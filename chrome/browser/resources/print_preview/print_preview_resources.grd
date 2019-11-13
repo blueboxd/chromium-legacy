@@ -42,7 +42,7 @@
                use_base_dir="false" type="BINDATA"/>
       <include name="IDR_PRINT_PREVIEW_UI_DESTINATION_SELECT_JS"
                file="${root_gen_dir}/chrome/browser/resources/print_preview/ui/destination_select.js"
-               use_base_dir="false" type="BINDATA" preprocess="true"/>
+               use_base_dir="false" type="BINDATA"/>
       <include name="IDR_PRINT_PREVIEW_UI_DESTINATION_SETTINGS_JS"
                file="${root_gen_dir}/chrome/browser/resources/print_preview/ui/destination_settings.js"
                use_base_dir="false" type="BINDATA" preprocess="true"/>

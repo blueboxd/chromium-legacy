@@ -77,6 +77,7 @@ public class CustomTabActivityNavigationController implements StartStopWithNativ
         boolean handleBackPressed(Runnable defaultBackHandler);
     }
 
+    /** Interface encapsulating the process of handling the custom tab closing. */
     public interface FinishHandler {
         void onFinish(@FinishReason int reason);
     }
@@ -87,10 +88,12 @@ public class CustomTabActivityNavigationController implements StartStopWithNativ
     private final CustomTabsConnection mConnection;
     private final Lazy<CustomTabObserver> mCustomTabObserver;
     private final CloseButtonNavigator mCloseButtonNavigator;
-    private final Lazy<ToolbarManager> mToolbarManager;
     private final ChromeBrowserInitializer mChromeBrowserInitializer;
     private final Activity mActivity;
     private final Lazy<ChromeFullscreenManager> mFullscreenManager;
+
+    @Nullable
+    private ToolbarManager mToolbarManager;
 
     @Nullable
     private BackHandler mBackHandler;
@@ -119,7 +122,6 @@ public class CustomTabActivityNavigationController implements StartStopWithNativ
             CustomTabsConnection connection,
             Lazy<CustomTabObserver> customTabObserver,
             CloseButtonNavigator closeButtonNavigator,
-            Lazy<ToolbarManager> toolbarManager,
             ChromeBrowserInitializer chromeBrowserInitializer,
             ChromeActivity activity,
             ActivityLifecycleDispatcher lifecycleDispatcher,
@@ -130,13 +132,22 @@ public class CustomTabActivityNavigationController implements StartStopWithNativ
         mConnection = connection;
         mCustomTabObserver = customTabObserver;
         mCloseButtonNavigator = closeButtonNavigator;
-        mToolbarManager = toolbarManager;
         mChromeBrowserInitializer = chromeBrowserInitializer;
         mActivity = activity;
         mFullscreenManager = fullscreenManager;
 
         lifecycleDispatcher.register(this);
         mTabProvider.addObserver(mTabObserver);
+    }
+
+    /**
+     * Notifies the navigation controller that the ToolbarManager has been created and is ready for
+     * use. ToolbarManager isn't passed directly to the constructor because it's not guaranteed to
+     * be initialized yet.
+     */
+    public void onToolbarInitialized(ToolbarManager manager) {
+        assert manager != null : "Toolbar manager not initialized";
+        mToolbarManager = manager;
     }
 
     /**
@@ -209,7 +220,7 @@ public class CustomTabActivityNavigationController implements StartStopWithNativ
     }
 
     private void executeDefaultBackHandling() {
-        if (mToolbarManager.get().back() != null) return;
+        if (mToolbarManager != null && mToolbarManager.back() != null) return;
 
         // mTabController.closeTab may result in either closing the only tab (through the back
         // button or the close button), or swapping to the previous tab. In the first case we need

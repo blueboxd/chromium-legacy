@@ -1478,6 +1478,53 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       MoveByUnitParagraphWithAriaHiddenNodes) {
+  const std::string html_markup = R"HTML(<!DOCTYPE html>
+  <html>
+    <body>
+      <div>start</div>
+      <div>
+        1. Paragraph with hidden <span aria-hidden="true">
+          [IGNORED]
+        </span> inline in between
+      </div>
+      <div>
+        <span>2. Paragraph parts wrapped by</span> <span aria-hidden="true">
+          [IGNORED]
+        </span> <span>span with hidden inline in between</span>
+      </div>
+      <div>
+        <span>3. Paragraph before hidden block</span><div aria-hidden="true">
+          [IGNORED]
+        </div><span>4. Paragraph after hidden block</span>
+      </div>
+      <div>
+        <span aria-hidden="true">[IGNORED]</span><span>5. Paragraph with leading
+        and trailing hidden span</span><span aria-hidden="true">[IGNORED]</span>
+      </div>
+      <div>
+        <div aria-hidden="true">[IGNORED]</div><span>6. Paragraph with leading
+        and trailing hidden block</span><div aria-hidden="true">[IGNORED]</div>
+      </div>
+      <div>end</div>
+    </body>
+  </html>)HTML";
+
+  const std::vector<const wchar_t*> paragraphs = {
+      L"start",
+      L"1. Paragraph with hidden inline in between",
+      L"2. Paragraph parts wrapped by span with hidden inline in between",
+      L"3. Paragraph before hidden block",
+      L"4. Paragraph after hidden block",
+      L"5. Paragraph with leading and trailing hidden span",
+      L"6. Paragraph with leading and trailing hidden block",
+      L"end",
+  };
+
+  AssertMoveByUnitForMarkup(TextUnit_Paragraph, html_markup, paragraphs);
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
                        IFrameTraversal) {
   LoadInitialAccessibilityTreeFromUrl(embedded_test_server()->GetURL(
       "/accessibility/html/iframe-cross-process.html"));

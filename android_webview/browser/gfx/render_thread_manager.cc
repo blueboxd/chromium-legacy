@@ -21,6 +21,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/quads/compositor_frame.h"
 
 namespace android_webview {
@@ -192,7 +193,7 @@ void RenderThreadManager::DrawOnRT(bool save_restore,
   ScopedAllowGL allow_gl;
   if (!hardware_renderer_ && !IsInsideHardwareRelease() &&
       HasFrameForHardwareRendererOnRT()) {
-    if (base::FeatureList::IsEnabled(features::kVizForWebView)) {
+    if (::features::IsUsingVizForWebView()) {
       RootFrameSinkGetter getter;
       {
         base::AutoLock lock(lock_);

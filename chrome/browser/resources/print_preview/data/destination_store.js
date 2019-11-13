@@ -31,9 +31,7 @@ import {parseDestination, parseExtensionDestination} from './local_parsers.js';
   export const DestinationErrorType = {
     INVALID: 0,
     UNSUPPORTED: 1,
-    // <if expr="chromeos">
     NO_DESTINATIONS: 2,
-    // </if>
   };
 
   /**
@@ -240,7 +238,7 @@ import {parseDestination, parseExtensionDestination} from './local_parsers.js';
 
       /**
        * Whether PDF printer is enabled. It's disabled, for example, in App
-       * Kiosk mode.
+       * Kiosk mode or when PDF printing is disallowed by policy.
        * @private {boolean}
        */
       this.pdfPrinterEnabled_ = false;
@@ -341,8 +339,8 @@ import {parseDestination, parseExtensionDestination} from './local_parsers.js';
      * Initializes the destination store. Sets the initially selected
      * destination. If any inserted destinations match this ID, that destination
      * will be automatically selected.
-     * @param {boolean} isInAppKioskMode Whether the print preview is in App
-     *     Kiosk mode.
+     * @param {boolean} pdfPrinterDisabled Whether the PDF print destination is
+     *     disabled in print preview.
      * @param {string} systemDefaultDestinationId ID of the system default
      *     destination.
      * @param {?string} serializedDefaultDestinationSelectionRulesStr Serialized
@@ -351,9 +349,9 @@ import {parseDestination, parseExtensionDestination} from './local_parsers.js';
      *     recentDestinations The recent print destinations.
      */
     init(
-        isInAppKioskMode, systemDefaultDestinationId,
+        pdfPrinterDisabled, systemDefaultDestinationId,
         serializedDefaultDestinationSelectionRulesStr, recentDestinations) {
-      this.pdfPrinterEnabled_ = !isInAppKioskMode;
+      this.pdfPrinterEnabled_ = !pdfPrinterDisabled;
       this.systemDefaultDestinationId_ = systemDefaultDestinationId;
       this.createLocalPdfPrintDestination_();
 
@@ -1272,12 +1270,10 @@ import {parseDestination, parseExtensionDestination} from './local_parsers.js';
           !this.selectFirstDestination_) {
         return;
       }
-      // <if expr="chromeos">
       this.selectFirstDestination_ = false;
       this.dispatchEvent(new CustomEvent(
           DestinationStore.EventType.ERROR,
           {detail: DestinationErrorType.NO_DESTINATIONS}));
-      // </if>
     }
 
     /**

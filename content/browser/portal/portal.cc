@@ -168,7 +168,8 @@ RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
   DCHECK_EQ(portal_contents_impl_->GetDelegate(), this);
 
   outer_contents_impl->AttachInnerWebContents(std::move(portal_contents_),
-                                              outer_node->current_frame_host());
+                                              outer_node->current_frame_host(),
+                                              false /* is_full_page */);
 
   FrameTreeNode* frame_tree_node =
       portal_contents_impl_->GetMainFrame()->frame_tree_node();

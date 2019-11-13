@@ -67,6 +67,10 @@ class SyncConsentScreenHandler : public BaseScreenHandler,
   void HandleContinueWithDefaults(
       const ::login::StringList& consent_description,
       const std::string& consent_confirmation);
+  void HandleOsSyncAcceptAndContinue(
+      const ::login::StringList& consent_description,
+      const std::string& consent_confirmation,
+      bool enable_os_sync);
 
   // Adds resource |resource_id| both to |builder| and to |known_string_ids_|.
   void RememberLocalizedValue(const std::string& name,

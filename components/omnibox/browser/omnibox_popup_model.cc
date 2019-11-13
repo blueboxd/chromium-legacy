@@ -118,8 +118,8 @@ void OmniboxPopupModel::SetSelectedLine(size_t line,
   // Cancel the query so the matches don't change on the user.
   autocomplete_controller()->Stop(false);
 
-  line = std::min(line, result.size() - 1);
-  const AutocompleteMatch& match = result.match_at(line);
+  if (line != kNoMatch)
+    line = std::min(line, result.size() - 1);
   has_selected_match_ = !reset_to_default;
 
   if (line == selected_line_ && !force)
@@ -130,18 +130,19 @@ void OmniboxPopupModel::SetSelectedLine(size_t line,
   // draw.  We also need to update |selected_line_| before calling
   // OnPopupDataChanged(), so that when the edit notifies its controller that
   // something has changed, the controller can get the correct updated data.
-  //
-  // NOTE: We should never reach here with no selected line; the same code that
-  // opened the popup and made it possible to get here should have also set a
-  // selected line.
-  CHECK(selected_line_ != kNoMatch);
   const size_t prev_selected_line = selected_line_;
   selected_line_state_ = NORMAL;
   selected_line_ = line;
-  view_->InvalidateLine(prev_selected_line);
-  view_->InvalidateLine(selected_line_);
+  if (prev_selected_line != kNoMatch) {
+    view_->InvalidateLine(prev_selected_line);
+  }
+  if (selected_line_ != kNoMatch) {
+    view_->InvalidateLine(selected_line_);
+    view_->OnLineSelected(selected_line_);
+  }
 
-  view_->OnLineSelected(selected_line_);
+  if (line == kNoMatch)
+    return;
 
   // Update the edit with the new data for this match.
   // TODO(pkasting): If |selected_line_| moves to the controller, this can be
@@ -149,6 +150,7 @@ void OmniboxPopupModel::SetSelectedLine(size_t line,
   base::string16 keyword;
   bool is_keyword_hint;
   TemplateURLService* service = edit_model_->client()->GetTemplateURLService();
+  const AutocompleteMatch& match = result.match_at(line);
   match.GetKeywordUIState(service, &keyword, &is_keyword_hint);
 
   if (reset_to_default) {
@@ -162,10 +164,12 @@ void OmniboxPopupModel::SetSelectedLine(size_t line,
   }
 }
 
-void OmniboxPopupModel::ResetToDefaultMatch() {
+void OmniboxPopupModel::ResetToInitialState() {
   const AutocompleteResult& result = this->result();
-  CHECK(!result.empty());
-  SetSelectedLine(result.default_match() - result.begin(), true, false);
+  size_t new_line = kNoMatch;
+  if (result.default_match() != result.end())
+    new_line = result.default_match() - result.begin();
+  SetSelectedLine(new_line, true, false);
   view_->OnDragCanceled();
 }
 
@@ -242,14 +246,19 @@ void OmniboxPopupModel::OnResultChanged() {
   rich_suggestion_bitmaps_.clear();
   const AutocompleteResult& result = this->result();
   size_t old_selected_line = selected_line_;
-  selected_line_ = result.default_match() == result.end() ?
-      kNoMatch : static_cast<size_t>(result.default_match() - result.begin());
-  // There had better not be a nonempty result set with no default match.
-  CHECK((selected_line_ != kNoMatch) || result.empty());
   has_selected_match_ = false;
-  // If selected line state was |BUTTON_FOCUSED| and nothing has changed, leave
-  // it.
-  if (selected_line_ != kNoMatch) {
+
+  if (result.default_match() == result.end()) {
+    selected_line_ = kNoMatch;
+    selected_line_state_ = NORMAL;
+  } else {
+    // TODO(tommycli): The default match is always in the first position. After
+    // we cement these semantics, we should just set selected_line_ to 0.
+    selected_line_ =
+        static_cast<size_t>(result.default_match() - result.begin());
+
+    // If selected line state was |BUTTON_FOCUSED| and nothing has changed,
+    // leave it.
     const bool has_focused_match =
         selected_line_state_ == BUTTON_FOCUSED &&
         result.match_at(selected_line_).has_tab_match;
@@ -258,8 +267,6 @@ void OmniboxPopupModel::OnResultChanged() {
         result.match_at(selected_line_).destination_url != old_focused_url_;
     if (!has_focused_match || has_changed)
       selected_line_state_ = NORMAL;
-  } else {
-    selected_line_state_ = NORMAL;
   }
 
   bool popup_was_open = view_->IsOpen();

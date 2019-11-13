@@ -1394,7 +1394,10 @@ AccountInfo ChromePasswordProtectionService::GetSignedInNonSyncAccount(
   auto account_iterator =
       std::find_if(signed_in_accounts.begin(), signed_in_accounts.end(),
                    [username](const auto& account) {
-                     return gaia::AreEmailsSame(account.email, username);
+                     return password_manager::AreUsernamesSame(
+                         account.email,
+                         /*is_username1_gaia_account=*/true, username,
+                         /*is_username2_gaia_account=*/true);
                    });
   if (account_iterator == signed_in_accounts.end())
     return AccountInfo();

@@ -52,6 +52,10 @@ void StatusAreaOverflowButtonTray::IconView::ToggleState(State state) {
     slide_animation_->Show();
   else if (state == CLICK_TO_COLLAPSE)
     slide_animation_->Hide();
+
+  // TODO(tengs): Currently, the collpase/expand animation is not fully spec'd,
+  // so skip it for now.
+  slide_animation_->End();
 }
 
 void StatusAreaOverflowButtonTray::IconView::AnimationEnded(

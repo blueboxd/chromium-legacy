@@ -58,7 +58,6 @@
 <translation id="3340978935015468852">設定</translation>
 <translation id="3474745554856756813">登出後，系統會將 <ph name="ITEMS_COUNT" /> 個項目從這個裝置上刪除。日後如要重新取得你的資料，請以 <ph name="USER_EMAIL" /> 身分登入 Chromium。</translation>
 <translation id="3509308970982693815">請關閉所有 Chromium 視窗，然後再試一次。</translation>
-<translation id="352783484088404971">從 Chromium 中移除...</translation>
 <translation id="3575459661164320785">你的電腦安裝了有害軟體。Chromium 可以移除該軟體、復原設定及停用擴充功能，讓你的瀏覽器恢復正常運作。</translation>
 <translation id="358997566136285270">Chromium 標誌</translation>
 <translation id="3639635944603682591">這位使用者的瀏覽資料將從這個裝置上刪除。如要還原資料，請使用 <ph name="USER_EMAIL" /> 登入 Chromium。</translation>

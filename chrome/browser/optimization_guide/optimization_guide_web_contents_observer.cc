@@ -19,6 +19,14 @@
 
 namespace {
 
+bool WasHostCoveredByFetch(content::NavigationHandle* navigation_handle) {
+  return optimization_guide::HintsFetcher::WasHostCoveredByFetch(
+      Profile::FromBrowserContext(
+          navigation_handle->GetWebContents()->GetBrowserContext())
+          ->GetPrefs(),
+      navigation_handle->GetURL().host());
+}
+
 // Records if the host for the current navigation was successfully
 // covered by a HintsFetch. HintsFetching must be enabled and only HTTPS
 // navigations are logged. Returns whether navigation was covered by fetch.
@@ -28,13 +36,7 @@ bool RecordHintsFetcherCoverage(content::NavigationHandle* navigation_handle) {
   if (!optimization_guide::features::IsHintsFetchingEnabled())
     return false;
 
-  bool was_host_covered_by_fetch =
-      optimization_guide::HintsFetcher::WasHostCoveredByFetch(
-          Profile::FromBrowserContext(
-              navigation_handle->GetWebContents()->GetBrowserContext())
-              ->GetPrefs(),
-          navigation_handle->GetURL().GetOrigin().host());
-
+  bool was_host_covered_by_fetch = WasHostCoveredByFetch(navigation_handle);
   UMA_HISTOGRAM_BOOLEAN(
       "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch",
       was_host_covered_by_fetch);
@@ -86,8 +88,6 @@ void OptimizationGuideWebContentsObserver::DidStartNavigation(
   OptimizationGuideTopHostProvider::MaybeUpdateTopHostBlacklist(
       navigation_handle);
 
-  // Record the HintsFetcher coverage for the navigation, regardless if the
-  // keyed service is active or not.
   bool was_host_covered_by_fetch =
       RecordHintsFetcherCoverage(navigation_handle);
 
@@ -123,6 +123,16 @@ void OptimizationGuideWebContentsObserver::DidRedirectNavigation(
 void OptimizationGuideWebContentsObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // If the navigation committed, this will cover if the race with the
+  // navigation was able to cover the navigation or not.
+  if (navigation_handle->HasCommitted() &&
+      navigation_handle->GetURL().SchemeIsHTTPOrHTTPS()) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
+        "AtCommit",
+        WasHostCoveredByFetch(navigation_handle));
+  }
 
   // Delete Optimization Guide information later, so that other
   // DidFinishNavigation methods can reliably use

@@ -1,11 +1,11 @@
 Name: Android SDK
 URL: http://developer.android.com/sdk/index.html
-Version: 28
-  Android SDK Build-tools 27.0.3
-  Android SDK Emulator 29.0.9
-  Android SDK Platform-tools 28.0.3
-  Android SDK Platform API 28
-  Android SDK Sources 28
+Version: 29
+  Android SDK Build-tools 29.0.2
+  Android SDK Emulator 29.1.12
+  Android SDK Platform-tools 29.0.3
+  Android SDK Platform API 29
+  Android SDK Sources 29
   Android SDK Tools 26.1.1
   Android Lint 26.4.0-alpha04
   Google Cloud Messaging 3
@@ -38,11 +38,11 @@ No other modifications has been made to the public Android SDK.
 
 Update Instructions:
 
-public/tools/bin/sdkmanager --list  # Look for"Installed packages:"
-public/tools/bin/sdkmanager --update "name from --list's output"
-cipd create --pkg-def cipd_emulator.yaml  # For each package updated
-
-Then,
-* Update //DEPS with InstanceIds printed by "cipd create".
+* public/tools/bin/sdkmanager --list  # Look for "Installed packages:"
+* Prepare the CIPD yaml files for packages that need update and add them
+  to android-sdk-packager buildbucket configuation file.
+  Submit the changes into gerrit (See crrev.com/c/1803895 as a reference)
+* Wait till the builder android-sdk-packager create new CIPD packages
+* Update //DEPS with InstanceIds from the CIPD
 * Update versions in this README.chromium.
   * The overall Version field should corresponde to the Platform API version.

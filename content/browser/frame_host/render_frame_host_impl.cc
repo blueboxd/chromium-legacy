@@ -1621,8 +1621,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidAccessInitialDocument,
                         OnDidAccessInitialDocument)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeOpener, OnDidChangeOpener)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidAddContentSecurityPolicies,
-                        OnDidAddContentSecurityPolicies)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeFramePolicy,
                         OnDidChangeFramePolicy)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeFrameOwnerProperties,
@@ -2503,6 +2501,20 @@ void RenderFrameHostImpl::FrameFocused() {
   delegate_->SetFocusedFrame(frame_tree_node_, GetSiteInstance());
 }
 
+void RenderFrameHostImpl::DidAddContentSecurityPolicies(
+    const std::vector<ContentSecurityPolicy>& policies) {
+  TRACE_EVENT1("navigation",
+               "RenderFrameHostImpl::OnDidAddContentSecurityPolicies",
+               "frame_tree_node", frame_tree_node_->frame_tree_node_id());
+
+  std::vector<ContentSecurityPolicyHeader> headers;
+  for (const ContentSecurityPolicy& policy : policies) {
+    AddContentSecurityPolicy(policy);
+    headers.push_back(policy.header);
+  }
+  frame_tree_node()->AddContentSecurityPolicies(headers);
+}
+
 void RenderFrameHostImpl::OnOpenURL(const FrameHostMsg_OpenURL_Params& params) {
   // Verify and unpack IPC payload.
   GURL validated_url;
@@ -3352,20 +3364,6 @@ void RenderFrameHostImpl::DidSetFramePolicyHeaders(
 
   // Save a copy of the now-active sandbox flags on this RFHI.
   active_sandbox_flags_ = frame_tree_node()->active_sandbox_flags();
-}
-
-void RenderFrameHostImpl::OnDidAddContentSecurityPolicies(
-    const std::vector<ContentSecurityPolicy>& policies) {
-  TRACE_EVENT1("navigation",
-               "RenderFrameHostImpl::OnDidAddContentSecurityPolicies",
-               "frame_tree_node", frame_tree_node_->frame_tree_node_id());
-
-  std::vector<ContentSecurityPolicyHeader> headers;
-  for (const ContentSecurityPolicy& policy : policies) {
-    AddContentSecurityPolicy(policy);
-    headers.push_back(policy.header);
-  }
-  frame_tree_node()->AddContentSecurityPolicies(headers);
 }
 
 void RenderFrameHostImpl::EnforceInsecureRequestPolicy(

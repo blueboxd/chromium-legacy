@@ -109,8 +109,11 @@ class WebViewCardUnmaskPromptView : public autofill::CardUnmaskPromptView {
     _unmaskingController =
         std::make_unique<autofill::CardUnmaskPromptControllerImpl>(
             prefs, isOffTheRecord);
-    _unmaskingController->ShowPrompt(_unmaskingView.get(), creditCard, reason,
-                                     delegate);
+    _unmaskingController->ShowPrompt(
+        base::BindOnce(^autofill::CardUnmaskPromptView*() {
+          return _unmaskingView.get();
+        }),
+        creditCard, reason, delegate);
   }
   return self;
 }

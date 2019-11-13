@@ -14,20 +14,30 @@
 #include "tools/binary_size/libsupersize/caspian/file_format.h"
 #include "tools/binary_size/libsupersize/caspian/model.h"
 
-int main(int argc, char* argv[]) {
-  if (argc < 2) {
-    std::cerr << "Usage: cli (path to .size file)" << std::endl;
-    exit(1);
-  }
-  std::ifstream ifs(argv[1], std::ifstream::in);
+void ParseSizeInfoFromFile(const char* filename, caspian::SizeInfo* info) {
+  std::ifstream ifs(filename, std::ifstream::in);
   if (!ifs.good()) {
-    std::cerr << "Unable to open file: " << argv[1] << std::endl;
+    std::cerr << "Unable to open file: " << filename << std::endl;
     exit(1);
   }
   std::string compressed((std::istreambuf_iterator<char>(ifs)),
                          std::istreambuf_iterator<char>());
+  caspian::ParseSizeInfo(compressed.data(), compressed.size(), info);
+}
+
+void Diff(const char* before_filename, const char* after_filename) {
+  caspian::SizeInfo before;
+  ParseSizeInfoFromFile(before_filename, &before);
+
+  caspian::SizeInfo after;
+  ParseSizeInfoFromFile(after_filename, &after);
+
+  caspian::DiffSizeInfo diff(&before, &after);
+}
+
+void Validate(const char* filename) {
   caspian::SizeInfo info;
-  caspian::ParseSizeInfo(compressed.data(), compressed.size(), &info);
+  ParseSizeInfoFromFile(filename, &info);
 
   size_t max_aliases = 0;
   for (auto& s : info.raw_symbols) {
@@ -44,5 +54,23 @@ int main(int argc, char* argv[]) {
     }
   }
   std::cout << "Largest number of aliases: " << max_aliases << std::endl;
+}
+
+int main(int argc, char* argv[]) {
+  if (argc < 2) {
+    std::cerr << "Must have exactly one of:" << std::endl;
+    std::cerr << "  validate, diff" << std::endl;
+    std::cerr << "Usage: " << std::endl;
+    std::cerr << "  cli validate <size file>" << std::endl;
+    std::cerr << "  cli diff <before_file> <after_file>" << std::endl;
+    exit(1);
+  }
+  if (std::string_view(argv[1]) == "diff") {
+    Diff(argv[2], argv[3]);
+  } else if (std::string_view(argv[1]) == "validate") {
+    Validate(argv[1]);
+  } else {
+    exit(1);
+  }
   return 0;
 }

@@ -13,6 +13,7 @@
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/render_frame_message_filter.h"
@@ -32,6 +33,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "ipc/ipc_security_test_util.h"
+#include "net/base/features.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_util.h"
 #include "net/dns/mock_host_resolver.h"
@@ -113,6 +115,10 @@ class RenderFrameMessageFilterBrowserTest : public ContentBrowserTest {
   void SetUp() override {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
+    feature_list_.InitWithFeatures(
+        {net::features::kSameSiteByDefaultCookies,
+         net::features::kCookiesWithoutSameSiteMustBeSecure} /* enabled */,
+        {} /* disabled */);
     ContentBrowserTest::SetUp();
   }
 
@@ -120,6 +126,9 @@ class RenderFrameMessageFilterBrowserTest : public ContentBrowserTest {
     // Support multiple sites on the test server.
     host_resolver()->AddRule("*", "127.0.0.1");
   }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 // Exercises basic cookie operations via javascript, including an http page

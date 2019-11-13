@@ -125,6 +125,7 @@ class TabImpl : public Tab,
   // content::WebContentsObserver:
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void RenderProcessGone(base::TerminationStatus status) override;
 
   // Called from closure supplied to delegate to exit fullscreen.
   void OnExitFullscreen();

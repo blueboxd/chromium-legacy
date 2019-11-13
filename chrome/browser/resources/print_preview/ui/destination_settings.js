@@ -49,8 +49,6 @@ import '../strings.m.js';
     ],
 
     properties: {
-      appKioskMode: Boolean,
-
       /** @type {CloudPrintInterface} */
       cloudPrintInterface: {
         type: Object,
@@ -131,6 +129,9 @@ import '../strings.m.js';
         type: Boolean,
         value: false,
       },
+
+      /** @private {boolean} */
+      pdfPrinterDisabled_: Boolean,
 
       /** @private */
       shouldHideSpinner_: {
@@ -251,6 +252,7 @@ import '../strings.m.js';
 
     /**
      * @param {string} defaultPrinter The system default printer ID.
+     * @param {boolean} pdfPrinterDisabled Whether the PDF printer is disabled.
      * @param {string} serializedDefaultDestinationRulesStr String with rules
      *     for selecting a default destination.
      * @param {?Array<string>} userAccounts The signed in user accounts.
@@ -259,11 +261,12 @@ import '../strings.m.js';
      *     to always send requests to the Google Cloud Print server.
      */
     init: function(
-        defaultPrinter, serializedDefaultDestinationRulesStr, userAccounts,
-        syncAvailable) {
+        defaultPrinter, pdfPrinterDisabled,
+        serializedDefaultDestinationRulesStr, userAccounts, syncAvailable) {
+      this.pdfPrinterDisabled_ = pdfPrinterDisabled;
       this.$.userManager.initUserAccounts(userAccounts, syncAvailable);
       this.destinationStore_.init(
-          this.appKioskMode, defaultPrinter,
+          this.pdfPrinterDisabled_, defaultPrinter,
           serializedDefaultDestinationRulesStr,
           /** @type {!Array<RecentDestination>} */
           (this.getSettingValue('recentDestinations')));
@@ -317,12 +320,10 @@ import '../strings.m.js';
         case DestinationErrorType.UNSUPPORTED:
           errorType = Error.UNSUPPORTED_PRINTER;
           break;
-        // <if expr="chromeos">
         case DestinationErrorType.NO_DESTINATIONS:
           errorType = Error.NO_DESTINATIONS;
           this.noDestinations_ = true;
           break;
-        // </if>
         default:
           break;
       }
@@ -495,12 +496,10 @@ import '../strings.m.js';
 
     /** @private */
     updateDestinationSelect_: function() {
-      // <if expr="chromeos">
       if (this.destinationState === DestinationState.ERROR &&
           !this.destination) {
         return;
       }
-      // </if>
 
       if (this.destinationState === DestinationState.INIT ||
           this.destinationState === DestinationState.SELECTED) {
@@ -517,4 +516,3 @@ import '../strings.m.js';
       });
     },
   });
-

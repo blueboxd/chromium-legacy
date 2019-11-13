@@ -171,3 +171,15 @@ html[dir=rtl] .tree-item[editing] input {
   margin: -2px -3px -2px -8px;
   padding: 1px 1px 1px 7px;
 }
+
+@media(forced-colors) {
+  .tree-row[selected],
+  .tree-row:hover,
+  .tree-row[selected]:hover,
+  tree:focus .tree-row[selected] {
+    background-color: Highlight;
+    background-image: none;
+    color: HighlightText;
+    forced-color-adjust: none;
+  }
+}

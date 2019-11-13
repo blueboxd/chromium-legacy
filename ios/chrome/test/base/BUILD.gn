@@ -5,25 +5,9 @@
 source_set("base") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "scoped_block_swizzler.h",
-    "scoped_block_swizzler.mm",
-  ]
-  deps = [
-    "//base",
-  ]
-}
-
-source_set("unit_tests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "scoped_block_swizzler_unittest.mm",
-  ]
-  deps = [
-    ":base",
-    "//base",
-    "//testing/gtest",
+  sources = []
+  public_deps = [
+    "//ios/testing:block_swizzler",
   ]
 }
 

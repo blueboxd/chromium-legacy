@@ -10,6 +10,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/test/base/js_test_api.h"
 #include "third_party/blink/public/web/blink.h"
 
 namespace {
@@ -177,30 +178,14 @@ bool V8UnitTest::RunJavascriptTestF(const std::string& test_fixture,
 }
 
 void V8UnitTest::InitPathsAndLibraries() {
-  base::FilePath test_data;
-  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data));
-
-  g_test_data_directory = test_data.AppendASCII("webui");
+  JsTestApiConfig config;
+  g_test_data_directory = config.search_path;
+  user_libraries_ = config.default_libraries;
 
   ASSERT_TRUE(base::PathService::Get(chrome::DIR_GEN_TEST_DATA,
                                      &g_gen_test_data_directory));
 
   ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &g_src_root));
-
-  AddLibrary(g_src_root.AppendASCII("chrome")
-                       .AppendASCII("third_party")
-                       .AppendASCII("mock4js")
-                       .AppendASCII("mock4js.js"));
-
-  AddLibrary(g_src_root.AppendASCII("third_party")
-                       .AppendASCII("chaijs")
-                       .AppendASCII("chai.js"));
-
-  AddLibrary(g_src_root.AppendASCII("third_party")
-                       .AppendASCII("accessibility-audit")
-                       .AppendASCII("axs_testing.js"));
-
-  AddLibrary(g_test_data_directory.AppendASCII("test_api.js"));
 }
 
 void V8UnitTest::SetUp() {

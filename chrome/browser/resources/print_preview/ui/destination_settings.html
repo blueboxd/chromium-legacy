@@ -34,7 +34,6 @@
       }
     </style>
     <print-preview-user-manager id="userManager" active-user="{{activeUser_}}"
-        app-kiosk-mode="[[appKioskMode]]"
         cloud-print-disabled="{{cloudPrintDisabled_}}"
         cloud-print-interface="[[cloudPrintInterface]]"
         users="{{users_}}" destination-store="[[destinationStore_]]"
@@ -49,12 +48,12 @@
         </div>
         <print-preview-destination-select id="destinationSelect"
             hidden$="[[!shouldHideSpinner_]]"
-            active-user="[[activeUser_]]"
-            app-kiosk-mode="[[appKioskMode]]" dark="[[dark]]"
+            active-user="[[activeUser_]]" dark="[[dark]]"
             destination="[[destination]]"
             disabled="[[shouldDisableDropdown_(
                             destinationState, state, disabled)]]"
             no-destinations="[[noDestinations_]]"
+            pdf-printer-disabled="[[pdfPrinterDisabled_]]"
             recent-destination-list="[[displayedDestinations_]]"
             on-selected-option-change="onSelectedDestinationOptionChange_">
         </print-preview-destination-select>

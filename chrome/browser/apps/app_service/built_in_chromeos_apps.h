@@ -56,6 +56,8 @@ class BuiltInChromeOsApps : public apps::mojom::Publisher {
   void Uninstall(const std::string& app_id,
                  bool clear_site_data,
                  bool report_abuse) override;
+  void PauseApp(const std::string& app_id) override;
+  void UnpauseApps(const std::string& app_id) override;
   void OpenNativeSettings(const std::string& app_id) override;
   void OnPreferredAppSet(const std::string& app_id,
                          apps::mojom::IntentFilterPtr intent_filter,

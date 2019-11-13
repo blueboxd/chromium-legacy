@@ -449,7 +449,7 @@ void FindBarView::OnThemeChanged() {
                   0xFF);
   auto border = std::make_unique<views::BubbleBorder>(
       views::BubbleBorder::NONE, views::BubbleBorder::SMALL_SHADOW, bg_color);
-  // TODO(sajadm): Remove when fixing https://crbug.com/822075 and use
+  // TODO(tluk): Remove when fixing https://crbug.com/822075 and use
   // EMPHASIS_HIGH metric values from the LayoutProvider to get the
   // corner radius.
   border->SetCornerRadius(2);

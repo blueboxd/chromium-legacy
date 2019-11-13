@@ -11,9 +11,8 @@
     <link rel="stylesheet" href="oobe_flex_layout.css">
     <oobe-dialog id="marketingOptInOverviewDialog" role="dialog" has-buttons
         aria-label="[[i18nDynamic(locale, 'marketingOptInScreenTitle')]]">
-      <!-- TODO(https://crbug.com/852557): replace placeholder with real icon. -->
-      <hd-iron-icon slot="oobe-icon" icon1x="oobe-32:googleg"
-          icon2x="oobe-32:googleg">
+      <hd-iron-icon slot="oobe-icon" icon1x="oobe-32:checkmark"
+          icon2x="oobe-32:checkmark">
       </hd-iron-icon>
       <h1 slot="title">
         [[i18nDynamic(locale, 'marketingOptInScreenTitle')]]
@@ -23,8 +22,7 @@
       </div>
       <div slot="footer" class="layout vertical">
         <div class="marketing-option layout horizontal center">
-          <!-- TODO(https://crbug.com/852557): replace placeholder with real icon. -->
-          <hd-iron-icon icon1x="oobe-32:googleg" icon2x="oobe-64:googleg">
+          <hd-iron-icon icon1x="oobe-32:checkmark" icon2x="oobe-64:checkmark">
           </hd-iron-icon>
           <div id="playUpdatesOptionLabel" class="flex">
             [[i18nDynamic(locale, 'marketingOptInGetPlayUpdates')]]
@@ -34,8 +32,7 @@
           </cr-toggle>
         </div>
         <div class="marketing-option layout horizontal center">
-          <!-- TODO(https://crbug.com/852557): replace placeholder with real icon. -->
-          <hd-iron-icon icon1x="oobe-32:googleg" icon2x="oobe-64:googleg">
+          <hd-iron-icon icon1x="oobe-32:checkmark" icon2x="oobe-64:checkmark">
           </hd-iron-icon>
           <div id="chromebookUpdatesOptionLabel" class="flex">
             [[i18nRecursive(locale, 'marketingOptInGetChromebookUpdates',

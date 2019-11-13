@@ -25,7 +25,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "components/autofill/core/browser/autofill-inl.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_download_manager.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
@@ -72,48 +71,39 @@ using ::i18n::addressinput::GetStreetAddressLinesAsSingleLine;
 using ::i18n::addressinput::STREET_ADDRESS;
 
 template <typename T>
-class FormGroupMatchesByGUIDFunctor {
- public:
-  explicit FormGroupMatchesByGUIDFunctor(const std::string& guid)
-      : guid_(guid) {}
-
-  bool operator()(const T& form_group) { return form_group.guid() == guid_; }
-
-  bool operator()(const T* form_group) { return form_group->guid() == guid_; }
-
-  bool operator()(const std::unique_ptr<T>& form_group) {
-    return form_group->guid() == guid_;
-  }
-
- private:
-  const std::string guid_;
-};
-
-template <typename T, typename C>
-typename C::const_iterator FindElementByGUID(const C& container,
-                                             const std::string& guid) {
-  return std::find_if(container.begin(), container.end(),
-                      FormGroupMatchesByGUIDFunctor<T>(guid));
-}
-
-template <typename T, typename C>
-bool FindByGUID(const C& container, const std::string& guid) {
-  return FindElementByGUID<T>(container, guid) != container.end();
+const T& Deref(T* x) {
+  return *x;
 }
 
 template <typename T>
-class IsEmptyFunctor {
- public:
-  explicit IsEmptyFunctor(const std::string& app_locale)
-      : app_locale_(app_locale) {}
+const T& Deref(const std::unique_ptr<T>& x) {
+  return *x;
+}
 
-  bool operator()(const T& form_group) {
-    return form_group.IsEmpty(app_locale_);
-  }
+template <typename T>
+const T& Deref(const T& x) {
+  return x;
+}
 
- private:
-  const std::string app_locale_;
-};
+template <typename C, typename StringType>
+typename C::const_iterator FindElementByGUID(const C& container,
+                                             const StringType& guid) {
+  return std::find_if(
+      std::begin(container), std::end(container),
+      [&guid](const auto& element) { return Deref(element).guid() == guid; });
+}
+
+template <typename C, typename StringType>
+bool FindByGUID(const C& container, const StringType& guid) {
+  return FindElementByGUID(container, guid) != container.end();
+}
+
+template <typename C, typename T>
+bool FindByContents(const C& container, const T& needle) {
+  return std::any_of(
+      std::begin(container), std::end(container),
+      [&needle](const auto& element) { return element->Compare(needle) == 0; });
+}
 
 bool IsSyncEnabledFor(const syncer::SyncService* sync_service,
                       syncer::ModelType model_type) {
@@ -691,7 +681,7 @@ AutofillProfile* PersonalDataManager::GetProfileByGUID(
 AutofillProfile* PersonalDataManager::GetProfileFromProfilesByGUID(
     const std::string& guid,
     const std::vector<AutofillProfile*>& profiles) {
-  auto iter = FindElementByGUID<AutofillProfile>(profiles, guid);
+  auto iter = FindElementByGUID(profiles, guid);
   return iter != profiles.end() ? *iter : nullptr;
 }
 
@@ -705,7 +695,7 @@ void PersonalDataManager::AddCreditCard(const CreditCard& credit_card) {
   if (credit_card.IsEmpty(app_locale_))
     return;
 
-  if (FindByGUID<CreditCard>(local_credit_cards_, credit_card.guid()))
+  if (FindByGUID(local_credit_cards_, credit_card.guid()))
     return;
 
   if (!database_helper_->GetLocalDatabase())
@@ -780,7 +770,7 @@ void PersonalDataManager::AddFullServerCreditCard(
       << "Adding server card without server storage.";
 
   // Don't add a duplicate.
-  if (FindByGUID<CreditCard>(server_credit_cards_, credit_card.guid()) ||
+  if (FindByGUID(server_credit_cards_, credit_card.guid()) ||
       FindByContents(server_credit_cards_, credit_card))
     return;
 
@@ -937,7 +927,7 @@ void PersonalDataManager::RemoveByGUID(const std::string& guid) {
   if (!database_helper_->GetLocalDatabase())
     return;
 
-  bool is_credit_card = FindByGUID<CreditCard>(local_credit_cards_, guid);
+  bool is_credit_card = FindByGUID(local_credit_cards_, guid);
   if (is_credit_card) {
     database_helper_->GetLocalDatabase()->RemoveCreditCard(guid);
     // Refresh our local cache and send notifications to observers.
@@ -949,7 +939,7 @@ void PersonalDataManager::RemoveByGUID(const std::string& guid) {
 
 CreditCard* PersonalDataManager::GetCreditCardByGUID(const std::string& guid) {
   const std::vector<CreditCard*>& credit_cards = GetCreditCards();
-  auto iter = FindElementByGUID<CreditCard>(credit_cards, guid);
+  auto iter = FindElementByGUID(credit_cards, guid);
   return iter != credit_cards.end() ? *iter : nullptr;
 }
 
@@ -1494,7 +1484,7 @@ void PersonalDataManager::SetProfiles(std::vector<AutofillProfile>* profiles) {
   // Any profiles that are not in the new profile list should be removed from
   // the web database
   for (const auto& it : web_profiles_) {
-    if (!FindByGUID<AutofillProfile>(*profiles, it->guid())) {
+    if (!FindByGUID(*profiles, it->guid())) {
       RemoveProfileFromDB(it->guid());
       change_happened = true;
     }
@@ -1537,7 +1527,9 @@ void PersonalDataManager::SetCreditCards(
     return;
 
   // Remove empty credit cards from input.
-  base::EraseIf(*credit_cards, IsEmptyFunctor<CreditCard>(app_locale_));
+  base::EraseIf(*credit_cards, [this](const CreditCard& credit_card) {
+    return credit_card.IsEmpty(app_locale_);
+  });
 
   if (!database_helper_->GetLocalDatabase())
     return;
@@ -1545,19 +1537,19 @@ void PersonalDataManager::SetCreditCards(
   // Any credit cards that are not in the new credit card list should be
   // removed.
   for (const auto& card : local_credit_cards_) {
-    if (!FindByGUID<CreditCard>(*credit_cards, card->guid()))
+    if (!FindByGUID(*credit_cards, card->guid()))
       database_helper_->GetLocalDatabase()->RemoveCreditCard(card->guid());
   }
 
   // Update the web database with the existing credit cards.
   for (const CreditCard& card : *credit_cards) {
-    if (FindByGUID<CreditCard>(local_credit_cards_, card.guid()))
+    if (FindByGUID(local_credit_cards_, card.guid()))
       database_helper_->GetLocalDatabase()->UpdateCreditCard(card);
   }
 
   // Add the new credit cards to the web database.  Don't add a duplicate.
   for (const CreditCard& card : *credit_cards) {
-    if (!FindByGUID<CreditCard>(local_credit_cards_, card.guid()) &&
+    if (!FindByGUID(local_credit_cards_, card.guid()) &&
         !FindByContents(local_credit_cards_, card))
       database_helper_->GetLocalDatabase()->AddCreditCard(card);
   }
@@ -1886,15 +1878,13 @@ void PersonalDataManager::OnAutofillProfileChanged(
       if (profile_exists &&
           (change.enforced() ||
            !existing_profile->EqualsForUpdatePurposes(profile))) {
-        web_profiles_.erase(
-            FindElementByGUID<AutofillProfile>(web_profiles_, guid));
+        web_profiles_.erase(FindElementByGUID(web_profiles_, guid));
         web_profiles_.push_back(std::make_unique<AutofillProfile>(profile));
       }
       break;
     case AutofillProfileChange::REMOVE:
       if (profile_exists) {
-        web_profiles_.erase(
-            FindElementByGUID<AutofillProfile>(web_profiles_, guid));
+        web_profiles_.erase(FindElementByGUID(web_profiles_, guid));
       }
       break;
     default:
@@ -2357,9 +2347,8 @@ void PersonalDataManager::AddProfileToDB(const AutofillProfile& profile,
   }
 
   if (!ProfileChangesAreOngoing(profile.guid())) {
-    if (!enforced &&
-        (FindByGUID<AutofillProfile>(web_profiles_, profile.guid()) ||
-         FindByContents(web_profiles_, profile))) {
+    if (!enforced && (FindByGUID(web_profiles_, profile.guid()) ||
+                      FindByContents(web_profiles_, profile))) {
       NotifyPersonalDataObserver();
       return;
     }
@@ -2392,7 +2381,7 @@ void PersonalDataManager::UpdateProfileInDB(const AutofillProfile& profile,
 }
 
 void PersonalDataManager::RemoveProfileFromDB(const std::string& guid) {
-  auto profile_it = FindElementByGUID<AutofillProfile>(web_profiles_, guid);
+  auto profile_it = FindElementByGUID(web_profiles_, guid);
   bool profile_exists = profile_it != web_profiles_.end();
   if (!profile_exists && !ProfileChangesAreOngoing(guid)) {
     NotifyPersonalDataObserver();

@@ -2795,7 +2795,7 @@ DOMArrayBuffer* Internals::serializeObject(
 scoped_refptr<SerializedScriptValue> Internals::deserializeBuffer(
     DOMArrayBuffer* buffer) const {
   return SerializedScriptValue::Create(static_cast<const char*>(buffer->Data()),
-                                       buffer->ByteLength());
+                                       buffer->ByteLengthAsSizeT());
 }
 
 DOMArrayBuffer* Internals::serializeWithInlineWasm(ScriptValue value) const {

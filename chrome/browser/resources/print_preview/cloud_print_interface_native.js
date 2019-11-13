@@ -9,6 +9,9 @@ import {CloudPrintInterface} from './cloud_print_interface.js';
     constructor() {}
 
     /** @override */
+    areCookieDestinationsDisabled() {}
+
+    /** @override */
     isCloudDestinationSearchInProgress() {}
 
     /** @override */

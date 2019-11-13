@@ -123,14 +123,15 @@ bool DecisionTreePredictionModel::ValidateTreeNode(
 
 optimization_guide::OptimizationTargetDecision
 DecisionTreePredictionModel::Predict(
-    const base::flat_map<std::string, float>& model_features) {
+    const base::flat_map<std::string, float>& model_features,
+    double* prediction_score) {
   SEQUENCE_CHECKER(sequence_checker_);
 
-  double result = 0.0;
+  *prediction_score = 0.0;
   // TODO(mcrouse): Add metrics to record if the model evaluation fails.
-  if (!EvaluateModel(*model_.get(), model_features, &result))
+  if (!EvaluateModel(*model_.get(), model_features, prediction_score))
     return optimization_guide::OptimizationTargetDecision::kUnknown;
-  if (result > model_->threshold().value())
+  if (*prediction_score > model_->threshold().value())
     return optimization_guide::OptimizationTargetDecision::kPageLoadMatches;
   return optimization_guide::OptimizationTargetDecision::kPageLoadDoesNotMatch;
 }

@@ -4338,12 +4338,14 @@ void RenderFrameImpl::DidSetFramePolicyHeaders(
 
 void RenderFrameImpl::DidAddContentSecurityPolicies(
     const blink::WebVector<blink::WebContentSecurityPolicy>& policies) {
+  // TODO(arthursonzogni): Send DidAddContentSecurityPolicies from blink side.
+  // Mojo will automagically convert from/to blink types. This requires
+  // converting native struct to mojo struct first.
   std::vector<ContentSecurityPolicy> content_policies;
   for (const auto& policy : policies)
     content_policies.push_back(BuildContentSecurityPolicy(policy));
 
-  Send(new FrameHostMsg_DidAddContentSecurityPolicies(routing_id_,
-                                                      content_policies));
+  GetFrameHost()->DidAddContentSecurityPolicies(content_policies);
 }
 
 void RenderFrameImpl::DidChangeFrameOwnerProperties(

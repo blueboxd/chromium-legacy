@@ -41,6 +41,11 @@ to the results_details/Render Results pages that you grabbed the new goldens
 from. This will help reviewers confirm that the changes to the goldens are
 acceptable.
 
+If you add a new device/SDK combination that you expect golden images for, be
+sure to add it to `ALLOWED_DEVICE_SDK_COMBINATIONS` in
+`//chrome/test/data/android/manage_render_test_goldens.py`, otherwise the
+goldens for it will not be uploaded.
+
 ### Failing locally
 
 Follow the steps in [*Running the tests locally*](#running-the-tests-locally)

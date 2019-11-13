@@ -62,7 +62,7 @@ import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-
       // Initialize
       destinationSettings.cloudPrintInterface = cloudPrintInterface;
       destinationSettings.init(
-          'FooDevice' /* printerName */,
+          'FooDevice' /* printerName */, false /* pdfPrinterDisabled */,
           '' /* serializedDefaultDestinationSelectionRulesStr */,
           [] /* userAccounts */, true /* syncAvailable */);
       return nativeLayer.whenCalled('getPrinterCapabilities').then(() => {

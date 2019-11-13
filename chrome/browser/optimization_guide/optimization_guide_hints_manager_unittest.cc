@@ -353,17 +353,6 @@ class OptimizationGuideHintsManagerTest
     return navigation_handle;
   }
 
-  // Returns the optimization guide navigation data attached to
-  // |navigation_handle|.
-  OptimizationGuideNavigationData* GetOptimizationGuideNavigationData(
-      content::NavigationHandle* navigation_handle) {
-    OptimizationGuideWebContentsObserver* observer =
-        OptimizationGuideWebContentsObserver::FromWebContents(
-            navigation_handle->GetWebContents());
-    return observer->GetOrCreateOptimizationGuideNavigationData(
-        navigation_handle);
-  }
-
   OptimizationGuideHintsManager* hints_manager() const {
     return hints_manager_.get();
   }
@@ -737,7 +726,8 @@ TEST_F(OptimizationGuideHintsManagerTest,
                                       true, 1);
   // Make sure navigation data is populated correctly.
   OptimizationGuideNavigationData* navigation_data =
-      GetOptimizationGuideNavigationData(navigation_handle.get());
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle.get());
   EXPECT_EQ(base::nullopt, navigation_data->serialized_hint_version_string());
   EXPECT_EQ(base::nullopt, navigation_data->has_hint_before_commit());
   EXPECT_TRUE(navigation_data->has_hint_after_commit().value());
@@ -761,7 +751,8 @@ TEST_F(OptimizationGuideHintsManagerTest, LoadHintForNavigationWithHint) {
                                       true, 1);
   // Make sure navigation data is populated correctly.
   OptimizationGuideNavigationData* navigation_data =
-      GetOptimizationGuideNavigationData(navigation_handle.get());
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle.get());
   EXPECT_EQ(base::nullopt, navigation_data->serialized_hint_version_string());
   EXPECT_TRUE(navigation_data->has_hint_before_commit().value());
   EXPECT_EQ(base::nullopt, navigation_data->has_hint_after_commit());
@@ -785,7 +776,8 @@ TEST_F(OptimizationGuideHintsManagerTest, LoadHintForNavigationNoHint) {
                                       false, 1);
   // Make sure navigation data is populated correctly.
   OptimizationGuideNavigationData* navigation_data =
-      GetOptimizationGuideNavigationData(navigation_handle.get());
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle.get());
   EXPECT_EQ(base::nullopt, navigation_data->serialized_hint_version_string());
   EXPECT_FALSE(navigation_data->has_hint_before_commit().value());
   EXPECT_EQ(base::nullopt, navigation_data->has_hint_after_commit());
@@ -808,7 +800,8 @@ TEST_F(OptimizationGuideHintsManagerTest, LoadHintForNavigationNoHost) {
   histogram_tester.ExpectTotalCount("OptimizationGuide.LoadedHint.Result", 0);
   // Make sure navigation data is populated correctly.
   OptimizationGuideNavigationData* navigation_data =
-      GetOptimizationGuideNavigationData(navigation_handle.get());
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle.get());
   EXPECT_EQ(base::nullopt, navigation_data->serialized_hint_version_string());
   EXPECT_EQ(base::nullopt, navigation_data->has_hint_before_commit());
   EXPECT_EQ(base::nullopt, navigation_data->has_hint_after_commit());
@@ -1265,7 +1258,8 @@ TEST_F(OptimizationGuideHintsManagerTest, CanApplyOptimizationUrlWithNoHost) {
             optimization_type_decision);
   // Make sure navigation data is populated correctly.
   OptimizationGuideNavigationData* navigation_data =
-      GetOptimizationGuideNavigationData(navigation_handle.get());
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle.get());
   EXPECT_EQ(base::nullopt, navigation_data->has_hint_before_commit());
   EXPECT_EQ(base::nullopt, navigation_data->has_hint_after_commit());
   EXPECT_EQ(base::nullopt, navigation_data->serialized_hint_version_string());
@@ -1309,7 +1303,8 @@ TEST_F(OptimizationGuideHintsManagerTest,
             optimization_type_decision);
   // Make sure navigation data is populated correctly.
   OptimizationGuideNavigationData* navigation_data =
-      GetOptimizationGuideNavigationData(navigation_handle.get());
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle.get());
   EXPECT_EQ(base::nullopt, navigation_data->has_hint_before_commit());
   EXPECT_FALSE(navigation_data->has_hint_after_commit().value());
   EXPECT_EQ(base::nullopt, navigation_data->serialized_hint_version_string());
@@ -1356,7 +1351,8 @@ TEST_F(OptimizationGuideHintsManagerTest,
             optimization_type_decision);
   // Make sure navigation data is populated correctly.
   OptimizationGuideNavigationData* navigation_data =
-      GetOptimizationGuideNavigationData(navigation_handle.get());
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle.get());
   EXPECT_EQ(base::nullopt, navigation_data->has_hint_before_commit());
   EXPECT_FALSE(navigation_data->has_hint_after_commit().value());
   EXPECT_EQ(base::nullopt, navigation_data->serialized_hint_version_string());
@@ -1403,7 +1399,8 @@ TEST_F(OptimizationGuideHintsManagerTest,
             optimization_type_decision);
   // Make sure navigation data is populated correctly.
   OptimizationGuideNavigationData* navigation_data =
-      GetOptimizationGuideNavigationData(navigation_handle.get());
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle.get());
   EXPECT_EQ(base::nullopt, navigation_data->has_hint_before_commit());
   EXPECT_FALSE(navigation_data->has_hint_after_commit().value());
   EXPECT_EQ(base::nullopt, navigation_data->serialized_hint_version_string());
@@ -1450,7 +1447,8 @@ TEST_F(OptimizationGuideHintsManagerTest, CanApplyOptimizationNoECTEstimate) {
             optimization_type_decision);
   // Make sure navigation data is populated correctly.
   OptimizationGuideNavigationData* navigation_data =
-      GetOptimizationGuideNavigationData(navigation_handle.get());
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle.get());
   EXPECT_EQ(base::nullopt, navigation_data->has_hint_before_commit());
   EXPECT_FALSE(navigation_data->has_hint_after_commit().value());
   EXPECT_EQ(base::nullopt, navigation_data->serialized_hint_version_string());
@@ -1498,7 +1496,8 @@ TEST_F(OptimizationGuideHintsManagerTest,
             optimization_type_decision);
   // Make sure navigation data is populated correctly.
   OptimizationGuideNavigationData* navigation_data =
-      GetOptimizationGuideNavigationData(navigation_handle.get());
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle.get());
   EXPECT_EQ(base::nullopt, navigation_data->has_hint_before_commit());
   EXPECT_FALSE(navigation_data->has_hint_after_commit().value());
   EXPECT_EQ(base::nullopt, navigation_data->serialized_hint_version_string());
@@ -1542,7 +1541,8 @@ TEST_F(OptimizationGuideHintsManagerTest,
             optimization_type_decision);
   // Make sure navigation data is populated correctly.
   OptimizationGuideNavigationData* navigation_data =
-      GetOptimizationGuideNavigationData(navigation_handle.get());
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle.get());
   EXPECT_TRUE(navigation_data->has_hint_before_commit().value());
   EXPECT_TRUE(navigation_data->has_hint_after_commit().value());
   EXPECT_EQ("someversion", navigation_data->serialized_hint_version_string());
@@ -1581,7 +1581,8 @@ TEST_F(OptimizationGuideHintsManagerTest,
             optimization_type_decision);
   // Make sure navigation data is populated correctly.
   OptimizationGuideNavigationData* navigation_data =
-      GetOptimizationGuideNavigationData(navigation_handle.get());
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle.get());
   EXPECT_TRUE(navigation_data->has_hint_before_commit().value());
   EXPECT_TRUE(navigation_data->has_hint_after_commit().value());
   EXPECT_EQ("someversion", navigation_data->serialized_hint_version_string());
@@ -1621,7 +1622,8 @@ TEST_F(OptimizationGuideHintsManagerTest,
             optimization_type_decision);
   // Make sure navigation data is populated correctly.
   OptimizationGuideNavigationData* navigation_data =
-      GetOptimizationGuideNavigationData(navigation_handle.get());
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle.get());
   EXPECT_TRUE(navigation_data->has_hint_before_commit().value());
   EXPECT_TRUE(navigation_data->has_hint_after_commit().value());
   EXPECT_EQ("someversion", navigation_data->serialized_hint_version_string());
@@ -1659,7 +1661,8 @@ TEST_F(OptimizationGuideHintsManagerTest,
             optimization_type_decision);
   // Make sure navigation data is populated correctly.
   OptimizationGuideNavigationData* navigation_data =
-      GetOptimizationGuideNavigationData(navigation_handle.get());
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle.get());
   EXPECT_TRUE(navigation_data->has_hint_before_commit().value());
   EXPECT_TRUE(navigation_data->has_hint_after_commit().value());
   EXPECT_EQ("someversion", navigation_data->serialized_hint_version_string());
@@ -1698,7 +1701,8 @@ TEST_F(OptimizationGuideHintsManagerTest,
             optimization_type_decision);
   // Make sure navigation data is populated correctly.
   OptimizationGuideNavigationData* navigation_data =
-      GetOptimizationGuideNavigationData(navigation_handle.get());
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle.get());
   EXPECT_TRUE(navigation_data->has_hint_before_commit().value());
   EXPECT_TRUE(navigation_data->has_hint_after_commit().value());
   EXPECT_EQ("someversion", navigation_data->serialized_hint_version_string());
@@ -1723,7 +1727,8 @@ TEST_F(OptimizationGuideHintsManagerTest,
   // Purposely set the page hint to be null to show that we override the page
   // hint information from the navigation handle.
   OptimizationGuideNavigationData* navigation_data =
-      GetOptimizationGuideNavigationData(navigation_handle.get());
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle.get());
   navigation_data->set_page_hint(nullptr);
 
   optimization_guide::OptimizationTargetDecision optimization_target_decision;
@@ -2050,7 +2055,8 @@ TEST_F(OptimizationGuideHintsManagerTest,
             optimization_type_decision);
   // Make sure navigation data is populated correctly.
   OptimizationGuideNavigationData* navigation_data =
-      GetOptimizationGuideNavigationData(navigation_handle.get());
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle.get());
   EXPECT_TRUE(navigation_data->has_hint_before_commit().value());
   EXPECT_TRUE(navigation_data->has_hint_after_commit().value());
   EXPECT_EQ("someversion", navigation_data->serialized_hint_version_string());
@@ -2086,7 +2092,8 @@ TEST_F(OptimizationGuideHintsManagerTest,
             optimization_type_decision);
   // Make sure navigation data is populated correctly.
   OptimizationGuideNavigationData* navigation_data =
-      GetOptimizationGuideNavigationData(navigation_handle.get());
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle.get());
   EXPECT_EQ(base::nullopt, navigation_data->has_hint_before_commit());
   EXPECT_FALSE(navigation_data->has_hint_after_commit().value());
   EXPECT_EQ(base::nullopt, navigation_data->serialized_hint_version_string());
@@ -2121,7 +2128,8 @@ TEST_F(OptimizationGuideHintsManagerTest,
       optimization_type_decision);
   // Make sure navigation data is populated correctly.
   OptimizationGuideNavigationData* navigation_data =
-      GetOptimizationGuideNavigationData(navigation_handle.get());
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle.get());
   EXPECT_EQ(base::nullopt, navigation_data->has_hint_before_commit());
   EXPECT_TRUE(navigation_data->has_hint_after_commit().value());
   EXPECT_EQ(base::nullopt, navigation_data->serialized_hint_version_string());
@@ -2184,7 +2192,8 @@ TEST_F(OptimizationGuideHintsManagerTest,
             optimization_type_decision);
   // Make sure navigation data is populated correctly.
   OptimizationGuideNavigationData* navigation_data =
-      GetOptimizationGuideNavigationData(navigation_handle.get());
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle.get());
   EXPECT_TRUE(navigation_data->has_hint_before_commit().value());
   EXPECT_TRUE(navigation_data->has_hint_after_commit().value());
   EXPECT_EQ("someversion", navigation_data->serialized_hint_version_string());
@@ -2248,7 +2257,8 @@ TEST_F(OptimizationGuideHintsManagerTest,
             optimization_type_decision);
   // Make sure navigation data is populated correctly.
   OptimizationGuideNavigationData* navigation_data =
-      GetOptimizationGuideNavigationData(navigation_handle.get());
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle.get());
   EXPECT_TRUE(navigation_data->has_hint_before_commit().value());
   EXPECT_TRUE(navigation_data->has_hint_after_commit().value());
   EXPECT_EQ("someversion", navigation_data->serialized_hint_version_string());

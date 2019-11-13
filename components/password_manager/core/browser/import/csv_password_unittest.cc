@@ -14,6 +14,8 @@ namespace password_manager {
 
 using ::autofill::PasswordForm;
 
+using Status = CSVPassword::Status;
+
 TEST(CSVPassword, Construction) {
   CSVPassword::ColumnMap col_map = {
       {0, CSVPassword::Label::kOrigin},
@@ -39,6 +41,7 @@ struct TestCase {
   std::string signon_realm;
   std::string username;
   std::string password;
+  Status status = Status::kOK;
 };
 
 class TestCaseBuilder {
@@ -77,6 +80,11 @@ class TestCaseBuilder {
     return *this;
   }
 
+  TestCaseBuilder& Status(Status status) {
+    test_case_.status = status;
+    return *this;
+  }
+
   TestCase Build() { return std::move(test_case_); }
 
  private:
@@ -89,7 +97,7 @@ TEST_P(CSVPasswordTestSuccess, Parse) {
   const TestCase& test_case = GetParam();
   SCOPED_TRACE(test_case.name);
   CSVPassword csv_pwd(test_case.map, test_case.csv);
-  EXPECT_TRUE(csv_pwd.Parse(nullptr));
+  EXPECT_EQ(Status::kOK, csv_pwd.Parse(nullptr));
 
   PasswordForm result = csv_pwd.ParseValid();
 
@@ -173,7 +181,8 @@ class CSVPasswordTestFailure : public ::testing::TestWithParam<TestCase> {};
 TEST_P(CSVPasswordTestFailure, Parse) {
   const TestCase& test_case = GetParam();
   SCOPED_TRACE(test_case.name);
-  EXPECT_FALSE(CSVPassword(test_case.map, test_case.csv).Parse(nullptr));
+  EXPECT_EQ(test_case.status,
+            CSVPassword(test_case.map, test_case.csv).Parse(nullptr));
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -182,51 +191,60 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(TestCaseBuilder("no columns specified")
                           .Map({})
                           .CSV("http://example.com,user,password")
+                          .Status(Status::kSemanticError)
                           .Build(),
                       TestCaseBuilder("not ASCII")
                           .Map({{0, CSVPassword::Label::kOrigin},
                                 {1, CSVPassword::Label::kUsername},
                                 {2, CSVPassword::Label::kPassword}})
                           .CSV("http://example.com/ř,user,password")
+                          .Status(Status::kSyntaxError)
                           .Build(),
                       TestCaseBuilder("no origin in map")
                           .Map({{1, CSVPassword::Label::kUsername},
                                 {2, CSVPassword::Label::kPassword}})
                           .CSV("http://example.com,user,password")
+                          .Status(Status::kSemanticError)
                           .Build(),
                       TestCaseBuilder("no username in map")
                           .Map({{0, CSVPassword::Label::kOrigin},
                                 {2, CSVPassword::Label::kPassword}})
                           .CSV("http://example.com,user,password")
+                          .Status(Status::kSemanticError)
                           .Build(),
                       TestCaseBuilder("no password in map")
                           .Map({{0, CSVPassword::Label::kOrigin},
                                 {1, CSVPassword::Label::kUsername}})
                           .CSV("http://example.com,user,password")
+                          .Status(Status::kSemanticError)
                           .Build(),
                       TestCaseBuilder("no origin in CSV")
                           .Map({{0, CSVPassword::Label::kUsername},
                                 {1, CSVPassword::Label::kPassword},
                                 {2, CSVPassword::Label::kOrigin}})
                           .CSV("user,password")
+                          .Status(Status::kSemanticError)
                           .Build(),
                       TestCaseBuilder("no username in CSV")
                           .Map({{0, CSVPassword::Label::kOrigin},
                                 {1, CSVPassword::Label::kPassword},
                                 {2, CSVPassword::Label::kUsername}})
                           .CSV("http://example.com,password")
+                          .Status(Status::kSemanticError)
                           .Build(),
                       TestCaseBuilder("no password in CSV")
                           .Map({{0, CSVPassword::Label::kOrigin},
                                 {1, CSVPassword::Label::kUsername},
                                 {2, CSVPassword::Label::kPassword}})
                           .CSV("http://example.com,user")
+                          .Status(Status::kSemanticError)
                           .Build(),
                       TestCaseBuilder("malformed CSV")
                           .Map({{0, CSVPassword::Label::kOrigin},
                                 {1, CSVPassword::Label::kUsername},
                                 {2, CSVPassword::Label::kPassword}})
                           .CSV("\"")
+                          .Status(Status::kSyntaxError)
                           .Build(),
                       TestCaseBuilder("map not injective")
                           .Map({{0, CSVPassword::Label::kOrigin},
@@ -234,6 +252,7 @@ INSTANTIATE_TEST_SUITE_P(
                                 {2, CSVPassword::Label::kPassword},
                                 {3, CSVPassword::Label::kUsername}})
                           .CSV("http://example.com,user,pwd,user2")
+                          .Status(Status::kSemanticError)
                           .Build()));
 
 }  // namespace password_manager

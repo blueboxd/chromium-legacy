@@ -247,15 +247,6 @@ var PrintPreviewModelSettingsAvailabilityTest = class extends PrintPreviewTest {
   get browsePreload() {
     return 'chrome://print/test_loader.html?module=print_preview/model_settings_availability_test.js';
   }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '../test_util.js',
-      'print_preview_test_utils.js',
-      'model_settings_availability_test.js',
-    ]);
-  }
 };
 
 TEST_F('PrintPreviewModelSettingsAvailabilityTest', 'All', function() {
@@ -525,11 +516,9 @@ TEST_F(
           destination_store_test.TestNames.LoadAndSelectDestination);
     });
 
-GEN('#if defined(OS_CHROMEOS)');
 TEST_F('PrintPreviewDestinationStoreTest', 'NoPrintersShowsError', function() {
   this.runMochaTest(destination_store_test.TestNames.NoPrintersShowsError);
 });
-GEN('#endif');
 
 TEST_F(
     'PrintPreviewDestinationStoreTest', 'UnreachableRecentCloudPrinter',
@@ -1109,6 +1098,14 @@ TEST_F(
       this.runMochaTest(
           destination_settings_test.TestNames.ResetDestinationOnSignOut);
     });
+
+TEST_F('PrintPreviewDestinationSettingsTest', 'DisabledSaveAsPdf', function() {
+  this.runMochaTest(destination_settings_test.TestNames.DisabledSaveAsPdf);
+});
+
+TEST_F('PrintPreviewDestinationSettingsTest', 'NoDestinations', function() {
+  this.runMochaTest(destination_settings_test.TestNames.NoDestinations);
+});
 
 // eslint-disable-next-line no-var
 var PrintPreviewScalingSettingsTest = class extends PrintPreviewTest {

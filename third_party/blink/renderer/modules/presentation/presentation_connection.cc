@@ -42,7 +42,7 @@ mojom::blink::PresentationConnectionMessagePtr MakeBinaryMessage(
       WTF::Vector<uint8_t>());
   WTF::Vector<uint8_t>& data = message->get_data();
   data.Append(static_cast<const uint8_t*>(buffer->Data()),
-              buffer->ByteLength());
+              buffer->DeprecatedByteLengthAsUnsigned());
   return message;
 }
 

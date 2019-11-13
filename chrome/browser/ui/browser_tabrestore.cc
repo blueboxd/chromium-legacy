@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "build/build_config.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_restore.h"
@@ -126,8 +127,16 @@ WebContents* AddRestoredTab(
   }
 
   if (select) {
-    if (!browser->window()->IsMinimized())
-      browser->window()->Show();
+    if (
+#if defined(OS_MACOSX)
+        // Activating a window on another space causes the system to switch to
+        // that space. Since the session restore process shows and activates
+        // windows itself, activating windows here should be safe to skip.
+        // Cautiously apply only to macOS, for now (https://crbug.com/1019048).
+        !from_session_restore &&
+#endif
+        !browser->window()->IsMinimized())
+      browser->window()->Activate();
   } else {
     // We set the size of the view here, before Blink does its initial layout.
     // If we don't, the initial layout of background tabs will be performed

@@ -228,6 +228,8 @@ TEST_F(AlertCoordinatorTest, OnlyOneCancelAction) {
   EXPECT_EQ(UIAlertActionStyleCancel, action.style);
 }
 
+// Tests that the |noInteractionAction| block is called for an alert coordinator
+// which is stopped before the user has interacted with it.
 TEST_F(AlertCoordinatorTest, NoInteractionActionTest) {
   // Setup.
   UIViewController* viewController = getViewController();
@@ -248,6 +250,8 @@ TEST_F(AlertCoordinatorTest, NoInteractionActionTest) {
   EXPECT_TRUE(blockCalled);
 }
 
+// Tests that the |noInteractionAction| block is not called for an alert
+// coordinator which is dismissed with the cancel button.
 TEST_F(AlertCoordinatorTest, NoInteractionActionWithCancelTest) {
   // Setup.
   UIViewController* viewController = getViewController();
@@ -266,5 +270,28 @@ TEST_F(AlertCoordinatorTest, NoInteractionActionWithCancelTest) {
   [alertCoordinator stop];
 
   // Test.
+  EXPECT_FALSE(blockCalled);
+}
+
+// Tests that the alert coordinator is dismissed if destroyed without being
+// stopped.
+TEST_F(AlertCoordinatorTest, AlertDismissedOnDestroy) {
+  // Setup.
+  UIViewController* viewController = getViewController();
+  AlertCoordinator* alertCoordinator = getAlertCoordinator(viewController);
+
+  ASSERT_FALSE(alertCoordinator.isVisible);
+  ASSERT_EQ(nil, viewController.presentedViewController);
+
+  __block BOOL blockCalled = NO;
+
+  alertCoordinator.noInteractionAction = ^{
+    blockCalled = YES;
+  };
+
+  startAlertCoordinator();
+
+  alertCoordinator = nil;
+
   EXPECT_FALSE(blockCalled);
 }

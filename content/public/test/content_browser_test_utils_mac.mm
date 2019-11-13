@@ -163,7 +163,7 @@ void GetStringFromRangeForRenderWidget(
 - (void)didAddSubview:(NSView*)view {
   content::RenderWidgetHostViewCocoaObserver::GetSwizzler(
       content::RenderWidgetHostViewCocoaObserver::kDidAddSubview)
-      ->GetOriginalImplementation()(self, _cmd, view);
+      ->InvokeOriginal<void, NSView*>(self, _cmd, view);
 
   content::RenderWidgetHostViewMac* rwhv_mac =
       content::GetRenderWidgetHostViewMac(self);
@@ -206,7 +206,8 @@ void GetStringFromRangeForRenderWidget(
   content::RenderWidgetHostViewCocoaObserver::GetSwizzler(
       content::RenderWidgetHostViewCocoaObserver::
           kShowDefinitionForAttributedString)
-      ->GetOriginalImplementation()(self, _cmd, attrString, textBaselineOrigin);
+      ->InvokeOriginal<void, NSAttributedString*, NSPoint>(
+          self, _cmd, attrString, textBaselineOrigin);
 
   auto* rwhv_mac = content::GetRenderWidgetHostViewMac(self);
 

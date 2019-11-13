@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -28,6 +29,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.test.util.browser.Features;
@@ -36,6 +38,7 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Tests for {@link TabSelectionEditorActionProvider}.
@@ -97,11 +100,10 @@ public class TabSelectionEditorActionProviderUnitTest {
     @Test
     public void testGroupAction() {
         TabSelectionEditorActionProvider tabSelectionEditorActionProvider =
-                new TabSelectionEditorActionProvider(mTabModelSelector,
-                        mTabSelectionEditorController,
+                new TabSelectionEditorActionProvider(mTabSelectionEditorController,
                         TabSelectionEditorActionProvider.TabSelectionEditorAction.GROUP);
         List<Tab> selectedTabs = new ArrayList<>(Arrays.asList(mTab1, mTab2));
-        tabSelectionEditorActionProvider.processSelectedTabs(selectedTabs);
+        tabSelectionEditorActionProvider.processSelectedTabs(selectedTabs, mTabModelSelector);
 
         verify(mTabGroupModelFilter)
                 .mergeListOfTabsToGroup(eq(selectedTabs), eq(mTab2), eq(false), eq(true));
@@ -111,15 +113,44 @@ public class TabSelectionEditorActionProviderUnitTest {
     @Test
     public void testUngroupAction() {
         TabSelectionEditorActionProvider tabSelectionEditorActionProvider =
-                new TabSelectionEditorActionProvider(mTabModelSelector,
-                        mTabSelectionEditorController,
+                new TabSelectionEditorActionProvider(mTabSelectionEditorController,
                         TabSelectionEditorActionProvider.TabSelectionEditorAction.UNGROUP);
         List<Tab> selectedTabs = new ArrayList<>(Arrays.asList(mTab1, mTab2));
-        tabSelectionEditorActionProvider.processSelectedTabs(selectedTabs);
+        tabSelectionEditorActionProvider.processSelectedTabs(selectedTabs, mTabModelSelector);
 
         verify(mTabGroupModelFilter).moveTabOutOfGroup(TAB1_ID);
         verify(mTabGroupModelFilter).moveTabOutOfGroup(TAB2_ID);
         verify(mTabSelectionEditorController).hide();
+    }
+
+    @Test
+    public void testCloseAction() {
+        TabSelectionEditorActionProvider tabSelectionEditorActionProvider =
+                new TabSelectionEditorActionProvider(mTabSelectionEditorController,
+                        TabSelectionEditorActionProvider.TabSelectionEditorAction.CLOSE);
+        List<Tab> selectedTabs = new ArrayList<>(Arrays.asList(mTab1, mTab2));
+        tabSelectionEditorActionProvider.processSelectedTabs(selectedTabs, mTabModelSelector);
+
+        verify(mTabModel).closeMultipleTabs(selectedTabs, true);
+        verify(mTabSelectionEditorController).hide();
+    }
+
+    @Test
+    public void testCustomizeAction() {
+        AtomicBoolean isProcessed = new AtomicBoolean();
+
+        TabSelectionEditorActionProvider tabSelectionEditorActionProvider =
+                new TabSelectionEditorActionProvider() {
+                    @Override
+                    void processSelectedTabs(
+                            List<Tab> selectedTabs, TabModelSelector tabModelSelector) {
+                        isProcessed.set(true);
+                    }
+                };
+        List<Tab> selectedTabs = new ArrayList<>(Arrays.asList(mTab1, mTab2));
+        tabSelectionEditorActionProvider.processSelectedTabs(selectedTabs, mTabModelSelector);
+
+        assertTrue(isProcessed.get());
     }
 
     private Tab prepareTab(int id, String title) {

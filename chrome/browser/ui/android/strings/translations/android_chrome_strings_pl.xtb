@@ -238,7 +238,7 @@
 <translation id="2717722538473713889">Adresy e-mail</translation>
 <translation id="2728754400939377704">Sortuj według witryny</translation>
 <translation id="2744248271121720757">Kliknij słowo, by szybko je wyszukać lub wyświetlić powiązane czynności</translation>
-<translation id="2760989362628427051">Włącz ciemny motyw, gdy urządzenie ma włączony ciemny motyw lub Oszczędzanie baterii</translation>
+<translation id="2760989362628427051">Włącz tryb ciemny, gdy urządzenie ma włączony tryb ciemny lub oszczędzanie baterii</translation>
 <translation id="2762000892062317888">przed chwilą</translation>
 <translation id="2777555524387840389">Pozostało: <ph name="SECONDS" /> s</translation>
 <translation id="2779651927720337254">Nie pobrano</translation>
@@ -883,7 +883,7 @@ Witryna NIE uzyskuje dostępu do kamery. Tylko Ty widzisz rejestrowany obraz.</t
 <translation id="756809126120519699">Wyczyszczono dane Chrome</translation>
 <translation id="757524316907819857">Blokuj odtwarzanie treści chronionej na stronach</translation>
 <translation id="757855969265046257">{FILES,plural, =1{Pobrano <ph name="FILES_DOWNLOADED_ONE" /> plik}few{Pobrano <ph name="FILES_DOWNLOADED_MANY" /> pliki}many{Pobrano <ph name="FILES_DOWNLOADED_MANY" /> plików}other{Pobrano <ph name="FILES_DOWNLOADED_MANY" /> pliku}}</translation>
-<translation id="7588219262685291874">Włącz ciemny motyw, gdy na urządzeniu jest aktywne oszczędzanie baterii</translation>
+<translation id="7588219262685291874">Włącz tryb ciemny, gdy na urządzeniu jest aktywne oszczędzanie baterii</translation>
 <translation id="7589445247086920869">Blokuj dostęp obecnej wyszukiwarce</translation>
 <translation id="7593557518625677601">Otwórz ustawienia Androida i ponownie włącz jego synchronizację, by uruchomić Synchronizację Chrome</translation>
 <translation id="7596558890252710462">System operacyjny</translation>

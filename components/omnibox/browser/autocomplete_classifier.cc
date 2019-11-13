@@ -82,14 +82,13 @@ void AutocompleteClassifier::Classify(
   controller_->Start(input);
   DCHECK(controller_->done());
   const AutocompleteResult& result = controller_->result();
-  if (result.empty()) {
+  if (result.empty() || result.default_match() == result.end()) {
     if (alternate_nav_url)
       *alternate_nav_url = GURL();
     return;
   }
 
-  DCHECK(result.default_match() != result.end());
-  *match = *result.default_match();
+  *match = *result.begin();
   if (alternate_nav_url)
     *alternate_nav_url = result.alternate_nav_url();
 }

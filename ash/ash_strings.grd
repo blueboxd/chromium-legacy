@@ -570,7 +570,7 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD" desc="The label used in the accessibility menu of the system tray to toggle on/off the onscreen keyboard.">
         On-screen keyboard
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SWITCH_ACCESS" desc="The label used in the accessibility menu of the system tray to toggle switch access, a feature that allows the entire device to be controlled with as few as 1 switch or button.">
+      <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SWITCH_ACCESS" desc="The label used in the accessibility menu of the system tray to toggle Switch Access, a feature that allows the entire device to be controlled with as few as 1 switch or button.">
         Switch Access
       </message>
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_ADDITIONAL_SETTINGS" desc="The sub-header label for additional setting in accessibility menu of system tray.">
@@ -1666,6 +1666,9 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_LOGIN_POD_SMART_CARD_PIN_FIELD_ACCESSIBLE_NAME" desc="Text to be spoken when the focus is set to the security token PIN input field of a user pod on the sign-in screen.">
         Smart card PIN for <ph name="USER_EMAIL_ADDRESS">$1<ex>john.doe@example.com</ex></ph>
+      </message>
+      <message name="IDS_ASH_LOGIN_POD_AUTH_TAP_PASSWORD_FIELD_ACCESSIBLE_NAME" desc="Text to be spoken when the focus is set to the password field of a user pod on the sign-in screen, and authentication by tap is enabled.">
+        Press Enter to unlock for <ph name="USER_EMAIL_ADDRESS">$1<ex>john.doe@example.com</ex></ph>
       </message>
       <message name="IDS_ASH_LOGIN_SUBMIT_BUTTON_ACCESSIBLE_NAME" desc="Text to be spoken when the focus is set to the submit button on login screen.">
         Submit

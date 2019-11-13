@@ -17,6 +17,9 @@ import org.chromium.weblayer_private.interfaces.IChildProcessService;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 
+/**
+ * Implementation of IChildProcessService.
+ */
 @UsedByReflection("WebLayer")
 public final class ChildProcessServiceImpl extends IChildProcessService.Stub {
     private ChildProcessService mService;

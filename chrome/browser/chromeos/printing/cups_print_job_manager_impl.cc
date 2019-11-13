@@ -361,9 +361,9 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
     }
     std::vector<std::string> ids{printer_ids.begin(), printer_ids.end()};
 
-    cups_wrapper_.QueryCups(ids,
-                            base::BindOnce(&CupsPrintJobManagerImpl::UpdateJobs,
-                                           weak_ptr_factory_.GetWeakPtr()));
+    cups_wrapper_.QueryCupsPrintJobs(
+        ids, base::BindOnce(&CupsPrintJobManagerImpl::UpdateJobs,
+                            weak_ptr_factory_.GetWeakPtr()));
   }
 
   // Process jobs from CUPS and perform notifications.

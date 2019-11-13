@@ -457,13 +457,12 @@ test(function() {
   const textarea = childDocument.createElement('textarea');
   childDocument.body.appendChild(textarea);
   textarea.addEventListener("focusin", e => {
-    childDocument.childEditContext = new EditContext()
-    childDocument.childEditContext.focus();
-    childDocument.childEditContext.addEventListener("textupdate", e => {
-      console.log("iframe textupdate event fired");
+    const childEditContext = new EditContext()
+    childEditContext.focus();
+    childEditContext.addEventListener("textupdate", e => {
       child.remove();
     });
-    childDocument.childEditContext.addEventListener("textformatupdate", e => {
+    childEditContext.addEventListener("textformatupdate", e => {
     });
   });
   textarea.focus();
@@ -472,26 +471,14 @@ test(function() {
 }, 'Testing EditContext Iframe Document Delete');
 
 test(function() {
-  // SetComposition should not crash when event handler removes document
-  const child = document.createElement("iframe");
-  document.body.appendChild(child);
-  const childDocument = child.contentDocument;
-  const textarea = childDocument.createElement('textarea');
-  childDocument.body.appendChild(textarea);
-  textarea.addEventListener("focusin", e => {
-    childDocument.childEditContext = new EditContext()
-    childDocument.childEditContext.focus()
-    childDocument.childEditContext.addEventListener("textupdate", e => {
-      console.log("textupdate event fired");
-      textarea.remove();
-    });
-    childDocument.childEditContext.addEventListener("textformatupdate", e => {
-    });
+  const editContext1 = new EditContext();
+  editContext1.addEventListener("textupdate", e => {
   });
-  child.contentWindow.focus();
-  textarea.focus();
+  editContext1.focus();
+  gc()
   textInputController.setComposition("bar");
-}, 'Testing EditContext Iframe Element Delete');
+
+}, 'Testing EditContext GC');
 
 </script>
 </body>

@@ -94,7 +94,7 @@ class TabSelectionEditorMediator
             }
 
             if (mActionProvider == null) return;
-            mActionProvider.processSelectedTabs(selectedTabs);
+            mActionProvider.processSelectedTabs(selectedTabs, mTabModelSelector);
         }
     };
 
@@ -163,8 +163,8 @@ class TabSelectionEditorMediator
         mTabModelSelector.addObserver(mTabModelSelectorObserver);
 
         // Default action for action button is to group selected tabs.
-        mActionProvider = new TabSelectionEditorActionProvider(mTabModelSelector, this,
-                TabSelectionEditorActionProvider.TabSelectionEditorAction.GROUP);
+        mActionProvider = new TabSelectionEditorActionProvider(
+                this, TabSelectionEditorActionProvider.TabSelectionEditorAction.GROUP);
 
         if (mPositionProvider != null) {
             mModel.set(TabSelectionEditorProperties.SELECTION_EDITOR_GLOBAL_LAYOUT_LISTENER,

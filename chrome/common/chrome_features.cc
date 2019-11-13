@@ -575,8 +575,14 @@ const base::Feature kUseNewAcceptLanguageHeader{
 const base::Feature kParentAccessCode{"ParentAccessCode",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables usage of Parent Access Code to authorize change of time actions on
+// child user device. Requires |kParentAccessCode| to be enabled.
 const base::Feature kParentAccessCodeForTimeChange{
     "ParentAccessCodeForTimeChange", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables enforcement of per-app time limits for child user.
+const base::Feature kPerAppTimeLimits{"PerAppTimeLimits",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 // Delegate permissions to cross-origin iframes when the feature has been
@@ -878,6 +884,7 @@ const base::Feature kAccessibilityInternalsPageImprovements{
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables setting time limit for Chrome and PWA's on child user device.
+// Requires |kPerAppTimeLimits| to be enabled.
 #if defined(OS_CHROMEOS)
 const base::Feature kWebTimeLimits{"WebTimeLimits",
                                    base::FEATURE_DISABLED_BY_DEFAULT};

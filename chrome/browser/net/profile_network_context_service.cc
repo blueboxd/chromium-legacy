@@ -584,24 +584,30 @@ ProfileNetworkContextService::CreateNetworkContextParams(
   // Always enable the HTTP cache.
   network_context_params->http_cache_enabled = true;
 
+  network_context_params->http_auth_static_network_context_params =
+      network::mojom::HttpAuthStaticNetworkContextParams::New();
+
   // Allow/disallow ambient authentication with default credentials based on the
   // profile type.
   // TODO(https://crbug.com/458508): Allow this behavior to be controllable by
   // policy.
   if (profile_->IsGuestSession()) {
-    network_context_params->allow_default_credentials =
+    network_context_params->http_auth_static_network_context_params
+        ->allow_default_credentials =
         base::FeatureList::IsEnabled(
             features::kEnableAmbientAuthenticationInGuestSession)
             ? net::HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS
             : net::HttpAuthPreferences::DISALLOW_DEFAULT_CREDENTIALS;
   } else if (profile_->IsIncognitoProfile()) {
-    network_context_params->allow_default_credentials =
+    network_context_params->http_auth_static_network_context_params
+        ->allow_default_credentials =
         base::FeatureList::IsEnabled(
             features::kEnableAmbientAuthenticationInIncognito)
             ? net::HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS
             : net::HttpAuthPreferences::DISALLOW_DEFAULT_CREDENTIALS;
   } else {
-    network_context_params->allow_default_credentials =
+    network_context_params->http_auth_static_network_context_params
+        ->allow_default_credentials =
         net::HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS;
   }
 

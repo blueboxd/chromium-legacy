@@ -17,6 +17,12 @@ namespace android_webview {
 
 class AwBrowserContextTest : public testing::Test {
  protected:
+  // Runs before the first test
+  static void SetUpTestSuite() {
+    net::NetworkChangeNotifier::SetFactory(
+        new AwNetworkChangeNotifierFactory());
+  }
+
   void SetUp() override {
     mojo::core::Init();
     test_content_client_initializer_ =
@@ -25,8 +31,6 @@ class AwBrowserContextTest : public testing::Test {
     AwFeatureListCreator* aw_feature_list_creator = new AwFeatureListCreator();
     aw_feature_list_creator->CreateLocalState();
     browser_process_ = new AwBrowserProcess(aw_feature_list_creator);
-    net::NetworkChangeNotifier::SetFactory(
-        new AwNetworkChangeNotifierFactory());
   }
 
   void TearDown() override {

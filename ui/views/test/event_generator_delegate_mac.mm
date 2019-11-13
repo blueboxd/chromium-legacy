@@ -252,8 +252,8 @@ class EventGeneratorDelegateMac : public ui::EventTarget,
 
   static EventGeneratorDelegateMac* instance() { return instance_; }
 
-  IMP CurrentEventMethod() {
-    return swizzle_current_event_->GetOriginalImplementation();
+  NSEvent* OriginalCurrentEvent(id receiver, SEL selector) {
+    return swizzle_current_event_->InvokeOriginal<NSEvent*>(receiver, selector);
   }
 
   NSWindow* window() { return window_.get(); }
@@ -634,8 +634,8 @@ CreateEventGeneratorDelegateMac(ui::test::EventGenerator* owner,
     return g_current_event;
 
   // Find the original implementation and invoke it.
-  IMP original = EventGeneratorDelegateMac::instance()->CurrentEventMethod();
-  return original(self, _cmd);
+  return EventGeneratorDelegateMac::instance()->OriginalCurrentEvent(self,
+                                                                     _cmd);
 }
 
 @end

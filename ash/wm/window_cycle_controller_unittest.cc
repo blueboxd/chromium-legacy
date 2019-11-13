@@ -480,9 +480,6 @@ TEST_F(WindowCycleControllerTest, MostRecentlyUsed) {
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
   EXPECT_FALSE(wm::IsActiveWindow(window0.get()));
 
-  // Showing the Alt+Tab UI does however deactivate the erstwhile active window.
-  EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
-
   controller->CompleteCycling();
 }
 
@@ -492,6 +489,8 @@ TEST_F(WindowCycleControllerTest, SelectingHidesAppList) {
 
   std::unique_ptr<aura::Window> window0(CreateTestWindowInShellWithId(0));
   std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
+  wm::ActivateWindow(window0.get());
+
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplay().id());
   GetAppListTestHelper()->CheckVisibility(true);
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
@@ -500,7 +499,7 @@ TEST_F(WindowCycleControllerTest, SelectingHidesAppList) {
 
   // Make sure that dismissing the app list this way doesn't pass activation
   // to a different window.
-  EXPECT_FALSE(wm::IsActiveWindow(window0.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
   EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
 
   controller->CompleteCycling();

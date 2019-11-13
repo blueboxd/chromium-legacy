@@ -10,7 +10,6 @@
 namespace blink {
 
 class TransformationMatrix;
-class XRHitTestOptions;
 class XRHitTestSource;
 class XRPose;
 class XRSpace;
@@ -21,8 +20,6 @@ class XRHitTestResult : public ScriptWrappable {
  public:
   XRHitTestResult(XRHitTestSource* hit_test_source,
                   const TransformationMatrix& pose);
-
-  XRHitTestOptions* hitTestOptions() const;
 
   XRPose* getPose(XRSpace* relative_to);
 

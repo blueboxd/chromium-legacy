@@ -21,6 +21,7 @@
 #include "chromeos/services/device_sync/cryptauth_device_registry_impl.h"
 #include "chromeos/services/device_sync/cryptauth_enroller_factory_impl.h"
 #include "chromeos/services/device_sync/cryptauth_enrollment_manager_impl.h"
+#include "chromeos/services/device_sync/cryptauth_feature_status_setter_impl.h"
 #include "chromeos/services/device_sync/cryptauth_gcm_manager_impl.h"
 #include "chromeos/services/device_sync/cryptauth_key_registry_impl.h"
 #include "chromeos/services/device_sync/cryptauth_scheduler_impl.h"
@@ -88,13 +89,6 @@ enum class DeviceSyncSetSoftwareFeature {
   kUnexpectedClientFeature = 5,
   kMaxValue = kUnexpectedClientFeature
 };
-
-bool ShouldUseV2DeviceSync() {
-  return base::FeatureList::IsEnabled(
-             chromeos::features::kCryptAuthV2Enrollment) &&
-         base::FeatureList::IsEnabled(
-             chromeos::features::kCryptAuthV2DeviceSync);
-}
 
 DeviceSyncRequestFailureReason GetDeviceSyncRequestFailureReason(
     mojom::NetworkRequestResult failure_reason) {
@@ -246,7 +240,7 @@ DeviceSyncImpl::PendingSetSoftwareFeatureRequest::
 
 bool DeviceSyncImpl::PendingSetSoftwareFeatureRequest::IsFulfilled() const {
   const auto& synced_devices = remote_device_provider_->GetSyncedDevices();
-  const auto& devices_it =
+  const auto devices_it =
       std::find_if(synced_devices.begin(), synced_devices.end(),
                    [this](const auto& remote_device) {
                      return device_public_key_ == remote_device.public_key;
@@ -256,7 +250,7 @@ bool DeviceSyncImpl::PendingSetSoftwareFeatureRequest::IsFulfilled() const {
   if (devices_it == synced_devices.end())
     return false;
 
-  const auto& features_map_it =
+  const auto features_map_it =
       devices_it->software_features.find(software_feature_);
 
   // If the device does not contain an entry for |software_feature_|, the
@@ -292,9 +286,86 @@ void DeviceSyncImpl::RegisterProfilePrefs(PrefRegistrySimple* registry) {
     CryptAuthEnrollmentManagerImpl::RegisterPrefs(registry);
   }
 
-  if (ShouldUseV2DeviceSync()) {
+  if (features::ShouldUseV2DeviceSync()) {
     CryptAuthDeviceRegistryImpl::RegisterPrefs(registry);
   }
+}
+
+DeviceSyncImpl::PendingSetFeatureStatusRequest::PendingSetFeatureStatusRequest(
+    const std::string& device_instance_id,
+    multidevice::SoftwareFeature software_feature,
+    FeatureStatusChange status_change,
+    RemoteDeviceProvider* remote_device_provider,
+    SetFeatureStatusCallback callback)
+    : device_instance_id_(device_instance_id),
+      software_feature_(software_feature),
+      status_change_(status_change),
+      remote_device_provider_(remote_device_provider),
+      callback_(std::move(callback)) {
+  DCHECK(!device_instance_id.empty());
+}
+
+DeviceSyncImpl::PendingSetFeatureStatusRequest::
+    ~PendingSetFeatureStatusRequest() = default;
+
+bool DeviceSyncImpl::PendingSetFeatureStatusRequest::IsFulfilled() const {
+  // True if the device from the request is included in the synced-devices list.
+  bool is_requested_device_in_list = false;
+
+  // True if the feature from the request is enabled on the device from the
+  // request.
+  bool is_feature_enabled_for_requested_device = false;
+
+  // True if the feature from the request is enabled on any synced device other
+  // than the device from the request.
+  bool is_feature_enabled_for_any_other_device = false;
+
+  for (const multidevice::RemoteDevice& remote_device :
+       remote_device_provider_->GetSyncedDevices()) {
+    const auto it = remote_device.software_features.find(software_feature_);
+    bool is_feature_set_for_device =
+        it != remote_device.software_features.end();
+    bool is_feature_enabled_for_device =
+        is_feature_set_for_device &&
+        it->second == multidevice::SoftwareFeatureState::kEnabled;
+
+    if (device_instance_id_ == remote_device.instance_id) {
+      DCHECK(!is_requested_device_in_list);
+      is_requested_device_in_list = true;
+
+      // If the requested device does not contain an entry for
+      // |software_feature_|, the request is not fulfilled.
+      if (!is_feature_set_for_device)
+        return false;
+
+      is_feature_enabled_for_requested_device = is_feature_enabled_for_device;
+    } else {
+      is_feature_enabled_for_any_other_device =
+          is_feature_enabled_for_any_other_device ||
+          is_feature_enabled_for_device;
+    }
+  }
+
+  // If the requested device no longer exists, the request is not fulfilled.
+  if (!is_requested_device_in_list)
+    return false;
+
+  switch (status_change_) {
+    case FeatureStatusChange::kEnableExclusively:
+      return is_feature_enabled_for_requested_device &&
+             !is_feature_enabled_for_any_other_device;
+    case FeatureStatusChange::kEnableNonExclusively:
+      return is_feature_enabled_for_requested_device;
+    case FeatureStatusChange::kDisable:
+      return !is_feature_enabled_for_requested_device;
+  }
+}
+
+void DeviceSyncImpl::PendingSetFeatureStatusRequest::InvokeCallback(
+    mojom::NetworkRequestResult result) {
+  // Callback should only be invoked once.
+  DCHECK(callback_);
+  std::move(callback_).Run(result);
 }
 
 DeviceSyncImpl::DeviceSyncImpl(
@@ -370,7 +441,7 @@ void DeviceSyncImpl::ForceSyncNow(ForceSyncNowCallback callback) {
 
   cryptauth_device_manager_->ForceSyncNow(cryptauth::INVOCATION_REASON_MANUAL);
 
-  if (ShouldUseV2DeviceSync()) {
+  if (features::ShouldUseV2DeviceSync()) {
     cryptauth_v2_device_manager_->ForceDeviceSyncNow(
         cryptauthv2::ClientMetadata::MANUAL, base::nullopt /* session_id */);
   }
@@ -439,6 +510,35 @@ void DeviceSyncImpl::SetSoftwareFeatureState(
       base::Bind(&DeviceSyncImpl::OnSetSoftwareFeatureStateError,
                  weak_ptr_factory_.GetWeakPtr(), request_id),
       is_exclusive);
+}
+
+void DeviceSyncImpl::SetFeatureStatus(const std::string& device_instance_id,
+                                      multidevice::SoftwareFeature feature,
+                                      FeatureStatusChange status_change,
+                                      SetFeatureStatusCallback callback) {
+  DCHECK(!device_instance_id.empty());
+
+  if (status_ != Status::READY) {
+    PA_LOG(WARNING) << "DeviceSyncImpl::SetFeatureStatus() invoked before "
+                    << "initialization was complete. Cannot enable/disable "
+                    << "feature.";
+    std::move(callback).Run(
+        mojom::NetworkRequestResult::kServiceNotYetInitialized);
+    return;
+  }
+
+  auto request_id = base::UnguessableToken::Create();
+  id_to_pending_set_feature_status_request_map_.emplace(
+      request_id, std::make_unique<PendingSetFeatureStatusRequest>(
+                      device_instance_id, feature, status_change,
+                      remote_device_provider_.get(), std::move(callback)));
+
+  feature_status_setter_->SetFeatureStatus(
+      device_instance_id, feature, status_change,
+      base::BindOnce(&DeviceSyncImpl::OnSetFeatureStatusSuccess,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&DeviceSyncImpl::OnSetFeatureStatusError,
+                     weak_ptr_factory_.GetWeakPtr(), request_id));
 }
 
 void DeviceSyncImpl::FindEligibleDevices(
@@ -551,8 +651,8 @@ void DeviceSyncImpl::OnSyncDeviceListChanged() {
 
   // Iterate through pending SetSoftwareFeature() requests. If any of them have
   // been fulfilled, invoke their callbacks.
-  auto it = id_to_pending_set_software_feature_request_map_.begin();
-  while (it != id_to_pending_set_software_feature_request_map_.end()) {
+  for (auto it = id_to_pending_set_software_feature_request_map_.begin();
+       it != id_to_pending_set_software_feature_request_map_.end();) {
     if (!it->second->IsFulfilled()) {
       ++it;
       continue;
@@ -564,10 +664,27 @@ void DeviceSyncImpl::OnSyncDeviceListChanged() {
     it->second->InvokeCallback(mojom::NetworkRequestResult::kSuccess);
     it = id_to_pending_set_software_feature_request_map_.erase(it);
   }
+
+  // Iterate through pending SetFeatureStatus() requests. If any of them have
+  // been fulfilled, invoke their callbacks.
+  for (auto it = id_to_pending_set_feature_status_request_map_.begin();
+       it != id_to_pending_set_feature_status_request_map_.end();) {
+    if (!it->second->IsFulfilled()) {
+      ++it;
+      continue;
+    }
+
+    PA_LOG(VERBOSE) << "DeviceSyncImpl::OnSyncDeviceListChanged(): Feature "
+                    << "status updated via device sync; notifying success "
+                    << "callbacks.";
+    it->second->InvokeCallback(mojom::NetworkRequestResult::kSuccess);
+    it = id_to_pending_set_feature_status_request_map_.erase(it);
+  }
 }
 
 void DeviceSyncImpl::Shutdown() {
   software_feature_manager_.reset();
+  feature_status_setter_.reset();
   remote_device_provider_.reset();
   cryptauth_v2_device_manager_.reset();
   cryptauth_device_manager_.reset();
@@ -674,7 +791,7 @@ void DeviceSyncImpl::InitializeCryptAuthManagementObjects() {
       clock_, cryptauth_client_factory_.get(), cryptauth_gcm_manager_.get(),
       profile_prefs_);
 
-  if (ShouldUseV2DeviceSync()) {
+  if (features::ShouldUseV2DeviceSync()) {
     cryptauth_device_registry_ =
         CryptAuthDeviceRegistryImpl::Factory::Get()->BuildInstance(
             profile_prefs_);
@@ -697,7 +814,7 @@ void DeviceSyncImpl::CompleteInitializationAfterSuccessfulEnrollment() {
   // Now that enrollment has completed, the current device has been registered
   // with the CryptAuth back-end and can begin monitoring synced devices.
   cryptauth_device_manager_->Start();
-  if (ShouldUseV2DeviceSync()) {
+  if (features::ShouldUseV2DeviceSync()) {
     cryptauth_v2_device_manager_->Start();
   }
 
@@ -708,6 +825,11 @@ void DeviceSyncImpl::CompleteInitializationAfterSuccessfulEnrollment() {
 
   software_feature_manager_ = SoftwareFeatureManagerImpl::Factory::NewInstance(
       cryptauth_client_factory_.get());
+
+  feature_status_setter_ =
+      CryptAuthFeatureStatusSetterImpl::Factory::Get()->BuildInstance(
+          client_app_metadata_provider_, cryptauth_client_factory_.get(),
+          cryptauth_gcm_manager_.get());
 
   status_ = Status::READY;
 
@@ -722,10 +844,10 @@ DeviceSyncImpl::GetSyncedDeviceWithPublicKey(
       << "DeviceSyncImpl::GetSyncedDeviceWithPublicKey() called before ready.";
 
   const auto& synced_devices = remote_device_provider_->GetSyncedDevices();
-  const auto& it = std::find_if(synced_devices.begin(), synced_devices.end(),
-                                [&public_key](const auto& remote_device) {
-                                  return public_key == remote_device.public_key;
-                                });
+  const auto it = std::find_if(synced_devices.begin(), synced_devices.end(),
+                               [&public_key](const auto& remote_device) {
+                                 return public_key == remote_device.public_key;
+                               });
 
   if (it == synced_devices.end())
     return base::nullopt;
@@ -740,7 +862,7 @@ void DeviceSyncImpl::OnSetSoftwareFeatureStateSuccess() {
   cryptauth_device_manager_->ForceSyncNow(
       cryptauth::INVOCATION_REASON_FEATURE_TOGGLED);
 
-  if (ShouldUseV2DeviceSync()) {
+  if (features::ShouldUseV2DeviceSync()) {
     cryptauth_v2_device_manager_->ForceDeviceSyncNow(
         cryptauthv2::ClientMetadata::FEATURE_TOGGLED,
         base::nullopt /* session_id */);
@@ -770,6 +892,36 @@ void DeviceSyncImpl::OnSetSoftwareFeatureStateError(
   it->second->InvokeCallback(
       mojo::ConvertTo<mojom::NetworkRequestResult>(error));
   id_to_pending_set_software_feature_request_map_.erase(it);
+}
+
+void DeviceSyncImpl::OnSetFeatureStatusSuccess() {
+  PA_LOG(VERBOSE) << "DeviceSyncImpl::OnSetFeatureStatusSuccess(): "
+                  << "Successfully completed SetFeatureStatus() call; "
+                  << "requesting force sync.";
+  cryptauth_device_manager_->ForceSyncNow(
+      cryptauth::INVOCATION_REASON_FEATURE_TOGGLED);
+
+  if (features::ShouldUseV2DeviceSync()) {
+    cryptauth_v2_device_manager_->ForceDeviceSyncNow(
+        cryptauthv2::ClientMetadata::FEATURE_TOGGLED,
+        base::nullopt /* session_id */);
+  }
+}
+
+void DeviceSyncImpl::OnSetFeatureStatusError(
+    const base::UnguessableToken& request_id,
+    NetworkRequestError error) {
+  auto it = id_to_pending_set_feature_status_request_map_.find(request_id);
+  if (it == id_to_pending_set_feature_status_request_map_.end()) {
+    PA_LOG(ERROR) << "DeviceSyncImpl::OnSetFeatureStatusError(): "
+                  << "Could not find request entry with ID " << request_id;
+    NOTREACHED();
+    return;
+  }
+
+  it->second->InvokeCallback(
+      mojo::ConvertTo<mojom::NetworkRequestResult>(error));
+  id_to_pending_set_feature_status_request_map_.erase(it);
 }
 
 void DeviceSyncImpl::OnFindEligibleDevicesSuccess(

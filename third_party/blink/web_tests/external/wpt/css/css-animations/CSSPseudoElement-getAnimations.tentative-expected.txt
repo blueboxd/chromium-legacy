@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-PASS getAnimations returns CSSAnimation objects
-FAIL getAnimations returns CSS transitions/animations, and script-generated animations in the expected order assert_equals: 1st animation is the 1st transition sorted by name expected (string) "height" but got (undefined) undefined
-Harness: the test ran to completion.
-

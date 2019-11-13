@@ -13,22 +13,15 @@
 #include <string>
 #include <vector>
 
-#include "base/containers/span.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "base/version.h"
 #include "build/build_config.h"
 #include "gpu/config/dx_diag_node.h"
 #include "gpu/gpu_export.h"
-#include "gpu/vulkan/buildflags.h"
 #include "ui/gfx/geometry/size.h"
 
 #if defined(USE_X11)
 typedef unsigned long VisualID;
-#endif
-
-#if BUILDFLAG(ENABLE_VULKAN)
-#include "gpu/config/vulkan_info.h"
 #endif
 
 namespace gpu {
@@ -364,10 +357,6 @@ struct GPU_EXPORT GPUInfo {
 
   bool subpixel_font_rendering;
 
-#if BUILDFLAG(ENABLE_VULKAN)
-  base::Optional<VulkanInfo> vulkan_info;
-#endif
-
   // Note: when adding new members, please remember to update EnumerateFields
   // in gpu_info.cc.
 
@@ -387,8 +376,6 @@ struct GPU_EXPORT GPUInfo {
     virtual void AddBool(const char* name, bool value) = 0;
     virtual void AddTimeDeltaInSecondsF(const char* name,
                                         const base::TimeDelta& value) = 0;
-    virtual void AddBinary(const char* name,
-                           const base::span<const uint8_t>& blob) = 0;
 
     // Markers indicating that a GPUDevice is being described.
     virtual void BeginGPUDevice() = 0;

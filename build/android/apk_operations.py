@@ -18,9 +18,12 @@ import posixpath
 import random
 import re
 import shlex
+import shutil
+import subprocess
 import sys
 import tempfile
 import textwrap
+import zipfile
 
 import adb_command_line
 import devil_chromium
@@ -34,8 +37,11 @@ from devil.android.sdk import intent
 from devil.android.sdk import version_codes
 from devil.utils import run_tests_helper
 
-with devil_env.SysPath(os.path.join(os.path.dirname(__file__), '..', '..',
-                                    'third_party', 'colorama', 'src')):
+_DIR_SOURCE_ROOT = os.path.normpath(
+    os.path.join(os.path.dirname(__file__), '..', '..'))
+
+with devil_env.SysPath(
+    os.path.join(_DIR_SOURCE_ROOT, 'third_party', 'colorama', 'src')):
   import colorama
 
 from incremental_install import installer
@@ -44,8 +50,8 @@ from pylib.symbols import deobfuscator
 from pylib.utils import simpleperf
 from pylib.utils import app_bundle_utils
 
-with devil_env.SysPath(os.path.join(os.path.dirname(__file__), '..', '..',
-                                    'build', 'android', 'gyp')):
+with devil_env.SysPath(
+    os.path.join(_DIR_SOURCE_ROOT, 'build', 'android', 'gyp')):
   import bundletool
 
 # Matches messages only on pre-L (Dalvik) that are spammy and unimportant.
@@ -1480,6 +1486,55 @@ class _ManifestCommand(_Command):
     ])
 
 
+class _StackCommand(_Command):
+  name = 'stack'
+  description = 'Decodes an Android stack.'
+  need_device_args = False
+
+  def _RegisterExtraArgs(self, group):
+    group.add_argument(
+        'file',
+        nargs='?',
+        help='File to decode. If not specified, stdin is processed.')
+
+  def Run(self):
+    try:
+      # In many cases, stack decoding requires APKs to map trace lines to native
+      # libraries. Create a temporary directory, and either unpack a bundle's
+      # APKS into it, or simply symlink the standalone APK into it. This
+      # provides an unambiguous set of APK files for the stack decoding process
+      # to inspect.
+      apks_directory = tempfile.mkdtemp()
+
+      if self.is_bundle:
+        output_path = self.bundle_generation_info.bundle_apks_path
+        _GenerateBundleApks(self.bundle_generation_info, output_path)
+
+        with zipfile.ZipFile(output_path, 'r') as archive:
+          files_to_extract = [
+              f for f in archive.namelist() if f.endswith('-master.apk')
+          ]
+          archive.extractall(apks_directory, files_to_extract)
+      else:
+        output = os.path.join(apks_directory,
+                              os.path.basename(self.args.apk_path))
+        os.symlink(self.args.apk_path, output)
+
+      stack_script = os.path.join(
+          constants.host_paths.ANDROID_PLATFORM_DEVELOPMENT_SCRIPTS_PATH,
+          'stack.py')
+      stack_command = [
+          stack_script, '--output-directory', self.args.output_directory,
+          '--apks-directory', apks_directory
+      ]
+      if self.args.file:
+        stack_command.append(self.args.file)
+      subprocess.call(stack_command)
+
+    finally:
+      shutil.rmtree(apks_directory)
+
+
 # Shared commands for regular APKs and app bundles.
 _COMMANDS = [
     _DevicesCommand,
@@ -1500,6 +1555,7 @@ _COMMANDS = [
     _CompileDexCommand,
     _ProfileCommand,
     _RunCommand,
+    _StackCommand,
 ]
 
 # Commands specific to app bundles.

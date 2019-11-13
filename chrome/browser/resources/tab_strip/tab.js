@@ -121,8 +121,15 @@ export class TabElement extends CustomElement {
     this.setAttribute('draggable', true);
     this.toggleAttribute('crashed_', tab.crashed);
 
-    if (!this.tab_ || this.tab_.title !== tab.title) {
+    if (tab.title) {
       this.titleTextEl_.textContent = tab.title;
+    } else if (
+        !tab.shouldHideThrobber &&
+        (tab.networkState === TabNetworkState.WAITING ||
+         tab.networkState === TabNetworkState.LOADING)) {
+      this.titleTextEl_.textContent = loadTimeData.getString('loadingTab');
+    } else {
+      this.titleTextEl_.textContent = loadTimeData.getString('defaultTabTitle');
     }
     this.titleTextEl_.setAttribute('aria-label', getAccessibleTitle(tab));
 

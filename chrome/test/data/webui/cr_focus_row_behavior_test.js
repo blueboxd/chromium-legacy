@@ -2,6 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {down, up, pressAndReleaseKeyOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js'
+// #import {eventToPromise, waitAfterNextRender} from 'chrome://test/test_util.m.js';
+// #import {FocusRowBehavior} from 'chrome://resources/js/cr/ui/focus_row_behavior.m.js';
+// #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+// #import {Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// clang-format on
+
 suite('cr-focus-row-behavior-test', function() {
   /** @type {FocusableIronListItemElement} */ let testElement;
 

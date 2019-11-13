@@ -83,17 +83,17 @@ class OmniboxPopupModel {
   // the necessary parts of the window, as well as updating the edit with the
   // new temporary text.  |line| will be clamped to the range of valid lines.
   // |reset_to_default| is true when the selection is being reset back to the
-  // default match, and thus there is no temporary text (and not
+  // initial state, and thus there is no temporary text (and not
   // |has_selected_match_|). If |force| is true then the selected line will
   // be updated forcibly even if the |line| is same as the current selected
   // line.
-  // NOTE: This assumes the popup is open, and thus both old and new values for
-  // the selected line should not be kNoMatch.
+  // NOTE: This assumes the popup is open, although both the old and new values
+  // for the selected line can be kNoMatch.
   void SetSelectedLine(size_t line, bool reset_to_default, bool force);
 
   // Called when the user hits escape after arrowing around the popup.  This
-  // will change the selected line back to the default match and redraw.
-  void ResetToDefaultMatch();
+  // will reset the popup to the initial state.
+  void ResetToInitialState();
 
   // Immediately updates and opens the popup if necessary, then moves the
   // current selection to the respective line. If the line is unchanged, the
@@ -186,6 +186,8 @@ class OmniboxPopupModel {
   GURL old_focused_url_;
 
   // The user has manually selected a match.
+  // TODO(tommycli): We can _probably_ eliminate this variable. It seems to be
+  // mostly rendundant with selected_line() and result()->default_match().
   bool has_selected_match_;
 
   // True if the popup should close on omnibox blur. This defaults to true, and

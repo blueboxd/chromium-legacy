@@ -2,6 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {afterNextRender} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {assert} from 'chrome://resources/js/assert.m.js';
+// #import {focusWithoutInk} from './focus_without_ink.m.js';
+// #import {FocusRow, FocusRowDelegate} from './focus_row.m.js';
+// clang-format on
+
 cr.define('cr.ui', function() {
   /** @implements {cr.ui.FocusRowDelegate} */
   class FocusRowBehaviorDelegate {
@@ -86,7 +93,7 @@ cr.define('cr.ui', function() {
    *
    * @polymerBehavior
    */
-  const FocusRowBehavior = {
+  /* #export */ const FocusRowBehavior = {
     properties: {
       /** @private {cr.ui.VirtualFocusRow} */
       row_: Object,
@@ -368,6 +375,7 @@ cr.define('cr.ui', function() {
     },
   };
 
+  // #cr_define_end
   return {
     FocusRowBehaviorDelegate,
     VirtualFocusRow,

@@ -1090,6 +1090,18 @@ void LoginAuthUserView::SetEasyUnlockIcon(
     EasyUnlockIconId id,
     const base::string16& accessibility_label) {
   password_view_->SetEasyUnlockIcon(id, accessibility_label);
+
+  const std::string& user_display_email =
+      current_user().basic_user_info.display_email;
+  if (id == EasyUnlockIconId::UNLOCKED) {
+    password_view_->SetAccessibleName(l10n_util::GetStringFUTF16(
+        IDS_ASH_LOGIN_POD_AUTH_TAP_PASSWORD_FIELD_ACCESSIBLE_NAME,
+        base::UTF8ToUTF16(user_display_email)));
+  } else {
+    password_view_->SetAccessibleName(l10n_util::GetStringFUTF16(
+        IDS_ASH_LOGIN_POD_PASSWORD_FIELD_ACCESSIBLE_NAME,
+        base::UTF8ToUTF16(user_display_email)));
+  }
 }
 
 void LoginAuthUserView::CaptureStateForAnimationPreLayout() {

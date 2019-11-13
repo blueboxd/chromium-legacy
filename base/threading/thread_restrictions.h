@@ -105,6 +105,7 @@ namespace android_webview {
 class AwFormDatabaseService;
 class CookieManager;
 class ScopedAllowInitGLBindings;
+class VizCompositorThreadRunnerWebView;
 }
 namespace audio {
 class OutputDevice;
@@ -461,6 +462,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   friend class android_webview::
       AwFormDatabaseService;  // http://crbug.com/904431
   friend class android_webview::CookieManager;
+  friend class android_webview::VizCompositorThreadRunnerWebView;
   friend class audio::OutputDevice;
   friend class base::sequence_manager::internal::TaskQueueImpl;
   friend class base::FileDescriptorWatcher;

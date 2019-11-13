@@ -600,7 +600,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, FocusOnReload) {
 }
 
 // Tests that focus goes where expected when using reload on a crashed tab.
-#if (defined(OS_CHROMEOS) || defined(OS_LINUX)) && !defined(NDEBUG)
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
 // Hangy, http://crbug.com/50025.
 #define MAYBE_FocusOnReloadCrashedTab DISABLED_FocusOnReloadCrashedTab
 #else

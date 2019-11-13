@@ -78,15 +78,6 @@
   font-size: 13px;
 }
 
-:host(.whitelist-error) .step-contents,
-:host(.whitelist-error) .gaia-dialog {
-  visibility: hidden;
-}
-
-:host(.whitelist-error) .step-loading {
-  visibility: hidden;
-}
-
 .step-loading {
   align-items: center;
   bottom: 0;
@@ -107,14 +98,6 @@
   right: 0;
   top: 0;
   visibility: hidden;
-}
-
-:host(.whitelist-error) #gaia-whitelist-error {
-  visibility: visible;
-}
-
-:host(:not(.saml-interstitial)) #gaia-step-contents {
-  display: none;
 }
 
 :host(.saml) #signin-frame-container {

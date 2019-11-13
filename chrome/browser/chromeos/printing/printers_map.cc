@@ -11,7 +11,8 @@ namespace {
 
 bool IsProtocolSecure(const Printer& printer) {
   return !printer.HasNetworkProtocol() ||
-         printer.GetProtocol() == Printer::kIpps;
+         printer.GetProtocol() == Printer::kIpps ||
+         printer.GetProtocol() == Printer::kHttps;
 }
 
 }  // namespace

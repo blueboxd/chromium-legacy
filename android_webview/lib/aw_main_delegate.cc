@@ -365,7 +365,7 @@ gpu::SharedImageManager* GetSharedImageManager() {
 }
 
 viz::VizCompositorThreadRunner* GetVizCompositorThreadRunner() {
-  return base::FeatureList::IsEnabled(features::kVizForWebView)
+  return ::features::IsUsingVizForWebView()
              ? VizCompositorThreadRunnerWebView::GetInstance()
              : nullptr;
 }

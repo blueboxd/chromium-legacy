@@ -30,7 +30,8 @@ class DecisionTreePredictionModel : public PredictionModel {
 
   // PredictionModel implementation:
   optimization_guide::OptimizationTargetDecision Predict(
-      const base::flat_map<std::string, float>& model_features) override;
+      const base::flat_map<std::string, float>& model_features,
+      double* prediction_score) override;
 
  private:
   // Evaluates the provided model, either an ensemble or decision tree model,

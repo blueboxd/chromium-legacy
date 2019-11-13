@@ -16,7 +16,7 @@
 #import "ios/chrome/browser/ui/main/test/stub_browser_interface_provider.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
-#import "ios/chrome/test/base/scoped_block_swizzler.h"
+#import "ios/testing/scoped_block_swizzler.h"
 #include "ios/web/public/test/web_task_environment.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"

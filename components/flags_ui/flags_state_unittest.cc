@@ -151,7 +151,8 @@ static FeatureEntry kEntries[] = {
      FeatureEntry::ORIGIN_LIST_VALUE, kStringSwitch, kValueForStringSwitch,
      nullptr, nullptr, nullptr /* feature */, 0, nullptr, nullptr, nullptr}};
 
-class FlagsStateTest : public ::testing::Test {
+class FlagsStateTest : public ::testing::Test,
+                       public flags_ui::FlagsState::Delegate {
  protected:
   FlagsStateTest() : flags_storage_(&prefs_), trial_list_(nullptr) {
     prefs_.registry()->RegisterListPref(prefs::kAboutFlagsEntries);
@@ -164,16 +165,15 @@ class FlagsStateTest : public ::testing::Test {
     while (os_other_than_current == FlagsState::GetCurrentPlatform())
       os_other_than_current <<= 1;
     kEntries[2].supported_platforms = os_other_than_current;
-    flags_state_.reset(new FlagsState(
-        kEntries, base::size(kEntries),
-        base::Bind(&FlagsStateTest::IsFlagExcluded, base::Unretained(this))));
+    flags_state_.reset(new FlagsState(kEntries, this));
   }
 
   ~FlagsStateTest() override {
     variations::testing::ClearAllVariationParams();
   }
 
-  bool IsFlagExcluded(const FeatureEntry& entry) {
+  // FlagsState::Delegate:
+  bool ShouldExcludeFlag(const FeatureEntry& entry) override {
     return exclude_flags_.count(entry.internal_name) != 0;
   }
 

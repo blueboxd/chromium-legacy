@@ -886,8 +886,7 @@ int HttpNetworkTransaction::DoGenerateProxyAuthToken() {
     auth_controllers_[target] = base::MakeRefCounted<HttpAuthController>(
         target, AuthURL(target), request_->network_isolation_key,
         session_->http_auth_cache(), session_->http_auth_handler_factory(),
-        session_->host_resolver(),
-        session_->params().allow_default_credentials);
+        session_->host_resolver());
   return auth_controllers_[target]->MaybeGenerateAuthToken(request_,
                                                            io_callback_,
                                                            net_log_);
@@ -907,8 +906,7 @@ int HttpNetworkTransaction::DoGenerateServerAuthToken() {
     auth_controllers_[target] = base::MakeRefCounted<HttpAuthController>(
         target, AuthURL(target), request_->network_isolation_key,
         session_->http_auth_cache(), session_->http_auth_handler_factory(),
-        session_->host_resolver(),
-        session_->params().allow_default_credentials);
+        session_->host_resolver());
     if (request_->load_flags & LOAD_DO_NOT_USE_EMBEDDED_IDENTITY)
       auth_controllers_[target]->DisableEmbeddedIdentity();
   }

@@ -178,8 +178,11 @@
     <div class="settings-box first">
       <div id="barArea">
         <progress id="bar" class$="[[getBarClass_(sizeStat_.spaceState)]]"
-            value="[[sizeStat_.usedRatio]]"></progress>
-        <div id="barLabels">
+            value="[[sizeStat_.usedRatio]]"
+            aria-label="$i18n{storageOverviewAriaLabel}"
+            aria-describedby="barLabels">
+        </progress>
+        <div id="barLabels" aria-hidden="true">
           <div id="inUseLabelArea" class="bar-label">
             <div class="vertical-line"></div>
             <div class="wrapper"><span>$i18n{storageItemInUse}</span></div>

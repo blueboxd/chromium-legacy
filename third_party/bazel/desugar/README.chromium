@@ -14,6 +14,7 @@ Googlers: See: go/desugar
 
 Local Modifications:
 * Added BUILD.gn, proguard.flags.
+* Made all lambdas be "stateful" to avoid <clinit> bloat.
 * Desugar_deploy.jar split into Desugar.jar and Desugar_runtime.jar.
 * Desugar.jar has been run through r8.jar to remove unused .class files.
 
@@ -21,7 +22,9 @@ Update instructions (requires @google.com account for uploading):
 * Check out Bazel from https://github.com/bazelbuild/bazel
 * Compile or install Bazel by following instructions on
     https://docs.bazel.build/versions/master/install.html
-* Build Desugar_deploy.jar by running
+* Apply stateful-lambdas.patch:
+    git apply $CHROMIUM_SRC/third_party/bazel/desugar/stateful-lambdas.patch
+* Build Desugar_deploy.jar:
     bazel build //src/tools/android/java/com/google/devtools/build/android/desugar:Desugar_deploy.jar
 * Move Desugar_deploy.jar to location within Chromium:
     rm $CHROMIUM_SRC/third_party/bazel/desugar/Desugar.jar

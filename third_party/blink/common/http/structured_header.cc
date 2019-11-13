@@ -9,6 +9,7 @@
 
 #include "base/base64.h"
 #include "base/containers/flat_set.h"
+#include "base/containers/span.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 
@@ -30,6 +31,11 @@ constexpr char kKeyChars13[] = DIGIT LCALPHA "_-*";
 #undef DIGIT
 #undef LCALPHA
 #undef UCALPHA
+
+// https://tools.ietf.org/html/draft-ietf-httpbis-header-structure-13#section-3.4
+// TODO(1011101): Add support for negative integers.
+constexpr int64_t kMaxInteger = 999999999999999L;
+constexpr int64_t kMinInteger = 0L;
 
 // https://tools.ietf.org/html/draft-ietf-httpbis-header-structure-09#section-3.8
 // https://tools.ietf.org/html/draft-ietf-httpbis-header-structure-13#section-3.6
@@ -306,6 +312,9 @@ class StructuredHeaderParser {
     int64_t n;
     if (!base::StringToInt64(output_number_string, &n))
       return base::nullopt;
+    // [SH13] restricts the range of integers further.
+    if (version_ == kDraft13 && n > kMaxInteger)
+      return base::nullopt;
     return Item(n);
   }
 
@@ -397,6 +406,128 @@ class StructuredHeaderParser {
   DISALLOW_COPY_AND_ASSIGN(StructuredHeaderParser);
 };
 
+// Serializer for (a subset of) Structured Headers for HTTP defined in [SH13].
+// [SH13] https://tools.ietf.org/html/draft-ietf-httpbis-header-structure-13
+class StructuredHeaderSerializer {
+ public:
+  StructuredHeaderSerializer() = default;
+  ~StructuredHeaderSerializer() = default;
+  StructuredHeaderSerializer(const StructuredHeaderSerializer&) = delete;
+  StructuredHeaderSerializer& operator=(const StructuredHeaderSerializer&) =
+      delete;
+
+  std::string Output() { return output_.str(); }
+
+  bool WriteList(const List& value) {
+    // Serializes a List ([SH13] 4.1.1).
+    bool first = true;
+    for (const auto& member : value) {
+      if (!first)
+        output_ << ", ";
+      if (!WriteParameterizedMember(member))
+        return false;
+      first = false;
+    }
+    return true;
+  }
+
+  bool WriteItem(const Item& value) {
+    // Serializes an Item ([SH13] 4.1.6).
+    if (value.is_string()) {
+      output_ << "\"";
+      for (const char& c : value.string()) {
+        if (!IsPrintableASCII(c))
+          return false;
+        if (c == '\\' || c == '\"')
+          output_ << "\\";
+        output_ << c;
+      }
+      output_ << "\"";
+      return true;
+    }
+    if (value.is_token()) {
+      if (!value.string().size() || !base::IsAsciiAlpha(value.string().front()))
+        return false;
+      if (value.string().find_first_not_of(kTokenChars) != std::string::npos)
+        return false;
+      output_ << value.string();
+      return true;
+    }
+    if (value.is_byte_sequence()) {
+      output_ << "*";
+      output_ << base::Base64Encode(
+          base::as_bytes(base::make_span(value.string())));
+      output_ << "*";
+      return true;
+    }
+    if (value.is_integer()) {
+      if (value.integer() > kMaxInteger || value.integer() < kMinInteger)
+        return false;
+      output_ << value.integer();
+      return true;
+    }
+    return false;
+  }
+
+ private:
+  bool WriteParameterizedMember(const ParameterizedMember& value) {
+    // Serializes a parameterized member ([SH13] 4.1.1).
+    if (value.member_is_inner_list) {
+      if (!WriteInnerList(value.member))
+        return false;
+    } else {
+      DCHECK_EQ(value.member.size(), 1UL);
+      if (!WriteItem(value.member[0]))
+        return false;
+    }
+    return WriteParameters(value.params);
+  }
+
+  bool WriteInnerList(const std::vector<Item>& value) {
+    // Serializes an inner list ([SH13] 4.1.1.1).
+    output_ << "(";
+    bool first = true;
+    for (const Item& member : value) {
+      if (!first)
+        output_ << " ";
+      if (!WriteItem(member))
+        return false;
+      first = false;
+    }
+    output_ << ")";
+    return true;
+  }
+
+  bool WriteParameters(const ParameterizedMember::Parameters& value) {
+    // Serializes a parameter list ([SH13] 4.1.1.2).
+    for (const auto& param_name_and_value : value) {
+      const std::string& param_name = param_name_and_value.first;
+      const Item& param_value = param_name_and_value.second;
+      output_ << ";";
+      if (!WriteKey(param_name))
+        return false;
+      if (!param_value.is_null()) {
+        output_ << "=";
+        if (!WriteItem(param_value))
+          return false;
+      }
+    }
+    return true;
+  }
+
+  bool WriteKey(const std::string& value) {
+    // Serializes a Key ([SH13] 4.1.1.3).
+    if (!value.size())
+      return false;
+    if (value.find_first_not_of(kKeyChars13) != std::string::npos)
+      return false;
+    output_ << value;
+    return true;
+  }
+
+  std::ostringstream output_;
+};
+
 }  // namespace
 
 Item::Item() {}
@@ -452,7 +583,7 @@ ParameterisedIdentifier::ParameterisedIdentifier(Item id, const Parameters& ps)
 ParameterisedIdentifier::~ParameterisedIdentifier() = default;
 
 base::Optional<Item> ParseItem(const base::StringPiece& str) {
-  StructuredHeaderParser parser(str, StructuredHeaderParser::kDraft09);
+  StructuredHeaderParser parser(str, StructuredHeaderParser::kDraft13);
   base::Optional<Item> item = parser.ReadItem();
   if (item && parser.FinishParsing())
     return item;
@@ -481,6 +612,20 @@ base::Optional<List> ParseList(const base::StringPiece& str) {
   base::Optional<List> list = parser.ReadList();
   if (list && parser.FinishParsing())
     return list;
+  return base::nullopt;
+}
+
+base::Optional<std::string> SerializeItem(const Item& value) {
+  StructuredHeaderSerializer s;
+  if (s.WriteItem(value))
+    return s.Output();
+  return base::nullopt;
+}
+
+base::Optional<std::string> SerializeList(const List& value) {
+  StructuredHeaderSerializer s;
+  if (s.WriteList(value))
+    return s.Output();
   return base::nullopt;
 }
 

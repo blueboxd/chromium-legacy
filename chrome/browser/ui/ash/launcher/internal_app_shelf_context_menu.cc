@@ -62,7 +62,7 @@ void InternalAppShelfContextMenu::ExecuteCommand(int command_id,
   DCHECK_EQ(internal_app->internal_app_name, apps::BuiltInAppName::kPluginVm);
   if (command_id == ash::STOP_APP) {
     plugin_vm::PluginVmManager::GetForProfile(controller()->profile())
-        ->StopPluginVm();
+        ->StopPluginVm(plugin_vm::kPluginVmName);
     return;
   }
 }

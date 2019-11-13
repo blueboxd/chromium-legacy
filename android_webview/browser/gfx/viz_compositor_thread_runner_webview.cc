@@ -80,6 +80,7 @@ void VizCompositorThreadRunnerWebView::ScheduleOnVizAndBlock(
 void VizCompositorThreadRunnerWebView::PostTaskAndBlock(
     const base::Location& from_here,
     base::OnceClosure task) {
+  base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
   base::WaitableEvent e;
   task_runner()->PostTask(from_here,
                           base::BindOnce(&RunAndSignal, std::move(task), &e));

@@ -101,11 +101,9 @@ source_set("browser_tests") {
   data = [
     "//chrome/browser/resources/chromeos/chromevox/",
     "//chrome/browser/resources/chromeos/switch_access/",
-    "//chrome/third_party/mock4js/",
-    "//third_party/accessibility-audit/axs_testing.js",
-    "//third_party/chaijs/chai.js",
     "//ui/webui/resources/js/cr.js",
   ]
+  data += js2gtest_js_libraries
 }
 
 js2gtest("switch_access_extjs_tests") {

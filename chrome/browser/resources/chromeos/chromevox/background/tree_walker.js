@@ -93,13 +93,15 @@ AutomationTreeWalker = function(node, dir, opt_restrictions) {
 
   this.visitPred_ = function(node) {
     if (this.skipInitialAncestry_ &&
-        this.phase_ == AutomationTreeWalkerPhase.ANCESTOR)
+        this.phase_ == AutomationTreeWalkerPhase.ANCESTOR) {
       return false;
+    }
 
     if (this.skipInitialSubtree_ &&
-        this.phase != AutomationTreeWalkerPhase.ANCESTOR &&
-        this.phase != AutomationTreeWalkerPhase.OTHER)
+        this.phase_ != AutomationTreeWalkerPhase.ANCESTOR &&
+        this.phase_ != AutomationTreeWalkerPhase.OTHER) {
       return false;
+    }
 
     if (restrictions.visit) {
       return restrictions.visit(node);
@@ -174,7 +176,7 @@ AutomationTreeWalker.prototype = {
       }
 
       if (!this.skipInitialSubtree_ ||
-          this.phase != AutomationTreeWalkerPhase.DESCENDANT) {
+          this.phase_ != AutomationTreeWalkerPhase.DESCENDANT) {
         this.node_ = node.firstChild;
         return;
       }
@@ -201,8 +203,9 @@ AutomationTreeWalker.prototype = {
       // Exit if we encounter a root-like node and are not searching descendants
       // of the initial node.
       if (searchNode.parent && this.rootPred_(searchNode.parent) &&
-          this.phase_ != AutomationTreeWalkerPhase.DESCENDANT)
+          this.phase_ != AutomationTreeWalkerPhase.DESCENDANT) {
         break;
+      }
 
       searchNode = searchNode.parent;
     }
@@ -218,8 +221,9 @@ AutomationTreeWalker.prototype = {
       this.phase_ = AutomationTreeWalkerPhase.OTHER;
       node = node.previousSibling;
 
-      while (!this.leafPred_(node) && node.lastChild)
+      while (!this.leafPred_(node) && node.lastChild) {
         node = node.lastChild;
+      }
 
       this.node_ = node;
       return;

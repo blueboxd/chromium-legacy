@@ -8,7 +8,7 @@
 
 #include "components/ntp_snippets/content_suggestion.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_test_utils.h"
-#include "ios/chrome/test/base/scoped_block_swizzler.h"
+#include "ios/testing/scoped_block_swizzler.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "base/synchronization/lock.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
 #include "build/build_config.h"
@@ -405,10 +406,12 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
   const GURL& redirect_url() const { return redirect_url_; }
 
   size_t count_user_agent_hint_headers_seen() const {
+    base::AutoLock lock(count_headers_lock_);
     return count_user_agent_hint_headers_seen_;
   }
 
   size_t count_client_hints_headers_seen() const {
+    base::AutoLock lock(count_headers_lock_);
     return count_client_hints_headers_seen_;
   }
 
@@ -429,6 +432,7 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
 
   std::string intercept_iframe_resource_;
   bool intercept_to_http_equiv_iframe_ = false;
+  mutable base::Lock count_headers_lock_;
 
  private:
   // Intercepts only the main frame requests that contain
@@ -584,6 +588,7 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
     for (size_t i = 0; i < blink::kClientHintsMappingsCount; ++i) {
       if (base::Contains(request.headers,
                          blink::kClientHintsHeaderMapping[i])) {
+        base::AutoLock lock(count_headers_lock_);
         // The user agent hint is special:
         if (std::string(blink::kClientHintsHeaderMapping[i]) == "sec-ch-ua") {
           count_user_agent_hint_headers_seen_++;

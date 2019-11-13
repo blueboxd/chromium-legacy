@@ -362,6 +362,12 @@ void TabImpl::DidFinishNavigation(
 #endif
 }
 
+void TabImpl::RenderProcessGone(base::TerminationStatus status) {
+  for (auto& observer : observers_) {
+    observer.OnRenderProcessGone();
+  }
+}
+
 void TabImpl::OnExitFullscreen() {
   // If |processing_enter_fullscreen_| is true, it means the callback is being
   // called while processing EnterFullscreenModeForTab(). WebContents doesn't

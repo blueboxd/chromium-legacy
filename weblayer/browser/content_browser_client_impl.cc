@@ -277,6 +277,12 @@ void ContentBrowserClientImpl::GetAdditionalMappedFilesForChildProcess(
   fd = ui::GetLocalePackFd(&region);
   mappings->ShareWithRegion(kWebLayerLocalePakDescriptor, fd, region);
 
+  mappings->ShareWithRegion(kWebLayerSecondaryLocalePakDescriptor,
+                            base::GlobalDescriptors::GetInstance()->Get(
+                                kWebLayerSecondaryLocalePakDescriptor),
+                            base::GlobalDescriptors::GetInstance()->GetRegion(
+                                kWebLayerSecondaryLocalePakDescriptor));
+
   int crash_signal_fd =
       crashpad::CrashHandlerHost::Get()->GetDeathSignalSocket();
   if (crash_signal_fd >= 0)

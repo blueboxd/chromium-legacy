@@ -2003,7 +2003,7 @@ void WebGLRenderingContextBase::bufferData(GLenum target,
     SynthesizeGLError(GL_INVALID_VALUE, "bufferData", "no data");
     return;
   }
-  BufferDataImpl(target, data->ByteLength(), data->Data(), usage);
+  BufferDataImpl(target, data->ByteLengthAsSizeT(), data->Data(), usage);
 }
 
 void WebGLRenderingContextBase::bufferData(GLenum target,
@@ -2041,7 +2041,7 @@ void WebGLRenderingContextBase::bufferSubData(GLenum target,
   if (isContextLost())
     return;
   DCHECK(data);
-  BufferSubDataImpl(target, offset, data->ByteLength(), data->Data());
+  BufferSubDataImpl(target, offset, data->ByteLengthAsSizeT(), data->Data());
 }
 
 void WebGLRenderingContextBase::bufferSubData(

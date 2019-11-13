@@ -177,7 +177,7 @@
 <translation id="1734878702283171397">Essayez de contacter l'administrateur système.</translation>
 <translation id="1739107442478692187">Un site ou une application que vous utilisez a subi une violation des données. Nous vous recommandons de vérifier vos mots de passe enregistrés et de modifier celui utilisé pour <ph name="ORIGIN" /> immédiatement.</translation>
 <translation id="1740951997222943430">Saisissez un mois d'expiration valide</translation>
-<translation id="1741613555002899862">Une valeur valide doit être spécifiée lorsque la règle DnsOverHttpsMode est définie sur <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
+<translation id="1741613555002899862">Cette règle doit être spécifiée avec une chaîne valide lorsque la règle DnsOverHttpsMode est définie sur <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="1743520634839655729">Pour régler plus rapidement vos achats la prochaine fois, enregistrez votre carte, votre nom et votre adresse de facturation dans votre compte Google et sur cet appareil.</translation>
 <translation id="1743570585616704562">Non reconnu</translation>
 <translation id="1745880797583122200">Votre navigateur est géré</translation>
@@ -504,7 +504,7 @@
 <translation id="3427092606871434483">Autoriser (par défaut)</translation>
 <translation id="3427342743765426898">&amp;Rétablir la modification</translation>
 <translation id="342781501876943858">L'équipe Chromium vous recommande de réinitialiser votre mot de passe si vous l'avez réutilisé sur d'autres sites.</translation>
-<translation id="3428151540071562330">Au moins un URI de modèle de serveur DnsOverHttpsTemplates n'est pas valide et ne sera pas utilisé.</translation>
+<translation id="3428151540071562330">Au moins un URI de modèle de serveur DnsOverHttpsTemplates est invalide et ne sera pas utilisé.</translation>
 <translation id="3431636764301398940">Enregistrer cette carte sur cet appareil</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">Le propriétaire de cet appareil a désactivé le jeu avec le dinosaure.</translation>
@@ -1075,7 +1075,7 @@
 <translation id="6266934640124581640">Turquoise clair</translation>
 <translation id="6276112860590028508">Les pages de votre liste de lecture s'affichent ici</translation>
 <translation id="627746635834430766">Pour régler vos achats plus rapidement la prochaine fois, enregistrez votre carte et votre adresse de facturation dans votre compte Google.</translation>
-<translation id="6279516281132775660">Chrome <ph name="BEGIN_EMPHASIS" />n'enregistre pas<ph name="END_EMPHASIS" /> les informations suivantes :
+<translation id="6279516281132775660">Chrome <ph name="BEGIN_EMPHASIS" />n'enregistrera pas<ph name="END_EMPHASIS" /> les informations suivantes :
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />Votre historique de navigation
           <ph name="LIST_ITEM" />Les cookies et les données de sites
@@ -1480,7 +1480,7 @@ Informations supplémentaires :
 <translation id="8261506727792406068">Supprimer</translation>
 <translation id="8262952874573525464">Agrafage par le bord inférieur</translation>
 <translation id="8267698848189296333">Connexion en tant que <ph name="USERNAME" /></translation>
-<translation id="8269981117540303696">Vous pouvez désormais naviguer de façon privée. Les autres utilisateurs de cet appareil ne verront pas votre activité. Les téléchargements et les favoris seront cependant enregistrés.</translation>
+<translation id="8269981117540303696">Vous pouvez maintenant naviguer de façon privée. Les autres utilisateurs de cet appareil ne verront pas votre activité. Les téléchargements et les favoris seront cependant enregistrés.</translation>
 <translation id="8277900682056760511">La feuille du gestionnaire de paiement est ouverte</translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">Connexion</translation>

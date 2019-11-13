@@ -205,7 +205,10 @@ void BookmarkModel::Remove(const BookmarkNode* node) {
   DCHECK(parent);
   size_t index = size_t{parent->GetIndexOf(node)};
   DCHECK_NE(size_t{-1}, index);
-  DCHECK(!is_permanent_node(node));
+
+  // Removing a permanent node is problematic and can cause crashes elsewhere
+  // that are difficult to trace back.
+  CHECK(!is_permanent_node(node)) << "for type " << node->type();
 
   for (BookmarkModelObserver& observer : observers_)
     observer.OnWillRemoveBookmarks(this, parent, index, node);

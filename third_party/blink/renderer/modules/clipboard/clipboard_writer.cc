@@ -33,8 +33,8 @@ class ClipboardImageWriter final : public ClipboardWriter {
       DOMArrayBuffer* png_data) override {
     DCHECK(!IsMainThread());
     std::unique_ptr<ImageDecoder> decoder = ImageDecoder::Create(
-        SegmentReader::CreateFromSkData(
-            SkData::MakeWithoutCopy(png_data->Data(), png_data->ByteLength())),
+        SegmentReader::CreateFromSkData(SkData::MakeWithoutCopy(
+            png_data->Data(), png_data->ByteLengthAsSizeT())),
         true, ImageDecoder::kAlphaPremultiplied, ImageDecoder::kDefaultBitDepth,
         ColorBehavior::Tag());
     sk_sp<SkImage> image = nullptr;
@@ -77,7 +77,7 @@ class ClipboardTextWriter final : public ClipboardWriter {
 
     String wtf_string =
         String::FromUTF8(reinterpret_cast<const LChar*>(raw_data->Data()),
-                         raw_data->ByteLength());
+                         raw_data->ByteLengthAsSizeT());
     DCHECK(wtf_string.IsSafeToSendToAnotherThread());
     PostCrossThreadTask(
         *task_runner, FROM_HERE,

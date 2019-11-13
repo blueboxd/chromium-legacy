@@ -1551,7 +1551,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="3241680850019875542">Pilih direktori akar bagi sambungan untuk pek. Untuk mengemas kini sambungan, pilih kunci persendirian untuk gunakan semula juga.</translation>
 <translation id="3244294424315804309">Teruskan meredam bunyi</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> - Ralat rangkaian</translation>
-<translation id="3248902735035392926">Perkara keselamatan. Luangkan masa dan <ph name="BEGIN_LINK" />semak sambungan anda<ph name="END_LINK" /></translation>
+<translation id="3248902735035392926">Keselamatan adalah perkara penting. Luangkan masa dan <ph name="BEGIN_LINK" />semak sambungan anda<ph name="END_LINK" /></translation>
 <translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;Bukan Sebahagian Daripada Sijil&gt;</translation>
 <translation id="3253225298092156258">Tidak tersedia</translation>
@@ -2044,7 +2044,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="3923676227229836009">Halaman ini dibenarkan melihat fail</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3925573269917483990">Kamera:</translation>
-<translation id="3925842537050977900">Nyahsemat dari Rak</translation>
 <translation id="3926002189479431949">Telefon Smart Lock telah berubah</translation>
 <translation id="3927932062596804919">Nafikan</translation>
 <translation id="3928570707778085600">Simpan perubahan kepada <ph name="FILE_OR_FOLDER_NAME" />?</translation>
@@ -2319,7 +2318,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="4349828822184870497">Membantu</translation>
 <translation id="4350019051035968019">Peranti ini tidak boleh didaftarkan pada domain bagi akaun anda kerana peranti telah ditandai untuk pengurusan oleh domain lain.</translation>
 <translation id="4351060348582610152"><ph name="ORIGIN" /> mahu mengimbas untuk mengesan peranti Bluetooth berdekatan. Peranti berikut telah dijumpai:</translation>
-<translation id="4353114845960720315">Semasa anda dalam VR, tapak ini mungkin mendapat tahu tentang:</translation>
+<translation id="4353114845960720315">Semasa anda dalam VR, tapak ini boleh mendapatkan maklumat tentang:</translation>
 <translation id="4354344420232759511">Tapak yang anda lawati akan dipaparkan di sini</translation>
 <translation id="435527878592612277">Pilih foto anda</translation>
 <translation id="4358313196493694334">Stabilkan lokasi klik</translation>
@@ -2538,7 +2537,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="4689235506267737042">Buat pilihan tunjuk cara anda</translation>
 <translation id="4689421377817139245">Segerakkan penanda halaman ini ke iPhone anda</translation>
 <translation id="4690091457710545971">&lt;Empat fail dihasilkan oleh perisian tegar Wi-Fi Intel: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon.  Tiga fail yang pertama ialah fail perduaan yang mengandungi longgokan pendaftaran dan Intel menegaskan bahawa fail ini tidak mengandungi maklumat peribadi atau yang mengenal pasti peranti. Fail terakhir ialah surih pelaksanaan daripada perisian tegar Intel; fail ini telah dibersihkan supaya tidak mengandungi sebarang maklumat peribadi atau yang mengenal pasti peranti, tetapi terlalu besar untuk dipaparkan di sini. Fail ini dihasilkan sebagai tindak balas terhadap masalah Wi-Fi pada peranti anda baru-baru ini dan akan dikongsi dengan Intel untuk membantu dalam menyelesaikan masalah ini.&gt;</translation>
-<translation id="469230890969474295">Folder OEM</translation>
 <translation id="4692623383562244444">Enjin carian</translation>
 <translation id="4693155481716051732">Susyi</translation>
 <translation id="4694024090038830733">Konfigurasi pencetak dikendalikan oleh pentadbir.</translation>
@@ -2571,7 +2569,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="4737715515457435632">Sila sambung ke rangkaian</translation>
 <translation id="473775607612524610">Kemas kini</translation>
 <translation id="4739639199548674512">Tiket</translation>
-<translation id="4742746985488890273">Sematkan pada Rak</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Ketahui cara mengemas kini aplikasi<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Nyahredam tapak}other{Nyahredam tapak}}</translation>
 <translation id="4746351372139058112">Mesej</translation>
@@ -2831,7 +2828,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="5135085122826131075">Akses Assistant anda apabila anda menyebut "Ok Google".</translation>
 <translation id="5135533361271311778">Tidak dapat mencipta item penanda halaman.</translation>
 <translation id="5137501176474113045">Padam item ini</translation>
-<translation id="5139823398361067371">Masukkan PIN untuk kunci keselamatan anda. Jika anda tidak tahu PINnya, anda perlu menetapkan semula kunci keselamatan itu.</translation>
+<translation id="5139823398361067371">Masukkan PIN untuk kunci keselamatan anda. Jika anda tidak tahu nombor PIN, anda perlu menetapkan semula kunci keselamatan itu.</translation>
 <translation id="5139955368427980650">&amp;Buka</translation>
 <translation id="5142961317498132443">Pengesahan</translation>
 <translation id="5143374789336132547">Sambungan "<ph name="EXTENSION_NAME" />" telah menukar halaman yang ditunjukkan apabila anda mengklik butang Laman Utama.</translation>
@@ -3081,7 +3078,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="5511379779384092781">Sangat kecil</translation>
 <translation id="5511823366942919280">Adakah anda pasti ingin menyediakan peranti ini sebagai "Shark"?</translation>
 <translation id="5512653252560939721">Sijil pengguna hendaklah disokong perkakasan.</translation>
-<translation id="5517304475148761050">Apl ini memerlukan akses ke Gedung Play</translation>
+<translation id="5517304475148761050">Apl ini memerlukan akses kepada Gedung Play</translation>
 <translation id="551752069230578406">Menambah pencetak pada akaun anda - proses ini mungkin mengambil sedikit masa...</translation>
 <translation id="5518219166343146486">Tanya apabila tapak mahu melihat teks dan imej yang disalin ke papan keratan</translation>
 <translation id="5518584115117143805">Sijil Penyulitan E-mel</translation>
@@ -3563,7 +3560,6 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="6196854373336333322">Sambungan "<ph name="EXTENSION_NAME" />" telah mengambil alih kawalan tetapan proksi anda, yang bermakna sambungan ini boleh mengubah, menghentikan atau mencuri dengar apa-apa sahaja yang anda lakukan dalam talian. Jika anda tidak pasti mengapa perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="6198102561359457428">Log keluar kemudian log masuk semula...</translation>
 <translation id="6198252989419008588">Tukar PIN</translation>
-<translation id="6201792273624501289">Apl Linux</translation>
 <translation id="6202304368170870640">Anda boleh menggunakan PIN anda untuk log masuk atau membuka kunci peranti anda.</translation>
 <translation id="6206311232642889873">Sal&amp;in Imej</translation>
 <translation id="6207200176136643843">Tetapkan semula kepada tahap zum lalai</translation>
@@ -5340,7 +5336,7 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8770406935328356739">Direktori akar sambungan</translation>
 <translation id="8770507190024617908">Urus Orang</translation>
 <translation id="8771300903067484968">Latar belakang halaman mula telah ditetapkan semula kepada latar belakang lalai.</translation>
-<translation id="8773302562181397928">Jimat <ph name="PRINTER_NAME" /></translation>
+<translation id="8773302562181397928">Simpan <ph name="PRINTER_NAME" /></translation>
 <translation id="8774379074441005279">Sahkan Pemulihan</translation>
 <translation id="8774934320277480003">Jidar atas</translation>
 <translation id="8775144690796719618">URL tidak sah</translation>
@@ -5598,7 +5594,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="9130015405878219958">Mod tidak sah dimasukkan.</translation>
 <translation id="9131487537093447019">Hantar mesej kepada dan terima mesej daripada peranti Bluetooth.</translation>
 <translation id="9134304429738380103">Ya, saya ikut serta.</translation>
-<translation id="9135090785674039430">Apabila pilihan ini dihidupkan, tapak tidak dapat menggunakan kuki yang menjejaki anda di seluruh web. Sesetengah tapak web mungkin tidak dapat diakses.</translation>
 <translation id="9137013805542155359">Paparkan asal</translation>
 <translation id="9137157311132182254">Enjin carian pilihan</translation>
 <translation id="9137248913990643158">Sila mulakan dan log masuk ke Chrome sebelum menggunakan apl ini.</translation>

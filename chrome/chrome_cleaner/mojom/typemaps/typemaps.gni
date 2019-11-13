@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 typemaps = [
+  "//chrome/chrome_cleaner/mojom/typemaps/footprints.typemap",
   "//chrome/chrome_cleaner/mojom/typemaps/pup.typemap",
   "//chrome/chrome_cleaner/mojom/typemaps/string16_embedded_nulls.typemap",
   "//chrome/chrome_cleaner/mojom/typemaps/windows_handle.typemap",

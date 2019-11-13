@@ -23,7 +23,7 @@
 <translation id="1171770572613082465">Appuyez sur le bouton "Sites populaires" pour afficher les sites Web les plus visités</translation>
 <translation id="1173894706177603556">Renommer</translation>
 <translation id="1178581264944972037">Suspendre</translation>
-<translation id="118069123878619799">- Vos caractéristiques physiques, telles que votre taille</translation>
+<translation id="118069123878619799">- vos caractéristiques physiques, telles que votre taille ;</translation>
 <translation id="1181037720776840403">Supprimer</translation>
 <translation id="1188239144602654184">Lancer</translation>
 <translation id="1197267115302279827">Déplacer les favoris</translation>
@@ -435,7 +435,7 @@ Pour modifier le terme de recherche, appuyez dessus de manière prolongée afin 
 <translation id="4307992518367153382">Options de base</translation>
 <translation id="4314815835985389558">Gérer la synchronisation</translation>
 <translation id="4351244548802238354">Fermer la boîte de dialogue</translation>
-<translation id="4353114845960720315">Lorsque vous utilisez le mode RV, le site peut retenir les informations suivantes :</translation>
+<translation id="4353114845960720315">En mode RV, le site pourrait accéder aux informations suivantes :</translation>
 <translation id="4378154925671717803">Téléphone</translation>
 <translation id="4384468725000734951">Utilisation de Sogou pour les recherches</translation>
 <translation id="4404568932422911380">Aucun favori</translation>
@@ -645,7 +645,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5809361687334836369">{HOURS,plural, =1{Il y a # heure}one{Il y a # heure}other{Il y a # heures}}</translation>
 <translation id="5810288467834065221">© <ph name="YEAR" /> Google LLC. Tous droits réservés.</translation>
 <translation id="5817918615728894473">Associer</translation>
-<translation id="5819762621475381970">- La disposition de la pièce</translation>
+<translation id="5819762621475381970">- la disposition de la pièce.</translation>
 <translation id="583281660410589416">Inconnu</translation>
 <translation id="5833984609253377421">Partager le lien</translation>
 <translation id="5836192821815272682">Téléchargement de la mise à jour de Chrome…</translation>

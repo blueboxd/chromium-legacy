@@ -329,9 +329,11 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
     }
   }
 
-  if (old_style &&
-      (could_contain_fixed != CanContainFixedPositionObjects() ||
-       could_contain_absolute != CanContainAbsolutePositionObjects())) {
+  bool can_contain_fixed = CanContainFixedPositionObjects();
+  bool can_contain_absolute = CanContainAbsolutePositionObjects();
+
+  if (old_style && (could_contain_fixed != can_contain_fixed ||
+                    could_contain_absolute != can_contain_absolute)) {
     // If out of flow element containment changed, then we need to force a
     // subtree paint property update, since the children elements may now be
     // referencing a different container.
@@ -345,6 +347,32 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
     SetNeedsPaintPropertyUpdate();
     if (Layer())
       Layer()->SetNeedsCompositingInputsUpdate();
+  }
+
+  if (old_style && Parent()) {
+    LayoutBlock* block = FindNonAnonymousContainingBlock(this);
+
+    if ((could_contain_fixed && !can_contain_fixed) ||
+        (could_contain_absolute && !can_contain_absolute)) {
+      // Clear our positioned objects list. Our absolute and fixed positioned
+      // descendants will be inserted into our containing block's positioned
+      // objects list during layout.
+      block->RemovePositionedObjects(nullptr, kNewContainingBlock);
+    }
+    if (!could_contain_absolute && can_contain_absolute) {
+      // Remove our absolute positioned descendants from their current
+      // containing block.
+      // They will be inserted into our positioned objects list during layout.
+      if (LayoutBlock* cb = block->ContainingBlockForAbsolutePosition())
+        cb->RemovePositionedObjects(this, kNewContainingBlock);
+    }
+    if (!could_contain_fixed && can_contain_fixed) {
+      // Remove our fixed positioned descendants from their current containing
+      // block.
+      // They will be inserted into our positioned objects list during layout.
+      if (LayoutBlock* cb = block->ContainingBlockForFixedPosition())
+        cb->RemovePositionedObjects(this, kNewContainingBlock);
+    }
   }
 
   if (Layer()) {

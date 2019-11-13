@@ -728,12 +728,6 @@ bool SVGElement::IsPresentationAttribute(const QualifiedName& name) const {
   return CssPropertyIdForSVGAttributeName(name) > CSSPropertyID::kInvalid;
 }
 
-bool SVGElement::IsPresentationAttributeWithSVGDOM(
-    const QualifiedName& name) const {
-  const SVGAnimatedPropertyBase* property = PropertyFromAttribute(name);
-  return property && property->HasPresentationAttributeMapping();
-}
-
 void SVGElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,

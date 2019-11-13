@@ -11,9 +11,9 @@
 
 namespace password_manager {
 
-struct LeakedCredentials;
+struct CompromisedCredentials;
 
-// Reads information associated with leaked credentials history from the
+// Reads information associated with compromised credentials history from the
 // PasswordStore. Reads are done asynchronously on a separate thread. It
 // provides the virtual callback method, which is guaranteed to be executed on
 // this (the UI) thread. It also provides the base::CancelableTaskTracker
@@ -22,10 +22,10 @@ class PasswordLeakHistoryConsumer {
  public:
   PasswordLeakHistoryConsumer();
 
-  // Called when the GetAllLeakedCredentials() request is finished, with the
-  // associated |leaked_credentials|.
-  virtual void OnGetLeakedCredentials(
-      std::vector<LeakedCredentials> leaked_credentials) = 0;
+  // Called when the GetAllCompromisedCredentials() request is finished, with
+  // the associated |compromised_credentials|.
+  virtual void OnGetCompromisedCredentials(
+      std::vector<CompromisedCredentials> compromised_credentials) = 0;
 
   // The base::CancelableTaskTracker can be used for cancelling the tasks
   // associated with the consumer.

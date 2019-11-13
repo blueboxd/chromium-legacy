@@ -153,20 +153,24 @@ using ListOfLists = std::vector<std::vector<Item>>;
 using List = std::vector<ParameterizedMember>;
 
 // Returns the result of parsing the header value as an Item, if it can be
-// parsed as one, or nullopt if it cannot.
+// parsed as one, or nullopt if it cannot. Note that this uses the Draft 13
+// parsing rules, and so applies tighter range limits to integers.
 BLINK_COMMON_EXPORT base::Optional<Item> ParseItem(
     const base::StringPiece& str);
 
 // Returns the result of parsing the header value as a Parameterised List, if it
 // can be parsed as one, or nullopt if it cannot. Note that parameter keys will
 // be returned as strings, which are guaranteed to be ASCII-encoded. List items,
-// as well as parameter values, will be returned as Items.
+// as well as parameter values, will be returned as Items. This method uses the
+// Draft 09 parsing rules for Items, so integers have the 64-bit int range.
+// Structured-Headers Draft 09 only.
 BLINK_COMMON_EXPORT base::Optional<ParameterisedList> ParseParameterisedList(
     const base::StringPiece& str);
 
 // Returns the result of parsing the header value as a List of Lists, if it can
 // be parsed as one, or nullopt if it cannot. Inner list items will be returned
-// as Items.
+// as Items. This method uses the Draft 09 parsing rules for Items, so integers
+// have the 64-bit int range.
 // Structured-Headers Draft 09 only.
 BLINK_COMMON_EXPORT base::Optional<ListOfLists> ParseListOfLists(
     const base::StringPiece& str);
@@ -176,6 +180,12 @@ BLINK_COMMON_EXPORT base::Optional<ListOfLists> ParseListOfLists(
 // Structured-Headers Draft 13 only.
 BLINK_COMMON_EXPORT base::Optional<List> ParseList(
     const base::StringPiece& str);
+
+// Serialization is implemented for Structured-Headers Draft 13 only.
+BLINK_COMMON_EXPORT base::Optional<std::string> SerializeItem(
+    const Item& value);
+BLINK_COMMON_EXPORT base::Optional<std::string> SerializeList(
+    const List& value);
 
 }  // namespace http_structured_header
 }  // namespace blink

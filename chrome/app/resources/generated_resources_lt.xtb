@@ -2044,7 +2044,6 @@ Jei nenorite, dabar atsijunkite, kad šios paskyros pakeitimai būtų matomi ši
 <translation id="3923676227229836009">Šiam puslapiui leidžiama peržiūrėti failus</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3925573269917483990">Fotoaparatas:</translation>
-<translation id="3925842537050977900">Atsegti nuo lentynos</translation>
 <translation id="3926002189479431949">Telefonas, kuriame naudojama „Smart Lock“, pasikeitė</translation>
 <translation id="3927932062596804919">Uždrausti</translation>
 <translation id="3928570707778085600">Išsaugoti „<ph name="FILE_OR_FOLDER_NAME" />“ pakeitimus?</translation>
@@ -2538,7 +2537,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4689235506267737042">Demonstracinės versijos nuostatų pasirinkimas</translation>
 <translation id="4689421377817139245">Sinchronizuokite šią žymę „iPhone“ įrenginyje</translation>
 <translation id="4690091457710545971">&lt;Keturi „Intel“ „Wi-Fi“ programinės aparatinės įrangos sugeneruoti failai: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon. Pirmieji trys yra dvejetainiai failai, kuriuose yra registro išklotinės ir kuriuos „Intel“ įvertino, kad nustatytų, ar nėra asmens ar įrenginį identifikuojančios informacijos. Paskutinis failas yra vykdymo pėdsakas iš „Intel“ programinės aparatinės įrangos. Jame išvalyta visa asmens ar įrenginį identifikuojanti informacija, bet jis per didelis, kad būtų galima čia pateikti. Šie failai sugeneruoti reaguojant į pastarąsias „Wi-Fi“ problemas, susijusias su įrenginiu, ir bus bendrinami su „Intel“, siekiant padėti pašalinti šias triktis.&gt;</translation>
-<translation id="469230890969474295">OEM aplankas</translation>
 <translation id="4692623383562244444">Paieškos varikliai</translation>
 <translation id="4693155481716051732">Sušis</translation>
 <translation id="4694024090038830733">Spausdintuvą konfigūruoja administratorius.</translation>
@@ -2571,7 +2569,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4737715515457435632">Prisijunkite prie tinklo</translation>
 <translation id="473775607612524610">Atnaujinti</translation>
 <translation id="4739639199548674512">Bilietai</translation>
-<translation id="4742746985488890273">Prisegti prie lentynos</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Sužinokite, kaip atnaujinti programas<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Įjungti svetainės garsą}one{Įjungti svetainių garsą}few{Įjungti svetainių garsą}many{Įjungti svetainių garsą}other{Įjungti svetainių garsą}}</translation>
 <translation id="4746351372139058112">Pranešimai</translation>
@@ -3564,7 +3561,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6196854373336333322">Plėtinys „<ph name="EXTENSION_NAME" />“ perėmė tarpinio serverio valdymą. Tai reiškia, kad jis gali keisti, nutraukti ar stebėti visus prisijungus atliekamus veiksmus. Jei nesate tikri, kodėl įvyko šis pakeitimas, tikriausiai jūs jo nenorite.</translation>
 <translation id="6198102561359457428">Atsijunkite, tada vėl prisijunkite...</translation>
 <translation id="6198252989419008588">Keisti PIN kodą</translation>
-<translation id="6201792273624501289">„Linux“ programos</translation>
 <translation id="6202304368170870640">Naudodami PIN kodą galite prisijungti prie įrenginio arba jį atrakinti.</translation>
 <translation id="6206311232642889873">Kopijuo&amp;ti vaizdą</translation>
 <translation id="6207200176136643843">Nustatomas numatytasis mastelis</translation>
@@ -5598,7 +5594,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="9130015405878219958">Įvestas neteisingas režimas.</translation>
 <translation id="9131487537093447019">Siųsti pranešimus į „Bluetooth“ įrenginius ir gauti pranešimus iš jų.</translation>
 <translation id="9134304429738380103">Taip, sutinku.</translation>
-<translation id="9135090785674039430">Įjungus svetainės negalės naudoti slapukų, kurie stebi jūsų veiklą žiniatinklyje. Kai kurios svetainės gali neveikti.</translation>
 <translation id="9137013805542155359">Rodyti originalą</translation>
 <translation id="9137157311132182254">Pageidaujamas paieškos variklis</translation>
 <translation id="9137248913990643158">Prieš naudodami šią programą prisijunkite prie „Chrome“.</translation>

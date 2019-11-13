@@ -208,24 +208,33 @@ int64_t GetValidDisplayId(int64_t display_id) {
 
 }  // namespace
 
-const char kCameraAppId[] = "goamfaniemdfcajgcmmflhchgkmbngka";
-const char kCameraMigrationAppId[] = "ngmkobaiicipbagcngcmilfkhejlnfci";
-const char kGoogleDuo[] = "djkcbcmkefiiphjkonbeknmcgiheajce";
-const char kInfinitePainter[] = "afihfgfghkmdmggakhkgnfhlikhdpima";
-const char kLightRoom[] = "fpegfnbgomakooccabncdaelhfppceni";
-const char kPlayStoreAppId[] = "cnbgggchhmkkdmeppjobngjoejnihlei";
-const char kPlayBooksAppId[] = "cafegjnmmjpfibnlddppihpnkbkgicbg";
-const char kPlayGamesAppId[] = "nplnnjkbeijcggmpdcecpabgbjgeiedc";
-const char kLegacyCameraAppId[] = "obfofkigjfamlldmipdegnjlcpincibc";
-const char kPlayMoviesAppId[] = "dbbihmicnlldbflflckpafphlekmjfnm";
-const char kPlayMusicAppId[] = "ophbaopahelaolbjliokocojjbgfadfn";
-const char kPlayStorePackage[] = "com.android.vending";
-const char kPlayStoreActivity[] = "com.android.vending.AssetBrowserActivity";
-const char kSettingsAppId[] = "mconboelelhjpkbdhhiijkgcimoangdj";
+// Package names, kept in sorted order.
 const char kInitialStartParam[] = "S.org.chromium.arc.start_type=initialStart";
-constexpr char kSettingsAppPackage[] = "com.android.settings";
+const char kPlayStoreActivity[] = "com.android.vending.AssetBrowserActivity";
+const char kPlayStorePackage[] = "com.android.vending";
 const char kSettingsAppDomainUrlActivity[] =
     "com.android.settings.Settings$ManageDomainUrlsActivity";
+
+constexpr char kSettingsAppPackage[] = "com.android.settings";
+
+// App IDs, kept in sorted order.
+const char kCameraAppId[] = "goamfaniemdfcajgcmmflhchgkmbngka";
+const char kCameraMigrationAppId[] = "ngmkobaiicipbagcngcmilfkhejlnfci";
+const char kGmailAppId[] = "hhkfkjpmacfncmbapfohfocpjpdnobjg";
+const char kGoogleCalendarAppId[] = "decaoeahkmjpajbmlbpogjjkjbjokeed";
+const char kGoogleDuoAppId[] = "djkcbcmkefiiphjkonbeknmcgiheajce";
+const char kGoogleMapsAppId[] = "gmhipfhgnoelkiiofcnimehjnpaejiel";
+const char kGooglePhotosAppId[] = "fdbkkojdbojonckghlanfaopfakedeca";
+const char kInfinitePainterAppId[] = "afihfgfghkmdmggakhkgnfhlikhdpima";
+const char kLegacyCameraAppId[] = "obfofkigjfamlldmipdegnjlcpincibc";
+const char kLightRoomAppId[] = "fpegfnbgomakooccabncdaelhfppceni";
+const char kPlayBooksAppId[] = "cafegjnmmjpfibnlddppihpnkbkgicbg";
+const char kPlayGamesAppId[] = "nplnnjkbeijcggmpdcecpabgbjgeiedc";
+const char kPlayMoviesAppId[] = "dbbihmicnlldbflflckpafphlekmjfnm";
+const char kPlayMusicAppId[] = "ophbaopahelaolbjliokocojjbgfadfn";
+const char kPlayStoreAppId[] = "cnbgggchhmkkdmeppjobngjoejnihlei";
+const char kSettingsAppId[] = "mconboelelhjpkbdhhiijkgcimoangdj";
+const char kYoutubeAppId[] = "aniolghapcdkoolpkffememnhpphmjkl";
 
 bool ShouldShowInLauncher(const std::string& app_id) {
   for (auto* const id : kAppIdsHiddenInLauncher) {

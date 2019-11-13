@@ -61,8 +61,7 @@ class DownloadTask : public BitmapFetcherDelegate {
 
     bitmap_fetcher_->Init(
         /*referrer=*/std::string(), net::URLRequest::NEVER_CLEAR_REFERRER,
-        net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES |
-            net::LOAD_DO_NOT_SEND_AUTH_DATA);
+        network::mojom::CredentialsMode::kOmit);
 
     bitmap_fetcher_->Start(
         content::BrowserContext::GetDefaultStoragePartition(profile)

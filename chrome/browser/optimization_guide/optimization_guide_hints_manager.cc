@@ -105,21 +105,6 @@ bool CanProcessComponentVersion(PrefService* pref_service,
   return true;
 }
 
-// Returns the OptimizationGuideNavigationData for |navigation_handle| if the
-// OptimizationGuideWebContentsObserver is registered.
-OptimizationGuideNavigationData* GetNavigationDataForNavigationHandle(
-    content::NavigationHandle* navigation_handle) {
-  OptimizationGuideWebContentsObserver*
-      optimization_guide_web_contents_observer =
-          OptimizationGuideWebContentsObserver::FromWebContents(
-              navigation_handle->GetWebContents());
-  if (!optimization_guide_web_contents_observer)
-    return nullptr;
-
-  return optimization_guide_web_contents_observer
-      ->GetOrCreateOptimizationGuideNavigationData(navigation_handle);
-}
-
 // Returns the page hint for the navigation, if applicable. It will use the
 // cached page hint stored in |navigation_handle| if we have already done the
 // computation to find the page hint in a previous request to the hints manager.
@@ -129,7 +114,8 @@ const optimization_guide::proto::PageHint* GetPageHintForNavigation(
     content::NavigationHandle* navigation_handle,
     const optimization_guide::proto::Hint* loaded_hint) {
   OptimizationGuideNavigationData* navigation_data =
-      GetNavigationDataForNavigationHandle(navigation_handle);
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle);
 
   // If we already know we had a page hint for the navigation, then just return
   // that.
@@ -588,7 +574,8 @@ void OptimizationGuideHintsManager::LoadHintForNavigation(
   }
 
   OptimizationGuideNavigationData* navigation_data =
-      GetNavigationDataForNavigationHandle(navigation_handle);
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle);
   if (navigation_data) {
     bool has_hint = hint_cache_->HasHint(url.host());
     if (navigation_handle->HasCommitted()) {
@@ -788,7 +775,8 @@ void OptimizationGuideHintsManager::CanApplyOptimization(
 
   // Populate navigation data with hint information.
   OptimizationGuideNavigationData* navigation_data =
-      GetNavigationDataForNavigationHandle(navigation_handle);
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle);
   if (navigation_data) {
     navigation_data->set_has_hint_after_commit(has_hint_in_cache);
 

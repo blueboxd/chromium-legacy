@@ -37,7 +37,7 @@ CardUnmaskPromptControllerImpl::~CardUnmaskPromptControllerImpl() {
 }
 
 void CardUnmaskPromptControllerImpl::ShowPrompt(
-    CardUnmaskPromptView* card_unmask_view,
+    CardUnmaskPromptViewFactory card_unmask_view_factory,
     const CreditCard& card,
     AutofillClient::UnmaskCardReason reason,
     base::WeakPtr<CardUnmaskDelegate> delegate) {
@@ -47,10 +47,10 @@ void CardUnmaskPromptControllerImpl::ShowPrompt(
   new_card_link_clicked_ = false;
   shown_timestamp_ = AutofillClock::Now();
   pending_details_ = CardUnmaskDelegate::UserProvidedUnmaskDetails();
-  card_unmask_view_ = card_unmask_view;
   card_ = card;
   reason_ = reason;
   delegate_ = delegate;
+  card_unmask_view_ = std::move(card_unmask_view_factory).Run();
   card_unmask_view_->Show();
   unmasking_result_ = AutofillClient::NONE;
   unmasking_number_of_attempts_ = 0;

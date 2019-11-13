@@ -79,7 +79,8 @@ class BrowsingModeBottomToolbarMediator implements ThemeColorObserver {
      * @param anchor The view to anchor the IPH to.
      * @param tracker A tracker for IPH.
      */
-    void showIPH(ChromeActivity activity, View anchor, Tracker tracker) {
+    void showIPH(ChromeActivity activity, View anchor, Tracker tracker,
+            Runnable completeRunnable) {
         if (!tracker.shouldTriggerHelpUI(FeatureConstants.CHROME_DUET_FEATURE)) return;
         int baseColor =
                 ApiCompatibilityUtils.getColor(anchor.getResources(), R.color.modern_blue_600);
@@ -92,7 +93,7 @@ class BrowsingModeBottomToolbarMediator implements ThemeColorObserver {
                 R.string.iph_duet_title, FeatureHighlightProvider.TextAlignment.CENTER,
                 R.style.TextAppearance_WhiteTitle1, R.string.iph_duet_description,
                 FeatureHighlightProvider.TextAlignment.CENTER, R.style.TextAppearance_WhiteBody,
-                finalColor, DUET_IPH_BUBBLE_SHOW_DURATION_MS);
+                finalColor, DUET_IPH_BUBBLE_SHOW_DURATION_MS, completeRunnable);
 
         anchor.postDelayed(() -> tracker.dismissed(FeatureConstants.CHROME_DUET_FEATURE),
                 DUET_IPH_BUBBLE_SHOW_DURATION_MS);

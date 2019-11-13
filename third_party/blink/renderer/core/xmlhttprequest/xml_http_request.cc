@@ -429,7 +429,7 @@ DOMArrayBuffer* XMLHttpRequest::ResponseArrayBuffer() {
           binary_response_builder_->size(), 1);
       if (buffer) {
         bool result = binary_response_builder_->GetBytes(
-            buffer->Data(), static_cast<size_t>(buffer->ByteLength()));
+            buffer->Data(), buffer->ByteLengthAsSizeT());
         DCHECK(result);
         response_array_buffer_ = buffer;
       }
@@ -923,7 +923,7 @@ void XMLHttpRequest::send(DOMArrayBuffer* body,
                           ExceptionState& exception_state) {
   NETWORK_DVLOG(1) << this << " send() ArrayBuffer " << body;
 
-  SendBytesData(body->Data(), body->ByteLength(), exception_state);
+  SendBytesData(body->Data(), body->ByteLengthAsSizeT(), exception_state);
 }
 
 void XMLHttpRequest::send(DOMArrayBufferView* body,

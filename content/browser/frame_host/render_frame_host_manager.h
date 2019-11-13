@@ -566,13 +566,13 @@ class CONTENT_EXPORT RenderFrameHostManager
   void DeleteRenderFrameProxyHost(SiteInstance* site_instance);
 
   // Returns true if for the navigation from |current_effective_url| to
-  // |new_effective_url|, a new SiteInstance and BrowsingInstance should be
-  // created (even if we are in a process model that doesn't usually swap).
+  // |destination_effective_url|, a new SiteInstance and BrowsingInstance should
+  // be created (even if we are in a process model that doesn't usually swap).
   // This forces a process swap and severs script connections with existing
   // tabs.  Cases where this can happen include transitions between WebUI and
-  // regular web pages. |new_site_instance| may be null.
+  // regular web pages. |dest_site_instance| may be null.
   // If there is no current NavigationEntry, then |current_is_view_source_mode|
-  // should be the same as |new_is_view_source_mode|.
+  // should be the same as |dest_is_view_source_mode|.
   //
   // We use the effective URL here, since that's what is used in the
   // SiteInstance's site and when we later call IsSameSite.  If there is no
@@ -581,9 +581,9 @@ class CONTENT_EXPORT RenderFrameHostManager
   bool ShouldSwapBrowsingInstancesForNavigation(
       const GURL& current_effective_url,
       bool current_is_view_source_mode,
-      SiteInstance* new_site_instance,
-      const GURL& new_effective_url,
-      bool new_is_view_source_mode,
+      SiteInstance* destination_site_instance,
+      const GURL& destination_effective_url,
+      bool destination_is_view_source_mode,
       bool is_failure) const;
 
   // Returns the SiteInstance to use for the navigation.

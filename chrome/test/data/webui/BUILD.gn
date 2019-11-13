@@ -16,6 +16,7 @@ js2gtest("interactive_ui_tests_js_webui") {
     "cr_elements/cr_elements_v3_focus_test.js",
     "cr_focus_outline_manager_test.js",
     "cr_focus_row_behavior_interactive_test.js",
+    "cr_focus_row_behavior_v3_interactive_test.js",
     "extensions/cr_extensions_interactive_ui_tests.js",
     "history/history_focus_test.js",
     "print_preview/print_preview_interactive_ui_tests.js",
@@ -33,6 +34,7 @@ js2gtest("interactive_ui_tests_js_webui") {
     "//chrome/browser/ui",
   ]
   data = [
+    "$root_gen_dir/chrome/test/data/webui/cr_focus_row_behavior_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_action_menu_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_checkbox_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_expand_button_focus_tests.m.js",
@@ -294,5 +296,14 @@ js_modulizer("modulize_local") {
     "mock_timer.js",
     "test_browser_proxy.js",
     "test_util.js",
+    "cr_focus_row_behavior_test.js",
+  ]
+  namespace_rewrites = [
+    "cr.ui.FocusRowBehavior|FocusRowBehavior",
+    "MockInteractions.down|down",
+    "MockInteractions.pressAndReleaseKeyOn|pressAndReleaseKeyOn",
+    "MockInteractions.up|up",
+    "test_util.eventToPromise|eventToPromise",
+    "test_util.waitAfterNextRender|waitAfterNextRender",
   ]
 }

@@ -182,6 +182,13 @@ interface TrustedURLLoaderHeaderClient {
       pending_receiver<TrustedHeaderClient> header_client);
 };
 
+struct HttpAuthStaticNetworkContextParams {
+  // Whether authentication APIs that support fallback to the default account
+  // on the system can be used without specifying an account.
+  DefaultCredentials allow_default_credentials
+     = DefaultCredentials.ALLOW_DEFAULT_CREDENTIALS;
+};
+
 // Parameters for constructing a network context.
 struct NetworkContextParams {
   // Name used by memory tools to identify the context.
@@ -268,11 +275,6 @@ struct NetworkContextParams {
 
   // If true, idle sockets won't be closed when memory pressure happens.
   bool disable_idle_sockets_close_on_memory_pressure = false;
-
-  // Whether authentication APIs that support fallback to the default account
-  // on the system can be used without specifying an account.
-  DefaultCredentials allow_default_credentials =
-      DefaultCredentials.ALLOW_DEFAULT_CREDENTIALS;
 
   // SSL configuration. |initial_proxy_config| is the initial SSL configuration
   // to use. If nullptr, uses the default configuration. Updated SSL
@@ -440,6 +442,11 @@ struct NetworkContextParams {
   // regardless. This field should not be used if the ENABLE_REPORTING build
   // flag is false.
   mojo_base.mojom.FilePath? reporting_and_nel_store_path;
+
+  // The params are network context specific which will be merged with
+  // the dynamic preference from NetworkService side, to populate
+  // HttpAuthPreference.
+  HttpAuthStaticNetworkContextParams? http_auth_static_network_context_params;
 };
 
 struct NetworkConditions {

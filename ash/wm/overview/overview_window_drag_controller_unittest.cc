@@ -325,7 +325,7 @@ class OverviewWindowDragControllerDesksPortraitTabletTest
   }
 
   SplitViewDragIndicators* drag_indicators() {
-    return overview_session()->split_view_drag_indicators();
+    return overview_session()->grid_list()[0]->split_view_drag_indicators();
   }
 
   OverviewGrid* overview_grid() {

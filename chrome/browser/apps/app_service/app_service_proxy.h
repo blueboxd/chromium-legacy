@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_APPS_APP_SERVICE_APP_SERVICE_PROXY_H_
 #define CHROME_BROWSER_APPS_APP_SERVICE_APP_SERVICE_PROXY_H_
 
+#include <map>
 #include <memory>
 #include <set>
 
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/apps/app_service/uninstall_dialog.h"
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
 #include "chrome/services/app_service/public/cpp/icon_cache.h"
 #include "chrome/services/app_service/public/cpp/icon_coalescer.h"
@@ -35,6 +35,12 @@ class Profile;
 namespace apps {
 
 class AppServiceImpl;
+class UninstallDialog;
+
+struct PauseData {
+  int hours;
+  int minutes;
+};
 
 // Singleton (per Profile) proxy and cache of an App Service's apps.
 //
@@ -46,6 +52,8 @@ class AppServiceProxy : public KeyedService,
                         public apps::IconLoader,
                         public apps::mojom::Subscriber {
  public:
+  using OnPauseDialogClosedCallback = base::OnceCallback<void()>;
+
   explicit AppServiceProxy(Profile* profile);
   ~AppServiceProxy() override;
 
@@ -92,6 +100,23 @@ class AppServiceProxy : public KeyedService,
                                bool clear_site_data,
                                bool report_abuse,
                                UninstallDialog* uninstall_dialog);
+
+  // Pauses apps. |pause_data|'s key is the app_id. |pause_data|'s PauseData
+  // is the time limit setting for the app, which is shown in the pause app
+  // dialog. AppService sets the paused status directly. If the app is running,
+  // AppService shows the pause app dialog. Otherwise, AppService applies the
+  // paused app icon effect directly.
+  void PauseApps(const std::map<std::string, PauseData>& pause_data);
+
+  // Unpauses the apps from the paused status. AppService sets the paused status
+  // as false directly and removes the paused app icon effect.
+  void UnpauseApps(const std::set<std::string>& app_ids);
+
+  // Called when the user clicks the 'OK' button of the pause app dialog.
+  // AppService stops the running app and applies the paused app icon effect.
+  void OnPauseDialogClosed(apps::mojom::AppType app_type,
+                           const std::string& app_id);
+
   void OpenNativeSettings(const std::string& app_id);
 
   void FlushMojoCallsForTesting();
@@ -170,6 +195,11 @@ class AppServiceProxy : public KeyedService,
     apps::IconLoader* overriding_icon_loader_for_testing_;
   };
 
+  static void CreatePauseDialog(const std::string& app_name,
+                                gfx::ImageSkia image,
+                                const PauseData& pause_data,
+                                OnPauseDialogClosedCallback pause_callback);
+
   void Initialize();
 
   void AddAppIconSource(Profile* profile);
@@ -183,6 +213,20 @@ class AppServiceProxy : public KeyedService,
   void OnPreferredAppSet(const std::string& app_id,
                          apps::mojom::IntentFilterPtr intent_filter) override;
   void InitializePreferredApps(base::Value preferred_apps) override;
+
+  void LoadIconForPauseDialog(const apps::AppUpdate& update,
+                              const PauseData& pause_data);
+
+  // Callback invoked when the icon is loaded.
+  void OnLoadIconForPauseDialog(apps::mojom::AppType app_type,
+                                const std::string& app_id,
+                                const std::string& app_name,
+                                const PauseData& pause_data,
+                                apps::mojom::IconValuePtr icon_value);
+
+  void UpdatePausedStatus(apps::mojom::AppType app_type,
+                          const std::string& app_id,
+                          bool paused);
 
   // This proxy privately owns its instance of the App Service. This should not
   // be exposed except through the Mojo interface connected to |app_service_|.

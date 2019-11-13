@@ -19,6 +19,7 @@
 #include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/http_raw_request_response_info.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "url/gurl.h"
 
 // Authenticate a user against the Google Accounts APIs with various
@@ -192,8 +193,8 @@ class GaiaAuthFetcher {
   // used as the body of the POST request sent to GAIA.  Any strings listed in
   // |headers| are added as extra HTTP headers in the request.
   //
-  // |load_flags| are passed to directly to network::SimpleURLLoader::Create()
-  // when creating the SimpleURLLoader.
+  // |credentials_mode| are passed to directly to
+  // network::SimpleURLLoader::Create() when creating the SimpleURLLoader.
   //
   // HasPendingFetch() should return false before calling this method, and will
   // return true afterwards.
@@ -201,7 +202,7 @@ class GaiaAuthFetcher {
       const std::string& body,
       const std::string& headers,
       const GURL& gaia_gurl,
-      int load_flags,
+      network::mojom::CredentialsMode credentials_mode,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
   // Called by OnURLLoadComplete, exposed for ease of testing.

@@ -30,14 +30,15 @@ Vector<uint8_t> BufferSourceToVector(
   if (application_server_key.IsArrayBuffer()) {
     input =
         static_cast<char*>(application_server_key.GetAsArrayBuffer()->Data());
-    length = application_server_key.GetAsArrayBuffer()->ByteLength();
+    length = application_server_key.GetAsArrayBuffer()
+                 ->DeprecatedByteLengthAsUnsigned();
   } else if (application_server_key.IsArrayBufferView()) {
     input = static_cast<char*>(
         application_server_key.GetAsArrayBufferView().View()->buffer()->Data());
     length = application_server_key.GetAsArrayBufferView()
                  .View()
                  ->buffer()
-                 ->ByteLength();
+                 ->DeprecatedByteLengthAsUnsigned();
   } else if (application_server_key.IsString()) {
     if (!Base64UnpaddedURLDecode(application_server_key.GetAsString(),
                                  decoded_application_server_key)) {
@@ -101,7 +102,7 @@ PushSubscriptionOptions::PushSubscriptionOptions(
 bool PushSubscriptionOptions::IsApplicationServerKeyVapid() const {
   if (!application_server_key_)
     return false;
-  return application_server_key_->ByteLength() == 65 &&
+  return application_server_key_->ByteLengthAsSizeT() == 65 &&
          static_cast<uint8_t*>(application_server_key_->Data())[0] == 0x04;
 }
 

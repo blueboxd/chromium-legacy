@@ -33,6 +33,8 @@ class SyncConsentScreen : public BaseScreen,
   };
 
  public:
+  enum ConsentGiven { CONSENT_NOT_GIVEN, CONSENT_GIVEN };
+
   class SyncConsentScreenTestDelegate {
    public:
     SyncConsentScreenTestDelegate() = default;
@@ -40,8 +42,9 @@ class SyncConsentScreen : public BaseScreen,
     // This is called from SyncConsentScreen when user consent is passed to
     // consent auditor with resource ids recorder as consent.
     virtual void OnConsentRecordedIds(
+        ConsentGiven consent_given,
         const std::vector<int>& consent_description,
-        const int consent_confirmation) = 0;
+        int consent_confirmation) = 0;
 
     // This is called from SyncConsentScreenHandler when user consent is passed
     // to consent auditor with resource strings recorder as consent.
@@ -77,6 +80,11 @@ class SyncConsentScreen : public BaseScreen,
   void OnContinueWithDefaults(const std::vector<int>& consent_description,
                               const int consent_confirmation);
 
+  // Reacts to "Accept and Continue".
+  void OnAcceptAndContinue(const std::vector<int>& consent_description,
+                           int consent_confirmation,
+                           bool enable_os_sync);
+
   // Sets internal condition "Sync disabled by policy" for tests.
   void SetProfileSyncDisabledByPolicyForTesting(bool value);
 
@@ -96,8 +104,9 @@ class SyncConsentScreen : public BaseScreen,
   void UpdateScreen();
 
   // Records user Sync consent.
-  void RecordConsent(const std::vector<int>& consent_description,
-                     const int consent_confirmation);
+  void RecordConsent(ConsentGiven consent_given,
+                     const std::vector<int>& consent_description,
+                     int consent_confirmation);
 
   // Returns true if profile sync is disabled by policy.
   bool IsProfileSyncDisabledByPolicy() const;

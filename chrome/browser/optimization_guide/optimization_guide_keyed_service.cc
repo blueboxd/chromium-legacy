@@ -10,7 +10,6 @@
 #include "chrome/browser/optimization_guide/optimization_guide_navigation_data.h"
 #include "chrome/browser/optimization_guide/optimization_guide_session_statistic.h"
 #include "chrome/browser/optimization_guide/optimization_guide_top_host_provider.h"
-#include "chrome/browser/optimization_guide/optimization_guide_web_contents_observer.h"
 #include "chrome/browser/optimization_guide/prediction/prediction_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
@@ -48,18 +47,13 @@ void LogOptimizationTargetDecision(
     optimization_guide::proto::OptimizationTarget optimization_target,
     optimization_guide::OptimizationTargetDecision
         optimization_target_decision) {
-  OptimizationGuideWebContentsObserver*
-      optimization_guide_web_contents_observer =
-          OptimizationGuideWebContentsObserver::FromWebContents(
-              navigation_handle->GetWebContents());
-  if (!optimization_guide_web_contents_observer)
-    return;
-
   OptimizationGuideNavigationData* navigation_data =
-      optimization_guide_web_contents_observer
-          ->GetOrCreateOptimizationGuideNavigationData(navigation_handle);
-  navigation_data->SetDecisionForOptimizationTarget(
-      optimization_target, optimization_target_decision);
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle);
+  if (navigation_data) {
+    navigation_data->SetDecisionForOptimizationTarget(
+        optimization_target, optimization_target_decision);
+  }
 }
 
 // Logs the |optimization_type_decision| for |optimization_type| in the current
@@ -68,18 +62,13 @@ void LogOptimizationTypeDecision(
     content::NavigationHandle* navigation_handle,
     optimization_guide::proto::OptimizationType optimization_type,
     optimization_guide::OptimizationTypeDecision optimization_type_decision) {
-  OptimizationGuideWebContentsObserver*
-      optimization_guide_web_contents_observer =
-          OptimizationGuideWebContentsObserver::FromWebContents(
-              navigation_handle->GetWebContents());
-  if (!optimization_guide_web_contents_observer)
-    return;
-
   OptimizationGuideNavigationData* navigation_data =
-      optimization_guide_web_contents_observer
-          ->GetOrCreateOptimizationGuideNavigationData(navigation_handle);
-  navigation_data->SetDecisionForOptimizationType(optimization_type,
-                                                  optimization_type_decision);
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle);
+  if (navigation_data) {
+    navigation_data->SetDecisionForOptimizationType(optimization_type,
+                                                    optimization_type_decision);
+  }
 }
 
 // Returns the OptimizationGuideDecision from |optimization_target_decision|.
@@ -245,12 +234,6 @@ OptimizationGuideKeyedService::ShouldTargetNavigation(
   if (prediction_manager_) {
     optimization_target_decision = prediction_manager_->ShouldTargetNavigation(
         navigation_handle, optimization_target);
-    if (optimization_guide::features::
-            ShouldOverrideOptimizationTargetDecisionForMetricsPurposes(
-                optimization_target)) {
-      optimization_target_decision = optimization_guide::
-          OptimizationTargetDecision::kModelPredictionHoldback;
-    }
   } else {
     DCHECK(hints_manager_);
     optimization_guide::OptimizationTypeDecision

@@ -21,42 +21,65 @@ import java.util.List;
  * Provider of actions for a list of selected tabs in {@link TabSelectionEditorMediator}.
  */
 class TabSelectionEditorActionProvider {
-    @IntDef({TabSelectionEditorAction.UNGROUP, TabSelectionEditorAction.GROUP})
+    @IntDef({TabSelectionEditorAction.UNDEFINED_ACTION, TabSelectionEditorAction.GROUP,
+            TabSelectionEditorAction.UNGROUP, TabSelectionEditorAction.CLOSE})
     @Retention(RetentionPolicy.SOURCE)
     @interface TabSelectionEditorAction {
-        int GROUP = 0;
-        int UNGROUP = 1;
-        int NUM_ENTRIES = 2;
+        int UNDEFINED_ACTION = 0;
+        int GROUP = 1;
+        int UNGROUP = 2;
+        int CLOSE = 3;
+        int NUM_ENTRIES = 4;
     }
-    private final TabModelSelector mTabModelSelector;
+
     private final TabSelectionEditorCoordinator
             .TabSelectionEditorController mTabSelectionEditorController;
-    private final int mAction;
+    private final @TabSelectionEditorAction int mAction;
 
-    TabSelectionEditorActionProvider(TabModelSelector tabModelSelector,
+    /**
+     * Construct {@link TabSelectionEditorActionProvider} with customized process selected tabs
+     * action.
+     * @see TabSelectionEditorActionProvider#processSelectedTabs(List, TabModelSelector).
+     */
+    TabSelectionEditorActionProvider() {
+        mTabSelectionEditorController = null;
+        mAction = TabSelectionEditorAction.UNDEFINED_ACTION;
+    }
+
+    /**
+     * Construct {@link TabSelectionEditorActionProvider} with defined
+     * {@link TabSelectionEditorAction}.
+     *
+     * @param tabSelectionEditorController Controller that associated with the TabSelectionEditor.
+     * @param action {@link TabSelectionEditorAction} to provide.
+     */
+    TabSelectionEditorActionProvider(
             TabSelectionEditorCoordinator.TabSelectionEditorController tabSelectionEditorController,
             @TabSelectionEditorAction int action) {
-        mTabModelSelector = tabModelSelector;
         mTabSelectionEditorController = tabSelectionEditorController;
         mAction = action;
     }
 
     /**
      * Defines how to process {@code selectedTabs} based on the {@link TabSelectionEditorAction}
-     * specified in the constructor.
+     * specified in the constructor. If {@link TabSelectionEditorAction} is not specified, the
+     * caller must override this method.
      *
      * @param selectedTabs The list of selected tabs to process.
+     * @param tabModelSelector {@link TabModelSelector} to use.
      */
-    void processSelectedTabs(List<Tab> selectedTabs) {
-        assert mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter()
-                        instanceof TabGroupModelFilter;
+    void processSelectedTabs(List<Tab> selectedTabs, TabModelSelector tabModelSelector) {
+        assert !(mAction == TabSelectionEditorAction.GROUP)
+                        && !(mAction == TabSelectionEditorAction.UNGROUP)
+                || tabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter()
+                                instanceof TabGroupModelFilter;
 
         switch (mAction) {
             case TabSelectionEditorAction.GROUP:
-                Tab destinationTab = getDestinationTab(selectedTabs);
+                Tab destinationTab = getDestinationTab(selectedTabs, tabModelSelector);
 
                 TabGroupModelFilter tabGroupModelFilter =
-                        (TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider()
+                        (TabGroupModelFilter) tabModelSelector.getTabModelFilterProvider()
                                 .getCurrentTabModelFilter();
                 tabGroupModelFilter.mergeListOfTabsToGroup(
                         selectedTabs, destinationTab, false, true);
@@ -67,28 +90,35 @@ class TabSelectionEditorActionProvider {
                 break;
             case TabSelectionEditorAction.UNGROUP:
                 TabGroupModelFilter filter =
-                        (TabGroupModelFilter) mTabModelSelector.getTabModelFilterProvider()
+                        (TabGroupModelFilter) tabModelSelector.getTabModelFilterProvider()
                                 .getCurrentTabModelFilter();
                 for (Tab tab : selectedTabs) {
                     filter.moveTabOutOfGroup(tab.getId());
                 }
                 mTabSelectionEditorController.hide();
                 break;
+            case TabSelectionEditorAction.CLOSE:
+                tabModelSelector.getCurrentModel().closeMultipleTabs(selectedTabs, true);
+                mTabSelectionEditorController.hide();
+                break;
+            case TabSelectionEditorAction.UNDEFINED_ACTION:
             default:
-                assert false;
+                assert false : "TabSelectionEditorActionProvider must override"
+                               + "processSelectedTab() if mAction is not pre-defined with"
+                               + "TabSelectionEditorAction.";
         }
     }
 
     /**
      * @return The {@link Tab} that has the greatest index in TabModel among the given list of tabs.
      */
-    private Tab getDestinationTab(List<Tab> tabs) {
+    private Tab getDestinationTab(List<Tab> tabs, TabModelSelector tabModelSelector) {
         int greatestIndex = TabModel.INVALID_TAB_INDEX;
         for (int i = 0; i < tabs.size(); i++) {
             int index = TabModelUtils.getTabIndexById(
-                    mTabModelSelector.getCurrentModel(), tabs.get(i).getId());
+                    tabModelSelector.getCurrentModel(), tabs.get(i).getId());
             greatestIndex = Math.max(index, greatestIndex);
         }
-        return mTabModelSelector.getCurrentModel().getTabAt(greatestIndex);
+        return tabModelSelector.getCurrentModel().getTabAt(greatestIndex);
     }
 }

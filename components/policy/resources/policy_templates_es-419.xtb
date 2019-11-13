@@ -72,7 +72,7 @@
 <translation id="1062407476771304334">Reemplazar</translation>
 <translation id="1078643757670228170">Ten en cuenta que esta política es obsoleta y se eliminará en la versión 82 de <ph name="PRODUCT_OS_NAME" />. En su lugar, utiliza <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
-          Si el dispositivo se alimenta mediante CA, especifica el período sin intervención del usuario después del cual se apagará la pantalla.
+          Especifica el período sin intervención del usuario después del cual se apagará la pantalla cuando el dispositivo esté funcionando con CA.
 
           Si se le asigna a la política un valor mayor que cero, este valor especificará el tiempo que debe transcurrir sin intervención del usuario para que <ph name="PRODUCT_OS_NAME" /> apague la pantalla.
 
@@ -572,17 +572,17 @@
       Si se inhabilita esta configuración o no se establece, el servicio de protección de contraseñas solo capturará la huella digital de la contraseña en https://accounts.google.com.
       Esta política está disponible en instancias de Windows vinculadas a un dominio de <ph name="MS_AD_NAME" /> o instancias de Windows 10 Pro o Enterprise habilitadas para la administración de dispositivos.</translation>
 <translation id="1910704279188129272">Permite establecer restricciones de uso según la app.
-        Se pueden aplicar restricciones de uso a las apps instaladas en <ph name="PRODUCT_OS_NAME" /> para un determinado usuario.
-        Las restricciones deben enviarse en la lista |app_limits|. Solo se permite una entrada por app. Las apps que no se incluyan en la lista no tendrán restricciones.
+        Se pueden aplicar restricciones de uso a las apps instaladas en <ph name="PRODUCT_OS_NAME" /> para un usuario determinado.
+        Las restricciones se deben especificar en la lista |app_limits|. Solo se permite una entrada por app. Las apps que no se incluyan en la lista no tendrán restricciones.
         Si no es posible bloquear apps que son fundamentales para el funcionamiento del sistema operativo, se ignorarán las restricciones para estas apps.
-        La app se identifica solamente por |app_id|. Dado que diferentes tipos de apps pueden usar diferentes formatos de identificación, debe especificarse |app_type| junto a |app_id|.
-        Actualmente, los límites de tiempo por app solo admiten las apps |ARC|. El nombre del paquete de Android se emite como |app_id|.
-        En el futuro, se admitirán otros tipos de apps. Por el momento, se pueden especificar en la política, aunque las restricciones no tendrán efecto.
+        La app se identifica unívocamente por su |app_id|. Dado que distintos tipos de apps pueden usar formatos de identificación diferentes, debe especificarse |app_type| junto a |app_id|.
+        Actualmente, los límites de tiempo por app solo admiten las apps |ARC|. Se usa el nombre del paquete de Android como |app_id|.
+        En el futuro se admitirán otros tipos de apps; por el momento se pueden especificar en la política, aunque las restricciones no tendrán efecto.
         Hay dos tipos de restricciones disponibles: |BLOCK| y |TIME_LIMIT|.
         |BLOCK| hace que la app no esté disponible para los usuarios. Si se especifica |daily_limit_mins| con la restricción |BLOCK|, se ignorará |daily_limit_mins|.
         |TIME_LIMITS| aplica un límite de uso diario y hace que la app deje de estar disponible una vez que se alcance ese límite en el día. En |daily_limit_mins|, se especifica el límite de uso, el cual se restablece cada día a la hora (UTC) que se indica en |reset_at|.
         Solo se usa esta política para usuarios menores de edad.
-        Esta política es complementaria de "UsageTimeLimit". Más allá de la política "PerAppTimeLimits", se aplicarán las restricciones especificadas en "UsageTimeLimit", como el tiempo de uso y la hora de dormir.</translation>
+        Esta política complementa a "UsageTimeLimit". Independientemente de la política "PerAppTimeLimits", se aplicarán las restricciones especificadas en "UsageTimeLimit", como el tiempo de uso y la hora de dormir.</translation>
 <translation id="1914840757300882918">Si se configura esta política, el host usará un Certificado de cliente con el CN del emisor determinado para autenticar RemoteAccessHostTokenValidationUrl. Para usar cualquier Certificado de cliente disponible, configura la política como "*".
 
           Actualmente, esta función está inhabilitada en el lado del servidor.</translation>
@@ -622,7 +622,7 @@
       Si se habilita esta configuración o no se establece ningún valor, el usuario podrá controlar la función "Autocompletar" para las direcciones en la IU.</translation>
 <translation id="1959613237819575097">Ten en cuenta que esta política es obsoleta y se eliminará en la versión 82 de <ph name="PRODUCT_OS_NAME" />. En su lugar, utiliza <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
-          Si el dispositivo se alimenta mediante batería, especifica el período sin intervención del usuario después del cual se apagará la pantalla.
+          Especifica el período sin intervención del usuario después del cual se apagará la pantalla cuando el dispositivo esté funcionando con batería.
 
           Si se le asigna a la política un valor mayor que cero, este valor especificará el tiempo que debe transcurrir sin intervención del usuario para que <ph name="PRODUCT_OS_NAME" /> apague la pantalla.
 
@@ -737,7 +737,7 @@
 <translation id="2149330464730004005">Habilitar la impresión a color</translation>
 <translation id="2156132677421487971">Configura las políticas para <ph name="PRODUCT_NAME" />, una función que permite que los usuarios envíen el contenido de las pestañas, los sitios o el escritorio del navegador a pantallas y sistemas de sonido remotos.</translation>
 <translation id="2156755242840687300">Habilita los servidores de impresión externos</translation>
-<translation id="2160336427036785721">Configura la cantidad de memoria que puede usar una única instancia de <ph name="PRODUCT_NAME" /> antes de que se empiecen a descartar las pestañas (es decir, se liberará la memoria que utiliza la pestaña y se deberá volver a cargar cuando se seleccione) para ahorrar memoria.
+<translation id="2160336427036785721">Configura la cantidad de memoria que puede usar una única instancia de <ph name="PRODUCT_NAME" /> antes de que se empiecen a descartar las pestañas (es decir que se liberará la memoria que utiliza la pestaña, la cual se deberá volver a cargar cuando se seleccione), a fin de ahorrar memoria.
 
       Si estableces la política, el navegador comenzará a descartar pestañas para ahorrar memoria cuando se supere el límite. Sin embargo, no hay garantía de que el navegador se ejecute siempre por debajo del límite. Se redondeará a 1024 cualquier valor por debajo de 1024.
 
@@ -843,11 +843,11 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="2303795211377219696">Habilitar la función Autocompletar para tarjetas de crédito</translation>
 <translation id="2309390639296060546">Configuración de geolocalización predeterminada</translation>
 <translation id="2327252517317514801">Definir los dominios con permiso para acceder a G Suite</translation>
-<translation id="2331354174913096226">La plantilla de URI del agente de resolución de DNS sobre HTTPS deseado. Si quieres especificar varios agentes de resolución de DNS sobre HTTPS, separa las plantillas de URI con espacios que correspondan.
+<translation id="2331354174913096226">La plantilla de URI del agente de resolución de DNS sobre HTTPS deseado. Si quieres especificar varios agentes de resolución de DNS sobre HTTPS, separa las plantillas de URI correspondientes mediante espacios.
 
-      Si se configuró DnsOverHttpsMode para <ph name="SECURE_DNS_MODE_SECURE" />, deberá establecerse esta política y no estar vacía.
+      Si se configuró DnsOverHttpsMode como <ph name="SECURE_DNS_MODE_SECURE" />, se debe establecer esta política y no puede estar vacía.
 
-      Si se configuró DnsOverHttpsMode para <ph name="SECURE_DNS_MODE_AUTOMATIC" /> y se establece esta política, se usarán las plantillas de URI especificadas. Si no se establece, se usarán los mapeos codificados para intentar actualizar el agente de resolución de DNS actual del usuario a un agente de resolución de DoH que opere el mismo proveedor.
+      Si se configuró DnsOverHttpsMode como <ph name="SECURE_DNS_MODE_AUTOMATIC" /> y se establece esta política, se usarán las plantillas de URI especificadas. Si no se establece, se usarán las asignaciones codificadas para intentar actualizar el agente de resolución de DNS actual del usuario a un agente de resolución de DoH que opere el mismo proveedor.
 
       Si la plantilla de URI contiene una variable <ph name="HTTP_VARIABLE_DNS" />, las solicitudes al agente de resolución usarán <ph name="HTTP_METHOD_GET" />; de lo contrario, las solicitudes usarán <ph name="HTTP_METHOD_POST" />.
 
@@ -890,7 +890,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Esta opción se eliminó de la versión 29 de <ph name="PRODUCT_NAME" /> y versiones posteriores.</translation>
 <translation id="2430828513262055658">Ten en cuenta que esta política es obsoleta y se eliminará en la versión 82 de <ph name="PRODUCT_OS_NAME" />. En su lugar, utiliza <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />.
 
-          Si el dispositivo se alimenta mediante CA, especifica el período sin intervención del usuario después del cual se bloqueará la pantalla.
+          Especifica el período sin intervención del usuario después del cual se bloqueará la pantalla cuando el dispositivo esté funcionando con CA.
 
           Si se le asigna a la política un valor mayor que cero, este valor especificará el tiempo que debe transcurrir sin intervención del usuario para que <ph name="PRODUCT_OS_NAME" /> bloquee la pantalla.
 
@@ -1652,7 +1652,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="3591584750136265240">Configurar el comportamiento de autenticación en el acceso</translation>
 <translation id="3602332793276340697">Ten en cuenta que esta política es obsoleta y se eliminará en la versión 82 de <ph name="PRODUCT_OS_NAME" />. En su lugar, utiliza <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />.
 
-          Si el dispositivo se alimenta mediante batería, especifica el período sin intervención del usuario después del cual se bloqueará la pantalla.
+          Especifica el período sin intervención del usuario después del cual se bloqueará la pantalla cuando el dispositivo esté funcionando con batería.
 
           Si se le asigna a la política un valor mayor que cero, este valor especificará el tiempo que debe transcurrir sin intervención del usuario para que <ph name="PRODUCT_OS_NAME" /> bloquee la pantalla.
 
@@ -2302,11 +2302,11 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="4591366717022345234">Proporcionarles a los usuarios una versión Quick Fix</translation>
 <translation id="4592246263545654202">Especifica si el usuario puede abrir páginas en modo Incógnito en <ph name="PRODUCT_NAME" />.
 
-      Si se selecciona "Enabled" o no se establece la política, es posible que las páginas se abran en modo Incógnito.
+      Si se habilita esta política o no se establece, es posible que las páginas se abran en modo Incógnito.
 
-      Si se selecciona "Disabled", es posible que las páginas no se abran en modo Incógnito.
+      Si se inhabilita, es posible que las páginas no se abran en modo Incógnito.
 
-      Si se selecciona "Forced", es posible que las páginas se abran SOLO en modo Incógnito. Ten en cuenta que la opción "Forced" no funciona para Android-on-Chrome.</translation>
+      Si se asigna el valor Forzado (Forced), es posible que las páginas se abran SOLO en modo Incógnito. Ten en cuenta que la opción Forzado (Forced) no funciona para Android-on-Chrome.</translation>
 <translation id="4600786265870346112">Habilita el cursor grande.</translation>
 <translation id="4604931264910482931">Configurar la lista negra de mensajería nativa</translation>
 <translation id="4617338332148204752">Omitir la comprobación de metaetiquetas en <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -2382,11 +2382,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Si estableces esta política, los usuarios no podrán cambiarla ni anularla.
 
           Si no la estableces, el audio mono estará inicialmente inhabilitado, pero el usuario podrá habilitarlo en cualquier momento.</translation>
-<translation id="4759650396863318477">Te permite establecer el período, en milisegundos, en el que se notifica a los usuarios que deben reiniciar <ph name="PRODUCT_NAME" /> o un dispositivo <ph name="PRODUCT_OS_NAME" /> para aplicar una actualización pendiente.
-
-      En este período, se le informará reiteradamente al usuario acerca de la necesidad de la actualización. En dispositivos <ph name="PRODUCT_OS_NAME" />, se muestra una notificación de reinicio en la bandeja del sistema, en conformidad con la política <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. En navegadores <ph name="PRODUCT_NAME" />, el menú de la app indica que se debe reiniciar después de transcurrido un tercio del período de la notificación. Esta notificación cambia de color tras dos tercios del período de la notificación y una vez más cuando finaliza este período. Las notificaciones adicionales que habilita la política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> siguen el mismo patrón.
-
-      Si no se establece, se utiliza el período predeterminado de 345600000 milisegundos (cuatro días) para los dispositivos <ph name="PRODUCT_OS_NAME" /> y 604800000 milisegundos (una semana) para los dispositivos <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4771144269610910963">Esta política controla el análisis detallado de las descargas del usuario con Navegación segura. Si no se configura o se le asigna el valor predeterminado "No analizar archivos", Navegación segura no analizará las descargas del usuario.
 
       Si se establece el valor "Analizar las descargas del usuario", se enviarán las descargas de los usuarios a través de la red a Navegación segura para analizar la presencia de software malicioso.
@@ -2555,11 +2550,11 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
           Si se establece esta política, controlará el tipo de lupa que se habilita cuando se muestre la pantalla de acceso. Si la política se configura como "ninguna", se inhabilitará la lupa.
 
-          Si estableces esta política, los usuarios podrán habilitar o inhabilitar la lupa para anular la política temporalmente. Sin embargo, no se mantendrá la elección del usuario, y se restablecerá la opción predeterminada siempre que la pantalla de acceso se muestre de nuevo o el usuario permanezca inactivo en esta pantalla por más de un minuto.
+          Si estableces esta política, los usuarios podrán anularla temporalmente al habilitar o inhabilitar la lupa. Sin embargo, no se mantendrá la elección del usuario y se restablecerá la opción predeterminada cada vez que se muestre la pantalla de acceso o el usuario permanezca inactivo en ella más de un minuto.
 
-          Si no estableces esta política, la lupa estará inhabilitada cuando se muestre por primera vez la pantalla de acceso. En este caso, los usuarios podrán habilitar o inhabilitar la lupa en pantalla en cualquier momento y la opción que elijan se mantendrá entre los usuarios.
+          Si no estableces esta política, la lupa estará inhabilitada cuando se muestre por primera vez la pantalla de acceso. En este caso, los usuarios podrán habilitar o inhabilitar la lupa en cualquier momento, y la opción que elijan para la pantalla de acceso se mantendrá entre los usuarios.
 
-          Nota: <ph name="DEVICE_LOGIN_SCREEN_SCREEN_MAGNIFIER_TYPE_POLICY_NAME" /> anula esta política si se especifica la política anterior.</translation>
+          Nota: Si se especifica <ph name="DEVICE_LOGIN_SCREEN_SCREEN_MAGNIFIER_TYPE_POLICY_NAME" />, anulará esta política.</translation>
 <translation id="5124368997194894978">Habilitar el inicio mediante CA (corriente alterna)</translation>
 <translation id="5131211790949066746">Permite combinar las políticas de listas de instalación para extensiones <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, <ph name="EXTENSION_INSTALL_WHITELIST_POLICY_NAME" /> y <ph name="EXTENSION_INSTALL_FORCELIST_POLICY_NAME" />.
 
@@ -2654,7 +2649,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="5255162913209987122">Se puede recomendar</translation>
 <translation id="5261766238868915624">Ten en cuenta que esta política es obsoleta y se eliminará en la versión 82 de <ph name="PRODUCT_OS_NAME" />. En su lugar, utiliza <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
-          Si el dispositivo se alimenta mediante batería, especifica el período sin intervención del usuario después del cual se atenuará la pantalla.
+          Especifica el período sin intervención del usuario después del cual se atenuará la pantalla cuando el dispositivo esté funcionando con batería.
 
           Si se le asigna a la política un valor mayor que cero, este valor especificará el tiempo que debe transcurrir sin intervención del usuario para que <ph name="PRODUCT_OS_NAME" /> atenúe la pantalla.
 
@@ -3190,7 +3185,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="614616930188030377">Se compararán los patrones de esta lista con el origen de seguridad de la URL solicitante.
       Si se encuentra una coincidencia o se inhabilita la opción chrome://flags/#enable-webrtc-hide-local-ips-with-mdns, se mostrarán las direcciones IP locales en los candidatos ICE de WebRTC.
       De lo contrario, se ocultarán las direcciones IP locales con nombres de host de mDNS.
-      Ten en cuenta que esta política afecta la protección de las IP locales, en el caso de que las necesiten los administradores.</translation>
+      Ten en cuenta que esta política afecta la protección de las IP locales, si los administradores la habilitan.</translation>
 <translation id="614662973812186053">Esta política también controla la recopilación de datos de diagnóstico y uso de Android.</translation>
 <translation id="6153048425064249648">Esta política controla los informes en la nube de <ph name="PRODUCT_NAME" />, que suben información sobre el funcionamiento del navegador a la consola del Administrador de Google.
 
@@ -3287,7 +3282,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="6284362063448764300">TLS 1.1</translation>
 <translation id="6293957650182823856">Ten en cuenta que esta política es obsoleta y se eliminará en la versión 82 de <ph name="PRODUCT_OS_NAME" />. En su lugar, utiliza <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
-          Si el equipo funciona con CA, especifica el período sin intervención del usuario que debe transcurrir para que se muestre un cuadro de diálogo de advertencia.
+          Especifica el período sin intervención del usuario que debe transcurrir para que se muestre un cuadro de diálogo de advertencia cuando el equipo esté funcionando con CA.
 
           Cuando se establece esta política, este valor especificará el tiempo que debe transcurrir sin intervención del usuario antes de que <ph name="PRODUCT_OS_NAME" /> muestre un cuadro de diálogo de advertencia que indica al usuario que la acción de inactividad está a punto de llevarse a cabo.
 
@@ -4309,9 +4304,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Si la política se establece en True, el dispositivo utilizará el formato del reloj de 24 horas. Si se establece en False, el dispositivo usará el formato del reloj de 12 horas.
 
       Si esta política no se establece, el dispositivo utilizará el formato de reloj de 24 horas de manera predeterminada.</translation>
-<translation id="8113421140338762630">Te permite establecer el período, en milisegundos, entre la primera notificación en la que se solicita reiniciar un dispositivo con <ph name="PRODUCT_OS_NAME" /> para aplicar una actualización pendiente y la finalización del período especificado en la política <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
-
-      Si no se establece, se utiliza el período predeterminado de 86,400,000 milisegundos (un día) para los dispositivos con <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="8114382167597081590">No aplicar el modo restringido en YouTube</translation>
 <translation id="8118665053362250806">Configurar el tamaño de caché de disco de medios</translation>
 <translation id="8124468781472887384">Política de acceso para la configuración de las impresoras asociadas a dispositivos</translation>
@@ -4637,7 +4629,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Los usuarios no pueden cambiar ni anular esta configuración.</translation>
 <translation id="8618139576368821933">Ten en cuenta que esta política es obsoleta y se eliminará en la versión 82 de <ph name="PRODUCT_OS_NAME" />. En su lugar, utiliza <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
-          Si el dispositivo se alimenta mediante CA, especifica el período sin intervención del usuario después del cual se atenuará la pantalla.
+          Especifica el período sin intervención del usuario después del cual se atenuará la pantalla cuando el dispositivo esté funcionando con CA.
 
           Si se le asigna a la política un valor mayor que cero, este valor especificará el tiempo que debe transcurrir sin intervención del usuario para que <ph name="PRODUCT_OS_NAME" /> atenúe la pantalla.
 
@@ -4696,7 +4688,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Si esta opción está inhabilitada, no se pueden eliminar el historial de navegación ni el de descargas.</translation>
 <translation id="8752541111574086388">Ten en cuenta que esta política es obsoleta y se eliminará en la versión 82 de <ph name="PRODUCT_OS_NAME" />. En su lugar, utiliza <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
-          Si el dispositivo se alimenta mediante batería, especifica el período sin intervención del usuario que debe transcurrir para que se muestre un cuadro de diálogo de advertencia.
+          Especifica el período sin intervención del usuario que debe transcurrir para que se muestre un cuadro de diálogo de advertencia cuando el dispositivo esté funcionando con batería.
 
           Cuando se establece esta política, este valor especificará el tiempo que debe transcurrir sin intervención del usuario antes de que <ph name="PRODUCT_OS_NAME" /> muestre un cuadro de diálogo de advertencia que indica al usuario que la acción de inactividad está a punto de llevarse a cabo.
 
@@ -4791,7 +4783,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="8917070657147922192">Permite que los usuarios administren los Certificados de CA instalados</translation>
 <translation id="8926275581598789324">Ten en cuenta que esta política es obsoleta y se eliminará en la versión 82 de <ph name="PRODUCT_OS_NAME" />. En su lugar, utiliza <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
-          Si el dispositivo se alimenta mediante batería, especifica el período sin intervención del usuario después del cual se ejecutará la acción de inactividad.
+          Especifica el período sin intervención del usuario después del cual se ejecutará la acción de inactividad cuando el dispositivo esté funcionando con batería.
 
           Si se establece esta política, se especifica la cantidad de tiempo que el usuario deberá permanecer inactivo antes de que <ph name="PRODUCT_OS_NAME" /> ejecute la acción de inactividad, la cual puede configurarse de forma independiente.
 
@@ -4800,7 +4792,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
           El valor de la política debe especificarse en milisegundos.</translation>
 <translation id="8929997566627164343">Ten en cuenta que esta política es obsoleta y se eliminará en la versión 82 de <ph name="PRODUCT_OS_NAME" />. En su lugar, utiliza <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.
 
-          Si el dispositivo se alimenta mediante CA, especifica el período sin intervención del usuario después del cual se ejecutará la acción de inactividad.
+          Especifica el período sin intervención del usuario después del cual se ejecutará la acción de inactividad cuando el dispositivo esté funcionando con CA.
 
           Si se establece esta política, se especifica la cantidad de tiempo que el usuario deberá permanecer inactivo antes de que <ph name="PRODUCT_OS_NAME" /> ejecute la acción de inactividad, la cual puede configurarse de forma independiente.
 
@@ -5022,11 +5014,11 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="991560005425213776">Enviar el nombre de usuario y del archivo a las impresoras nativas</translation>
 <translation id="99232017131102456">Esta política configura una única caché global por perfil con credenciales de autenticación del servidor HTTP.
 
-      Si se inhabilita o no se establece esta política, el navegador usará el comportamiento predeterminado de autenticación en sitios. A partir de la versión 80, este comportamiento será incluir las credenciales de autenticación del servidor HTTP según el sitio de nivel más alto. Por lo tanto, si dos sitios usan recursos del mismo dominio de autenticación, se deberán proporcionar credenciales de forma independiente en el contexto de ambos sitios. Se reutilizarán las credenciales de proxy almacenadas en la caché entre los sitios.
+      Si se inhabilita o no se establece esta política, el navegador usará el comportamiento predeterminado de autenticación entre sitios. A partir de la versión 80, este consiste en asignar el alcance de las credenciales de autenticación del servidor HTTP de acuerdo al sitio de nivel más alto. Por lo tanto, si dos sitios usan recursos del mismo dominio de autenticación, se deberán proporcionar credenciales de forma independiente en el contexto de ambos sitios. Se reutilizarán las credenciales de proxy almacenadas en la caché entre los sitios.
 
       Si se habilita la política, las credenciales de autenticación de HTTP ingresadas en un sitio se usarán automáticamente en otro.
 
-      Si se habilita esta política, los sitios quedan expuestos a ciertos tipos de ataques entre sitios. Además, se pueden rastrear a los usuarios entre los sitios sin usar cookies; solo es necesario agregar entradas a la caché de autorización de HTTP con credenciales incorporadas en las URL.
+      Si se habilita esta política, los sitios quedan expuestos a ciertos tipos de ataques entre sitios. Además, se pueden rastrear los usuarios entre los sitios sin usar cookies; solo es necesario agregar entradas a la caché de autorización de HTTP con credenciales incorporadas en las URL.
 
       El objetivo de esta política es brindarles a las empresas que dependen del comportamiento heredado una oportunidad para actualizar sus procedimientos de acceso. En el futuro, se quitará esta política.</translation>
 </translationbundle>

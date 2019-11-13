@@ -581,15 +581,15 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
       Esta política solo está disponible en instancias de Windows que estén vinculadas a un dominio de <ph name="MS_AD_NAME" /> y en instancias de Windows 10 Pro o Enterprise que se hayan registrado para gestionar dispositivos.</translation>
 <translation id="1910704279188129272">Permite especificar restricciones de uso por aplicación.
         Se pueden aplicar restricciones de uso a las aplicaciones instaladas en <ph name="PRODUCT_OS_NAME" /> para un usuario determinado.
-        Las restricciones se deberán transmitir a la lista |app_limits|. Solo se permite una entrada por aplicación. Las aplicaciones no incluidas en la lista no tienen restricciones.
+        Las restricciones se deben especificar en la lista |app_limits|. Solo se permite una entrada por aplicación. Las aplicaciones no incluidas en la lista no tienen restricciones.
         No se pueden bloquear aplicaciones que sean imprescindibles para el sistema operativo; se ignorarán las restricciones para dichas aplicaciones.
         |app_id| identifica cada aplicación de forma única. Debido a que los distintos tipos de aplicaciones pueden usar diversos formatos de ID, es necesario especificar |app_type| junto a |app_id|.
         Actualmente, los límites de tiempo por aplicación solo admiten aplicaciones |ARC|. El nombre del paquete de Android se utiliza como |app_id|.
         En el futuro se añadirá compatibilidad con otros tipos de aplicaciones. Por el momento, se pueden especificar restricciones en la política para otros tipos de aplicaciones, pero no surtirán efecto.
         Existen dos tipos de restricciones disponibles: |BLOCK| y |TIME_LIMIT|.
         |BLOCK| hace que la aplicación deje de estar disponible para el usuario. Si se especifica |daily_limit_mins| con restricción |BLOCK|, se ignorará |daily_limit_mins|.
-        |TIME_LIMITS| aplica un límite de uso diario y hace que la aplicación deje de estar disponible cuando se alcance ese límite durante el día determinado. El límite de uso se especifica en |daily_limit_mins| y se restablece diariamente a la hora UTC transmitida en |reset_at|.
-        Esta política solo se usará a los usuarios infantiles.
+        |TIME_LIMITS| aplica un límite de uso diario y hace que la aplicación deje de estar disponible cuando se alcance ese límite durante el día determinado. El límite de uso se especifica en |daily_limit_mins| y se restablece diariamente a la hora UTC especificada en |reset_at|.
+        Esta política solo se usa para usuarios infantiles.
         Esta política es complementaria a "UsageTimeLimit". Las restricciones especificadas en "UsageTimeLimit", como el tiempo de pantalla y la hora de dormir, se aplicarán independientemente de lo que se haya especificado en "PerAppTimeLimits".</translation>
 <translation id="1914840757300882918">Si se asigna un valor a esta política, el host utilizará un certificado de cliente con el CN de emisor especificado para autenticarse en RemoteAccessHostTokenValidationUrl. Si se le asigna el valor "*", se utilizará cualquier certificado de cliente disponible.
 
@@ -2362,13 +2362,13 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
           Si se inhabilita esta opción o no se le asigna ningún valor, el host de acceso remoto puede asociarse a cualquier usuario local.</translation>
 <translation id="4591366717022345234">Proporciona a los usuarios una versión Quick Fix</translation>
-<translation id="4592246263545654202">Permite especificar si el usuario podrá abrir páginas en modo de navegación de incógnito en <ph name="PRODUCT_NAME" />.
+<translation id="4592246263545654202">Permite especificar si el usuario podrá abrir páginas en modo de incógnito en <ph name="PRODUCT_NAME" />.
 
-      Si se habilita esta política o no se define, se podrán abrir páginas en modo de navegación de incógnito.
+      Si se habilita esta política o no se define, se podrán abrir páginas en modo de incógnito.
 
-      Si se inhabilita, las páginas no se podrán abrir en modo de navegación de incógnito.
+      Si se inhabilita, las páginas no se podrán abrir en modo de incógnito.
 
-      Si se asigna el valor "Forced" a esta política, las páginas solo se podrán abrir en modo de navegación de incógnito. Ten en cuenta que el valor "Forced" no funciona en dispositivos con Android en Chrome.</translation>
+      Si se asigna el valor "Forced" a esta política, las páginas solo se podrán abrir en modo de incógnito. Ten en cuenta que el valor "Forced" no funciona en dispositivos con Android en Chrome.</translation>
 <translation id="4600786265870346112">Habilitar cursor grande</translation>
 <translation id="4604931264910482931">Configurar la lista negra de mensajes nativos</translation>
 <translation id="4617338332148204752">Saltarla comprobación de metaetiquetas en <ph name="PRODUCT_FRAME_NAME" /></translation>
@@ -2444,11 +2444,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
           Si se asigna un valor a esta política, los usuarios no podrán cambiarla ni anularla.
 
           Si no se le asigna ningún valor, el audio en mono se inhabilitará al inicio, pero el usuario podrá habilitarlo en cualquier momento.</translation>
-<translation id="4759650396863318477">Permite establecer el periodo de tiempo (en milisegundos) durante el que los usuarios recibirán una notificación informándoles de que deben reiniciar <ph name="PRODUCT_NAME" /> o un dispositivo <ph name="PRODUCT_OS_NAME" /> para aplicar una actualización pendiente.
-
-      Durante este periodo de tiempo, se informará de forma reiterada al usuario de que la actualización es necesaria. En el caso de los dispositivos <ph name="PRODUCT_OS_NAME" />, se mostrará una notificación de reinicio en la bandeja del sistema de acuerdo con la política <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. En el caso de los navegadores <ph name="PRODUCT_NAME" />, el menú de aplicaciones cambiará para indicar que es necesario reiniciar cuando haya transcurrido un tercio del periodo de notificación. Esta notificación cambiará de color cuando hayan transcurrido dos tercios del periodo de notificación y, de nuevo, cuando este periodo haya finalizado. Las notificaciones adicionales habilitadas por la política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> siguen esta misma programación.
-
-      Si no se asigna ningún valor, se usará el periodo predeterminado de 345.600.000 milisegundos (cuatro días) para los dispositivos <ph name="PRODUCT_OS_NAME" /> y de 604.800.000 milisegundos (una semana) para <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4771144269610910963">Esta política controla el análisis profundo de las descargas de usuario con Navegación Segura. Si no se le asigna ningún valor o se le asigna el valor predeterminado "No analizar archivos", las descargas de usuario no se analizarán con Navegación Segura.
 
       Si se le asigna el valor "Enviar descargas de usuario para analizarlas", las descargas de usuario se enviarán a Navegación Segura a través de la red para realizar un análisis de software malicioso.
@@ -3288,7 +3283,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="614616930188030377">Los patrones de esta lista se compararán con el origen de seguridad de la URL solicitante.
       Si se encuentra alguna coincidencia o chrome://flags/#enable-webrtc-hide-local-ips-with-mdns está inhabilitado, las direcciones IP locales se mostrarán en candidatos ICE WebRTC.
       De lo contrario, las direcciones IP locales se ocultarán con nombres de host mDNS.
-      Ten en cuenta que esta política debilita la protección de IP locales si fuera necesario por los administradores.</translation>
+      Ten en cuenta que esta política debilita la protección de las IP locales si así lo necesitan los administradores.</translation>
 <translation id="614662973812186053">Esta política también controla la recopilación de los datos de uso y diagnóstico de Android.</translation>
 <translation id="6153048425064249648">Esta política regula los informes en la nube de <ph name="PRODUCT_NAME" />, que envían información sobre el funcionamiento del navegador a la consola de administración de Google.
 
@@ -3638,7 +3633,7 @@ Si la política está establecida en False, no se informará sobre los usuarios.
 <translation id="6843296367238757293">Esta política está obsoleta. Te recomendamos que no la utilices. Consulta https://support.google.com/chrome/a/answer/7643500</translation>
 <translation id="684856667300805181">Esta política se retiró en <ph name="PRODUCT_NAME" /> 68 y se ha sustituido por <ph name="ARC_GLS_POLICY_NAME" />.</translation>
 <translation id="6851199885688265233">Habilita la función de accesibilidad de resaltado del cursor</translation>
-<translation id="6851315055469993882">Habilita el caché de autenticación de HTTP con alcance global</translation>
+<translation id="6851315055469993882">Habilita la caché de autenticación de HTTP con alcance global</translation>
 <translation id="6856743875250214792">Esta política está obsoleta y se ha quitado de M66, ya que solo se utilizaba para realizar pruebas internas y es un requisito de seguridad.
 
       Especifica las opciones que se deben aplicar a <ph name="PRODUCT_NAME" /> cuando se inicia. Las opciones especificadas solo se aplican en la pantalla de inicio de sesión. Las opciones establecidas a través de esta política no se propagan a las sesiones del usuario.</translation>
@@ -3701,7 +3696,7 @@ Si la política está establecida en False, no se informará sobre los usuarios.
       Estos son los idiomas que se admiten actualmente: af, bg, ca, cs, da, de, el, en-AU, en-CA, en-GB, en-US, es, es-419, es-AR, es-ES, es-MX, es-US, et, fa, fo, fr, he, hi, hr, hu, id, it, ko, lt, lv, nb, nl, pl, pt-BR, pt-PT, ro, ru, sh, sk, sl, sq, sr, sv, ta, tg, tr, uk y vi.</translation>
 <translation id="6926703471186170050">Habilitar impresión de borde largo por las dos caras</translation>
 <translation id="6931242315485576290">Inhabilitar sincronización de datos con Google</translation>
-<translation id="6932419914671987652">Si se habilita esta política, <ph name="PRODUCT_NAME" /> forzará las sesiones de invitado y evitará los inicios de sesión de perfil. Los inicios de sesión como invitado son perfiles de <ph name="PRODUCT_NAME" /> en los que todas las ventanas están en modo de navegación de incógnito.
+<translation id="6932419914671987652">Si se habilita esta política, <ph name="PRODUCT_NAME" /> forzará las sesiones de invitado y evitará los inicios de sesión de perfil. Los inicios de sesión como invitado son perfiles de <ph name="PRODUCT_NAME" /> en los que todas las ventanas están en modo de incógnito.
 
       Si la política está inhabilitada o no está definida, o el modo invitados del navegador está inhabilitado por la política <ph name="BROWSER_GUEST_MODE_ENABLED_POLICY_NAME" />, <ph name="PRODUCT_NAME" /> permitirá que se usen perfiles nuevos y ya creados.</translation>
 <translation id="6936894225179401731">Permite especificar el número máximo de conexiones simultáneas que se pueden establecer con el servidor proxy.
@@ -4299,7 +4294,7 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
           Si no se asigna ningún valor a esta política, el modo de contraste alto se inhabilitará inicialmente cuando se muestre la pantalla de inicio de sesión por primera vez. Los usuarios podrán habilitar o inhabilitar el modo de contraste alto en cualquier momento, y su estado en la pantalla de inicio de sesión permanecerá entre usuarios.
 
           Nota: <ph name="DEVICE_LOGIN_SCREEN_HIGH_CONTRAST_ENABLED_POLICY_NAME" /> anula esta política si se especifica la anterior.</translation>
-<translation id="7846952520291088817">URL para las que IP locales están expuestas en candidatos ICE WebRTC</translation>
+<translation id="7846952520291088817">URLs cuyas IP locales se exponen en candidatos ICE WebRTC</translation>
 <translation id="7858404742201086014">Si habilitas esta opción, los complementos obsoletos se utilizarán como complementos normales.
 
       Si inhabilitas esta opción, no se utilizarán los complementos obsoletos y no se pedirá permiso a los usuarios para ejecutarlos.
@@ -4436,9 +4431,6 @@ Esta política configura el formato de reloj que se debe utilizar en la pantalla
 Si la política está establecida en True, el dispositivo utilizará un formato de reloj de 24 horas. Si la política está establecida en False, el dispositivo utilizará el formato de reloj de 12 horas.
 
 Si no se establece la política, el dispositivo tendrá un formato de reloj de 24 horas de forma predeterminada.</translation>
-<translation id="8113421140338762630">Permite definir el periodo (en milisegundos) que transcurre entre la primera notificación que avisa de que un dispositivo <ph name="PRODUCT_OS_NAME" /> debe reiniciarse para aplicar una actualización pendiente y la finalización del periodo especificado en la política <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
-
-      Si no se le asigna ningún valor, se usará el periodo predeterminado, que es de 86.400.000 milisegundos (un día), para los dispositivos <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="8114382167597081590">No aplicar el modo restringido en YouTube</translation>
 <translation id="8118665053362250806">Establecer tamaño de caché de disco de medios</translation>
 <translation id="8124468781472887384">Política de acceso a la configuración de las impresoras de dispositivos.</translation>
@@ -4720,7 +4712,7 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
       Los cambios de esta política solo se podrán aplicar cuando ARC no se esté ejecutando, p. ej. cuando Chrome OS se está iniciando.</translation>
 <translation id="8606263947930257189">Permite controlar si <ph name="PRODUCT_NAME" /> puede inmovilizar las pestañas que hayan estado en segundo plano durante un mínimo de 5 minutos.
 
-      Si se asigna el valor "true" a esta política, las pestañas que hayan estado en segundo plano durante un mínimo de 5 minutos podrían inmovilizarse. Inmovilizar las pestañas reduce el consumo de CPU, batería y memoria. <ph name="PRODUCT_NAME" /> usa métodos heurísticos para evitar inmovilizar pestañas que realicen funciones útiles en segundo plano, como mostrar notificaciones, reproducir sonidos o vídeos en streaming. Los desarrolladores web pueden inhabilitar la inmovilización en sus sitios web (https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/browser/performance_manager/docs/freezing_opt_out_opt_in.md).
+      Si se asigna el valor "true" a esta política, las pestañas que hayan estado en segundo plano durante un mínimo de 5 minutos podrían inmovilizarse. Inmovilizar las pestañas reduce el consumo de CPU, batería y memoria. <ph name="PRODUCT_NAME" /> usa métodos heurísticos para evitar inmovilizar pestañas que realicen funciones útiles en segundo plano, como mostrar notificaciones, reproducir sonidos o emitir vídeos en streaming. Los desarrolladores web pueden inhabilitar la inmovilización en sus sitios web (https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/browser/performance_manager/docs/freezing_opt_out_opt_in.md).
 
       Si se asigna el valor "false" a esta política, no se inmovilizará ninguna pestaña.</translation>
 <translation id="8615400197788843468">Habilita la función de inicio de sesión restringido de <ph name="PRODUCT_NAME" /> en G Suite e impide que los usuarios cambien esta opción.
@@ -5134,11 +5126,11 @@ Los controladores de protocolos registrados por la política se combinan con los
 <translation id="981346395360763138">Los servicios de ubicación de Google están inhabilitados</translation>
 <translation id="982497069985795632">Habilitar corrector ortográfico</translation>
 <translation id="991560005425213776">Enviar los nombres de usuario y de archivo a impresoras nativas</translation>
-<translation id="99232017131102456">Esta política configura un caché único global por perfil con credenciales de autenticación del servidor HTTP.
+<translation id="99232017131102456">Esta política configura una caché única global por perfil con credenciales de autenticación del servidor HTTP.
 
       Si esta política se inhabilita o no se define, el navegador utilizará el comportamiento predeterminado de autenticación entre sitios, el cual, a partir de la versión 80, consistirá en definir el alcance de las credenciales de autenticación del servidor HTTP según el sitio de nivel superior, por lo que, si dos sitios web utilizan recursos del mismo dominio de autenticación, tendrán que facilitarse las credenciales de forma independiente en el contexto de ambos sitios web. Las credenciales proxy almacenadas en caché se reutilizarán entre los sitios web.
 
-      Si se habilita esta política, las credenciales de autenticación de HTTP introducidas en el contexto de un sitio web se utilizarán automáticamente en el contexto de otro.
+      Si se habilita esta política, las credenciales de autenticación de HTTP que se introduzcan en el contexto de un sitio web se utilizarán automáticamente en el contexto de otro.
 
       Al habilitar esta política, los sitios web quedan expuestos a algunos tipos de ataques entre sitios y se permite que los usuarios sean rastreados entre varios sitios, incluso sin cookies, añadiendo entradas a la caché de autenticación de HTTP utilizando credenciales insertadas en URLs.
 

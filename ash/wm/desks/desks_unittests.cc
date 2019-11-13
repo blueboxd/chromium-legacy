@@ -2178,7 +2178,8 @@ TEST_F(DesksWithSplitViewTest, SuccessfulDragToDeskRemovesSplitViewIndicators) {
   // widget are created.
   EXPECT_TRUE(overview_grid->drop_target_widget());
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kFromOverview,
-            overview_session->split_view_drag_indicators()
+            overview_session->grid_list()[0]
+                ->split_view_drag_indicators()
                 ->current_window_dragging_state());
   // Now drop the window, and validate the indicators and the drop target were
   // removed.
@@ -2189,7 +2190,8 @@ TEST_F(DesksWithSplitViewTest, SuccessfulDragToDeskRemovesSplitViewIndicators) {
   EXPECT_TRUE(overview_session->no_windows_widget_for_testing());
   EXPECT_FALSE(overview_grid->drop_target_widget());
   EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kNoDrag,
-            overview_session->split_view_drag_indicators()
+            overview_session->grid_list()[0]
+                ->split_view_drag_indicators()
                 ->current_window_dragging_state());
 }
 

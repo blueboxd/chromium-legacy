@@ -9,6 +9,7 @@
 
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/password_manager/core/browser/import/csv_password.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace password_manager {
@@ -75,9 +76,10 @@ TEST(CSVPasswordIteratorTest, Success) {
 
   CSVPasswordIterator check = iter;
   for (size_t i = 0; i < base::size(kExpectedPasswords); ++i) {
-    EXPECT_TRUE((check++)->Parse(nullptr)) << "on line " << i;
+    EXPECT_EQ(CSVPassword::Status::kOK, (check++)->Parse(nullptr))
+        << "on line " << i;
   }
-  EXPECT_FALSE(check->Parse(nullptr));
+  EXPECT_NE(CSVPassword::Status::kOK, check->Parse(nullptr));
 
   for (const base::StringPiece& expected_password : kExpectedPasswords) {
     PasswordForm result = (iter++)->ParseValid();
@@ -107,12 +109,13 @@ TEST(CSVPasswordIteratorTest, Failure) {
 
   CSVPasswordIterator check = iter;
   for (size_t i = 0; i + 1 < kLinesInBlob; ++i) {
-    EXPECT_FALSE((check++)->Parse(nullptr)) << "on line " << i;
+    EXPECT_NE(CSVPassword::Status::kOK, (check++)->Parse(nullptr))
+        << "on line " << i;
   }
   // Last line was not a failure.
-  EXPECT_TRUE((check++)->Parse(nullptr));
+  EXPECT_EQ(CSVPassword::Status::kOK, (check++)->Parse(nullptr));
   // After iterating over all lines, there is no more data to parse.
-  EXPECT_FALSE(check->Parse(nullptr));
+  EXPECT_NE(CSVPassword::Status::kOK, check->Parse(nullptr));
 }
 
 }  // namespace password_manager

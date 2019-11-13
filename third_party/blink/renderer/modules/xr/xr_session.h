@@ -39,7 +39,6 @@ class XR;
 class XRAnchor;
 class XRAnchorSet;
 class XRCanvasInputProvider;
-class XRHitTestOptions;
 class XRHitTestOptionsInit;
 class XRHitTestSource;
 class XRPlane;
@@ -311,7 +310,6 @@ class XRSession final
 
   void OnSubscribeToHitTestResult(
       ScriptPromiseResolver* resolver,
-      XRHitTestOptions* options,
       device::mojom::SubscribeToHitTestResult result,
       uint64_t subscription_id);
 

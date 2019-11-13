@@ -185,6 +185,7 @@ IN_PROC_BROWSER_TEST_F(WebUIResourceBrowserTest, CommandTest) {
   AddLibrary(IDR_WEBUI_JS_ASSERT);
   AddLibrary(IDR_WEBUI_JS_CR);
   AddLibrary(IDR_WEBUI_JS_CR_UI);
+  AddLibrary(IDR_WEBUI_JS_CR_UI_KEYBOARD_SHORTCUT_LIST);
   AddLibrary(IDR_WEBUI_JS_CR_UI_COMMAND);
   LoadFile(base::FilePath(FILE_PATH_LITERAL("command_test.html")));
 }

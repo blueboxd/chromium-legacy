@@ -22,7 +22,7 @@ def CommonChecks(input_api, output_api):
 
   messages = []
 
-  if generated_files and not generating_files:
+  if (len(generated_files) > 0 and len(generating_files) == 0):
     long_text = 'Changed files:\n'
     for file in generated_files:
       long_text += file.LocalPath() + '\n'
@@ -33,7 +33,7 @@ def CommonChecks(input_api, output_api):
 
   with input_api.temporary_directory() as temp_dir:
     commands = []
-    if generating_files:
+    if len(generating_files) > 0:
       commands.append(input_api.Command(name='generate_bindings',
                                         cmd=[input_api.python_executable,
                                              'generate_bindings.py',
@@ -41,7 +41,7 @@ def CommonChecks(input_api, output_api):
                                              '--output-dir=' + temp_dir],
                                         kwargs={},
                                         message=output_api.PresubmitError))
-    if commands:
+    if len(commands) > 0:
       messages.extend(input_api.RunTests(commands))
 
   return messages

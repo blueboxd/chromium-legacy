@@ -15,10 +15,6 @@ XRHitTestResult::XRHitTestResult(XRHitTestSource* hit_test_source,
     : hit_test_source_(hit_test_source),
       pose_(std::make_unique<TransformationMatrix>(pose)) {}
 
-XRHitTestOptions* XRHitTestResult::hitTestOptions() const {
-  return hit_test_source_->hitTestOptions();
-}
-
 XRPose* XRHitTestResult::getPose(XRSpace* relative_to) {
   DCHECK(relative_to->MojoFromSpace());
 

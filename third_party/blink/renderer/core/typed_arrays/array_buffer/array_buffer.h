@@ -44,27 +44,27 @@ class CORE_EXPORT ArrayBuffer : public RefCounted<ArrayBuffer> {
   USING_FAST_MALLOC(ArrayBuffer);
 
  public:
-  static inline scoped_refptr<ArrayBuffer> Create(unsigned num_elements,
-                                                  unsigned element_byte_size);
+  static inline scoped_refptr<ArrayBuffer> Create(size_t num_elements,
+                                                  size_t element_byte_size);
   static inline scoped_refptr<ArrayBuffer> Create(ArrayBuffer*);
   static inline scoped_refptr<ArrayBuffer> Create(const void* source,
                                                   size_t byte_length);
   static inline scoped_refptr<ArrayBuffer> Create(ArrayBufferContents&);
 
   static inline scoped_refptr<ArrayBuffer> CreateOrNull(
-      unsigned num_elements,
-      unsigned element_byte_size);
+      size_t num_elements,
+      size_t element_byte_size);
 
   // Only for use by DOMArrayBuffer::CreateUninitializedOrNull().
   static inline scoped_refptr<ArrayBuffer> CreateUninitializedOrNull(
-      unsigned num_elements,
-      unsigned element_byte_size);
+      size_t num_elements,
+      size_t element_byte_size);
 
   static inline scoped_refptr<ArrayBuffer> CreateShared(
-      unsigned num_elements,
-      unsigned element_byte_size);
+      size_t num_elements,
+      size_t element_byte_size);
   static inline scoped_refptr<ArrayBuffer> CreateShared(const void* source,
-                                                        unsigned byte_length);
+                                                        size_t byte_length);
 
   inline void* Data();
   inline const void* Data() const;
@@ -98,16 +98,16 @@ class CORE_EXPORT ArrayBuffer : public RefCounted<ArrayBuffer> {
 
  private:
   static inline scoped_refptr<ArrayBuffer> Create(
-      unsigned num_elements,
-      unsigned element_byte_size,
+      size_t num_elements,
+      size_t element_byte_size,
       ArrayBufferContents::InitializationPolicy);
   static inline scoped_refptr<ArrayBuffer> CreateOrNull(
-      unsigned num_elements,
-      unsigned element_byte_size,
+      size_t num_elements,
+      size_t element_byte_size,
       ArrayBufferContents::InitializationPolicy);
   static inline scoped_refptr<ArrayBuffer> CreateShared(
-      unsigned num_elements,
-      unsigned element_byte_size,
+      size_t num_elements,
+      size_t element_byte_size,
       ArrayBufferContents::InitializationPolicy);
 
   inline unsigned ClampIndex(unsigned index) const;
@@ -117,8 +117,8 @@ class CORE_EXPORT ArrayBuffer : public RefCounted<ArrayBuffer> {
   bool is_detached_;
 };
 
-scoped_refptr<ArrayBuffer> ArrayBuffer::Create(unsigned num_elements,
-                                               unsigned element_byte_size) {
+scoped_refptr<ArrayBuffer> ArrayBuffer::Create(size_t num_elements,
+                                               size_t element_byte_size) {
   return Create(num_elements, element_byte_size,
                 ArrayBufferContents::kZeroInitialize);
 }
@@ -146,23 +146,22 @@ scoped_refptr<ArrayBuffer> ArrayBuffer::Create(ArrayBufferContents& contents) {
   return base::AdoptRef(new ArrayBuffer(contents));
 }
 
-scoped_refptr<ArrayBuffer> ArrayBuffer::CreateOrNull(
-    unsigned num_elements,
-    unsigned element_byte_size) {
+scoped_refptr<ArrayBuffer> ArrayBuffer::CreateOrNull(size_t num_elements,
+                                                     size_t element_byte_size) {
   return CreateOrNull(num_elements, element_byte_size,
                       ArrayBufferContents::kZeroInitialize);
 }
 
 scoped_refptr<ArrayBuffer> ArrayBuffer::CreateUninitializedOrNull(
-    unsigned num_elements,
-    unsigned element_byte_size) {
+    size_t num_elements,
+    size_t element_byte_size) {
   return CreateOrNull(num_elements, element_byte_size,
                       ArrayBufferContents::kDontInitialize);
 }
 
 scoped_refptr<ArrayBuffer> ArrayBuffer::Create(
-    unsigned num_elements,
-    unsigned element_byte_size,
+    size_t num_elements,
+    size_t element_byte_size,
     ArrayBufferContents::InitializationPolicy policy) {
   ArrayBufferContents contents(num_elements, element_byte_size,
                                ArrayBufferContents::kNotShared, policy);
@@ -172,8 +171,8 @@ scoped_refptr<ArrayBuffer> ArrayBuffer::Create(
 }
 
 scoped_refptr<ArrayBuffer> ArrayBuffer::CreateOrNull(
-    unsigned num_elements,
-    unsigned element_byte_size,
+    size_t num_elements,
+    size_t element_byte_size,
     ArrayBufferContents::InitializationPolicy policy) {
   ArrayBufferContents contents(num_elements, element_byte_size,
                                ArrayBufferContents::kNotShared, policy);
@@ -182,15 +181,14 @@ scoped_refptr<ArrayBuffer> ArrayBuffer::CreateOrNull(
   return base::AdoptRef(new ArrayBuffer(contents));
 }
 
-scoped_refptr<ArrayBuffer> ArrayBuffer::CreateShared(
-    unsigned num_elements,
-    unsigned element_byte_size) {
+scoped_refptr<ArrayBuffer> ArrayBuffer::CreateShared(size_t num_elements,
+                                                     size_t element_byte_size) {
   return CreateShared(num_elements, element_byte_size,
                       ArrayBufferContents::kZeroInitialize);
 }
 
 scoped_refptr<ArrayBuffer> ArrayBuffer::CreateShared(const void* source,
-                                                     unsigned byte_length) {
+                                                     size_t byte_length) {
   ArrayBufferContents contents(byte_length, 1, ArrayBufferContents::kShared,
                                ArrayBufferContents::kDontInitialize);
   CHECK(contents.DataShared());
@@ -200,8 +198,8 @@ scoped_refptr<ArrayBuffer> ArrayBuffer::CreateShared(const void* source,
 }
 
 scoped_refptr<ArrayBuffer> ArrayBuffer::CreateShared(
-    unsigned num_elements,
-    unsigned element_byte_size,
+    size_t num_elements,
+    size_t element_byte_size,
     ArrayBufferContents::InitializationPolicy policy) {
   ArrayBufferContents contents(num_elements, element_byte_size,
                                ArrayBufferContents::kShared, policy);

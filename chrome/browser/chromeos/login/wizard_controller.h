@@ -85,7 +85,7 @@ class WizardController {
   static void SkipEnrollmentPromptsForTesting();
 
   // Forces screens that should only appear in chrome branded builds to show.
-  static std::unique_ptr<base::AutoReset<bool>> ForceOfficialBuildForTesting();
+  static std::unique_ptr<base::AutoReset<bool>> ForceBrandedBuildForTesting();
 
   // Returns true if OOBE is operating under the
   // Zero-Touch Hands-Off Enrollment Flow.
@@ -332,8 +332,8 @@ class WizardController {
   // Screen that was active before, or nullptr for login screen.
   BaseScreen* previous_screen_ = nullptr;
 
-// True if running official BUILD.
-  static bool is_official_build_;
+  // True if this is a branded build (i.e. Google Chrome).
+  static bool is_branded_build_;
 
   // True if full OOBE flow should be shown.
   bool is_out_of_box_ = false;

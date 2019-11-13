@@ -130,7 +130,7 @@
 <translation id="1177863135347784049">Personnalisé</translation>
 <translation id="1178581264944972037">Suspendre</translation>
 <translation id="117916940443676133">Votre clé de sécurité n'est pas protégée par un code. Pour gérer vos données de connexion, commencez par créer un code.</translation>
-<translation id="118069123878619799">- Vos caractéristiques physiques, telles que votre taille</translation>
+<translation id="118069123878619799">- vos caractéristiques physiques, telles que votre taille ;</translation>
 <translation id="1181037720776840403">Supprimer</translation>
 <translation id="1183237619868651138">Impossible d'installer le fichier <ph name="EXTERNAL_CRX_FILE" /> dans le cache local.</translation>
 <translation id="1185924365081634987">Vous pouvez également essayer de <ph name="GUEST_SIGNIN_LINK_START" />naviguer en tant qu'invité<ph name="GUEST_SIGNIN_LINK_END" /> pour corriger cette erreur réseau.</translation>
@@ -2044,7 +2044,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="3923676227229836009">Cette page est autorisée à afficher les fichiers</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3925573269917483990">Appareil photo :</translation>
-<translation id="3925842537050977900">Retirer de l'étagère</translation>
 <translation id="3926002189479431949">Le téléphone Smart Lock a changé</translation>
 <translation id="3927932062596804919">Refuser</translation>
 <translation id="3928570707778085600">Enregistrer les modifications apportées à "<ph name="FILE_OR_FOLDER_NAME" />" ?</translation>
@@ -2319,7 +2318,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4349828822184870497">Utile</translation>
 <translation id="4350019051035968019">Impossible d'enregistrer cet appareil dans le domaine auquel appartient votre compte, car il est marqué pour être géré par un autre domaine.</translation>
 <translation id="4351060348582610152">Le site <ph name="ORIGIN" /> souhaite rechercher les appareils Bluetooth à proximité. Les appareils suivants ont été détectés :</translation>
-<translation id="4353114845960720315">Lorsque vous utilisez le mode RV, le site peut retenir les informations suivantes :</translation>
+<translation id="4353114845960720315">En mode RV, le site pourrait accéder aux informations suivantes :</translation>
 <translation id="4354344420232759511">Les sites que vous consultez s'affichent ici</translation>
 <translation id="435527878592612277">Sélectionner votre photo</translation>
 <translation id="4358313196493694334">Stabiliser la position du curseur</translation>
@@ -2379,7 +2378,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="443475966875174318">Mettre à jour ou supprimer des applications incompatibles</translation>
 <translation id="4438043733494739848">Transparent</translation>
 <translation id="4441124369922430666">Voulez-vous démarrer automatiquement cette application à la mise sous tension de l'ordinateur ?</translation>
-<translation id="4441147046941420429">Pour continuer, retirez la clé de sécurité de votre appareil, puis réinsérez-la et appuyez sur son bouton d'activation</translation>
+<translation id="4441147046941420429">Pour continuer, retirez la clé de sécurité de votre appareil, puis réinsérez-la et appuyez dessus</translation>
 <translation id="444134486829715816">Développer...</translation>
 <translation id="4442424173763614572">Échec de la résolution DNS.</translation>
 <translation id="4443536555189480885">&amp;Aide</translation>
@@ -2538,7 +2537,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4689235506267737042">Sélectionner vos préférences de démonstration</translation>
 <translation id="4689421377817139245">Synchroniser ce favori sur votre iPhone</translation>
 <translation id="4690091457710545971">&lt;Le micrologiciel Wi-Fi d'Intel a généré quatre fichiers : csr.lst, fh_regs.lst, radio_reg.lst et monitor.lst.sysmon. Les trois premiers sont des fichiers binaires qui contiennent des images mémoire de registres. Intel certifie que ces fichiers ne possèdent pas d'informations personnelles ni de données permettant d'identifier les appareils. Le dernier fichier est une trace d'exécution du micrologiciel Intel. Toutes les informations personnelles ainsi que les données permettant d'identifier les appareils qu'il pouvait contenir ont été supprimées. Toutefois, il est trop volumineux pour s'afficher ici. Ces fichiers ont été créés suite aux problèmes que votre appareil a récemment rencontrés avec le Wi-Fi, et seront partagés avec Intel pour qu'une solution soit trouvée.&gt;</translation>
-<translation id="469230890969474295">Dossier OEM</translation>
 <translation id="4692623383562244444">Moteurs de recherche</translation>
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694024090038830733">La configuration de l'imprimante est gérée par l'administrateur.</translation>
@@ -2571,7 +2569,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4737715515457435632">Veuillez vous connecter à un réseau</translation>
 <translation id="473775607612524610">Mettre à jour</translation>
 <translation id="4739639199548674512">Tickets</translation>
-<translation id="4742746985488890273">Épingler sur l'étagère</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Découvrir comment mettre à jour des applications<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Réactiver le son du site}one{Réactiver le son du site}other{Réactiver le son des sites}}</translation>
 <translation id="4746351372139058112">Messages</translation>
@@ -2831,7 +2828,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5135085122826131075">Accédez à l'Assistant en disant "Ok Google".</translation>
 <translation id="5135533361271311778">Impossible de créer le favori.</translation>
 <translation id="5137501176474113045">Supprimer cet article</translation>
-<translation id="5139823398361067371">Saisissez le code associé à votre clé de sécurité. Si vous ne le connaissez pas, vous devez réinitialiser la clé de sécurité.</translation>
+<translation id="5139823398361067371">Saisissez le code de votre clé de sécurité. Si vous ne le connaissez pas, vous devez réinitialiser la clé de sécurité.</translation>
 <translation id="5139955368427980650">&amp;Ouvrir</translation>
 <translation id="5142961317498132443">Authentification</translation>
 <translation id="5143374789336132547">L'extension <ph name="EXTENSION_NAME" /> a modifié la page affichée lorsque vous cliquez sur le bouton Accueil.</translation>
@@ -3293,7 +3290,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="5815645614496570556">Adresse X.400</translation>
 <translation id="5816434091619127343">Les modifications demandées concernant l'imprimante risquent de rendre celle-ci inutilisable.</translation>
 <translation id="5817918615728894473">Associer</translation>
-<translation id="5819762621475381970">- La disposition de la pièce</translation>
+<translation id="5819762621475381970">- la disposition de la pièce.</translation>
 <translation id="5821565227679781414">Créer un raccourci</translation>
 <translation id="5825412242012995131">Activé (recommandé)</translation>
 <translation id="5826395379250998812">Connectez votre <ph name="DEVICE_TYPE" /> à votre téléphone. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" /></translation>
@@ -3564,7 +3561,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6196854373336333322">L'extension <ph name="EXTENSION_NAME" /> a pris le contrôle de vos paramètres de proxy, ce qui signifie que toutes vos activités en ligne peuvent être modifiées, interrompues ou espionnées. Si vous ne savez pas pourquoi cette modification s'est produite, c'est qu'elle est probablement indésirable.</translation>
 <translation id="6198102561359457428">Se déconnecter, puis se connecter de nouveau…</translation>
 <translation id="6198252989419008588">Modifier le code PIN</translation>
-<translation id="6201792273624501289">Applications Linux</translation>
 <translation id="6202304368170870640">Vous pouvez utiliser votre code pour vous connecter à votre appareil ou le déverrouiller.</translation>
 <translation id="6206311232642889873">Cop&amp;ier l'image</translation>
 <translation id="6207200176136643843">Réinitialiser le niveau de zoom par défaut</translation>
@@ -3959,7 +3955,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6805038906417219576">OK</translation>
 <translation id="6805647936811177813">Connectez-vous à <ph name="TOKEN_NAME" /> pour importer le certificat client de <ph name="HOST_NAME" /></translation>
 <translation id="680572642341004180">Activer le suivi RLZ pour <ph name="SHORT_PRODUCT_OS_NAME" /></translation>
-<translation id="6808039367995747522">Pour continuer, insérez la clé de sécurité et appuyez sur son bouton d'activation</translation>
+<translation id="6808039367995747522">Pour continuer, insérez la clé de sécurité et appuyez dessus</translation>
 <translation id="6808193438228982088">Renard</translation>
 <translation id="6810613314571580006">Permet de se connecter automatiquement aux sites Web à l'aide des identifiants enregistrés. Lorsque la fonctionnalité est désactivée, vous êtes invité à confirmer chaque connexion à un site Web.</translation>
 <translation id="6810768462515084623">Petit problème… Votre mot de passe est arrivé à expiration. Changez-le sur un autre appareil, puis réessayez.</translation>
@@ -5598,7 +5594,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="9130015405878219958">Le mode indiqué est incorrect.</translation>
 <translation id="9131487537093447019">Envoyer des messages à des appareils Bluetooth, et en recevoir de ces derniers</translation>
 <translation id="9134304429738380103">J'accepte.</translation>
-<translation id="9135090785674039430">Lorsque cette option est activée, les sites ne peuvent pas utiliser de cookies pour suivre votre activité sur le Web. Certains sites Web risquent de ne pas fonctionner.</translation>
 <translation id="9137013805542155359">Afficher l'original</translation>
 <translation id="9137157311132182254">Moteur de recherche préféré</translation>
 <translation id="9137248913990643158">Veuillez démarrer Chrome et vous connecter à votre compte avant d'utiliser cette application</translation>

@@ -29,7 +29,6 @@
 #include "google_apis/gaia/oauth2_id_token_decoder.h"
 #include "google_apis/gaia/oauth_multilogin_result.h"
 #include "net/base/escape.h"
-#include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
@@ -40,9 +39,6 @@
 #include "services/network/public/cpp/simple_url_loader.h"
 
 namespace {
-
-const int kLoadFlagsIgnoreCookies = net::LOAD_DO_NOT_SEND_COOKIES |
-                                    net::LOAD_DO_NOT_SAVE_COOKIES;
 
 const size_t kMaxMessageSize = 1024 * 1024;  // 1MB
 
@@ -256,7 +252,7 @@ void GaiaAuthFetcher::CreateAndStartGaiaFetcher(
     const std::string& body,
     const std::string& headers,
     const GURL& gaia_gurl,
-    int load_flags,
+    network::mojom::CredentialsMode credentials_mode,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(!fetch_pending_) << "Tried to fetch two things at once!";
 
@@ -264,7 +260,7 @@ void GaiaAuthFetcher::CreateAndStartGaiaFetcher(
   resource_request->url = gaia_gurl;
   original_url_ = gaia_gurl;
 
-  if (!(load_flags & net::LOAD_DO_NOT_SEND_COOKIES)) {
+  if (credentials_mode != network::mojom::CredentialsMode::kOmit) {
     DCHECK_EQ(GaiaUrls::GetInstance()->gaia_url(), gaia_gurl.GetOrigin())
         << gaia_gurl;
     resource_request->site_for_cookies = GaiaUrls::GetInstance()->gaia_url();
@@ -287,7 +283,7 @@ void GaiaAuthFetcher::CreateAndStartGaiaFetcher(
   // maintain a separation between the user's browsing and Chrome's internal
   // services.  Where such mixing is desired (MergeSession or OAuthLogin), it
   // will be done explicitly.
-  resource_request->load_flags = load_flags;
+  resource_request->credentials_mode = credentials_mode;
 
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  traffic_annotation);
@@ -490,7 +486,8 @@ void GaiaAuthFetcher::StartRevokeOAuth2Token(const std::string& auth_token) {
           }
         })");
   CreateAndStartGaiaFetcher(request_body_, std::string(), oauth2_revoke_gurl_,
-                            kLoadFlagsIgnoreCookies, traffic_annotation);
+                            network::mojom::CredentialsMode::kOmit,
+                            traffic_annotation);
 }
 
 void GaiaAuthFetcher::StartAuthCodeForOAuth2TokenExchange(
@@ -534,7 +531,8 @@ void GaiaAuthFetcher::StartAuthCodeForOAuth2TokenExchangeWithDeviceId(
           }
         })");
   CreateAndStartGaiaFetcher(request_body_, std::string(), oauth2_token_gurl_,
-                            kLoadFlagsIgnoreCookies, traffic_annotation);
+                            network::mojom::CredentialsMode::kOmit,
+                            traffic_annotation);
 }
 
 void GaiaAuthFetcher::StartGetUserInfo(const std::string& lsid) {
@@ -566,7 +564,8 @@ void GaiaAuthFetcher::StartGetUserInfo(const std::string& lsid) {
           }
         })");
   CreateAndStartGaiaFetcher(request_body_, std::string(), get_user_info_gurl_,
-                            kLoadFlagsIgnoreCookies, traffic_annotation);
+                            network::mojom::CredentialsMode::kOmit,
+                            traffic_annotation);
 }
 
 void GaiaAuthFetcher::StartMergeSession(const std::string& uber_token,
@@ -614,9 +613,9 @@ void GaiaAuthFetcher::StartMergeSession(const std::string& uber_token,
             }
           }
         })");
-  CreateAndStartGaiaFetcher(std::string(), std::string(),
-                            merge_session_gurl_.Resolve(query),
-                            net::LOAD_NORMAL, traffic_annotation);
+  CreateAndStartGaiaFetcher(
+      std::string(), std::string(), merge_session_gurl_.Resolve(query),
+      network::mojom::CredentialsMode::kInclude, traffic_annotation);
 }
 
 void GaiaAuthFetcher::StartTokenFetchForUberAuthExchange(
@@ -654,9 +653,9 @@ void GaiaAuthFetcher::StartTokenFetchForUberAuthExchange(
             }
           }
         })");
-  CreateAndStartGaiaFetcher(std::string(), authentication_header,
-                            uberauth_token_gurl_, kLoadFlagsIgnoreCookies,
-                            traffic_annotation);
+  CreateAndStartGaiaFetcher(
+      std::string(), authentication_header, uberauth_token_gurl_,
+      network::mojom::CredentialsMode::kOmit, traffic_annotation);
 }
 
 void GaiaAuthFetcher::StartOAuthLogin(const std::string& access_token,
@@ -696,9 +695,9 @@ void GaiaAuthFetcher::StartOAuthLogin(const std::string& access_token,
             }
           }
         })");
-  CreateAndStartGaiaFetcher(request_body_, authentication_header,
-                            oauth_login_gurl_, net::LOAD_NORMAL,
-                            traffic_annotation);
+  CreateAndStartGaiaFetcher(
+      request_body_, authentication_header, oauth_login_gurl_,
+      network::mojom::CredentialsMode::kInclude, traffic_annotation);
 }
 
 void GaiaAuthFetcher::StartListAccounts() {
@@ -731,10 +730,10 @@ void GaiaAuthFetcher::StartListAccounts() {
             }
           }
         })");
-  CreateAndStartGaiaFetcher(" ",  // To force an HTTP POST.
-                            "Origin: https://www.google.com",
-                            list_accounts_gurl_, net::LOAD_NORMAL,
-                            traffic_annotation);
+  CreateAndStartGaiaFetcher(
+      " ",  // To force an HTTP POST.
+      "Origin: https://www.google.com", list_accounts_gurl_,
+      network::mojom::CredentialsMode::kInclude, traffic_annotation);
 }
 
 void GaiaAuthFetcher::StartOAuthMultilogin(
@@ -796,10 +795,10 @@ void GaiaAuthFetcher::StartOAuthMultilogin(
             }
           }
         })");
-  CreateAndStartGaiaFetcher(" ",  // Non-empty to force a POST
-                            authorization_header,
-                            oauth_multilogin_gurl_.Resolve(parameters),
-                            net::LOAD_NORMAL, traffic_annotation);
+  CreateAndStartGaiaFetcher(
+      " ",  // Non-empty to force a POST
+      authorization_header, oauth_multilogin_gurl_.Resolve(parameters),
+      network::mojom::CredentialsMode::kInclude, traffic_annotation);
 }
 
 void GaiaAuthFetcher::StartLogOut() {
@@ -833,7 +832,8 @@ void GaiaAuthFetcher::StartLogOut() {
           }
         })");
   CreateAndStartGaiaFetcher(std::string(), std::string(), logout_gurl_,
-                            net::LOAD_NORMAL, traffic_annotation);
+                            network::mojom::CredentialsMode::kInclude,
+                            traffic_annotation);
 }
 
 void GaiaAuthFetcher::StartGetCheckConnectionInfo() {
@@ -864,9 +864,9 @@ void GaiaAuthFetcher::StartGetCheckConnectionInfo() {
             }
           }
         })");
-  CreateAndStartGaiaFetcher(std::string(), std::string(),
-                            get_check_connection_info_url_,
-                            kLoadFlagsIgnoreCookies, traffic_annotation);
+  CreateAndStartGaiaFetcher(
+      std::string(), std::string(), get_check_connection_info_url_,
+      network::mojom::CredentialsMode::kOmit, traffic_annotation);
 }
 
 // static

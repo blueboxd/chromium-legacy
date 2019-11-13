@@ -326,9 +326,9 @@ public class TabGridDialogMediator {
 
     private void setupDialogSelectionEditor() {
         assert mTabSelectionEditorController != null;
-        TabSelectionEditorActionProvider actionProvider = new TabSelectionEditorActionProvider(
-                mTabModelSelector, mTabSelectionEditorController,
-                TabSelectionEditorActionProvider.TabSelectionEditorAction.UNGROUP);
+        TabSelectionEditorActionProvider actionProvider =
+                new TabSelectionEditorActionProvider(mTabSelectionEditorController,
+                        TabSelectionEditorActionProvider.TabSelectionEditorAction.UNGROUP);
 
         String actionButtonText =
                 mContext.getString(R.string.tab_grid_dialog_selection_mode_remove);

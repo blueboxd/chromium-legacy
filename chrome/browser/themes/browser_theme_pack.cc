@@ -1035,7 +1035,7 @@ void BrowserThemePack::AddCustomThemeColorMixers(
   }
   if (theme_colors.empty())
     return;
-  provider->AddMixer()->AddSet({kColorSetCustomTheme, std::move(theme_colors)});
+  provider->AddMixer().AddSet({kColorSetCustomTheme, std::move(theme_colors)});
 }
 
 // private:

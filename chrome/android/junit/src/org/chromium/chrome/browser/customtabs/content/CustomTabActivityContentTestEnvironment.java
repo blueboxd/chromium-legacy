@@ -151,10 +151,15 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
 
     public CustomTabActivityNavigationController createNavigationController(
             CustomTabActivityTabController tabController) {
-        return new CustomTabActivityNavigationController(tabController, tabProvider,
-                intentDataProvider, connection, () -> customTabObserver, closeButtonNavigator,
-                () -> toolbarManager, browserInitializer, activity, lifecycleDispatcher,
-                () -> fullscreenManager);
+        CustomTabActivityNavigationController controller =
+                new CustomTabActivityNavigationController(tabController, tabProvider,
+                        intentDataProvider, connection,
+                        ()
+                                -> customTabObserver,
+                        closeButtonNavigator, browserInitializer, activity, lifecycleDispatcher,
+                        () -> fullscreenManager);
+        controller.onToolbarInitialized(toolbarManager);
+        return controller;
     }
 
     public CustomTabIntentHandler createIntentHandler(

@@ -14,7 +14,6 @@ import android.support.test.filters.SmallTest;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -42,9 +41,11 @@ public class AsyncTaskThreadTest {
     private static final boolean DEBUG = false;
 
     private static class BlockAndGetFeedDataTask extends AsyncTask<Boolean> {
-        private LinkedBlockingQueue<Boolean> mIncomingQueue = new LinkedBlockingQueue<Boolean>();
-        private LinkedBlockingQueue<Boolean> mOutgoingQueue = new LinkedBlockingQueue<Boolean>();
-        private LinkedBlockingQueue<Boolean> mInterruptedExceptionQueue =
+        private final LinkedBlockingQueue<Boolean> mIncomingQueue =
+                new LinkedBlockingQueue<Boolean>();
+        private final LinkedBlockingQueue<Boolean> mOutgoingQueue =
+                new LinkedBlockingQueue<Boolean>();
+        private final LinkedBlockingQueue<Boolean> mInterruptedExceptionQueue =
                 new LinkedBlockingQueue<Boolean>();
         private Boolean mPostExecuteResult;
 
@@ -69,6 +70,7 @@ public class AsyncTaskThreadTest {
             try {
                 return mIncomingQueue.poll(3, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
+                if (DEBUG) Log.i(TAG, "InterruptedException");
                 mInterruptedExceptionQueue.add(true);
                 return false;
             }
@@ -125,7 +127,7 @@ public class AsyncTaskThreadTest {
         // Cannot cancel. The task is already run.
         assertFalse(mTask.cancel(false /* mayInterruptIfRunning */));
         assertTrue(mTask.get());
-        assertEquals(Boolean.valueOf(true), mTask.getPostExecuteResult());
+        assertEquals(Boolean.TRUE, mTask.getPostExecuteResult());
     }
 
     @Test
@@ -135,6 +137,7 @@ public class AsyncTaskThreadTest {
 
         // Wait until the task is started. Note that data is not yet fed.
         mTask.blockUntilDoInBackgroundStarts();
+
         // This reflects FutureTask#cancel() behavior. Note that the task is
         // started but cancel can still return true.
         assertTrue(mTask.cancel(false /* mayInterruptIfRunning */));
@@ -167,12 +170,11 @@ public class AsyncTaskThreadTest {
         // Cannot cancel. The task is already run.
         assertFalse(mTask.cancel(true /* mayInterruptIfRunning */));
         assertTrue(mTask.get());
-        assertEquals(Boolean.valueOf(true), mTask.getPostExecuteResult());
+        assertEquals(Boolean.TRUE, mTask.getPostExecuteResult());
     }
 
     @Test
     @SmallTest
-    @Ignore("crbug.com/1022954")
     public void testCancel_MayInterrupt_TaskIsInterrupted() throws Exception {
         mTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
@@ -182,8 +184,7 @@ public class AsyncTaskThreadTest {
         // Cancel and interrupt the current task.
         assertTrue(mTask.cancel(true /* mayInterruptIfRunning */));
 
-        // Ensure that the background thread is not blocked.
-        mTask.feedData(true);
+        // Do not feed data here because task may finish before it gets interrupted.
 
         // get() will raise an exception although the task is started.
         try {
@@ -194,6 +195,8 @@ public class AsyncTaskThreadTest {
         }
         assertNull(mTask.getPostExecuteResult()); // onPostExecute did not run.
         // Task was interrupted.
-        assertEquals(Boolean.valueOf(true), mTask.getInterruptedExceptionQueue().poll());
+        // Note: interruption is raised and handled in the background thread, so we need to
+        // wait here.
+        assertEquals(Boolean.TRUE, mTask.getInterruptedExceptionQueue().poll(3, TimeUnit.SECONDS));
     }
 }

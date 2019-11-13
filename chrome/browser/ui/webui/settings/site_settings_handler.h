@@ -14,17 +14,15 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/permissions/chooser_context_base.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_observer.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/host_zoom_map.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "ppapi/buildflags/buildflags.h"
-
-class Profile;
 
 class PrefChangeRegistrar;
 
@@ -37,7 +35,7 @@ namespace settings {
 // Chrome "ContentSettings" settings page UI handler.
 class SiteSettingsHandler : public SettingsPageUIHandler,
                             public content_settings::Observer,
-                            public content::NotificationObserver,
+                            public ProfileObserver,
                             public ChooserContextBase::PermissionObserver,
                             public CookiesTreeModel::Observer {
  public:
@@ -79,10 +77,9 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
                                ContentSettingsType content_type,
                                const std::string& resource_identifier) override;
 
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // ProfileObserver:
+  void OnOffTheRecordProfileCreated(Profile* off_the_record) override;
+  void OnProfileWillBeDestroyed(Profile* profile) override;
 
   // ChooserContextBase::PermissionObserver implementation:
   void OnChooserObjectPermissionChanged(
@@ -246,7 +243,7 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   Profile* profile_;
   web_app::AppRegistrar& app_registrar_;
 
-  content::NotificationRegistrar notification_registrar_;
+  ScopedObserver<Profile, ProfileObserver> observed_profiles_{this};
 
   // Keeps track of events related to zooming.
   std::unique_ptr<content::HostZoomMap::Subscription>

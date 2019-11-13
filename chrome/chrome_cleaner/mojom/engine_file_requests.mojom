@@ -4,7 +4,7 @@
 
 module chrome_cleaner.mojom;
 
-import "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom";
+import "chrome/chrome_cleaner/mojom/footprints.mojom";
 
 // Handles returned by FindFirstFile aren't real handles, so we can't pass them
 // through mojo as handles, since they can't be duplicated.

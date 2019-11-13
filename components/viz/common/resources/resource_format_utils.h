@@ -18,7 +18,7 @@
 #endif
 
 #if BUILDFLAG(SKIA_USE_DAWN)
-#include "third_party/dawn/src/include/dawn/dawncpp.h"  // nogncheck
+#include <dawn/dawncpp.h>
 #endif
 
 namespace viz {

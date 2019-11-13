@@ -3,11 +3,11 @@
 <translationbundle lang="nl">
 <translation id="1001649754854402482">Schakel <ph name="CORS" />-controlebeperkingen voor de nieuwe <ph name="CORS" />-implementatie in, waardoor extensies geschikt gedrag kunnen behouden en <ph name="PRODUCT_NAME" /> toestemming heeft om opgegeven headers te verzenden zonder <ph name="CORS" />-controle.
 
-      Als deze lijst leeg is, probeert <ph name="PRODUCT_NAME" /> extensies op geschikte manieren uit te voeren en worden er geen <ph name="API" />-wijzingen geïntroduceerd voor <ph name="PRODUCT_NAME" /> 79, zoals uiteeengezet in <ph name="WEB_REQUEST_API_MANUAL" />.
+      Als deze lijst leeg is, probeert <ph name="PRODUCT_NAME" /> extensies op geschikte manieren uit te voeren en worden er geen <ph name="API" />-wijzingen geïntroduceerd voor <ph name="PRODUCT_NAME" /> 79, zoals uitgelegd in <ph name="WEB_REQUEST_API_MANUAL" />.
 
       Als deze lijst is ingesteld voor headernamen van <ph name="HTTP" />-verzoeken, negeert de <ph name="CORS" />-controle de vermelde headers om de beperking voor extensies in te schakelen.
 
-      Als deze lijst niet is ingesteld, worden beide beperkingen (zoals hierboven uiteengezet) niet toegepast.
+      Als deze lijst niet is ingesteld, worden beide beperkingen (zoals hierboven uitgelegd) niet toegepast.
 
       Ga voor meer informatie over <ph name="CORS" /> naar: <ph name="CORS_HELP_URL" />.</translation>
 <translation id="1002439864875515590">Als dit beleid is ingesteld op een lege tekenreeks of niet is geconfigureerd, geeft <ph name="PRODUCT_OS_NAME" /> geen optie voor automatisch aanvullen weer tijdens het inlogproces van de gebruiker.
@@ -867,7 +867,7 @@
 
       Als de DnsOverHttpsMode is ingesteld op <ph name="SECURE_DNS_MODE_SECURE" />, moet dit beleid worden ingesteld en mag het niet leeg blijven.
 
-      Als de DnsOverHttpsMode is ingesteld op <ph name="SECURE_DNS_MODE_AUTOMATIC" /> en dit beleid is ingesteld, worden de opgegeven URI-templates gebruikt; als dit beleid niet is ingesteld, worden hardgecodeerde toewijzingen gebruikt om te proberen de huidige DNS-resolver van de gebruiker te upgraden naar een DoH-resolver van dezelfde provider.
+      Als de DnsOverHttpsMode is ingesteld op <ph name="SECURE_DNS_MODE_AUTOMATIC" /> en dit beleid is ingesteld, worden de opgegeven URI-templates gebruikt. Als dit beleid niet is ingesteld, worden hardgecodeerde toewijzingen gebruikt om te proberen de huidige DNS-resolver van de gebruiker te upgraden naar een DoH-resolver van dezelfde provider.
 
       Als de URI-template een variabele <ph name="HTTP_VARIABLE_DNS" /> bevat, wordt voor verzoeken aan de resolver <ph name="HTTP_METHOD_GET" /> gebruikt; anders wordt voor verzoeken <ph name="HTTP_METHOD_POST" /> gebruikt.
 
@@ -879,9 +879,9 @@
 <translation id="2386362615870139244">Schermactiveringsvergrendeling toestaan</translation>
 <translation id="2398554235599593694"> Met dit beleid wordt bepaald of het selectievakje 'Altijd openen' moet worden weergegeven in bevestigingsprompts voor externe protocolactivering.
 
-      Als dit beleid is ingesteld op 'True', kan de gebruiker, wanneer een bevestiging van een extern protocol wordt weergegeven, aangeven dat het protocol in de toekomst altijd moet worden geopend zonder bevestigingsprompts.
+      Als dit beleid is ingesteld op 'True', kan de gebruiker, als er een bevestiging van een extern protocol wordt weergegeven, aangeven dat het protocol in de toekomst altijd moet worden geopend zonder bevestigingsprompts.
 
-      Als dit beleid is ingesteld op 'False' of niet is ingesteld, wordt het selectievakje 'Altijd openen' niet weergegeven en ontvangt de gebruiker een prompt telkens wanneer een extern protocol wordt aangeroepen.</translation>
+      Als dit beleid is ingesteld op 'False' of niet is ingesteld, wordt het selectievakje 'Altijd openen' niet weergegeven en krijgt de gebruiker elke keer als er een extern protocol wordt aangeroepen een prompt.</translation>
 <translation id="2411817661175306360">Waarschuwing voor wachtwoordbeveiliging is uitgeschakeld</translation>
 <translation id="2411919772666155530">Meldingen op deze sites blokkeren</translation>
 <translation id="2418507228189425036">Hiermee wordt het opslaan van de browsergeschiedenis in <ph name="PRODUCT_NAME" /> uitgeschakeld en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
@@ -2424,11 +2424,6 @@
           Als je dit beleid instelt, kunnen gebruikers het niet wijzigen of overschrijven.
 
           Als dit beleid niet is ingesteld, is de functie voor monogeluid in eerste instantie uitgeschakeld, maar kan de gebruiker deze op elk gewenst moment inschakelen.</translation>
-<translation id="4759650396863318477">Hiermee kun je de periode in milliseconden instellen waarin gebruikers een melding ontvangen dat <ph name="PRODUCT_NAME" /> opnieuw moet worden gestart of dat een <ph name="PRODUCT_OS_NAME" />-apparaat opnieuw moet worden opgestart om een in behandeling zijnde update uit te voeren.
-
-      Gedurende deze periode krijgt de gebruiker regelmatig de melding dat er een update moet worden uitgevoerd. In het geval van <ph name="PRODUCT_OS_NAME" />-apparaten wordt een melding over opnieuw opstarten weergegeven in het systeemvak, in overeenstemming met het <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />-beleid. In het geval van <ph name="PRODUCT_NAME" />-browsers wordt het app-menu gewijzigd om aan te geven dat er opnieuw moet worden opgestart zodra een derde van de meldingsperiode is verstreken. Deze melding krijgt een andere kleur zodra twee derde van de meldingsperiode is verstreken en dit gebeurt nogmaals als de volledige periode is verstreken. Hetzelfde schema wordt gehanteerd voor aanvullende meldingen die door het <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />-beleid zijn ingeschakeld.
-
-      Als dit beleid niet is ingesteld, wordt de standaardperiode van 345.600.000 milliseconden (vier dagen) voor <ph name="PRODUCT_OS_NAME" />-apparaten en een periode van 604.800.000 milliseconden (één week) voor <ph name="PRODUCT_NAME" /> gebruikt.</translation>
 <translation id="4771144269610910963">Met dit beleid worden uitgebreide scans van gebruikersdownloads met Safe Browsing beheerd. Als dit beleid niet is ingesteld of op de standaardinstelling 'Bestanden niet scannen' staat, worden gebruikersdownloads niet gescand door Safe Browsing.
 
       Als 'Gebruikersdownloads sturen voor scannen' is ingesteld, worden gebruikersdownloads via het netwerk naar Safe Browsing gestuurd om ze te scannen op malware.
@@ -2605,7 +2600,7 @@
 
           Als dit beleid is ingesteld, bepaalt dit het type vergrootglas dat is ingeschakeld als het inlogscherm wordt weergegeven. Als het beleid is ingesteld op 'None', wordt het vergrootglas uitgeschakeld.
 
-          Als je dit beleid instelt, kunnen gebruikers dit tijdelijk overschrijven door het vergrootglas zelf in of uit te schakelen. De keuze van de gebruiker is echter niet permanent en de standaardinstelling wordt hersteld als het inlogscherm opnieuw wordt weergegeven of als de gebruiker gedurende een minuut niet actief is op het inlogscherm.
+          Als je dit beleid instelt, kunnen gebruikers dit tijdelijk overschrijven door het vergrootglas zelf in of uit te schakelen. De keuze van de gebruiker is echter niet permanent en de standaardinstelling wordt hersteld als het inlogscherm opnieuw wordt weergegeven, of als de gebruiker gedurende een minuut niet actief is op het inlogscherm.
 
           Als je dit beleid niet instelt, is het vergrootglas uitgeschakeld als het inlogscherm voor de eerste keer wordt weergegeven. Gebruikers kunnen het vergrootglas op elk moment in- of uitschakelen en de status op het inlogscherm is van toepassing op alle gebruikers.
 
@@ -2998,7 +2993,7 @@
 
       Het bestand mag niet groter zijn dan 1 MB en moet een matrix van records (json-objecten) bevatten. Elke record moet de velden 'id', 'url' en 'display_name' bevatten, met tekenreeksen als waarden. De waarden van het veld 'id' moeten uniek zijn.
 
-      Het bestand wordt gedownload en opgeslagen in het cachegeheugen. De cryptografische hash wordt gebruikt om de integriteit van de download te verifiëren. Het bestand wordt opnieuw gedownload wanneer de URL of de hash wordt gewijzigd.
+      Het bestand wordt gedownload en opgeslagen in het cachegeheugen. De cryptografische hash wordt gebruikt om de integriteit van de download te verifiëren. Het bestand wordt opnieuw gedownload als de URL of de hash wordt gewijzigd.
 
       Als dit beleid is ingesteld op de juiste waarde, proberen apparaten opgegeven afdrukservers naar beschikbare printers te vragen die het IPP-protocol gebruiken.
 
@@ -4399,9 +4394,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als het beleid wordt ingesteld op 'True', gebruikt het apparaat een 24-uursnotatie. Als het beleid wordt ingesteld op 'False', gebruikt het apparaat een 12-uursnotatie.
 
       Als dit beleid niet wordt ingesteld, gebruikt het apparaat standaard een 24-uursnotatie.</translation>
-<translation id="8113421140338762630">Hiermee kun je de periode in milliseconden instellen tussen de eerste melding dat een <ph name="PRODUCT_OS_NAME" />-apparaat opnieuw moet worden gestart om een update in behandeling toe te passen en het eind van de periode zoals vermeld in het <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />-beleid.
-
-      Als dit beleid niet is ingesteld, wordt de standaardperiode van 86400000 milliseconden (één dag) gebruikt voor <ph name="PRODUCT_OS_NAME" />-apparaten.</translation>
 <translation id="8114382167597081590">'Beperkte modus' niet afdwingen op YouTube</translation>
 <translation id="8118665053362250806">Grootte voor mediaschijfcache instellen</translation>
 <translation id="8124468781472887384">Toegangsbeleid voor configuratie van apparaatprinters.</translation>
@@ -4680,9 +4672,9 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
       Wijzigingen in het beleid worden alleen toegepast wanneer ARC niet actief is, bijvoorbeeld wanneer Chrome OS wordt gestart.</translation>
 <translation id="8606263947930257189">Bepaalt of <ph name="PRODUCT_NAME" /> tabbladen kan vastzetten die minimaal vijf minuten op de achtergrond actief zijn.
 
-      Als het beleid is ingesteld op True, kunnen tabbladen worden vastgezet die minimaal vijf minuten op de achtergrond actief zijn. Het vastzetten van tabbladen verlaagt het CPU-, batterij- en geheugengebruik. <ph name="PRODUCT_NAME" /> gebruikt bepaalde methoden om te voorkomen dat tabbladen worden vastgezet die nuttig werk op de achtergrond leveren (zoals meldingen weergeven, geluid afspelen en video streamen). Webontwikkelaars kunnen daarnaast hun site afmelden voor vastzetten (https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/browser/performance_manager/docs/freezing_opt_out_opt_in.md).
+      Als het beleid is ingesteld op 'True', kunnen tabbladen die minimaal vijf minuten op de achtergrond actief zijn worden vastgezet. Het vastzetten van tabbladen verlaagt het CPU-, batterij- en geheugengebruik. <ph name="PRODUCT_NAME" /> gebruikt bepaalde methoden om te voorkomen dat tabbladen worden vastgezet die nuttig werk op de achtergrond leveren (zoals meldingen weergeven, geluid afspelen en video streamen). Webontwikkelaars kunnen daarnaast hun site afmelden voor vastzetten (https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/browser/performance_manager/docs/freezing_opt_out_opt_in.md).
 
-      Als het beleid is ingesteld op False, worden er geen tabbladen vastgezet.</translation>
+      Als het beleid is ingesteld op 'False', worden er geen tabbladen vastgezet.</translation>
 <translation id="8615400197788843468">Hiermee wordt de beperkte inlogfunctie van <ph name="PRODUCT_NAME" /> in G Suite ingeschakeld en wordt voorkomen dat gebruikers deze instelling wijzigen.
 
       Als je deze instelling definieert, kan de gebruiker Google-apps alleen openen via accounts van de opgegeven domeinen (houd er rekening mee dat als je accounts van gmail.com/googlemail.com wilt toestaan, je 'consumer_accounts' (zonder aanhalingstekens) aan de lijst met domeinen moet toevoegen).
@@ -5098,7 +5090,7 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
 <translation id="991560005425213776">Gebruikersnaam en bestandsnaam naar systeemeigen printers verzenden</translation>
 <translation id="99232017131102456">Met dit beleid configureer je één globale cache per profiel met HTTP-serververificatiegegevens.
 
-      Als dit beleid niet is ingesteld of is uitgeschakeld, gebruikt de browser het standaardgedrag van verificatie voor meerdere sites (cross-site auth), die HTTP-serververificatiegegevens vanaf versie 80 per hoofdomeinsite in kaart brengt. Dit betekent dat als twee sites bronnen van hetzelfde verificatiedomein gebruiken, de verificatiegegevens onafhankelijk van elkaar moeten worden doorgegeven binnen de context van beide sites. Proxy-gegevens in het cachegeheugen worden hergebruikt op de andere sites.
+      Als dit beleid niet is ingesteld of is uitgeschakeld, gebruikt de browser het standaardgedrag van verificatie voor meerdere sites (cross-site auth), die HTTP-serververificatiegegevens vanaf versie 80 per hoofddomeinsite in kaart brengt. Dit betekent dat als twee sites bronnen van hetzelfde verificatiedomein gebruiken, de verificatiegegevens onafhankelijk van elkaar moeten worden doorgegeven binnen de context van beide sites. Proxy-gegevens in het cachegeheugen worden hergebruikt op de andere sites.
 
       Als dit beleid is ingeschakeld, worden HTTP-verificatiegegevens die binnen de context van één site worden opgegeven, automatisch gebruikt binnen de context van een andere site.
 

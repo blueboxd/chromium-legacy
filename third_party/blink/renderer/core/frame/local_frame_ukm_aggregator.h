@@ -259,6 +259,8 @@ class CORE_EXPORT LocalFrameUkmAggregator
  private:
   struct AbsoluteMetricRecord {
     std::unique_ptr<CustomCountHistogram> uma_counter;
+    std::unique_ptr<CustomCountHistogram> pre_fcp_uma_counter;
+    std::unique_ptr<CustomCountHistogram> post_fcp_uma_counter;
 
     // Accumulated at each sample, then reset with a call to
     // RecordEndOfFrameMetrics.

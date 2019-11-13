@@ -37,6 +37,10 @@ per-file undo_strings.grdp=file://components/undo/OWNERS
 per-file version_ui_strings.grdp=file://components/version_ui/OWNERS
 per-file web_contents_delegate_android_strings.grdp=file://components/embedder_support/android/delegate/OWNERS
 
+# For web_dev_style related changes.
+per-file .eslintrc.js=file://ui/webui/PLATFORM_OWNERS
+per-file PRESUBMIT.py=file://ui/webui/PLATFORM_OWNERS
+
 # Translation artifacts:
 per-file *.xtb=file://tools/translation/TRANSLATION_OWNERS
 

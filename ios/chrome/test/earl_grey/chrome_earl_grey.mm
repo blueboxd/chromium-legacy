@@ -173,8 +173,14 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 }
 
 - (void)reload {
+  [self reloadAndWaitForCompletion:YES];
+}
+
+- (void)reloadAndWaitForCompletion:(BOOL)wait {
   [ChromeEarlGreyAppInterface startReloading];
-  [self waitForPageToFinishLoading];
+  if (wait) {
+    [self waitForPageToFinishLoading];
+  }
 }
 
 #pragma mark - Tab Utilities (EG2)

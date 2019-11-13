@@ -97,13 +97,3 @@ def GetAvailableTcpPort():
   port = sock.getsockname()[1]
   sock.close()
   return port
-
-
-def PublishPackage(package_path, tuf_root):
-  """Publishes a combined FAR package to a TUF repository root."""
-
-  pm_tool = GetHostToolPathFromPlatform('pm')
-  subprocess.check_call(
-      [pm_tool, 'publish', '-a', '-f', package_path, '-r', tuf_root, '-vt',
-          '-v'],
-      stderr=subprocess.STDOUT)

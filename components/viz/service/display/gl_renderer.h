@@ -102,6 +102,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   void DoDrawQuad(const class DrawQuad*,
                   const gfx::QuadF* draw_region) override;
   void BeginDrawingFrame() override;
+  void FlushOverdrawFeedback(const gfx::Rect& output_rect) override;
   void FinishDrawingFrame() override;
   bool FlippedFramebuffer() const override;
   bool FlippedRootFramebuffer() const;
@@ -330,7 +331,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
 
   // Setup/flush all pending overdraw feedback to framebuffer.
   void SetupOverdrawFeedback();
-  void FlushOverdrawFeedback(const gfx::Rect& output_rect);
+
   // Process overdraw feedback from query.
   void ProcessOverdrawFeedback(std::vector<int>* overdraw,
                                size_t num_expected_results,

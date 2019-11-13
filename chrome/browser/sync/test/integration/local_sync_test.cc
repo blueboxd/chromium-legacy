@@ -10,8 +10,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
-#include "chrome/browser/sharing/sharing_service.h"
-#include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/ui/browser.h"
@@ -19,6 +17,7 @@
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "crypto/ec_private_key.h"
 
 namespace {
 
@@ -75,12 +74,10 @@ IN_PROC_BROWSER_TEST_F(LocalSyncTest, ShouldStart) {
   ASSERT_TRUE(SyncTransportActiveChecker(service).Wait());
 
   EXPECT_TRUE(service->IsLocalSyncEnabled());
+  EXPECT_FALSE(service->GetExperimentalAuthenticationKey());
 
   // Verify certain features are disabled.
   EXPECT_FALSE(send_tab_to_self::IsUserSyncTypeActive(browser()->profile()));
-  EXPECT_EQ(SharingService::State::DISABLED,
-            SharingServiceFactory::GetForBrowserContext(browser()->profile())
-                ->GetStateForTesting());
 }
 #endif  // defined(OS_WIN)
 

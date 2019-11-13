@@ -14,6 +14,7 @@ import android.os.Message;
 import android.os.SystemClock;
 import android.support.v7.app.ActionBar;
 import android.text.TextUtils;
+import android.view.OrientationEventListener;
 import android.view.View;
 import android.view.View.OnAttachStateChangeListener;
 import android.view.View.OnClickListener;
@@ -40,6 +41,7 @@ import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.ThemeColorProvider.ThemeColorObserver;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
+import org.chromium.chrome.browser.appmenu.AppMenuCoordinator;
 import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.appmenu.AppMenuObserver;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
@@ -201,6 +203,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     private final Handler mHandler = new Handler();
     private final ChromeActivity mActivity;
     private UrlFocusChangeListener mLocationBarFocusObserver;
+    private OrientationEventListener mOrientationEventListener;
 
     private BrowserStateBrowserControlsVisibilityDelegate mControlsVisibilityDelegate;
     private int mFullscreenFocusToken = TokenHolder.INVALID_TOKEN;
@@ -249,6 +252,14 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
         mToolbarActionModeCallback = new ToolbarActionModeCallback();
         mBookmarkBridgeSupplier = new ObservableSupplierImpl<>();
+
+        mOrientationEventListener = new OrientationEventListener(activity) {
+            @Override
+            public void onOrientationChanged(int orientation) {
+                onOrientationChange();
+            }
+        };
+        mOrientationEventListener.enable();
 
         mLocationBarFocusObserver = new UrlFocusChangeListener() {
             /** The params used to control how the scrim behaves when shown for the omnibox. */
@@ -706,8 +717,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
      * @param appMenuHandler The handler for interacting with the menu.
      * @param propertiesDelegate Delegate for interactions with the app level menu.
      */
-    public void onAppMenuInitialized(
-            AppMenuHandler appMenuHandler, AppMenuPropertiesDelegate propertiesDelegate) {
+    public void onAppMenuInitialized(AppMenuCoordinator appMenuCoordinator) {
+        AppMenuHandler appMenuHandler = appMenuCoordinator.getAppMenuHandler();
         MenuDelegatePhone menuDelegate = new MenuDelegatePhone() {
             @Override
             public void updateReloadButtonState(boolean isLoading) {
@@ -719,7 +730,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         };
         setMenuDelegatePhone(menuDelegate);
         setAppMenuHandler(appMenuHandler);
-        mAppMenuPropertiesDelegate = propertiesDelegate;
+        mAppMenuPropertiesDelegate = appMenuCoordinator.getAppMenuPropertiesDelegate();
     }
 
     @Override
@@ -1142,16 +1153,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     }
 
     /**
-     * TODO(https://crbug.com/956260): Remove this public method. Classes that need the app menu
-     *     handler should have the dependency passed in rather than retrieving it from the toolbar
-     *     manager.
-     * @return The AppMenuHandler for the menu button contained in the various toolbars.
-     */
-    public @Nullable AppMenuHandler getAppMenuHandler() {
-        return mAppMenuHandler;
-    }
-
-    /**
      * TODO(twellington): Try to remove this method. It's only used to return an in-product help
      *                    bubble anchor view... which should be moved out of tab and perhaps into
      *                    the status bar icon component.
@@ -1254,6 +1255,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
         if (mTabThemeColorProvider != null) mTabThemeColorProvider.removeThemeColorObserver(this);
         if (mAppThemeColorProvider != null) mAppThemeColorProvider.destroy();
+        mOrientationEventListener.disable();
+        mOrientationEventListener = null;
     }
 
     /**

@@ -126,6 +126,11 @@ void WebContentsObserverProxy::DidFailLoad(
       jstring_error_description, jstring_url);
 }
 
+void WebContentsObserverProxy::DidChangeVisibleSecurityState() {
+  Java_WebContentsObserverProxy_didChangeVisibleSecurityState(
+      AttachCurrentThread(), java_observer_);
+}
+
 void WebContentsObserverProxy::DocumentAvailableInMainFrame() {
   JNIEnv* env = AttachCurrentThread();
   Java_WebContentsObserverProxy_documentAvailableInMainFrame(env,

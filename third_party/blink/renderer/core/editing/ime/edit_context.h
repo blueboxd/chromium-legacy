@@ -11,10 +11,10 @@
 #include "third_party/blink/public/platform/web_text_input_type.h"
 #include "third_party/blink/public/web/web_ime_text_span.h"
 #include "third_party/blink/public/web/web_input_method_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
-#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
 
@@ -32,7 +32,8 @@ class InputMethodController;
 // https://github.com/MicrosoftEdge/MSEdgeExplainers/blob/master/EditContext/explainer.md
 
 class CORE_EXPORT EditContext final : public EventTargetWithInlineData,
-                                      public ContextClient,
+                                      public ActiveScriptWrappable<EditContext>,
+                                      public ContextLifecycleObserver,
                                       public WebInputMethodController {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(EditContext);
@@ -134,9 +135,12 @@ class CORE_EXPORT EditContext final : public EventTargetWithInlineData,
   void setInputPanelPolicy(const String& input_policy);
 
   // EventTarget overrides
-  bool HasEventTargetData() const { return has_event_target_data; }
   const AtomicString& InterfaceName() const override;
-  ExecutionContext* GetExecutionContext() const final;
+  ExecutionContext* GetExecutionContext() const override;
+
+  // ActiveScriptWrappable overrides.
+  bool HasPendingActivity() const override;
+
   void Trace(Visitor*) override;
 
   // WebInputMethodController overrides.
@@ -231,7 +235,6 @@ class CORE_EXPORT EditContext final : public EventTargetWithInlineData,
   ui::TextInputAction enter_key_hint_ = ui::TextInputAction::kEnter;
   EditContextInputPanelPolicy input_panel_policy_ =
       EditContextInputPanelPolicy::kManual;
-  bool has_event_target_data = false;
   WebRect control_bounds_;
   WebRect selection_bounds_;
   // This flag is set when the input method controller receives a

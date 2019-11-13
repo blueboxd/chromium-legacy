@@ -2371,11 +2371,6 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
           Se você definir esta política, o usuário não poderá alterá-la ou modificá-la.
 
           Se esta política não for definida, o áudio mono ficará desativado inicialmente, mas poderá ser ativado pelo usuário a qualquer momento.</translation>
-<translation id="4759650396863318477">Permite definir o período, em milésimos de segundo, em que os usuários são notificados de que o <ph name="PRODUCT_NAME" /> ou um dispositivo <ph name="PRODUCT_OS_NAME" /> precisa ser reiniciado para aplicar uma atualização pendente.
-
-      Nesse período, o usuário será informado várias vezes sobre a necessidade de atualização. Para dispositivos <ph name="PRODUCT_OS_NAME" />, uma notificação de reinicialização é exibida na bandeja do sistema de acordo com a política <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Para navegadores <ph name="PRODUCT_NAME" />, o menu de apps muda para indicar que uma reinicialização é necessária após o decorrer de um terço do período de notificação. Essa notificação muda de cor após dois terços do período de notificação e mais uma vez quando todo o período de notificação é concluído. As outras notificações ativadas pela política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> seguem essa mesma programação.
-
-      Se a política não for definida, o período padrão de 345.600.000 milésimos de segundo (quatro dias) será usado para dispositivos <ph name="PRODUCT_OS_NAME" />, e o de 604.800.000 milésimos de segundo (uma semana) será usado para o <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4771144269610910963">Esta política controla a verificação detalhada de downloads do usuário com o "Navegação segura". Se ela não for definida ou a configuração padrão "Não verificar arquivos" for escolhida, os downloads do usuário não serão verificados pelo "Navegação segura".
 
       Se ela for definida como "Enviar downloads do usuário para verificação", os downloads serão enviados pela rede para que o "Navegação segura" faça a verificação de malware.
@@ -4292,9 +4287,6 @@ Esses favoritos são colocados em uma pasta que não pode ser modificada pelo us
       Se a política é definida como "true", o dispositivo usa um formato de hora de 24 horas. Se a política é definida como "false", o dispositivo usa um formato de hora de 12 horas.
 
       Se essa política não é definida, o dispositivo usa o padrão do formato de hora de 24 horas.</translation>
-<translation id="8113421140338762630">Permite definir o período, em milissegundos, entre a primeira notificação de que o dispositivo <ph name="PRODUCT_OS_NAME" /> precisa ser reiniciado para aplicação de uma atualização pendente e o fim do período especificado pela política <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
-
-      Se essa política não for definida, o período padrão de 86.400.000 milissegundos (um dia) será usado para os dispositivos <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="8114382167597081590">Não aplicar o Modo restrito no YouTube</translation>
 <translation id="8118665053362250806">Definir tamanho do cache de disco da mídia</translation>
 <translation id="8124468781472887384">Política de acesso à configuração de impressoras do dispositivo.</translation>

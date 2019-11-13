@@ -36,6 +36,11 @@ public final class TabCallbackProxy {
         mClient.visibleUrlChanged(string);
     }
 
+    @CalledByNative
+    private void onRenderProcessGone() throws RemoteException {
+        mClient.onRenderProcessGone();
+    }
+
     @NativeMethods
     interface Natives {
         long createTabCallbackProxy(TabCallbackProxy proxy, long tab);

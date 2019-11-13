@@ -11,6 +11,9 @@
 namespace ash {
 namespace features {
 
+const base::Feature kAllowAmbientEQ{"AllowAmbientEQ",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kDockedMagnifier{"DockedMagnifier",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -99,6 +102,10 @@ const base::Feature kSwipingFromLeftEdgeToGoBack{
 
 const base::Feature kDragFromShelfToHomeOrOverview{
     "DragFromShelfToHomeOrOverview", base::FEATURE_ENABLED_BY_DEFAULT};
+
+bool IsAllowAmbientEQEnabled() {
+  return base::FeatureList::IsEnabled(kAllowAmbientEQ);
+}
 
 bool IsHideArcMediaNotificationsEnabled() {
   return base::FeatureList::IsEnabled(kMediaSessionNotification) &&

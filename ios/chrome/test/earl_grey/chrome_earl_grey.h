@@ -102,6 +102,10 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // GREYAssert is induced.
 - (void)reload;
 
+// Reloads the page. If |wait| is YES, waits for the loading to complete within
+// a timeout, or a GREYAssert is induced.
+- (void)reloadAndWaitForCompletion:(BOOL)wait;
+
 // Navigates back to the previous page and waits for the loading to complete
 // within a timeout, or a GREYAssert is induced.
 - (void)goBack;

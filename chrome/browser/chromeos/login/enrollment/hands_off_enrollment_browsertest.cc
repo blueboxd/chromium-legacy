@@ -53,7 +53,7 @@ class HandsOffEnrollmentTest : public MixinBasedInProcessBrowserTest {
     ShowLoginWizard(OobeScreen::SCREEN_TEST_NO_WINDOW);
 
     // Set official build so EULA screen is not skipped by default.
-    official_build_override_ = WizardController::ForceOfficialBuildForTesting();
+    branded_build_override_ = WizardController::ForceBrandedBuildForTesting();
 
     // Sets all network services into idle state to simulate disconnected state.
     NetworkStateHandler::NetworkStateList networks;
@@ -84,7 +84,7 @@ class HandsOffEnrollmentTest : public MixinBasedInProcessBrowserTest {
 
  protected:
   test::EnrollmentHelperMixin enrollment_helper_{&mixin_host_};
-  std::unique_ptr<base::AutoReset<bool>> official_build_override_;
+  std::unique_ptr<base::AutoReset<bool>> branded_build_override_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HandsOffEnrollmentTest);

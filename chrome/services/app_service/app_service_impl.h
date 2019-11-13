@@ -70,6 +70,10 @@ class AppServiceImpl : public apps::mojom::AppService {
                  const std::string& app_id,
                  bool clear_site_data,
                  bool report_abuse) override;
+  void PauseApp(apps::mojom::AppType app_type,
+                const std::string& app_id) override;
+  void UnpauseApps(apps::mojom::AppType app_type,
+                   const std::string& app_id) override;
   void OpenNativeSettings(apps::mojom::AppType app_type,
                           const std::string& app_id) override;
   void AddPreferredApp(apps::mojom::AppType app_type,

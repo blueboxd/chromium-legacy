@@ -683,6 +683,9 @@ void DirectRenderer::DrawRenderPass(const RenderPass* render_pass) {
                 render_pass_requires_scissor);
   FinishDrawingQuadList();
 
+  if (is_root_render_pass && overdraw_feedback_)
+    FlushOverdrawFeedback(render_pass_scissor_in_draw_space);
+
   if (render_pass->generate_mipmap)
     GenerateMipmap();
 }

@@ -38,8 +38,8 @@ import {parseCloudDestination, parseInvitation} from './data/cloud_parsers.js';
       this.nativeLayer_ = nativeLayer;
 
       /**
-       * Whether Print Preview is in App Kiosk mode, basically, use only
-       * printers available for the device.
+       * Whether Print Preview is in App Kiosk mode; use only printers available
+       * for the device and disable cookie destinations.
        * @private {boolean}
        */
       this.isInAppKioskMode_ = isInAppKioskMode;
@@ -83,6 +83,11 @@ import {parseCloudDestination, parseInvitation} from './data/cloud_parsers.js';
 
       /** @private {!EventTarget} */
       this.eventTarget_ = new EventTarget();
+    }
+
+    /** @override */
+    areCookieDestinationsDisabled() {
+      return this.isInAppKioskMode_;
     }
 
     /** @override */

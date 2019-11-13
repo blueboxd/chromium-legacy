@@ -158,9 +158,10 @@ void RTCDtlsTransport::OnStateChange(webrtc::DtlsTransportInformation info) {
             der_cert.data(), static_cast<unsigned int>(der_cert.size()));
         // Don't replace the certificate if it's unchanged.
         // Should have been "if (*dab_cert != *remote_certificates_[i])"
-        if (dab_cert->ByteLength() != remote_certificates_[i]->ByteLength() ||
+        if (dab_cert->ByteLengthAsSizeT() !=
+                remote_certificates_[i]->ByteLengthAsSizeT() ||
             memcmp(dab_cert->Data(), remote_certificates_[i]->Data(),
-                   dab_cert->ByteLength()) != 0) {
+                   dab_cert->ByteLengthAsSizeT()) != 0) {
           remote_certificates_[i] = dab_cert;
         }
       }

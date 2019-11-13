@@ -13,6 +13,7 @@ import {Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.m
     return {
       isInKioskAutoPrintMode: false,
       isInAppKioskMode: false,
+      pdfPrinterDisabled: false,
       thousandsDelimiter: ',',
       decimalDelimiter: '.',
       unitType: 1,

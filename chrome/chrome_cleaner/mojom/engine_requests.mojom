@@ -4,9 +4,9 @@
 
 module chrome_cleaner.mojom;
 
+import "chrome/chrome_cleaner/mojom/footprints.mojom";
 import "chrome/chrome_cleaner/mojom/string16_embedded_nulls.mojom";
 import "chrome/chrome_cleaner/mojom/windows_handle.mojom";
-import "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom";
 import "mojo/public/mojom/base/process_id.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 

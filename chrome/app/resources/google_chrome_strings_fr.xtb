@@ -95,7 +95,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="3718181793972440140">Cette action aura pour effet de supprimer 1 élément de cet appareil. Pour récupérer vos données ultérieurement, connectez-vous à Chrome en tant que <ph name="USER_EMAIL" />.</translation>
 <translation id="3735758079232443276">L'extension <ph name="EXTENSION_NAME" /> a modifié la page qui s'affiche lorsque vous démarrez Chrome.</translation>
 <translation id="3780814664026482060">Chrome – <ph name="PAGE_TITLE" /></translation>
-<translation id="3784527566857328444">Supprimer de Chrome</translation>
 <translation id="386202838227397562">Veuillez fermer toutes les fenêtres de Google Chrome et réessayer.</translation>
 <translation id="3873044882194371212">Ouvrir le lien dans la fenêtre de navi&amp;gation privée Chrome</translation>
 <translation id="3889417619312448367">Désinstaller Google Chrome</translation>
@@ -109,9 +108,9 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="4251615635259297716">Associer vos données Chrome à ce compte ?</translation>
 <translation id="4293420128516039005">Se connecter pour synchroniser et personnaliser Chrome sur vos appareils</translation>
 <translation id="4328355335528187361">Google Chrome pour les développeurs (mDNS-In)</translation>
-<translation id="4331809312908958774">Système d’exploitation Google Chrome</translation>
+<translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4343195214584226067">L'extension <ph name="EXTENSION_NAME" /> a été ajoutée à Chrome</translation>
-<translation id="4407807842708586359">Système d'exploitation Google Chrome</translation>
+<translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458462641685292929">Une autre opération est en cours dans Google Chrome. Veuillez réessayer ultérieurement.</translation>
 <translation id="4480040274068703980">Impossible de synchroniser vos données dans Chrome OS, car une erreur s'est produite lors de la connexion.</translation>
 <translation id="4561051373932531560">Avec Google Chrome, cliquez sur un numéro de téléphone sur le Web et appelez-le dans Skype !</translation>

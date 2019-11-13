@@ -93,12 +93,9 @@ source_set("browser_tests") {
     # The test uses data from the original location, not the copied one.
     "//chrome/browser/resources/chromeos/chromevox/",
     "//chrome/browser/resources/chromeos/autoclick/",
-    "//chrome/test/data/webui/test_api.js",
-    "//chrome/third_party/mock4js/",
-    "//third_party/accessibility-audit/axs_testing.js",
-    "//third_party/chaijs/chai.js",
     "//ui/webui/resources/js/cr.js",
   ]
+  data += js2gtest_js_libraries
 }
 
 js2gtest("autoclick_extjs_tests") {

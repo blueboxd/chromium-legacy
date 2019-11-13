@@ -66,7 +66,7 @@ class SplitViewDragIndicatorsTest : public AshTestBase {
     overview_session_ = Shell::Get()->overview_controller()->overview_session();
     ASSERT_TRUE(overview_session_);
     split_view_drag_indicators_ =
-        overview_session_->split_view_drag_indicators();
+        overview_session_->grid_list()[0]->split_view_drag_indicators();
   }
 
   SplitViewController* split_view_controller() {
@@ -368,8 +368,9 @@ TEST_F(SplitViewDragIndicatorsTest,
 // Verify when the window dragging state changes, the expected indicators will
 // become visible or invisible.
 TEST_F(SplitViewDragIndicatorsTest, SplitViewDragIndicatorsVisibility) {
-  auto indicator = std::make_unique<SplitViewDragIndicators>();
   std::unique_ptr<aura::Window> dragged_window(CreateTestWindow());
+  auto indicator = std::make_unique<SplitViewDragIndicators>(
+      dragged_window->GetRootWindow());
   indicator->SetDraggedWindow(dragged_window.get());
 
   auto to_int = [](IndicatorType type) { return static_cast<int>(type); };
@@ -388,12 +389,10 @@ TEST_F(SplitViewDragIndicatorsTest, SplitViewDragIndicatorsVisibility) {
     }
   };
 
-  // Check each state has the correct views displayed. Pass and empty point as
-  // the location since there is no need to reparent the widget. Verify that
-  // nothing is shown in state
-  // |SplitViewDragIndicators::WindowDraggingState::kNoDrag|.
+  // Check each state has the correct views displayed. Verify that nothing is
+  // shown in state |SplitViewDragIndicators::WindowDraggingState::kNoDrag|.
   indicator->SetWindowDraggingState(
-      SplitViewDragIndicators::WindowDraggingState::kNoDrag, gfx::Point());
+      SplitViewDragIndicators::WindowDraggingState::kNoDrag);
   check_helper(indicator.get(), 0);
 
   const int all = to_int(IndicatorType::kLeftHighlight) |
@@ -403,35 +402,34 @@ TEST_F(SplitViewDragIndicatorsTest, SplitViewDragIndicatorsVisibility) {
   // Verify that everything is visible in state
   // |SplitViewDragIndicators::WindowDraggingState::kFromOverview|.
   indicator->SetWindowDraggingState(
-      SplitViewDragIndicators::WindowDraggingState::kFromOverview,
-      gfx::Point());
+      SplitViewDragIndicators::WindowDraggingState::kFromOverview);
   check_helper(indicator.get(), all);
 
   // Verify that only one highlight shows up for the snap states.
   indicator->SetWindowDraggingState(
-      SplitViewDragIndicators::WindowDraggingState::kToSnapLeft, gfx::Point());
+      SplitViewDragIndicators::WindowDraggingState::kToSnapLeft);
   check_helper(indicator.get(), to_int(IndicatorType::kLeftHighlight));
   indicator->SetWindowDraggingState(
-      SplitViewDragIndicators::WindowDraggingState::kToSnapRight, gfx::Point());
+      SplitViewDragIndicators::WindowDraggingState::kToSnapRight);
   check_helper(indicator.get(), to_int(IndicatorType::kRightHighlight));
 
   // Verify that only snap previews are shown for window dragging from shelf.
   indicator->SetWindowDraggingState(
-      SplitViewDragIndicators::WindowDraggingState::kNoDrag, gfx::Point());
+      SplitViewDragIndicators::WindowDraggingState::kNoDrag);
   indicator->SetWindowDraggingState(
-      SplitViewDragIndicators::WindowDraggingState::kFromShelf, gfx::Point());
+      SplitViewDragIndicators::WindowDraggingState::kFromShelf);
   check_helper(indicator.get(), 0);
   indicator->SetWindowDraggingState(
-      SplitViewDragIndicators::WindowDraggingState::kToSnapLeft, gfx::Point());
+      SplitViewDragIndicators::WindowDraggingState::kToSnapLeft);
   check_helper(indicator.get(), to_int(IndicatorType::kLeftHighlight));
   indicator->SetWindowDraggingState(
-      SplitViewDragIndicators::WindowDraggingState::kFromShelf, gfx::Point());
+      SplitViewDragIndicators::WindowDraggingState::kFromShelf);
   check_helper(indicator.get(), 0);
   indicator->SetWindowDraggingState(
-      SplitViewDragIndicators::WindowDraggingState::kToSnapRight, gfx::Point());
+      SplitViewDragIndicators::WindowDraggingState::kToSnapRight);
   check_helper(indicator.get(), to_int(IndicatorType::kRightHighlight));
   indicator->SetWindowDraggingState(
-      SplitViewDragIndicators::WindowDraggingState::kFromShelf, gfx::Point());
+      SplitViewDragIndicators::WindowDraggingState::kFromShelf);
   check_helper(indicator.get(), 0);
 
   ScreenOrientationControllerTestApi orientation_api(
@@ -442,14 +440,14 @@ TEST_F(SplitViewDragIndicatorsTest, SplitViewDragIndicatorsVisibility) {
   ASSERT_EQ(OrientationLockType::kLandscapePrimary,
             orientation_api.GetCurrentOrientation());
   indicator->SetWindowDraggingState(
-      SplitViewDragIndicators::WindowDraggingState::kNoDrag, gfx::Point());
+      SplitViewDragIndicators::WindowDraggingState::kNoDrag);
   indicator->SetWindowDraggingState(
-      SplitViewDragIndicators::WindowDraggingState::kFromTop, gfx::Point());
+      SplitViewDragIndicators::WindowDraggingState::kFromTop);
   check_helper(indicator.get(), all);
   indicator->SetWindowDraggingState(
-      SplitViewDragIndicators::WindowDraggingState::kToSnapRight, gfx::Point());
+      SplitViewDragIndicators::WindowDraggingState::kToSnapRight);
   indicator->SetWindowDraggingState(
-      SplitViewDragIndicators::WindowDraggingState::kFromTop, gfx::Point());
+      SplitViewDragIndicators::WindowDraggingState::kFromTop);
   check_helper(indicator.get(), all);
 
   const int right_with_text = to_int(IndicatorType::kRightHighlight) |
@@ -462,71 +460,15 @@ TEST_F(SplitViewDragIndicatorsTest, SplitViewDragIndicatorsVisibility) {
   ASSERT_EQ(OrientationLockType::kPortraitPrimary,
             orientation_api.GetCurrentOrientation());
   indicator->SetWindowDraggingState(
-      SplitViewDragIndicators::WindowDraggingState::kNoDrag, gfx::Point());
+      SplitViewDragIndicators::WindowDraggingState::kNoDrag);
   indicator->SetWindowDraggingState(
-      SplitViewDragIndicators::WindowDraggingState::kFromTop, gfx::Point());
+      SplitViewDragIndicators::WindowDraggingState::kFromTop);
   check_helper(indicator.get(), right_with_text);
   indicator->SetWindowDraggingState(
-      SplitViewDragIndicators::WindowDraggingState::kToSnapRight, gfx::Point());
+      SplitViewDragIndicators::WindowDraggingState::kToSnapRight);
   indicator->SetWindowDraggingState(
-      SplitViewDragIndicators::WindowDraggingState::kFromTop, gfx::Point());
+      SplitViewDragIndicators::WindowDraggingState::kFromTop);
   check_helper(indicator.get(), right_with_text);
-}
-
-// Verify that the split view drag indicators widget reparents when starting a
-// drag on a different display.
-TEST_F(SplitViewDragIndicatorsTest, SplitViewDragIndicatorsWidgetReparenting) {
-  // Add two displays and one window on each display.
-  UpdateDisplay("600x600,600x600");
-  // DisplayConfigurationObserver enables mirror mode when tablet mode is
-  // enabled. Disable mirror mode to test multiple displays.
-  display_manager()->SetMirrorMode(display::MirrorMode::kOff, base::nullopt);
-  base::RunLoop().RunUntilIdle();
-
-  auto root_windows = Shell::Get()->GetAllRootWindows();
-  ASSERT_EQ(2u, root_windows.size());
-
-  const gfx::Rect primary_screen_bounds(0, 0, 600, 600);
-  const gfx::Rect secondary_screen_bounds(600, 0, 600, 600);
-  auto primary_screen_window(CreateTestWindow(primary_screen_bounds));
-  auto secondary_screen_window(CreateTestWindow(secondary_screen_bounds));
-
-  ToggleOverview();
-
-  // Select an item on the primary display and verify the drag indicators
-  // widget's parent is the primary root window.
-  OverviewItem* item = GetOverviewItemForWindow(primary_screen_window.get());
-  gfx::PointF start_location(item->target_bounds().CenterPoint());
-  overview_session_->InitiateDrag(item, start_location,
-                                  /*is_touch_dragging=*/true);
-  overview_session_->Drag(item, gfx::PointF(100.f, start_location.y()));
-  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kFromOverview,
-            window_dragging_state());
-  EXPECT_EQ(root_windows[0], overview_session_->split_view_drag_indicators()
-                                 ->widget_->GetNativeView()
-                                 ->GetRootWindow());
-  // Drag the item in a way that neither opens the window nor activates
-  // splitview mode.
-  overview_session_->Drag(item,
-                          gfx::PointF(primary_screen_bounds.CenterPoint()));
-  overview_session_->CompleteDrag(
-      item, gfx::PointF(primary_screen_bounds.CenterPoint()));
-  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
-  ASSERT_FALSE(split_view_controller()->InSplitViewMode());
-
-  // Select an item on the secondary display and verify the indicators widget
-  // has reparented to the secondary root window.
-  item = GetOverviewItemForWindow(secondary_screen_window.get(), 1);
-  start_location = item->target_bounds().CenterPoint();
-  overview_session_->InitiateDrag(item, start_location,
-                                  /*is_touch_dragging=*/true);
-  overview_session_->Drag(item, gfx::PointF(800.f, start_location.y()));
-  EXPECT_EQ(SplitViewDragIndicators::WindowDraggingState::kFromOverview,
-            window_dragging_state());
-  EXPECT_EQ(root_windows[1], overview_session_->split_view_drag_indicators()
-                                 ->widget_->GetNativeView()
-                                 ->GetRootWindow());
-  overview_session_->CompleteDrag(item, start_location);
 }
 
 }  // namespace ash

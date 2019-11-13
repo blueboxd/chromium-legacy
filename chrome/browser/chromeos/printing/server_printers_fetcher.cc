@@ -148,12 +148,12 @@ class ServerPrintersFetcher::PrivateImplementation
     resource_request->headers.SetHeader(net::HttpRequestHeaders::kContentType,
                                         "application/ipp");
     resource_request->load_flags =
-        net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
-        net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES;
+        net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE;
     resource_request->request_body =
         network::ResourceRequestBody::CreateFromBytes(
             reinterpret_cast<char*>(request_frame.data()),
             request_frame.size());
+    resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
     // TODO(pawliczek): create a traffic annotation for printing network traffic
     simple_url_loader_ = network::SimpleURLLoader::Create(
         std::move(resource_request), MISSING_TRAFFIC_ANNOTATION);

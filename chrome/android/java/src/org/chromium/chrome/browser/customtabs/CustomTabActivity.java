@@ -67,6 +67,7 @@ import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
+import org.chromium.chrome.browser.ui.RootUiCoordinator;
 import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -129,6 +130,16 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
             resetPostMessageHandlersForCurrentSession();
         }
     };
+
+    @Override
+    protected RootUiCoordinator createRootUiCoordinator() {
+        // TODO(https://crbug.com/1020324): Move this logic into a CustomTabRootUICoordinator that
+        // can synchronously orchestrate the creation of child coordinators.
+        return new RootUiCoordinator(this, (toolbarManager) -> {
+            mToolbarCoordinator.onToolbarInitialized(toolbarManager);
+            mNavigationController.onToolbarInitialized(toolbarManager);
+        }, null);
+    }
 
     @Override
     protected Drawable getBackgroundDrawable() {

@@ -178,6 +178,14 @@ void BuiltInChromeOsApps::Uninstall(const std::string& app_id,
              << app_id;
 }
 
+void BuiltInChromeOsApps::PauseApp(const std::string& app_id) {
+  NOTIMPLEMENTED();
+}
+
+void BuiltInChromeOsApps::UnpauseApps(const std::string& app_id) {
+  NOTIMPLEMENTED();
+}
+
 void BuiltInChromeOsApps::OpenNativeSettings(const std::string& app_id) {
   NOTIMPLEMENTED();
 }

@@ -2467,6 +2467,8 @@ enum WebFeature {
   kByteLengthQueuingStrategyConstructor = 3083,
   kClassicDedicatedWorker = 3084,
   kModuleDedicatedWorker = 3085,
+  kFetchBodyStreamInServiceWorker = 3086,
+  kFetchBodyStreamOutsideServiceWorker = 3087,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

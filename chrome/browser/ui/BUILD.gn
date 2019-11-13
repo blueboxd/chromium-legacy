@@ -2627,6 +2627,8 @@ jumbo_static_library("ui") {
       "views/apps/app_info_dialog/app_info_permissions_panel.h",
       "views/apps/app_info_dialog/app_info_summary_panel.cc",
       "views/apps/app_info_dialog/app_info_summary_panel.h",
+      "views/apps/app_pause_dialog_view.cc",
+      "views/apps/app_pause_dialog_view.h",
       "views/apps/app_uninstall_dialog_view.cc",
       "views/apps/app_uninstall_dialog_view.h",
       "views/apps/chrome_native_app_window_views.cc",

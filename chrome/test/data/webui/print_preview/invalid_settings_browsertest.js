@@ -44,6 +44,7 @@ import {isWindows} from 'chrome://resources/js/cr.m.js';
       documentHasSelection: true,
       shouldPrintSelectionOnly: false,
       printerName: 'FooDevice',
+      pdfPrinterDisabled: false,
       serializedAppStateStr: null,
       serializedDefaultDestinationSelectionRulesStr: null
     };

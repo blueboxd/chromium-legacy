@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chromeos/components/help_app_ui/help_app_ui.h"
+#include "chromeos/components/help_app_ui/help_app_guest_ui.h"
 
 #include "chromeos/components/help_app_ui/url_constants.h"
 #include "chromeos/grit/chromeos_help_app_resources.h"
@@ -13,7 +14,7 @@
 namespace chromeos {
 
 namespace {
-content::WebUIDataSource* CreateDataSource() {
+content::WebUIDataSource* CreateHostDataSource() {
   auto* source = content::WebUIDataSource::Create(kChromeUIHelpAppHost);
 
   // TODO(crbug.com/1012578): This is a placeholder only, update with the
@@ -27,8 +28,16 @@ content::WebUIDataSource* CreateDataSource() {
 }  // namespace
 
 HelpAppUI::HelpAppUI(content::WebUI* web_ui) : MojoWebUIController(web_ui) {
-  content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
-                                CreateDataSource());
+  content::BrowserContext* browser_context =
+      web_ui->GetWebContents()->GetBrowserContext();
+  content::WebUIDataSource* host_source = CreateHostDataSource();
+  content::WebUIDataSource::Add(browser_context, host_source);
+  // We need a CSP override to use the guest origin in the host.
+  std::string csp = std::string("frame-src ") + kChromeUIHelpAppGuestURL + ";";
+  host_source->OverrideContentSecurityPolicyChildSrc(csp);
+
+  content::WebUIDataSource* guest_source = CreateHelpAppGuestDataSource();
+  content::WebUIDataSource::Add(browser_context, guest_source);
 }
 
 HelpAppUI::~HelpAppUI() = default;

@@ -162,6 +162,24 @@ void AppServiceImpl::Uninstall(apps::mojom::AppType app_type,
   iter->second->Uninstall(app_id, clear_site_data, report_abuse);
 }
 
+void AppServiceImpl::PauseApp(apps::mojom::AppType app_type,
+                              const std::string& app_id) {
+  auto iter = publishers_.find(app_type);
+  if (iter == publishers_.end()) {
+    return;
+  }
+  iter->second->PauseApp(app_id);
+}
+
+void AppServiceImpl::UnpauseApps(apps::mojom::AppType app_type,
+                                 const std::string& app_id) {
+  auto iter = publishers_.find(app_type);
+  if (iter == publishers_.end()) {
+    return;
+  }
+  iter->second->UnpauseApps(app_id);
+}
+
 void AppServiceImpl::OpenNativeSettings(apps::mojom::AppType app_type,
                                         const std::string& app_id) {
   auto iter = publishers_.find(app_type);
@@ -237,11 +255,10 @@ void AppServiceImpl::ConnectToPrefService(
 
 void AppServiceImpl::OnPrefServiceConnected(
     std::unique_ptr<PrefService> pref_service) {
-  if (!pref_service) {
+  if (!pref_service || pref_service_) {
     // TODO(crbug.com/853604): Handle if not successfully connected.
     return;
   }
-  DCHECK_EQ(nullptr, pref_service_);
   pref_service_ = std::move(pref_service);
   InitializePreferredApps();
 }

@@ -154,6 +154,7 @@ android_apk("weblayer_support_apk") {
     "//android_webview:monochrome_webview_assets",
     "//android_webview:pak_file_assets",
     "//base:base_java",
+    "//weblayer:locale_pak_assets",
     "//weblayer/browser/java",
   ]
 
@@ -184,45 +185,4 @@ android_apk("weblayer_support_apk") {
   native_lib_version_arg = "@FileArg($_native_lib_file:full-quoted)"
 
   shared_libraries = [ "//weblayer:libweblayer" ]
-}
-
-instrumentation_test_apk("weblayer_instrumentation_test_apk") {
-  apk_name = "WebLayerInstrumentationTest"
-  apk_under_test = "//weblayer/shell/android:weblayer_shell_apk"
-  android_manifest = "javatests/AndroidManifest.xml"
-  min_sdk_version = 21
-  deps = [
-    "//base:base_java_test_support",
-    "//content/public/test/android:content_java_test_support",
-    "//net/android:net_java_test_support",
-    "//third_party/android_support_test_runner:runner_java",
-    "//weblayer/public/javatests:weblayer_public_javatests",
-  ]
-  java_files = [
-    "javatests/src/org/chromium/weblayer/test/DataClearingTest.java",
-    "javatests/src/org/chromium/weblayer/test/DownloadCallbackTest.java",
-    "javatests/src/org/chromium/weblayer/test/EventUtils.java",
-    "javatests/src/org/chromium/weblayer/test/EventUtils.java",
-    "javatests/src/org/chromium/weblayer/test/ExecuteScriptTest.java",
-    "javatests/src/org/chromium/weblayer/test/BrowserFragmentLifecycleTest.java",
-    "javatests/src/org/chromium/weblayer/test/FullscreenCallbackTest.java",
-    "javatests/src/org/chromium/weblayer/test/InputTypesTest.java",
-    "javatests/src/org/chromium/weblayer/test/InstrumentationActivityTestRule.java",
-    "javatests/src/org/chromium/weblayer/test/NavigationTest.java",
-    "javatests/src/org/chromium/weblayer/test/NewTabCallbackImpl.java",
-    "javatests/src/org/chromium/weblayer/test/NewTabCallbackTest.java",
-    "javatests/src/org/chromium/weblayer/test/RenderingTest.java",
-    "javatests/src/org/chromium/weblayer/test/ProfileTest.java",
-    "javatests/src/org/chromium/weblayer/test/SmokeTest.java",
-    "javatests/src/org/chromium/weblayer/test/TabCallbackTest.java",
-    "javatests/src/org/chromium/weblayer/test/TopControlsTest.java",
-    "javatests/src/org/chromium/weblayer/test/TabListCallbackTest.java",
-  ]
-  additional_apks = [
-    "//weblayer/shell/android:weblayer_support_apk",
-    "//net/android:net_test_support_apk",
-  ]
-  data = [
-    "//weblayer/test/data/",
-  ]
 }

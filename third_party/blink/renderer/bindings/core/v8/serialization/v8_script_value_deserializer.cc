@@ -414,7 +414,7 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
       if (!image_data)
         return nullptr;
       DOMArrayBufferBase* pixel_buffer = image_data->BufferBase();
-      DCHECK_EQ(pixel_buffer->ByteLength(), byte_length);
+      DCHECK_EQ(pixel_buffer->DeprecatedByteLengthAsUnsigned(), byte_length);
       memcpy(pixel_buffer->Data(), pixels, byte_length);
       return image_data;
     }

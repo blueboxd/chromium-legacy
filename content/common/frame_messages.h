@@ -965,15 +965,6 @@ IPC_MESSAGE_ROUTED0(FrameHostMsg_DidStopLoading)
 // Notifies the browser that this frame has new session history information.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdateState, content::PageState /* state */)
 
-// Notifies the browser process about a new Content Security Policy that needs
-// to be applies to the frame.  This message is sent when a frame commits
-// navigation to a new location (reporting accumulated policies from HTTP
-// headers and/or policies that might have been inherited from the parent frame)
-// or when a new policy has been discovered afterwards (i.e. found in a
-// dynamically added or a static <meta> element).
-IPC_MESSAGE_ROUTED1(FrameHostMsg_DidAddContentSecurityPolicies,
-                    std::vector<content::ContentSecurityPolicy> /* policies */)
-
 // Sent when the renderer changed the progress of a load.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DidChangeLoadProgress,
                     double /* load_progress */)

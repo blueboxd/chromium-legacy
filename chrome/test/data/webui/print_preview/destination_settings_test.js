@@ -27,6 +27,8 @@ import {isChromeOS} from 'chrome://resources/js/cr.m.js';
     TwoAccountsRecentDestinations: 'two accounts recent destinations',
     UpdateRecentDestinations: 'update recent destinations',
     ResetDestinationOnSignOut: 'reset destination on sign out',
+    DisabledSaveAsPdf: 'disabled save as pdf',
+    NoDestinations: 'no destinations'
   };
 
   suite(destination_settings_test.suiteName, function() {
@@ -47,6 +49,9 @@ import {isChromeOS} from 'chrome://resources/js/cr.m.js';
 
     /** @type {!Array<string>} */
     let initialAccounts = [];
+
+    /** @type {boolean} */
+    let pdfPrinterDisabled = false;
 
     /** @type {string} */
     const defaultUser = 'foo@chromium.org';
@@ -138,26 +143,18 @@ import {isChromeOS} from 'chrome://resources/js/cr.m.js';
             destinationSettings.disabled = true;
             assertFalse(dropdown.disabled);
 
-            if (isChromeOS) {
-              // Simulate the user having no printers.
-              destinationSettings.destinationStore_.dispatchEvent(
-                  new CustomEvent(
-                      DestinationStore.EventType.ERROR, {
-                        detail:
-                            DestinationErrorType.NO_DESTINATIONS
-                      }));
-              flush();
+            // Simulate the user having no printers.
+            destinationSettings.destinationStore_.dispatchEvent(new CustomEvent(
+                DestinationStore.EventType.ERROR,
+                {detail: DestinationErrorType.NO_DESTINATIONS}));
+            flush();
 
-              assertEquals(
-                  DestinationState.ERROR,
-                  destinationSettings.destinationState);
-              assertEquals(
-                  Error.NO_DESTINATIONS,
-                  destinationSettings.error);
-              destinationSettings.state = State.FATAL_ERROR;
-              destinationSettings.disabled = true;
-              assertTrue(dropdown.disabled);
-            }
+            assertEquals(
+                DestinationState.ERROR, destinationSettings.destinationState);
+            assertEquals(Error.NO_DESTINATIONS, destinationSettings.error);
+            destinationSettings.state = State.FATAL_ERROR;
+            destinationSettings.disabled = true;
+            assertTrue(dropdown.disabled);
           });
     });
 
@@ -177,7 +174,7 @@ import {isChromeOS} from 'chrome://resources/js/cr.m.js';
       destinationSettings.setSetting('recentDestinations', recentDestinations);
       destinationSettings.appKioskMode = false;
       destinationSettings.init(
-          '' /* printerName */,
+          '' /* printerName */, pdfPrinterDisabled,
           '' /* serializedDefaultDestinationSelectionRulesStr */,
           initialAccounts, true /* syncAvailable */);
       destinationSettings.state = State.READY;
@@ -712,4 +709,39 @@ import {isChromeOS} from 'chrome://resources/js/cr.m.js';
             assertEquals('ID2', destinationSettings.destination.id);
           });
     });
+
+    // Tests that disabling the Save as PDF destination hides the corresponding
+    // dropdown item.
+    test(
+        assert(destination_settings_test.TestNames.DisabledSaveAsPdf),
+        function() {
+          // Initialize destination settings with the PDF printer disabled.
+          pdfPrinterDisabled = true;
+          initialize();
+
+          return nativeLayer.whenCalled('getPrinterCapabilities').then(() => {
+            // Because the 'Save as PDF' fallback is unavailable, the first
+            // destination is selected.
+            assertDropdownItems([makeLocalDestinationKey('ID1')]);
+          });
+        });
+
+    // Tests that disabling the 'Save as PDF' destination and exposing no
+    // printers to the native layer results in a 'No destinations' option in the
+    // dropdown.
+    test(
+        assert(destination_settings_test.TestNames.NoDestinations), function() {
+          nativeLayer.setLocalDestinations([]);
+
+          // Initialize destination settings with the PDF printer disabled.
+          pdfPrinterDisabled = true;
+          initialize();
+
+          // 'getPrinters' will be called because there are no printers known to
+          // the destination store and the 'Save as PDF' fallback is
+          // unavailable.
+          return nativeLayer.whenCalled('getPrinters').then(() => {
+            assertDropdownItems(['noDestinations']);
+          });
+        });
   });

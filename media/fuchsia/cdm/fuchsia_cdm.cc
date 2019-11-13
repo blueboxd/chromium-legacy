@@ -4,12 +4,14 @@
 
 #include "media/fuchsia/cdm/fuchsia_cdm.h"
 
+#include "base/command_line.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
 #include "base/optional.h"
 #include "fuchsia/base/mem_buffer_util.h"
 #include "media/base/callback_registry.h"
 #include "media/base/cdm_promise.h"
+#include "media/base/media_switches.h"
 
 #define REJECT_PROMISE_AND_RETURN_IF_BAD_CDM(promise, cdm)         \
   if (!cdm) {                                                      \
@@ -266,8 +268,9 @@ std::unique_ptr<FuchsiaSecureStreamDecryptor> FuchsiaCdm::CreateVideoDecryptor(
     FuchsiaSecureStreamDecryptor::Client* client) {
   fuchsia::media::drm::DecryptorParams params;
 
-  // TODO(crbug.com/997853): Enable secure mode when it's implemented in sysmem.
-  params.set_require_secure_mode(false);
+  bool secure_mode = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableProtectedVideoBuffers);
+  params.set_require_secure_mode(secure_mode);
 
   params.mutable_input_details()->set_format_details_version_ordinal(0);
   fuchsia::media::StreamProcessorPtr stream_processor;

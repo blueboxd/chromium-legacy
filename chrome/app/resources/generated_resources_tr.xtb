@@ -2044,7 +2044,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3923676227229836009">Bu sayfanın dosyaları görüntülemesine izin verilir</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3925573269917483990">Kamera:</translation>
-<translation id="3925842537050977900">Raftaki sabitlemeyi kaldır</translation>
 <translation id="3926002189479431949">Smart Lock telefonu değişti</translation>
 <translation id="3927932062596804919">Reddet</translation>
 <translation id="3928570707778085600">Değişiklikler <ph name="FILE_OR_FOLDER_NAME" /> içine kaydedilsin mi?</translation>
@@ -2538,7 +2537,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4689235506267737042">Demo tercihlerinizi belirleyin</translation>
 <translation id="4689421377817139245">Bu yer işaretini iPhone'unuzla senkronize edin</translation>
 <translation id="4690091457710545971">&lt;Intel Kablosuz donanım yazılımı tarafından dört dosya oluşturuldu: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon. İlk üç dosya, kayıt dökümlerini içeren ikili dosyalardır ve Intel, bu dosyalarda kimlik veya cihaz bilgilerini tanımlayan bilgilerin yer almadığını teyit etmektedir. Son dosya, Intel donanım yazılımındaki bir yürütme izidir. Bu dosyadaki kimlik ve cihaz bilgileri temizlenmiştir, ancak dosya burada görüntülenemeyecek kadar büyüktür. Bu dosyalar, cihazınızla ilgili son kablosuz bağlantı sorunlarına yanıt olarak oluşturulmuştur ve bu sorunların giderilmesinde yardımcı olması için Intel ile paylaşılacaktır.&gt;</translation>
-<translation id="469230890969474295">OEM Klasörü</translation>
 <translation id="4692623383562244444">Arama motorları</translation>
 <translation id="4693155481716051732">Suşi</translation>
 <translation id="4694024090038830733">Yazıcı yapılandırması yönetici tarafından gerçekleştirilir.</translation>
@@ -2571,7 +2569,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4737715515457435632">Lütfen bir ağa bağlanın</translation>
 <translation id="473775607612524610">Güncelle</translation>
 <translation id="4739639199548674512">Biletler</translation>
-<translation id="4742746985488890273">Rafa sabitle</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Uygulamaların nasıl güncelleneceğini öğrenin<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Sitenin sesini aç}other{Sitelerin sesini aç}}</translation>
 <translation id="4746351372139058112">Mesajlar</translation>
@@ -3564,7 +3561,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6196854373336333322">"<ph name="EXTENSION_NAME" />" uzantısı proxy ayarlarınızın denetimini ele geçirdi. Bu, uzantının çevrimiçinde yaptıklarınızı değiştirebileceği, kesebileceği veya dinleyebileceği anlamına gelir. Bu değişikliğin neden gerçekleştiğinden emin değilseniz muhtemelen bu değişikliği yapmayı istememişsinizdir.</translation>
 <translation id="6198102561359457428">Oturumu kapatıp tekrar açın...</translation>
 <translation id="6198252989419008588">PIN'i değiştir</translation>
-<translation id="6201792273624501289">Linux Uygulamaları</translation>
 <translation id="6202304368170870640">Cihazınızda oturum açmak veya cihazınızın kilidini açmak için PIN'inizi kullanabilirsiniz.</translation>
 <translation id="6206311232642889873">Resmi Kop&amp;yala</translation>
 <translation id="6207200176136643843">Varsayılan yakınlaştırma seviyesine sıfırla</translation>
@@ -5597,7 +5593,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="9130015405878219958">Geçersiz mod girildi</translation>
 <translation id="9131487537093447019">Bluetooth cihazlarına ileti gönderme ve Bluetooth cihazlarından gelen iletileri alma.</translation>
 <translation id="9134304429738380103">Evet, istiyorum.</translation>
-<translation id="9135090785674039430">Etkinleştirildiğinde, siteler sizi web'de takip eden çerezler kullanamaz. Bazı web siteleri kullanılamayabilir.</translation>
 <translation id="9137013805542155359">Orijinali göster</translation>
 <translation id="9137157311132182254">Tercih edilen arama motoru</translation>
 <translation id="9137248913990643158">Lütfen bu uygulamayı kullanmadan önce Chrome'u başlatıp oturum açın.</translation>

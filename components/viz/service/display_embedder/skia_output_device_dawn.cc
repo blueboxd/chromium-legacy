@@ -9,9 +9,9 @@
 #include "components/viz/common/gpu/dawn_context_provider.h"
 
 #if defined(OS_WIN)
-#include "third_party/dawn/src/include/dawn_native/D3D12Backend.h"
+#include <dawn_native/D3D12Backend.h>
 #elif defined(OS_LINUX)
-#include "third_party/dawn/src/include/dawn_native/VulkanBackend.h"
+#include <dawn_native/VulkanBackend.h>
 #endif
 
 namespace viz {

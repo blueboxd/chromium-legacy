@@ -14,12 +14,10 @@
 #include "ui/base/webui/web_ui_util.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/webui/chromeos/user_image_source.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
-#include "content/public/browser/notification_service.h"
 #else
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_statistics.h"

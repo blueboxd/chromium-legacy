@@ -150,6 +150,13 @@ template("fuchsia_package_runner") {
     if (defined(invoker.use_test_server) && invoker.use_test_server) {
       executable_args += [ "--enable-test-server" ]
     }
+
+    if (default_fuchsia_build_dir_for_installation != "") {
+      executable_args += [
+        "--fuchsia-out-dir",
+        default_fuchsia_build_dir_for_installation,
+      ]
+    }
   }
 
   # Produces a script which installs a package and its dependencies into the

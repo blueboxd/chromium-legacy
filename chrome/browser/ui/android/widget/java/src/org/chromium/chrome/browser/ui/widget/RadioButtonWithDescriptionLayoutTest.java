@@ -11,6 +11,7 @@ import android.support.test.filters.SmallTest;
 import android.support.test.rule.UiThreadTestRule;
 import android.view.View;
 import android.view.ViewGroup.MarginLayoutParams;
+import android.widget.TextView;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -186,5 +187,52 @@ public class RadioButtonWithDescriptionLayoutTest {
             RadioButtonWithDescription child = (RadioButtonWithDescription) layout.getChildAt(i);
             Assert.assertEquals(i == 1, child.isChecked());
         }
+    }
+
+    @Test
+    @SmallTest
+    @UiThreadTest
+    public void testAccessoryViewAdded() {
+        final RadioButtonWithDescriptionLayout layout =
+                new RadioButtonWithDescriptionLayout(mContext);
+
+        List<RadioButtonWithDescriptionLayout.Option> options = new ArrayList<>();
+        options.add(new RadioButtonWithDescriptionLayout.Option("a", "a_desc", null));
+        options.add(new RadioButtonWithDescriptionLayout.Option("b", "b_desc", null));
+        options.add(new RadioButtonWithDescriptionLayout.Option("c", "c_desc", null));
+        layout.addOptions(options);
+
+        RadioButtonWithDescription firstButton = (RadioButtonWithDescription) layout.getChildAt(0);
+        final TextView accessoryTextView = new TextView(mContext);
+        layout.attachAccessoryView(accessoryTextView, firstButton);
+        Assert.assertEquals(
+                "The accessory view should be right after the position of it's attachment host.",
+                accessoryTextView, layout.getChildAt(1));
+    }
+
+    @Test
+    @SmallTest
+    @UiThreadTest
+    public void testAccessoryViewAddedThenReadded() {
+        final RadioButtonWithDescriptionLayout layout =
+                new RadioButtonWithDescriptionLayout(mContext);
+
+        List<RadioButtonWithDescriptionLayout.Option> options = new ArrayList<>();
+        options.add(new RadioButtonWithDescriptionLayout.Option("a", "a_desc", null));
+        options.add(new RadioButtonWithDescriptionLayout.Option("b", "b_desc", null));
+        options.add(new RadioButtonWithDescriptionLayout.Option("c", "c_desc", null));
+        layout.addOptions(options);
+
+        RadioButtonWithDescription firstButton = (RadioButtonWithDescription) layout.getChildAt(0);
+        RadioButtonWithDescription lastButton =
+                (RadioButtonWithDescription) layout.getChildAt(layout.getChildCount() - 1);
+        final TextView accessoryTextView = new TextView(mContext);
+        layout.attachAccessoryView(accessoryTextView, firstButton);
+        layout.attachAccessoryView(accessoryTextView, lastButton);
+        Assert.assertNotEquals(
+                "The accessory view shouldn't be in the first position it was inserted at.",
+                accessoryTextView, layout.getChildAt(1));
+        Assert.assertEquals("The accessory view should be at the new position it was placed at.",
+                accessoryTextView, layout.getChildAt(layout.getChildCount() - 1));
     }
 }

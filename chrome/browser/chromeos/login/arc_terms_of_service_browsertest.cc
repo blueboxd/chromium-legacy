@@ -158,7 +158,7 @@ class ArcTermsOfServiceScreenTest : public MixinBasedInProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    official_build_override_ = WizardController::ForceOfficialBuildForTesting();
+    branded_build_override_ = WizardController::ForceBrandedBuildForTesting();
     host_resolver()->AddRule("*", "127.0.0.1");
 
     login_manager_mixin_.LoginAndWaitForActiveSession(
@@ -313,7 +313,7 @@ class ArcTermsOfServiceScreenTest : public MixinBasedInProcessBrowserTest {
 
   base::OnceClosure on_screen_exit_called_ = base::DoNothing();
 
-  std::unique_ptr<base::AutoReset<bool>> official_build_override_;
+  std::unique_ptr<base::AutoReset<bool>> branded_build_override_;
 
   EmbeddedTestServerSetupMixin embedded_test_server_{&mixin_host_,
                                                      embedded_test_server()};

@@ -110,8 +110,19 @@ int Me2MeNativeMessagingHostMain(int argc, char** argv) {
 
 #if defined(OS_MACOSX)
   if (command_line->HasSwitch(kCheckPermissionSwitchName)) {
-    bool perm = daemon_controller->CheckPermission();
-    return perm ? kSuccessExitCode : kNoPermissionExitCode;
+    int exit_code;
+    daemon_controller->CheckPermission(
+        // base::BindOnce cannot bind a capturing lambda, so the "captured"
+        // parameters are bound manually. This is safe because the run-loop is
+        // run to completion within this scope.
+        base::BindOnce(
+            [](int* exit_code, base::RunLoop* run_loop, bool perm) {
+              *exit_code = (perm ? kSuccessExitCode : kNoPermissionExitCode);
+              run_loop->Quit();
+            },
+            &exit_code, &run_loop));
+    run_loop.Run();
+    return exit_code;
   }
 #endif  // defined(OS_MACOSX)
 

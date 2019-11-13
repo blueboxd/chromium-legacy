@@ -8,7 +8,6 @@
 #include "base/mac/foundation_util.h"
 #include "ios/chrome/browser/ui/safe_mode/safe_mode_app_interface.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
-#import "ios/chrome/test/base/scoped_block_swizzler.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -16,6 +15,7 @@
 #import "ios/chrome/test/earl_grey/earl_grey_scoped_block_swizzler.h"
 #import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
+#import "ios/testing/scoped_block_swizzler.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

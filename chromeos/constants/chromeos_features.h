@@ -141,9 +141,12 @@ bool IsInstantTetheringBackgroundAdvertisingSupported();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsParentalControlsSettingsEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsSplitSettingsEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsSplitSettingsSyncEnabled();
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool ShouldDeprecateV1DeviceSync();
 
 // TODO(michaelpg): Remove after M71 branch to re-enable Play Store by default.
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool ShouldShowPlayStoreInDemoMode();
+
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool ShouldUseV2DeviceSync();
 
 // Keep alphabetized.
 

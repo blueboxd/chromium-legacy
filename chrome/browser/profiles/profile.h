@@ -453,9 +453,9 @@ class Profile : public content::BrowserContext {
   static PrefStore* CreateExtensionPrefStore(Profile*,
                                              bool incognito_pref_store);
 
- private:
   void NotifyOffTheRecordProfileCreated(Profile* off_the_record);
 
+ private:
   bool restored_last_session_;
 
   // Used to prevent the notification that this Profile is destroyed from

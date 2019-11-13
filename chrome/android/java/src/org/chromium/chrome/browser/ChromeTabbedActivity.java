@@ -67,7 +67,6 @@ import org.chromium.chrome.browser.compositor.layouts.OverviewModeController;
 import org.chromium.chrome.browser.compositor.layouts.phone.StackLayout;
 import org.chromium.chrome.browser.cookies.CookiesFetcher;
 import org.chromium.chrome.browser.crypto.CipherFactory;
-import org.chromium.chrome.browser.datareduction.DataReductionPromoScreen;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
@@ -79,7 +78,6 @@ import org.chromium.chrome.browser.feature_engagement.ScreenshotTabObserver;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.feed.FeedProcessScopeFactory;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
-import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.fullscreen.ComposedBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.gesturenav.NavigationSheet;
@@ -91,7 +89,6 @@ import org.chromium.chrome.browser.incognito.IncognitoTabLauncher;
 import org.chromium.chrome.browser.incognito.IncognitoTabSnapshotController;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.infobar.DataReductionPromoInfoBar;
-import org.chromium.chrome.browser.language.LanguageAskPrompt;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.metrics.ActivityStopMetrics;
@@ -101,7 +98,6 @@ import org.chromium.chrome.browser.modaldialog.TabModalLifetimeHandler;
 import org.chromium.chrome.browser.modaldialog.TabModalPresenter;
 import org.chromium.chrome.browser.multiwindow.MultiInstanceChromeTabbedActivity;
 import org.chromium.chrome.browser.multiwindow.MultiInstanceManager;
-import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.native_page.NativePageAssassin;
 import org.chromium.chrome.browser.night_mode.WebContentsDarkModeController;
 import org.chromium.chrome.browser.ntp.NewTabPage;
@@ -110,12 +106,9 @@ import org.chromium.chrome.browser.omaha.OmahaBase;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
-import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.SearchEngineChoiceNotification;
-import org.chromium.chrome.browser.signin.SigninPromoUtil;
 import org.chromium.chrome.browser.snackbar.undo.UndoBarController;
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporterBridge;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
@@ -798,42 +791,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
         }
     }
 
-    private void createToolbarButtonInProductHelpController() {
-        try (TraceEvent e = TraceEvent.scoped(
-                     "ChromeTabbedActivity.createToolbarButtonInProductHelpController")) {
-            SharedPreferencesManager preferenceManager = SharedPreferencesManager.getInstance();
-            // Promos can only be shown when we start with ACTION_MAIN intent and
-            // after FRE is complete. Native initialization can finish before the FRE flow is
-            // complete, and this will only show promos on the second opportunity. This is
-            // because the FRE is shown on the first opportunity, and we don't want to show such
-            // content back to back.
-            //
-            // TODO(tedchoc): Unify promo dialog logic as the search engine promo dialog checks
-            //                might not have completed at this point and we could show multiple
-            //                promos.
-            boolean isShowingPromo = mLocaleManager.hasShownSearchEnginePromoThisSession();
-            // Promo dialogs in multiwindow mode are broken on some devices:
-            // http://crbug.com/354696
-            boolean isLegacyMultiWindow = MultiWindowUtils.getInstance().isLegacyMultiWindow(this);
-            if (!isShowingPromo && !mIntentWithEffect && FirstRunStatus.getFirstRunFlowComplete()
-                    && preferenceManager.readBoolean(
-                            ChromePreferenceKeys.PROMOS_SKIPPED_ON_FIRST_START, false)
-                    && !VrModuleProvider.getDelegate().isInVr()
-                    // VrModuleProvider.getDelegate().isInVr may not return true at this point
-                    // even though Chrome is about to enter VR, so we need to also check whether
-                    // we're launching into VR.
-                    && !VrModuleProvider.getIntentDelegate().isLaunchingIntoVr(this, getIntent())
-                    && !isLegacyMultiWindow) {
-                isShowingPromo = maybeShowPromo();
-            } else {
-                preferenceManager.writeBoolean(
-                        ChromePreferenceKeys.PROMOS_SKIPPED_ON_FIRST_START, true);
-            }
-
-            ToolbarButtonInProductHelpController.create(this, isShowingPromo);
-        }
-    }
-
     private void maybeGetFeedAppLifecycleAndMaybeCreatePageViewObserver() {
         try (TraceEvent e = TraceEvent.scoped("ChromeTabbedActivity."
                      + "maybeGetFeedAppLifecycleAndMaybeCreatePageViewObserver")) {
@@ -917,24 +874,11 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
             PostTask.postTask(
                     UiThreadTaskTraits.DEFAULT, this::onAccessibilityTabSwitcherModeChanged);
 
-            PostTask.postTask(
-                    UiThreadTaskTraits.DEFAULT, this::createToolbarButtonInProductHelpController);
             PostTask.postTask(UiThreadTaskTraits.DEFAULT,
                     this::maybeGetFeedAppLifecycleAndMaybeCreatePageViewObserver);
             PostTask.postTask(UiThreadTaskTraits.DEFAULT, this::addOverviewModeObserver);
             PostTask.postTask(UiThreadTaskTraits.DEFAULT, this::finishNativeInitialization);
         }
-    }
-
-    private boolean maybeShowPromo() {
-        // Only one promo can be shown in one run to avoid nagging users too much.
-        if (SigninPromoUtil.launchSigninPromoIfNeeded(this)) return true;
-        if (DataReductionPromoScreen.launchDataReductionPromo(
-                    this, mTabModelSelectorImpl.getCurrentModel().isIncognito())) {
-            return true;
-        }
-
-        return LanguageAskPrompt.maybeShowLanguageAskPrompt(this);
     }
 
     @Override
@@ -1059,6 +1003,16 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
     @Override
     public @Nullable ObservableSupplier<OverviewModeBehavior> getOverviewModeBehaviorSupplier() {
         return mOverviewModeController.mOverviewModeBehaviorSupplier;
+    }
+
+    /**
+     * @return The toolbar button in-product help controller for this activity.
+     * TODO(pnoland, https://crbug.com/865801): remove this in favor
+     *        of injecting the controller directly where it's needed.
+     */
+    public ToolbarButtonInProductHelpController getToolbarButtonInProductHelpController() {
+        return ((TabbedRootUiCoordinator) mRootUiCoordinator)
+                .getToolbarButtonInProductHelpController();
     }
 
     @Override
@@ -1625,7 +1579,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
 
     @Override
     protected RootUiCoordinator createRootUiCoordinator() {
-        return new TabbedRootUiCoordinator(this);
+        return new TabbedRootUiCoordinator(
+                this, null, this::onOmniboxFocusChanged, mIntentWithEffect);
     }
 
     @Override
@@ -1662,16 +1617,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
 
         mUndoBarPopupController =
                 new UndoBarController(this, mTabModelSelectorImpl, this::getSnackbarManager);
-    }
-
-    @Override
-    protected void initializeToolbar() {
-        super.initializeToolbar();
-        if (!isTablet()
-                && (FeatureUtilities.isBottomToolbarEnabled()
-                        || FeatureUtilities.isTabGroupsAndroidEnabled())) {
-            getToolbarManager().enableBottomToolbar();
-        }
     }
 
     @Override
@@ -1863,12 +1808,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
         mDirectActionInitializer.registerTabManipulationActions(this, getTabModelSelector());
     }
 
-    @Override
-    protected void onOmniboxFocusChanged(boolean hasFocus) {
-        super.onOmniboxFocusChanged(hasFocus);
-
+    private void onOmniboxFocusChanged(boolean hasFocus) {
         mMainIntentMetrics.onOmniboxFocused();
-
         mTabModalHandler.onOmniboxFocusChanged(hasFocus);
     }
 

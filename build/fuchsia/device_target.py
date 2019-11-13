@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+import amber_repo
 import boot_data
 import filecmp
 import logging
@@ -85,21 +86,21 @@ class DeviceTarget(target.Target):
     self._system_log_file = system_log_file
     self._loglistener = None
     self._host = host
-    self._fuchsia_out_dir = fuchsia_out_dir
+    self._fuchsia_out_dir = os.path.expanduser(fuchsia_out_dir)
     self._node_name = node_name
     self._os_check = os_check,
 
     if self._host and self._node_name:
       raise Exception('Only one of "--host" or "--name" can be specified.')
 
-    if fuchsia_out_dir:
+    if self._fuchsia_out_dir:
       if ssh_config:
         raise Exception('Only one of "--fuchsia-out-dir" or "--ssh_config" can '
                         'be specified.')
 
       # Use SSH keys from the Fuchsia output directory.
-      self._ssh_config_path = os.path.join(os.path.expanduser(fuchsia_out_dir),
-                                           'ssh-keys', 'ssh_config')
+      self._ssh_config_path = os.path.join(self._fuchsia_out_dir, 'ssh-keys',
+                                           'ssh_config')
       self._os_check = 'ignore'
 
     elif ssh_config:
@@ -212,6 +213,15 @@ class DeviceTarget(target.Target):
       assert self._node_name
       assert self._host
 
+
+  def _GetAmberRepo(self):
+    if self._fuchsia_out_dir:
+      # Deploy to an already-booted device running a local Fuchsia build.
+      return amber_repo.ExternalAmberRepo(
+          os.path.join(self._fuchsia_out_dir, 'amber-files'))
+    else:
+      # Pave a Zedbootable device.
+      return amber_repo.ManagedAmberRepo(self)
 
   def __ProvisionDevice(self):
     """Netboots a device with Fuchsia. If |_node_name| is set, then only a

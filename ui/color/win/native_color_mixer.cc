@@ -21,7 +21,7 @@ void AddMixerForNativeColors(ui::ColorProvider* provider) {
   // reverse-engineering current Windows behavior.  Or maybe the union of all
   // these.
 #define MAP(chrome, native) {chrome, color_utils::GetSysSkColor(native)}
-  provider->AddMixer()->AddSet(
+  provider->AddMixer().AddSet(
       {kColorSetNative,
        {
            MAP(kColorNative3dDkShadow, COLOR_3DDKSHADOW),

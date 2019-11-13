@@ -33,6 +33,7 @@
 #include "net/cert/cert_verify_result.h"
 #include "net/dns/dns_config_overrides.h"
 #include "net/dns/host_resolver.h"
+#include "net/http/http_auth_preferences.h"
 #include "services/network/cors/preflight_controller.h"
 #include "services/network/http_cache_data_counter.h"
 #include "services/network/http_cache_data_remover.h"
@@ -448,6 +449,14 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   bool IsCorsEnabled() const { return cors_enabled_; }
 
+  // The http_auth_dynamic_params_ would be used to populate
+  // the |http_auth_merged_preferences| of the given NetworkContext.
+  void OnHttpAuthDynamicParamsChanged(
+      const mojom::HttpAuthDynamicParams*
+          http_auth_dynamic_network_service_params);
+
+  const net::HttpAuthPreferences* GetHttpAuthPreferences() const;
+
  private:
   URLRequestContextOwner MakeURLRequestContext();
 
@@ -648,6 +657,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       domain_reliability_monitor_;
 
   std::unique_ptr<OriginPolicyManager> origin_policy_manager_;
+
+  // Each network context holds its own HttpAuthPreferences.
+  // The dynamic preferences of |NetworkService| and the static
+  // preferences from |NetworkContext| would be merged to
+  // `http_auth_merged_preferences_` which would then be used to create
+  // HttpAuthHandle via |NetworkContext::CreateHttpAuthHandlerFactory|.
+  net::HttpAuthPreferences http_auth_merged_preferences_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkContext);
 };

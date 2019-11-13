@@ -157,7 +157,8 @@ void Blob::PopulateBlobData(
   for (const auto& item : parts) {
     if (item.IsArrayBuffer()) {
       DOMArrayBuffer* array_buffer = item.GetAsArrayBuffer();
-      blob_data->AppendBytes(array_buffer->Data(), array_buffer->ByteLength());
+      blob_data->AppendBytes(array_buffer->Data(),
+                             array_buffer->ByteLengthAsSizeT());
     } else if (item.IsArrayBufferView()) {
       DOMArrayBufferView* array_buffer_view =
           item.GetAsArrayBufferView().View();

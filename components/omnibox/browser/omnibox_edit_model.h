@@ -437,14 +437,14 @@ class OmniboxEditModel {
   base::string16 MaybeStripKeyword(const base::string16& text) const;
   base::string16 MaybePrependKeyword(const base::string16& text) const;
 
-  // If there's a selected match, copies it into |match|. Else, returns the
-  // default match for the current text, as well as the alternate nav URL, if
-  // |alternate_nav_url| is non-NULL and there is such a URL.
+  // Copies a match corresponding to the current text into |match|, and
+  // populates |alternate_nav_url| as well if it's not nullptr. If the popup
+  // is closed, the match is generated from the autocomplete classifier.
   void GetInfoForCurrentText(AutocompleteMatch* match,
                              GURL* alternate_nav_url) const;
 
   // Reverts the edit box from a temporary text back to the original user text.
-  // Also resets the popup to the default match.
+  // Also resets the popup to the initial state.
   void RevertTemporaryTextAndPopup();
 
   // Accepts current keyword if the user just typed a space at the end of

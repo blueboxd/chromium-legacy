@@ -25,6 +25,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -37,6 +38,7 @@
 #include "content/public/test/simple_url_loader_test_helper.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/load_flags.h"
+#include "net/http/http_auth_preferences.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -150,6 +152,64 @@ IN_PROC_BROWSER_TEST_F(ProfileNetworkContextServiceBrowsertest, BrotliEnabled) {
       base::SplitString(*simple_loader_helper.response_body(), ",",
                         base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   EXPECT_TRUE(base::Contains(encodings, "br"));
+}
+
+enum class AmbientAuthenticationStateIncognito { ENABLED, DISABLED };
+
+class AmbientAuthenticationTest : public InProcessBrowserTest {
+ public:
+  explicit AmbientAuthenticationTest(
+      AmbientAuthenticationStateIncognito state =
+          AmbientAuthenticationStateIncognito::ENABLED) {
+    scoped_feature_list_.InitWithFeatureState(
+        features::kEnableAmbientAuthenticationInIncognito,
+        state == AmbientAuthenticationStateIncognito::ENABLED);
+  }
+
+  Profile* GetOffTheRecordProfile() {
+    Profile* regular_profile = browser()->profile();
+    Profile* off_the_record_profile = regular_profile->GetOffTheRecordProfile();
+    EXPECT_TRUE(regular_profile->HasOffTheRecordProfile());
+    return off_the_record_profile;
+  }
+
+  bool IsAmbientAuthAllowedForProfile(Profile* profile) {
+    ProfileNetworkContextService* profile_network_context_service =
+        ProfileNetworkContextServiceFactory::GetForContext(profile);
+    base::FilePath empty_relative_partition_path;
+    network::mojom::NetworkContextParamsPtr network_context_params_ptr =
+        profile_network_context_service->CreateNetworkContextParams(
+            /*in_memory=*/false, empty_relative_partition_path);
+    return network_context_params_ptr->http_auth_static_network_context_params
+               ->allow_default_credentials ==
+           net::HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS;
+  }
+
+ protected:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+class AmbientAuthenticationTestDisabled : public AmbientAuthenticationTest {
+ public:
+  explicit AmbientAuthenticationTestDisabled()
+      : AmbientAuthenticationTest(
+            AmbientAuthenticationStateIncognito::DISABLED) {}
+};
+
+IN_PROC_BROWSER_TEST_F(AmbientAuthenticationTest,
+                       AllowDefaultCredentialsRegular) {
+  EXPECT_TRUE(IsAmbientAuthAllowedForProfile(browser()->profile()));
+}
+
+IN_PROC_BROWSER_TEST_F(AmbientAuthenticationTest,
+                       AllowDefaultCredentialsIncognito) {
+  EXPECT_TRUE(IsAmbientAuthAllowedForProfile(GetOffTheRecordProfile()));
+}
+
+IN_PROC_BROWSER_TEST_F(AmbientAuthenticationTestDisabled,
+                       DisallowDefaultCredentialsIncognito) {
+  EXPECT_TRUE(IsAmbientAuthAllowedForProfile(browser()->profile()));
+  EXPECT_FALSE(IsAmbientAuthAllowedForProfile(GetOffTheRecordProfile()));
 }
 
 // Test subclass that adds switches::kDiskCacheDir and switches::kDiskCacheSize

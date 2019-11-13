@@ -9,6 +9,7 @@
 GEN('#include "chromeos/constants/chromeos_features.h"');
 
 const HOST_ORIGIN = 'chrome://help-app';
+const GUEST_ORIGIN = 'chrome://help-app-guest';
 
 var HelpAppUIBrowserTest = class extends testing.Test {
   /** @override */
@@ -29,5 +30,8 @@ var HelpAppUIBrowserTest = class extends testing.Test {
 
 // Tests that chrome://help-app goes somewhere instead of 404ing or crashing.
 TEST_F('HelpAppUIBrowserTest', 'HasChromeSchemeURL', () => {
+  const guest = document.querySelector('iframe');
+
   assertEquals(document.location.origin, HOST_ORIGIN);
+  assertEquals(guest.src, GUEST_ORIGIN + "/app.html");
 });

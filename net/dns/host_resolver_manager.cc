@@ -750,19 +750,16 @@ class HostResolverManager::ProbeRequestImpl : public CancellableProbeRequest {
     if (!needs_cancel_ || !resolver_)
       return;
 
-    resolver_->CancelProbesForContext(context_);
+    resolver_->CancelDohProbes();
     needs_cancel_ = false;
     context_ = nullptr;
   }
 
-  // TODO(crbug.com/1013350): Make this actually start the probes once the logic
-  // for startup wait and watching for config changes is moved outside DnsClient
-  // to the caller of this Request object.
   int Start() override {
     DCHECK(resolver_);
     DCHECK(!needs_cancel_);
 
-    resolver_->SetRequestContextForProbes(context_);
+    resolver_->ActivateDohProbes(context_);
     needs_cancel_ = true;
     return ERR_IO_PENDING;
   }
@@ -3727,20 +3724,19 @@ void HostResolverManager::InvalidateCaches() {
 #endif
 }
 
-void HostResolverManager::SetRequestContextForProbes(
+void HostResolverManager::ActivateDohProbes(
     URLRequestContext* url_request_context) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(dns_client_);
 
-  dns_client_->SetRequestContextForProbes(url_request_context);
+  dns_client_->ActivateDohProbes(url_request_context);
 }
 
-void HostResolverManager::CancelProbesForContext(
-    URLRequestContext* url_request_context) {
+void HostResolverManager::CancelDohProbes() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(dns_client_);
 
-  dns_client_->CancelProbesForContext(url_request_context);
+  dns_client_->CancelDohProbes();
 }
 
 void HostResolverManager::RequestImpl::Cancel() {

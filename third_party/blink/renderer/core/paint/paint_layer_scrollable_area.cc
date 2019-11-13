@@ -2353,6 +2353,18 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
   if (layer_->Size().IsEmpty())
     return false;
 
+  const auto* box = GetLayoutBox();
+
+  // Although trivial 3D transforms are not always a direct compositing reason
+  // (see CompositingReasonFinder::RequiresCompositingFor3DTransform), we treat
+  // them as one for composited scrolling. This is because of the amount of
+  // content that depends on this optimization, and because of the long-term
+  // desire to use composited scrolling whenever possible.
+  if (box->HasTransformRelatedProperty() &&
+      box->StyleRef().Has3DTransformOperation()) {
+    return true;
+  }
+
   if (!force_prefer_compositing_to_lcd_text &&
       !LayerNodeMayNeedCompositedScrolling(layer_)) {
     return false;
@@ -2362,7 +2374,6 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
 
   // TODO(flackr): Allow integer transforms as long as all of the ancestor
   // transforms are also integer.
-  const LayoutBox* box = GetLayoutBox();
   bool background_supports_lcd_text =
       box->StyleRef().IsStackingContext() &&
       (box->GetBackgroundPaintLocation(

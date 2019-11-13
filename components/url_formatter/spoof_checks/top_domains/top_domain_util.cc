@@ -11,9 +11,11 @@ namespace top_domains {
 
 namespace {
 
-// Minimum length for a hostname to be considered for an edit distance
-// comparison. Shorter domains are ignored.
-const size_t kMinLengthForEditDistance = 5u;
+// Minimum length of the e2LD (the registered domain name without the registry)
+// to be considered for an edit distance comparison, including a trailing dot.
+// Thus: 'google.com' has of length 7 ("google.") and is long enough, while
+//       'abc.co.uk' has a length of 4 ("abc."), and will not be considered.
+const size_t kMinLengthForEditDistance = 6u;
 
 }  // namespace
 

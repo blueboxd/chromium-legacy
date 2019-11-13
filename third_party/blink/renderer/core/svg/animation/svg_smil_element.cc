@@ -38,7 +38,6 @@
 #include "third_party/blink/renderer/core/svg/animation/smil_time_container.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_uri_reference.h"
-#include "third_party/blink/renderer/core/xlink_names.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -524,8 +523,7 @@ void SVGSMILElement::ParseAttribute(const AttributeModificationParams& params) {
 }
 
 void SVGSMILElement::SvgAttributeChanged(const QualifiedName& attr_name) {
-  if (attr_name.Matches(svg_names::kHrefAttr) ||
-      attr_name.Matches(xlink_names::kHrefAttr)) {
+  if (SVGURIReference::IsKnownAttribute(attr_name)) {
     // TODO(fs): Could be smarter here when 'href' is specified and 'xlink:href'
     // is changed.
     SVGElement::InvalidationGuard invalidation_guard(this);

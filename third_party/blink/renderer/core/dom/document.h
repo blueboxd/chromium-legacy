@@ -840,6 +840,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void EnqueueAutofocusCandidate(Element&);
   bool HasAutofocusCandidates() const;
   void FlushAutofocusCandidates();
+  void FinalizeAutofocus();
   void SetSequentialFocusNavigationStartingPoint(Node*);
   Element* SequentialFocusNavigationStartingPoint(WebFocusType) const;
 

@@ -472,6 +472,8 @@ TabStripUI::TabStripUI(content::WebUI* web_ui)
   static constexpr LocalizedString kStrings[] = {
       {"tabListTitle", IDS_ACCNAME_TAB_LIST},
       {"closeTab", IDS_ACCNAME_CLOSE},
+      {"defaultTabTitle", IDS_DEFAULT_TAB_TITLE},
+      {"loadingTab", IDS_TAB_LOADING_TITLE},
       {"tabCrashed", IDS_TAB_AX_LABEL_CRASHED_FORMAT},
       {"tabNetworkError", IDS_TAB_AX_LABEL_NETWORK_ERROR_FORMAT},
       {"audioPlaying", IDS_TAB_AX_LABEL_AUDIO_PLAYING_FORMAT},

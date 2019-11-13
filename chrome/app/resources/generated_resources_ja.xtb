@@ -2044,7 +2044,6 @@
 <translation id="3923676227229836009">このページはファイルの表示が許可されています</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3925573269917483990">カメラ:</translation>
-<translation id="3925842537050977900">シェルフの固定解除</translation>
 <translation id="3926002189479431949">Smart Lock 用のスマートフォンが変更されました</translation>
 <translation id="3927932062596804919">拒否</translation>
 <translation id="3928570707778085600">「<ph name="FILE_OR_FOLDER_NAME" />」に変更を保存しますか？</translation>
@@ -2538,7 +2537,6 @@
 <translation id="4689235506267737042">デモ設定の選択</translation>
 <translation id="4689421377817139245">このブックマークは iPhone と同期できます</translation>
 <translation id="4690091457710545971">&lt;Intel Wi-Fi ファームウェアにより生成された 4 つのファイル: csr.lst、fh_regs.lst、radio_reg.lst、monitor.lst.sysmon。最初の 3 つはレジスタダンプを含むバイナリ ファイルで、個人情報や端末を特定できる情報を一切含まないことが Intel により表明されています。最後の 1 つは Intel ファームウェアからの実行トレースで、個人情報や端末を特定できる情報は除かれていますが、サイズが大きいためここには表示できません。これらのファイルはご使用の端末で最近発生した Wi-Fi の問題への応答として生成されたもので、問題を調査するために Intel と共有されます。&gt;</translation>
-<translation id="469230890969474295">OEM フォルダ</translation>
 <translation id="4692623383562244444">検索エンジン</translation>
 <translation id="4693155481716051732">お寿司</translation>
 <translation id="4694024090038830733">プリンタの設定を行えるのは管理者のみです。</translation>
@@ -2571,7 +2569,6 @@
 <translation id="4737715515457435632">ネットワークに接続してください</translation>
 <translation id="473775607612524610">更新</translation>
 <translation id="4739639199548674512">チケット</translation>
-<translation id="4742746985488890273">シェルフに固定</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />アプリケーションの更新方法を確認<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{サイトのミュートを解除}other{サイトのミュートを解除}}</translation>
 <translation id="4746351372139058112">メッセージ</translation>
@@ -3563,7 +3560,6 @@
 <translation id="6196854373336333322">拡張機能「<ph name="EXTENSION_NAME" />」によってプロキシ設定が制御されています。オンラインで行う操作は、この拡張機能によって変更、遮断、傍受される可能性があります。この変更が行われた理由に心当たりがない場合、これは不正な変更と考えられます。</translation>
 <translation id="6198102561359457428">ログアウトしてから再度ログイン...</translation>
 <translation id="6198252989419008588">PIN を変更</translation>
-<translation id="6201792273624501289">Linux アプリ</translation>
 <translation id="6202304368170870640">デバイスのログインやロック解除に PIN を使用できます。</translation>
 <translation id="6206311232642889873">画像をコピー(&amp;Y)</translation>
 <translation id="6207200176136643843">リセットしてデフォルトのズームレベルに戻す</translation>
@@ -5597,7 +5593,6 @@
 <translation id="9130015405878219958">入力されたモードが無効です。</translation>
 <translation id="9131487537093447019">Bluetooth デバイスとのメッセージの送受信。</translation>
 <translation id="9134304429738380103">利用する</translation>
-<translation id="9135090785674039430">オンにすると、サイトは Cookie を使用してあなたをウェブ上でトラッキングできなくなります。ウェブサイトによっては機能が損なわれる場合もあります。</translation>
 <translation id="9137013805542155359">原文のページを表示</translation>
 <translation id="9137157311132182254">優先する検索エンジン</translation>
 <translation id="9137248913990643158">このアプリを使用するには、Chrome を起動してログインしてください。</translation>

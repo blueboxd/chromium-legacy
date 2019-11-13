@@ -1556,30 +1556,52 @@ TEST_P(ScrollingCoordinatorTest, UpdateUMAMetricUpdated) {
     </div>
   )HTML");
 
-  // The initial count should be zero.
+  // The initial counts should be zero.
   histogram_tester.ExpectTotalCount("Blink.ScrollingCoordinator.UpdateTime", 0);
+  histogram_tester.ExpectTotalCount(
+      "Blink.ScrollingCoordinator.UpdateTime.PreFCP", 0);
+  histogram_tester.ExpectTotalCount(
+      "Blink.ScrollingCoordinator.UpdateTime.PostFCP", 0);
 
-  // After an initial compositing update, we should have one scrolling update.
+  // After an initial compositing update, we should have one scrolling update
+  // recorded as PreFCP.
   ForceFullCompositingUpdate();
   histogram_tester.ExpectTotalCount("Blink.ScrollingCoordinator.UpdateTime", 1);
+  histogram_tester.ExpectTotalCount(
+      "Blink.ScrollingCoordinator.UpdateTime.PreFCP", 1);
+  histogram_tester.ExpectTotalCount(
+      "Blink.ScrollingCoordinator.UpdateTime.PostFCP", 0);
 
   // An update with no scrolling changes should not cause a scrolling update.
   ForceFullCompositingUpdate();
   histogram_tester.ExpectTotalCount("Blink.ScrollingCoordinator.UpdateTime", 1);
+  histogram_tester.ExpectTotalCount(
+      "Blink.ScrollingCoordinator.UpdateTime.PreFCP", 1);
+  histogram_tester.ExpectTotalCount(
+      "Blink.ScrollingCoordinator.UpdateTime.PostFCP", 0);
 
   // A change to background color does not need to cause a scrolling update but,
   // because hit test display items paint, we also cause a scrolling coordinator
-  // update when the background paints.
+  // update when the background paints. Also render some text to get past FCP.
   auto* background = GetFrame()->GetDocument()->getElementById("bg");
   background->removeAttribute(html_names::kStyleAttr);
+  background->SetInnerHTMLFromString("Some Text");
   ForceFullCompositingUpdate();
   histogram_tester.ExpectTotalCount("Blink.ScrollingCoordinator.UpdateTime", 2);
+  histogram_tester.ExpectTotalCount(
+      "Blink.ScrollingCoordinator.UpdateTime.PreFCP", 1);
+  histogram_tester.ExpectTotalCount(
+      "Blink.ScrollingCoordinator.UpdateTime.PostFCP", 1);
 
   // Removing a scrollable area should cause a scrolling update.
   auto* scroller = GetFrame()->GetDocument()->getElementById("scroller");
   scroller->removeAttribute(html_names::kStyleAttr);
   ForceFullCompositingUpdate();
   histogram_tester.ExpectTotalCount("Blink.ScrollingCoordinator.UpdateTime", 3);
+  histogram_tester.ExpectTotalCount(
+      "Blink.ScrollingCoordinator.UpdateTime.PreFCP", 1);
+  histogram_tester.ExpectTotalCount(
+      "Blink.ScrollingCoordinator.UpdateTime.PostFCP", 2);
 }
 
 TEST_P(ScrollingCoordinatorTest, NonCompositedNonFastScrollableRegion) {

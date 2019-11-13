@@ -2044,7 +2044,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="3923676227229836009">Deze pagina heeft toestemming om bestanden bekijken</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3925573269917483990">Camera:</translation>
-<translation id="3925842537050977900">Losmaken van plank</translation>
 <translation id="3926002189479431949">Smart Lock-telefoon gewijzigd</translation>
 <translation id="3927932062596804919">Weigeren</translation>
 <translation id="3928570707778085600">Wijzigingen in <ph name="FILE_OR_FOLDER_NAME" /> opslaan?</translation>
@@ -2391,7 +2390,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="4451757071857432900">Geblokkeerd op sites die opdringerige of misleidende advertenties weergeven (aanbevolen)</translation>
 <translation id="4453946976636652378">Zoek met <ph name="SEARCH_ENGINE_NAME" /> of voer een URL in</translation>
 <translation id="4459169140545916303"><ph name="DEVICE_LAST_ACTIVATED_TIME" /> dagen geleden actief</translation>
-<translation id="4460014764210899310">Niet sorteren</translation>
+<translation id="4460014764210899310">Groeperen ongedaan maken</translation>
 <translation id="4462159676511157176">Aangepaste naamservers</translation>
 <translation id="4469477701382819144">Geblokkeerd op sites die opdringerige of misleidende advertenties weergeven</translation>
 <translation id="4469762931504673593"><ph name="ORIGIN" /> kan bestanden bewerken in <ph name="FOLDERNAME" /></translation>
@@ -2538,7 +2537,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="4689235506267737042">Je demovoorkeuren kiezen</translation>
 <translation id="4689421377817139245">Deze bladwijzer synchroniseren met je iPhone</translation>
 <translation id="4690091457710545971">&lt;Vier bestanden gegenereerd door wifi-firmware van Intel: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon. De eerste drie zijn binaire bestanden met registerdumps. Hiervan wordt door Intel verzekerd dat deze geen persoonlijke of apparaatidentificerende gegevens bevatten. Het laatste bestand is een bestand waarin uitvoering wordt bijgehouden. Alle persoonlijke of apparaatidentificerende gegevens zijn uit dit bestand verwijderd, maar het is te groot om hier weer te geven. Deze bestanden zijn gegenereerd als reactie op recente wifi-problemen met je apparaat en worden gedeeld met Intel om deze problemen op te lossen.&gt;</translation>
-<translation id="469230890969474295">OEM-map</translation>
 <translation id="4692623383562244444">Zoekmachines</translation>
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694024090038830733">De printerconfiguratie wordt bepaald door de beheerder.</translation>
@@ -2571,7 +2569,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="4737715515457435632">Maak verbinding met een netwerk</translation>
 <translation id="473775607612524610">Updaten</translation>
 <translation id="4739639199548674512">Tickets</translation>
-<translation id="4742746985488890273">Vastmaken aan plank</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Meer informatie over hoe je apps updatet<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Geluid van site dempen opheffen}other{Geluid van sites dempen opheffen}}</translation>
 <translation id="4746351372139058112">Berichten</translation>
@@ -3331,7 +3328,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="5860494867054883682">Je apparaat updaten naar het kanaal <ph name="CHANNEL_NAME" /> (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">Stylustools op de plank weergeven</translation>
 <translation id="5863445608433396414">Foutopsporingsfuncties inschakelen</translation>
-<translation id="5863471434640009253">Als je de Android Debug Bridge wilt inschakelen, start je eerst je <ph name="DEVICE_TYPE" /> opnieuw op. Je kunt de ADB alleen uitschakelen door je apparaat terug te zetten op de fabrieksinstellingen.</translation>
+<translation id="5863471434640009253">Als je de Android Debug Bridge wilt inschakelen, start je eerst <ph name="DEVICE_TYPE" /> opnieuw op. Je kunt ADB alleen uitschakelen door je apparaat terug te zetten op de fabrieksinstellingen.</translation>
 <translation id="5864471791310927901">Opzoeken van DHCP mislukt</translation>
 <translation id="586567932979200359">Je voert <ph name="PRODUCT_NAME" /> uit via de schijfkopie. Als je dit programma installeert op je computer, kun je dit uitvoeren zonder de schijfkopie te gebruiken en blijft het programma bijgewerkt.</translation>
 <translation id="5865733239029070421">Hiermee worden automatisch gebruiksstatistieken en crashrapporten naar Google verzonden</translation>
@@ -3401,7 +3398,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="5958529069007801266">Gebruiker met beperkte rechten</translation>
 <translation id="5959471481388474538">Netwerk niet beschikbaar</translation>
 <translation id="595959584676692139">Laad de pagina opnieuw om deze extensie te gebruiken</translation>
-<translation id="5961320084471308154">De ADB inschakelen?</translation>
+<translation id="5961320084471308154">ADB inschakelen?</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> piek)</translation>
 <translation id="5965661248935608907">Hiermee wordt ook gecontroleerd welke pagina wordt weergegeven wanneer je op de knop 'Homepage' klikt of vanuit de omnibox zoekt.</translation>
 <translation id="5969419185858894314"><ph name="ORIGIN" /> kan bestanden bekijken in <ph name="FOLDERNAME" /></translation>
@@ -3563,7 +3560,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="6196854373336333322">De extensie '<ph name="EXTENSION_NAME" />' heeft het beheer van je proxyinstellingen overgenomen. Dit betekent dat de extensie alles wat je online doet, kan wijzigen, beschadigen of bekijken. Als je niet zeker weet waarom deze wijziging heeft plaatsgevonden, is het waarschijnlijk een ongewenste wijziging.</translation>
 <translation id="6198102561359457428">Log uit en log daarna weer in...</translation>
 <translation id="6198252989419008588">Pincode wijzigen</translation>
-<translation id="6201792273624501289">Linux-apps</translation>
 <translation id="6202304368170870640">Je kunt je pincode gebruiken om in te loggen of je apparaat te ontgrendelen.</translation>
 <translation id="6206311232642889873">A&amp;fbeelding kopiëren</translation>
 <translation id="6207200176136643843">Standaardzoomniveau resetten</translation>
@@ -4551,7 +4547,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="7683373461016844951">Als je verder wilt gaan, klik je op 'OK' en vervolgens op 'Persoon toevoegen' om een nieuw profiel te maken voor je <ph name="DOMAIN" />-mailadres.</translation>
 <translation id="7684212569183643648">Geïnstalleerd door je beheerder</translation>
 <translation id="7684559058815332124">Captive portal-loginpagina bezoeken</translation>
-<translation id="7684718995427157417">Schakel de Android Debug Bridge (ADB) in om je apps te maken en te testen. Let op: Met deze actie sta je toe dat Android-apps worden geïnstalleerd die niet door Google zijn geverifieerd. Als je deze functie wilt uitschakelen, moet je apparaat worden teruggezet op de fabrieksinstellingen.</translation>
+<translation id="7684718995427157417">Schakel Android Debug Bridge (ADB) in om je apps te maken en te testen. Let op: Met deze actie sta je toe dat Android-apps worden geïnstalleerd die niet door Google zijn geverifieerd. Als je deze functie wilt uitschakelen, moet je apparaat worden teruggezet op de fabrieksinstellingen.</translation>
 <translation id="7685049629764448582">JavaScript-geheugen</translation>
 <translation id="7685087414635069102">Pincode vereist</translation>
 <translation id="768549422429443215">Voeg talen toe of sorteer de lijst opnieuw.</translation>
@@ -5597,7 +5593,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="9130015405878219958">Ongeldige modus opgegeven.</translation>
 <translation id="9131487537093447019">Berichten verzenden naar en ontvangen van Bluetooth-apparaten.</translation>
 <translation id="9134304429738380103">Ja, ik doe mee.</translation>
-<translation id="9135090785674039430">Als deze optie is ingeschakeld, kunnen sites geen cookies gebruiken die je volgen op internet. Sommige websites werken hierdoor mogelijk niet meer.</translation>
 <translation id="9137013805542155359">Origineel weergeven</translation>
 <translation id="9137157311132182254">Voorkeurszoekmachine</translation>
 <translation id="9137248913990643158">Start Chrome en log in voordat je deze app gebruikt.</translation>

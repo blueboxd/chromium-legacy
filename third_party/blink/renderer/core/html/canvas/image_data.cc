@@ -683,8 +683,8 @@ ImageData::ConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
   if (pixel_format == kRGBA8CanvasPixelFormat &&
       storage_format == kUint8ClampedArrayStorageFormat) {
     DOMArrayBuffer* array_buffer = DOMArrayBuffer::Create(content);
-    return DOMUint8ClampedArray::Create(array_buffer, 0,
-                                        array_buffer->ByteLength());
+    return DOMUint8ClampedArray::Create(
+        array_buffer, 0, array_buffer->DeprecatedByteLengthAsUnsigned());
   }
 
   skcms_PixelFormat src_format = skcms_PixelFormat_RGBA_8888;

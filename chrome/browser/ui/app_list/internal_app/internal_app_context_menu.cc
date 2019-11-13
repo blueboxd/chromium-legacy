@@ -33,7 +33,8 @@ void InternalAppContextMenu::ExecuteCommand(int command_id, int event_flags) {
     case ash::STOP_APP:
       DCHECK_EQ(app_list::FindInternalApp(app_id())->internal_app_name,
                 apps::BuiltInAppName::kPluginVm);
-      plugin_vm::PluginVmManager::GetForProfile(profile())->StopPluginVm();
+      plugin_vm::PluginVmManager::GetForProfile(profile())->StopPluginVm(
+          plugin_vm::kPluginVmName);
       return;
   }
   app_list::AppContextMenu::ExecuteCommand(command_id, event_flags);

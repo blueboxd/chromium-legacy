@@ -359,19 +359,6 @@ class TestImporterTest(LoggingTestCase):
             'No-Export: true')
         self.assertEqual(host.executive.calls, [['git', 'log', '-1', '--format=%B']])
 
-    def test_cl_description_with_environ_variables(self):
-        host = MockHost()
-        host.executive = MockExecutive(output='Last commit message\n')
-        importer = TestImporter(host)
-        importer.host.environ['BUILDBOT_MASTERNAME'] = 'my.master'
-        importer.host.environ['BUILDBOT_BUILDERNAME'] = 'b'
-        importer.host.environ['BUILDBOT_BUILDNUMBER'] = '123'
-        description = importer._cl_description(directory_owners={})
-        self.assertIn(
-            'Build: https://ci.chromium.org/buildbot/my.master/b/123\n\n',
-            description)
-        self.assertEqual(host.executive.calls, [['git', 'log', '-1', '--format=%B']])
-
     def test_cl_description_moves_noexport_tag(self):
         host = MockHost()
         host.executive = MockExecutive(output='Summary\n\nNo-Export: true\n\n')

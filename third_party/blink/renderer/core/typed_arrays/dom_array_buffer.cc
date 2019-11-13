@@ -41,8 +41,8 @@ bool DOMArrayBuffer::Transfer(v8::Isolate* isolate,
                               ArrayBufferContents& result) {
   DOMArrayBuffer* to_transfer = this;
   if (!IsDetachable(isolate)) {
-    to_transfer = DOMArrayBuffer::Create(Buffer()->Data(),
-                                         Buffer()->ByteLengthAsUnsigned());
+    to_transfer =
+        DOMArrayBuffer::Create(Buffer()->Data(), Buffer()->ByteLengthAsSizeT());
   }
 
   if (!to_transfer->Buffer()->Transfer(result))
@@ -59,8 +59,8 @@ bool DOMArrayBuffer::Transfer(v8::Isolate* isolate,
 }
 
 DOMArrayBuffer* DOMArrayBuffer::CreateUninitializedOrNull(
-    unsigned num_elements,
-    unsigned element_byte_size) {
+    size_t num_elements,
+    size_t element_byte_size) {
   scoped_refptr<ArrayBuffer> buffer =
       ArrayBuffer::CreateUninitializedOrNull(num_elements, element_byte_size);
   if (!buffer)
@@ -78,7 +78,7 @@ v8::Local<v8::Object> DOMArrayBuffer::Wrap(
   v8::Local<v8::Object> wrapper;
   {
     v8::Context::Scope context_scope(creation_context->CreationContext());
-    wrapper = v8::ArrayBuffer::New(isolate, Data(), ByteLength());
+    wrapper = v8::ArrayBuffer::New(isolate, Data(), ByteLengthAsSizeT());
   }
 
   return AssociateWithWrapper(isolate, wrapper_type_info, wrapper);

@@ -346,9 +346,8 @@ class MockDnsClient : public DnsClient {
   bool SetConfigOverrides(DnsConfigOverrides config_overrides) override;
   const DnsConfig* GetEffectiveConfig() const override;
   const DnsHosts* GetHosts() const override;
-  void SetRequestContextForProbes(
-      URLRequestContext* url_request_context) override;
-  void CancelProbesForContext(URLRequestContext* url_request_context) override;
+  void ActivateDohProbes(URLRequestContext* url_request_context) override;
+  void CancelDohProbes() override;
   DnsTransactionFactory* GetTransactionFactory() override;
   AddressSorter* GetAddressSorter() override;
   void IncrementInsecureFallbackFailures() override;
@@ -358,7 +357,6 @@ class MockDnsClient : public DnsClient {
   void SetProbeSuccessForTest(unsigned index, bool success) override;
   void SetTransactionFactoryForTesting(
       std::unique_ptr<DnsTransactionFactory> factory) override;
-  void StartDohProbesForTesting() override;
 
   // Completes all DnsTransactions that were delayed by a rule.
   void CompleteDelayedTransactions();

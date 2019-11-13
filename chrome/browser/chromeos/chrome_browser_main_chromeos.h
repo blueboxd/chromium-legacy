@@ -174,6 +174,12 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
       dark_resume_controller_;
 
   std::unique_ptr<SessionTerminationManager> session_termination_manager_;
+
+  // Set when PreProfileInit() is called. If PreMainMessageLoopRun() exits
+  // early, this will be false during PostMainMessageLoopRun(), etc.
+  // Used to prevent shutting down classes that were not initialized.
+  bool pre_profile_init_called_ = false;
+
   std::unique_ptr<policy::LockToSingleUserManager> lock_to_single_user_manager_;
   std::unique_ptr<WilcoDtcSupportdManager> wilco_dtc_supportd_manager_;
   std::unique_ptr<LoginScreenExtensionsLifetimeManager>

@@ -133,8 +133,10 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
   // ScheduleDCLayers() will be called.
   virtual void SetEnableDCLayers(bool enable) = 0;
 
-  // Schedule drawing DC layer overlays at next SkiaSwapBuffers() call.
-  virtual void ScheduleDCLayers(std::vector<DCLayerOverlay> dc_layers) = 0;
+  // Schedule drawing DC layer overlays at next SkiaSwapBuffers() call. Waits on
+  // |sync_tokens| for the overlay textures to be ready before scheduling.
+  virtual void ScheduleDCLayers(std::vector<DCLayerOverlay> dc_layers,
+                                std::vector<gpu::SyncToken> sync_tokens) = 0;
 
   // Add context lost observer.
   virtual void AddContextLostObserver(ContextLostObserver* observer) = 0;

@@ -2044,7 +2044,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="3923676227229836009">Sidan har läsbehörighet till filer</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3925573269917483990">Kamera:</translation>
-<translation id="3925842537050977900">Ta bort från hyllan</translation>
 <translation id="3926002189479431949">Du har bytt ut mobilen som är kopplad till Smart Lock</translation>
 <translation id="3927932062596804919">Neka</translation>
 <translation id="3928570707778085600">Vill du spara ändringarna i <ph name="FILE_OR_FOLDER_NAME" />?</translation>
@@ -2538,7 +2537,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4689235506267737042">Välj demoinställningar</translation>
 <translation id="4689421377817139245">Synkronisera det här bokmärket med din iPhone</translation>
 <translation id="4690091457710545971">&lt;Fyra filer som genererats av Intels Wi-Fi-firmware: csr.lst, fh_regs.lst, radio_reg.lst och monitor.lst.sysmon. De tre första är binärfiler med registerdumpar, och Intel intygar att de inte innehåller några personliga uppgifter eller uppgifter som kan identifiera en enhet. Den sista filen är en körningsspårning från Intels firmware. Alla personliga uppgifter eller uppgifter som kan identifiera en enhet har tagits bort från den, men filen är för stor att visa här. Filerna genererades på grund av problem med Wi-Fi på enheten nyligen och delas med Intel så att de kan hjälpa till med felsökningen.&gt;</translation>
-<translation id="469230890969474295">OEM-mapp</translation>
 <translation id="4692623383562244444">Sökmotorer</translation>
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694024090038830733">Skrivarkonfigurationen hanteras av administratören.</translation>
@@ -2571,7 +2569,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4737715515457435632">Anslut till ett nätverk</translation>
 <translation id="473775607612524610">Uppdatera</translation>
 <translation id="4739639199548674512">Biljetter</translation>
-<translation id="4742746985488890273">Fäst på hyllan</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Läs mer om hur du uppdaterar appar<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Sätt på webbplatsens ljud}other{Sätt på webbplatsernas ljud}}</translation>
 <translation id="4746351372139058112">Meddelanden</translation>
@@ -3563,7 +3560,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="6196854373336333322">Tillägget <ph name="EXTENSION_NAME" /> har tagit kontroll över dina proxyinställningar, vilket innebär att det kan ändra, knäcka eller tjuvlyssna på allt du gör på webben. Om du inte vet varför den här ändringen inträffade är den troligen inte önskvärd.</translation>
 <translation id="6198102561359457428">Logga ut och sedan in igen ...</translation>
 <translation id="6198252989419008588">Byt PIN</translation>
-<translation id="6201792273624501289">Linux-appar</translation>
 <translation id="6202304368170870640">Du kan logga in på eller låsa upp enheten med pinkoden.</translation>
 <translation id="6206311232642889873">Kopiera &amp;bild</translation>
 <translation id="6207200176136643843">Återställ standardzoomnivån</translation>
@@ -5597,7 +5593,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="9130015405878219958">Du har angett ett ogiltigt läge.</translation>
 <translation id="9131487537093447019">Skicka och ta emot meddelanden från Bluetooth-enheter.</translation>
 <translation id="9134304429738380103">Ja</translation>
-<translation id="9135090785674039430">När detta har aktiverats kan en webbplats inte använda cookies som spårar dig på webben. Vissa webbplatser kan sluta fungera.</translation>
 <translation id="9137013805542155359">Visa original</translation>
 <translation id="9137157311132182254">Prioriterad sökmotor</translation>
 <translation id="9137248913990643158">Logga in på Chrome innan du använder den här appen.</translation>

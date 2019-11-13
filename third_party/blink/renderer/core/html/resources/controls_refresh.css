@@ -146,20 +146,6 @@ input::-webkit-calendar-picker-indicator:hover {
   background-color: initial;
 }
 
-/* Remove focus ring from fields and use highlight color */
-input::-webkit-datetime-edit-ampm-field:focus,
-input::-webkit-datetime-edit-day-field:focus,
-input::-webkit-datetime-edit-hour-field:focus,
-input::-webkit-datetime-edit-millisecond-field:focus,
-input::-webkit-datetime-edit-minute-field:focus,
-input::-webkit-datetime-edit-month-field:focus,
-input::-webkit-datetime-edit-second-field:focus,
-input::-webkit-datetime-edit-week-field:focus,
-input::-webkit-datetime-edit-year-field:focus {
-  background-color: rgba(0, 120, 212, 0.4);
-  outline: none;
-}
-
 /* -internal-list-box is how we specify select[multiple] */
 /* select[multiple] is an exception to the prohibition on sizes here
    because it is one of the few controls with borders that grow on zoom

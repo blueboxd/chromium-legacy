@@ -1580,6 +1580,166 @@ TEST_F(AXPositionTest,
   EXPECT_FALSE(text_position10->AtStartOfParagraph());
 }
 
+TEST_F(AXPositionTest, AtStartOrEndOfParagraphWithIgnoredNodes) {
+  // This test updates the tree structure to test a specific edge case -
+  // At{Start|End}OfParagraph when there are ignored nodes present near
+  // a paragraph boundary.
+  // ++1 kRootWebArea isLineBreakingObject
+  // ++++2 kGenericContainer ignored
+  // ++++++3 kStaticText ignored
+  // ++++++++4 kInlineTextBox "ignored text" ignored
+  // ++++5 kGenericContainer
+  // ++++++6 kStaticText
+  // ++++++++7 kInlineTextBox "some"
+  // ++++++++8 kInlineTextBox " "
+  // ++++++++9 kInlineTextBox "text"
+  // ++++10 kGenericContainer ignored
+  // ++++++11 kStaticText ignored
+  // ++++++++12 kInlineTextBox "ignored text" ignored
+  AXNodePosition::SetTree(nullptr);
+
+  AXNodeData root_data;
+  root_data.id = 1;
+  root_data.role = ax::mojom::Role::kRootWebArea;
+  root_data.AddBoolAttribute(ax::mojom::BoolAttribute::kIsLineBreakingObject,
+                             true);
+
+  AXNodeData container_data_a;
+  container_data_a.id = 2;
+  container_data_a.role = ax::mojom::Role::kGenericContainer;
+  container_data_a.AddState(ax::mojom::State::kIgnored);
+
+  AXNodeData static_text_data_a;
+  static_text_data_a.id = 3;
+  static_text_data_a.role = ax::mojom::Role::kStaticText;
+  static_text_data_a.SetName("ignored text");
+  static_text_data_a.AddState(ax::mojom::State::kIgnored);
+
+  AXNodeData inline_text_data_a;
+  inline_text_data_a.id = 4;
+  inline_text_data_a.role = ax::mojom::Role::kInlineTextBox;
+  inline_text_data_a.SetName("ignored text");
+  inline_text_data_a.AddState(ax::mojom::State::kIgnored);
+
+  AXNodeData container_data_b;
+  container_data_b.id = 5;
+  container_data_b.role = ax::mojom::Role::kGenericContainer;
+
+  AXNodeData static_text_data_b;
+  static_text_data_b.id = 6;
+  static_text_data_b.role = ax::mojom::Role::kStaticText;
+  static_text_data_b.SetName("some text");
+
+  AXNodeData inline_text_data_b_1;
+  inline_text_data_b_1.id = 7;
+  inline_text_data_b_1.role = ax::mojom::Role::kInlineTextBox;
+  inline_text_data_b_1.SetName("some");
+
+  AXNodeData inline_text_data_b_2;
+  inline_text_data_b_2.id = 8;
+  inline_text_data_b_2.role = ax::mojom::Role::kInlineTextBox;
+  inline_text_data_b_2.SetName(" ");
+
+  AXNodeData inline_text_data_b_3;
+  inline_text_data_b_3.id = 9;
+  inline_text_data_b_3.role = ax::mojom::Role::kInlineTextBox;
+  inline_text_data_b_3.SetName("text");
+
+  AXNodeData container_data_c;
+  container_data_c.id = 10;
+  container_data_c.role = ax::mojom::Role::kGenericContainer;
+  container_data_c.AddState(ax::mojom::State::kIgnored);
+
+  AXNodeData static_text_data_c;
+  static_text_data_c.id = 11;
+  static_text_data_c.role = ax::mojom::Role::kStaticText;
+  static_text_data_c.SetName("ignored text");
+  static_text_data_c.AddState(ax::mojom::State::kIgnored);
+
+  AXNodeData inline_text_data_c;
+  inline_text_data_c.id = 12;
+  inline_text_data_c.role = ax::mojom::Role::kInlineTextBox;
+  inline_text_data_c.SetName("ignored text");
+  inline_text_data_c.AddState(ax::mojom::State::kIgnored);
+
+  root_data.child_ids = {container_data_a.id, container_data_b.id,
+                         container_data_c.id};
+  container_data_a.child_ids = {static_text_data_a.id};
+  static_text_data_a.child_ids = {inline_text_data_a.id};
+  container_data_b.child_ids = {static_text_data_b.id};
+  static_text_data_b.child_ids = {inline_text_data_b_1.id,
+                                  inline_text_data_b_2.id,
+                                  inline_text_data_b_3.id};
+  container_data_c.child_ids = {static_text_data_c.id};
+  static_text_data_c.child_ids = {inline_text_data_c.id};
+
+  std::unique_ptr<AXTree> new_tree = CreateAXTree(
+      {root_data, container_data_a, container_data_b, container_data_c,
+       static_text_data_a, static_text_data_b, static_text_data_c,
+       inline_text_data_a, inline_text_data_b_1, inline_text_data_b_2,
+       inline_text_data_b_3, inline_text_data_c});
+
+  TestPositionType text_position1 = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, inline_text_data_a.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  EXPECT_FALSE(text_position1->AtEndOfParagraph());
+  EXPECT_FALSE(text_position1->AtStartOfParagraph());
+
+  TestPositionType text_position2 = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, inline_text_data_a.id, 12 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  EXPECT_FALSE(text_position2->AtEndOfParagraph());
+  EXPECT_FALSE(text_position2->AtStartOfParagraph());
+
+  TestPositionType text_position3 = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, inline_text_data_b_1.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  EXPECT_FALSE(text_position3->AtEndOfParagraph());
+  EXPECT_TRUE(text_position3->AtStartOfParagraph());
+
+  TestPositionType text_position4 = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, inline_text_data_b_1.id, 4 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  EXPECT_FALSE(text_position4->AtEndOfParagraph());
+  EXPECT_FALSE(text_position4->AtStartOfParagraph());
+
+  TestPositionType text_position5 = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, inline_text_data_b_2.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  EXPECT_FALSE(text_position5->AtEndOfParagraph());
+  EXPECT_FALSE(text_position5->AtStartOfParagraph());
+
+  TestPositionType text_position6 = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, inline_text_data_b_2.id, 1 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  EXPECT_FALSE(text_position6->AtEndOfParagraph());
+  EXPECT_FALSE(text_position6->AtStartOfParagraph());
+
+  TestPositionType text_position7 = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, inline_text_data_b_3.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  EXPECT_FALSE(text_position7->AtEndOfParagraph());
+  EXPECT_FALSE(text_position7->AtStartOfParagraph());
+
+  TestPositionType text_position8 = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, inline_text_data_b_3.id, 4 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  EXPECT_TRUE(text_position8->AtEndOfParagraph());
+  EXPECT_FALSE(text_position8->AtStartOfParagraph());
+
+  TestPositionType text_position9 = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, inline_text_data_c.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  EXPECT_FALSE(text_position9->AtEndOfParagraph());
+  EXPECT_FALSE(text_position9->AtStartOfParagraph());
+
+  TestPositionType text_position10 = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, inline_text_data_c.id, 12 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  EXPECT_FALSE(text_position10->AtEndOfParagraph());
+  EXPECT_FALSE(text_position10->AtStartOfParagraph());
+}
+
 TEST_F(AXPositionTest, LowestCommonAncestor) {
   TestPositionType null_position = AXNodePosition::CreateNullPosition();
   ASSERT_NE(nullptr, null_position);

@@ -11,8 +11,8 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/child_accounts/consumer_status_reporting_service.h"
-#include "chrome/browser/chromeos/child_accounts/consumer_status_reporting_service_factory.h"
+#include "chrome/browser/chromeos/child_accounts/child_status_reporting_service.h"
+#include "chrome/browser/chromeos/child_accounts/child_status_reporting_service_factory.h"
 #include "chrome/browser/chromeos/child_accounts/screen_time_controller.h"
 #include "chrome/browser/chromeos/child_accounts/screen_time_controller_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -35,11 +35,11 @@ namespace chromeos {
 namespace {
 
 class TestingConsumerStatusReportingService
-    : public ConsumerStatusReportingService {
+    : public ChildStatusReportingService {
  public:
   explicit TestingConsumerStatusReportingService(
       content::BrowserContext* context)
-      : ConsumerStatusReportingService(context) {}
+      : ChildStatusReportingService(context) {}
   ~TestingConsumerStatusReportingService() override = default;
 
   bool RequestImmediateStatusReport() override {
@@ -108,11 +108,11 @@ class EventBasedStatusReportingServiceTest : public testing::Test {
     session_manager_.SetSessionState(
         session_manager::SessionState::LOGIN_PRIMARY);
 
-    ConsumerStatusReportingServiceFactory::GetInstance()->SetTestingFactory(
+    ChildStatusReportingServiceFactory::GetInstance()->SetTestingFactory(
         profile(),
         base::BindRepeating(&CreateTestingConsumerStatusReportingService));
-    ConsumerStatusReportingService* consumer_status_reporting_service =
-        ConsumerStatusReportingServiceFactory::GetForBrowserContext(profile());
+    ChildStatusReportingService* consumer_status_reporting_service =
+        ChildStatusReportingServiceFactory::GetForBrowserContext(profile());
     test_consumer_status_reporting_service_ =
         static_cast<TestingConsumerStatusReportingService*>(
             consumer_status_reporting_service);

@@ -524,7 +524,6 @@ modules_idl_files =
           "xr/xr_reference_space_event.idl",
           "xr/xr_render_state.idl",
           "xr/xr_rigid_transform.idl",
-          "xr/xr_hit_test_options.idl",
           "xr/xr_hit_test_result.idl",
           "xr/xr_hit_test_source.idl",
           "xr/xr_session.idl",

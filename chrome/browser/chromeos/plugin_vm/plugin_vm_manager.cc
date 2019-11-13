@@ -144,10 +144,10 @@ void PluginVmManager::LaunchPluginVm() {
                                     weak_ptr_factory_.GetWeakPtr()));
 }
 
-void PluginVmManager::StopPluginVm() {
+void PluginVmManager::StopPluginVm(const std::string& name) {
   vm_tools::plugin_dispatcher::StopVmRequest request;
   request.set_owner_id(owner_id_);
-  request.set_vm_name_uuid(kPluginVmName);
+  request.set_vm_name_uuid(name);
 
   chromeos::DBusThreadManager::Get()->GetVmPluginDispatcherClient()->StopVm(
       std::move(request), base::DoNothing());

@@ -55,7 +55,7 @@ constexpr char kInterfaceMapLabel[] =
 
 }  // namespace
 
-// Wrapper function defined in WebKit.h
+// Wrapper function defined in blink.h
 v8::Isolate* MainThreadIsolate() {
   return V8PerIsolateData::MainThreadIsolate();
 }

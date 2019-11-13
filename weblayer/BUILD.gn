@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("//build/config/locales.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
 import("//build/config/win/console_app.gni")
@@ -31,6 +32,103 @@ source_set("android_descriptors") {
   public_deps = [
     "//content/public/common:content_descriptors",
   ]
+}
+
+if (is_android) {
+  grit("generate_components_strings") {
+    source = "../components/components_strings.grd"
+
+    # components_strings contains strings from all components. WebLayer
+    # will never display most of them, so we try to limit the included
+    # strings.
+    whitelist = rebase_path("grit_strings_whitelist.txt", root_build_dir)
+    inputs = [
+      "//weblayer/grit_strings_whitelist.txt",
+    ]
+    grit_flags = [
+      "-w",
+      whitelist,
+    ]
+    outputs = [
+      "grit/components_strings.h",
+      "java/res/values-am/components_strings.xml",
+      "java/res/values-ar/components_strings.xml",
+      "java/res/values-bg/components_strings.xml",
+      "java/res/values-bn/components_strings.xml",
+      "java/res/values-ca/components_strings.xml",
+      "java/res/values-cs/components_strings.xml",
+      "java/res/values-da/components_strings.xml",
+      "java/res/values-de/components_strings.xml",
+      "java/res/values-el/components_strings.xml",
+      "java/res/values-en-rGB/components_strings.xml",
+      "java/res/values-es/components_strings.xml",
+      "java/res/values-es-rUS/components_strings.xml",
+      "java/res/values-et/components_strings.xml",
+      "java/res/values-fa/components_strings.xml",
+      "java/res/values-fi/components_strings.xml",
+      "java/res/values-fr/components_strings.xml",
+      "java/res/values-gu/components_strings.xml",
+      "java/res/values-hi/components_strings.xml",
+      "java/res/values-hr/components_strings.xml",
+      "java/res/values-hu/components_strings.xml",
+      "java/res/values-in/components_strings.xml",
+      "java/res/values-it/components_strings.xml",
+      "java/res/values-iw/components_strings.xml",
+      "java/res/values-ja/components_strings.xml",
+      "java/res/values-kn/components_strings.xml",
+      "java/res/values-ko/components_strings.xml",
+      "java/res/values-lt/components_strings.xml",
+      "java/res/values-lv/components_strings.xml",
+      "java/res/values-ml/components_strings.xml",
+      "java/res/values-mr/components_strings.xml",
+      "java/res/values-ms/components_strings.xml",
+      "java/res/values-nb/components_strings.xml",
+      "java/res/values-nl/components_strings.xml",
+      "java/res/values-pl/components_strings.xml",
+      "java/res/values-pt-rBR/components_strings.xml",
+      "java/res/values-pt-rPT/components_strings.xml",
+      "java/res/values-ro/components_strings.xml",
+      "java/res/values-ru/components_strings.xml",
+      "java/res/values-sk/components_strings.xml",
+      "java/res/values-sl/components_strings.xml",
+      "java/res/values-sr/components_strings.xml",
+      "java/res/values-sv/components_strings.xml",
+      "java/res/values-sw/components_strings.xml",
+      "java/res/values-ta/components_strings.xml",
+      "java/res/values-te/components_strings.xml",
+      "java/res/values-th/components_strings.xml",
+      "java/res/values-tl/components_strings.xml",
+      "java/res/values-tr/components_strings.xml",
+      "java/res/values-uk/components_strings.xml",
+      "java/res/values-vi/components_strings.xml",
+      "java/res/values-zh-rCN/components_strings.xml",
+      "java/res/values-zh-rTW/components_strings.xml",
+      "java/res/values/components_strings.xml",
+    ]
+    foreach(_locale, locales_with_fake_bidi) {
+      outputs += [ "components_strings_${_locale}.pak" ]
+    }
+  }
+
+  repack("weblayer_locales") {
+    sources = [
+      "${root_gen_dir}/weblayer/components_strings_en-US.pak",
+    ]
+    deps = [
+      ":generate_components_strings",
+    ]
+    output = "$root_out_dir/weblayer/locales/en-US.pak"
+  }
+
+  android_assets("locale_pak_assets") {
+    disable_compression = true
+    renaming_sources = [ "$root_out_dir/weblayer/locales/en-US.pak" ]
+    renaming_destinations = [ "stored-locales/weblayer/en-US.pak" ]
+    treat_as_locale_paks = true
+    deps = [
+      ":weblayer_locales",
+    ]
+  }
 }
 
 jumbo_static_library("weblayer_lib") {

@@ -155,8 +155,8 @@ bool CupsConnection::GetJobs(const std::vector<std::string>& printer_ids,
     temp_queues.emplace_back();
     QueueStatus* queue_status = &temp_queues.back();
 
-    if (!GetPrinterStatus(cups_http_.get(), id,
-                          &queue_status->printer_status)) {
+    if (!printing::GetPrinterStatus(cups_http_.get(), id,
+                                    &queue_status->printer_status)) {
       LOG(WARNING) << "Could not retrieve printer status for " << id;
       return false;
     }
@@ -176,6 +176,16 @@ bool CupsConnection::GetJobs(const std::vector<std::string>& printer_ids,
   queues->insert(queues->end(), temp_queues.begin(), temp_queues.end());
 
   return true;
+}
+
+bool CupsConnection::GetPrinterStatus(const std::string& printer_id,
+                                      PrinterStatus* printer_status) {
+  if (!Connect()) {
+    LOG(ERROR) << "Could not establish connection to CUPS";
+    return false;
+  }
+  return printing::GetPrinterStatus(cups_http_.get(), printer_id,
+                                    printer_status);
 }
 
 std::string CupsConnection::server_name() const {

@@ -251,7 +251,7 @@
 <translation id="2119867082804433120">Tebukan bawah sebelah kanan</translation>
 <translation id="2124528555835617522">Pelanggaran data berlaku pada tapak atau apl yang anda gunakan. Chrome mengesyorkan anda menyemak kata laluan yang disimpan sekarang.</translation>
 <translation id="2129079103035905234">Penderia Gerakan</translation>
-<translation id="2130448033692577677">Templat yang anda nyatakan mungkin tidak dapat digunakan kerana dasar DnsOverHttpsMode tidak ditetapkan.</translation>
+<translation id="2130448033692577677">Templat yang anda nyatakan tidak dapat digunakan kerana dasar DnsOverHttpsMode tidak ditetapkan.</translation>
 <translation id="213826338245044447">Penanda Halaman Mudah Alih</translation>
 <translation id="214556005048008348">Batalkan pembayaran</translation>
 <translation id="2147827593068025794">Penyegerakan Latar Belakang</translation>
@@ -514,7 +514,7 @@
 <translation id="3427092606871434483">Benarkan (lalai)</translation>
 <translation id="3427342743765426898">&amp;Buat Semula Edit</translation>
 <translation id="342781501876943858">Chromium mengesyorkan penetapan semula kata laluan jika anda menggunakan semula kata laluan itu di tapak lain.</translation>
-<translation id="3428151540071562330">Satu atau lebih DnsOverHttpsTemplates URI templat pelayan adalah tidak sah dan tidak akan digunakan.</translation>
+<translation id="3428151540071562330">Satu atau beberapa URI templat pelayan DnsOverHttpsTemplates URI tidak sah dan tidak akan digunakan.</translation>
 <translation id="3431636764301398940">Simpan kad ini pada peranti ini</translation>
 <translation id="3443726618221119081">Juuro-Ku-Kai</translation>
 <translation id="3447661539832366887">Pemilik peranti ini telah mematikan permainan dinosaur.</translation>
@@ -716,7 +716,7 @@
 <translation id="4346197816712207223">Kad Kredit yang Diterima</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
 <translation id="4356973930735388585">Penyerang pada tapak ini mungkin cuba memasang atur cara berbahaya pada komputer anda yang mencuri atau memadamkan maklumat anda (sebagai contoh, foto, kata laluan, mesej dan kad kredit).</translation>
-<translation id="4358059973562876591">Templat yang anda nyatakan mungkin tidak dapat digunakan kerana terdapat ralat dengan dasar DnsOverHttpsMode.</translation>
+<translation id="4358059973562876591">Templat yang anda nyatakan tidak dapat digunakan kerana terdapat ralat pada dasar DnsOverHttpsMode.</translation>
 <translation id="4358461427845829800">Urus kaedah pembayaran...</translation>
 <translation id="4367563149485757821">Number-12 (Sampul Surat)</translation>
 <translation id="437058704415269440">Baki Akaun</translation>
@@ -980,7 +980,7 @@
 <translation id="5685654322157854305">Tambahkan Alamat Penghantaran</translation>
 <translation id="5689199277474810259">Eksport ke JSON</translation>
 <translation id="5689516760719285838">Lokasi</translation>
-<translation id="569000877158168851">Nilai DnsOverHttpsTemplates tidak berkaitan dan tidak akan digunakan, melainkan dasar DnsOverHttpsMode ditetapkan kepada sama ada <ph name="SECURE_DNS_MODE_AUTOMATIC" /> atau <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
+<translation id="569000877158168851">Nilai DnsOverHttpsTemplates tidak berkaitan dan tidak akan digunakan, melainkan dasar DnsOverHttpsMode ditetapkan kepada <ph name="SECURE_DNS_MODE_AUTOMATIC" /> atau <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="570530837424789914">Urus...</translation>
 <translation id="57094364128775171">Cadangkan kata laluan yang kukuh…</translation>
 <translation id="5710435578057952990">Identiti tapak web ini belum disahkan.</translation>
@@ -1497,7 +1497,7 @@ Butiran tambahan:
 <translation id="8261506727792406068">Padam</translation>
 <translation id="8262952874573525464">Jahitan tepi bawah</translation>
 <translation id="8267698848189296333">Log masuk sebagai <ph name="USERNAME" /></translation>
-<translation id="8269981117540303696">Kini, anda boleh menyemak imbas secara sulit dan orang lain yang menggunakan peranti ini tidak akan melihat aktiviti anda. Namun begitu, muat turun dan penanda halaman akan disimpan.</translation>
+<translation id="8269981117540303696">Kini anda boleh menyemak imbas secara sulit dan orang lain yang menggunakan peranti ini tidak akan dapat melihat aktiviti anda. Namun begitu, muat turun dan penanda halaman akan disimpan.</translation>
 <translation id="8277900682056760511">Helaian pengendali pembayaran dibuka</translation>
 <translation id="8281084378435768645">Foto-Besar</translation>
 <translation id="8286036467436129157">Log Masuk</translation>

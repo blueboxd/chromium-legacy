@@ -1094,7 +1094,9 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
       {"storageExternalStorageEmptyListHeader",
        IDS_SETTINGS_STORAGE_EXTERNAL_STORAGE_EMPTY_LIST_HEADER},
       {"storageExternalStorageListHeader",
-       IDS_SETTINGS_STORAGE_EXTERNAL_STORAGE_LIST_HEADER}};
+       IDS_SETTINGS_STORAGE_EXTERNAL_STORAGE_LIST_HEADER},
+      {"storageOverviewAriaLabel", IDS_SETTINGS_STORAGE_OVERVIEW_ARIA_LABEL}};
+
   AddLocalizedStringsBulk(html_source, kStorageStrings,
                           base::size(kStorageStrings));
 
@@ -3277,16 +3279,18 @@ void AddExtensionsStrings(content::WebUIDataSource* html_source) {
 
 void AddSecurityKeysStrings(content::WebUIDataSource* html_source) {
   static constexpr LocalizedString kSecurityKeysStrings[] = {
+      {"securityKeysBioEnrollmentAddTitle",
+       IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_ADD_TITLE},
       {"securityKeysBioEnrollmentDialogTitle",
        IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_DIALOG_TITLE},
       {"securityKeysBioEnrollmentEnrollingCompleteLabel",
        IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_ENROLLING_COMPLETE_LABEL},
       {"securityKeysBioEnrollmentEnrollingLabel",
        IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_ENROLLING_LABEL},
-      {"securityKeysBioEnrollmentLabel",
-       IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_LABEL},
-      {"securityKeysBioEnrollmentNoEnrollments",
-       IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_NO_ENROLLMENTS},
+      {"securityKeysBioEnrollmentEnrollmentsLabel",
+       IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_ENROLLMENTS_LABEL},
+      {"securityKeysBioEnrollmentNoEnrollmentsLabel",
+       IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_NO_ENROLLMENTS_LABEL},
       {"securityKeysBioEnrollmentSubpageDescription",
        IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_SUBPAGE_DESCRIPTION},
       {"securityKeysBioEnrollmentSubpageLabel",

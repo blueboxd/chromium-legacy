@@ -2044,7 +2044,6 @@
 <translation id="3923676227229836009">이 페이지에서 파일을 볼 수 있습니다.</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3925573269917483990">카메라:</translation>
-<translation id="3925842537050977900">임시보관함에서 고정 해제</translation>
 <translation id="3926002189479431949">Smart Lock 휴대전화가 변경됨</translation>
 <translation id="3927932062596804919">거부</translation>
 <translation id="3928570707778085600"><ph name="FILE_OR_FOLDER_NAME" />에 변경사항을 저장하시겠습니까?</translation>
@@ -2536,7 +2535,6 @@
 <translation id="4689235506267737042">데모 환경설정 선택</translation>
 <translation id="4689421377817139245">이 북마크를 내 iPhone에 동기화</translation>
 <translation id="4690091457710545971">&lt;Intel Wi-Fi 펌웨어에서 csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon 의 4개 파일을 생성하였습니다. 처음 3개 파일은 레지스터 덤프를 포함하는 바이너리 파일로 Intel에서 개인정보나 기기 식별 정보를 포함하지 않도록 선언되었습니다. 4번째 파일은 Intel 펌웨어의 실행 기록으로 모든 개인정보나 기기 식별 정보가 삭제되었지만 너무 커서 여기에 표시할 수 없습니다. 이러한 4개 파일은 최근에 발생한 기기의 Wi-Fi 문제로 인해 생성되었으며 관련 문제를 해결하기 위해 Intel과 공유됩니다.&gt;</translation>
-<translation id="469230890969474295">OEM 폴더</translation>
 <translation id="4692623383562244444">검색엔진</translation>
 <translation id="4693155481716051732">초밥</translation>
 <translation id="4694024090038830733">프린터 구성은 관리자가 처리합니다.</translation>
@@ -2569,7 +2567,6 @@
 <translation id="4737715515457435632">네트워크에 연결하세요.</translation>
 <translation id="473775607612524610">업데이트</translation>
 <translation id="4739639199548674512">티켓</translation>
-<translation id="4742746985488890273">임시보관함에 고정</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />애플리케이션 업데이트 방법 알아보기<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{사이트 숨기기 취소}other{사이트 숨기기 취소}}</translation>
 <translation id="4746351372139058112">메시지</translation>
@@ -3407,7 +3404,7 @@
 <translation id="5972017421290582825">MIDI 설정 관리...</translation>
 <translation id="597235323114979258">대상 더보기</translation>
 <translation id="5972666587303800813">작동하지 않는 서비스</translation>
-<translation id="5972708806901999743">위로 이동</translation>
+<translation id="5972708806901999743">가장 위로 이동</translation>
 <translation id="5972826969634861500"><ph name="PRODUCT_NAME" /> 시작</translation>
 <translation id="5973605538625120605">PIN 변경</translation>
 <translation id="5975792506968920132">배터리 충전율</translation>
@@ -3561,7 +3558,6 @@
 <translation id="6196854373336333322">'<ph name="EXTENSION_NAME" />' 확장 프로그램이 프록시 설정을 제어할 수 있게 되었으며, 따라서 사용자가 온라인에서 수행하는 모든 작업을 변경, 중단하거나 엿볼 수 있게 되었습니다. 이와 같이 변경된 이유를 잘 모른다면 이 설정을 사용하지 않는 것이 좋습니다.</translation>
 <translation id="6198102561359457428">로그아웃한 후 다시 로그인...</translation>
 <translation id="6198252989419008588">PIN 변경</translation>
-<translation id="6201792273624501289">Linux 앱</translation>
 <translation id="6202304368170870640">PIN을 사용하여 로그인하거나 기기를 잠금 해제할 수 있습니다.</translation>
 <translation id="6206311232642889873">이미지 복사(&amp;Y)</translation>
 <translation id="6207200176136643843">기본 확대/축소 수준으로 재설정</translation>
@@ -5595,7 +5591,6 @@
 <translation id="9130015405878219958">잘못된 모드를 입력했습니다.</translation>
 <translation id="9131487537093447019">블루투스 기기와 메시지를 주고받습니다.</translation>
 <translation id="9134304429738380103">예, 동의합니다.</translation>
-<translation id="9135090785674039430">이 옵션을 사용 설정하면 사이트가 웹 전반에서 사용자를 추적하는 쿠키를 사용할 수 없습니다. 일부 웹사이트가 정상적으로 작동하지 않을 수 있습니다.</translation>
 <translation id="9137013805542155359">원본 보기</translation>
 <translation id="9137157311132182254">기본 검색엔진</translation>
 <translation id="9137248913990643158">이 앱을 사용하기 전에 Chrome을 시작하고 로그인하세요.</translation>

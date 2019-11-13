@@ -1503,5 +1503,15 @@ TEST_F(ProfileSyncServiceTest, GetExperimentalAuthenticationKey) {
   EXPECT_EQ(kExpectedPrivateKeyInfo, actual_private_key);
 }
 
+TEST_F(ProfileSyncServiceTest, GetExperimentalAuthenticationKeyLocalSync) {
+  CreateServiceWithLocalSyncBackend();
+  InitializeForNthSync();
+  EXPECT_EQ(SyncService::TransportState::ACTIVE,
+            service()->GetTransportState());
+
+  EXPECT_TRUE(service()->GetExperimentalAuthenticationSecretForTest().empty());
+  EXPECT_FALSE(service()->GetExperimentalAuthenticationKey());
+}
+
 }  // namespace
 }  // namespace syncer

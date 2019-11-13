@@ -2043,7 +2043,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3923676227229836009">Tato stránka má povoleno zobrazovat soubory</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3925573269917483990">Kamera:</translation>
-<translation id="3925842537050977900">Uvolnit z poličky</translation>
 <translation id="3926002189479431949">Došlo ke změně telefonu funkce Smart Lock</translation>
 <translation id="3927932062596804919">Odmítnout</translation>
 <translation id="3928570707778085600">Uložit změny do souboru nebo složky <ph name="FILE_OR_FOLDER_NAME" />?</translation>
@@ -2536,7 +2535,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4689235506267737042">Zvolte předvolby ukázkového režimu</translation>
 <translation id="4689421377817139245">Synchronizujte tuto záložku do svého iPhonu</translation>
 <translation id="4690091457710545971">&lt;Čtyři soubory vygenerované firmwarem Wi-Fi od společnosti Intel: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon. První tři jsou binární soubory s výpisy z registru a společnost Intel o nich prohlašuje, že neobsahují žádné informace umožňující identifikaci osob ani zařízení. Poslední soubor obsahuje trasovací informace z firmwaru Intel. Byly z něj odstraněny všechny informace umožňující identifikaci osob nebo zařízení, ale je příliš velký na to, aby jej zde bylo možné zobrazit. Tyto soubory byly vygenerovány v reakci na nedávné problémy se sítí Wi-Fi ve vašem zařízení a budou poskytnuty společnosti Intel, aby tyto problémy mohla odstranit.&gt;</translation>
-<translation id="469230890969474295">Složka OEM</translation>
 <translation id="4692623383562244444">Vyhledávače</translation>
 <translation id="4693155481716051732">Suši</translation>
 <translation id="4694024090038830733">Konfiguraci tiskáren spravuje administrátor.</translation>
@@ -2569,7 +2567,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4737715515457435632">Připojte se prosím k síti</translation>
 <translation id="473775607612524610">Aktualizovat</translation>
 <translation id="4739639199548674512">Lístky</translation>
-<translation id="4742746985488890273">Připnout k poličce</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Přečtěte si, jak aktualizovat aplikace<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Zapnout zvuk webu}few{Zapnout zvuk webů}many{Zapnout zvuk webů}other{Zapnout zvuk webů}}</translation>
 <translation id="4746351372139058112">Zprávy</translation>
@@ -3561,7 +3558,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="6196854373336333322">Rozšíření <ph name="EXTENSION_NAME" /> převzalo kontrolu nad nastavením proxy serveru, což znamená, že může změnit, narušit nebo sledovat vše, co děláte na internetu. Pokud si nejste jisti, proč k tomu došlo, zřejmě se jedná o nežádoucí změnu.</translation>
 <translation id="6198102561359457428">Odhlaste se a poté se znovu přihlaste...</translation>
 <translation id="6198252989419008588">Změnit kód PIN</translation>
-<translation id="6201792273624501289">Aplikace pro Linux</translation>
 <translation id="6202304368170870640">Pomocí kódu PIN se můžete přihlásit na zařízení nebo jej odemknout.</translation>
 <translation id="6206311232642889873">&amp;Kopírovat obrázek</translation>
 <translation id="6207200176136643843">Obnovit výchozí úroveň přiblížení</translation>
@@ -5594,7 +5590,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="9130015405878219958">Byl zadán neplatný režim.</translation>
 <translation id="9131487537093447019">Odesílání zpráv do zařízení Bluetooth a přijímání zpráv ze zařízení Bluetooth</translation>
 <translation id="9134304429738380103">Souhlasím.</translation>
-<translation id="9135090785674039430">Když je tato možnost zapnutá, weby vás na internetu nemohou sledovat pomocí souborů cookie. Některé weby mohou přestat fungovat.</translation>
 <translation id="9137013805542155359">Zobrazit originál</translation>
 <translation id="9137157311132182254">Preferovaný vyhledávač</translation>
 <translation id="9137248913990643158">Chcete-li tuto aplikaci použít, přihlaste se do Chromu.</translation>

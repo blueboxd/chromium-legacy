@@ -16,6 +16,9 @@ import org.chromium.weblayer_private.interfaces.IBrowserFragment;
 import org.chromium.weblayer_private.interfaces.IRemoteFragment;
 import org.chromium.weblayer_private.interfaces.IRemoteFragmentClient;
 
+/**
+ * Implementation of RemoteFragmentImpl which forwards logic to BrowserImpl.
+ */
 public class BrowserFragmentImpl extends RemoteFragmentImpl {
     private final ProfileImpl mProfile;
 

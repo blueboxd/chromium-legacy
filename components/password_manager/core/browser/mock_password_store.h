@@ -73,11 +73,13 @@ class MockPasswordStore : public PasswordStore {
                std::vector<InteractionsStats>(const GURL& origin_domain));
   MOCK_METHOD1(AddSiteStatsImpl, void(const InteractionsStats&));
   MOCK_METHOD1(RemoveSiteStatsImpl, void(const GURL&));
-  MOCK_METHOD1(AddLeakedCredentialsImpl, void(const LeakedCredentials&));
-  MOCK_METHOD2(RemoveLeakedCredentialsImpl,
+  MOCK_METHOD1(AddCompromisedCredentialsImpl,
+               void(const CompromisedCredentials&));
+  MOCK_METHOD2(RemoveCompromisedCredentialsImpl,
                void(const GURL&, const base::string16&));
-  MOCK_METHOD0(GetAllLeakedCredentialsImpl, std::vector<LeakedCredentials>());
-  MOCK_METHOD3(RemoveLeakedCredentialsByUrlAndTimeImpl,
+  MOCK_METHOD0(GetAllCompromisedCredentialsImpl,
+               std::vector<CompromisedCredentials>());
+  MOCK_METHOD3(RemoveCompromisedCredentialsByUrlAndTimeImpl,
                void(const base::RepeatingCallback<bool(const GURL&)>&,
                     base::Time,
                     base::Time));

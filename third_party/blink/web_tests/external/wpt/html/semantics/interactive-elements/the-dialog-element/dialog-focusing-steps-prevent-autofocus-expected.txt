@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-FAIL After showing a dialog, non-dialog autofocus processing won't work. assert_equals: Non-dialog autofocus processing should be skipped. expected Element node <body>
-<input autofocus=""><dialog></dialog>
-<script>
-// ... but got Element node <input autofocus=""></input>
-Harness: the test ran to completion.
-

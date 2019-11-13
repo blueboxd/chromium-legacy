@@ -165,8 +165,9 @@ DaemonControllerDelegateLinux::GetConfig() {
   return result;
 }
 
-bool DaemonControllerDelegateLinux::CheckPermission() {
-  return true;
+void DaemonControllerDelegateLinux::CheckPermission(
+    DaemonController::BoolCallback callback) {
+  std::move(callback).Run(true);
 }
 
 void DaemonControllerDelegateLinux::SetConfigAndStart(

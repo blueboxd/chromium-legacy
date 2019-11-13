@@ -25,7 +25,7 @@ AX_EXPORT extern const char
 // Returns true if experimental accessibility language detection is enabled.
 AX_EXPORT bool IsExperimentalAccessibilityLanguageDetectionEnabled();
 
-// Returns true if experimental accessibility switch access text is enabled.
+// Returns true if experimental accessibility Switch Access text is enabled.
 AX_EXPORT bool IsExperimentalAccessibilitySwitchAccessTextEnabled();
 
 #if defined(OS_WIN)

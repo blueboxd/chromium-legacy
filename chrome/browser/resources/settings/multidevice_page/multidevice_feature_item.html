@@ -63,16 +63,17 @@
           restamp>
         <cr-policy-indicator indicator-type="userPolicy"></cr-policy-indicator>
       </template>
-      <slot name="feature-controller">
-        <!-- This settings-multidevice-feature-toggle is the default controller.
-        If an element with slot="feature-controller" is attached, it will
-        replace this one. -->
-        <settings-multidevice-feature-toggle
-            class="margin-matches-padding"
-            feature="[[feature]]"
-            page-content-data="[[pageContentData]]">
-        </settings-multidevice-feature-toggle>
-      </slot>
+      <div class="margin-matches-padding">
+        <slot name="feature-controller">
+          <!-- This settings-multidevice-feature-toggle is the default controller.
+          If an element with slot="feature-controller" is attached, it will
+          replace this one. -->
+          <settings-multidevice-feature-toggle
+              feature="[[feature]]"
+              page-content-data="[[pageContentData]]">
+          </settings-multidevice-feature-toggle>
+        </slot>
+      </div>
     </div>
   </template>
   <script src="multidevice_feature_item.js"></script>

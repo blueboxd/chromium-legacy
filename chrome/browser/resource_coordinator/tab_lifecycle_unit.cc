@@ -754,7 +754,7 @@ void TabLifecycleUnitSource::TabLifecycleUnit::FinishDiscard(
     LifecycleUnitDiscardReason discard_reason) {
   UMA_HISTOGRAM_BOOLEAN(
       "TabManager.Discarding.DiscardedTabHasBeforeUnloadHandler",
-      web_contents()->NeedToFireBeforeUnload());
+      web_contents()->NeedToFireBeforeUnloadOrUnload());
 
   content::WebContents* const old_contents = web_contents();
   content::WebContents::CreateParams create_params(tab_strip_model_->profile());

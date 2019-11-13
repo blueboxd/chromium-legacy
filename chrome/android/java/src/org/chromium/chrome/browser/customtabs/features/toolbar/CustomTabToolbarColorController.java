@@ -11,8 +11,6 @@ import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProv
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
-import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
-import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
@@ -20,14 +18,11 @@ import org.chromium.chrome.browser.ui.styles.ChromeColors;
 
 import javax.inject.Inject;
 
-import dagger.Lazy;
-
 /**
  * Maintains the toolbar color for {@link CustomTabActivity}.
  */
 @ActivityScope
-public class CustomTabToolbarColorController implements InflationObserver {
-    private final Lazy<ToolbarManager> mToolbarManager;
+public class CustomTabToolbarColorController {
     private final BrowserServicesIntentDataProvider mIntentDataProvider;
     private final ChromeActivity mActivity;
     private final TabObserverRegistrar mTabObserverRegistrar;
@@ -47,27 +42,25 @@ public class CustomTabToolbarColorController implements InflationObserver {
                 }
             };
 
+    private ToolbarManager mToolbarManager;
+
     @Inject
-    public CustomTabToolbarColorController(ActivityLifecycleDispatcher lifecycleDispatcher,
-            Lazy<ToolbarManager> toolbarManager,
-            BrowserServicesIntentDataProvider intentDataProvider,
-            ChromeActivity activity,
-            CustomTabActivityTabProvider tabProvider,
+    public CustomTabToolbarColorController(BrowserServicesIntentDataProvider intentDataProvider,
+            ChromeActivity activity, CustomTabActivityTabProvider tabProvider,
             TabObserverRegistrar tabObserverRegistrar) {
-        mToolbarManager = toolbarManager;
         mIntentDataProvider = intentDataProvider;
         mActivity = activity;
         mTabProvider = tabProvider;
         mTabObserverRegistrar = tabObserverRegistrar;
-        lifecycleDispatcher.register(this);
     }
 
-    @Override
-    public void onPreInflationStartup() {}
-
-    @Override
-    public void onPostInflationStartup() {
-        ToolbarManager manager = mToolbarManager.get();
+    /**
+     * Notifies the ColorController that the ToolbarManager has been created and is ready for
+     * use. ToolbarManager isn't passed directly to the constructor because it's not guaranteed to
+     * be initialized yet.
+     */
+    public void onToolbarInitialized(ToolbarManager manager) {
+        mToolbarManager = manager;
         assert manager != null : "Toolbar manager not initialized";
 
         int toolbarColor = mIntentDataProvider.getToolbarColor();
@@ -102,7 +95,7 @@ public class CustomTabToolbarColorController implements InflationObserver {
      * with site-specific theme colors which are disabled when a preview is being shown.
      */
     private void updateColor(Tab tab) {
-        ToolbarManager manager = mToolbarManager.get();
+        ToolbarManager manager = mToolbarManager;
 
         // Record the original toolbar color in case we need to revert back to it later
         // after a preview has been shown then the user navigates to another non-preview

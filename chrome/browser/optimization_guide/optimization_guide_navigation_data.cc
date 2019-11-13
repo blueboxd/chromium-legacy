@@ -8,7 +8,9 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/optimization_guide/optimization_guide_web_contents_observer.h"
 #include "components/optimization_guide/hints_processing_util.h"
+#include "content/public/browser/navigation_handle.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source.h"
@@ -45,6 +47,10 @@ OptimizationGuideNavigationData::OptimizationGuideNavigationData(
       serialized_hint_version_string_(other.serialized_hint_version_string_),
       optimization_type_decisions_(other.optimization_type_decisions_),
       optimization_target_decisions_(other.optimization_target_decisions_),
+      optimization_target_model_versions_(
+          other.optimization_target_model_versions_),
+      optimization_target_model_prediction_scores_(
+          other.optimization_target_model_prediction_scores_),
       has_hint_before_commit_(other.has_hint_before_commit_),
       has_hint_after_commit_(other.has_hint_after_commit_),
       was_host_covered_by_fetch_at_navigation_start_(
@@ -53,6 +59,20 @@ OptimizationGuideNavigationData::OptimizationGuideNavigationData(
     page_hint_ = std::make_unique<optimization_guide::proto::PageHint>(
         *other.page_hint());
   }
+}
+
+// static
+OptimizationGuideNavigationData*
+OptimizationGuideNavigationData::GetFromNavigationHandle(
+    content::NavigationHandle* navigation_handle) {
+  OptimizationGuideWebContentsObserver*
+      optimization_guide_web_contents_observer =
+          OptimizationGuideWebContentsObserver::FromWebContents(
+              navigation_handle->GetWebContents());
+  if (!optimization_guide_web_contents_observer)
+    return nullptr;
+  return optimization_guide_web_contents_observer
+      ->GetOrCreateOptimizationGuideNavigationData(navigation_handle);
 }
 
 void OptimizationGuideNavigationData::RecordMetrics(bool has_committed) const {
@@ -130,37 +150,54 @@ void OptimizationGuideNavigationData::RecordOptimizationTypeAndTargetDecisions()
 }
 
 void OptimizationGuideNavigationData::RecordOptimizationGuideUKM() const {
-  if (!serialized_hint_version_string_.has_value() ||
-      serialized_hint_version_string_.value().empty())
-    return;
-
-  // Deserialize the serialized version string into its protobuffer.
-  std::string binary_version_pb;
-  if (!base::Base64Decode(serialized_hint_version_string_.value(),
-                          &binary_version_pb))
-    return;
-
-  optimization_guide::proto::Version hint_version;
-  if (!hint_version.ParseFromString(binary_version_pb))
-    return;
-
-  // Record the UKM.
+  bool did_record_metric = false;
   ukm::SourceId ukm_source_id =
       ukm::ConvertToSourceId(navigation_id_, ukm::SourceIdType::NAVIGATION_ID);
   ukm::builders::OptimizationGuide builder(ukm_source_id);
 
-  bool did_record_metric = false;
-  if (hint_version.has_generation_timestamp() &&
-      hint_version.generation_timestamp().seconds() > 0) {
-    did_record_metric = true;
-    builder.SetHintGenerationTimestamp(
-        hint_version.generation_timestamp().seconds());
+  // Record model metrics.
+  for (const auto& optimization_target_model_version :
+       optimization_target_model_versions_) {
+    if (optimization_target_model_version.first ==
+        optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD) {
+      did_record_metric = true;
+      builder.SetPainfulPageLoadModelVersion(
+          optimization_target_model_version.second);
+    }
   }
-  if (hint_version.has_hint_source() &&
-      hint_version.hint_source() !=
-          optimization_guide::proto::HINT_SOURCE_UNKNOWN) {
-    did_record_metric = true;
-    builder.SetHintSource(static_cast<int>(hint_version.hint_source()));
+  for (const auto& optimization_target_model_prediction_score :
+       optimization_target_model_prediction_scores_) {
+    if (optimization_target_model_prediction_score.first ==
+        optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD) {
+      did_record_metric = true;
+      builder.SetPainfulPageLoadModelPredictionScore(static_cast<int64_t>(
+          100 * optimization_target_model_prediction_score.second));
+    }
+  }
+
+  // Record hint metrics.
+  if (serialized_hint_version_string_.has_value() &&
+      !serialized_hint_version_string_.value().empty()) {
+    // Deserialize the serialized version string into its protobuffer.
+    std::string binary_version_pb;
+    if (base::Base64Decode(serialized_hint_version_string_.value(),
+                           &binary_version_pb)) {
+      optimization_guide::proto::Version hint_version;
+      if (hint_version.ParseFromString(binary_version_pb)) {
+        if (hint_version.has_generation_timestamp() &&
+            hint_version.generation_timestamp().seconds() > 0) {
+          did_record_metric = true;
+          builder.SetHintGenerationTimestamp(
+              hint_version.generation_timestamp().seconds());
+        }
+        if (hint_version.has_hint_source() &&
+            hint_version.hint_source() !=
+                optimization_guide::proto::HINT_SOURCE_UNKNOWN) {
+          did_record_metric = true;
+          builder.SetHintSource(static_cast<int>(hint_version.hint_source()));
+        }
+      }
+    }
   }
 
   // Only record UKM if a metric was recorded.
@@ -198,4 +235,40 @@ void OptimizationGuideNavigationData::SetDecisionForOptimizationTarget(
     optimization_guide::proto::OptimizationTarget optimization_target,
     optimization_guide::OptimizationTargetDecision decision) {
   optimization_target_decisions_[optimization_target] = decision;
+}
+
+base::Optional<int64_t>
+OptimizationGuideNavigationData::GetModelVersionForOptimizationTarget(
+    optimization_guide::proto::OptimizationTarget optimization_target) const {
+  auto optimization_target_model_version_iter =
+      optimization_target_model_versions_.find(optimization_target);
+  if (optimization_target_model_version_iter ==
+      optimization_target_model_versions_.end())
+    return base::nullopt;
+  return optimization_target_model_version_iter->second;
+}
+
+void OptimizationGuideNavigationData::SetModelVersionForOptimizationTarget(
+    optimization_guide::proto::OptimizationTarget optimization_target,
+    int64_t model_version) {
+  optimization_target_model_versions_[optimization_target] = model_version;
+}
+
+base::Optional<double>
+OptimizationGuideNavigationData::GetModelPredictionScoreForOptimizationTarget(
+    optimization_guide::proto::OptimizationTarget optimization_target) const {
+  auto optimization_target_model_prediction_score_iter =
+      optimization_target_model_prediction_scores_.find(optimization_target);
+  if (optimization_target_model_prediction_score_iter ==
+      optimization_target_model_prediction_scores_.end())
+    return base::nullopt;
+  return optimization_target_model_prediction_score_iter->second;
+}
+
+void OptimizationGuideNavigationData::
+    SetModelPredictionScoreForOptimizationTarget(
+        optimization_guide::proto::OptimizationTarget optimization_target,
+        double model_prediction_score) {
+  optimization_target_model_prediction_scores_[optimization_target] =
+      model_prediction_score;
 }

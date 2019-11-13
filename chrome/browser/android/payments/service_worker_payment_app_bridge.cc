@@ -95,6 +95,13 @@ void OnGotAllPaymentApps(
               env, app_info.second->capabilities[i].supported_card_types));
     }
 
+    base::android::ScopedJavaLocalRef<jobject> jsupported_delegations =
+        Java_ServiceWorkerPaymentAppBridge_createSupportedDelegations(
+            env, app_info.second->supported_delegations.shipping_address,
+            app_info.second->supported_delegations.payer_name,
+            app_info.second->supported_delegations.payer_phone,
+            app_info.second->supported_delegations.payer_email);
+
     // TODO(crbug.com/846077): Find a proper way to make use of user hint.
     Java_ServiceWorkerPaymentAppBridge_onPaymentAppCreated(
         env, app_info.second->registration_id,
@@ -109,10 +116,17 @@ void OnGotAllPaymentApps(
         ToJavaArrayOfStrings(env, app_info.second->enabled_methods),
         app_info.second->has_explicitly_verified_methods, jcapabilities,
         ToJavaArrayOfStrings(env, preferred_related_application_ids),
-        jweb_contents, jcallback);
+        jsupported_delegations, jweb_contents, jcallback);
   }
 
   for (const auto& installable_app : installable_apps) {
+    base::android::ScopedJavaLocalRef<jobject> jsupported_delegations =
+        Java_ServiceWorkerPaymentAppBridge_createSupportedDelegations(
+            env, installable_app.second->supported_delegations.shipping_address,
+            installable_app.second->supported_delegations.payer_name,
+            installable_app.second->supported_delegations.payer_phone,
+            installable_app.second->supported_delegations.payer_email);
+
     Java_ServiceWorkerPaymentAppBridge_onInstallablePaymentAppCreated(
         env, ConvertUTF8ToJavaString(env, installable_app.second->name),
         ConvertUTF8ToJavaString(env, installable_app.second->sw_js_url),
@@ -123,7 +137,7 @@ void OnGotAllPaymentApps(
             : gfx::ConvertToJavaBitmap(installable_app.second->icon.get()),
         ConvertUTF8ToJavaString(env, installable_app.first.spec()),
         ToJavaArrayOfStrings(env, installable_app.second->preferred_app_ids),
-        jweb_contents, jcallback);
+        jsupported_delegations, jweb_contents, jcallback);
   }
 
   Java_ServiceWorkerPaymentAppBridge_onAllPaymentAppsCreated(env, jcallback);

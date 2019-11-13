@@ -18,7 +18,7 @@ const base::Feature kEnableAuraTooltipsOnWindows{
 #endif  // OS_WIN
 
 // Increases corner radius on Dialogs for the material design refresh.
-// TODO(sajadm): Remove this feature flag when platform inconsistencies
+// TODO(tluk): Remove this feature flag when platform inconsistencies
 // have been fixed as recorded on: https://crbug.com/932970
 const base::Feature kEnableMDRoundedCornersOnDialogs{
     "EnableMDRoundedCornersOnDialogs", base::FEATURE_DISABLED_BY_DEFAULT};

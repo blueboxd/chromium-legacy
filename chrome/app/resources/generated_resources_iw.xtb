@@ -2041,7 +2041,6 @@
 <translation id="3923676227229836009">לדף הזה יש הרשאה להציג קבצים</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3925573269917483990">מצלמה:</translation>
-<translation id="3925842537050977900">ביטול הצמדה למדף</translation>
 <translation id="3926002189479431949">‏הטלפון המשמש ל-Smart Lock הוחלף</translation>
 <translation id="3927932062596804919">דחה</translation>
 <translation id="3928570707778085600">שינית את <ph name="FILE_OR_FOLDER_NAME" />. לשמור את השינויים?</translation>
@@ -2535,7 +2534,6 @@
 <translation id="4689235506267737042">בחירת העדפות ההדגמה</translation>
 <translation id="4689421377817139245">‏סנכרון הסימניה עם ה-iPhone</translation>
 <translation id="4690091457710545971">‏&lt;קושחת ה-Wi-Fi של Intel יצרה ארבעה קבצים: csr.lst‏, fh_regs.lst‏, radio_reg.lst‏, monitor.lst.sysmon. שלושת הקבצים הראשונים הם קובצי Dump בינאריים של הרישום, והמערכת של Intel מטפלת בהם מתוך הנחה שהם לא מכילים מידע שמאפשר זיהוי אישי או זיהוי של המכשיר. הקובץ האחרון הוא מעקב ביצוע מהקושחה של Intel. נמחק ממנו מידע שמאפשר זיהוי אישי או זיהוי של המכשיר, אבל הוא גדול מדי מכדי להציג אותו כאן. הקבצים האלה נוצרו בתגובה לבעיות שאירעו לאחרונה בחיבור ה-Wi-Fi של המכשיר שלך, והם ישותפו עם Intel בניסיון לפתור את הבעיות האלה.&gt;</translation>
-<translation id="469230890969474295">‏תיקיית OEM</translation>
 <translation id="4692623383562244444">מנועי חיפוש</translation>
 <translation id="4693155481716051732">סושי</translation>
 <translation id="4694024090038830733">מנהל המערכת קובע את תצורת המדפסת.</translation>
@@ -2568,7 +2566,6 @@
 <translation id="4737715515457435632">התחבר לרשת</translation>
 <translation id="473775607612524610">עדכן</translation>
 <translation id="4739639199548674512">כרטיסים</translation>
-<translation id="4742746985488890273">הצמד למדף</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />איך לעדכן אפליקציות<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{ביטול השתקת האתר}two{ביטול השתקת האתרים}many{ביטול השתקת האתרים}other{ביטול השתקת האתרים}}</translation>
 <translation id="4746351372139058112">הודעות</translation>
@@ -3560,7 +3557,6 @@
 <translation id="6196854373336333322">‏התוסף "<ph name="EXTENSION_NAME" />" השתלט על הגדרות שרת ה-Proxy. פירוש הדבר שהוא יכול לשנות ולקטוע לכל פעולה שתבצע באינטרנט או לצותת לה. אם אינך יודע בוודאות מדוע שינוי זה התרחש, סביר להניח שזהו שינוי לא רצוי.</translation>
 <translation id="6198102561359457428">צא והיכנס שוב...</translation>
 <translation id="6198252989419008588">‏שנה PIN</translation>
-<translation id="6201792273624501289">‏אפליקציות Linux</translation>
 <translation id="6202304368170870640">קוד האימות מאפשר להיכנס למכשיר או לבטל את נעילתו.</translation>
 <translation id="6206311232642889873">העת&amp;ק תמונה</translation>
 <translation id="6207200176136643843">אפס למרחק התצוגה המוגדר כברירת המחדל</translation>
@@ -5595,7 +5591,6 @@
 <translation id="9130015405878219958">הוזן מצב לא חוקי.</translation>
 <translation id="9131487537093447019">‏שליחת הודעות למכשירי Bluetooth וקבלת הודעות מהם.</translation>
 <translation id="9134304429738380103">כן, אני מסכים/ה.</translation>
-<translation id="9135090785674039430">‏כשהאפשרות מופעלת, אתרים לא יכולים להשתמש בקובצי cookie לניהול מעקב אחריך באינטרנט. ייתכנו תקלות בתפקוד של חלק מהאתרים.</translation>
 <translation id="9137013805542155359">הצג מקור</translation>
 <translation id="9137157311132182254">מנוע חיפוש מועדף</translation>
 <translation id="9137248913990643158">‏היכנס לחשבונך ב-Chrome לפני שתשתמש באפליקציה הזו.</translation>

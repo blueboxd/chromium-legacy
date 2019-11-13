@@ -511,11 +511,11 @@
     <message name="IDS_SETTINGS_ACCESSIBILITY_SELECT_TO_SPEAK_OPTIONS_LABEL" desc="In the settings tab, the label for the button that opens the Options page for the Select-to-Speak feature.">
       Open select-to-speak settings
     </message>
-    <message name="IDS_SETTINGS_ACCESSIBILITY_SWITCH_ACCESS_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to enable switch access (for users with limited motor control).">
-      Switch access (control the computer with just one or two switches)
+    <message name="IDS_SETTINGS_ACCESSIBILITY_SWITCH_ACCESS_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to enable Switch Access (for users with limited motor control).">
+      Switch Access (control the computer with just one or two switches)
     </message>
     <message name="IDS_SETTINGS_ACCESSIBILITY_SWITCH_ACCESS_OPTIONS_LABEL" desc="In the settings tab, the label for the button that opens the Options page for the Switch Access feature.">
-      Switch access options
+      Switch Access options
     </message>
     <message name="IDS_SETTINGS_ACCESSIBILITY_TEXT_TO_SPEECH_HEADING" desc="In the settings tab, the heading for accessibility features that enable the computer to speak text from the computer screen.">
       Text-to-Speech
@@ -4850,6 +4850,9 @@
     <message name="IDS_SETTINGS_STORAGE_EXTERNAL_STORAGE_LIST_HEADER" desc="Header of the list of external storage devices for the subpage for setting preferences for external storage. This is shown when the list is not empty.">
       Available devices
     </message>
+    <message name="IDS_SETTINGS_STORAGE_OVERVIEW_ARIA_LABEL" desc="The label to be read aloud by ChromeVox to describe the storage usage progress bar on the Storage page">
+      Storage Usage Overview
+    </message>
 
     <!-- Power -->
     <message name="IDS_SETTINGS_POWER_TITLE" desc="In Device Settings, the title for power management.">
@@ -4885,14 +4888,14 @@
     <message name="IDS_SETTINGS_POWER_IDLE_OTHER" desc="In Device Settings > Power, menu item for custom idle behavior.">
       Other
     </message>
-    <message name="IDS_SETTINGS_POWER_LID_CLOSED_SLEEP_LABEL" desc="In Device Settings > Power, label for suspending when lid is closed.">
-      Sleep when lid is closed
+    <message name="IDS_SETTINGS_POWER_LID_CLOSED_SLEEP_LABEL" desc="In Device Settings > Power, label for suspending when cover is closed.">
+      Sleep when cover is closed
     </message>
-    <message name="IDS_SETTINGS_POWER_LID_CLOSED_SIGN_OUT_LABEL" desc="In Device Settings > Power, label for signing out when lid is closed.">
-      Sign out when lid is closed
+    <message name="IDS_SETTINGS_POWER_LID_CLOSED_SIGN_OUT_LABEL" desc="In Device Settings > Power, label for signing out when cover is closed.">
+      Sign out when cover is closed
     </message>
-    <message name="IDS_SETTINGS_POWER_LID_CLOSED_SHUT_DOWN_LABEL" desc="In Device Settings > Power, label for shutting down when lid is closed.">
-      Shut down when lid is closed
+    <message name="IDS_SETTINGS_POWER_LID_CLOSED_SHUT_DOWN_LABEL" desc="In Device Settings > Power, label for shutting down when cover is closed.">
+      Shut down when cover is closed
     </message>
     <message name="IDS_SETTINGS_BATTERY_STATUS" desc="In Device Settings > Power, the battery status while the battery is discharging, showing the battery power as a percentage and the time left until the battery is empty.">
       <ph name="percentage">$1<ex>56</ex></ph>% - <ph name="time">$2<ex>2 hours and 20 minutes</ex></ph> left
@@ -5313,16 +5316,19 @@
   <message name="IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_DIALOG_TITLE" desc="The title of a dialog that lets users view, add, rename, and delete fingerprints on their security key (an authentication hardware device).">
     Manage fingerprints
   </message>
+  <message name="IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_ADD_TITLE" desc="The title of a dialog instructing a user to touch their security key (an authentication hardware device) to enroll a fingerprint on it.">
+    Add fingerprint
+  </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_BIO_CHOOSE_NAME" desc="A label instructing the user to provide a descriptive name for a fingerprint enrolled to a security key.">
     Choose a name for this fingerprint
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_BIO_NAME_LABEL" desc="A label for a text input field containing a descriptive name for a fingerprint enrolled to a security key.">
     Name
   </message>
-  <message name="IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_NO_ENROLLMENTS" desc="A label informing the user that there are no fingerprints stored on their security key (authentication hardware device).">
-    Your security key has no fingerprints stored.
+  <message name="IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_NO_ENROLLMENTS_LABEL" desc="A label informing the user that there are no fingerprints stored on their security key (authentication hardware device).">
+    Your security key has no fingerprints stored
   </message>
-  <message name="IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_LABEL" desc="A label describing a list of fingerprints enrolled with a security key (authentication hardware device).">
+  <message name="IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_ENROLLMENTS_LABEL" desc="A label describing a list of fingerprints enrolled with a security key (authentication hardware device).">
     Fingerprints on this security key
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_ENROLLING_LABEL" desc="A label instructing the user to repeatedly touch the fingerprint sensor on their security key (authentication hardware device) to take samples for a new fingerprint.">

@@ -81,6 +81,12 @@ body {
   z-index: 1;
 }
 
+@media(forced-colors) {
+  .content-header {
+    background: none;
+  }
+}
+
 .tree-label {
   user-select: text;
 }

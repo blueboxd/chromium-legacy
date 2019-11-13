@@ -2040,7 +2040,6 @@
 <translation id="3923676227229836009">此页面可查看文件</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3925573269917483990">摄像头：</translation>
-<translation id="3925842537050977900">取消固定到任务栏</translation>
 <translation id="3926002189479431949">Smart Lock 的配对手机已更改</translation>
 <translation id="3927932062596804919">拒绝</translation>
 <translation id="3928570707778085600">将所做更改保存至 <ph name="FILE_OR_FOLDER_NAME" />？</translation>
@@ -2533,7 +2532,6 @@
 <translation id="4689235506267737042">选择您的演示偏好设置</translation>
 <translation id="4689421377817139245">将此书签同步到您的 iPhone</translation>
 <translation id="4690091457710545971">&lt;Intel Wi-Fi 固件生成了四个文件：csr.lst、fh_regs.lst、radio_reg.lst 和 monitor.lst.sysmon。前三个文件是包含注册表转储的二进制文件，且 Intel 表示其中并未包含任何个人信息或设备标识信息。最后一个文件是 Intel 固件的执行跟踪记录，其中的个人信息和设备标识信息已全部清除，但由于文件过大而无法显示在这里。因为您的设备最近发生过 Wi-Fi 问题，所以系统生成了这些文件，且会将文件提供给 Intel 以协助排查相关问题。&gt;</translation>
-<translation id="469230890969474295">OEM文件夹</translation>
 <translation id="4692623383562244444">搜索引擎</translation>
 <translation id="4693155481716051732">寿司</translation>
 <translation id="4694024090038830733">打印机配置由管理员处理。</translation>
@@ -2566,7 +2564,6 @@
 <translation id="4737715515457435632">请连接到网络</translation>
 <translation id="473775607612524610">更新</translation>
 <translation id="4739639199548674512">票据</translation>
-<translation id="4742746985488890273">固定到任务栏</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />了解如何更新应用<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{将这个网站取消静音}other{将这些网站取消静音}}</translation>
 <translation id="4746351372139058112">信息</translation>
@@ -3558,7 +3555,6 @@
 <translation id="6196854373336333322">“<ph name="EXTENSION_NAME" />”扩展程序控制了您的代理设置，也就是说，它可以更改、中断或窃听您在网上执行的任何操作。如果您不确定出现这种变化的原因，那么这种变化可能并不是您所希望的。</translation>
 <translation id="6198102561359457428">退出后重新登录...</translation>
 <translation id="6198252989419008588">更改 PIN</translation>
-<translation id="6201792273624501289">Linux 应用</translation>
 <translation id="6202304368170870640">您可以使用 PIN 码登录或解锁您的设备。</translation>
 <translation id="6206311232642889873">复制图片(&amp;Y)</translation>
 <translation id="6207200176136643843">重置为默认缩放级别</translation>
@@ -5591,7 +5587,6 @@
 <translation id="9130015405878219958">输入的模式无效。</translation>
 <translation id="9131487537093447019">向蓝牙设备发送消息，以及接收来自蓝牙设备的消息。</translation>
 <translation id="9134304429738380103">立即启用。</translation>
-<translation id="9135090785674039430">当此设置处于开启状态时，网站无法使用 Cookie 来跟踪您在网上的活动。某些网站可能会无法正常运行。</translation>
 <translation id="9137013805542155359">显示原始网页</translation>
 <translation id="9137157311132182254">首选搜索引擎</translation>
 <translation id="9137248913990643158">在使用此应用前，请先启动并登录 Chrome。</translation>

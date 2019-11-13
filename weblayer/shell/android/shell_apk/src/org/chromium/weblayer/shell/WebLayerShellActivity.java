@@ -125,43 +125,40 @@ public class WebLayerShellActivity extends FragmentActivity {
 
         Fragment fragment = getOrCreateBrowserFragment(savedInstanceState);
         mBrowser = Browser.fromFragment(fragment);
-        mBrowser.getActiveTab().setFullscreenCallback(
-                new FullscreenCallback() {
-                    private int mSystemVisibilityToRestore;
+        mBrowser.getActiveTab().setFullscreenCallback(new FullscreenCallback() {
+            private int mSystemVisibilityToRestore;
 
-                    @Override
-                    public void onEnterFullscreen(Runnable exitFullscreenRunnable) {
-                        // This comes from Chrome code to avoid an extra resize.
-                        final WindowManager.LayoutParams attrs = getWindow().getAttributes();
-                        attrs.flags |= WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
-                        getWindow().setAttributes(attrs);
+            @Override
+            public void onEnterFullscreen(Runnable exitFullscreenRunnable) {
+                // This comes from Chrome code to avoid an extra resize.
+                final WindowManager.LayoutParams attrs = getWindow().getAttributes();
+                attrs.flags |= WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
+                getWindow().setAttributes(attrs);
 
-                        View decorView = getWindow().getDecorView();
-                        // Caching the system ui visibility is ok for shell, but likely not ok for
-                        // real code.
-                        mSystemVisibilityToRestore = decorView.getSystemUiVisibility();
-                        decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
-                                | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-                                | View.SYSTEM_UI_FLAG_LOW_PROFILE
-                                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-                    }
+                View decorView = getWindow().getDecorView();
+                // Caching the system ui visibility is ok for shell, but likely not ok for
+                // real code.
+                mSystemVisibilityToRestore = decorView.getSystemUiVisibility();
+                decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                        | View.SYSTEM_UI_FLAG_LOW_PROFILE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+            }
 
-                    @Override
-                    public void onExitFullscreen() {
-                        View decorView = getWindow().getDecorView();
-                        decorView.setSystemUiVisibility(mSystemVisibilityToRestore);
+            @Override
+            public void onExitFullscreen() {
+                View decorView = getWindow().getDecorView();
+                decorView.setSystemUiVisibility(mSystemVisibilityToRestore);
 
-                        final WindowManager.LayoutParams attrs = getWindow().getAttributes();
-                        if ((attrs.flags & WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-                                != 0) {
-                            attrs.flags &= ~WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
-                            getWindow().setAttributes(attrs);
-                        }
-                    }
-                });
+                final WindowManager.LayoutParams attrs = getWindow().getAttributes();
+                if ((attrs.flags & WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS) != 0) {
+                    attrs.flags &= ~WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
+                    getWindow().setAttributes(attrs);
+                }
+            }
+        });
         mProfile = mBrowser.getProfile();
 
         mBrowser.setTopView(mTopContentsContainer);

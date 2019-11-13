@@ -248,27 +248,6 @@ void ArcIntentHelperBridge::CloseCameraApp() {
   ash::NewWindowDelegate::GetInstance()->CloseCameraApp();
 }
 
-void ArcIntentHelperBridge::HandleCameraResult(
-    uint32_t intent_id,
-    arc::mojom::CameraIntentAction action,
-    const std::vector<uint8_t>& data,
-    arc::mojom::IntentHelperInstance::HandleCameraResultCallback callback) {
-  auto* arc_service_manager = arc::ArcServiceManager::Get();
-  arc::mojom::IntentHelperInstance* instance = nullptr;
-  if (arc_service_manager) {
-    instance = ARC_GET_INSTANCE_FOR_METHOD(
-        arc_service_manager->arc_bridge_service()->intent_helper(),
-        HandleCameraResult);
-  }
-  if (!instance) {
-    LOG(ERROR) << "Failed to get instance for HandleCameraResult().";
-    std::move(callback).Run(false);
-    return;
-  }
-
-  instance->HandleCameraResult(intent_id, action, data, std::move(callback));
-}
-
 ArcIntentHelperBridge::GetResult ArcIntentHelperBridge::GetActivityIcons(
     const std::vector<ActivityName>& activities,
     OnIconsReadyCallback callback) {
@@ -308,6 +287,27 @@ void ArcIntentHelperBridge::RemoveObserver(ArcIntentHelperObserver* observer) {
 bool ArcIntentHelperBridge::HasObserver(
     ArcIntentHelperObserver* observer) const {
   return observer_list_.HasObserver(observer);
+}
+
+void ArcIntentHelperBridge::HandleCameraResult(
+    uint32_t intent_id,
+    arc::mojom::CameraIntentAction action,
+    const std::vector<uint8_t>& data,
+    arc::mojom::IntentHelperInstance::HandleCameraResultCallback callback) {
+  auto* arc_service_manager = arc::ArcServiceManager::Get();
+  arc::mojom::IntentHelperInstance* instance = nullptr;
+  if (arc_service_manager) {
+    instance = ARC_GET_INSTANCE_FOR_METHOD(
+        arc_service_manager->arc_bridge_service()->intent_helper(),
+        HandleCameraResult);
+  }
+  if (!instance) {
+    LOG(ERROR) << "Failed to get instance for HandleCameraResult().";
+    std::move(callback).Run(false);
+    return;
+  }
+
+  instance->HandleCameraResult(intent_id, action, data, std::move(callback));
 }
 
 // static

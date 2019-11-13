@@ -75,6 +75,9 @@ cr.define('downloads', function() {
     /** @private {Array<number>} */
     listenerIds_: null,
 
+    /** @private {?Function} */
+    boundOnKeyDown_: null,
+
     /** @override */
     created: function() {
       const browserProxy = downloads.BrowserProxy.getInstance();
@@ -103,12 +106,18 @@ cr.define('downloads', function() {
         this.mojoEventTarget_.updateItem.addListener(
             this.updateItem_.bind(this)),
       ];
+
+      this.boundOnKeyDown_ = e => this.onKeyDown_(e);
+      document.addEventListener('keydown', this.boundOnKeyDown_);
     },
 
     /** @override */
     detached: function() {
       this.listenerIds_.forEach(
           id => assert(this.mojoEventTarget_.removeListener(id)));
+
+      document.removeEventListener('keydown', this.boundOnKeyDown_);
+      this.boundOnKeyDown_ = null;
     },
 
     /** @private */
@@ -186,34 +195,53 @@ cr.define('downloads', function() {
     },
 
     /**
-     * @param {Event} e
+     * @param {!KeyboardEvent} e
      * @private
      */
-    onCanExecute_: function(e) {
-      e = /** @type {cr.ui.CanExecuteEvent} */ (e);
-      switch (e.command.id) {
-        case 'undo-command':
-          e.canExecute = this.$.toolbar.canUndo();
-          break;
-        case 'clear-all-command':
-          e.canExecute = this.$.toolbar.canClearAll();
-          break;
+    onKeyDown_: function(e) {
+      let clearAllKey = 'c';
+      // <if expr="is_macosx">
+      // On Mac, pressing alt+c produces 'ç' as |event.key|.
+      clearAllKey = 'ç';
+      // </if>
+      if (e.key === clearAllKey && e.altKey && !e.ctrlKey && !e.shiftKey &&
+          !e.metaKey) {
+        this.onClearAllCommand_();
+        e.preventDefault();
+        return;
+      }
+
+      if (e.key === 'z' && !e.altKey && !e.shiftKey) {
+        let hasTriggerModifier = e.ctrlKey && !e.metaKey;
+        // <if expr="is_macosx">
+        hasTriggerModifier = !e.ctrlKey && e.metaKey;
+        // </if>
+        if (hasTriggerModifier) {
+          this.onUndoCommand_();
+          e.preventDefault();
+        }
       }
     },
 
-    /**
-     * @param {Event} e
-     * @private
-     */
-    onCommand_: function(e) {
-      if (e.command.id == 'clear-all-command') {
-        cr.toastManager.getInstance().show(
-            loadTimeData.getString('toastClearedAll'), true);
-        this.mojoHandler_.clearAll();
-      } else if (e.command.id == 'undo-command') {
-        cr.toastManager.getInstance().hide();
-        this.mojoHandler_.undo();
+    /** @private */
+    onClearAllCommand_() {
+      if (!this.$.toolbar.canClearAll()) {
+        return;
       }
+
+      this.mojoHandler_.clearAll();
+      cr.toastManager.getInstance().show(
+          loadTimeData.getString('toastClearedAll'), true);
+    },
+
+    /** @private */
+    onUndoCommand_() {
+      if (!this.$.toolbar.canUndo()) {
+        return;
+      }
+
+      cr.toastManager.getInstance().hide();
+      this.mojoHandler_.undo();
     },
 
     /** @private */
@@ -233,10 +261,6 @@ cr.define('downloads', function() {
      * @private
      */
     onLoad_: function() {
-      cr.ui.decorate('command', cr.ui.Command);
-      document.addEventListener('canExecute', this.onCanExecute_.bind(this));
-      document.addEventListener('command', this.onCommand_.bind(this));
-
       this.searchService_.loadMore();
       return this.loaded_.promise;
     },

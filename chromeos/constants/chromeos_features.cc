@@ -316,8 +316,21 @@ bool IsSplitSettingsSyncEnabled() {
   return base::FeatureList::IsEnabled(kSplitSettingsSync);
 }
 
+bool ShouldDeprecateV1DeviceSync() {
+  return ShouldUseV2DeviceSync() &&
+         base::FeatureList::IsEnabled(
+             chromeos::features::kCryptAuthV1DeviceSyncDeprecate);
+}
+
 bool ShouldShowPlayStoreInDemoMode() {
   return base::FeatureList::IsEnabled(kShowPlayInDemoMode);
+}
+
+bool ShouldUseV2DeviceSync() {
+  return base::FeatureList::IsEnabled(
+             chromeos::features::kCryptAuthV2Enrollment) &&
+         base::FeatureList::IsEnabled(
+             chromeos::features::kCryptAuthV2DeviceSync);
 }
 
 }  // namespace features

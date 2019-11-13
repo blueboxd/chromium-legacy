@@ -414,6 +414,8 @@ class PrintPreviewHandlerTest : public testing::Test {
     if (expected_header_footer.has_value())
       EXPECT_EQ(expected_header_footer.value(), header_footer->GetBool());
 
+    ASSERT_TRUE(settings->FindKeyOfType("pdfPrinterDisabled",
+                                        base::Value::Type::BOOLEAN));
     ASSERT_TRUE(
         settings->FindKeyOfType("cloudPrintURL", base::Value::Type::STRING));
     ASSERT_TRUE(

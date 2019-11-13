@@ -146,6 +146,13 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
       aura::Window* dragged_window,
       SplitViewDragIndicators::WindowDraggingState window_dragging_state);
 
+  // Sets the dragged window on |split_view_drag_indicators_|.
+  void SetSplitViewDragIndicatorsDraggedWindow(aura::Window* dragged_window);
+
+  // Sets the window dragging state on |split_view_drag_indicators_|.
+  void SetSplitViewDragIndicatorsWindowDraggingState(
+      SplitViewDragIndicators::WindowDraggingState window_dragging_state);
+
   // Updates the desks bar widget bounds if necessary.
   // Returns true if the desks widget's bounds have been updated.
   bool MaybeUpdateDesksWidgetBounds();
@@ -326,6 +333,10 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
     return window_list_;
   }
 
+  SplitViewDragIndicators* split_view_drag_indicators() {
+    return split_view_drag_indicators_.get();
+  }
+
   const DesksBarView* desks_bar_view() const { return desks_bar_view_; }
 
   const gfx::Rect bounds() const { return bounds_; }
@@ -421,6 +432,10 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
 
   // Vector containing all the windows in this grid.
   std::vector<std::unique_ptr<OverviewItem>> window_list_;
+
+  // The owner of the widget that displays split-view-related information. Null
+  // if split view is unsupported (see |ShouldAllowSplitView|).
+  std::unique_ptr<SplitViewDragIndicators> split_view_drag_indicators_;
 
   // Widget that contains the DeskBarView contents when the Virtual Desks
   // feature is enabled.

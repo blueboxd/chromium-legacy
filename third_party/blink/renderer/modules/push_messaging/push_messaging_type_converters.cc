@@ -20,7 +20,7 @@ blink::mojom::blink::PushSubscriptionOptionsPtr TypeConverter<
   Vector<uint8_t> application_server_key;
   application_server_key.Append(
       reinterpret_cast<uint8_t*>(input->applicationServerKey()->Data()),
-      input->applicationServerKey()->ByteLength());
+      input->applicationServerKey()->DeprecatedByteLengthAsUnsigned());
 
   return blink::mojom::blink::PushSubscriptionOptions::New(
       input->userVisibleOnly(), application_server_key);

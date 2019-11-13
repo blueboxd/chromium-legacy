@@ -38,6 +38,7 @@ android_library("apk_java") {
 android_library("devui_java") {
   java_files = [
     "java/src/org/chromium/android_webview/devui/CrashesListActivity.java",
+    "java/src/org/chromium/android_webview/devui/FlagsActivity.java",
     "java/src/org/chromium/android_webview/devui/MainActivity.java",
     "java/src/org/chromium/android_webview/devui/util/CrashInfoLoader.java",
     "java/src/org/chromium/android_webview/devui/util/NavigationMenuHelper.java",
@@ -50,6 +51,7 @@ android_library("devui_java") {
     ":devui_resources",
     ":system_webview_manifest",
     "//android_webview:common_crash_java",
+    "//android_webview:common_java",
     "//base:base_java",
     "//components/minidump_uploader:minidump_uploader_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
@@ -108,10 +110,12 @@ android_resources("icon_resources") {
 android_resources("devui_resources") {
   resource_dirs = [ "java/res_devui" ]
   custom_package = "org.chromium.android_webview.devui"
+}
 
-  if (webview_devui_show_icon) {
-    android_manifest = "java/DeveloperUiLauncherManifest.xml"
-  }
+android_resources("devui_launcher_icon_resources") {
+  resource_dirs = []
+  custom_package = "org.chromium.android_webview.devui.icon"
+  android_manifest = "java/DeveloperUiLauncherManifest.xml"
 }
 
 jinja_template("system_webview_manifest") {

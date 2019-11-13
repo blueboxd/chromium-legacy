@@ -140,6 +140,34 @@ public abstract class PaymentInstrument extends EditableOption {
         return getInstrumentMethodNames().contains(method);
     }
 
+    /**
+     * @return Whether the instrument can collect and return shipping address.
+     */
+    public boolean handlesShippingAddress() {
+        return false;
+    }
+
+    /**
+     * @return Whether the instrument can collect and return payer's name.
+     */
+    public boolean handlesPayerName() {
+        return false;
+    }
+
+    /**
+     * @return Whether the instrument can collect and return payer's email.
+     */
+    public boolean handlesPayerEmail() {
+        return false;
+    }
+
+    /**
+     * @return Whether the instrument can collect and return payer's phone.
+     */
+    public boolean handlesPayerPhone() {
+        return false;
+    }
+
     /** @return The country code (or null if none) associated with this payment instrument. */
     @Nullable
     public String getCountryCode() {

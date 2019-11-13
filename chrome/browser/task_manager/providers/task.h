@@ -37,12 +37,13 @@ class Task {
     UNKNOWN = 0,
 
     /* Singleton processes first that don't belong to a particular tab. */
-    BROWSER,  /* The main browser process. */
-    GPU,      /* A graphics process. */
-    ARC,      /* An ARC process. */
-    CROSTINI, /* A Crostini VM process. */
-    ZYGOTE,   /* A Linux zygote process. */
-    UTILITY,  /* A browser utility process. */
+    BROWSER,   /* The main browser process. */
+    GPU,       /* A graphics process. */
+    ARC,       /* An ARC process. */
+    CROSTINI,  /* A Crostini VM process. */
+    PLUGIN_VM, /* A Plugin VM process. */
+    ZYGOTE,    /* A Linux zygote process. */
+    UTILITY,   /* A browser utility process. */
 
     /* Per-Tab processes next. */
     RENDERER,  /* A normal WebContents renderer process. */

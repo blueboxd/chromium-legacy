@@ -139,6 +139,7 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
               int(sizeof(prefs)));
     InitializeExtensionService(params);
     service_->updater()->Start();
+    content::RunAllTasksUntilIdle();
   }
 
   // ExtensionServiceTestBase overrides:

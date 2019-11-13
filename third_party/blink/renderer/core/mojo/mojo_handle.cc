@@ -70,7 +70,7 @@ MojoResult MojoHandle::writeMessage(
   if (buffer.IsArrayBuffer()) {
     DOMArrayBuffer* array = buffer.GetAsArrayBuffer();
     bytes = array->Data();
-    num_bytes = array->ByteLength();
+    num_bytes = array->ByteLengthAsSizeT();
   } else {
     DOMArrayBufferView* view = buffer.GetAsArrayBufferView().View();
     bytes = view->BaseAddress();
@@ -154,7 +154,7 @@ MojoWriteDataResult* MojoHandle::writeData(
   if (buffer.IsArrayBuffer()) {
     DOMArrayBuffer* array = buffer.GetAsArrayBuffer();
     elements = array->Data();
-    num_bytes = array->ByteLength();
+    num_bytes = array->DeprecatedByteLengthAsUnsigned();
   } else {
     DOMArrayBufferView* view = buffer.GetAsArrayBufferView().View();
     elements = view->BaseAddress();
@@ -217,7 +217,7 @@ MojoReadDataResult* MojoHandle::readData(
   if (buffer.IsArrayBuffer()) {
     DOMArrayBuffer* array = buffer.GetAsArrayBuffer();
     elements = array->Data();
-    num_bytes = array->ByteLength();
+    num_bytes = array->DeprecatedByteLengthAsUnsigned();
   } else {
     DOMArrayBufferView* view = buffer.GetAsArrayBufferView().View();
     elements = view->BaseAddress();

@@ -206,8 +206,8 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   bool CommitTransaction();
 
   StatisticsTable& stats_table() { return stats_table_; }
-  LeakedCredentialsTable& leaked_credentials_table() {
-    return leaked_credentials_table_;
+  CompromisedCredentialsTable& compromised_credentials_table() {
+    return compromised_credentials_table_;
   }
 
   FieldInfoTable& field_info_table() { return field_info_table_; }
@@ -325,8 +325,8 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   mutable sql::Database db_;
   sql::MetaTable meta_table_;
   StatisticsTable stats_table_;
-  LeakedCredentialsTable leaked_credentials_table_;
   FieldInfoTable field_info_table_;
+  CompromisedCredentialsTable compromised_credentials_table_;
 
   // These cached strings are used to build SQL statements.
   std::string add_statement_;

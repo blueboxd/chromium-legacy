@@ -10,7 +10,6 @@
 #include <string>
 #include <utility>
 
-#include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -74,8 +73,6 @@ WebUIDataSource* CreateGpuHTMLSource() {
 
   source->UseStringsJs();
   source->AddResourcePath("gpu_internals.js", IDR_GPU_INTERNALS_JS);
-  source->AddResourcePath("vulkan_info.mojom.js", IDR_VULKAN_INFO_MOJO_JS);
-  source->AddResourcePath("vulkan_types.mojom.js", IDR_VULKAN_TYPES_MOJO_JS);
   source->SetDefaultResource(IDR_GPU_INTERNALS_HTML);
   return source;
 }
@@ -328,13 +325,6 @@ std::unique_ptr<base::DictionaryValue> GpuInfoAsDictionaryValue() {
   if (gpu_info.dx_diagnostics.children.size())
     dx_info = DxDiagNodeToList(gpu_info.dx_diagnostics);
   info->Set("diagnostics", std::move(dx_info));
-#endif
-
-#if BUILDFLAG(ENABLE_VULKAN)
-  if (gpu_info.vulkan_info) {
-    auto blob = gpu_info.vulkan_info->Serialize();
-    info->SetString("vulkanInfo", base::Base64Encode(blob));
-  }
 #endif
 
   return info;

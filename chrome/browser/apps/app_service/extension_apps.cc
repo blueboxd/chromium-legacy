@@ -520,6 +520,26 @@ void ExtensionApps::Uninstall(const std::string& app_id,
   }
 }
 
+void ExtensionApps::PauseApp(const std::string& app_id) {
+  if (paused_apps.find(app_id) != paused_apps.end()) {
+    return;
+  }
+
+  paused_apps.insert(app_id);
+  SetIconEffect(app_id);
+
+  // TODO(crbug.com/1011235): If the app is running, Stop the app.
+}
+
+void ExtensionApps::UnpauseApps(const std::string& app_id) {
+  if (paused_apps.find(app_id) == paused_apps.end()) {
+    return;
+  }
+
+  paused_apps.erase(app_id);
+  SetIconEffect(app_id);
+}
+
 void ExtensionApps::OpenNativeSettings(const std::string& app_id) {
   if (!profile_) {
     return;
@@ -998,6 +1018,10 @@ IconEffects ExtensionApps::GetIconEffects(
     icon_effects =
         static_cast<IconEffects>(icon_effects | IconEffects::kRoundCorners);
   }
+  if (paused_apps.find(extension->id()) != paused_apps.end()) {
+    icon_effects =
+        static_cast<IconEffects>(icon_effects | IconEffects::kPaused);
+  }
   return icon_effects;
 }
 
@@ -1005,23 +1029,27 @@ void ExtensionApps::ApplyChromeBadge(const std::string& package_name) {
   const std::vector<std::string> extension_ids =
       extensions::util::GetEquivalentInstalledExtensions(profile_,
                                                          package_name);
-  extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(profile_);
 
   for (auto& app_id : extension_ids) {
-    const extensions::Extension* extension =
-        registry->GetInstalledExtension(app_id);
-    if (!extension || !Accepts(extension)) {
-      continue;
-    }
-
-    apps::mojom::AppPtr app = apps::mojom::App::New();
-    app->app_type = app_type_;
-    app->app_id = extension->id();
-    app->icon_key = icon_key_factory_.MakeIconKey(GetIconEffects(extension));
-
-    Publish(std::move(app));
+    SetIconEffect(app_id);
   }
+}
+
+void ExtensionApps::SetIconEffect(const std::string& app_id) {
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile_);
+  DCHECK(registry);
+  const extensions::Extension* extension =
+      registry->GetInstalledExtension(app_id);
+  if (!extension || !Accepts(extension)) {
+    return;
+  }
+
+  apps::mojom::AppPtr app = apps::mojom::App::New();
+  app->app_type = app_type_;
+  app->app_id = app_id;
+  app->icon_key = icon_key_factory_.MakeIconKey(GetIconEffects(extension));
+  Publish(std::move(app));
 }
 
 }  // namespace apps

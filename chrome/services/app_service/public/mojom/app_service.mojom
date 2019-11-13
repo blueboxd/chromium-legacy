@@ -71,6 +71,16 @@ interface AppService {
       bool clear_site_data,
       bool report_abuse);
 
+  // Pauses an app to stop the current running app, and apply the icon effect.
+  PauseApp(
+      AppType app_type,
+      string app_id);
+
+  // Unpauses an app, and recover the icon effect for the app.
+  UnpauseApps(
+      AppType app_type,
+      string app_id);
+
   OpenNativeSettings(
       AppType app_type,
       string app_id);
@@ -129,6 +139,14 @@ interface Publisher {
       string app_id,
       bool clear_site_data,
       bool report_abuse);
+
+  // Pauses an app to stop the current running app, and apply the icon effect.
+  PauseApp(
+      string app_id);
+
+  // Unpauses an app, and recover the icon effect for the app.
+  UnpauseApps(
+      string app_id);
 
   OpenNativeSettings(
       string app_id);

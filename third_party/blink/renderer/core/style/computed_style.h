@@ -2530,6 +2530,20 @@ class ComputedStyle : public ComputedStyleBase,
                                                WebColorScheme::kLight);
   }
 
+  // render-subtree helpers.
+  bool RenderSubtreeInvisible() const {
+    return static_cast<unsigned>(RenderSubtree()) &
+           static_cast<unsigned>(RenderSubtreeFlags::kInvisible);
+  }
+  bool RenderSubtreeSkipActivation() const {
+    return static_cast<unsigned>(RenderSubtree()) &
+           static_cast<unsigned>(RenderSubtreeFlags::kSkipActivation);
+  }
+  bool RenderSubtreeSkipViewportActivation() const {
+    return static_cast<unsigned>(RenderSubtree()) &
+           static_cast<unsigned>(RenderSubtreeFlags::kSkipViewportActivation);
+  }
+
  private:
   EClear Clear() const { return ClearInternal(); }
   EFloat Floating() const { return FloatingInternal(); }

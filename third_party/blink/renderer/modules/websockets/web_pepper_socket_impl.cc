@@ -114,7 +114,8 @@ bool WebPepperSocketImpl::SendArrayBuffer(
     return true;
 
   DOMArrayBuffer* array_buffer = web_array_buffer;
-  private_->Send(*array_buffer, 0, array_buffer->ByteLength(),
+  private_->Send(*array_buffer, 0,
+                 array_buffer->DeprecatedByteLengthAsUnsigned(),
                  base::OnceClosure());
   return true;
 }

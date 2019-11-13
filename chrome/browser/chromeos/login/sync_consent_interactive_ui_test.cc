@@ -3,12 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/screens/assistant_optin_flow_screen.h"
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
@@ -19,12 +18,14 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/assistant_optin_flow_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
-#include "content/public/browser/notification_service.h"
+#include "components/prefs/pref_service.h"
+#include "components/sync/base/pref_names.h"
 #include "content/public/test/test_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -44,8 +45,10 @@ class ConsentRecordedWaiter
   }
 
   // SyncConsentScreen::SyncConsentScreenTestDelegate
-  void OnConsentRecordedIds(const std::vector<int>& consent_description,
-                            const int consent_confirmation) override {
+  void OnConsentRecordedIds(SyncConsentScreen::ConsentGiven consent_given,
+                            const std::vector<int>& consent_description,
+                            int consent_confirmation) override {
+    consent_given_ = consent_given;
     consent_description_ids_ = consent_description;
     consent_confirmation_id_ = consent_confirmation;
   }
@@ -62,18 +65,7 @@ class ConsentRecordedWaiter
     run_loop_.Quit();
   }
 
-  const std::vector<int>& get_consent_description_ids() const {
-    return consent_description_ids_;
-  }
-  int get_consent_confirmation_id() const { return consent_confirmation_id_; }
-  const ::login::StringList& get_consent_description_strings() const {
-    return consent_description_strings_;
-  }
-  const std::string& get_consent_confirmation_string() const {
-    return consent_confirmation_string_;
-  }
-
- private:
+  SyncConsentScreen::ConsentGiven consent_given_;
   std::vector<int> consent_description_ids_;
   int consent_confirmation_id_;
 
@@ -91,8 +83,6 @@ std::string GetLocalizedConsentString(const int id) {
   return sanitized_string;
 }
 
-}  // anonymous namespace
-
 class SyncConsentTest : public OobeBaseTest {
  public:
   SyncConsentTest() = default;
@@ -100,7 +90,7 @@ class SyncConsentTest : public OobeBaseTest {
 
   void SetUpOnMainThread() override {
     OobeBaseTest::SetUpOnMainThread();
-    official_build_override_ = WizardController::ForceOfficialBuildForTesting();
+    branded_build_override_ = WizardController::ForceBrandedBuildForTesting();
   }
 
   void TearDownOnMainThread() override {
@@ -145,12 +135,16 @@ class SyncConsentTest : public OobeBaseTest {
   }
 
  protected:
+  static SyncConsentScreen* GetSyncConsentScreen() {
+    return static_cast<SyncConsentScreen*>(
+        WizardController::default_controller()->GetScreen(
+            SyncConsentScreenView::kScreenId));
+  }
+
   void SyncConsentRecorderTestImpl(
       const std::vector<std::string>& expected_consent_strings,
       const std::string expected_consent_confirmation_string) {
-    SyncConsentScreen* screen = static_cast<SyncConsentScreen*>(
-        WizardController::default_controller()->GetScreen(
-            SyncConsentScreenView::kScreenId));
+    SyncConsentScreen* screen = GetSyncConsentScreen();
     ConsentRecordedWaiter consent_recorded_waiter;
     screen->SetDelegateForTesting(&consent_recorded_waiter);
 
@@ -169,14 +163,16 @@ class SyncConsentTest : public OobeBaseTest {
     const int expected_consent_confirmation_id =
         IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT_AND_CONTINUE;
 
+    EXPECT_EQ(SyncConsentScreen::CONSENT_GIVEN,
+              consent_recorded_waiter.consent_given_);
     EXPECT_EQ(expected_consent_strings,
-              consent_recorded_waiter.get_consent_description_strings());
+              consent_recorded_waiter.consent_description_strings_);
     EXPECT_EQ(expected_consent_confirmation_string,
-              consent_recorded_waiter.get_consent_confirmation_string());
+              consent_recorded_waiter.consent_confirmation_string_);
     EXPECT_EQ(expected_consent_ids,
-              consent_recorded_waiter.get_consent_description_ids());
+              consent_recorded_waiter.consent_description_ids_);
     EXPECT_EQ(expected_consent_confirmation_id,
-              consent_recorded_waiter.get_consent_confirmation_id());
+              consent_recorded_waiter.consent_confirmation_id_);
   }
 
   std::vector<std::string> GetLocalizedExpectedConsentStrings() const {
@@ -197,7 +193,7 @@ class SyncConsentTest : public OobeBaseTest {
       IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT_AND_CONTINUE,
   };
 
-  std::unique_ptr<base::AutoReset<bool>> official_build_override_;
+  std::unique_ptr<base::AutoReset<bool>> branded_build_override_;
   FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
 
  private:
@@ -228,7 +224,7 @@ class SyncConsentTestWithParams
       public ::testing::WithParamInterface<std::string> {
  public:
   SyncConsentTestWithParams() = default;
-  ~SyncConsentTestWithParams() = default;
+  ~SyncConsentTestWithParams() override = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncConsentTestWithParams);
@@ -268,9 +264,7 @@ IN_PROC_BROWSER_TEST_P(SyncConsentPolicyDisabledTest,
                        SyncConsentPolicyDisabled) {
   LoginToSyncConsentScreen();
 
-  SyncConsentScreen* screen = static_cast<SyncConsentScreen*>(
-      WizardController::default_controller()->GetScreen(
-          SyncConsentScreenView::kScreenId));
+  SyncConsentScreen* screen = GetSyncConsentScreen();
 
   screen->SetProfileSyncDisabledByPolicyForTesting(true);
   screen->SetProfileSyncEngineInitializedForTesting(GetParam());
@@ -284,4 +278,98 @@ INSTANTIATE_TEST_SUITE_P(/* no prefix */,
                          SyncConsentPolicyDisabledTest,
                          testing::Bool());
 
+// Tests of the consent dialog with the SplitSettingsSync flag enabled.
+class SyncConsentSplitSettingsSyncTest : public SyncConsentTest {
+ public:
+  SyncConsentSplitSettingsSyncTest() {
+    sync_feature_list_.InitAndEnableFeature(
+        chromeos::features::kSplitSettingsSync);
+  }
+  ~SyncConsentSplitSettingsSyncTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList sync_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest, DefaultFlow) {
+  LoginToSyncConsentScreen();
+
+  // OS sync is disabled by default.
+  PrefService* prefs = ProfileManager::GetPrimaryUserProfile()->GetPrefs();
+  EXPECT_FALSE(prefs->GetBoolean(syncer::prefs::kOsSyncFeatureEnabled));
+
+  // Wait for content to load.
+  SyncConsentScreen* screen = GetSyncConsentScreen();
+  ConsentRecordedWaiter consent_recorded_waiter;
+  screen->SetDelegateForTesting(&consent_recorded_waiter);
+  screen->SetProfileSyncDisabledByPolicyForTesting(false);
+  screen->SetProfileSyncEngineInitializedForTesting(true);
+  screen->OnStateChanged(nullptr);
+  test::OobeJS().CreateVisibilityWaiter(true, {"sync-consent-impl"})->Wait();
+
+  // Dialog is visible.
+  test::OobeJS().ExpectVisiblePath(
+      {"sync-consent-impl", "osSyncConsentDialog"});
+
+  // Click the continue button and wait for the JS to C++ callback.
+  test::OobeJS().ClickOnPath(
+      {"sync-consent-impl", "osSyncAcceptAndContinueButton"});
+  consent_recorded_waiter.Wait();
+  screen->SetDelegateForTesting(nullptr);
+
+  // Consent was recorded for the confirmation button.
+  EXPECT_EQ(SyncConsentScreen::CONSENT_GIVEN,
+            consent_recorded_waiter.consent_given_);
+  EXPECT_EQ("Accept and continue",
+            consent_recorded_waiter.consent_confirmation_string_);
+  EXPECT_EQ(IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT_AND_CONTINUE,
+            consent_recorded_waiter.consent_confirmation_id_);
+
+  // Consent was recorded for all descriptions, including the confirmation
+  // button label.
+  // TODO(jamescook): When PLACEHOLDER strings are replaced, add checks for the
+  // correct text and IDs here.
+  std::vector<std::string> expected_desc_strings = {"Accept and continue"};
+  std::vector<int> expected_desc_ids = {
+      IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT_AND_CONTINUE};
+  EXPECT_EQ(expected_desc_strings,
+            consent_recorded_waiter.consent_description_strings_);
+  EXPECT_EQ(expected_desc_ids,
+            consent_recorded_waiter.consent_description_ids_);
+
+  // Toggle button is on-by-default, so OS sync should be on.
+  EXPECT_TRUE(prefs->GetBoolean(syncer::prefs::kOsSyncFeatureEnabled));
+}
+
+IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest, UserCanDisable) {
+  LoginToSyncConsentScreen();
+
+  // Wait for content to load.
+  SyncConsentScreen* screen = GetSyncConsentScreen();
+  ConsentRecordedWaiter consent_recorded_waiter;
+  screen->SetDelegateForTesting(&consent_recorded_waiter);
+  screen->SetProfileSyncDisabledByPolicyForTesting(false);
+  screen->SetProfileSyncEngineInitializedForTesting(true);
+  screen->OnStateChanged(nullptr);
+  test::OobeJS().CreateVisibilityWaiter(true, {"sync-consent-impl"})->Wait();
+
+  // Turn off the toggle.
+  test::OobeJS().ClickOnPath({"sync-consent-impl", "enableOsSyncToggle"});
+
+  // Click the continue button and wait for the JS to C++ callback.
+  test::OobeJS().ClickOnPath(
+      {"sync-consent-impl", "osSyncAcceptAndContinueButton"});
+  consent_recorded_waiter.Wait();
+  screen->SetDelegateForTesting(nullptr);
+
+  // User did not consent.
+  EXPECT_EQ(SyncConsentScreen::CONSENT_NOT_GIVEN,
+            consent_recorded_waiter.consent_given_);
+
+  // OS sync is off.
+  PrefService* prefs = ProfileManager::GetPrimaryUserProfile()->GetPrefs();
+  EXPECT_FALSE(prefs->GetBoolean(syncer::prefs::kOsSyncFeatureEnabled));
+}
+
+}  // namespace
 }  // namespace chromeos

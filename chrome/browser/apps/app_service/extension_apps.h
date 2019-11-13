@@ -92,6 +92,8 @@ class ExtensionApps : public apps::mojom::Publisher,
   void Uninstall(const std::string& app_id,
                  bool clear_site_data,
                  bool report_abuse) override;
+  void PauseApp(const std::string& app_id) override;
+  void UnpauseApps(const std::string& app_id) override;
   void OpenNativeSettings(const std::string& app_id) override;
   void OnPreferredAppSet(const std::string& app_id,
                          apps::mojom::IntentFilterPtr intent_filter,
@@ -168,6 +170,8 @@ class ExtensionApps : public apps::mojom::Publisher,
   // remove the Chrome app badge.
   void ApplyChromeBadge(const std::string& arc_package_name);
 
+  void SetIconEffect(const std::string& app_id);
+
   mojo::Receiver<apps::mojom::Publisher> receiver_{this};
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
 
@@ -187,6 +191,8 @@ class ExtensionApps : public apps::mojom::Publisher,
 
   using EnableFlowPtr = std::unique_ptr<ExtensionAppsEnableFlow>;
   std::map<std::string, EnableFlowPtr> enable_flow_map_;
+
+  std::set<std::string> paused_apps;
 
   ArcAppListPrefs* arc_prefs_ = nullptr;
 

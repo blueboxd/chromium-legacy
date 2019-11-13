@@ -435,13 +435,6 @@ class GFX_EXPORT Canvas {
   // Apply transformation on the canvas.
   void Transform(const Transform& transform);
 
-  // Draws the given string with a fade gradient at the end.
-  void DrawFadedString(const base::string16& text,
-                       const FontList& font_list,
-                       SkColor color,
-                       const Rect& display_rect,
-                       int flags);
-
   // Note that writing to this bitmap will modify pixels stored in this canvas.
   SkBitmap GetBitmap() const;
 

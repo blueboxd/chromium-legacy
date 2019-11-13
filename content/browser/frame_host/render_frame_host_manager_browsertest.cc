@@ -5315,8 +5315,8 @@ class BrowsingInstanceSwapContentBrowserClient
 
   bool ShouldSwapBrowsingInstancesForNavigation(
       content::SiteInstance* site_instance,
-      const GURL& current_url,
-      const GURL& new_url) override {
+      const GURL& current_effective_url,
+      const GURL& destination_effective_url) override {
     return true;
   }
 

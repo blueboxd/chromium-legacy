@@ -8,6 +8,7 @@
 
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/app_types.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
@@ -16,6 +17,7 @@
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -231,6 +233,33 @@ aura::Window* TabletModeWindowManager::GetTopWindow() {
       Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk);
 
   return windows.empty() ? nullptr : windows[0];
+}
+
+// static
+bool TabletModeWindowManager::ShouldMinimizeTopWindowOnBack() {
+  if (!features::IsSwipingFromLeftEdgeToGoBackEnabled())
+    return false;
+
+  Shell* shell = Shell::Get();
+  if (!shell->tablet_mode_controller()->InTabletMode())
+    return false;
+
+  aura::Window* window = GetTopWindow();
+  if (!window)
+    return false;
+
+  const int app_type = window->GetProperty(aura::client::kAppType);
+  if (app_type != static_cast<int>(AppType::BROWSER) &&
+      app_type != static_cast<int>(AppType::CHROME_APP)) {
+    return false;
+  }
+
+  WindowState* window_state = WindowState::Get(window);
+  if (!window_state || !window_state->CanMinimize())
+    return false;
+
+  // Minimize the window if it is at the bottom page.
+  return !shell->shell_delegate()->CanGoBack(window);
 }
 
 void TabletModeWindowManager::Init() {

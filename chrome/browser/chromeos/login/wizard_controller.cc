@@ -326,9 +326,9 @@ bool WizardController::skip_enrollment_prompts_ = false;
 
 // static
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-bool WizardController::is_official_build_ = true;
+bool WizardController::is_branded_build_ = true;
 #else
-bool WizardController::is_official_build_ = false;
+bool WizardController::is_branded_build_ = false;
 #endif
 
 // static
@@ -646,7 +646,7 @@ void WizardController::ShowTermsOfServiceScreen() {
 }
 
 void WizardController::ShowSyncConsentScreen() {
-  if (is_official_build_)
+  if (is_branded_build_)
     SetCurrentScreen(GetScreen(SyncConsentScreenView::kScreenId));
   else
     OnSyncConsentFinished();
@@ -847,7 +847,7 @@ void WizardController::OnNetworkScreenExit(NetworkScreen::Result result) {
 }
 
 bool WizardController::ShowEulaOrArcTosAfterNetworkScreen() {
-  if (!is_official_build_)
+  if (!is_branded_build_)
     return false;
 
   if (!StartupUtils::IsEulaAccepted()) {
@@ -1622,8 +1622,8 @@ void WizardController::SkipEnrollmentPromptsForTesting() {
 
 // static
 std::unique_ptr<base::AutoReset<bool>>
-WizardController::ForceOfficialBuildForTesting() {
-  return std::make_unique<base::AutoReset<bool>>(&is_official_build_, true);
+WizardController::ForceBrandedBuildForTesting() {
+  return std::make_unique<base::AutoReset<bool>>(&is_branded_build_, true);
 }
 
 // static

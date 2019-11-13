@@ -339,36 +339,37 @@ void PasswordStore::GetSiteStats(const GURL& origin_domain,
       base::BindOnce(&PasswordStore::GetSiteStatsImpl, this, origin_domain));
 }
 
-void PasswordStore::AddLeakedCredentials(
-    const LeakedCredentials& leaked_credentials) {
+void PasswordStore::AddCompromisedCredentials(
+    const CompromisedCredentials& compromised_credentials) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
-  ScheduleTask(base::BindOnce(&PasswordStore::AddLeakedCredentialsImpl, this,
-                              leaked_credentials));
+  ScheduleTask(base::BindOnce(&PasswordStore::AddCompromisedCredentialsImpl,
+                              this, compromised_credentials));
 }
 
-void PasswordStore::RemoveLeakedCredentials(const GURL& url,
-                                            const base::string16& username) {
+void PasswordStore::RemoveCompromisedCredentials(
+    const GURL& url,
+    const base::string16& username) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
-  ScheduleTask(base::BindOnce(&PasswordStore::RemoveLeakedCredentialsImpl, this,
-                              url, username));
+  ScheduleTask(base::BindOnce(&PasswordStore::RemoveCompromisedCredentialsImpl,
+                              this, url, username));
 }
 
-void PasswordStore::GetAllLeakedCredentials(
+void PasswordStore::GetAllCompromisedCredentials(
     PasswordLeakHistoryConsumer* consumer) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
-  PostLeakedCredentialsTaskAndReplyToConsumerWithResult(
+  PostCompromisedCredentialsTaskAndReplyToConsumerWithResult(
       consumer,
-      base::BindOnce(&PasswordStore::GetAllLeakedCredentialsImpl, this));
+      base::BindOnce(&PasswordStore::GetAllCompromisedCredentialsImpl, this));
 }
 
-void PasswordStore::RemoveLeakedCredentialsByUrlAndTime(
+void PasswordStore::RemoveCompromisedCredentialsByUrlAndTime(
     base::RepeatingCallback<bool(const GURL&)> url_filter,
     base::Time remove_begin,
     base::Time remove_end,
     base::OnceClosure completion) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   ScheduleTask(base::BindOnce(
-      &PasswordStore::RemoveLeakedCredentialsByUrlAndTimeInternal, this,
+      &PasswordStore::RemoveCompromisedCredentialsByUrlAndTimeInternal, this,
       std::move(url_filter), remove_begin, remove_end, std::move(completion)));
 }
 
@@ -753,12 +754,12 @@ void PasswordStore::PostStatsTaskAndReplyToConsumerWithResult(
                      consumer->GetWeakPtr()));
 }
 
-void PasswordStore::PostLeakedCredentialsTaskAndReplyToConsumerWithResult(
+void PasswordStore::PostCompromisedCredentialsTaskAndReplyToConsumerWithResult(
     PasswordLeakHistoryConsumer* consumer,
-    LeakedCredentialsTask task) {
+    CompromisedCredentialsTask task) {
   consumer->cancelable_task_tracker()->PostTaskAndReplyWithResult(
       background_task_runner_.get(), FROM_HERE, std::move(task),
-      base::BindOnce(&PasswordLeakHistoryConsumer::OnGetLeakedCredentials,
+      base::BindOnce(&PasswordLeakHistoryConsumer::OnGetCompromisedCredentials,
                      consumer->GetWeakPtr()));
 }
 
@@ -887,13 +888,14 @@ void PasswordStore::UnblacklistInternal(
     main_task_runner_->PostTask(FROM_HERE, std::move(completion));
 }
 
-void PasswordStore::RemoveLeakedCredentialsByUrlAndTimeInternal(
+void PasswordStore::RemoveCompromisedCredentialsByUrlAndTimeInternal(
     const base::RepeatingCallback<bool(const GURL&)>& url_filter,
     base::Time remove_begin,
     base::Time remove_end,
     base::OnceClosure completion) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
-  RemoveLeakedCredentialsByUrlAndTimeImpl(url_filter, remove_begin, remove_end);
+  RemoveCompromisedCredentialsByUrlAndTimeImpl(url_filter, remove_begin,
+                                               remove_end);
   if (!completion.is_null())
     main_task_runner_->PostTask(FROM_HERE, std::move(completion));
 }

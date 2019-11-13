@@ -34,4 +34,4 @@ TEST_F(WebViewOnlyAPITest, EnsureWebViewCreatedWithConfiguration) {
   [web_controller() removeWebView];
 }
 
-}  // namespace
+}  // namespace web

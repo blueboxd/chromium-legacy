@@ -44,6 +44,7 @@ import {assert} from 'chrome://resources/js/assert.m.js';
       printerName: 'FooDevice',
       serializedAppStateStr: null,
       serializedDefaultDestinationSelectionRulesStr: null,
+      pdfPrinterDisabled: false,
       cloudPrintURL: 'cloudprint URL',
       userAccounts: ['foo@chromium.org'],
     };

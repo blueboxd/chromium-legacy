@@ -138,7 +138,7 @@ void SerialPortUnderlyingSink::WriteData() {
   if (buffer_source_.IsArrayBuffer()) {
     DOMArrayBuffer* array = buffer_source_.GetAsArrayBuffer();
     data = static_cast<const uint8_t*>(array->Data());
-    length = array->ByteLength();
+    length = array->DeprecatedByteLengthAsUnsigned();
   } else {
     DOMArrayBufferView* view = buffer_source_.GetAsArrayBufferView().View();
     data = static_cast<const uint8_t*>(view->BaseAddress());

@@ -41,7 +41,6 @@
 #include "chrome/browser/ui/app_list/arc/arc_data_removal_dialog.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -159,10 +158,6 @@ class FakeAuthInstance : public mojom::AuthInstance {
         mojom::MainAccountResolutionStatus::HASH_CODE_MATCH_SINGLE_ACCOUNT);
   }
 
-  void RemoveSecondaryAccounts() override {
-    ++num_remove_secondary_accounts_calls_;
-  }
-
   mojom::AccountInfo* account_info() { return account_info_.get(); }
 
   mojom::ArcSignInStatus sign_in_status() const { return status_; }
@@ -174,10 +169,6 @@ class FakeAuthInstance : public mojom::AuthInstance {
   int num_account_removed_calls() const { return num_account_removed_calls_; }
 
   std::string last_removed_account() const { return last_removed_account_; }
-
-  int num_remove_secondary_accounts_calls() const {
-    return num_remove_secondary_accounts_calls_;
-  }
 
  private:
   void OnAccountInfoResponse(base::OnceClosure done_closure,
@@ -198,21 +189,13 @@ class FakeAuthInstance : public mojom::AuthInstance {
   int num_account_removed_calls_ = 0;
   std::string last_removed_account_;
 
-  int num_remove_secondary_accounts_calls_ = 0;
-
   base::WeakPtrFactory<FakeAuthInstance> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(FakeAuthInstance);
 };
 
 class ArcAuthServiceTest : public InProcessBrowserTest {
  protected:
-  ArcAuthServiceTest() {
-    scoped_feature_list_.InitWithFeatures(
-        {kEnableChildToRegularTransitionFeature,
-         kEnableRegularToChildTransitionFeature,
-         chromeos::features::kEduCoexistence},
-        {});
-  }
+  ArcAuthServiceTest() = default;
 
   // InProcessBrowserTest:
   ~ArcAuthServiceTest() override = default;
@@ -312,9 +295,7 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
         identity_test_environment_adaptor_->identity_test_env();
     identity_test_env->SetAutomaticIssueOfAccessTokens(true);
     identity_test_env->MakePrimaryAccountAvailable(kFakeUserName);
-  }
 
-  void SetUpAuthService() {
     profile()->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
     profile()->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, true);
     MigrateSigninScopedDeviceId(profile());
@@ -383,7 +364,6 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
 
   AccountInfo SetupGaiaAccount(const std::string& email) {
     SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
-    SetUpAuthService();
     return SeedAccountInfo(email);
   }
 
@@ -425,7 +405,6 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
   // Not owned.
   ArcAuthService* auth_service_ = nullptr;
   ArcBridgeService* arc_bridge_service_ = nullptr;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAuthServiceTest);
 };
@@ -436,7 +415,6 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
                        SuccessfulBackgroundFetchViaDeprecatedApi) {
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
-  SetUpAuthService();
   test_url_loader_factory()->AddResponse(arc::kAuthTokenExchangeEndPoint,
                                          GetFakeAuthTokenResponse());
 
@@ -458,7 +436,6 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
 // Chrome supplies the info configured in SetAccountAndProfile() method.
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, SuccessfulBackgroundFetch) {
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
-  SetUpAuthService();
   test_url_loader_factory()->AddResponse(arc::kAuthTokenExchangeEndPoint,
                                          GetFakeAuthTokenResponse());
 
@@ -479,7 +456,6 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, SuccessfulBackgroundFetch) {
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
                        ReAuthenticatePrimaryAccountSucceeds) {
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
-  SetUpAuthService();
   test_url_loader_factory()->AddResponse(arc::kAuthTokenExchangeEndPoint,
                                          GetFakeAuthTokenResponse());
 
@@ -500,7 +476,6 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
                        ReAuthenticatePrimaryAccountFailsForInvalidAccount) {
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
-  SetUpAuthService();
   test_url_loader_factory()->AddResponse(arc::kAuthTokenExchangeEndPoint,
                                          std::string() /* response */,
                                          net::HTTP_UNAUTHORIZED);
@@ -517,7 +492,6 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, FetchSecondaryAccountInfoSucceeds) {
   // Add a Secondary Account.
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
-  SetUpAuthService();
   SeedAccountInfo(kSecondaryAccountEmail);
   test_url_loader_factory()->AddResponse(arc::kAuthTokenExchangeEndPoint,
                                          GetFakeAuthTokenResponse());
@@ -541,7 +515,6 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
                        FetchSecondaryAccountInfoFailsForInvalidAccounts) {
   // Add a Secondary Account.
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
-  SetUpAuthService();
   SeedAccountInfo(kSecondaryAccountEmail);
   test_url_loader_factory()->AddResponse(arc::kAuthTokenExchangeEndPoint,
                                          std::string() /* response */,
@@ -561,7 +534,6 @@ IN_PROC_BROWSER_TEST_F(
     ArcAuthServiceTest,
     FetchSecondaryAccountInfoReturnsErrorForNotFoundAccounts) {
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
-  SetUpAuthService();
   // Don't add account with kSecondaryAccountEmail.
 
   base::RunLoop run_loop;
@@ -576,7 +548,6 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, FetchGoogleAccountsFromArc) {
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
-  SetUpAuthService();
 
   EXPECT_FALSE(arc_google_accounts_callback_called());
   RequestGoogleAccountsInArc();
@@ -592,7 +563,6 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, FetchGoogleAccountsFromArc) {
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
                        FetchGoogleAccountsFromArcWorksAcrossConnectionResets) {
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
-  SetUpAuthService();
 
   // Close the connection.
   arc_bridge_service().auth()->CloseInstance(&auth_instance());
@@ -617,7 +587,6 @@ IN_PROC_BROWSER_TEST_F(
     ArcAuthServiceTest,
     PrimaryAccountReauthIsNotAttemptedJustAfterProvisioning) {
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
-  SetUpAuthService();
   const int initial_num_calls = auth_instance().num_account_upserted_calls();
   // Our test setup manually sets the device as provisioned and invokes
   // |ArcAuthService::OnConnectionReady|. Hence, we would have received an
@@ -658,7 +627,6 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, AccountUpdatesArePropagated) {
 
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, AccountRemovalsArePropagated) {
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
-  SetUpAuthService();
   SeedAccountInfo(kSecondaryAccountEmail);
 
   EXPECT_EQ(0, auth_instance().num_account_removed_calls());
@@ -748,7 +716,6 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest,
   chromeos::DemoSession::StartIfInDemoMode();
 
   SetAccountAndProfile(user_manager::USER_TYPE_PUBLIC_ACCOUNT);
-  SetUpAuthService();
 
   test_url_loader_factory()->SetInterceptor(
       base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
@@ -776,7 +743,6 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest, GetDemoAccount) {
   chromeos::DemoSession::StartIfInDemoMode();
 
   SetAccountAndProfile(user_manager::USER_TYPE_PUBLIC_ACCOUNT);
-  SetUpAuthService();
 
   test_url_loader_factory()->SetInterceptor(
       base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
@@ -803,7 +769,6 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest,
   chromeos::DemoSession::StartIfInDemoMode();
 
   SetAccountAndProfile(user_manager::USER_TYPE_PUBLIC_ACCOUNT);
-  SetUpAuthService();
 
   base::RunLoop run_loop;
   auth_instance().RequestAccountInfoDeprecated(run_loop.QuitClosure());
@@ -824,7 +789,6 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest, GetOfflineDemoAccount) {
   chromeos::DemoSession::StartIfInDemoMode();
 
   SetAccountAndProfile(user_manager::USER_TYPE_PUBLIC_ACCOUNT);
-  SetUpAuthService();
 
   base::RunLoop run_loop;
   auth_instance().RequestPrimaryAccountInfo(run_loop.QuitClosure());
@@ -846,7 +810,6 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest,
   chromeos::DemoSession::StartIfInDemoMode();
 
   SetAccountAndProfile(user_manager::USER_TYPE_PUBLIC_ACCOUNT);
-  SetUpAuthService();
 
   test_url_loader_factory()->SetInterceptor(
       base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
@@ -874,7 +837,6 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest,
   chromeos::DemoSession::StartIfInDemoMode();
 
   SetAccountAndProfile(user_manager::USER_TYPE_PUBLIC_ACCOUNT);
-  SetUpAuthService();
 
   test_url_loader_factory()->SetInterceptor(
       base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
@@ -898,7 +860,6 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest,
 IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest,
                        RequestPublicAccountInfo) {
   SetAccountAndProfile(user_manager::USER_TYPE_PUBLIC_ACCOUNT);
-  SetUpAuthService();
   profile()->GetProfilePolicyConnector()->OverrideIsManagedForTesting(true);
 
   test_url_loader_factory()->SetInterceptor(
@@ -924,7 +885,6 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest,
 // SetAccountAndProfile() above.
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, ChildAccountFetchViaDeprecatedApi) {
   SetAccountAndProfile(user_manager::USER_TYPE_CHILD);
-  SetUpAuthService();
   EXPECT_TRUE(profile()->IsChild());
   test_url_loader_factory()->AddResponse(arc::kAuthTokenExchangeEndPoint,
                                          GetFakeAuthTokenResponse());
@@ -947,7 +907,6 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, ChildAccountFetchViaDeprecatedApi) {
 // Chrome supplies the info configured in SetAccountAndProfile() above.
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, ChildAccountFetch) {
   SetAccountAndProfile(user_manager::USER_TYPE_CHILD);
-  SetUpAuthService();
   EXPECT_TRUE(profile()->IsChild());
   test_url_loader_factory()->AddResponse(arc::kAuthTokenExchangeEndPoint,
                                          GetFakeAuthTokenResponse());
@@ -968,7 +927,6 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, ChildAccountFetch) {
 
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, ChildTransition) {
   SetAccountAndProfile(user_manager::USER_TYPE_CHILD);
-  SetUpAuthService();
 
   ArcSessionManager* session = ArcSessionManager::Get();
   ASSERT_TRUE(session);
@@ -1072,40 +1030,6 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, ChildTransition) {
     EXPECT_EQ(ArcSessionManager::State::STOPPED, session->state());
     EXPECT_FALSE(IsDataRemovalConfirmationDialogOpenForTesting());
   }
-}
-
-IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
-                       ChildUserSecondaryAccountsNotPropagated) {
-  SetAccountAndProfile(user_manager::USER_TYPE_CHILD);
-  SetUpAuthService();
-  SeedAccountInfo(kSecondaryAccountEmail);
-  EXPECT_TRUE(profile()->IsChild());
-  EXPECT_EQ(1, auth_instance().num_account_upserted_calls());
-}
-
-IN_PROC_BROWSER_TEST_F(
-    ArcAuthServiceTest,
-    RegularToChildTransitionShouldRemoveSecondaryAccountsFromArc) {
-  SetAccountAndProfile(user_manager::USER_TYPE_CHILD);
-  SeedAccountInfo(kSecondaryAccountEmail);
-  profile()->GetPrefs()->SetInteger(
-      arc::prefs::kArcSupervisionTransition,
-      static_cast<int>(arc::ArcSupervisionTransition::REGULAR_TO_CHILD));
-  SetUpAuthService();
-  EXPECT_EQ(1, auth_instance().num_account_upserted_calls());
-  EXPECT_EQ(1, auth_instance().num_remove_secondary_accounts_calls());
-}
-
-IN_PROC_BROWSER_TEST_F(
-    ArcAuthServiceTest,
-    ChildToRegularTransitionShouldAddSecondaryAccountsToArc) {
-  SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
-  SeedAccountInfo(kSecondaryAccountEmail);
-  profile()->GetPrefs()->SetInteger(
-      arc::prefs::kArcSupervisionTransition,
-      static_cast<int>(arc::ArcSupervisionTransition::CHILD_TO_REGULAR));
-  SetUpAuthService();
-  EXPECT_EQ(2, auth_instance().num_account_upserted_calls());
 }
 
 }  // namespace arc

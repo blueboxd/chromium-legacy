@@ -211,7 +211,6 @@ class CORE_EXPORT SVGElement : public Element {
   static const AtomicString& EventParameterName();
 
   bool IsPresentationAttribute(const QualifiedName&) const override;
-  virtual bool IsPresentationAttributeWithSVGDOM(const QualifiedName&) const;
 
   bool HasSVGParent() const;
 

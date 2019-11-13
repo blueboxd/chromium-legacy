@@ -2041,7 +2041,6 @@
 <translation id="3923676227229836009">این صفحه مجاز به مشاهده فایل‌ها است</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3925573269917483990">دوربین:</translation>
-<translation id="3925842537050977900">قطع اتصال از راه‌انداز</translation>
 <translation id="3926002189479431949">‏تلفن مربوط به Smart Lock تغییر کرد</translation>
 <translation id="3927932062596804919">ردکردن</translation>
 <translation id="3928570707778085600">تغییرات ایجادشده در <ph name="FILE_OR_FOLDER_NAME" /> ذخیره شود؟</translation>
@@ -2535,7 +2534,6 @@
 <translation id="4689235506267737042">انتخاب تنظیمات برگزیده حالت نمایشی</translation>
 <translation id="4689421377817139245">‏این نشانک را در iPhone خود همگام‌سازی کنید</translation>
 <translation id="4690091457710545971">‏&lt;سفت‌افزار Wi-Fi ‏Intel چهار فایل ایجاد می‌کند: csr.lst، ‏fh_regs.lst، ‏radio_reg.lst، ‏monitor.lst.sysmon.  سه فایل اول فایل‌های دودویی حاوی رونوشت‌های ثبت هستند و Intel تصریح کرده این فایل‌ها حاوی اطلاعات شخصی یا اطلاعات هویتی دستگاه نیست.  فایل آخر ردیابی اجرا از سفت‌افزار Intel است؛ هرگونه اطلاعات شخصی یا هویتی دستگاه از این فایل حذف شده اما برای نمایش در اینجا بسیار حجیم است.  این فایل‌ها جهت رفع مشکلات اخیر Wi-Fi در دستگاهتان ایجاد شده است و با Intel هم‌رسانی خواهد شد تا به عیب‌یابی این مشکلات کمک کند.&gt;</translation>
-<translation id="469230890969474295">‏پوشه OEM</translation>
 <translation id="4692623383562244444">موتورهای جستجو</translation>
 <translation id="4693155481716051732">سوشی</translation>
 <translation id="4694024090038830733">سرپرست سیستم، پیکربندی چاپگر را انجام می‌دهد.</translation>
@@ -2568,7 +2566,6 @@
 <translation id="4737715515457435632">لطفاً به شبکه وصل شوید.</translation>
 <translation id="473775607612524610">به‌روزرسانی</translation>
 <translation id="4739639199548674512">بلیت‌ها</translation>
-<translation id="4742746985488890273">پین به راه‌انداز</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />با نحوه به‌روزرسانی برنامه‌ها آشنا شوید<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{باصدا کردن سایت}one{باصدا کردن سایت‌ها}other{باصدا کردن سایت‌ها}}</translation>
 <translation id="4746351372139058112">پیام‌ها</translation>
@@ -3560,7 +3557,6 @@
 <translation id="6196854373336333322">افزونه «<ph name="EXTENSION_NAME" />»، کنترل تنظیمات پروکسی شما را در اختیار گرفته است یعنی می‌تواند هر چیزی که در حالت آنلاین انجام می‌دهید تغییر دهد، خراب کند یا استراق سمع کند. اگر مطمئن نیستید چرا این تغییر انجام شده است، احتمالاً این افزونه را نمی‌خواهید.</translation>
 <translation id="6198102561359457428">خارج شده و دوباره وارد سیستم شوید...</translation>
 <translation id="6198252989419008588">تغییر دادن پین</translation>
-<translation id="6201792273624501289">‏برنامه‌های Linux</translation>
 <translation id="6202304368170870640">می‌توانید برای ورود به سیستم یا باز کردن قفل دستگاه از پین استفاده کنید.</translation>
 <translation id="6206311232642889873">&amp;کپی تصویر</translation>
 <translation id="6207200176136643843">بازنشانی به سطح بزرگ‌نمایی پیش‌فرض</translation>
@@ -5594,7 +5590,6 @@
 <translation id="9130015405878219958">حالت نامعتبر وارد شده است.</translation>
 <translation id="9131487537093447019">ارسال پیام‌ها به دستگاه‌های بلوتوث و دریافت پیام‌ها از آنها</translation>
 <translation id="9134304429738380103">بله، موافقم.</translation>
-<translation id="9135090785674039430">وقتی روشن باشد، سایت‌ها نمی‌توانند از کوکی‌هایی استفاده کنند که شما را در وب ردیابی می‌کند. شاید بعضی از وب‌سایت‌ها خراب شوند.</translation>
 <translation id="9137013805542155359">نمایش مورد اصلی</translation>
 <translation id="9137157311132182254">موتور جستجوی ترجیحی</translation>
 <translation id="9137248913990643158">‏لطفاً پیش از استفاده از این برنامه، Chrome را باز کنید و به سیستم آن وارد شوید.</translation>

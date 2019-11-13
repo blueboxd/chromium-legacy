@@ -64,6 +64,19 @@ static views::GridLayout* ResetOverlayLayout(views::View* overlay) {
   return overlay_layout;
 }
 
+std::unique_ptr<views::Checkbox> CreateSaveCheckbox(bool start_state) {
+  auto storage_checkbox =
+      std::make_unique<views::Checkbox>(l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_CHECKBOX));
+  storage_checkbox->SetBorder(views::CreateEmptyBorder(gfx::Insets()));
+  storage_checkbox->SetChecked(start_state);
+  storage_checkbox->SetEnabledTextColors(views::style::GetColor(
+      *storage_checkbox.get(), ChromeTextContext::CONTEXT_BODY_TEXT_SMALL,
+      views::style::STYLE_SECONDARY));
+
+  return storage_checkbox;
+}
+
 }  // namespace
 
 CardUnmaskPromptViews::CardUnmaskPromptViews(
@@ -71,6 +84,11 @@ CardUnmaskPromptViews::CardUnmaskPromptViews(
     content::WebContents* web_contents)
     : controller_(controller), web_contents_(web_contents) {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CARD_UNMASK);
+  if (controller_->CanStoreLocally()) {
+    storage_checkbox_ = DialogDelegate::SetFootnoteView(
+        CreateSaveCheckbox(controller_->GetStoreLocallyStartState()));
+  }
+
   UpdateButtonLabels();
 }
 
@@ -222,23 +240,6 @@ void CardUnmaskPromptViews::ShowNewCardLink() {
 views::View* CardUnmaskPromptViews::GetContentsView() {
   InitIfNecessary();
   return this;
-}
-
-std::unique_ptr<views::View> CardUnmaskPromptViews::CreateFootnoteView() {
-  if (!controller_->CanStoreLocally())
-    return nullptr;
-
-  auto storage_checkbox =
-      std::make_unique<views::Checkbox>(l10n_util::GetStringUTF16(
-          IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_CHECKBOX));
-  storage_checkbox->SetBorder(views::CreateEmptyBorder(gfx::Insets()));
-  storage_checkbox->SetChecked(controller_->GetStoreLocallyStartState());
-  storage_checkbox->SetEnabledTextColors(views::style::GetColor(
-      *storage_checkbox.get(), ChromeTextContext::CONTEXT_BODY_TEXT_SMALL,
-      views::style::STYLE_SECONDARY));
-  storage_checkbox_ = storage_checkbox.get();
-
-  return storage_checkbox;
 }
 
 gfx::Size CardUnmaskPromptViews::CalculatePreferredSize() const {

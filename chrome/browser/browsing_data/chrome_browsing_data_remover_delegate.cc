@@ -16,6 +16,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/task/post_task.h"
@@ -91,6 +92,7 @@
 #include "components/omnibox/browser/omnibox_pref_names.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/search_engines/template_url_service.h"
@@ -862,9 +864,13 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
           nullable_filter, delete_begin_, delete_end_,
           base::AdaptCallbackForRepeating(CreateTaskCompletionClosure(
               TracingDataType::kPasswordsStatistics)));
-      password_store->RemoveLeakedCredentialsByUrlAndTime(
-          nullable_filter, delete_begin_, delete_end_,
-          CreateTaskCompletionClosure(TracingDataType::kLeakedCredentials));
+      if (base::FeatureList::IsEnabled(
+              password_manager::features::kLeakHistory)) {
+        password_store->RemoveCompromisedCredentialsByUrlAndTime(
+            nullable_filter, delete_begin_, delete_end_,
+            CreateTaskCompletionClosure(
+                TracingDataType::kCompromisedCredentials));
+      }
       password_store->RemoveFieldInfoByTime(
           delete_begin_, delete_end_,
           CreateTaskCompletionClosure(TracingDataType::kFieldInfo));

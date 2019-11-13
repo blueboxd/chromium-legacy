@@ -749,6 +749,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Accel_Minimize_Top_Window_On_Back">
+  <owner>minch@chromium.org</owner>
+  <description>
+    Metric recorded when the user press back key in the keyboard to minimize the
+    top window at bottom page while in tablet mode.
+  </description>
+</action>
+
 <action name="Accel_Move_Active_Window_Between_Displays">
   <owner>warx@chromium.org</owner>
   <description>
@@ -15142,12 +15150,12 @@ should be able to be added at any place in this file.
 
 <action name="Options_AccessibilitySwitchAccess_Disable">
   <owner>dmazzoni@chromium.org</owner>
-  <description>Settings: Accessibility: Disable switch access</description>
+  <description>Settings: Accessibility: Disable Switch Access</description>
 </action>
 
 <action name="Options_AccessibilitySwitchAccess_Enable">
   <owner>dmazzoni@chromium.org</owner>
-  <description>Settings: Accessibility: Enable switch access</description>
+  <description>Settings: Accessibility: Enable Switch Access</description>
 </action>
 
 <action name="Options_AccessibilitySystemMenu_Disable">
@@ -21377,7 +21385,7 @@ should be able to be added at any place in this file.
   <owner>anastasi@google.com</owner>
   <owner>dtseng@chromium.org</owner>
   <description>
-    Ash system menu: Accessibility: Disable switch access
+    Ash system menu: Accessibility: Disable Switch Access
   </description>
 </action>
 
@@ -21385,7 +21393,7 @@ should be able to be added at any place in this file.
   <owner>anastasi@google.com</owner>
   <owner>dtseng@chromium.org</owner>
   <description>
-    Ash system menu: Accessibility: Enable switch access
+    Ash system menu: Accessibility: Enable Switch Access
   </description>
 </action>
 

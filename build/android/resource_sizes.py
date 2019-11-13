@@ -284,6 +284,9 @@ def _DoApkAnalysis(apk_filename, apks_path, tool_prefix, out_dir, report_func):
     file_groups.append(group)
     return group
 
+  def has_no_extension(filename):
+    return os.path.splitext(filename)[1] == ''
+
   native_code = make_group('Native code')
   java_code = make_group('Java code')
   native_resources_no_translations = make_group('Native resources (no l10n)')
@@ -354,10 +357,12 @@ def _DoApkAnalysis(apk_filename, apks_path, tool_prefix, out_dir, report_func):
       icu_data.AddZipInfo(member)
     elif filename.endswith('.bin'):
       v8_snapshots.AddZipInfo(member)
-    elif filename.endswith('.png') or filename.endswith('.webp'):
-      png_drawables.AddZipInfo(member)
     elif filename.startswith('res/'):
-      res_directory.AddZipInfo(member)
+      if (filename.endswith('.png') or filename.endswith('.webp')
+          or has_no_extension(filename)):
+        png_drawables.AddZipInfo(member)
+      else:
+        res_directory.AddZipInfo(member)
     elif filename.endswith('.arsc'):
       arsc.AddZipInfo(member)
     elif filename.startswith('META-INF') or filename == 'AndroidManifest.xml':

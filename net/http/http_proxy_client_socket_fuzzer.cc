@@ -23,7 +23,6 @@
 #include "net/http/http_auth_handler_basic.h"
 #include "net/http/http_auth_handler_digest.h"
 #include "net/http/http_auth_handler_factory.h"
-#include "net/http/http_auth_preferences.h"
 #include "net/http/http_auth_scheme.h"
 #include "net/log/test_net_log.h"
 #include "net/socket/fuzzed_socket.h"
@@ -60,7 +59,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       base::MakeRefCounted<net::HttpAuthController>(
           net::HttpAuth::AUTH_PROXY, GURL("http://proxy:42/"),
           net::NetworkIsolationKey(), &auth_cache, &auth_handler_factory,
-          nullptr, net::HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS));
+          nullptr));
   // Determine if the HttpProxyClientSocket should be told the underlying socket
   // is HTTPS.
   net::HttpProxyClientSocket socket(

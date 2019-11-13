@@ -27,6 +27,7 @@
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/lib/message_quota_checker.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "mojo/public/cpp/bindings/thread_safe_interface_ptr.h"
 
@@ -375,6 +376,9 @@ class COMPONENT_EXPORT(IPC) ChannelProxy : public Sender {
     // One exception is the thread-safe send. See the class comment.
     std::unique_ptr<Channel> channel_;
     bool channel_connected_called_;
+
+    // The quota checker associated with this channel, if any.
+    scoped_refptr<mojo::internal::MessageQuotaChecker> quota_checker_;
 
     // Lock for |channel_| value. This is only relevant in the context of
     // thread-safe send.

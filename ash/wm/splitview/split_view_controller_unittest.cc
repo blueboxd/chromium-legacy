@@ -1121,36 +1121,6 @@ TEST_P(SplitViewControllerTest, DragAndDoubleTapDivider) {
   EXPECT_EQ(split_view_controller()->right_window(), window2.get());
 }
 
-// Verify that you cannot snap a window during the divider snap animation.
-TEST_P(SplitViewControllerTest, SnapWindowDuringDividerSnapAnimation) {
-  const gfx::Rect bounds(0, 0, 400, 400);
-  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
-  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
-  std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
-  std::unique_ptr<aura::Window> window4(CreateWindow(bounds));
-
-  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
-  split_view_controller()->SnapWindow(window2.get(),
-                                      SplitViewController::RIGHT);
-  ASSERT_EQ(split_view_controller()->left_window(), window1.get());
-  ASSERT_EQ(split_view_controller()->right_window(), window2.get());
-
-  // Drag the divider to trigger the snap animation.
-  const gfx::Point divider_center =
-      split_view_divider()
-          ->GetDividerBoundsInScreen(false /* is_dragging */)
-          .CenterPoint();
-  GetEventGenerator()->set_current_screen_location(divider_center);
-  GetEventGenerator()->DragMouseBy(20, 0);
-  ASSERT_TRUE(IsDividerAnimating());
-
-  split_view_controller()->SnapWindow(window3.get(), SplitViewController::LEFT);
-  split_view_controller()->SnapWindow(window4.get(),
-                                      SplitViewController::RIGHT);
-  EXPECT_EQ(split_view_controller()->left_window(), window1.get());
-  EXPECT_EQ(split_view_controller()->right_window(), window2.get());
-}
-
 // Verify that you cannot start dragging the divider during its snap animation.
 TEST_P(SplitViewControllerTest, StartDraggingDividerDuringSnapAnimation) {
   const gfx::Rect bounds(0, 0, 400, 400);

@@ -1703,6 +1703,9 @@ extern const char kNtpDismissPromosDescription[];
 extern const char kNtpRealboxName[];
 extern const char kNtpRealboxDescription[];
 
+extern const char kNtpRealboxMatchOmniboxThemeName[];
+extern const char kNtpRealboxMatchOmniboxThemeDescription[];
+
 extern const char kImprovedCookieControlsName[];
 extern const char kImprovedCookieControlsDescription[];
 
@@ -1866,6 +1869,9 @@ extern const char kAggregatedMlAppRankingDescription[];
 
 extern const char kAggregatedMlSearchRankingName[];
 extern const char kAggregatedMlSearchRankingDescription[];
+
+extern const char kAllowAmbientEQName[];
+extern const char kAllowAmbientEQDescription[];
 
 extern const char kAllowDisableMouseAccelerationName[];
 extern const char kAllowDisableMouseAccelerationDescription[];

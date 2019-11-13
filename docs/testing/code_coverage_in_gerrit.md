@@ -27,7 +27,10 @@ trivial-rebase away**, however, if a newly uploaded patchset has
 non-trivial code change, a new CQ dry run must be triggered before coverage data
 shows up again.
 
-The code coverage tool currently **supports C/C++ code for Chrome on Linux**;
+The code coverage tool currently supports:
+* C/C++ code for [Chromium on Linux].
+* C/C++ code for [Chromium on Chromium OS].
+
 support for more platforms and more languages is in progress.
 
 ## Contacts
@@ -66,3 +69,5 @@ in Gerrit.
 [code_coverage.md]: code_coverage.md
 [clang_code_coverage_wrapper]: clang_code_coverage_wrapper.md
 [chromium-coverage Gerrit plugin]: https://chromium.googlesource.com/infra/gerrit-plugins/code-coverage/
+[Chromium on Chromium OS]: https://chromium.googlesource.com/chromium/src/+/master/docs/chromeos_build_instructions.md
+[Chromium on Linux]: https://chromium.googlesource.com/chromium/src/+/master/docs/linux_build_instructions.md

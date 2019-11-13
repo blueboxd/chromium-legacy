@@ -104,8 +104,11 @@ public class BrowsingModeBottomToolbarCoordinator {
             public void onActivityTabChanged(Tab tab) {
                 if (tab == null) return;
                 final Tracker tracker = TrackerFactory.getTrackerForProfile(tab.getProfile());
-                tracker.addOnInitializedCallback((ready) -> mMediator.showIPH(tab.getActivity(),
-                        mSearchAccelerator, tracker));
+                tracker.addOnInitializedCallback(
+                        (ready) -> mMediator.showIPH(tab.getActivity(), mSearchAccelerator, tracker,
+                                () -> {
+                                    searchAcceleratorListener.onClick(mSearchAccelerator);
+                                }));
                 tabProvider.removeObserver(this);
             }
         });

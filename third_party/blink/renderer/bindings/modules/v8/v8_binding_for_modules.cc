@@ -203,7 +203,7 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValue(
       return nullptr;
     }
     const char* start = static_cast<const char*>(buffer->Data());
-    size_t length = buffer->ByteLength();
+    size_t length = buffer->ByteLengthAsSizeT();
     return IDBKey::CreateBinary(SharedBuffer::Create(start, length));
   }
   if (value->IsArrayBufferView()) {

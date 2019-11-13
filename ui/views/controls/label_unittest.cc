@@ -326,6 +326,54 @@ TEST_F(LabelTest, AlignmentProperty) {
   EXPECT_EQ(was_rtl, base::i18n::IsRTL());
 }
 
+TEST_F(LabelTest, MinimumSizeRespectsLineHeight) {
+  base::string16 text(ASCIIToUTF16("This is example text."));
+  label()->SetText(text);
+
+  const gfx::Size minimum_size = label()->GetMinimumSize();
+  const int expected_height = minimum_size.height() + 10;
+  label()->SetLineHeight(expected_height);
+  EXPECT_EQ(expected_height, label()->GetMinimumSize().height());
+}
+
+TEST_F(LabelTest, MinimumSizeRespectsLineHeightMultiline) {
+  base::string16 text(ASCIIToUTF16("This is example text."));
+  label()->SetText(text);
+  label()->SetMultiLine(true);
+
+  const gfx::Size minimum_size = label()->GetMinimumSize();
+  const int expected_height = minimum_size.height() + 10;
+  label()->SetLineHeight(expected_height);
+  EXPECT_EQ(expected_height, label()->GetMinimumSize().height());
+}
+
+TEST_F(LabelTest, MinimumSizeRespectsLineHeightWithInsets) {
+  base::string16 text(ASCIIToUTF16("This is example text."));
+  label()->SetText(text);
+
+  const gfx::Size minimum_size = label()->GetMinimumSize();
+  int expected_height = minimum_size.height() + 10;
+  label()->SetLineHeight(expected_height);
+  constexpr gfx::Insets kInsets{2, 3, 4, 5};
+  expected_height += kInsets.height();
+  label()->SetBorder(CreateEmptyBorder(kInsets));
+  EXPECT_EQ(expected_height, label()->GetMinimumSize().height());
+}
+
+TEST_F(LabelTest, MinimumSizeRespectsLineHeightMultilineWithInsets) {
+  base::string16 text(ASCIIToUTF16("This is example text."));
+  label()->SetText(text);
+  label()->SetMultiLine(true);
+
+  const gfx::Size minimum_size = label()->GetMinimumSize();
+  int expected_height = minimum_size.height() + 10;
+  label()->SetLineHeight(expected_height);
+  constexpr gfx::Insets kInsets{2, 3, 4, 5};
+  expected_height += kInsets.height();
+  label()->SetBorder(CreateEmptyBorder(kInsets));
+  EXPECT_EQ(expected_height, label()->GetMinimumSize().height());
+}
+
 TEST_F(LabelTest, ElideBehavior) {
   base::string16 text(ASCIIToUTF16("This is example text."));
   label()->SetText(text);

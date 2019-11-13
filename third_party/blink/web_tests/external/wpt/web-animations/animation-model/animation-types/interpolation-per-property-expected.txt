@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 690 tests; 657 PASS, 33 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 686 tests; 653 PASS, 33 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup
 PASS align-content (type: discrete) has testInterpolation function
 PASS align-content uses discrete animation when animating between "flex-start" and "flex-end" with linear easing
@@ -212,10 +212,6 @@ PASS column-width (type: discrete) has testInterpolation function
 PASS column-width uses discrete animation when animating between "auto" and "1px" with linear easing
 PASS column-width uses discrete animation when animating between "auto" and "1px" with effect easing
 PASS column-width uses discrete animation when animating between "auto" and "1px" with keyframe easing
-PASS content (type: discrete) has testInterpolation function
-PASS content uses discrete animation when animating between ""a"" and ""b"" with linear easing
-PASS content uses discrete animation when animating between ""a"" and ""b"" with effect easing
-PASS content uses discrete animation when animating between ""a"" and ""b"" with keyframe easing
 PASS counter-increment (type: discrete) has testInterpolation function
 PASS counter-increment uses discrete animation when animating between "ident-1 1" and "ident-2 2" with linear easing
 PASS counter-increment uses discrete animation when animating between "ident-1 1" and "ident-2 2" with effect easing

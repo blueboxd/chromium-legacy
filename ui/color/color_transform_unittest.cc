@@ -156,7 +156,7 @@ TEST(ColorTransformTest, FromResultColor) {
   ColorMixer mixer;
   mixer.AddSet({kColorSetTest0,
                 {{kColorTest0, SK_ColorGREEN}, {kColorTest1, kTest1Color}}});
-  mixer.AddRecipe(kColorTest0).AddTransform(FromInputColor(kColorTest1));
+  mixer[kColorTest0].AddTransform(FromInputColor(kColorTest1));
   const auto verify_color = [&](SkColor input) {
     EXPECT_EQ(kTest1Color, transform.Run(input, mixer));
   };

@@ -2044,7 +2044,6 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="3923676227229836009">Tämä sivu saa nähdä tiedostot</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3925573269917483990">Kamera:</translation>
-<translation id="3925842537050977900">Poista kiinnitys hyllystä</translation>
 <translation id="3926002189479431949">Smart Lock -puhelin on vaihdettu</translation>
 <translation id="3927932062596804919">Estä</translation>
 <translation id="3928570707778085600">Tallennetaanko muutokset (<ph name="FILE_OR_FOLDER_NAME" />)?</translation>
@@ -2535,7 +2534,6 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="4689235506267737042">Valitse esittelyasetukset</translation>
 <translation id="4689421377817139245">Synkronoi tämä kirjanmerkki iPhoneesi</translation>
 <translation id="4690091457710545971">&lt;Intelin Wi-Fi-laiteohjelmisto loi neljä tiedostoa: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon. Ensimmäiset kolmet ovat rekisterivedoksia sisältäviä binääritiedostoja, jotka eivät Intelin mukaan sisällä mitään henkilötietoja tai laitetta yksilöiviä tietoja. Viimeinen tiedosto on Intel-laiteohjelmiston luoma suoritusluettelo, josta on poistettu henkilötiedot tai laitetta yksilöivät tiedot. Se on liian suuri täällä näytettäväksi. Tiedostot luotiin laitteesi viimeaikaisten Wi-Fi-ongelmien ratkaisemiseksi ja jaetaan Intelin kanssa vianetsinnän tukemiseksi.&gt;</translation>
-<translation id="469230890969474295">Alkuperäisten laitevalmistajien kansio</translation>
 <translation id="4692623383562244444">Hakukoneet</translation>
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694024090038830733">Järjestelmänvalvoja vastaa tulostinten määrityksestä.</translation>
@@ -2568,7 +2566,6 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="4737715515457435632">Muodosta verkkoyhteys</translation>
 <translation id="473775607612524610">Päivitä</translation>
 <translation id="4739639199548674512">Tukipyynnöt</translation>
-<translation id="4742746985488890273">Kiinnitä hyllyyn</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Katso, miten sovelluksia päivitetään<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Poista sivuston mykistys}other{Poista sivustojen mykistys}}</translation>
 <translation id="4746351372139058112">Viestit</translation>
@@ -3562,7 +3559,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6196854373336333322">Välityspalvelimesi asetuksia hallinnoi tällä hetkellä tämä laajennus <ph name="EXTENSION_NAME" />, joka voi muokata, haitata tai salakuunnella kaikkia verkkotoimiasi. Jos et tiedä, miksi tämä muutos tehtiin, et luultavasti halua käyttää sitä.</translation>
 <translation id="6198102561359457428">Kirjaudu ulos ja kirjaudu uudelleen sisään...</translation>
 <translation id="6198252989419008588">Vaihda PIN-koodi</translation>
-<translation id="6201792273624501289">Linux-sovellukset</translation>
 <translation id="6202304368170870640">PIN-koodin avulla voit kirjautua laitteeseen tai avata sen lukituksen.</translation>
 <translation id="6206311232642889873">K&amp;opioi kuva</translation>
 <translation id="6207200176136643843">Palauta zoomauksen oletustaso</translation>
@@ -5595,7 +5591,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="9130015405878219958">Annoit virheellisen tilan.</translation>
 <translation id="9131487537093447019">Lähettää viestejä Bluetooth-laitteisiin ja vastaanottaa viestejä Bluetooth-laitteilta.</translation>
 <translation id="9134304429738380103">Kyllä</translation>
-<translation id="9135090785674039430">Kun tämä on käytössä, sivustot eivät voi seurata sinua verkossa evästeiden avulla. Jotkin verkkosivustot eivät välttämättä toimi.</translation>
 <translation id="9137013805542155359">Näytä alkuperäinen</translation>
 <translation id="9137157311132182254">Ensisijainen hakukone</translation>
 <translation id="9137248913990643158">Aloita ja kirjaudu sisään Chromeen ennen tämän sovelluksen käyttämistä.</translation>

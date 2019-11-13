@@ -3,7 +3,7 @@
 <translationbundle lang="fr">
 <translation id="1001649754854402482">Atténuer les vérifications <ph name="CORS" /> dans la nouvelle mise en œuvre de <ph name="CORS" />, ce qui permet aux extensions de conserver un comportement compatible, et à <ph name="PRODUCT_NAME" /> d'envoyer les en-têtes spécifiés sans vérifications <ph name="CORS" />.
 
-      Si aucun paramètre d'atténuation n'est indiqué dans la liste, <ph name="PRODUCT_NAME" /> essaie d'exécuter les extensions de manière compatible, et n'introduit pas de modifications de <ph name="API" /> pour <ph name="PRODUCT_NAME" /> 79 (comme indiqué dans le <ph name="WEB_REQUEST_API_MANUAL" />).
+      Si aucun paramètre d'atténuation n'est indiqué dans la liste, <ph name="PRODUCT_NAME" /> essaie d'exécuter les extensions de manière compatible, et n'introduit pas de modifications de <ph name="API" /> pour <ph name="PRODUCT_NAME" /> 79 (comme indiqué à la page <ph name="WEB_REQUEST_API_MANUAL" />).
 
       Si cette liste est définie pour contenir le nom d'en-têtes de requêtes <ph name="HTTP" />, les vérifications <ph name="CORS" /> ignorent les en-têtes répertoriés en plus d'être atténuées pour les extensions.
 
@@ -452,7 +452,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="1675002386741412210">Compatible avec :</translation>
 <translation id="1676141669324989554">Permet de définir si les utilisateurs peuvent ajouter ou non des exceptions qui autorisent l'affichage de contenu mixte sur des sites spécifiques.
 
-          Pour les formats d'URL spécifiques, les règles "InsecureContentAllowedForUrls" et "InsecureContentBlockedForUrls" peuvent être utilisées à la place de celle-ci.
+          Pour les formats d'URL spécifiques, les règles "InsecureContentAllowedForUrls" et "InsecureContentBlockedForUrls" peuvent être utilisées à la place de cette règle.
 
           Si cette règle n'est pas configurée, les utilisateurs peuvent ajouter des exceptions qui autorisent le contenu mixte pouvant être bloqué.</translation>
 <translation id="1695708467571967752">Cette règle détermine si les utilisateurs peuvent ou non lire des contenus multimédias lorsque l'appareil est verrouillé.
@@ -2444,11 +2444,6 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
           Si vous configurez cette règle, les utilisateurs ne peuvent pas la modifier ni l'ignorer.
 
           Si cette règle n'est pas définie, l'audio mono est désactivé au départ, mais les utilisateurs peuvent l'activer à tout moment.</translation>
-<translation id="4759650396863318477">Permet de définir la période, en millisecondes, pendant laquelle les utilisateurs sont avertis que <ph name="PRODUCT_NAME" /> doit être relancé ou qu'un appareil <ph name="PRODUCT_OS_NAME" /> doit être redémarré pour appliquer une mise à jour en attente.
-
-      Au cours de cette période, l'utilisateur est régulièrement informé de la nécessité d'appliquer la mise à jour. Pour les appareils <ph name="PRODUCT_OS_NAME" />, une notification de redémarrage s'affiche dans la barre d'état système conformément à la règle <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Pour les navigateurs <ph name="PRODUCT_NAME" />, lorsqu'un tiers de la période de notification s'est écoulé, le menu d'application change pour indiquer qu'il est nécessaire de redémarrer le navigateur. La notification change de couleur une première fois lorsque les deux tiers de la période de notification se sont écoulés et une deuxième fois à l'issue de cette période. Les notifications supplémentaires activées par la règle <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> pour les navigateurs suivent le même calendrier.
-
-      Si ce paramètre n'est pas défini, la période par défaut est fixée à 345 600 000 millisecondes (quatre jours) pour les appareils <ph name="PRODUCT_OS_NAME" /> et à 604 800 000 millisecondes (une semaine) pour <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4771144269610910963">Cette règle permet de contrôler l'analyse approfondie des téléchargements des utilisateurs à l'aide de la navigation sécurisée. Si cette règle n'est pas configurée ou si elle est définie sur le paramètre par défaut ("Ne pas analyser les fichiers"), les téléchargements des utilisateurs ne sont pas analysés par la navigation sécurisée.
 
       Si cette règle est définie sur "Envoyer les téléchargements des utilisateurs pour analyse", les téléchargements des utilisateurs sont envoyés sur le réseau à la navigation sécurisée afin d'y être analysés pour détecter les éventuels logiciels malveillants.
@@ -3282,10 +3277,10 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 <translation id="6145799962557135888">Permet de définir une liste de formats d'URL spécifiant les sites qui sont autorisés à exécuter JavaScript. 
 
 Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle "DefaultJavaScriptSetting", si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
-<translation id="614616930188030377">Les modèles de cette liste sont rapprochés de la source de sécurité de l'URL à l'origine de la demande.
+<translation id="614616930188030377">Les modèles de cette liste sont comparés à la source de sécurité de l'URL à l'origine de la demande.
       En cas de correspondance ou si chrome://flags/#enable-webrtc-hide-local-ips-with-mdns est désactivé, les candidats WebRTC ICE affichent les adresses IP locales.
       Sinon, les adresses IP locales sont masquées avec les noms d'hôte mDNS.
-      Veuillez noter que cette règle affaiblit la protection des adresses IP locales, dans le cas où celle-ci serait requise par les administrateurs.</translation>
+      Veuillez noter que cette règle affaiblit la protection des adresses IP locales, dans le cas où celle-ci serait requise par les administrateurs.</translation>
 <translation id="614662973812186053">Cette règle permet également de contrôler la collecte des données d'utilisation et de diagnostic sur les appareils Android.</translation>
 <translation id="6153048425064249648">Cette règle permet de contrôler la création de rapports dans le cloud pour <ph name="PRODUCT_NAME" />, qui transmet des informations sur le fonctionnement du navigateur à la console d'administration Google.
 
@@ -4431,9 +4426,6 @@ Ces favoris sont placés dans un dossier qui ne peut pas être modifié par l'ut
       Si la règle est définie sur la valeur "true", le format 24 heures est utilisé sur l'appareil. Si elle est définie sur la valeur "false", le format 12 heures est utilisé.
 
       Si cette règle n'est pas définie, le format 24 heures est utilisé par défaut sur l'appareil.</translation>
-<translation id="8113421140338762630">Vous permet de définir le délai, en millisecondes, entre la première notification vous avertissant qu'un appareil <ph name="PRODUCT_OS_NAME" /> doit être redémarré pour appliquer une mise à jour en attente et la fin du délai spécifié par la règle <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
-
-      Si cette règle n'est pas définie, le délai par défaut de 8 640 000 ms (soit 24 h) est utilisé pour les appareils <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="8114382167597081590">Ne pas appliquer le mode restreint sur YouTube</translation>
 <translation id="8118665053362250806">Définir la taille du cache disque de support</translation>
 <translation id="8124468781472887384">Règle d'accès à la configuration des imprimantes d'appareils.</translation>

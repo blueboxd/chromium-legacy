@@ -40,7 +40,6 @@ import java.util.List;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@DisabledTest(message = "https://crbug.com/1023437")
 public class TabObserverRegistrarTest {
     private static class LoadUrlTabObserver extends EmptyTabObserver {
         private List<String> mUrlLoadRequests = new ArrayList<>();
@@ -64,6 +63,7 @@ public class TabObserverRegistrarTest {
      * switched.
      */
     @Test
+    @DisabledTest(message = "https://crbug.com/1023437")
     @MediumTest
     public void testObserveActiveTab() throws Throwable {
         EmbeddedTestServer testServer = mCustomTabActivityTestRule.getTestServer();

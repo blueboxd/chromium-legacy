@@ -154,11 +154,24 @@ void DirectContextProvider::SetGLRendererCopierRequiredState(
   // SkiaOutputSurfaceImplOnGpu::ScopedUseContextProvider).
   gles2_implementation_->BindFramebuffer(GL_FRAMEBUFFER, 0);
 
-  decoder_->RestoreActiveTexture();
-  decoder_->RestoreProgramBindings();
-  decoder_->RestoreAllAttributes();
-  decoder_->RestoreGlobalState();
-  decoder_->RestoreBufferBindings();
+  auto* group = decoder()->GetContextGroup();
+  if (group->use_passthrough_cmd_decoder()) {
+    // Matches state setting in
+    // SkiaOutputSurfaceImplOnGpu::ScopedUseContextProvider when passthrough
+    // is enabled so that client side and service side state match.
+    //
+    // TODO(backer): Use ANGLE API to force state reset once API is available.
+    gles2_implementation_->UseProgram(0);
+    gles2_implementation_->ActiveTexture(GL_TEXTURE0);
+    gles2_implementation_->BindBuffer(GL_ARRAY_BUFFER, 0);
+    gles2_implementation_->BindTexture(GL_TEXTURE_2D, 0);
+  } else {
+    decoder_->RestoreActiveTexture();
+    decoder_->RestoreProgramBindings();
+    decoder_->RestoreAllAttributes();
+    decoder_->RestoreGlobalState();
+    decoder_->RestoreBufferBindings();
+  }
 
   // At this point |decoder_| cached state (if any, passthrough doesn't cache)
   // is synced with GLContext state. But GLES2Implementation caches some state

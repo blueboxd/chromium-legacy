@@ -21,6 +21,7 @@
 #include "gpu/ipc/common/gpu_watchdog_timeout.h"
 #include "ipc/ipc_channel_mojo.h"
 #include "ipc/ipc_sync_message.h"
+#include "mojo/public/cpp/bindings/lib/message_quota_checker.h"
 #include "url/gurl.h"
 
 using base::AutoLock;
@@ -274,11 +275,13 @@ operator=(OrderingBarrierInfo&&) = default;
 GpuChannelHost::Listener::Listener(
     mojo::ScopedMessagePipeHandle handle,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
-    : channel_(IPC::ChannelMojo::Create(std::move(handle),
-                                        IPC::Channel::MODE_CLIENT,
-                                        this,
-                                        io_task_runner,
-                                        base::ThreadTaskRunnerHandle::Get())) {
+    : channel_(IPC::ChannelMojo::Create(
+          std::move(handle),
+          IPC::Channel::MODE_CLIENT,
+          this,
+          io_task_runner,
+          base::ThreadTaskRunnerHandle::Get(),
+          mojo::internal::MessageQuotaChecker::MaybeCreate())) {
   DCHECK(channel_);
   DCHECK(io_task_runner->BelongsToCurrentThread());
   bool result = channel_->Connect();

@@ -2250,6 +2250,38 @@ class NoProductionJavaCodeUsingTestOnlyFunctionsTest(unittest.TestCase):
     self.assertEqual(0, len(results))
 
 
+class NewImagesWarningTest(unittest.TestCase):
+  def testTruePositives(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockFile('dir/android/res/drawable/foo.png', []),
+      MockFile('dir/android/res/drawable-v21/bar.svg', []),
+      MockFile('dir/android/res/mipmap-v21-en/baz.webp', []),
+      MockFile('dir/android/res_gshoe/drawable-mdpi/foobar.png', []),
+    ]
+
+    results = PRESUBMIT._CheckNewImagesWarning(mock_input_api, MockOutputApi())
+    self.assertEqual(1, len(results))
+    self.assertEqual(4, len(results[0].items))
+    self.assertTrue('foo.png' in results[0].items[0].LocalPath())
+    self.assertTrue('bar.svg' in results[0].items[1].LocalPath())
+    self.assertTrue('baz.webp' in results[0].items[2].LocalPath())
+    self.assertTrue('foobar.png' in results[0].items[3].LocalPath())
+
+  def testFalsePositives(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockFile('dir/pngs/README.md', []),
+      MockFile('java/test/res/drawable/foo.png', []),
+      MockFile('third_party/blink/foo.png', []),
+      MockFile('dir/third_party/libpng/src/foo.cc', ['foobar']),
+      MockFile('dir/resources.webp/.gitignore', ['foo.png']),
+    ]
+
+    results = PRESUBMIT._CheckNewImagesWarning(mock_input_api, MockOutputApi())
+    self.assertEqual(0, len(results))
+
+
 class CheckUniquePtrTest(unittest.TestCase):
   def testTruePositivesNullptr(self):
     mock_input_api = MockInputApi()

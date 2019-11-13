@@ -8,7 +8,7 @@ import("//testing/test.gni")
 group("all_tests") {
   testonly = true
   deps = [
-    ":ocmock_support_unittests",
+    ":ios_testing_unittests",
   ]
 }
 
@@ -33,6 +33,18 @@ source_set("hardware_keyboarr_support") {
   ]
   deps = [
     "//base/test:test_support",
+  ]
+}
+
+source_set("block_swizzler") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "scoped_block_swizzler.h",
+    "scoped_block_swizzler.mm",
+  ]
+  deps = [
+    "//base",
   ]
 }
 
@@ -76,9 +88,10 @@ source_set("ocmock_support") {
   ]
 }
 
-test("ocmock_support_unittests") {
+test("ios_testing_unittests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   deps = [
+    ":block_swizzler",
     ":ocmock_support",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
@@ -89,6 +102,7 @@ test("ocmock_support_unittests") {
 
   sources = [
     "ocmock_complex_type_helper_unittest.mm",
+    "scoped_block_swizzler_unittest.mm",
   ]
 
   assert_no_deps = ios_assert_no_deps

@@ -1017,6 +1017,12 @@
     'gfx_image': {
       'filepath': 'ui/gfx/image/',
     },
+    'global_media_controls': {
+      'filepath': 'chrome/browser/ui/global_media_controls|'\
+                  'chrome/browser/ui/views/global_media_controls|'\
+                  'chrome/browser/ui/views/feature_promos/global_media_controls|'\
+                  'chrome/browser/ui/in_product_help/global_media_controls',
+    },
     'gn': {
       'filepath': 'tools/gn',
     },
@@ -2378,6 +2384,7 @@
     'geolocation': ['mattreynolds+watch@chromium.org'],
     'gfx_geometry': ['cc-bugs@chromium.org'],
     'gfx_image': ['rsesek+watch@chromium.org'],
+    'global_media_controls': ['steimel+watch-gmc@chromium.org'],
     'gn': ['agrieve+watch@chromium.org',
            'dpranke@chromium.org'],
     'gpu_passthrough_cmd_decoder': ['geofflang+watch@chromium.org'],

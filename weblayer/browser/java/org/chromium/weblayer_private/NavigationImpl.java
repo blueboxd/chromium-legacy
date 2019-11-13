@@ -19,6 +19,9 @@ import org.chromium.weblayer_private.interfaces.NavigationState;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Implementation of INavigation.
+ */
 @JNINamespace("weblayer")
 public final class NavigationImpl extends INavigation.Stub {
     private final IClientNavigation mClientNavigation;

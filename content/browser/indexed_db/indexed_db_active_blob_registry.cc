@@ -23,6 +23,54 @@ IndexedDBActiveBlobRegistry::IndexedDBActiveBlobRegistry(
 
 IndexedDBActiveBlobRegistry::~IndexedDBActiveBlobRegistry() {}
 
+bool IndexedDBActiveBlobRegistry::MarkDeletedCheckIfUsed(int64_t database_id,
+                                                         int64_t blob_key) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(KeyPrefix::IsValidDatabaseId(database_id));
+  const auto& db_pair = use_tracker_.find(database_id);
+  if (db_pair == use_tracker_.end())
+    return false;
+
+  if (blob_key == DatabaseMetaDataKey::kAllBlobsKey) {
+    deleted_dbs_.insert(database_id);
+    return true;
+  }
+
+  SingleDBMap& single_db = db_pair->second;
+  auto iter = single_db.find(blob_key);
+  if (iter == single_db.end())
+    return false;
+
+  iter->second = BlobState::kDeleted;
+  return true;
+}
+
+IndexedDBBlobInfo::ReleaseCallback
+IndexedDBActiveBlobRegistry::GetFinalReleaseCallback(int64_t database_id,
+                                                     int64_t blob_key) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return base::BindRepeating(
+      &IndexedDBActiveBlobRegistry::ReleaseBlobRefThreadSafe,
+      base::SequencedTaskRunnerHandle::Get(), weak_factory_.GetWeakPtr(),
+      database_id, blob_key);
+}
+
+base::RepeatingClosure IndexedDBActiveBlobRegistry::GetAddBlobRefCallback(
+    int64_t database_id,
+    int64_t blob_key) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return base::BindRepeating(&IndexedDBActiveBlobRegistry::AddBlobRef,
+                             weak_factory_.GetWeakPtr(), database_id, blob_key);
+}
+
+void IndexedDBActiveBlobRegistry::ForceShutdown() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  weak_factory_.InvalidateWeakPtrs();
+  use_tracker_.clear();
+  report_outstanding_blobs_.Reset();
+  report_unused_blob_.Reset();
+}
+
 void IndexedDBActiveBlobRegistry::AddBlobRef(int64_t database_id,
                                              int64_t blob_key) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -87,28 +135,6 @@ void IndexedDBActiveBlobRegistry::ReleaseBlobRef(int64_t database_id,
     report_outstanding_blobs_.Run(false);
 }
 
-bool IndexedDBActiveBlobRegistry::MarkDeletedCheckIfUsed(int64_t database_id,
-                                                         int64_t blob_key) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(KeyPrefix::IsValidDatabaseId(database_id));
-  const auto& db_pair = use_tracker_.find(database_id);
-  if (db_pair == use_tracker_.end())
-    return false;
-
-  if (blob_key == DatabaseMetaDataKey::kAllBlobsKey) {
-    deleted_dbs_.insert(database_id);
-    return true;
-  }
-
-  SingleDBMap& single_db = db_pair->second;
-  auto iter = single_db.find(blob_key);
-  if (iter == single_db.end())
-    return false;
-
-  iter->second = BlobState::kDeleted;
-  return true;
-}
-
 void IndexedDBActiveBlobRegistry::ReleaseBlobRefThreadSafe(
     scoped_refptr<base::TaskRunner> task_runner,
     base::WeakPtr<IndexedDBActiveBlobRegistry> weak_ptr,
@@ -118,32 +144,6 @@ void IndexedDBActiveBlobRegistry::ReleaseBlobRefThreadSafe(
   task_runner->PostTask(
       FROM_HERE, base::BindOnce(&IndexedDBActiveBlobRegistry::ReleaseBlobRef,
                                 std::move(weak_ptr), database_id, blob_key));
-}
-
-IndexedDBBlobInfo::ReleaseCallback
-IndexedDBActiveBlobRegistry::GetFinalReleaseCallback(int64_t database_id,
-                                                     int64_t blob_key) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return base::BindRepeating(
-      &IndexedDBActiveBlobRegistry::ReleaseBlobRefThreadSafe,
-      base::SequencedTaskRunnerHandle::Get(), weak_factory_.GetWeakPtr(),
-      database_id, blob_key);
-}
-
-base::RepeatingClosure IndexedDBActiveBlobRegistry::GetAddBlobRefCallback(
-    int64_t database_id,
-    int64_t blob_key) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return base::BindRepeating(&IndexedDBActiveBlobRegistry::AddBlobRef,
-                             weak_factory_.GetWeakPtr(), database_id, blob_key);
-}
-
-void IndexedDBActiveBlobRegistry::ForceShutdown() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  weak_factory_.InvalidateWeakPtrs();
-  use_tracker_.clear();
-  report_outstanding_blobs_.Reset();
-  report_unused_blob_.Reset();
 }
 
 }  // namespace content

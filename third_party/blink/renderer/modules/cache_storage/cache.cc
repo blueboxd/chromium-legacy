@@ -458,9 +458,10 @@ class Cache::CodeCacheHandleCallbackForPut final
 
     auto blob_data = std::make_unique<BlobData>();
     blob_data->SetContentType(mime_type_);
-    blob_data->AppendBytes(array_buffer->Data(), array_buffer->ByteLength());
+    blob_data->AppendBytes(array_buffer->Data(),
+                           array_buffer->ByteLengthAsSizeT());
     batch_operation->response->blob = BlobDataHandle::Create(
-        std::move(blob_data), array_buffer->ByteLength());
+        std::move(blob_data), array_buffer->ByteLengthAsSizeT());
 
     scoped_refptr<CachedMetadata> cached_metadata =
         GenerateFullCodeCache(array_buffer);
@@ -520,7 +521,7 @@ class Cache::CodeCacheHandleCallbackForPut final
     return V8CodeCache::GenerateFullCodeCache(
         script_state_,
         text_decoder->Decode(static_cast<const char*>(array_buffer->Data()),
-                             array_buffer->ByteLength()),
+                             array_buffer->ByteLengthAsSizeT()),
         url_, text_decoder->Encoding(), opaque_mode_);
   }
 

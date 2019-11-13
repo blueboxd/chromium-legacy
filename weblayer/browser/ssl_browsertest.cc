@@ -51,13 +51,9 @@ class SSLBrowserTest : public WebLayerBrowserTest {
     EXPECT_FALSE(IsShowingSecurityInterstitial(shell()->tab()));
   }
 
-  void NavigateToPageWithSslError() {
-    // Now do a navigation that should result in an SSL error.
-    GURL url_with_mismatched_cert =
-        https_server_mismatched_->GetURL("/simple_page.html");
-
-    NavigateAndWaitForFailure(url_with_mismatched_cert, shell());
-
+  void NavigateToPageWithSslErrorExpectBlocked() {
+    // Do a navigation that should result in an SSL error.
+    NavigateAndWaitForFailure(bad_ssl_url(), shell());
     // First check that there *is* an interstitial.
     ASSERT_TRUE(IsShowingSecurityInterstitial(shell()->tab()));
 
@@ -69,7 +65,37 @@ class SSLBrowserTest : public WebLayerBrowserTest {
     // ssl_browsertest.cc's CheckAuthenticationBrokenState() function.
   }
 
+  void NavigateToPageWithSslErrorExpectNotBlocked() {
+    NavigateAndWaitForCompletion(bad_ssl_url(), shell());
+    EXPECT_FALSE(IsShowingSecurityInterstitial(shell()->tab()));
+
+    // TODO(blundell): Check the security state once security state is available
+    // via the public WebLayer API, following the example of //chrome's
+    // ssl_browsertest.cc's CheckAuthenticationBrokenState() function.
+  }
+
+  void InteractWithBlockingPage(bool proceed) {
+    TestNavigationObserver navigation_observer(
+        proceed ? bad_ssl_url() : ok_url(),
+        TestNavigationObserver::NavigationEvent::Completion, shell());
+    ExecuteScript(shell(),
+                  "window.certificateErrorPageController." +
+                      std::string(proceed ? "proceed" : "dontProceed") + "();",
+                  false /*use_separate_isolate*/);
+    navigation_observer.Wait();
+    EXPECT_FALSE(IsShowingSSLInterstitial(shell()->tab()));
+  }
+
+  void NavigateToOtherOkPage() {
+    NavigateAndWaitForCompletion(https_server_->GetURL("/simple_page2.html"),
+                                 shell());
+    EXPECT_FALSE(IsShowingSecurityInterstitial(shell()->tab()));
+  }
+
   GURL ok_url() { return https_server_->GetURL("/simple_page.html"); }
+  GURL bad_ssl_url() {
+    return https_server_mismatched_->GetURL("/simple_page.html");
+  }
 
  protected:
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
@@ -82,30 +108,45 @@ class SSLBrowserTest : public WebLayerBrowserTest {
 // Tests clicking "take me back" on the interstitial page.
 IN_PROC_BROWSER_TEST_F(SSLBrowserTest, TakeMeBack) {
   NavigateToOkPage();
-  NavigateToPageWithSslError();
+  NavigateToPageWithSslErrorExpectBlocked();
 
   // Click "Take me back".
-  TestNavigationObserver navigation_observer(
-      ok_url(), TestNavigationObserver::NavigationEvent::Completion, shell());
-  ExecuteScript(shell(), "window.certificateErrorPageController.dontProceed();",
-                false /*use_separate_isolate*/);
-  navigation_observer.Wait();
-  EXPECT_FALSE(IsShowingSSLInterstitial(shell()->tab()));
+  InteractWithBlockingPage(false /*proceed*/);
 
   // Check that it's possible to navigate to a new page.
-  NavigateAndWaitForCompletion(https_server_->GetURL("/simple_page2.html"),
-                               shell());
-  EXPECT_FALSE(IsShowingSecurityInterstitial(shell()->tab()));
+  NavigateToOtherOkPage();
+
+  // Navigate to the bad SSL page again, an interstitial shows again (in
+  // contrast to what would happen had the user chosen to proceed).
+  NavigateToPageWithSslErrorExpectBlocked();
+}
+
+// Tests clicking proceed link on the interstitial page. This is a PRE_ test
+// because it also acts as setup for the test below which verifies the behavior
+// across restarts.
+IN_PROC_BROWSER_TEST_F(SSLBrowserTest, PRE_Proceed) {
+  NavigateToOkPage();
+  NavigateToPageWithSslErrorExpectBlocked();
+  InteractWithBlockingPage(true /*proceed*/);
+
+  // Go back to an OK page, then try to navigate again. The "Proceed" decision
+  // should be saved, so no interstitial is shown this time.
+  NavigateToOkPage();
+  NavigateToPageWithSslErrorExpectNotBlocked();
+}
+
+// The proceed decision is not perpetuated across WebLayer sessions, i.e.
+// WebLayer will block again when navigating to the same bad page that was
+// previously proceeded through.
+IN_PROC_BROWSER_TEST_F(SSLBrowserTest, Proceed) {
+  NavigateToPageWithSslErrorExpectBlocked();
 }
 
 // Tests navigating away from the interstitial page.
 IN_PROC_BROWSER_TEST_F(SSLBrowserTest, NavigateAway) {
   NavigateToOkPage();
-  NavigateToPageWithSslError();
-
-  NavigateAndWaitForCompletion(https_server_->GetURL("/simple_page2.html"),
-                               shell());
-  EXPECT_FALSE(IsShowingSecurityInterstitial(shell()->tab()));
+  NavigateToPageWithSslErrorExpectBlocked();
+  NavigateToOtherOkPage();
 }
 
 }  // namespace weblayer

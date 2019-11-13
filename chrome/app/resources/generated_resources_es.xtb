@@ -2044,7 +2044,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3923676227229836009">Esta página tiene permiso para ver archivos</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3925573269917483990">Cámara:</translation>
-<translation id="3925842537050977900">No fijar en la estantería</translation>
 <translation id="3926002189479431949">El teléfono de Smart Lock ha cambiado</translation>
 <translation id="3927932062596804919">Denegar</translation>
 <translation id="3928570707778085600">¿Quieres guardar los cambios en <ph name="FILE_OR_FOLDER_NAME" />?</translation>
@@ -2537,7 +2536,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="4689235506267737042">Elegir tus preferencias de demostración</translation>
 <translation id="4689421377817139245">Sincronizar este marcador con tu iPhone</translation>
 <translation id="4690091457710545971">&lt;El firmware del Wi‑Fi de Intel ha generado cuatro archivos: csr.lst, fh_regs.lst, radio_reg.lst y monitor.lst.sysmon. Los tres primeros son archivos binarios que contienen volcados de registro, e Intel afirma que no contienen información personal o que identifique el dispositivo. El último archivo es un seguimiento de ejecución del firmware de Intel del cual se ha eliminado toda la información personal o que identifique el dispositivo, pero es demasiado grande para mostrarse aquí. Estos archivos se han generado como respuesta a los problemas recientes de tu dispositivo con la conexión Wi‑Fi y se compartirán con Intel para que ayude a solucionarlos.&gt;</translation>
-<translation id="469230890969474295">Carpeta OEM</translation>
 <translation id="4692623383562244444">Buscadores</translation>
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694024090038830733">El administrador se encarga de configurar la impresora.</translation>
@@ -2570,7 +2568,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="4737715515457435632">Establece conexión con una red</translation>
 <translation id="473775607612524610">Actualizar</translation>
 <translation id="4739639199548674512">Tickets</translation>
-<translation id="4742746985488890273">Fijar en la estantería</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Cómo actualizar aplicaciones<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Activar sonido del sitio web}other{Activar sonido de los sitios web}}</translation>
 <translation id="4746351372139058112">Mensajes</translation>
@@ -3191,7 +3188,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5659593005791499971">Correo electrónico</translation>
 <translation id="5659833766619490117">No se ha podido traducir la página</translation>
 <translation id="5660204307954428567">Vincular con <ph name="DEVICE_NAME" /></translation>
-<translation id="5662477687021125631">Perpetua</translation>
+<translation id="5662477687021125631">Permanente</translation>
 <translation id="5667546120811588575">Configurando Google Play...</translation>
 <translation id="5669267381087807207">Activando</translation>
 <translation id="5669691691057771421">Introducir el nuevo PIN</translation>
@@ -3562,7 +3559,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6196854373336333322">La extensión <ph name="EXTENSION_NAME" /> ahora controla la configuración del proxy, lo que significa que puede cambiar, deshacer o espiar cualquier acción que hagas online. Si no estás seguro de los motivos por los que se ha producido este cambio, probablemente no haya sido intencionado.</translation>
 <translation id="6198102561359457428">Cerrar y volver a iniciar sesión...</translation>
 <translation id="6198252989419008588">Cambiar PIN</translation>
-<translation id="6201792273624501289">Aplicaciones de Linux</translation>
 <translation id="6202304368170870640">Puedes usar el PIN para iniciar sesión en tu dispositivo o para desbloquearlo.</translation>
 <translation id="6206311232642889873">Copia&amp;r imagen</translation>
 <translation id="6207200176136643843">Restablecer el nivel de zoom predeterminado</translation>
@@ -5596,7 +5592,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="9130015405878219958">Modo no válido introducido</translation>
 <translation id="9131487537093447019">Enviar y recibir mensajes desde dispositivos Bluetooth.</translation>
 <translation id="9134304429738380103">Sí, acepto.</translation>
-<translation id="9135090785674039430">Si activas esta opción, los sitios web no podrán usar cookies para hacer un seguimiento de tu actividad en la web. Es posible que algunos sitios web dejen de funcionar.</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9137157311132182254">Buscador preferido</translation>
 <translation id="9137248913990643158">Abre Chrome e inicia sesión en el navegador para usar esta aplicación.</translation>

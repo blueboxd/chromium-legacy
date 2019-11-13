@@ -266,10 +266,6 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
 
     bool oop_rasterization_supported;
     bool subpixel_font_rendering;
-
-#if BUILDFLAG(ENABLE_VULKAN)
-    base::Optional<VulkanInfo> vulkan_info;
-#endif
   };
 
   // If this assert fails then most likely something below needs to be updated.
@@ -340,12 +336,6 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
 #endif
   enumerator->AddBool("oopRasterizationSupported", oop_rasterization_supported);
   enumerator->AddBool("subpixelFontRendering", subpixel_font_rendering);
-#if BUILDFLAG(ENABLE_VULKAN)
-  if (vulkan_info) {
-    auto blob = vulkan_info->Serialize();
-    enumerator->AddBinary("vulkanInfo", base::span<const uint8_t>(blob));
-  }
-#endif
   enumerator->EndAuxAttributes();
 }
 

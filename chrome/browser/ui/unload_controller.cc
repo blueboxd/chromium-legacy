@@ -85,11 +85,11 @@ bool UnloadController::RunUnloadEventsHelper(content::WebContents* contents) {
   // handler we can fire even if the WebContents has an unload listener.
   // One case where we hit this is in a tab that has an infinite loop
   // before load.
-  if (contents->NeedToFireBeforeUnload()) {
+  if (contents->NeedToFireBeforeUnloadOrUnload()) {
     // If the page has unload listeners, then we tell the renderer to fire
     // them. Once they have fired, we'll get a message back saying whether
     // to proceed closing the page or not, which sends us back to this method
-    // with the NeedToFireBeforeUnload bit cleared.
+    // with the NeedToFireBeforeUnloadOrUnload bit cleared.
     contents->DispatchBeforeUnload(false /* auto_cancel */);
     return true;
   }
@@ -193,7 +193,7 @@ bool UnloadController::TabsNeedBeforeUnloadFired() {
       content::WebContents* contents =
           browser_->tab_strip_model()->GetWebContentsAt(i);
       bool should_fire_beforeunload =
-          contents->NeedToFireBeforeUnload() ||
+          contents->NeedToFireBeforeUnloadOrUnload() ||
           DevToolsWindow::NeedsToInterceptBeforeUnload(contents);
       if (!base::Contains(tabs_needing_unload_fired_, contents) &&
           should_fire_beforeunload) {

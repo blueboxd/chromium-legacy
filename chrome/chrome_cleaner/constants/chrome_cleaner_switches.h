@@ -54,6 +54,13 @@ extern const char kAllowUnsecureDLLsSwitch[];
 extern const char kRunWithoutSandboxForTestingSwitch[];
 #endif
 
+// Deprecated switches that were set by older Chrome versions.
+// These must still be handled until we drop support for those versions.
+
+// The Mojo pipe token for IPC communication between the Software Reporter and
+// Chrome. Dropped in M80.
+extern const char kChromeMojoPipeTokenSwitch[];
+
 }  // namespace chrome_cleaner
 
 #endif  // CHROME_CHROME_CLEANER_CONSTANTS_CHROME_CLEANER_SWITCHES_H_

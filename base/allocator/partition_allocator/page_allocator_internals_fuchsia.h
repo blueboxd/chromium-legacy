@@ -109,7 +109,10 @@ void* SystemAllocPagesInternal(void* hint,
       zx::vmar::root_self()->map(vmar_offset, vmo,
                                  /*vmo_offset=*/0, length, options, &address);
   if (status != ZX_OK) {
-    ZX_DLOG(INFO, status) << "zx_vmar_map";
+    // map() is expected to fail if |hint| is set to an already-in-use location.
+    if (!hint) {
+      ZX_DLOG(ERROR, status) << "zx_vmar_map";
+    }
     return nullptr;
   }
 

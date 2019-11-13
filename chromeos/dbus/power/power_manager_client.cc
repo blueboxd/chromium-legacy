@@ -1056,6 +1056,9 @@ class PowerManagerClientImpl : public PowerManagerClient {
         for (auto& observer : observers_)
           observer.TabletModeEventReceived(TabletMode::OFF, timestamp);
         break;
+      default:
+        // TODO(henryhsu): handle the missing cases.
+        break;
     }
   }
 

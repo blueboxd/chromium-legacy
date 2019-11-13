@@ -30,8 +30,6 @@ Polymer({
       notify: true,
     },
 
-    appKioskMode: Boolean,
-
     cloudPrintDisabled: {
       type: Boolean,
       value: true,
@@ -134,7 +132,8 @@ Polymer({
    * @private
    */
   checkCloudPrintStatus_: function(event) {
-    if (event.detail.status != 403 || this.appKioskMode) {
+    if (event.detail.status != 403 ||
+        this.cloudPrintInterface.areCookieDestinationsDisabled()) {
       return;
     }
 

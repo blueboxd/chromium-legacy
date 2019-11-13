@@ -673,9 +673,8 @@ void ManagementUIHandler::AsyncUpdateLogo() {
   if (!url.empty() && GURL(url) != logo_url_) {
     icon_fetcher_ = std::make_unique<BitmapFetcher>(
         GURL(url), this, GetManagementUICustomerLogoAnnotation());
-    icon_fetcher_->Init(
-        std::string(), net::URLRequest::NEVER_CLEAR_REFERRER,
-        net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES);
+    icon_fetcher_->Init(std::string(), net::URLRequest::NEVER_CLEAR_REFERRER,
+                        network::mojom::CredentialsMode::kOmit);
     auto* profile = Profile::FromWebUI(web_ui());
     icon_fetcher_->Start(
         content::BrowserContext::GetDefaultStoragePartition(profile)

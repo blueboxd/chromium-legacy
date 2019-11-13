@@ -491,7 +491,12 @@ void NetworkConnect::Initialize(Delegate* delegate) {
 void NetworkConnect::Shutdown() {
   CHECK(g_network_connect);
   delete g_network_connect;
-  g_network_connect = NULL;
+  g_network_connect = nullptr;
+}
+
+// static
+bool NetworkConnect::IsInitialized() {
+  return g_network_connect;
 }
 
 // static

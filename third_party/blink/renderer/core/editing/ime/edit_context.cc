@@ -24,7 +24,7 @@
 namespace blink {
 
 EditContext::EditContext(ScriptState* script_state, const EditContextInit* dict)
-    : ContextClient(ExecutionContext::From(script_state)) {
+    : ContextLifecycleObserver(ExecutionContext::From(script_state)) {
   DCHECK(IsMainThread());
 
   if (dict->hasText())
@@ -58,26 +58,30 @@ const AtomicString& EditContext::InterfaceName() const {
 }
 
 ExecutionContext* EditContext::GetExecutionContext() const {
-  return ContextClient::GetExecutionContext();
+  return ContextLifecycleObserver::GetExecutionContext();
+}
+
+bool EditContext::HasPendingActivity() const {
+  return GetExecutionContext() && HasEventListeners();
 }
 
 InputMethodController& EditContext::GetInputMethodController() const {
-  return ContextClient::GetFrame()->GetInputMethodController();
+  return ContextLifecycleObserver::GetFrame()->GetInputMethodController();
 }
 
 void EditContext::DispatchCompositionEndEvent(const String& text) {
   auto* event = MakeGarbageCollected<CompositionEvent>(
-      event_type_names::kCompositionend, ContextClient::GetFrame()->DomWindow(),
-      text);
+      event_type_names::kCompositionend,
+      ContextLifecycleObserver::GetFrame()->DomWindow(), text);
   DispatchEvent(*event);
 }
 
 bool EditContext::DispatchCompositionStartEvent(const String& text) {
   auto* event = MakeGarbageCollected<CompositionEvent>(
       event_type_names::kCompositionstart,
-      ContextClient::GetFrame()->DomWindow(), text);
+      ContextLifecycleObserver::GetFrame()->DomWindow(), text);
   DispatchEvent(*event);
-  if (!ContextClient::GetFrame())
+  if (!ContextLifecycleObserver::GetFrame())
     return false;
   return true;
 }
@@ -573,8 +577,9 @@ WebRange EditContext::GetSelectionOffsets() const {
 }
 
 void EditContext::Trace(Visitor* visitor) {
-  EventTarget::Trace(visitor);
-  ScriptWrappable::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ActiveScriptWrappable::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
+  EventTargetWithInlineData::Trace(visitor);
 }
+
 }  // namespace blink

@@ -10,7 +10,6 @@ package enterprise_management;
 
 // Everything below this comment will be synchronized between client and server
 // repos ( go/cros-proto-sync ).
-// Please don't manually edit any lines below this comment.
 
 message StringList {
   repeated string entries = 1;

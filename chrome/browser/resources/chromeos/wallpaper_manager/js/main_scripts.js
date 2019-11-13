@@ -21,6 +21,8 @@
 // src="../../../../../../ui/webui/resources/js/cr/ui/list_selection_controller.js">
 // <include src="../../../../../../ui/webui/resources/js/cr/ui/list.js">
 // <include src="../../../../../../ui/webui/resources/js/cr/ui/grid.js">
+// <include
+// src="../../../../../../ui/webui/resources/js/cr/ui/keyboard_shortcut_list.js">
 // <include src="../../../../../../ui/webui/resources/js/cr/ui/command.js">
 // <include
 // src="../../../../../../ui/webui/resources/js/cr/ui/position_util.js">

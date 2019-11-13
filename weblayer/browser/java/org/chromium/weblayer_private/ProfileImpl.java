@@ -17,6 +17,9 @@ import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Implementation of IProfile.
+ */
 @JNINamespace("weblayer")
 public final class ProfileImpl extends IProfile.Stub {
     private final String mPath;

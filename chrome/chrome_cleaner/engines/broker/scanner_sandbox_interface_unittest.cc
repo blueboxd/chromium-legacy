@@ -607,6 +607,24 @@ TEST_F(ScannerSandboxInterface_OpenReadOnlyFile, BasicFile) {
   handle = SandboxOpenReadOnlyFile(base::FilePath(path_with_space),
                                    FILE_ATTRIBUTE_NORMAL);
   EXPECT_TRUE(handle.IsValid());
+
+  // Make sure quotes aren't interpreted. The same path might be passed to
+  // SandboxDeleteFile, which doesn't interpret quotes.
+  const base::FilePath quoted_path(L"\"" + file_path.value() + L"\"");
+  handle = SandboxOpenReadOnlyFile(quoted_path, FILE_ATTRIBUTE_NORMAL);
+  EXPECT_FALSE(handle.IsValid())
+      << "SandboxOpenReadOnlyFile is interpreting quotes around path names; "
+         "this will cause problems if the same path is passed to DeleteFile "
+         "(see CleanerSandboxInterfaceDeleteFileTest.QuotedPath)";
+
+  const base::FilePath partly_quoted_path =
+      temp.GetPath().Append(L"\"temp_file.exe\"");
+  handle = SandboxOpenReadOnlyFile(partly_quoted_path, FILE_ATTRIBUTE_NORMAL);
+  EXPECT_FALSE(handle.IsValid())
+      << "SandboxOpenReadOnlyFile is interpreting quotes around path "
+         "components; this will cause problems if the same path is passed to "
+         "DeleteFile (see "
+         "CleanerSandboxInterfaceDeleteFileTest.QuotedFilename)";
 }
 
 TEST_F(ScannerSandboxInterface_OpenReadOnlyFile, NoFile) {

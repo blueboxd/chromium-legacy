@@ -25,7 +25,6 @@
 #include "net/cert/cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
-#include "net/http/http_auth_preferences.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_response_info.h"
 #include "net/http/http_server_properties.h"
@@ -237,7 +236,6 @@ struct SpdySessionDependencies {
   NetLog* net_log;
   bool disable_idle_sockets_close_on_memory_pressure;
   bool enable_early_data;
-  HttpAuthPreferences::DefaultCredentials allow_default_credentials;
   bool key_auth_cache_server_entries_by_network_isolation_key;
 };
 

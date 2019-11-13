@@ -40,7 +40,7 @@ class CORE_EXPORT SVGURIReference : public GarbageCollectedMixin {
  public:
   virtual ~SVGURIReference() = default;
 
-  bool IsKnownAttribute(const QualifiedName&);
+  static bool IsKnownAttribute(const QualifiedName&);
 
   // Use this for accesses to 'href' or 'xlink:href' (in that order) for
   // elements where both are allowed and don't necessarily inherit from

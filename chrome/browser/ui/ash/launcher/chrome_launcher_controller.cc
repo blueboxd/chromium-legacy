@@ -14,7 +14,6 @@
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_prefs.h"
-#include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/window_animation_types.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -600,12 +599,6 @@ ash::ShelfAction ChromeLauncherController::ActivateWindowOrMinimizeIfActive(
       !(app_list_client && app_list_client->app_list_target_visibility())) {
     window->Minimize();
     return ash::SHELF_ACTION_WINDOW_MINIMIZED;
-  }
-
-  if (ash::TabletMode::Get() && ash::TabletMode::Get()->InTabletMode()) {
-    // Run slide down animation to show the window.
-    wm::SetWindowVisibilityAnimationType(
-        native_window, ash::WINDOW_VISIBILITY_ANIMATION_TYPE_SLIDE_DOWN);
   }
 
   window->Show();

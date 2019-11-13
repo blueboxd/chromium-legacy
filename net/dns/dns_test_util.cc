@@ -702,18 +702,14 @@ const DnsHosts* MockDnsClient::GetHosts() const {
   return &config->hosts;
 }
 
-void MockDnsClient::SetRequestContextForProbes(
-    URLRequestContext* url_request_context) {
-  DCHECK(!probe_context_ || probe_context_ == url_request_context);
+void MockDnsClient::ActivateDohProbes(URLRequestContext* url_request_context) {
+  DCHECK(url_request_context);
+  DCHECK(!probe_context_);
   probe_context_ = url_request_context;
   factory_->StartDohProbes(probe_context_, false /* network_change */);
 }
 
-void MockDnsClient::CancelProbesForContext(
-    URLRequestContext* url_request_context) {
-  if (probe_context_ != url_request_context)
-    return;
-
+void MockDnsClient::CancelDohProbes() {
   factory_->CancelDohProbes();
   probe_context_ = nullptr;
 }
@@ -747,11 +743,6 @@ void MockDnsClient::SetProbeSuccessForTest(unsigned index, bool success) {}
 void MockDnsClient::SetTransactionFactoryForTesting(
     std::unique_ptr<DnsTransactionFactory> factory) {
   NOTREACHED();
-}
-
-void MockDnsClient::StartDohProbesForTesting() {
-  factory_->StartDohProbes(probe_context_ /* url_request_context */,
-                           false /* network_change */);
 }
 
 void MockDnsClient::CompleteDelayedTransactions() {

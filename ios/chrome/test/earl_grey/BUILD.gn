@@ -74,7 +74,6 @@ chrome_ios_eg_test("ios_chrome_settings_egtests") {
 chrome_ios_eg_test("ios_chrome_ui_egtests") {
   deps = [
     "//ios/chrome/browser/ui/activity_services:eg_tests",
-    "//ios/chrome/browser/ui/alert_coordinator:eg_tests",
     "//ios/chrome/browser/ui/browser_view:eg_tests",
     "//ios/chrome/browser/ui/dialogs:eg_tests",
     "//ios/chrome/browser/ui/download:eg_tests",
@@ -282,7 +281,7 @@ source_set("test_support") {
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/web:tab_id_tab_helper",
     "//ios/chrome/test/app:test_support",
-    "//ios/chrome/test/base",
+    "//ios/testing:block_swizzler",
     "//ios/testing:verify_custom_webkit",
     "//ios/testing/earl_grey:earl_grey_support",
     "//ios/third_party/material_components_ios",
@@ -416,7 +415,7 @@ source_set("eg_app_support+eg2") {
     "//ios/chrome/browser/ui/util:eg_app_support+eg2",
     "//ios/chrome/browser/web:tab_id_tab_helper",
     "//ios/chrome/test/app:test_support",
-    "//ios/chrome/test/base",
+    "//ios/testing:block_swizzler",
     "//ios/testing:nserror_support",
     "//ios/testing:verify_custom_webkit",
     "//ios/testing/earl_grey:eg_app_support+eg2",

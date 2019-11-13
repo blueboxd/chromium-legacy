@@ -196,17 +196,6 @@ class TestResultsFetcher(object):
         return WebTestResults.results_from_string(data)
 
 
-def current_build_link(host):
-    """Returns a link to the current job if running on buildbot, or None."""
-    master_name = host.environ.get('BUILDBOT_MASTERNAME')
-    builder_name = host.environ.get('BUILDBOT_BUILDERNAME')
-    build_number = host.environ.get('BUILDBOT_BUILDNUMBER')
-    if not (master_name and builder_name and build_number):
-        return None
-    return ('https://ci.chromium.org/buildbot/%s/%s/%s' %
-            (master_name, builder_name, build_number))
-
-
 def filter_latest_builds(builds):
     """Filters Build objects to include only the latest for each builder.
 

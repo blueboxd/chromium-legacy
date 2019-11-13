@@ -31,6 +31,7 @@
 #include "ipc/ipc_channel_mojo.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/message_filter.h"
+#include "mojo/public/cpp/bindings/lib/message_quota_checker.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/constants.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
@@ -157,7 +158,8 @@ void ChildProcessHostImpl::CreateChannelMojo() {
   BindInterface(IPC::mojom::ChannelBootstrap::Name_, std::move(pipe.handle1));
   channel_ = IPC::ChannelMojo::Create(
       std::move(pipe.handle0), IPC::Channel::MODE_SERVER, this,
-      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get());
+      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
+      mojo::internal::MessageQuotaChecker::MaybeCreate());
   DCHECK(channel_);
 
   bool initialized = InitChannel();

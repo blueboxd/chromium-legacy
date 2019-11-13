@@ -134,7 +134,7 @@ js_library("command_manager") {
     "//ui/webui/resources/cr_elements/cr_toast:cr_toast_manager",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:load_time_data",
-    "//ui/webui/resources/js/cr/ui:command",
+    "//ui/webui/resources/js/cr/ui:keyboard_shortcut_list",
   ]
   externs_list = [ "$externs_path/bookmark_manager_private.js" ]
 }

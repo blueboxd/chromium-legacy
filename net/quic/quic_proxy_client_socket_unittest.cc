@@ -294,12 +294,11 @@ class QuicProxyClientSocketTest : public ::testing::TestWithParam<TestParams>,
     sock_.reset(new QuicProxyClientSocket(
         std::move(stream_handle), std::move(session_handle_), user_agent_,
         endpoint_host_port_, net_log_.bound(),
-        new HttpAuthController(
-            HttpAuth::AUTH_PROXY,
-            GURL("https://" + proxy_host_port_.ToString()),
-            NetworkIsolationKey(), &http_auth_cache_,
-            http_auth_handler_factory_.get(), host_resolver_.get(),
-            HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS)));
+        new HttpAuthController(HttpAuth::AUTH_PROXY,
+                               GURL("https://" + proxy_host_port_.ToString()),
+                               NetworkIsolationKey(), &http_auth_cache_,
+                               http_auth_handler_factory_.get(),
+                               host_resolver_.get())));
 
     session_->StartReading();
   }

@@ -3,8 +3,15 @@
 # found in the LICENSE file.
 
 
+# Ignore the following files from SVG optimization checks.
+BLOCKLIST = [
+  # Ignore since it holds documentation comments.
+  "components/dom_distiller/core/images/dom_distiller_material_spinner.svg",
+]
+
 def CheckOptimized(input_api, output_api):
-  file_filter = lambda f: f.LocalPath().endswith('.svg')
+  file_filter = lambda f: f.LocalPath().endswith('.svg') and \
+      f.LocalPath() not in BLOCKLIST
   svgs = input_api.AffectedFiles(file_filter=file_filter, include_deletes=False)
 
   if not svgs:

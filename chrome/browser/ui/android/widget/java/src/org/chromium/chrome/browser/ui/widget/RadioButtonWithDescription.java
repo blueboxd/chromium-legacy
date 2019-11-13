@@ -17,7 +17,6 @@ import android.view.View.OnClickListener;
 import android.widget.RadioButton;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-
 import java.util.List;
 
 /**

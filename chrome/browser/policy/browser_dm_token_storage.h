@@ -44,15 +44,22 @@ class BrowserDMTokenStorage {
   //    enrollment token is present.
   class BrowserDMToken {
    public:
+    static BrowserDMToken CreateValidToken(const std::string& value);
+    static BrowserDMToken CreateInvalidToken();
+    static BrowserDMToken CreateEmptyToken();
+
+    BrowserDMToken(const BrowserDMToken& other);
+    BrowserDMToken(BrowserDMToken&& other);
+
+    BrowserDMToken& operator=(const BrowserDMToken& other);
+    BrowserDMToken& operator=(BrowserDMToken&& other);
+    ~BrowserDMToken();
+
     const std::string& value() const;
 
     bool is_valid() const;
     bool is_invalid() const;
     bool is_empty() const;
-
-    static BrowserDMToken CreateValidToken(const std::string& value);
-    static BrowserDMToken CreateInvalidToken();
-    static BrowserDMToken CreateEmptyToken();
 
    private:
     enum class Status { kValid, kInvalid, kEmpty };

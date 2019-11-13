@@ -13,6 +13,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
+#include "chrome/browser/custom_handlers/test_protocol_handler_registry_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
@@ -853,23 +854,9 @@ TEST_F(ContentSettingBubbleModelTest, RegisterProtocolHandler) {
   EXPECT_FALSE(bubble_content.manage_text.empty());
 }
 
-class FakeDelegate : public ProtocolHandlerRegistry::Delegate {
- public:
-  void RegisterExternalHandler(const std::string& protocol) override {
-    // Overrides in order to not register the handler with the
-    // ChildProcessSecurityPolicy. That has persistent and unalterable
-    // side effects on other tests.
-  }
-
-  void RegisterWithOSAsDefaultClient(
-      const std::string& protocol,
-      shell_integration::DefaultWebClientWorkerCallback callback) override {
-    VLOG(1) << "Register With OS";
-  }
-};
-
 TEST_F(ContentSettingBubbleModelTest, RPHAllow) {
-  ProtocolHandlerRegistry registry(profile(), std::make_unique<FakeDelegate>());
+  ProtocolHandlerRegistry registry(
+      profile(), std::make_unique<TestProtocolHandlerRegistryDelegate>());
   registry.InitProtocolSettings();
 
   const GURL page_url("http://toplevel.example/");
@@ -934,7 +921,8 @@ TEST_F(ContentSettingBubbleModelTest, RPHAllow) {
 }
 
 TEST_F(ContentSettingBubbleModelTest, RPHDefaultDone) {
-  ProtocolHandlerRegistry registry(profile(), std::make_unique<FakeDelegate>());
+  ProtocolHandlerRegistry registry(
+      profile(), std::make_unique<TestProtocolHandlerRegistryDelegate>());
   registry.InitProtocolSettings();
 
   const GURL page_url("http://toplevel.example/");

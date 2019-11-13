@@ -15,6 +15,11 @@
              android:showAsAction="never"/>
         <!--suppress HardcodedText -->
         <item
+             android:id="@+id/nav_menu_flags_ui"
+             android:title="Experimental Flags"
+             android:showAsAction="never"/>
+        <!--suppress HardcodedText -->
+        <item
              android:id="@+id/nav_menu_main_ui"
              android:title="Home"
              android:showAsAction="never"/>

@@ -23,10 +23,6 @@ extern const char kChromeChannelSwitch[];
 // The path to Chrome's executable.
 extern const char kChromeExePathSwitch[];
 
-// The Mojo pipe token for IPC communication between the Software Reporter and
-// Chrome.
-extern const char kChromeMojoPipeTokenSwitch[];
-
 // Indicates that a cleaner run was started by Chrome.
 extern const char kChromePromptSwitch[];
 

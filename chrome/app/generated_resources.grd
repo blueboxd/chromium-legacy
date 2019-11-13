@@ -2561,7 +2561,7 @@ are declared in tools/grit/grit_rule.gni.
         Some sites use third-party cookies to load their pages. If a site isn't working, you can try turning off cookie blocking.
       </message>
       <message name="IDS_COOKIE_CONTROLS_BLOCKED_MESSAGE" desc="Text shown in the dialog that allows users to control cookie blocking.">
-        Chrome is blocking cookies that can be used to track you across the web
+        Sites can’t use your browsing activity across different sites to personalize ads
       </message>
       <message name="IDS_COOKIE_CONTROLS_TOOLTIP" desc="Tooltip shown on a page action icon that is shown when cookie blocking is enabled.">
         Third-party cookie blocking
@@ -3446,6 +3446,9 @@ are declared in tools/grit/grit_rule.gni.
         </message>
         <message name="IDS_TASK_MANAGER_LINUX_VM_PREFIX" desc="The prefix for a Linux virtual machine row">
           Linux Virtual Machine: <ph name="LINUX_VM_NAME">$1<ex>termina</ex></ph>
+        </message>
+        <message name="IDS_TASK_MANAGER_PLUGIN_VM_PREFIX" desc="The prefix for a Linux virtual machine row">
+          Plugin Virtual Machine: <ph name="PLUGIN_VM_NAME">$1<ex>PvmDefault</ex></ph>
         </message>
       </if>
 
@@ -10254,6 +10257,32 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_SMS_INFOBAR_BUTTON_OK" desc="Text for the button shown when Chrome has received an SMS on the user's behalf">
       Verify
     </message>
+
+    <!-- App pause prompt -->
+    <message name="IDS_APP_PAUSE_PROMPT_TITLE" desc="Titlebar of the app pause prompt window">
+      App paused
+    </message>
+
+    <message name="IDS_APP_PAUSE_HEADING_HOURS_AND_MINUTES" desc="Tells the user the app will be paused.">
+      The limit on "<ph name="APP_NAME">$1<ex>Google Photos</ex></ph>" that your parent set ran out. You can use it for <ph name="HOURS">$2<ex>2 hours</ex></ph> <ph name="MINUTES">$3<ex>30 minutes</ex></ph> tomorrow.
+    </message>
+    <message name="IDS_APP_PAUSE_HEADING_HOURS_ONLY" desc="Tells the user the app will be paused.">
+      The limit on "<ph name="APP_NAME">$1<ex>Google Photos</ex></ph>" that your parent set ran out. You can use it for <ph name="HOURS">$2<ex>2 hours</ex></ph> tomorrow.
+    </message>
+    <message name="IDS_APP_PAUSE_HEADING_MINUTES_ONLY" desc="Tells the user the app will be paused.">
+      The limit on "<ph name="APP_NAME">$1<ex>Google Photos</ex></ph>" that your parent set ran out. You can use it for <ph name="MINUTES">$2<ex>30 minutes</ex></ph> tomorrow.
+    </message>
+    <message name="IDS_APP_PAUSE_HEADING_HOURS" desc="Tells the user the app can be run how many hours. [ICU Syntax]">
+       {HOURS, plural,
+        =1 {# hour}
+        other {# hours}}
+    </message>
+    <message name="IDS_APP_PAUSE_HEADING_MINUTES" desc="Tells the user the app can be run how many minutes. [ICU Syntax]">
+       {MINUTES, plural,
+        =1 {# minute}
+        other {# minutes}}
+    </message>
+
 
   </messages>
 </release>

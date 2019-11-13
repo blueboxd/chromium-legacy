@@ -524,6 +524,76 @@ TEST_F(AutocompleteResultTest, SortAndCullKeepMoreDefaultTailSuggestions) {
   }
 }
 
+TEST_F(AutocompleteResultTest, SortAndCullZeroRelevanceSuggestions) {
+  // clang-format off
+  TestData data[] = {
+      {1, 1, 1000, true},   // A default non-tail suggestion.
+      {2, 1, 0,    true},   // A no-relevance default non-tail suggestion.
+      {3, 1, 1100, true},   // Default tail
+      {4, 1, 1000, false},  // Tail
+      {5, 1, 1300, false},  // Tail
+      {6, 1, 0,    false},  // No-relevance tail suggestion.
+  };
+  // clang-format on
+
+  ACMatches matches;
+  PopulateAutocompleteMatches(data, base::size(data), &matches);
+  for (size_t i = 2; i < base::size(data); ++i)
+    matches[i].type = AutocompleteMatchType::SEARCH_SUGGEST_TAIL;
+
+  AutocompleteInput input(base::ASCIIToUTF16("a"),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  AutocompleteResult result;
+  result.AppendMatches(input, matches);
+  result.SortAndCull(input, template_url_service_.get());
+
+  EXPECT_EQ(4UL, result.size());
+  EXPECT_NE(AutocompleteMatchType::SEARCH_SUGGEST_TAIL,
+            result.match_at(0)->type);
+  EXPECT_TRUE(result.match_at(0)->allowed_to_be_default_match);
+  for (size_t i = 1; i < 4; ++i) {
+    EXPECT_EQ(AutocompleteMatchType::SEARCH_SUGGEST_TAIL,
+              result.match_at(i)->type);
+    EXPECT_FALSE(result.match_at(i)->allowed_to_be_default_match);
+  }
+}
+
+TEST_F(AutocompleteResultTest, SortAndCullZeroRelevanceDefaultMatches) {
+  // clang-format off
+  TestData data[] = {
+      {1, 1, 0,    true},   // A zero-relevance default non-tail suggestion.
+      {2, 1, 1100, true},   // Default tail
+      {3, 1, 1000, false},  // Tail
+      {4, 1, 1300, false},  // Tail
+      {5, 1, 0,    false},  // No-relevance tail suggestion.
+  };
+  // clang-format on
+
+  ACMatches matches;
+  PopulateAutocompleteMatches(data, base::size(data), &matches);
+  for (size_t i = 1; i < base::size(data); ++i)
+    matches[i].type = AutocompleteMatchType::SEARCH_SUGGEST_TAIL;
+
+  AutocompleteInput input(base::ASCIIToUTF16("a"),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  AutocompleteResult result;
+  result.AppendMatches(input, matches);
+  result.SortAndCull(input, template_url_service_.get());
+
+  // It should ignore the first suggestion, despite it being marked as
+  // allowed to be default.
+  EXPECT_EQ(3UL, result.size());
+  EXPECT_TRUE(result.match_at(0)->allowed_to_be_default_match);
+  for (size_t i = 0; i < 3; ++i) {
+    EXPECT_EQ(AutocompleteMatchType::SEARCH_SUGGEST_TAIL,
+              result.match_at(i)->type);
+    if (i > 0)
+      EXPECT_FALSE(result.match_at(i)->allowed_to_be_default_match);
+  }
+}
+
 #endif
 
 TEST_F(AutocompleteResultTest, SortAndCullOnlyTailSuggestions) {

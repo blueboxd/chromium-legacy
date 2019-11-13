@@ -415,12 +415,9 @@ if (is_chromeos) {
       # Surprisingly, the test uses data from the original location, not the
       # copied one.
       "//chrome/browser/resources/chromeos/chromevox/",
-      "//chrome/test/data/webui/test_api.js",
       "//third_party/chromevox/",
-      "//chrome/third_party/mock4js/",
-      "//third_party/accessibility-audit/axs_testing.js",
-      "//third_party/chaijs/chai.js",
     ]
+    data += js2gtest_js_libraries
   }
 }
 

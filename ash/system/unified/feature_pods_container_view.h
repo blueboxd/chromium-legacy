@@ -51,7 +51,7 @@ class ASH_EXPORT FeaturePodsContainerView : public views::View,
   int GetVisibleCount() const;
 
   // Make sure button is visible by switching page if needed.
-  void EnsurePageWithButton(FeaturePodButton* button);
+  void EnsurePageWithButton(views::View* button);
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;

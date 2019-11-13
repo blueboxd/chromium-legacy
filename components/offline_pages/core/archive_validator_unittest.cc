@@ -168,7 +168,8 @@ TEST_F(ArchiveValidatorTest, ValidateBigFile) {
 }
 
 #if defined(OS_ANDROID)
-TEST_F(ArchiveValidatorTest, ValidateContentUri) {
+// Flaky. https://crbug.com/1022322
+TEST_F(ArchiveValidatorTest, DISABLED_ValidateContentUri) {
   base::FilePath content_uri_path = GetContentUriPathForTest();
   EXPECT_TRUE(ArchiveValidator::ValidateFile(
       content_uri_path, kSizeForTestContentUri, kExpectedDigestForContentUri));

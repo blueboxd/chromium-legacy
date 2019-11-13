@@ -327,6 +327,49 @@ TEST_F(CleanerSandboxInterfaceDeleteFileTest, AllowTrailingWhitespace) {
   EXPECT_FALSE(base::PathExists(file_path));
 }
 
+TEST_F(CleanerSandboxInterfaceDeleteFileTest, QuotedPath) {
+  base::ScopedTempDir temp;
+  ASSERT_TRUE(temp.CreateUniqueTempDir());
+  base::FilePath file_path = temp.GetPath().Append(L"temp_file.exe");
+
+  ASSERT_TRUE(chrome_cleaner::CreateFileInFolder(
+      file_path.DirName(), file_path.BaseName().value().c_str()));
+
+  const base::FilePath quoted_path(L"\"" + file_path.value() + L"\"");
+
+  // RemoveNow should reject the file name because it starts with an invalid
+  // character. This needs to match the behaviour of SandboxOpenFileReadOnly,
+  // which is tested in ScannerSandboxInterface_OpenReadOnlyFile.BasicFile,
+  // since the same path could be passed to both.
+  chrome_cleaner::VerifyRemoveNowFailure(quoted_path, file_remover_.get());
+  EXPECT_TRUE(base::PathExists(file_path));
+}
+
+TEST_F(CleanerSandboxInterfaceDeleteFileTest, QuotedFilename) {
+  base::ScopedTempDir temp;
+  ASSERT_TRUE(temp.CreateUniqueTempDir());
+  base::FilePath file_path = temp.GetPath().Append(L"temp_file.exe");
+
+  ASSERT_TRUE(chrome_cleaner::CreateFileInFolder(
+      file_path.DirName(), file_path.BaseName().value().c_str()));
+
+  const base::FilePath quoted_path =
+      temp.GetPath().Append(L"\"temp_file.exe\"");
+
+  // RemoveNow should return true because the file name is valid, but refers to
+  // a file that already doesn't exist. The important thing is that the quotes
+  // aren't interpreted, which would cause '"temp_file.exe"' and
+  // 'temp_file.exe' to refer to the same thing.
+  //
+  // This needs to match the behaviour of SandboxOpenFileReadOnly, which is
+  // tested in ScannerSandboxInterface_OpenReadOnlyFile.BasicFile, since the
+  // same path could be passed to both. It would also be ok if both RemoveNow
+  // and OpenFileReadOnly interpreted the quotes, as long as their behaviour
+  // matches.
+  chrome_cleaner::VerifyRemoveNowSuccess(quoted_path, file_remover_.get());
+  EXPECT_TRUE(base::PathExists(file_path));
+}
+
 TEST_F(CleanerSandboxInterfaceDeleteFileTest, DeleteAlternativeStream) {
   base::ScopedTempDir temp;
   ASSERT_TRUE(temp.CreateUniqueTempDir());

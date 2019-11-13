@@ -460,7 +460,8 @@ gfx::Size Label::GetMinimumSize() const {
   if (!GetVisible() && collapse_when_hidden_)
     return gfx::Size();
 
-  gfx::Size size(0, font_list().GetHeight());
+  // Always reserve vertical space for at least one line.
+  gfx::Size size(0, std::max(font_list().GetHeight(), GetLineHeight()));
   if (elide_behavior_ == gfx::ELIDE_HEAD ||
       elide_behavior_ == gfx::ELIDE_MIDDLE ||
       elide_behavior_ == gfx::ELIDE_TAIL ||
@@ -479,6 +480,7 @@ gfx::Size Label::GetMinimumSize() const {
       size.SetToMin(GetTextSize());
     }
   }
+
   size.Enlarge(GetInsets().width(), GetInsets().height());
   return size;
 }

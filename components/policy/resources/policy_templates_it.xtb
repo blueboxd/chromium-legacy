@@ -718,9 +718,9 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2149330464730004005">Attiva la stampa a colori</translation>
 <translation id="2156132677421487971">Consente di configurare le norme per <ph name="PRODUCT_NAME" />, una funzione che permette agli utenti di inviare i contenuti di schede, siti o del desktop dal browser a schermi remoti e sistemi audio.</translation>
 <translation id="2156755242840687300">Server di stampa esterni attivi</translation>
-<translation id="2160336427036785721">Consente di configurare la quantità di memoria che una singola istanza di <ph name="PRODUCT_NAME" /> può utilizzare prima che le schede vengano ignorate (ossia la memoria utilizzata dalla scheda verrà liberata e la scheda dovrà essere ricaricata quando l'utente la seleziona) per risparmiare memoria.
+<translation id="2160336427036785721">Consente di configurare la quantità di memoria che una singola istanza di <ph name="PRODUCT_NAME" /> può utilizzare prima che le schede vengano eliminate (ossia la memoria utilizzata dalla scheda verrà liberata e la scheda dovrà essere ricaricata quando l'utente la seleziona) per risparmiare memoria.
 
-      Se il criterio viene impostato, una volta superato il limite il browser inizierà a ignorare le schede per risparmiare memoria. Non vi è, tuttavia, alcuna garanzia che il browser venga sempre eseguito al di sotto di tale limite. Qualsiasi valore inferiore a 1024 verrà arrotondato per eccesso a 1024.
+      Se il criterio viene impostato, una volta superato il limite il browser inizierà a eliminare le schede per risparmiare memoria. Non vi è, tuttavia, alcuna garanzia che il browser venga sempre eseguito al di sotto di tale limite. Qualsiasi valore inferiore a 1024 verrà arrotondato per eccesso a 1024.
 
       Se questo criterio non viene impostato, il browser farà dei tentativi per risparmiare memoria solo una volta rilevato che la memoria fisica del computer è in esaurimento.</translation>
 <translation id="2166472654199325139">Non filtrare i siti di contenuti per adulti</translation>
@@ -841,9 +841,9 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2386362615870139244">Consenti Wakelock dello schermo</translation>
 <translation id="2398554235599593694"> Questo criterio consente di stabilire se mostrare o meno la casella di controllo "Apri sempre" nei messaggi di conferma di avvio di protocolli esterni.
 
-      Se questo criterio viene impostato su True, quando viene mostrato un messaggio di conferma di un protocollo esterno, l'utente può scegliere di "aprire sempre" il protocollo senza ricevere ulteriori messaggi di conferma.
+      Se questo criterio viene impostato su true, quando viene mostrato un messaggio di conferma di un protocollo esterno, l'utente può scegliere di "aprire sempre" il protocollo senza ricevere ulteriori messaggi di conferma.
 
-      Se questo criterio viene impostato su False o non viene impostato, la casella di controllo "Apri sempre" non viene visualizzata e l'utente riceverà un messaggio ogni volta che viene richiamato un protocollo esterno.</translation>
+      Se questo criterio viene impostato su false o non viene impostato, la casella di controllo "Apri sempre" non viene visualizzata e l'utente riceverà un messaggio ogni volta che viene richiamato un protocollo esterno.</translation>
 <translation id="2411817661175306360">L'avviso di protezione tramite password non è attivo</translation>
 <translation id="2411919772666155530">Blocca le notifiche su questi siti</translation>
 <translation id="2418507228189425036">Consente di disattivare il salvataggio della cronologia del browser in <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificare questa impostazione.
@@ -1251,7 +1251,7 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 <translation id="2872961005593481000">Spegni</translation>
 <translation id="2873651257716068683">Consente di eseguire l'override delle dimensioni predefinite delle pagine di stampa. Se le dimensioni della pagina non sono disponibili, questa norma viene ignorata.</translation>
 <translation id="2874209944580848064">Nota per i dispositivi <ph name="PRODUCT_OS_NAME" /> che supportano le app Android:</translation>
-<translation id="2875192972412983412">Consente di specificare il sottoinsieme di server di stampa a cui verranno richieste stampanti.
+<translation id="2875192972412983412">Consente di specificare il sottoinsieme di server di stampa a cui verranno inviate query sulle stampanti.
 
       Se viene usato questo criterio, gli utenti avranno a disposizione soltanto le stampanti con ID corrispondenti ai valori specificati in questo criterio.
 
@@ -2350,11 +2350,6 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
           Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
 
           Se questo criterio non viene impostato, inizialmente l'audio in formato mono è disattivato, ma l'utente può attivarlo in qualsiasi momento.</translation>
-<translation id="4759650396863318477">Consente di stabilire per quanto tempo, in millisecondi, gli utenti riceveranno notifiche relative alla necessità di riavviare <ph name="PRODUCT_NAME" /> o un dispositivo <ph name="PRODUCT_OS_NAME" /> per applicare un aggiornamento in sospeso.
-
-      Durante questo periodo di tempo l'utente verrà informato più volte della necessità di un aggiornamento. Per quanto riguarda i dispositivi <ph name="PRODUCT_OS_NAME" />, nella barra delle applicazioni viene mostrata una notifica relativa al riavvio in base al criterio <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Per quanto riguarda i browser <ph name="PRODUCT_NAME" />, il menu delle app cambia per indicare che è necessario il riavvio una volta trascorso un terzo del periodo di notifica. Questa notifica cambia colore una volta trascorsi due terzi del periodo di notifica e lo cambia di nuovo al termine dell'intero periodo di notifica. Le notifiche aggiuntive attivate in base al criterio <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> seguono questa stessa pianificazione.
-
-      Se il criterio non viene impostato, viene usato il periodo predefinito di 345600000 millisecondi (quattro giorni) per <ph name="PRODUCT_OS_NAME" /> e di 604800000 millisecondi (una settimana) per <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4771144269610910963">Questo criterio consente di controllare l'analisi approfondita dei download degli utenti tramite Navigazione sicura. Se non viene impostato o viene impostata l'opzione predefinita "Non analizzare i file", i download degli utenti non verranno analizzati dalla funzionalità Navigazione sicura.
 
       Se viene impostata l'opzione "Invia download degli utenti da analizzare", i download degli utenti verranno inviati tramite la rete alla funzionalità Navigazione sicura per verificare l'eventuale presenza di malware.
@@ -4281,9 +4276,6 @@ Se attivi questa impostazione o non imposti un valore, la funzione Compilazione 
       Se la norma viene impostata su true, sul dispositivo viene utilizzato il formato di 24 ore, se viene impostata su false viene utilizzato il formato di 12 ore.
 
       Se questa norma non viene impostata, sul dispositivo viene utilizzato il formato predefinito di 24 ore.</translation>
-<translation id="8113421140338762630">Ti consente di impostare il periodo di tempo, in millisecondi, tra la prima notifica che informa che un dispositivo <ph name="PRODUCT_OS_NAME" /> deve essere riavviato per applicare un aggiornamento in sospeso e la fine del periodo di tempo specificato dal criterio <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
-
-      Se non impostato, il periodo predefinito di 86.400.000 millisecondi (un giorno) viene utilizzato per i dispositivi <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="8114382167597081590">Non imporre la Modalità con restrizioni su YouTube</translation>
 <translation id="8118665053362250806">Imposta le dimensioni della cache su disco di supporto</translation>
 <translation id="8124468781472887384">Norma di accesso alla configurazione delle stampanti per i dispositivi.</translation>
@@ -4953,5 +4945,5 @@ https://www.w3.org/TR/secure-contexts/
 
       Se questo criterio viene attivato, i siti sono esposti ad alcuni tipi di attacchi cross-site e gli utenti possono essere monitorati tra i siti anche senza i cookie tramite l'aggiunta di voci alla cache di autenticazione HTTP usando credenziali incorporate negli URL.
 
-      Questo criterio è stato ideato per dare la possibilità alle aziende che dipendono dal comportamento precedente di aggiornare le loro procedure di accesso e verrà rimosso in futuro.</translation>
+      Questo criterio è stato ideato per dare la possibilità alle aziende che dipendono dal comportamento precedente di aggiornare le proprie procedure di accesso e verrà rimosso in futuro.</translation>
 </translationbundle>

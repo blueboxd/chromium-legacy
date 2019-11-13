@@ -19,6 +19,7 @@
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/lib/message_quota_checker.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
@@ -42,7 +43,8 @@ class COMPONENT_EXPORT(IPC) MojoBootstrap {
       mojo::ScopedMessagePipeHandle handle,
       Channel::Mode mode,
       const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
-      const scoped_refptr<base::SingleThreadTaskRunner>& proxy_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& proxy_task_runner,
+      const scoped_refptr<mojo::internal::MessageQuotaChecker>& quota_checker);
 
   // Start the handshake over the underlying message pipe.
   virtual void Connect(

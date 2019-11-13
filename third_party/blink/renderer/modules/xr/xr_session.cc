@@ -31,7 +31,7 @@
 #include "third_party/blink/renderer/modules/xr/xr_frame.h"
 #include "third_party/blink/renderer/modules/xr/xr_frame_provider.h"
 #include "third_party/blink/renderer/modules/xr/xr_hit_result.h"
-#include "third_party/blink/renderer/modules/xr/xr_hit_test_options.h"
+#include "third_party/blink/renderer/modules/xr/xr_hit_test_options_init.h"
 #include "third_party/blink/renderer/modules/xr/xr_hit_test_source.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_source_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_sources_change_event.h"
@@ -631,12 +631,11 @@ ScriptPromise XRSession::requestHitTestSource(
 
   DCHECK(options_init);  // is this enforced by generated bindings?
 
-  XRHitTestOptions* options =
-      MakeGarbageCollected<XRHitTestOptions>(options_init);
-
   // 1. Grab the native origin from the passed in XRSpace.
   base::Optional<XRNativeOriginInformation> maybe_native_origin =
-      options->space()->NativeOrigin();
+      options_init && options_init->hasSpace()
+          ? options_init->space()->NativeOrigin()
+          : base::nullopt;
 
   if (!maybe_native_origin) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
@@ -648,13 +647,20 @@ ScriptPromise XRSession::requestHitTestSource(
   // should only matter for spaces whose transforms are not fully known on the
   // device (for example any space containing origin-offset).
   TransformationMatrix origin_from_space =
-      options->space()->OriginOffsetMatrix();
+      options_init->space()
+          ->OriginOffsetMatrix();  // Null checks not needed since native origin
+                                   // wouldn't be set if options_init or space()
+                                   // were null.
 
   DVLOG(3) << __func__
            << ": origin_from_space = " << origin_from_space.ToString(true);
 
   // Transformation from passed in pose to |space|.
-  auto space_from_ray = options->offsetRay()->RawMatrix();
+
+  XRRay* offsetRay = options_init && options_init->hasOffsetRay()
+                         ? options_init->offsetRay()
+                         : MakeGarbageCollected<XRRay>();
+  auto space_from_ray = offsetRay->RawMatrix();
   auto origin_from_ray = origin_from_space * space_from_ray;
 
   DVLOG(3) << __func__
@@ -681,7 +687,7 @@ ScriptPromise XRSession::requestHitTestSource(
   xr_->xrEnvironmentProviderRemote()->SubscribeToHitTest(
       maybe_native_origin->ToMojo(), std::move(ray_mojo),
       WTF::Bind(&XRSession::OnSubscribeToHitTestResult, WrapPersistent(this),
-                WrapPersistent(resolver), WrapPersistent(options)));
+                WrapPersistent(resolver)));
   request_hit_test_source_promises_.insert(resolver);
 
   return promise;
@@ -709,7 +715,6 @@ void XRSession::OnHitTestResults(
 
 void XRSession::OnSubscribeToHitTestResult(
     ScriptPromiseResolver* resolver,
-    XRHitTestOptions* options,
     device::mojom::SubscribeToHitTestResult result,
     uint64_t subscription_id) {
   DVLOG(2) << __func__ << ": result=" << result
@@ -725,7 +730,7 @@ void XRSession::OnSubscribeToHitTestResult(
   }
 
   XRHitTestSource* hit_test_source =
-      MakeGarbageCollected<XRHitTestSource>(subscription_id, options);
+      MakeGarbageCollected<XRHitTestSource>(subscription_id);
 
   hit_test_source_ids_to_hit_test_sources_.insert(subscription_id,
                                                   hit_test_source);

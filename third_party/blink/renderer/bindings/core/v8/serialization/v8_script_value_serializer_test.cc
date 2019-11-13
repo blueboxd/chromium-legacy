@@ -794,8 +794,8 @@ TEST(V8ScriptValueSerializerTest, RoundTripImageDataWithColorSpaceInfo) {
       new_image_data->getColorSettings();
   EXPECT_EQ("p3", new_color_settings->colorSpace());
   EXPECT_EQ("float32", new_color_settings->storageFormat());
-  EXPECT_EQ(image_data->BufferBase()->ByteLength(),
-            new_image_data->BufferBase()->ByteLength());
+  EXPECT_EQ(image_data->BufferBase()->ByteLengthAsSizeT(),
+            new_image_data->BufferBase()->ByteLengthAsSizeT());
   EXPECT_EQ(200, static_cast<unsigned char*>(
                      new_image_data->BufferBase()->Data())[0]);
 }
@@ -850,7 +850,7 @@ TEST(V8ScriptValueSerializerTest, DecodeImageDataV18) {
       new_image_data->getColorSettings();
   EXPECT_EQ("p3", new_color_settings->colorSpace());
   EXPECT_EQ("float32", new_color_settings->storageFormat());
-  EXPECT_EQ(32u, new_image_data->BufferBase()->ByteLength());
+  EXPECT_EQ(32u, new_image_data->BufferBase()->ByteLengthAsSizeT());
   EXPECT_EQ(200, static_cast<unsigned char*>(
                      new_image_data->BufferBase()->Data())[0]);
 }

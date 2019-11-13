@@ -545,6 +545,9 @@ void TestingProfile::FinishInit() {
     // must be initialized when the testing profile finishes its initialization.
     signin_util::EnsureUserSignoutAllowedIsInitializedForProfile(this);
   }
+
+  if (original_profile_)
+    original_profile_->NotifyOffTheRecordProfileCreated(this);
 }
 
 TestingProfile::~TestingProfile() {

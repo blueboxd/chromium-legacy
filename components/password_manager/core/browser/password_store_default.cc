@@ -222,34 +222,34 @@ std::vector<InteractionsStats> PasswordStoreDefault::GetSiteStatsImpl(
                    : std::vector<InteractionsStats>();
 }
 
-void PasswordStoreDefault::AddLeakedCredentialsImpl(
-    const LeakedCredentials& leaked_credentials) {
+void PasswordStoreDefault::AddCompromisedCredentialsImpl(
+    const CompromisedCredentials& compromised_credentials) {
   DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
   if (login_db_)
-    login_db_->leaked_credentials_table().AddRow(leaked_credentials);
+    login_db_->compromised_credentials_table().AddRow(compromised_credentials);
 }
 
-void PasswordStoreDefault::RemoveLeakedCredentialsImpl(
+void PasswordStoreDefault::RemoveCompromisedCredentialsImpl(
     const GURL& url,
     const base::string16& username) {
   DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
   if (login_db_)
-    login_db_->leaked_credentials_table().RemoveRow(url, username);
+    login_db_->compromised_credentials_table().RemoveRow(url, username);
 }
 
-std::vector<LeakedCredentials>
-PasswordStoreDefault::GetAllLeakedCredentialsImpl() {
+std::vector<CompromisedCredentials>
+PasswordStoreDefault::GetAllCompromisedCredentialsImpl() {
   DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
-  return login_db_ ? login_db_->leaked_credentials_table().GetAllRows()
-                   : std::vector<LeakedCredentials>();
+  return login_db_ ? login_db_->compromised_credentials_table().GetAllRows()
+                   : std::vector<CompromisedCredentials>();
 }
 
-void PasswordStoreDefault::RemoveLeakedCredentialsByUrlAndTimeImpl(
+void PasswordStoreDefault::RemoveCompromisedCredentialsByUrlAndTimeImpl(
     const base::RepeatingCallback<bool(const GURL&)>& url_filter,
     base::Time remove_begin,
     base::Time remove_end) {
   if (login_db_) {
-    login_db_->leaked_credentials_table().RemoveRowsByUrlAndTime(
+    login_db_->compromised_credentials_table().RemoveRowsByUrlAndTime(
         url_filter, remove_begin, remove_end);
   }
 }

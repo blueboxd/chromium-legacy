@@ -53,6 +53,7 @@ import {MeasurementSystemUnitType} from './data/measurement_system.js';
    *   isHeaderFooterManaged: boolean,
    *   serializedAppStateStr: ?string,
    *   serializedDefaultDestinationSelectionRulesStr: ?string,
+   *   pdfPrinterDisabled: boolean,
    *   cloudPrintURL: (string | undefined),
    *   userAccounts: (Array<string> | undefined),
    *   syncAvailable: boolean

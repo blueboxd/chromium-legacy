@@ -30,7 +30,7 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -81,7 +81,7 @@ public class TabSwitcherMultiWindowTest {
     @Test
     @MediumTest
     @TargetApi(Build.VERSION_CODES.N)
-    @DisabledTest(message = "crbug.com/1017141 This test fails deterministically on Nexus 5X")
+    @DisableIf.Build(message = "crbug.com/1017141", sdk_is_less_than = Build.VERSION_CODES.P)
     public void testMoveTabsAcrossWindow_GTS_WithoutGroup() throws InterruptedException {
         final ChromeTabbedActivity cta1 = mActivityTestRule.getActivity();
         // Initially, we have 4 normal tabs and 3 incognito tabs in cta1.

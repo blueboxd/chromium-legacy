@@ -65,12 +65,12 @@ void LeakDetectionDelegate::OnLeakDetectionDone(bool is_leaked,
       client_->GetProfilePasswordStore();
   if (base::FeatureList::IsEnabled(password_manager::features::kLeakHistory)) {
     if (is_leaked) {
-      password_store->AddLeakedCredentials(
-          LeakedCredentials(url, username, base::Time::Now()));
+      password_store->AddCompromisedCredentials(CompromisedCredentials(
+          url, username, base::Time::Now(), CompromiseType::kLeaked));
     } else {
       // If the credentials are not saved as leaked in the database, this call
       // will just get ignored.
-      password_store->RemoveLeakedCredentials(url, username);
+      password_store->RemoveCompromisedCredentials(url, username);
     }
   }
 

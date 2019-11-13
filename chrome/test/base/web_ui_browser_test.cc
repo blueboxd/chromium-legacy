@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/webui/web_ui_test_handler.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/test/base/js_test_api.h"
 #include "chrome/test/base/test_chrome_web_ui_controller_factory.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/url_data_source.h"
@@ -442,8 +443,6 @@ void BaseWebUIBrowserTest::SetUpOnMainThread() {
 
   logging::SetLogMessageHandler(&LogHandler);
 
-  AddLibrary(base::FilePath(kA11yAuditLibraryJSPath));
-
   content::WebUIControllerFactory::UnregisterFactoryForTesting(
       ChromeWebUIControllerFactory::GetInstance());
 
@@ -545,9 +544,7 @@ bool BaseWebUIBrowserTest::RunJavascriptUsingHandler(
 GURL BaseWebUIBrowserTest::WebUITestDataPathToURL(
     const base::FilePath::StringType& path) {
   base::ScopedAllowBlockingForTesting allow_blocking;
-  base::FilePath dir_test_data;
-  EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &dir_test_data));
-  base::FilePath test_path(dir_test_data.Append(kWebUITestFolder).Append(path));
+  base::FilePath test_path(JsTestApiConfig().search_path);
   EXPECT_TRUE(base::PathExists(test_path));
   return net::FilePathToFileURL(test_path);
 }

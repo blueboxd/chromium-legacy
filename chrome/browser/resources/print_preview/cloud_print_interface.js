@@ -71,6 +71,9 @@ import {Invitation} from './data/invitation.js';
 
   /** @interface */
   export class CloudPrintInterface {
+    /** @return {boolean} Whether cookie destinations are disabled. */
+    areCookieDestinationsDisabled() {}
+
     /**
      * @return {boolean} Whether a search for cloud destinations is in progress.
      */

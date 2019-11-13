@@ -91,7 +91,7 @@ String TextDecoder::decode(const BufferSource& input,
   DCHECK(input.IsArrayBuffer());
   const char* start =
       static_cast<const char*>(input.GetAsArrayBuffer()->Data());
-  uint32_t length = input.GetAsArrayBuffer()->ByteLength();
+  uint32_t length = input.GetAsArrayBuffer()->DeprecatedByteLengthAsUnsigned();
   return decode(start, length, options, exception_state);
 }
 

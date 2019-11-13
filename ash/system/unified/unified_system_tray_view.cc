@@ -569,8 +569,7 @@ void UnifiedSystemTrayView::OnDidChangeFocus(views::View* before,
     return;
 
   if (feature_pods_container_->Contains(now)) {
-    feature_pods_container_->EnsurePageWithButton(
-        static_cast<FeaturePodButton*>(now));
+    feature_pods_container_->EnsurePageWithButton(now);
   }
 
   views::View* first_view = GetFirstFocusableChild();

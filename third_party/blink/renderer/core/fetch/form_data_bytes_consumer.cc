@@ -497,7 +497,8 @@ FormDataBytesConsumer::FormDataBytesConsumer(const String& string)
               UTF8Encoding().Encode(string, WTF::kNoUnencodables)))) {}
 
 FormDataBytesConsumer::FormDataBytesConsumer(DOMArrayBuffer* buffer)
-    : FormDataBytesConsumer(buffer->Data(), buffer->ByteLength()) {}
+    : FormDataBytesConsumer(buffer->Data(),
+                            buffer->DeprecatedByteLengthAsUnsigned()) {}
 
 FormDataBytesConsumer::FormDataBytesConsumer(DOMArrayBufferView* view)
     : FormDataBytesConsumer(view->BaseAddress(), view->byteLength()) {}

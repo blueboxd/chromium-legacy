@@ -434,6 +434,87 @@ TEST(OptimizationGuideNavigationDataTest,
 }
 
 TEST(OptimizationGuideNavigationDataTest,
+     RecordMetricsOptimizationTargetModelVersion) {
+  base::test::TaskEnvironment env;
+
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+
+  OptimizationGuideNavigationData data(/*navigation_id=*/3);
+  data.SetModelVersionForOptimizationTarget(
+      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, 2);
+  data.RecordMetrics(/*has_committed=*/false);
+
+  auto entries = ukm_recorder.GetEntriesByName(
+      ukm::builders::OptimizationGuide::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  auto* entry = entries[0];
+  EXPECT_TRUE(ukm_recorder.EntryHasMetric(
+      entry,
+      ukm::builders::OptimizationGuide::kPainfulPageLoadModelVersionName));
+  ukm_recorder.ExpectEntryMetric(
+      entry, ukm::builders::OptimizationGuide::kPainfulPageLoadModelVersionName,
+      2);
+}
+
+TEST(OptimizationGuideNavigationDataTest,
+     RecordMetricsModelVersionForOptimizationTargetHasNoCorrespondingUkm) {
+  base::test::TaskEnvironment env;
+
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+
+  OptimizationGuideNavigationData data(/*navigation_id=*/3);
+  data.SetModelVersionForOptimizationTarget(
+      optimization_guide::proto::OPTIMIZATION_TARGET_UNKNOWN, 2);
+  data.RecordMetrics(/*has_committed=*/false);
+
+  // Make sure UKM not recorded for all empty values.
+  auto entries = ukm_recorder.GetEntriesByName(
+      ukm::builders::OptimizationGuide::kEntryName);
+  EXPECT_TRUE(entries.empty());
+}
+
+TEST(OptimizationGuideNavigationDataTest,
+     RecordMetricsOptimizationTargetModelPredictionScore) {
+  base::test::TaskEnvironment env;
+
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+
+  OptimizationGuideNavigationData data(/*navigation_id=*/3);
+  data.SetModelPredictionScoreForOptimizationTarget(
+      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, 0.123);
+  data.RecordMetrics(/*has_committed=*/false);
+
+  auto entries = ukm_recorder.GetEntriesByName(
+      ukm::builders::OptimizationGuide::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  auto* entry = entries[0];
+  EXPECT_TRUE(ukm_recorder.EntryHasMetric(
+      entry, ukm::builders::OptimizationGuide::
+                 kPainfulPageLoadModelPredictionScoreName));
+  ukm_recorder.ExpectEntryMetric(entry,
+                                 ukm::builders::OptimizationGuide::
+                                     kPainfulPageLoadModelPredictionScoreName,
+                                 12);
+}
+
+TEST(OptimizationGuideNavigationDataTest,
+     RecordMetricsModelPredicitonScoreOptimizationTargetHasNoCorrespondingUkm) {
+  base::test::TaskEnvironment env;
+
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+
+  OptimizationGuideNavigationData data(/*navigation_id=*/3);
+  data.SetModelPredictionScoreForOptimizationTarget(
+      optimization_guide::proto::OPTIMIZATION_TARGET_UNKNOWN, 0.123);
+  data.RecordMetrics(/*has_committed=*/false);
+
+  // Make sure UKM not recorded for all empty values.
+  auto entries = ukm_recorder.GetEntriesByName(
+      ukm::builders::OptimizationGuide::kEntryName);
+  EXPECT_TRUE(entries.empty());
+}
+
+TEST(OptimizationGuideNavigationDataTest,
      RecordMetricsMultipleOptimizationTypes) {
   base::HistogramTester histogram_tester;
 
@@ -537,6 +618,14 @@ TEST(OptimizationGuideNavigationDataTest, DeepCopy) {
   EXPECT_EQ(base::nullopt, data->has_hint_before_commit());
   EXPECT_EQ(base::nullopt, data->has_hint_after_commit());
   EXPECT_FALSE(data->has_page_hint_value());
+  EXPECT_EQ(
+      base::nullopt,
+      data->GetModelVersionForOptimizationTarget(
+          optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+  EXPECT_EQ(
+      base::nullopt,
+      data->GetModelPredictionScoreForOptimizationTarget(
+          optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
 
   data->set_serialized_hint_version_string("123abc");
   data->SetDecisionForOptimizationType(
@@ -552,6 +641,10 @@ TEST(OptimizationGuideNavigationDataTest, DeepCopy) {
   page_hint.set_page_pattern("pagepattern");
   data->set_page_hint(
       std::make_unique<optimization_guide::proto::PageHint>(page_hint));
+  data->SetModelVersionForOptimizationTarget(
+      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, 123);
+  data->SetModelPredictionScoreForOptimizationTarget(
+      optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD, 0.12);
 
   OptimizationGuideNavigationData data_copy(*data);
   EXPECT_EQ(3, data_copy.navigation_id());
@@ -567,4 +660,12 @@ TEST(OptimizationGuideNavigationDataTest, DeepCopy) {
   EXPECT_EQ("123abc", *(data_copy.serialized_hint_version_string()));
   EXPECT_TRUE(data_copy.has_page_hint_value());
   EXPECT_EQ("pagepattern", data_copy.page_hint()->page_pattern());
+  EXPECT_EQ(
+      123,
+      *data_copy.GetModelVersionForOptimizationTarget(
+          optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+  EXPECT_EQ(
+      0.12,
+      *data_copy.GetModelPredictionScoreForOptimizationTarget(
+          optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
 }

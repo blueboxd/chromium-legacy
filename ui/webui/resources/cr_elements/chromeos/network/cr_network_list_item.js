@@ -60,6 +60,17 @@ Polymer({
     },
 
     /**
+     * Expose the aria role attribute based on the showButtons properties/
+     * attribute. When showButtons is true, the role is "button" otherwise it is
+     * left blank.
+     */
+    role: {
+      type: String,
+      reflectToAttribute: true,
+      computed: 'getAriaRole_(showButtons)',
+    },
+
+    /**
      * The cached ConnectionState for the network.
      * @type {!chromeos.networkConfig.mojom.ConnectionStateType|undefined}
      */
@@ -143,6 +154,16 @@ Polymer({
     }
     return this.getItemName_();
   },
+
+  /**
+   * Compute the aria role based on the showButtons property value
+   * @return {string} the aria role
+   * @private
+   */
+  getAriaRole_: function() {
+    return this.showButtons ? 'button' : '';
+  },
+
 
   /**
    * @return {boolean}

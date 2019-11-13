@@ -884,4 +884,41 @@ suite('SecurityKeysBioEnrollment', function() {
     await uiReady;
     assertShown(allDivs, dialog, 'enrollments');
   });
+
+  test('EnrollCancel', async function() {
+    // Simulate starting an enrollment and then cancelling it.
+    browserProxy.setResponseFor('enumerateEnrollments', Promise.resolve([]));
+    let enrollResolver = new PromiseResolver;
+    browserProxy.setResponseFor('startEnrolling', enrollResolver.promise);
+
+    document.body.appendChild(dialog);
+    await browserProxy.whenCalled('startBioEnroll');
+
+    dialog.dialogPage_ = 'enrollments';
+
+    // Forcibly disable the cancel button to ensure showing the dialog page
+    // re-enables it.
+    dialog.cancelButtonDisabled_ = true;
+    dialog.cancelButtonVisible_ = false;
+
+    let uiReady =
+        test_util.eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
+    dialog.$.addButton.click();
+    await browserProxy.whenCalled('startEnrolling');
+    await uiReady;
+
+    assertShown(allDivs, dialog, 'enroll');
+    assert(dialog.$.cancelButton.disabled == false);
+    assert(dialog.$.cancelButton.hidden == false);
+
+    uiReady =
+        test_util.eventToPromise('bio-enroll-dialog-ready-for-testing', dialog);
+    dialog.$.cancelButton.click();
+    await browserProxy.whenCalled('cancelEnrollment');
+    enrollResolver.resolve({code: Ctap2Status.ERR_KEEPALIVE_CANCEL});
+    await browserProxy.whenCalled('enumerateEnrollments');
+
+    await uiReady;
+    assertShown(allDivs, dialog, 'enrollments');
+  });
 });

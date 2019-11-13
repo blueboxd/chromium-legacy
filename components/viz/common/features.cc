@@ -49,6 +49,10 @@ const base::Feature kRecordSkPicture{"RecordSkPicture",
 const base::Feature kDisableDeJelly{"DisableDeJelly",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Viz for WebView architecture.
+const base::Feature kVizForWebView{"VizForWebView",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsVizDisplayCompositorEnabled() {
 #if defined(OS_MACOSX) || defined(OS_WIN)
   // We can't remove the feature switch yet because OOP-D isn't enabled on all
@@ -101,6 +105,15 @@ bool IsUsingSkiaRenderer() {
 bool IsRecordingSkPicture() {
   return IsUsingSkiaRenderer() &&
          base::FeatureList::IsEnabled(kRecordSkPicture);
+}
+
+bool IsUsingVizForWebView() {
+  if (base::FeatureList::IsEnabled(kVizForWebView)) {
+    DCHECK(IsVizDisplayCompositorEnabled())
+        << "Enabling VizForWebView requires VizDisplayCompositor";
+    return true;
+  }
+  return false;
 }
 
 }  // namespace features

@@ -228,13 +228,13 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   wallpaper_controller_client_.reset();
   vpn_list_forwarder_.reset();
 
-  // Initialized in PostProfileInit:
+  // Initialized in PostProfileInit (which may not get called in some tests).
   network_portal_notification_controller_.reset();
   display_settings_handler_.reset();
   media_client_.reset();
   login_screen_client_.reset();
 
-  // Initialized in PreProfileInit:
+  // Initialized in PreProfileInit (which may not get called in some tests).
   system_tray_client_.reset();
   session_controller_client_.reset();
   ime_controller_client_.reset();
@@ -245,8 +245,8 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   app_list_client_.reset();
   ash_shell_init_.reset();
   cast_config_controller_media_router_.reset();
-
-  chromeos::NetworkConnect::Shutdown();
+  if (chromeos::NetworkConnect::IsInitialized())
+    chromeos::NetworkConnect::Shutdown();
   network_connect_delegate_.reset();
 }
 

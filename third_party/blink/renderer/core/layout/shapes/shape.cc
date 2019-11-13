@@ -285,8 +285,8 @@ static std::unique_ptr<RasterShapeIntervals> ExtractIntervalsFromImageData(
     const IntRect& image_rect,
     const IntRect& margin_rect) {
   DOMArrayBuffer* array_buffer = DOMArrayBuffer::Create(contents);
-  DOMUint8ClampedArray* pixel_array =
-      DOMUint8ClampedArray::Create(array_buffer, 0, array_buffer->ByteLength());
+  DOMUint8ClampedArray* pixel_array = DOMUint8ClampedArray::Create(
+      array_buffer, 0, array_buffer->DeprecatedByteLengthAsUnsigned());
 
   unsigned pixel_array_offset = 3;  // Each pixel is four bytes: RGBA.
   uint8_t alpha_pixel_threshold = threshold * 255;

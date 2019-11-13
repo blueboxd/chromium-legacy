@@ -17,8 +17,6 @@ class SwitchAccess {
 
   /** @private */
   constructor() {
-    console.log('Switch access is enabled');
-
     /**
      * User commands.
      * @private {Commands}

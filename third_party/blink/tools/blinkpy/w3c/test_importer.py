@@ -19,7 +19,6 @@ import re
 
 from blinkpy.common.net.git_cl import GitCL
 from blinkpy.common.net.network_transaction import NetworkTimeout
-from blinkpy.common.net.results_fetcher import current_build_link
 from blinkpy.common.path_finder import PathFinder
 from blinkpy.common.system.executive import ScriptError
 from blinkpy.common.system.log_utils import configure_logging
@@ -502,10 +501,6 @@ class TestImporter(object):
         """
         # TODO(robertma): Add a method in Git for getting the commit body.
         description = self.chromium_git.run(['log', '-1', '--format=%B'])
-        build_link = current_build_link(self.host)
-        if build_link:
-            description += 'Build: %s\n\n' % build_link
-
         description += (
             'Note to sheriffs: This CL imports external tests and adds\n'
             'expectations for those tests; if this CL is large and causes\n'

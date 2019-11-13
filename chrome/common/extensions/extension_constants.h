@@ -210,9 +210,9 @@ extern const char kSelectToSpeakExtensionId[];
 // Path to preinstalled Select-to-speak extension (relative to
 // |chrome::DIR_RESOURCES|).
 extern const char kSelectToSpeakExtensionPath[];
-// The extension id of the Switch access extension.
+// The extension id of the Switch Access extension.
 extern const char kSwitchAccessExtensionId[];
-// Path to preinstalled Switch access extension (relative to
+// Path to preinstalled Switch Access extension (relative to
 // |chrome::DIR_RESOURCES|).
 extern const char kSwitchAccessExtensionPath[];
 // Name of the manifest file in an extension when a special manifest is used

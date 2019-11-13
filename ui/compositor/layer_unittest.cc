@@ -63,12 +63,6 @@
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/skia_util.h"
 
-#if defined(OS_WIN)
-#include <windows.h>
-
-#include "base/win/windows_version.h"
-#endif
-
 using cc::MatchesPNGFile;
 using cc::WritePNGFile;
 
@@ -106,35 +100,6 @@ class ColoredLayer : public Layer, public LayerDelegate {
 
  private:
   SkColor color_;
-};
-
-// Layer delegate for painting text with fade effect on canvas.
-class DrawFadedStringLayerDelegate : public LayerDelegate {
- public:
-  DrawFadedStringLayerDelegate(SkColor back_color, const gfx::Size& layer_size)
-      : background_color_(back_color), layer_size_(layer_size) {}
-
-  ~DrawFadedStringLayerDelegate() override {}
-
-  // Overridden from LayerDelegate:
-  void OnPaintLayer(const ui::PaintContext& context) override {
-    ui::PaintRecorder recorder(context, layer_size_);
-    gfx::Rect bounds(layer_size_);
-    recorder.canvas()->DrawColor(background_color_);
-    const base::string16 text = base::ASCIIToUTF16("Tests!");
-    recorder.canvas()->DrawFadedString(text, font_list_, SK_ColorRED, bounds,
-                                       0);
-  }
-
-  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
-                                  float new_device_scale_factor) override {}
-
- private:
-  const SkColor background_color_;
-  const gfx::FontList font_list_;
-  const gfx::Size layer_size_;
-
-  DISALLOW_COPY_AND_ASSIGN(DrawFadedStringLayerDelegate);
 };
 
 // Param specifies whether to use SkiaRenderer or not
@@ -192,15 +157,6 @@ class LayerWithRealCompositorTest : public testing::TestWithParam<bool> {
   std::unique_ptr<Layer> CreateNoTextureLayer(const gfx::Rect& bounds) {
     std::unique_ptr<Layer> layer = CreateLayer(LAYER_NOT_DRAWN);
     layer->SetBounds(bounds);
-    return layer;
-  }
-
-  std::unique_ptr<Layer> CreateDrawFadedStringLayerDelegate(
-      const gfx::Rect& bounds,
-      DrawFadedStringLayerDelegate* delegate) {
-    auto layer = std::make_unique<Layer>(LAYER_TEXTURED);
-    layer->SetBounds(bounds);
-    layer->set_delegate(delegate);
     return layer;
   }
 
@@ -466,17 +422,6 @@ class TestCompositorAnimationObserver : public CompositorAnimationObserver {
 
   DISALLOW_COPY_AND_ASSIGN(TestCompositorAnimationObserver);
 };
-
-#if defined(OS_WIN)
-bool IsFontsSmoothingEnabled() {
-  BOOL antialiasing = TRUE;
-  BOOL result = SystemParametersInfo(SPI_GETFONTSMOOTHING, 0, &antialiasing, 0);
-  if (result == FALSE) {
-    ADD_FAILURE() << "Failed to retrieve font aliasing configuration.";
-  }
-  return antialiasing;
-}
-#endif
 
 }  // namespace
 
@@ -1992,57 +1937,6 @@ TEST_P(LayerWithRealCompositorTest, BackgroundBlurChangeDeviceScale) {
   // WritePNGFile(bitmap, ref_img2, false);
   EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img2, fuzzy_comparator));
 }
-
-// It is really hard to write pixel test on text rendering,
-// due to different font appearance.
-// So we choose to check result only on Windows.
-// See https://codereview.chromium.org/1634103003/#msg41
-#if defined(OS_WIN)
-TEST_P(LayerWithRealCompositorTest, CanvasDrawFadedString) {
-  ASSERT_TRUE(IsFontsSmoothingEnabled())
-      << "The test requires that fonts smoothing (anti-aliasing) is activated. "
-         "If this assert is failing you need to manually activate the flag in "
-         "your system fonts settings.";
-
-  viz::ParentLocalSurfaceIdAllocator allocator;
-  allocator.GenerateId();
-  gfx::Size size(50, 50);
-  GetCompositor()->SetScaleAndSize(
-      1.0f, size, allocator.GetCurrentLocalSurfaceIdAllocation());
-  DrawFadedStringLayerDelegate delegate(SK_ColorBLUE, size);
-  std::unique_ptr<Layer> layer =
-      CreateDrawFadedStringLayerDelegate(gfx::Rect(size), &delegate);
-  DrawTree(layer.get());
-
-  SkBitmap bitmap;
-  ReadPixels(&bitmap);
-  ASSERT_FALSE(bitmap.empty());
-
-  std::string filename;
-  if (base::win::GetVersion() < base::win::Version::WIN10) {
-    filename = "string_faded_win7.png";
-  } else {
-    filename = "string_faded_win10.png";
-  }
-  base::FilePath ref_img = test_data_dir().AppendASCII(filename);
-  // WritePNGFile(bitmap, ref_img, true);
-
-  float percentage_pixels_large_error = 8.0f;  // 200px / (50*50)
-  float percentage_pixels_small_error = 0.0f;
-  float average_error_allowed_in_bad_pixels = 80.f;
-  int large_error_allowed = 255;
-  int small_error_allowed = 0;
-
-  EXPECT_TRUE(MatchesPNGFile(bitmap, ref_img,
-                             cc::FuzzyPixelComparator(
-                                 true,
-                                 percentage_pixels_large_error,
-                                 percentage_pixels_small_error,
-                                 average_error_allowed_in_bad_pixels,
-                                 large_error_allowed,
-                                 small_error_allowed)));
-}
-#endif  // defined(OS_WIN)
 
 // Opacity is rendered correctly.
 // Checks that modifying the hierarchy correctly affects final composite.

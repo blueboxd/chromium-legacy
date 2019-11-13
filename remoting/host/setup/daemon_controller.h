@@ -73,6 +73,9 @@ class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
   // starting/stopping the service.
   typedef base::Callback<void (AsyncResult result)> CompletionCallback;
 
+  // Callback used to notify a Boolean result.
+  typedef base::OnceCallback<void(bool)> BoolCallback;
+
   struct UsageStatsConsent {
     // Indicates whether crash dump reporting is supported by the host.
     bool supported;
@@ -110,9 +113,10 @@ class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
     virtual std::unique_ptr<base::DictionaryValue> GetConfig() = 0;
 
     // Checks to verify that the required OS permissions have been granted to
-    // the host process, querying the user if necessary. Returns true iff all
-    // required permissions have been granted.
-    virtual bool CheckPermission() = 0;
+    // the host process, querying the user if necessary. Notifies the callback
+    // when permission status is established, passing true iff all required
+    // permissions have been granted.
+    virtual void CheckPermission(BoolCallback callback) = 0;
 
     // Starts the daemon process. This may require that the daemon be
     // downloaded and installed. |done| is invoked on the calling thread when
@@ -157,8 +161,9 @@ class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
 
   // Checks to see if the required OS permissions have been granted. This may
   // show a dialog to the user requesting the permissions.
-  // Returns true iff all required permissions have been granted.
-  bool CheckPermission();
+  // Notifies the callback when permission status is established, passing true
+  // iff all required permissions have been granted.
+  void CheckPermission(BoolCallback callback);
 
   // Start the daemon process. This may require that the daemon be
   // downloaded and installed. |done| is called when the

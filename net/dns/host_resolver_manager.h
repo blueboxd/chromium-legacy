@@ -452,8 +452,10 @@ class NET_EXPORT HostResolverManager
 
   void InvalidateCaches();
 
-  void SetRequestContextForProbes(URLRequestContext* url_request_context);
-  void CancelProbesForContext(URLRequestContext* url_request_context);
+  // Currently only allows one probe to be started at a time. Must be cancelled
+  // before starting another.
+  void ActivateDohProbes(URLRequestContext* url_request_context);
+  void CancelDohProbes();
 
   // Used for multicast DNS tasks. Created on first use using
   // GetOrCreateMndsClient().

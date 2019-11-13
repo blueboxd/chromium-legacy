@@ -18,7 +18,6 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
-#include "mojo/public/c/system/quota.h"
 #include "mojo/public/cpp/bindings/connection_group.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/sequence_local_sync_event_watcher.h"
@@ -32,6 +31,9 @@ class Lock;
 }
 
 namespace mojo {
+namespace internal {
+class MessageQuotaChecker;
+}
 
 // The Connector class is responsible for performing read/write operations on a
 // MessagePipe. It writes messages it receives through the MessageReceiver
@@ -197,6 +199,10 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) Connector : public MessageReceiver {
   // |tag| must be a const string literal.
   void SetWatcherHeapProfilerTag(const char* tag);
 
+  // Sets the quota checker.
+  void SetMessageQuotaChecker(
+      scoped_refptr<internal::MessageQuotaChecker> checker);
+
   // Allows testing environments to override the default serialization behavior
   // of newly constructed Connector instances. Must be called before any
   // Connector instances are constructed.
@@ -315,10 +321,8 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) Connector : public MessageReceiver {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  // If this instance was selected for unread message measurement, contains
-  // the max send quota usage seen so far. If this instance was not selected
-  // contains MOJO_QUOTA_LIMIT_NONE as a sentinel value.
-  uint64_t max_unread_message_quota_used_ = MOJO_QUOTA_LIMIT_NONE;
+  // The quota checker associate with this connector, if any.
+  scoped_refptr<internal::MessageQuotaChecker> quota_checker_;
 
   base::Lock connected_lock_;
   bool connected_ = true;

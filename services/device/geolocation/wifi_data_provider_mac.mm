@@ -21,7 +21,13 @@
 #include "services/device/geolocation/wifi_data_provider_common.h"
 #include "services/device/geolocation/wifi_data_provider_manager.h"
 
+#if !defined(MAC_OS_X_VERSION_10_15)
+// This API is so deprecated that this symbol is no longer present at all in the
+// 10.15 SDK. For the moment, hack this functionality out entirely when building
+// with the 10.15 SDK.
+// https://crbug.com/1022821
 extern "C" NSString* const kCWScanKeyMerge;
+#endif
 
 @interface CWInterface (Private)
 - (NSArray*)scanForNetworksWithParameters:(NSDictionary*)params
@@ -47,7 +53,11 @@ bool CoreWlanApi::GetAccessPointData(WifiData::AccessPointDataSet* data) {
   @autoreleasepool {  // Initialize the scan parameters with scan key merging
                       // disabled, so we get
     // every AP listed in the scan without any SSID de-duping logic.
+#if defined(MAC_OS_X_VERSION_10_15)
+    NSDictionary* params = @{};
+#else
     NSDictionary* params = @{kCWScanKeyMerge : @NO};
+#endif
 
     NSSet* supported_interfaces = [CWInterface interfaceNames];
     NSUInteger interface_error_count = 0;

@@ -155,8 +155,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientSendTabToSelfSyncTest,
   EXPECT_TRUE(device_infos[1]->send_tab_to_self_receiving_enabled());
 }
 
+// Flaky. https://crbug.com/1023950
 IN_PROC_BROWSER_TEST_F(TwoClientSendTabToSelfSyncTest,
-                       SendTabToSelfReceivingDisabled) {
+                       DISABLED_SendTabToSelfReceivingDisabled) {
   ASSERT_TRUE(SetupSync());
   GetClient(0)->DisableSyncForType(syncer::UserSelectableType::kTabs);
 

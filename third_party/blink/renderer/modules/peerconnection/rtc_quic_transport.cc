@@ -155,7 +155,7 @@ RTCQuicTransport::RTCQuicTransport(
       key_(key),
       certificates_(certificates),
       p2p_quic_transport_factory_(std::move(p2p_quic_transport_factory)) {
-  DCHECK_GT(key_->ByteLength(), 0u);
+  DCHECK_GT(key_->ByteLengthAsSizeT(), 0u);
   transport->ConnectConsumer(this);
 }
 
@@ -184,7 +184,7 @@ String RTCQuicTransport::state() const {
 }
 
 DOMArrayBuffer* RTCQuicTransport::getKey() const {
-  return DOMArrayBuffer::Create(key_->Data(), key_->ByteLength());
+  return DOMArrayBuffer::Create(key_->Data(), key_->ByteLengthAsSizeT());
 }
 
 void RTCQuicTransport::connect(ExceptionState& exception_state) {
@@ -196,7 +196,7 @@ void RTCQuicTransport::connect(ExceptionState& exception_state) {
   }
   start_reason_ = StartReason::kClientConnecting;
   std::string pre_shared_key(static_cast<const char*>(key_->Data()),
-                             key_->ByteLength());
+                             key_->ByteLengthAsSizeT());
   StartConnection(quic::Perspective::IS_CLIENT,
                   P2PQuicTransport::StartConfig(pre_shared_key));
 }

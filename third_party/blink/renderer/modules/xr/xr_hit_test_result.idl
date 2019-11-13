@@ -4,7 +4,5 @@
 
 [SecureContext, Exposed=Window, RuntimeEnabled=WebXRHitTest]
 interface XRHitTestResult {
-  readonly attribute XRHitTestOptions hitTestOptions;
-
    XRPose? getPose(XRSpace relative_to);
 };

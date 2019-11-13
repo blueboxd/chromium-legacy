@@ -287,8 +287,16 @@ void SetBuildInfoAnnotations(std::map<std::string, std::string>* annotations) {
 // adjacent to it.
 bool GetHandlerTrampoline(std::string* handler_trampoline,
                           std::string* handler_library) {
+  // The linker doesn't support loading executables passed on its command
+  // line until Q.
+  if (!base::android::BuildInfo::GetInstance()->is_at_least_q()) {
+    return false;
+  }
+
   Dl_info info;
-  if (dladdr(reinterpret_cast<void*>(&GetHandlerTrampoline), &info) == 0) {
+  if (dladdr(reinterpret_cast<void*>(&GetHandlerTrampoline), &info) == 0 ||
+      dlsym(dlopen(info.dli_fname, RTLD_NOLOAD | RTLD_LAZY),
+            "CrashpadHandlerMain") == nullptr) {
     return false;
   }
 
@@ -498,15 +506,8 @@ class HandlerStarter {
     }
 
     if (!base::PathExists(handler_path)) {
-      // The linker doesn't support loading executables passed on its command
-      // line until Q.
-      if (base::android::BuildInfo::GetInstance()->is_at_least_q()) {
-        bool found_library =
-            GetHandlerTrampoline(&handler_trampoline_, &handler_library_);
-        DCHECK(found_library);
-      } else {
-        use_java_handler_ = true;
-      }
+      use_java_handler_ =
+          !GetHandlerTrampoline(&handler_trampoline_, &handler_library_);
     }
 
     if (!dump_at_crash) {

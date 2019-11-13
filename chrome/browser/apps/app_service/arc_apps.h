@@ -77,6 +77,8 @@ class ArcApps : public KeyedService,
   void Uninstall(const std::string& app_id,
                  bool clear_site_data,
                  bool report_abuse) override;
+  void PauseApp(const std::string& app_id) override;
+  void UnpauseApps(const std::string& app_id) override;
   void OpenNativeSettings(const std::string& app_id) override;
   void OnPreferredAppSet(const std::string& app_id,
                          apps::mojom::IntentFilterPtr intent_filter,
@@ -116,6 +118,7 @@ class ArcApps : public KeyedService,
   void ConvertAndPublishPackageApps(
       const arc::mojom::ArcPackageInfo& package_info,
       bool update_icon = true);
+  void SetIconEffect(const std::string& app_id);
   void UpdateAppIntentFilters(
       std::string package_name,
       arc::ArcIntentHelperBridge* intent_helper_bridge,
@@ -128,6 +131,8 @@ class ArcApps : public KeyedService,
   ArcIconOnceLoader arc_icon_once_loader_;
 
   apps_util::IncrementingIconKeyFactory icon_key_factory_;
+
+  std::set<std::string> paused_apps;
 
   ScopedObserver<arc::ArcIntentHelperBridge, arc::ArcIntentHelperObserver>
       arc_intent_helper_observer_{this};

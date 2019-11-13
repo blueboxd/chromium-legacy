@@ -323,7 +323,7 @@ void MediaKeys::SetServerCertificateTask(
   // 5.2 Use the cdm to process certificate.
   cdm->SetServerCertificate(
       static_cast<unsigned char*>(server_certificate->Data()),
-      server_certificate->ByteLength(), result->Result());
+      server_certificate->ByteLengthAsSizeT(), result->Result());
 
   // 5.3 If any of the preceding steps failed, reject promise with a
   //     new DOMException whose name is the appropriate error name.

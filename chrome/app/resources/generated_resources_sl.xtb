@@ -2044,7 +2044,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="3923676227229836009">Ta stran ima dovoljenje za ogled datotek</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3925573269917483990">Kamera:</translation>
-<translation id="3925842537050977900">Odpni s police</translation>
 <translation id="3926002189479431949">Telefon za Smart Lock spremenjen</translation>
 <translation id="3927932062596804919">Ne dovoli</translation>
 <translation id="3928570707778085600">Želite shraniti spremembe v <ph name="FILE_OR_FOLDER_NAME" />?</translation>
@@ -2538,7 +2537,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="4689235506267737042">Izbira nastavitev predstavitve</translation>
 <translation id="4689421377817139245">Sinhronizacija tega zaznamka z iPhonom</translation>
 <translation id="4690091457710545971">&lt;Štiri datoteke, ki jih generira Intelova vdelana programska oprema za Wi-Fi: csr.lst, fh_regs.lst, radio_reg.lst in monitor.lst.sysmon. Prve tri so dvojiške datoteke, ki vsebujejo izvoze registra in Intel zanje zagotavlja, da ne vsebujejo osebnih podatkov ali podatkov, ki bi omogočali prepoznavo naprave. Zadnja datoteka je sled izvajanja iz Intelove vdelane programske opreme; očiščena je vseh osebnih podatkov ali podatkov, ki bi omogočali prepoznavo naprave, vendar je prevelika, da bi jo bilo mogoče prikazati tukaj. Te datoteke so bile generirane kot odziv na nedavne težave z Wi-Fi-jem v vaši napravi in bodo posredovane Intelu za pomoč pri odpravljanju teh težav.&gt;</translation>
-<translation id="469230890969474295">Mapa OEM</translation>
 <translation id="4692623383562244444">Iskalniki</translation>
 <translation id="4693155481716051732">Suši</translation>
 <translation id="4694024090038830733">Konfiguracijo tiskalnikov upravlja skrbnik.</translation>
@@ -2571,7 +2569,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="4737715515457435632">Povežite se z omrežjem</translation>
 <translation id="473775607612524610">Posodobi</translation>
 <translation id="4739639199548674512">Kartončki</translation>
-<translation id="4742746985488890273">Pripni na polico</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Preberite, kako posodobite aplikacije<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Vklopi zvok spletnega mesta}one{Vklopi zvok spletnih mest}two{Vklopi zvok spletnih mest}few{Vklopi zvok spletnih mest}other{Vklopi zvok spletnih mest}}</translation>
 <translation id="4746351372139058112">Sporočila</translation>
@@ -3565,7 +3562,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6196854373336333322">Razširitev »<ph name="EXTENSION_NAME" />« je prevzela nadzor nad nastavitvami strežnika proxy, kar pomeni, da lahko spremeni, prekine ali nadzoruje vse, kar počnete v spletu. Če ne veste, zakaj je prišlo do te spremembe, je verjetno nezaželena.</translation>
 <translation id="6198102561359457428">Odjavite se in znova prijavite ...</translation>
 <translation id="6198252989419008588">Spremeni PIN</translation>
-<translation id="6201792273624501289">Aplikacije za Linux</translation>
 <translation id="6202304368170870640">Kodo PIN lahko uporabite za prijavo ali odklepanje naprave.</translation>
 <translation id="6206311232642889873">Kop&amp;iraj sliko</translation>
 <translation id="6207200176136643843">Ponastavitev na privzeto stopnjo povečave/pomanjšave</translation>
@@ -5599,7 +5595,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="9130015405878219958">Vneseni način ni veljaven.</translation>
 <translation id="9131487537093447019">Pošiljanje sporočil napravam Bluetooth in prejemanje sporočil od naprav Bluetooth.</translation>
 <translation id="9134304429738380103">Da, sem za.</translation>
-<translation id="9135090785674039430">Ko je to omogočeno, vam spletna mesta ne morejo slediti po spletu na podlagi piškotkov. Nekatera spletna mesta morda ne bodo delovala.</translation>
 <translation id="9137013805542155359">Pokaži izvirno besedilo</translation>
 <translation id="9137157311132182254">Prednostni iskalnik</translation>
 <translation id="9137248913990643158">Začnite s prijavo v Chrome, preden začnete uporabljati to aplikacijo.</translation>

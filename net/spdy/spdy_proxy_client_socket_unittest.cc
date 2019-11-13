@@ -17,7 +17,6 @@
 #include "net/base/test_completion_callback.h"
 #include "net/base/winsock_init.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/http/http_auth_preferences.h"
 #include "net/http/http_proxy_connect_job.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
@@ -270,8 +269,7 @@ void SpdyProxyClientSocketTest::Initialize(base::span<const MockRead> reads,
       new HttpAuthController(
           HttpAuth::AUTH_PROXY, GURL("https://" + proxy_host_port_.ToString()),
           NetworkIsolationKey(), session_->http_auth_cache(),
-          session_->http_auth_handler_factory(), session_->host_resolver(),
-          HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS));
+          session_->http_auth_handler_factory(), session_->host_resolver()));
 }
 
 scoped_refptr<IOBufferWithSize> SpdyProxyClientSocketTest::CreateBuffer(

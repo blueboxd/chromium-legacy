@@ -26,7 +26,6 @@
 #include "ui/wm/public/activation_change_observer.h"
 
 namespace gfx {
-class Point;
 class PointF;
 }  // namespace gfx
 
@@ -130,15 +129,23 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // Activates |item's| window.
   void SelectWindow(OverviewItem* item);
 
-  // Sets the dragged window on |split_view_drag_indicators_|.
+  // Sets the dragged window on the split view drag indicators.
   void SetSplitViewDragIndicatorsDraggedWindow(aura::Window* dragged_window);
 
-  // Called to show or hide the split view drag indicators. This will do
-  // nothing if split view is not enabled. |event_location| is used to reparent
-  // |split_view_drag_indicators_|'s widget, if necessary.
-  void SetSplitViewDragIndicatorsWindowDraggingState(
-      SplitViewDragIndicators::WindowDraggingState window_dragging_state,
-      const gfx::Point& event_location);
+  // This function sets the window dragging state on the split view drag
+  // indicators on every root window. On |root_window_being_dragged_in|, the
+  // state is determined by forwarding the other three arguments to
+  // |SplitViewDragIndicators::ComputeWindowDraggingState|. On other root
+  // windows, as snap previews are not appropriate, the state is determined
+  // similarly but with |SplitViewController::NONE| instead of |snap_position|.
+  void UpdateSplitViewDragIndicatorsWindowDraggingStates(
+      const aura::Window* root_window_being_dragged_in,
+      bool is_dragging,
+      SplitViewDragIndicators::WindowDraggingState non_snap_state,
+      SplitViewController::SnapPosition snap_position);
+
+  // See |OverviewGrid::RearrangeDuringDrag|.
+  void RearrangeDuringDrag(aura::Window* dragged_window);
 
   // Retrieves the window grid whose root window matches |root_window|. Returns
   // nullptr if the window grid is not found.
@@ -296,10 +303,6 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
     is_shutting_down_ = is_shutting_down;
   }
 
-  SplitViewDragIndicators* split_view_drag_indicators() {
-    return split_view_drag_indicators_.get();
-  }
-
   const std::vector<std::unique_ptr<OverviewGrid>>& grid_list() const {
     return grid_list_;
   }
@@ -380,10 +383,6 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
 
   // List of all the window overview grids, one for each root window.
   std::vector<std::unique_ptr<OverviewGrid>> grid_list_;
-
-  // The owner of the widget which displays splitview related information in
-  // overview mode. This will be nullptr if split view is not enabled.
-  std::unique_ptr<SplitViewDragIndicators> split_view_drag_indicators_;
 
   // The following variables are used for metric collection purposes. All of
   // them refer to this particular overview session and are not cumulative:

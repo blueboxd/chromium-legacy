@@ -25,7 +25,6 @@
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
-#include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/sharing_utils.h"
 #include "chrome/browser/sharing/sms/sms_fetch_request_handler.h"
@@ -411,35 +410,19 @@ void SharingService::OnDeviceUnregistered(
 }
 
 bool SharingService::IsSyncEnabled() const {
-  if (!sync_service_)
-    return false;
-
-  bool is_sync_enabled =
-      sync_service_->GetTransportState() ==
-          syncer::SyncService::TransportState::ACTIVE &&
-      sync_service_->GetActiveDataTypes().HasAll(GetRequiredSyncDataTypes());
-  // TODO(crbug.com/1012226): Remove local sync check when we have dedicated
-  // Sharing data type.
-  if (base::FeatureList::IsEnabled(kSharingDeriveVapidKey))
-    is_sync_enabled &= !sync_service_->IsLocalSyncEnabled();
-  return is_sync_enabled;
+  return sync_service_ &&
+         sync_service_->GetTransportState() ==
+             syncer::SyncService::TransportState::ACTIVE &&
+         sync_service_->GetActiveDataTypes().HasAll(GetRequiredSyncDataTypes());
 }
 
 bool SharingService::IsSyncDisabled() const {
-  if (!sync_service_)
-    return false;
-
-  bool is_sync_disabled =
-      sync_service_->GetTransportState() ==
-          syncer::SyncService::TransportState::DISABLED ||
-      (sync_service_->GetTransportState() ==
-           syncer::SyncService::TransportState::ACTIVE &&
-       !sync_service_->GetActiveDataTypes().HasAll(GetRequiredSyncDataTypes()));
-  // TODO(crbug.com/1012226): Remove local sync check when we have dedicated
-  // Sharing data type.
-  if (base::FeatureList::IsEnabled(kSharingDeriveVapidKey))
-    is_sync_disabled |= sync_service_->IsLocalSyncEnabled();
-  return is_sync_disabled;
+  return sync_service_ && (sync_service_->GetTransportState() ==
+                               syncer::SyncService::TransportState::DISABLED ||
+                           (sync_service_->GetTransportState() ==
+                                syncer::SyncService::TransportState::ACTIVE &&
+                            !sync_service_->GetActiveDataTypes().HasAll(
+                                GetRequiredSyncDataTypes())));
 }
 
 syncer::ModelTypeSet SharingService::GetRequiredSyncDataTypes() const {

@@ -19,12 +19,12 @@ namespace {
 using MatchType = LookalikeUrlInterstitialPage::MatchType;
 
 const base::FeatureParam<bool> kEnableLookalikeTopSites{
-    &security_state::features::kSafetyTipUI, "topsites", false};
+    &security_state::features::kSafetyTipUI, "topsites", true};
 const base::FeatureParam<bool> kEnableLookalikeEditDistance{
-    &security_state::features::kSafetyTipUI, "editdistance", false};
+    &security_state::features::kSafetyTipUI, "editdistance", true};
 const base::FeatureParam<bool> kEnableLookalikeEditDistanceSiteEngagement{
     &security_state::features::kSafetyTipUI, "editdistance_siteengagement",
-    false};
+    true};
 
 }  // namespace
 

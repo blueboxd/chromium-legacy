@@ -621,11 +621,12 @@ void SkiaOutputSurfaceImpl::SetEnableDCLayers(bool enable) {
 }
 
 void SkiaOutputSurfaceImpl::ScheduleDCLayers(
-    std::vector<DCLayerOverlay> overlays) {
+    std::vector<DCLayerOverlay> overlays,
+    std::vector<gpu::SyncToken> sync_tokens) {
   auto task =
       base::BindOnce(&SkiaOutputSurfaceImplOnGpu::ScheduleDCLayers,
                      base::Unretained(impl_on_gpu_.get()), std::move(overlays));
-  ScheduleGpuTask(std::move(task), {});
+  ScheduleGpuTask(std::move(task), std::move(sync_tokens));
 }
 
 void SkiaOutputSurfaceImpl::SetCapabilitiesForTesting(

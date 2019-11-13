@@ -9,7 +9,7 @@
 
 #include "ash/home_screen/home_launcher_gesture_handler.h"
 #include "ash/home_screen/home_screen_delegate.h"
-#include "ash/home_screen/window_transform_to_home_screen_animation.h"
+#include "ash/home_screen/window_scale_animation.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
@@ -200,8 +200,9 @@ bool HomeScreenController::GoHome(int64_t display_id) {
       // Do the scale-down transform for the entire transient tree.
       for (auto* window : GetTransientTreeIterator(active_window)) {
         // Self-destructed when window transform animation is done.
-        new WindowTransformToHomeScreenAnimation(
+        new WindowScaleAnimation(
             window,
+            WindowScaleAnimation::WindowScaleType::kScaleDownToHomeScreen,
             window == active_window
                 ? base::make_optional(original_backdrop_mode)
                 : base::nullopt,

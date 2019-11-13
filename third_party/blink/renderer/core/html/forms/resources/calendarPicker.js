@@ -2502,10 +2502,11 @@ YearListView.prototype.onClick = function(event) {
   ListView.prototype.onClick.call(this, event);
   var year = this.selectedRow + 1;
   if (this.selectedRow !== oldSelectedRow) {
-    var month = this.highlightedMonth ? this.highlightedMonth.month : 0;
+    // Always start with first month when changing the year.
+    const month = new Month(year, 0);
+    this.highlightMonth(month);
     this.dispatchEvent(
-        YearListView.EventTypeYearListViewDidSelectMonth, this,
-        new Month(year, month));
+        YearListView.EventTypeYearListViewDidSelectMonth, this, month);
     this.scrollView.scrollTo(this.selectedRow * YearListCell.GetHeight(), true);
   } else {
     var monthButton = enclosingNodeOrSelfWithClass(

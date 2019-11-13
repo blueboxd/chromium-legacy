@@ -27,10 +27,13 @@ class CupsWrapper::Backend {
   Backend& operator=(const Backend&) = delete;
   ~Backend();
 
-  std::unique_ptr<QueryResult> QueryCups(
+  std::unique_ptr<QueryResult> QueryCupsPrintJobs(
       const std::vector<std::string>& printer_ids);
 
   void CancelJob(const std::string& printer_id, int job_id);
+
+  std::unique_ptr<::printing::PrinterStatus> QueryCupsPrinterStatus(
+      const std::string& printer_id);
 
  private:
   ::printing::CupsConnection cups_connection_;
@@ -47,7 +50,8 @@ CupsWrapper::Backend::~Backend() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-std::unique_ptr<CupsWrapper::QueryResult> CupsWrapper::Backend::QueryCups(
+std::unique_ptr<CupsWrapper::QueryResult>
+CupsWrapper::Backend::QueryCupsPrintJobs(
     const std::vector<std::string>& printer_ids) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto result = std::make_unique<CupsWrapper::QueryResult>();
@@ -76,6 +80,17 @@ void CupsWrapper::Backend::CancelJob(const std::string& printer_id,
   }
 }
 
+std::unique_ptr<::printing::PrinterStatus>
+CupsWrapper::Backend::QueryCupsPrinterStatus(const std::string& printer_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  auto result = std::make_unique<::printing::PrinterStatus>();
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
+  if (!cups_connection_.GetPrinterStatus(printer_id, result.get()))
+    return nullptr;
+  return result;
+}
+
 CupsWrapper::CupsWrapper()
     : backend_(std::make_unique<Backend>()),
       backend_task_runner_(base::CreateSequencedTaskRunner(
@@ -88,7 +103,7 @@ CupsWrapper::~CupsWrapper() {
   backend_task_runner_->DeleteSoon(FROM_HERE, backend_.release());
 }
 
-void CupsWrapper::QueryCups(
+void CupsWrapper::QueryCupsPrintJobs(
     const std::vector<std::string>& printer_ids,
     base::OnceCallback<void(std::unique_ptr<CupsWrapper::QueryResult>)>
         callback) {
@@ -97,8 +112,8 @@ void CupsWrapper::QueryCups(
   // the same task runner.
   base::PostTaskAndReplyWithResult(
       backend_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&Backend::QueryCups, base::Unretained(backend_.get()),
-                     printer_ids),
+      base::BindOnce(&Backend::QueryCupsPrintJobs,
+                     base::Unretained(backend_.get()), printer_ids),
       std::move(callback));
 }
 
@@ -110,6 +125,20 @@ void CupsWrapper::CancelJob(const std::string& printer_id, int job_id) {
       FROM_HERE,
       base::BindOnce(&Backend::CancelJob, base::Unretained(backend_.get()),
                      printer_id, job_id));
+}
+
+void CupsWrapper::QueryCupsPrinterStatus(
+    const std::string& printer_id,
+    base::OnceCallback<void(std::unique_ptr<::printing::PrinterStatus>)>
+        callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // It's safe to pass unretained pointer here because we delete |backend_| on
+  // the same task runner.
+  base::PostTaskAndReplyWithResult(
+      backend_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&Backend::QueryCupsPrinterStatus,
+                     base::Unretained(backend_.get()), printer_id),
+      std::move(callback));
 }
 
 }  // namespace chromeos

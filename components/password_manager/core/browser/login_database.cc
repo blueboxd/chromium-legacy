@@ -143,9 +143,8 @@ enum DatabaseInitError {
   INIT_STATS_ERROR,
   MIGRATION_ERROR,
   COMMIT_TRANSACTION_ERROR,
-  INIT_LEAKED_CREDENTIALS_ERROR,
+  INIT_COMPROMISED_CREDENTIALS_ERROR,
   INIT_FIELD_INFO_ERROR,
-
   DATABASE_INIT_ERROR_COUNT,
 };
 
@@ -774,7 +773,7 @@ bool LoginDatabase::Init() {
   }
 
   stats_table_.Init(&db_);
-  leaked_credentials_table_.Init(&db_);
+  compromised_credentials_table_.Init(&db_);
   field_info_table_.Init(&db_);
 
   int current_version = meta_table_.GetVersionNumber();
@@ -814,12 +813,28 @@ bool LoginDatabase::Init() {
     return false;
   }
 
-  if (!leaked_credentials_table_.CreateTableIfNecessary()) {
-    LogDatabaseInitError(INIT_LEAKED_CREDENTIALS_ERROR);
-    LOG(ERROR) << "Unable to create the leaked credentials table.";
-    transaction.Rollback();
-    db_.Close();
-    return false;
+  // The table "leaked_credentials" was previously created without a flag.
+  // The table is now renamed to "compromised_credentials" and also includes
+  // a new column so the old table needs to be deleted.
+  if (db_.DoesTableExist("leaked_credentials")) {
+    if (!db_.Execute("DROP TABLE leaked_credentials")) {
+      LOG(ERROR) << "Unable to create the stats table.";
+      transaction.Rollback();
+      db_.Close();
+      return false;
+    }
+  }
+
+  // TODO(bdea): Create a more generic experiment for creation of compromise
+  // credentials because the current experiment is leak detection specific.
+  if (base::FeatureList::IsEnabled(password_manager::features::kLeakHistory)) {
+    if (!compromised_credentials_table_.CreateTableIfNecessary()) {
+      LogDatabaseInitError(INIT_COMPROMISED_CREDENTIALS_ERROR);
+      LOG(ERROR) << "Unable to create the compromised credentials table.";
+      transaction.Rollback();
+      db_.Close();
+      return false;
+    }
   }
 
   if (!field_info_table_.CreateTableIfNecessary()) {

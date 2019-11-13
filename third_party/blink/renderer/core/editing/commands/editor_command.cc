@@ -1052,8 +1052,7 @@ static bool EnabledVisibleSelection(LocalFrame& frame,
   const VisibleSelection& selection =
       CreateVisibleSelection(frame.GetEditor().SelectionForCommand(event));
   return (selection.IsCaret() &&
-          (selection.IsContentEditable() ||
-           frame.GetSettings()->GetCaretBrowsingEnabled())) ||
+          (selection.IsContentEditable() || frame.IsCaretBrowsingEnabled())) ||
          selection.IsRange();
 }
 
@@ -1069,8 +1068,7 @@ static bool EnabledVisibleSelectionAndMark(LocalFrame& frame,
   const VisibleSelection& selection =
       CreateVisibleSelection(frame.GetEditor().SelectionForCommand(event));
   return ((selection.IsCaret() &&
-           (selection.IsContentEditable() ||
-            frame.GetSettings()->GetCaretBrowsingEnabled())) ||
+           (selection.IsContentEditable() || frame.IsCaretBrowsingEnabled())) ||
           selection.IsRange()) &&
          !frame.GetEditor().Mark().IsNone();
 }
@@ -1104,7 +1102,7 @@ static bool EnabledInEditableText(LocalFrame& frame,
 static bool EnabledInEditableTextOrCaretBrowsing(LocalFrame& frame,
                                                  Event* event,
                                                  EditorCommandSource source) {
-  return frame.GetSettings()->GetCaretBrowsingEnabled() ||
+  return frame.IsCaretBrowsingEnabled() ||
          EnabledInEditableText(frame, event, source);
 }
 

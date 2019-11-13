@@ -26,6 +26,7 @@ js_library("apps_page") {
     "//ui/webui/resources/js/cr/ui/context_menu_handler.js",
     "//ui/webui/resources/js/cr/ui/drag_wrapper.js",
     "//ui/webui/resources/js/cr/ui/focus_manager.js",
+    "//ui/webui/resources/js/cr/ui/keyboard_shortcut_list.js",
     "//ui/webui/resources/js/cr/ui/menu.js",
     "//ui/webui/resources/js/cr/ui/menu_button.js",
     "//ui/webui/resources/js/cr/ui/menu_item.js",

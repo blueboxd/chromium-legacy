@@ -363,7 +363,7 @@
     },
     {
       name: "CookiesWithoutSameSiteMustBeSecure",
-      status: "experimental",
+      status: "test",
     },
     {
       name: "CooperativeScheduling"
@@ -487,6 +487,10 @@
     {
       name: "CSSPseudoWhere",
       status: "experimental",
+    },
+    {
+      name: "CSSRenderSubtree",
+      status: "test",
     },
     {
       name: "CSSSnapSize",
@@ -1443,7 +1447,7 @@
     },
     {
       name: "SameSiteByDefaultCookies",
-      status: "experimental",
+      status: "test",
     },
     // Exposes the displays connected to the device and provides the display
     // properties needed for window placement features.

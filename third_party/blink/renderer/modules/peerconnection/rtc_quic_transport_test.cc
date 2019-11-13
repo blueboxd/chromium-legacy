@@ -79,7 +79,7 @@ void FillDatagramBuffer(RTCQuicTransport* transport) {
 
 static base::span<uint8_t> SpanFromDOMArrayBuffer(DOMArrayBuffer* buffer) {
   return base::span<uint8_t>(static_cast<uint8_t*>(buffer->Data()),
-                             buffer->ByteLength());
+                             buffer->ByteLengthAsSizeT());
 }
 
 }  // namespace
@@ -444,7 +444,7 @@ TEST_F(RTCQuicTransportTest, ConnectPassesPreSharedKey) {
       CreateQuicTransport(scope, ice_transport, {}, std::move(mock_transport));
   DOMArrayBuffer* key = quic_transport->getKey();
   std::string pre_shared_key(static_cast<const char*>(key->Data()),
-                             key->ByteLength());
+                             key->ByteLengthAsSizeT());
 
   EXPECT_CALL(*mock_transport_ptr, MockStart(_))
       .WillOnce(
@@ -659,7 +659,7 @@ TEST_F(RTCQuicTransportTest, GetKeyReturnsValidKey) {
       CreateQuicTransport(scope, ice_transport, {}, std::move(mock_transport));
   auto* key = quic_transport->getKey();
 
-  EXPECT_GE(key->ByteLength(), 16u);
+  EXPECT_GE(key->ByteLengthAsSizeT(), 16u);
 }
 
 // Test that stats are converted correctly to the RTCQuicTransportStats

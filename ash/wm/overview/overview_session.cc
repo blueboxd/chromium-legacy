@@ -110,9 +110,6 @@ void OverviewSession::Init(const WindowList& windows,
   if (restore_focus_window_)
     restore_focus_window_->AddObserver(this);
 
-  if (ShouldAllowSplitView())
-    split_view_drag_indicators_ = std::make_unique<SplitViewDragIndicators>();
-
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   std::sort(root_windows.begin(), root_windows.end(),
             [](const aura::Window* a, const aura::Window* b) {
@@ -323,16 +320,37 @@ void OverviewSession::SelectWindow(OverviewItem* item) {
 
 void OverviewSession::SetSplitViewDragIndicatorsDraggedWindow(
     aura::Window* dragged_window) {
-  DCHECK(split_view_drag_indicators_);
-  split_view_drag_indicators_->SetDraggedWindow(dragged_window);
+  for (std::unique_ptr<OverviewGrid>& grid : grid_list_)
+    grid->SetSplitViewDragIndicatorsDraggedWindow(dragged_window);
 }
 
-void OverviewSession::SetSplitViewDragIndicatorsWindowDraggingState(
-    SplitViewDragIndicators::WindowDraggingState window_dragging_state,
-    const gfx::Point& event_location) {
-  DCHECK(split_view_drag_indicators_);
-  split_view_drag_indicators_->SetWindowDraggingState(window_dragging_state,
-                                                      event_location);
+void OverviewSession::UpdateSplitViewDragIndicatorsWindowDraggingStates(
+    const aura::Window* root_window_being_dragged_in,
+    bool is_dragging,
+    SplitViewDragIndicators::WindowDraggingState non_snap_state,
+    SplitViewController::SnapPosition snap_position) {
+  using State = SplitViewDragIndicators::WindowDraggingState;
+  const State window_dragging_state_on_root_window_being_dragged_in =
+      SplitViewDragIndicators::ComputeWindowDraggingState(
+          is_dragging, non_snap_state, snap_position);
+  const State window_dragging_state_on_root_windows_not_being_dragged_in =
+      SplitViewDragIndicators::ComputeWindowDraggingState(
+          is_dragging, non_snap_state, SplitViewController::NONE);
+  for (std::unique_ptr<OverviewGrid>& grid : grid_list_) {
+    grid->SetSplitViewDragIndicatorsWindowDraggingState(
+        grid->root_window() == root_window_being_dragged_in
+            ? window_dragging_state_on_root_window_being_dragged_in
+            : window_dragging_state_on_root_windows_not_being_dragged_in);
+  }
+}
+
+void OverviewSession::RearrangeDuringDrag(aura::Window* dragged_window) {
+  for (std::unique_ptr<OverviewGrid>& grid : grid_list_) {
+    DCHECK(grid->split_view_drag_indicators());
+    grid->RearrangeDuringDrag(
+        dragged_window,
+        grid->split_view_drag_indicators()->current_window_dragging_state());
+  }
 }
 
 OverviewGrid* OverviewSession::GetGridWithRootWindow(
@@ -776,9 +794,6 @@ void OverviewSession::OnDisplayMetricsChanged(const display::Display& display,
     ResetDraggedWindowGesture();
   GetGridWithRootWindow(Shell::GetRootWindowForDisplayId(display.id()))
       ->OnDisplayMetricsChanged();
-
-  if (split_view_drag_indicators_)
-    split_view_drag_indicators_->OnDisplayBoundsChanged();
 
   // The no windows widget is on the primary root window. If |display|
   // corresponds to another root window, then we are done.

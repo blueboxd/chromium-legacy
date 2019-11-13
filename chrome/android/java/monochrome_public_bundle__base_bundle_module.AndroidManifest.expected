@@ -1,12 +1,12 @@
 <?xml version="1.0" ?>
 <manifest
     package="org.chromium.chrome"
-    platformBuildVersionCode="28"
-    platformBuildVersionName="9"
+    platformBuildVersionCode="29"
+    platformBuildVersionName="10"
     tools:ignore="MissingVersion"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-  <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="28"/>
+  <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="29"/>
   <uses-permission-sdk-23 android:name="android.permission.USE_FINGERPRINT"/>
   <uses-permission-sdk-23 android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
   <uses-permission-sdk-23 android:name="android.permission.REORDER_TASKS"/>
@@ -1025,6 +1025,13 @@
         <category android:name="android.intent.category.DEFAULT"/>
       </intent-filter>
     </activity>
+    <activity
+        android:label="WebView
+        Flags"
+        android:launchMode="singleTop"
+        android:name="org.chromium.android_webview.devui.FlagsActivity"
+        android:process=":webview_apk"
+        android:theme="@style/Theme.DevUi.DayNight"/>
     <activity
         android:enabled="false"
         android:excludeFromRecents="true"

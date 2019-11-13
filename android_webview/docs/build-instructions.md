@@ -128,6 +128,14 @@ build files for local development.
 See [internal instructions][1] for the Google-internal variants of the build
 targets (`system_webview_google_apk`, `monochrome_apk`).
 
+*** note
+**Note:** TV/car devices have a bug where the release key signed WebView is
+preinstalled on all Android images, even those signed with dev-keys. Because
+humans cannot access release keys (`use_signing_keys = true` provides "developer
+test keys," not release keys), you must remove the preinstalled WebView (see
+below).
+***
+
 ### Removing preinstalled WebView
 
 If WebView is preinstalled (under the chosen package name) in the device's

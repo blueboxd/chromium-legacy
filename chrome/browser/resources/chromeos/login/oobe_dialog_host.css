@@ -22,3 +22,9 @@
   border-radius: 4px;
   box-shadow: 0 24px 24px rgba(0, 0, 0, .24), 0 0 24px rgba(0, 0, 0, .12);
 }
+
+.oobe-illustration {
+  max-height: -webkit-fill-available;
+  max-width: -webkit-fill-available;
+  object-fit: contain;
+}

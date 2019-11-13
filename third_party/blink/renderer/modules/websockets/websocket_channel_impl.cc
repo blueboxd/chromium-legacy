@@ -684,7 +684,7 @@ void WebSocketChannelImpl::ProcessSendQueue() {
         CHECK(message->array_buffer);
         SendInternal(network::mojom::blink::WebSocketMessageType::BINARY,
                      static_cast<const char*>(message->array_buffer->Data()),
-                     message->array_buffer->ByteLength(),
+                     message->array_buffer->DeprecatedByteLengthAsUnsigned(),
                      &consumed_buffered_amount);
         break;
       case kMessageTypeClose: {

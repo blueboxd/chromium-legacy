@@ -90,7 +90,8 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
       sk_sp<SkColorSpace> color_space) override;
   void RemoveRenderPassResource(std::vector<RenderPassId> ids) override;
   void SetEnableDCLayers(bool enable) override {}
-  void ScheduleDCLayers(std::vector<DCLayerOverlay> overlays) override {}
+  void ScheduleDCLayers(std::vector<DCLayerOverlay> overlays,
+                        std::vector<gpu::SyncToken> sync_tokens) override {}
   void CopyOutput(RenderPassId id,
                   const copy_output::RenderPassGeometry& geometry,
                   const gfx::ColorSpace& color_space,

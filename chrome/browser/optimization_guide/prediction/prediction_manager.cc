@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/optimization_guide/optimization_guide_navigation_data.h"
 #include "chrome/browser/optimization_guide/optimization_guide_session_statistic.h"
 #include "chrome/browser/optimization_guide/prediction/prediction_model.h"
 #include "chrome/browser/optimization_guide/prediction/prediction_model_fetcher.h"
@@ -182,7 +183,28 @@ OptimizationTargetDecision PredictionManager::ShouldTargetNavigation(
   base::flat_map<std::string, float> feature_map =
       BuildFeatureMap(navigation_handle, prediction_model->GetModelFeatures());
 
-  return prediction_model->Predict(feature_map);
+  double prediction_score = 0.0;
+  optimization_guide::OptimizationTargetDecision target_decision =
+      prediction_model->Predict(feature_map, &prediction_score);
+
+  OptimizationGuideNavigationData* navigation_data =
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle);
+  if (navigation_data) {
+    navigation_data->SetModelVersionForOptimizationTarget(
+        optimization_target, prediction_model->GetVersion());
+    navigation_data->SetModelPredictionScoreForOptimizationTarget(
+        optimization_target, prediction_score);
+  }
+
+  if (optimization_guide::features::
+          ShouldOverrideOptimizationTargetDecisionForMetricsPurposes(
+              optimization_target)) {
+    return optimization_guide::OptimizationTargetDecision::
+        kModelPredictionHoldback;
+  }
+
+  return target_decision;
 }
 
 void PredictionManager::OnEffectiveConnectionTypeChanged(

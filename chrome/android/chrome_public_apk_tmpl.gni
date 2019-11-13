@@ -373,6 +373,10 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       ]
       loadable_modules += [ "$root_out_dir/libcrashpad_handler_trampoline.so" ]
 
+      if (webview_devui_show_icon) {
+        _deps += [ "//android_webview/apk:devui_launcher_icon_resources" ]
+      }
+
       if (android_64bit_target_cpu && build_apk_secondary_abi &&
           (!defined(invoker.is_64_bit_browser) || !invoker.is_64_bit_browser ||
            invoker.include_32_bit_webview)) {

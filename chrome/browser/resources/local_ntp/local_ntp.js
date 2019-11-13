@@ -41,12 +41,6 @@ const ACMatchClassificationStyle = {
   DIM: 1 << 2,
 };
 
-/** @enum {number} */
-const AutocompleteResultStatus = {
-  SUCCESS: 0,
-  SKIPPED: 1,
-};
-
 /** @type {string} */
 let lastInput;
 
@@ -268,7 +262,10 @@ let delayedHideNotification = null;
  */
 let isDarkModeEnabled = false;
 
-/** Used to prevent inline autocompleting recently deleted output. */
+/**
+ * Used to prevent the default match from requiring inline autocompletion when
+ * the user is deleting text in the input.
+ */
 let isDeletingInput = false;
 
 /**
@@ -760,8 +757,7 @@ function init() {
       setRealboxWrapperListenForFocusIn(true);
       setRealboxWrapperListenForFocusOut(true);
 
-      searchboxApiHandle.onqueryautocompletedone = onQueryAutocompleteDone;
-      searchboxApiHandle.ondeleteautocompletematch = onDeleteAutocompleteMatch;
+      searchboxApiHandle.autocompleteresultchanged = autocompleteResultChanged;
 
       if (!iframesAndVoiceSearchDisabledForTesting) {
         speech.init(
@@ -1069,43 +1065,6 @@ function onAddCustomLinkDone(success) {
   ntpApiHandle.logEvent(LOG_TYPE.NTP_CUSTOMIZE_SHORTCUT_DONE);
 }
 
-/** @param {!DeleteAutocompleteMatchResult} result */
-function onDeleteAutocompleteMatch(result) {
-  if (!result.success) {
-    return;
-  }
-
-  $(IDS.REALBOX).focus();
-
-  populateAutocompleteMatches(result.matches);
-
-  if (result.matches.length === 0) {
-    updateRealboxOutput({inline: '', text: ''});
-    return;
-  }
-
-  const firstMatch = autocompleteMatches[0];
-  if (firstMatch.allowedToBeDefaultMatch) {
-    const matchEls = Array.from($(IDS.REALBOX_MATCHES).children);
-    selectMatchEl(matchEls[0]);
-
-    const fill = firstMatch.fillIntoEdit;
-    const inline = firstMatch.inlineAutocompletion;
-    const textEnd = fill.length - inline.length;
-    updateRealboxOutput({
-      moveCursorToEnd: true,
-      inline: inline,
-      text: assert(fill.substr(0, textEnd)),
-    });
-  } else {
-    updateRealboxOutput({
-      moveCursorToEnd: true,
-      inline: '',
-      text: lastInput,
-    });
-  }
-}
-
 /**
  * Callback for embeddedSearch.newTabPage.ondeletecustomlinkdone. Called when
  * the custom link was successfully deleted. Shows the "Shortcut deleted"
@@ -1150,30 +1109,24 @@ function onMostVisitedChange() {
 }
 
 /** @param {!AutocompleteResult} result */
-function onQueryAutocompleteDone(result) {
-  const realboxEl = $(IDS.REALBOX);
-  if (result.status === AutocompleteResultStatus.SKIPPED ||
-      result.input !== realboxEl.value) {
-    return;  // Stale or skipped result; ignore.
+function autocompleteResultChanged(result) {
+  if (result.input !== lastInput) {
+    return;  // Stale result; ignore.
   }
 
   populateAutocompleteMatches(result.matches);
 
-  if (result.matches.length === 0) {
-    return;
-  }
+  $(IDS.REALBOX).focus();
 
-  if (result.matches[0].allowedToBeDefaultMatch) {
+  updateRealboxOutput({
+    inline: '',
+    text: lastInput || '',
+  });
+
+  const first = result.matches[0];
+  if (first && first.allowedToBeDefaultMatch) {
     selectMatchEl(assert($(IDS.REALBOX_MATCHES).firstElementChild));
-  }
-
-  // If the user is deleting content, don't quickly re-suggest the same
-  // output.
-  if (!isDeletingInput) {
-    const first = result.matches[0];
-    if (first.allowedToBeDefaultMatch && first.inlineAutocompletion) {
-      updateRealboxOutput({inline: first.inlineAutocompletion});
-    }
+    updateRealboxOutput({inline: first.inlineAutocompletion});
   }
 }
 
@@ -1212,7 +1165,7 @@ function onRealboxInput() {
   } else {
     setRealboxMatchesVisible(false);
     setRealboxWrapperListenForKeydown(false);
-    setAutocompleteMatches([]);
+    clearAutocompleteMatches();
   }
 }
 
@@ -1244,15 +1197,14 @@ function onRealboxWrapperFocusOut(e) {
   const relatedTarget = /** @type {Element} */ (e.relatedTarget);
   const realboxWrapper = $(IDS.REALBOX_INPUT_WRAPPER);
   if (!realboxWrapper.contains(relatedTarget)) {
-    setRealboxMatchesVisible(false);
-    // Note: intentionally leaving keydown listening (see
-    // onRealboxWrapperKeydown) intact.
-    setAutocompleteMatches([]);
-
     // Clear the input if it was empty when displaying the matches.
     if (lastInput === '') {
       updateRealboxOutput({inline: '', text: ''});
     }
+    setRealboxMatchesVisible(false);
+    // Note: intentionally leaving keydown listening (see
+    // onRealboxWrapperKeydown) intact.
+    clearAutocompleteMatches();
   }
 }
 
@@ -1339,7 +1291,7 @@ function onRealboxWrapperKeydown(e) {
     updateRealboxOutput({inline: '', text: ''});
     setRealboxMatchesVisible(false);
     setRealboxWrapperListenForKeydown(false);
-    setAutocompleteMatches([]);
+    clearAutocompleteMatches();
     e.preventDefault();
     return;
   }
@@ -1534,7 +1486,7 @@ function populateAutocompleteMatches(matches) {
   const hasMatches = matches.length > 0;
   setRealboxMatchesVisible(hasMatches);
   setRealboxWrapperListenForKeydown(hasMatches);
-  setAutocompleteMatches(matches);
+  autocompleteMatches = matches;
 }
 
 /**
@@ -1542,7 +1494,8 @@ function populateAutocompleteMatches(matches) {
  */
 function queryAutocomplete(input) {
   lastInput = input;
-  window.chrome.embeddedSearch.searchBox.queryAutocomplete(input);
+  window.chrome.embeddedSearch.searchBox.queryAutocomplete(
+      input, isDeletingInput);
 }
 
 /**
@@ -1628,38 +1581,38 @@ function renderOneGoogleBarTheme() {
 
 /** Updates the NTP based on the current theme. */
 function renderTheme() {
-  const info = getNtpTheme();
-  if (!info) {
+  const theme = getNtpTheme();
+  if (!theme) {
     return;
   }
 
   // Update dark mode styling.
   isDarkModeEnabled = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  document.body.classList.toggle('light-chip', !getUseDarkChips(info));
+  document.body.classList.toggle('light-chip', !getUseDarkChips(theme));
 
   // Dark mode uses a white Google logo.
   const useWhiteLogo =
-      info.alternateLogo || (info.usingDefaultTheme && isDarkModeEnabled);
+      theme.alternateLogo || (theme.usingDefaultTheme && isDarkModeEnabled);
   document.body.classList.toggle(CLASSES.ALTERNATE_LOGO, useWhiteLogo);
 
-  if (info.logoColor) {
+  if (theme.logoColor) {
     document.body.style.setProperty(
-        '--logo-color', convertToRGBAColor(info.logoColor));
+        '--logo-color', convertToRGBAColor(theme.logoColor));
   }
 
   // The doodle notifier should be shown for non-default backgrounds. This
   // includes non-white backgrounds, excluding dark mode gray if dark mode is
   // enabled.
-  const isDefaultBackground = info.usingDefaultTheme && !info.imageUrl;
+  const isDefaultBackground = theme.usingDefaultTheme && !theme.imageUrl;
   document.body.classList.toggle(CLASSES.USE_NOTIFIER, !isDefaultBackground);
 
   // If a custom background has been selected the image will be applied to the
   // custom-background element instead of the body.
-  if (!info.customBackgroundConfigured) {
+  if (!theme.customBackgroundConfigured) {
     document.body.style.background = [
-      convertToRGBAColor(info.backgroundColorRgba), info.imageUrl,
-      info.imageTiling, info.imageHorizontalAlignment,
-      info.imageVerticalAlignment
+      convertToRGBAColor(theme.backgroundColorRgba), theme.imageUrl,
+      theme.imageTiling, theme.imageHorizontalAlignment,
+      theme.imageVerticalAlignment
     ].join(' ').trim();
 
     $(IDS.CUSTOM_BG).style.opacity = '0';
@@ -1667,7 +1620,7 @@ function renderTheme() {
     customize.clearAttribution();
   } else {
     // Do anything only if the custom background changed.
-    const imageUrl = assert(info.imageUrl);
+    const imageUrl = assert(theme.imageUrl);
     if (!$(IDS.CUSTOM_BG).style.backgroundImage.includes(imageUrl)) {
       const imageWithOverlay = [
         customize.CUSTOM_BACKGROUND_OVERLAY, 'url(' + imageUrl + ')'
@@ -1692,26 +1645,59 @@ function renderTheme() {
 
       customize.clearAttribution();
       customize.setAttribution(
-          '' + info.attribution1, '' + info.attribution2,
-          '' + info.attributionActionUrl);
+          '' + theme.attribution1, '' + theme.attribution2,
+          '' + theme.attributionActionUrl);
     }
   }
 
-  updateThemeAttribution(info.attributionUrl, info.imageHorizontalAlignment);
-  setCustomThemeStyle(info);
+  updateThemeAttribution(theme.attributionUrl, theme.imageHorizontalAlignment);
+  setCustomThemeStyle(theme);
 
   $(customize.IDS.RESTORE_DEFAULT)
       .classList.toggle(
-          customize.CLASSES.OPTION_DISABLED, !info.customBackgroundConfigured);
+          customize.CLASSES.OPTION_DISABLED, !theme.customBackgroundConfigured);
   $(customize.IDS.RESTORE_DEFAULT).tabIndex =
-      (info.customBackgroundConfigured ? 0 : -1);
+      (theme.customBackgroundConfigured ? 0 : -1);
 
   $(customize.IDS.EDIT_BG)
       .classList.toggle(
-          CLASSES.ENTRY_POINT_ENHANCED, !info.customBackgroundConfigured);
+          CLASSES.ENTRY_POINT_ENHANCED, !theme.customBackgroundConfigured);
 
   if (configData.isGooglePage) {
     customize.onThemeChange();
+  }
+
+  if (configData.realboxMatchOmniboxTheme) {
+    // TODO(dbeam): actually get these from theme service.
+    const removeMatchHovered = assert(theme.searchBox.icon).slice();
+    removeMatchHovered[3] = .08 * 255;
+
+    const removeMatchFocused = theme.searchBox.icon.slice();
+    removeMatchFocused[3] = .16 * 255;
+
+    /**
+     * @param {string} varName
+     * @param {!Array<number>|undefined} colors
+     */
+    const setCssVar = (varName, colors) => {
+      const rgba = convertToRGBAColor(assert(colors));
+      document.body.style.setProperty(`--${varName}`, rgba);
+    };
+
+    setCssVar('search-box-bg', theme.searchBox.bg);
+    setCssVar('search-box-icon', theme.searchBox.icon);
+    setCssVar('search-box-placeholder', theme.searchBox.placeholder);
+    setCssVar('search-box-results-bg', theme.searchBox.resultsBg);
+    setCssVar(
+        'search-box-results-bg-hovered', theme.searchBox.resultsBgHovered);
+    setCssVar(
+        'search-box-results-bg-selected', theme.searchBox.resultsBgSelected);
+    setCssVar('search-box-results-dim', theme.searchBox.resultsDim);
+    setCssVar('search-box-results-text', theme.searchBox.resultsText);
+    setCssVar('search-box-results-url', theme.searchBox.resultsUrl);
+    setCssVar('search-box-text', theme.searchBox.text);
+    setCssVar('remove-match-hovered', removeMatchHovered);
+    setCssVar('remove-match-focused', removeMatchFocused);
   }
 }
 
@@ -1807,13 +1793,14 @@ function setAttributionVisibility(show) {
   $(IDS.ATTRIBUTION).style.display = show ? '' : 'none';
 }
 
-/** @param {!Array<!AutocompleteMatch>} matches */
-function setAutocompleteMatches(matches) {
-  autocompleteMatches = matches;
-  if (matches.length === 0) {
-    window.chrome.embeddedSearch.searchBox.stopAutocomplete(
-        /*clearResult=*/ true);
-  }
+/** @suppress {checkTypes} */
+function clearAutocompleteMatches() {
+  autocompleteMatches = [];
+  window.chrome.embeddedSearch.searchBox.stopAutocomplete(
+      /*clearResult=*/ true);
+  // Autocomplete sends updates once it is stopped. Invalidate those results
+  // by setting the last queried input to its uninitialized value.
+  lastInput = undefined;
 }
 
 /**

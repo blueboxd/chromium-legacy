@@ -155,7 +155,7 @@ class DemoSetupTest : public LoginManagerTest {
   void SetUpOnMainThread() override {
     LoginManagerTest::SetUpOnMainThread();
     DisableConfirmationDialogAnimations();
-    official_build_override_ = WizardController::ForceOfficialBuildForTesting();
+    branded_build_override_ = WizardController::ForceBrandedBuildForTesting();
     DisconnectAllNetworks();
   }
 
@@ -456,7 +456,7 @@ class DemoSetupTest : public LoginManagerTest {
   // TODO(agawronska): Maybe create a separate test fixture for offline setup.
   base::ScopedTempDir fake_demo_resources_dir_;
   policy::MockCloudPolicyStore mock_policy_store_;
-  std::unique_ptr<base::AutoReset<bool>> official_build_override_;
+  std::unique_ptr<base::AutoReset<bool>> branded_build_override_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoSetupTest);
 };

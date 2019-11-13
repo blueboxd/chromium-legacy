@@ -241,40 +241,6 @@ void AnimateHideWindow_BrightnessGrayscale(aura::Window* window) {
   AnimateShowHideWindowCommon_BrightnessGrayscale(window, false);
 }
 
-bool AnimateShowWindow_SlideDown(aura::Window* window) {
-  HomeScreenController* home_screen_controller =
-      Shell::Get()->home_screen_controller();
-  const TabletModeController* tablet_mode_controller =
-      Shell::Get()->tablet_mode_controller();
-
-  if (home_screen_controller && tablet_mode_controller &&
-      tablet_mode_controller->InTabletMode()) {
-    // Slide down the window from above screen to show and, meanwhile, slide
-    // down the home launcher off screen.
-    HomeLauncherGestureHandler* handler =
-        home_screen_controller->home_launcher_gesture_handler();
-    if (handler &&
-        handler->HideHomeLauncherForWindow(
-            display::Screen::GetScreen()->GetDisplayNearestView(window),
-            window)) {
-      // Now that the window has been restored, we need to clear its animation
-      // style to default so that normal animation applies.
-      ::wm::SetWindowVisibilityAnimationType(
-          window, ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT);
-      return true;
-    }
-  }
-
-  // Fallback to no animation.
-  return false;
-}
-
-bool AnimateHideWindow_SlideDown(aura::Window* window) {
-  // The hide animation should be handled in HomeLauncherGestureHandler, so
-  // fallback to no animation.
-  return false;
-}
-
 void AnimateHideWindow_SlideOut(aura::Window* window) {
   base::TimeDelta duration =
       base::TimeDelta::FromMilliseconds(PipPositioner::kPipDismissTimeMs);
@@ -321,9 +287,6 @@ bool AnimateShowWindow(aura::Window* window) {
     case WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE:
       AnimateShowWindow_BrightnessGrayscale(window);
       return true;
-    case WINDOW_VISIBILITY_ANIMATION_TYPE_SLIDE_DOWN:
-      return AnimateShowWindow_SlideDown(window);
-      return true;
     case WINDOW_VISIBILITY_ANIMATION_TYPE_FADE_IN_SLIDE_OUT:
       AnimateShowWindow_FadeIn(window);
       return true;
@@ -349,8 +312,6 @@ bool AnimateHideWindow(aura::Window* window) {
     case WINDOW_VISIBILITY_ANIMATION_TYPE_BRIGHTNESS_GRAYSCALE:
       AnimateHideWindow_BrightnessGrayscale(window);
       return true;
-    case WINDOW_VISIBILITY_ANIMATION_TYPE_SLIDE_DOWN:
-      return AnimateHideWindow_SlideDown(window);
     case WINDOW_VISIBILITY_ANIMATION_TYPE_FADE_IN_SLIDE_OUT:
       AnimateHideWindow_SlideOut(window);
       return true;

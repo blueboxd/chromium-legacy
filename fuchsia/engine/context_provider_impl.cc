@@ -24,15 +24,19 @@
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/fuchsia/default_job.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "components/viz/common/features.h"
 #include "content/public/common/content_switches.h"
@@ -40,6 +44,7 @@
 #include "fuchsia/engine/switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "media/base/key_system_names.h"
+#include "media/base/media_switches.h"
 #include "net/http/http_util.h"
 #include "services/service_manager/sandbox/fuchsia/sandbox_policy_fuchsia.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
@@ -102,6 +107,34 @@ bool SetContentDirectoriesInCommandLine(
                                   base::JoinString(directory_pairs, ","));
 
   return true;
+}
+
+constexpr char kConfigFileName[] = "/config/data/config.json";
+
+base::Value LoadConfigFrom(const base::FilePath& file_path) {
+  if (!base::PathExists(file_path)) {
+    DLOG(WARNING) << file_path.value()
+                  << " doesn't exist. Using default WebEngine configuration.";
+    return base::Value(base::Value::Type::DICTIONARY);
+  }
+
+  std::string file_content;
+  bool loaded = base::ReadFileToString(file_path, &file_content);
+  CHECK(loaded) << "Failed to read " << file_path.value();
+
+  base::JSONReader reader;
+  base::Optional<base::Value> parsed = reader.Read(file_content);
+  CHECK(parsed) << "Failed to parse " << file_path.value() << ": "
+                << reader.GetErrorMessage();
+  CHECK(parsed->is_dict()) << "Config is not a JSON dictinary: "
+                           << file_path.value();
+
+  return std::move(parsed.value());
+}
+
+const base::Value& GetWebEngineConfig() {
+  static base::Value config = LoadConfigFrom(base::FilePath(kConfigFileName));
+  return config;
 }
 
 // Returns true if DRM is supported in current configuration. Currently we
@@ -238,9 +271,8 @@ void ContextProviderImpl::Create(
     enable_playready = false;
   }
 
-  bool enable_protected_graphics = enable_widevine || enable_playready;
-
-  if (enable_protected_graphics && !enable_vulkan) {
+  bool enable_drm = enable_widevine || enable_playready;
+  if (enable_drm && !enable_vulkan) {
     DLOG(ERROR) << "WIDEVINE_CDM and PLAYREADY_CDM features require VULKAN.";
     context_request.Close(ZX_ERR_INVALID_ARGS);
     return;
@@ -269,6 +301,27 @@ void ContextProviderImpl::Create(
     // Context will still run a GPU process, but will not support WebGL.
     launch_command.AppendSwitch(switches::kDisableGpu);
     launch_command.AppendSwitch(switches::kDisableSoftwareRasterizer);
+  }
+
+  const base::Value& web_engine_config = GetWebEngineConfig();
+  bool allow_protected_graphics =
+      web_engine_config.FindBoolPath("allow-protected-graphics")
+          .value_or(false);
+  bool force_protected_graphics =
+      web_engine_config.FindBoolPath("force-protected-graphics")
+          .value_or(false);
+  bool enable_protected_graphics =
+      (enable_drm && allow_protected_graphics) || force_protected_graphics;
+
+  if (enable_protected_graphics) {
+    launch_command.AppendSwitch(switches::kEnforceVulkanProtectedMemory);
+    launch_command.AppendSwitch(switches::kEnableProtectedVideoBuffers);
+    bool force_protected_video_buffers =
+        web_engine_config.FindBoolPath("force-protected-video-buffers")
+            .value_or(false);
+    if (force_protected_video_buffers) {
+      launch_command.AppendSwitch(switches::kForceProtectedVideoOutputBuffers);
+    }
   }
 
   if (enable_widevine) {

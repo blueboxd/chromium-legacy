@@ -14,6 +14,10 @@ class TabObserver {
   // The URL bar should be updated to |url|.
   virtual void DisplayedUrlChanged(const GURL& url) {}
 
+  // Triggered when the render process dies, either due to crash or killed by the system to
+  // reclaim memory.
+  virtual void OnRenderProcessGone() {}
+
  protected:
   virtual ~TabObserver() {}
 };

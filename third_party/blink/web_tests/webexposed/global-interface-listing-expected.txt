@@ -11074,19 +11074,12 @@ interface XRHitResult
     attribute @@toStringTag
     getter hitMatrix
     method constructor
-interface XRHitTestOptions
-    attribute @@toStringTag
-    getter offsetRay
-    getter space
-    method constructor
 interface XRHitTestResult
     attribute @@toStringTag
-    getter hitTestOptions
     method constructor
     method getPose
 interface XRHitTestSource
     attribute @@toStringTag
-    getter hitTestOptions
     method constructor
 interface XRInputSource
     attribute @@toStringTag

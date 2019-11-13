@@ -517,7 +517,7 @@ void MediaKeySession::GenerateRequestTask(ContentDecryptionModuleResult* result,
   // initializeNewSession() in Chromium will execute steps 10.1 to 10.9.
   session_->InitializeNewSession(
       init_data_type, static_cast<unsigned char*>(init_data_buffer->Data()),
-      init_data_buffer->ByteLength(), session_type_, result->Result());
+      init_data_buffer->ByteLengthAsSizeT(), session_type_, result->Result());
 
   // Remaining steps (10.10) executed in finishGenerateRequest(),
   // called when |result| is resolved.
@@ -732,7 +732,7 @@ void MediaKeySession::UpdateTask(ContentDecryptionModuleResult* result,
 
   // update() in Chromium will execute steps 6.1 through 6.8.
   session_->Update(static_cast<unsigned char*>(sanitized_response->Data()),
-                   sanitized_response->ByteLength(), result->Result());
+                   sanitized_response->ByteLengthAsSizeT(), result->Result());
 
   // Last step (6.8.2 Resolve promise) will be done when |result| is resolved.
 }

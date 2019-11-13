@@ -2044,7 +2044,6 @@ Pretende pará-lo?</translation>
 <translation id="3923676227229836009">Esta página tem autorização para ver ficheiros</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3925573269917483990">Câmara:</translation>
-<translation id="3925842537050977900">Soltar da prateleira</translation>
 <translation id="3926002189479431949">Telemóvel Smart Lock alterado</translation>
 <translation id="3927932062596804919">Recusar</translation>
 <translation id="3928570707778085600">Pretende guardar as alterações a <ph name="FILE_OR_FOLDER_NAME" />?</translation>
@@ -2538,7 +2537,6 @@ Pretende pará-lo?</translation>
 <translation id="4689235506267737042">Escolher as preferências de demonstração</translation>
 <translation id="4689421377817139245">Sincronizar este marcador com o seu iPhone</translation>
 <translation id="4690091457710545971">&lt;Quatro ficheiros gerados pelo firmware de Wi-Fi da Intel: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon. Os três primeiros são ficheiros binários que contêm cópias do registo e são confirmados pela Intel como não contendo informações identificativas do dispositivo ou pessoais. O último ficheiro é um rastreio de execução do firmware da Intel; foram dele removidas quaisquer informações identificativas do dispositivo ou pessoais, mas é demasiado grande para apresentar aqui. Estes ficheiros foram gerados como resposta aos recentes problemas de Wi-Fi do seu dispositivo e serão partilhados com a Intel para ajudar a resolver estes problemas.&gt;</translation>
-<translation id="469230890969474295">Pasta OEM</translation>
 <translation id="4692623383562244444">Motores de pesquisa</translation>
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694024090038830733">A configuração da impressora é gerida pelo administrador.</translation>
@@ -2571,7 +2569,6 @@ Pretende pará-lo?</translation>
 <translation id="4737715515457435632">Ligue-se a uma rede</translation>
 <translation id="473775607612524610">Atualizar</translation>
 <translation id="4739639199548674512">Permissões</translation>
-<translation id="4742746985488890273">Afixar na prateleira</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Saiba como atualizar aplicações<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Reativar o som do site}other{Reativar o som dos sites}}</translation>
 <translation id="4746351372139058112">Mensagens</translation>
@@ -3564,7 +3561,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6196854373336333322">A extensão "<ph name="EXTENSION_NAME" />" apoderou-se das suas definições de proxy, o que significa que pode alterar, interromper ou intercetar qualquer coisa que esteja a fazer online. Se não tem a certeza do motivo pelo qual aconteceu esta alteração, é provável que não a queira.</translation>
 <translation id="6198102561359457428">Terminar sessão e, em seguida, iniciar sessão novamente...</translation>
 <translation id="6198252989419008588">Alterar PIN</translation>
-<translation id="6201792273624501289">Aplicações para Linux</translation>
 <translation id="6202304368170870640">Pode utilizar o PIN para iniciar sessão ou desbloquear o dispositivo.</translation>
 <translation id="6206311232642889873">Cop&amp;iar Imagem</translation>
 <translation id="6207200176136643843">Repor o nível de zoom predefinido</translation>
@@ -5597,7 +5593,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="9130015405878219958">Introduzido modo inválido.</translation>
 <translation id="9131487537093447019">Envie mensagens para e receba mensagens de dispositivos Bluetooth.</translation>
 <translation id="9134304429738380103">Sim, aceito.</translation>
-<translation id="9135090785674039430">Quando ativados, os sites não podem utilizar cookies que monitorizam o utilizador na Web. Alguns Websites podem deixar de funcionar.</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9137157311132182254">Motor de pesquisa preferido</translation>
 <translation id="9137248913990643158">Comece e inicie sessão no Chrome antes de utilizar esta aplicação.</translation>

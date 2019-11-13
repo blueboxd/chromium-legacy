@@ -34,12 +34,12 @@ std::unique_ptr<UiInterface> UiModuleFactory::Create(
   // make it tolerant of two different variants of the VR lib (one for Chrome,
   // one for Monochrome).
   const std::vector<const std::string> library_name_possibilities = {
-      "monochrome_vr",
-      "chrome_vr",
+      "monochrome_vr_partition",
+      "chrome_vr_partition",
   };
 
   void* ui_library_handle = nullptr;
-  const std::string partition_name = "vr";
+  const std::string partition_name = "vr_partition";
   for (const auto& library_name : library_name_possibilities) {
     ui_library_handle =
         base::android::BundleUtils::DlOpenModuleLibraryPartition(

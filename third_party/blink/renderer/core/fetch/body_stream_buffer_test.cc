@@ -388,7 +388,7 @@ TEST_F(BodyStreamBufferTest, LoadBodyStreamBufferAsArrayBuffer) {
   EXPECT_FALSE(buffer->HasPendingActivity());
   ASSERT_TRUE(array_buffer);
   EXPECT_EQ("hello", String(static_cast<const char*>(array_buffer->Data()),
-                            array_buffer->ByteLength()));
+                            array_buffer->ByteLengthAsSizeT()));
 }
 
 TEST_F(BodyStreamBufferTest, LoadBodyStreamBufferAsBlob) {

@@ -7,11 +7,10 @@
 """Deploys Fuchsia packages to an Amber repository in a Fuchsia
 build output directory."""
 
+import amber_repo
 import argparse
 import os
 import sys
-
-from common import PublishPackage
 
 
 # Populates the GDB-standard symbol directory structure |build_ids_path| with
@@ -54,10 +53,12 @@ def main():
     return 1
 
   fuchsia_out_dir = os.path.expanduser(args.fuchsia_out_dir.pop())
-  tuf_root = os.path.join(fuchsia_out_dir, 'amber-files')
-  print('Installing packages and symbols in Amber repo %s...' % tuf_root)
+  repo = amber_repo.ExternalAmberRepo(
+      os.path.join(fuchsia_out_dir, 'amber-files'))
+  print('Installing packages and symbols in Amber repo %s...' % repo.GetPath())
+
   for package in args.package:
-    PublishPackage(package, tuf_root)
+    repo.PublishPackage(package)
     InstallSymbols(os.path.join(os.path.dirname(package), 'ids.txt'),
                    os.path.join(fuchsia_out_dir, '.build-id'))
 

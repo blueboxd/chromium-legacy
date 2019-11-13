@@ -40,6 +40,7 @@ class WebContentsObserverProxy : public WebContentsObserver {
                    const GURL& validated_url,
                    int error_code,
                    const base::string16& error_description) override;
+  void DidChangeVisibleSecurityState() override;
   void DocumentAvailableInMainFrame() override;
   void DidFirstVisuallyNonEmptyPaint() override;
   void OnVisibilityChanged(content::Visibility visibility) override;

@@ -11,6 +11,10 @@
 namespace ash {
 namespace features {
 
+// Enables the UI to support Ambient EQ if the device supports it.
+// See https://crbug.com/1021193 for more details.
+ASH_PUBLIC_EXPORT extern const base::Feature kAllowAmbientEQ;
+
 // Enables the docked (a.k.a. picture-in-picture) magnifier.
 // TODO(afakhry): Remove this after the feature is fully launched.
 // https://crbug.com/709824.
@@ -128,6 +132,8 @@ ASH_PUBLIC_EXPORT extern const base::Feature kSwipingFromLeftEdgeToGoBack;
 // TODO(https://crbug.com/992642): Remove this after this feature is fully
 // launched.
 ASH_PUBLIC_EXPORT extern const base::Feature kDragFromShelfToHomeOrOverview;
+
+ASH_PUBLIC_EXPORT bool IsAllowAmbientEQEnabled();
 
 ASH_PUBLIC_EXPORT bool IsHideArcMediaNotificationsEnabled();
 

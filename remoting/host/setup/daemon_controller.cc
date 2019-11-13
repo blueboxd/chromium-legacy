@@ -51,9 +51,9 @@ void DaemonController::GetConfig(const GetConfigCallback& done) {
   ServiceOrQueueRequest(request);
 }
 
-bool DaemonController::CheckPermission() {
+void DaemonController::CheckPermission(BoolCallback callback) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-  return delegate_->CheckPermission();
+  return delegate_->CheckPermission(std::move(callback));
 }
 
 void DaemonController::SetConfigAndStart(

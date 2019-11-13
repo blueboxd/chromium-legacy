@@ -6,7 +6,6 @@
 
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "net/base/features.h"
 
 namespace content {
 
@@ -22,13 +21,6 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
     // State to override the feature with.
     base::FeatureList::OverrideState override_state;
   } override_info[] = {
-      // Experimental Cookie SameSite features.
-      {switches::kEnableExperimentalWebPlatformFeatures,
-       std::cref(net::features::kSameSiteByDefaultCookies),
-       base::FeatureList::OVERRIDE_ENABLE_FEATURE},
-      {switches::kEnableExperimentalWebPlatformFeatures,
-       std::cref(net::features::kCookiesWithoutSameSiteMustBeSecure),
-       base::FeatureList::OVERRIDE_ENABLE_FEATURE},
       {switches::kEnableExperimentalWebPlatformFeatures,
        std::cref(features::kCookieDeprecationMessages),
        base::FeatureList::OVERRIDE_ENABLE_FEATURE},

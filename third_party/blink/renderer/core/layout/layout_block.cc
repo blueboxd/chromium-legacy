@@ -159,46 +159,7 @@ void LayoutBlock::WillBeDestroyed() {
 
 void LayoutBlock::StyleWillChange(StyleDifference diff,
                                   const ComputedStyle& new_style) {
-  const ComputedStyle* old_style = Style();
-
   SetIsAtomicInlineLevel(new_style.IsDisplayInlineType());
-
-  if (old_style && Parent()) {
-    bool old_style_contains_fixed_position = ComputeIsFixedContainer(old_style);
-    bool old_style_contains_absolute_position =
-        ComputeIsAbsoluteContainer(old_style);
-    bool new_style_contains_fixed_position =
-        ComputeIsFixedContainer(&new_style);
-    bool new_style_contains_absolute_position =
-        ComputeIsAbsoluteContainer(&new_style);
-
-    if ((old_style_contains_fixed_position &&
-         !new_style_contains_fixed_position) ||
-        (old_style_contains_absolute_position &&
-         !new_style_contains_absolute_position)) {
-      // Clear our positioned objects list. Our absolute and fixed positioned
-      // descendants will be inserted into our containing block's positioned
-      // objects list during layout.
-      RemovePositionedObjects(nullptr, kNewContainingBlock);
-    }
-    if (!old_style_contains_absolute_position &&
-        new_style_contains_absolute_position) {
-      // Remove our absolutely positioned descendants from their current
-      // containing block.
-      // They will be inserted into our positioned objects list during layout.
-      if (LayoutBlock* cb = ContainingBlockForAbsolutePosition())
-        cb->RemovePositionedObjects(this, kNewContainingBlock);
-    }
-    if (!old_style_contains_fixed_position &&
-        new_style_contains_fixed_position) {
-      // Remove our fixed positioned descendants from their current containing
-      // block.
-      // They will be inserted into our positioned objects list during layout.
-      if (LayoutBlock* cb = ContainingBlockForFixedPosition())
-        cb->RemovePositionedObjects(this, kNewContainingBlock);
-    }
-  }
-
   LayoutBox::StyleWillChange(diff, new_style);
 }
 

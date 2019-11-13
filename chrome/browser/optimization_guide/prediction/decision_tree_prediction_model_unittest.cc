@@ -83,10 +83,14 @@ TEST(DecisionTreePredictionModel, ValidDecisionTreeModel) {
   std::unique_ptr<PredictionModel> model =
       PredictionModel::Create(std::move(prediction_model), {"agg1"});
   EXPECT_TRUE(model);
+
+  double prediction_score;
   EXPECT_EQ(OptimizationTargetDecision::kPageLoadDoesNotMatch,
-            model->Predict({{"agg1", 1.0}}));
+            model->Predict({{"agg1", 1.0}}, &prediction_score));
+  EXPECT_EQ(4., prediction_score);
   EXPECT_EQ(OptimizationTargetDecision::kPageLoadMatches,
-            model->Predict({{"agg1", 2.0}}));
+            model->Predict({{"agg1", 2.0}}, &prediction_score));
+  EXPECT_EQ(8., prediction_score);
 }
 
 TEST(DecisionTreePredictionModel, InequalityLessThan) {
@@ -111,10 +115,14 @@ TEST(DecisionTreePredictionModel, InequalityLessThan) {
   std::unique_ptr<PredictionModel> model =
       PredictionModel::Create(std::move(prediction_model), {"agg1"});
   EXPECT_TRUE(model);
+
+  double prediction_score;
   EXPECT_EQ(OptimizationTargetDecision::kPageLoadDoesNotMatch,
-            model->Predict({{"agg1", 0.5}}));
+            model->Predict({{"agg1", 0.5}}, &prediction_score));
+  EXPECT_EQ(4., prediction_score);
   EXPECT_EQ(OptimizationTargetDecision::kPageLoadMatches,
-            model->Predict({{"agg1", 2.0}}));
+            model->Predict({{"agg1", 2.0}}, &prediction_score));
+  EXPECT_EQ(8., prediction_score);
 }
 
 TEST(DecisionTreePredictionModel, InequalityGreaterOrEqual) {
@@ -139,10 +147,14 @@ TEST(DecisionTreePredictionModel, InequalityGreaterOrEqual) {
   std::unique_ptr<PredictionModel> model =
       PredictionModel::Create(std::move(prediction_model), {"agg1"});
   EXPECT_TRUE(model);
+
+  double prediction_score;
   EXPECT_EQ(OptimizationTargetDecision::kPageLoadMatches,
-            model->Predict({{"agg1", 0.5}}));
+            model->Predict({{"agg1", 0.5}}, &prediction_score));
+  EXPECT_EQ(8., prediction_score);
   EXPECT_EQ(OptimizationTargetDecision::kPageLoadDoesNotMatch,
-            model->Predict({{"agg1", 1.0}}));
+            model->Predict({{"agg1", 1.0}}, &prediction_score));
+  EXPECT_EQ(4., prediction_score);
 }
 
 TEST(DecisionTreePredictionModel, InequalityGreaterThan) {
@@ -167,10 +179,14 @@ TEST(DecisionTreePredictionModel, InequalityGreaterThan) {
   std::unique_ptr<PredictionModel> model =
       PredictionModel::Create(std::move(prediction_model), {"agg1"});
   EXPECT_TRUE(model);
+
+  double prediction_score;
   EXPECT_EQ(OptimizationTargetDecision::kPageLoadMatches,
-            model->Predict({{"agg1", 0.5}}));
+            model->Predict({{"agg1", 0.5}}, &prediction_score));
+  EXPECT_EQ(8., prediction_score);
   EXPECT_EQ(OptimizationTargetDecision::kPageLoadDoesNotMatch,
-            model->Predict({{"agg1", 2.0}}));
+            model->Predict({{"agg1", 2.0}}, &prediction_score));
+  EXPECT_EQ(4., prediction_score);
 }
 
 TEST(DecisionTreePredictionModel, MissingInequalityTest) {
@@ -416,10 +432,14 @@ TEST(DecisionTreePredictionModel, ValidEnsembleModel) {
   std::unique_ptr<PredictionModel> model =
       PredictionModel::Create(std::move(prediction_model), {"agg1"});
   EXPECT_TRUE(model);
+
+  double prediction_score;
   EXPECT_EQ(OptimizationTargetDecision::kPageLoadDoesNotMatch,
-            model->Predict({{"agg1", 1.0}}));
+            model->Predict({{"agg1", 1.0}}, &prediction_score));
+  EXPECT_EQ(4., prediction_score);
   EXPECT_EQ(OptimizationTargetDecision::kPageLoadMatches,
-            model->Predict({{"agg1", 2.0}}));
+            model->Predict({{"agg1", 2.0}}, &prediction_score));
+  EXPECT_EQ(8., prediction_score);
 }
 
 TEST(DecisionTreePredictionModel, EnsembleWithNoMembers) {

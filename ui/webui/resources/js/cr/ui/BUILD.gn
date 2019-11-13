@@ -25,6 +25,7 @@ js_type_check("ui_resources") {
     ":focus_row",
     ":focus_row_behavior",
     ":focus_without_ink",
+    ":keyboard_shortcut_list",
     ":list",
     ":list_item",
     ":list_selection_controller",
@@ -64,6 +65,7 @@ js_library("bubble") {
 
 js_library("command") {
   deps = [
+    ":keyboard_shortcut_list",
     "..:ui",
     "../..:cr",
   ]
@@ -139,6 +141,12 @@ js_library("focus_without_ink") {
 js_library("grid") {
   deps = [
     ":list",
+  ]
+}
+
+js_library("keyboard_shortcut_list") {
+  deps = [
+    "../..:cr",
   ]
 }
 
@@ -262,20 +270,24 @@ js_modulizer("modulize") {
     "drag_wrapper.js",
     "focus_outline_manager.js",
     "focus_row.js",
+    "focus_row_behavior.js",
     "focus_without_ink.js",
   ]
   namespace_rewrites = [
     "cr.ui.DragWrapperDelegate|DragWrapperDelegate",
     "cr.ui.FocusRowDelegate|FocusRowDelegate",
     "cr.ui.FocusRow|FocusRow",
+    "cr.ui.focusWithoutInk|focusWithoutInk",
   ]
 }
 
 js_type_check("ui_resources_modules") {
+  is_polymer3 = true
   deps = [
     ":drag_wrapper.m",
     ":focus_outline_manager.m",
     ":focus_row.m",
+    ":focus_row_behavior.m",
     ":focus_without_ink.m",
   ]
 }
@@ -302,6 +314,19 @@ js_library("focus_row.m") {
   ]
   sources = [
     "$root_gen_dir/ui/webui/resources/js/cr/ui/focus_row.m.js",
+  ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("focus_row_behavior.m") {
+  deps = [
+    ":focus_row.m",
+    ":focus_without_ink.m",
+    "../..:assert.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+  sources = [
+    "$root_gen_dir/ui/webui/resources/js/cr/ui/focus_row_behavior.m.js",
   ]
   extra_deps = [ ":modulize" ]
 }

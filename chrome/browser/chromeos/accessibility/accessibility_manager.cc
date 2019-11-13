@@ -919,8 +919,8 @@ void AccessibilityManager::OnSwitchAccessChanged() {
   if (!command_line->HasSwitch(
           ::switches::kEnableExperimentalAccessibilitySwitchAccess)) {
     if (enabled) {
-      LOG(WARNING) << "Switch access enabled but experimental accessibility "
-                   << "switch access flag is not set.";
+      LOG(WARNING) << "Switch Access enabled but experimental accessibility "
+                   << "Switch Access flag is not set.";
     }
     return;
   }

@@ -1518,12 +1518,12 @@ Status ExecutePerformActions(Session* session,
             action_input_states[j]->SetInteger("y", action_locations[id].y());
           }
         }
-
-        if (tick_duration > 0) {
-          base::PlatformThread::Sleep(
-              base::TimeDelta::FromMilliseconds(tick_duration));
-        }
       }
+    }
+
+    if (tick_duration > 0) {
+      base::PlatformThread::Sleep(
+          base::TimeDelta::FromMilliseconds(tick_duration));
     }
   }
 

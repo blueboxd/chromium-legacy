@@ -28,6 +28,8 @@ FAIL Treats display:contents in a display:none subtree as not rendered assert_th
 FAIL Throws if the target effect is disconnected assert_throws: function "() => {
     animation.commitStyles();
   }" threw object "TypeError: animation.commitStyles is not a function" that is not a DOMException InvalidStateError: property "code" is equal to undefined, expected 11
-FAIL Checks the pseudo element condition before the not rendered condition Cannot read property 'remove' of undefined
+FAIL Checks the pseudo element condition before the not rendered condition assert_throws: function "() => {
+    animation.commitStyles();
+  }" threw object "TypeError: animation.commitStyles is not a function" that is not a DOMException NoModificationAllowedError: property "code" is equal to undefined, expected 7
 Harness: the test ran to completion.
 

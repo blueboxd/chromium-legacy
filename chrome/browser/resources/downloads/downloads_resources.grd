@@ -68,6 +68,7 @@
           type="chrome_html" />
       <structure name="IDR_DOWNLOADS_MANAGER_JS"
           file="manager.js"
+          preprocess="true"
           type="chrome_html" />
       <structure name="IDR_DOWNLOADS_SEARCH_SERVICE_HTML"
           file="search_service.html"

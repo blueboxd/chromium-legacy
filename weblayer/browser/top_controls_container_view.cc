@@ -120,10 +120,10 @@ static jlong JNI_TopControlsContainerView_CreateTopControlsContainerView(
     const base::android::JavaParamRef<jobject>&
         java_top_controls_container_view,
     jlong native_content_view_render_view) {
-  return reinterpret_cast<jlong>(new TopControlsContainerView(
-      java_top_controls_container_view,
-      reinterpret_cast<ContentViewRenderView*>(
-          native_content_view_render_view)));
+  return reinterpret_cast<jlong>(
+      new TopControlsContainerView(java_top_controls_container_view,
+                                   reinterpret_cast<ContentViewRenderView*>(
+                                       native_content_view_render_view)));
 }
 
 }  // namespace weblayer

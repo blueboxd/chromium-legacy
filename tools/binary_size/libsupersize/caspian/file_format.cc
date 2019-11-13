@@ -15,6 +15,7 @@
 #include <iostream>
 #include <memory>
 #include <numeric>
+#include <set>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -155,6 +156,56 @@ void CheckNoNonEmptyLinesRemain(char* rest) {
 
 namespace caspian {
 
+void CalculatePadding(std::vector<Symbol>* raw_symbols) {
+  std::set<const char*> seen_sections;
+  for (size_t i = 1; i < raw_symbols->size(); i++) {
+    const Symbol& prev_symbol = (*raw_symbols)[i - 1];
+    Symbol& symbol = (*raw_symbols)[i];
+
+    if (symbol.IsOverhead()) {
+      symbol.padding = symbol.size;
+    }
+    if (prev_symbol.section_name != symbol.section_name) {
+      if (seen_sections.count(symbol.section_name)) {
+        std::cerr << "Input symbols must be sorted by section, then address: "
+                  << prev_symbol << ", " << symbol << std::endl;
+        exit(1);
+      }
+      seen_sections.insert(symbol.section_name);
+      continue;
+    }
+
+    if (symbol.address <= 0 || prev_symbol.address <= 0 || !symbol.IsNative() ||
+        !prev_symbol.IsNative()) {
+      continue;
+    }
+
+    if (symbol.address == prev_symbol.address) {
+      if (symbol.aliases && symbol.aliases == prev_symbol.aliases) {
+        symbol.padding = prev_symbol.padding;
+        symbol.size = prev_symbol.size;
+        continue;
+      }
+      if (prev_symbol.SizeWithoutPadding() != 0) {
+        // Padding-only symbols happen for ** symbol gaps.
+        std::cerr << "Found duplicate symbols: " << prev_symbol << ", "
+                  << symbol << std::endl;
+        exit(1);
+      }
+    }
+
+    int32_t padding = symbol.address - prev_symbol.EndAddress();
+    symbol.padding = padding;
+    symbol.size += padding;
+    if (symbol.size < 0) {
+      std::cerr << "Symbol has negative size (likely not sorted properly):"
+                << symbol << std::endl;
+      std::cerr << "prev symbol: " << prev_symbol << std::endl;
+      exit(1);
+    }
+  }
+}
+
 void ParseSizeInfo(const char* gzipped,
                    unsigned long len,
                    ::caspian::SizeInfo* info) {
@@ -257,6 +308,8 @@ void ParseSizeInfo(const char* gzipped,
   // Construct raw symbols
   for (int section_idx = 0; section_idx < n_sections; section_idx++) {
     const char* cur_section_name = info->section_names[section_idx];
+    caspian::SectionId cur_section_id =
+        info->ShortSectionName(cur_section_name);
     const int cur_section_count = section_counts[section_idx];
     const std::vector<int64_t>& cur_addresses = addresses[section_idx];
     const std::vector<int32_t>& cur_sizes = sizes[section_idx];
@@ -295,9 +348,10 @@ void ParseSizeInfo(const char* gzipped,
           }
         }
       }
-      new_sym.section_name = cur_section_name;
+      new_sym.sectionId = cur_section_id;
       new_sym.address = cur_addresses[i];
       new_sym.size = cur_sizes[i];
+      new_sym.section_name = cur_section_name;
       new_sym.object_path = info->object_paths[cur_path_indices[i]];
       new_sym.source_path = info->source_paths[cur_path_indices[i]];
       if (has_components) {
@@ -318,6 +372,13 @@ void ParseSizeInfo(const char* gzipped,
         alias_counter--;
       }
     }
+  }
+
+  CalculatePadding(&info->raw_symbols);
+
+  for (caspian::Symbol& sym : info->raw_symbols) {
+    size_t alias_count = sym.aliases ? sym.aliases->size() : 1;
+    sym.pss = static_cast<float>(sym.size) / alias_count;
   }
 
   // If there are unparsed non-empty lines, something's gone wrong.

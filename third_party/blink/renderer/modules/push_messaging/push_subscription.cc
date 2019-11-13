@@ -27,7 +27,7 @@ namespace {
 // based on the value of |buffer| while encoding, assuming a known length.
 String ToBase64URLWithoutPadding(DOMArrayBuffer* buffer) {
   String value = WTF::Base64URLEncode(static_cast<const char*>(buffer->Data()),
-                                      buffer->ByteLength());
+                                      buffer->DeprecatedByteLengthAsUnsigned());
   DCHECK_GT(value.length(), 0u);
 
   unsigned padding_to_remove = 0;

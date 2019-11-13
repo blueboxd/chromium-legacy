@@ -5877,12 +5877,8 @@ crbug.com/1021407 [ Retina Release ] virtual/audio-service/media/video-controls-
 crbug.com/1021407 [ Mac10.11 ] virtual/audio-service/media/controls/video-overlay-cast-dark-rendering.html [ Pass Failure ]
 crbug.com/1021407 [ Mac10.11 ] media/controls/video-overlay-cast-dark-rendering.html [ Pass Failure ]
 
-# Temporarily disabled to land accessibility changes in DevTools
-crbug.com/963183 http/tests/devtools/sources/debugger-ui/error-in-watch-expressions.js [ Pass Failure ]
-crbug.com/963183 http/tests/devtools/sources/debugger-ui/watch-expressions-preserve-expansion.js [ Pass Failure ]
-crbug.com/963183 http/tests/devtools/sources/debugger/debugger-proto-property.js [ Pass Failure ]
-
 # Temporarily disabled to land scope changes in DevTools
 crbug.com/963183 http/tests/devtools/sources/debugger-pause/set-return-value.js [ Pass Failure ]
+crbug.com/963183 http/tests/devtools/sources/debugger/debugger-proto-property.js [ Pass Failure ]
 
 crbug.com/892983 external/wpt/css/css-pseudo/first-line-with-before-after.html [ Failure ]

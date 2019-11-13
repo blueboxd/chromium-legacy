@@ -49,6 +49,11 @@ MEDIA_EXPORT extern const char kTrySupportedChannelLayouts[];
 MEDIA_EXPORT extern const char kWaveOutBuffers[];
 #endif
 
+#if defined(OS_FUCHSIA)
+MEDIA_EXPORT extern const char kEnableProtectedVideoBuffers[];
+MEDIA_EXPORT extern const char kForceProtectedVideoOutputBuffers[];
+#endif
+
 #if defined(USE_CRAS)
 MEDIA_EXPORT extern const char kUseCras[];
 #endif

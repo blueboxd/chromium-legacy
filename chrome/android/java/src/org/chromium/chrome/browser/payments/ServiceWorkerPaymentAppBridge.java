@@ -354,6 +354,13 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
     }
 
     @CalledByNative
+    private static Object createSupportedDelegations(
+            boolean shippingAddress, boolean payerName, boolean payerPhone, boolean payerEmail) {
+        return new ServiceWorkerPaymentApp.SupportedDelegations(
+                shippingAddress, payerName, payerPhone, payerEmail);
+    }
+
+    @CalledByNative
     private static void addCapabilities(Object[] capabilities, int index,
             int[] supportedCardNetworks, int[] supportedCardTypes) {
         assert index < capabilities.length;
@@ -365,8 +372,8 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
     private static void onPaymentAppCreated(long registrationId, String scope,
             @Nullable String name, @Nullable String userHint, String origin, @Nullable Bitmap icon,
             String[] methodNameArray, boolean explicitlyVerified, Object[] capabilities,
-            String[] preferredRelatedApplications, WebContents webContents,
-            PaymentAppFactory.PaymentAppCreatedCallback callback) {
+            String[] preferredRelatedApplications, Object supportedDelegations,
+            WebContents webContents, PaymentAppFactory.PaymentAppCreatedCallback callback) {
         ThreadUtils.assertOnUiThread();
 
         Context context = ChromeActivity.fromWebContents(webContents);
@@ -380,15 +387,15 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
                 scopeUri, name, userHint, origin,
                 icon == null ? null : new BitmapDrawable(context.getResources(), icon),
                 methodNameArray, explicitlyVerified,
-                (ServiceWorkerPaymentApp.Capabilities[]) capabilities,
-                preferredRelatedApplications));
+                (ServiceWorkerPaymentApp.Capabilities[]) capabilities, preferredRelatedApplications,
+                (ServiceWorkerPaymentApp.SupportedDelegations) supportedDelegations));
     }
 
     @CalledByNative
     private static void onInstallablePaymentAppCreated(@Nullable String name, String swUrl,
             String scope, boolean useCache, @Nullable Bitmap icon, String methodName,
-            String[] preferredRelatedApplications, WebContents webContents,
-            PaymentAppFactory.PaymentAppCreatedCallback callback) {
+            String[] preferredRelatedApplications, Object supportedDelegations,
+            WebContents webContents, PaymentAppFactory.PaymentAppCreatedCallback callback) {
         ThreadUtils.assertOnUiThread();
 
         Context context = ChromeActivity.fromWebContents(webContents);
@@ -406,7 +413,8 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
         callback.onPaymentAppCreated(new ServiceWorkerPaymentApp(webContents, name,
                 scopeUri.getHost(), swUri, scopeUri, useCache,
                 icon == null ? null : new BitmapDrawable(context.getResources(), icon), methodName,
-                preferredRelatedApplications));
+                preferredRelatedApplications,
+                (ServiceWorkerPaymentApp.SupportedDelegations) supportedDelegations));
     }
 
     @CalledByNative

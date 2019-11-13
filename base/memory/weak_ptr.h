@@ -140,7 +140,7 @@ class BASE_EXPORT WeakReferenceOwner {
   void Invalidate();
 
  private:
-  mutable scoped_refptr<WeakReference::Flag> flag_;
+  scoped_refptr<WeakReference::Flag> flag_;
 };
 
 // This class simplifies the implementation of WeakPtr's type conversion

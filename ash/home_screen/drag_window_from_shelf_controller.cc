@@ -7,7 +7,7 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/home_screen/home_screen_delegate.h"
-#include "ash/home_screen/window_transform_to_home_screen_animation.h"
+#include "ash/home_screen/window_scale_animation.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
@@ -168,16 +168,17 @@ void DragWindowFromShelfController::Drag(const gfx::Point& location_in_screen,
   if (overview_controller->InOverviewSession()) {
     const SplitViewController::SnapPosition snap_position =
         GetSnapPosition(location_in_screen);
-    SplitViewDragIndicators::WindowDraggingState window_dragging_state =
-        SplitViewDragIndicators::ComputeWindowDraggingState(
-            drag_started_,
-            SplitViewDragIndicators::WindowDraggingState::kFromShelf,
-            snap_position);
     OverviewSession* overview_session = overview_controller->overview_session();
-    overview_session->SetSplitViewDragIndicatorsWindowDraggingState(
-        window_dragging_state, location_in_screen);
+    overview_session->UpdateSplitViewDragIndicatorsWindowDraggingStates(
+        Shell::GetPrimaryRootWindow(), /*is_dragging=*/true,
+        SplitViewDragIndicators::WindowDraggingState::kFromShelf,
+        snap_position);
     overview_session->OnWindowDragContinued(
-        window_, gfx::PointF(location_in_screen), window_dragging_state);
+        window_, gfx::PointF(location_in_screen),
+        SplitViewDragIndicators::ComputeWindowDraggingState(
+            /*is_dragging=*/true,
+            SplitViewDragIndicators::WindowDraggingState::kFromShelf,
+            snap_position));
 
     if (snap_position != SplitViewController::NONE) {
       // If the dragged window is in snap preview area, make sure overview is
@@ -222,14 +223,7 @@ void DragWindowFromShelfController::EndDrag(
     }
     ScaleDownWindowAfterDrag();
   } else if (ShouldRestoreToOriginalBounds(location_in_screen)) {
-    // TODO(crbug.com/997885): Add animation.
-    SetTransform(window_, gfx::Transform());
-    window_->SetProperty(kBackdropWindowMode, original_backdrop_mode_);
-    if (!in_splitview && in_overview) {
-      overview_controller->EndOverview(
-          OverviewSession::EnterExitOverviewType::kImmediateExit);
-    }
-    ReshowHiddenWindowsOnDragEnd();
+    ScaleUpToRestoreWindowAfterDrag();
   } else if (!in_overview) {
     // if overview is not active during the entire drag process, scale down the
     // dragged window to go to home screen.
@@ -261,6 +255,10 @@ void DragWindowFromShelfController::CancelDrag() {
   OnDragEnded(previous_location_in_screen_,
               /*should_drop_window_in_overview=*/false,
               /*snap_position=*/SplitViewController::NONE);
+}
+
+bool DragWindowFromShelfController::IsDraggedWindowAnimating() const {
+  return window_ && window_->layer()->GetAnimator()->is_animating();
 }
 
 void DragWindowFromShelfController::OnWindowDestroying(aura::Window* window) {
@@ -323,9 +321,10 @@ void DragWindowFromShelfController::OnDragEnded(
     ShowOverviewDuringOrAfterDrag();
 
     OverviewSession* overview_session = overview_controller->overview_session();
-    overview_session->SetSplitViewDragIndicatorsWindowDraggingState(
+    overview_session->UpdateSplitViewDragIndicatorsWindowDraggingStates(
+        Shell::GetPrimaryRootWindow(), /*is_dragging=*/false,
         SplitViewDragIndicators::WindowDraggingState::kNoDrag,
-        location_in_screen);
+        SplitViewController::NONE);
     overview_session->OnWindowDragEnded(
         window_, gfx::PointF(location_in_screen),
         should_drop_window_in_overview,
@@ -515,12 +514,38 @@ void DragWindowFromShelfController::ScaleDownWindowAfterDrag() {
   // Do the scale-down transform for the entire transient tree.
   for (auto* window : GetTransientTreeIterator(window_)) {
     // self-destructed when window transform animation is done.
-    new WindowTransformToHomeScreenAnimation(
-        window,
+    new WindowScaleAnimation(
+        window, WindowScaleAnimation::WindowScaleType::kScaleDownToHomeScreen,
         window == window_ ? base::make_optional(original_backdrop_mode_)
                           : base::nullopt,
         base::NullCallback());
   }
+}
+
+void DragWindowFromShelfController::ScaleUpToRestoreWindowAfterDrag() {
+  const bool should_end_overview =
+      Shell::Get()->overview_controller()->InOverviewSession() &&
+      !SplitViewController::Get(Shell::GetPrimaryRootWindow())
+           ->InSplitViewMode();
+  // Do the scale up transform for the entire transient tee.
+  for (auto* window : GetTransientTreeIterator(window_)) {
+    new WindowScaleAnimation(
+        window, WindowScaleAnimation::WindowScaleType::kScaleUpToRestore,
+        window == window_ ? base::make_optional(original_backdrop_mode_)
+                          : base::nullopt,
+        base::BindOnce(
+            &DragWindowFromShelfController::OnWindowRestoredToOrignalBounds,
+            weak_ptr_factory_.GetWeakPtr(), should_end_overview));
+  }
+}
+
+void DragWindowFromShelfController::OnWindowRestoredToOrignalBounds(
+    bool end_overview) {
+  if (end_overview) {
+    Shell::Get()->overview_controller()->EndOverview(
+        OverviewSession::EnterExitOverviewType::kImmediateExit);
+  }
+  ReshowHiddenWindowsOnDragEnd();
 }
 
 }  // namespace ash

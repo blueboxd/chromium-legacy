@@ -1585,6 +1585,21 @@
             ]
         }
     ],
+    "CloudPolicyOverFcm": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "CloudPolicyOverFCM"
+                }
+            ]
+        }
+    ],
     "CompositorImageAnimation": [
         {
             "platforms": [
@@ -2084,6 +2099,21 @@
                     },
                     "enable_features": [
                         "AllowDownloadResumptionWithoutStrongValidators"
+                    ]
+                }
+            ]
+        }
+    ],
+    "DownloadWithServicificationM77": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ServiceManagerForDownload"
                     ]
                 }
             ]
@@ -4254,6 +4284,27 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ClickToOpenPDFPlaceholder"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ParallelDownloadWithQUICAndHTTP2": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "EnableHTTP2",
+                    "enable_features": [
+                        "UseParallelRequestsForHTTP2"
+                    ]
+                },
+                {
+                    "name": "EnableQuic",
+                    "enable_features": [
+                        "UseParallelRequestsForQUIC"
                     ]
                 }
             ]
@@ -6707,31 +6758,9 @@
             ],
             "experiments": [
                 {
-                    "name": "UKM_Enabled",
+                    "name": "UMA_Enabled",
                     "enable_features": [
-                        "DemographicMetricsReporting",
-                        "UkmReportNoisedUserBirthYearAndGender"
-                    ]
-                }
-            ]
-        }
-    ],
-    "UnidoOnSignIn": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SharingDeriveVapidKey",
-                        "SharingUseDeviceInfo",
-                        "SyncDeviceInfoInTransportMode"
+                        "DemographicMetricsReporting"
                     ]
                 }
             ]
@@ -7562,6 +7591,18 @@
                     "enable_features": [
                         "WebRtcHybridAgc"
                     ]
+                }
+            ]
+        }
+    ],
+    "ZippedSystemLogsUpload": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "ZippedSystemLogsUpload"
                 }
             ]
         }

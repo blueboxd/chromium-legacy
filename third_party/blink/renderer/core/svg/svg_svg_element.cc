@@ -202,13 +202,6 @@ bool SVGSVGElement::IsPresentationAttribute(const QualifiedName& name) const {
   return SVGGraphicsElement::IsPresentationAttribute(name);
 }
 
-bool SVGSVGElement::IsPresentationAttributeWithSVGDOM(
-    const QualifiedName& attr_name) const {
-  if (attr_name == svg_names::kWidthAttr || attr_name == svg_names::kHeightAttr)
-    return false;
-  return SVGGraphicsElement::IsPresentationAttributeWithSVGDOM(attr_name);
-}
-
 void SVGSVGElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,

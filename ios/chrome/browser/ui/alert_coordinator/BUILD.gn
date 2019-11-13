@@ -71,24 +71,3 @@ source_set("alert_coordinator_internal") {
   ]
   libs = [ "UIKit.framework" ]
 }
-
-source_set("eg_tests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "alert_coordinator_egtest.mm",
-  ]
-  deps = [
-    ":alert_coordinator",
-    "//base",
-    "//components/strings",
-    "//ios/chrome/browser/ui/util",
-    "//ios/chrome/test/earl_grey:test_support",
-    "//ios/testing/earl_grey:earl_grey_support",
-    "//ios/third_party/earl_grey:earl_grey+link",
-  ]
-  libs = [
-    "UIKit.framework",
-    "XCTest.framework",
-  ]
-}

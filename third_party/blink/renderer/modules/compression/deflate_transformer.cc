@@ -73,7 +73,7 @@ ScriptPromise DeflateTransformer::Transform(
   DCHECK(buffer_source.IsArrayBuffer());
   const auto* array_buffer = buffer_source.GetAsArrayBuffer();
   const uint8_t* start = static_cast<const uint8_t*>(array_buffer->Data());
-  wtf_size_t length = array_buffer->ByteLength();
+  wtf_size_t length = array_buffer->DeprecatedByteLengthAsUnsigned();
   Deflate(start, length, IsFinished(false), controller, exception_state);
 
   return ScriptPromise::CastUndefined(script_state_);

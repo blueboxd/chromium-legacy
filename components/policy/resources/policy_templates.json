@@ -13115,7 +13115,7 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'supported_on': ['chrome.*:80-', 'chrome_os:80-'],
+      'supported_on': ['chrome.*:79-', 'chrome_os:79-'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': True,

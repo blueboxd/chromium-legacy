@@ -20,11 +20,10 @@ class CORE_EXPORT DOMArrayBuffer final : public DOMArrayBufferBase {
   static DOMArrayBuffer* Create(scoped_refptr<ArrayBuffer> buffer) {
     return MakeGarbageCollected<DOMArrayBuffer>(std::move(buffer));
   }
-  static DOMArrayBuffer* Create(unsigned num_elements,
-                                unsigned element_byte_size) {
+  static DOMArrayBuffer* Create(size_t num_elements, size_t element_byte_size) {
     return Create(ArrayBuffer::Create(num_elements, element_byte_size));
   }
-  static DOMArrayBuffer* Create(const void* source, unsigned byte_length) {
+  static DOMArrayBuffer* Create(const void* source, size_t byte_length) {
     return Create(ArrayBuffer::Create(source, byte_length));
   }
   static DOMArrayBuffer* Create(ArrayBufferContents& contents) {
@@ -36,8 +35,8 @@ class CORE_EXPORT DOMArrayBuffer final : public DOMArrayBufferBase {
   // Only for use by XMLHttpRequest::responseArrayBuffer,
   // Internals::serializeObject, and
   // FetchDataLoaderAsArrayBuffer::OnStateChange.
-  static DOMArrayBuffer* CreateUninitializedOrNull(unsigned num_elements,
-                                                   unsigned element_byte_size);
+  static DOMArrayBuffer* CreateUninitializedOrNull(size_t num_elements,
+                                                   size_t element_byte_size);
 
   explicit DOMArrayBuffer(scoped_refptr<ArrayBuffer> buffer)
       : DOMArrayBufferBase(std::move(buffer)) {}

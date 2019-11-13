@@ -13,55 +13,47 @@
 #include "ui/gfx/color_utils.h"
 
 void AddOmniboxColorMixer(ui::ColorProvider* provider, bool high_contrast) {
-  ui::ColorMixer* mixer = provider->AddMixer();
+  ui::ColorMixer& mixer = provider->AddMixer();
   const float minimum_contrast =
       high_contrast ? 6.0f : color_utils::kMinimumReadableContrastRatio;
 
   // Omnibox background colors.
-  mixer->AddRecipe(kColorOmniboxBackground)
-      .AddTransform(ui::GetResultingPaintColor(
-          ui::FromTransformInput(), ui::FromInputColor(kColorToolbar)));
-  mixer->AddRecipe(kColorOmniboxBackgroundHovered)
-      .AddTransform(ui::BlendTowardMaxContrast(
-          ui::FromResultColor(kColorOmniboxBackground), 0x0A));
+  mixer[kColorOmniboxBackground].AddTransform(ui::GetResultingPaintColor(
+      ui::FromTransformInput(), ui::FromInputColor(kColorToolbar)));
+  mixer[kColorOmniboxBackgroundHovered].AddTransform(ui::BlendTowardMaxContrast(
+      ui::FromResultColor(kColorOmniboxBackground), 0x0A));
 
   // Omnibox text colors.
-  mixer->AddRecipe(kColorOmniboxText)
-      .AddTransform(ui::GetResultingPaintColor(
-          ui::FromTransformInput(),
-          ui::FromResultColor(kColorOmniboxBackground)));
+  mixer[kColorOmniboxText].AddTransform(ui::GetResultingPaintColor(
+      ui::FromTransformInput(), ui::FromResultColor(kColorOmniboxBackground)));
   {
-    auto& selected_text =
-        mixer->AddRecipe(kColorOmniboxResultsTextSelected)
-            .AddTransform(ui::FromResultColor(kColorOmniboxText));
+    auto& selected_text = mixer[kColorOmniboxResultsTextSelected].AddTransform(
+        ui::FromResultColor(kColorOmniboxText));
     if (high_contrast)
       selected_text.AddTransform(ui::ContrastInvert(ui::FromTransformInput()));
   }
-  mixer->AddRecipe(kColorOmniboxSelectedKeyword)
-      .AddTransform(ui::SelectBasedOnDarkInput(
-          ui::FromResultColor(kColorOmniboxBackground),
-          ui::FromColor(gfx::kGoogleGrey100),
-          ui::FromResultColor(kColorOmniboxResultsUrl)));
+  mixer[kColorOmniboxSelectedKeyword].AddTransform(
+      ui::SelectBasedOnDarkInput(ui::FromResultColor(kColorOmniboxBackground),
+                                 ui::FromColor(gfx::kGoogleGrey100),
+                                 ui::FromResultColor(kColorOmniboxResultsUrl)));
 
   // Bubble outline colors.
-  mixer->AddRecipe(kColorOmniboxBubbleOutline)
-      .AddTransform(ui::SelectBasedOnDarkInput(
-          ui::FromResultColor(kColorOmniboxBackground),
-          ui::FromColor(gfx::kGoogleGrey100),
-          ui::FromColor(SkColorSetA(gfx::kGoogleGrey900, 0x24))));
-  mixer->AddRecipe(kColorOmniboxBubbleOutlineExperimentalKeywordMode)
-      .AddTransform(ui::FromResultColor(kColorOmniboxSelectedKeyword));
+  mixer[kColorOmniboxBubbleOutline].AddTransform(ui::SelectBasedOnDarkInput(
+      ui::FromResultColor(kColorOmniboxBackground),
+      ui::FromColor(gfx::kGoogleGrey100),
+      ui::FromColor(SkColorSetA(gfx::kGoogleGrey900, 0x24))));
+  mixer[kColorOmniboxBubbleOutlineExperimentalKeywordMode].AddTransform(
+      ui::FromResultColor(kColorOmniboxSelectedKeyword));
 
   // Results background colors.
-  mixer->AddRecipe(kColorOmniboxResultsBackground)
-      .AddTransform(
-          ui::GetColorWithMaxContrast(ui::FromResultColor(kColorOmniboxText)));
-  mixer->AddRecipe(kColorOmniboxResultsBackgroundHovered)
-      .AddTransform(ui::BlendTowardMaxContrast(
+  mixer[kColorOmniboxResultsBackground].AddTransform(
+      ui::GetColorWithMaxContrast(ui::FromResultColor(kColorOmniboxText)));
+  mixer[kColorOmniboxResultsBackgroundHovered].AddTransform(
+      ui::BlendTowardMaxContrast(
           ui::FromResultColor(kColorOmniboxResultsBackground),
           gfx::kGoogleGreyAlpha200));
-  mixer->AddRecipe(kColorOmniboxResultsBackgroundSelected)
-      .AddTransform(ui::BlendTowardMaxContrast(
+  mixer[kColorOmniboxResultsBackgroundSelected].AddTransform(
+      ui::BlendTowardMaxContrast(
           ui::GetColorWithMaxContrast(
               ui::FromResultColor(kColorOmniboxResultsTextSelected)),
           gfx::kGoogleGreyAlpha300));
@@ -74,12 +66,11 @@ void AddOmniboxColorMixer(ui::ColorProvider* provider, bool high_contrast) {
           ui::DeriveDefaultIconColor(ui::FromResultColor(text_id)),
           ui::FromResultColor(background_id), base::nullopt, minimum_contrast);
     };
-    mixer->AddRecipe(kColorOmniboxResultsIcon)
-        .AddTransform(
-            results_icon(kColorOmniboxText, kColorOmniboxResultsBackground));
-    mixer->AddRecipe(kColorOmniboxResultsIconSelected)
-        .AddTransform(results_icon(kColorOmniboxResultsTextSelected,
-                                   kColorOmniboxResultsBackgroundSelected));
+    mixer[kColorOmniboxResultsIcon].AddTransform(
+        results_icon(kColorOmniboxText, kColorOmniboxResultsBackground));
+    mixer[kColorOmniboxResultsIconSelected].AddTransform(
+        results_icon(kColorOmniboxResultsTextSelected,
+                     kColorOmniboxResultsBackgroundSelected));
   }
 
   // Dimmed text colors.
@@ -95,16 +86,14 @@ void AddOmniboxColorMixer(ui::ColorProvider* provider, bool high_contrast) {
                                   base::nullopt, minimum_contrast),
           minimum_contrast);
     };
-    mixer->AddRecipe(kColorOmniboxResultsTextDimmed)
-        .AddTransform(blend_with_clamped_contrast(
-            kColorOmniboxText, kColorOmniboxResultsBackgroundHovered));
-    mixer->AddRecipe(kColorOmniboxResultsTextDimmedSelected)
-        .AddTransform(blend_with_clamped_contrast(
-            kColorOmniboxResultsTextSelected,
-            kColorOmniboxResultsBackgroundSelected));
-    mixer->AddRecipe(kColorOmniboxTextDimmed)
-        .AddTransform(blend_with_clamped_contrast(
-            kColorOmniboxText, kColorOmniboxBackgroundHovered));
+    mixer[kColorOmniboxResultsTextDimmed].AddTransform(
+        blend_with_clamped_contrast(kColorOmniboxText,
+                                    kColorOmniboxResultsBackgroundHovered));
+    mixer[kColorOmniboxResultsTextDimmedSelected].AddTransform(
+        blend_with_clamped_contrast(kColorOmniboxResultsTextSelected,
+                                    kColorOmniboxResultsBackgroundSelected));
+    mixer[kColorOmniboxTextDimmed].AddTransform(blend_with_clamped_contrast(
+        kColorOmniboxText, kColorOmniboxBackgroundHovered));
   }
 
   // Results URL colors.
@@ -117,10 +106,10 @@ void AddOmniboxColorMixer(ui::ColorProvider* provider, bool high_contrast) {
                                      ui::FromColor(gfx::kGoogleBlue900)),
           minimum_contrast);
     };
-    mixer->AddRecipe(kColorOmniboxResultsUrl)
-        .AddTransform(url_color(kColorOmniboxResultsBackgroundHovered));
-    mixer->AddRecipe(kColorOmniboxResultsUrlSelected)
-        .AddTransform(url_color(kColorOmniboxResultsBackgroundSelected));
+    mixer[kColorOmniboxResultsUrl].AddTransform(
+        url_color(kColorOmniboxResultsBackgroundHovered));
+    mixer[kColorOmniboxResultsUrlSelected].AddTransform(
+        url_color(kColorOmniboxResultsBackgroundSelected));
   }
 
   // Security chip colors.
@@ -136,12 +125,11 @@ void AddOmniboxColorMixer(ui::ColorProvider* provider, bool high_contrast) {
                   ui::FromResultColor(kColorOmniboxBackgroundHovered),
                   base::nullopt, minimum_contrast));
         };
-    mixer->AddRecipe(kColorOmniboxSecurityChipDangerous)
-        .AddTransform(security_chip_color(ui::FromColor(gfx::kGoogleRed600)));
-    mixer->AddRecipe(kColorOmniboxSecurityChipSecure)
-        .AddTransform(security_chip_color(ui::DeriveDefaultIconColor(
-            ui::FromResultColor(kColorOmniboxText))));
+    mixer[kColorOmniboxSecurityChipDangerous].AddTransform(
+        security_chip_color(ui::FromColor(gfx::kGoogleRed600)));
+    mixer[kColorOmniboxSecurityChipSecure].AddTransform(security_chip_color(
+        ui::DeriveDefaultIconColor(ui::FromResultColor(kColorOmniboxText))));
   }
-  mixer->AddRecipe(kColorOmniboxSecurityChipDefault)
-      .AddTransform(ui::FromResultColor(kColorOmniboxSecurityChipSecure));
+  mixer[kColorOmniboxSecurityChipDefault].AddTransform(
+      ui::FromResultColor(kColorOmniboxSecurityChipSecure));
 }

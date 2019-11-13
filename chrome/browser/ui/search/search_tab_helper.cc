@@ -169,13 +169,6 @@ SearchTabHelper::SearchTabHelper(content::WebContents* web_contents)
 SearchTabHelper::~SearchTabHelper() {
   if (instant_service_)
     instant_service_->RemoveObserver(this);
-  if (query_autocomplete_callback_) {
-    std::move(query_autocomplete_callback_)
-        .Run(chrome::mojom::AutocompleteResult::New(
-            autocomplete_controller_->input().text(),
-            std::vector<chrome::mojom::AutocompleteMatchPtr>(),
-            chrome::mojom::AutocompleteResultStatus::SKIPPED));
-  }
 }
 
 void SearchTabHelper::OmniboxInputStateChanged() {
@@ -492,14 +485,16 @@ void SearchTabHelper::OnResultChanged(bool default_result_changed) {
     return;
   }
 
-  if (!autocomplete_controller_->done() || !query_autocomplete_callback_)
+  if (!autocomplete_controller_->done())
     return;
 
-  std::move(query_autocomplete_callback_)
-      .Run(chrome::mojom::AutocompleteResult::New(
-          autocomplete_controller_->input().text(),
-          CreateAutocompleteMatches(autocomplete_controller_->result()),
-          chrome::mojom::AutocompleteResultStatus::SUCCESS));
+  if (!search::DefaultSearchProviderIsGoogle(profile())) {
+    return;
+  }
+
+  ipc_router_.AutocompleteResultChanged(chrome::mojom::AutocompleteResult::New(
+      autocomplete_controller_->input().text(),
+      CreateAutocompleteMatches(autocomplete_controller_->result())));
 }
 
 void SearchTabHelper::OnSelectLocalBackgroundImage() {
@@ -583,13 +578,9 @@ void SearchTabHelper::OnConfirmThemeChanges() {
     chrome_colors_service_->ConfirmThemeChanges();
 }
 
-void SearchTabHelper::QueryAutocomplete(
-    const base::string16& input,
-    chrome::mojom::EmbeddedSearch::QueryAutocompleteCallback callback) {
+void SearchTabHelper::QueryAutocomplete(const base::string16& input,
+                                        bool prevent_inline_autocomplete) {
   if (!search::DefaultSearchProviderIsGoogle(profile())) {
-    std::move(callback).Run(chrome::mojom::AutocompleteResult::New(
-        input, std::vector<chrome::mojom::AutocompleteMatchPtr>(),
-        chrome::mojom::AutocompleteResultStatus::SKIPPED));
     return;
   }
 
@@ -606,19 +597,12 @@ void SearchTabHelper::QueryAutocomplete(
         providers);
   }
 
-  if (query_autocomplete_callback_) {
-    std::move(query_autocomplete_callback_)
-        .Run(chrome::mojom::AutocompleteResult::New(
-            input, std::vector<chrome::mojom::AutocompleteMatchPtr>(),
-            chrome::mojom::AutocompleteResultStatus::SKIPPED));
-    autocomplete_controller_->Stop(/*clear_results=*/false);
-  }
-  query_autocomplete_callback_ = std::move(callback);
-
   AutocompleteInput autocomplete_input(
       input, metrics::OmniboxEventProto::NTP_REALBOX,
       ChromeAutocompleteSchemeClassifier(profile()));
   autocomplete_input.set_from_omnibox_focus(input.empty());
+  autocomplete_input.set_prevent_inline_autocomplete(
+      prevent_inline_autocomplete);
   autocomplete_controller_->Start(autocomplete_input);
 }
 
@@ -672,16 +656,12 @@ class DeleteAutocompleteMatchConfirmDelegate
 
 }  // namespace
 
-void SearchTabHelper::DeleteAutocompleteMatch(
-    uint8_t line,
-    chrome::mojom::EmbeddedSearch::DeleteAutocompleteMatchCallback callback) {
+void SearchTabHelper::DeleteAutocompleteMatch(uint8_t line) {
   DCHECK(autocomplete_controller_);
 
   if (!search::DefaultSearchProviderIsGoogle(profile()) ||
       autocomplete_controller_->result().size() <= line ||
       !autocomplete_controller_->result().match_at(line).SupportsDeletion()) {
-    std::move(callback).Run(chrome::mojom::DeleteAutocompleteMatchResult::New(
-        false, std::vector<chrome::mojom::AutocompleteMatchPtr>()));
     return;
   }
 
@@ -689,7 +669,7 @@ void SearchTabHelper::DeleteAutocompleteMatch(
     // If suggestion transparency is disabled, the UI is also disabled. This
     // must've come from a keyboard shortcut, which are allowed to remove
     // without confirmation.
-    OnDeleteAutocompleteMatchConfirm(line, std::move(callback), true);
+    OnDeleteAutocompleteMatchConfirm(line, true);
     return;
   }
 
@@ -710,13 +690,12 @@ void SearchTabHelper::DeleteAutocompleteMatch(
   auto delegate = std::make_unique<DeleteAutocompleteMatchConfirmDelegate>(
       web_contents_, search_provider_name,
       base::BindOnce(&SearchTabHelper::OnDeleteAutocompleteMatchConfirm,
-                     weak_factory_.GetWeakPtr(), line, std::move(callback)));
+                     weak_factory_.GetWeakPtr(), line));
   TabModalConfirmDialog::Create(std::move(delegate), web_contents_);
 }
 
 void SearchTabHelper::OnDeleteAutocompleteMatchConfirm(
     uint8_t line,
-    chrome::mojom::EmbeddedSearch::DeleteAutocompleteMatchCallback callback,
     bool accepted) {
   DCHECK(autocomplete_controller_);
 
@@ -733,9 +712,6 @@ void SearchTabHelper::OnDeleteAutocompleteMatchConfirm(
       matches = CreateAutocompleteMatches(autocomplete_controller_->result());
     }
   }
-
-  std::move(callback).Run(chrome::mojom::DeleteAutocompleteMatchResult::New(
-      success, std::move(matches)));
 }
 
 void SearchTabHelper::StopAutocomplete(bool clear_result) {

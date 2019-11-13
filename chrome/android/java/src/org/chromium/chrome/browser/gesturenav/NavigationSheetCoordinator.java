@@ -244,9 +244,10 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
 
     @Override
     public void close(boolean animate) {
-        if (mBottomSheetController.get() == null) return;
-        if (!isHidden()) mBottomSheetController.get().hideContent(this, animate);
-        mBottomSheetController.get().removeObserver(mSheetObserver);
+        BottomSheetController controller = mBottomSheetController.get();
+        if (controller == null) return;
+        controller.hideContent(this, animate);
+        controller.removeObserver(mSheetObserver);
         mMediator.clear();
     }
 

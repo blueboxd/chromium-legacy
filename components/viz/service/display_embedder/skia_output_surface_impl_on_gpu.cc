@@ -220,6 +220,16 @@ class SkiaOutputSurfaceImplOnGpu::ScopedUseContextProvider {
     // side consistent with that.
     auto* api = impl_on_gpu_->api_;
     api->glBindFramebufferEXTFn(GL_FRAMEBUFFER, 0);
+
+    auto* group = impl_on_gpu->context_provider_->decoder()->GetContextGroup();
+    if (group->use_passthrough_cmd_decoder()) {
+      // Passthrough decoding is not hooked into GLStateRestorer and we must
+      // manually reset the context into a known state after Skia is finished.
+      api->glUseProgramFn(0);
+      api->glActiveTextureFn(GL_TEXTURE0);
+      api->glBindBufferFn(GL_ARRAY_BUFFER, 0);
+      api->glBindTextureFn(GL_TEXTURE_2D, 0);
+    }
     impl_on_gpu_->context_provider_->SetGLRendererCopierRequiredState(
         texture_client_id);
   }

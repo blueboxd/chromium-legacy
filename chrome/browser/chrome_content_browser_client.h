@@ -192,8 +192,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void SiteInstanceDeleting(content::SiteInstance* site_instance) override;
   bool ShouldSwapBrowsingInstancesForNavigation(
       content::SiteInstance* site_instance,
-      const GURL& current_url,
-      const GURL& new_url) override;
+      const GURL& current_effective_url,
+      const GURL& destination_effective_url) override;
   bool ShouldIsolateErrorPage(bool in_main_frame) override;
   bool ShouldAssignSiteForURL(const GURL& url) override;
   std::vector<url::Origin> GetOriginsRequiringDedicatedProcess() override;

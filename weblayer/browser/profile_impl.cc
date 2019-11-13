@@ -173,9 +173,7 @@ class ProfileImpl::DataClearer : public content::BrowsingDataRemover::Observer {
 
   ~DataClearer() override { remover_->RemoveObserver(this); }
 
-  void ClearData(int mask,
-                 base::Time from_time,
-                 base::Time to_time) {
+  void ClearData(int mask, base::Time from_time, base::Time to_time) {
     int origin_types =
         content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB |
         content::BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB;

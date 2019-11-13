@@ -497,7 +497,7 @@ WebContents* PrerenderManager::SwapInternal(const GURL& url,
   DCHECK(prerender_tab_helper);
   prerender_tab_helper->PrerenderSwappedIn();
 
-  if (old_web_contents->NeedToFireBeforeUnload()) {
+  if (old_web_contents->NeedToFireBeforeUnloadOrUnload()) {
     // Schedule the delete to occur after the tab has run its unload handlers.
     // TODO(davidben): Honor the beforeunload event. http://crbug.com/304932
     WebContents* old_web_contents_ptr = old_web_contents.get();

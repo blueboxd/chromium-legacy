@@ -741,10 +741,10 @@ TEST_F(BrowserThemePackTest, TestCreateColorMixersOmniboxNoValues) {
   // Tests to make sure that existing colors within the color provider are not
   // overwritten or lost in the absence of any user provided theme values.
   ui::ColorProvider provider;
-  provider.AddMixer()->AddSet({ui::kColorSetTest0,
-                               {{kColorToolbar, SK_ColorRED},
-                                {kColorOmniboxText, SK_ColorGREEN},
-                                {kColorOmniboxBackground, SK_ColorBLUE}}});
+  provider.AddMixer().AddSet({ui::kColorSetTest0,
+                              {{kColorToolbar, SK_ColorRED},
+                               {kColorOmniboxText, SK_ColorGREEN},
+                               {kColorOmniboxBackground, SK_ColorBLUE}}});
   theme_pack().AddCustomThemeColorMixers(&provider);
   EXPECT_EQ(SK_ColorRED, provider.GetColor(kColorToolbar));
   EXPECT_EQ(SK_ColorGREEN, provider.GetColor(kColorOmniboxText));
@@ -755,10 +755,10 @@ TEST_F(BrowserThemePackTest, TestCreateColorMixersOmniboxPartialValues) {
   // Tests to make sure that only provided theme values are replicated into the
   // color provider.
   ui::ColorProvider provider;
-  provider.AddMixer()->AddSet({ui::kColorSetTest0,
-                               {{kColorToolbar, SK_ColorRED},
-                                {kColorOmniboxText, SK_ColorGREEN},
-                                {kColorOmniboxBackground, SK_ColorBLUE}}});
+  provider.AddMixer().AddSet({ui::kColorSetTest0,
+                              {{kColorToolbar, SK_ColorRED},
+                               {kColorOmniboxText, SK_ColorGREEN},
+                               {kColorOmniboxBackground, SK_ColorBLUE}}});
   std::string color_json = R"({ "toolbar": [0, 20, 40],
                                 "omnibox_text": [60, 80, 100] })";
   LoadColorJSON(color_json);
@@ -772,10 +772,10 @@ TEST_F(BrowserThemePackTest, TestCreateColorMixersOmniboxAllValues) {
   // Tests to make sure that all available colors are properly loaded into the
   // color provider.
   ui::ColorProvider provider;
-  provider.AddMixer()->AddSet({ui::kColorSetTest0,
-                               {{kColorToolbar, SK_ColorRED},
-                                {kColorOmniboxText, SK_ColorGREEN},
-                                {kColorOmniboxBackground, SK_ColorBLUE}}});
+  provider.AddMixer().AddSet({ui::kColorSetTest0,
+                              {{kColorToolbar, SK_ColorRED},
+                               {kColorOmniboxText, SK_ColorGREEN},
+                               {kColorOmniboxBackground, SK_ColorBLUE}}});
   std::string color_json = R"({ "toolbar": [0, 20, 40],
                                 "omnibox_text": [60, 80, 100],
                                 "omnibox_background": [120, 140, 160] })";

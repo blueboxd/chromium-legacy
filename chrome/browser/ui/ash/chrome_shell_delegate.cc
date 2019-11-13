@@ -58,7 +58,7 @@ bool ChromeShellDelegate::CanGoBack(gfx::NativeWindow window) const {
   BrowserView* browser_view =
       BrowserView::GetBrowserViewForNativeWindow(window);
   if (!browser_view)
-    return true;
+    return false;
   content::WebContents* contents =
       browser_view->browser()->tab_strip_model()->GetActiveWebContents();
   if (!contents)

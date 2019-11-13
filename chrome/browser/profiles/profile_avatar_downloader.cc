@@ -69,7 +69,7 @@ void ProfileAvatarDownloader::Start() {
     fetcher_->Init(
         std::string(),
         net::URLRequest::REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN,
-        net::LOAD_NORMAL);
+        network::mojom::CredentialsMode::kInclude);
     fetcher_->Start(loader_factory);
   }
 }

@@ -15,7 +15,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -54,18 +53,14 @@ public class MainActivity extends Activity {
         infoListView.setAdapter(itemsArrayAdapter);
 
         // Copy item's text to clipboard on tapping a list item.
-        infoListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                InfoItem item = infoItems[position];
-                ClipboardManager clipboard =
-                        (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText(item.title, item.subtitle);
-                clipboard.setPrimaryClip(clip);
-                // Show a toast that the text has been copied.
-                Toast.makeText(MainActivity.this, "Copied " + item.title, Toast.LENGTH_SHORT)
-                        .show();
-            }
+        infoListView.setOnItemClickListener((parent, view, pos, id) -> {
+            InfoItem item = infoItems[pos];
+            ClipboardManager clipboard =
+                    (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clip = ClipData.newPlainText(item.title, item.subtitle);
+            clipboard.setPrimaryClip(clip);
+            // Show a toast that the text has been copied.
+            Toast.makeText(MainActivity.this, "Copied " + item.title, Toast.LENGTH_SHORT).show();
         });
     }
 

@@ -28,9 +28,12 @@
 
     <color name="black_alpha_38" tools:ignore="UnusedResources">#61000000</color>
 
+    <color name="white_alpha_8" tools:ignore="UnusedResources">#14FFFFFF</color>
     <color name="white_alpha_10" tools:ignore="UnusedResources">#1AFFFFFF</color>
     <color name="white_alpha_12" tools:ignore="UnusedResources">#1FFFFFFF</color>
     <color name="white_alpha_20" tools:ignore="UnusedResources">#33FFFFFF</color>
+    <color name="white_alpha_24" tools:ignore="UnusedResources">#3DFFFFFF</color>
+    <color name="white_alpha_32" tools:ignore="UnusedResources">#51FFFFFF</color>
     <color name="white_alpha_38" tools:ignore="UnusedResources">#61FFFFFF</color>
     <color name="white_alpha_50" tools:ignore="UnusedResources">#80FFFFFF</color>
     <color name="white_alpha_70">#B3FFFFFF</color>

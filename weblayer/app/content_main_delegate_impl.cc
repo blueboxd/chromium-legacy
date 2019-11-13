@@ -210,6 +210,16 @@ void ContentMainDelegateImpl::InitializeResourceBundle() {
     base::PathService::Get(ui::DIR_RESOURCE_PAKS_ANDROID, &pak_file_path);
     pak_file_path = pak_file_path.AppendASCII("resources.pak");
     ui::LoadMainAndroidPackFile("assets/resources.pak", pak_file_path);
+
+    constexpr char kWebLayerLocalePath[] =
+        "assets/stored-locales/weblayer/en-US.pak";
+    base::MemoryMappedFile::Region region;
+    int fd = base::android::OpenApkAsset(kWebLayerLocalePath, &region);
+    CHECK_GE(fd, 0) << "Could not find " << kWebLayerLocalePath << " in APK.";
+    ui::ResourceBundle::GetSharedInstance().AddDataPackFromFileRegion(
+        base::File(fd), region, ui::SCALE_FACTOR_NONE);
+    base::GlobalDescriptors::GetInstance()->Set(
+        kWebLayerSecondaryLocalePakDescriptor, fd, region);
   } else {
     base::i18n::SetICUDefaultLocale(
         command_line.GetSwitchValueASCII(switches::kLang));
@@ -223,6 +233,7 @@ void ContentMainDelegateImpl::InitializeResourceBundle() {
 
     std::pair<int, ui::ScaleFactor> extra_paks[] = {
         {kWebLayerMainPakDescriptor, ui::SCALE_FACTOR_NONE},
+        {kWebLayerSecondaryLocalePakDescriptor, ui::SCALE_FACTOR_NONE},
         {kWebLayer100PercentPakDescriptor, ui::SCALE_FACTOR_100P}};
 
     for (const auto& pak_info : extra_paks) {

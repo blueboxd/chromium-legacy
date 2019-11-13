@@ -14,18 +14,15 @@
 
 namespace blink {
 
-class XRHitTestOptions;
 class XRHitTestResult;
 
 class XRHitTestSource : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  XRHitTestSource(uint64_t id, XRHitTestOptions* options);
+  explicit XRHitTestSource(uint64_t id);
 
   uint64_t id() const;
-
-  XRHitTestOptions* hitTestOptions() const;
 
   // Returns a vector of XRHitTestResults that were obtained during last frame
   // update. This method is not exposed to JavaScript.
@@ -34,12 +31,8 @@ class XRHitTestSource : public ScriptWrappable {
   void Update(const WTF::Vector<device::mojom::blink::XRHitResultPtr>&
                   hit_test_results);
 
-  void Trace(blink::Visitor*) override;
-
  private:
   const uint64_t id_;
-
-  Member<XRHitTestOptions> options_;
 
   Vector<std::unique_ptr<TransformationMatrix>> last_frame_results_;
 };

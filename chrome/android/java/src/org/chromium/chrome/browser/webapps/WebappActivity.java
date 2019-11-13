@@ -56,6 +56,7 @@ import org.chromium.chrome.browser.tabmodel.SingleTabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
+import org.chromium.chrome.browser.ui.RootUiCoordinator;
 import org.chromium.chrome.browser.ui.widget.TintedDrawable;
 import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.chrome.browser.util.AndroidTaskUtils;
@@ -174,6 +175,14 @@ public class WebappActivity extends ChromeActivity<WebappActivityComponent> {
     @Override
     public @ChromeActivity.ActivityType int getActivityType() {
         return ChromeActivity.ActivityType.WEBAPP;
+    }
+
+    @Override
+    protected RootUiCoordinator createRootUiCoordinator() {
+        return new RootUiCoordinator(this, (toolbarManager) -> {
+            mToolbarCoordinator.onToolbarInitialized(toolbarManager);
+            mNavigationController.onToolbarInitialized(toolbarManager);
+        }, null);
     }
 
     protected boolean loadUrlIfPostShareTarget(WebappInfo webappInfo) {

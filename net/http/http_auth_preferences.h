@@ -79,6 +79,8 @@ class NET_EXPORT HttpAuthPreferences {
 
   void SetDelegateAllowlist(const std::string& delegate_allowlist);
 
+  void SetAllowDefaultCredentials(DefaultCredentials creds);
+
 #if defined(OS_ANDROID)
   void set_auth_android_negotiate_account_type(
       const std::string& account_type) {
@@ -90,6 +92,8 @@ class NET_EXPORT HttpAuthPreferences {
   bool delegate_by_kdc_policy_ = false;
   bool negotiate_disable_cname_lookup_ = false;
   bool negotiate_enable_port_ = false;
+
+  DefaultCredentials allow_default_credentials_ = ALLOW_DEFAULT_CREDENTIALS;
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
   bool ntlm_v2_enabled_ = true;

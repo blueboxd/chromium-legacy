@@ -18,7 +18,7 @@ Assistive technology includes:
 * Screen readers for blind users that describe the screen using
   synthesized speech or braille
 * Voice control applications that let you speak to the computer,
-* Switch access that lets you control the computer with a small number
+* Switch Access that lets you control the computer with a small number
   of physical switches,
 * Magnifiers that magnify a portion of the screen, and often highlight the
   cursor and caret for easier viewing, and

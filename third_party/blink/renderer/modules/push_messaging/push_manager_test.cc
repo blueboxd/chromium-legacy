@@ -37,9 +37,9 @@ void IsApplicationServerKeyValid(PushSubscriptionOptions* output) {
 
   String application_server_key(
       reinterpret_cast<const char*>(output->applicationServerKey()->Data()),
-      output->applicationServerKey()->ByteLength());
+      output->applicationServerKey()->DeprecatedByteLengthAsUnsigned());
 
-  ASSERT_EQ(output->applicationServerKey()->ByteLength(),
+  ASSERT_EQ(output->applicationServerKey()->DeprecatedByteLengthAsUnsigned(),
             kApplicationServerKeyLength);
 
   ASSERT_EQ(reinterpret_cast<const char*>(sender_key),

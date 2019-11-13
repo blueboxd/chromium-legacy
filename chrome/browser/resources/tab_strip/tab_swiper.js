@@ -227,7 +227,7 @@ export class TabSwiper {
             (event.timeStamp - this.currentPointerDownEvent_.timeStamp)) >
         SWIPE_VELOCITY_THRESHOLD;
 
-    if (pixelsSwiped === SWIPE_FINISH_THRESHOLD_PX) {
+    if (Math.abs(pixelsSwiped) === SWIPE_FINISH_THRESHOLD_PX) {
       // The user has swiped the max amount of pixels to swipe and the animation
       // has already completed all its keyframes, so just fire the onfinish
       // events on the animation.

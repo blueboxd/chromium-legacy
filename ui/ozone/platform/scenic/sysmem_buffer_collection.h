@@ -119,6 +119,7 @@ class SysmemBufferCollection
   THREAD_CHECKER(vulkan_thread_checker_);
 
   size_t buffer_size_ = 0;
+  bool is_protected_ = false;
 
   base::OnceClosure on_deleted_;
 

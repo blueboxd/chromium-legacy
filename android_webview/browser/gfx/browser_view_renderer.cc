@@ -20,6 +20,7 @@
 #include "base/supports_user_data.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/base/math_util.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "content/public/browser/render_process_host.h"
@@ -113,7 +114,7 @@ BrowserViewRenderer::BrowserViewRenderer(
       on_new_picture_enable_(false),
       clear_view_(false),
       offscreen_pre_raster_(false) {
-  if (base::FeatureList::IsEnabled(features::kVizForWebView)) {
+  if (::features::IsUsingVizForWebView()) {
     root_frame_sink_proxy_ = std::make_unique<RootFrameSinkProxy>(
         ui_task_runner_,
         base::BindRepeating(&BrowserViewRenderer::SetNeedsBeginFrames,

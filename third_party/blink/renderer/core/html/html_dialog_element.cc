@@ -39,10 +39,11 @@
 
 namespace blink {
 
+// https://html.spec.whatwg.org/C/#the-dialog-element
 // This function chooses the focused element when show() or showModal() is
 // invoked, as described in their spec.
 static void SetFocusForDialog(HTMLDialogElement* dialog) {
-  Element* focusable_descendant = nullptr;
+  Element* control = nullptr;
   Node* next = nullptr;
 
   // TODO(kochi): How to find focusable element inside Shadow DOM is not
@@ -57,24 +58,35 @@ static void SetFocusForDialog(HTMLDialogElement* dialog) {
     if (!element)
       continue;
     if (element->IsAutofocusable() && element->IsFocusable()) {
-      element->focus();
-      return;
+      control = element;
+      break;
     }
-    if (!focusable_descendant && element->IsFocusable())
-      focusable_descendant = element;
+    if (!control && element->IsFocusable())
+      control = element;
   }
+  if (!control)
+    control = dialog;
 
-  if (focusable_descendant) {
-    focusable_descendant->focus();
+  // 3. Run the focusing steps for control.
+  if (control->IsFocusable())
+    control->focus();
+  else
+    dialog->GetDocument().ClearFocusedElement();
+
+  // 4. Let topDocument be the active document of control's node document's
+  // browsing context's top-level browsing context.
+  // 5. If control's node document's origin is not the same as the origin of
+  // topDocument, then return.
+  Document& doc = control->GetDocument();
+  if (!doc.IsActive())
     return;
-  }
-
-  if (dialog->IsFocusable()) {
-    dialog->focus();
+  if (!doc.IsInMainFrame() &&
+      !doc.TopFrameOrigin()->CanAccess(doc.GetSecurityOrigin()))
     return;
-  }
 
-  dialog->GetDocument().ClearFocusedElement();
+  // 6. Empty topDocument's autofocus candidates.
+  // 7. Set topDocument's autofocus processed flag to true.
+  doc.TopDocument().FinalizeAutofocus();
 }
 
 static void InertSubtreesChanged(Document& document) {

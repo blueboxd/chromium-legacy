@@ -2041,7 +2041,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3923676227229836009">Esta página puede ver archivos</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3925573269917483990">Cámara:</translation>
-<translation id="3925842537050977900">No fijar en la biblioteca</translation>
 <translation id="3926002189479431949">Cambió el teléfono con Smart Lock</translation>
 <translation id="3927932062596804919">Rechazar</translation>
 <translation id="3928570707778085600">¿Quieres guardar los cambios de <ph name="FILE_OR_FOLDER_NAME" />?</translation>
@@ -2535,7 +2534,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4689235506267737042">Elegir las preferencias de la demostración</translation>
 <translation id="4689421377817139245">Sincronizar este favorito con tu iPhone</translation>
 <translation id="4690091457710545971">&lt;El firmware de Wi-Fi de Intel generó cuatro archivos: csr.lst, fh_regs.lst, radio_reg.lst y monitor.lst.sysmon. Intel utiliza los primeros tres, archivos binarios con volcados de registros, para incluir información que no identifique personas ni dispositivos. El último archivo es un rastro de ejecución del firmware de Intel del cual se eliminan los datos de identificación personal o de dispositivo; sin embargo, es demasiado grande para mostrarlo aquí. Se generaron estos archivos en respuesta a los recientes problemas de conectividad Wi-Fi en tu dispositivo y se compartirán con Intel para solucionarlos.&gt;</translation>
-<translation id="469230890969474295">Carpeta OEM</translation>
 <translation id="4692623383562244444">Motores de búsqueda</translation>
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694024090038830733">El administrador controla la configuración de la impresora.</translation>
@@ -2568,7 +2566,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4737715515457435632">Conéctate a una red</translation>
 <translation id="473775607612524610">Actualizar</translation>
 <translation id="4739639199548674512">Tickets</translation>
-<translation id="4742746985488890273">Fijar en la biblioteca</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Obtener información sobre cómo actualizar las aplicaciones<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Activar el sonido del sitio}other{Activar el sonido de los sitios}}</translation>
 <translation id="4746351372139058112">Mensajes</translation>
@@ -3560,7 +3557,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6196854373336333322">La extensión "<ph name="EXTENSION_NAME" />" tomó el control de la configuración de proxy, lo que significa que puede modificar, dañar o espiar cualquier actividad que lleves a cabo en línea. Si no sabes con certeza por qué se produjo este cambio, probablemente no lo desees.</translation>
 <translation id="6198102561359457428">Salir y volver a acceder</translation>
 <translation id="6198252989419008588">Cambiar PIN</translation>
-<translation id="6201792273624501289">Apps de Linux</translation>
 <translation id="6202304368170870640">Puedes usar el PIN para acceder a tu dispositivo o desbloquearlo.</translation>
 <translation id="6206311232642889873">Cop&amp;iar imagen</translation>
 <translation id="6207200176136643843">Restablece el nivel de zoom predeterminado</translation>
@@ -5594,7 +5590,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="9130015405878219958">Se ingresó un modo no válido.</translation>
 <translation id="9131487537093447019">Enviar y recibir mensajes desde dispositivos Bluetooth</translation>
 <translation id="9134304429738380103">Acepto.</translation>
-<translation id="9135090785674039430">Cuando esta opción está activada, los sitios no pueden usar cookies para rastrearte en la Web. Es posible que algunos sitios web no funcionen.</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9137157311132182254">Motor de búsqueda preferido</translation>
 <translation id="9137248913990643158">Abre Chrome y accede a tu cuenta antes de usar esta app.</translation>

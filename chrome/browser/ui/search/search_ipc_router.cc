@@ -103,6 +103,15 @@ SearchIPCRouter::SearchIPCRouter(content::WebContents* web_contents,
 
 SearchIPCRouter::~SearchIPCRouter() = default;
 
+void SearchIPCRouter::AutocompleteResultChanged(
+    chrome::mojom::AutocompleteResultPtr result) {
+  if (!policy_->ShouldProcessAutocompleteResultChanged(is_active_tab_)) {
+    return;
+  }
+
+  embedded_search_client()->AutocompleteResultChanged(std::move(result));
+}
+
 void SearchIPCRouter::OnNavigationEntryCommitted() {
   ++commit_counter_;
   embedded_search_client()->SetPageSequenceNumber(commit_counter_);
@@ -439,17 +448,13 @@ void SearchIPCRouter::ConfirmThemeChanges() {
   delegate_->OnConfirmThemeChanges();
 }
 
-void SearchIPCRouter::QueryAutocomplete(
-    const base::string16& input,
-    chrome::mojom::EmbeddedSearch::QueryAutocompleteCallback callback) {
+void SearchIPCRouter::QueryAutocomplete(const base::string16& input,
+                                        bool prevent_inline_autocomplete) {
   if (!policy_->ShouldProcessQueryAutocomplete(is_active_tab_)) {
-    std::move(callback).Run(chrome::mojom::AutocompleteResult::New(
-        input, std::vector<chrome::mojom::AutocompleteMatchPtr>(),
-        chrome::mojom::AutocompleteResultStatus::SKIPPED));
     return;
   }
 
-  delegate_->QueryAutocomplete(input, std::move(callback));
+  delegate_->QueryAutocomplete(input, prevent_inline_autocomplete);
 }
 
 void SearchIPCRouter::StopAutocomplete(bool clear_result) {
@@ -468,16 +473,12 @@ void SearchIPCRouter::BlocklistPromo(const std::string& promo_id) {
   delegate_->BlocklistPromo(promo_id);
 }
 
-void SearchIPCRouter::DeleteAutocompleteMatch(
-    uint8_t line,
-    chrome::mojom::EmbeddedSearch::DeleteAutocompleteMatchCallback callback) {
+void SearchIPCRouter::DeleteAutocompleteMatch(uint8_t line) {
   if (!policy_->ShouldProcessDeleteAutocompleteMatch()) {
-    std::move(callback).Run(chrome::mojom::DeleteAutocompleteMatchResult::New(
-        false, std::vector<chrome::mojom::AutocompleteMatchPtr>()));
     return;
   }
 
-  delegate_->DeleteAutocompleteMatch(line, std::move(callback));
+  delegate_->DeleteAutocompleteMatch(line);
 }
 
 void SearchIPCRouter::set_delegate_for_testing(Delegate* delegate) {

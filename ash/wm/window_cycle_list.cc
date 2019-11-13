@@ -7,6 +7,8 @@
 #include <map>
 #include <memory>
 
+#include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/app_list/app_list_controller_impl.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
@@ -19,7 +21,9 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_targeter.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
 #include "ui/gfx/canvas.h"
@@ -67,6 +71,28 @@ constexpr int kInsideBorderVerticalPaddingDp = 60;
 
 // Padding between the window previews within the alt-tab bandshield.
 constexpr int kBetweenChildPaddingDp = 10;
+
+// The alt-tab cycler widget is not activatable (except when ChromeVox is on),
+// so we use WindowTargeter to send input events to the widget.
+class CustomWindowTargeter : public aura::WindowTargeter {
+ public:
+  explicit CustomWindowTargeter(aura::Window* tab_cycler)
+      : tab_cycler_(tab_cycler) {}
+  ~CustomWindowTargeter() override = default;
+
+  // aura::WindowTargeter
+  ui::EventTarget* FindTargetForEvent(ui::EventTarget* root,
+                                      ui::Event* event) override {
+    if (event->IsLocatedEvent())
+      return aura::WindowTargeter::FindTargetForEvent(root, event);
+    return tab_cycler_;
+  }
+
+ private:
+  aura::Window* tab_cycler_;
+
+  DISALLOW_COPY_AND_ASSIGN(CustomWindowTargeter);
+};
 
 }  // namespace
 
@@ -338,11 +364,6 @@ WindowCycleList::~WindowCycleList() {
   for (auto* window : windows_)
     window->RemoveObserver(this);
 
-  if (!windows_.empty() && user_did_accept_) {
-    auto* target_window = windows_[current_index_];
-    SelectWindow(target_window);
-  }
-
   if (cycle_ui_widget_)
     cycle_ui_widget_->Close();
 
@@ -353,6 +374,15 @@ WindowCycleList::~WindowCycleList() {
   // crbug.com/681207
   if (cycle_view_)
     cycle_view_->DestroyContents();
+
+  // While the cycler widget is shown, the windows listed in the cycler is
+  // marked as force-visible and don't contribute to occlusion. In order to
+  // work occlusion calculation properly, we need to activate a window after
+  // the widget has been destroyed. See b/138914552.
+  if (!windows_.empty() && user_did_accept_) {
+    auto* target_window = windows_[current_index_];
+    SelectWindow(target_window);
+  }
 }
 
 void WindowCycleList::Step(WindowCycleController::Direction direction) {
@@ -449,11 +479,21 @@ void WindowCycleList::InitWindowCycleView() {
   cycle_view_ = new WindowCycleView(windows_);
   cycle_view_->SetTargetWindow(windows_[current_index_]);
 
+  // We need to activate the widget if ChromeVox is enabled as ChromeVox relies
+  // on activation.
+  const bool spoken_feedback_enabled =
+      Shell::Get()->accessibility_controller()->spoken_feedback_enabled();
+
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params;
   params.delegate = cycle_view_;
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  // Don't let the alt-tab cycler be activatable. This lets the currently
+  // activated window continue to be in the foreground. This may affect
+  // things such as video automatically pausing/playing.
+  if (!spoken_feedback_enabled)
+    params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   params.accept_events = true;
   params.name = "WindowCycleList (Alt+Tab)";
   // TODO(estade): make sure nothing untoward happens when the lock screen
@@ -473,6 +513,15 @@ void WindowCycleList::InitWindowCycleView() {
   screen_observer_.Add(display::Screen::GetScreen());
   widget->Show();
   cycle_ui_widget_ = widget;
+
+  // Since this window is not activated, grab events.
+  if (!spoken_feedback_enabled) {
+    window_targeter_ = std::make_unique<aura::ScopedWindowTargeter>(
+        widget->GetNativeWindow()->GetRootWindow(),
+        std::make_unique<CustomWindowTargeter>(widget->GetNativeWindow()));
+  }
+  // Close the app list, if it's open.
+  Shell::Get()->app_list_controller()->DismissAppList();
 }
 
 void WindowCycleList::SelectWindow(aura::Window* window) {

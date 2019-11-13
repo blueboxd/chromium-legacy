@@ -10,7 +10,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
-#include "base/timer/timer.h"
 #include "base/values.h"
 #include "net/dns/address_sorter.h"
 #include "net/dns/dns_session.h"
@@ -86,15 +85,10 @@ class DnsClientImpl : public DnsClient,
   DnsClientImpl(NetLog* net_log,
                 ClientSocketFactory* socket_factory,
                 const RandIntCallback& rand_int_callback)
-      : probes_allowed_(false),
-        url_request_context_for_probes_(nullptr),
-        net_log_(net_log),
+      : net_log_(net_log),
         socket_factory_(socket_factory),
         rand_int_callback_(rand_int_callback) {
     NetworkChangeNotifier::AddConnectionTypeObserver(this);
-    delayed_probes_allowed_timer_.Start(
-        FROM_HERE, kInitialDohTimeout,
-        base::Bind(&DnsClientImpl::SetProbesAllowed, base::Unretained(this)));
   }
 
   ~DnsClientImpl() override {
@@ -161,23 +155,20 @@ class DnsClientImpl : public DnsClient,
     return &config->hosts;
   }
 
-  void SetRequestContextForProbes(
-      URLRequestContext* url_request_context) override {
+  void ActivateDohProbes(URLRequestContext* url_request_context) override {
     DCHECK(url_request_context);
-    DCHECK(!url_request_context_for_probes_ ||
-           url_request_context == url_request_context_for_probes_);
+    DCHECK(!url_request_context_for_probes_);
 
     url_request_context_for_probes_ = url_request_context;
+    StartDohProbes(false /* network_change */);
   }
 
-  void CancelProbesForContext(URLRequestContext* url_request_context) override {
-    if (url_request_context_for_probes_ != url_request_context)
-      return;
+  void CancelDohProbes() override {
+    DCHECK(url_request_context_for_probes_);
 
     if (factory_)
       factory_->CancelDohProbes();
 
-    delayed_probes_start_timer_.Stop();
     url_request_context_for_probes_ = nullptr;
   }
 
@@ -210,10 +201,6 @@ class DnsClientImpl : public DnsClient,
   void SetTransactionFactoryForTesting(
       std::unique_ptr<DnsTransactionFactory> factory) override {
     factory_ = std::move(factory);
-  }
-
-  void StartDohProbesForTesting() override {
-    StartDohProbes(false /* network_change */);
   }
 
  private:
@@ -288,22 +275,11 @@ class DnsClientImpl : public DnsClient,
   }
 
   void StartDohProbes(bool network_change) {
-    if (!url_request_context_for_probes_)
+    if (!url_request_context_for_probes_ || !factory_)
       return;
 
-    if (probes_allowed_) {
-      delayed_probes_start_timer_.Stop();
-      factory_->StartDohProbes(url_request_context_for_probes_, network_change);
-    } else {
-      delayed_probes_start_timer_.Start(
-          FROM_HERE, delayed_probes_allowed_timer_.GetCurrentDelay(),
-          base::BindOnce(&DnsTransactionFactory::StartDohProbes,
-                         factory_->weak_factory_.GetWeakPtr(),
-                         url_request_context_for_probes_, network_change));
-    }
+    factory_->StartDohProbes(url_request_context_for_probes_, network_change);
   }
-
-  void SetProbesAllowed() { probes_allowed_ = true; }
 
   bool insecure_enabled_ = false;
   int insecure_fallback_failures_ = 0;
@@ -315,12 +291,7 @@ class DnsClientImpl : public DnsClient,
   std::unique_ptr<DnsTransactionFactory> factory_;
   std::unique_ptr<AddressSorter> address_sorter_ =
       AddressSorter::CreateAddressSorter();
-  // Probes are not allowed until some amount of time has passed in order to
-  // prevent interference with startup tasks.
-  bool probes_allowed_;
-  base::OneShotTimer delayed_probes_allowed_timer_;
-  base::OneShotTimer delayed_probes_start_timer_;
-  URLRequestContext* url_request_context_for_probes_;
+  URLRequestContext* url_request_context_for_probes_ = nullptr;
 
   NetLog* net_log_;
 
@@ -331,10 +302,6 @@ class DnsClientImpl : public DnsClient,
 };
 
 }  // namespace
-
-// static
-const base::TimeDelta DnsClient::kInitialDohTimeout =
-    base::TimeDelta::FromSeconds(5);
 
 // static
 std::unique_ptr<DnsClient> DnsClient::CreateClient(NetLog* net_log) {

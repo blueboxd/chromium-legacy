@@ -438,16 +438,14 @@ void SearchBox::ConfirmThemeChanges() {
   embedded_search_service_->ConfirmThemeChanges();
 }
 
-void SearchBox::QueryAutocomplete(const base::string16& input) {
-  embedded_search_service_->QueryAutocomplete(
-      input, base::BindOnce(&SearchBox::QueryAutocompleteResult,
-                            weak_ptr_factory_.GetWeakPtr()));
+void SearchBox::QueryAutocomplete(const base::string16& input,
+                                  bool prevent_inline_autocomplete) {
+  embedded_search_service_->QueryAutocomplete(input,
+                                              prevent_inline_autocomplete);
 }
 
 void SearchBox::DeleteAutocompleteMatch(uint8_t line) {
-  embedded_search_service_->DeleteAutocompleteMatch(
-      line, base::BindOnce(&SearchBox::OnDeleteAutocompleteMatch,
-                           base::Unretained(this)));
+  embedded_search_service_->DeleteAutocompleteMatch(line);
 }
 
 void SearchBox::StopAutocomplete(bool clear_result) {
@@ -456,22 +454,6 @@ void SearchBox::StopAutocomplete(bool clear_result) {
 
 void SearchBox::BlocklistPromo(const std::string& promo_id) {
   embedded_search_service_->BlocklistPromo(promo_id);
-}
-
-void SearchBox::QueryAutocompleteResult(
-    chrome::mojom::AutocompleteResultPtr result) {
-  if (can_run_js_in_renderframe_) {
-    SearchBoxExtension::DispatchQueryAutocompleteResult(
-        render_frame()->GetWebFrame(), std::move(result));
-  }
-}
-
-void SearchBox::OnDeleteAutocompleteMatch(
-    chrome::mojom::DeleteAutocompleteMatchResultPtr result) {
-  if (can_run_js_in_renderframe_) {
-    SearchBoxExtension::DispatchDeleteAutocompleteMatchResult(
-        render_frame()->GetWebFrame(), std::move(result));
-  }
 }
 
 void SearchBox::SetPageSequenceNumber(int page_seq_no) {
@@ -526,6 +508,14 @@ void SearchBox::DeleteCustomLinkResult(bool success) {
   if (can_run_js_in_renderframe_) {
     SearchBoxExtension::DispatchDeleteCustomLinkResult(
         render_frame()->GetWebFrame(), success);
+  }
+}
+
+void SearchBox::AutocompleteResultChanged(
+    chrome::mojom::AutocompleteResultPtr result) {
+  if (can_run_js_in_renderframe_) {
+    SearchBoxExtension::DispatchAutocompleteResultChanged(
+        render_frame()->GetWebFrame(), std::move(result));
   }
 }
 

@@ -97,15 +97,14 @@ class WallpaperWidgetController::WidgetHandler
 
     parent_window_ = widget_->GetNativeWindow()->parent();
     window_observer_.Add(parent_window_);
-
-    has_blur_cache_ = widget_->GetLayer()->layer_blur() > 0.0f;
+    has_blur_cache_ = blur_sigma() > 0.0f;
     if (has_blur_cache_)
       parent_window_->layer()->AddCacheRenderSurfaceRequest();
 
     return true;
   }
 
-  float blur_sigma() const { return widget_->GetLayer()->layer_blur(); }
+  float blur_sigma() const { return wallpaper_view_->layer()->layer_blur(); }
 
   void SetBlur(float blur_sigma) {
     wallpaper_view_->layer()->SetLayerBlur(blur_sigma);
@@ -117,12 +116,18 @@ class WallpaperWidgetController::WidgetHandler
     } else if (old_has_blur_cache && !has_blur_cache_) {
       parent_window_->layer()->RemoveCacheRenderSurfaceRequest();
     }
+
+    // Reset the paint blur if any.
+    if (wallpaper_view_->repaint_blur() != 0.f ||
+        wallpaper_view_->repaint_opacity() != 1.f) {
+      wallpaper_view_->RepaintBlurAndOpacity(0, 1.f);
+    }
   }
 
   void StopAnimating() { widget_->GetLayer()->GetAnimator()->StopAnimating(); }
 
   void SwitchToNonLayerBlur() {
-    float blur = widget_->GetLayer()->layer_blur();
+    float blur = blur_sigma();
     if (has_blur_cache_) {
       parent_window_->layer()->RemoveCacheRenderSurfaceRequest();
       has_blur_cache_ = false;
@@ -132,7 +137,7 @@ class WallpaperWidgetController::WidgetHandler
     if (blur == 0.f)
       return;
 
-    widget_->GetLayer()->SetLayerBlur(0.f);
+    wallpaper_view_->layer()->SetLayerBlur(0.f);
     wallpaper_view_->RepaintBlurAndOpacity(blur, 1.f);
   }
 

@@ -42,7 +42,7 @@ class CORE_EXPORT DOMArrayPiece : public ArrayPiece {
                 InitWithUnionOption = kTreatNullAsNull);
 
   bool operator==(const DOMArrayBuffer& other) const {
-    return ByteLength() == other.ByteLength() &&
+    return ByteLength() == other.DeprecatedByteLengthAsUnsigned() &&
            memcmp(Data(), other.Data(), ByteLength()) == 0;
   }
 

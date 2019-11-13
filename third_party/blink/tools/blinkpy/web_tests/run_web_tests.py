@@ -46,6 +46,13 @@ _log = logging.getLogger(__name__)
 def main(argv, stderr):
     options, args = parse_args(argv)
 
+    # Run tests with the new SameSite cookie behavior by default.
+    # By appending the features to --enable-features, they will be enabled if
+    # they are not also explicitly disabled (as base::FeatureList disables a
+    # feature that appears in both --disable-features and --enable-features).
+    samesite_feature_names = ['SameSiteByDefaultCookies', 'CookiesWithoutSameSiteMustBeSecure']
+    options.additional_driver_flag.append('--enable-features=' + ','.join(samesite_feature_names))
+
     if options.platform and 'test' in options.platform and not 'browser_test' in options.platform:
         # It's a bit lame to import mocks into real code, but this allows the user
         # to run tests against the test platform interactively, which is useful for

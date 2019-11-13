@@ -265,7 +265,7 @@ public class TabUiTestHelper {
             Tab previousTab = previousTabModel.getTabAt(previousTabIndex);
 
             ChromeTabUtils.newTabFromMenu(InstrumentationRegistry.getInstrumentation(),
-                    rule.getActivity(), isIncognito, true);
+                    rule.getActivity(), isIncognito, url == null);
 
             if (url != null) rule.loadUrl(url);
 

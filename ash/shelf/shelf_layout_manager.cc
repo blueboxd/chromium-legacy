@@ -1079,6 +1079,10 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
     return HotseatState::kShown;
 
   auto* app_list_controller = Shell::Get()->app_list_controller();
+  // If the app list controller is null, we are probably in the middle of
+  // a shutdown, let's not change the hotseat state.
+  if (!app_list_controller)
+    return hotseat_state();
   const auto* overview_controller = Shell::Get()->overview_controller();
   const bool in_overview =
       ((overview_controller && overview_controller->InOverviewSession()) ||
@@ -2190,7 +2194,7 @@ bool ShelfLayoutManager::StartShelfDrag(
     drag_amount_ = 0.f;
   }
 
-  MaybeStartDragWindowFromShelf(event_in_screen);
+  MaybeStartDragWindowFromShelf(event_in_screen, /*scroll_y=*/base::nullopt);
 
   return true;
 }
@@ -2429,7 +2433,8 @@ void ShelfLayoutManager::SendA11yAlertForFullscreenWorkspaceState(
 }
 
 bool ShelfLayoutManager::MaybeStartDragWindowFromShelf(
-    const ui::LocatedEvent& event_in_screen) {
+    const ui::LocatedEvent& event_in_screen,
+    base::Optional<float> scroll_y) {
   if (!features::IsDragFromShelfToHomeOrOverviewEnabled())
     return false;
   if (!IsTabletModeEnabled())
@@ -2463,6 +2468,15 @@ bool ShelfLayoutManager::MaybeStartDragWindowFromShelf(
     const gfx::Rect shelf_bounds = GetVisibleShelfBounds();
     if (event_in_screen.location().y() < shelf_bounds.y())
       return false;
+    // Do not start drag if it's a downward update event.
+    if (scroll_y.has_value() && *scroll_y > 0)
+      return false;
+  }
+
+  // Do not allow window drag if the previous dragged window is still animating.
+  if (window_drag_controller_ &&
+      window_drag_controller_->IsDraggedWindowAnimating()) {
+    return false;
   }
 
   aura::Window* window =
@@ -2479,8 +2493,9 @@ void ShelfLayoutManager::MaybeUpdateWindowDrag(
     const ui::LocatedEvent& event_in_screen,
     float scroll_x,
     float scroll_y) {
-  if (!window_drag_controller_ &&
-      !MaybeStartDragWindowFromShelf(event_in_screen)) {
+  if (!IsWindowDragInProgress() &&
+      !MaybeStartDragWindowFromShelf(event_in_screen,
+                                     base::make_optional(scroll_y))) {
     return;
   }
 
@@ -2490,7 +2505,7 @@ void ShelfLayoutManager::MaybeUpdateWindowDrag(
 
 void ShelfLayoutManager::MaybeEndWindowDrag(
     const ui::LocatedEvent& event_in_screen) {
-  if (!window_drag_controller_)
+  if (!IsWindowDragInProgress())
     return;
 
   DCHECK_EQ(drag_status_, kDragInProgress);
@@ -2500,16 +2515,18 @@ void ShelfLayoutManager::MaybeEndWindowDrag(
         event_in_screen.AsGestureEvent()->details().velocity_y());
   }
   window_drag_controller_->EndDrag(event_in_screen.location(), velocity_y);
-  window_drag_controller_.reset();
 }
 
 void ShelfLayoutManager::MaybeCancelWindowDrag() {
-  if (!window_drag_controller_)
+  if (!IsWindowDragInProgress())
     return;
 
   DCHECK_EQ(drag_status_, kDragInProgress);
   window_drag_controller_->CancelDrag();
-  window_drag_controller_.reset();
+}
+
+bool ShelfLayoutManager::IsWindowDragInProgress() {
+  return window_drag_controller_ && window_drag_controller_->drag_started();
 }
 
 }  // namespace ash

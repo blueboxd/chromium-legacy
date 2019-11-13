@@ -230,9 +230,10 @@ HeadlessRequestContextManager::CreateNetworkContextParams(bool is_system) {
   context_params->primary_network_context = is_system;
 
   // TODO(https://crbug.com/458508): Allow
-  // context_params->allow_default_credentials to be controllable by a flag.
-  context_params->allow_default_credentials =
-    net::HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS;
+  // context_params->http_auth_static_network_context_params->allow_default_credentials
+  // to be controllable by a flag.
+  context_params->http_auth_static_network_context_params =
+      ::network::mojom::HttpAuthStaticNetworkContextParams::New();
 
   if (!user_data_path_.empty()) {
     context_params->enable_encrypted_cookies = cookie_encryption_enabled_;

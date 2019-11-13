@@ -128,6 +128,14 @@ class WebContentsObserverProxy extends WebContentsObserver {
 
     @Override
     @CalledByNative
+    public void didChangeVisibleSecurityState() {
+        for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
+            mObserversIterator.next().didChangeVisibleSecurityState();
+        }
+    }
+
+    @Override
+    @CalledByNative
     public void didFailLoad(
             boolean isMainFrame, int errorCode, String description, String failingUrl) {
         for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {

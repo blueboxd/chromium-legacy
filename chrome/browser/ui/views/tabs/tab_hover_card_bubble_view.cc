@@ -97,6 +97,16 @@ bool CustomShadowsSupported() {
 #endif
 }
 
+std::unique_ptr<views::View> CreateAlertView(const TabAlertState& state) {
+  auto alert_state_label = std::make_unique<views::Label>(
+      base::string16(), CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_PRIMARY);
+  alert_state_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  alert_state_label->SetMultiLine(true);
+  alert_state_label->SetVisible(true);
+  alert_state_label->SetText(chrome::GetTabAlertStateText(state));
+  return alert_state_label;
+}
+
 }  // namespace
 
 // static
@@ -635,19 +645,6 @@ int TabHoverCardBubbleView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }
 
-std::unique_ptr<views::View> TabHoverCardBubbleView::CreateFootnoteView() {
-  if (!alert_state_.has_value())
-    return nullptr;
-
-  auto alert_state_label = std::make_unique<views::Label>(
-      base::string16(), CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_PRIMARY);
-  alert_state_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  alert_state_label->SetMultiLine(true);
-  alert_state_label->SetVisible(true);
-  alert_state_label->SetText(chrome::GetTabAlertStateText(*alert_state_));
-  return alert_state_label;
-}
-
 void TabHoverCardBubbleView::Layout() {
   View::Layout();
   title_fade_label_->SetBoundsRect(title_label_->bounds());
@@ -727,8 +724,10 @@ void TabHoverCardBubbleView::UpdateCardContent(const Tab* tab) {
   title_fade_label_->SetText(title_label_->GetText());
   title_label_->SetText(title);
 
-  if (alert_state_ != old_alert_state)
-    GetBubbleFrameView()->SetFootnoteView(CreateFootnoteView());
+  if (alert_state_ != old_alert_state) {
+    GetBubbleFrameView()->SetFootnoteView(
+        alert_state_.has_value() ? CreateAlertView(*alert_state_) : nullptr);
+  }
 
   domain_fade_label_->SetText(domain_label_->GetText());
   domain_label_->SetText(domain);

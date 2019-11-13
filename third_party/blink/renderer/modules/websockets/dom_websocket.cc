@@ -354,15 +354,15 @@ void DOMWebSocket::send(DOMArrayBuffer* binary_data,
     return;
   }
   if (common_.GetState() == kClosing || common_.GetState() == kClosed) {
-    UpdateBufferedAmountAfterClose(binary_data->ByteLength());
+    UpdateBufferedAmountAfterClose(binary_data->ByteLengthAsSizeT());
     return;
   }
   RecordSendTypeHistogram(kWebSocketSendTypeArrayBuffer);
   RecordSendMessageSizeHistogram(kWebSocketSendTypeArrayBuffer,
-                                 binary_data->ByteLength());
+                                 binary_data->ByteLengthAsSizeT());
   DCHECK(channel_);
-  buffered_amount_ += binary_data->ByteLength();
-  channel_->Send(*binary_data, 0, binary_data->ByteLength(),
+  buffered_amount_ += binary_data->ByteLengthAsSizeT();
+  channel_->Send(*binary_data, 0, binary_data->DeprecatedByteLengthAsUnsigned(),
                  base::OnceClosure());
 }
 

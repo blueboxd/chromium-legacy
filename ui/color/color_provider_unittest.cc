@@ -11,14 +11,6 @@
 namespace ui {
 namespace {
 
-// Tests that AddMixer() returns non-null pointers, implying addition was
-// successful.  (Other tests below will verify the mixers have an effect.)
-TEST(ColorProviderTest, AddMixer) {
-  ColorProvider provider;
-  EXPECT_NE(nullptr, provider.AddMixer());
-  EXPECT_NE(nullptr, provider.AddMixer());
-}
-
 // Tests that when there are no mixers, GetColor() returns a placeholder value.
 TEST(ColorProviderTest, GetColorNoMixers) {
   EXPECT_EQ(gfx::kPlaceholderColor, ColorProvider().GetColor(kColorTest0));
@@ -28,7 +20,7 @@ TEST(ColorProviderTest, GetColorNoMixers) {
 // possible.
 TEST(ColorProviderTest, SingleMixer) {
   ColorProvider provider;
-  provider.AddMixer()->AddSet({kColorSetTest0, {{kColorTest0, SK_ColorGREEN}}});
+  provider.AddMixer().AddSet({kColorSetTest0, {{kColorTest0, SK_ColorGREEN}}});
   EXPECT_EQ(SK_ColorGREEN, provider.GetColor(kColorTest0));
   EXPECT_EQ(gfx::kPlaceholderColor, provider.GetColor(kColorTest1));
 }
@@ -37,8 +29,8 @@ TEST(ColorProviderTest, SingleMixer) {
 // use of both.
 TEST(ColorProviderTest, NonOverlappingMixers) {
   ColorProvider provider;
-  provider.AddMixer()->AddSet({kColorSetTest0, {{kColorTest0, SK_ColorGREEN}}});
-  provider.AddMixer()->AddSet({kColorSetTest1, {{kColorTest1, SK_ColorRED}}});
+  provider.AddMixer().AddSet({kColorSetTest0, {{kColorTest0, SK_ColorGREEN}}});
+  provider.AddMixer().AddSet({kColorSetTest1, {{kColorTest1, SK_ColorRED}}});
   EXPECT_EQ(SK_ColorGREEN, provider.GetColor(kColorTest0));
   EXPECT_EQ(SK_ColorRED, provider.GetColor(kColorTest1));
 }
@@ -47,8 +39,8 @@ TEST(ColorProviderTest, NonOverlappingMixers) {
 // added takes priority.
 TEST(ColorProviderTest, OverlappingMixers) {
   ColorProvider provider;
-  provider.AddMixer()->AddSet({kColorSetTest0, {{kColorTest0, SK_ColorGREEN}}});
-  provider.AddMixer()->AddSet({kColorSetTest0, {{kColorTest0, SK_ColorRED}}});
+  provider.AddMixer().AddSet({kColorSetTest0, {{kColorTest0, SK_ColorGREEN}}});
+  provider.AddMixer().AddSet({kColorSetTest0, {{kColorTest0, SK_ColorRED}}});
   EXPECT_EQ(SK_ColorRED, provider.GetColor(kColorTest0));
 }
 
@@ -56,10 +48,10 @@ TEST(ColorProviderTest, OverlappingMixers) {
 // This attempts to verify that nothing is badly wrong with color caching.
 TEST(ColorProviderTest, Caching) {
   ColorProvider provider;
-  provider.AddMixer()->AddSet({kColorSetTest0, {{kColorTest0, SK_ColorGREEN}}});
+  provider.AddMixer().AddSet({kColorSetTest0, {{kColorTest0, SK_ColorGREEN}}});
   EXPECT_EQ(SK_ColorGREEN, provider.GetColor(kColorTest0));
   EXPECT_EQ(SK_ColorGREEN, provider.GetColor(kColorTest0));
-  provider.AddMixer()->AddSet({kColorSetTest0, {{kColorTest0, SK_ColorRED}}});
+  provider.AddMixer().AddSet({kColorSetTest0, {{kColorTest0, SK_ColorRED}}});
   EXPECT_EQ(SK_ColorRED, provider.GetColor(kColorTest0));
 }
 

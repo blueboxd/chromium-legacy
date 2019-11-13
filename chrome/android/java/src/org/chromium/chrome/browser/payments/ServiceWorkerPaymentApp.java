@@ -45,6 +45,7 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
     private final boolean mCanPreselect;
     private final Set<String> mPreferredRelatedApplicationIds;
     private final boolean mIsIncognito;
+    private final SupportedDelegations mSupportedDelegations;
 
     // Below variables are used for installable service worker payment app specifically.
     private final boolean mNeedsInstallation;
@@ -101,6 +102,30 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
     }
 
     /**
+     * This class represents the supported delegations of a service worker based payment app.
+     */
+    protected static class SupportedDelegations {
+        private final boolean mShippingAddress;
+        private final boolean mPayerName;
+        private final boolean mPayerPhone;
+        private final boolean mPayerEmail;
+
+        SupportedDelegations(boolean shippingAddress, boolean payerName, boolean payerPhone,
+                boolean payerEmail) {
+            mShippingAddress = shippingAddress;
+            mPayerName = payerName;
+            mPayerPhone = payerPhone;
+            mPayerEmail = payerEmail;
+        }
+        SupportedDelegations() {
+            mShippingAddress = false;
+            mPayerName = false;
+            mPayerPhone = false;
+            mPayerEmail = false;
+        }
+    }
+
+    /**
      * Build a service worker payment app instance per origin.
      *
      * @see https://w3c.github.io/webpayments-payment-handler/#structure-of-a-web-payment-app
@@ -124,11 +149,13 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
      *                                       this payment app (only valid for basic-card payment
      *                                       method for now).
      * @param preferredRelatedApplicationIds A set of preferred related application Ids.
+     * @param supportedDelegations           Supported delegations of the payment app.
      */
     public ServiceWorkerPaymentApp(WebContents webContents, long registrationId, URI scope,
             @Nullable String name, @Nullable String userHint, String origin,
             @Nullable BitmapDrawable icon, String[] methodNames, boolean explicitlyVerified,
-            Capabilities[] capabilities, String[] preferredRelatedApplicationIds) {
+            Capabilities[] capabilities, String[] preferredRelatedApplicationIds,
+            SupportedDelegations supportedDelegations) {
         // Do not display duplicate information.
         super(scope.toString(), TextUtils.isEmpty(name) ? origin : name, userHint,
                 TextUtils.isEmpty(name) ? null : origin, icon);
@@ -151,6 +178,8 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
 
         mPreferredRelatedApplicationIds = new HashSet<>();
         Collections.addAll(mPreferredRelatedApplicationIds, preferredRelatedApplicationIds);
+
+        mSupportedDelegations = supportedDelegations;
 
         ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
         mIsIncognito = activity != null && activity.getCurrentTabModel().isIncognito();
@@ -175,10 +204,12 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
      * @param icon                            The drawable icon of the payment app.
      * @param methodName                      The supported method name.
      * @param preferredRelatedApplicationIds  A set of preferred related application Ids.
+     * @param supportedDelegations            Supported delegations of the payment app.
      */
     public ServiceWorkerPaymentApp(WebContents webContents, @Nullable String name, String origin,
             URI swUri, URI scope, boolean useCache, @Nullable BitmapDrawable icon,
-            String methodName, String[] preferredRelatedApplicationIds) {
+            String methodName, String[] preferredRelatedApplicationIds,
+            SupportedDelegations supportedDelegations) {
         // Do not display duplicate information.
         super(scope.toString(), TextUtils.isEmpty(name) ? origin : name, null,
                 TextUtils.isEmpty(name) ? null : origin, icon);
@@ -197,6 +228,8 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
         mCapabilities = new Capabilities[0];
         mPreferredRelatedApplicationIds = new HashSet<>();
         Collections.addAll(mPreferredRelatedApplicationIds, preferredRelatedApplicationIds);
+
+        mSupportedDelegations = supportedDelegations;
 
         ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
         mIsIncognito = activity != null && activity.getCurrentTabModel().isIncognito();
@@ -402,6 +435,26 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
     @Override
     public boolean canPreselect() {
         return mCanPreselect;
+    }
+
+    @Override
+    public boolean handlesShippingAddress() {
+        return mSupportedDelegations.mShippingAddress;
+    }
+
+    @Override
+    public boolean handlesPayerName() {
+        return mSupportedDelegations.mPayerName;
+    }
+
+    @Override
+    public boolean handlesPayerEmail() {
+        return mSupportedDelegations.mPayerEmail;
+    }
+
+    @Override
+    public boolean handlesPayerPhone() {
+        return mSupportedDelegations.mPayerPhone;
     }
 
     @Override

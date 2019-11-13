@@ -2041,7 +2041,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="3923676227229836009">Denne siden har lov til å se filer</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3925573269917483990">Kamera:</translation>
-<translation id="3925842537050977900">Løsne fra hyllen</translation>
 <translation id="3926002189479431949">Smart Lock-telefon endret</translation>
 <translation id="3927932062596804919">Ikke tillat</translation>
 <translation id="3928570707778085600">Vil du lagre endringene i <ph name="FILE_OR_FOLDER_NAME" />?</translation>
@@ -2533,7 +2532,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4689235506267737042">Velg demoinnstillingene dine</translation>
 <translation id="4689421377817139245">Synkroniser dette bokmerket med iPhone</translation>
 <translation id="4690091457710545971">&lt;Fire filer genereres av Intel Wi-Fi-fastvaren: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon. De tre første er binærfiler som inneholder registerdumper og kontrolleres av Intel for å sikre at de ikke inneholder personlig eller enhetsidentifiserende informasjon. Den siste filen er et kjøringsspor fra Intel-fastvaren. All personlig eller enhetsidentifiserende informasjon er fjernet fra filen, men den er for stor til å vises her. Disse filene ble generert som svar på nylige Wi-Fi-problemer med enheten din og deles med Intel for å bidra med feilsøking av disse problemene.&gt;</translation>
-<translation id="469230890969474295">OEM-mappe</translation>
 <translation id="4692623383562244444">Søkemotorer</translation>
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694024090038830733">Administratoren håndterer konfigureringen av skrivere.</translation>
@@ -2566,7 +2564,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4737715515457435632">Du må koble til et nettverk</translation>
 <translation id="473775607612524610">Oppdater</translation>
 <translation id="4739639199548674512">Saker</translation>
-<translation id="4742746985488890273">Fest til hyllen</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Finn ut hvordan du oppdaterer programmer<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Slå på lyden for nettstedet}other{Slå på lyden for nettstedene}}</translation>
 <translation id="4746351372139058112">Meldinger</translation>
@@ -3558,7 +3555,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="6196854373336333322">Utvidelsen «<ph name="EXTENSION_NAME" />» har tatt kontroll over proxy-tjenerinnstillingene dine, noe som betyr at den kan endre, ødelegge eller spionere på alt du foretar deg på nettet. Hvis du ikke er sikker på hvorfor denne endringen fant sted, vil du mest sannsynlig ikke ha den.</translation>
 <translation id="6198102561359457428">Logg deg av og på igjen</translation>
 <translation id="6198252989419008588">Endre personlig kode</translation>
-<translation id="6201792273624501289">Linux-apper</translation>
 <translation id="6202304368170870640">Du kan bruke PIN-koden til å logge på eller låse opp enheten.</translation>
 <translation id="6206311232642889873">&amp;Kopier bilde</translation>
 <translation id="6207200176136643843">Tilbakestill til standard zoomnivå</translation>
@@ -5592,7 +5588,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="9130015405878219958">Ugyldig modus angitt.</translation>
 <translation id="9131487537093447019">sende meldinger til og motta meldinger fra Bluetooth-enheter.</translation>
 <translation id="9134304429738380103">Ja, den er grei.</translation>
-<translation id="9135090785674039430">Når dette er påslått, kan ikke nettsteder bruke informasjonskapsler som sporer deg overalt på nettet. Noen nettsteder kan slutte å fungere som normalt.</translation>
 <translation id="9137013805542155359">Vis original</translation>
 <translation id="9137157311132182254">Foretrukket søkemotor</translation>
 <translation id="9137248913990643158">Du må starte og logge på Chrome før du bruker denne appen.</translation>

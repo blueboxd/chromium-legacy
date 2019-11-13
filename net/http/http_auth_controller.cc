@@ -142,15 +142,13 @@ HttpAuthController::HttpAuthController(
     const NetworkIsolationKey& network_isolation_key,
     HttpAuthCache* http_auth_cache,
     HttpAuthHandlerFactory* http_auth_handler_factory,
-    HostResolver* host_resolver,
-    HttpAuthPreferences::DefaultCredentials allow_default_credentials)
+    HostResolver* host_resolver)
     : target_(target),
       auth_url_(auth_url),
       auth_origin_(auth_url.GetOrigin()),
       auth_path_(auth_url.path()),
       network_isolation_key_(network_isolation_key),
       embedded_identity_used_(false),
-      allow_default_credentials_(allow_default_credentials),
       default_credentials_used_(false),
       http_auth_cache_(http_auth_cache),
       http_auth_handler_factory_(http_auth_handler_factory),
@@ -539,12 +537,7 @@ bool HttpAuthController::SelectNextAuthIdentityToTry() {
   // infinite loop. We use default credentials after checking the auth cache so
   // that if single sign-on doesn't work, we won't try default credentials for
   // future transactions.
-  if (!default_credentials_used_ && handler_->AllowsDefaultCredentials() &&
-      // TODO(https://crbug.com/458508): Refactor |AllowsDefaultCredentials|
-      // to internally process |allow_default_credentials_| once it is
-      // passed along with the other |HttpAuthPreferences|.
-      allow_default_credentials_ ==
-          HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS) {
+  if (!default_credentials_used_ && handler_->AllowsDefaultCredentials()) {
     identity_.source = HttpAuth::IDENT_SRC_DEFAULT_CREDENTIALS;
     identity_.invalid = false;
     default_credentials_used_ = true;

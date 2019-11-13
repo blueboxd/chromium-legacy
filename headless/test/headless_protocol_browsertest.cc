@@ -248,6 +248,8 @@ HEADLESS_PROTOCOL_TEST(VirtualTimeHistoryNavigation,
                        "emulation/virtual-time-history-navigation.js")
 HEADLESS_PROTOCOL_TEST(VirtualTimeHistoryNavigationSameDoc,
                        "emulation/virtual-time-history-navigation-same-doc.js")
+HEADLESS_PROTOCOL_TEST(VirtualTimeFetchKeepalive,
+                       "emulation/virtual-time-fetch-keepalive.js")
 
 // http://crbug.com/633321
 #if defined(OS_ANDROID)

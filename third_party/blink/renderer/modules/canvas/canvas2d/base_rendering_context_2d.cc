@@ -1632,7 +1632,7 @@ ImageData* BaseRenderingContext2D::getImageData(
   ImageData* imageData = ImageData::Create(
       image_data_rect.Size(),
       NotShared<DOMUint8ClampedArray>(DOMUint8ClampedArray::Create(
-          array_buffer, 0, array_buffer->ByteLength())),
+          array_buffer, 0, array_buffer->DeprecatedByteLengthAsUnsigned())),
       color_settings);
 
   if (!IsPaint2D()) {

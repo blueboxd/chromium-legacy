@@ -8,6 +8,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.WebContentsFactory;
+import org.chromium.chrome.browser.payments.handler.toolbar.PaymentHandlerToolbarCoordinator;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -59,7 +60,11 @@ public class PaymentHandlerCoordinator {
         bottomSheetController.addObserver(mediator);
         webContents.addObserver(mediator);
 
-        PaymentHandlerView view = new PaymentHandlerView(activity, webContents, webContentView);
+        PaymentHandlerToolbarCoordinator toolbarCoordinator = new PaymentHandlerToolbarCoordinator(
+                activity, webContents, () -> { mHider.run(); });
+        PaymentHandlerView view = new PaymentHandlerView(
+                activity, webContents, webContentView, toolbarCoordinator.getView());
+        assert toolbarCoordinator.getToolbarHeightPx() == view.getToolbarHeightPx();
         PropertyModelChangeProcessor changeProcessor =
                 PropertyModelChangeProcessor.create(model, view, PaymentHandlerViewBinder::bind);
         mHider = () -> {

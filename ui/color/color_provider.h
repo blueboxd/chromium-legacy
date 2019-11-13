@@ -30,9 +30,9 @@ class COMPONENT_EXPORT(COLOR) ColorProvider {
   ColorProvider& operator=(const ColorProvider&) = delete;
   ~ColorProvider();
 
-  // Adds a mixer to the end of the current color pipeline.  Returns a pointer
+  // Adds a mixer to the end of the current color pipeline.  Returns a reference
   // to the added mixer so callers can subsequently add sets and/or recipes.
-  ColorMixer* AddMixer();
+  ColorMixer& AddMixer();
 
   // Returns the result color for |id| by applying the effects of each mixer in
   // order.  Returns gfx::kPlaceholderColor if no mixer knows how to construct

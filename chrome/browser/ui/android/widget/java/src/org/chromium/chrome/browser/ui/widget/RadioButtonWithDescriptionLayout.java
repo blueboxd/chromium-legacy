@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.ui.widget;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.RadioGroup;
 
 import androidx.annotation.Nullable;
@@ -16,11 +17,13 @@ import java.util.List;
 
 /**
  * Manages a group of exclusive RadioButtonWithDescriptions, automatically inserting a margin in
- * between the rows to prevent them from squishing together.
+ * between the rows to prevent them from squishing together. Has the option to set an accessory view
+ * on any given RadioButtonWithDescription. Only one accessory view per layout is supported.
  *
  * -------------------------------------------------
  * | O | MESSAGE #1                                |
  *        description_1                            |
+ *        [optional] accessory view                |
  * | O | MESSAGE #N                                |
  *        description_n                            |
  * -------------------------------------------------
@@ -63,6 +66,7 @@ public final class RadioButtonWithDescriptionLayout
     private final int mMarginBetweenRows;
     private final List<RadioButtonWithDescription> mRadioButtonsWithDescriptions;
     private OnCheckedChangeListener mOnCheckedChangeListener;
+    private View mAccessoryView;
 
     public RadioButtonWithDescriptionLayout(Context context) {
         this(context, null);
@@ -128,6 +132,31 @@ public final class RadioButtonWithDescriptionLayout
         }
 
         updateMargins();
+    }
+
+    private View removeAttachedAccessoryView(View view) {
+        // Remove the view from it's parent if it has one.
+        if (view.getParent() != null) {
+            ViewGroup previousGroup = (ViewGroup) view.getParent();
+            previousGroup.removeView(view);
+        }
+        return view;
+    }
+
+    /**
+     * Attach the given accessory view to the given RadioButtonWithDescription. The attachmentPoint
+     * must be a direct child of this.
+     *
+     * @param accessoryView The accessory view to be attached.
+     * @param attachmentPoint The RadioButtonWithDescription that the accessory view will be
+     *                        attached to.
+     */
+    public void attachAccessoryView(
+            View accessoryView, RadioButtonWithDescription attachmentPoint) {
+        removeAttachedAccessoryView(accessoryView);
+        int attachmentPointIndex = indexOfChild(attachmentPoint);
+        assert attachmentPointIndex >= 0 : "attachmentPoint view must a child of layout.";
+        addView(accessoryView, attachmentPointIndex + 1);
     }
 
     /** Sets margins between each of the radio buttons. */

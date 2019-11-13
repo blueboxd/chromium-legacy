@@ -33,6 +33,7 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/chrome_paths.h"
@@ -656,7 +657,7 @@ bool InstantService::IsCustomLinksEnabled() {
 
 void InstantService::BuildNtpTheme() {
   // Get theme information from theme service.
-  theme_.reset(new NtpTheme());
+  theme_ = std::make_unique<NtpTheme>();
 
   // Get if the current theme is the default theme.
   ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile_);
@@ -674,6 +675,31 @@ void InstantService::BuildNtpTheme() {
   theme_->text_color_light =
       theme_provider.GetColor(ThemeProperties::COLOR_NTP_TEXT_LIGHT);
   SetNtpElementsNtpTheme();
+
+  if (base::FeatureList::IsEnabled(ntp_features::kRealboxMatchOmniboxTheme)) {
+    theme_->search_box.bg =
+        GetOmniboxColor(&theme_provider, OmniboxPart::LOCATION_BAR_BACKGROUND);
+    theme_->search_box.icon =
+        GetOmniboxColor(&theme_provider, OmniboxPart::RESULTS_ICON);
+    theme_->search_box.placeholder =
+        GetOmniboxColor(&theme_provider, OmniboxPart::LOCATION_BAR_TEXT_DIMMED);
+    theme_->search_box.results_bg =
+        GetOmniboxColor(&theme_provider, OmniboxPart::RESULTS_BACKGROUND);
+    theme_->search_box.results_bg_hovered =
+        GetOmniboxColor(&theme_provider, OmniboxPart::RESULTS_BACKGROUND,
+                        OmniboxPartState::HOVERED);
+    theme_->search_box.results_bg_selected =
+        GetOmniboxColor(&theme_provider, OmniboxPart::RESULTS_BACKGROUND,
+                        OmniboxPartState::SELECTED);
+    theme_->search_box.results_dim =
+        GetOmniboxColor(&theme_provider, OmniboxPart::RESULTS_TEXT_DIMMED);
+    theme_->search_box.results_text =
+        GetOmniboxColor(&theme_provider, OmniboxPart::RESULTS_TEXT_DEFAULT);
+    theme_->search_box.results_url =
+        GetOmniboxColor(&theme_provider, OmniboxPart::RESULTS_TEXT_URL);
+    theme_->search_box.text = GetOmniboxColor(
+        &theme_provider, OmniboxPart::LOCATION_BAR_TEXT_DEFAULT);
+  }
 
   if (theme_service->UsingExtensionTheme()) {
     const extensions::Extension* extension =

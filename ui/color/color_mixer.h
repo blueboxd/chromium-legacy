@@ -39,15 +39,13 @@ class COMPONENT_EXPORT(COLOR) ColorMixer {
   ColorMixer& operator=(ColorMixer&&) noexcept;
   ~ColorMixer();
 
+  // Adds a recipe for |id| if it does not exist.
+  ColorRecipe& operator[](ColorId id);
+
   // Adds |set| to |sets_|.  |set| must not have the same ID as any previously
   // added sets, though it may contain colors with the same IDs as colors in
   // those sets; in such cases, the last-added set takes priority.
   void AddSet(ColorSet&& set);
-
-  // Adds a recipe for |id|, which must not already have an existing recipe.
-  // Returns a non-const ref to allow chaining calls to
-  // ColorRecipe::AddTransform().
-  ColorRecipe& AddRecipe(ColorId id);
 
   // Returns the input color for |id|.  First searches all |sets_| in reverse
   // order; if not found, asks the previous mixer for the result color.  If

@@ -163,6 +163,8 @@ class AutocompleteController : public AutocompleteProviderListener,
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsUIATest, AccessibleOmnibox);
 #endif  // OS_WIN
   FRIEND_TEST_ALL_PREFIXES(OmniboxPopupModelTest, SetSelectedLine);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxPopupModelTest,
+                           SetSelectedLineWithNoDefaultMatches);
   FRIEND_TEST_ALL_PREFIXES(OmniboxPopupModelTest, TestFocusFixing);
   FRIEND_TEST_ALL_PREFIXES(OmniboxPopupModelTest, PopupPositionChanging);
   FRIEND_TEST_ALL_PREFIXES(OmniboxPopupContentsViewTest,

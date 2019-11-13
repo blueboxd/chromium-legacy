@@ -81,9 +81,9 @@ bool IsSlidingOutOverviewFromShelf();
 void MaximizeIfSnapped(aura::Window* window);
 
 // Get the grid bounds if a window is snapped in splitview, or what they will be
-// when snapped based on |indicator_state|.
+// when snapped based on |target_root| and |indicator_state|.
 gfx::Rect GetGridBoundsInScreenForSplitview(
-    aura::Window* window,
+    aura::Window* target_root,
     base::Optional<SplitViewDragIndicators::WindowDraggingState>
         window_dragging_state = base::nullopt);
 

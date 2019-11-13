@@ -339,7 +339,8 @@ public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
                             "https://bobpay.com" /* tertiarylabel */, icon /* icon */,
                             bobpayMethodNames /* methodNames */, true /* explicitlyVerified */,
                             bobpayCapabilities /* capabilities */,
-                            new String[0] /* preferredRelatedApplicationIds */));
+                            new String[0] /* preferredRelatedApplicationIds */,
+                            new ServiceWorkerPaymentApp.SupportedDelegations()));
             callback.onPaymentAppCreated(
                     new ServiceWorkerPaymentApp(webContents, 0 /* registrationId */,
                             UriUtils.parseUriFromString("https://alicepay.com") /* scope */,
@@ -347,7 +348,8 @@ public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
                             "https://alicepay.com" /* tertiarylabel */, icon /* icon */,
                             alicepayMethodNames /* methodNames */, true /* explicitlyVerified */,
                             alicepayCapabilities /* capabilities */,
-                            new String[0] /* preferredRelatedApplicationIds */));
+                            new String[0] /* preferredRelatedApplicationIds */,
+                            new ServiceWorkerPaymentApp.SupportedDelegations()));
             callback.onAllPaymentAppsCreated();
         });
         mPaymentRequestTestRule.triggerUIAndWait(

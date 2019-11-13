@@ -68,6 +68,7 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
@@ -754,6 +755,12 @@ void HandleWindowSnap(AcceleratorAction action) {
 void HandleWindowMinimize() {
   base::RecordAction(base::UserMetricsAction("Accel_Toggle_Minimized_Minus"));
   accelerators::ToggleMinimized();
+}
+
+void HandleTopWindowMinimizeOnBack() {
+  base::RecordAction(
+      base::UserMetricsAction("Accel_Minimize_Top_Window_On_Back"));
+  WindowState::Get(TabletModeWindowManager::GetTopWindow())->Minimize();
 }
 
 void HandleShowImeMenuBubble() {
@@ -1674,6 +1681,8 @@ bool AcceleratorControllerImpl::CanPerformAction(
       return CanHandleWindowSnap();
     case FOCUS_PIP:
       return !!FindPipWidget();
+    case MINIMIZE_TOP_WINDOW_ON_BACK:
+      return TabletModeWindowManager::ShouldMinimizeTopWindowOnBack();
 
     // The following are always enabled.
     case BRIGHTNESS_DOWN:
@@ -2069,6 +2078,9 @@ void AcceleratorControllerImpl::PerformAction(
       break;
     case WINDOW_MINIMIZE:
       HandleWindowMinimize();
+      break;
+    case MINIMIZE_TOP_WINDOW_ON_BACK:
+      HandleTopWindowMinimizeOnBack();
       break;
   }
 }

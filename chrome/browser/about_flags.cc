@@ -825,26 +825,18 @@ const FeatureEntry::FeatureVariation kOmniboxDocumentProviderVariations[] = {
      base::size(kOmniboxDocumentProviderServerAndClientScoring), nullptr}};
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
-#ifdef OS_ANDROID
+const FeatureEntry::FeatureParam kOmniboxOnFocusSuggestionsParamSERP[] = {
+    {"ZeroSuggestVariant:6:*", "RemoteSendUrl"}};
+#if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kOmniboxNTPZPSLocal[] = {
     {"ZeroSuggestVariant:1:*", "Local"},
     {"ZeroSuggestVariant:7:*", "Local"},
     {"ZeroSuggestVariant:8:*", "Local"}};
-
 const FeatureEntry::FeatureParam kOmniboxNTPZPSRemote[] = {
     {"ZeroSuggestVariant:1:*", "RemoteNoUrl"},
     {"ZeroSuggestVariant:7:*", "RemoteNoUrl"},
     {"ZeroSuggestVariant:8:*", "RemoteNoUrl"}};
-
-const FeatureEntry::FeatureVariation kOmniboxOnFocusSuggestionsVariations[] = {
-    {"ZPS on NTP: Local History", kOmniboxNTPZPSLocal,
-     base::size(kOmniboxNTPZPSLocal), nullptr},
-    {"ZPS on NTP: Remote History", kOmniboxNTPZPSRemote,
-     base::size(kOmniboxNTPZPSRemote), "t3314248"},
-};
-#else
-const FeatureEntry::FeatureParam kOmniboxOnFocusSuggestionsParamSERP[] = {
-    {"ZeroSuggestVariant:6:*", "RemoteSendUrl"}};
+#else   // !defined(OS_ANDROID)
 const FeatureEntry::FeatureParam
     kOmniboxOnFocusSuggestionsParamNTPOmniboxRemoteLocal[] = {
         {"ZeroSuggestVariant:7:*", "RemoteNoUrl,Local"}};
@@ -855,10 +847,18 @@ const FeatureEntry::FeatureParam
     kOmniboxOnFocusSuggestionsParamNTPOmniboxRealboxRemoteLocal[] = {
         *kOmniboxOnFocusSuggestionsParamNTPOmniboxRemoteLocal,
         *kOmniboxOnFocusSuggestionsParamNTPRealboxRemoteLocal};
+#endif  // defined(OS_ANDROID)
+
 const FeatureEntry::FeatureVariation kOmniboxOnFocusSuggestionsVariations[] = {
     {"SERP - RemoteSendURL", kOmniboxOnFocusSuggestionsParamSERP,
      base::size(kOmniboxOnFocusSuggestionsParamSERP),
      "t3315869" /* variation_id */},
+#if defined(OS_ANDROID)
+    {"ZPS on NTP: Local History", kOmniboxNTPZPSLocal,
+     base::size(kOmniboxNTPZPSLocal), nullptr},
+    {"ZPS on NTP: Remote History", kOmniboxNTPZPSRemote,
+     base::size(kOmniboxNTPZPSRemote), "t3314248"},
+#else   // !defined(OS_ANDROID)
     {"NTP Omnibox - Remote,Local",
      kOmniboxOnFocusSuggestionsParamNTPOmniboxRemoteLocal,
      base::size(kOmniboxOnFocusSuggestionsParamNTPOmniboxRemoteLocal),
@@ -871,8 +871,8 @@ const FeatureEntry::FeatureVariation kOmniboxOnFocusSuggestionsVariations[] = {
      kOmniboxOnFocusSuggestionsParamNTPOmniboxRealboxRemoteLocal,
      base::size(kOmniboxOnFocusSuggestionsParamNTPOmniboxRealboxRemoteLocal),
      "t3316133" /* variation_id */},
+#endif  // defined(OS_ANDROID)
 };
-#endif
 
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches3[] = {
     {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "3"}};
@@ -2982,7 +2982,7 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"omnibox-zero-suggestions-on-serp",
      flag_descriptions::kOmniboxZeroSuggestionsOnSERPName,
-     flag_descriptions::kOmniboxZeroSuggestionsOnSERPDescription, kOsDesktop,
+     flag_descriptions::kOmniboxZeroSuggestionsOnSERPDescription, kOsAll,
      FEATURE_VALUE_TYPE(omnibox::kZeroSuggestionsOnSERP)},
 
     {"omnibox-material-design-weather-icons",
@@ -3115,6 +3115,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"ntp-realbox", flag_descriptions::kNtpRealboxName,
      flag_descriptions::kNtpRealboxDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(ntp_features::kRealbox)},
+
+    {"ntp-realbox-match-omnibox-theme",
+     flag_descriptions::kNtpRealboxMatchOmniboxThemeName,
+     flag_descriptions::kNtpRealboxMatchOmniboxThemeDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(ntp_features::kRealboxMatchOmniboxTheme)},
 
     {"webui-a11y-enhancements", flag_descriptions::kWebUIA11yEnhancementsName,
      flag_descriptions::kWebUIA11yEnhancementsDescription, kOsDesktop,
@@ -4124,6 +4129,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kUseSkiaRenderer)},
 
 #if defined(OS_CHROMEOS)
+    {"allow-ambient-eq", flag_descriptions::kAllowAmbientEQName,
+     flag_descriptions::kAllowAmbientEQDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kAllowAmbientEQ)},
+
     {"allow-disable-mouse-acceleration",
      flag_descriptions::kAllowDisableMouseAccelerationName,
      flag_descriptions::kAllowDisableMouseAccelerationDescription, kOsCrOS,
@@ -4770,18 +4779,12 @@ const FeatureEntry kFeatureEntries[] = {
     // AboutFlagsHistogramTest unit test to verify this process).
 };
 
-class FlagsStateSingleton {
+class FlagsStateSingleton : public flags_ui::FlagsState::Delegate {
  public:
   FlagsStateSingleton()
-      : flags_state_(std::make_unique<flags_ui::FlagsState>(
-            kFeatureEntries,
-            base::size(kFeatureEntries),
-            base::Bind(&FlagsStateSingleton::IsFlagExpired))) {}
-  ~FlagsStateSingleton() {}
-
-  static bool IsFlagExpired(const flags_ui::FeatureEntry& entry) {
-    return flags::IsFlagExpired(entry.internal_name);
-  }
+      : flags_state_(
+            std::make_unique<flags_ui::FlagsState>(kFeatureEntries, this)) {}
+  ~FlagsStateSingleton() override = default;
 
   static FlagsStateSingleton* GetInstance() {
     return base::Singleton<FlagsStateSingleton>::get();
@@ -4792,12 +4795,15 @@ class FlagsStateSingleton {
   }
 
   void RebuildState(const std::vector<flags_ui::FeatureEntry>& entries) {
-    flags_state_ = std::make_unique<flags_ui::FlagsState>(
-        entries.data(), entries.size(),
-        base::Bind(&FlagsStateSingleton::IsFlagExpired));
+    flags_state_ = std::make_unique<flags_ui::FlagsState>(entries, this);
   }
 
  private:
+  // flags_ui::FlagsState::Delegate:
+  bool ShouldExcludeFlag(const FeatureEntry& entry) override {
+    return flags::IsFlagExpired(entry.internal_name);
+  }
+
   std::unique_ptr<flags_ui::FlagsState> flags_state_;
 
   DISALLOW_COPY_AND_ASSIGN(FlagsStateSingleton);

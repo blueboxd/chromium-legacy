@@ -2043,7 +2043,6 @@
 <translation id="3923676227229836009">या पेजला फाइल पाहण्याची अनुमती आहे</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3925573269917483990">कॅमेराः</translation>
-<translation id="3925842537050977900">शेल्फपासून अनपिन करा</translation>
 <translation id="3926002189479431949">Smart Lock फोन बदलला</translation>
 <translation id="3927932062596804919">नकार द्या</translation>
 <translation id="3928570707778085600"><ph name="FILE_OR_FOLDER_NAME" /> मध्ये बदल सेव्ह करायचे आहेत का?</translation>
@@ -2536,7 +2535,6 @@
 <translation id="4689235506267737042">तुमची डेमो प्राधान्ये निवडा</translation>
 <translation id="4689421377817139245">आपल्या iPhone सह हा बुकमार्क संकालित करा</translation>
 <translation id="4690091457710545971">&lt;Intel वाय-फाय फर्मवेयरद्वारे चार फायली निर्माण करण्यात आल्या: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon.  पहिल्या तीन बायनरी फायली अशा आहेत ज्यामध्ये रजिस्टर डंप आहेत आणि त्यामध्ये कोणतीही वैयक्तिक किंवा डिव्हाइसची ओळख स्पष्ट करणारी माहिती नसेल याची Intel द्वारे खात्री करण्यात आली आहे. शेवटची फाइल म्हणजे Intel फर्मवेयरने काढलेला माग आहे; त्यामधून कोणतीही वैयक्तिक किंवा डिव्हाइसची ओळख स्पष्ट करणारी माहिती काढून टाकण्यात आली आहे, पण ही फाइल इथे दर्शवण्यासाठी खूप मोठी आहे. तुमच्या डिव्हाइसवर नुकत्याच उद्भवलेल्या वाय-फाय समस्यांच्या प्रतिसादातून या फायली तयार करण्यात आल्या आहेत आणि या समस्यांवर मार्ग काढण्यासाठी त्या Intel सह शेअर केल्या जातील.&gt;</translation>
-<translation id="469230890969474295">OEM फोल्डर</translation>
 <translation id="4692623383562244444">शोध इंजिने</translation>
 <translation id="4693155481716051732">सुशी</translation>
 <translation id="4694024090038830733">प्रिंटर कॉन्फिगरेशन ॲडमिनिस्ट्रेटरद्वारे हाताळले जाते.</translation>
@@ -2569,7 +2567,6 @@
 <translation id="4737715515457435632">कृपया एका नेटवर्कशी कनेक्ट करा</translation>
 <translation id="473775607612524610">अपडेट करा</translation>
 <translation id="4739639199548674512">तिकिटे</translation>
-<translation id="4742746985488890273">शेल्फवर पिन करा</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />ॲप्लिकेशन कशी अपडेट करायची ते शिका<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{साइट अनम्यूट करा}other{साइट अनम्यूट करा}}</translation>
 <translation id="4746351372139058112">संदेश</translation>
@@ -3562,7 +3559,6 @@
 <translation id="6196854373336333322">"<ph name="EXTENSION_NAME" />" एक्स्टेंशनने तुमच्या प्रॉक्सी सेटिंग्जचे नियंत्रण घेतले आहे, याचा अर्थ हे तुम्ही ऑनलाइन करता ती कोणतीही गोष्ट बदलू शकते, खंडित करू शकते किंवा चोरून ऐकू शकते. हा बदल का झाला, याबद्दल तुम्ही खात्री नसल्यास, तुम्हाला कदाचित तो नको आहे.</translation>
 <translation id="6198102561359457428">साइन आउट करा नंतर पुन्हा साइन इन करा...</translation>
 <translation id="6198252989419008588">पिन बदला</translation>
-<translation id="6201792273624501289">Linux ॲप्स</translation>
 <translation id="6202304368170870640">तुमच्या डिव्हाइसमध्ये साइन इन करण्यासाठी किंवा ते अनलॉक करण्यासाठी तुम्ही तुमचा पिन वापरू शकता.</translation>
 <translation id="6206311232642889873">इमेज कॉ&amp;पी करा</translation>
 <translation id="6207200176136643843">झूम स्तर डीफॉल्टवर रीसेट करा</translation>
@@ -5595,7 +5591,6 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
 <translation id="9130015405878219958">चुकीचे मोड एंटर केले.</translation>
 <translation id="9131487537093447019">ब्लूटूथ डिव्हाइस वर मेसेज पाठवा आणि त्यावरून मिळवा.</translation>
 <translation id="9134304429738380103">होय, मला मान्य आहे.</translation>
-<translation id="9135090785674039430">सुरू केलेले असते तेव्हा साइट संपूर्ण वेबवर तुमचा माग ठेवणाऱ्या कुकी वापरू शकत नाहीत. काही वेबसाइट काम करू शकत नाहीत.</translation>
 <translation id="9137013805542155359">मूळ दर्शवा</translation>
 <translation id="9137157311132182254">प्राधान्य असलेले शोध इंजीन</translation>
 <translation id="9137248913990643158">कृपया हा ॲप वापरण्‍यापूर्वी प्रारंभ करा आणि Chrome मध्‍ये साइन इन करा.</translation>

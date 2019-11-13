@@ -57,4 +57,21 @@ public class FeatureHighlightProvider {
             @TextAlignment int headAlignment, @StyleRes int headStyle, @StringRes int bodyTextId,
             @TextAlignment int bodyAlignment, @StyleRes int bodyStyle, @ColorInt int color,
             long timeoutMs) {}
+
+    /**
+     * Build and show a feature highlight bubble for a particular view.
+     * @param activity An activity to attach the highlight to.
+     * @param view The view to focus.
+     * @param headTextId The text shown in the header section of the bubble.
+     * @param headAlignment Alignment of the head text.
+     * @param bodyTextId The text shown in the body section of the bubble.
+     * @param bodyAlignment Alignment of the body text.
+     * @param color The color of the bubble.
+     * @param timeoutMs The amount of time in ms before the bubble disappears.
+     * @param completeRunnable The Runnable to be called if the user tab on the view.
+     */
+    public void buildForView(AppCompatActivity activity, View view, @StringRes int headTextId,
+            @TextAlignment int headAlignment, @StyleRes int headStyle, @StringRes int bodyTextId,
+            @TextAlignment int bodyAlignment, @StyleRes int bodyStyle, @ColorInt int color,
+            long timeoutMs, Runnable completeRunnable) {}
 }

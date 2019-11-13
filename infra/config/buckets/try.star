@@ -1175,7 +1175,7 @@ linux_builder(
 linux_builder(
     name = 'fuchsia-compile-x64-dbg',
     tryjob = tryjob(
-        experiment_percentage = 20,
+        experiment_percentage = 50,
     ),
 )
 

@@ -52,10 +52,16 @@ LocalFrameUkmAggregator::LocalFrameUkmAggregator(int64_t source_id,
   // Define the UMA for the primary metric.
   primary_metric_.uma_counter.reset(
       new CustomCountHistogram("Blink.MainFrame.UpdateTime", 0, 10000000, 50));
+  primary_metric_.pre_fcp_uma_counter.reset(new CustomCountHistogram(
+      "Blink.MainFrame.UpdateTime.PreFCP", 0, 10000000, 50));
+  primary_metric_.post_fcp_uma_counter.reset(new CustomCountHistogram(
+      "Blink.MainFrame.UpdateTime.PostFCP", 0, 10000000, 50));
 
   // Set up the substrings to create the UMA names
   const String uma_preamble = "Blink.";
   const String uma_postscript = ".UpdateTime";
+  const String uma_prefcp_postscript = ".PreFCP";
+  const String uma_postfcp_postscript = ".PostFCP";
   const String uma_percentage_preamble = "Blink.MainFrame.";
   const String uma_percentage_postscript = "Ratio";
 
@@ -83,23 +89,34 @@ LocalFrameUkmAggregator::LocalFrameUkmAggregator(int64_t source_id,
   for (unsigned i = 0; i < (unsigned)kCount; ++i) {
     const MetricInitializationData& metric_data = metrics_data()[i];
 
-    // Absolute records report the absolute time for each metric, both
-    // average and worst case. They have an associated UMA too that we
-    // own and allocate here.
+    // Absolute records report the absolute time for each metric per frame.
+    // They also aggregate the time spent in each stage between navigation
+    // (LocalFrameView resets) and First Contentful Paint.
+    // They have an associated UMA too that we own and allocate here.
     auto& absolute_record = absolute_metric_records_.emplace_back();
     absolute_record.reset();
-    StringBuilder uma_name;
-    uma_name.Append(uma_preamble);
-    uma_name.Append(metric_data.name);
-    uma_name.Append(uma_postscript);
     if (metric_data.has_uma) {
+      StringBuilder uma_name;
+      uma_name.Append(uma_preamble);
+      uma_name.Append(metric_data.name);
+      uma_name.Append(uma_postscript);
       absolute_record.uma_counter.reset(new CustomCountHistogram(
           uma_name.ToString().Utf8().c_str(), 0, 10000000, 50));
+      StringBuilder pre_fcp_uma_name;
+      pre_fcp_uma_name.Append(uma_name);
+      pre_fcp_uma_name.Append(uma_prefcp_postscript);
+      absolute_record.pre_fcp_uma_counter.reset(new CustomCountHistogram(
+          pre_fcp_uma_name.ToString().Utf8().c_str(), 0, 10000000, 50));
+      StringBuilder post_fcp_uma_name;
+      post_fcp_uma_name.Append(uma_name);
+      post_fcp_uma_name.Append(uma_postfcp_postscript);
+      absolute_record.post_fcp_uma_counter.reset(new CustomCountHistogram(
+          post_fcp_uma_name.ToString().Utf8().c_str(), 0, 10000000, 50));
     }
 
-    // Percentage records report the ratio of each metric to the primary metric,
-    // average and worst case. UMA counters are also associated with the
-    // ratios and we allocate and own them here.
+    // Percentage records report the ratio of each metric to the primary metric.
+    // UMA counters are also associated with the ratios and we allocate and own
+    // them here.
     auto& percentage_record = main_frame_percentage_records_.emplace_back();
     percentage_record.reset();
     for (auto bucket_substring : threshold_substrings) {
@@ -177,6 +194,10 @@ void LocalFrameUkmAggregator::RecordForcedStyleLayoutUMA(
   if (!calls_to_next_forced_style_layout_uma_) {
     auto& record = absolute_metric_records_[kForcedStyleAndLayout];
     record.uma_counter->CountMicroseconds(duration);
+    if (is_before_fcp_)
+      record.pre_fcp_uma_counter->CountMicroseconds(duration);
+    else
+      record.post_fcp_uma_counter->CountMicroseconds(duration);
     calls_to_next_forced_style_layout_uma_ =
         base::RandInt(0, mean_calls_between_forced_style_layout_uma_ * 2);
   } else {
@@ -199,10 +220,16 @@ void LocalFrameUkmAggregator::RecordSample(size_t metric_index,
   // the signed 32 counter for number of events in a 30 minute period. So
   // randomly record with probability 1/100.
   if (record.uma_counter) {
-    if (metric_index == static_cast<size_t>(kForcedStyleAndLayout))
+    if (metric_index == static_cast<size_t>(kForcedStyleAndLayout)) {
       RecordForcedStyleLayoutUMA(duration);
-    else
+    } else {
       record.uma_counter->CountMicroseconds(duration);
+      if (is_before_fcp_) {
+        record.pre_fcp_uma_counter->CountMicroseconds(duration);
+      } else {
+        record.post_fcp_uma_counter->CountMicroseconds(duration);
+      }
+    }
   }
 
   // Only record ratios when inside a main frame.
@@ -230,6 +257,10 @@ void LocalFrameUkmAggregator::RecordEndOfFrameMetrics(base::TimeTicks start,
 
   // Record UMA
   primary_metric_.uma_counter->CountMicroseconds(duration);
+  if (is_before_fcp_)
+    primary_metric_.pre_fcp_uma_counter->CountMicroseconds(duration);
+  else
+    primary_metric_.post_fcp_uma_counter->CountMicroseconds(duration);
 
   // Record primary time information
   primary_metric_.interval_duration = duration;

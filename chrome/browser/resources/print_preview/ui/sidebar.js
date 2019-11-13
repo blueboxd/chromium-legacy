@@ -139,14 +139,16 @@ Polymer({
    *     for selecting the default destination.
    * @param {?Array<string>} userAccounts The signed in user accounts.
    * @param {boolean} syncAvailable
+   * @param {boolean} pdfPrinterDisabled Whether the PDF printer is disabled.
    */
   init: function(
       appKioskMode, defaultPrinter, serializedDestinationSelectionRulesStr,
-      userAccounts, syncAvailable) {
+      userAccounts, syncAvailable, pdfPrinterDisabled) {
     this.isInAppKioskMode_ = appKioskMode;
+    const saveAsPdfDisabled = this.isInAppKioskMode_ || pdfPrinterDisabled;
     this.$.destinationSettings.init(
-        defaultPrinter, serializedDestinationSelectionRulesStr, userAccounts,
-        syncAvailable);
+        defaultPrinter, saveAsPdfDisabled,
+        serializedDestinationSelectionRulesStr, userAccounts, syncAvailable);
   },
 
   /**

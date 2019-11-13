@@ -504,7 +504,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
     WizardControllerTest::SetUpOnMainThread();
 
     // Make sure that OOBE is run as an "official" build.
-    official_build_override_ = WizardController::ForceOfficialBuildForTesting();
+    branded_build_override_ = WizardController::ForceBrandedBuildForTesting();
 
     WizardController* wizard_controller =
         WizardController::default_controller();
@@ -809,7 +809,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
  private:
   NetworkPortalDetectorTestImpl* network_portal_detector_ = nullptr;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  std::unique_ptr<base::AutoReset<bool>> official_build_override_;
+  std::unique_ptr<base::AutoReset<bool>> branded_build_override_;
 
   DISALLOW_COPY_AND_ASSIGN(WizardControllerFlowTest);
 };
@@ -1972,12 +1972,12 @@ class WizardControllerBrokenLocalStateTest : public WizardControllerTest {
     WizardControllerTest::SetUpOnMainThread();
 
     // Make sure that OOBE is run as an "official" build.
-    official_build_override_ = WizardController::ForceOfficialBuildForTesting();
+    branded_build_override_ = WizardController::ForceBrandedBuildForTesting();
   }
 
  private:
   std::unique_ptr<PrefService> local_state_;
-  std::unique_ptr<base::AutoReset<bool>> official_build_override_;
+  std::unique_ptr<base::AutoReset<bool>> branded_build_override_;
 
   DISALLOW_COPY_AND_ASSIGN(WizardControllerBrokenLocalStateTest);
 };
@@ -2712,7 +2712,7 @@ class WizardControllerOobeResumeTest : public WizardControllerTest {
     WizardControllerTest::SetUpOnMainThread();
 
     // Make sure that OOBE is run as an "official" build.
-    official_build_override_ = WizardController::ForceOfficialBuildForTesting();
+    branded_build_override_ = WizardController::ForceBrandedBuildForTesting();
 
     WizardController* wizard_controller =
         WizardController::default_controller();
@@ -2747,7 +2747,7 @@ class WizardControllerOobeResumeTest : public WizardControllerTest {
   std::unique_ptr<MockEnrollmentScreenView> mock_enrollment_screen_view_;
   MockEnrollmentScreen* mock_enrollment_screen_;
 
-  std::unique_ptr<base::AutoReset<bool>> official_build_override_;
+  std::unique_ptr<base::AutoReset<bool>> branded_build_override_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WizardControllerOobeResumeTest);
@@ -2819,7 +2819,7 @@ class WizardControllerOobeConfigurationTest : public WizardControllerTest {
     WizardControllerTest::SetUpOnMainThread();
 
     // Make sure that OOBE is run as an "official" build.
-    official_build_override_ = WizardController::ForceOfficialBuildForTesting();
+    branded_build_override_ = WizardController::ForceBrandedBuildForTesting();
 
     // Clear portal list (as it is by default in OOBE).
     NetworkHandler::Get()->network_state_handler()->SetCheckPortalList("");
@@ -2844,7 +2844,7 @@ class WizardControllerOobeConfigurationTest : public WizardControllerTest {
  protected:
   std::unique_ptr<MockWelcomeView> mock_welcome_view_;
   MockWelcomeScreen* mock_welcome_screen_ = nullptr;
-  std::unique_ptr<base::AutoReset<bool>> official_build_override_;
+  std::unique_ptr<base::AutoReset<bool>> branded_build_override_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WizardControllerOobeConfigurationTest);

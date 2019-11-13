@@ -2043,7 +2043,6 @@
 <translation id="3923676227229836009">ይህ ገጽ ፋይሎችን እንዲመለከት ይፈቀድለታል</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3925573269917483990">ካሜራ፦</translation>
-<translation id="3925842537050977900">ከመደርደሪያ ንቀል</translation>
 <translation id="3926002189479431949">Smart Lock ስልክ ተለውጧል</translation>
 <translation id="3927932062596804919">ከልክል</translation>
 <translation id="3928570707778085600">በ<ph name="FILE_OR_FOLDER_NAME" /> ላይ የተደረጉ ለውጦች ይቀመጡ?</translation>
@@ -2535,7 +2534,6 @@
 <translation id="4689235506267737042">የእርስዎን ቅንጭብ ማሳያ ምርጫዎችን ይምረጡ</translation>
 <translation id="4689421377817139245">ይህን ዕልባት ከእርስዎ iPhone ጋር ያስምሩት</translation>
 <translation id="4690091457710545971">&lt;አራት ፋይሎች በIntel Wi-Fi ፈርምዌር መንጭተዋል፦ csr.lst፣ fh_regs.lst፣ radio_reg.lst፣ monitor.lst.sysmon። የመጀመሪያዎቹ ሦስት የመዝገብ ተወጋጆችን የያዙ የሁለትዮሽ ፋይሎች ናቸው፣ እና ምንም የግል ወይም መሣሪያን ለይቶ የሚያሳውቅ መረጃን እንዳልያዙ በIntel የተረጋገጡ ናቸው። የመጨረሻው ፋይል ከIntel ፈርምዌር የሥራ ማስፈጸሚያ ዱካ ነው፤ ማናቸውም የግል ወይም መሣሪያን ለይቶ የሚያሳውቅ መረጃው እንዲራገፍ ተደርጓል።  እነዚህ ፋይሎች የመነጩት በቅርቡ በእርስዎ መሣሪያ ላይ ከWi-Fi ጋር ለነበሩ ችግሮች እንደ ምላሽ ነው፣ እና ለእነዚህ ችግሮች መላ ለመፈለግ ለIntel ይጋራሉ።&gt;</translation>
-<translation id="469230890969474295">የኦኢኤም አቃፊ</translation>
 <translation id="4692623383562244444">የፍለጋ ፕሮግራሞች</translation>
 <translation id="4693155481716051732">ሱሺ</translation>
 <translation id="4694024090038830733">የአታሚ ውቅረት በአስተዳዳሪው ነው የሚሰራው።</translation>
@@ -2568,7 +2566,6 @@
 <translation id="4737715515457435632">እባክዎ ከአንድ አውታረ መረብ ጋር ይገናኙ</translation>
 <translation id="473775607612524610">አዘምን</translation>
 <translation id="4739639199548674512">ቲኬቶች</translation>
-<translation id="4742746985488890273">መደርደሪያ ላይ ሰካ</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />እንዴት መተግበሪያዎችን ማዘመን እንደሚቻል ይረዱ<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{የጣቢያን ድምጸ-ከል አንሳ}one{የጣቢያዎችን ድምጸ-ከል አንሳ}other{የጣቢያዎችን ድምጸ-ከል አንሳ}}</translation>
 <translation id="4746351372139058112">መልዕክቶች</translation>
@@ -3560,7 +3557,6 @@
 <translation id="6196854373336333322">ይህ «<ph name="EXTENSION_NAME" />» ቅጥያ የተኪ ቅንብሮችዎን ተቆጣጥሯል፣ ይሄ ማለት መስመር ላይ የሚያደርጉት ማንኛውም ነገር ሊቀይር፣ ሊሰብር ወይም በድብቅ ሊከታተል ይችላል። ይሄ ለውጥ ለምን እንደተከሰተ እርግጠኛ ካልሆኑ የማይፈልጉት ነገር ሳይሆን አይቀርም።</translation>
 <translation id="6198102561359457428">ዘግተው ይውጡና ከዚያ እንደገና ይግቡ...</translation>
 <translation id="6198252989419008588">ፒን ይቀይሩ</translation>
-<translation id="6201792273624501289">Linux መተግበሪያዎች</translation>
 <translation id="6202304368170870640">ወደ መሣሪያዎ ለመግባት ወይም መሣሪያዎን ለመቆለፍ የእርስዎን ፒን መጠቀም ይችላሉ።</translation>
 <translation id="6206311232642889873">ምስል ቅ&amp;ዳ</translation>
 <translation id="6207200176136643843">ወደ ነባሪ የማጉላት ደረጃ ዳግም አስጀምር</translation>
@@ -5598,7 +5594,6 @@ nil</translation>
 <translation id="9130015405878219958">ልክ ያልሆነ ሁነታ ገብቷል።</translation>
 <translation id="9131487537093447019">መልዕክቶችን ወደ ብሉቱዝ መሣሪያዎች ይልካል እና ከእነሱ ይቀበላል።</translation>
 <translation id="9134304429738380103">አዎ፣ ገብቼበታለሁ።</translation>
-<translation id="9135090785674039430">ሲበራ ጣቢያዎች እርስዎን በመላው ድር ላይ የሚከታተሉ ኩኪዎችን መጠቀም አይችሉም። አንዳንድ ድር ጣቢያዎች ሊሰበሩ ይችላሉ።</translation>
 <translation id="9137013805542155359">የመጀመሪያውን አሳይ</translation>
 <translation id="9137157311132182254">የተመረጠው የፍለጋ ፕሮግራም</translation>
 <translation id="9137248913990643158">ይህን መተግበሪያ ከመጠቀምዎ በፊት እባክዎ ይጀምሩና ወደ Chrome ይግቡ።</translation>

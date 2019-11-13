@@ -110,7 +110,7 @@ const char kPropertyFocusHighlightEnabled[] = "a11yFocusHighlightEnabled";
 // Key which corresponds to the select-to-speak A11Y property in JS.
 const char kPropertySelectToSpeakEnabled[] = "a11ySelectToSpeakEnabled";
 
-// Key which corresponds to the switch access A11Y property in JS.
+// Key which corresponds to the Switch Access A11Y property in JS.
 const char kPropertySwitchAccessEnabled[] = "a11ySwitchAccessEnabled";
 
 // Key which corresponds to the send-function-keys property in JS.

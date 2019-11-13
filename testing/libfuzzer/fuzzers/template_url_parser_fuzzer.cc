@@ -19,6 +19,7 @@
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_parser.h"
+#include "mojo/core/embedder/embedder.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/libfuzzer/libfuzzer_exports.h"
 
@@ -48,7 +49,10 @@ void ignore(void* ctx, const char* msg, ...) {
 
 class Env {
  public:
-  Env() { xmlSetGenericErrorFunc(nullptr, &ignore); }
+  Env() : executor_(base::MessagePumpType::IO) {
+    mojo::core::Init();
+    xmlSetGenericErrorFunc(nullptr, &ignore);
+  }
 
  private:
   base::SingleThreadTaskExecutor executor_;

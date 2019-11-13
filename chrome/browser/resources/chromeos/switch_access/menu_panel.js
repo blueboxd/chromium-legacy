@@ -15,7 +15,7 @@ class Panel {
     this.menuManager_;
 
     /**
-     * Reference to switch access.
+     * Reference to Switch Access.
      * @private {SwitchAccessInterface}
      */
     this.switchAccess_;

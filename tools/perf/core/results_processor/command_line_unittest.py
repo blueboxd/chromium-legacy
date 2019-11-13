@@ -129,6 +129,12 @@ class TestProcessOptions(ProcessOptionsTestCase):
     with self.assertRaises(SystemExit):
       self.ParseArgs(['--output-format', 'unknown'])
 
+  def testNoDuplicateOutputFormats(self):
+    options = self.ParseArgs(
+        ['--output-format', 'html', '--output-format', 'csv',
+         '--output-format', 'html', '--output-format', 'csv'])
+    self.assertEqual(options.output_formats, ['csv', 'html'])
+
 
 class StandaloneTestProcessOptions(ProcessOptionsTestCase):
   def setUp(self):

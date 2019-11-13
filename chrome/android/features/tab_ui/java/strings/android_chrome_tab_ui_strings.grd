@@ -196,6 +196,17 @@
       <message name="IDS_ACCESSIBILITY_TAB_SWITCHER_CAROUSEL_MORE_TABS" desc="Accessibility message of the more Tabs button on the single pane start surface.">
           More tabs
       </message>
+
+      <!-- Tab Suggestion strings -->
+      <message name="IDS_TAB_SUGGESTION_REVIEW_BUTTON" desc="This text button shows on the TabSuggestion card. When user clicks this text button, user will enter a selection mode where they can view all the suggested tabs and the rest of the open tabs.">
+          Review
+      </message>
+      <message name="IDS_TAB_SUGGESTION_CLOSE_TAB_ACTION_BUTTON" desc="This text button shows on the toolbar of the selection mode. When user clicks this text button, all the selected tabs will be closed">
+          Close
+      </message>
+      <message name="IDS_TAB_SUGGESTION_CLOSE_STALE_MESSAGE" desc="This text shows on the TabSuggestion card. It describes the TabSuggestion.">
+          <ph name="NUMBER_OF_TABS">%1$s<ex>2</ex></ph> of your tabs haven't been used lately. Close them?
+      </message>
     </messages>
   </release>
 </grit>

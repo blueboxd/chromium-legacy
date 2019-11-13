@@ -20,7 +20,6 @@ import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.ScreenOrientationProvider;
@@ -64,11 +63,6 @@ public class ChromeActivityCommonsModule {
     @Provides
     public ChromeFullscreenManager provideChromeFullscreenManager() {
         return mActivity.getFullscreenManager();
-    }
-
-    @Provides
-    public ToolbarManager provideToolbarManager() {
-        return mActivity.getToolbarManager();
     }
 
     @Provides

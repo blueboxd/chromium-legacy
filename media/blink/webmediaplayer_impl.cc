@@ -263,9 +263,8 @@ void SetSanitizedStringProperty(MediaLog* log,
                                 std::string key,
                                 blink::WebString value) {
   std::string converted = value.Utf8();
-  if (converted.empty() || !base::IsStringUTF8(converted)) {
-    converted = "<invalid property>";
-  }
+  if (!base::IsStringUTF8(converted))
+    converted = "[invalid property]";
   log->SetStringProperty(key, converted);
 }
 

@@ -621,6 +621,9 @@ class LocalNtpSource::SearchConfigurationProvider
                                  ntp_features::kChromeColorsCustomColorPicker));
       config_data.SetBoolean("realboxEnabled",
                              ntp_features::IsRealboxEnabled());
+      config_data.SetBoolean("realboxMatchOmniboxTheme",
+                             base::FeatureList::IsEnabled(
+                                 ntp_features::kRealboxMatchOmniboxTheme));
       config_data.SetBoolean(
           "suggestionTransparencyEnabled",
           base::FeatureList::IsEnabled(

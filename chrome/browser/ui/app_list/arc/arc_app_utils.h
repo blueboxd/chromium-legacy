@@ -25,22 +25,28 @@ class BrowserContext;
 
 namespace arc {
 
+extern const char kInitialStartParam[];
+extern const char kPlayStoreActivity[];
+extern const char kPlayStorePackage[];
+extern const char kSettingsAppDomainUrlActivity[];
+
 extern const char kCameraAppId[];
 extern const char kCameraMigrationAppId[];
-extern const char kGoogleDuo[];
-extern const char kInfinitePainter[];
+extern const char kGmailAppId[];
+extern const char kGoogleCalendarAppId[];
+extern const char kGoogleDuoAppId[];
+extern const char kGoogleMapsAppId[];
+extern const char kGooglePhotosAppId[];
+extern const char kInfinitePainterAppId[];
 extern const char kLegacyCameraAppId[];
-extern const char kLightRoom[];
-extern const char kPlayStoreAppId[];
+extern const char kLightRoomAppId[];
 extern const char kPlayBooksAppId[];
 extern const char kPlayGamesAppId[];
 extern const char kPlayMoviesAppId[];
 extern const char kPlayMusicAppId[];
-extern const char kPlayStorePackage[];
-extern const char kPlayStoreActivity[];
+extern const char kPlayStoreAppId[];
 extern const char kSettingsAppId[];
-extern const char kInitialStartParam[];
-extern const char kSettingsAppDomainUrlActivity[];
+extern const char kYoutubeAppId[];
 
 // Represents unparsed intent.
 class Intent {

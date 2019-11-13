@@ -478,12 +478,8 @@ class SessionRestoreImpl : public BrowserListObserver {
     chromeos::BootTimesRecorder::Get()->AddLoginTimeMarker(
         "SessionRestore-CreatingTabs-End", false);
 #endif
-    if (browser_to_activate) {
-      // |browser_to_activate| may be minimized. Show it before activating it to
-      // avoid having a window with no content. https://crbug.com/1018885
-      browser_to_activate->window()->Show();
+    if (browser_to_activate)
       browser_to_activate->window()->Activate();
-    }
 
     // If last_normal_browser is NULL and urls_to_open_ is non-empty,
     // FinishedTabCreation will create a new TabbedBrowser and add the urls to
@@ -663,8 +659,7 @@ class SessionRestoreImpl : public BrowserListObserver {
     if (browser_ == browser)
       return;
 
-    if (!browser->window()->IsVisible() && !browser->window()->IsMinimized())
-      browser->window()->Show();
+    browser->window()->Show();
     browser->set_is_session_restore(false);
   }
 

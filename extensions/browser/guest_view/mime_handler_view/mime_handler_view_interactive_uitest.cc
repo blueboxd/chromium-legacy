@@ -196,8 +196,6 @@ IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, EscapeExitsFullscreen) {
   fullscreen_waiter.Wait();
   WaitForFullscreenAnimation();
 
-  EXPECT_NE(guest_contents, content::GetFocusedWebContents(embedder_contents));
-  EXPECT_FALSE(IsRenderWidgetHostFocused(guest_rwh));
   // Send a touch to focus the guest. We can't directly test that the correct
   // RenderWidgetHost got focus, but the wait seems to work.
   SimulateMouseClick(guest_contents, 0, blink::WebMouseEvent::Button::kLeft);

@@ -307,7 +307,6 @@ WallpaperManager.prototype.placeWallpaperPicker_ = function() {
 
   var totalWidth = this.document_.body.offsetWidth;
   var totalHeight = this.document_.body.offsetHeight;
-  centerElement($('top-header'), totalWidth, null);
   centerElement($('preview-spinner'), totalWidth, totalHeight);
 
   centerElement(

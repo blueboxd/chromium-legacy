@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 563 tests; 544 PASS, 19 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 560 tests; 541 PASS, 19 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup
 PASS align-content (type: discrete) has testAccumulation function
 PASS align-content: "flex-end" onto "flex-start"
@@ -176,9 +176,6 @@ PASS column-width: length of rem
 PASS column-width (type: discrete) has testAccumulation function
 PASS column-width: "1px" onto "auto"
 PASS column-width: "auto" onto "1px"
-PASS content (type: discrete) has testAccumulation function
-PASS content: ""b"" onto ""a""
-PASS content: ""a"" onto ""b""
 PASS counter-increment (type: discrete) has testAccumulation function
 PASS counter-increment: "ident-2 2" onto "ident-1 1"
 PASS counter-increment: "ident-1 1" onto "ident-2 2"

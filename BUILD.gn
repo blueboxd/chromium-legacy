@@ -200,6 +200,9 @@ group("gn_all") {
       "//weblayer/shell:weblayer_shell",
       "//weblayer/test:weblayer_browsertests",
     ]
+    if (is_android) {
+      deps += [ "//weblayer/browser/android/javatests:weblayer_instrumentation_test_apk" ]
+    }
   }
 
   if (!is_ios && !is_android) {

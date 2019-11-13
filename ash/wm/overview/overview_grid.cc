@@ -41,6 +41,7 @@
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_divider.h"
+#include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_state.h"
 #include "ash/wm/window_util.h"
@@ -373,6 +374,10 @@ OverviewGrid::OverviewGrid(aura::Window* root_window,
                            OverviewSession* overview_session)
     : root_window_(root_window),
       overview_session_(overview_session),
+      split_view_drag_indicators_(
+          ShouldAllowSplitView()
+              ? std::make_unique<SplitViewDragIndicators>(root_window)
+              : nullptr),
       bounds_(GetGridBoundsInScreen(root_window, /*divider_changed=*/false)) {
   for (auto* window : windows) {
     if (window->GetRootWindow() != root_window)
@@ -647,13 +652,11 @@ void OverviewGrid::RemoveItem(OverviewItem* overview_item,
         overview_session_->window_drag_controller()->item()) {
       ignored_items.insert(overview_session_->window_drag_controller()->item());
     }
-    auto* split_view_drag_indicators =
-        overview_session_->split_view_drag_indicators();
     const gfx::Rect grid_bounds = GetGridBoundsInScreenForSplitview(
         root_window_,
-        split_view_drag_indicators
+        split_view_drag_indicators_
             ? base::make_optional(
-                  split_view_drag_indicators->current_window_dragging_state())
+                  split_view_drag_indicators_->current_window_dragging_state())
             : base::nullopt);
     SetBoundsAndUpdatePositions(grid_bounds, ignored_items, /*animate=*/true);
   }
@@ -713,12 +716,24 @@ void OverviewGrid::RearrangeDuringDrag(
 
   // Update the grid's bounds.
   const gfx::Rect wanted_grid_bounds = GetGridBoundsInScreenForSplitview(
-      dragged_window, base::make_optional(window_dragging_state));
+      root_window_, base::make_optional(window_dragging_state));
   if (bounds_ != wanted_grid_bounds) {
     SetBoundsAndUpdatePositions(wanted_grid_bounds,
                                 {GetOverviewItemContaining(dragged_window)},
                                 /*animate=*/true);
   }
+}
+
+void OverviewGrid::SetSplitViewDragIndicatorsDraggedWindow(
+    aura::Window* dragged_window) {
+  DCHECK(split_view_drag_indicators_);
+  split_view_drag_indicators_->SetDraggedWindow(dragged_window);
+}
+
+void OverviewGrid::SetSplitViewDragIndicatorsWindowDraggingState(
+    SplitViewDragIndicators::WindowDraggingState window_dragging_state) {
+  DCHECK(split_view_drag_indicators_);
+  split_view_drag_indicators_->SetWindowDraggingState(window_dragging_state);
 }
 
 bool OverviewGrid::MaybeUpdateDesksWidgetBounds() {
@@ -864,7 +879,7 @@ void OverviewGrid::OnWindowDragEnded(aura::Window* dragged_window,
   // Update the grid bounds and reposition windows. Since the grid bounds might
   // be updated based on the preview area during drag, but the window finally
   // didn't be snapped to the preview area.
-  SetBoundsAndUpdatePositions(GetGridBoundsInScreenForSplitview(dragged_window),
+  SetBoundsAndUpdatePositions(GetGridBoundsInScreenForSplitview(root_window_),
                               /*ignored_items=*/{},
                               /*animate=*/true);
 }
@@ -903,6 +918,9 @@ OverviewItem* OverviewGrid::GetDropTarget() {
 }
 
 void OverviewGrid::OnDisplayMetricsChanged() {
+  if (split_view_drag_indicators_)
+    split_view_drag_indicators_->OnDisplayBoundsChanged();
+
   // In case of split view mode, the grid bounds and item positions will be
   // updated in |OnSplitViewDividerPositionChanged|.
   if (SplitViewController::Get(root_window_)->InSplitViewMode())
@@ -1910,10 +1928,8 @@ gfx::Rect OverviewGrid::GetDesksWidgetBounds() const {
   // Shift the widget down to make room for the splitview indicator guidance
   // when it's shown at the top of the screen when in portrait mode and no other
   // windows are snapped.
-  auto* split_view_drag_indicators =
-      overview_session_->split_view_drag_indicators();
-  if (split_view_drag_indicators &&
-      split_view_drag_indicators->current_window_dragging_state() ==
+  if (split_view_drag_indicators_ &&
+      split_view_drag_indicators_->current_window_dragging_state() ==
           SplitViewDragIndicators::WindowDraggingState::kFromOverview &&
       !IsCurrentScreenOrientationLandscape() &&
       !SplitViewController::Get(root_window_)->InSplitViewMode()) {

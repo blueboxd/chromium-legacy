@@ -376,7 +376,7 @@ void RTCDataChannel::send(DOMArrayBuffer* data,
     return;
   }
 
-  size_t data_length = data->ByteLength();
+  size_t data_length = data->ByteLengthAsSizeT();
   if (!data_length)
     return;
 

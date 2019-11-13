@@ -1364,10 +1364,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnDidAccessInitialDocument();
   void OnDidChangeOpener(int32_t opener_routing_id);
 
-  // A new set of CSP |policies| has been added to the document.
-  void OnDidAddContentSecurityPolicies(
-      const std::vector<ContentSecurityPolicy>& policies);
-
   void OnDidChangeFramePolicy(int32_t frame_routing_id,
                               const blink::FramePolicy& frame_policy);
   void OnDidChangeFrameOwnerProperties(int32_t frame_routing_id,
@@ -1508,6 +1504,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
                          const gfx::Rect& initial_rect,
                          bool user_gesture) override;
   void FrameFocused() override;
+  void DidAddContentSecurityPolicies(
+      const std::vector<ContentSecurityPolicy>& policies) override;
 #if defined(OS_ANDROID)
   void UpdateUserGestureCarryoverInfo() override;
 #endif

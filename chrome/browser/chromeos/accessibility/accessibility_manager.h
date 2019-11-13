@@ -214,10 +214,10 @@ class AccessibilityManager
   // Called when the Select-to-Speak extension state has changed.
   void OnSelectToSpeakStateChanged(ash::SelectToSpeakState state);
 
-  // Invoked to enable or disable switch access.
+  // Invoked to enable or disable Switch Access.
   void SetSwitchAccessEnabled(bool enabled);
 
-  // Returns if switch access is enabled.
+  // Returns if Switch Access is enabled.
   bool IsSwitchAccessEnabled() const;
 
   // Returns true if a braille display is connected to the system, otherwise

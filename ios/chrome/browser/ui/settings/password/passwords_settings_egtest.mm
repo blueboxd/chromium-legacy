@@ -647,6 +647,11 @@ PasswordForm CreateSampleFormWithIndex(int index) {
 // Checks that deleting a saved password from password details view goes back
 // to the list-of-passwords view which doesn't display that form anymore.
 - (void)testSavedFormDeletionInDetailView {
+  // TODO(crbug.com/1023619): Enable the test on 13.2+ iPad once the bug is
+  // fixed.
+  if (base::ios::IsRunningOnOrLater(13, 2, 0) && [ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on iPad and iOS 13.2+");
+  }
   // Save form to be deleted later.
   SaveExamplePasswordForm();
 
@@ -698,6 +703,11 @@ PasswordForm CreateSampleFormWithIndex(int index) {
 // goes back to the list-of-passwords view which doesn't display that form
 // anymore.
 - (void)testDuplicatedSavedFormDeletionInDetailView {
+  // TODO(crbug.com/1023619): Enable the test on 13.2+ iPad once the bug is
+  // fixed.
+  if (base::ios::IsRunningOnOrLater(13, 2, 0) && [ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on iPad and iOS 13.2+");
+  }
   // Save form to be deleted later.
   SaveExamplePasswordForm();
   // Save duplicate of the previously saved form to be deleted at the same time.
@@ -757,6 +767,11 @@ PasswordForm CreateSampleFormWithIndex(int index) {
 // Checks that deleting a blacklisted form from password details view goes
 // back to the list-of-passwords view which doesn't display that form anymore.
 - (void)testBlacklistedFormDeletionInDetailView {
+  // TODO(crbug.com/1023619): Enable the test on 13.2+ iPad once the bug is
+  // fixed.
+  if (base::ios::IsRunningOnOrLater(13, 2, 0) && [ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on iPad and iOS 13.2+");
+  }
   // Save blacklisted form to be deleted later.
   PasswordForm blacklisted;
   blacklisted.origin = GURL("https://blacklisted.com");
@@ -809,6 +824,11 @@ PasswordForm CreateSampleFormWithIndex(int index) {
 
 // Checks that deleting a password from password details can be cancelled.
 - (void)testCancelDeletionInDetailView {
+  // TODO(crbug.com/1023619): Enable the test on 13.2+ iPad once the bug is
+  // fixed.
+  if (base::ios::IsRunningOnOrLater(13, 2, 0) && [ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on iPad and iOS 13.2+");
+  }
   // Save form to be deleted later.
   SaveExamplePasswordForm();
 
@@ -1503,6 +1523,11 @@ PasswordForm CreateSampleFormWithIndex(int index) {
 
 // Test export flow
 - (void)testExportFlow {
+  // TODO(crbug.com/1023619): Enable the test on 13.2+ iPad once the bug is
+  // fixed.
+  if (base::ios::IsRunningOnOrLater(13, 2, 0) && [ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_SKIPPED(@"Test disabled on iPad and iOS 13.2+");
+  }
   // Saving a form is needed for exporting passwords.
   SaveExamplePasswordForm();
 

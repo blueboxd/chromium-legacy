@@ -53,19 +53,8 @@ struct AutocompleteMatch {
   bool supports_deletion;
 };
 
-enum AutocompleteResultStatus {
-  SUCCESS = 0,
-  SKIPPED = 1,
-};
-
 struct AutocompleteResult {
   mojo_base.mojom.String16 input;
-  array<AutocompleteMatch> matches;
-  AutocompleteResultStatus status;
-};
-
-struct DeleteAutocompleteMatchResult {
-  bool success;
   array<AutocompleteMatch> matches;
 };
 
@@ -180,14 +169,13 @@ interface EmbeddedSearch {
   // Confirms applied theme changes.
   ConfirmThemeChanges();
 
-  // Gets autocomplete matches from the browser.
-  QueryAutocomplete(mojo_base.mojom.String16 input) =>
-        (AutocompleteResult result);
+  // Queries autocomplete matches from the browser.
+  QueryAutocomplete(mojo_base.mojom.String16 input,
+                    bool prevent_inline_autocomplete);
 
   // Deletes the AutocompleteMatch in the current results by |line| number if
-  // it is deletable. When a match is deleted, |matches| is populated with the
-  // updated result after deletion. Otherwise, |matches| is empty.
-  DeleteAutocompleteMatch(uint8 line) => (DeleteAutocompleteMatchResult result);
+  // it is deletable.
+  DeleteAutocompleteMatch(uint8 line);
 
   // Cancels the current autocomplete query. Clears the result set if
   // |clear_result| is true.
@@ -206,9 +194,15 @@ struct InstantMostVisitedInfo;
 [Native]
 struct NtpTheme;
 
+[Native]
+struct SearchBoxTheme;
+
 // Renderer interface used by the browser to push updates to the client. For
 // example, the browser will tell the frame if the omnibox got focus.
 interface EmbeddedSearchClient {
+  // Updates the NTP realbox with the autocomplete results.
+  AutocompleteResultChanged(AutocompleteResult result);
+
   // Update the page sequence number for the page.
   SetPageSequenceNumber(int32 page_seq_no);
 

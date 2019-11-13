@@ -328,14 +328,8 @@ void SplitViewController::SnapWindow(aura::Window* window,
   DCHECK(window && CanSnapInSplitview(window));
   DCHECK_NE(snap_position, NONE);
   DCHECK(!is_resizing_);
+  DCHECK(!IsDividerAnimating());
   DCHECK_EQ(root_window_, window->GetRootWindow());
-
-  // This check detects the case that you try to snap a window while watching
-  // the divider snap animation. It also detects the case that you click a
-  // window in overview while tap dragging the divider (possible by using the
-  // emulator or chrome://flags/#force-tablet-mode).
-  if (IsDividerAnimating())
-    return;
 
   UpdateSnappingWindowTransformedBounds(window);
   RemoveWindowFromOverviewIfApplicable(window);

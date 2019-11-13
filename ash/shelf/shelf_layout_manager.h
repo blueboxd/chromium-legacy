@@ -271,6 +271,7 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   class UpdateShelfObserver;
   friend class PanelLayoutManagerTest;
   friend class ShelfLayoutManagerTestBase;
+  friend class ShelfLayoutManagerWindowDraggingTest;
   friend class NotificationTrayTest;
   friend class Shelf;
 
@@ -512,12 +513,14 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
       WorkspaceWindowState current_workspace_window_state);
 
   // Maybe start/update/end the window drag when swiping up from the shelf.
-  bool MaybeStartDragWindowFromShelf(const ui::LocatedEvent& event_in_screen);
+  bool MaybeStartDragWindowFromShelf(const ui::LocatedEvent& event_in_screen,
+                                     base::Optional<float> scroll_y);
   void MaybeUpdateWindowDrag(const ui::LocatedEvent& event_in_screen,
                              float scroll_x,
                              float scroll_y);
   void MaybeEndWindowDrag(const ui::LocatedEvent& event_in_screen);
   void MaybeCancelWindowDrag();
+  bool IsWindowDragInProgress();
 
   // True when inside UpdateBoundsAndOpacity() method. Used to prevent calling
   // UpdateBoundsAndOpacity() again from SetChildBounds().

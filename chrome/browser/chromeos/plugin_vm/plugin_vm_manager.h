@@ -31,7 +31,7 @@ class PluginVmManager : public KeyedService,
   ~PluginVmManager() override;
 
   void LaunchPluginVm();
-  void StopPluginVm();
+  void StopPluginVm(const std::string& name);
 
   // Seneschal server handle to use for path sharing.
   uint64_t seneschal_server_handle() { return seneschal_server_handle_; }

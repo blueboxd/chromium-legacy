@@ -61,7 +61,7 @@ import {keyEventOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock
       recentDestinations =
           [makeRecentDestination(destinations[4])];
       destinationStore.init(
-          false /* isInAppKioskMode */, 'FooDevice' /* printerName */,
+          false /* pdfPrinterDisabled */, 'FooDevice' /* printerName */,
           '' /* serializedDefaultDestinationSelectionRulesStr */,
           recentDestinations /* recentDestinations */);
       nativeLayer.setLocalDestinations(localDestinations);

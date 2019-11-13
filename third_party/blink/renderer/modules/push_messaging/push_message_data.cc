@@ -38,7 +38,8 @@ PushMessageData* PushMessageData::Create(
             : message_data.GetAsArrayBuffer();
 
     return MakeGarbageCollected<PushMessageData>(
-        static_cast<const char*>(buffer->Data()), buffer->ByteLength());
+        static_cast<const char*>(buffer->Data()),
+        buffer->DeprecatedByteLengthAsUnsigned());
   }
 
   if (message_data.IsUSVString()) {

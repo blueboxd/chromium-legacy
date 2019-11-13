@@ -72,8 +72,10 @@ class WPTTestAdapter(common.BaseIsolatedScriptArgsAdapter):
             #"--no-manifest-update",
             "--manifest=../../third_party/blink/web_tests/external/"
                 "WPT_BASE_MANIFEST_6.json",
-            # Enable mach logging to aid debugging
-            "--log-mach=-"
+            # (crbug.com/1023835) The flags below are temporary to aid debugging
+            "--log-mach=-",
+            "--log-mach-verbose",
+            "--exclude=webdriver"
         ])
         return rest_args
 

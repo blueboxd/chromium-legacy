@@ -48,7 +48,7 @@ const wchar_t kRightToLeftText[] =
     L"\x5e9\x5dc\x5d5\x5dd \x5d4\x5e2\x5d5\x5dc\x5dd!";
 
 const char* kTextExamples[] = { "Short", "Long", "Ampersands", "RTL Hebrew", };
-const char* kElideBehaviors[] = { "Elide", "No Elide", "Fade", };
+const char* kElideBehaviors[] = {"Elide", "No Elide"};
 const char* kPrefixOptions[] = { "Default", "Show", "Hide", };
 const char* kHorizontalAligments[] = { "Default", "Left", "Center", "Right", };
 constexpr const char* kWeightLabels[] = {
@@ -82,11 +82,7 @@ class TextExample::TextExampleView : public View {
     View::OnPaint(canvas);
     const gfx::Rect bounds = GetContentsBounds();
     const SkColor color = SK_ColorDKGRAY;
-    if (elide_ == gfx::FADE_TAIL) {
-      canvas->DrawFadedString(text_, font_list_, color, bounds, flags_);
-    } else {
-      canvas->DrawStringRectWithFlags(text_, font_list_, color, bounds, flags_);
-    }
+    canvas->DrawStringRectWithFlags(text_, font_list_, color, bounds, flags_);
   }
 
   int flags() const { return flags_; }
@@ -246,9 +242,6 @@ void TextExample::OnPerformAction(Combobox* combobox) {
         break;
       case 1:
         text_view_->set_elide(gfx::NO_ELIDE);
-        break;
-      case 2:
-        text_view_->set_elide(gfx::FADE_TAIL);
         break;
     }
   } else if (combobox == prefix_cb_) {

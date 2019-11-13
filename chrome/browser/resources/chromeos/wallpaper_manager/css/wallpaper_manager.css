@@ -418,15 +418,22 @@ body:not([surprise-me-disabled]) [visibleif~='surprise-me-disabled'] {
   background-color: #fff;
   border-radius: 0 0 24px 24px;
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.24), 0 0 24px rgba(0, 0, 0, 0.12);
-  display: flex;
+  display: inline-block;
   height: 48px;
-  position: absolute;
+  margin: 0 auto;
+  max-width: 100%;
   top: 0;
-  visibility: hidden;  /* Need this for correct positioning. */
 }
 
-.preview-mode:not(.wallpaper-set-successfully) #top-header {
-  visibility: visible;
+#top-header-container {
+  display: none;
+  position: absolute;
+  text-align: center;
+  width: 100%;
+}
+
+.preview-mode:not(.wallpaper-set-successfully) #top-header-container {
+  display: inline-block;
 }
 
 .top-header-contents {
@@ -480,6 +487,7 @@ body:not([surprise-me-disabled]) [visibleif~='surprise-me-disabled'] {
   overflow: hidden;
   padding-inline-end: 16px;
   padding-inline-start: 8px;
+  text-align: initial;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -585,16 +593,13 @@ html[dir='rtl'] .top-header-contents .more-options {
   background-image: url(../images/ui/center_cropped_layout_disabled.svg);
 }
 
-.top-header-contents #confirm-preview-wallpaper {
-  margin-inline-start: 96px;
+.top-header-contents #confirm-preview-wallpaper,
+.top-header-contents #refresh-wallpaper {
+  margin-inline-start: 16px;
 }
 
 .daily-wallpaper .top-header-contents #confirm-preview-wallpaper {
   margin-inline-start: 8px;
-}
-
-.top-header-contents #refresh-wallpaper {
-  margin-inline-start: 16px;
 }
 
 .preview-mode.custom-wallpaper .more-options .custom-option,
@@ -868,7 +873,6 @@ html[dir='rtl'] .top-header-contents .more-options {
   border-radius: 16px;
   color: #fff;
   display: inline-block;
-  left: 50%;
   margin: 0 auto;
   max-width: 90%;
   padding: 8px 28px;

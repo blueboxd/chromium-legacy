@@ -27,8 +27,6 @@ Polymer({
   properties: {
     activeUser: String,
 
-    appKioskMode: Boolean,
-
     dark: Boolean,
 
     /** @type {!Destination} */
@@ -37,6 +35,8 @@ Polymer({
     disabled: Boolean,
 
     noDestinations: Boolean,
+
+    pdfPrinterDisabled: Boolean,
 
     /** @type {!Array<!RecentDestination>} */
     recentDestinationList: Array,
@@ -129,11 +129,9 @@ Polymer({
     }
 
     let iconSetAndIcon = null;
-    // <if expr="chromeos">
     if (this.noDestinations) {
       iconSetAndIcon = ['cr', 'error'];
     }
-    // </if>
     iconSetAndIcon = iconSetAndIcon || icon.split(':');
     const iconset = /** @type {!IronIconsetSvgElement} */ (
         this.meta_.byKey(iconSetAndIcon[0]));

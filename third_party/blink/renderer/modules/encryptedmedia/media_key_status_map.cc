@@ -45,15 +45,15 @@ class MediaKeyStatusMap::MapEntry final
       return b->KeyId();
 
     // Compare the bytes.
-    int result =
-        memcmp(a->KeyId()->Data(), b->KeyId()->Data(),
-               std::min(a->KeyId()->ByteLength(), b->KeyId()->ByteLength()));
+    int result = memcmp(a->KeyId()->Data(), b->KeyId()->Data(),
+                        std::min(a->KeyId()->ByteLengthAsSizeT(),
+                                 b->KeyId()->ByteLengthAsSizeT()));
     if (result != 0)
       return result < 0;
 
     // KeyIds are equal to the shared length, so the shorter string is <.
-    DCHECK_NE(a->KeyId()->ByteLength(), b->KeyId()->ByteLength());
-    return a->KeyId()->ByteLength() < b->KeyId()->ByteLength();
+    DCHECK_NE(a->KeyId()->ByteLengthAsSizeT(), b->KeyId()->ByteLengthAsSizeT());
+    return a->KeyId()->ByteLengthAsSizeT() < b->KeyId()->ByteLengthAsSizeT();
   }
 
   virtual void Trace(blink::Visitor* visitor) { visitor->Trace(key_id_); }

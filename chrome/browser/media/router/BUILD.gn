@@ -164,7 +164,7 @@ static_library("router") {
       ]
 
       configs +=
-          [ "//third_party/openscreen/src/build:allow_build_from_embedder" ]
+          [ "//third_party/openscreen/src/build:openscreen_include_dirs" ]
 
       deps += [
         "//third_party/openscreen/src/osp/public",

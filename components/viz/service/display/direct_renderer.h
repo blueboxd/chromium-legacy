@@ -206,6 +206,7 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   virtual void DoDrawQuad(const DrawQuad* quad,
                           const gfx::QuadF* clip_region) = 0;
   virtual void BeginDrawingFrame() = 0;
+  virtual void FlushOverdrawFeedback(const gfx::Rect& output_rect) {}
   virtual void FinishDrawingFrame() = 0;
   // If a pass contains a single tile draw quad and can be drawn without
   // a render pass (e.g. applying a filter directly to the tile quad)

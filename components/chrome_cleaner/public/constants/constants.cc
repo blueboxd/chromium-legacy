@@ -9,7 +9,6 @@ namespace chrome_cleaner {
 // Command line switches.
 const char kChromeChannelSwitch[] = "chrome-channel";
 const char kChromeExePathSwitch[] = "chrome-exe-path";
-const char kChromeMojoPipeTokenSwitch[] = "chrome-mojo-pipe-token";
 const char kChromePromptSwitch[] = "chrome-prompt";
 const char kChromeReadHandleSwitch[] = "chrome-read-handle";
 const char kChromeWriteHandleSwitch[] = "chrome-write-handle";

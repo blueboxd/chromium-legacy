@@ -19,7 +19,6 @@
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_local_storage_helper.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -48,7 +47,6 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_web_ui.h"
@@ -396,10 +394,6 @@ class SiteSettingsHandlerTest : public testing::Test {
   }
 
   virtual void DestroyIncognitoProfile() {
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_PROFILE_DESTROYED,
-        content::Source<Profile>(static_cast<Profile*>(incognito_profile_)),
-        content::NotificationService::NoDetails());
     profile_.SetOffTheRecordProfile(nullptr);
     ASSERT_FALSE(profile_.HasOffTheRecordProfile());
     incognito_profile_ = nullptr;

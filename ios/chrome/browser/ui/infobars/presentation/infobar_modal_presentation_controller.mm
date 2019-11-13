@@ -25,9 +25,14 @@ const CGFloat kContainerCornerRadius = 13.0;
 @implementation InfobarModalPresentationController
 
 - (void)presentationTransitionWillBegin {
+  // Add a gesture recognizer to endEditing (thus hiding the keyboard) if a user
+  // taps outside the keyboard while one its being presented. Set
+  // cancelsTouchesInView to NO so the presented Modal can handle the gesture as
+  // well. (e.g. Selecting a row in a TableViewController.)
   UITapGestureRecognizer* tap =
       [[UITapGestureRecognizer alloc] initWithTarget:self.presentedView
                                               action:@selector(endEditing:)];
+  tap.cancelsTouchesInView = NO;
   [self.containerView addGestureRecognizer:tap];
 }
 

@@ -280,6 +280,47 @@ void AppServiceProxy::OnUninstallDialogClosed(
   uninstall_dialogs_.erase(it);
 }
 
+void AppServiceProxy::PauseApps(
+    const std::map<std::string, PauseData>& pause_data) {
+  if (!app_service_.is_connected())
+    return;
+
+  for (auto& data : pause_data) {
+    apps::mojom::AppType app_type = cache_.GetAppType(data.first);
+    constexpr bool kPaused = true;
+    UpdatePausedStatus(app_type, data.first, kPaused);
+
+    // TODO(crbug.com/1011235): Add the app running checking. If the app is not
+    // running, don't create the pause dialog, pause the app directly.
+    if (app_type != apps::mojom::AppType::kArc) {
+      app_service_->PauseApp(app_type, data.first);
+      continue;
+    }
+
+    cache_.ForOneApp(data.first, [this, &data](const apps::AppUpdate& update) {
+      this->LoadIconForPauseDialog(update, data.second);
+    });
+  }
+}
+
+void AppServiceProxy::UnpauseApps(const std::set<std::string>& app_ids) {
+  if (!app_service_.is_connected())
+    return;
+
+  for (auto& app_id : app_ids) {
+    apps::mojom::AppType app_type = cache_.GetAppType(app_id);
+    constexpr bool kPaused = false;
+    UpdatePausedStatus(app_type, app_id, kPaused);
+
+    app_service_->UnpauseApps(app_type, app_id);
+  }
+}
+
+void AppServiceProxy::OnPauseDialogClosed(apps::mojom::AppType app_type,
+                                          const std::string& app_id) {
+  app_service_->PauseApp(app_type, app_id);
+}
+
 void AppServiceProxy::OpenNativeSettings(const std::string& app_id) {
   if (app_service_.is_connected()) {
     cache_.ForOneApp(app_id, [this](const apps::AppUpdate& update) {
@@ -402,6 +443,51 @@ void AppServiceProxy::OnPreferredAppSet(
 void AppServiceProxy::InitializePreferredApps(base::Value preferred_apps) {
   preferred_apps_.Init(
       std::make_unique<base::Value>(std::move(preferred_apps)));
+}
+
+void AppServiceProxy::LoadIconForPauseDialog(const apps::AppUpdate& update,
+                                             const PauseData& pause_data) {
+  apps::mojom::IconKeyPtr icon_key = update.IconKey();
+  constexpr bool kAllowPlaceholderIcon = false;
+  constexpr int32_t kPauseIconSize = 48;
+  LoadIconFromIconKey(
+      update.AppType(), update.AppId(), std::move(icon_key),
+      apps::mojom::IconCompression::kUncompressed, kPauseIconSize,
+      kAllowPlaceholderIcon,
+      base::BindOnce(&AppServiceProxy::OnLoadIconForPauseDialog,
+                     weak_ptr_factory_.GetWeakPtr(), update.AppType(),
+                     update.AppId(), update.Name(), pause_data));
+}
+
+void AppServiceProxy::OnLoadIconForPauseDialog(
+    apps::mojom::AppType app_type,
+    const std::string& app_id,
+    const std::string& app_name,
+    const PauseData& pause_data,
+    apps::mojom::IconValuePtr icon_value) {
+  if (icon_value->icon_compression !=
+      apps::mojom::IconCompression::kUncompressed) {
+    OnPauseDialogClosed(app_type, app_id);
+    return;
+  }
+
+  AppServiceProxy::CreatePauseDialog(
+      app_name, icon_value->uncompressed, pause_data,
+      base::BindOnce(&AppServiceProxy::OnPauseDialogClosed,
+                     weak_ptr_factory_.GetWeakPtr(), app_type, app_id));
+}
+
+void AppServiceProxy::UpdatePausedStatus(apps::mojom::AppType app_type,
+                                         const std::string& app_id,
+                                         bool paused) {
+  std::vector<apps::mojom::AppPtr> apps;
+  apps::mojom::AppPtr app = apps::mojom::App::New();
+  app->app_type = app_type;
+  app->app_id = app_id;
+  app->paused = (paused) ? apps::mojom::OptionalBool::kTrue
+                         : apps::mojom::OptionalBool::kFalse;
+  apps.push_back(std::move(app));
+  cache_.OnApps(std::move(apps));
 }
 
 }  // namespace apps

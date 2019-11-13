@@ -14,6 +14,10 @@
 
 namespace remoting {
 
+namespace mac {
+class PermissionWizard;
+}
+
 class DaemonControllerDelegateMac : public DaemonController::Delegate {
  public:
   DaemonControllerDelegateMac();
@@ -22,7 +26,7 @@ class DaemonControllerDelegateMac : public DaemonController::Delegate {
   // DaemonController::Delegate interface.
   DaemonController::State GetState() override;
   std::unique_ptr<base::DictionaryValue> GetConfig() override;
-  bool CheckPermission() override;
+  void CheckPermission(DaemonController::BoolCallback) override;
   void SetConfigAndStart(
       std::unique_ptr<base::DictionaryValue> config,
       bool consent,
@@ -33,6 +37,8 @@ class DaemonControllerDelegateMac : public DaemonController::Delegate {
   DaemonController::UsageStatsConsent GetUsageStatsConsent() override;
 
  private:
+  std::unique_ptr<mac::PermissionWizard> permission_wizard_;
+
   DISALLOW_COPY_AND_ASSIGN(DaemonControllerDelegateMac);
 };
 

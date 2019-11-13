@@ -85,12 +85,14 @@ class TestPasswordStore : public PasswordStore {
   void AddSiteStatsImpl(const InteractionsStats& stats) override;
   void RemoveSiteStatsImpl(const GURL& origin_domain) override;
   std::vector<InteractionsStats> GetAllSiteStatsImpl() override;
-  void AddLeakedCredentialsImpl(
-      const LeakedCredentials& leaked_credentials) override;
-  void RemoveLeakedCredentialsImpl(const GURL& url,
-                                   const base::string16& username) override;
-  std::vector<LeakedCredentials> GetAllLeakedCredentialsImpl() override;
-  void RemoveLeakedCredentialsByUrlAndTimeImpl(
+  void AddCompromisedCredentialsImpl(
+      const CompromisedCredentials& compromised_credentials) override;
+  void RemoveCompromisedCredentialsImpl(
+      const GURL& url,
+      const base::string16& username) override;
+  std::vector<CompromisedCredentials> GetAllCompromisedCredentialsImpl()
+      override;
+  void RemoveCompromisedCredentialsByUrlAndTimeImpl(
       const base::RepeatingCallback<bool(const GURL&)>& url_filter,
       base::Time remove_begin,
       base::Time remove_end) override;

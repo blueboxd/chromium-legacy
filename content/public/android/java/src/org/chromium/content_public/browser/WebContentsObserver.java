@@ -82,6 +82,11 @@ public abstract class WebContentsObserver {
     public void loadProgressChanged(float progress) {}
 
     /**
+     * Called when a page's visible security state has changed.
+     */
+    public void didChangeVisibleSecurityState() {}
+
+    /**
      * Called when an error occurs while loading a page and/or the page fails to load.
      * @param isMainFrame Whether the navigation occurred in main frame.
      * @param errorCode Error code for the occurring error.

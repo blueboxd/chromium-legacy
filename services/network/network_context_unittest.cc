@@ -3247,7 +3247,7 @@ TEST_F(NetworkContextTest, CreateHostResolverWithConfigOverrides) {
 }
 #endif  // defined(OS_IOS)
 
-TEST_F(NetworkContextTest, StartDohProbes) {
+TEST_F(NetworkContextTest, ActivateDohProbes) {
   auto resolver = std::make_unique<net::MockHostResolver>();
   mojom::NetworkContextParamsPtr params = CreateContextParams();
   params->primary_network_context = true;
@@ -3265,6 +3265,21 @@ TEST_F(NetworkContextTest, StartDohProbes) {
 
   network_context.reset();
 
+  EXPECT_FALSE(resolver->IsDohProbeRunning());
+}
+
+TEST_F(NetworkContextTest, ActivateDohProbes_NotPrimaryContext) {
+  auto resolver = std::make_unique<net::MockHostResolver>();
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateContextParams());
+  network_context->url_request_context()->set_host_resolver(resolver.get());
+
+  ASSERT_FALSE(resolver->IsDohProbeRunning());
+
+  network_context->ActivateDohProbes();
+  EXPECT_FALSE(resolver->IsDohProbeRunning());
+
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(resolver->IsDohProbeRunning());
 }
 

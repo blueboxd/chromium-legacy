@@ -50,6 +50,10 @@ source_set("common") {
     "//services/network/public/mojom",
   ]
 
+  if (is_mac) {
+    deps += [ "//remoting/host/mac:permission_checking" ]
+  }
+
   if (is_mac || is_ios) {
     deps += [ "//remoting/host/mac:constants" ]
   }

@@ -131,8 +131,6 @@ js_library("manager") {
     "//ui/webui/resources/js:find_shortcut_behavior",
     "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js:util",
-    "//ui/webui/resources/js/cr:ui",
-    "//ui/webui/resources/js/cr/ui:command",
   ]
   externs_list = [ "$externs_path/chrome_send.js" ]
 }

@@ -2044,6 +2044,7 @@ void SkiaRenderer::ScheduleDCLayers() {
   if (current_frame()->dc_layer_overlay_list.empty())
     return;
 
+  std::vector<gpu::SyncToken> sync_tokens;
   for (auto& dc_layer_overlay : current_frame()->dc_layer_overlay_list) {
     for (size_t i = 0; i < DCLayerOverlay::kNumResources; ++i) {
       ResourceId resource_id = dc_layer_overlay.resources[i];
@@ -2053,6 +2054,12 @@ void SkiaRenderer::ScheduleDCLayers() {
       // Resources will be unlocked after the next call to SwapBuffers().
       auto* image_context =
           lock_set_for_external_use_->LockResource(resource_id, true);
+
+      // Sync tokens ensure the texture to be overlaid is available before
+      // scheduling it for display.
+      DCHECK(image_context->mailbox_holder().sync_token.HasData());
+      sync_tokens.push_back(image_context->mailbox_holder().sync_token);
+
       dc_layer_overlay.mailbox[i] = image_context->mailbox_holder().mailbox;
     }
     DCHECK(!dc_layer_overlay.mailbox[0].IsZero());
@@ -2060,7 +2067,8 @@ void SkiaRenderer::ScheduleDCLayers() {
 
   has_locked_overlay_resources_ = true;
   skia_output_surface_->ScheduleDCLayers(
-      std::move(current_frame()->dc_layer_overlay_list));
+      std::move(current_frame()->dc_layer_overlay_list),
+      std::move(sync_tokens));
 }
 
 sk_sp<SkColorFilter> SkiaRenderer::GetColorFilter(const gfx::ColorSpace& src,

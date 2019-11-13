@@ -24,6 +24,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/media/router/media_router_feature.h"
+#include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -443,6 +444,10 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
       if (!uma_action_recorded_)
         UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.Cast", delta);
       LogMenuAction(MENU_ACTION_CAST);
+      // TODO(takumif): Look into moving this metrics logging to a single
+      // location, like MediaRouterDialogController::ShowMediaRouterDialog().
+      media_router::MediaRouterMetrics::RecordMediaRouterDialogOrigin(
+          media_router::MediaRouterDialogOpenOrigin::APP_MENU);
       break;
 
     // Edit menu.

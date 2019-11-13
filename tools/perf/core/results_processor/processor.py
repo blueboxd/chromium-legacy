@@ -205,9 +205,7 @@ def AggregateJsonTraces(test_result):
   """
   artifacts = test_result.get('outputArtifacts', {})
   json_traces = [name for name in artifacts if _IsJsonTrace(name)]
-  # TODO(crbug.com/981349): Stop checking for HTML_TRACE_NAME after
-  # Telemetry does not aggregate traces anymore.
-  if json_traces and compute_metrics.HTML_TRACE_NAME not in artifacts:
+  if json_traces:
     trace_files = [artifacts[name]['filePath'] for name in json_traces]
     html_path = _BuildOutputPath(trace_files, compute_metrics.HTML_TRACE_NAME)
     logging.info('%s: Aggregating json traces %s.',
@@ -246,7 +244,7 @@ def UploadArtifacts(test_result, upload_bucket, run_identifier):
       continue
     # TODO(crbug.com/981349): Think of a more general way to
     # specify which artifacts deserve uploading.
-    if name == MEASUREMENTS_NAME:
+    if name in [DIAGNOSTICS_NAME, MEASUREMENTS_NAME]:
       continue
     remote_name = '/'.join([run_identifier, test_result['testPath'], name])
     urlsafe_remote_name = re.sub(r'[^A-Za-z0-9/.-]+', '_', remote_name)

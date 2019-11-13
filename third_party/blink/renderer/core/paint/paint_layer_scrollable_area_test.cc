@@ -4,7 +4,9 @@
 
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 
+#include "base/test/scoped_feature_list.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -1285,6 +1287,57 @@ TEST_P(PaintLayerScrollableAreaTest, ShowCustomResizerInTextarea) {
   ASSERT_TRUE(paint_layer);
 
   EXPECT_NE(paint_layer->GetScrollableArea()->Resizer(), nullptr);
+}
+
+class PaintLayerScrollableAreaCompositingTest
+    : public PaintLayerScrollableAreaTestBase,
+      public testing::WithParamInterface<unsigned>,
+      private ScopedCompositeAfterPaintForTest {
+ public:
+  PaintLayerScrollableAreaCompositingTest()
+      : ScopedCompositeAfterPaintForTest(GetParam() & kCompositeAfterPaint) {
+    if (GetParam() & kDoNotCompositeTrivial3D) {
+      scoped_feature_list_.InitAndEnableFeature(
+          blink::features::kDoNotCompositeTrivial3D);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          blink::features::kDoNotCompositeTrivial3D);
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_DO_NOT_COMPOSITE_TRIVIAL_3D_P(
+    PaintLayerScrollableAreaCompositingTest);
+
+// Test that a trivial 3D transform results in composited scrolling.
+TEST_P(PaintLayerScrollableAreaCompositingTest, CompositeWithTrivial3D) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #scroller {
+        width: 100px;
+        height: 100px;
+        overflow: scroll;
+        transform: translateZ(0);
+      }
+      #scrolled {
+        width: 200px;
+        height: 200px;
+      }
+    </style>
+    <div id="scroller">
+      <div id="scrolled"></div>
+    </div>
+  )HTML");
+
+  LayoutBox* scroller = ToLayoutBox(GetLayoutObjectByElementId("scroller"));
+  PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    EXPECT_TRUE(scrollable_area->NeedsCompositedScrolling());
+  const auto* properties = scroller->FirstFragment().PaintProperties();
+  EXPECT_TRUE(properties->ScrollTranslation()->HasDirectCompositingReasons());
 }
 
 }  // namespace blink

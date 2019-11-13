@@ -133,7 +133,7 @@ js_library("find_shortcut_behavior") {
     ":assert",
     ":cr",
     ":util",
-    "cr/ui:command",
+    "cr/ui:keyboard_shortcut_list",
   ]
 }
 

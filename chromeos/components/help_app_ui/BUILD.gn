@@ -8,6 +8,8 @@ assert(is_chromeos, "Help App is Chrome OS only")
 
 static_library("help_app_ui") {
   sources = [
+    "help_app_guest_ui.cc",
+    "help_app_guest_ui.h",
     "help_app_ui.cc",
     "help_app_ui.h",
     "url_constants.cc",

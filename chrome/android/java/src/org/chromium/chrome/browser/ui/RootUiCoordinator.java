@@ -4,15 +4,19 @@
 
 package org.chromium.chrome.browser.ui;
 
+import android.view.View;
+
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
+import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.MenuOrKeyboardActionController;
+import org.chromium.chrome.browser.TabThemeColorProvider;
 import org.chromium.chrome.browser.appmenu.AppMenuBlocker;
 import org.chromium.chrome.browser.appmenu.AppMenuCoordinator;
 import org.chromium.chrome.browser.appmenu.AppMenuCoordinatorFactory;
@@ -28,9 +32,13 @@ import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.metrics.UkmRecorder;
 import org.chromium.chrome.browser.share.ShareSheetCoordinator;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.toolbar.ToolbarManager;
+import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
 import org.chromium.chrome.browser.vr.VrModeObserver;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.ui.base.DeviceFormFactor;
+import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogManagerObserver;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * The root UI coordinator. This class will eventually be responsible for inflating and managing
@@ -58,15 +66,32 @@ public class RootUiCoordinator
     private OverviewModeBehavior mOverviewModeBehavior;
     private OverviewModeBehavior.OverviewModeObserver mOverviewModeObserver;
 
+    /** A means of providing the theme color to different features. */
+    private TabThemeColorProvider mTabThemeColorProvider;
+    @Nullable
+    private Callback<Boolean> mOnOmniboxFocusChangedListener;
+    private ToolbarManager mToolbarManager;
+    @Nullable
+    private Callback<ToolbarManager> mToolbarManagerCallback;
+    private ModalDialogManagerObserver mModalDialogManagerObserver;
+
     private VrModeObserver mVrModeObserver;
 
     /**
      * Create a new {@link RootUiCoordinator} for the given activity.
      * @param activity The containing {@link ChromeActivity}. TODO(https://crbug.com/931496):
      *         Remove this in favor of passing in direct dependencies.
+     * @param toolbarManagerCallback Callback<ToolbarManager> callback to invoke when the
+     *         ToolbarManager is created.
+     * @param onOmniboxFocusChangedListener Callback<Boolean> callback to invoke when Omnibox focus
+     *         changes.
      */
-    public RootUiCoordinator(ChromeActivity activity) {
+    public RootUiCoordinator(ChromeActivity activity,
+            @Nullable Callback<ToolbarManager> toolbarManagerCallback,
+            @Nullable Callback<Boolean> onOmniboxFocusChangedListener) {
         mActivity = activity;
+        mOnOmniboxFocusChangedListener = onOmniboxFocusChangedListener;
+        mToolbarManagerCallback = toolbarManagerCallback;
         mActivity.getLifecycleDispatcher().register(this);
 
         mMenuOrKeyboardActionController = mActivity.getMenuOrKeyboardActionController();
@@ -77,6 +102,11 @@ public class RootUiCoordinator
         mActivity.getLayoutManagerSupplier().addObserver(mLayoutManagerSupplierCallback);
 
         initOverviewModeSupplierObserver();
+    }
+
+    // TODO(pnoland, crbug.com/865801): remove this in favor of wiring it directly.
+    public ToolbarManager getToolbarManager() {
+        return mToolbarManager;
     }
 
     @Override
@@ -103,9 +133,18 @@ public class RootUiCoordinator
             mAppMenuCoordinator.destroy();
         }
 
+        if (mTabThemeColorProvider != null) {
+            mTabThemeColorProvider.destroy();
+            mTabThemeColorProvider = null;
+        }
+
         if (mFindToolbarManager != null) mFindToolbarManager.removeObserver(mFindToolbarObserver);
 
         if (mVrModeObserver != null) VrModuleProvider.unregisterVrModeObserver(mVrModeObserver);
+
+        if (mModalDialogManagerObserver != null && mActivity.getModalDialogManager() != null) {
+            mActivity.getModalDialogManager().removeObserver(mModalDialogManagerObserver);
+        }
 
         mActivity = null;
     }
@@ -115,8 +154,25 @@ public class RootUiCoordinator
 
     @Override
     public void onPostInflationStartup() {
+        mTabThemeColorProvider = new TabThemeColorProvider(mActivity);
+        mTabThemeColorProvider.setActivityTabProvider(mActivity.getActivityTabProvider());
+
+        initializeToolbar();
         initAppMenu();
         initFindToolbarManager();
+        if (mAppMenuCoordinator != null) {
+            mToolbarManager.onAppMenuInitialized(mAppMenuCoordinator);
+            mModalDialogManagerObserver = new ModalDialogManagerObserver() {
+                @Override
+                public void onDialogShown(PropertyModel model) {
+                    mAppMenuCoordinator.getAppMenuHandler().hideAppMenu();
+                }
+
+                @Override
+                public void onDialogHidden(PropertyModel model) {}
+            };
+            mActivity.getModalDialogManager().addObserver(mModalDialogManagerObserver);
+        }
 
         mVrModeObserver = new VrModeObserver() {
             @Override
@@ -223,6 +279,33 @@ public class RootUiCoordinator
         mOverlayPanelManager.addObserver(mOverlayPanelManagerObserver);
     }
 
+    /**
+     * Constructs {@link ToolbarManager} and the handler necessary for controlling the menu on the
+     * {@link Toolbar}.
+     */
+    protected void initializeToolbar() {
+        try (TraceEvent te = TraceEvent.scoped("RootUiCoordinator.initializeToolbar")) {
+            final View controlContainer = mActivity.findViewById(R.id.control_container);
+            assert controlContainer != null;
+            ToolbarControlContainer toolbarContainer = (ToolbarControlContainer) controlContainer;
+            Callback<Boolean> urlFocusChangedCallback = hasFocus -> {
+                if (mOnOmniboxFocusChangedListener != null) {
+                    mOnOmniboxFocusChangedListener.onResult(hasFocus);
+                }
+            };
+            mToolbarManager = new ToolbarManager(mActivity, toolbarContainer,
+                    mActivity.getCompositorViewHolder().getInvalidator(), urlFocusChangedCallback,
+                    mTabThemeColorProvider);
+            if (!mActivity.supportsAppMenu()) {
+                mToolbarManager.getToolbar().disableMenuButton();
+            }
+
+            if (mToolbarManagerCallback != null) {
+                mToolbarManagerCallback.onResult(mToolbarManager);
+            }
+        }
+    }
+
     // Private class methods
 
     private void initOverviewModeSupplierObserver() {
@@ -278,16 +361,12 @@ public class RootUiCoordinator
         // discussion around activity-specific UI customizations.
         if (mActivity.supportsAppMenu()) {
             mAppMenuCoordinator = AppMenuCoordinatorFactory.createAppMenuCoordinator(mActivity,
-                    mActivity.getLifecycleDispatcher(), mActivity.getToolbarManager(), mActivity,
+                    mActivity.getLifecycleDispatcher(), mToolbarManager, mActivity,
                     mActivity.getWindow().getDecorView(),
                     mActivity.getWindow().getDecorView().findViewById(R.id.menu_anchor_stub));
-            mActivity.getToolbarManager().onAppMenuInitialized(
-                    mAppMenuCoordinator.getAppMenuHandler(),
-                    mAppMenuCoordinator.getAppMenuPropertiesDelegate());
+
             mAppMenuCoordinator.registerAppMenuBlocker(this);
             mAppMenuCoordinator.registerAppMenuBlocker(mActivity);
-        } else if (mActivity.getToolbarManager() != null) {
-            mActivity.getToolbarManager().getToolbar().disableMenuButton();
         }
     }
 
@@ -304,7 +383,7 @@ public class RootUiCoordinator
         }
         mFindToolbarManager = new FindToolbarManager(mActivity.findViewById(stubId),
                 mActivity.getTabModelSelector(), mActivity.getWindowAndroid(),
-                mActivity.getToolbarManager().getActionModeControllerCallback());
+                mToolbarManager.getActionModeControllerCallback());
 
         mFindToolbarObserver = new FindToolbarObserver() {
             @Override

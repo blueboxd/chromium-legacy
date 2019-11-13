@@ -22,7 +22,7 @@ enum class SinkIconType;
 
 // NOTE: Do not renumber enums as that would confuse interpretation of
 // previously logged data. When making changes, also update the enum list
-// in tools/metrics/histograms/histograms.xml to keep it in sync.
+// in tools/metrics/histograms/enums.xml to keep it in sync.
 
 // NOTE: For metrics specific to the Media Router component extension, see
 // mojo/media_router_mojo_metrics.h.
@@ -33,9 +33,10 @@ enum class MediaRouterDialogOpenOrigin {
   OVERFLOW_MENU = 1,
   CONTEXTUAL_MENU = 2,
   PAGE = 3,
+  APP_MENU = 4,
 
   // NOTE: Add entries only immediately above this line.
-  TOTAL_COUNT = 4
+  TOTAL_COUNT = 5
 };
 
 // The possible outcomes from a route creation response.

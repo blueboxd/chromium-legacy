@@ -167,7 +167,10 @@ class SafetyTipPageInfoBubbleViewBrowserTest
         break;
       case UIStatus::kEnabled:
         feature_list_.InitWithFeaturesAndParameters(
-            {{security_state::features::kSafetyTipUI, {}},
+            {{security_state::features::kSafetyTipUI,
+              {{"topsites", "false"},
+               {"editdistance", "false"},
+               {"editdistance_siteengagement", "false"}}},
              {features::kLookalikeUrlNavigationSuggestionsUI,
               {{"topsites", "true"}}}},
             {});
@@ -610,9 +613,11 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
   const GURL kLookalikeUrl = GetURL("googlé.sk");
   SetEngagementScore(browser(), kLookalikeUrl, kLowEngagement);
   NavigateToURL(browser(), kLookalikeUrl, WindowOpenDisposition::CURRENT_TAB);
-  histograms.ExpectBucketCount(
-      kHistogramName, security_state::SafetyTipStatus::kLookalike,
-      ui_status() == UIStatus::kEnabledWithAllFeatures ? 1 : 0);
+
+  // Record metrics for lookalike domains unless explicitly disabled.
+  histograms.ExpectBucketCount(kHistogramName,
+                               security_state::SafetyTipStatus::kLookalike,
+                               ui_status() == UIStatus::kEnabled ? 0 : 1);
   histograms.ExpectTotalCount(kHistogramName, 3);
 }
 

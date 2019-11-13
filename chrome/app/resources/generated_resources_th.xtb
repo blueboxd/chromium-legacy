@@ -1551,7 +1551,7 @@
 <translation id="3241680850019875542">เลือกไดเรกทอรีหลักของส่วนขยายที่จะแพค หากคุณต้องการอัปเดตส่วนขยาย ให้เลือกไฟล์กุญแจส่วนตัวที่จะใช้ซ้ำด้วย</translation>
 <translation id="3244294424315804309">ดำเนินการปิดเสียงไว้ต่อไป</translation>
 <translation id="324849028894344899"><ph name="WINDOW_TITLE" /> - ข้อผิดพลาดของเครือข่าย</translation>
-<translation id="3248902735035392926">ความปลอดภัยเป็นสิ่งสำคัญ โปรดใช้เวลาสักครู่<ph name="BEGIN_LINK" />ตรวจสอบส่วนขยายตอนนี้เลย<ph name="END_LINK" /></translation>
+<translation id="3248902735035392926">ความปลอดภัยเป็นสิ่งสำคัญ โปรดใช้เวลาสักครู่เพื่อ<ph name="BEGIN_LINK" />ตรวจสอบส่วนขยายตอนนี้เลย<ph name="END_LINK" /></translation>
 <translation id="3249950116250264636"><ph name="APP_NAME" /> (<ph name="APP_URL" />)</translation>
 <translation id="3251759466064201842">&lt;ไม่ใช่ส่วนหนึ่งของใบรับรอง&gt;</translation>
 <translation id="3253225298092156258">ไม่มีข้อมูล</translation>
@@ -2044,7 +2044,6 @@
 <translation id="3923676227229836009">หน้านี้ได้รับอนุญาตให้ดูไฟล์</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3925573269917483990">กล้อง:</translation>
-<translation id="3925842537050977900">เลิกตรึงในชั้นวาง</translation>
 <translation id="3926002189479431949">โทรศัพท์ของ Smart Lock มีการเปลี่ยนแปลง</translation>
 <translation id="3927932062596804919">ปฏิเสธ</translation>
 <translation id="3928570707778085600">บันทึกการเปลี่ยนแปลงลงใน <ph name="FILE_OR_FOLDER_NAME" /> ใช่ไหม</translation>
@@ -2379,7 +2378,7 @@
 <translation id="443475966875174318">อัปเดตหรือนำแอปพลิเคชันที่ใช้ร่วมกันไม่ได้ออก</translation>
 <translation id="4438043733494739848">โปร่งใส</translation>
 <translation id="4441124369922430666">คุณต้องการเริ่มแอปนี้โดยอัตโนมัติเมื่อเครื่องเปิดไหม</translation>
-<translation id="4441147046941420429">หากต้องการดำนินการต่อ ให้ดึงคีย์ความปลอดภัยออกจากอุปกรณ์ จากนั้นเสียบกลับเข้าไปใหม่แล้วแตะคีย์</translation>
+<translation id="4441147046941420429">หากต้องการดำเนินการต่อ ให้ดึงคีย์ความปลอดภัยออกจากอุปกรณ์ จากนั้นเสียบกลับเข้าไปใหม่แล้วแตะที่คีย์นั้น</translation>
 <translation id="444134486829715816">ขยาย...</translation>
 <translation id="4442424173763614572">การค้นหา DNS ล้มเหลว</translation>
 <translation id="4443536555189480885">&amp;ความช่วยเหลือ</translation>
@@ -2538,7 +2537,6 @@
 <translation id="4689235506267737042">เลือกค่ากำหนดการสาธิต</translation>
 <translation id="4689421377817139245">ซิงค์บุ๊กมาร์กนี้กับ iPhone ของคุณ</translation>
 <translation id="4690091457710545971">&lt;มีไฟล์ 4 ไฟล์ที่สร้างขึ้นโดยเฟิร์มแวร์ Wi-Fi ของ Intel ได้แก่ csr.lst, fh_regs.lst, radio_reg.lst และ monitor.lst.sysmon  โดย 3 ไฟล์แรกเป็นไฟล์ไบนารีที่มี Register Dump ซึ่งผ่านการยืนยันโดย Intel เพื่อไม่ให้รวมข้อมูลส่วนตัวหรือข้อมูลที่ระบุอุปกรณ์  ส่วนไฟล์สุดท้ายเป็นการติดตามการทำงานจากเฟิร์มแวร์ของ Intel โดยมีการลบข้อมูลส่วนตัวหรือข้อมูลที่ระบุอุปกรณ์ออกไปแล้ว แต่ไฟล์มีขนาดใหญ่เกินกว่าที่จะแสดงตรงนี้ได้  ไฟล์เหล่านี้สร้างขึ้นมาเพื่อตอบสนองต่อปัญหา Wi-Fi ล่าสุดในอุปกรณ์ของคุณและระบบจะแชร์ไฟล์กับ Intel เพื่อช่วยแก้ปัญหาเหล่านี้&gt;</translation>
-<translation id="469230890969474295">โฟลเดอร์ OEM</translation>
 <translation id="4692623383562244444">เครื่องมือค้นหา</translation>
 <translation id="4693155481716051732">ซูชิ</translation>
 <translation id="4694024090038830733">ผู้ดูแลระบบเป็นผู้จัดการการกำหนดค่าเครื่องพิมพ์</translation>
@@ -2571,7 +2569,6 @@
 <translation id="4737715515457435632">โปรดเชื่อมต่อเครือข่าย</translation>
 <translation id="473775607612524610">อัปเดต</translation>
 <translation id="4739639199548674512">ตั๋ว</translation>
-<translation id="4742746985488890273">ตรึงที่ชั้นวาง</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />ดูวิธีอัปเดตแอปพลิเคชัน<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{เลิกซ่อนเว็บไซต์}other{เลิกซ่อนเว็บไซต์}}</translation>
 <translation id="4746351372139058112">ข้อความ</translation>
@@ -3563,7 +3560,6 @@
 <translation id="6196854373336333322">ส่วนขยาย "<ph name="EXTENSION_NAME" />" ได้เข้าควบคุมการตั้งค่าพร็อกซีของคุณ ซึ่งหมายความว่าส่วนขยายนี้จะสามารถเปลี่ยนแปลง ทำให้เสียหาย หรือดักฟังทุกอย่างที่คุณทำทางออนไลน์ได้ หากคุณไม่แน่ใจว่าการเปลี่ยนแปลงนี้เกิดขึ้นได้อย่างไร คุณอาจไม่ต้องการส่วนขยายนี้</translation>
 <translation id="6198102561359457428">ออกจากระบบแล้วลงชื่อเข้าใช้อีกครั้ง...</translation>
 <translation id="6198252989419008588">เปลี่ยน PIN</translation>
-<translation id="6201792273624501289">แอป Linux</translation>
 <translation id="6202304368170870640">คุณใช้ PIN เพื่อลงชื่อเข้าใช้หรือปลดล็อกอุปกรณ์ได้</translation>
 <translation id="6206311232642889873">คัดลอ&amp;กรูปภาพ</translation>
 <translation id="6207200176136643843">รีเซ็ตเป็นระดับการซูมเริ่มต้น</translation>
@@ -3823,7 +3819,7 @@
 <translation id="6589660129740381104">ตอนนี้ฟีเจอร์ที่เกี่ยวกับการซิงค์และการปรับเปลี่ยนในแบบของคุณรวมอยู่ในส่วนควบคุมเดียวแล้วเพื่อช่วยให้คุณจัดการประสบการณ์การใช้งาน <ph name="IDS_SHORT_PRODUCT_NAME" /> ได้ง่ายขึ้น การเปิดใช้ตัวเลือกนี้อาจเปลี่ยนการตั้งค่าปัจจุบัน</translation>
 <translation id="6590458744723262880">เปลี่ยนชื่อโฟลเดอร์</translation>
 <translation id="6592267180249644460">บันทึก WebRTC ที่จับภาพ <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
-<translation id="6592808042417736307">จับภาพลายนิ้วมือของคุณได้แล้ว</translation>
+<translation id="6592808042417736307">บันทึกลายนิ้วมือของคุณได้แล้ว</translation>
 <translation id="6594883168703494535">ใช้ Smart Lock เพื่อลงชื่อเข้าใช้บัญชี Google</translation>
 <translation id="6596325263575161958">ตัวเลือกการเข้ารหัส</translation>
 <translation id="6596816719288285829">ที่อยู่ IP</translation>
@@ -5181,7 +5177,7 @@
 <translation id="8551388862522347954">ใบอนุญาต</translation>
 <translation id="8553342806078037065">จัดการบุคคลอื่นๆ</translation>
 <translation id="8554899698005018844">ไม่มีภาษา</translation>
-<translation id="8557022314818157177">แตะคีย์ความปลอดภัยซ้ำๆ จนกว่าระบบจะจับภาพลายนิ้วมือของคุณได้</translation>
+<translation id="8557022314818157177">แตะคีย์ความปลอดภัยซ้ำๆ จนกว่าระบบจะบันทึกลายนิ้วมือของคุณได้</translation>
 <translation id="855773602626431402">ปลั๊กอินที่ไม่ได้อยู่ในแซนด์บ็อกซ์ถูกป้องกันไม่ให้ทำงานในหน้าเว็บนี้</translation>
 <translation id="8557930019681227453">ไฟล์ Manifest</translation>
 <translation id="8561206103590473338">ช้าง</translation>
@@ -5597,7 +5593,6 @@
 <translation id="9130015405878219958">โหมดที่ป้อนไม่ถูกต้อง</translation>
 <translation id="9131487537093447019">ส่งข้อความถึงและรับข้อความจากอุปกรณ์บลูทูธ</translation>
 <translation id="9134304429738380103">ได้สิ ตกลง</translation>
-<translation id="9135090785674039430">เมื่อเปิดใช้ เว็บไซต์ต่างๆ จะใช้คุกกี้ที่ติดตามคุณในอินเทอร์เน็ตไม่ได้ บางเว็บไซต์อาจเกิดข้อขัดข้องขึ้น</translation>
 <translation id="9137013805542155359">แสดงหน้าเว็บเดิม</translation>
 <translation id="9137157311132182254">เครื่องมือค้นหาที่ต้องการ</translation>
 <translation id="9137248913990643158">โปรดเปิดและลงชื่อเข้าใช้ Chrome ก่อนใช้แอปนี้</translation>

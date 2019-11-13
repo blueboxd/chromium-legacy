@@ -7,10 +7,14 @@
 #include <memory>
 
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "chrome/browser/optimization_guide/optimization_guide_navigation_data.h"
+#include "chrome/browser/optimization_guide/optimization_guide_web_contents_observer.h"
 #include "chrome/browser/optimization_guide/prediction/prediction_model.h"
 #include "chrome/browser/optimization_guide/prediction/prediction_model_fetcher.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "components/optimization_guide/top_host_provider.h"
 #include "content/public/test/mock_navigation_handle.h"
@@ -75,12 +79,15 @@ class TestPredictionModel : public PredictionModel {
   ~TestPredictionModel() override = default;
 
   optimization_guide::OptimizationTargetDecision Predict(
-      const base::flat_map<std::string, float>& model_features) override {
+      const base::flat_map<std::string, float>& model_features,
+      double* prediction_score) override {
+    *prediction_score = 0.0;
     // Check to make sure the all model_features were provided.
     for (const auto& model_feature : GetModelFeatures()) {
       if (!model_features.contains(model_feature))
         return OptimizationTargetDecision::kUnknown;
     }
+    *prediction_score = 0.6;
     model_evaluated_ = true;
     return OptimizationTargetDecision::kPageLoadMatches;
   }
@@ -304,7 +311,8 @@ TEST_F(PredictionManagerTest,
 }
 
 TEST_F(PredictionManagerTest, OptimizationTargetNotRegisteredForNavigation) {
-  content::MockNavigationHandle navigation_handle;
+  OptimizationGuideWebContentsObserver::CreateForWebContents(web_contents());
+  content::MockNavigationHandle navigation_handle(web_contents());
   navigation_handle.set_url(GURL("https://foo.com"));
 
   prediction_manager()->SetPredictionModelFetcherForTesting(
@@ -319,11 +327,24 @@ TEST_F(PredictionManagerTest, OptimizationTargetNotRegisteredForNavigation) {
   EXPECT_EQ(OptimizationTargetDecision::kUnknown,
             prediction_manager()->ShouldTargetNavigation(
                 &navigation_handle, proto::OPTIMIZATION_TARGET_UNKNOWN));
+  // OptimizationGuideNavData should not be populated.
+  OptimizationGuideNavigationData* nav_data =
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          &navigation_handle);
+  EXPECT_FALSE(nav_data
+                   ->GetModelVersionForOptimizationTarget(
+                       optimization_guide::proto::OPTIMIZATION_TARGET_UNKNOWN)
+                   .has_value());
+  EXPECT_FALSE(nav_data
+                   ->GetModelPredictionScoreForOptimizationTarget(
+                       optimization_guide::proto::OPTIMIZATION_TARGET_UNKNOWN)
+                   .has_value());
 }
 
 TEST_F(PredictionManagerTest,
        NoPredictionModelForRegisteredOptimizationTarget) {
-  content::MockNavigationHandle navigation_handle;
+  OptimizationGuideWebContentsObserver::CreateForWebContents(web_contents());
+  content::MockNavigationHandle navigation_handle(web_contents());
   navigation_handle.set_url(GURL("https://foo.com"));
 
   prediction_manager()->RegisterOptimizationTargets(
@@ -332,10 +353,25 @@ TEST_F(PredictionManagerTest,
       OptimizationTargetDecision::kModelNotAvailableOnClient,
       prediction_manager()->ShouldTargetNavigation(
           &navigation_handle, proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+
+  // OptimizationGuideNavData should not be populated.
+  OptimizationGuideNavigationData* nav_data =
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          &navigation_handle);
+  EXPECT_FALSE(
+      nav_data
+          ->GetModelVersionForOptimizationTarget(
+              optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD)
+          .has_value());
+  EXPECT_FALSE(
+      nav_data
+          ->GetModelPredictionScoreForOptimizationTarget(
+              optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD)
+          .has_value());
 }
 
 TEST_F(PredictionManagerTest, EvaluatePredictionModel) {
-  content::MockNavigationHandle navigation_handle;
+  content::MockNavigationHandle navigation_handle(web_contents());
   navigation_handle.set_url(GURL("https://foo.com"));
 
   prediction_manager()->SetPredictionModelFetcherForTesting(
@@ -362,8 +398,6 @@ TEST_F(PredictionManagerTest, EvaluatePredictionModel) {
 }
 
 TEST_F(PredictionManagerTest, UpdateModelWithSameVersion) {
-  content::MockNavigationHandle navigation_handle;
-  navigation_handle.set_url(GURL("https://foo.com"));
   prediction_manager()->SetPredictionModelFetcherForTesting(
       BuildTestPredictionModelFetcher(
           PredictionModelFetcherEndState::kFetchFailed));
@@ -395,10 +429,87 @@ TEST_F(PredictionManagerTest, UpdateModelWithSameVersion) {
   EXPECT_EQ(3, stored_prediction_model->GetVersion());
 }
 
-TEST_F(PredictionManagerTest, UpdateModelForUnregisteredTarget) {
-  content::MockNavigationHandle navigation_handle;
+TEST_F(PredictionManagerTest, EvaluatePredictionModelPopulatesNavData) {
+  OptimizationGuideWebContentsObserver::CreateForWebContents(web_contents());
+  content::MockNavigationHandle navigation_handle(web_contents());
   navigation_handle.set_url(GURL("https://foo.com"));
 
+  prediction_manager()->SetPredictionModelFetcherForTesting(
+      BuildTestPredictionModelFetcher(
+          PredictionModelFetcherEndState::
+              kFetchSuccessWithModelsAndHostsModelFeatures));
+
+  prediction_manager()->RegisterOptimizationTargets(
+      {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
+
+  EXPECT_TRUE(prediction_model_fetcher()->models_fetched());
+
+  EXPECT_EQ(
+      OptimizationTargetDecision::kPageLoadMatches,
+      prediction_manager()->ShouldTargetNavigation(
+          &navigation_handle, proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+
+  TestPredictionModel* test_prediction_model =
+      static_cast<TestPredictionModel*>(
+          prediction_manager()->GetPredictionModelForTesting(
+              proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+  EXPECT_TRUE(test_prediction_model);
+  EXPECT_TRUE(test_prediction_model->WasModelEvaluated());
+
+  OptimizationGuideNavigationData* nav_data =
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          &navigation_handle);
+  EXPECT_EQ(2, *nav_data->GetModelVersionForOptimizationTarget(
+                   proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+  EXPECT_EQ(0.6, *nav_data->GetModelPredictionScoreForOptimizationTarget(
+                     proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+}
+
+TEST_F(PredictionManagerTest,
+       EvaluatePredictionModelPopulatesNavDataEvenWithHoldback) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeaturesAndParameters(
+      {base::test::ScopedFeatureList::FeatureAndParams(
+          features::kOptimizationTargetPrediction,
+          {{"painful_page_load_metrics_only", "true"}})},
+      {});
+
+  OptimizationGuideWebContentsObserver::CreateForWebContents(web_contents());
+  content::MockNavigationHandle navigation_handle(web_contents());
+  navigation_handle.set_url(GURL("https://foo.com"));
+
+  prediction_manager()->SetPredictionModelFetcherForTesting(
+      BuildTestPredictionModelFetcher(
+          PredictionModelFetcherEndState::
+              kFetchSuccessWithModelsAndHostsModelFeatures));
+
+  prediction_manager()->RegisterOptimizationTargets(
+      {proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD});
+
+  EXPECT_TRUE(prediction_model_fetcher()->models_fetched());
+
+  EXPECT_EQ(
+      OptimizationTargetDecision::kModelPredictionHoldback,
+      prediction_manager()->ShouldTargetNavigation(
+          &navigation_handle, proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+
+  TestPredictionModel* test_prediction_model =
+      static_cast<TestPredictionModel*>(
+          prediction_manager()->GetPredictionModelForTesting(
+              proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+  EXPECT_TRUE(test_prediction_model);
+  EXPECT_TRUE(test_prediction_model->WasModelEvaluated());
+
+  OptimizationGuideNavigationData* nav_data =
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          &navigation_handle);
+  EXPECT_EQ(2, *nav_data->GetModelVersionForOptimizationTarget(
+                   proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+  EXPECT_EQ(0.6, *nav_data->GetModelPredictionScoreForOptimizationTarget(
+                     proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+}
+
+TEST_F(PredictionManagerTest, UpdateModelForUnregisteredTarget) {
   prediction_manager()->SetPredictionModelFetcherForTesting(
       BuildTestPredictionModelFetcher(
           PredictionModelFetcherEndState::
@@ -422,7 +533,7 @@ TEST_F(PredictionManagerTest, UpdateModelForUnregisteredTarget) {
 }
 
 TEST_F(PredictionManagerTest, UpdateModelWithUnsupportedOptimizationTarget) {
-  content::MockNavigationHandle navigation_handle;
+  content::MockNavigationHandle navigation_handle(web_contents());
   navigation_handle.set_url(GURL("https://foo.com"));
 
   prediction_manager()->SetPredictionModelFetcherForTesting(
@@ -456,8 +567,6 @@ TEST_F(PredictionManagerTest, UpdateModelWithUnsupportedOptimizationTarget) {
 
 TEST_F(PredictionManagerTest, HasHostModelFeaturesForHost) {
   base::HistogramTester histogram_tester;
-  content::MockNavigationHandle navigation_handle;
-  navigation_handle.set_url(GURL("https://example1.com"));
 
   prediction_manager()->SetPredictionModelFetcherForTesting(
       BuildTestPredictionModelFetcher(
@@ -488,7 +597,7 @@ TEST_F(PredictionManagerTest, HasHostModelFeaturesForHost) {
 
 TEST_F(PredictionManagerTest, NoHostModelFeaturesForHost) {
   base::HistogramTester histogram_tester;
-  content::MockNavigationHandle navigation_handle;
+  content::MockNavigationHandle navigation_handle(web_contents());
   navigation_handle.set_url(GURL("https://foo.com"));
 
   prediction_manager()->SetPredictionModelFetcherForTesting(
@@ -529,8 +638,6 @@ TEST_F(PredictionManagerTest, NoHostModelFeaturesForHost) {
 
 TEST_F(PredictionManagerTest, UpdateHostModelFeaturesMissingHost) {
   base::HistogramTester histogram_tester;
-  content::MockNavigationHandle navigation_handle;
-  navigation_handle.set_url(GURL("https://foo.com"));
 
   prediction_manager()->SetPredictionModelFetcherForTesting(
       BuildTestPredictionModelFetcher(
@@ -553,8 +660,6 @@ TEST_F(PredictionManagerTest, UpdateHostModelFeaturesMissingHost) {
 
 TEST_F(PredictionManagerTest, UpdateHostModelFeaturesNoFeature) {
   base::HistogramTester histogram_tester;
-  content::MockNavigationHandle navigation_handle;
-  navigation_handle.set_url(GURL("https://foo.com"));
 
   prediction_manager()->SetPredictionModelFetcherForTesting(
       BuildTestPredictionModelFetcher(
@@ -577,8 +682,6 @@ TEST_F(PredictionManagerTest, UpdateHostModelFeaturesNoFeature) {
 
 TEST_F(PredictionManagerTest, UpdateHostModelFeaturesNoFeatureName) {
   base::HistogramTester histogram_tester;
-  content::MockNavigationHandle navigation_handle;
-  navigation_handle.set_url(GURL("https://foo.com"));
 
   prediction_manager()->SetPredictionModelFetcherForTesting(
       BuildTestPredictionModelFetcher(
@@ -603,8 +706,6 @@ TEST_F(PredictionManagerTest, UpdateHostModelFeaturesNoFeatureName) {
 
 TEST_F(PredictionManagerTest, UpdateHostModelFeaturesDoubleValue) {
   base::HistogramTester histogram_tester;
-  content::MockNavigationHandle navigation_handle;
-  navigation_handle.set_url(GURL("https://foo.com"));
 
   prediction_manager()->SetPredictionModelFetcherForTesting(
       BuildTestPredictionModelFetcher(
@@ -632,8 +733,6 @@ TEST_F(PredictionManagerTest, UpdateHostModelFeaturesDoubleValue) {
 
 TEST_F(PredictionManagerTest, UpdateHostModelFeaturesIntValue) {
   base::HistogramTester histogram_tester;
-  content::MockNavigationHandle navigation_handle;
-  navigation_handle.set_url(GURL("https://foo.com"));
 
   prediction_manager()->SetPredictionModelFetcherForTesting(
       BuildTestPredictionModelFetcher(
@@ -663,8 +762,6 @@ TEST_F(PredictionManagerTest, UpdateHostModelFeaturesIntValue) {
 
 TEST_F(PredictionManagerTest, UpdateHostModelFeaturesUpdateDataInMap) {
   base::HistogramTester histogram_tester;
-  content::MockNavigationHandle navigation_handle;
-  navigation_handle.set_url(GURL("https://foo.com"));
 
   prediction_manager()->SetPredictionModelFetcherForTesting(
       BuildTestPredictionModelFetcher(

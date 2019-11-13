@@ -1489,7 +1489,7 @@ bool TabStripModel::RunUnloadListenerBeforeClosing(
 
 bool TabStripModel::ShouldRunUnloadListenerBeforeClosing(
     content::WebContents* contents) {
-  return contents->NeedToFireBeforeUnload() ||
+  return contents->NeedToFireBeforeUnloadOrUnload() ||
          delegate_->ShouldRunUnloadListenerBeforeClosing(contents);
 }
 

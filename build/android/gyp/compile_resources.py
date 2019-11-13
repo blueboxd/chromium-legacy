@@ -396,7 +396,7 @@ def _MoveImagesToNonMdpiFolders(res_root):
     dst_dir = os.path.join(res_root, dst_dir_name)
     build_utils.MakeDirectory(dst_dir)
     for src_file_name in os.listdir(src_dir):
-      if not os.path.splitext(src_file_name)[1] in ('.png', '.webp'):
+      if not os.path.splitext(src_file_name)[1] in ('.png', '.webp', ''):
         continue
       src_file = os.path.join(src_dir, src_file_name)
       dst_file = os.path.join(dst_dir, src_file_name)
@@ -524,8 +524,8 @@ def _ConvertToWebP(webp_binary, png_files):
   pool = multiprocessing.pool.ThreadPool(10)
   def convert_image(png_path_tuple):
     png_path, original_dir = png_path_tuple
-    root = os.path.splitext(png_path)[0]
-    webp_path = root + '.webp'
+    # No need to add an extension, android can load images fine without them.
+    webp_path = os.path.splitext(png_path)[0]
     args = [webp_binary, png_path, '-mt', '-quiet', '-m', '6', '-q', '100',
         '-lossless', '-o', webp_path]
     subprocess.check_call(args)
@@ -537,6 +537,26 @@ def _ConvertToWebP(webp_binary, png_files):
                            if not _PNG_WEBP_BLACKLIST_PATTERN.match(f[0])])
   pool.close()
   pool.join()
+  return renamed_paths
+
+
+def _RemoveImageExtensions(directory):
+  """Remove extensions from image files in the passed directory.
+
+  This reduces binary size but does not affect android's ability to load the
+  images.
+
+  Returns: dict[destination] -> source
+  """
+  renamed_paths = {}
+  for f in _IterFiles(directory):
+    if (f.endswith('.png') or f.endswith('.webp')) and not f.endswith('.9.png'):
+      path_with_extension = f
+      path_no_extension = os.path.splitext(path_with_extension)[0]
+      if path_no_extension != path_with_extension:
+        shutil.move(path_with_extension, path_no_extension)
+        renamed_paths[os.path.relpath(path_no_extension, directory)] = (
+            os.path.relpath(path_with_extension, directory))
   return renamed_paths
 
 
@@ -688,6 +708,7 @@ def _PackageApk(options, build):
     renamed_paths.update(_ConvertToWebP(options.webp_binary, png_paths))
   for directory in dep_subdirs:
     renamed_paths.update(_MoveImagesToNonMdpiFolders(directory))
+    renamed_paths.update(_RemoveImageExtensions(directory))
 
   _CreateResourceInfoFile(renamed_paths, build.info_path,
                           options.dependencies_res_zips)

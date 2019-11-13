@@ -54,11 +54,14 @@ config("skia_config") {
   }
 
   defines = [
-    "SK_GL",
     "SK_HAS_PNG_LIBRARY",
     "SK_HAS_WEBP_LIBRARY",
     "SK_USER_CONFIG_HEADER=\"../../skia/config/SkUserConfig.h\"",
   ]
+
+  if (skia_use_gl) {
+    defines += [ "SK_GL" ]
+  }
 
   if (!is_ios) {
     defines += [ "SK_HAS_JPEG_LIBRARY" ]
@@ -569,6 +572,9 @@ component("skia") {
     sources += skia_gpu_sources
     sources += skia_null_gpu_sources
     sources += skia_sksl_gpu_sources
+    if (skia_use_gl) {
+      sources += skia_gl_gpu_sources
+    }
     if (enable_vulkan) {
       sources += skia_vk_sources
       sources += [

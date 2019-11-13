@@ -4,5 +4,21 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <title>Help App</title>
+<style>
+  body {
+    height: 100vh;
+    margin: 0;
+    overflow: hidden;
+  }
+  /*
+   * This is the <iframe> style set for sandboxed guests that use
+   * guest_view_iframe_container.js.
+   */
+  iframe {
+    border: 0;
+    height: 100%;
+    width: 100%;
+  }
+</style>
 <script src="chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js"></script>
-<!-- TODO(crbug/1012578): Add sandboxed guest with content in an iframe. -->
+<iframe src="chrome://help-app-guest/app.html"></iframe>

@@ -63,6 +63,11 @@
 
 using base::SysUTF16ToNSString;
 
+@interface AppController (ForTesting)
+- (void)getUrl:(NSAppleEventDescriptor*)event
+     withReply:(NSAppleEventDescriptor*)reply;
+@end
+
 namespace {
 
 GURL g_open_shortcut_url = GURL::EmptyGURL();
@@ -86,14 +91,7 @@ NSAppleEventDescriptor* AppleEventToOpenUrl(const GURL& url) {
 void SendAppleEventToOpenUrlToAppController(const GURL& url) {
   AppController* controller =
       base::mac::ObjCCast<AppController>([NSApp delegate]);
-  Method get_url =
-      class_getInstanceMethod([controller class], @selector(getUrl:withReply:));
-
-  ASSERT_TRUE(get_url);
-
-  NSAppleEventDescriptor* shortcut_event = AppleEventToOpenUrl(url);
-
-  method_invoke(controller, get_url, shortcut_event, NULL);
+  [controller getUrl:AppleEventToOpenUrl(url) withReply:nullptr];
 }
 
 void RunClosureWhenProfileInitialized(const base::Closure& closure,

@@ -30,8 +30,6 @@ import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvid
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
-import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
-import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.content_public.common.BrowserControlsState;
@@ -56,9 +54,7 @@ import dagger.Lazy;
  * 3. Refactor to MVC.
  */
 @ActivityScope
-public class CustomTabToolbarCoordinator implements InflationObserver {
-
-    private final Lazy<ToolbarManager> mToolbarManager;
+public class CustomTabToolbarCoordinator {
     private final BrowserServicesIntentDataProvider mIntentDataProvider;
     private final @Nullable CustomTabUmaRecorder mUmaRecorder;
     private final CustomTabActivityTabProvider mTabProvider;
@@ -69,6 +65,10 @@ public class CustomTabToolbarCoordinator implements InflationObserver {
     private final Lazy<ChromeFullscreenManager> mFullscreenManager;
     private final CustomTabActivityNavigationController mNavigationController;
     private final CustomTabBrowserControlsVisibilityDelegate mVisibilityDelegate;
+    private final CustomTabToolbarColorController mToolbarColorController;
+
+    @Nullable
+    private ToolbarManager mToolbarManager;
 
     private int mControlsHidingToken = TokenHolder.INVALID_TOKEN;
     private boolean mInitializedToolbarWithNative;
@@ -77,20 +77,16 @@ public class CustomTabToolbarCoordinator implements InflationObserver {
     private static final String TAG = "CustomTabToolbarCoor";
 
     @Inject
-    public CustomTabToolbarCoordinator(ActivityLifecycleDispatcher lifecycleDispatcher,
-            Lazy<ToolbarManager> toolbarManager,
-            BrowserServicesIntentDataProvider intentDataProvider,
-            @Nullable CustomTabUmaRecorder umaRecorder,
-            CustomTabActivityTabProvider tabProvider,
-            CustomTabsConnection connection,
-            ChromeActivity activity,
+    public CustomTabToolbarCoordinator(BrowserServicesIntentDataProvider intentDataProvider,
+            @Nullable CustomTabUmaRecorder umaRecorder, CustomTabActivityTabProvider tabProvider,
+            CustomTabsConnection connection, ChromeActivity activity,
             @Named(APP_CONTEXT) Context appContext,
             BrowserServicesActivityTabController tabController,
             Lazy<ChromeFullscreenManager> fullscreenManager,
             CustomTabActivityNavigationController navigationController,
             CustomTabBrowserControlsVisibilityDelegate visibilityDelegate,
-            CustomTabCompositorContentInitializer compositorContentInitializer) {
-        mToolbarManager = toolbarManager;
+            CustomTabCompositorContentInitializer compositorContentInitializer,
+            CustomTabToolbarColorController toolbarColorController) {
         mIntentDataProvider = intentDataProvider;
         mUmaRecorder = umaRecorder;
         mTabProvider = tabProvider;
@@ -101,18 +97,20 @@ public class CustomTabToolbarCoordinator implements InflationObserver {
         mFullscreenManager = fullscreenManager;
         mNavigationController = navigationController;
         mVisibilityDelegate = visibilityDelegate;
-        lifecycleDispatcher.register(this);
+        mToolbarColorController = toolbarColorController;
 
         compositorContentInitializer.addCallback(this::onCompositorContentInitialized);
     }
 
-    @Override
-    public void onPreInflationStartup() {}
-
-    @Override
-    public void onPostInflationStartup() {
-        ToolbarManager manager = mToolbarManager.get();
+    /**
+     * Notifies the navigation controller that the ToolbarManager has been created and is ready for
+     * use. ToolbarManager isn't passed directly to the constructor because it's not guaranteed to
+     * be initialized yet.
+     */
+    public void onToolbarInitialized(ToolbarManager manager) {
         assert manager != null : "Toolbar manager not initialized";
+        mToolbarManager = manager;
+        mToolbarColorController.onToolbarInitialized(manager);
 
         manager.setCloseButtonDrawable(mIntentDataProvider.getCloseButtonDrawable());
         manager.setShowTitle(
@@ -132,8 +130,8 @@ public class CustomTabToolbarCoordinator implements InflationObserver {
     private void showCustomButtonsOnToolbar() {
         for (CustomButtonParams params : mIntentDataProvider.getCustomButtonsOnToolbar()) {
             View.OnClickListener onClickListener = v -> onCustomButtonClick(params);
-            mToolbarManager.get().addCustomActionButton(params.getIcon(mActivity),
-                    params.getDescription(), onClickListener);
+            mToolbarManager.addCustomActionButton(
+                    params.getIcon(mActivity), params.getDescription(), onClickListener);
         }
     }
 
@@ -169,7 +167,7 @@ public class CustomTabToolbarCoordinator implements InflationObserver {
     }
 
     private void onCompositorContentInitialized(LayoutManager layoutDriver) {
-        mToolbarManager.get().initializeWithNative(mTabController.getTabModelSelector(),
+        mToolbarManager.initializeWithNative(mTabController.getTabModelSelector(),
                 mFullscreenManager.get().getBrowserVisibilityDelegate(), null, layoutDriver, null,
                 null, null, v -> onCloseButtonClick());
         mInitializedToolbarWithNative = true;
@@ -213,8 +211,12 @@ public class CustomTabToolbarCoordinator implements InflationObserver {
             assert false;
             return false;
         }
-        mToolbarManager.get().updateCustomActionButton(index, params.getIcon(mActivity),
-                params.getDescription());
+        if (mToolbarManager == null) {
+            return false;
+        }
+
+        mToolbarManager.updateCustomActionButton(
+                index, params.getIcon(mActivity), params.getDescription());
         return true;
     }
 

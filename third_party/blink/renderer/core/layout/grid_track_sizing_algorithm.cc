@@ -69,6 +69,10 @@ void GridTrack::SetGrowthLimitCap(base::Optional<LayoutUnit> growth_limit_cap) {
   growth_limit_cap_ = growth_limit_cap;
 }
 
+void GridTrack::SetCachedTrackSize(const GridTrackSize& cached_track_size) {
+  cached_track_size_ = cached_track_size;
+}
+
 bool GridTrack::IsGrowthLimitBiggerThanBaseSize() const {
   return GrowthLimitIsInfinite() || growth_limit_ >= base_size_;
 }
@@ -195,8 +199,12 @@ LayoutUnit GridTrackSizingAlgorithm::EstimatedGridAreaBreadthForChild(
     // We may need to estimate the grid area size before running the track
     // sizing algorithm in order to perform the pre-layout of orthogonal
     // items.
-    GridTrackSize track_size =
-        WasSetup() ? GetGridTrackSize(direction, track_position)
+    // We cannot use Tracks(direction)[track_position].CachedTrackSize()
+    // because Tracks(direction) is empty, since we are either performing
+    // pre-layout or are running the track sizing algorithm in the opposite
+    // direction and haven't run it in the desired direction yet.
+    const GridTrackSize& track_size =
+        WasSetup() ? CalculateGridTrackSize(direction, track_position)
                    : RawGridTrackSize(direction, track_position);
     GridLength max_track_size = track_size.MaxTrackBreadth();
     if (max_track_size.IsContentSized() || max_track_size.IsFlex() ||
@@ -394,7 +402,8 @@ LayoutUnit GridTrackSizingAlgorithmStrategy::MinSizeForChild(
         algorithm_.GetGrid().GridItemSpan(child, Direction());
     LayoutUnit max_breadth;
     for (const auto& track_position : span) {
-      GridTrackSize track_size = GetGridTrackSize(Direction(), track_position);
+      const GridTrackSize& track_size =
+          GetCachedGridTrackSize(Direction(), track_position);
       if (!track_size.HasFixedMaxTrackBreadth())
         return min_size;
       max_breadth += ValueForLength(track_size.MaxTrackBreadth().length(),
@@ -658,9 +667,10 @@ double IndefiniteSizeStrategy::FindUsedFlexFraction(
     // not to have to do that.
     flex_fraction = std::max(
         flex_fraction,
-        NormalizedFlexFraction(
-            all_tracks[track_index],
-            GetGridTrackSize(direction, track_index).MaxTrackBreadth().Flex()));
+        NormalizedFlexFraction(all_tracks[track_index],
+                               GetCachedGridTrackSize(direction, track_index)
+                                   .MaxTrackBreadth()
+                                   .Flex()));
   }
 
   const Grid& grid = algorithm_.GetGrid();
@@ -894,7 +904,7 @@ bool GridTrackSizingAlgorithm::IsRelativeSizedTrackAsAuto(
   return false;
 }
 
-GridTrackSize GridTrackSizingAlgorithm::GetGridTrackSize(
+GridTrackSize GridTrackSizingAlgorithm::CalculateGridTrackSize(
     GridTrackSizingDirection direction,
     size_t translated_index) const {
   DCHECK(WasSetup());
@@ -986,8 +996,9 @@ void GridTrackSizingAlgorithm::InitializeTrackSizes() {
       direction_ == kForRows && !layout_grid_->CachedHasDefiniteLogicalHeight();
   size_t num_tracks = track_list.size();
   for (size_t i = 0; i < num_tracks; ++i) {
-    GridTrackSize track_size = GetGridTrackSize(direction_, i);
+    const GridTrackSize& track_size = CalculateGridTrackSize(direction_, i);
     GridTrack& track = track_list[i];
+    track.SetCachedTrackSize(track_size);
     track.SetBaseSize(InitialBaseSize(track_size));
     track.SetGrowthLimit(InitialGrowthLimit(track_size, track.BaseSize()));
     track.SetInfinitelyGrowable(false);
@@ -1019,7 +1030,8 @@ void GridTrackSizingAlgorithm::SizeTrackToFitNonSpanningItem(
     LayoutBox& grid_item,
     GridTrack& track) {
   const size_t track_position = span.StartLine();
-  GridTrackSize track_size = GetGridTrackSize(direction_, track_position);
+  const GridTrackSize& track_size =
+      Tracks(direction_)[track_position].CachedTrackSize();
 
   if (track_size.HasMinContentMinTrackBreadth()) {
     track.SetBaseSize(
@@ -1049,9 +1061,10 @@ void GridTrackSizingAlgorithm::SizeTrackToFitNonSpanningItem(
 
 bool GridTrackSizingAlgorithm::SpanningItemCrossesFlexibleSizedTracks(
     const GridSpan& span) const {
+  const Vector<GridTrack>& track_list = Tracks(direction_);
   for (const auto& track_position : span) {
     const GridTrackSize& track_size =
-        GetGridTrackSize(direction_, track_position);
+        track_list[track_position].CachedTrackSize();
     if (track_size.MinTrackBreadth().IsFlex() ||
         track_size.MaxTrackBreadth().IsFlex())
       return true;
@@ -1358,8 +1371,8 @@ void GridTrackSizingAlgorithm::IncreaseSizesToAccommodateSpanningItems(
     filtered_tracks.Shrink(0);
     LayoutUnit spanning_tracks_size;
     for (const auto& track_position : item_span) {
-      GridTrackSize track_size = GetGridTrackSize(direction_, track_position);
-      GridTrack& track = Tracks(direction_)[track_position];
+      GridTrack& track = all_tracks[track_position];
+      const GridTrackSize& track_size = track.CachedTrackSize();
       spanning_tracks_size +=
           TrackSizeForTrackSizeComputationPhase(phase, track, kForbidInfinity);
       if (!ShouldProcessTrackForTrackSizeComputationPhase(phase, track_size))
@@ -1399,12 +1412,13 @@ void GridTrackSizingAlgorithm::IncreaseSizesToAccommodateSpanningItems(
 }
 
 void GridTrackSizingAlgorithm::ResolveIntrinsicTrackSizes() {
+  Vector<GridTrack>& all_tracks = Tracks(direction_);
   Vector<GridItemWithSpan> items_sorted_by_increasing_span;
   if (grid_.HasGridItems()) {
     HashSet<LayoutBox*> items_set;
     for (const auto& track_index : content_sized_tracks_index_) {
       auto iterator = grid_.CreateIterator(direction_, track_index);
-      GridTrack& track = Tracks(direction_)[track_index];
+      GridTrack& track = all_tracks[track_index];
       while (auto* grid_item = iterator->NextGridItem()) {
         if (items_set.insert(grid_item).is_new_entry) {
           const GridSpan& span = grid_.GridItemSpan(*grid_item, direction_);
@@ -1440,7 +1454,7 @@ void GridTrackSizingAlgorithm::ResolveIntrinsicTrackSizes() {
   }
 
   for (const auto& track_index : content_sized_tracks_index_) {
-    GridTrack& track = Tracks(direction_)[track_index];
+    GridTrack& track = all_tracks[track_index];
     if (track.GrowthLimit() == kInfinity)
       track.SetGrowthLimit(track.BaseSize());
   }
@@ -1487,7 +1501,7 @@ double GridTrackSizingAlgorithm::FindFrUnitSize(
   double flex_factor_sum = 0;
   Vector<size_t, 8> flexible_tracks_indexes;
   for (const auto& track_index : tracks_span) {
-    GridTrackSize track_size = GetGridTrackSize(direction_, track_index);
+    const GridTrackSize& track_size = all_tracks[track_index].CachedTrackSize();
     if (!track_size.MaxTrackBreadth().IsFlex()) {
       left_over_space -= all_tracks[track_index].BaseSize();
     } else {
@@ -1527,7 +1541,7 @@ double GridTrackSizingAlgorithm::ComputeFlexFactorUnitSize(
       continue;
     LayoutUnit base_size = tracks[index].BaseSize();
     double flex_factor =
-        GetGridTrackSize(direction_, index).MaxTrackBreadth().Flex();
+        tracks[index].CachedTrackSize().MaxTrackBreadth().Flex();
     // treating all such tracks as inflexible.
     if (base_size > hypothetical_factor_unit_size * flex_factor) {
       left_over_space -= base_size;
@@ -1557,7 +1571,7 @@ void GridTrackSizingAlgorithm::ComputeFlexSizedTracksGrowth(
   const Vector<GridTrack>& all_tracks = Tracks(direction_);
   for (size_t i = 0; i < num_flex_tracks; ++i) {
     size_t track_index = flexible_sized_tracks_index_[i];
-    auto track_size = GetGridTrackSize(direction_, track_index);
+    const GridTrackSize& track_size = all_tracks[track_index].CachedTrackSize();
     DCHECK(track_size.MaxTrackBreadth().IsFlex());
     LayoutUnit old_base_size = all_tracks[track_index].BaseSize();
     LayoutUnit new_base_size = std::max(
@@ -1768,7 +1782,7 @@ void GridTrackSizingAlgorithm::Reset() {
 bool GridTrackSizingAlgorithm::TracksAreWiderThanMinTrackBreadth() const {
   const Vector<GridTrack>& all_tracks = Tracks(direction_);
   for (size_t i = 0; i < all_tracks.size(); ++i) {
-    GridTrackSize track_size = GetGridTrackSize(direction_, i);
+    const GridTrackSize& track_size = all_tracks[i].CachedTrackSize();
     if (InitialBaseSize(track_size) > all_tracks[i].BaseSize())
       return false;
   }

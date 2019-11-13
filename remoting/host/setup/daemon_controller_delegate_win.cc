@@ -439,8 +439,9 @@ DaemonControllerDelegateWin::GetUsageStatsConsent() {
   return consent;
 }
 
-bool DaemonControllerDelegateWin::CheckPermission() {
-  return true;
+void DaemonControllerDelegateWin::CheckPermission(
+    DaemonController::BoolCallback callback) {
+  std::move(callback).Run(true);
 }
 
 void DaemonControllerDelegateWin::SetConfigAndStart(

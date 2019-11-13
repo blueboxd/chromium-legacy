@@ -18,6 +18,7 @@
 #include "mojo/public/cpp/bindings/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_controller.h"
 #include "mojo/public/cpp/bindings/lib/may_auto_lock.h"
+#include "mojo/public/cpp/bindings/lib/message_quota_checker.h"
 #include "mojo/public/cpp/bindings/sequence_local_sync_event_watcher.h"
 
 namespace mojo {
@@ -313,9 +314,9 @@ struct MultiplexRouter::Task {
 MultiplexRouter::MultiplexRouter(
     ScopedMessagePipeHandle message_pipe,
     Config config,
-    bool set_interface_id_namesapce_bit,
+    bool set_interface_id_namespace_bit,
     scoped_refptr<base::SequencedTaskRunner> runner)
-    : set_interface_id_namespace_bit_(set_interface_id_namesapce_bit),
+    : set_interface_id_namespace_bit_(set_interface_id_namespace_bit),
       task_runner_(runner),
       dispatcher_(this),
       connector_(std::move(message_pipe),
@@ -341,6 +342,11 @@ MultiplexRouter::MultiplexRouter(
   connector_.set_connection_error_handler(
       base::BindOnce(&MultiplexRouter::OnPipeConnectionError,
                      base::Unretained(this), false /* force_async_dispatch */));
+
+  scoped_refptr<internal::MessageQuotaChecker> quota_checker =
+      internal::MessageQuotaChecker::MaybeCreate();
+  if (quota_checker)
+    connector_.SetMessageQuotaChecker(std::move(quota_checker));
 
   std::unique_ptr<MessageHeaderValidator> header_validator =
       std::make_unique<MessageHeaderValidator>();

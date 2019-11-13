@@ -175,7 +175,7 @@ class MockDaemonControllerDelegate : public DaemonController::Delegate {
   // DaemonController::Delegate interface.
   DaemonController::State GetState() override;
   std::unique_ptr<base::DictionaryValue> GetConfig() override;
-  bool CheckPermission() override;
+  void CheckPermission(DaemonController::BoolCallback callback) override;
   void SetConfigAndStart(
       std::unique_ptr<base::DictionaryValue> config,
       bool consent,
@@ -202,8 +202,9 @@ MockDaemonControllerDelegate::GetConfig() {
   return std::make_unique<base::DictionaryValue>();
 }
 
-bool MockDaemonControllerDelegate::CheckPermission() {
-  return true;
+void MockDaemonControllerDelegate::CheckPermission(
+    DaemonController::BoolCallback callback) {
+  std::move(callback).Run(true);
 }
 
 void MockDaemonControllerDelegate::SetConfigAndStart(

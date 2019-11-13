@@ -27,6 +27,7 @@ suite('Tab', function() {
 
   const strings = {
     closeTab: 'Close tab',
+    loadingTab: 'Loading...',
     tabCrashed: '$1 has crashed',
     tabNetworkError: '$1 has a network error',
   };
@@ -193,6 +194,18 @@ suite('Tab', function() {
   test('sets the title', () => {
     assertEquals(
         tab.title, tabElement.shadowRoot.querySelector('#titleText').innerText);
+  });
+
+  test('sets the loading title while loading', () => {
+    const loadingTabWithoutTitle = Object.assign({}, tab, {
+      networkState: TabNetworkState.WAITING,
+      shouldHideThrobber: false,
+    });
+    delete loadingTabWithoutTitle.title;
+    tabElement.tab = loadingTabWithoutTitle;
+    assertEquals(
+        strings['loadingTab'],
+        tabElement.shadowRoot.querySelector('#titleText').innerText);
   });
 
   test('exposes the tab ID to an attribute', () => {

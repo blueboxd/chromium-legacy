@@ -291,7 +291,8 @@ void WebSocketStream::UnderlyingSink::SendAny(ScriptState* script_state,
   auto* isolate = script_state->GetIsolate();
   if (v8chunk->IsArrayBuffer()) {
     DOMArrayBuffer* data = V8ArrayBuffer::ToImpl(v8chunk.As<v8::ArrayBuffer>());
-    SendArrayBuffer(script_state, data, 0, data->ByteLength(), resolver,
+    SendArrayBuffer(script_state, data, 0,
+                    data->DeprecatedByteLengthAsUnsigned(), resolver,
                     std::move(callback));
     return;
   }

@@ -59,6 +59,17 @@ BrowserDMToken BrowserDMToken::CreateEmptyToken() {
   return BrowserDMToken(Status::kEmpty, "");
 }
 
+BrowserDMToken::BrowserDMToken(const BrowserDMToken& other) = default;
+
+BrowserDMToken::BrowserDMToken(BrowserDMToken&& other) = default;
+
+BrowserDMToken& BrowserDMToken::operator=(const BrowserDMToken& other) =
+    default;
+
+BrowserDMToken& BrowserDMToken::operator=(BrowserDMToken&& other) = default;
+
+BrowserDMToken::~BrowserDMToken() = default;
+
 const std::string& BrowserDMToken::value() const {
   // TODO(domfc): Uncomment DCHECK(is_valid()) after migrating code.
   // DCHECK(is_valid());

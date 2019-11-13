@@ -30,7 +30,7 @@ class CC_PAINT_EXPORT PaintRecorder {
     return beginRecording(SkRect::MakeWH(width, height));
   }
 
-  // Only valid between between and finish recording.
+  // Only valid while recording.
   ALWAYS_INLINE RecordPaintCanvas* getRecordingCanvas() {
     return canvas_.has_value() ? &canvas_.value() : nullptr;
   }

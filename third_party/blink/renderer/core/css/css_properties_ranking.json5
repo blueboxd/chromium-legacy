@@ -697,7 +697,8 @@
         "border-inline-style",
         "border-inline-width",
         "inset-block-start",
-        "syntax"
+        "syntax",
+        "render-subtree",
     ],
     "properties": {}
 }

@@ -27,9 +27,6 @@ syncer::ModelTypeSet AllowedTypesInStandaloneTransportMode() {
                                      syncer::SECURITY_EVENTS,
                                      syncer::AUTOFILL_WALLET_DATA);
   allowed_types.PutAll(syncer::ControlTypes());
-  if (base::FeatureList::IsEnabled(switches::kSyncDeviceInfoInTransportMode)) {
-    allowed_types.Put(syncer::DEVICE_INFO);
-  }
   return allowed_types;
 }
 

@@ -1908,7 +1908,6 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
     const auto& request = resource->GetResourceRequest();
     ResourceResponse response;
 
-    resource->VirtualTimePauser().PauseVirtualTime();
     if (resource_load_observer_) {
       DCHECK(!IsDetached());
       resource_load_observer_->WillSendRequest(
@@ -1943,6 +1942,7 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
     } else {
       non_blocking_loaders_.insert(loader);
     }
+    resource->VirtualTimePauser().PauseVirtualTime();
 
     StorePerformanceTimingInitiatorInformation(resource);
   }

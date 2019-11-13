@@ -18,6 +18,26 @@ template("chrome_cleaner_mojom") {
   }
 }
 
+chrome_cleaner_mojom("chrome_prompt_interface") {
+  sources = [
+    "chrome_prompt.mojom",
+  ]
+
+  deps = [
+    ":footprints_interface",
+  ]
+
+  # NOTE: We avoid scrambling message IDs here because these messages cross an
+  # IPC boundary to an external program built from a different source tree.
+  scramble_message_ids = false
+}
+
+chrome_cleaner_mojom("footprints_interface") {
+  sources = [
+    "footprints.mojom",
+  ]
+}
+
 chrome_cleaner_mojom("engine_sandbox_interface") {
   sources = [
     "cleaner_engine_requests.mojom",
@@ -29,7 +49,7 @@ chrome_cleaner_mojom("engine_sandbox_interface") {
     "windows_handle.mojom",
   ]
   deps = [
-    "//components/chrome_cleaner/public/interfaces",
+    ":footprints_interface",
     "//mojo/public/mojom/base",
   ]
 }

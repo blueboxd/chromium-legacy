@@ -74,10 +74,11 @@ bool IsDataOrAbout(const GURL& url) {
 }
 
 // Helper function to determine whether a navigation from |current_rfh| to
-// |dest_url| should swap BrowsingInstances to ensure that |dest_url| ends up
-// in a dedicated process.  This is the case when |dest_url| has an origin that
-// was just isolated dynamically, where leaving the navigation in the current
-// BrowsingInstance would leave |dest_url| without a dedicated process, since
+// |destination_effective_url| should swap BrowsingInstances to ensure that
+// |destination_effective_url| ends up in a dedicated process.  This is the case
+// when |destination_effective_url| has an origin that was just isolated
+// dynamically, where leaving the navigation in the current BrowsingInstance
+// would leave |destination_effective_url| without a dedicated process, since
 // dynamic origin isolation applies only to future BrowsingInstances.  In the
 // common case where |current_rfh| is a main frame, and there are no scripting
 // references to it from other windows, it is safe to swap BrowsingInstances to
@@ -85,7 +86,7 @@ bool IsDataOrAbout(const GURL& url) {
 // same-site navigations, as well as to renderer-initiated navigations.
 bool ShouldSwapBrowsingInstancesForDynamicIsolation(
     RenderFrameHostImpl* current_rfh,
-    const GURL& dest_url) {
+    const GURL& destination_effective_url) {
   // Only main frames are eligible to swap BrowsingInstances.
   if (!current_rfh->frame_tree_node()->IsMainFrame())
     return false;
@@ -95,25 +96,27 @@ bool ShouldSwapBrowsingInstancesForDynamicIsolation(
   if (current_instance->GetRelatedActiveContentsCount() > 1u)
     return false;
 
-  // Check whether |dest_url| would require a dedicated process if we left it
-  // in the current BrowsingInstance.  If so, there's no need to swap
-  // BrowsingInstances.
+  // Check whether |destination_effective_url| would require a dedicated process
+  // if we left it in the current BrowsingInstance.  If so, there's no need to
+  // swap BrowsingInstances.
   if (SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
-          current_instance->GetIsolationContext(), dest_url)) {
+          current_instance->GetIsolationContext(), destination_effective_url)) {
     return false;
   }
 
-  // Finally, check whether |dest_url| would require a dedicated process if we
-  // were to swap to a fresh BrowsingInstance.  To check this, use a new
-  // IsolationContext, rather than current_instance->GetIsolationContext().
+  // Finally, check whether |destination_effective_url| would require a
+  // dedicated process if we were to swap to a fresh BrowsingInstance.  To check
+  // this, use a new IsolationContext, rather than
+  // current_instance->GetIsolationContext().
   IsolationContext future_isolation_context(
       current_instance->GetBrowserContext());
   return SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
-      future_isolation_context, dest_url);
+      future_isolation_context, destination_effective_url);
 }
 
-bool ShouldProactivelySwapBrowsingInstance(RenderFrameHostImpl* current_rfh,
-                                           const GURL& dest_url) {
+bool ShouldProactivelySwapBrowsingInstance(
+    RenderFrameHostImpl* current_rfh,
+    const GURL& destination_effective_url) {
   if (!IsProactivelySwapBrowsingInstanceEnabled())
     return false;
 
@@ -136,7 +139,8 @@ bool ShouldProactivelySwapBrowsingInstance(RenderFrameHostImpl* current_rfh,
   // Exclude non http(s) schemes. Some tests don't expect navigations to
   // data-URL or to about:blank to switch to a different BrowsingInstance.
   const GURL& current_url = current_rfh->GetLastCommittedURL();
-  if (!current_url.SchemeIsHTTPOrHTTPS() || !dest_url.SchemeIsHTTPOrHTTPS())
+  if (!current_url.SchemeIsHTTPOrHTTPS() ||
+      !destination_effective_url.SchemeIsHTTPOrHTTPS())
     return false;
 
   // Nothing prevents two pages with the same website to live in different
@@ -145,7 +149,8 @@ bool ShouldProactivelySwapBrowsingInstance(RenderFrameHostImpl* current_rfh,
   // cost of getting a new process on same-site navigation would (probably?) be
   // too high.
   if (SiteInstanceImpl::IsSameSite(current_instance->GetIsolationContext(),
-                                   current_url, dest_url, true)) {
+                                   current_url, destination_effective_url,
+                                   true)) {
     return false;
   }
 
@@ -1093,9 +1098,9 @@ void RenderFrameHostManager::DeleteRenderFrameProxyHost(
 bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
     const GURL& current_effective_url,
     bool current_is_view_source_mode,
-    SiteInstance* new_site_instance,
-    const GURL& new_effective_url,
-    bool new_is_view_source_mode,
+    SiteInstance* destination_site_instance,
+    const GURL& destination_effective_url,
+    bool destination_is_view_source_mode,
     bool is_failure) const {
   // A subframe must stay in the same BrowsingInstance as its parent.
   if (!frame_tree_node_->IsMainFrame())
@@ -1112,8 +1117,8 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
 
   // If new_entry already has a SiteInstance, assume it is correct.  We only
   // need to force a swap if it is in a different BrowsingInstance.
-  if (new_site_instance) {
-    return !new_site_instance->IsRelatedSiteInstance(
+  if (destination_site_instance) {
+    return !destination_site_instance->IsRelatedSiteInstance(
         render_frame_host_->GetSiteInstance());
   }
 
@@ -1125,7 +1130,7 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
 
   // Don't force a new BrowsingInstance for URLs that are handled in the
   // renderer process, like javascript: or debug URLs like chrome://crash.
-  if (IsRendererDebugURL(new_effective_url))
+  if (IsRendererDebugURL(destination_effective_url))
     return false;
 
   // Transitions across BrowserContexts should always require a
@@ -1152,7 +1157,7 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
     // If so, force a swap if destination is not an acceptable URL for Web UI.
     // Here, data URLs are never allowed.
     if (!WebUIControllerFactoryRegistry::GetInstance()->IsURLAcceptableForWebUI(
-            browser_context, new_effective_url)) {
+            browser_context, destination_effective_url)) {
       return true;
     }
 
@@ -1161,13 +1166,13 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
     if (WebUIControllerFactoryRegistry::GetInstance()->GetWebUIType(
             browser_context, current_effective_url) !=
         WebUIControllerFactoryRegistry::GetInstance()->GetWebUIType(
-            browser_context, new_effective_url)) {
+            browser_context, destination_effective_url)) {
       return true;
     }
   } else {
     // Force a swap if it's a Web UI URL.
     if (WebUIControllerFactoryRegistry::GetInstance()->UseWebUIBindingsForURL(
-            browser_context, new_effective_url)) {
+            browser_context, destination_effective_url)) {
       return true;
     }
   }
@@ -1177,7 +1182,7 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
   // no current_entry.
   if (GetContentClient()->browser()->ShouldSwapBrowsingInstancesForNavigation(
           render_frame_host_->GetSiteInstance(), current_effective_url,
-          new_effective_url)) {
+          destination_effective_url)) {
     return true;
   }
 
@@ -1185,7 +1190,7 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
   // without screwing up the session history sometimes (when navigating between
   // "view-source:http://foo.com/" and "http://foo.com/", Blink doesn't treat
   // it as a new navigation). So require a BrowsingInstance switch.
-  if (current_is_view_source_mode != new_is_view_source_mode)
+  if (current_is_view_source_mode != destination_is_view_source_mode)
     return true;
 
   // If the target URL's origin was dynamically isolated, and the isolation
@@ -1195,15 +1200,15 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
   // isolation, ensuring that the next navigation (e.g., a form submission
   // after user has typed in a password) can utilize a dedicated process when
   // possible (e.g., when there are no existing script references).
-  if (ShouldSwapBrowsingInstancesForDynamicIsolation(render_frame_host_.get(),
-                                                     new_effective_url)) {
+  if (ShouldSwapBrowsingInstancesForDynamicIsolation(
+          render_frame_host_.get(), destination_effective_url)) {
     return true;
   }
 
   // Experimental mode to swap BrowsingInstances on most cross-site navigations
   // when there are no other windows in the BrowsingInstance.
   if (ShouldProactivelySwapBrowsingInstance(render_frame_host_.get(),
-                                            new_effective_url)) {
+                                            destination_effective_url)) {
     return true;
   }
 

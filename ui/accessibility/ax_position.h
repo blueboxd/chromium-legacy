@@ -477,7 +477,8 @@ class AXPosition {
   // position from the one representing the end of the previous paragraph.
   // A position |AsLeafTextPosition| is the start of a paragraph if all of the
   // following are true :
-  // 1. The current leaf text position must be at the start of an anchor.
+  // 1. The current leaf text position must be an unignored position at
+  //    the start of an anchor.
   // 2. The current position is not whitespace only, unless it is also
   //    the first leaf text position within the document.
   // 3. Either (a) the current leaf text position is the first leaf text
@@ -493,8 +494,9 @@ class AXPosition {
         NOTREACHED();
         return false;
       case AXPositionKind::TEXT_POSITION: {
-        // 1. The current leaf text position must be at the start of an anchor.
-        if (!text_position->AtStartOfAnchor())
+        // 1. The current leaf text position must be an unignored position at
+        //    the start of an anchor.
+        if (text_position->IsIgnored() || !text_position->AtStartOfAnchor())
           return false;
 
         // 2. The current position is not whitespace only, unless it is also
@@ -529,7 +531,8 @@ class AXPosition {
           // There's a chance that |CreatePreviousTextAnchorPosition| will
           // return whitespace that should be appended to a previous paragraph
           // rather than separating two pieces of the current paragraph.
-        } while (previous_text_position->IsInWhiteSpace());
+        } while (previous_text_position->IsInWhiteSpace() ||
+                 previous_text_position->IsIgnored());
         return previous_text_position->IsNullPosition();
       }
     }
@@ -542,7 +545,8 @@ class AXPosition {
   // position from the one representing the start of the next paragraph.
   // A position |AsLeafTextPosition| is the end of a paragraph if all of the
   // following are true :
-  // 1. The current leaf text position must be at the end of an anchor.
+  // 1. The current leaf text position must be an unignored position at
+  //    the end of an anchor.
   // 2. Either (a) the current leaf text position is the last leaf text
   //    position in the document, or (b) there are no line breaking
   //    objects between it and the next leaf text position except when
@@ -562,8 +566,9 @@ class AXPosition {
         NOTREACHED();
         return false;
       case AXPositionKind::TEXT_POSITION: {
-        // 1. The current leaf text position must be at the end of an anchor.
-        if (!text_position->AtEndOfAnchor())
+        // 1. The current leaf text position must be an unignored position at
+        //    the end of an anchor.
+        if (text_position->IsIgnored() || !text_position->AtEndOfAnchor())
           return false;
 
         // 2. Either (a) the current leaf text position is the last leaf text
@@ -586,8 +591,12 @@ class AXPosition {
         const AbortMovePredicate abort_move_predicate =
             base::BindRepeating(&AbortMoveAtParagraphBoundary,
                                 std::ref(crossed_potential_boundary_token));
-        AXPositionInstance next_text_position =
-            text_position->CreateNextTextAnchorPosition(abort_move_predicate);
+
+        AXPositionInstance next_text_position = text_position->Clone();
+        do {
+          next_text_position = next_text_position->CreateNextTextAnchorPosition(
+              abort_move_predicate);
+        } while (next_text_position->IsIgnored());
         if (next_text_position->IsNullPosition())
           return true;
 
@@ -2613,7 +2622,7 @@ class AXPosition {
   // Creates a tree position using the next text-only node as its anchor.
   // Assumes that text-only nodes are leaf nodes.
   AXPositionInstance CreateNextLeafTreePosition(
-      const AbortMovePredicate abort_predicate) const {
+      const AbortMovePredicate& abort_predicate) const {
     AXPositionInstance next_leaf =
         AsTreePosition()->CreateNextAnchorPosition(abort_predicate);
     while (!next_leaf->IsNullPosition() && next_leaf->AnchorChildCount()) {
@@ -2627,7 +2636,7 @@ class AXPosition {
   // Creates a tree position using the previous text-only node as its anchor.
   // Assumes that text-only nodes are leaf nodes.
   AXPositionInstance CreatePreviousLeafTreePosition(
-      const AbortMovePredicate abort_predicate) const {
+      const AbortMovePredicate& abort_predicate) const {
     AXPositionInstance previous_leaf =
         AsTreePosition()->CreatePreviousAnchorPosition(abort_predicate);
     while (!previous_leaf->IsNullPosition() &&

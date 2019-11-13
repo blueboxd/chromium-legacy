@@ -31,6 +31,11 @@ void TabCallbackProxy::DisplayedUrlChanged(const GURL& url) {
   Java_TabCallbackProxy_visibleUrlChanged(env, java_observer_, jstring_url);
 }
 
+void TabCallbackProxy::OnRenderProcessGone() {
+  Java_TabCallbackProxy_onRenderProcessGone(AttachCurrentThread(),
+                                            java_observer_);
+}
+
 static jlong JNI_TabCallbackProxy_CreateTabCallbackProxy(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& proxy,

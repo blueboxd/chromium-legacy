@@ -2044,7 +2044,6 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="3923676227229836009">Ez az oldal megtekinthet fájlokat</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3925573269917483990">Kamera:</translation>
-<translation id="3925842537050977900">Rögzítés feloldása a polcon</translation>
 <translation id="3926002189479431949">A Smart Lockhoz használt telefon megváltozott</translation>
 <translation id="3927932062596804919">Megtagadás</translation>
 <translation id="3928570707778085600">Menti a(z) <ph name="FILE_OR_FOLDER_NAME" /> módosításait?</translation>
@@ -2537,7 +2536,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4689235506267737042">A demóbeállítások kiválasztása</translation>
 <translation id="4689421377817139245">Szinkronizálja ezt a könyvjelzőt iPhone eszközével</translation>
 <translation id="4690091457710545971">&lt;Négy, az Intel Wi-Fi firmware által generált fájl: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon. Az első három bináris fájl, melyek regisztertartalmakat tárolnak. Az Intel biztosítja, hogy nincs bennük eszköz- és személyazonosításra alkalmas adat. Az utolsó fájl végrehajtási lánc az Intel firmware-ből; mentes az eszköz- és személyazonosításra alkalmas adatoktól, de túl nagy ahhoz, hogy itt szerepeljen. Ezek a fájlok azért jöttek létre, mert eszközén az elmúlt időszakban Wi-Fi-vel kapcsolatos problémák adódtak. A probléma megoldása érdekében a rendszer megosztja a fájlokat az Intellel.&gt;</translation>
-<translation id="469230890969474295">OEM mappa</translation>
 <translation id="4692623383562244444">Keresők</translation>
 <translation id="4693155481716051732">Szusi</translation>
 <translation id="4694024090038830733">A nyomtató konfigurálását a rendszergazda végzi.</translation>
@@ -2570,7 +2568,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4737715515457435632">Kérjük, csatlakozzon egy hálózathoz</translation>
 <translation id="473775607612524610">Frissítés</translation>
 <translation id="4739639199548674512">Jegyek</translation>
-<translation id="4742746985488890273">Rögzítés a polcra</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />További információ az alkalmazások frissítéséről<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Webhely némításának feloldása}other{Webhelyek némításának feloldása}}</translation>
 <translation id="4746351372139058112">Üzenetek</translation>
@@ -3564,7 +3561,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6196854373336333322">A(z) <ph name="EXTENSION_NAME" /> bővítmény átvette az irányítást proxybeállításai felett, ami azt jelenti, hogy a bővítmény minden internetes tevékenységét módosíthatja, feltörheti vagy lehallgathatja. Ha nem biztos benne, hogy miért történt a változás, akkor valószínűleg nem is akarja azt.</translation>
 <translation id="6198102561359457428">Jelentkezzen ki, majd jelentkezzen be újra...</translation>
 <translation id="6198252989419008588">PIN-kód megváltoztatása</translation>
-<translation id="6201792273624501289">Linux-alkalmazások</translation>
 <translation id="6202304368170870640">PIN-kódjával bejelentkezhet, és feloldhatja eszköze zárolását.</translation>
 <translation id="6206311232642889873">Ké&amp;p másolása</translation>
 <translation id="6207200176136643843">Visszaállítás az alapértelmezett nagyítási szintre</translation>
@@ -5598,7 +5594,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="9130015405878219958">Érvénytelen módot adott meg.</translation>
 <translation id="9131487537093447019">Üzenetek küldése és fogadása Bluetooth-eszközöknek, illetve Bluetooth-eszközöktől.</translation>
 <translation id="9134304429738380103">Igen, elfogadom.</translation>
-<translation id="9135090785674039430">Bekapcsolt állapotban a webhelyek nem tudnak olyan cookie-kat használni, amelyek nyomon követik tevékenységeit az interneten. Előfordulhat, hogy bizonyos webhelyek nem működnek megfelelően.</translation>
 <translation id="9137013805542155359">Eredeti megjelenítése</translation>
 <translation id="9137157311132182254">Elsődleges keresőmotor</translation>
 <translation id="9137248913990643158">Indítsa el a Chrome böngészőt és jelentkezzen be az alkalmazás használata előtt.</translation>

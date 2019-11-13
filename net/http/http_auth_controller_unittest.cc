@@ -80,7 +80,7 @@ void RunSingleRoundAuthTest(
       base::MakeRefCounted<HttpAuthController>(
           HttpAuth::AUTH_PROXY, GURL("http://example.com"),
           NetworkIsolationKey(), &dummy_auth_cache, &auth_handler_factory,
-          host_resolver.get(), HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS));
+          host_resolver.get()));
   SSLInfo null_ssl_info;
   ASSERT_EQ(OK, controller->HandleAuthChallenge(headers, null_ssl_info, false,
                                                 false, net_log));
@@ -265,7 +265,7 @@ TEST(HttpAuthControllerTest, NoExplicitCredentialsAllowed) {
       base::MakeRefCounted<HttpAuthController>(
           HttpAuth::AUTH_SERVER, GURL("http://example.com"),
           NetworkIsolationKey(), &dummy_auth_cache, &auth_handler_factory,
-          host_resolver.get(), HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS));
+          host_resolver.get()));
   SSLInfo null_ssl_info;
   ASSERT_EQ(OK, controller->HandleAuthChallenge(headers, null_ssl_info, false,
                                                 false, dummy_log));

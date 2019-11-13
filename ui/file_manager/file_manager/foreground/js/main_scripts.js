@@ -64,6 +64,8 @@
 //
 // <include src="../../../../webui/resources/js/cr/ui/grid.js">
 //
+// <include
+// src="../../../../webui/resources/js/cr/ui/keyboard_shortcut_list.js">
 // <include src="../../../../webui/resources/js/cr/ui/command.js">
 // <include src="../../../../webui/resources/js/cr/ui/position_util.js">
 // <include src="../../../../webui/resources/js/cr/ui/menu_item.js">

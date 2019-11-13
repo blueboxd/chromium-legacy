@@ -98,8 +98,8 @@ gfx::Rect GetBoundsOfSelectedDropTarget(aura::Window* dragged_window) {
 TabletModeWindowDragDelegate::TabletModeWindowDragDelegate()
     : split_view_controller_(
           SplitViewController::Get(Shell::GetPrimaryRootWindow())),
-      split_view_drag_indicators_(std::make_unique<SplitViewDragIndicators>()) {
-}
+      split_view_drag_indicators_(std::make_unique<SplitViewDragIndicators>(
+          Shell::GetPrimaryRootWindow())) {}
 
 TabletModeWindowDragDelegate::~TabletModeWindowDragDelegate() {
   if (dragged_window_) {
@@ -250,8 +250,7 @@ void TabletModeWindowDragDelegate::ContinueWindowDrag(
           is_window_considered_moved_,
           SplitViewDragIndicators::WindowDraggingState::kFromTop,
           GetSnapPosition(location_in_screen));
-  split_view_drag_indicators_->SetWindowDraggingState(window_dragging_state,
-                                                      location_in_screen);
+  split_view_drag_indicators_->SetWindowDraggingState(window_dragging_state);
 
   if (GetOverviewSession()) {
     GetOverviewSession()->OnWindowDragContinued(dragged_window_,
@@ -284,8 +283,7 @@ void TabletModeWindowDragDelegate::EndWindowDrag(
   split_view_controller_->OnWindowDragEnded(dragged_window_, snap_position,
                                             location_in_screen);
   split_view_drag_indicators_->SetWindowDraggingState(
-      SplitViewDragIndicators::WindowDraggingState::kNoDrag,
-      location_in_screen);
+      SplitViewDragIndicators::WindowDraggingState::kNoDrag);
 
   // Reset the dragged window's window shadow elevation.
   ::wm::SetShadowElevation(dragged_window_, original_shadow_elevation_);

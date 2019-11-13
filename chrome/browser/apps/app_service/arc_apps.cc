@@ -416,6 +416,26 @@ void ArcApps::Uninstall(const std::string& app_id,
   arc::UninstallArcApp(app_id, profile_);
 }
 
+void ArcApps::PauseApp(const std::string& app_id) {
+  if (paused_apps.find(app_id) != paused_apps.end()) {
+    return;
+  }
+
+  paused_apps.insert(app_id);
+  SetIconEffect(app_id);
+
+  // TODO(crbug.com/1011235): If the app is running, Stop the app.
+}
+
+void ArcApps::UnpauseApps(const std::string& app_id) {
+  if (paused_apps.find(app_id) == paused_apps.end()) {
+    return;
+  }
+
+  paused_apps.erase(app_id);
+  SetIconEffect(app_id);
+}
+
 void ArcApps::OpenNativeSettings(const std::string& app_id) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
   if (!prefs) {
@@ -745,6 +765,32 @@ void ArcApps::ConvertAndPublishPackageApps(
       }
     }
   }
+}
+
+void ArcApps::SetIconEffect(const std::string& app_id) {
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
+  if (!prefs) {
+    return;
+  }
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
+  if (!app_info) {
+    return;
+  }
+
+  IconEffects icon_effects = IconEffects::kNone;
+  if (app_info->suspended) {
+    icon_effects = static_cast<IconEffects>(icon_effects | IconEffects::kGray);
+  }
+  if (paused_apps.find(app_id) != paused_apps.end()) {
+    icon_effects =
+        static_cast<IconEffects>(icon_effects | IconEffects::kPaused);
+  }
+
+  apps::mojom::AppPtr app = apps::mojom::App::New();
+  app->app_type = apps::mojom::AppType::kArc;
+  app->app_id = app_id;
+  app->icon_key = icon_key_factory_.MakeIconKey(icon_effects);
+  Publish(std::move(app));
 }
 
 void ArcApps::UpdateAppIntentFilters(

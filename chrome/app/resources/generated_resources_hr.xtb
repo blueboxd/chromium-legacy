@@ -2044,7 +2044,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="3923676227229836009">Ova stranica ima dopuštenje za pregled datoteka</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3925573269917483990">Fotoaparat:</translation>
-<translation id="3925842537050977900">Otkvači s police</translation>
 <translation id="3926002189479431949">Telefon za Smart Lock promijenio se</translation>
 <translation id="3927932062596804919">Odbij</translation>
 <translation id="3928570707778085600">Želite li spremiti promjene u <ph name="FILE_OR_FOLDER_NAME" />?</translation>
@@ -2538,7 +2537,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="4689235506267737042">Odaberite svoje demo-postavke</translation>
 <translation id="4689421377817139245">Sinkronizirajte ovu oznaku sa svojim iPhoneom</translation>
 <translation id="4690091457710545971">&lt;Četiri datoteke koje je generirala Intelova oprema za Wi-Fi: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon. Prve su tri datoteke binarne i sadrže ispis registra, a Intel potvrđuje da ne sadrže osobne podatke ni podatke za identifikaciju uređaja. Zadnja je datoteka zapis izvedbe Intelove opreme; iz nje su izbrisani svi osobni podaci i podaci za identifikaciju uređaja, no prevelika je da bi se prikazala ovdje. Te su datoteke generirane zbog nedavnih poteškoća s Wi-Fijem na vašem uređaju i podijelit će se s Intelom radi rješavanja tih problema.&gt;</translation>
-<translation id="469230890969474295">OEM mapa</translation>
 <translation id="4692623383562244444">Tražilice</translation>
 <translation id="4693155481716051732">Suši</translation>
 <translation id="4694024090038830733">Konfiguracijom pisača upravlja administrator.</translation>
@@ -2571,7 +2569,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="4737715515457435632">Povežite se s mrežom</translation>
 <translation id="473775607612524610">Ažuriraj</translation>
 <translation id="4739639199548674512">Tiketi</translation>
-<translation id="4742746985488890273">Prikvači na policu</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Saznajte kako ažurirati aplikacije<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Uključi zvuk na web-lokaciji}one{Uključi zvuk na web-lokacijama}few{Uključi zvuk na web-lokacijama}other{Uključi zvuk na web-lokacijama}}</translation>
 <translation id="4746351372139058112">Poruke</translation>
@@ -3563,7 +3560,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="6196854373336333322">Proširenje "<ph name="EXTENSION_NAME" />" preuzelo je kontrolu nad vašim postavkama proxyja, a to znači da može promijeniti, prekinuti ili prisluškivati sve što radite na mreži. Ako niste sigurni kako je došlo do te promjene, vjerojatno je ne želite.</translation>
 <translation id="6198102561359457428">Odjavite se, a zatim ponovo prijavite...</translation>
 <translation id="6198252989419008588">Promijeni PIN</translation>
-<translation id="6201792273624501289">Linux aplikacije</translation>
 <translation id="6202304368170870640">PIN možete upotrebljavati za prijavu na uređaj ili otključavanje uređaja.</translation>
 <translation id="6206311232642889873">Kop&amp;iraj sliku</translation>
 <translation id="6207200176136643843">Vraćanje na zadanu razinu zumiranja</translation>
@@ -5597,7 +5593,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="9130015405878219958">Unesen je nevažeći način.</translation>
 <translation id="9131487537093447019">slati poruke na Bluetooth uređaje i primati poruke s njih</translation>
 <translation id="9134304429738380103">Da, pristajem.</translation>
-<translation id="9135090785674039430">Kad je ta značajka uključena, web-lokacije ne mogu upotrebljavati kolačiće koji vas prate na webu. Neke web-lokacije možda neće funkcionirati pravilno.</translation>
 <translation id="9137013805542155359">Prikaži original</translation>
 <translation id="9137157311132182254">Željena tražilica</translation>
 <translation id="9137248913990643158">Pokrenite Chrome i prijavite se na njega da biste mogli upotrebljavati tu aplikaciju.</translation>

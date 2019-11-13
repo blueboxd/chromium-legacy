@@ -164,6 +164,14 @@ void CrostiniApps::Uninstall(const std::string& app_id,
       ->QueueUninstallApplication(app_id);
 }
 
+void CrostiniApps::PauseApp(const std::string& app_id) {
+  NOTIMPLEMENTED();
+}
+
+void CrostiniApps::UnpauseApps(const std::string& app_id) {
+  NOTIMPLEMENTED();
+}
+
 void CrostiniApps::OpenNativeSettings(const std::string& app_id) {
   NOTIMPLEMENTED();
 }

@@ -344,8 +344,9 @@ class StartSurfaceMediator
     @Override
     public void startedHiding() {
         if (mPropertyModel != null) {
-            mPropertyModel.set(IS_SHOWING_OVERVIEW, false);
             mFakeboxDelegate.removeUrlFocusChangeListener(mUrlFocusChangeListener);
+            mPropertyModel.set(IS_SHOWING_OVERVIEW, false);
+
             destroyFeedSurfaceCoordinator();
         }
         for (StartSurface.OverviewModeObserver observer : mObservers) {

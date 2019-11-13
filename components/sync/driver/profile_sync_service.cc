@@ -1954,7 +1954,8 @@ std::string ProfileSyncService::GetExperimentalAuthenticationSecret() const {
   // when usually all except keystore keys are guaranteed to be available.
   // Keystore keys are usually available initially too, but in rare cases they
   // should arrive in later sync cycles.
-  if (last_keystore_key_.empty()) {
+  // GAIA ID is not available with local sync enabled.
+  if (last_keystore_key_.empty() || IsLocalSyncEnabled()) {
     return std::string();
   }
 

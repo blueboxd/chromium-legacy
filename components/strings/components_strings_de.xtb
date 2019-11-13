@@ -177,7 +177,7 @@
 <translation id="1734878702283171397">Setzen Sie sich mit dem Systemadministrator in Verbindung.</translation>
 <translation id="1739107442478692187">Auf einer Website oder in einer App, die Sie nutzen, ist eine Datenpanne aufgetreten. Chrome empfiehlt, Ihre gespeicherten Passwörter zu überprüfen und Ihr Passwort auf <ph name="ORIGIN" /> jetzt zu ändern.</translation>
 <translation id="1740951997222943430">Geben Sie einen gültigen Ablaufmonat ein</translation>
-<translation id="1741613555002899862">Muss angegeben werden und ein gültiger String sein, wenn "DnsOverHttpsMode" <ph name="SECURE_DNS_MODE_SECURE" /> ist.</translation>
+<translation id="1741613555002899862">Muss angegeben werden und ein gültiger String sein, wenn "DnsOverHttpsMode" auf <ph name="SECURE_DNS_MODE_SECURE" /> gesetzt ist.</translation>
 <translation id="1743520634839655729">Damit Zahlungen zukünftig schneller abgewickelt werden können, speichern Sie Ihre Kreditkartendaten, Ihren Namen und Ihre Rechnungsadresse in Ihrem Google-Konto und auf diesem Gerät.</translation>
 <translation id="1743570585616704562">Nicht erkannt</translation>
 <translation id="1745880797583122200">Ihr Browser wird verwaltet</translation>
@@ -306,7 +306,7 @@
 <translation id="2365563543831475020">Absturzbericht erfasst am <ph name="CRASH_TIME" />, wurde nicht hochgeladen</translation>
 <translation id="2367567093518048410">Ebene</translation>
 <translation id="2380886658946992094">Legal</translation>
-<translation id="2384307209577226199">Standardeinstellung durch Unternehmen</translation>
+<translation id="2384307209577226199">Unternehmensstandard</translation>
 <translation id="2386255080630008482">Das Serverzertifikat wurde aufgehoben.</translation>
 <translation id="2392959068659972793">Richtlinien ohne Wert zeigen</translation>
 <translation id="239429038616798445">Diese Versandart ist nicht verfügbar. Bitte wählen Sie eine andere aus.</translation>

@@ -221,7 +221,9 @@ void ChromeAutofillClient::ShowUnmaskPrompt(
     UnmaskCardReason reason,
     base::WeakPtr<CardUnmaskDelegate> delegate) {
   unmask_controller_.ShowPrompt(
-      CreateCardUnmaskPromptView(&unmask_controller_, web_contents()),
+      base::Bind(&CreateCardUnmaskPromptView,
+                 base::Unretained(&unmask_controller_),
+                 base::Unretained(web_contents())),
       card, reason, delegate);
 }
 

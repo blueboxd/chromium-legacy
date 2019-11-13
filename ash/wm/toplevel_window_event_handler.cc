@@ -11,11 +11,11 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/wm/back_gesture_affordance.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_observer.h"
@@ -103,7 +103,7 @@ void OnDragCompleted(
 }
 
 // True if we can start swiping from left edge to go to previous page.
-bool CanStartGoingBack(aura::Window* target) {
+bool CanStartGoingBack() {
   if (!features::IsSwipingFromLeftEdgeToGoBackEnabled())
     return false;
 
@@ -126,18 +126,6 @@ bool CanStartGoingBack(aura::Window* target) {
     return false;
   }
 
-  views::Widget* widget = views::Widget::GetTopLevelWidgetForNativeView(target);
-  if (!widget)
-    return false;
-
-  aura::Window* native_window = widget->GetNativeWindow();
-  const int app_type = native_window->GetProperty(aura::client::kAppType);
-  // No need to show the back gesture affordance and go back if the active
-  // browser web contents can not go back.
-  if (app_type == static_cast<int>(AppType::BROWSER) ||
-      app_type == static_cast<int>(AppType::CHROME_APP)) {
-    return Shell::Get()->shell_delegate()->CanGoBack(widget->GetNativeWindow());
-  }
   return true;
 }
 
@@ -896,7 +884,7 @@ void ToplevelWindowEventHandler::UpdateGestureTarget(
 bool ToplevelWindowEventHandler::HandleGoingBackFromLeftEdge(
     ui::GestureEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
-  if (!CanStartGoingBack(target))
+  if (!CanStartGoingBack())
     return false;
 
   gfx::Point screen_location = event->location();
@@ -924,16 +912,20 @@ bool ToplevelWindowEventHandler::HandleGoingBackFromLeftEdge(
       if (back_gesture_affordance_->IsActivated() ||
           (event->type() == ui::ET_SCROLL_FLING_START &&
            event->details().velocity_x() >= kFlingVelocityForGoingBack)) {
-        aura::Window* root_window =
-            window_util::GetRootWindowAt(screen_location);
-        ui::KeyEvent press_key_event(ui::ET_KEY_PRESSED, ui::VKEY_BROWSER_BACK,
-                                     ui::EF_NONE);
-        ignore_result(
-            root_window->GetHost()->SendEventToSink(&press_key_event));
-        ui::KeyEvent release_key_event(ui::ET_KEY_RELEASED,
+        if (TabletModeWindowManager::ShouldMinimizeTopWindowOnBack()) {
+          WindowState::Get(TabletModeWindowManager::GetTopWindow())->Minimize();
+        } else {
+          aura::Window* root_window =
+              window_util::GetRootWindowAt(screen_location);
+          ui::KeyEvent press_key_event(ui::ET_KEY_PRESSED,
                                        ui::VKEY_BROWSER_BACK, ui::EF_NONE);
-        ignore_result(
-            root_window->GetHost()->SendEventToSink(&release_key_event));
+          ignore_result(
+              root_window->GetHost()->SendEventToSink(&press_key_event));
+          ui::KeyEvent release_key_event(ui::ET_KEY_RELEASED,
+                                         ui::VKEY_BROWSER_BACK, ui::EF_NONE);
+          ignore_result(
+              root_window->GetHost()->SendEventToSink(&release_key_event));
+        }
         back_gesture_affordance_->Complete();
       } else {
         back_gesture_affordance_->Abort();

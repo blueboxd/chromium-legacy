@@ -193,7 +193,9 @@ class AutocompleteResult {
   // If there are both tail and non-tail suggestions (ignoring one default
   // match), remove the tail suggestions.  If the only default matches are tail
   // suggestions, remove the non-tail suggestions.
-  static void MaybeCullTailSuggestions(ACMatches* matches);
+  static void MaybeCullTailSuggestions(
+      ACMatches* matches,
+      const CompareWithDemoteByType<AutocompleteMatch>& comparing_object);
 
   // Populates |provider_to_matches| from |matches_|. This AutocompleteResult
   // should not be used after the 'move' version.

@@ -110,7 +110,7 @@ import {isChromeOS} from 'chrome://resources/js/cr.m.js';
               .SELECTED_DESTINATION_CAPABILITIES_READY,
           destinationStore);
       destinationStore.init(
-          initialSettings.isInAppKioskMode, initialSettings.printerName,
+          initialSettings.pdfPrinterDisabled, initialSettings.printerName,
           initialSettings.serializedDefaultDestinationSelectionRulesStr,
           recentDestinations);
       return opt_expectPrinterFailure ? Promise.resolve() : Promise.race([
@@ -271,7 +271,7 @@ import {isChromeOS} from 'chrome://resources/js/cr.m.js';
         function() {
       initialSettings.serializedDefaultDestinationSelectionRulesStr = '';
       initialSettings.serializedAppStateStr = '';
-      initialSettings.isInAppKioskMode = true;
+      initialSettings.pdfPrinterDisabled = true;
       initialSettings.printerName = '';
 
       return setInitialSettings().then(function(args) {
@@ -294,7 +294,7 @@ import {isChromeOS} from 'chrome://resources/js/cr.m.js';
         function() {
       initialSettings.serializedDefaultDestinationSelectionRulesStr = '';
       initialSettings.serializedAppStateStr = '';
-      initialSettings.isInAppKioskMode = true;
+      initialSettings.pdfPrinterDisabled = true;
       initialSettings.printerName = '';
       localDestinations = [];
 

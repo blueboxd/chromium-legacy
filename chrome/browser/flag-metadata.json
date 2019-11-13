@@ -49,6 +49,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "allow-ambient-eq",
+    "owners": [ "zentaro", "baileyberro" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "allow-disable-mouse-acceleration",
     "owners": [ "zentaro" ],
     "expiry_milestone": 82
@@ -1508,8 +1513,8 @@
   },
   {
     "name": "enable-md-rounded-corners-on-dialogs",
-    "owners": ["bsep", "sajadm"],
-    "expiry_milestone": 78
+    "owners": ["tluk"],
+    "expiry_milestone": 85
   },
   {
     "name": "enable-media-internals-devtools",
@@ -2175,7 +2180,7 @@
   {
     "name": "explore-sites",
     "owners": [ "chili", "dewittj" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 85
   },
   {
     "name": "extension-apis",
@@ -2633,6 +2638,11 @@
   },
   {
     "name": "ntp-realbox",
+    "owners": ["dbeam", "mahmadi"],
+    "expiry_milestone": 85
+  },
+  {
+    "name": "ntp-realbox-match-omnibox-theme",
     "owners": ["dbeam", "mahmadi"],
     "expiry_milestone": 85
   },

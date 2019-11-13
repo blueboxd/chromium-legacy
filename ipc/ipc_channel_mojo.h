@@ -51,7 +51,8 @@ class COMPONENT_EXPORT(IPC) ChannelMojo
       Mode mode,
       Listener* listener,
       const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
-      const scoped_refptr<base::SingleThreadTaskRunner>& proxy_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& proxy_task_runner,
+      const scoped_refptr<mojo::internal::MessageQuotaChecker>& quota_checker);
 
   // Create a factory object for ChannelMojo.
   // The factory is used to create Mojo-based ChannelProxy family.
@@ -101,7 +102,8 @@ class COMPONENT_EXPORT(IPC) ChannelMojo
       Mode mode,
       Listener* listener,
       const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
-      const scoped_refptr<base::SingleThreadTaskRunner>& proxy_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& proxy_task_runner,
+      const scoped_refptr<mojo::internal::MessageQuotaChecker>& quota_checker);
 
   void ForwardMessageFromThreadSafePtr(mojo::Message message);
   void ForwardMessageWithResponderFromThreadSafePtr(

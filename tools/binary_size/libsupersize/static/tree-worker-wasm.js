@@ -7,6 +7,13 @@
 importScripts('./shared.js');
 importScripts('./caspian_web.js');
 
+const LoadWasm = new Promise(function(resolve, reject) {
+  Module['onRuntimeInitialized'] = function() {
+    console.log('Loaded WebAssembly runtime');
+    resolve();
+  }
+});
+
 const _PATH_SEP = '/';
 const _NAMES_TO_FLAGS = Object.freeze({
   hot: _FLAGS.HOT,
@@ -127,84 +134,66 @@ function mallocBuffer(buf) {
   return dataHeap;
 }
 
-var _Open = null;
-function Open(name) {
-  if (_Open === null) {
+async function Open(name) {
+  return LoadWasm.then(() => {
     _Open = Module.cwrap('Open', 'number', ['string']);
-  }
-  let stringPtr = _Open(name);
-  // Something has gone wrong if we get back a string longer than 67MB.
-  let ret = JSON.parse(Module.UTF8ToString(stringPtr, 2 ** 26));
-  console.log(ret);
-  return ret;
+    const stringPtr = _Open(name);
+    // Something has gone wrong if we get back a string longer than 67MB.
+    const ret = JSON.parse(Module.UTF8ToString(stringPtr, 2 ** 26));
+    return ret;
+  });
 }
 
 // Placeholder input name until supplied via setInput()
-const fetcher = new DataFetcher('data.size');
+const fetcher = new DataFetcher('data.ndjson');
+let beforeFetcher = null;
 let sizeFileLoaded = false;
+
+async function loadSizeFile(isBefore, fetcher) {
+  const sizeBuffer = await fetcher.loadSizeBuffer();
+  const heapBuffer = mallocBuffer(sizeBuffer);
+  const LoadSizeFile = Module.cwrap(
+      isBefore ? 'LoadBeforeSizeFile' : 'LoadSizeFile', 'bool',
+      ['number', 'number']);
+  const start_time = Date.now();
+  LoadSizeFile(heapBuffer.byteOffset, sizeBuffer.byteLength);
+  console.log(
+      'Loaded size file in ' + (Date.now() - start_time) / 1000.0 + ' seconds');
+  Module._free(heapBuffer.byteOffset);
+}
 
 async function buildTree(
     groupBy, includeRegex, excludeRegex, includeSections, minSymbolSize,
     flagToFilter, methodCountMode, onProgress) {
-  if (!sizeFileLoaded) {
-    let sizeBuffer = await fetcher.loadSizeBuffer();
-    let heapBuffer = mallocBuffer(sizeBuffer);
-    console.log('Passing ' + sizeBuffer.byteLength + ' bytes to WebAssembly');
-    let LoadSizeFile =
-        Module.cwrap('LoadSizeFile', 'bool', ['number', 'number']);
-    let start_time = Date.now();
-    LoadSizeFile(heapBuffer.byteOffset, sizeBuffer.byteLength);
+  return await LoadWasm.then(async () => {
+    if (!sizeFileLoaded) {
+      const current = loadSizeFile(false, fetcher);
+      const before =
+          beforeFetcher !== null ? loadSizeFile(true, beforeFetcher) : null;
+      await current;
+      await before;
+      sizeFileLoaded = true;
+    }
+
+    const BuildTree = Module.cwrap(
+        'BuildTree', 'void',
+        ['bool', 'string', 'string', 'string', 'number', 'number']);
+    const start_time = Date.now();
+    const groupByComponent = groupBy === 'component';
+    BuildTree(
+        groupByComponent, includeRegex, excludeRegex, includeSections,
+        minSymbolSize, flagToFilter);
     console.log(
-        'Loaded size file in ' + (Date.now() - start_time) / 1000.0 +
+        'Constructed tree in ' + (Date.now() - start_time) / 1000.0 +
         ' seconds');
-    Module._free(heapBuffer.byteOffset);
 
-    sizeFileLoaded = true;
-  }
-
-  /**
-   * Creates data to post to the UI thread. Defaults will be used for the root
-   * and percent values if not specified.
-   * @param {{root?:TreeNode,percent?:number,error?:Error}} data Default data
-   * values to post.
-   */
-  function createProgressMessage(data = {}) {
-    let {percent} = data;
-    if (percent == null) {
-      if (meta == null) {
-        percent = 0;
-      } else {
-        percent = Math.max(builder.rootNode.size / meta.total, 0.1);
-      }
-    }
-
-    const message = {
-      root: builder.formatNode(data.root || builder.rootNode),
-      percent,
-      diffMode: meta && meta.diff_mode,
+    const root = await Open('');
+    return {
+      root: root,
+      percent: 1.0,
+      diffMode: beforeFetcher !== null,  // diff mode
     };
-    if (data.error) {
-      message.error = data.error.message;
-    }
-    return message;
-  }
-
-  let BuildTree = Module.cwrap(
-      'BuildTree', 'void',
-      ['bool', 'string', 'string', 'string', 'number', 'number']);
-  let start_time = Date.now();
-  const groupByComponent = groupBy === 'component';
-  BuildTree(
-      groupByComponent, includeRegex, excludeRegex, includeSections,
-      minSymbolSize, flagToFilter);
-  console.log('Constructed tree in ' +
-    (Date.now() - start_time)/1000.0 + ' seconds');
-
-  return {
-    root: Open(''),
-    percent: 1.0,
-    diffMode: 0, // diff mode
-  };
+  });
 }
 
 /**
@@ -215,15 +204,8 @@ async function buildTree(
 function parseOptions(options) {
   const params = new URLSearchParams(options);
 
-  const url = params.get('load_url');
   const groupBy = params.get('group_by') || 'source_path';
   const methodCountMode = params.has('method_count');
-  const flagToFilter = _NAMES_TO_FLAGS[params.get('flag_filter')] || 0;
-
-  let minSymbolSize = Number(params.get('min_size'));
-  if (Number.isNaN(minSymbolSize)) {
-    minSymbolSize = 0;
-  }
 
   const includeRegex = params.get('include');
   const excludeRegex = params.get('exclude');
@@ -238,6 +220,15 @@ function parseOptions(options) {
     includeSections = Array.from(includeSectionsSet.values()).join('');
   }
 
+  const minSymbolSize = Number(params.get('min_size'));
+  if (Number.isNaN(minSymbolSize)) {
+    minSymbolSize = 0;
+  }
+
+  const flagToFilter = _NAMES_TO_FLAGS[params.get('flag_filter')] || 0;
+  const url = params.get('load_url');
+  const beforeUrl = params.get('before_url');
+
   return {
     groupBy,
     includeRegex,
@@ -246,6 +237,7 @@ function parseOptions(options) {
     minSymbolSize,
     flagToFilter,
     url,
+    beforeUrl,
   };
 }
 
@@ -260,6 +252,7 @@ const actions = {
       minSymbolSize,
       flagToFilter,
       url,
+      beforeUrl,
     } = parseOptions(options);
     if (input === 'from-url://' && url) {
       // Display the data from the `load_url` query parameter
@@ -268,6 +261,10 @@ const actions = {
     } else if (input != null) {
       console.info('Displaying uploaded data');
       fetcher.setInput(input);
+    }
+
+    if (beforeUrl) {
+      beforeFetcher = new DataFetcher(beforeUrl);
     }
 
     return buildTree(

@@ -32,7 +32,7 @@
 #import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
-#import "ios/chrome/test/base/scoped_block_swizzler.h"
+#import "ios/testing/scoped_block_swizzler.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/test/gtest_util.h"

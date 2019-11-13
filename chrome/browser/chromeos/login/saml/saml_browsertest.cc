@@ -1616,7 +1616,7 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLInterstitialChangeAccount) {
   ShowSAMLInterstitial();
   test::OobeJS().ExpectHiddenPath({"gaia-signin", "signin-frame-dialog"});
   test::OobeJS().ExpectHiddenPath({"gaia-signin", "offline-gaia"});
-  test::OobeJS().ExpectVisiblePath({"gaia-signin", "saml-interstitial"});
+  test::OobeJS().ExpectVisiblePath({"gaia-signin", "gaia-step-contents"});
 
   // Click the "change account" link on the SAML interstitial page.
   ClickChangeAccountOnSAMLInterstitialPage();
@@ -1626,7 +1626,7 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLInterstitialChangeAccount) {
   test::OobeJS().ExpectHasClass("non-transparent",
                                 {"gaia-signin", "signin-frame-container"});
   test::OobeJS().ExpectHiddenPath({"gaia-signin", "offline-gaia"});
-  test::OobeJS().ExpectHiddenPath({"gaia-signin", "saml-interstitial"});
+  test::OobeJS().ExpectHiddenPath({"gaia-signin", "gaia-step-contents"});
 }
 
 // Tests that clicking "Next" in the SAML interstitial page successfully

@@ -4,10 +4,11 @@
 
 #include "components/viz/common/gpu/dawn_context_provider.h"
 
+#include <dawn/dawn_proc.h>
+
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
-#include "third_party/dawn/src/include/dawn/dawn_proc.h"
 
 namespace viz {
 

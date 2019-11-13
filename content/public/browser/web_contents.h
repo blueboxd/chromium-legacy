@@ -573,11 +573,14 @@ class WebContents : public PageNavigator,
   // Returns the visibility of the WebContents' view.
   virtual Visibility GetVisibility() = 0;
 
-  // Returns true if the before unload and unload listeners need to be
-  // fired. The value of this changes over time. For example, if true and the
-  // before unload listener is executed and allows the user to exit, then this
+  // This function checks *all* frames in this WebContents (not just the main
+  // frame) and returns true if at least one frame has either a beforeunload or
+  // an unload handler.
+  //
+  // The value of this may change over time. For example, if true and the
+  // beforeunload listener is executed and allows the user to exit, then this
   // returns false.
-  virtual bool NeedToFireBeforeUnload() = 0;
+  virtual bool NeedToFireBeforeUnloadOrUnload() = 0;
 
   // Runs the beforeunload handler for the main frame and all its subframes.
   // See also ClosePage in RenderViewHostImpl, which runs the unload handler.
@@ -596,9 +599,12 @@ class WebContents : public PageNavigator,
   // but ideally it should be "about:blank" to avoid problems with beforeunload.
   // To ensure sane usage of this API users first should call the async API
   // RenderFrameHost::PrepareForInnerWebContentsAttach first.
+  // Note: If |is_full_page| is true, focus will be given to the inner
+  // WebContents.
   virtual void AttachInnerWebContents(
       std::unique_ptr<WebContents> inner_web_contents,
-      RenderFrameHost* render_frame_host) = 0;
+      RenderFrameHost* render_frame_host,
+      bool is_full_page) = 0;
 
   // Returns the outer WebContents frame, the same frame that this WebContents
   // was attached in AttachToOuterWebContentsFrame().

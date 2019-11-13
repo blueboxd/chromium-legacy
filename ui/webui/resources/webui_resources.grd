@@ -246,6 +246,9 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_HTML_CR_UI_FOCUS_ROW"
                  file="html/cr/ui/focus_row.html" type="chrome_html"
                  compress="gzip" />
+      <structure name="IDR_WEBUI_HTML_CR_UI_KEYBOARD_SHORTCUT_LIST"
+                 file="html/cr/ui/keyboard_shortcut_list.html"
+                 type="chrome_html" compress="gzip" />
       <structure name="IDR_WEBUI_HTML_CR_UI_LIST"
                  file="html/cr/ui/list.html"
                  type="chrome_html" compress="gzip" />
@@ -360,6 +363,9 @@ without changes to the corresponding grd file. -->
                  type="chrome_html" compress="gzip" />
       <structure name="IDR_WEBUI_JS_CR_UI_FOCUS_ROW"
                  file="js/cr/ui/focus_row.js" type="chrome_html"
+                 compress="gzip" />
+      <structure name="IDR_WEBUI_JS_CR_UI_KEYBOARD_SHORTCUT_LIST"
+                 file="js/cr/ui/keyboard_shortcut_list.js" type="chrome_html"
                  compress="gzip" />
       <structure name="IDR_WEBUI_JS_CR_UI_LIST"
                  file="js/cr/ui/list.js" type="chrome_html" compress="gzip" />

@@ -37,6 +37,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
+#include "chrome/browser/custom_handlers/test_protocol_handler_registry_delegate.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_core_service_factory.h"
@@ -86,6 +87,7 @@
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/verdict_cache_manager.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -485,41 +487,11 @@ class RemoveFaviconTester {
   DISALLOW_COPY_AND_ASSIGN(RemoveFaviconTester);
 };
 
-// Custom ProtocolHandlerRegistry delegate that doesn't change any OS settings.
-class FakeProtocolHandlerRegistryDelegate
-    : public ProtocolHandlerRegistry::Delegate {
- public:
-  ~FakeProtocolHandlerRegistryDelegate() override = default;
-
-  void RegisterExternalHandler(const std::string& protocol) override {
-    registered_protocols_.insert(protocol);
-  }
-
-  void DeregisterExternalHandler(const std::string& protocol) override {
-    registered_protocols_.erase(protocol);
-  }
-
-  bool IsExternalHandlerRegistered(const std::string& protocol) override {
-    return registered_protocols_.count(protocol);
-  }
-
-  void RegisterWithOSAsDefaultClient(
-      const std::string& protocol,
-      shell_integration::DefaultWebClientWorkerCallback callback) override {}
-
-  void CheckDefaultClientWithOS(
-      const std::string& protocol,
-      shell_integration::DefaultWebClientWorkerCallback callback) override {}
-
- private:
-  std::set<std::string> registered_protocols_;
-};
-
 std::unique_ptr<KeyedService> BuildProtocolHandlerRegistry(
     content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
   return std::make_unique<ProtocolHandlerRegistry>(
-      profile, std::make_unique<FakeProtocolHandlerRegistryDelegate>());
+      profile, std::make_unique<TestProtocolHandlerRegistryDelegate>());
 }
 
 class ClearDomainReliabilityTester {
@@ -2006,11 +1978,14 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
 }
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest,
-       RemoveLeakedCredentialsByTimeOnly) {
+       RemoveCompromisedCredentialsByTimeOnly) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(password_manager::features::kLeakHistory);
+
   RemovePasswordsTester tester(GetProfile());
   base::Callback<bool(const GURL&)> empty_filter;
 
-  EXPECT_CALL(*tester.store(), RemoveLeakedCredentialsByUrlAndTimeImpl(
+  EXPECT_CALL(*tester.store(), RemoveCompromisedCredentialsByUrlAndTimeImpl(
                                    ProbablySameFilter(empty_filter),
                                    base::Time(), base::Time::Max()));
   BlockUntilBrowsingDataRemoved(
@@ -2021,7 +1996,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
 // TODO(crbug.com/589586): Disabled, since history is not yet marked as
 // a filterable datatype.
 TEST_F(ChromeBrowsingDataRemoverDelegateTest,
-       DISABLED_RemoveLeakedCredentialsByUrlAndTime) {
+       DISABLED_RemoveCompromisedCredentialsByUrlAndTime) {
   RemovePasswordsTester tester(GetProfile());
   auto builder =
       BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST);
@@ -2030,7 +2005,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
       builder->BuildGeneralFilter();
 
   EXPECT_CALL(*tester.store(),
-              RemoveLeakedCredentialsByUrlAndTimeImpl(
+              RemoveCompromisedCredentialsByUrlAndTimeImpl(
                   ProbablySameFilter(filter), base::Time(), base::Time::Max()));
   BlockUntilOriginDataRemoved(
       base::Time(), base::Time::Max(),

@@ -24,6 +24,7 @@ import org.mockito.Mockito;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.LifecycleObserver;
@@ -34,6 +35,7 @@ import org.chromium.chrome.test.ui.DummyUiActivity;
 import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.test.util.UiDisableIf;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -615,6 +617,7 @@ public class AppMenuTest extends DummyUiActivityTestCase {
 
     @Test
     @MediumTest
+    @DisableIf.Device(type = {UiDisableIf.TABLET})
     public void testDragHelper_ClickItem() throws Exception {
         AppMenuButtonHelperImpl buttonHelper =
                 (AppMenuButtonHelperImpl) mAppMenuHandler.createAppMenuButtonHelper();

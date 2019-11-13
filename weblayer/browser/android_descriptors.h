@@ -15,6 +15,7 @@ enum {
   kWebLayerLocalePakDescriptor = kContentIPCDescriptorMax + 1,
   kWebLayerMainPakDescriptor,
   kWebLayer100PercentPakDescriptor,
+  kWebLayerSecondaryLocalePakDescriptor,
 };
 
 }  // namespace weblayer

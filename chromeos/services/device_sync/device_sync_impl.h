@@ -14,6 +14,7 @@
 #include "chromeos/services/device_sync/cryptauth_enrollment_manager.h"
 #include "chromeos/services/device_sync/cryptauth_gcm_manager.h"
 #include "chromeos/services/device_sync/device_sync_base.h"
+#include "chromeos/services/device_sync/feature_status_change.h"
 #include "chromeos/services/device_sync/network_request_error.h"
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
 #include "chromeos/services/device_sync/remote_device_provider.h"
@@ -44,6 +45,7 @@ class ClientAppMetadataProvider;
 class CryptAuthClientFactory;
 class CryptAuthDeviceManager;
 class CryptAuthDeviceRegistry;
+class CryptAuthFeatureStatusSetter;
 class CryptAuthKeyRegistry;
 class CryptAuthScheduler;
 class CryptAuthV2DeviceManager;
@@ -100,6 +102,10 @@ class DeviceSyncImpl : public DeviceSyncBase,
       bool enabled,
       bool is_exclusive,
       SetSoftwareFeatureStateCallback callback) override;
+  void SetFeatureStatus(const std::string& device_instance_id,
+                        multidevice::SoftwareFeature feature,
+                        FeatureStatusChange status_change,
+                        SetFeatureStatusCallback callback) override;
   void FindEligibleDevices(multidevice::SoftwareFeature software_feature,
                            FindEligibleDevicesCallback callback) override;
   void GetDevicesActivityStatus(
@@ -147,6 +153,30 @@ class DeviceSyncImpl : public DeviceSyncBase,
     SetSoftwareFeatureStateCallback callback_;
   };
 
+  class PendingSetFeatureStatusRequest {
+   public:
+    PendingSetFeatureStatusRequest(
+        const std::string& device_instance_id,
+        multidevice::SoftwareFeature software_feature,
+        FeatureStatusChange status_change,
+        RemoteDeviceProvider* remote_device_provider,
+        SetFeatureStatusCallback callback);
+    ~PendingSetFeatureStatusRequest();
+
+    // True if the device and software feature status specified in the request
+    // agrees with the device data returned by CryptAuth.
+    bool IsFulfilled() const;
+
+    void InvokeCallback(mojom::NetworkRequestResult result);
+
+   private:
+    std::string device_instance_id_;
+    multidevice::SoftwareFeature software_feature_;
+    FeatureStatusChange status_change_;
+    RemoteDeviceProvider* remote_device_provider_;
+    SetFeatureStatusCallback callback_;
+  };
+
   DeviceSyncImpl(
       signin::IdentityManager* identity_manager,
       gcm::GCMDriver* gcm_driver,
@@ -174,6 +204,9 @@ class DeviceSyncImpl : public DeviceSyncBase,
   void OnSetSoftwareFeatureStateSuccess();
   void OnSetSoftwareFeatureStateError(const base::UnguessableToken& request_id,
                                       NetworkRequestError error);
+  void OnSetFeatureStatusSuccess();
+  void OnSetFeatureStatusError(const base::UnguessableToken& request_id,
+                               NetworkRequestError error);
   void OnFindEligibleDevicesSuccess(
       const base::RepeatingCallback<
           void(mojom::NetworkRequestResult,
@@ -213,6 +246,9 @@ class DeviceSyncImpl : public DeviceSyncBase,
   base::flat_map<base::UnguessableToken,
                  std::unique_ptr<PendingSetSoftwareFeatureRequest>>
       id_to_pending_set_software_feature_request_map_;
+  base::flat_map<base::UnguessableToken,
+                 std::unique_ptr<PendingSetFeatureStatusRequest>>
+      id_to_pending_set_feature_status_request_map_;
   base::flat_map<base::UnguessableToken, GetDevicesActivityStatusCallback>
       get_devices_activity_status_callbacks_;
 
@@ -231,6 +267,7 @@ class DeviceSyncImpl : public DeviceSyncBase,
   std::unique_ptr<CryptAuthDeviceManager> cryptauth_device_manager_;
   std::unique_ptr<RemoteDeviceProvider> remote_device_provider_;
   std::unique_ptr<SoftwareFeatureManager> software_feature_manager_;
+  std::unique_ptr<CryptAuthFeatureStatusSetter> feature_status_setter_;
   std::unique_ptr<CryptAuthDeviceActivityGetter>
       cryptauth_device_activity_getter_;
 

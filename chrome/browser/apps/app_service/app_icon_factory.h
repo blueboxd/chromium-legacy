@@ -33,6 +33,8 @@ enum IconEffects : uint32_t {
   kBadge = 0x02,         // Another (Android) app has the same name.
   kGray = 0x04,          // Disabled apps are grayed out.
   kRoundCorners = 0x08,  // Bookmark apps get round corners.
+  kPaused = 0x10,        // Paused apps are badged to indicate they cannot be
+                         // launched.
 };
 
 // Modifies |image_skia| to apply icon post-processing effects like badging and

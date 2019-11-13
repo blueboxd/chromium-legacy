@@ -5,6 +5,24 @@
 import("//v8/gni/snapshot_toolchain.gni")
 import("//v8/gni/v8.gni")
 
+# Libraries required to generate the custom test library built with js2gtest.
+# Changing the size or the order of files in this array also requires changing
+# src/tools/gypv8sh.py.
+js2gtest_js_input_libraries = [
+  "//chrome/third_party/mock4js/mock4js.js",
+  "//chrome/test/data/webui/test_api.js",
+  "//chrome/test/base/js2gtest.js",
+]
+
+# Additional libraries loaded at test runtime.
+js2gtest_runtime_js_libraries = [
+  "//third_party/chaijs/chai.js",
+  "//third_party/accessibility-audit/axs_testing.js",
+]
+
+js2gtest_js_libraries =
+    js2gtest_js_input_libraries + js2gtest_runtime_js_libraries
+
 # Variables:
 #   test_type: One of 'webui', 'unit' or 'extension' indicating what
 #       environment the test runs under.
@@ -50,12 +68,7 @@ template("js2gtest") {
       v8_shell_path += ".exe"
     }
 
-    input_js = [
-      "//chrome/third_party/mock4js/mock4js.js",
-      "//chrome/test/data/webui/test_api.js",
-      "//chrome/test/base/js2gtest.js",
-    ]
-    inputs = [ v8_shell_path ] + input_js
+    inputs = [ v8_shell_path ] + js2gtest_js_input_libraries
     if (defined(invoker.deps_js)) {
       inputs += [ invoker.deps_js ]
     }
@@ -83,7 +96,8 @@ template("js2gtest") {
       # Need "./" for script to find binary (cur dir is not on path).
       "./" + rebase_path(v8_shell_path, root_build_dir),
     ]
-    args += rebase_path(input_js, root_build_dir) + [ invoker.test_type ]
+    args += rebase_path(js2gtest_js_input_libraries, root_build_dir) +
+            [ invoker.test_type ]
     if (v8_use_external_startup_data) {
       args += [ "--external=y" ]
     } else {

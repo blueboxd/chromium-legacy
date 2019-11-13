@@ -4,5 +4,4 @@
 
 [SecureContext, Exposed=Window, RuntimeEnabled=WebXRHitTest]
 interface XRHitTestSource {
-  readonly attribute XRHitTestOptions hitTestOptions;
 };

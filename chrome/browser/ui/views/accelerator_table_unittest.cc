@@ -64,7 +64,8 @@ TEST(AcceleratorTableTest, CheckDuplicatedAcceleratorsAsh) {
     // 321568.
     if (ash_entry.action == ash::WINDOW_MINIMIZE ||
         ash_entry.action == ash::SHOW_TASK_MANAGER ||
-        ash_entry.action == ash::OPEN_GET_HELP)
+        ash_entry.action == ash::OPEN_GET_HELP ||
+        ash_entry.action == ash::MINIMIZE_TOP_WINDOW_ON_BACK)
       continue;
 
     // The following actions are duplicated in both ash and browser accelerator

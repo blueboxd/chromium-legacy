@@ -60,7 +60,7 @@ class PasswordSyncableService;
 class PasswordSyncBridge;
 struct FieldInfo;
 struct InteractionsStats;
-struct LeakedCredentials;
+struct CompromisedCredentials;
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 using PasswordHashDataList = base::Optional<std::vector<PasswordHashData>>;
@@ -242,24 +242,27 @@ class PasswordStore : protected PasswordStoreSync,
   // completion. The request will be cancelled if the consumer is destroyed.
   void GetSiteStats(const GURL& origin_domain, PasswordStoreConsumer* consumer);
 
-  // Adds information about credentials leaked on |leaked_credentials.url| for
-  // |leaked_credentials.username|. The first |leaked_credentials.create_time|
-  // is kept, so if the record for given url and username already exists,
-  // the new one will be ignored.
-  void AddLeakedCredentials(const LeakedCredentials& leaked_credentials);
+  // Adds information about credentials compromised on
+  // |compromised_credentials.url| for |compromised_credentials.username|. The
+  // first |compromised_credentials.create_time| is kept, so if the record for
+  // given url and username already exists, the new one will be ignored.
+  void AddCompromisedCredentials(
+      const CompromisedCredentials& compromised_credentials);
 
-  // Removes information about credentials leaked on |url| for |username|.
-  void RemoveLeakedCredentials(const GURL& url, const base::string16& username);
+  // Removes information about credentials compromised on |url| for |username|.
+  void RemoveCompromisedCredentials(const GURL& url,
+                                    const base::string16& username);
 
-  // Retrieves all leaked credentials and notifies |consumer| on completion. The
-  // request will be cancelled if the consumer is destroyed.
-  void GetAllLeakedCredentials(PasswordLeakHistoryConsumer* consumer);
+  // Retrieves all compromised credentials and notifies |consumer| on
+  // completion. The request will be cancelled if the consumer is destroyed.
+  void GetAllCompromisedCredentials(PasswordLeakHistoryConsumer* consumer);
 
-  // Removes all leaked credentials in the given date range. If |url_filter| is
-  // not null, only leaked credentials for matching urls are removed. If
-  // |completion| is not null, it will be posted to the |main_task_runner_|
-  // after deletions have been completed. Should be called on the UI thread.
-  void RemoveLeakedCredentialsByUrlAndTime(
+  // Removes all compromised credentials in the given date range. If
+  // |url_filter| is not null, only compromised credentials for matching urls
+  // are removed. If |completion| is not null, it will be posted to the
+  // |main_task_runner_| after deletions have been completed. Should be called
+  // on the UI thread.
+  void RemoveCompromisedCredentialsByUrlAndTime(
       base::RepeatingCallback<bool(const GURL&)> url_filter,
       base::Time remove_begin,
       base::Time remove_end,
@@ -473,14 +476,17 @@ class PasswordStore : protected PasswordStoreSync,
   virtual std::vector<InteractionsStats> GetSiteStatsImpl(
       const GURL& origin_domain) = 0;
 
-  // Synchronous implementation for manipulating with information about leaked
-  // credentials.
-  virtual void AddLeakedCredentialsImpl(
-      const LeakedCredentials& leaked_credentials) = 0;
-  virtual void RemoveLeakedCredentialsImpl(const GURL& url,
-                                           const base::string16& username) = 0;
-  virtual std::vector<LeakedCredentials> GetAllLeakedCredentialsImpl() = 0;
-  virtual void RemoveLeakedCredentialsByUrlAndTimeImpl(
+  // Synchronous implementation for manipulating with information about
+  // compromised credentials.
+  virtual void AddCompromisedCredentialsImpl(
+      const CompromisedCredentials& compromised_credentials) = 0;
+  // TODO(bdea): Add CompromiseType as a filter.
+  virtual void RemoveCompromisedCredentialsImpl(
+      const GURL& url,
+      const base::string16& username) = 0;
+  virtual std::vector<CompromisedCredentials>
+  GetAllCompromisedCredentialsImpl() = 0;
+  virtual void RemoveCompromisedCredentialsByUrlAndTimeImpl(
       const base::RepeatingCallback<bool(const GURL&)>& url_filter,
       base::Time remove_begin,
       base::Time remove_end) = 0;
@@ -566,8 +572,9 @@ class PasswordStore : protected PasswordStoreSync,
   using StatsResult = std::vector<InteractionsStats>;
   using StatsTask = base::OnceCallback<StatsResult()>;
 
-  using LeakedCredentialsResult = std::vector<LeakedCredentials>;
-  using LeakedCredentialsTask = base::OnceCallback<LeakedCredentialsResult()>;
+  using CompromisedCredentialsResult = std::vector<CompromisedCredentials>;
+  using CompromisedCredentialsTask =
+      base::OnceCallback<CompromisedCredentialsResult()>;
 
   // Called on the main thread after initialization is completed.
   // |success| is true if initialization was successful. Sets the
@@ -597,11 +604,11 @@ class PasswordStore : protected PasswordStoreSync,
       StatsTask task);
 
   // Schedules the given |task| to be run on the PasswordStore's TaskRunner.
-  // Invokes |consumer|->OnGetLeakedCredentials() on the caller's thread with
-  // the result.
-  void PostLeakedCredentialsTaskAndReplyToConsumerWithResult(
+  // Invokes |consumer|->OnGetCompromisedCredentials() on the caller's thread
+  // with the result.
+  void PostCompromisedCredentialsTaskAndReplyToConsumerWithResult(
       PasswordLeakHistoryConsumer* consumer,
-      LeakedCredentialsTask task);
+      CompromisedCredentialsTask task);
 
   // The following methods notify observers that the password store may have
   // been modified via NotifyLoginsChanged(). Note that there is no guarantee
@@ -630,7 +637,7 @@ class PasswordStore : protected PasswordStoreSync,
       const base::Closure& completion);
   void UnblacklistInternal(const PasswordStore::FormDigest& form_digest,
                            base::OnceClosure completion);
-  void RemoveLeakedCredentialsByUrlAndTimeInternal(
+  void RemoveCompromisedCredentialsByUrlAndTimeInternal(
       const base::RepeatingCallback<bool(const GURL&)>& url_filter,
       base::Time remove_begin,
       base::Time remove_end,

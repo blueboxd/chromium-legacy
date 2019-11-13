@@ -208,8 +208,8 @@ bool ContentBrowserClient::ShouldSubframesTryToReuseExistingProcess(
 
 bool ContentBrowserClient::ShouldSwapBrowsingInstancesForNavigation(
     SiteInstance* site_instance,
-    const GURL& current_url,
-    const GURL& new_url) {
+    const GURL& current_effective_url,
+    const GURL& destination_effective_url) {
   return false;
 }
 

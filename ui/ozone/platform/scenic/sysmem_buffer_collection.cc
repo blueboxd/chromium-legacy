@@ -447,6 +447,7 @@ bool SysmemBufferCollection::InitializeInternal(
   DCHECK(buffers_info_.settings.has_image_format_constraints);
 
   buffer_size_ = buffers_info_.settings.buffer_settings.size_bytes;
+  is_protected_ = buffers_info_.settings.buffer_settings.is_secure;
 
   // CreateVkImage() should always be called on the same thread, but it may be
   // different from the thread that called Initialize().
@@ -459,6 +460,7 @@ void SysmemBufferCollection::InitializeImageCreateInfo(
     VkImageCreateInfo* vk_image_info,
     gfx::Size size) {
   *vk_image_info = {VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
+  vk_image_info->flags = is_protected_ ? VK_IMAGE_CREATE_PROTECTED_BIT : 0u;
   vk_image_info->imageType = VK_IMAGE_TYPE_2D;
   vk_image_info->format = VkFormatForBufferFormat(format_);
   vk_image_info->extent = VkExtent3D{size.width(), size.height(), 1};

@@ -20,7 +20,7 @@
 
 namespace {
 
-IMP g_original_populatemenu_implementation = nullptr;
+base::mac::ScopedObjCClassSwizzler* g_populatemenu_swizzler = nullptr;
 
 // |g_filtered_entries_array| is only set during testing (see
 // +[ChromeSwizzleServicesMenuUpdater storeFilteredEntriesForTestingInArray:]).
@@ -98,8 +98,8 @@ NSMenuItem* GetMenuItemByID(ui::MenuModel* model,
   }
 
   // Pass the filtered array along to the _NSServicesMenuUpdater.
-  g_original_populatemenu_implementation(self, _cmd, menu, remainingEntries,
-                                         display);
+  g_populatemenu_swizzler->InvokeOriginal<void, NSMenu*, NSArray*, BOOL>(
+      self, _cmd, menu, remainingEntries, display);
 }
 
 + (void)storeFilteredEntriesForTestingInArray:(NSMutableArray*)array {
@@ -145,8 +145,7 @@ NSMenuItem* GetMenuItemByID(ui::MenuModel* model,
     Class swizzleClass = [ChromeSwizzleServicesMenuUpdater class];
     static base::NoDestructor<base::mac::ScopedObjCClassSwizzler>
         servicesMenuFilter(targetClass, swizzleClass, targetSelector);
-    g_original_populatemenu_implementation =
-        servicesMenuFilter->GetOriginalImplementation();
+    g_populatemenu_swizzler = servicesMenuFilter.get();
   });
 }
 

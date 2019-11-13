@@ -30,8 +30,6 @@ blink_modules_sources("xr") {
     "xr_grip_space.h",
     "xr_hit_result.cc",
     "xr_hit_result.h",
-    "xr_hit_test_options.cc",
-    "xr_hit_test_options.h",
     "xr_hit_test_result.cc",
     "xr_hit_test_result.h",
     "xr_hit_test_source.cc",

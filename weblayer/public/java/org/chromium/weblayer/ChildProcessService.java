@@ -17,6 +17,7 @@ import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 /**
  * Delegates service calls to the chrome service implementation.
  */
+@SuppressWarnings("JavadocType")
 public abstract class ChildProcessService extends Service {
     private IChildProcessService mImpl;
 

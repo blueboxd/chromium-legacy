@@ -641,8 +641,8 @@ bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
 }
 
 flags_ui::FlagsState& GetGlobalFlagsState() {
-  static base::NoDestructor<flags_ui::FlagsState> flags_state(
-      kFeatureEntries, base::size(kFeatureEntries), base::NullCallback());
+  static base::NoDestructor<flags_ui::FlagsState> flags_state(kFeatureEntries,
+                                                              nullptr);
   return *flags_state;
 }
 }  // namespace

@@ -132,13 +132,13 @@ Polymer({
     switch (this.dialogPage_) {
       case 'initial':
         this.cancelButtonVisible_ = true;
-        this.cancelButtonDisabled = false;
+        this.cancelButtonDisabled_ = false;
         this.confirmButtonVisible_ = false;
         this.doneButtonVisible_ = false;
         break;
       case 'pinPrompt':
         this.cancelButtonVisible_ = true;
-        this.cancelButtonDisabled = false;
+        this.cancelButtonDisabled_ = false;
         this.confirmButtonVisible_ = true;
         this.confirmButtonDisabled_ = false;
         this.doneButtonVisible_ = false;
@@ -150,7 +150,7 @@ Polymer({
         break;
       case 'enroll':
         this.cancelButtonVisible_ = true;
-        this.cancelButtonDisabled = false;
+        this.cancelButtonDisabled_ = false;
         this.confirmButtonVisible_ = false;
         this.doneButtonVisible_ = false;
         break;
@@ -303,15 +303,6 @@ Polymer({
 
   /**
    * @private
-   * @param {?Array} list
-   * @return {boolean} true if the list exists and has items.
-   */
-  hasSome_: function(list) {
-    return !!(list && list.length);
-  },
-
-  /**
-   * @private
    * @param {!DomRepeatEvent} event
    */
   deleteEnrollment_: function(event) {
@@ -329,6 +320,30 @@ Polymer({
   /** @private */
   onEnrollmentNameInput_: function() {
     this.confirmButtonDisabled_ = !this.recentEnrollmentName_.length;
+  },
+
+  /**
+   * @private
+   * @param {string} dialogPage
+   * @return {string} The title string for the current dialog page.
+   */
+  dialogTitle_: function(dialogPage) {
+    if (dialogPage == 'enroll' || dialogPage == 'chooseName') {
+      return this.i18n('securityKeysBioEnrollmentAddTitle');
+    }
+    return this.i18n('securityKeysBioEnrollmentDialogTitle');
+  },
+
+  /**
+   * @private
+   * @param {?Array} enrollments
+   * @return {string} The header label for the enrollments page.
+   */
+  enrollmentsHeader_: function(enrollments) {
+    return this.i18n(
+        enrollments && enrollments.length ?
+            'securityKeysBioEnrollmentEnrollmentsLabel' :
+            'securityKeysBioEnrollmentNoEnrollmentsLabel');
   },
 });
 })();

@@ -155,7 +155,7 @@ void TabGroupHeader::VisualsChanged() {
     title_->SetVisible(false);
 
     constexpr int kEmptyChipSize = 14;
-    const int y = (height() - kEmptyChipSize) / 2;
+    const int y = (GetLayoutConstant(TAB_HEIGHT) - kEmptyChipSize) / 2;
 
     title_chip_->SetBounds(TabGroupUnderline::GetStrokeInset(), y,
                            kEmptyChipSize, kEmptyChipSize);
@@ -184,7 +184,8 @@ void TabGroupHeader::VisualsChanged() {
     const int text_vertical_inset = 1;
     const int text_horizontal_inset = corner_radius + text_vertical_inset;
 
-    const int y = (height() - text_height) / 2 - text_vertical_inset;
+    const int y =
+        (GetLayoutConstant(TAB_HEIGHT) - text_height) / 2 - text_vertical_inset;
 
     title_chip_->SetBounds(TabGroupUnderline::GetStrokeInset(), y,
                            text_width + 2 * text_horizontal_inset,

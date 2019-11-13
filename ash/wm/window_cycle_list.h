@@ -19,6 +19,7 @@
 
 namespace aura {
 class Window;
+class ScopedWindowTargeter;
 }
 
 namespace views {
@@ -108,6 +109,10 @@ class ASH_EXPORT WindowCycleList : public aura::WindowObserver,
 
   // A timer to delay showing the UI. Quick Alt+Tab should not flash a UI.
   base::OneShotTimer show_ui_timer_;
+
+  // This is needed so that it won't leak keyboard events even if the widget is
+  // not activatable.
+  std::unique_ptr<aura::ScopedWindowTargeter> window_targeter_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowCycleList);
 };

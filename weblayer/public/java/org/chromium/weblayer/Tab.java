@@ -224,6 +224,13 @@ public final class Tab {
             assert tab.getBrowser() == getBrowser();
             mNewTabCallback.onNewTab(tab, mode);
         }
+
+        @Override
+        public void onRenderProcessGone() {
+            for (TabCallback callback : mCallbacks) {
+                callback.onRenderProcessGone();
+            }
+        }
     }
 
     private static final class DownloadCallbackClientImpl extends IDownloadCallbackClient.Stub {

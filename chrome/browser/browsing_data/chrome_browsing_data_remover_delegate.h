@@ -226,9 +226,10 @@ class ChromeBrowsingDataRemoverDelegate
     kHostCache = 29,
     kTpmAttestationKeys = 30,
     kStrikes = 31,
-    kLeakedCredentials = 32,
+    kLeakedCredentials = 32,  // deprecated
     kFieldInfo = 33,
-    kMaxValue = kFieldInfo,
+    kCompromisedCredentials = 34,
+    kMaxValue = kCompromisedCredentials,
   };
 
   // Called by CreateTaskCompletionClosure().

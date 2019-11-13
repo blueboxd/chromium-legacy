@@ -201,6 +201,8 @@ void AutocompleteResult::SortAndCull(
   for (auto i(matches_.begin()); i != matches_.end(); ++i)
     i->ComputeStrippedDestinationURL(input, template_url_service);
 
+  CompareWithDemoteByType<AutocompleteMatch> comparing_object(
+      input.current_page_classification());
 #if !(defined(OS_ANDROID) || defined(OS_IOS))
   // Do not cull the tail suggestions for zero prefix query suggetions of
   // chromeOS launcher or NTP, since there won't be any default match in this
@@ -210,7 +212,7 @@ void AutocompleteResult::SortAndCull(
              metrics::OmniboxEventProto::CHROMEOS_APP_LIST ||
          BaseSearchProvider::IsNTPPage(input.current_page_classification())))) {
     // Wipe tail suggestions if not exclusive (minus default match).
-    MaybeCullTailSuggestions(&matches_);
+    MaybeCullTailSuggestions(&matches_, comparing_object);
   }
 #endif
   DemoteOnDeviceSearchSuggestions();
@@ -218,8 +220,6 @@ void AutocompleteResult::SortAndCull(
   DeduplicateMatches(input.current_page_classification(), &matches_);
 
   // Sort and trim to the most relevant GetMaxMatches() matches.
-  CompareWithDemoteByType<AutocompleteMatch> comparing_object(
-      input.current_page_classification());
   std::sort(matches_.begin(), matches_.end(), comparing_object);
 
   // Find the best match and rotate it to the front to become the default match.
@@ -273,18 +273,36 @@ void AutocompleteResult::SortAndCull(
     GroupSuggestionsBySearchVsURL(next, matches_.end());
   }
 
-  // There is no default match for chromeOS launcher zero prefix query
-  // suggestions.
-  if (input.text().empty() && (input.current_page_classification() ==
-                               metrics::OmniboxEventProto::CHROMEOS_APP_LIST)) {
+  // Early exit when there is no default match. This can occur in these cases:
+  //  1. There are no matches.
+  //  2. The first match doesn't have |allowed_to_be_default_match| as true.
+  //     This implies that NONE of the matches were allowed to be the default.
+  //  3. Hardcoded for ChromeOS Launcher empty-textfield on-focus suggestions.
+  //     TODO(tommycli): We should remove the ChromeOS launcher special case.
+  //     Instead, ensure none of the launcher matches are allowed to be default.
+  if (matches_.empty() || !matches_.begin()->allowed_to_be_default_match ||
+      (input.text().empty() &&
+       (input.current_page_classification() ==
+        metrics::OmniboxEventProto::CHROMEOS_APP_LIST))) {
     default_match_ = end();
     alternate_nav_url_ = GURL();
     return;
   }
 
+  // Since we didn't early exit, the first match must be the default match.
+  // TODO(tommycli): Once we eliminate the ChromeOS Launcher hardcoding above,
+  // we can delete |default_match_|, since if matches.begin() has a true
+  // |allowed_to_be_default_match|, it will always be the default match.
   default_match_ = matches_.begin();
 
-  if (default_match_ != matches_.end()) {
+  // TODO(tommycli): Simplify our state by not pre-computing this.
+  alternate_nav_url_ = ComputeAlternateNavUrl(input, *default_match_);
+
+  // Almost all matches are "navigable": they have a valid |destination_url|.
+  // One example exception is the user tabbing into keyword search mode,
+  // but not having typed a query yet. In that case, the default match should
+  // rightfully be non-navigable, and pressing Enter should do nothing.
+  if (default_match_->destination_url.is_valid()) {
     const base::string16 debug_info =
         base::ASCIIToUTF16("fill_into_edit=") + default_match_->fill_into_edit +
         base::ASCIIToUTF16(", provider=") +
@@ -293,49 +311,22 @@ void AutocompleteResult::SortAndCull(
              : base::string16()) +
         base::ASCIIToUTF16(", input=") + input.text();
 
-    // It's unusual if |default_match_| is not |allowed_to_be_default_match|.
-    // This can occur in two situations:
-    //  - Empty-textfield on-focus suggestions (i.e. NTP, ChromeOS launcher)
-    //  - Enterprise policy prohibiting a default search provider
-    //
-    // In those cases, hitting Enter should do nothing, so there should be
-    // legitimately no default match.
-    //
-    // TODO(tommycli): It seems odd that we are still setting |default_match_|
-    // in that case. We should fix that.
-    if (!default_match_->allowed_to_be_default_match) {
-      bool default_search_provider_exists =
-          template_url_service &&
-          template_url_service->GetDefaultSearchProvider();
-      DCHECK(input.text().empty() || !default_search_provider_exists)
-          << debug_info;
-    }
-
-    // For navigable default matches, make sure the destination type is what the
-    // user would expect given the input.
-    if (default_match_->allowed_to_be_default_match &&
-        default_match_->destination_url.is_valid()) {
-      if (AutocompleteMatch::IsSearchType(default_match_->type)) {
-        // We shouldn't get query matches for URL inputs.
-        DCHECK_NE(metrics::OmniboxInputType::URL, input.type()) << debug_info;
-      } else {
-        // If the user explicitly typed a scheme, the default match should
-        // have the same scheme.
-        if ((input.type() == metrics::OmniboxInputType::URL) &&
-            input.parts().scheme.is_nonempty()) {
-          const std::string& in_scheme = base::UTF16ToUTF8(input.scheme());
-          const std::string& dest_scheme =
-              default_match_->destination_url.scheme();
-          DCHECK(url_formatter::IsEquivalentScheme(in_scheme, dest_scheme))
-              << debug_info;
-        }
+    if (AutocompleteMatch::IsSearchType(default_match_->type)) {
+      // We shouldn't get query matches for URL inputs.
+      DCHECK_NE(metrics::OmniboxInputType::URL, input.type()) << debug_info;
+    } else {
+      // If the user explicitly typed a scheme, the default match should
+      // have the same scheme.
+      if ((input.type() == metrics::OmniboxInputType::URL) &&
+          input.parts().scheme.is_nonempty()) {
+        const std::string& in_scheme = base::UTF16ToUTF8(input.scheme());
+        const std::string& dest_scheme =
+            default_match_->destination_url.scheme();
+        DCHECK(url_formatter::IsEquivalentScheme(in_scheme, dest_scheme))
+            << debug_info;
       }
     }
   }
-
-  // Set the alternate nav URL.
-  alternate_nav_url_ = (default_match_ == matches_.end()) ?
-      GURL() : ComputeAlternateNavUrl(input, *default_match_);
 }
 
 void AutocompleteResult::DemoteOnDeviceSearchSuggestions() {
@@ -530,7 +521,7 @@ ACMatches::iterator AutocompleteResult::FindTopMatch(
   // the highest-relevance, allowed-to-be-default match while ignoring type
   // demotion, as we do when IsPreserveDefaultMatchScoreEnabled is true, we need
   // to explicitly find the highest relevance match rather than just accepting
-  // the first allowed-to-be--default match in the list.
+  // the first allowed-to-be-default match in the list.
   // The goal of this behavior is to ensure that in situations where the user
   // expects to see a commonly visited URL as the default match, the URL is not
   // suppressed by type demotion.
@@ -554,7 +545,7 @@ ACMatches::iterator AutocompleteResult::FindTopMatch(
     return best;
   } else {
     return std::find_if(matches->begin(), matches->end(), [](const auto& m) {
-      return m.allowed_to_be_default_match;
+      return m.allowed_to_be_default_match && !m.IsSubMatch();
     });
   }
 }
@@ -797,19 +788,39 @@ bool AutocompleteResult::HasMatchByDestination(const AutocompleteMatch& match,
 }
 
 // static
-void AutocompleteResult::MaybeCullTailSuggestions(ACMatches* matches) {
+void AutocompleteResult::MaybeCullTailSuggestions(
+    ACMatches* matches,
+    const CompareWithDemoteByType<AutocompleteMatch>& comparing_object) {
+  // This function implements the following logic:
+  // ('E' == 'There exists', '!E' == 'There does not exist')
+  // 1) !E default non-tail and E tail default? remove non-tails
+  // 2) !E any tails at all? do nothing
+  // 3) E default non-tail and other non-tails? remove tails
+  // 4) E default non-tail and no other non-tails? mark tails as non-default
+  // 5) E non-default non-tails? remove non-tails
   std::function<bool(const AutocompleteMatch&)> is_tail =
       [](const AutocompleteMatch& match) {
         return match.type == ACMatchType::SEARCH_SUGGEST_TAIL;
       };
-  auto non_tail_default = std::find_if(
-      matches->begin(), matches->end(), [&](const AutocompleteMatch& match) {
-        return match.allowed_to_be_default_match && !is_tail(match);
-      });
-  bool tail_default_exists = std::any_of(
-      matches->begin(), matches->end(), [&](const AutocompleteMatch& match) {
-        return match.allowed_to_be_default_match && is_tail(match);
-      });
+  auto default_non_tail = matches->end();
+  auto default_tail = matches->end();
+  bool other_non_tails = false, any_tails = false;
+  for (auto i = matches->begin(); i != matches->end(); ++i) {
+    if (comparing_object.GetDemotedRelevance(*i) == 0)
+      continue;
+    if (!is_tail(*i)) {
+      // We allow one default non-tail match. For non-default matches,
+      // don't consider if we'd remove them later.
+      if (default_non_tail == matches->end() && i->allowed_to_be_default_match)
+        default_non_tail = i;
+      else
+        other_non_tails = true;
+    } else {
+      any_tails = true;
+      if (default_tail == matches->end() && i->allowed_to_be_default_match)
+        default_tail = i;
+    }
+  }
   // If the only default matches are tail suggestions, let them remain and
   // instead remove the non-tail suggestions.  This is necessary because we do
   // not want to display tail suggestions mixed with other suggestions in the
@@ -818,39 +829,35 @@ void AutocompleteResult::MaybeCullTailSuggestions(ACMatches* matches) {
   // default match--the non-tail ones much go.  This situation though is
   // unlikely, as we normally would expect the search-what-you-typed suggestion
   // as a default match (and that's a non-tail suggestion).
-  if (tail_default_exists && non_tail_default == matches->end()) {
-    base::EraseIf(*matches, [&is_tail](const AutocompleteMatch& match) {
-      return !is_tail(match);
-    });
+  // 1) above.
+  if (default_tail != matches->end() && default_non_tail == matches->end()) {
+    base::EraseIf(*matches, std::not1(is_tail));
     return;
   }
-  // Determine if there are both tail and non-tail matches, excluding the
-  // non-tail default match.
-  bool any_tail = false, any_non_tail = false;
-  for (auto i = matches->begin();
-       i != matches->end() && !(any_tail && any_non_tail); ++i) {
-    // We allow one default non-tail match.
-    if (i != non_tail_default) {
-      if (is_tail(*i))
-        any_tail = true;
-      else
-        any_non_tail = true;
-    }
-  }
+  // 2) above.
+  if (!any_tails)
+    return;
   // If both tail and non-tail matches, remove tail. Note that this can
   // remove the highest rated suggestions.
-  if (any_tail) {
-    if (any_non_tail) {
+  if (default_non_tail != matches->end()) {
+    // 3) above.
+    if (other_non_tails) {
       base::EraseIf(*matches, is_tail);
     } else {
-      // We want the non-tail default match to be first. Mark tail suggestions
-      // as not a legal default match, so that the default match will be moved
-      // up explicitly.
+      // 4) above.
+      // We want the non-tail default match to be placed first. Mark tail
+      // suggestions as not a legal default match, so that the default match
+      // will be moved up explicitly.
       for (auto& match : *matches) {
         if (is_tail(match))
           match.allowed_to_be_default_match = false;
       }
     }
+  } else if (other_non_tails && default_tail == matches->end()) {
+    // 5) above.
+    // If there are no defaults at all, but non-tail suggestions exist, remove
+    // the tail suggestions.
+    base::EraseIf(*matches, is_tail);
   }
 }
 

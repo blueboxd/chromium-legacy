@@ -19,6 +19,7 @@
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
@@ -972,7 +973,13 @@ TEST_F(DataReductionProxyCompressionStatsTest, ClearDataSavingStatistics) {
   VerifyDailyDataSavingContentLengthPrefLists(nullptr, 0, nullptr, 0, 0);
 }
 
-TEST_F(DataReductionProxyCompressionStatsTest, WeeklyAggregateDataUse) {
+// Aggregate metrics recording was disabled on Android x86 in crbug.com/865373.
+#if defined(OS_ANDROID) && defined(ARCH_CPU_X86)
+#define MAYBE_WeeklyAggregateDataUse DISABLED_WeeklyAggregateDataUse
+#else
+#define MAYBE_WeeklyAggregateDataUse WeeklyAggregateDataUse
+#endif
+TEST_F(DataReductionProxyCompressionStatsTest, MAYBE_WeeklyAggregateDataUse) {
   const int32_t kDataUseKB = 100;
   base::HistogramTester histogram_tester;
 
@@ -1021,7 +1028,14 @@ TEST_F(DataReductionProxyCompressionStatsTest, WeeklyAggregateDataUse) {
       data_use_measurement::DataUseUserData::MAIN_FRAME_HTML, 0);
 }
 
-TEST_F(DataReductionProxyCompressionStatsTest, AggregateDataUseForwardWeeks) {
+// Aggregate metrics recording was disabled on Android x86 in crbug.com/865373.
+#if defined(OS_ANDROID) && defined(ARCH_CPU_X86)
+#define MAYBE_AggregateDataUseForwardWeeks DISABLED_AggregateDataUseForwardWeeks
+#else
+#define MAYBE_AggregateDataUseForwardWeeks AggregateDataUseForwardWeeks
+#endif
+TEST_F(DataReductionProxyCompressionStatsTest,
+       MAYBE_AggregateDataUseForwardWeeks) {
   const int32_t kMainFrameKB = 100;
   const int32_t kNonMainFrameKB = 101;
   base::HistogramTester histogram_tester;

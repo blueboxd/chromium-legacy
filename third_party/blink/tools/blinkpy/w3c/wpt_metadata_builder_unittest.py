@@ -14,20 +14,29 @@ from blinkpy.w3c.wpt_manifest import BASE_MANIFEST_NAME
 from blinkpy.w3c.wpt_metadata_builder import WPTMetadataBuilder
 
 
-def _make_expectation(port, test_name, test_statuses):
-    """Creates an expectation object for a single test.
+def _make_expectation(port, test_path, test_statuses, test_names=[]):
+    """Creates an expectation object for a single test or directory.
 
     Args:
         port: the port to run against
-        test_name: the name of the test
+        test_path: the path to set expectations for
         test_status: the statuses of the test
+        test_names: a set of tests under the 'test_path'. Should be non-empty
+            when the 'test_path' is a directory instead of a single test
 
     Returns:
         An expectation object with the given test and statuses.
     """
     expectation_dict = OrderedDict()
-    expectation_dict["expectations"] = "Bug(test) %s [ %s ]" % (test_name, test_statuses)
-    return TestExpectations(port, tests=[test_name], expectations_dict=expectation_dict)
+    expectation_dict["expectations"] = "Bug(test) %s [ %s ]" % (test_path, test_statuses)
+
+    # When test_path is a dir, we expect test_names to be provided.
+    is_dir = test_path.endswith('/')
+    assert is_dir == bool(test_names)
+    if not is_dir:
+        test_names = [test_path]
+
+    return TestExpectations(port, tests=test_names, expectations_dict=expectation_dict)
 
 
 class WPTMetadataBuilderTest(unittest.TestCase):
@@ -86,10 +95,11 @@ class WPTMetadataBuilderTest(unittest.TestCase):
 
     def test_skipped_directory(self):
         """A skipped WPT directory should get a dir-wide metadata file."""
-        test_name = "external/wpt/test_dir/"
-        expectations = _make_expectation(self.port, test_name, "SKIP")
+        test_dir = "external/wpt/test_dir/"
+        test_name = "external/wpt/test_dir/test.html"
+        expectations = _make_expectation(self.port, test_dir, "SKIP", test_names=[test_name])
         metadata_builder = WPTMetadataBuilder(expectations, self.port)
-        filename, contents = metadata_builder.get_metadata_filename_and_contents(test_name, 'SKIP')
+        filename, contents = metadata_builder.get_metadata_filename_and_contents(test_dir, 'SKIP')
         self.assertEqual(os.path.join("test_dir", "__dir__.ini"), filename)
         self.assertEqual("disabled: wpt_metadata_builder.py\n", contents)
 

@@ -184,14 +184,19 @@ TEST_F(PrintersMapTest, GetSecurePrintersOnlyReturnsSecurePrinters) {
   http_printer.set_uri("http:printer");
   printers_map.Insert(PrinterClass::kDiscovered, http_printer);
 
-  // Only IPPS, IPPUSB, and USB printers are returned.
+  Printer https_printer = Printer("https");
+  https_printer.set_uri("https://printer");
+  printers_map.Insert(PrinterClass::kDiscovered, https_printer);
+
+  // Only HTTPS, IPPS, IPPUSB, and USB printers are returned.
   auto printers = printers_map.GetSecurePrinters();
 
-  EXPECT_EQ(3u, printers.size());
+  EXPECT_EQ(4u, printers.size());
 
   EXPECT_TRUE(IsPrinterInPrinters(printers, ipps_printer));
   EXPECT_TRUE(IsPrinterInPrinters(printers, usb_printer));
   EXPECT_TRUE(IsPrinterInPrinters(printers, ippusb_printer));
+  EXPECT_TRUE(IsPrinterInPrinters(printers, https_printer));
 
   EXPECT_FALSE(IsPrinterInPrinters(printers, ipp_printer));
   EXPECT_FALSE(IsPrinterInPrinters(printers, http_printer));

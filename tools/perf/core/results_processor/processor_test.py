@@ -123,9 +123,8 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
             'benchmark/story',
             output_artifacts={
                 'logs': testing.Artifact('/logs.txt', 'gs://logs.txt'),
-                'trace/telemetry.json': testing.Artifact('/telemetry.json'),
-                'trace.html':
-                    testing.Artifact('/trace.html', 'gs://trace.html'),
+                'screenshot': testing.Artifact(
+                    os.path.join(self.output_dir, 'screenshot.png')),
             }
         ),
     )
@@ -146,7 +145,7 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
 
     self.assertEqual(len(artifacts), 2)
     self.assertEqual(artifacts['logs'], ['gs://logs.txt'])
-    self.assertEqual(artifacts['trace.html'], ['gs://trace.html'])
+    self.assertEqual(artifacts['screenshot'], ['screenshot.png'])
 
   def testMaxValuesPerTestCase(self):
     def SomeMeasurements(num):

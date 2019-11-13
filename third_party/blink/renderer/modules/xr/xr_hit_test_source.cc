@@ -5,20 +5,14 @@
 #include "third_party/blink/renderer/modules/xr/xr_hit_test_source.h"
 
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
-#include "third_party/blink/renderer/modules/xr/xr_hit_test_options.h"
 #include "third_party/blink/renderer/modules/xr/xr_hit_test_result.h"
 
 namespace blink {
 
-XRHitTestSource::XRHitTestSource(uint64_t id, XRHitTestOptions* options)
-    : id_(id), options_(options) {}
+XRHitTestSource::XRHitTestSource(uint64_t id) : id_(id) {}
 
 uint64_t XRHitTestSource::id() const {
   return id_;
-}
-
-XRHitTestOptions* XRHitTestSource::hitTestOptions() const {
-  return options_;
 }
 
 HeapVector<Member<XRHitTestResult>> XRHitTestSource::Results() {
@@ -39,11 +33,6 @@ void XRHitTestSource::Update(
     last_frame_results_.push_back(
         std::make_unique<TransformationMatrix>(result->hit_matrix.matrix()));
   }
-}
-
-void XRHitTestSource::Trace(blink::Visitor* visitor) {
-  visitor->Trace(options_);
-  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

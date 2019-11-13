@@ -14,7 +14,7 @@ using base::mac::ScopedObjCClassSwizzler;
 namespace {
 
 NSWindow* g_fake_focused_window = nil;
-IMP g_order_out_impl_ = nullptr;
+base::mac::ScopedObjCClassSwizzler* g_order_out_swizzler = nullptr;
 
 void SetFocus(NSWindow* window) {
   g_fake_focused_window = window;
@@ -74,7 +74,7 @@ void ClearFocus() {
   NSWindow* selfAsWindow = base::mac::ObjCCastStrict<NSWindow>(self);
   if (selfAsWindow == g_fake_focused_window)
     ClearFocus();
-  g_order_out_impl_(self, _cmd, sender);
+  g_order_out_swizzler->InvokeOriginal<void, id>(self, _cmd, sender);
 }
 
 - (void)resignKeyWindow {
@@ -117,10 +117,11 @@ ScopedFakeNSWindowFocus::ScopedFakeNSWindowFocus()
           new ScopedObjCClassSwizzler([NSWindow class],
                                       [FakeNSWindowFocusDonor class],
                                       @selector(orderOut:))) {
-  g_order_out_impl_ = order_out_swizzler_->GetOriginalImplementation();
+  g_order_out_swizzler = order_out_swizzler_.get();
 }
 
 ScopedFakeNSWindowFocus::~ScopedFakeNSWindowFocus() {
+  g_order_out_swizzler = nullptr;
   ClearFocus();
 }
 

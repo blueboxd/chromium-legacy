@@ -20,23 +20,28 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.night_mode.NightModeMetrics;
 import org.chromium.chrome.browser.preferences.themes.ThemePreferences.ThemeSetting;
 import org.chromium.chrome.browser.ui.widget.RadioButtonWithDescription;
+import org.chromium.chrome.browser.ui.widget.RadioButtonWithDescriptionLayout;
 
 import java.util.ArrayList;
 import java.util.Collections;
 
 /**
  * A radio button group Preference used for Themes. Currently, it has 3 options: System default,
- * Light, and Dark.
+ * Light, and Dark. When an additional flag, DARKEN_WEBSITES_CHECKBOX_IN_THEMES_SETTING, is active
+ * there is an option added underneath the currently selected preference to allow website contents
+ * to be darkened (active for System default and Dark).
  */
 public class RadioButtonGroupThemePreference
         extends Preference implements RadioGroup.OnCheckedChangeListener {
     private @ThemeSetting int mSetting;
+    private RadioButtonWithDescription mSettingRadioButton;
+    private RadioButtonWithDescriptionLayout mGroup;
     private ArrayList<RadioButtonWithDescription> mButtons;
+
+    // Additional view that darkens website contents.
+    private LinearLayout mCheckboxContainer;
     private boolean mDarkenWebsitesEnabled;
     private CheckBox mCheckBox;
-    private LinearLayout mLayoutContainer;
-    private LinearLayout mCheckboxContainer;
-    private RadioGroup mRadioGroup;
 
     public RadioButtonGroupThemePreference(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -61,10 +66,9 @@ public class RadioButtonGroupThemePreference
         super.onBindViewHolder(holder);
         mCheckboxContainer = (LinearLayout) holder.findViewById(R.id.checkbox_container);
         mCheckBox = (CheckBox) holder.findViewById(R.id.darken_websites);
-        mLayoutContainer = (LinearLayout) holder.itemView;
 
-        mRadioGroup = (RadioGroup) holder.findViewById(R.id.radio_button_layout);
-        mRadioGroup.setOnCheckedChangeListener(this);
+        mGroup = (RadioButtonWithDescriptionLayout) holder.findViewById(R.id.radio_button_layout);
+        mGroup.setOnCheckedChangeListener(this);
 
         mCheckboxContainer.setOnClickListener(x -> {
             mCheckBox.setChecked(!mCheckBox.isChecked());
@@ -86,20 +90,20 @@ public class RadioButtonGroupThemePreference
         mButtons.set(
                 ThemeSetting.DARK, (RadioButtonWithDescription) holder.findViewById(R.id.dark));
 
-        mButtons.get(mSetting).setChecked(true);
+        mSettingRadioButton = mButtons.get(mSetting);
+        mSettingRadioButton.setChecked(true);
         positionCheckbox();
     }
 
     /**
-     * Remove and insert the checkbox to the view, based on the value of mSetting
+     * Remove and insert the checkbox to the view, based on the current theme preference.
      */
     private void positionCheckbox() {
         if (ChromeFeatureList.isEnabled(
                     ChromeFeatureList.DARKEN_WEBSITES_CHECKBOX_IN_THEMES_SETTING)) {
             if (mSetting == ThemeSetting.SYSTEM_DEFAULT || mSetting == ThemeSetting.DARK) {
-                mLayoutContainer.removeView(mCheckboxContainer);
+                mGroup.attachAccessoryView(mCheckboxContainer, mSettingRadioButton);
                 mCheckboxContainer.setVisibility(View.VISIBLE);
-                mLayoutContainer.addView(mCheckboxContainer, mSetting + 1);
             } else {
                 mCheckboxContainer.setVisibility(View.GONE);
             }
@@ -111,9 +115,12 @@ public class RadioButtonGroupThemePreference
         for (int i = 0; i < ThemeSetting.NUM_ENTRIES; i++) {
             if (mButtons.get(i).isChecked()) {
                 mSetting = i;
+                mSettingRadioButton = mButtons.get(i);
                 break;
             }
         }
+        assert mSetting >= 0 && mSetting < ThemeSetting.NUM_ENTRIES : "No matching setting found.";
+
         positionCheckbox();
         callChangeListener(mSetting);
         NightModeMetrics.recordThemePreferencesChanged(mSetting);

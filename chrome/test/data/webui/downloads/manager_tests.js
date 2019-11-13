@@ -136,12 +136,21 @@ suite('manager tests', function() {
     loadTimeData.getString('browserManagedByOrg');
   });
 
-  test('toast is shown when clear-all-command is fired', () => {
+  test('toast is shown when clear-all-command is fired', async () => {
+    // Add a download entry so that clear-all-command is applicable.
+    callbackRouterRemote.insertItems(0, [createDownload({
+                                       fileName: 'file name',
+                                       state: downloads.States.COMPLETE,
+                                       sinceString: 'Today',
+                                       url: 'a'.repeat(1000),
+                                     })]);
+    await callbackRouterRemote.$.flushForTesting();
+
     const toastManager = cr.toastManager.getInstance();
     assertFalse(toastManager.isToastOpen);
-    const event = new Event('command', {bubbles: true});
-    event.command = {id: 'clear-all-command'};
-    manager.dispatchEvent(event);
+
+    // Simulate 'alt+c' key combo.
+    MockInteractions.keyDownOn(document, null, 'alt', cr.isMac ? 'ç' : 'c');
     assertTrue(toastManager.isToastOpen);
     assertFalse(toastManager.isUndoButtonHidden);
   });
@@ -149,10 +158,10 @@ suite('manager tests', function() {
   test('toast is hidden when undo-command is fired', () => {
     const toastManager = cr.toastManager.getInstance();
     toastManager.show('');
-    const event = new Event('command', {bubbles: true});
-    event.command = {id: 'undo-command'};
     assertTrue(toastManager.isToastOpen);
-    manager.dispatchEvent(event);
+
+    // Simulate 'ctrl+z' key combo (or meta+z for Mac).
+    MockInteractions.keyDownOn(document, null, cr.isMac ? 'meta' : 'ctrl', 'z');
     assertFalse(toastManager.isToastOpen);
   });
 

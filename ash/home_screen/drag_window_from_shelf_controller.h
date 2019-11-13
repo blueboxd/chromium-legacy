@@ -12,6 +12,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/timer/timer.h"
 #include "ui/aura/window_observer.h"
@@ -61,6 +62,8 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
   void EndDrag(const gfx::Point& location_in_screen,
                base::Optional<float> velocity_y);
   void CancelDrag();
+
+  bool IsDraggedWindowAnimating() const;
 
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
@@ -117,6 +120,14 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
   // screen after drag ends.
   void ScaleDownWindowAfterDrag();
 
+  // Called when the dragged window should scale up to restore to its original
+  // bounds after drag ends.
+  void ScaleUpToRestoreWindowAfterDrag();
+
+  // Callback function to be called after the window has been restored to its
+  // original bounds after drag ends.
+  void OnWindowRestoredToOrignalBounds(bool end_overview);
+
   aura::Window* window_ = nullptr;
   gfx::Point initial_location_in_screen_;
   gfx::Point previous_location_in_screen_;
@@ -132,6 +143,8 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
 
   // The hotseat state when drag starts.
   const HotseatState hotseat_state_;
+
+  base::WeakPtrFactory<DragWindowFromShelfController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DragWindowFromShelfController);
 };

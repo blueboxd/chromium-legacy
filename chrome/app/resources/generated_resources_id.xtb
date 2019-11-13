@@ -2042,7 +2042,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="3923676227229836009">Halaman ini diizinkan untuk melihat file</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3925573269917483990">Kamera:</translation>
-<translation id="3925842537050977900">Lepaskan pin dari Rak</translation>
 <translation id="3926002189479431949">Ponsel Smart Lock diubah</translation>
 <translation id="3927932062596804919">Tolak</translation>
 <translation id="3928570707778085600">Simpan perubahan ke <ph name="FILE_OR_FOLDER_NAME" />?</translation>
@@ -2536,7 +2535,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="4689235506267737042">Pilih preferensi demo</translation>
 <translation id="4689421377817139245">Sinkronisasikan bookmark ini ke iPhone Anda</translation>
 <translation id="4690091457710545971">&lt;Empat file dibuat oleh firmware Wi-Fi Intel: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon.  Ketiga file pertama adalah file biner yang berisi dump pendaftaran, dan dinyatakan oleh Intel tidak berisi informasi pribadi atau yang mengidentifikasi perangkat.  File terakhir adalah pelacakan eksekusi dari firmware Intel; file tersebut telah dibersihkan dari informasi pribadi atau yang mengidentifikasi perangkat, namun terlalu besar untuk ditampilkan di sini.  Semua file tersebut dibuat untuk merespons masalah Wi-Fi baru-baru ini di perangkat Anda, dan akan dibagikan kepada Intel untuk membantu memecahkan masalah tersebut.&gt;</translation>
-<translation id="469230890969474295">Folder OEM</translation>
 <translation id="4692623383562244444">Mesin telusur</translation>
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694024090038830733">Konfigurasi printer ditangani oleh administrator.</translation>
@@ -2569,7 +2567,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="4737715515457435632">Sambungkan ke jaringan</translation>
 <translation id="473775607612524610">Perbarui</translation>
 <translation id="4739639199548674512">Tiket</translation>
-<translation id="4742746985488890273">Pin ke Rak</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Pelajari cara mengupdate aplikasi<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Aktifkan notifikasi situs}other{Aktifkan notifikasi beberapa situs}}</translation>
 <translation id="4746351372139058112">Pesan</translation>
@@ -3561,7 +3558,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="6196854373336333322">Ekstensi "<ph name="EXTENSION_NAME" />" telah mengambil alih kontrol setelan proxy Anda, yang berarti ekstensi dapat mengubah, merusak, atau menyadap apa pun yang Anda lakukan secara online. Jika tidak yakin mengapa perubahan ini terjadi, mungkin Anda tidak menginginkannya.</translation>
 <translation id="6198102561359457428">Keluar kemudian masuk lagi...</translation>
 <translation id="6198252989419008588">Ubah PIN</translation>
-<translation id="6201792273624501289">Aplikasi Linux</translation>
 <translation id="6202304368170870640">Anda dapat menggunakan PIN untuk login atau membuka kunci perangkat.</translation>
 <translation id="6206311232642889873">Sali&amp;n Gambar</translation>
 <translation id="6207200176136643843">Setel ulang ke tingkat zoom default</translation>
@@ -5595,7 +5591,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="9130015405878219958">Mode yang dimasukkan tidak valid.</translation>
 <translation id="9131487537093447019">Kirim pesan ke dan terima pesan dari perangkat Bluetooth.</translation>
 <translation id="9134304429738380103">Ya, saya setuju.</translation>
-<translation id="9135090785674039430">Jika diaktifkan, situs tidak dapat menggunakan cookie yang akan melacak Anda di web. Beberapa situs mungkin dapat terganggu.</translation>
 <translation id="9137013805542155359">Perlihatkan halaman asli</translation>
 <translation id="9137157311132182254">Mesin telusur pilihan</translation>
 <translation id="9137248913990643158">Mulai dan login ke Chrome sebelum menggunakan aplikasi ini.</translation>

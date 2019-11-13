@@ -72,7 +72,7 @@ if (is_wasm) {
       "-s",
       "ALLOW_MEMORY_GROWTH=1",
       "-s",
-      "EXPORTED_FUNCTIONS=['_LoadSizeFile','_BuildTree','_Open','_malloc','_free']",
+      "EXPORTED_FUNCTIONS=['_LoadSizeFile','_LoadBeforeSizeFile','_BuildTree','_Open','_malloc','_free']",
       "-s",
       "EXTRA_EXPORTED_RUNTIME_METHODS=['ccall','cwrap','UTF8ToString']",
     ]

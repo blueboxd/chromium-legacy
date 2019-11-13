@@ -2430,11 +2430,6 @@ politikayı geçersiz kılamaz.
           Bu politikayı ayarlarsanız kullanıcılar değiştiremez veya geçersiz kılamazlar.
 
           Bu politika ayarlanmadan bırakılırsa mono ses başlangıçta devre dışıdır ancak istenildiğinde kullanıcı tarafından etkinleştirilebilir.</translation>
-<translation id="4759650396863318477">Beklemedeki bir güncellemenin uygulanması için <ph name="PRODUCT_NAME" /> ürününün veya bir <ph name="PRODUCT_OS_NAME" /> cihazının yeniden başlatılması gerektiği konusunda kullanıcıların bilgilendirileceği dönemi milisaniye cinsinden ayarlamanıza olanak tanır.
-
-      Bu zaman diliminde kullanıcı, güncelleme yapılması gerektiğine dair tekrar tekrar bilgilendirilir. <ph name="PRODUCT_OS_NAME" /> cihazları için yeniden başlatma bildirimi, <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" /> politikası gereği sistem tepsisinde görünür. <ph name="PRODUCT_NAME" /> tarayıcıları için uygulama menüsü, bildirim süresinin üçte biri geçtikten sonra yeniden başlatmanın gerekli olduğunu gösterecek şekilde değişir. Bu bildirim, bildirim süresinin üçte ikisi geçtikten sonra renk değiştirir ve bildirim süresinin tamamı geçtikten sonra tekrar renk değiştirir. <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> politikası tarafından etkinleştirilen ek bildirimler, aynı programı takip eder.
-
-      Bu değer ayarlanmazsa <ph name="PRODUCT_OS_NAME" /> cihazlarda varsayılan süre olan 345600000 milisaniye (dört gün) ve <ph name="PRODUCT_NAME" /> cihazlarda 604800000 milisaniye (bir hafta) kullanılır.</translation>
 <translation id="4771144269610910963">Bu politika kullanıcıların indirdiklerine Güvenli Tarama ile derin tarama uygulanmasını denetler. Bu politika, ayarlanmazsa veya varsayılan değer olan “Dosyaları tarama” olarak ayarlanırsa kullanıcıların indirdiği dosyalar Güvenli Tarama ile taranmaz.
 
       "Kullanıcıların indirdiklerini tarama için gönder" seçeneğine ayarlanırsa kullanıcıların indirdikleri dosyalar kötü amaçlı yazılım taraması için ağ üzerinden Güvenli Tarama'ya gönderilir.
@@ -4409,9 +4404,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
       Politika doğru değerine ayarlanırsa cihaz 24 saat biçimini kullanır. Politika yanlış değerine ayarlanırsa cihaz 12 saat biçimini kullanır.
 
       Bu politika ayarlanmazsa cihaz varsayılan olarak 24 saat biçimini kullanır.</translation>
-<translation id="8113421140338762630">Beklemedeki bir güncellemenin uygulanması için bir <ph name="PRODUCT_OS_NAME" /> cihazın yeniden başlatılması gerektiğini belirten ilk bildirim ile <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> politikası tarafından belirtilen süre sonu arasındaki zamanı milisaniye cinsinden ayarlamanıza olanak tanır.
-
-      Bu değer ayarlanmazsa <ph name="PRODUCT_OS_NAME" /> cihazlarda varsayılan süre olan 86.400.000 milisaniye (bir gün) kullanılır.</translation>
 <translation id="8114382167597081590">YouTube'da Kısıtlı Mod'u zorunlu kılma</translation>
 <translation id="8118665053362250806">Medya diski önbellek boyutunu ayarla</translation>
 <translation id="8124468781472887384">Cihaz yazıcı yapılandırması erişim politikası.</translation>

@@ -14,8 +14,8 @@
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/chromeos/child_accounts/consumer_status_reporting_service.h"
-#include "chrome/browser/chromeos/child_accounts/consumer_status_reporting_service_factory.h"
+#include "chrome/browser/chromeos/child_accounts/child_status_reporting_service.h"
+#include "chrome/browser/chromeos/child_accounts/child_status_reporting_service_factory.h"
 #include "chrome/browser/chromeos/child_accounts/time_limit_override.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -117,7 +117,7 @@ void ScreenTimeController::RemoveObserver(Observer* observer) {
 }
 
 base::TimeDelta ScreenTimeController::GetScreenTimeDuration() {
-  return ConsumerStatusReportingServiceFactory::GetForBrowserContext(context_)
+  return ChildStatusReportingServiceFactory::GetForBrowserContext(context_)
       ->GetChildScreenTime();
 }
 
@@ -171,7 +171,7 @@ void ScreenTimeController::CheckTimeLimit(const std::string& source) {
       // this feature is enabled.
       if (!base::FeatureList::IsEnabled(features::kEventBasedStatusReporting)) {
         VLOG(1) << "Request status report before locking screen.";
-        ConsumerStatusReportingServiceFactory::GetForBrowserContext(context_)
+        ChildStatusReportingServiceFactory::GetForBrowserContext(context_)
             ->RequestImmediateStatusReport();
       }
       ForceScreenLockByPolicy();

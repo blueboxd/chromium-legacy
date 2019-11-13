@@ -1235,7 +1235,14 @@ void LayoutBlockFlow::AdjustLinePositionForPagination(RootInlineBox& line_box,
     // Moving to a different page or column may mean that its height is
     // different.
     page_logical_height = PageLogicalHeightForOffset(new_logical_offset);
-    if (line_height > page_logical_height) {
+    // We need to insert a break now, either because there's no room for the
+    // line in the current column / page, or because we have determined that we
+    // need a break to satisfy widow requirements.
+    if (ShouldBreakAtLineToAvoidWidow() &&
+        LineBreakToAvoidWidow() == line_index) {
+      ClearShouldBreakAtLineToAvoidWidow();
+      SetDidBreakAtLineToAvoidWidow();
+    } else if (line_height > page_logical_height) {
       // Too tall to fit in one page / column. Give up. Don't push to the next
       // page / column.
       // TODO(mstensho): Get rid of this. This is just utter weirdness, but the
@@ -1246,14 +1253,6 @@ void LayoutBlockFlow::AdjustLinePositionForPagination(RootInlineBox& line_box,
       return;
     }
 
-    // We need to insert a break now, either because there's no room for the
-    // line in the current column / page, or because we have determined that we
-    // need a break to satisfy widow requirements.
-    if (ShouldBreakAtLineToAvoidWidow() &&
-        LineBreakToAvoidWidow() == line_index) {
-      ClearShouldBreakAtLineToAvoidWidow();
-      SetDidBreakAtLineToAvoidWidow();
-    }
     if (ShouldSetStrutOnBlock(*this, line_box, logical_offset, line_index,
                               page_logical_height)) {
       // Note that when setting the strut on a block, it may be propagated to

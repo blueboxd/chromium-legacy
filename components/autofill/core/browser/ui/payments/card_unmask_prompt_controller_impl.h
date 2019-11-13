@@ -25,8 +25,15 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
                                  bool is_off_the_record);
   virtual ~CardUnmaskPromptControllerImpl();
 
+  // This should be OnceCallback<unique_ptr<CardUnmaskPromptView>> but there are
+  // tests which don't do the ownership correctly.
+  using CardUnmaskPromptViewFactory =
+      base::OnceCallback<CardUnmaskPromptView*()>;
+
   // Functions called by ChromeAutofillClient.
-  void ShowPrompt(CardUnmaskPromptView* view,
+  // It is guaranteed that |view_factory| is called before this function
+  // returns, i.e., the callback will not outlive the stack frame of ShowPrompt.
+  void ShowPrompt(CardUnmaskPromptViewFactory view_factory,
                   const CreditCard& card,
                   AutofillClient::UnmaskCardReason reason,
                   base::WeakPtr<CardUnmaskDelegate> delegate);

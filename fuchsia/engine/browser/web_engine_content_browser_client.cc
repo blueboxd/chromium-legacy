@@ -22,6 +22,7 @@
 #include "fuchsia/engine/common/web_engine_content_client.h"
 #include "fuchsia/engine/common/web_engine_url_loader_throttle.h"
 #include "fuchsia/engine/switches.h"
+#include "media/base/media_switches.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
 namespace {
@@ -137,7 +138,9 @@ void WebEngineContentBrowserClient::AppendExtraCommandLineSwitches(
   constexpr char const* kSwitchesToCopy[] = {
       switches::kContentDirectories,
       switches::kDisableSoftwareVideoDecoders,
+      switches::kEnableProtectedVideoBuffers,
       switches::kEnableWidevine,
+      switches::kForceProtectedVideoOutputBuffers,
       switches::kPlayreadyKeySystem,
   };
 

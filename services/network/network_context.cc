@@ -366,6 +366,12 @@ NetworkContext::NetworkContext(
 
   origin_policy_manager_ = std::make_unique<OriginPolicyManager>(this);
 
+  if (params_->http_auth_static_network_context_params) {
+    http_auth_merged_preferences_.SetAllowDefaultCredentials(
+        params_->http_auth_static_network_context_params
+            ->allow_default_credentials);
+  }
+
   InitializeCorsParams();
 }
 
@@ -473,8 +479,15 @@ void NetworkContext::CreateURLLoaderFactory(
 }
 
 void NetworkContext::ActivateDohProbes() {
-  DCHECK(IsPrimaryNetworkContext());
   DCHECK(url_request_context_->host_resolver());
+
+  // DoH probes are global rather than per-context, so they should be run just
+  // for the primary context.
+  //
+  // TODO(crbug.com/1022059): Trigger per-context DoH probes for all
+  // NetworkContext.
+  if (!IsPrimaryNetworkContext())
+    return;
 
   doh_probes_request_.reset();
   doh_probes_request_ =
@@ -1573,6 +1586,40 @@ void NetworkContext::LookupServerBasicAuthCredentials(
     std::move(callback).Run(base::nullopt);
 }
 
+const net::HttpAuthPreferences* NetworkContext::GetHttpAuthPreferences() const
+    noexcept {
+  return &http_auth_merged_preferences_;
+}
+
+void NetworkContext::OnHttpAuthDynamicParamsChanged(
+    const mojom::HttpAuthDynamicParams*
+        http_auth_dynamic_network_service_params) {
+  http_auth_merged_preferences_.SetServerAllowlist(
+      http_auth_dynamic_network_service_params->server_allowlist);
+  http_auth_merged_preferences_.SetDelegateAllowlist(
+      http_auth_dynamic_network_service_params->delegate_allowlist);
+  http_auth_merged_preferences_.set_delegate_by_kdc_policy(
+      http_auth_dynamic_network_service_params->delegate_by_kdc_policy);
+  http_auth_merged_preferences_.set_negotiate_disable_cname_lookup(
+      http_auth_dynamic_network_service_params->negotiate_disable_cname_lookup);
+  http_auth_merged_preferences_.set_negotiate_enable_port(
+      http_auth_dynamic_network_service_params->enable_negotiate_port);
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+  http_auth_merged_preferences_.set_ntlm_v2_enabled(
+      http_auth_dynamic_network_service_params->ntlm_v2_enabled);
+#endif
+
+#if defined(OS_ANDROID)
+  http_auth_merged_preferences_.set_auth_android_negotiate_account_type(
+      http_auth_dynamic_network_service_params->android_negotiate_account_type);
+#endif
+
+#if defined(OS_CHROMEOS)
+  http_auth_merged_preferences_.set_allow_gssapi_library_load(
+      http_auth_dynamic_network_service_params->allow_gssapi_library_load);
+#endif
+}
+
 URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
   URLRequestContextBuilderMojo builder;
   const base::CommandLine* command_line =
@@ -1860,8 +1907,6 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
   network_session_configurator::ParseCommandLineAndFieldTrials(
       *base::CommandLine::ForCurrentProcess(), is_quic_force_disabled,
       params_->quic_user_agent_id, &session_params);
-
-  session_params.allow_default_credentials = params_->allow_default_credentials;
 
   session_params.disable_idle_sockets_close_on_memory_pressure =
       params_->disable_idle_sockets_close_on_memory_pressure;

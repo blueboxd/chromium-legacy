@@ -13,6 +13,8 @@
 #import "ios/chrome/browser/ui/infobars/infobar_container.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_save_card_table_view_controller.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#include "ios/chrome/grit/ios_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -154,10 +156,20 @@
 
   self.modalViewController =
       [[InfobarSaveCardTableViewController alloc] initWithModalDelegate:self];
-  // TODO(crbug.com/1014652): Replace with Modal specific text.
-  self.modalViewController.title = @"Save Credit Card";
+  self.modalViewController.title =
+      l10n_util::GetNSString(IDS_IOS_AUTOFILL_SAVE_CARD);
   self.modalViewController.cardIssuerIcon =
       NativeImage(self.saveCardInfoBarDelegate->issuer_icon_id());
+  self.modalViewController.cardNumber = [NSString
+      stringWithFormat:@"•••• %@",
+                       base::SysUTF16ToNSString(self.saveCardInfoBarDelegate
+                                                    ->card_last_four_digits())];
+  self.modalViewController.cardholderName =
+      base::SysUTF16ToNSString(self.saveCardInfoBarDelegate->cardholder_name());
+  self.modalViewController.expirationMonth = base::SysUTF16ToNSString(
+      self.saveCardInfoBarDelegate->expiration_date_month());
+  self.modalViewController.expirationYear = base::SysUTF16ToNSString(
+      self.saveCardInfoBarDelegate->expiration_date_year());
 
   return YES;
 }

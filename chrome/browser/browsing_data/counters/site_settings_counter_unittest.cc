@@ -15,6 +15,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
+#include "chrome/browser/custom_handlers/test_protocol_handler_registry_delegate.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
@@ -30,48 +31,6 @@
 #endif
 
 namespace {
-
-class TestProtocolHandlerRegistryDelegate
-    : public ProtocolHandlerRegistry::Delegate {
- public:
-  TestProtocolHandlerRegistryDelegate() = default;
-  ~TestProtocolHandlerRegistryDelegate() override = default;
-
-  TestProtocolHandlerRegistryDelegate(
-      const TestProtocolHandlerRegistryDelegate& other) = delete;
-  TestProtocolHandlerRegistryDelegate& operator=(
-      const TestProtocolHandlerRegistryDelegate& other) = delete;
-
-  // ProtocolHandlerRegistry::Delegate:
-  void RegisterExternalHandler(const std::string& protocol) override {
-    bool inserted = registered_protocols_.insert(protocol).second;
-    DCHECK(inserted);
-  }
-  void DeregisterExternalHandler(const std::string& protocol) override {
-    size_t removed = registered_protocols_.erase(protocol);
-    DCHECK_EQ(removed, 1u);
-  }
-  bool IsExternalHandlerRegistered(const std::string& protocol) override {
-    return registered_protocols_.find(protocol) != registered_protocols_.end();
-  }
-  void RegisterWithOSAsDefaultClient(
-      const std::string& protocol,
-      shell_integration::DefaultWebClientWorkerCallback callback) override {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), shell_integration::NOT_DEFAULT));
-  }
-  void CheckDefaultClientWithOS(
-      const std::string& protocol,
-      shell_integration::DefaultWebClientWorkerCallback callback) override {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), shell_integration::NOT_DEFAULT));
-  }
-
- private:
-  base::flat_set<std::string> registered_protocols_;
-};
 
 class SiteSettingsCounterTest : public testing::Test {
  public:

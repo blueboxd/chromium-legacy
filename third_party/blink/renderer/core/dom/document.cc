@@ -7904,9 +7904,8 @@ void Document::FlushAutofocusCandidates() {
         // https://github.com/whatwg/html/issues/5027
         element.DelegatesFocus()) {
       // 9.1. Empty candidates.
-      autofocus_candidates_.clear();
       // 9.2. Set topDocument's autofocus processed flag to true.
-      autofocus_processed_flag_ = true;
+      FinalizeAutofocus();
       // 9.3. Run the focusing steps for element.
       element.focus();
     } else {
@@ -7914,6 +7913,11 @@ void Document::FlushAutofocusCandidates() {
       // in browser_tests.
     }
   }
+}
+
+void Document::FinalizeAutofocus() {
+  autofocus_candidates_.clear();
+  autofocus_processed_flag_ = true;
 }
 
 bool Document::HasNonEmptyFragment() const {

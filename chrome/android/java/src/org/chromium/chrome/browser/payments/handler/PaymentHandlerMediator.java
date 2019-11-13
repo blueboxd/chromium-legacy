@@ -23,6 +23,8 @@ import org.chromium.ui.modelutil.PropertyModel;
         extends WebContentsObserver implements BottomSheetObserver {
     private final PropertyModel mModel;
     private final Runnable mHider;
+    /** Postfixed with "Ref" to distinguish from mWebContent in WebContentsObserver. */
+    private final WebContents mWebContentsRef;
 
     /**
      * Build a new mediator that handle events from outside the payment handler component.
@@ -35,28 +37,17 @@ import org.chromium.ui.modelutil.PropertyModel;
     /* package */ PaymentHandlerMediator(
             PropertyModel model, Runnable hider, WebContents webContents) {
         super(webContents);
+        mWebContentsRef = webContents;
         mModel = model;
         mHider = hider;
-    }
-
-    /**
-     * Hide the bottom-sheet if weak-ref of web-contents refers to null.
-     * @return Return true if the sheet is hidden.
-     */
-    private boolean hideSheetIfWebContentsNotExist() {
-        if (mWebContents != null) return false;
-        // TODO(maxlg): how to inform the service worker when the web-contents is missing.
-        mHider.run();
-        return true;
     }
 
     // BottomSheetObserver:
     @Override
     public void onSheetStateChanged(@SheetState int newState) {
-        if (hideSheetIfWebContentsNotExist()) return;
         switch (newState) {
             case BottomSheetController.SheetState.HIDDEN:
-                ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindow(mWebContents.get());
+                ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindow(mWebContentsRef);
                 mHider.run();
                 break;
         }
@@ -88,28 +79,25 @@ import org.chromium.ui.modelutil.PropertyModel;
     // WebContentsObserver:
     @Override
     public void didFinishLoad(long frameId, String validatedUrl, boolean isMainFrame) {
-        if (hideSheetIfWebContentsNotExist()) return;
-        if (!SslValidityChecker.isValidPageInPaymentHandlerWindow(mWebContents.get())) {
+        if (!SslValidityChecker.isValidPageInPaymentHandlerWindow(mWebContentsRef)) {
             ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindowForInsecureNavigation(
-                    mWebContents.get());
+                    mWebContentsRef);
             mHider.run();
         }
     }
 
     @Override
     public void didAttachInterstitialPage() {
-        if (hideSheetIfWebContentsNotExist()) return;
         ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindowForInsecureNavigation(
-                mWebContents.get());
+                mWebContentsRef);
         mHider.run();
     }
 
     @Override
     public void didFailLoad(
             boolean isMainFrame, int errorCode, String description, String failingUrl) {
-        if (hideSheetIfWebContentsNotExist()) return;
         // TODO(crbug.com/1017926): Respond to service worker with the net error.
-        ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindow(mWebContents.get());
+        ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindow(mWebContentsRef);
         mHider.run();
     }
 }

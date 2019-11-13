@@ -77,7 +77,7 @@
       </template>
     </div>
     <!-- APP MANAGEMENT -->
-    <template is="dom-if" if="showAppManagement">
+    <template is="dom-if" if="[[showAppManagement]]">
       <template is="dom-if" route-path="/app-management" no-search>
         <settings-subpage
             page-title="$i18n{appManagementTitle}"

@@ -83,14 +83,12 @@ class NET_EXPORT_PRIVATE HttpAuthController
   //
   // * |allow_default_credentials| is used for determining if the current
   //       context allows ambient authentication using default credentials.
-  HttpAuthController(
-      HttpAuth::Target target,
-      const GURL& auth_url,
-      const NetworkIsolationKey& network_isolation_key,
-      HttpAuthCache* http_auth_cache,
-      HttpAuthHandlerFactory* http_auth_handler_factory,
-      HostResolver* host_resolver,
-      HttpAuthPreferences::DefaultCredentials allow_default_credentials);
+  HttpAuthController(HttpAuth::Target target,
+                     const GURL& auth_url,
+                     const NetworkIsolationKey& network_isolation_key,
+                     HttpAuthCache* http_auth_cache,
+                     HttpAuthHandlerFactory* http_auth_handler_factory,
+                     HostResolver* host_resolver);
 
   // Generate an authentication token for |target| if necessary. The return
   // value is a net error code. |OK| will be returned both in the case that
@@ -227,13 +225,6 @@ class NET_EXPORT_PRIVATE HttpAuthController
   // makes sure we use the embedded identity only once for the transaction,
   // preventing an infinite auth restart loop.
   bool embedded_identity_used_;
-
-  // If the current context allows ambient authentication using default
-  // credentials.
-  // TODO(https://crbug.com/458508): Refactor |allow_default_credentials_|
-  // to be passed along with the other |HttpAuthPreferences|, rather then being
-  // passed directly to |HttpAuthController|.
-  HttpAuthPreferences::DefaultCredentials allow_default_credentials_;
 
   // True if default credentials have already been tried for this transaction
   // in response to an HTTP authentication challenge.

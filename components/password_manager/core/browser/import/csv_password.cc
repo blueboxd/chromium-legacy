@@ -35,12 +35,12 @@ CSVPassword::CSVPassword(const ColumnMap& map, base::StringPiece csv_row)
 
 CSVPassword::~CSVPassword() = default;
 
-bool CSVPassword::Parse(PasswordForm* form) const {
+CSVPassword::Status CSVPassword::Parse(PasswordForm* form) const {
   // |map_| must be an (1) injective and (2) surjective (3) partial map. (3) is
   // enforced by its type, (2) is checked later in the code and (1) follows from
   // (2) and the following size() check.
   if (map_.size() != kLabelCount)
-    return false;
+    return Status::kSemanticError;
 
   size_t field_idx = 0;
   CSVFieldParser parser(row_);
@@ -51,14 +51,14 @@ bool CSVPassword::Parse(PasswordForm* form) const {
   while (parser.HasMoreFields()) {
     base::StringPiece field;
     if (!parser.NextField(&field))
-      return false;
+      return Status::kSyntaxError;
     auto meaning_it = map_.find(field_idx++);
     if (meaning_it == map_.end())
       continue;
     switch (meaning_it->second) {
       case Label::kOrigin:
         if (!base::IsStringASCII(field))
-          return false;
+          return Status::kSyntaxError;
         origin = GURL(field);
         break;
       case Label::kUsername:
@@ -74,9 +74,9 @@ bool CSVPassword::Parse(PasswordForm* form) const {
   // username is permitted to be an empty string, while password and origin are
   // not.
   if (!origin.is_valid() || !username_set || password.empty())
-    return false;
+    return Status::kSemanticError;
   if (!form)
-    return true;
+    return Status::kOK;
   // There is currently no way to import non-HTML credentials.
   form->scheme = PasswordForm::Scheme::kHtml;
   // GURL::GetOrigin() returns an empty GURL for Android credentials due
@@ -89,13 +89,13 @@ bool CSVPassword::Parse(PasswordForm* form) const {
   form->origin = std::move(origin);
   form->username_value = Convert(username);
   form->password_value = Convert(password);
-  return true;
+  return Status::kOK;
 }
 
 PasswordForm CSVPassword::ParseValid() const {
   PasswordForm result;
-  bool success = Parse(&result);
-  DCHECK(success);
+  Status status = Parse(&result);
+  DCHECK_EQ(Status::kOK, status);
   return result;
 }
 

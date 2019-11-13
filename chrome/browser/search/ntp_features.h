@@ -17,6 +17,7 @@ extern const base::Feature kChromeColorsCustomColorPicker;
 extern const base::Feature kConfirmSuggestionRemovals;
 extern const base::Feature kCustomizationMenuV2;
 extern const base::Feature kDismissPromos;
+extern const base::Feature kRealboxMatchOmniboxTheme;
 extern const base::Feature kRealboxUseGoogleGIcon;
 
 // Note: only exposed for about:flags. Use IsNtpRealboxEnabled() instead.

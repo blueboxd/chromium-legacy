@@ -4,11 +4,19 @@
 
 package org.chromium.chrome.browser.directactions;
 
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 import android.os.Bundle;
 import android.os.CancellationSignal;
 
+import org.hamcrest.Matchers;
+
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
@@ -17,7 +25,7 @@ import java.util.List;
 /**
  * Utilities for writing tests that check for or perform direct actions on an activity.
  */
-public class DirectActionTestUtils {
+class DirectActionTestUtils {
     /** Perform a direct action, with the given name. */
     public static void callOnPerformDirectActions(
             ChromeActivity activity, String actionId, Callback<Bundle> callback) {
@@ -41,6 +49,41 @@ public class DirectActionTestUtils {
                     (actions) -> directActions.addAll((List<String>) actions));
         });
         return directActions;
+    }
+
+    /**
+     * Sets the ChromeActivityTestRule by forcing "go_forward" to be available.
+     *
+     * <p>The activity of the given rule must have been started and have loaded a page.
+     */
+    static List<String> setupActivityAndGetDirectAction(ChromeActivityTestRule<?> rule)
+            throws Exception {
+        allowGoForward(rule);
+        return callOnGetDirectActions(rule.getActivity());
+    }
+
+    /**
+     * Forces availability of the "go_forward" direct action on the current tab by loading another
+     * URL then navigating back to the current one.
+     *
+     * <p>The activity of the given rule must have been started and have loaded a page.
+     */
+    static void allowGoForward(ChromeActivityTestRule<?> rule) throws Exception {
+        ChromeActivity activity = rule.getActivity();
+        String initialUrl = TestThreadUtils.runOnUiThreadBlocking(
+                () -> activity.getCurrentWebContents().getLastCommittedUrl());
+
+        // Any built-in page that is not about:blank and is reasonably cheap to render will do,
+        // here.
+        String visitedUrl = "chrome://version/";
+        assertThat(initialUrl, Matchers.not(Matchers.equalTo(visitedUrl)));
+        rule.loadUrl(visitedUrl);
+
+        Tab tab = activity.getTabModelSelector().getCurrentTab();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> activity.getCurrentWebContents().getNavigationController().goBack());
+        ChromeTabUtils.waitForTabPageLoaded(tab, initialUrl);
+        assertTrue(tab.canGoForward());
     }
 
     private DirectActionTestUtils() {

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_ARC_INTENT_HELPER_ARC_INTENT_HELPER_BRIDGE_H_
 #define COMPONENTS_ARC_INTENT_HELPER_ARC_INTENT_HELPER_BRIDGE_H_
 
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -60,6 +61,11 @@ class ArcIntentHelperBridge : public KeyedService,
   void AddObserver(ArcIntentHelperObserver* observer);
   void RemoveObserver(ArcIntentHelperObserver* observer);
   bool HasObserver(ArcIntentHelperObserver* observer) const;
+  void HandleCameraResult(
+      uint32_t intent_id,
+      arc::mojom::CameraIntentAction action,
+      const std::vector<uint8_t>& data,
+      arc::mojom::IntentHelperInstance::HandleCameraResultCallback callback);
 
   // mojom::IntentHelperHost
   void OnIconInvalidated(const std::string& package_name) override;
@@ -85,11 +91,6 @@ class ArcIntentHelperBridge : public KeyedService,
                        bool should_down_scale,
                        bool is_secure) override;
   void CloseCameraApp() override;
-  void HandleCameraResult(
-      uint32_t intent_id,
-      arc::mojom::CameraIntentAction action,
-      const std::vector<uint8_t>& data,
-      arc::mojom::IntentHelperInstance::HandleCameraResultCallback callback);
   void OnIntentFiltersUpdatedForPackage(
       const std::string& package_name,
       std::vector<IntentFilter> intent_filters) override;

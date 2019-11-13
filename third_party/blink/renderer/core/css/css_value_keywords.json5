@@ -1214,5 +1214,10 @@
     // (navigation-controls) media feature
     // none
     "back-button",
+
+    // render-subtree
+    "invisible",
+    "skip-activation",
+    "skip-viewport-activation",
   ],
 }

@@ -25,6 +25,8 @@ class TabCallbackProxy : public TabObserver {
   // BrowserObserver:
   void DisplayedUrlChanged(const GURL& url) override;
 
+  void OnRenderProcessGone() override;
+
  private:
   Tab* tab_;
   base::android::ScopedJavaGlobalRef<jobject> java_observer_;

@@ -121,7 +121,12 @@ class BuildConfigGenerator extends DefaultTask {
                     new File("${absoluteDepDir}/LICENSE").write(
                             new File("${normalisedRepoPath}/${dependency.licensePath}").text)
                 } else if (!dependency.licenseUrl?.trim()?.isEmpty()) {
-                    downloadFile(dependency.licenseUrl, new File("${absoluteDepDir}/LICENSE"))
+                    File destFile = new File("${absoluteDepDir}/LICENSE")
+                    downloadFile(dependency.id, dependency.licenseUrl, destFile)
+                    if (destFile.text.contains("<html")) {
+                        throw new RuntimeException("Found HTML in LICENSE file. Please add an "
+                                + "override to ChromiumDepGraph.groovy for ${dependency.name}.")
+                    }
                 }
             }
         }
@@ -478,9 +483,37 @@ class BuildConfigGenerator extends DefaultTask {
         getLogger().warn(jsonDump(obj))
     }
 
-    static void downloadFile(String sourceUrl, File destinationFile) {
+    static HttpURLConnection connectAndFollowRedirects(String id, String sourceUrl) {
+        URL urlObj = new URL(sourceUrl)
+        HttpURLConnection connection
+        for (int i = 0; i < 10; ++i) {
+            // Several deps use this URL for their license, but it just points to license
+            // *template*. Generally the actual license can be found in the source code.
+            if (sourceUrl.contains("://opensource.org/licenses")) {
+                throw new RuntimeException("Found templated license URL for dependency "
+                    + id + ": " + sourceUrl
+                    + ". You will need to edit FALLBACK_PROPERTIES for this dep.")
+            }
+            connection = urlObj.openConnection()
+            switch (connection.getResponseCode()) {
+                case HttpURLConnection.HTTP_MOVED_PERM:
+                case HttpURLConnection.HTTP_MOVED_TEMP:
+                    String location = connection.getHeaderField("Location");
+                    urlObj = new URL(urlObj, location);
+                    continue
+                case HttpURLConnection.HTTP_OK:
+                    return connection
+                default:
+                    throw new RuntimeException(
+                        "Url had statusCode=" + connection.getResponseCode() + ": " + sourceUrl)
+            }
+        }
+        throw new RuntimeException("Url in redirect loop: " + sourceUrl)
+    }
+
+    static void downloadFile(String id, String sourceUrl, File destinationFile) {
         destinationFile.withOutputStream { out ->
-            out << new URL(sourceUrl).openStream()
+            out << connectAndFollowRedirects(id, sourceUrl).getInputStream()
         }
     }
 

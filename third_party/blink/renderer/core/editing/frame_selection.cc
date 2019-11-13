@@ -260,9 +260,8 @@ void FrameSelection::DidSetSelectionDeprecated(
     // |setFocusedNodeIfNeeded()| dispatches sync events "FocusOut" and
     // "FocusIn", |frame_| may associate to another document.
     if (!IsAvailable() || GetDocument() != current_document) {
-      // Once we get test case to reach here, we should change this
-      // if-statement to |DCHECK()|.
-      NOTREACHED();
+      // editing/selection/move-selection-detached-frame-crash.html reaches
+      // here. See http://crbug.com/1015710.
       return;
     }
   }
@@ -522,7 +521,7 @@ bool FrameSelection::ShouldPaintCaret(const LayoutBlock& block) const {
   DCHECK(!result ||
          (ComputeVisibleSelectionInDOMTree().IsCaret() &&
           (IsEditablePosition(ComputeVisibleSelectionInDOMTree().Start()) ||
-           frame_->GetSettings()->GetCaretBrowsingEnabled())));
+           frame_->IsCaretBrowsingEnabled())));
   return result;
 }
 

@@ -2044,7 +2044,6 @@ Servera ziņojums: <ph name="SERVER_MSG" /></translation>
 <translation id="3923676227229836009">Šai lapai ir atļauts skatīt failus</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3925573269917483990">Kamera:</translation>
-<translation id="3925842537050977900">Atspraust no plaukta</translation>
 <translation id="3926002189479431949">Ir mainījies ar Smart Lock saistītais tālrunis</translation>
 <translation id="3927932062596804919">Neatļaut</translation>
 <translation id="3928570707778085600">Vai saglabāt izmaiņas šeit: <ph name="FILE_OR_FOLDER_NAME" />?</translation>
@@ -2538,7 +2537,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="4689235506267737042">Demonstrācijas režīma preferenču izvēle</translation>
 <translation id="4689421377817139245">Sinhronizējiet šo grāmatzīmi savā iPhone tālrunī</translation>
 <translation id="4690091457710545971">&lt;Četri Intel Wi-Fi aparātprogrammatūras ģenerēti faili: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon. Pirmie trīs ir binārie faili, kas ietver reģistra izmetes; Intel apliecina, ka tie neietver personas informāciju vai ierīci identificējošu informāciju. Pēdējais fails ir Intel programmaparatūras izpildes trasējums; no tā ir noņemta personas informācija un ierīci identificējoša informācija, taču to nevar parādīt šeit, jo fails ir pārāk liels. Šie faili tika ģenerēti, reaģējot uz nesenām Wi-Fi problēmām jūsu ierīcē, un tie tiks kopīgoti ar Intel, lai palīdzētu novērst šīs problēmas.&gt;</translation>
-<translation id="469230890969474295">OEM mape</translation>
 <translation id="4692623383562244444">Meklētājprogrammas</translation>
 <translation id="4693155481716051732">Suši</translation>
 <translation id="4694024090038830733">Printera konfigurāciju pārvalda administrators.</translation>
@@ -2571,7 +2569,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="4737715515457435632">Lūdzu, izveidojiet savienojumu ar tīklu</translation>
 <translation id="473775607612524610">Atjaunināt</translation>
 <translation id="4739639199548674512">Biļetes</translation>
-<translation id="4742746985488890273">Piespraust plauktam</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Uzzināt, kā atjaunināt lietojumprogrammas<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Rādīt vietni}zero{Rādīt vietnes}one{Rādīt vietnes}other{Rādīt vietnes}}</translation>
 <translation id="4746351372139058112">Messages</translation>
@@ -3563,7 +3560,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6196854373336333322">Paplašinājums “<ph name="EXTENSION_NAME" />” pārvalda jūsu starpniekservera iestatījumus. Tas nozīmē, ka tas var mainīt, pārtraukt vai izsekot visas jūsu darbības tiešsaistē. Ja neesat pārliecināts, kāpēc notika šīs izmaiņas, visticamāk, jūs tās nevēlaties.</translation>
 <translation id="6198102561359457428">Izrakstīties un tad pierakstīties vēlreiz</translation>
 <translation id="6198252989419008588">Mainīt PIN</translation>
-<translation id="6201792273624501289">Linux lietotnes</translation>
 <translation id="6202304368170870640">Varat izmantot PIN kodu, lai pierakstītos vai atbloķētu savu ierīci.</translation>
 <translation id="6206311232642889873">Kopēt &amp;attēlu</translation>
 <translation id="6207200176136643843">Atiestatīt noklusējuma tālummaiņas līmeni</translation>
@@ -5596,7 +5592,6 @@ Glabājiet atslēgas failu drošā vietā. Tas būs vajadzīgs, lai izveidotu ja
 <translation id="9130015405878219958">Ievadīts nederīgs režīms.</translation>
 <translation id="9131487537093447019">Sūtīt ziņojumus uz Bluetooth ierīcēm un saņemt ziņojumus no tām.</translation>
 <translation id="9134304429738380103">Jā, piekrītu.</translation>
-<translation id="9135090785674039430">Ja šis iestatījums ir ieslēgts, vietnes nevar izmantot sīkfailus, lai izsekotu jūsu darbības tīmeklī. Dažu tīmekļa vietņu darbībā var rasties traucējumi.</translation>
 <translation id="9137013805542155359">Rādīt oriģinālo</translation>
 <translation id="9137157311132182254">Vēlamā meklētājprogramma</translation>
 <translation id="9137248913990643158">Pirms šīs lietotnes izmantošanas, lūdzu, palaidiet pārlūku Chrome un pierakstieties tajā.</translation>

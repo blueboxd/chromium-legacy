@@ -29,7 +29,9 @@ class SendGlobalKeyEventsHelper {
   // Callback for MockCrApplication.
   void ObserveSendEvent(NSEvent* event);
 
-  IMP original_send_event() const { return original_send_event_; }
+  void OriginalSendEvent(id receiver, SEL selector, NSEvent* event) {
+    scoped_swizzler_->InvokeOriginal<void, NSEvent*>(receiver, selector, event);
+  }
 
   void SendGlobalKeyEventsAndWait(int key_code, int modifier_flags);
 
@@ -39,7 +41,6 @@ class SendGlobalKeyEventsHelper {
                           bool key_down);
 
   std::unique_ptr<base::mac::ScopedObjCClassSwizzler> scoped_swizzler_;
-  IMP original_send_event_ = nullptr;
   base::ScopedCFTypeRef<CGEventSourceRef> event_source_;
   CGEventTapLocation event_tap_location_;
   base::RunLoop run_loop_;
@@ -62,7 +63,7 @@ SendGlobalKeyEventsHelper* g_global_key_events_helper = nullptr;
 - (void)sendEvent:(NSEvent*)event {
   DCHECK(g_global_key_events_helper);
   g_global_key_events_helper->ObserveSendEvent(event);
-  g_global_key_events_helper->original_send_event()(self, _cmd, event);
+  g_global_key_events_helper->OriginalSendEvent(self, _cmd, event);
 }
 
 @end
@@ -78,7 +79,6 @@ SendGlobalKeyEventsHelper::SendGlobalKeyEventsHelper()
   scoped_swizzler_ = std::make_unique<base::mac::ScopedObjCClassSwizzler>(
       [BrowserCrApplication class], [MockCrApplication class],
       @selector(sendEvent:));
-  original_send_event_ = scoped_swizzler_->GetOriginalImplementation();
 }
 
 SendGlobalKeyEventsHelper::~SendGlobalKeyEventsHelper() {

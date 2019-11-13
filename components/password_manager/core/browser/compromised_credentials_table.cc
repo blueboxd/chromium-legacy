@@ -11,102 +11,112 @@
 namespace password_manager {
 namespace {
 
-constexpr char kLeakedCredentialsTableName[] = "leaked_credentials";
+constexpr char kCompromisedCredentialsTableName[] = "compromised_credentials";
 
-// Represents columns of the leaked credentials table. Used with SQL
+// Represents columns of the compromised credentials table. Used with SQL
 // queries that use all the columns.
-enum class LeakedCredentialsTableColumn {
+enum class CompromisedCredentialsTableColumn {
   kUrl,
   kUsername,
   kCreateTime,
-  kMaxValue = kCreateTime
+  kCompromiseType,
+  kMaxValue = kCompromiseType
 };
 
-// Casts the leaked credentials table column enum to its integer value.
-int GetColumnNumber(LeakedCredentialsTableColumn column) {
+// Casts the compromised credentials table column enum to its integer value.
+int GetColumnNumber(CompromisedCredentialsTableColumn column) {
   return static_cast<int>(column);
 }
 
 // Teaches |builder| about the different DB schemes in different versions.
-void InitializeLeakedCredentialsBuilder(SQLTableBuilder* builder) {
+void InitializeCompromisedCredentialsBuilder(SQLTableBuilder* builder) {
   // Version 0.
   builder->AddColumnToUniqueKey("url", "VARCHAR NOT NULL");
   builder->AddColumnToUniqueKey("username", "VARCHAR NOT NULL");
   builder->AddColumn("create_time", "INTEGER NOT NULL");
-  builder->AddIndex("leaked_credentials_index", {"url", "username"});
+  builder->AddColumnToUniqueKey("compromise_type", "INTEGER NOT NULL");
+  builder->AddIndex("compromised_credentials_index",
+                    {"url", "username", "compromise_type"});
   builder->SealVersion();
 }
 
-// Returns a leaked credentials vector from the SQL statement.
-std::vector<LeakedCredentials> StatementToLeakedCredentials(sql::Statement* s) {
-  std::vector<LeakedCredentials> results;
+// Returns a compromised credentials vector from the SQL statement.
+std::vector<CompromisedCredentials> StatementToCompromisedCredentials(
+    sql::Statement* s) {
+  std::vector<CompromisedCredentials> results;
   while (s->Step()) {
-    GURL url(
-        s->ColumnString(GetColumnNumber(LeakedCredentialsTableColumn::kUrl)));
+    GURL url(s->ColumnString(
+        GetColumnNumber(CompromisedCredentialsTableColumn::kUrl)));
     base::string16 username = s->ColumnString16(
-        GetColumnNumber(LeakedCredentialsTableColumn::kUsername));
+        GetColumnNumber(CompromisedCredentialsTableColumn::kUsername));
     base::Time create_time = base::Time::FromDeltaSinceWindowsEpoch(
         (base::TimeDelta::FromMicroseconds(s->ColumnInt64(
-            GetColumnNumber(LeakedCredentialsTableColumn::kCreateTime)))));
-    results.push_back(
-        LeakedCredentials(std::move(url), std::move(username), create_time));
+            GetColumnNumber(CompromisedCredentialsTableColumn::kCreateTime)))));
+    CompromiseType compromise_type = static_cast<CompromiseType>(s->ColumnInt64(
+        GetColumnNumber(CompromisedCredentialsTableColumn::kCompromiseType)));
+    results.push_back(CompromisedCredentials(
+        std::move(url), std::move(username), create_time, compromise_type));
   }
   return results;
 }
 
 }  // namespace
 
-bool operator==(const LeakedCredentials& lhs, const LeakedCredentials& rhs) {
+bool operator==(const CompromisedCredentials& lhs,
+                const CompromisedCredentials& rhs) {
   return lhs.url == rhs.url && lhs.username == rhs.username &&
-         lhs.create_time == rhs.create_time;
+         lhs.create_time == rhs.create_time &&
+         lhs.compromise_type == rhs.compromise_type;
 }
 
-void LeakedCredentialsTable::Init(sql::Database* db) {
+void CompromisedCredentialsTable::Init(sql::Database* db) {
   db_ = db;
 }
 
-bool LeakedCredentialsTable::CreateTableIfNecessary() {
-  if (!db_->DoesTableExist(kLeakedCredentialsTableName)) {
-    SQLTableBuilder builder(kLeakedCredentialsTableName);
-    InitializeLeakedCredentialsBuilder(&builder);
-    if (!builder.CreateTable(db_))
-      return false;
-  }
-  return true;
+bool CompromisedCredentialsTable::CreateTableIfNecessary() {
+  if (db_->DoesTableExist(kCompromisedCredentialsTableName))
+    return true;
+
+  SQLTableBuilder builder(kCompromisedCredentialsTableName);
+  InitializeCompromisedCredentialsBuilder(&builder);
+  return builder.CreateTable(db_);
 }
 
-bool LeakedCredentialsTable::AddRow(
-    const LeakedCredentials& leaked_credentials) {
-  if (!leaked_credentials.url.is_valid())
+bool CompromisedCredentialsTable::AddRow(
+    const CompromisedCredentials& compromised_credentials) {
+  if (!compromised_credentials.url.is_valid())
     return false;
   sql::Statement s(
       db_->GetCachedStatement(SQL_FROM_HERE,
-                              "INSERT OR IGNORE INTO leaked_credentials "
-                              "(url, username, create_time) "
-                              "VALUES (?, ?, ?)"));
-  s.BindString(GetColumnNumber(LeakedCredentialsTableColumn::kUrl),
-               leaked_credentials.url.spec());
-  s.BindString16(GetColumnNumber(LeakedCredentialsTableColumn::kUsername),
-                 leaked_credentials.username);
-  s.BindInt64(GetColumnNumber(LeakedCredentialsTableColumn::kCreateTime),
-              leaked_credentials.create_time.ToDeltaSinceWindowsEpoch()
+                              "INSERT OR IGNORE INTO compromised_credentials "
+                              "(url, username, create_time, compromise_type) "
+                              "VALUES (?, ?, ?, ?)"));
+  s.BindString(GetColumnNumber(CompromisedCredentialsTableColumn::kUrl),
+               compromised_credentials.url.spec());
+  s.BindString16(GetColumnNumber(CompromisedCredentialsTableColumn::kUsername),
+                 compromised_credentials.username);
+  s.BindInt64(GetColumnNumber(CompromisedCredentialsTableColumn::kCreateTime),
+              compromised_credentials.create_time.ToDeltaSinceWindowsEpoch()
                   .InMicroseconds());
+  s.BindInt64(
+      GetColumnNumber(CompromisedCredentialsTableColumn::kCompromiseType),
+      static_cast<int>(compromised_credentials.compromise_type));
   return s.Run();
 }
 
-bool LeakedCredentialsTable::RemoveRow(const GURL& url,
-                                       const base::string16& username) {
+bool CompromisedCredentialsTable::RemoveRow(const GURL& url,
+                                            const base::string16& username) {
   if (!url.is_valid())
     return false;
   sql::Statement s(db_->GetCachedStatement(
       SQL_FROM_HERE,
-      "DELETE FROM leaked_credentials WHERE url = ? AND username = ? "));
+      "DELETE FROM compromised_credentials WHERE url = ? AND username = ? "));
   s.BindString(0, url.spec());
   s.BindString16(1, username);
   return s.Run();
 }
 
-bool LeakedCredentialsTable::RemoveRowsByUrlAndTime(
+bool CompromisedCredentialsTable::RemoveRowsByUrlAndTime(
     const base::RepeatingCallback<bool(const GURL&)>& url_filter,
     base::Time remove_begin,
     base::Time remove_end) {
@@ -119,7 +129,7 @@ bool LeakedCredentialsTable::RemoveRowsByUrlAndTime(
   if (!url_filter) {
     sql::Statement s(
         db_->GetCachedStatement(SQL_FROM_HERE,
-                                "DELETE FROM leaked_credentials WHERE "
+                                "DELETE FROM compromised_credentials WHERE "
                                 "create_time >= ? AND create_time < ?"));
     s.BindInt64(0, remove_begin_us);
     s.BindInt64(1, remove_end_us);
@@ -129,7 +139,7 @@ bool LeakedCredentialsTable::RemoveRowsByUrlAndTime(
   // Otherwise, filter urls.
   sql::Statement s(db_->GetCachedStatement(
       SQL_FROM_HERE,
-      "SELECT DISTINCT url FROM leaked_credentials WHERE "
+      "SELECT DISTINCT url FROM compromised_credentials WHERE "
       "create_time >= ? AND create_time < ?"));
   s.BindInt64(0, remove_begin_us);
   s.BindInt64(1, remove_end_us);
@@ -144,10 +154,10 @@ bool LeakedCredentialsTable::RemoveRowsByUrlAndTime(
 
   bool success = true;
   for (const std::string& url : urls) {
-    sql::Statement s(
-        db_->GetCachedStatement(SQL_FROM_HERE,
-                                "DELETE FROM leaked_credentials WHERE url = ? "
-                                "AND create_time >= ? AND create_time < ?"));
+    sql::Statement s(db_->GetCachedStatement(
+        SQL_FROM_HERE,
+        "DELETE FROM compromised_credentials WHERE url = ? "
+        "AND create_time >= ? AND create_time < ?"));
     s.BindString(0, url);
     s.BindInt64(1, remove_begin_us);
     s.BindInt64(2, remove_end_us);
@@ -156,11 +166,10 @@ bool LeakedCredentialsTable::RemoveRowsByUrlAndTime(
   return success;
 }
 
-std::vector<LeakedCredentials> LeakedCredentialsTable::GetAllRows() {
-  static constexpr char query[] =
-      "SELECT url, username, create_time FROM leaked_credentials";
+std::vector<CompromisedCredentials> CompromisedCredentialsTable::GetAllRows() {
+  static constexpr char query[] = "SELECT * FROM compromised_credentials";
   sql::Statement s(db_->GetCachedStatement(SQL_FROM_HERE, query));
-  return StatementToLeakedCredentials(&s);
+  return StatementToCompromisedCredentials(&s);
 }
 
 }  // namespace password_manager

@@ -549,7 +549,8 @@ void GuestViewBase::WillAttach(WebContents* embedder_web_contents,
 
   if (content::GuestMode::IsCrossProcessFrameGuest(web_contents())) {
     owner_web_contents_->AttachInnerWebContents(
-        base::WrapUnique<WebContents>(web_contents()), outer_contents_frame);
+        base::WrapUnique<WebContents>(web_contents()), outer_contents_frame,
+        is_full_page_plugin);
     // TODO(ekaramad): MimeHandlerViewGuest might not need this ACK
     // (https://crbug.com/659750).
     // We don't ACK until after AttachToOuterWebContentsFrame, so that

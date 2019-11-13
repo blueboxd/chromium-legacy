@@ -41,7 +41,7 @@ std::string_view DirName(std::string_view path, char sep, char othersep) {
 }  // namespace
 
 TreeBuilder::TreeBuilder(
-    SizeInfo* size_info,
+    BaseSizeInfo* size_info,
     bool group_by_component,
     std::vector<std::function<bool(const Symbol&)>> filters)
     : size_info_(size_info),
@@ -123,9 +123,8 @@ void TreeBuilder::AddFileEntry(const std::string_view source_path,
     TreeNode* symbol_node = new TreeNode();
     symbol_node->container_type = ContainerType::kSymbol;
     symbol_node->id_path = sym->full_name;
-    symbol_node->size = sym->pss();
-    symbol_node->node_stats = NodeStats(
-        size_info_->ShortSectionName(sym->section_name), 1, symbol_node->size);
+    symbol_node->size = sym->pss;
+    symbol_node->node_stats = NodeStats(sym->sectionId, 1, symbol_node->size);
     AttachToParent(symbol_node, file_node);
   }
 

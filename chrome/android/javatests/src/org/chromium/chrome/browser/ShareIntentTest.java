@@ -150,7 +150,7 @@ public class ShareIntentTest {
             return new MockChromeActivity(mActivityTestRule.getActivity());
         });
         RootUiCoordinator rootUiCoordinator = TestThreadUtils.runOnUiThreadBlocking(
-                () -> { return new RootUiCoordinator(mockActivity); });
+                () -> { return new RootUiCoordinator(mockActivity, null, null); });
         ShareHelper.setLastShareComponentName(
                 new ComponentName("test.package", "test.activity"), null);
         // Skips the capture of screenshot and notifies with an empty file.

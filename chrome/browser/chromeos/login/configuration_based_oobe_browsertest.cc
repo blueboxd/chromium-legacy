@@ -160,7 +160,7 @@ class OobeConfigurationTest : public OobeBaseTest {
     LoadConfiguration();
 
     // Make sure that OOBE is run as an "official" build.
-    official_build_override_ = WizardController::ForceOfficialBuildForTesting();
+    branded_build_override_ = WizardController::ForceBrandedBuildForTesting();
 
     // Clear portal list (as it is by default in OOBE).
     NetworkHandler::Get()->network_state_handler()->SetCheckPortalList("");
@@ -169,7 +169,7 @@ class OobeConfigurationTest : public OobeBaseTest {
  protected:
   // Owned by DBusThreadManagerSetter
   chromeos::FakeUpdateEngineClient* fake_update_engine_client_;
-  std::unique_ptr<base::AutoReset<bool>> official_build_override_;
+  std::unique_ptr<base::AutoReset<bool>> branded_build_override_;
   base::ScopedTempDir fake_policy_dir_;
 
  private:

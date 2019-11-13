@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/arc/instance_throttle/arc_active_window_throttle_observer.h"
 #include "chrome/browser/chromeos/arc/instance_throttle/arc_app_launch_throttle_observer.h"
 #include "chrome/browser/chromeos/arc/instance_throttle/arc_boot_phase_throttle_observer.h"
+#include "chrome/browser/chromeos/arc/instance_throttle/arc_pip_window_throttle_observer.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_util.h"
 
@@ -78,8 +79,9 @@ ArcInstanceThrottle::ArcInstanceThrottle(content::BrowserContext* context,
     : ThrottleService(context),
       delegate_(std::make_unique<DefaultDelegateImpl>()) {
   AddObserver(std::make_unique<ArcActiveWindowThrottleObserver>());
-  AddObserver(std::make_unique<ArcBootPhaseThrottleObserver>());
   AddObserver(std::make_unique<ArcAppLaunchThrottleObserver>());
+  AddObserver(std::make_unique<ArcBootPhaseThrottleObserver>());
+  AddObserver(std::make_unique<ArcPipWindowThrottleObserver>());
   StartObservers();
 }
 

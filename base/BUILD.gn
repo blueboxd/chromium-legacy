@@ -3361,6 +3361,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/compat/ApiHelperForO.java",
       "android/java/src/org/chromium/base/compat/ApiHelperForOMR1.java",
       "android/java/src/org/chromium/base/compat/ApiHelperForP.java",
+      "android/java/src/org/chromium/base/compat/ApiHelperForQ.java",
       "android/java/src/org/chromium/base/library_loader/LegacyLinker.java",
       "android/java/src/org/chromium/base/library_loader/LibraryLoader.java",
       "android/java/src/org/chromium/base/library_loader/LibraryPrefetcher.java",

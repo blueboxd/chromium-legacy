@@ -492,6 +492,10 @@ void LocalFrame::DidChangeVisibilityState() {
   Frame::DidChangeVisibilityState();
 }
 
+bool LocalFrame::IsCaretBrowsingEnabled() const {
+  return GetSettings() ? GetSettings()->GetCaretBrowsingEnabled() : false;
+}
+
 void LocalFrame::HookBackForwardCacheEviction() {
   // Register a callback dispatched when JavaScript is executed on the frame.
   // The callback evicts the frame. If a frame is frozen by BackForwardCache,

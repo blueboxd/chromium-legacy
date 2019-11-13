@@ -34,6 +34,11 @@ const base::Feature kCustomizationMenuV2{"NtpCustomizationMenuV2",
 const base::Feature kDismissPromos{"DismissNtpPromos",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Depends on kRealbox being enabled. If enabled, the NTP "realbox" will be
+// themed like the omnibox (same background/text/selected/hover colors).
+const base::Feature kRealboxMatchOmniboxTheme{
+    "NtpRealboxMatchOmniboxTheme", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled, the real search box ("realbox") on the New Tab page will show a
 // Google (g) icon instead of the typical magnifying glass (aka loupe).
 const base::Feature kRealboxUseGoogleGIcon{"NtpRealboxUseGoogleGIcon",

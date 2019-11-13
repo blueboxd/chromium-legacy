@@ -139,7 +139,9 @@ def ProcessOptions(options):
 
   if not options.output_formats:
     options.output_formats = ['html']
-  elif 'none' in options.output_formats:
+  else:
+    options.output_formats = sorted(set(options.output_formats))
+  if 'none' in options.output_formats:
     options.output_formats.remove('none')
 
 

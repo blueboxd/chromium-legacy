@@ -237,7 +237,6 @@ AutocompleteMatch OmniboxEditModel::CurrentMatch(
     GURL* alternate_nav_url) const {
   // If we have a valid match use it. Otherwise get one for the current text.
   AutocompleteMatch match = omnibox_controller_->current_match();
-
   if (!match.destination_url.is_valid()) {
     GetInfoForCurrentText(&match, alternate_nav_url);
   } else if (alternate_nav_url) {
@@ -1196,7 +1195,8 @@ void OmniboxEditModel::OnUpOrDownKeyPressed(int count) {
     // (user_input_in_progress_ is false) unless the first result is a
     // verbatim match of the omnibox input (on-focus query refinements on SERP).
     const size_t line_no = GetNewSelectedLine(count);
-    if (has_temporary_text_ && line_no == 0 &&
+    if (result().default_match() != result().end() && has_temporary_text_ &&
+        line_no == 0 &&
         (user_input_in_progress_ ||
          result().default_match()->IsVerbatimType())) {
       RevertTemporaryTextAndPopup();
@@ -1506,31 +1506,29 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
                                              GURL* alternate_nav_url) const {
   DCHECK(match);
 
+  // If there's a query in progress or the popup is open, pick out the default
+  // match or selected match, if there is one.
+  bool found_match_for_text = false;
   if (query_in_progress() || PopupIsOpen()) {
-    if (query_in_progress()) {
-      // It's technically possible for |result| to be empty if no provider
-      // returns a synchronous result but the query has not completed
-      // synchronously; practically, however, that should never actually happen.
-      if (result().empty())
-        return;
+    if (query_in_progress() && result().default_match() != result().end()) {
       // The user cannot have manually selected a match, or the query would have
       // stopped. So the default match must be the desired selection.
       *match = *result().default_match();
-    } else {
-      // If there are no results, the popup should be closed, so we shouldn't
-      // have gotten here.
-      CHECK(!result().empty());
-      CHECK(popup_model()->selected_line() < result().size());
+      found_match_for_text = true;
+    } else if (popup_model()->selected_line() != OmniboxPopupModel::kNoMatch) {
       const AutocompleteMatch& selected_match =
           result().match_at(popup_model()->selected_line());
       *match =
           (popup_model()->selected_line_state() == OmniboxPopupModel::KEYWORD) ?
               *selected_match.associated_keyword : selected_match;
+      found_match_for_text = true;
     }
-    if (alternate_nav_url &&
+    if (found_match_for_text && alternate_nav_url &&
         (!popup_model() || !popup_model()->has_selected_match()))
       *alternate_nav_url = result().alternate_nav_url();
-  } else {
+  }
+
+  if (!found_match_for_text) {
     client_->GetAutocompleteClassifier()->Classify(
         MaybePrependKeyword(view_->GetText()), is_keyword_selected(), true,
         GetPageClassification(), match, alternate_nav_url);
@@ -1545,12 +1543,16 @@ void OmniboxEditModel::RevertTemporaryTextAndPopup() {
   has_temporary_text_ = false;
 
   if (popup_model())
-    popup_model()->ResetToDefaultMatch();
+    popup_model()->ResetToInitialState();
 
-  // If user input is not in progress, we are reverting an on-focus suggestion.
-  // Set the window text back to the original input, rather than the top match.
+  // There are two cases in which resetting to the default match doesn't restore
+  // the proper original text:
+  //  1. If user input is not in progress, we are reverting an on-focus
+  //     suggestion. These may be unrelated to the original input.
+  //  2. If there's no default match at all.
+  //
   // The original selection will be restored in OnRevertTemporaryText() below.
-  if (!user_input_in_progress_) {
+  if (!user_input_in_progress_ || result().default_match() == result().end()) {
     view_->SetWindowTextAndCaretPos(input_.text(), /*caret_pos=*/0,
                                     /*update_popup=*/false,
                                     /*notify_text_changed=*/true);

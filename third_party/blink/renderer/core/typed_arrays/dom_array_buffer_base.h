@@ -21,7 +21,17 @@ class CORE_EXPORT DOMArrayBufferBase : public ScriptWrappable {
 
   const void* Data() const { return Buffer()->Data(); }
   void* Data() { return Buffer()->Data(); }
-  unsigned ByteLength() const { return Buffer()->ByteLengthAsUnsigned(); }
+
+  size_t ByteLengthAsSizeT() const { return Buffer()->ByteLengthAsSizeT(); }
+
+  // This function is deprecated and should not be used. Use {ByteLengthAsSizeT}
+  // instead.
+  unsigned DeprecatedByteLengthAsUnsigned() const {
+    size_t size = ByteLengthAsSizeT();
+    CHECK_LE(size, static_cast<size_t>(std::numeric_limits<unsigned>::max()));
+    return static_cast<unsigned>(size);
+  }
+
   bool IsDetached() const { return Buffer()->IsDetached(); }
   bool IsShared() const { return Buffer()->IsShared(); }
 

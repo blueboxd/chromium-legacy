@@ -246,43 +246,40 @@ TEST_F(DnsClientTest, OverrideToInvalid) {
   EXPECT_FALSE(client_->GetEffectiveConfig());
 }
 
-TEST_F(DnsClientTest, DohProbes) {
-  URLRequestContext context;
-  client_->SetRequestContextForProbes(&context);
-
+TEST_F(DnsClientTest, ActivateDohProbes) {
   client_->SetSystemConfig(ValidConfigWithDoh());
   auto transaction_factory =
       std::make_unique<MockDnsTransactionFactory>(MockDnsClientRuleList());
   auto* transaction_factory_ptr = transaction_factory.get();
   client_->SetTransactionFactoryForTesting(std::move(transaction_factory));
 
-  client_->StartDohProbesForTesting();
-  EXPECT_FALSE(transaction_factory_ptr->doh_probes_running());
-  FastForwardBy(DnsClient::kInitialDohTimeout);
+  ASSERT_FALSE(transaction_factory_ptr->doh_probes_running());
+
+  URLRequestContext context;
+  client_->ActivateDohProbes(&context);
   EXPECT_TRUE(transaction_factory_ptr->doh_probes_running());
 }
 
-TEST_F(DnsClientTest, CancelDohProbesBeforeEnabled) {
-  URLRequestContext context;
-  client_->SetRequestContextForProbes(&context);
-
+TEST_F(DnsClientTest, CancelDohProbes) {
   client_->SetSystemConfig(ValidConfigWithDoh());
   auto transaction_factory =
       std::make_unique<MockDnsTransactionFactory>(MockDnsClientRuleList());
   auto* transaction_factory_ptr = transaction_factory.get();
   client_->SetTransactionFactoryForTesting(std::move(transaction_factory));
 
-  client_->StartDohProbesForTesting();
-  EXPECT_FALSE(transaction_factory_ptr->doh_probes_running());
-  client_->CancelProbesForContext(&context);
+  URLRequestContext context;
+  client_->ActivateDohProbes(&context);
 
-  FastForwardUntilNoTasksRemain();
+  ASSERT_TRUE(transaction_factory_ptr->doh_probes_running());
+
+  client_->CancelDohProbes();
   EXPECT_FALSE(transaction_factory_ptr->doh_probes_running());
 }
 
-TEST_F(DnsClientTest, CancelDohProbesAfterEnabled) {
+TEST_F(DnsClientTest, CancelDohProbes_BeforeConfig) {
   URLRequestContext context;
-  client_->SetRequestContextForProbes(&context);
+  client_->ActivateDohProbes(&context);
+  client_->CancelDohProbes();
 
   client_->SetSystemConfig(ValidConfigWithDoh());
   auto transaction_factory =
@@ -290,11 +287,6 @@ TEST_F(DnsClientTest, CancelDohProbesAfterEnabled) {
   auto* transaction_factory_ptr = transaction_factory.get();
   client_->SetTransactionFactoryForTesting(std::move(transaction_factory));
 
-  client_->StartDohProbesForTesting();
-  FastForwardUntilNoTasksRemain();
-  EXPECT_TRUE(transaction_factory_ptr->doh_probes_running());
-
-  client_->CancelProbesForContext(&context);
   EXPECT_FALSE(transaction_factory_ptr->doh_probes_running());
 }
 

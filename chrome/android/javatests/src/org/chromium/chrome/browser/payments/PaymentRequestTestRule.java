@@ -971,6 +971,9 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
     @Override
     public void onPaymentRequestReadyForInput(PaymentRequestUI ui) {
         ThreadUtils.assertOnUiThread();
+        // This happens when the payment request is created by a direct js function call rather than
+        // calling the js function via triggerUIAndWait() which sets the mUI.
+        if (mUI == null) mUI = ui;
         mReadyForInput.notifyCalled(ui);
     }
 
@@ -995,6 +998,9 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
     @Override
     public void onPaymentRequestReadyToPay(PaymentRequestUI ui) {
         ThreadUtils.assertOnUiThread();
+        // This happens when the payment request is created by a direct js function call rather than
+        // calling the js function via triggerUIAndWait() which sets the mUI.
+        if (mUI == null) mUI = ui;
         mReadyToPay.notifyCalled(ui);
     }
 

@@ -65,11 +65,15 @@ Polymer({
    * Reacts to changes in loadTimeData.
    */
   updateLocalizedContent: function() {
-    let useMakeBetterScreen = loadTimeData.getBoolean('syncConsentMakeBetter');
-    if (useMakeBetterScreen) {
+    if (loadTimeData.getBoolean('splitSettingsSync')) {
+      // SplitSettingsSync version.
+      this.showScreen_('osSyncConsentDialog');
+    } else if (loadTimeData.getBoolean('syncConsentMakeBetter')) {
+      // Unified Consent version.
       if (this.$.syncConsentMakeChromeSyncOptionsDialog.hidden)
         this.showScreen_('syncConsentNewDialog');
     } else {
+      // Regular version.
       this.showScreen_('syncConsentOverviewDialog');
     }
     this.i18nUpdateLocale();
@@ -89,6 +93,20 @@ Polymer({
         this.getConsentDescription_(), this.getConsentConfirmation_(e.path)
       ]);
     }
+  },
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onOsSyncAcceptAndContinue_: function(event) {
+    assert(loadTimeData.getBoolean('splitSettingsSync'));
+    assert(event.path);
+    let enableOsSync = !!this.$.enableOsSyncToggle.checked;
+    chrome.send('login.SyncConsentScreen.osSyncAcceptAndContinue', [
+      this.getConsentDescription_(), this.getConsentConfirmation_(event.path),
+      enableOsSync
+    ]);
   },
 
   /**

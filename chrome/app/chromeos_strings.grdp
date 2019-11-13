@@ -3825,6 +3825,9 @@
   <message name="IDS_SMART_LOCK_SPINNER_ACCESSIBILITY_LABEL" desc="Label for the spinner icon used for accessibility purposes. This label is needed because this state does not have a tooltip.">
     Finding your phone
   </message>
+  <message name="IDS_SMART_LOCK_SCREENLOCK_AUTHENTICATED_LABEL" desc="Label for the Smart Lock icon used for accessibility purposes. Describes when a phone eligible to unlock the Chromebook is detected and authenticated.">
+    Your device is unlocked with Smart Lock. Press Enter to unlock.
+  </message>
 
   <!-- User Image Selection Dialog -->
   <message name="IDS_USER_IMAGE_SCREEN_TITLE" desc="String to be displayed in the title bar of the oobe/login user image selection dialog">

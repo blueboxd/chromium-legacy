@@ -359,6 +359,9 @@ extern const base::Feature kParentAccessCode;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kParentAccessCodeForTimeChange;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kPerAppTimeLimits;
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)

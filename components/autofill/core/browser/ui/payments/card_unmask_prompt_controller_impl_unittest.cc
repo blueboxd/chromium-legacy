@@ -96,14 +96,20 @@ class CardUnmaskPromptControllerImplGenericTest {
 
   void ShowPrompt() {
     controller_->ShowPrompt(
-        test_unmask_prompt_view_.get(), test::GetMaskedServerCard(),
-        AutofillClient::UNMASK_FOR_AUTOFILL, delegate_->GetWeakPtr());
+        base::Bind(
+            &CardUnmaskPromptControllerImplGenericTest::GetCardUnmaskPromptView,
+            base::Unretained(this)),
+        test::GetMaskedServerCard(), AutofillClient::UNMASK_FOR_AUTOFILL,
+        delegate_->GetWeakPtr());
   }
 
   void ShowPromptAmex() {
     controller_->ShowPrompt(
-        test_unmask_prompt_view_.get(), test::GetMaskedServerCardAmex(),
-        AutofillClient::UNMASK_FOR_AUTOFILL, delegate_->GetWeakPtr());
+        base::Bind(
+            &CardUnmaskPromptControllerImplGenericTest::GetCardUnmaskPromptView,
+            base::Unretained(this)),
+        test::GetMaskedServerCardAmex(), AutofillClient::UNMASK_FOR_AUTOFILL,
+        delegate_->GetWeakPtr());
   }
 
   void ShowPromptAndSimulateResponse(bool should_store_pan,
@@ -130,6 +136,10 @@ class CardUnmaskPromptControllerImplGenericTest {
   std::unique_ptr<TestCardUnmaskDelegate> delegate_;
 
  private:
+  CardUnmaskPromptView* GetCardUnmaskPromptView() {
+    return test_unmask_prompt_view_.get();
+  }
+
   DISALLOW_COPY_AND_ASSIGN(CardUnmaskPromptControllerImplGenericTest);
 };
 

@@ -17,7 +17,7 @@
 namespace caspian {
 class TreeBuilder {
  public:
-  TreeBuilder(SizeInfo* size_info,
+  TreeBuilder(BaseSizeInfo* size_info,
               bool group_by_component,
               std::vector<std::function<bool(const Symbol&)>> filters);
   ~TreeBuilder();
@@ -45,7 +45,7 @@ class TreeBuilder {
   // node.
   std::unordered_map<std::string_view, TreeNode*> _parents;
 
-  SizeInfo* size_info_ = nullptr;
+  BaseSizeInfo* size_info_ = nullptr;
   // Contained TreeNode hold lightweight string_views to fields in SizeInfo.
   // If grouping by component, this isn't possible: TreeNode id_paths are not
   // substrings of SizeInfo-owned strings. In that case, the strings are stored

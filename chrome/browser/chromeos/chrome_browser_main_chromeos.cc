@@ -577,6 +577,11 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
   // -- immediately before Profile creation().
 
+  // PreProfileInit() is not always called if no browser process is started
+  // (e.g. during some browser tests). Set a boolean so that we do not try to
+  // destroy singletons that are initialized here.
+  pre_profile_init_called_ = true;
+
   // Now that the file thread exists we can record our stats.
   BootTimesRecorder::Get()->RecordChromeMainStats();
   LoginEventRecorder::Get()->SetDelegate(BootTimesRecorder::Get());
@@ -954,6 +959,10 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
 }
 
 // Shut down services before the browser process, etc are destroyed.
+// NOTE: This may get called without PreProfileInit() (or other
+// PreMainMessageLoopRun sub-stages) getting called, so be careful with
+// shutdown calls and test |pre_profile_init_called_| if necessary. See
+// crbug.com/702403 for details.
 void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   crostini_unsupported_action_notifier_.reset();
 
@@ -965,7 +974,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
     lock_screen_apps_state_controller_->Shutdown();
 
   // This must be shut down before |arc_service_launcher_|.
-  NoteTakingHelper::Shutdown();
+  if (pre_profile_init_called_)
+    NoteTakingHelper::Shutdown();
 
   arc_service_launcher_->Shutdown();
 
@@ -979,7 +989,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   shutdown_policy_forwarder_.reset();
 
   // Destroy the application name notifier for Kiosk mode.
-  KioskModeIdleAppNameNotification::Shutdown();
+  if (pre_profile_init_called_)
+    KioskModeIdleAppNameNotification::Shutdown();
 
   // Shutdown the upgrade detector for Chrome OS. The upgrade detector
   // stops monitoring changes from the update engine.
@@ -1003,7 +1014,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   wake_on_wifi_manager_.reset();
   fast_transition_observer_.reset();
   network_throttling_observer_.reset();
-  ScreenLocker::ShutDownClass();
+  if (pre_profile_init_called_)
+    ScreenLocker::ShutDownClass();
   low_disk_notification_.reset();
   demo_mode_resources_remover_.reset();
   adaptive_screen_brightness_manager_.reset();
@@ -1021,10 +1033,10 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   if (LoginScreenExtensionUiHandler::Get(false /*can_create*/))
     LoginScreenExtensionUiHandler::Shutdown();
 
-  MagnificationManager::Shutdown();
-
-  audio::SoundsManager::Shutdown();
-
+  if (pre_profile_init_called_) {
+    MagnificationManager::Shutdown();
+    audio::SoundsManager::Shutdown();
+  }
   system::StatisticsProvider::GetInstance()->Shutdown();
 
   DemoSession::ShutDownIfInitialized();
@@ -1035,10 +1047,14 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   if (NetworkCertLoader::IsInitialized())
     NetworkCertLoader::Get()->set_is_shutting_down();
 
+  CHECK(g_browser_process);
+  CHECK(g_browser_process->platform_part());
+
   // Let the UserManager unregister itself as an observer of the CrosSettings
   // singleton before it is destroyed. This also ensures that the UserManager
   // has no URLRequest pending (see http://crbug.com/276659).
-  g_browser_process->platform_part()->user_manager()->Shutdown();
+  if (g_browser_process->platform_part()->user_manager())
+    g_browser_process->platform_part()->user_manager()->Shutdown();
 
   // Let the DeviceDisablingManager unregister itself as an observer of the
   // CrosSettings singleton before it is destroyed.
@@ -1052,7 +1068,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   KioskAppManager::Shutdown();
 
   // Make sure that there is no pending URLRequests.
-  UserSessionManager::GetInstance()->Shutdown();
+  if (pre_profile_init_called_)
+    UserSessionManager::GetInstance()->Shutdown();
 
   // Give BrowserPolicyConnectorChromeOS a chance to unregister any observers
   // on services that are going to be deleted later but before its Shutdown()
@@ -1063,15 +1080,19 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   // Shutdown the virtual keyboard UI before destroying ash::Shell or the
   // primary profile.
-  chrome_keyboard_controller_client_->Shutdown();
+  if (chrome_keyboard_controller_client_)
+    chrome_keyboard_controller_client_->Shutdown();
 
   // Must occur before BrowserProcessImpl::StartTearDown() destroys the
   // ProfileManager.
-  Profile* primary_user = ProfileManager::GetPrimaryUserProfile();
-  if (primary_user) {
-    // See startup_settings_cache::ReadAppLocale() comment for why we do this.
-    startup_settings_cache::WriteAppLocale(primary_user->GetPrefs()->GetString(
-        language::prefs::kApplicationLocale));
+  if (pre_profile_init_called_) {
+    Profile* primary_user = ProfileManager::GetPrimaryUserProfile();
+    if (primary_user) {
+      // See startup_settings_cache::ReadAppLocale() comment for why we do this.
+      startup_settings_cache::WriteAppLocale(
+          primary_user->GetPrefs()->GetString(
+              language::prefs::kApplicationLocale));
+    }
   }
 
   // Cleans up dbus services depending on ash.
@@ -1092,9 +1113,10 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // |arc_service_launcher_| uses |scheduler_configuration_manager_|.
   scheduler_configuration_manager_.reset();
 
-  AccessibilityManager::Shutdown();
-
-  input_method::Shutdown();
+  if (pre_profile_init_called_) {
+    AccessibilityManager::Shutdown();
+    input_method::Shutdown();
+  }
 
   // Stops all in-flight OAuth2 token fetchers before the IO thread stops.
   DeviceOAuth2TokenServiceFactory::Shutdown();
@@ -1106,11 +1128,11 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   quirks::QuirksManager::Shutdown();
 
-  // Called after
-  // ChromeBrowserMainPartsLinux::PostMainMessageLoopRun() to be
-  // executed after execution of chrome::CloseAsh(), because some
-  // parts of WebUI depends on NetworkPortalDetector.
-  network_portal_detector::Shutdown();
+  // Called after ChromeBrowserMainPartsLinux::PostMainMessageLoopRun() (which
+  // calls chrome::CloseAsh()) because some parts of WebUI depend on
+  // NetworkPortalDetector.
+  if (pre_profile_init_called_)
+    network_portal_detector::Shutdown();
 
   g_browser_process->platform_part()->ShutdownSessionManager();
   // Ash needs to be closed before UserManager is destroyed.

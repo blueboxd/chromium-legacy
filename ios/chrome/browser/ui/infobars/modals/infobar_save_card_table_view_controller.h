@@ -20,8 +20,20 @@
                                (ChromeTableViewControllerStyle)appBarStyle
     NS_UNAVAILABLE;
 
+// Cardholder name to be displayed.
+@property(nonatomic, copy) NSString* cardholderName;
+
 // Card Issuer icon image to be displayed.
 @property(nonatomic, strong) UIImage* cardIssuerIcon;
+
+// Card Number to be displayed.
+@property(nonatomic, copy) NSString* cardNumber;
+
+// Card Expiration Month to be displayed
+@property(nonatomic, copy) NSString* expirationMonth;
+
+// Card Expiration Year to be displayed.
+@property(nonatomic, copy) NSString* expirationYear;
 
 @end
 

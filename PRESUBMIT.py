@@ -1320,6 +1320,9 @@ _JAVA_MULTIPLE_DEFINITION_EXCLUDED_PATHS = [
     r".*chrome[\\\/]android[\\\/]feed[\\\/]dummy[\\\/].*\.java",
 ]
 
+# List of image extensions that are used as resources in chromium.
+_IMAGE_EXTENSIONS = ['.svg', '.png', '.webp']
+
 # These paths contain test data and other known invalid JSON files.
 _KNOWN_INVALID_JSON_FILE_PATTERNS = [
     r'test[\\/]data[\\/]',
@@ -4079,6 +4082,36 @@ def _CheckFuzzTargets(input_api, output_api):
         long_text=long_text)]
 
 
+def _CheckNewImagesWarning(input_api, output_api):
+  """
+  Warns authors who add images into the repo to make sure their images are
+  optimized before committing.
+  """
+  images_added = False
+  image_paths = []
+  errors = []
+  filter_lambda = lambda x: input_api.FilterSourceFile(
+    x,
+    black_list=(('(?i).*test', r'.*\/junit\/')
+                + input_api.DEFAULT_BLACK_LIST),
+    white_list=[r'.*\/(drawable|mipmap)' ]
+  )
+  for f in input_api.AffectedFiles(
+      include_deletes=False, file_filter=filter_lambda):
+    local_path = f.LocalPath().lower()
+    if any(local_path.endswith(extension) for extension in _IMAGE_EXTENSIONS):
+      images_added = True
+      image_paths.append(f)
+  if images_added:
+    errors.append(output_api.PresubmitPromptWarning(
+        'It looks like you are trying to commit some images. If these are '
+        'non-test-only images, please make sure to read and apply the tips in '
+        'https://chromium.googlesource.com/chromium/src/+/HEAD/docs/speed/'
+        'binary_size/optimization_advice.md#optimizing-images\nThis check is '
+        'FYI only and will not block your CL on the CQ.', image_paths))
+  return errors
+
+
 def _AndroidSpecificOnUploadChecks(input_api, output_api):
   """Groups upload checks that target android code."""
   results = []
@@ -4091,6 +4124,7 @@ def _AndroidSpecificOnUploadChecks(input_api, output_api):
   results.extend(_CheckAndroidTestAnnotationUsage(input_api, output_api))
   results.extend(_CheckAndroidWebkitImports(input_api, output_api))
   results.extend(_CheckAndroidXmlStyle(input_api, output_api, True))
+  results.extend(_CheckNewImagesWarning(input_api, output_api))
   return results
 
 def _AndroidSpecificOnCommitChecks(input_api, output_api):

@@ -2725,8 +2725,6 @@ void GLRenderer::FinishDrawingFrame() {
   }
 
   swap_buffer_rect_.Union(current_frame()->root_damage_rect);
-  if (overdraw_feedback_)
-    FlushOverdrawFeedback(swap_buffer_rect_);
 
   if (use_swap_with_bounds_)
     swap_content_bounds_ = current_frame()->root_content_bounds;
@@ -2798,9 +2796,6 @@ void GLRenderer::CopyDrawnRenderPass(
     const copy_output::RenderPassGeometry& geometry,
     std::unique_ptr<CopyOutputRequest> request) {
   TRACE_EVENT0("viz", "GLRenderer::CopyDrawnRenderPass");
-
-  if (overdraw_feedback_)
-    FlushOverdrawFeedback(current_frame()->current_render_pass->output_rect);
 
   GLuint framebuffer_texture = 0;
   gfx::Size framebuffer_texture_size;

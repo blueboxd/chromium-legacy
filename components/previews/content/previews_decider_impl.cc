@@ -263,43 +263,6 @@ PreviewsEligibilityReason PreviewsDeciderImpl::DeterminePreviewEligibility(
   passed_reasons->push_back(
       PreviewsEligibilityReason::EXCLUDED_BY_MEDIA_SUFFIX);
 
-  // Skip blacklist checks if the blacklist is ignored.
-  if (!blacklist_ignored_) {
-    // Trigger the USER_RECENTLY_OPTED_OUT rule when a reload on a preview has
-    // occurred recently. No need to push_back the eligibility reason as it will
-    // be added in IsLoadedAndAllowed as the first check.
-    if (recent_preview_reload_time_ &&
-        recent_preview_reload_time_.value() + params::SingleOptOutDuration() >
-            clock_->Now()) {
-      return PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT;
-    }
-
-    // If the blacklist is unavailable and we are checking a commit-time
-    // preview, we will check for the blacklist at commit-time.
-    if (!IsCommitTimePreview(type)) {
-      if (!previews_black_list_)
-        return PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE;
-      passed_reasons->push_back(
-          PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE);
-
-      // The blacklist will disallow certain hosts for periods of time based on
-      // user's opting out of the preview.
-      PreviewsEligibilityReason status =
-          previews_black_list_->IsLoadedAndAllowed(
-              url, type,
-              is_drp_server_preview &&
-                  ignore_long_term_blacklist_for_server_previews_,
-              passed_reasons);
-
-      if (status != PreviewsEligibilityReason::ALLOWED) {
-        if (type == PreviewsType::LITE_PAGE) {
-          previews_data->set_black_listed_for_lite_page(true);
-        }
-        return status;
-      }
-    }
-  }
-
   // Check the network quality for client previews that don't have optimization
   // hints. This defers checking ECT for server previews because the server will
   // perform its own ECT check and for previews with hints because the hints may
@@ -357,7 +320,46 @@ PreviewsEligibilityReason PreviewsDeciderImpl::DeterminePreviewEligibility(
     }
   }
 
+  // Skip blacklist checks if the blacklist is ignored or defer check until
+  // commit time if preview type is to be decided at commit time.
+  if (!blacklist_ignored_ && !IsCommitTimePreview(type)) {
+    PreviewsEligibilityReason status =
+        CheckLocalBlacklist(url, type, is_drp_server_preview, passed_reasons);
+    if (status != PreviewsEligibilityReason::ALLOWED) {
+      if (type == PreviewsType::LITE_PAGE) {
+        previews_data->set_black_listed_for_lite_page(true);
+      }
+      return status;
+    }
+  }
+
   return PreviewsEligibilityReason::ALLOWED;
+}
+
+PreviewsEligibilityReason PreviewsDeciderImpl::CheckLocalBlacklist(
+    const GURL& url,
+    PreviewsType type,
+    bool is_drp_server_preview,
+    std::vector<PreviewsEligibilityReason>* passed_reasons) const {
+  if (!previews_black_list_)
+    return PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE;
+  passed_reasons->push_back(PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE);
+
+  // Trigger the USER_RECENTLY_OPTED_OUT rule when a reload on a preview has
+  // occurred recently. No need to push_back the eligibility reason as it will
+  // be added in IsLoadedAndAllowed as the first check.
+  if (recent_preview_reload_time_ &&
+      recent_preview_reload_time_.value() + params::SingleOptOutDuration() >
+          clock_->Now()) {
+    return PreviewsEligibilityReason::USER_RECENTLY_OPTED_OUT;
+  }
+
+  // The blacklist will disallow certain hosts for periods of time based on
+  // user's opting out of the preview.
+  return previews_black_list_->IsLoadedAndAllowed(
+      url, type,
+      is_drp_server_preview && ignore_long_term_blacklist_for_server_previews_,
+      passed_reasons);
 }
 
 bool PreviewsDeciderImpl::LoadPageHints(
@@ -402,18 +404,12 @@ bool PreviewsDeciderImpl::ShouldCommitPreview(
 
   const GURL committed_url = navigation_handle->GetURL();
 
-  if (!blacklist_ignored_) {
-    if (!previews_black_list_) {
-      LogPreviewDecisionMade(PreviewsEligibilityReason::BLACKLIST_UNAVAILABLE,
-                             committed_url, clock_->Now(), type, {},
-                             previews_data);
-      return false;
-    }
+  // Re-check server optimization hints (if provided) on this commit-time URL.
+  if (ShouldCheckOptimizationHints(type) &&
+      optimization_guide::features::IsOptimizationHintsEnabled()) {
     std::vector<PreviewsEligibilityReason> passed_reasons;
-    // The blacklist will disallow certain hosts for periods of time based on
-    // user's opting out of the preview.
-    PreviewsEligibilityReason status = previews_black_list_->IsLoadedAndAllowed(
-        committed_url, type, false, &passed_reasons);
+    PreviewsEligibilityReason status = ShouldCommitPreviewPerOptimizationHints(
+        previews_data, navigation_handle, type, &passed_reasons);
     if (status != PreviewsEligibilityReason::ALLOWED) {
       LogPreviewDecisionMade(status, committed_url, clock_->Now(), type,
                              std::move(passed_reasons), previews_data);
@@ -421,12 +417,11 @@ bool PreviewsDeciderImpl::ShouldCommitPreview(
     }
   }
 
-  // Re-check server optimization hints (if provided) on this commit-time URL.
-  if (ShouldCheckOptimizationHints(type) &&
-      optimization_guide::features::IsOptimizationHintsEnabled()) {
+  // Check local blacklist for commit-time preview (if blacklist not ignored).
+  if (!blacklist_ignored_ && IsCommitTimePreview(type)) {
     std::vector<PreviewsEligibilityReason> passed_reasons;
-    PreviewsEligibilityReason status = ShouldCommitPreviewPerOptimizationHints(
-        previews_data, navigation_handle, type, &passed_reasons);
+    PreviewsEligibilityReason status =
+        CheckLocalBlacklist(committed_url, type, false, &passed_reasons);
     if (status != PreviewsEligibilityReason::ALLOWED) {
       LogPreviewDecisionMade(status, committed_url, clock_->Now(), type,
                              std::move(passed_reasons), previews_data);

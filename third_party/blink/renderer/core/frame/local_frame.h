@@ -200,6 +200,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // Returns ContentCaptureManager in LocalFrameRoot.
   ContentCaptureManager* GetContentCaptureManager();
 
+  // Returns the current state of caret browsing mode.
+  bool IsCaretBrowsingEnabled() const;
+
   // Activates the user activation states of the |LocalFrame| (provided it's
   // non-null) and all its ancestors.  Also creates a |UserGestureIndicator|
   // that contains a |UserGestureToken| with the given status.

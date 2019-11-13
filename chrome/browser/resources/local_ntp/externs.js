@@ -31,6 +31,7 @@ let MostVisitedData;
  *            isAccessibleBrowser: boolean,
  *            isGooglePage: boolean,
  *            realboxEnabled: boolean,
+ *            realboxMatchOmniboxTheme: boolean,
  *            richerPicker: boolean,
  *            suggestionTransparencyEnabled: boolean,
  *            translatedStrings: Object<string>}}
@@ -324,6 +325,18 @@ window.chrome.embeddedSearch.newTabPage.setBackgroundInfo;
  *   imageVerticalAlignment: (string|undefined),
  *   isNtpBackgroundDark: boolean,
  *   logoColor: (!Array<number>|undefined),
+ *   searchBox: (!{
+ *     bg: !Array<number>,
+ *     icon: !Array<number>,
+ *     placeholder: !Array<number>,
+ *     resultsBg: !Array<number>,
+ *     resultsBgHovered: !Array<number>,
+ *     resultsBgSelected: !Array<number>,
+ *     resultsDim: !Array<number>,
+ *     resultsText: !Array<number>,
+ *     resultsUrl: !Array<number>,
+ *     text: !Array<number>,
+ *   }|undefined),
  *   textColorLightRgba: !Array<number>,
  *   textColorRgba: !Array<number>,
  *   themeId: (string|undefined),
@@ -390,7 +403,10 @@ window.chrome.embeddedSearch.searchBox.paste;
 window.chrome.embeddedSearch.searchBox.rtl;
 window.chrome.embeddedSearch.searchBox.startCapturingKeyStrokes;
 window.chrome.embeddedSearch.searchBox.stopCapturingKeyStrokes;
-/** @param {string} input */
+/**
+ * @param {string} input
+ * @param {boolean} preventInlineAutocomplete
+ */
 window.chrome.embeddedSearch.searchBox.queryAutocomplete;
 /** @param {boolean} clearResult */
 window.chrome.embeddedSearch.searchBox.stopAutocomplete;
@@ -416,31 +432,16 @@ let ACMatchClassification;
  */
 let AutocompleteMatch;
 
-/** @enum {number} */
-const AutocompleteResultStatus = {};
-
 /**
  * @typedef {{
  *   input: string,
  *   matches: !Array<!AutocompleteMatch>,
- *   status: !AutocompleteResultStatus,
  * }}
  */
 let AutocompleteResult;
 
 /** @type {function(!AutocompleteResult):void} */
-window.chrome.embeddedSearch.searchBox.onqueryautocompletedone;
-
-/**
- * @typedef {{
- *   success: boolean,
- *   matches: !Array<!AutocompleteMatch>,
- * }}
- */
-let DeleteAutocompleteMatchResult;
-
-/** @type {function(!DeleteAutocompleteMatchResult):void} */
-window.chrome.embeddedSearch.searchBox.ondeleteautocompletematch;
+window.chrome.embeddedSearch.searchBox.autocompleteresultchanged;
 
 /**************************** Translated Strings *****************************/
 

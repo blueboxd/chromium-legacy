@@ -15,6 +15,8 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
+#include "ios/chrome/grit/ios_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -101,56 +103,54 @@ typedef NS_ENUM(NSInteger, ItemType) {
   TableViewModel* model = self.tableViewModel;
   [model addSectionWithIdentifier:SectionIdentifierContent];
 
-  // TODO(crbug.com/1014652): Use the real strings once they are exposed in the
-  // delegate.
-  TableViewTextEditItem* cardLastDigitsItem =
-      [self textEditItemWithType:ItemTypeCardExpireYear
-                   textFieldName:@"Card Number"
-                  textFieldValue:@"•••• 1234"
-                textFieldEnabled:NO];
+  TableViewTextEditItem* cardLastDigitsItem = [self
+      textEditItemWithType:ItemTypeCardExpireYear
+             textFieldName:l10n_util::GetNSString(IDS_IOS_AUTOFILL_CARD_NUMBER)
+            textFieldValue:self.cardNumber
+          textFieldEnabled:NO];
   cardLastDigitsItem.identifyingIcon = self.cardIssuerIcon;
   [model addItem:cardLastDigitsItem
       toSectionWithIdentifier:SectionIdentifierContent];
 
-  // TODO(crbug.com/1014652): Use the real strings once they are exposed in the
-  // delegate.
+  // TODO(crbug.com/1014652): Change textFieldEnabled to YES once editing its
+  // supported.
   TableViewTextEditItem* cardholderNameItem =
       [self textEditItemWithType:ItemTypeCardExpireYear
-                   textFieldName:@"Cardholder Name"
-                  textFieldValue:@"Sergio Collazos"
-                textFieldEnabled:YES];
+                   textFieldName:l10n_util::GetNSString(
+                                     IDS_IOS_AUTOFILL_CARDHOLDER_NAME)
+                  textFieldValue:self.cardholderName
+                textFieldEnabled:NO];
   [model addItem:cardholderNameItem
       toSectionWithIdentifier:SectionIdentifierContent];
 
-  // TODO(crbug.com/1014652): Use the real strings once they are exposed in the
-  // delegate.
-  TableViewTextEditItem* expireMonthItem =
-      [self textEditItemWithType:ItemTypeCardExpireYear
-                   textFieldName:@"Expiration Month"
-                  textFieldValue:@"07"
-                textFieldEnabled:YES];
+  // TODO(crbug.com/1014652): Change textFieldEnabled to YES once editing its
+  // supported.
+  TableViewTextEditItem* expireMonthItem = [self
+      textEditItemWithType:ItemTypeCardExpireYear
+             textFieldName:l10n_util::GetNSString(IDS_IOS_AUTOFILL_EXP_MONTH)
+            textFieldValue:self.expirationMonth
+          textFieldEnabled:NO];
   [model addItem:expireMonthItem
       toSectionWithIdentifier:SectionIdentifierContent];
 
-  // TODO(crbug.com/1014652): Use the real strings once they are exposed in the
-  // delegate.
-  TableViewTextEditItem* expireYearItem =
-      [self textEditItemWithType:ItemTypeCardExpireYear
-                   textFieldName:@"Expiration Year"
-                  textFieldValue:@"2020"
-                textFieldEnabled:YES];
+  // TODO(crbug.com/1014652): Change textFieldEnabled to YES once editing its
+  // supported.
+  TableViewTextEditItem* expireYearItem = [self
+      textEditItemWithType:ItemTypeCardExpireYear
+             textFieldName:l10n_util::GetNSString(IDS_IOS_AUTOFILL_EXP_YEAR)
+            textFieldValue:self.expirationYear
+          textFieldEnabled:NO];
   [model addItem:expireYearItem
       toSectionWithIdentifier:SectionIdentifierContent];
 
-  // TODO(crbug.com/1014652): Use the real strings once they are exposed in the
-  // delegate.
   TableViewTextButtonItem* saveCardButtonItem =
       [[TableViewTextButtonItem alloc] initWithType:ItemTypeCardSave];
   saveCardButtonItem.textAlignment = NSTextAlignmentNatural;
   // TODO(crbug.com/1014652): Implement TOS with Links. This might require a
   // separate item.
   saveCardButtonItem.text = @"TOS Agreement";
-  saveCardButtonItem.buttonText = @"Save Credit Card";
+  saveCardButtonItem.buttonText =
+      l10n_util::GetNSString(IDS_IOS_AUTOFILL_SAVE_CARD);
   saveCardButtonItem.enabled = YES;
   saveCardButtonItem.disableButtonIntrinsicWidth = YES;
   [model addItem:saveCardButtonItem

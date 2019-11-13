@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
 #include "third_party/blink/renderer/core/fetch/fetch_data_loader.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
@@ -186,7 +187,7 @@ ScriptPromise Body::arrayBuffer(ScriptState* script_state,
       return ScriptPromise();
     }
   } else {
-    resolver->Resolve(DOMArrayBuffer::Create(0u, 1));
+    resolver->Resolve(DOMArrayBuffer::Create(size_t{0}, size_t{0}));
   }
   return promise;
 }
@@ -349,6 +350,14 @@ ScriptPromise Body::text(ScriptState* script_state,
 }
 
 ReadableStream* Body::body() {
+  auto* execution_context = GetExecutionContext();
+  if (execution_context->IsServiceWorkerGlobalScope()) {
+    execution_context->CountUse(WebFeature::kFetchBodyStreamInServiceWorker);
+  } else {
+    execution_context->CountUse(
+        WebFeature::kFetchBodyStreamOutsideServiceWorker);
+  }
+
   if (!BodyBuffer())
     return nullptr;
   return BodyBuffer()->Stream();

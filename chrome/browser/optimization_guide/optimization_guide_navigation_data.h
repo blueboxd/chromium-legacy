@@ -26,6 +26,11 @@ class OptimizationGuideNavigationData {
 
   OptimizationGuideNavigationData(const OptimizationGuideNavigationData& other);
 
+  // Returns the OptimizationGuideNavigationData for |navigation_handle|. Will
+  // return nullptr if one cannot be created for it for any reason.
+  static OptimizationGuideNavigationData* GetFromNavigationHandle(
+      content::NavigationHandle* navigation_handle);
+
   // Records metrics based on data currently held in |this|. |has_committed|
   // indicates whether commit-time metrics should be recorded.
   void RecordMetrics(bool has_committed) const;
@@ -60,6 +65,23 @@ class OptimizationGuideNavigationData {
   void SetDecisionForOptimizationTarget(
       optimization_guide::proto::OptimizationTarget optimization_target,
       optimization_guide::OptimizationTargetDecision decision);
+
+  // Returns the version of the model evaluated for |optimization_target|.
+  base::Optional<int64_t> GetModelVersionForOptimizationTarget(
+      optimization_guide::proto::OptimizationTarget optimization_target) const;
+  // Sets the |model_version| for |optimization_target|.
+  void SetModelVersionForOptimizationTarget(
+      optimization_guide::proto::OptimizationTarget optimization_target,
+      int64_t model_version);
+
+  // Returns the prediction score of the model evaluated for
+  // |optimization_target|.
+  base::Optional<double> GetModelPredictionScoreForOptimizationTarget(
+      optimization_guide::proto::OptimizationTarget optimization_target) const;
+  // Sets the |model_prediction_score| for |optimization_target|.
+  void SetModelPredictionScoreForOptimizationTarget(
+      optimization_guide::proto::OptimizationTarget optimization_target,
+      double model_prediction_score);
 
   // Whether the hint cache had a hint for the navigation before commit.
   base::Optional<bool> has_hint_before_commit() const {
@@ -126,6 +148,17 @@ class OptimizationGuideNavigationData {
   base::flat_map<optimization_guide::proto::OptimizationTarget,
                  optimization_guide::OptimizationTargetDecision>
       optimization_target_decisions_;
+
+  // The version of the painful page load model that was evaluated for the
+  // page load.
+  base::flat_map<optimization_guide::proto::OptimizationTarget, int64_t>
+      optimization_target_model_versions_;
+
+  // The score output after evaluating the painful page load model. If
+  // populated, this is 100x the fractional value output by the model
+  // evaluation.
+  base::flat_map<optimization_guide::proto::OptimizationTarget, double>
+      optimization_target_model_prediction_scores_;
 
   // Whether the hint cache had a hint for the navigation before commit.
   base::Optional<bool> has_hint_before_commit_;

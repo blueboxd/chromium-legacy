@@ -42,7 +42,7 @@ MediaToolbarButtonView::MediaToolbarButtonView(const Browser* browser)
   EnableCanvasFlippingForRTLUI(false);
   SetTooltipText(
       l10n_util::GetStringUTF16(IDS_GLOBAL_MEDIA_CONTROLS_ICON_TOOLTIP_TEXT));
-  GetViewAccessibility().OverrideHasPopup(ax::mojom::HasPopup::kMenu);
+  GetViewAccessibility().OverrideHasPopup(ax::mojom::HasPopup::kDialog);
 
   ToolbarButton::Init();
 

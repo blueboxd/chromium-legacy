@@ -10,6 +10,7 @@
     Constructor(optional EditContextInit options),
     ConstructorCallWith=ScriptState,
     Exposed=Window,
+    ActiveScriptWrappable,
     RuntimeEnabled=EditContext
 ] interface EditContext : EventTarget {
     void focus();

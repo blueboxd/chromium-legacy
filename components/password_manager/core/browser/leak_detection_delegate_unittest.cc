@@ -201,8 +201,8 @@ TEST_F(LeakDetectionDelegateTest, LeakHistoryRemoveCredentials) {
       /*is_leaked=*/false, form.origin, form.username_value,
       form.password_value);
 
-  EXPECT_CALL(*store(),
-              RemoveLeakedCredentialsImpl(form.origin, form.username_value));
+  EXPECT_CALL(*store(), RemoveCompromisedCredentialsImpl(form.origin,
+                                                         form.username_value));
   WaitForPasswordStore();
 }
 
@@ -223,9 +223,10 @@ TEST_F(LeakDetectionDelegateTest, LeakHistoryAddCredentials) {
       /*is_leaked=*/true, form.origin, form.username_value,
       form.password_value);
 
-  const LeakedCredentials leaked_credentials(form.origin, form.username_value,
-                                             base::Time::Now());
-  EXPECT_CALL(*store(), AddLeakedCredentialsImpl(leaked_credentials));
+  const CompromisedCredentials compromised_credentials(
+      form.origin, form.username_value, base::Time::Now(),
+      CompromiseType::kLeaked);
+  EXPECT_CALL(*store(), AddCompromisedCredentialsImpl(compromised_credentials));
   WaitForPasswordStore();
 }
 

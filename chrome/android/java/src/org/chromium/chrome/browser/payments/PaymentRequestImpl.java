@@ -237,16 +237,25 @@ public class PaymentRequestImpl
     private static final Comparator<Completable> COMPLETENESS_COMPARATOR =
             (a, b) -> (compareCompletablesByCompleteness(b, a));
 
+    private boolean mRequestShipping;
+    private boolean mRequestPayerName;
+    private boolean mRequestPayerPhone;
+    private boolean mRequestPayerEmail;
+
     /**
      * Sorts the payment instruments by several rules:
      * Rule 1: Non-autofill before autofill.
      * Rule 2: Complete instruments before incomplete intsruments.
      * Rule 3: Exact type matching instruments before non-exact type matching instruments.
      * Rule 4: Preselectable instruments before non-preselectable instruments.
-     * Rule 5: Frequently and recently used instruments before rarely and non-recently used
-     *         instruments.
+     * Rule 5: When shipping address is requested instruments which will handle shipping address
+     * before others.
+     * Rule 6: When payer's contact information is requested instruments which will handle more
+     * required contact fields (name, email, phone) come before others.
+     * Rule 7: Frequently and recently used instruments before rarely and non-recently used
+     * instruments.
      */
-    private static final Comparator<PaymentInstrument> PAYMENT_INSTRUMENT_COMPARATOR = (a, b) -> {
+    private final Comparator<PaymentInstrument> mPaymentInstrumentComparator = (a, b) -> {
         // Payment apps (not autofill) first.
         int autofill = (a.isAutofillInstrument() ? 1 : 0) - (b.isAutofillInstrument() ? 1 : 0);
         if (autofill != 0) return autofill;
@@ -267,6 +276,32 @@ public class PaymentRequestImpl
         // instruments can always be preselected.
         int canPreselect = (b.canPreselect() ? 1 : 0) - (a.canPreselect() ? 1 : 0);
         if (canPreselect != 0) return canPreselect;
+
+        // Payment apps which handle shipping address before others.
+        if (mRequestShipping) {
+            int canHandleShipping =
+                    (b.handlesShippingAddress() ? 1 : 0) - (a.handlesShippingAddress() ? 1 : 0);
+            if (canHandleShipping != 0) return canHandleShipping;
+        }
+
+        // Payment apps which handle more contact information fields come first.
+        int aSupportedContactDelegationsNum = 0;
+        int bSupportedContactDelegationsNum = 0;
+        if (mRequestPayerName) {
+            if (a.handlesPayerName()) aSupportedContactDelegationsNum++;
+            if (b.handlesPayerName()) bSupportedContactDelegationsNum++;
+        }
+        if (mRequestPayerEmail) {
+            if (a.handlesPayerEmail()) aSupportedContactDelegationsNum++;
+            if (b.handlesPayerEmail()) bSupportedContactDelegationsNum++;
+        }
+        if (mRequestPayerPhone) {
+            if (a.handlesPayerPhone()) aSupportedContactDelegationsNum++;
+            if (b.handlesPayerPhone()) bSupportedContactDelegationsNum++;
+        }
+        if (bSupportedContactDelegationsNum != aSupportedContactDelegationsNum) {
+            return bSupportedContactDelegationsNum - aSupportedContactDelegationsNum > 0 ? 1 : -1;
+        }
 
         // More frequently and recently used instruments first.
         return compareInstrumentsByFrecency(b, a);
@@ -368,10 +403,6 @@ public class PaymentRequestImpl
 
     private String mId;
     private Map<String, PaymentMethodData> mMethodData;
-    private boolean mRequestShipping;
-    private boolean mRequestPayerName;
-    private boolean mRequestPayerPhone;
-    private boolean mRequestPayerEmail;
     private int mShippingType;
     private SectionInformation mShippingAddressesSection;
     private ContactDetailsSection mContactSection;
@@ -710,6 +741,12 @@ public class PaymentRequestImpl
 
     /** @return Whether the UI was built. */
     private boolean buildUI(ChromeActivity activity) {
+        // Payment methods section must be ready before building the rest of the UI. This is because
+        // shipping and contact sections (when requested by merchant) are populated depending on
+        // whether or not the selected payment instrument (if such exists) can provide the required
+        // information.
+        assert mPaymentMethodsSection != null;
+
         assert activity != null;
 
         // Catch any time the user switches tabs. Because the dialog is modal, a user shouldn't be
@@ -739,19 +776,16 @@ public class PaymentRequestImpl
             mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
         }
 
-        if (mRequestShipping && !mWaitForUpdatedDetails) {
+        if (shouldShowShippingSection() && !mWaitForUpdatedDetails) {
             createShippingSection(activity, mAutofillProfiles);
         }
 
-        if (mRequestPayerName || mRequestPayerPhone || mRequestPayerEmail) {
+        if (shouldShowContactSection()) {
             mContactSection = new ContactDetailsSection(
                     activity, mAutofillProfiles, mContactEditor, mJourneyLogger);
         }
 
-        mUI = new PaymentRequestUI(activity, this, mRequestShipping,
-                /* requestShippingOption= */ mRequestShipping,
-                mRequestPayerName || mRequestPayerPhone || mRequestPayerEmail,
-                mMerchantSupportsAutofillPaymentInstruments,
+        mUI = new PaymentRequestUI(activity, this, mMerchantSupportsAutofillPaymentInstruments,
                 !PaymentPreferencesUtil.isPaymentCompleteOnce(), mMerchantName, mTopLevelOrigin,
                 SecurityStateModel.getSecurityLevelForWebContents(mWebContents),
                 new ShippingStrings(mShippingType));
@@ -1262,7 +1296,8 @@ public class PaymentRequestImpl
             return;
         }
 
-        if (mRequestShipping && (mUiShippingOptions.isEmpty() || !TextUtils.isEmpty(details.error))
+        if (shouldShowShippingSection()
+                && (mUiShippingOptions.isEmpty() || !TextUtils.isEmpty(details.error))
                 && mShippingAddressesSection.getSelectedItem() != null) {
             mShippingAddressesSection.getSelectedItem().setInvalid();
             mShippingAddressesSection.setSelectedItemIndex(SectionInformation.INVALID_SELECTION);
@@ -1292,7 +1327,7 @@ public class PaymentRequestImpl
 
         // Do not create shipping section When UI is not built yet. This happens when the show
         // promise gets resolved before all instruments are ready.
-        if (mUI != null && mRequestShipping) {
+        if (mUI != null && shouldShowShippingSection()) {
             createShippingSection(chromeActivity, mAutofillProfiles);
         }
 
@@ -1344,7 +1379,7 @@ public class PaymentRequestImpl
             providePaymentInformation();
         } else {
             mUI.updateOrderSummarySection(mUiShoppingCart);
-            if (mRequestShipping) {
+            if (shouldShowShippingSection()) {
                 mUI.updateSection(PaymentRequestUI.DataType.SHIPPING_OPTIONS, mUiShippingOptions);
             }
         }
@@ -1677,6 +1712,20 @@ public class PaymentRequestImpl
             mPaymentInformationCallback = callback;
             return PaymentRequestUI.SelectionResult.ASYNCHRONOUS_VALIDATION;
         } else if (optionType == PaymentRequestUI.DataType.PAYMENT_METHODS) {
+            if (shouldShowShippingSection() && mShippingAddressesSection == null) {
+                ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
+                assert activity != null;
+                createShippingSection(activity, mAutofillProfiles);
+            }
+            if (shouldShowContactSection() && mContactSection == null) {
+                ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
+                assert activity != null;
+                mContactSection = new ContactDetailsSection(
+                        activity, mAutofillProfiles, mContactEditor, mJourneyLogger);
+            }
+            mUI.selectedPaymentMethodUpdated(
+                    new PaymentInformation(mUiShoppingCart, mShippingAddressesSection,
+                            mUiShippingOptions, mContactSection, mPaymentMethodsSection));
             PaymentInstrument paymentInstrument = (PaymentInstrument) option;
             if (paymentInstrument instanceof AutofillPaymentInstrument) {
                 AutofillPaymentInstrument card = (AutofillPaymentInstrument) paymentInstrument;
@@ -1744,6 +1793,38 @@ public class PaymentRequestImpl
         }
 
         return PaymentRequestUI.SelectionResult.NONE;
+    }
+
+    @Override
+    public boolean shouldShowShippingSection() {
+        if (!mRequestShipping) return false;
+
+        if (mPaymentMethodsSection == null) return true;
+
+        PaymentInstrument selectedInstrument =
+                (PaymentInstrument) mPaymentMethodsSection.getSelectedItem();
+        return selectedInstrument == null || !selectedInstrument.handlesShippingAddress();
+    }
+
+    @Override
+    public boolean shouldShowContactSection() {
+        PaymentInstrument selectedInstrument = (mPaymentMethodsSection == null)
+                ? null
+                : (PaymentInstrument) mPaymentMethodsSection.getSelectedItem();
+        if (mRequestPayerName
+                && (selectedInstrument == null || !selectedInstrument.handlesPayerName())) {
+            return true;
+        }
+        if (mRequestPayerPhone
+                && (selectedInstrument == null || !selectedInstrument.handlesPayerPhone())) {
+            return true;
+        }
+        if (mRequestPayerEmail
+                && (selectedInstrument == null || !selectedInstrument.handlesPayerEmail())) {
+            return true;
+        }
+
+        return false;
     }
 
     private void editAddress(final AutofillAddress toEdit) {
@@ -2045,7 +2126,7 @@ public class PaymentRequestImpl
                     activity.getResources().getString(R.string.payments_error_message));
         }
 
-        if (mRequestShipping && hasShippingAddressError(errors.shippingAddress)) {
+        if (shouldShowShippingSection() && hasShippingAddressError(errors.shippingAddress)) {
             mRetryQueue.add(() -> {
                 mAddressEditor.setAddressErrors(errors.shippingAddress);
                 AutofillAddress selectedAddress =
@@ -2054,8 +2135,7 @@ public class PaymentRequestImpl
             });
         }
 
-        if ((mRequestPayerName || mRequestPayerPhone || mRequestPayerEmail)
-                && hasPayerError(errors.payer)) {
+        if (shouldShowContactSection() && hasPayerError(errors.payer)) {
             mRetryQueue.add(() -> {
                 mContactEditor.setPayerErrors(errors.payer);
                 AutofillContact selectedContact =
@@ -2348,7 +2428,7 @@ public class PaymentRequestImpl
             }
         }
 
-        Collections.sort(mPendingInstruments, PAYMENT_INSTRUMENT_COMPARATOR);
+        Collections.sort(mPendingInstruments, mPaymentInstrumentComparator);
 
         // Possibly pre-select the first instrument on the list.
         int selection = !mPendingInstruments.isEmpty() && mPendingInstruments.get(0).canPreselect()

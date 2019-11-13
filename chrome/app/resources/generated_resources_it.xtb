@@ -2043,7 +2043,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3923676227229836009">Questa pagina è autorizzata a visualizzare i file</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3925573269917483990">Fotocamera:</translation>
-<translation id="3925842537050977900">Stacca dallo shelf</translation>
 <translation id="3926002189479431949">Telefono con Smart Lock cambiato</translation>
 <translation id="3927932062596804919">Non consentire</translation>
 <translation id="3928570707778085600">Salvare le modifiche per <ph name="FILE_OR_FOLDER_NAME" />?</translation>
@@ -2537,7 +2536,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4689235506267737042">Scegli le preferenze relative alle demo</translation>
 <translation id="4689421377817139245">Sincronizza il preferito con l'iPhone</translation>
 <translation id="4690091457710545971">&lt;Quattro file generati dal firmware Intel Wi-Fi: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon. I primi tre sono file binari che contengono dump di registro e che, secondo quanto dichiarato da Intel, non contengono informazioni personali o di identificazione del dispositivo. L'ultimo file è una traccia di esecuzione dal firmware Intel, privato di ogni informazione personale o di identificazione del dispositivo, ma troppo grande per essere mostrato qui. Questi file sono stati generati in risposta ai recenti problemi del tuo dispositivo con la rete Wi-Fi e verranno condivisi con Intel per agevolare la risoluzione di tali problemi.&gt;</translation>
-<translation id="469230890969474295">Cartella OEM</translation>
 <translation id="4692623383562244444">Motori di ricerca</translation>
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694024090038830733">Le stampanti vengono configurate dall'amministratore.</translation>
@@ -2570,7 +2568,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4737715515457435632">Collegati a una rete</translation>
 <translation id="473775607612524610">Aggiorna</translation>
 <translation id="4739639199548674512">Richieste</translation>
-<translation id="4742746985488890273">Fissa sullo shelf</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Scopri come aggiornare le applicazioni<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Riattiva l'audio del sito}other{Riattiva l'audio dei siti}}</translation>
 <translation id="4746351372139058112">Messaggi</translation>
@@ -3562,7 +3559,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="6196854373336333322">L'estensione "<ph name="EXTENSION_NAME" />" ha assunto il controllo delle tue impostazioni proxy, il che significa che può cambiare, interrompere o intercettare tutto ciò che fai online. Se non sei sicuro del motivo per cui si sia verificato questo cambiamento, è probabile che sia indesiderato.</translation>
 <translation id="6198102561359457428">Esci e accedi di nuovo...</translation>
 <translation id="6198252989419008588">Modifica PIN</translation>
-<translation id="6201792273624501289">App Linux</translation>
 <translation id="6202304368170870640">Puoi utilizzare il PIN per accedere al tuo dispositivo o per sbloccarlo.</translation>
 <translation id="6206311232642889873">Cop&amp;ia immagine</translation>
 <translation id="6207200176136643843">Ripristina il livello di zoom predefinito</translation>
@@ -5595,7 +5591,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="9130015405878219958">La modalità inserita non è valida.</translation>
 <translation id="9131487537093447019">Inviare e ricevere messaggi a/da dispositivi Bluetooth.</translation>
 <translation id="9134304429738380103">Sì, accetto.</translation>
-<translation id="9135090785674039430">Se questa opzione è attiva, i siti non possono usare i cookie per monitorare la tua attività sul Web. Alcuni siti web potrebbero non funzionare.</translation>
 <translation id="9137013805542155359">Mostra originale</translation>
 <translation id="9137157311132182254">Motore di ricerca preferito</translation>
 <translation id="9137248913990643158">Accedi a Chrome prima di usare questa app.</translation>

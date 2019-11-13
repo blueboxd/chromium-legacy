@@ -42,15 +42,15 @@ namespace {
 constexpr float kOtherHighlightScreenPrimaryAxisRatio = 0.03f;
 
 // Creates the widget responsible for displaying the indicators.
-std::unique_ptr<views::Widget> CreateWidget() {
+std::unique_ptr<views::Widget> CreateWidget(aura::Window* root_window) {
   auto widget = std::make_unique<views::Widget>();
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_POPUP;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.accept_events = false;
-  params.parent = Shell::GetContainer(Shell::Get()->GetPrimaryRootWindow(),
-                                      kShellWindowId_OverlayContainer);
+  params.parent =
+      Shell::GetContainer(root_window, kShellWindowId_OverlayContainer);
   widget->set_focus_on_creation(false);
   widget->Init(std::move(params));
   return widget;
@@ -612,9 +612,10 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
   DISALLOW_COPY_AND_ASSIGN(SplitViewDragIndicatorsView);
 };
 
-SplitViewDragIndicators::SplitViewDragIndicators() {
+SplitViewDragIndicators::SplitViewDragIndicators(aura::Window* root_window) {
   indicators_view_ = new SplitViewDragIndicatorsView();
-  widget_ = CreateWidget();
+  widget_ = CreateWidget(root_window);
+  widget_->SetBounds(GetWorkAreaBoundsNoOverlapWithShelf(root_window));
   widget_->SetContentsView(indicators_view_);
   widget_->Show();
 }
@@ -635,22 +636,9 @@ void SplitViewDragIndicators::SetDraggedWindow(aura::Window* dragged_window) {
 }
 
 void SplitViewDragIndicators::SetWindowDraggingState(
-    WindowDraggingState window_dragging_state,
-    const gfx::Point& event_location) {
+    WindowDraggingState window_dragging_state) {
   if (window_dragging_state == current_window_dragging_state_)
     return;
-
-  // Reparent the widget if needed.
-  aura::Window* target = ash::window_util::GetRootWindowAt(event_location);
-  aura::Window* root_window = target->GetRootWindow();
-  if (widget_->GetNativeView()->GetRootWindow() != root_window) {
-    views::Widget::ReparentNativeView(
-        widget_->GetNativeView(),
-        Shell::GetContainer(root_window, kShellWindowId_OverlayContainer));
-    widget_->SetContentsView(indicators_view_);
-  }
-  widget_->SetBounds(GetWorkAreaBoundsNoOverlapWithShelf(root_window));
-
   current_window_dragging_state_ = window_dragging_state;
   indicators_view_->OnWindowDraggingStateChanged(window_dragging_state);
 }

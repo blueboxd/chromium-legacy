@@ -617,7 +617,6 @@ void AppListControllerImpl::OnOverviewModeStarting() {
   if (IsTabletMode()) {
     const int64_t display_id = last_visible_display_id_;
     OnHomeLauncherPositionChanged(false /* showing */, display_id);
-    OnVisibilityWillChange(false /* visible */, display_id);
   } else {
     DismissAppList();
   }
@@ -638,7 +637,6 @@ void AppListControllerImpl::OnOverviewModeEnding(OverviewSession* session) {
   if (home_launcher_transition_state_ == HomeLauncherTransitionState::kFinished)
     target_visibility &= !HasVisibleWindows();
   OnHomeLauncherPositionChanged(target_visibility, display_id);
-  OnVisibilityWillChange(target_visibility, display_id);
 }
 
 void AppListControllerImpl::OnOverviewModeEnded() {
@@ -647,7 +645,6 @@ void AppListControllerImpl::OnOverviewModeEnded() {
   const int64_t display_id = last_visible_display_id_;
   const bool app_list_visible = IsVisible();
   OnHomeLauncherAnimationComplete(app_list_visible, display_id);
-  OnVisibilityChanged(app_list_visible, display_id);
 }
 
 void AppListControllerImpl::OnTabletModeStarted() {
@@ -1336,14 +1333,20 @@ void AppListControllerImpl::RemoveObserver(
 
 void AppListControllerImpl::OnVisibilityChanged(bool visible,
                                                 int64_t display_id) {
+  // Focus and app visibility changes while finishing home launcher state
+  // animation may cause OnVisibilityChanged() to be called before the home
+  // launcher state transition finished - delay the visibility change until the
+  // home launcher stops animating, so observers do not miss the animation state
+  // update.
+  if (home_launcher_transition_state_ != HomeLauncherTransitionState::kFinished)
+    return;
+
   bool real_visibility = visible;
   // HomeLauncher is only visible when no other app windows are visible,
   // unless we are in the process of animating to (or dragging) the home
   // launcher.
-  if (IsTabletMode() && home_launcher_transition_state_ ==
-                            HomeLauncherTransitionState::kFinished) {
+  if (IsTabletMode())
     real_visibility &= !HasVisibleWindows();
-  }
 
   DCHECK_EQ(last_target_visible_, real_visibility)
       << "Visibility notifications should follow target visibility "

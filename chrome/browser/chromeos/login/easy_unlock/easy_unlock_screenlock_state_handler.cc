@@ -191,6 +191,13 @@ void EasyUnlockScreenlockStateHandler::ChangeState(ScreenlockState new_state) {
         l10n_util::GetStringUTF16(IDS_SMART_LOCK_SPINNER_ACCESSIBILITY_LABEL));
   }
 
+  // Accessibility users may not be able to see the green icon which indicates
+  // the phone is authenticated. Provide message to that effect.
+  if (state_ == ScreenlockState::AUTHENTICATED) {
+    icon_options.SetAriaLabel(l10n_util::GetStringUTF16(
+        IDS_SMART_LOCK_SCREENLOCK_AUTHENTICATED_LABEL));
+  }
+
   screenlock_bridge_->lock_handler()->ShowUserPodCustomIcon(account_id_,
                                                             icon_options);
 }

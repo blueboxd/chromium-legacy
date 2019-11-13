@@ -21,7 +21,9 @@
 
 namespace caspian {
 namespace {
-SizeInfo info;
+std::unique_ptr<SizeInfo> info;
+std::unique_ptr<SizeInfo> before_info;
+std::unique_ptr<DiffSizeInfo> diff_info;
 std::unique_ptr<TreeBuilder> builder;
 
 std::unique_ptr<Json::StreamWriter> writer;
@@ -38,7 +40,15 @@ std::string JsonSerialize(const Json::Value& value) {
 
 extern "C" {
 void LoadSizeFile(const char* compressed, size_t size) {
-  ParseSizeInfo(compressed, size, &info);
+  diff_info.reset(nullptr);
+  info = std::make_unique<SizeInfo>();
+  ParseSizeInfo(compressed, size, info.get());
+}
+
+void LoadBeforeSizeFile(const char* compressed, size_t size) {
+  diff_info.reset(nullptr);
+  before_info = std::make_unique<SizeInfo>();
+  ParseSizeInfo(compressed, size, before_info.get());
 }
 
 void BuildTree(bool group_by_component,
@@ -49,14 +59,22 @@ void BuildTree(bool group_by_component,
                int match_flag) {
   std::vector<std::function<bool(const Symbol&)>> filters;
 
+  const bool diff_mode = info && before_info;
+
   if (minimum_size_bytes > 0) {
-    filters.push_back([minimum_size_bytes](const Symbol& sym) -> bool {
-      return sym.pss() >= minimum_size_bytes;
-    });
+    if (!diff_mode) {
+      filters.push_back([minimum_size_bytes](const Symbol& sym) -> bool {
+        return sym.pss >= minimum_size_bytes;
+      });
+    } else {
+      filters.push_back([minimum_size_bytes](const Symbol& sym) -> bool {
+        return abs(sym.pss) >= minimum_size_bytes;
+      });
+    }
   }
 
-  // It's currently not useful to filter on more than one flag, so |match_flag|
-  // can be assumed to be a power of two.
+  // It's currently not useful to filter on more than one flag, so
+  // |match_flag| can be assumed to be a power of two.
   if (match_flag) {
     std::cout << "Filtering on flag matching " << match_flag << std::endl;
     filters.push_back([match_flag](const Symbol& sym) -> bool {
@@ -71,8 +89,7 @@ void BuildTree(bool group_by_component,
       include_sections_map[static_cast<uint8_t>(*c)] = true;
     }
     filters.push_back([&include_sections_map](const Symbol& sym) -> bool {
-      return include_sections_map[static_cast<uint8_t>(
-          info.ShortSectionName(sym.section_name))];
+      return include_sections_map[static_cast<uint8_t>(sym.sectionId)];
     });
   }
 
@@ -98,7 +115,18 @@ void BuildTree(bool group_by_component,
     }
   }
 
-  builder.reset(new TreeBuilder(&info, group_by_component, filters));
+  // BuildTree() is called every time a new filter is applied in the HTML
+  // viewer, but if we already have a DiffSizeInfo we can skip regenerating it
+  // and let the TreeBuilder filter the symbols we care about.
+  if (diff_mode && !diff_info) {
+    diff_info.reset(new DiffSizeInfo(before_info.get(), info.get()));
+  }
+
+  BaseSizeInfo* rendered_info = info.get();
+  if (diff_mode) {
+    rendered_info = diff_info.get();
+  }
+  builder.reset(new TreeBuilder(rendered_info, group_by_component, filters));
   builder->Build();
 }
 

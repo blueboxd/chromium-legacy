@@ -1060,7 +1060,7 @@ IN_PROC_BROWSER_TEST_P(
             net::EFFECTIVE_CONNECTION_TYPE_2G);
 
     // Navigate to a host not in the seeded site engagement service; it
-    // should be recorded as not covered by the hints fetcher.
+    // should be recorded as covered by the hints fetcher due to the race.
     base::flat_set<std::string> expected_hosts_2g;
     std::string host_2g("https://unseenhost_2g.com/");
     expected_hosts_2g.insert(GURL(host_2g).host());
@@ -1079,10 +1079,21 @@ IN_PROC_BROWSER_TEST_P(
     RetryForHistogramUntilCountReached(
         histogram_tester, optimization_guide::kLoadedHintLocalHistogramString,
         IsOptimizationGuideKeyedServiceEnabled() ? 2 : 1);
+    if (IsOptimizationGuideKeyedServiceEnabled()) {
+      RetryForHistogramUntilCountReached(
+          histogram_tester,
+          "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
+          "AtCommit",
+          1);
+      histogram_tester->ExpectUniqueSample(
+          "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
+          "AtCommit",
+          true, 1);
+    }
   }
 
   // Change ECT to a high value. Hints should not be fetched at the time of
-  // navigation.
+  // navigation as the ECT fast so the fetcher should not race.
   {
     g_browser_process->network_quality_tracker()
         ->ReportEffectiveConnectionTypeForTesting(
@@ -1106,6 +1117,21 @@ IN_PROC_BROWSER_TEST_P(
     RetryForHistogramUntilCountReached(
         histogram_tester, optimization_guide::kLoadedHintLocalHistogramString,
         IsOptimizationGuideKeyedServiceEnabled() ? 2 : 1);
+    if (IsOptimizationGuideKeyedServiceEnabled()) {
+      RetryForHistogramUntilCountReached(
+          histogram_tester,
+          "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
+          "AtCommit",
+          2);
+      histogram_tester->ExpectBucketCount(
+          "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
+          "AtCommit",
+          true, 1);
+      histogram_tester->ExpectBucketCount(
+          "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
+          "AtCommit",
+          false, 1);
+    }
   }
 
   // Change ECT back to a low value. Hints should be fetched at the time of
@@ -1135,6 +1161,22 @@ IN_PROC_BROWSER_TEST_P(
     RetryForHistogramUntilCountReached(
         histogram_tester, optimization_guide::kLoadedHintLocalHistogramString,
         IsOptimizationGuideKeyedServiceEnabled() ? 3 : 1);
+
+    if (IsOptimizationGuideKeyedServiceEnabled()) {
+      RetryForHistogramUntilCountReached(
+          histogram_tester,
+          "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
+          "AtCommit",
+          3);
+      histogram_tester->ExpectBucketCount(
+          "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
+          "AtCommit",
+          true, 2);
+      histogram_tester->ExpectBucketCount(
+          "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
+          "AtCommit",
+          false, 1);
+    }
   }
 
   // Navigate again to a webpage with the
@@ -1173,6 +1215,22 @@ IN_PROC_BROWSER_TEST_P(
     RetryForHistogramUntilCountReached(
         histogram_tester, optimization_guide::kLoadedHintLocalHistogramString,
         IsOptimizationGuideKeyedServiceEnabled() ? 4 : 1);
+
+    if (IsOptimizationGuideKeyedServiceEnabled()) {
+      RetryForHistogramUntilCountReached(
+          histogram_tester,
+          "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
+          "AtCommit",
+          4);
+      histogram_tester->ExpectBucketCount(
+          "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
+          "AtCommit",
+          true, 3);
+      histogram_tester->ExpectBucketCount(
+          "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
+          "AtCommit",
+          false, 1);
+    }
   }
 }
 
@@ -1425,4 +1483,10 @@ IN_PROC_BROWSER_TEST_P(
   RetryForHistogramUntilCountReached(
       histogram_tester, optimization_guide::kLoadedHintLocalHistogramString,
       IsOptimizationGuideKeyedServiceEnabled() ? 2 : 1);
+  // Only the SRP is navigated to and it should not be covered at navigation
+  // finish.
+  histogram_tester->ExpectUniqueSample(
+      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
+      "AtCommit",
+      false, 1);
 }

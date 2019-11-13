@@ -65,7 +65,7 @@ public class EphemeralTabSheetContent implements BottomSheetContent {
         mOpenNewTabCallback = openNewTabCallback;
         mToolbarClickCallback = toolbarClickCallback;
         mToolbarHeightPx =
-                mContext.getResources().getDimensionPixelSize(R.dimen.preview_tab_toolbar_height);
+                mContext.getResources().getDimensionPixelSize(R.dimen.sheet_tab_toolbar_height);
 
         createThinWebView(maxSheetHeight);
         createToolbarView();
@@ -101,8 +101,8 @@ public class EphemeralTabSheetContent implements BottomSheetContent {
     }
 
     private void createToolbarView() {
-        mToolbarView = (ViewGroup) LayoutInflater.from(mContext).inflate(
-                R.layout.ephemeral_tab_toolbar, null);
+        mToolbarView =
+                (ViewGroup) LayoutInflater.from(mContext).inflate(R.layout.sheet_tab_toolbar, null);
         mShadow = mToolbarView.findViewById(R.id.shadow);
         mShadow.init(ApiCompatibilityUtils.getColor(
                              mContext.getResources(), R.color.toolbar_shadow_color),
@@ -153,14 +153,14 @@ public class EphemeralTabSheetContent implements BottomSheetContent {
 
     /** Sets the ephemeral tab title text. */
     public void updateTitle(String title) {
-        TextView toolbarText = mToolbarView.findViewById(R.id.ephemeral_tab_text);
+        TextView toolbarText = mToolbarView.findViewById(R.id.title);
         toolbarText.setText(title);
     }
 
     /** Sets the ephemeral tab URL. */
     public void updateURL(String url) {
-        TextView caption = mToolbarView.findViewById(R.id.ephemeral_tab_caption);
-        caption.setText(UrlFormatter.formatUrlForSecurityDisplayOmitScheme(url));
+        TextView originView = mToolbarView.findViewById(R.id.origin);
+        originView.setText(UrlFormatter.formatUrlForSecurityDisplayOmitScheme(url));
     }
 
     /** Sets the security icon. */

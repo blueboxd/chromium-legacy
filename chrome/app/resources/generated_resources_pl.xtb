@@ -2044,7 +2044,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="3923676227229836009">Ta strona ma zezwolenie na przeglądanie plików</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3925573269917483990">Kamera:</translation>
-<translation id="3925842537050977900">Odepnij od półki</translation>
 <translation id="3926002189479431949">Telefon z funkcją Smart Lock został zmieniony</translation>
 <translation id="3927932062596804919">Odmawiaj</translation>
 <translation id="3928570707778085600">Zapisać zmiany w: <ph name="FILE_OR_FOLDER_NAME" />?</translation>
@@ -2538,7 +2537,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4689235506267737042">Wybierz ustawienia trybu demonstracyjnego</translation>
 <translation id="4689421377817139245">Zsynchronizuj tę zakładkę ze swoim iPhonem</translation>
 <translation id="4690091457710545971">&lt;Cztery pliki wygenerowane przez oprogramowanie układowe Wi-Fi firmy Intel: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon. Pierwsze trzy to pliki binarne zawierające zrzuty rejestru. Intel twierdzi, że nie zawierają żadnych danych umożliwiających identyfikację osoby lub urządzenia. Ostatni plik zawiera ślad wykonywania oprogramowania układowego firmy Intel. Wszelkie dane umożliwiające identyfikację osoby lub urządzenia zostały z niego usunięte, ale jest zbyt duży, by go tu wyświetlić. Te pliki zostały wygenerowane w reakcji na niedawne problemy z Wi-Fi na Twoim urządzeniu i zostaną przekazane firmie Intel, by pomóc w rozwiązaniu tych problemów.&gt;</translation>
-<translation id="469230890969474295">Folder OEM</translation>
 <translation id="4692623383562244444">Wyszukiwarki</translation>
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694024090038830733">Konfiguracją drukarek zajmuje się administrator.</translation>
@@ -2571,7 +2569,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4737715515457435632">Połącz się z siecią</translation>
 <translation id="473775607612524610">Aktualizuj</translation>
 <translation id="4739639199548674512">Bilety</translation>
-<translation id="4742746985488890273">Przypnij do półki</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Dowiedz się, jak zaktualizować aplikacje<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Wyłącz wyciszenie strony}few{Wyłącz wyciszenie stron}many{Wyłącz wyciszenie stron}other{Wyłącz wyciszenie stron}}</translation>
 <translation id="4746351372139058112">Wiadomość tekstowa</translation>
@@ -3563,7 +3560,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="6196854373336333322">Rozszerzenie „<ph name="EXTENSION_NAME" />” przejęło kontrolę nad ustawieniami serwera proxy, co oznacza, że może zmieniać, przerywać lub podglądać wszystko, co robisz online. Jeśli nie masz pewności, skąd wzięła się ta zmiana, prawdopodobnie jej nie chcesz.</translation>
 <translation id="6198102561359457428">Wyloguj się i ponownie zaloguj</translation>
 <translation id="6198252989419008588">Zmień kod PIN</translation>
-<translation id="6201792273624501289">Aplikacje na Linuksa</translation>
 <translation id="6202304368170870640">Kodu PIN możesz używać do logowania się lub do odblokowywania urządzenia.</translation>
 <translation id="6206311232642889873">Kop&amp;iuj grafikę</translation>
 <translation id="6207200176136643843">Przywróć domyślny poziom powiększenia</translation>
@@ -4082,7 +4078,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="6985235333261347343">Agent odzyskiwania kluczy firmy Microsoft</translation>
 <translation id="698524779381350301">Automatycznie zezwól na dostęp na tych stronach</translation>
 <translation id="6985607387932385770">Drukarki</translation>
-<translation id="6990778048354947307">Ciemny motyw</translation>
+<translation id="6990778048354947307">Tryb ciemny</translation>
 <translation id="6991665348624301627">Wybierz urządzenie docelowe</translation>
 <translation id="6992554835374084304">Włączanie ulepszonego sprawdzania pisowni</translation>
 <translation id="6997642619627518301"><ph name="NAME_PH" /> – Historia aktywności</translation>
@@ -5597,7 +5593,6 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="9130015405878219958">Wprowadzono nieprawidłowy tryb.</translation>
 <translation id="9131487537093447019">Wysyłanie wiadomości do urządzeń Bluetooth i odbieranie ich z tych urządzeń</translation>
 <translation id="9134304429738380103">Tak, zgadzam się.</translation>
-<translation id="9135090785674039430">Gdy to ustawienie jest włączone, strony internetowe nie mogą używać plików cookie śledzących, co robisz w sieci. Niektóre strony mogą nie działać.</translation>
 <translation id="9137013805542155359">Pokaż tekst oryginalny</translation>
 <translation id="9137157311132182254">Preferowana wyszukiwarka</translation>
 <translation id="9137248913990643158">Aby użyć tej aplikacji, najpierw uruchom Chrome i zaloguj się w nim.</translation>

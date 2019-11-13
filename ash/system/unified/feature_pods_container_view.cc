@@ -163,7 +163,7 @@ int FeaturePodsContainerView::GetVisibleCount() const {
       });
 }
 
-void FeaturePodsContainerView::EnsurePageWithButton(FeaturePodButton* button) {
+void FeaturePodsContainerView::EnsurePageWithButton(views::View* button) {
   int index = visible_buttons_.GetIndexOfView(button->parent());
   if (index < 0)
     return;

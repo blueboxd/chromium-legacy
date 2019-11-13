@@ -84,6 +84,77 @@ _SPECIFIER_GROUPS = [
     set(s.upper() for s in _BUILD_TYPE_TOKEN_LIST)
 ]
 
+
+class AllTests(object):
+    """A class to query for path-prefix matches against the list of all tests."""
+    def __init__(self, list_of_tests):
+        self._tree = dict()
+        for test in list_of_tests:
+            assert not test.startswith('/')
+            assert not test.endswith('/')
+            assert test.replace('//', '/') == test
+            AllTests._add_path_to_tree(self._tree, test.split('/'))
+
+    def find_matching_tests(self, path_prefix):
+        assert not path_prefix.startswith('/')
+        assert path_prefix.replace('//', '/') == path_prefix
+
+        subtree = AllTests._find_subtree_with_prefix(self._tree, path_prefix.rstrip('/').split('/'))
+        if subtree is None:
+            # No match found.
+            return []
+        if not subtree:
+            # We found a leaf node, an exact match on |path_prefix|.
+            return [path_prefix]
+        return AllTests._all_paths_under_subtree(subtree, path_prefix)
+
+    @staticmethod
+    def _find_subtree_with_prefix(subtree, path_list):
+        # Reached the end of the path, we matched to this point in the
+        # dictionary tree.
+        if not path_list:
+            return subtree
+        path_component = path_list[0]
+        # A component of the path does not exist in the dictionary tree.
+        if not path_component in subtree:
+            return None
+        path_remainder = path_list[1:]
+        return AllTests._find_subtree_with_prefix(subtree[path_component], path_remainder)
+
+    @staticmethod
+    def _all_paths_under_subtree(subtree, prefix):
+        if not subtree:
+            return []
+
+        if prefix and not prefix.endswith('/'):
+            prefix = prefix + '/'
+
+        paths = []
+        for child_path, child_tree in subtree.iteritems():
+            if not child_tree:
+                paths.append(prefix + child_path)
+            else:
+                paths.extend(AllTests._all_paths_under_subtree(child_tree, prefix + child_path))
+        return paths
+
+    @staticmethod
+    def _add_path_to_tree(subtree, path_list):
+        # When |path_list| is empty, we reached the end of the path,
+        # so don't add anything more to |subtree|.
+        if not path_list:
+            # If subtree is not empty, then we have the same path listed
+            # twice in the initial list of tests.
+            assert len(subtree) == 0
+            return
+
+        path_component = path_list[0]
+        if not path_component in subtree:
+            subtree[path_component] = dict()
+
+        path_remainder = path_list[1:]
+        AllTests._add_path_to_tree(subtree[path_component], path_remainder)
+
+
 class TestExpectationParser(object):
     """Provides parsing facilities for lines in the test_expectation.txt file."""
 
@@ -101,12 +172,7 @@ class TestExpectationParser(object):
         self._port = port
         self._test_configuration_converter = TestConfigurationConverter(
             set(port.all_test_configurations()), port.configuration_specifier_macros())
-
-        if all_tests:
-            self._all_tests = set(all_tests)
-        else:
-            self._all_tests = set()
-
+        self._all_tests = AllTests(all_tests) if all_tests else None
         self._is_lint_mode = is_lint_mode
 
     def parse(self, filename, expectations_string):
@@ -220,16 +286,7 @@ class TestExpectationParser(object):
             expectation_line.matching_tests = [expectation_line.path]
             return
 
-        if not expectation_line.is_file:
-            # this is a test category, return all the tests of the category.
-            expectation_line.matching_tests = [test for test in self._all_tests if test.startswith(expectation_line.path)]
-            return
-
-        # this is a test file, do a quick check if it's in the
-        # full test suite.
-        if expectation_line.path in self._all_tests:
-            expectation_line.matching_tests.append(expectation_line.path)
-
+        expectation_line.matching_tests = self._all_tests.find_matching_tests(expectation_line.path)
 
 class TestExpectationLine(object):
     """Represents a line in test expectations file."""

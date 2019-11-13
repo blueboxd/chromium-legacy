@@ -13,6 +13,7 @@ import("//build/toolchain/toolchain.gni")
 import("//build/util/version.gni")
 import("//chrome/chrome_repack_locales.gni")
 import("//chrome/common/features.gni")
+import("//chrome/test/base/js2gtest.gni")
 import("//components/feature_engagement/features.gni")
 import("//components/feed/features.gni")
 import("//components/gwp_asan/buildflags/buildflags.gni")
@@ -110,6 +111,8 @@ static_library("test_support") {
     "base/chrome_unit_test_suite.h",
     "base/find_result_waiter.cc",
     "base/find_result_waiter.h",
+    "base/js_test_api.cc",
+    "base/js_test_api.h",
     "base/launchservices_utils_mac.h",
     "base/launchservices_utils_mac.mm",
     "base/process_inspector_win.cc",
@@ -778,7 +781,6 @@ if (!is_android) {
     data = [
       "data/",
       "//chrome/common/extensions/docs/examples/apps/calculator/",
-      "//chrome/third_party/mock4js/",
       "//components/test/data/arc/",
       "//components/test/data/autofill/",
       "//components/test/data/payments/",
@@ -792,8 +794,6 @@ if (!is_android) {
       "//ppapi/tests/test_page.css",
       "//ppapi/tests/test_page.css.mock-http-headers",
       "//testing/test_env.py",
-      "//third_party/accessibility-audit/axs_testing.js",
-      "//third_party/chaijs/chai.js",
       "//third_party/mocha/mocha.js",
       "//third_party/polymer/v1_0/components-chromium/iron-test-helpers/mock-interactions.js",
       "//third_party/pywebsocket/src/mod_pywebsocket/",
@@ -802,6 +802,7 @@ if (!is_android) {
       "//ui/webui/resources/",
       "$root_out_dir/browser_tests.pak",
     ]
+    data += js2gtest_js_libraries
 
     sources = [
       "../../apps/app_restore_service_browsertest.cc",
@@ -2980,6 +2981,8 @@ test("unit_tests") {
     "../browser/content_settings/sound_content_setting_observer_unittest.cc",
     "../browser/content_settings/tab_specific_content_settings_unittest.cc",
     "../browser/custom_handlers/protocol_handler_registry_unittest.cc",
+    "../browser/custom_handlers/test_protocol_handler_registry_delegate.cc",
+    "../browser/custom_handlers/test_protocol_handler_registry_delegate.h",
     "../browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_unittest.cc",
     "../browser/data_reduction_proxy/data_reduction_proxy_settings_unittest_android.cc",
     "../browser/download/chrome_download_manager_delegate_unittest.cc",
@@ -3439,18 +3442,16 @@ test("unit_tests") {
     "../browser/flag-never-expire-list.json",
     "data/",
     "//base/test/data/",
-    "//chrome/third_party/mock4js/",
     "//components/test/data/",
     "//extensions/test/data/",
     "//google_apis/test/data/",
     "//net/tools/testserver/",
-    "//third_party/accessibility-audit/axs_testing.js",
-    "//third_party/chaijs/chai.js",
     "//third_party/pywebsocket/src/mod_pywebsocket/",
     "//third_party/tlslite/",
     "//third_party/zlib/google/test/data/",
     "//tools/metrics/histograms/enums.xml",
   ]
+  data += js2gtest_js_libraries
   if (is_android) {
     data += [
       "$root_gen_dir/chrome/android/chrome_apk_paks/chrome_100_percent.pak",
@@ -5484,15 +5485,12 @@ if (!is_android) {
 
     data = [
       "data/",
-      "//chrome/third_party/mock4js/",
       "//content/test/data/",
       "//net/tools/testserver/",
       "//ppapi/tests/test_case.html",
       "//ppapi/tests/test_case.html.mock-http-headers",
       "//ppapi/tests/test_page.css",
       "//ppapi/tests/test_page.css.mock-http-headers",
-      "//third_party/accessibility-audit/axs_testing.js",
-      "//third_party/chaijs/chai.js",
       "//third_party/mocha/mocha.js",
       "//third_party/polymer/v1_0/components-chromium/iron-test-helpers/mock-interactions.js",
       "//third_party/pywebsocket/src/mod_pywebsocket/",
@@ -5506,6 +5504,7 @@ if (!is_android) {
       "$root_out_dir/test_page.css.mock-http-headers",
       "$root_out_dir/ui_test.pak",
     ]
+    data += js2gtest_js_libraries
     if (is_linux || is_win) {
       data += [
         "$root_out_dir/chrome_100_percent.pak",

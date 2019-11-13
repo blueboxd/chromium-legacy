@@ -13,7 +13,6 @@
 #include "ios/chrome/browser/signin/gaia_auth_fetcher_ios_wk_webview_bridge.h"
 #include "ios/web/common/features.h"
 #include "ios/web/public/browser_state.h"
-#include "net/base/load_flags.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -48,15 +47,15 @@ void GaiaAuthFetcherIOS::CreateAndStartGaiaFetcher(
     const std::string& body,
     const std::string& headers,
     const GURL& gaia_gurl,
-    int load_flags,
+    network::mojom::CredentialsMode credentials_mode,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(!HasPendingFetch()) << "Tried to fetch two things at once!";
 
-  bool cookies_required = !(load_flags & (net::LOAD_DO_NOT_SEND_COOKIES |
-                                          net::LOAD_DO_NOT_SAVE_COOKIES));
+  bool cookies_required =
+      credentials_mode != network::mojom::CredentialsMode::kOmit;
   if (!ShouldUseGaiaAuthFetcherIOS() || !cookies_required) {
-    GaiaAuthFetcher::CreateAndStartGaiaFetcher(body, headers, gaia_gurl,
-                                               load_flags, traffic_annotation);
+    GaiaAuthFetcher::CreateAndStartGaiaFetcher(
+        body, headers, gaia_gurl, credentials_mode, traffic_annotation);
     return;
   }
 

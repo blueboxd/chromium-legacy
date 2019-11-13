@@ -47,7 +47,7 @@ namespace blink {
 unsigned MoveCommands::VerticalScrollDistance(LocalFrame& frame) {
   const Element* focused_element = frame.GetDocument()->FocusedElement();
   if (!focused_element) {
-    if (frame.GetSettings()->GetCaretBrowsingEnabled()) {
+    if (frame.IsCaretBrowsingEnabled()) {
       focused_element = frame.GetDocument()->ActiveElement();
     }
 
@@ -63,8 +63,7 @@ unsigned MoveCommands::VerticalScrollDistance(LocalFrame& frame) {
     return 0;
   if (!(style->OverflowY() == EOverflow::kScroll ||
         style->OverflowY() == EOverflow::kAuto ||
-        HasEditableStyle(*focused_element) ||
-        frame.GetSettings()->GetCaretBrowsingEnabled()))
+        HasEditableStyle(*focused_element) || frame.IsCaretBrowsingEnabled()))
     return 0;
   const ScrollableArea& scrollable_area = *frame.View()->LayoutViewport();
   const int height = std::min<int>(layout_box.ClientHeight().ToInt(),
@@ -126,7 +125,7 @@ bool MoveCommands::MoveSelection(LocalFrame& frame,
 }
 
 void MoveCommands::UpdateFocusForCaretBrowsing(LocalFrame& frame) {
-  if (!frame.GetSettings()->GetCaretBrowsingEnabled())
+  if (!frame.IsCaretBrowsingEnabled())
     return;
 
   SelectionInDOMTree selection = frame.Selection().GetSelectionInDOMTree();
@@ -160,7 +159,7 @@ void MoveCommands::UpdateFocusForCaretBrowsing(LocalFrame& frame) {
 }
 
 void MoveCommands::UpdateSelectionForCaretBrowsing(LocalFrame& frame) {
-  if (!frame.GetSettings()->GetCaretBrowsingEnabled())
+  if (!frame.IsCaretBrowsingEnabled())
     return;
 
   if (frame.Selection().SelectionHasFocus())

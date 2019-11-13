@@ -147,8 +147,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.toolbar.ControlContainer;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
-import org.chromium.chrome.browser.toolbar.top.Toolbar;
-import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
 import org.chromium.chrome.browser.translate.TranslateBridge;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController;
@@ -261,7 +259,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private boolean mTabModelsInitialized;
     private boolean mNativeInitialized;
     private boolean mRemoveWindowBackgroundDone;
-    private boolean mToolbarInitialized;
 
     // The class cannot implement TouchExplorationStateChangeListener,
     // because it is only available for Build.VERSION_CODES.KITKAT and later.
@@ -286,8 +283,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     protected ReaderModeManager mReaderModeManager;
     private SnackbarManager mSnackbarManager;
     private SnackbarManager mBottomSheetSnackbarManager;
-    @Nullable
-    private ToolbarManager mToolbarManager;
+
     private BottomSheetController mBottomSheetController;
     private EphemeralTabCoordinator mEphemeralTabCoordinator;
     private UpdateNotificationController mUpdateNotificationController;
@@ -326,9 +322,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     /** A means of providing the foreground tab of the activity to different features. */
     private ActivityTabProvider mActivityTabProvider = new ActivityTabProvider();
 
-    /** A means of providing the theme color to different features. */
-    private TabThemeColorProvider mTabThemeColorProvider;
-
     /** Whether or not the activity is in started state. */
     private boolean mStarted;
 
@@ -337,8 +330,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     /**
      * The RootUiCoordinator associated with the activity. This variable is held to facilitate
      * testing.
+     * TODO(pnoland, https://crbug.com/865801): make this private again.
      */
-    private RootUiCoordinator mRootUiCoordinator;
+    protected RootUiCoordinator mRootUiCoordinator;
 
     @Nullable
     private StartupTabPreloader mStartupTabPreloader;
@@ -389,7 +383,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // to the RootUiCoordinator, passing the activity is an easy way to get access to a
         // number of objects that will ultimately be owned by the RootUiCoordinator. This is not
         // a recommended pattern.
-        return new RootUiCoordinator(this);
+        return new RootUiCoordinator(this, null, null);
     }
 
     private C createComponent() {
@@ -469,7 +463,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                     mCompositorViewHolder.getCompositorView());
 
             initializeTabModels();
-            initializeToolbarIfNecessary();
             if (!isFinishing() && getFullscreenManager() != null) {
                 getFullscreenManager().initialize(
                         (ControlContainer) findViewById(R.id.control_container),
@@ -613,32 +606,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         return true;
     }
 
-    private void initializeToolbarIfNecessary() {
-        // TODO(https://crbug.com/931496): Move toolbar ownership to RootUiCoordinator.
-        // TODO(pshmakov): make ToolbarManager lazy, don't create them unless getToolbarManager()
-        // is called.
-        if (!mToolbarInitialized) {
-            mToolbarInitialized = true;
-            initializeToolbar();
-        }
-    }
-
-    /**
-     * Constructs {@link ToolbarManager} and the handler necessary for controlling the menu on the
-     * {@link Toolbar}. Extending classes can override this call to avoid creating the toolbar.
-     */
-    protected void initializeToolbar() {
-        try (TraceEvent te = TraceEvent.scoped("ChromeActivity.initializeToolbar")) {
-            final View controlContainer = findViewById(R.id.control_container);
-            assert controlContainer != null;
-            ToolbarControlContainer toolbarContainer = (ToolbarControlContainer) controlContainer;
-            Callback<Boolean> urlFocusChangedCallback = hasFocus -> onOmniboxFocusChanged(hasFocus);
-            mToolbarManager = new ToolbarManager(this, toolbarContainer,
-                    getCompositorViewHolder().getInvalidator(), urlFocusChangedCallback,
-                    mTabThemeColorProvider);
-        }
-    }
-
     /**
      * Initialize the {@link TabModelSelector}, {@link TabModel}s, and
      * {@link org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator} needed by
@@ -650,8 +617,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         mTabModelSelector = createTabModelSelector();
         mTabModelSelectorSupplier.set(mTabModelSelector);
         mActivityTabProvider.setTabModelSelector(mTabModelSelector);
-        mTabThemeColorProvider = new TabThemeColorProvider(this);
-        mTabThemeColorProvider.setActivityTabProvider(mActivityTabProvider);
         getStatusBarColorController().setTabModelSelector(mTabModelSelector);
 
         if (mTabModelSelector == null) {
@@ -721,13 +686,12 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     /**
      * @return {@link ToolbarManager} that belongs to this activity or null if the current activity
      *         does not support a toolbar.
+     * TODO(pnoland, https://crbug.com/865801): remove this in favor of having RootUICoordinator
+     *         inject ToolbarManager directly to sub-components.
      */
     @Nullable
     public ToolbarManager getToolbarManager() {
-        if (isInitialLayoutInflationComplete()) {
-            initializeToolbarIfNecessary();
-        }
-        return mToolbarManager;
+        return mRootUiCoordinator.getToolbarManager();
     }
 
     /**
@@ -1102,11 +1066,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         final String simpleName = getClass().getSimpleName();
         DeferredStartupHandler.getInstance().addDeferredTask(() -> {
             if (isActivityFinishingOrDestroyed()) return;
-            if (mToolbarManager != null) {
+            if (getToolbarManager() != null) {
                 RecordHistogram.recordTimesHistogram(
                         "MobileStartup.ToolbarInflationTime." + simpleName,
                         mInflateInitialLayoutEndMs - mInflateInitialLayoutBeginMs);
-                mToolbarManager.onDeferredStartup(getOnCreateTimestampMs(), simpleName);
+                getToolbarManager().onDeferredStartup(getOnCreateTimestampMs(), simpleName);
             }
 
             if (MultiWindowUtils.getInstance().isInMultiWindowMode(ChromeActivity.this)) {
@@ -1285,11 +1249,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         onDestroyInternal();
 
-        if (mToolbarManager != null) {
-            mToolbarManager.destroy();
-            mToolbarManager = null;
-        }
-
         if (mDidAddPolicyChangeListener) {
             CombinedPolicyProvider.get().removePolicyChangeListener(this);
             mDidAddPolicyChangeListener = false;
@@ -1323,11 +1282,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 getBaseContext().getSystemService(Context.ACCESSIBILITY_SERVICE);
         manager.removeAccessibilityStateChangeListener(this);
         manager.removeTouchExplorationStateChangeListener(mTouchExplorationStateChangeListener);
-
-        if (mTabThemeColorProvider != null) {
-            mTabThemeColorProvider.destroy();
-            mTabThemeColorProvider = null;
-        }
 
         mActivityTabProvider.destroy();
 
@@ -1561,7 +1515,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     protected void onAccessibilityModeChanged(boolean enabled) {
         InfoBarContainer.setIsAllowedToAutoHide(!enabled);
-        if (mToolbarManager != null) mToolbarManager.onAccessibilityStatusChanged(enabled);
+        if (getToolbarManager() != null) getToolbarManager().onAccessibilityStatusChanged(enabled);
         if (mContextualSearchManager != null) {
             mContextualSearchManager.onAccessibilityModeChanged(enabled);
         }
@@ -1651,7 +1605,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         }
 
         // Defense in depth against the UI being erroneously enabled.
-        if (!mToolbarManager.getBookmarkBridge().isEditBookmarksEnabled()) {
+        if (!getToolbarManager().getBookmarkBridge().isEditBookmarksEnabled()) {
             assert false;
             return;
         }
@@ -1952,18 +1906,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     @Override
-    public void onOrientationChange(int orientation) {
-        if (mToolbarManager != null) mToolbarManager.onOrientationChange();
-    }
-
-    /**
-     * Notified when the focus of the omnibox has changed.
-     *
-     * @param hasFocus Whether the omnibox currently has focus.
-     */
-    protected void onOmniboxFocusChanged(boolean hasFocus) {}
-
-    @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
@@ -2109,10 +2051,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         MenuButtonState buttonState = UpdateMenuItemHelper.getInstance().getUiState().buttonState;
 
         if (buttonState != null) {
-            mToolbarManager.showAppMenuUpdateBadge();
+            getToolbarManager().showAppMenuUpdateBadge();
             mCompositorViewHolder.requestRender();
         } else {
-            mToolbarManager.removeAppMenuUpdateBadge(false);
+            getToolbarManager().removeAppMenuUpdateBadge(false);
         }
     }
 

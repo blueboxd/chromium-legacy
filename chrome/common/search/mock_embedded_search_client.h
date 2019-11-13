@@ -14,6 +14,8 @@ class MockEmbeddedSearchClient : public chrome::mojom::EmbeddedSearchClient {
   MockEmbeddedSearchClient();
   ~MockEmbeddedSearchClient() override;
 
+  MOCK_METHOD1(AutocompleteResultChanged,
+               void(chrome::mojom::AutocompleteResultPtr result));
   MOCK_METHOD1(SetPageSequenceNumber, void(int));
   MOCK_METHOD2(FocusChanged, void(OmniboxFocusState, OmniboxFocusChangeReason));
   MOCK_METHOD1(MostVisitedInfoChanged, void(const InstantMostVisitedInfo&));

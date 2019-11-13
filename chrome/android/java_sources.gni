@@ -48,11 +48,3 @@ if (enable_arcore) {
     "java/src/org/chromium/chrome/browser/vr/ArImmersiveOverlay.java",
   ]
 }
-
-if (android_sdk_release == "q") {
-  chrome_java_sources += [ "geo/java/src/org/chromium/chrome/browser/omnibox/geo/CellInfoDelegate.java" ]
-} else {
-  chrome_java_sources += [
-    "java/src/org/chromium/chrome/browser/omnibox/geo/CellInfoDelegate.java",
-  ]
-}

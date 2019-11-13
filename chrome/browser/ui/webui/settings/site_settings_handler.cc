@@ -17,7 +17,6 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/web_site_settings_uma_util.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
@@ -28,7 +27,6 @@
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/serial/serial_chooser_context.h"
 #include "chrome/browser/serial/serial_chooser_context_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -50,7 +48,6 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/origin_util.h"
@@ -338,9 +335,7 @@ void LogAllSitesAction(AllSitesAction action) {
 
 SiteSettingsHandler::SiteSettingsHandler(Profile* profile,
                                          web_app::AppRegistrar& app_registrar)
-    : profile_(profile),
-      app_registrar_(app_registrar),
-      pref_change_registrar_(nullptr) {}
+    : profile_(profile), app_registrar_(app_registrar) {}
 
 SiteSettingsHandler::~SiteSettingsHandler() {
   if (cookies_tree_model_)
@@ -452,11 +447,6 @@ void SiteSettingsHandler::OnJavascriptAllowed() {
   if (profile_->HasOffTheRecordProfile())
     ObserveSourcesForProfile(profile_->GetOffTheRecordProfile());
 
-  notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
-                              content::NotificationService::AllSources());
-  notification_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
-                              content::NotificationService::AllSources());
-
   // Here we only subscribe to the HostZoomMap for the default storage partition
   // since we don't allow the user to manage the zoom levels for apps.
   // We're only interested in zoom-levels that are persisted, since the user
@@ -487,12 +477,12 @@ void SiteSettingsHandler::OnJavascriptAllowed() {
 void SiteSettingsHandler::OnJavascriptDisallowed() {
   observer_.RemoveAll();
   chooser_observer_.RemoveAll();
-  notification_registrar_.RemoveAll();
   host_zoom_map_subscription_.reset();
   pref_change_registrar_->Remove(prefs::kBlockAutoplayEnabled);
 #if defined(OS_CHROMEOS)
   pref_change_registrar_->Remove(prefs::kEnableDRM);
 #endif
+  observed_profiles_.RemoveAll();
 }
 
 void SiteSettingsHandler::OnGetUsageInfo() {
@@ -558,31 +548,16 @@ void SiteSettingsHandler::OnContentSettingChanged(
   }
 }
 
-void SiteSettingsHandler::Observe(int type,
-                                  const content::NotificationSource& source,
-                                  const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_PROFILE_DESTROYED: {
-      Profile* profile = content::Source<Profile>(source).ptr();
-      if (!profile_->IsSameProfile(profile))
-        break;
-      SendIncognitoStatus(profile, /*was_destroyed=*/true);
+void SiteSettingsHandler::OnOffTheRecordProfileCreated(
+    Profile* off_the_record) {
+  FireWebUIListener("onIncognitoStatusChanged", base::Value(true));
+  ObserveSourcesForProfile(off_the_record);
+}
 
-      if (profile->IsOffTheRecord())
-        StopObservingSourcesForProfile(profile);
-      break;
-    }
-
-    case chrome::NOTIFICATION_PROFILE_CREATED: {
-      Profile* profile = content::Source<Profile>(source).ptr();
-      if (!profile_->IsSameProfile(profile))
-        break;
-      SendIncognitoStatus(profile, /*was_destroyed=*/false);
-
-      ObserveSourcesForProfile(profile);
-      break;
-    }
-  }
+void SiteSettingsHandler::OnProfileWillBeDestroyed(Profile* profile) {
+  if (profile->IsOffTheRecord())
+    FireWebUIListener("onIncognitoStatusChanged", base::Value(false));
+  StopObservingSourcesForProfile(profile);
 }
 
 void SiteSettingsHandler::OnChooserObjectPermissionChanged(
@@ -1207,22 +1182,8 @@ void SiteSettingsHandler::HandleIsPatternValidForType(
 void SiteSettingsHandler::HandleUpdateIncognitoStatus(
     const base::ListValue* args) {
   AllowJavascript();
-  SendIncognitoStatus(profile_, /*was_destroyed=*/false);
-}
-
-void SiteSettingsHandler::SendIncognitoStatus(Profile* profile,
-                                              bool was_destroyed) {
-  if (!IsJavascriptAllowed())
-    return;
-
-  // When an incognito profile is destroyed, it sends out the destruction
-  // message before destroying, so HasOffTheRecordProfile for profile_ won't
-  // return false until after the profile actually been destroyed.
-  bool incognito_enabled =
-      profile_->HasOffTheRecordProfile() &&
-      !(was_destroyed && profile == profile_->GetOffTheRecordProfile());
-
-  FireWebUIListener("onIncognitoStatusChanged", base::Value(incognito_enabled));
+  FireWebUIListener("onIncognitoStatusChanged",
+                    base::Value(profile_->HasOffTheRecordProfile()));
 }
 
 void SiteSettingsHandler::HandleFetchZoomLevels(const base::ListValue* args) {
@@ -1390,6 +1351,8 @@ void SiteSettingsHandler::ObserveSourcesForProfile(Profile* profile) {
   auto* serial_context = SerialChooserContextFactory::GetForProfile(profile);
   if (!chooser_observer_.IsObserving(serial_context))
     chooser_observer_.Add(serial_context);
+
+  observed_profiles_.Add(profile);
 }
 
 void SiteSettingsHandler::StopObservingSourcesForProfile(Profile* profile) {
@@ -1404,6 +1367,8 @@ void SiteSettingsHandler::StopObservingSourcesForProfile(Profile* profile) {
   auto* serial_context = SerialChooserContextFactory::GetForProfile(profile);
   if (chooser_observer_.IsObserving(serial_context))
     chooser_observer_.Remove(serial_context);
+
+  observed_profiles_.Remove(profile);
 }
 
 void SiteSettingsHandler::TreeNodesAdded(ui::TreeModel* model,

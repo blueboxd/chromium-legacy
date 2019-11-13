@@ -1139,8 +1139,8 @@ class ScopedSwizzleWaiter {
 
   ~ScopedSwizzleWaiter() { instance_ = nullptr; }
 
-  static IMP GetMethodAndMarkCalled() {
-    return instance_->GetMethodInternal();
+  static void OriginalSetWindowStateForEnd(id receiver, SEL method) {
+    return instance_->CallMethodInternal(receiver, method);
   }
 
   void WaitForMethod() {
@@ -1158,12 +1158,12 @@ class ScopedSwizzleWaiter {
   bool method_called() const { return method_called_; }
 
  private:
-  IMP GetMethodInternal() {
+  void CallMethodInternal(id receiver, SEL selector) {
     DCHECK(!method_called_);
     method_called_ = true;
     if (run_loop_)
       run_loop_->Quit();
-    return swizzler_.GetOriginalImplementation();
+    swizzler_.InvokeOriginal<void>(receiver, selector);
   }
 
   static ScopedSwizzleWaiter* instance_;
@@ -2475,7 +2475,7 @@ TEST_F(NativeWidgetMacTest, InitCallback) {
 
 @implementation TestStopAnimationWaiter
 - (void)setWindowStateForEnd {
-  views::test::ScopedSwizzleWaiter::GetMethodAndMarkCalled()(self, _cmd);
+  views::test::ScopedSwizzleWaiter::OriginalSetWindowStateForEnd(self, _cmd);
 }
 @end
 

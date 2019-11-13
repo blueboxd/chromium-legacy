@@ -9,6 +9,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import org.chromium.android_webview.devui.CrashesListActivity;
+import org.chromium.android_webview.devui.FlagsActivity;
 import org.chromium.android_webview.devui.MainActivity;
 import org.chromium.android_webview.devui.R;
 
@@ -36,6 +37,8 @@ public final class NavigationMenuHelper {
     public static boolean onOptionsItemSelected(Activity activity, MenuItem item) {
         if (item.getItemId() == R.id.nav_menu_crash_ui) {
             activity.startActivity(new Intent(activity, CrashesListActivity.class));
+        } else if (item.getItemId() == R.id.nav_menu_flags_ui) {
+            activity.startActivity(new Intent(activity, FlagsActivity.class));
         } else if (item.getItemId() == R.id.nav_menu_main_ui) {
             activity.startActivity(new Intent(activity, MainActivity.class));
         } else {

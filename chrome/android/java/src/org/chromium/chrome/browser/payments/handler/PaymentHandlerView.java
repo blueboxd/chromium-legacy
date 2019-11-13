@@ -11,13 +11,10 @@ import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.thinwebview.ThinWebView;
 import org.chromium.chrome.browser.thinwebview.ThinWebViewFactory;
-import org.chromium.chrome.browser.ui.widget.FadingShadow;
-import org.chromium.chrome.browser.ui.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.content_public.browser.WebContents;
@@ -25,12 +22,12 @@ import org.chromium.ui.base.ActivityWindowAndroid;
 
 /** PaymentHandler UI. */
 /* package */ class PaymentHandlerView implements BottomSheetContent {
-    private final int mToolbarHeightPx;
     private final View mToolbarView;
     private final FrameLayout mContentView;
     private final ThinWebView mThinWebView;
     private final Handler mReflowHandler = new Handler();
     private final int mTabHeight;
+    private final int mToolbarHeightPx;
 
     /**
      * Construct the PaymentHandlerView.
@@ -39,13 +36,12 @@ import org.chromium.ui.base.ActivityWindowAndroid;
      * @param webContents The web-content of the payment-handler web-app.
      * @param webContentView The {@link ContentView} that has been contructed with the web-content.
      */
-    /* package */ PaymentHandlerView(
-            ChromeActivity activity, WebContents webContents, ContentView webContentView) {
-        mToolbarHeightPx = activity.getResources().getDimensionPixelSize(
-                R.dimen.custom_tabs_control_container_height);
+    /* package */ PaymentHandlerView(ChromeActivity activity, WebContents webContents,
+            ContentView webContentView, View toolbarView) {
         mTabHeight = activity.getActivityTab().getHeight();
-
-        mToolbarView = LayoutInflater.from(activity).inflate(R.layout.custom_tabs_toolbar, null);
+        mToolbarView = toolbarView;
+        mToolbarHeightPx =
+                activity.getResources().getDimensionPixelSize(R.dimen.sheet_tab_toolbar_height);
         mContentView = (FrameLayout) LayoutInflater.from(activity).inflate(
                 R.layout.payment_handler_content, null);
 
@@ -63,13 +59,10 @@ import org.chromium.ui.base.ActivityWindowAndroid;
      */
     private void initContentView(ChromeActivity activity, ThinWebView thinWebView,
             WebContents webContents, ContentView webContentView) {
-        FadingShadowView shadow = mContentView.findViewById(R.id.shadow);
-        shadow.init(ApiCompatibilityUtils.getColor(
-                            activity.getResources(), R.color.toolbar_shadow_color),
-                FadingShadow.POSITION_TOP);
         assert webContentView.getParent() == null;
         thinWebView.attachWebContents(webContents, webContentView);
-        mContentView.setPadding(/*left=*/0, /*top=*/mToolbarHeightPx, /*right=*/0, /*bottom=*/0);
+        mContentView.setPadding(
+                /*left=*/0, /*top=*/mToolbarHeightPx, /*right=*/0, /*bottom=*/0);
         mContentView.addView(thinWebView.getView(), /*index=*/0);
     }
 
@@ -87,6 +80,10 @@ import org.chromium.ui.base.ActivityWindowAndroid;
         LayoutParams params = (LayoutParams) mThinWebView.getView().getLayoutParams();
         params.height = Math.max(0, (int) (mTabHeight * heightFraction) - mToolbarHeightPx);
         mThinWebView.getView().setLayoutParams(params);
+    }
+
+    /* package */ int getToolbarHeightPx() {
+        return mToolbarHeightPx;
     }
 
     // BottomSheetContent:

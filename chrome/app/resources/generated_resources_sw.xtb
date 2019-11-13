@@ -2041,7 +2041,6 @@ Unaweza kudhibiti mipangilio ya akaunti hii kwa kusakinisha programu ya Family L
 <translation id="3923676227229836009">Ukurasa huu unaruhusiwa kuangalia faili</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3925573269917483990">Kamera:</translation>
-<translation id="3925842537050977900">Banua kutoka kwenye Rafu</translation>
 <translation id="3926002189479431949">Simu ya Smart Lock imebadilishwa</translation>
 <translation id="3927932062596804919">Kataza</translation>
 <translation id="3928570707778085600">Ungependa kuhifadhi mabadiliko kwenye <ph name="FILE_OR_FOLDER_NAME" />?</translation>
@@ -2533,7 +2532,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4689235506267737042">Chagua mapendeleo yako ya maonyesho</translation>
 <translation id="4689421377817139245">Sawazisha alamisho hii kwenye iPhone yako</translation>
 <translation id="4690091457710545971">&lt;Faili nne zinazozalishwa na programu dhibiti ya Intel Wi-Fi: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon.  Faili za kwanza tatu ni faili za mfumo wa jozi zilizo na data ya faili za sajili, na zimethibitishwa na Intel kuwa hazina maelezo yanayoweza kutambulisha mtu au kifaa. Faili ya mwisho ni faili ya utekelezaji kutoka programu dhibiti ya Intel; imeondolewa maelezo yoyote yanayoweza kutambulisha mtu au kifaa, lakini haiwezi kuonekana hapa kwa kuwa ni kubwa mno.  Faili hizi zilizalishwa ili kusuluhisha matatizo ya hivi majuzi ya Wi-Fi ambayo yalikumba kifaa chako, na tutazishiriki na Intel ili kukusaidia utatue matatizo haya.&gt;</translation>
-<translation id="469230890969474295">Folda ya OEM</translation>
 <translation id="4692623383562244444">Mitambo ya kutafuta</translation>
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694024090038830733">Mipangilio ya printa inashughulikiwa na msimamizi.</translation>
@@ -2566,7 +2564,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4737715515457435632">Tafadhali unganisha kwenye mtandao.</translation>
 <translation id="473775607612524610">Sasisha</translation>
 <translation id="4739639199548674512">Tiketi</translation>
-<translation id="4742746985488890273">Bandika kwenye Rafu</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Pata maelezo zaidi kuhusu jinsi ya kusasisha programu<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Washa sauti ya tovuti}other{Washa sauti za tovuti}}</translation>
 <translation id="4746351372139058112">Ujumbe</translation>
@@ -3558,7 +3555,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6196854373336333322">Kiendelezi hiki "<ph name="EXTENSION_NAME" />" kinadhibiti mipangilio yako ya seva mbadala, kumaanisha kuwa kinaweza kubadilisha, kuvunja, au kufuatilia chochote unachokifanya mtandaoni. Ikiwa huna uhakika kwa nini mabadiliko haya yamefanyika, huenda huyahitaji.</translation>
 <translation id="6198102561359457428">Ondoka na kisha uingie tena...</translation>
 <translation id="6198252989419008588">Badilisha PIN</translation>
-<translation id="6201792273624501289">Programu za Linux</translation>
 <translation id="6202304368170870640">Unaweza kutumia PIN yako kuingia katika akaunti au kufungua kifaa chako.</translation>
 <translation id="6206311232642889873">&amp;Nakili Picha</translation>
 <translation id="6207200176136643843">Rejesha kiwango cha kukuza kuwa chaguomsingi</translation>
@@ -5594,7 +5590,6 @@ Sidhani tovuti hii inapaswa kuzuiwa!</translation>
 <translation id="9130015405878219958">Modi batili imeingizwa.</translation>
 <translation id="9131487537093447019">Tuma na upokee barua kutoka kwenye vifaa vya Bluetooth.</translation>
 <translation id="9134304429738380103">Ndiyo, ninakubali.</translation>
-<translation id="9135090785674039430">Ikiwashwa, tovuti haziwezi kutumia vidakuzi vinavyokufuatilia kwenye wavuti. Baadhi ya tovuti huenda zikaacha kufanya kazi.</translation>
 <translation id="9137013805542155359">Onyesha asili</translation>
 <translation id="9137157311132182254">Mtambo wa kutafuta unaopendelea</translation>
 <translation id="9137248913990643158">Tafadhali anza na uingie katika Chrome kabla ya kutumia programu hii.</translation>

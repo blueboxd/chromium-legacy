@@ -120,6 +120,7 @@ test("weblayer_browsertests") {
       "//testing/android/native_test:native_test_support",
       "//ui/android:android",
       "//ui/touch_selection:touch_selection",
+      "//weblayer:locale_pak_assets",
 
       # Needed for WebLayerImpl.
       "//weblayer/browser/java",

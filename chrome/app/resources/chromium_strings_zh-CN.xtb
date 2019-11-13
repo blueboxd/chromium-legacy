@@ -58,7 +58,6 @@
 <translation id="3340978935015468852">设置</translation>
 <translation id="3474745554856756813">这会从这台设备上删除 <ph name="ITEMS_COUNT" /> 项内容。如果日后想要检索您的数据，届时请以 <ph name="USER_EMAIL" /> 的身份登录 Chromium。</translation>
 <translation id="3509308970982693815">请关闭所有 Chromium 窗口并重试。</translation>
-<translation id="352783484088404971">从Chromium中移除…</translation>
 <translation id="3575459661164320785">您的计算机上存在有害软件。Chromium 可以移除该软件、恢复您的设置并停用扩展程序，以确保您的浏览器能够重新正常运行。</translation>
 <translation id="358997566136285270">Chromium 徽标</translation>
 <translation id="3639635944603682591">系统将会从此设备上删除该用户的浏览数据。要想恢复这些数据，请以“<ph name="USER_EMAIL" />”的身份登录 Chromium。</translation>

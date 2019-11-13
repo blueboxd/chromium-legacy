@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "components/os_crypt/os_crypt_mocker.h"
@@ -27,6 +28,7 @@
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/password_store_default.h"
 #include "components/password_manager/core/browser/password_store_signin_notifier.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -80,7 +82,8 @@ class MockPasswordLeakHistoryConsumer : public PasswordLeakHistoryConsumer {
  public:
   MockPasswordLeakHistoryConsumer() = default;
 
-  MOCK_METHOD1(OnGetLeakedCredentials, void(std::vector<LeakedCredentials>));
+  MOCK_METHOD1(OnGetCompromisedCredentials,
+               void(std::vector<CompromisedCredentials>));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPasswordLeakHistoryConsumer);
@@ -1249,69 +1252,76 @@ TEST_F(PasswordStoreTest, ReportMetricsForNonSyncPassword) {
 }
 #endif
 
-TEST_F(PasswordStoreTest, GetAllLeakedCredentials) {
-  LeakedCredentials leaked_credentials(GURL("https://example.com"),
-                                       base::ASCIIToUTF16("username"),
-                                       base::Time::FromTimeT(1));
-  LeakedCredentials leaked_credentials2(GURL("https://example2.com"),
-                                        base::ASCIIToUTF16("username2"),
-                                        base::Time::FromTimeT(2));
+TEST_F(PasswordStoreTest, GetAllCompromisedCredentials) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(password_manager::features::kLeakHistory);
+  CompromisedCredentials compromised_credentials(
+      GURL("https://example.com"), base::ASCIIToUTF16("username"),
+      base::Time::FromTimeT(1), CompromiseType::kLeaked);
+  CompromisedCredentials compromised_credentials2(
+      GURL("https://2.example.com"), base::ASCIIToUTF16("username2"),
+      base::Time::FromTimeT(2), CompromiseType::kLeaked);
 
   scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
-  store->AddLeakedCredentials(leaked_credentials);
-  store->AddLeakedCredentials(leaked_credentials2);
+  store->AddCompromisedCredentials(compromised_credentials);
+  store->AddCompromisedCredentials(compromised_credentials2);
   MockPasswordLeakHistoryConsumer consumer;
-  EXPECT_CALL(consumer, OnGetLeakedCredentials(UnorderedElementsAre(
-                            leaked_credentials, leaked_credentials2)));
-  store->GetAllLeakedCredentials(&consumer);
+  EXPECT_CALL(consumer,
+              OnGetCompromisedCredentials(UnorderedElementsAre(
+                  compromised_credentials, compromised_credentials2)));
+  store->GetAllCompromisedCredentials(&consumer);
   WaitForPasswordStore();
   testing::Mock::VerifyAndClearExpectations(&consumer);
 
-  store->RemoveLeakedCredentials(leaked_credentials.url,
-                                 leaked_credentials.username);
-  EXPECT_CALL(consumer, OnGetLeakedCredentials(
-                            UnorderedElementsAre(leaked_credentials2)));
-  store->GetAllLeakedCredentials(&consumer);
+  store->RemoveCompromisedCredentials(compromised_credentials.url,
+                                      compromised_credentials.username);
+  EXPECT_CALL(consumer, OnGetCompromisedCredentials(
+                            UnorderedElementsAre(compromised_credentials2)));
+  store->GetAllCompromisedCredentials(&consumer);
   WaitForPasswordStore();
 
   store->ShutdownOnUIThread();
 }
 
-TEST_F(PasswordStoreTest, RemoveLeakedCredentialsCreatedBetween) {
-  LeakedCredentials leaked_credentials1(GURL("https://example1.com"),
-                                        base::ASCIIToUTF16("username1"),
-                                        base::Time::FromTimeT(100));
-  LeakedCredentials leaked_credentials2(GURL("https://example2.com"),
-                                        base::ASCIIToUTF16("username2"),
-                                        base::Time::FromTimeT(200));
-  LeakedCredentials leaked_credentials3(GURL("https://example3.com"),
-                                        base::ASCIIToUTF16("username3"),
-                                        base::Time::FromTimeT(300));
+TEST_F(PasswordStoreTest, RemoveCompromisedCredentialsCreatedBetween) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(password_manager::features::kLeakHistory);
+  CompromisedCredentials compromised_credentials1(
+      GURL("https://example1.com"), base::ASCIIToUTF16("username1"),
+      base::Time::FromTimeT(100), CompromiseType::kLeaked);
+  CompromisedCredentials compromised_credentials2(
+      GURL("https://2.example.com"), base::ASCIIToUTF16("username2"),
+      base::Time::FromTimeT(200), CompromiseType::kLeaked);
+  CompromisedCredentials compromised_credentials3(
+      GURL("https://example3.com"), base::ASCIIToUTF16("username3"),
+      base::Time::FromTimeT(300), CompromiseType::kLeaked);
 
   scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
-  store->AddLeakedCredentials(leaked_credentials1);
-  store->AddLeakedCredentials(leaked_credentials2);
-  store->AddLeakedCredentials(leaked_credentials3);
+  store->AddCompromisedCredentials(compromised_credentials1);
+  store->AddCompromisedCredentials(compromised_credentials2);
+  store->AddCompromisedCredentials(compromised_credentials3);
 
   MockPasswordLeakHistoryConsumer consumer;
-  EXPECT_CALL(consumer, OnGetLeakedCredentials(UnorderedElementsAre(
-                            leaked_credentials1, leaked_credentials2,
-                            leaked_credentials3)));
-  store->GetAllLeakedCredentials(&consumer);
+  EXPECT_CALL(consumer, OnGetCompromisedCredentials(UnorderedElementsAre(
+                            compromised_credentials1, compromised_credentials2,
+                            compromised_credentials3)));
+  store->GetAllCompromisedCredentials(&consumer);
   WaitForPasswordStore();
   testing::Mock::VerifyAndClearExpectations(&consumer);
 
-  store->RemoveLeakedCredentialsByUrlAndTime(
-      base::BindRepeating(std::not_equal_to<GURL>(), leaked_credentials3.url),
+  store->RemoveCompromisedCredentialsByUrlAndTime(
+      base::BindRepeating(std::not_equal_to<GURL>(),
+                          compromised_credentials3.url),
       base::Time::FromTimeT(150), base::Time::FromTimeT(350), base::Closure());
 
-  EXPECT_CALL(consumer, OnGetLeakedCredentials(UnorderedElementsAre(
-                            leaked_credentials1, leaked_credentials3)));
-  store->GetAllLeakedCredentials(&consumer);
+  EXPECT_CALL(consumer,
+              OnGetCompromisedCredentials(UnorderedElementsAre(
+                  compromised_credentials1, compromised_credentials3)));
+  store->GetAllCompromisedCredentials(&consumer);
   WaitForPasswordStore();
 
   store->ShutdownOnUIThread();

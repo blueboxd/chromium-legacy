@@ -62,7 +62,7 @@ class TextDecoderStream::Transformer final : public TransformStreamTransformer {
     DCHECK(bufferSource.IsArrayBuffer());
     const auto* array_buffer = bufferSource.GetAsArrayBuffer();
     const char* start = static_cast<const char*>(array_buffer->Data());
-    uint32_t length = array_buffer->ByteLength();
+    uint32_t length = array_buffer->DeprecatedByteLengthAsUnsigned();
     DecodeAndEnqueue(start, length, WTF::FlushBehavior::kDoNotFlush, controller,
                      exception_state);
 

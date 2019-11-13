@@ -949,11 +949,15 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
   TRACE_EVENT_WITH_FLOW2(
       TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
       "RenderWidgetHostImpl::SynchronizeVisualProperties send message",
-      visual_properties->local_surface_id_allocation->local_surface_id()
+      visual_properties->local_surface_id_allocation
+          .value_or(viz::LocalSurfaceIdAllocation())
+          .local_surface_id()
           .submission_trace_id(),
       TRACE_EVENT_FLAG_FLOW_OUT, "message",
       "WidgetMsg_SynchronizeVisualProperties", "local_surface_id",
-      visual_properties->local_surface_id_allocation->local_surface_id()
+      visual_properties->local_surface_id_allocation
+          .value_or(viz::LocalSurfaceIdAllocation())
+          .local_surface_id()
           .ToString());
   visual_properties_ack_pending_ =
       DoesVisualPropertiesNeedAck(old_visual_properties_, *visual_properties);

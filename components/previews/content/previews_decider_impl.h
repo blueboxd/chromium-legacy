@@ -168,6 +168,13 @@ class PreviewsDeciderImpl : public PreviewsDecider,
       bool is_drp_server_preview,
       std::vector<PreviewsEligibilityReason>* passed_reasons) const;
 
+  // Returns previews eligibility with respect to the local blacklist.
+  PreviewsEligibilityReason CheckLocalBlacklist(
+      const GURL& url,
+      PreviewsType type,
+      bool is_drp_server_preview,
+      std::vector<PreviewsEligibilityReason>* passed_reasons) const;
+
   // Whether the preview |type| should be allowed to be considered for |url|
   // subject to any server provided optimization hints. This is meant for
   // checking the initial navigation URL. Returns ALLOWED if no reason found

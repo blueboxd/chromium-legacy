@@ -37,7 +37,7 @@ Vector<uint8_t> ConvertBufferSource(
   Vector<uint8_t> vector;
   if (buffer.IsArrayBuffer()) {
     vector.Append(static_cast<uint8_t*>(buffer.GetAsArrayBuffer()->Data()),
-                  buffer.GetAsArrayBuffer()->ByteLength());
+                  buffer.GetAsArrayBuffer()->DeprecatedByteLengthAsUnsigned());
   } else {
     vector.Append(static_cast<uint8_t*>(
                       buffer.GetAsArrayBufferView().View()->BaseAddress()),

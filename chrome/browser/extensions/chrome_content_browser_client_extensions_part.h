@@ -66,8 +66,8 @@ class ChromeContentBrowserClientExtensionsPart
       content::RenderFrameHost* main_frame);
   static bool ShouldSwapBrowsingInstancesForNavigation(
       content::SiteInstance* site_instance,
-      const GURL& current_url,
-      const GURL& new_url);
+      const GURL& current_effective_url,
+      const GURL& destination_effective_url);
   // TODO(crbug.com/824858): Remove the OnIO method.
   static bool AllowServiceWorkerOnIO(const GURL& scope,
                                      const GURL& first_party_url,

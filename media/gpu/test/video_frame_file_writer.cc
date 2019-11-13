@@ -150,13 +150,12 @@ void VideoFrameFileWriter::WriteVideoFramePNG(
     scoped_refptr<const VideoFrame> video_frame,
     const base::FilePath& filename) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(writer_thread_sequence_checker_);
-  DCHECK(video_frame_mapper_);
 
   auto mapped_frame = video_frame;
 #if defined(OS_CHROMEOS)
   if (video_frame->storage_type() == VideoFrame::STORAGE_DMABUFS ||
       video_frame->storage_type() == VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
-    DCHECK(video_frame_mapper_);
+    CHECK(video_frame_mapper_);
     mapped_frame = video_frame_mapper_->Map(std::move(video_frame));
   }
 
@@ -196,13 +195,12 @@ void VideoFrameFileWriter::WriteVideoFrameYUV(
     scoped_refptr<const VideoFrame> video_frame,
     const base::FilePath& filename) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(writer_thread_sequence_checker_);
-  DCHECK(video_frame_mapper_);
 
   auto mapped_frame = video_frame;
 #if defined(OS_CHROMEOS)
   if (video_frame->storage_type() == VideoFrame::STORAGE_DMABUFS ||
       video_frame->storage_type() == VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
-    DCHECK(video_frame_mapper_);
+    CHECK(video_frame_mapper_);
     mapped_frame = video_frame_mapper_->Map(std::move(video_frame));
   }
 #endif

@@ -7897,16 +7897,21 @@ void Document::FlushAutofocusCandidates() {
       DCHECK_EQ(doc, this);
     }
 
-    // 9. If element is a focusable area, then:
+    // 9. Let target be element.
+    Element* target = &element;
+
+    // 10. If target is not a focusable area, then set target to the result of
+    // getting the focusable area for target.
     element.GetDocument().UpdateStyleAndLayoutTree();
-    if (element.IsFocusable() ||
-        // TODO(tkent): Standardize delegatesFocus handling.
-        // https://github.com/whatwg/html/issues/5027
-        element.DelegatesFocus()) {
-      // 9.1. Empty candidates.
-      // 9.2. Set topDocument's autofocus processed flag to true.
+    if (!target->IsFocusable())
+      target = target->GetFocusableArea();
+
+    // 11. If target is not null, then:
+    if (target) {
+      // 11.1. Empty candidates.
+      // 11.2. Set topDocument's autofocus processed flag to true.
       FinalizeAutofocus();
-      // 9.3. Run the focusing steps for element.
+      // 11.3. Run the focusing steps for element.
       element.focus();
     } else {
       // TODO(tkent): Show a console message, and fix LocalNTP*Test.*

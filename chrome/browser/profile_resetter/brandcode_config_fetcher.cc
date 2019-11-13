@@ -54,7 +54,7 @@ BrandcodeConfigFetcher::BrandcodeConfigFetcher(
     const FetchCallback& callback,
     const GURL& url,
     const std::string& brandcode)
-    : fetch_callback_(callback) {
+    : fetch_callback_(callback), weak_ptr_factory_(this) {
   DCHECK(!brandcode.empty());
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("brandcode_config", R"(
@@ -91,7 +91,7 @@ BrandcodeConfigFetcher::BrandcodeConfigFetcher(
   simple_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory,
       base::BindOnce(&BrandcodeConfigFetcher::OnSimpleLoaderComplete,
-                     base::Unretained(this)));
+                     weak_ptr_factory_.GetWeakPtr()));
   // Abort the download attempt if it takes too long.
   download_timer_.Start(FROM_HERE,
                         base::TimeDelta::FromSeconds(kDownloadTimeoutSec),
@@ -112,7 +112,7 @@ void BrandcodeConfigFetcher::OnSimpleLoaderComplete(
     data_decoder::DataDecoder::ParseXmlIsolated(
         *response_body,
         base::BindOnce(&BrandcodeConfigFetcher::OnXmlConfigParsed,
-                       base::Unretained(this)));
+                       weak_ptr_factory_.GetWeakPtr()));
   } else {
     std::move(fetch_callback_).Run();
   }

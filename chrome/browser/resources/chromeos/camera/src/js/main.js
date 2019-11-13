@@ -113,7 +113,7 @@ cca.App.prototype.setupToggles_ = function() {
   document.querySelectorAll('input').forEach((element) => {
     element.addEventListener(
         'keypress',
-        (event) => cca.util.getShortcutIdentifier(event) == 'Enter' &&
+        (event) => cca.util.getShortcutIdentifier(event) === 'Enter' &&
             element.click());
 
     var css = element.getAttribute('data-state');
@@ -129,7 +129,7 @@ cca.App.prototype.setupToggles_ = function() {
       }
       if (event.isTrusted) {
         element.save();
-        if (element.type == 'radio' && element.checked) {
+        if (element.type === 'radio' && element.checked) {
           // Handle unchecked grouped sibling radios.
           var grouped = `input[type=radio][name=${element.name}]:not(:checked)`;
           document.querySelectorAll(grouped).forEach(
@@ -181,7 +181,7 @@ cca.App.prototype.start = function() {
       })
       .catch((error) => {
         console.error(error);
-        if (error && error.message == 'no-migrate') {
+        if (error && error.message === 'no-migrate') {
           chrome.app.window.current().close();
           return;
         }

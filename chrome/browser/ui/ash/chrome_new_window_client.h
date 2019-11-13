@@ -11,6 +11,7 @@
 
 #include "ash/public/cpp/new_window_delegate.h"
 #include "base/macros.h"
+#include "components/arc/intent_helper/control_camera_app_delegate.h"
 #include "components/arc/intent_helper/open_url_delegate.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "url/gurl.h"
@@ -28,7 +29,8 @@ class WebContents;
 // Handles opening new tabs and windows on behalf of ash (over mojo) and the
 // ARC bridge (via a delegate in the browser process).
 class ChromeNewWindowClient : public ash::NewWindowDelegate,
-                              public arc::OpenUrlDelegate {
+                              public arc::OpenUrlDelegate,
+                              public arc::ControlCameraAppDelegate {
  public:
   ChromeNewWindowClient();
   ~ChromeNewWindowClient() override;
@@ -46,8 +48,6 @@ class ChromeNewWindowClient : public ash::NewWindowDelegate,
   void ShowKeyboardShortcutViewer() override;
   void ShowTaskManager() override;
   void OpenFeedbackPage(bool from_assistant) override;
-  void LaunchCameraApp(const std::string& queries) override;
-  void CloseCameraApp() override;
 
   // arc::OpenUrlDelegate:
   void OpenUrlFromArc(const GURL& url) override;
@@ -59,6 +59,11 @@ class ChromeNewWindowClient : public ash::NewWindowDelegate,
       int32_t top_margin,
       arc::mojom::IntentHelperHost::OnOpenCustomTabCallback callback) override;
   void OpenChromePageFromArc(arc::mojom::ChromePage page) override;
+
+  // arc::ControlCameraAppDelegate:
+  void LaunchCameraApp(const std::string& queries) override;
+  void CloseCameraApp() override;
+  bool IsCameraAppEnabled() override;
 
  private:
   class TabRestoreHelper;

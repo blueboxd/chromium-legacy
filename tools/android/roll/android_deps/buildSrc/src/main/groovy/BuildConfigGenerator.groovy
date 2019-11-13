@@ -459,6 +459,8 @@ class BuildConfigGenerator extends DefaultTask {
 
         // NOTE: the fetch_all.py script relies on the format of this file!
         // See fetch_all.py:GetCipdPackageInfo().
+        // NOTE: keep the copyright year 2018 until this generated code is
+        //       updated, avoiding annual churn of all cipd.yaml files.
         def str = """\
         # Copyright 2018 The Chromium Authors. All rights reserved.
         # Use of this source code is governed by a BSD-style license that can be

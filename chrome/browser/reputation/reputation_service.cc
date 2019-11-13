@@ -30,6 +30,7 @@ namespace {
 using chrome_browser_safety_tips::FlaggedPage;
 using chrome_browser_safety_tips::UrlPattern;
 using safe_browsing::V4ProtocolManagerUtil;
+using security_state::SafetyTipStatus;
 
 // This factory helps construct and find the singleton ReputationService linked
 // to a Profile.
@@ -278,7 +279,16 @@ void ReputationService::GetReputationStatusWithEngagedSites(
     done_checking_reputation_status = true;
   }
 
-  result.user_previously_ignored = IsIgnored(url);
+  if (IsIgnored(url)) {
+    if (result.safety_tip_status == SafetyTipStatus::kBadReputation) {
+      result.safety_tip_status = SafetyTipStatus::kBadReputationIgnored;
+    } else if (result.safety_tip_status == SafetyTipStatus::kLookalike) {
+      result.safety_tip_status = SafetyTipStatus::kLookalikeIgnored;
+    } else {
+      // Only reputation or lookalikes should show bubbles.
+      NOTREACHED();
+    }
+  }
   result.url = url;
   std::move(callback).Run(result);
 }

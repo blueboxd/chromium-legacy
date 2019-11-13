@@ -88,7 +88,7 @@ cca.mojo.DeviceOperator = class {
     // The data of |streamConfigs| looks like:
     // streamConfigs: [FORMAT_1, WIDTH_1, HEIGHT_1, TYPE_1,
     //                 FORMAT_2, WIDTH_2, HEIGHT_2, TYPE_2, ...]
-    if (streamConfigs.length % numElementPerEntry != 0) {
+    if (streamConfigs.length % numElementPerEntry !== 0) {
       throw new Error('Unexpected length of stream configurations');
     }
 
@@ -129,7 +129,7 @@ cca.mojo.DeviceOperator = class {
     // minFrameDurationCOnfigs: [FORMAT_1, WIDTH_1, HEIGHT_1, DURATION_1,
     //                           FORMAT_2, WIDTH_2, HEIGHT_2, DURATION_2,
     //                           ...]
-    if (minFrameDurationConfigs.length % numElementPerEntry != 0) {
+    if (minFrameDurationConfigs.length % numElementPerEntry !== 0) {
       throw new Error('Unexpected length of frame durations configs');
     }
 
@@ -181,7 +181,7 @@ cca.mojo.DeviceOperator = class {
     // The data of |availableFpsRanges| looks like:
     // availableFpsRanges: [RANGE_1_MIN, RANGE_1_MAX,
     //                      RANGE_2_MIN, RANGE_2_MAX, ...]
-    if (availableFpsRanges.length % numElementPerEntry != 0) {
+    if (availableFpsRanges.length % numElementPerEntry !== 0) {
       throw new Error('Unexpected length of available fps range configs');
     }
 
@@ -370,7 +370,7 @@ cca.mojo.DeviceOperator = class {
    * @return {!Promise<boolean>} True if the DeviceOperator is supported.
    */
   static async isSupported() {
-    return await this.getInstance() != null;
+    return await this.getInstance() !== null;
   }
 };
 

@@ -229,7 +229,8 @@ double LayoutShiftTracker::SubframeWeightingFactor() const {
   auto subframe_rect = PhysicalRect::EnclosingRect(subframe_cliprect.Rect());
 
   // Intersect with the portion of the local root that overlaps the main frame.
-  frame.LocalFrameRoot().View()->MapToVisualRectInTopFrameSpace(subframe_rect);
+  frame.LocalFrameRoot().View()->MapToVisualRectInRemoteRootFrame(
+      subframe_rect);
   IntSize subframe_visible_size = subframe_rect.PixelSnappedSize();
   IntSize main_frame_size = frame.GetPage()->GetVisualViewport().Size();
 

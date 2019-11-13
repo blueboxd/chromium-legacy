@@ -144,6 +144,20 @@ constexpr const T* data(std::initializer_list<T> il) noexcept {
   return il.begin();
 }
 
+// std::array::data() was not constexpr prior to C++17 [1].
+// Hence these overloads are provided.
+//
+// [1] https://en.cppreference.com/w/cpp/container/array/data
+template <typename T, size_t N>
+constexpr T* data(std::array<T, N>& array) noexcept {
+  return !array.empty() ? &array[0] : nullptr;
+}
+
+template <typename T, size_t N>
+constexpr const T* data(const std::array<T, N>& array) noexcept {
+  return !array.empty() ? &array[0] : nullptr;
+}
+
 // Returns a const reference to the underlying container of a container adapter.
 // Works for std::priority_queue, std::queue, and std::stack.
 template <class A>

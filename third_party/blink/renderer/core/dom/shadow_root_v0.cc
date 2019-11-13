@@ -168,6 +168,8 @@ const DestinationInsertionPoints* ShadowRootV0::DestinationInsertionPointsFor(
 }
 
 void ShadowRootV0::Distribute() {
+  ClearDistribution();
+
   DistributionPool pool(GetShadowRoot().host());
   HTMLShadowElement* shadow_insertion_point = nullptr;
 

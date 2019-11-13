@@ -57,5 +57,8 @@ const char kPasswordManagerOnboardingState[] =
 const char kPasswordLeakDetectionEnabled[] =
     "profile.password_manager_leak_detection";
 
+const char kWasOnboardingFeatureCheckedBefore[] =
+    "profile.was_pwm_onboarding_feature_checked_before";
+
 }  // namespace prefs
 }  // namespace password_manager

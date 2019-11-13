@@ -5,8 +5,6 @@
 #ifndef ASH_PUBLIC_CPP_NEW_WINDOW_DELEGATE_H_
 #define ASH_PUBLIC_CPP_NEW_WINDOW_DELEGATE_H_
 
-#include <string>
-
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/macros.h"
 
@@ -52,13 +50,6 @@ class ASH_PUBLIC_EXPORT NewWindowDelegate {
   // Opens the feedback page for "Report Issue". If |from_assistant| is
   // true then the page is triggered from Assistant.
   virtual void OpenFeedbackPage(bool from_assistant = false) = 0;
-
-  // Launches the camera app from Android camera intent with the intent
-  // information as url |queries|.
-  virtual void LaunchCameraApp(const std::string& queries) = 0;
-
-  // Closes the camera app.
-  virtual void CloseCameraApp() = 0;
 
  protected:
   NewWindowDelegate();

@@ -21,6 +21,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
+#include "components/password_manager/core/browser/field_info_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 
@@ -490,6 +491,8 @@ void VotesUploader::MaybeSendSingleUsernameVote(bool credentials_saved) {
       if (has_username_edited_vote_)
         field->set_vote_type(AutofillUploadContents::Field::USERNAME_EDITED);
       available_field_types.insert(type);
+      SaveFieldVote(form_to_upload->form_signature(),
+                    field->GetFieldSignature(), type);
     }
     field->set_possible_types({type});
   }
@@ -690,6 +693,15 @@ bool VotesUploader::StartUploadRequest(
   return download_manager->StartUploadRequest(
       *form_to_upload, false /* was_autofilled */, available_field_types,
       std::string(), true /* observed_submission */, nullptr /* prefs */);
+}
+
+void VotesUploader::SaveFieldVote(uint64_t form_signature,
+                                  uint32_t field_signature,
+                                  autofill::ServerFieldType field_type) {
+  FieldInfoManager* field_info_manager = client_->GetFieldInfoManager();
+  if (!field_info_manager)
+    return;
+  field_info_manager->AddFieldType(form_signature, field_signature, field_type);
 }
 
 }  // namespace password_manager

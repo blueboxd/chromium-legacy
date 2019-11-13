@@ -263,7 +263,8 @@ void IntersectionGeometry::ComputeGeometry(const RootGeometry& root_geometry,
       // map it down the to absolute coordinates for the target's document.
       intersection_rect_ =
           target->GetDocument().GetLayoutView()->AbsoluteToLocalRect(
-              intersection_rect_, kTraverseDocumentBoundaries);
+              intersection_rect_,
+              kTraverseDocumentBoundaries | kApplyRemoteRootFrameOffset);
     } else {
       // intersection_rect_ is in root's coordinate system; map it up to
       // absolute coordinates for target's containing document (which is the
@@ -353,8 +354,17 @@ bool IntersectionGeometry::ClipToRoot(const LayoutObject* root,
   }
   bool does_intersect = target->MapToVisualRectInAncestorSpace(
       local_ancestor, intersection_rect, static_cast<VisualRectFlags>(flags));
+
+  // Note that this early-return for (!local_ancestor) skips clipping to the
+  // root_rect. That's ok because the only scenario where local_ancestor is
+  // null is an implicit root and running inside an OOPIF, in which case there
+  // can't be any root margin applied to root_rect (root margin is disallowed
+  // for implicit-root cross-origin observation). So the default behavior of
+  // MapToVisualRectInAncestorSpace will have already done the right thing WRT
+  // clipping to the implicit root.
   if (!does_intersect || !local_ancestor)
     return does_intersect;
+
   if (local_ancestor->HasOverflowClip()) {
     intersection_rect.Move(
         -PhysicalOffset(LayoutPoint(local_ancestor->ScrollOrigin()) +

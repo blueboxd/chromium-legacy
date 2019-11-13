@@ -77,9 +77,10 @@ class RemoteFrameView final : public GarbageCollected<RemoteFrameView>,
   void Trace(blink::Visitor*) override;
 
  protected:
+  bool NeedsViewportOffset() const override { return true; }
   // This is used to service IntersectionObservers in an OOPIF child document.
-  void SetViewportIntersection(const IntRect& viewport_intersection,
-                               FrameOcclusionState occlusion_state) override;
+  void SetViewportIntersection(
+      const ViewportIntersectionState& intersection_state) override;
   void ParentVisibleChanged() override;
 
  private:
@@ -94,8 +95,7 @@ class RemoteFrameView final : public GarbageCollected<RemoteFrameView>,
   // and LocalFrameView. Please see the LocalFrameView::frame_ comment for
   // details.
   Member<RemoteFrame> remote_frame_;
-  IntRect last_viewport_intersection_;
-  FrameOcclusionState last_occlusion_state_ = FrameOcclusionState::kUnknown;
+  ViewportIntersectionState last_intersection_state_;
 
   IntrinsicSizingInfo intrinsic_sizing_info_;
   bool has_intrinsic_sizing_info_ = false;

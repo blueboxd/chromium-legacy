@@ -261,6 +261,26 @@ namespace declarativeNetRequest {
      MatchedRuleInfo[] rulesMatchedInfo;
   };
 
+  // TODO(crbug.com/1017934): Add documentation once the implementation is
+  // complete.
+  [nodoc]
+  dictionary RequestDetails {
+    DOMString requestId;
+    DOMString url;
+    DOMString? initiator;
+    DOMString method;
+    long frameId;
+    long parentFrameId;
+    long tabId;
+    ResourceType type;
+  };
+
+  [nodoc]
+  dictionary MatchedRuleInfoDebug {
+    MatchedRule rule;
+    RequestDetails request;
+  };
+
   callback EmptyCallback = void();
   callback GetAllowedPagesCallback = void(DOMString[] result);
   callback GetRulesCallback = void(Rule[] rules);
@@ -354,5 +374,12 @@ namespace declarativeNetRequest {
 
     // The maximum number of dynamic rules that an extension can add.
     [value=5000] static long MAX_NUMBER_OF_DYNAMIC_RULES();
+  };
+
+  interface Events {
+    // TODO(crbug.com/1017934): Add documentation once the implementation is
+    // complete.
+    [nodoc]
+    static void onRuleMatchedDebug(MatchedRuleInfoDebug event);
   };
 };

@@ -5,7 +5,6 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/message_loop/message_pump.h"
 #include "base/task/single_thread_task_executor.h"
 #include "base/test/launcher/unit_test_launcher.h"
@@ -35,7 +34,6 @@ class GlTestsSuite : public base::TestSuite {
   void Initialize() override {
     base::TestSuite::Initialize();
 
-    base::FeatureList::InitializeInstance(std::string(), std::string());
     task_environment_ = std::make_unique<base::test::TaskEnvironment>(
         base::test::TaskEnvironment::MainThreadType::UI);
 #if defined(USE_OZONE)

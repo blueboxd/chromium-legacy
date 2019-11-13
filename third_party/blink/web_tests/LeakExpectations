@@ -84,6 +84,8 @@ crbug.com/934144 [ Linux ] http/tests/devtools/tracing/timeline-misc/timeline-fl
 # Sheriff 2019-04-10
 crbug.com/951453 [ Linux ] external/wpt/html/user-activation/activation-transfer-cross-origin-with-click.sub.tentative.html [ Pass Failure ]
 
+crbug.com/1024161 [ Linux ] editing/input/edit-context.html [ Pass Failure ]
+
 # Sheriff 2019-08-21
 crbug.com/996235 [ Linux ] media/controls/doubletap-to-jump-backwards-at-start.html [ Pass Failure ]
 crbug.com/996235 [ Linux ] virtual/audio-service/media/controls/doubletap-to-jump-backwards-at-start.html [ Pass Failure ]

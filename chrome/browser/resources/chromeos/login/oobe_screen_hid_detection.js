@@ -147,5 +147,13 @@ login.createScreen('HIDDetectionScreen', 'hid-detection', function() {
       $('oobe-hid-detection-md').setMouseState(this.CONNECTION.SEARCHING);
       $('oobe-hid-detection-md').setKeyboardState(this.CONNECTION.SEARCHING);
     },
+
+    /**
+     * Updates localized content of the screen that is not updated via template.
+     */
+    updateLocalizedContent: function() {
+      $('oobe-hid-detection-md').i18nUpdateLocale();
+    },
+
   };
 });

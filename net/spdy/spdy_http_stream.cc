@@ -352,9 +352,11 @@ int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
         return SpdyHeaderBlockNetLogParams(&headers, capture_mode);
       });
   DispatchRequestHeadersCallback(headers);
+
+  bool will_send_data = HasUploadData() | spdy_session_->GreasedFramesEnabled();
   result = stream_->SendRequestHeaders(
       std::move(headers),
-      HasUploadData() ? MORE_DATA_TO_SEND : NO_MORE_DATA_TO_SEND);
+      will_send_data ? MORE_DATA_TO_SEND : NO_MORE_DATA_TO_SEND);
 
   if (result == ERR_IO_PENDING) {
     CHECK(request_callback_.is_null());
@@ -375,6 +377,8 @@ void SpdyHttpStream::Cancel() {
 void SpdyHttpStream::OnHeadersSent() {
   if (HasUploadData()) {
     ReadAndSendRequestBodyData();
+  } else if (spdy_session_->GreasedFramesEnabled()) {
+    SendEmptyBody();
   } else {
     MaybePostRequestCallback(OK);
   }
@@ -448,8 +452,12 @@ void SpdyHttpStream::OnDataReceived(std::unique_ptr<SpdyBuffer> buffer) {
 }
 
 void SpdyHttpStream::OnDataSent() {
-  request_body_buf_size_ = 0;
-  ReadAndSendRequestBodyData();
+  if (HasUploadData()) {
+    request_body_buf_size_ = 0;
+    ReadAndSendRequestBodyData();
+  } else {
+    CHECK(spdy_session_->GreasedFramesEnabled());
+  }
 }
 
 // TODO(xunjieli): Maybe do something with the trailers. crbug.com/422958.
@@ -537,6 +545,14 @@ void SpdyHttpStream::ReadAndSendRequestBodyData() {
 
   if (rv != ERR_IO_PENDING)
     OnRequestBodyReadCompleted(rv);
+}
+
+void SpdyHttpStream::SendEmptyBody() {
+  CHECK(!HasUploadData());
+  CHECK(spdy_session_->GreasedFramesEnabled());
+
+  auto buffer = base::MakeRefCounted<IOBuffer>(/* buffer_size = */ 0);
+  stream_->SendData(buffer.get(), /* length = */ 0, NO_MORE_DATA_TO_SEND);
 }
 
 void SpdyHttpStream::InitializeStreamHelper() {

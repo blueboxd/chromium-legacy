@@ -221,6 +221,14 @@ login.createScreen('ResetScreen', 'reset', function() {
 
     onTPMFirmwareUpdateChanged_: function(value) {
       chrome.send('ResetScreen.setTpmFirmwareUpdateChecked', [value]);
-    }
+    },
+
+    /**
+     * Updates localized content of the screen that is not updated via template.
+     */
+    updateLocalizedContent: function() {
+      $('oobe-reset-md').i18nUpdateLocale();
+      $('reset-confirm-overlay-md').i18nUpdateLocale();
+    },
   };
 });

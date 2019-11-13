@@ -121,7 +121,8 @@ void HostContextFactoryPrivate::ConfigureCompositor(
 
   if (compositor->use_external_begin_frame_control()) {
     root_params->external_begin_frame_controller =
-        mojo::MakeRequest(&compositor_data.external_begin_frame_controller);
+        compositor_data.external_begin_frame_controller
+            .BindNewEndpointAndPassReceiver();
   }
 
   root_params->frame_sink_id = compositor->frame_sink_id();

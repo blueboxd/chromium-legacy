@@ -378,7 +378,9 @@ void LayoutView::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
       parent_doc_layout_object->MapLocalToAncestor(ancestor, transform_state,
                                                    mode);
     } else {
-      GetFrameView()->ApplyTransformForTopFrameSpace(transform_state);
+      DCHECK(!ancestor);
+      if (mode & kApplyRemoteRootFrameOffset)
+        GetFrameView()->MapLocalToRemoteRootFrame(transform_state);
     }
   }
 }
@@ -425,6 +427,12 @@ void LayoutView::MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
 
       transform_state.Move(
           parent_doc_layout_object->PhysicalContentBoxOffset());
+    } else {
+      DCHECK(!ancestor);
+      // Note that MapLocalToAncestorRootFrame is correct here because
+      // transform_state will be set to kUnapplyInverseTransformDirection.
+      if (mode & kApplyRemoteRootFrameOffset)
+        GetFrameView()->MapLocalToRemoteRootFrame(transform_state);
     }
   } else {
     DCHECK(this == ancestor || !ancestor);
@@ -520,7 +528,7 @@ bool LayoutView::MapToVisualRectInAncestorSpaceInternal(
   if (!owner) {
     PhysicalRect rect = PhysicalRect::EnclosingRect(
         transform_state.LastPlanarQuad().BoundingBox());
-    bool retval = GetFrameView()->MapToVisualRectInTopFrameSpace(rect);
+    bool retval = GetFrameView()->MapToVisualRectInRemoteRootFrame(rect);
     transform_state.SetQuad(FloatQuad(FloatRect(rect)));
     return retval;
   }

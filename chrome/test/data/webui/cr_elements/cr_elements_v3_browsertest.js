@@ -185,6 +185,18 @@ TEST_F('CrElementsSearchFieldV3Test', 'All', function() {
 });
 
 // eslint-disable-next-line no-var
+var CrElementsSplitterV3Test = class extends CrElementsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test?module=cr_elements/cr_splitter_test.m.js';
+  }
+};
+
+TEST_F('CrElementsSplitterV3Test', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
 var CrElementsToastV3Test = class extends CrElementsV3BrowserTest {
   /** @override */
   get browsePreload() {

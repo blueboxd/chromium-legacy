@@ -12,6 +12,9 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.accessibility.AccessibilityNodeProvider;
 import android.widget.FrameLayout;
 
 import org.chromium.base.Log;
@@ -41,9 +44,10 @@ public class CastWebContentsView extends FrameLayout {
 
     private void initView() {
         FrameLayout.LayoutParams matchParent = new FrameLayout.LayoutParams(
-                    FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
         addView(LayoutInflater.from(getContext())
-                        .inflate(R.layout.cast_web_contents_activity, null), matchParent);
+                        .inflate(R.layout.cast_web_contents_activity, null),
+                matchParent);
     }
 
     public void onStart(Bundle startArgumentsBundle) {
@@ -90,5 +94,41 @@ public class CastWebContentsView extends FrameLayout {
 
     private void sendIntentSync(Intent in) {
         CastWebContentsIntentUtils.getLocalBroadcastManager().sendBroadcastSync(in);
+    }
+
+    @Override
+    public AccessibilityNodeProvider getAccessibilityNodeProvider() {
+        View contentView = getContentView();
+        if (contentView != null) {
+            return contentView.getAccessibilityNodeProvider();
+        } else {
+            Log.w(TAG, "Content view is null! Returns a null AccessibilityNodeProvider.");
+            return null;
+        }
+    }
+
+    @Override
+    public void setAccessibilityDelegate(AccessibilityDelegate delegate) {
+        View contentView = getContentView();
+        if (contentView != null) {
+            contentView.setAccessibilityDelegate(delegate);
+        } else {
+            Log.w(TAG, "Content view is null!");
+        }
+    }
+
+    @Override
+    public boolean onHoverEvent(MotionEvent event) {
+        View contentView = getContentView();
+        if (contentView != null) {
+            return contentView.onHoverEvent(event);
+        } else {
+            Log.w(TAG, "Content view is null!");
+            return false;
+        }
+    }
+
+    private View getContentView() {
+        return findViewWithTag(CastWebContentsScopes.VIEW_TAG_CONTENT_VIEW);
     }
 }

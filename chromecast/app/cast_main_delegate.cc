@@ -221,8 +221,13 @@ void CastMainDelegate::PostEarlyInitialization(bool is_running_tests) {
   CHECK(base::CreateDirectory(home_dir));
 #endif  // !defined(OS_ANDROID)
 
-  // The |FieldTrialList| is a dependency of the feature list.
-  field_trial_list_ = std::make_unique<base::FieldTrialList>(nullptr);
+  // The |FieldTrialList| is a dependency of the feature list. In tests, it
+  // gets constructed as part of the test suite.
+  if (is_running_tests) {
+    DCHECK(base::FieldTrialList::GetInstance());
+  } else {
+    field_trial_list_ = std::make_unique<base::FieldTrialList>(nullptr);
+  }
 
   // Initialize the base::FeatureList and the PrefService (which it depends on),
   // so objects initialized after this point can use features from

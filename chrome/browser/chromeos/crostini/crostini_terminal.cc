@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_terminal.h"
 
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
 #include "chrome/browser/ui/ash/window_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -18,9 +19,10 @@ GURL GenerateVshInCroshUrl(Profile* profile,
                            const std::string& vm_name,
                            const std::string& container_name,
                            const std::vector<std::string>& terminal_args) {
-  std::string vsh_crosh = base::StringPrintf(
-      "chrome-extension://%s/html/crosh.html?command=vmshell",
-      kCrostiniCroshBuiltinAppId);
+  std::string vsh_crosh =
+      extensions::TerminalExtensionHelper::GetCroshExtensionURL(profile)
+          .spec() +
+      "?command=vmshell";
   std::string vm_name_param = net::EscapeQueryParamValue(
       base::StringPrintf("--vm_name=%s", vm_name.c_str()), false);
   std::string container_name_param = net::EscapeQueryParamValue(

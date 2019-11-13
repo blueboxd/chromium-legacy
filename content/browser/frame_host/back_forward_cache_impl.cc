@@ -100,6 +100,15 @@ bool IsGeolocationSupported() {
   return geolocation_supported.Get();
 }
 
+// Ignore all features that the page is using and all DisableForRenderFrameHost
+// calls and force all pages to be cached. Should be used only for local testing
+// and debugging -- things will break when this param is used.
+bool ShouldIgnoreBlocklists() {
+  static constexpr base::FeatureParam<bool> should_ignore_blocklists(
+      &features::kBackForwardCache, "should_ignore_blocklists", false);
+  return should_ignore_blocklists.Get();
+}
+
 uint64_t GetDisallowedFeatures(RenderFrameHostImpl* rfh) {
   // TODO(https://crbug.com/1015784): Finalize disallowed feature list, and test
   // for each disallowed feature.
@@ -282,7 +291,7 @@ void BackForwardCacheImpl::CanStoreRenderFrameHost(
         BackForwardCacheMetrics::NotRestoredReason::kWasGrantedMediaAccess);
   }
 
-  if (rfh->is_back_forward_cache_disabled()) {
+  if (rfh->is_back_forward_cache_disabled() && !ShouldIgnoreBlocklists()) {
     result->No(BackForwardCacheMetrics::NotRestoredReason::
                    kDisableForRenderFrameHostCalled);
   }
@@ -293,7 +302,9 @@ void BackForwardCacheImpl::CanStoreRenderFrameHost(
   // from children.
   if (uint64_t banned_features =
           GetDisallowedFeatures(rfh) & rfh->scheduler_tracked_features()) {
-    result->NoDueToFeatures(banned_features);
+    if (!ShouldIgnoreBlocklists()) {
+      result->NoDueToFeatures(banned_features);
+    }
   }
 
   bool has_navigation_request = rfh->frame_tree_node()->navigation_request() ||

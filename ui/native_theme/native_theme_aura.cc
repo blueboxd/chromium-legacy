@@ -501,9 +501,10 @@ void NativeThemeAura::PaintCheckbox(cc::PaintCanvas* canvas,
                                           color_scheme);
   }
 
+  const float border_radius =
+      SkIntToScalar(kCheckboxBorderRadius) * button.zoom;
   SkRect skrect = PaintCheckboxRadioCommon(canvas, state, rect, button, true,
-                                           SkIntToScalar(kCheckboxBorderRadius),
-                                           color_scheme);
+                                           border_radius, color_scheme);
 
   if (!skrect.isEmpty()) {
     cc::PaintFlags flags;
@@ -516,14 +517,12 @@ void NativeThemeAura::PaintCheckbox(cc::PaintCanvas* canvas,
           skrect.makeInset(skrect.width() * kIndeterminateInsetWidthRatio,
                            skrect.height() * kIndeterminateInsetHeightRatio);
       flags.setStyle(cc::PaintFlags::kFill_Style);
-      canvas->drawRoundRect(indeterminate, SkIntToScalar(kCheckboxBorderRadius),
-                            SkIntToScalar(kCheckboxBorderRadius), flags);
+      canvas->drawRoundRect(indeterminate, border_radius, border_radius, flags);
     } else if (button.checked) {
       // Draw the accent background.
       flags.setStyle(cc::PaintFlags::kFill_Style);
       flags.setColor(ControlsAccentColorForState(state, color_scheme));
-      canvas->drawRoundRect(skrect, kCheckboxBorderRadius,
-                            kCheckboxBorderRadius, flags);
+      canvas->drawRoundRect(skrect, border_radius, border_radius, flags);
 
       // Draw the checkmark.
       SkPath check;
@@ -765,13 +764,14 @@ void NativeThemeAura::PaintSliderTrack(cc::PaintCanvas* canvas,
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
   flags.setColor(ControlsFillColorForState(state, color_scheme));
-  SkRect track_rect = AlignSliderTrack(rect, slider, false, kSliderTrackHeight);
+  const float track_height = kSliderTrackHeight * slider.zoom;
+  SkRect track_rect = AlignSliderTrack(rect, slider, false, track_height);
   canvas->drawRoundRect(track_rect, kSliderTrackBorderRadius,
                         kSliderTrackBorderRadius, flags);
 
   // Paint the value slider track.
   flags.setColor(ControlsAccentColorForState(state, color_scheme));
-  SkRect value_rect = AlignSliderTrack(rect, slider, true, kSliderTrackHeight);
+  SkRect value_rect = AlignSliderTrack(rect, slider, true, track_height);
   canvas->drawRoundRect(value_rect, kSliderTrackBorderRadius,
                         kSliderTrackBorderRadius, flags);
 

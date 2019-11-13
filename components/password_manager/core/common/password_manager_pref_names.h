@@ -89,6 +89,12 @@ extern const char kPasswordManagerOnboardingState[];
 // submitted by the user were part of a leak.
 extern const char kPasswordLeakDetectionEnabled[];
 
+// Boolean indicating whether this profile was ever eligible for password
+// manager onboarding. If the profile was eligible, then the feature flag
+// will be checked and this will be set to true. This is then used for
+// subsequent feature checks to ensure data completeness.
+extern const char kWasOnboardingFeatureCheckedBefore[];
+
 }  // namespace prefs
 }  // namespace password_manager
 

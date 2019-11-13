@@ -2384,6 +2384,10 @@ const char kBackgroundTaskComponentUpdateName[] =
 const char kBackgroundTaskComponentUpdateDescription[] =
     "Schedule component updates with BackgroundTaskScheduler";
 
+const char kCCTIncognitoName[] = "Chrome Custom Tabs Incognito mode";
+const char kCCTIncognitoDescription[] =
+    "Enables incognito mode for Chrome Custom Tabs, on Android.";
+
 const char kCCTModuleName[] = "Chrome Custom Tabs Module";
 const char kCCTModuleDescription[] =
     "Enables a dynamically loaded module in Chrome Custom Tabs, on Android.";

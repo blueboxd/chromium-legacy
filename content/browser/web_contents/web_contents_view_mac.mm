@@ -639,18 +639,18 @@ void WebContentsViewMac::ViewsHostableAttach(
     mojo::PendingAssociatedReceiver<remote_cocoa::mojom::WebContentsNSView>
         ns_view_receiver = remote_ns_view_.BindNewEndpointAndPassReceiver();
 
-    // Cast from mojo::AssociatedRemote<mojom::WebContentsNSViewHost> and
+    // Cast from mojo::PendingAssociatedRemote<mojom::WebContentsNSViewHost> and
     // mojo::PendingAssociatedReceiver<remote_cocoa::mojom::WebContentsNSView>
     // to the public interfaces accepted by the application.
     // TODO(ccameron): Remove the need for this cast.
     // https://crbug.com/888290
-    mojo::AssociatedInterfacePtrInfo<remote_cocoa::mojom::StubInterface>
-        stub_host(host.PassHandle(), 0);
-    remote_cocoa::mojom::StubInterfaceAssociatedRequest stub_ns_view_request(
-        ns_view_receiver.PassHandle());
+    mojo::PendingAssociatedRemote<remote_cocoa::mojom::StubInterface> stub_host(
+        host.PassHandle(), 0);
+    mojo::PendingAssociatedReceiver<remote_cocoa::mojom::StubInterface>
+        stub_ns_view_receiver(ns_view_receiver.PassHandle());
 
     remote_cocoa_application->CreateWebContentsNSView(
-        ns_view_id_, std::move(stub_host), std::move(stub_ns_view_request));
+        ns_view_id_, std::move(stub_host), std::move(stub_ns_view_receiver));
     remote_ns_view_->SetParentNSView(views_host_->GetNSViewId());
 
     // Because this view is being displayed from a remote process, reset the

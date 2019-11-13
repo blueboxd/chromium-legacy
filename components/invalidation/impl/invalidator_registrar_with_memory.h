@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "components/invalidation/public/invalidation_export.h"
 #include "components/invalidation/public/invalidation_handler.h"
 #include "components/invalidation/public/invalidation_util.h"
@@ -110,8 +110,7 @@ class INVALIDATION_EXPORT InvalidatorRegistrarWithMemory {
   // Generate a Dictionary with all the debugging information.
   base::DictionaryValue CollectDebugData() const;
 
-  // TODO(treib): Switch to SequenceChecker.
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::ObserverList<InvalidationHandler, true>::Unchecked handlers_;
   // Note: When a handler is unregistered, its entry is removed from

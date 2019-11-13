@@ -4300,25 +4300,25 @@ String LocalFrameView::MainThreadScrollingReasonsAsText() {
   return String(cc::MainThreadScrollingReason::AsText(reasons).c_str());
 }
 
-bool LocalFrameView::MapToVisualRectInTopFrameSpace(PhysicalRect& rect) {
+bool LocalFrameView::MapToVisualRectInRemoteRootFrame(PhysicalRect& rect) {
+  DCHECK(frame_->IsLocalRoot());
   // This is the top-level frame, so no mapping necessary.
   if (frame_->IsMainFrame())
     return true;
-
-  PhysicalRect viewport_intersection_rect(
-      GetFrame().RemoteViewportIntersection());
-  return rect.InclusiveIntersect(viewport_intersection_rect);
+  bool result = rect.InclusiveIntersect(
+      PhysicalRect(frame_->RemoteViewportIntersection()));
+  if (result)
+    rect.Move(PhysicalOffset(GetFrame().RemoteViewportOffset()));
+  return result;
 }
 
-void LocalFrameView::ApplyTransformForTopFrameSpace(
+void LocalFrameView::MapLocalToRemoteRootFrame(
     TransformState& transform_state) {
+  DCHECK(frame_->IsLocalRoot());
   // This is the top-level frame, so no mapping necessary.
   if (frame_->IsMainFrame())
     return;
-
-  PhysicalRect viewport_intersection_rect(
-      GetFrame().RemoteViewportIntersection());
-  transform_state.Move(-viewport_intersection_rect.offset);
+  transform_state.Move(PhysicalOffset(frame_->RemoteViewportOffset()));
 }
 
 LayoutUnit LocalFrameView::CaretWidth() const {

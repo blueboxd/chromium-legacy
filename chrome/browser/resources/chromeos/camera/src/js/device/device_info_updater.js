@@ -141,7 +141,7 @@ cca.device.DeviceInfoUpdater = class {
    */
   async enumerateDevices_() {
     const devices = (await navigator.mediaDevices.enumerateDevices())
-                        .filter((device) => device.kind == 'videoinput');
+                        .filter((device) => device.kind === 'videoinput');
     if (devices.length === 0) {
       throw new Error('Device list empty.');
     }

@@ -26,6 +26,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/web/web_frame.h"
@@ -198,7 +199,6 @@ SearchBox::IconURLHelper::~IconURLHelper() = default;
 SearchBox::SearchBox(content::RenderFrame* render_frame)
     : content::RenderFrameObserver(render_frame),
       content::RenderFrameObserverTracker<SearchBox>(render_frame),
-      binding_(this),
       can_run_js_in_renderframe_(false),
       page_seq_no_(0),
       is_focused_(false),
@@ -209,10 +209,11 @@ SearchBox::SearchBox(content::RenderFrame* render_frame)
   // Connect to the embedded search interface in the browser.
   mojo::AssociatedRemote<chrome::mojom::EmbeddedSearchConnector> connector;
   render_frame->GetRemoteAssociatedInterfaces()->GetInterface(&connector);
-  chrome::mojom::EmbeddedSearchClientAssociatedPtrInfo embedded_search_client;
-  binding_.Bind(mojo::MakeRequest(&embedded_search_client),
-                render_frame->GetTaskRunner(
-                    blink::TaskType::kInternalNavigationAssociated));
+  mojo::PendingAssociatedRemote<chrome::mojom::EmbeddedSearchClient>
+      embedded_search_client;
+  receiver_.Bind(embedded_search_client.InitWithNewEndpointAndPassReceiver(),
+                 render_frame->GetTaskRunner(
+                     blink::TaskType::kInternalNavigationAssociated));
   connector->Connect(
       mojo::MakeRequest(&embedded_search_service_,
                         render_frame->GetTaskRunner(

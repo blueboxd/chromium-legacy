@@ -67,7 +67,6 @@ class PluginVmLauncherView : public views::BubbleDialogDelegateView,
     IMPORTING,          // Downloaded PluginVm image importing is in progress.
     FINISHED,           // PluginVm environment setting has been finished.
     ERROR,              // Something unexpected happened.
-    NOT_ALLOWED,        // PluginVm is disallowed on the device.
   };
 
   ~PluginVmLauncherView() override;
@@ -99,6 +98,7 @@ class PluginVmLauncherView : public views::BubbleDialogDelegateView,
   base::TimeTicks setup_start_tick_;
 
   State state_ = State::START_DOWNLOADING;
+  base::Optional<plugin_vm::PluginVmImageManager::FailureReason> reason_;
 
   base::OnceCallback<void(bool success)> finished_callback_for_testing_;
 

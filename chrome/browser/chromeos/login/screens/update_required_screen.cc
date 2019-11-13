@@ -10,6 +10,7 @@
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/system_tray.h"
 #include "base/bind.h"
+#include "base/time/default_clock.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
@@ -42,7 +43,8 @@ UpdateRequiredScreen::UpdateRequiredScreen(UpdateRequiredView* view,
       histogram_helper_(
           std::make_unique<ErrorScreensHistogramHelper>("UpdateRequired")),
       version_updater_(std::make_unique<VersionUpdater>(this)),
-      network_state_helper_(std::make_unique<login::NetworkStateHelper>()) {
+      network_state_helper_(std::make_unique<login::NetworkStateHelper>()),
+      clock_(base::DefaultClock::GetInstance()) {
   if (view_)
     view_->Bind(this);
 }
@@ -72,9 +74,19 @@ void UpdateRequiredScreen::Show() {
       view_->Show();
     }
   }
+  version_updater_->GetEolInfo(base::BindOnce(
+      &UpdateRequiredScreen::OnGetEolInfo, weak_factory_.GetWeakPtr()));
+}
 
-  // TODO(crbug/1020616): Get end-of-life information and update the UI based on
-  // that.
+void UpdateRequiredScreen::OnGetEolInfo(
+    const chromeos::UpdateEngineClient::EolInfo& info) {
+  //  TODO(crbug.com/1020616) : Handle if the device is left on this screen
+  //  for long enough to reach Eol.
+  if (!info.eol_date.is_null() && info.eol_date <= clock_->Now()) {
+    EnsureScreenIsShown();
+    if (view_)
+      view_->SetUIState(UpdateRequiredView::EOL);
+  }
 }
 
 void UpdateRequiredScreen::Hide() {
@@ -262,6 +274,10 @@ void UpdateRequiredScreen::FinishExitUpdate(VersionUpdater::Result result) {
 
 VersionUpdater* UpdateRequiredScreen::GetVersionUpdaterForTesting() {
   return version_updater_.get();
+}
+
+void UpdateRequiredScreen::SetClockForTesting(base::Clock* clock) {
+  clock_ = clock;
 }
 
 void UpdateRequiredScreen::EnsureScreenIsShown() {

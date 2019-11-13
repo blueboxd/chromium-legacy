@@ -18,7 +18,7 @@
   <template>
     <oobe-dialog has-buttons hidden="[[showOn_(ui_state,
         'update-required-message',
-        'update-error')]]">
+        'update-error')]]" id="update-required-error-dialog">
       <div slot="subtitle">
         <div hidden="[[showOn_(ui_state, 'update-error')]]"
             class="update-error">
@@ -88,12 +88,20 @@
     </oobe-dialog>
 
     <oobe-dialog
-        hidden="[[showOn_(ui_state, 'update-completed-need-reboot', 'eol')]]">
+        hidden="[[showOn_(ui_state, 'update-completed-need-reboot')]]"
+        id="update-completed-dialog">
       <div slot="subtitle">
-        <div hidden="[[showOn_(ui_state, 'update-completed-need-reboot')]]">
+        <div>
           [[i18nDynamic(locale,'rebootNeededMessage')]]
         </div>
-        <div hidden="[[showOn_(ui_state, 'eol')]]">
+      </div>
+    </oobe-dialog>
+
+    <oobe-dialog
+        hidden="[[showOn_(ui_state, 'eol')]]"
+        id="eol-dialog">
+      <div slot="subtitle">>
+        <div>
           [[i18nDynamic(locale,'eolMessage')]]
         </div>
       </div>

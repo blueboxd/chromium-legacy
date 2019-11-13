@@ -26,10 +26,10 @@ namespace syncer {
 class PerUserTopicRegistrationRequest {
  public:
   // The request result consists of the request status and name of the private
-  // topic. The |private_topic_name| will be empty in the case of error.
+  // topic. The |topic_name| will be empty in the case of error.
   using CompletedCallback =
       base::OnceCallback<void(const Status& status,
-                              const std::string& private_topic_name)>;
+                              const std::string& topic_name)>;
   enum RequestType { SUBSCRIBE, UNSUBSCRIBE };
 
   // Builds authenticated PerUserTopicRegistrationRequests.

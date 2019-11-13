@@ -106,7 +106,6 @@ bool HTMLResourcePreloader::AllowPreloadRequest(PreloadRequest* preload) const {
   // resources are either classified into CSS (always fetched when not in the
   // HTML only arm), JS (skip_script param), or other.
   switch (preload->GetResourceType()) {
-    case ResourceType::kFont:
     case ResourceType::kRaw:
     case ResourceType::kSVGDocument:
     case ResourceType::kXSLStyleSheet:
@@ -123,6 +122,9 @@ bool HTMLResourcePreloader::AllowPreloadRequest(PreloadRequest* preload) const {
       return false;
     case ResourceType::kCSSStyleSheet:
       return true;
+    case ResourceType::kFont:
+      return !GetFieldTrialParamByFeatureAsBool(
+          features::kLightweightNoStatePrefetch, "skip_font", true);
     case ResourceType::kScript:
       // We might skip all script.
       if (GetFieldTrialParamByFeatureAsBool(

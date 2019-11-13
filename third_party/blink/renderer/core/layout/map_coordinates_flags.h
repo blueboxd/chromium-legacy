@@ -22,6 +22,10 @@ enum MapCoordinatesMode {
   // Ignore scroll offset from container, i.e. scrolling has no effect on mapped
   // position.
   kIgnoreScrollOffset = 1 << 5,
+
+  // If the local root frame has a remote frame parent, apply the offset from
+  // the remote frame parent to the local root.
+  kApplyRemoteRootFrameOffset = 1 << 6,
 };
 typedef unsigned MapCoordinatesFlags;
 

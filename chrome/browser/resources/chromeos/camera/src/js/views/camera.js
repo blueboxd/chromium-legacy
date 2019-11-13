@@ -135,7 +135,7 @@ cca.views.Camera = function(
 
   // Monitor the states to stop camera when locked/minimized.
   chrome.idle.onStateChanged.addListener((newState) => {
-    this.locked_ = (newState == 'locked');
+    this.locked_ = (newState === 'locked');
     if (this.locked_) {
       this.restart();
     }
@@ -199,7 +199,7 @@ cca.views.Camera.prototype.beginTake_ = function() {
       }
       await this.modes_.current.startCapture();
     } catch (e) {
-      if (e && e.message == 'cancel') {
+      if (e && e.message === 'cancel') {
         return;
       }
       console.error(e);
@@ -272,7 +272,7 @@ cca.views.Camera.prototype.layout = function() {
  * @override
  */
 cca.views.Camera.prototype.handlingKey = function(key) {
-  if (key == 'Ctrl-R') {
+  if (key === 'Ctrl-R') {
     cca.toast.show(this.preview_.toString());
     return true;
   }

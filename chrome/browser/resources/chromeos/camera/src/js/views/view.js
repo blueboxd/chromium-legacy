@@ -43,8 +43,10 @@ cca.views.View = function(
   this.dismissByEsc_ = dismissByEsc;
 
   if (dismissByBkgndClick) {
-    this.rootElement_.addEventListener('click', (event) =>
-        event.target == this.rootElement_ && this.leave({bkgnd: true}));
+    this.rootElement_.addEventListener(
+        'click',
+        (event) =>
+            event.target === this.rootElement_ && this.leave({bkgnd: true}));
   }
 };
 
@@ -71,10 +73,10 @@ cca.views.View.prototype.handlingKey = function(key) {
 cca.views.View.prototype.onKeyPressed = function(key) {
   if (this.handlingKey(key)) {
     return true;
-  } else if (key == 'Ctrl-V') {
+  } else if (key === 'Ctrl-V') {
     cca.toast.show(chrome.runtime.getManifest().version);
     return true;
-  } else if (this.dismissByEsc_ && key == 'Escape') {
+  } else if (this.dismissByEsc_ && key === 'Escape') {
     this.leave();
     return true;
   }

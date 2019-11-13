@@ -714,12 +714,14 @@ PageInfoUI::CreateSafetyTipSecurityDescription(
     const security_state::SafetyTipInfo& info) {
   switch (info.status) {
     case security_state::SafetyTipStatus::kBadReputation:
+    case security_state::SafetyTipStatus::kBadReputationIgnored:
       return CreateSecurityDescription(
           SecuritySummaryColor::RED,
           IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE,
           IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION,
           PageInfoUI::SecurityDescriptionType::SAFETY_TIP);
     case security_state::SafetyTipStatus::kLookalike:
+    case security_state::SafetyTipStatus::kLookalikeIgnored:
       return CreateSecurityDescriptionForLookalikeSafetyTip(info.safe_url);
 
     case security_state::SafetyTipStatus::kBadKeyword:

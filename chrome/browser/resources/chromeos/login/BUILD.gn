@@ -289,13 +289,14 @@ js_library("oobe_network") {
 
 js_library("oobe_reset_confirmation_overlay") {
   deps = [
-    ":oobe_dialog_host_behavior",
+    "//ui/webui/resources/js:i18n_behavior",
   ]
 }
 
 js_library("oobe_reset") {
   deps = [
     ":oobe_dialog_host_behavior",
+    "//ui/webui/resources/js:i18n_behavior",
   ]
 }
 

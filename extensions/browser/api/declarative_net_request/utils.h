@@ -15,12 +15,14 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
+#include "extensions/common/api/declarative_net_request.h"
 
 namespace base {
 class FilePath;
 }  // namespace base
 
 namespace extensions {
+struct WebRequestInfo;
 
 namespace declarative_net_request {
 
@@ -56,6 +58,11 @@ void ClearRendererCacheOnNavigation();
 
 // Helper to log the |kReadDynamicRulesJSONStatusHistogram| histogram.
 void LogReadDynamicRulesStatus(ReadJSONRulesResult::Status status);
+
+// Constructs an api::declarative_net_request::RequestDetails from a
+// WebRequestInfo.
+api::declarative_net_request::RequestDetails CreateRequestDetails(
+    const WebRequestInfo& request);
 
 }  // namespace declarative_net_request
 }  // namespace extensions

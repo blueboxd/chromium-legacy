@@ -20,6 +20,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_mouse_wheel_event.h"
@@ -445,6 +446,15 @@ void InputHandlerProxy::InjectScrollbarGestureScroll(
     input_handler_->SetNeedsAnimateInput();
 }
 
+bool HasModifier(const WebInputEvent& event) {
+#if defined(OS_MACOSX)
+  // Mac uses the "Option" key (which is mapped to the enum "kAltKey").
+  return event.GetModifiers() & WebInputEvent::kAltKey;
+#else
+  return event.GetModifiers() & WebInputEvent::kShiftKey;
+#endif
+}
+
 InputHandlerProxy::EventDisposition
 InputHandlerProxy::RouteToTypeSpecificHandler(
     const WebInputEvent& event,
@@ -519,10 +529,13 @@ InputHandlerProxy::RouteToTypeSpecificHandler(
 
       if (mouse_event.button == blink::WebMouseEvent::Button::kLeft) {
         CHECK(input_handler_);
+        // TODO(arakeri): Pass in the modifier instead of a bool once the
+        // refactor (crbug.com/1022097) is done. For details, see
+        // crbug.com/1016955.
         cc::InputHandlerPointerResult pointer_result =
             input_handler_->MouseDown(
                 gfx::PointF(mouse_event.PositionInWidget()),
-                event.GetModifiers() & WebInputEvent::kShiftKey);
+                HasModifier(event));
         if (pointer_result.type == cc::PointerResultType::kScrollbarScroll) {
           // Generate GSB and GSU events and add them to the
           // CompositorThreadEventQueue.

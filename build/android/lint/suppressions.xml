@@ -338,6 +338,8 @@ Still reading?
     <ignore regexp="The resource `R.string.tab_suggestion_review_button` appears to be unused"/>
     <ignore regexp="The resource `R.string.tab_suggestion_close_tab_action_button` appears to be unused"/>
     <ignore regexp="The resource `R.string.tab_suggestion_close_stale_message` appears to be unused"/>
+    <!-- crbug.com/1017492 remove this line and the following line after the bug is resolved -->
+    <ignore regexp="The resource `R.string.tab_grid_dialog_toolbar_share_group` appears to be unused"/>
     <!-- 3 raw resources are accessed by URL in various places -->
     <ignore regexp="PRODUCT_DIR/gen/remoting/android/.*/res/raw/credits.html"/>
     <ignore regexp="PRODUCT_DIR/gen/remoting/android/.*/res/raw/credits_css.css"/>

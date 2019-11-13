@@ -15887,6 +15887,11 @@ Called by update_net_error_codes.py.-->
   <int value="386" label="webm"/>
   <int value="387" label="xbm"/>
   <int value="388" label="accdb"/>
+  <int value="389" label="accde"/>
+  <int value="390" label="accdr"/>
+  <int value="391" label="accda"/>
+  <int value="392" label="cer"/>
+  <int value="393" label="der"/>
 </enum>
 
 <enum name="DownloadItem.DangerType">
@@ -19822,6 +19827,7 @@ Called by update_net_error_codes.py.-->
   <int value="443" label="AUTOTESTPRIVATE_ON_CLIPBOARD_DATA_CHANGED"/>
   <int value="444" label="AUTOFILL_PRIVATE_ON_PERSONAL_DATA_CHANGED"/>
   <int value="445" label="PRINTING_ON_JOB_STATUS_CHANGED"/>
+  <int value="446" label="DECLARATIVE_NET_REQUEST_ON_RULE_MATCHED_DEBUG"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -37284,6 +37290,7 @@ from previous Chrome versions.
       label="OmniboxUIExperimentHideSuggestionUrlScheme:enabled"/>
   <int value="-9599490" label="KernelnextVMs:disabled"/>
   <int value="-9322265" label="ShowBluetoothDebugLogToggle:enabled"/>
+  <int value="-5492723" label="CCTIncognito:enabled"/>
   <int value="-5052940" label="enable-simplified-fullscreen"/>
   <int value="-3093629" label="DcheckIsFatal:disabled"/>
   <int value="-2953333" label="AndroidHistoryManager:disabled"/>
@@ -38051,6 +38058,7 @@ from previous Chrome versions.
   <int value="1033412163" label="OmniboxDisplayTitleForCurrentUrl:enabled"/>
   <int value="1033597574" label="disable-layer-squashing"/>
   <int value="1036068554" label="enable-android-pay-integration-v2"/>
+  <int value="1037961753" label="CCTIncognito:disabled"/>
   <int value="1038234679" label="PrefetchPrivacyChanges:disabled"/>
   <int value="1042202617" label="RemoteCopyReceiver:enabled"/>
   <int value="1043291220" label="OverviewSwipeToClose:disabled"/>
@@ -54627,6 +54635,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Safety Tip for bad reputation"/>
   <int value="3" label="Safety Tip for lookalike URL"/>
   <int value="4" label="Safety Tip for a URL with a suspicious keyword"/>
+  <int value="5"
+      label="Safety Tip for bad reputation, but the user has explicitly
+             dismissed the Safety Tip on a previous navigation"/>
+  <int value="6"
+      label="Safety Tip for a lookalike URL, but the user has explicitly
+             dismissed the Safety Tip on a previous navigation"/>
 </enum>
 
 <enum name="SameSiteCookieContext">
@@ -55419,6 +55433,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="386" label="WEBM"/>
   <int value="387" label="XBM"/>
   <int value="388" label="ACCDB"/>
+  <int value="389" label="ACCDE"/>
+  <int value="390" label="ACCDR"/>
+  <int value="391" label="ACCDA"/>
+  <int value="392" label="CER"/>
+  <int value="393" label="DER"/>
 </enum>
 
 <enum name="SBClientDownloadIsSignedBinary">
@@ -59436,9 +59455,18 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="TLS 1.2 (or earlier) full handshake (2-RTT)"/>
   <int value="1" label="TLS 1.2 (or earlier) resumption (1-RTT)"/>
   <int value="2" label="TLS 1.2 full handshake with False Start (1-RTT)"/>
-  <int value="3" label="TLS 1.3 full handshake (1-RTT, usually)"/>
-  <int value="4" label="TLS 1.3 resumption handshake (1-RTT, usually)"/>
+  <int value="3"
+      label="TLS 1.3 full handshake, HelloRetryRequest unknown (1-RTT or
+             2-RTT)"/>
+  <int value="4"
+      label="TLS 1.3 resumption handshake, HelloRetryRequest unknown (1-RTT
+             or 2-RTT)"/>
   <int value="5" label="TLS 1.3 0-RTT handshake (0-RTT)"/>
+  <int value="6" label="TLS 1.3 full handshake (1-RTT)"/>
+  <int value="7" label="TLS 1.3 resumption handshake (1-RTT)"/>
+  <int value="8" label="TLS 1.3 full handshake with HelloRetryRequest (2-RTT)"/>
+  <int value="9"
+      label="TLS 1.3 resumption handshake with HelloRetryRequest (2-RTT)"/>
 </enum>
 
 <enum name="SSLHandshakeEarlyDataReason">

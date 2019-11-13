@@ -184,9 +184,13 @@ int PluginVmLauncherView::GetDialogButtons() const {
     case State::FINISHED:
       return ui::DIALOG_BUTTON_OK;
     case State::ERROR:
-      return ui::DIALOG_BUTTON_CANCEL | ui::DIALOG_BUTTON_OK;
-    case State::NOT_ALLOWED:
-      return ui::DIALOG_BUTTON_CANCEL;
+      DCHECK(reason_);
+      switch (*reason_) {
+        case plugin_vm::PluginVmImageManager::FailureReason::NOT_ALLOWED:
+          return ui::DIALOG_BUTTON_CANCEL;
+        default:
+          return ui::DIALOG_BUTTON_CANCEL | ui::DIALOG_BUTTON_OK;
+      }
   }
 }
 
@@ -204,13 +208,17 @@ base::string16 PluginVmLauncherView::GetDialogButtonLabel(
       return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_LAUNCH_BUTTON);
     }
     case State::ERROR: {
-      return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK
-                                           ? IDS_PLUGIN_VM_LAUNCHER_RETRY_BUTTON
-                                           : IDS_APP_CANCEL);
-    }
-    case State::NOT_ALLOWED: {
-      DCHECK_EQ(button, ui::DIALOG_BUTTON_CANCEL);
-      return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
+      DCHECK(reason_);
+      switch (*reason_) {
+        case plugin_vm::PluginVmImageManager::FailureReason::NOT_ALLOWED:
+          DCHECK_EQ(button, ui::DIALOG_BUTTON_CANCEL);
+          return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
+        default:
+          return l10n_util::GetStringUTF16(
+              button == ui::DIALOG_BUTTON_OK
+                  ? IDS_PLUGIN_VM_LAUNCHER_RETRY_BUTTON
+                  : IDS_APP_CANCEL);
+      }
     }
   }
 }
@@ -290,6 +298,7 @@ void PluginVmLauncherView::OnDownloadFailed(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   state_ = State::ERROR;
+  reason_ = reason;
   OnStateUpdated();
 
   plugin_vm::RecordPluginVmSetupResultHistogram(
@@ -314,6 +323,7 @@ void PluginVmLauncherView::OnImportFailed(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   state_ = State::ERROR;
+  reason_ = reason;
   OnStateUpdated();
 
   plugin_vm::RecordPluginVmSetupResultHistogram(
@@ -343,10 +353,14 @@ base::string16 PluginVmLauncherView::GetBigMessage() const {
     case State::FINISHED:
       return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_FINISHED_TITLE);
     case State::ERROR:
-      return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_ERROR_TITLE);
-    case State::NOT_ALLOWED:
-      return l10n_util::GetStringUTF16(
-          IDS_PLUGIN_VM_LAUNCHER_NOT_ALLOWED_TITLE);
+      DCHECK(reason_);
+      switch (*reason_) {
+        case plugin_vm::PluginVmImageManager::FailureReason::NOT_ALLOWED:
+          return l10n_util::GetStringUTF16(
+              IDS_PLUGIN_VM_LAUNCHER_NOT_ALLOWED_TITLE);
+        default:
+          return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_ERROR_TITLE);
+      }
   }
 }
 
@@ -364,10 +378,15 @@ base::string16 PluginVmLauncherView::GetMessage() const {
     case State::FINISHED:
       return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_FINISHED_MESSAGE);
     case State::ERROR:
-      return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_ERROR_MESSAGE);
-    case State::NOT_ALLOWED:
-      return l10n_util::GetStringUTF16(
-          IDS_PLUGIN_VM_LAUNCHER_NOT_ALLOWED_MESSAGE);
+      DCHECK(reason_);
+      switch (*reason_) {
+        case plugin_vm::PluginVmImageManager::FailureReason::NOT_ALLOWED:
+          return l10n_util::GetStringUTF16(
+              IDS_PLUGIN_VM_LAUNCHER_NOT_ALLOWED_MESSAGE);
+        default:
+          return l10n_util::GetStringUTF16(
+              IDS_PLUGIN_VM_LAUNCHER_ERROR_MESSAGE);
+      }
   }
 }
 
@@ -386,7 +405,8 @@ void PluginVmLauncherView::AddedToWidget() {
   // dialogue is reached somehow although PluginVm has been disabled.
   if (!plugin_vm::IsPluginVmAllowedForProfile(profile_)) {
     LOG(ERROR) << "PluginVm is disallowed by policy. Showing error screen.";
-    state_ = State::NOT_ALLOWED;
+    state_ = State::ERROR;
+    reason_ = plugin_vm::PluginVmImageManager::FailureReason::NOT_ALLOWED;
     plugin_vm::RecordPluginVmSetupResultHistogram(
         plugin_vm::PluginVmSetupResult::kPluginVmIsNotAllowed);
   }
@@ -421,8 +441,7 @@ void PluginVmLauncherView::OnStateUpdated() {
   DialogModelChanged();
   GetWidget()->GetRootView()->Layout();
 
-  if (state_ == State::FINISHED || state_ == State::ERROR ||
-      state_ == State::NOT_ALLOWED) {
+  if (state_ == State::FINISHED || state_ == State::ERROR) {
     if (finished_callback_for_testing_)
       std::move(finished_callback_for_testing_).Run(state_ == State::FINISHED);
   }
@@ -491,7 +510,7 @@ void PluginVmLauncherView::SetMessageLabel() {
 }
 
 void PluginVmLauncherView::SetBigImage() {
-  if (state_ == State::ERROR || state_ == State::NOT_ALLOWED) {
+  if (state_ == State::ERROR) {
     big_image_->SetImage(
         ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
             IDR_PLUGIN_VM_LAUNCHER_ERROR));

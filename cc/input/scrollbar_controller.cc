@@ -201,7 +201,7 @@ ui::input_types::ScrollGranularity ScrollbarController::Granularity(
   return ui::input_types::ScrollGranularity::kScrollByPixel;
 }
 
-float ScrollbarController::GetScrollDeltaForShiftClick(
+float ScrollbarController::GetScrollDeltaForAbsoluteJump(
     const ScrollbarLayerImplBase* scrollbar) {
   layer_tree_host_impl_->active_tree()->UpdateScrollbarGeometries();
 
@@ -605,7 +605,7 @@ int ScrollbarController::GetScrollDeltaForScrollbarPart(
     case ScrollbarPart::BACK_TRACK:
     case ScrollbarPart::FORWARD_TRACK:
       if (shift_modifier) {
-        scroll_delta = GetScrollDeltaForShiftClick(scrollbar);
+        scroll_delta = GetScrollDeltaForAbsoluteJump(scrollbar);
         break;
       }
       owner_scroll_layer =

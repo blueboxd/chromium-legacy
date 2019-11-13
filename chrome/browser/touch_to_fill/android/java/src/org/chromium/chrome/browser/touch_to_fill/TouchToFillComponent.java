@@ -27,7 +27,9 @@ public interface TouchToFillComponent {
      * The different reasons that the sheet's state can change.
      *
      * These values are persisted to logs. Entries should not be renumbered and numeric values
-     * should never be reused. Needs to stay in sync with TouchToFill.UserAction in enums.xml.
+     * should never be reused. Needs to stay in sync with TouchToFill.UserAction in enums.xml and
+     * UserAction in touch_to_fill_controller.h.
+     * TODO(crbug.com/1013134): Deduplicate the Java and C++ enum.
      */
     @IntDef({UserAction.SELECT_CREDENTIAL, UserAction.DISMISS, UserAction.SELECT_MANAGE_PASSWORDS,
             UserAction.MAX_VALUE})

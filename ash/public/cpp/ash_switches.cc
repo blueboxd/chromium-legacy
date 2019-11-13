@@ -58,6 +58,10 @@ const char kAshEnableWaylandServer[] = "enable-wayland-server";
 // Enables the stylus tools next to the status area.
 const char kAshForceEnableStylusTools[] = "force-enable-stylus-tools";
 
+// Forces the status area to allow collapse/expand regardless of the current
+// state.
+const char kAshForceStatusAreaCollapsible[] = "force-status-area-collapsible";
+
 // Power button position includes the power button's physical display side and
 // the percentage for power button center position to the display's
 // width/height in landscape_primary screen orientation. The value is a JSON

@@ -10,11 +10,12 @@ namespace viz {
 
 ExternalBeginFrameSourceMojo::ExternalBeginFrameSourceMojo(
     FrameSinkManagerImpl* frame_sink_manager,
-    mojom::ExternalBeginFrameControllerAssociatedRequest controller_request,
+    mojo::PendingAssociatedReceiver<mojom::ExternalBeginFrameController>
+        controller_receiver,
     uint32_t restart_id)
     : ExternalBeginFrameSource(this, restart_id),
       frame_sink_manager_(frame_sink_manager),
-      binding_(this, std::move(controller_request)) {
+      receiver_(this, std::move(controller_receiver)) {
   frame_sink_manager_->AddObserver(this);
 }
 

@@ -23,6 +23,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
@@ -34,7 +35,9 @@
 #include "base/test/gtest_xml_util.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/launcher/unit_test_launcher.h"
+#include "base/test/mock_entropy_provider.h"
 #include "base/test/multiprocess_test.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
@@ -117,6 +120,70 @@ class ResetCommandLineBetweenTests : public testing::EmptyTestEventListener {
   CommandLine old_command_line_;
 
   DISALLOW_COPY_AND_ASSIGN(ResetCommandLineBetweenTests);
+};
+
+// Initializes a base::test::ScopedFeatureList for each individual test, which
+// involves a FeatureList and a FieldTrialList, such that unit test don't need
+// to initialize them manually.
+class FeatureListScopedToEachTest : public testing::EmptyTestEventListener {
+ public:
+  FeatureListScopedToEachTest() {
+    // Allow nested FieldTrialList instances, for unit tests that instantiate
+    // them explicitly despite |field_trial_list_| being auto-instantiated here.
+    // TODO(crbug.com/1018667): Remove after all unit tests have been migrated.
+    base::FieldTrialList::AllowNestedFieldTrialListForTesting();
+  }
+
+  FeatureListScopedToEachTest(const FeatureListScopedToEachTest&) = delete;
+
+  ~FeatureListScopedToEachTest() override = default;
+
+  FeatureListScopedToEachTest& operator=(const FeatureListScopedToEachTest&) =
+      delete;
+
+  void OnTestStart(const testing::TestInfo& test_info) override {
+    field_trial_list_ = std::make_unique<FieldTrialList>(
+        std::make_unique<MockEntropyProvider>());
+
+    const CommandLine* command_line = CommandLine::ForCurrentProcess();
+
+    // Set up a FeatureList instance, so that code using that API will not hit a
+    // an error that it's not set. It will be cleared automatically.
+    // TestFeatureForBrowserTest1 and TestFeatureForBrowserTest2 used in
+    // ContentBrowserTestScopedFeatureListTest to ensure ScopedFeatureList keeps
+    // features from command line.
+    std::string enabled =
+        command_line->GetSwitchValueASCII(switches::kEnableFeatures);
+    std::string disabled =
+        command_line->GetSwitchValueASCII(switches::kDisableFeatures);
+    enabled += ",TestFeatureForBrowserTest1";
+    disabled += ",TestFeatureForBrowserTest2";
+    scoped_feature_list_.InitFromCommandLine(enabled, disabled);
+
+    // The enable-features and disable-features flags were just slurped into a
+    // FeatureList, so remove them from the command line. Tests should enable
+    // and disable features via the ScopedFeatureList API rather than
+    // command-line flags.
+    CommandLine new_command_line(command_line->GetProgram());
+    CommandLine::SwitchMap switches = command_line->GetSwitches();
+
+    switches.erase(switches::kEnableFeatures);
+    switches.erase(switches::kDisableFeatures);
+
+    for (const auto& iter : switches)
+      new_command_line.AppendSwitchNative(iter.first, iter.second);
+
+    *CommandLine::ForCurrentProcess() = new_command_line;
+  }
+
+  void OnTestEnd(const testing::TestInfo& test_info) override {
+    scoped_feature_list_.Reset();
+    field_trial_list_.reset();
+  }
+
+ private:
+  std::unique_ptr<FieldTrialList> field_trial_list_;
+  test::ScopedFeatureList scoped_feature_list_;
 };
 
 class CheckForLeakedGlobals : public testing::EmptyTestEventListener {
@@ -523,33 +590,6 @@ void TestSuite::Initialize() {
     debug::WaitForDebugger(60, true);
   }
 #endif
-  // Set up a FeatureList instance, so that code using that API will not hit a
-  // an error that it's not set. It will be cleared automatically.
-  // TestFeatureForBrowserTest1 and TestFeatureForBrowserTest2 used in
-  // ContentBrowserTestScopedFeatureListTest to ensure ScopedFeatureList keeps
-  // features from command line.
-  std::string enabled =
-      command_line->GetSwitchValueASCII(switches::kEnableFeatures);
-  std::string disabled =
-      command_line->GetSwitchValueASCII(switches::kDisableFeatures);
-  enabled += ",TestFeatureForBrowserTest1";
-  disabled += ",TestFeatureForBrowserTest2";
-  scoped_feature_list_.InitFromCommandLine(enabled, disabled);
-
-  // The enable-features and disable-features flags were just slurped into a
-  // FeatureList, so remove them from the command line. Tests should enable and
-  // disable features via the ScopedFeatureList API rather than command-line
-  // flags.
-  CommandLine new_command_line(command_line->GetProgram());
-  CommandLine::SwitchMap switches = command_line->GetSwitches();
-
-  switches.erase(switches::kEnableFeatures);
-  switches.erase(switches::kDisableFeatures);
-
-  for (const auto& iter : switches)
-    new_command_line.AppendSwitchNative(iter.first, iter.second);
-
-  *CommandLine::ForCurrentProcess() = new_command_line;
 
 #if defined(OS_IOS)
   InitIOSTestMessageLoop();
@@ -604,6 +644,7 @@ void TestSuite::Initialize() {
       testing::UnitTest::GetInstance()->listeners();
   listeners.Append(new DisableMaybeTests);
   listeners.Append(new ResetCommandLineBetweenTests);
+  listeners.Append(new FeatureListScopedToEachTest);
   if (check_for_leaked_globals_)
     listeners.Append(new CheckForLeakedGlobals);
   if (check_for_thread_and_process_priority_) {

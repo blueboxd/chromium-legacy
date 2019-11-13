@@ -151,6 +151,12 @@
     "contexts": ["blessed_extension"],
     "channel": "trunk"
   },
+  "declarativeNetRequest.onRuleMatchedDebug": {
+    "dependencies": ["permission:declarativeNetRequest", "permission:declarativeNetRequestFeedback"],
+    "contexts": ["blessed_extension"],
+    "channel": "trunk",
+    "location": "unpacked"
+  },
   "declarativeNetRequest.setActionCountAsBadgeText": {
     "dependencies": ["permission:declarativeNetRequest"],
     "contexts": ["blessed_extension"],

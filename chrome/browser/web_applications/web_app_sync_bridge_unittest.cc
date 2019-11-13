@@ -7,6 +7,8 @@
 #include <memory>
 #include <vector>
 
+#include "base/barrier_closure.h"
+#include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -18,6 +20,7 @@
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "components/sync/model/data_batch.h"
+#include "components/sync/model/entity_change.h"
 #include "components/sync/protocol/web_app_specifics.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -120,14 +123,34 @@ void InsertAppsListIntoRegistry(Registry* registry, const AppsList& apps_list) {
     registry->emplace(app->app_id(), std::make_unique<WebApp>(*app));
 }
 
+void ConvertAppToEntityChange(const WebApp& app,
+                              syncer::EntityChange::ChangeType change_type,
+                              syncer::EntityChangeList* sync_data_list) {
+  std::unique_ptr<syncer::EntityChange> entity_change;
+
+  switch (change_type) {
+    case syncer::EntityChange::ACTION_ADD:
+      entity_change = syncer::EntityChange::CreateAdd(
+          app.app_id(), CreateSyncEntityData(app));
+      break;
+    case syncer::EntityChange::ACTION_UPDATE:
+      entity_change = syncer::EntityChange::CreateUpdate(
+          app.app_id(), CreateSyncEntityData(app));
+      break;
+    case syncer::EntityChange::ACTION_DELETE:
+      entity_change = syncer::EntityChange::CreateDelete(app.app_id());
+      break;
+  }
+
+  sync_data_list->push_back(std::move(entity_change));
+}
+
 void ConvertAppsListToEntityChangeList(
     const AppsList& apps_list,
     syncer::EntityChangeList* sync_data_list) {
   for (auto& app : apps_list) {
-    std::unique_ptr<syncer::EntityChange> entity_change =
-        syncer::EntityChange::CreateAdd(app->app_id(),
-                                        CreateSyncEntityData(*app));
-    sync_data_list->push_back(std::move(entity_change));
+    ConvertAppToEntityChange(*app, syncer::EntityChange::ACTION_ADD,
+                             sync_data_list);
   }
 }
 
@@ -146,6 +169,22 @@ bool RemoveEntityDataAppFromAppsList(const std::string& storage_key,
   }
 
   return false;
+}
+
+void RunCallbacksOnInstall(
+    const std::vector<WebApp*>& apps,
+    TestWebAppRegistryController::RepeatingInstallCallback callback,
+    InstallResultCode code) {
+  for (WebApp* app : apps)
+    callback.Run(app->app_id(), code);
+}
+
+void RunCallbacksOnUninstall(
+    const std::vector<std::unique_ptr<WebApp>>& apps,
+    TestWebAppRegistryController::RepeatingUninstallCallback callback,
+    bool uninstalled) {
+  for (const std::unique_ptr<WebApp>& app : apps)
+    callback.Run(app->app_id(), uninstalled);
 }
 
 }  // namespace
@@ -168,9 +207,32 @@ class WebAppSyncBridgeTest : public WebAppTest {
 
   void InitSyncBridge() { controller().Init(); }
 
+  void MergeSyncData(const AppsList& merged_apps) {
+    syncer::EntityChangeList entity_data_list;
+    ConvertAppsListToEntityChangeList(merged_apps, &entity_data_list);
+    EXPECT_CALL(processor(), Put(_, _, _)).Times(0);
+    EXPECT_CALL(processor(), Delete(_, _)).Times(0);
+    sync_bridge().MergeSyncData(sync_bridge().CreateMetadataChangeList(),
+                                std::move(entity_data_list));
+  }
+
   bool IsDatabaseRegistryEqualToRegistrar() {
     Registry registry = database_factory().ReadRegistry();
     return IsRegistryEqual(registrar_registry(), registry);
+  }
+
+  void SetSyncInstallDelegateFailureIfCalled() {
+    controller().SetInstallWebAppsAfterSyncDelegate(base::BindLambdaForTesting(
+        [&](std::vector<WebApp*> apps_to_install,
+            TestWebAppRegistryController::RepeatingInstallCallback callback) {
+          ADD_FAILURE();
+        }));
+
+    controller().SetUninstallWebAppsAfterSyncDelegate(
+        base::BindLambdaForTesting(
+            [&](std::vector<std::unique_ptr<WebApp>> apps_to_uninstall,
+                TestWebAppRegistryController::RepeatingUninstallCallback
+                    callback) { ADD_FAILURE(); }));
   }
 
  protected:
@@ -379,18 +441,295 @@ TEST_F(WebAppSyncBridgeTest, MergeSyncData_LocalSetLessThanServerSet) {
 
         EXPECT_TRUE(expected_apps_to_install.empty());
 
-        // Run the callbacks to fulfill the contract.
-        for (WebApp* app_to_install : apps_to_install) {
-          callback.Run(app_to_install->app_id(),
-                       InstallResultCode::kSuccessNewInstall);
-        }
-
+        RunCallbacksOnInstall(apps_to_install, callback,
+                              InstallResultCode::kSuccessNewInstall);
         run_loop.Quit();
       }));
 
   sync_bridge().MergeSyncData(sync_bridge().CreateMetadataChangeList(),
                               std::move(sync_data_list));
   run_loop.Run();
+
+  EXPECT_TRUE(IsRegistryEqual(registrar_registry(), registry));
+  EXPECT_TRUE(IsDatabaseRegistryEqualToRegistrar());
+}
+
+TEST_F(WebAppSyncBridgeTest, ApplySyncChanges_EmptyEntityChanges) {
+  AppsList merged_apps = CreateAppsList("https://example.com/", 10);
+
+  Registry registry;
+  InsertAppsListIntoRegistry(&registry, merged_apps);
+  database_factory().WriteRegistry(registry);
+  InitSyncBridge();
+  MergeSyncData(merged_apps);
+
+  syncer::EntityChangeList entity_changes;
+  EXPECT_CALL(processor(), Put(_, _, _)).Times(0);
+  EXPECT_CALL(processor(), Delete(_, _)).Times(0);
+  SetSyncInstallDelegateFailureIfCalled();
+
+  sync_bridge().ApplySyncChanges(sync_bridge().CreateMetadataChangeList(),
+                                 std::move(entity_changes));
+
+  EXPECT_TRUE(IsRegistryEqual(registrar_registry(), registry));
+  EXPECT_TRUE(IsDatabaseRegistryEqualToRegistrar());
+}
+
+TEST_F(WebAppSyncBridgeTest, ApplySyncChanges_AddUpdateDelete) {
+  // 20 initial apps with DisplayMode::kStandalone user display mode.
+  AppsList merged_apps = CreateAppsList("https://example.com/", 20);
+
+  Registry registry;
+  InsertAppsListIntoRegistry(&registry, merged_apps);
+  database_factory().WriteRegistry(registry);
+  InitSyncBridge();
+  MergeSyncData(merged_apps);
+
+  syncer::EntityChangeList entity_changes;
+
+  for (std::unique_ptr<WebApp>& app_to_add :
+       CreateAppsList("https://example.org/", 10)) {
+    app_to_add->SetIsLocallyInstalled(AreAppsLocallyInstalledByDefault());
+    app_to_add->SetIsInSyncInstall(true);
+
+    ConvertAppToEntityChange(*app_to_add, syncer::EntityChange::ACTION_ADD,
+                             &entity_changes);
+  }
+
+  // Update first 5 initial apps.
+  for (int i = 0; i < 5; ++i) {
+    auto app_to_update = std::make_unique<WebApp>(*merged_apps[i]);
+    // Update user display mode field.
+    app_to_update->SetUserDisplayMode(DisplayMode::kBrowser);
+    ConvertAppToEntityChange(
+        *app_to_update, syncer::EntityChange::ACTION_UPDATE, &entity_changes);
+    // Override the app in the expected registry.
+    registry[app_to_update->app_id()] = std::move(app_to_update);
+  }
+
+  // Delete next 5 initial apps. Leave the rest unchanged.
+  for (int i = 5; i < 10; ++i) {
+    const WebApp& app_to_delete = *merged_apps[i];
+    ConvertAppToEntityChange(app_to_delete, syncer::EntityChange::ACTION_DELETE,
+                             &entity_changes);
+  }
+
+  EXPECT_CALL(processor(), Put(_, _, _)).Times(0);
+  EXPECT_CALL(processor(), Delete(_, _)).Times(0);
+
+  base::RunLoop run_loop;
+  base::RepeatingClosure barrier_closure =
+      base::BarrierClosure(2, run_loop.QuitClosure());
+
+  controller().SetInstallWebAppsAfterSyncDelegate(base::BindLambdaForTesting(
+      [&](std::vector<WebApp*> apps_to_install,
+          TestWebAppRegistryController::RepeatingInstallCallback callback) {
+        for (WebApp* app_to_install : apps_to_install) {
+          // The app must be registered.
+          EXPECT_TRUE(registrar().GetAppById(app_to_install->app_id()));
+          // Add the app copy to the expected registry.
+          registry.emplace(app_to_install->app_id(),
+                           std::make_unique<WebApp>(*app_to_install));
+        }
+
+        RunCallbacksOnInstall(apps_to_install, callback,
+                              InstallResultCode::kSuccessNewInstall);
+        barrier_closure.Run();
+      }));
+
+  controller().SetUninstallWebAppsAfterSyncDelegate(base::BindLambdaForTesting(
+      [&](std::vector<std::unique_ptr<WebApp>> apps_to_uninstall,
+          TestWebAppRegistryController::RepeatingUninstallCallback callback) {
+        for (std::unique_ptr<WebApp>& app_to_uninstall : apps_to_uninstall) {
+          // The app must be unregistered.
+          EXPECT_FALSE(registrar().GetAppById(app_to_uninstall->app_id()));
+          registry.erase(app_to_uninstall->app_id());
+        }
+
+        RunCallbacksOnUninstall(apps_to_uninstall, callback,
+                                /*uninstalled=*/true);
+        barrier_closure.Run();
+      }));
+
+  sync_bridge().ApplySyncChanges(sync_bridge().CreateMetadataChangeList(),
+                                 std::move(entity_changes));
+  run_loop.Run();
+
+  EXPECT_TRUE(IsRegistryEqual(registrar_registry(), registry));
+  EXPECT_TRUE(IsDatabaseRegistryEqualToRegistrar());
+}
+
+TEST_F(WebAppSyncBridgeTest, ApplySyncChanges_UpdateOnly) {
+  AppsList merged_apps = CreateAppsList("https://example.com/", 10);
+
+  Registry registry;
+  InsertAppsListIntoRegistry(&registry, merged_apps);
+  database_factory().WriteRegistry(registry);
+  InitSyncBridge();
+  MergeSyncData(merged_apps);
+
+  syncer::EntityChangeList entity_changes;
+
+  // Update last 5 initial apps.
+  for (int i = 5; i < 10; ++i) {
+    auto app_to_update = std::make_unique<WebApp>(*merged_apps[i]);
+    app_to_update->SetUserDisplayMode(DisplayMode::kStandalone);
+
+    WebApp::SyncData sync_data;
+    sync_data.name = "Sync Name";
+    sync_data.theme_color = SK_ColorYELLOW;
+    app_to_update->SetSyncData(std::move(sync_data));
+
+    ConvertAppToEntityChange(
+        *app_to_update, syncer::EntityChange::ACTION_UPDATE, &entity_changes);
+    // Override the app in the expected registry.
+    registry[app_to_update->app_id()] = std::move(app_to_update);
+  }
+
+  EXPECT_CALL(processor(), Put(_, _, _)).Times(0);
+  EXPECT_CALL(processor(), Delete(_, _)).Times(0);
+  SetSyncInstallDelegateFailureIfCalled();
+
+  sync_bridge().ApplySyncChanges(sync_bridge().CreateMetadataChangeList(),
+                                 std::move(entity_changes));
+
+  EXPECT_TRUE(IsRegistryEqual(registrar_registry(), registry));
+  EXPECT_TRUE(IsDatabaseRegistryEqualToRegistrar());
+}
+
+TEST_F(WebAppSyncBridgeTest,
+       ApplySyncChanges_AddSyncAppsWithOverlappingPolicyApps) {
+  AppsList policy_apps;
+  for (int i = 0; i < 10; ++i) {
+    std::unique_ptr<WebApp> policy_app =
+        CreateWebApp("https://example.com/" + base::NumberToString(i));
+    policy_app->AddSource(Source::kPolicy);
+    policy_apps.push_back(std::move(policy_app));
+  }
+
+  Registry registry;
+  InsertAppsListIntoRegistry(&registry, policy_apps);
+  database_factory().WriteRegistry(registry);
+  InitSyncBridge();
+
+  syncer::EntityChangeList entity_changes;
+
+  // Install 5 kSync apps over existing kPolicy apps. Leave the rest unchanged.
+  for (int i = 0; i < 5; ++i) {
+    const WebApp& app_to_install = *policy_apps[i];
+    ConvertAppToEntityChange(app_to_install, syncer::EntityChange::ACTION_ADD,
+                             &entity_changes);
+  }
+
+  EXPECT_CALL(processor(), Put(_, _, _)).Times(0);
+  EXPECT_CALL(processor(), Delete(_, _)).Times(0);
+  SetSyncInstallDelegateFailureIfCalled();
+
+  sync_bridge().ApplySyncChanges(sync_bridge().CreateMetadataChangeList(),
+                                 std::move(entity_changes));
+
+  // Modify the registry with the results that we expect.
+  for (int i = 0; i < 5; ++i) {
+    std::unique_ptr<WebApp>& expected_sync_and_policy_app =
+        registry[policy_apps[i]->app_id()];
+    expected_sync_and_policy_app->AddSource(Source::kSync);
+  }
+
+  EXPECT_TRUE(IsRegistryEqual(registrar_registry(), registry));
+  EXPECT_TRUE(IsDatabaseRegistryEqualToRegistrar());
+}
+
+TEST_F(WebAppSyncBridgeTest,
+       ApplySyncChanges_UpdateSyncAppsWithOverlappingPolicyApps) {
+  AppsList policy_and_sync_apps;
+  for (int i = 0; i < 10; ++i) {
+    std::unique_ptr<WebApp> policy_and_sync_app =
+        CreateWebApp("https://example.com/" + base::NumberToString(i));
+    policy_and_sync_app->AddSource(Source::kPolicy);
+    policy_and_sync_app->AddSource(Source::kSync);
+    policy_and_sync_apps.push_back(std::move(policy_and_sync_app));
+  }
+
+  Registry registry;
+  InsertAppsListIntoRegistry(&registry, policy_and_sync_apps);
+  database_factory().WriteRegistry(registry);
+  InitSyncBridge();
+  MergeSyncData(policy_and_sync_apps);
+
+  syncer::EntityChangeList entity_changes;
+
+  // Update first 5 kSync apps which are shared with kPolicy. Leave the rest
+  // unchanged.
+  AppsList apps_to_update;
+  for (int i = 0; i < 5; ++i) {
+    auto app_to_update = std::make_unique<WebApp>(*policy_and_sync_apps[i]);
+    app_to_update->SetUserDisplayMode(DisplayMode::kBrowser);
+
+    WebApp::SyncData sync_data;
+    sync_data.name = "Updated Sync Name";
+    sync_data.theme_color = SK_ColorWHITE;
+    app_to_update->SetSyncData(std::move(sync_data));
+
+    ConvertAppToEntityChange(
+        *app_to_update, syncer::EntityChange::ACTION_UPDATE, &entity_changes);
+    apps_to_update.push_back(std::move(app_to_update));
+  }
+
+  EXPECT_CALL(processor(), Put(_, _, _)).Times(0);
+  EXPECT_CALL(processor(), Delete(_, _)).Times(0);
+  SetSyncInstallDelegateFailureIfCalled();
+
+  sync_bridge().ApplySyncChanges(sync_bridge().CreateMetadataChangeList(),
+                                 std::move(entity_changes));
+
+  // Modify the registry with the results that we expect.
+  for (int i = 0; i < 5; ++i)
+    registry[policy_and_sync_apps[i]->app_id()] = std::move(apps_to_update[i]);
+
+  EXPECT_TRUE(IsRegistryEqual(registrar_registry(), registry));
+  EXPECT_TRUE(IsDatabaseRegistryEqualToRegistrar());
+}
+
+TEST_F(WebAppSyncBridgeTest,
+       ApplySyncChanges_DeleteSyncAppsWithOverlappingPolicyApps) {
+  AppsList policy_and_sync_apps;
+  for (int i = 0; i < 10; ++i) {
+    std::unique_ptr<WebApp> policy_and_sync_app =
+        CreateWebApp("https://example.com/" + base::NumberToString(i));
+    policy_and_sync_app->AddSource(Source::kPolicy);
+    policy_and_sync_app->AddSource(Source::kSync);
+    policy_and_sync_apps.push_back(std::move(policy_and_sync_app));
+  }
+
+  Registry registry;
+  InsertAppsListIntoRegistry(&registry, policy_and_sync_apps);
+  database_factory().WriteRegistry(registry);
+  InitSyncBridge();
+  MergeSyncData(policy_and_sync_apps);
+
+  syncer::EntityChangeList entity_changes;
+
+  // Uninstall 5 kSync apps which are shared with kPolicy. Leave the rest
+  // unchanged.
+  for (int i = 0; i < 5; ++i) {
+    const WebApp& app_to_uninstall = *policy_and_sync_apps[i];
+    ConvertAppToEntityChange(
+        app_to_uninstall, syncer::EntityChange::ACTION_DELETE, &entity_changes);
+  }
+
+  EXPECT_CALL(processor(), Put(_, _, _)).Times(0);
+  EXPECT_CALL(processor(), Delete(_, _)).Times(0);
+  SetSyncInstallDelegateFailureIfCalled();
+
+  sync_bridge().ApplySyncChanges(sync_bridge().CreateMetadataChangeList(),
+                                 std::move(entity_changes));
+
+  // Modify the registry with the results that we expect.
+  for (int i = 0; i < 5; ++i) {
+    std::unique_ptr<WebApp>& expected_policy_app =
+        registry[policy_and_sync_apps[i]->app_id()];
+    expected_policy_app->RemoveSource(Source::kSync);
+  }
 
   EXPECT_TRUE(IsRegistryEqual(registrar_registry(), registry));
   EXPECT_TRUE(IsDatabaseRegistryEqualToRegistrar());

@@ -272,12 +272,17 @@ js_modulizer("modulize") {
     "focus_row.js",
     "focus_row_behavior.js",
     "focus_without_ink.js",
+    "store.js",
+    "store_client.js",
   ]
   namespace_rewrites = [
+    "cr.ui.Action|Action",
+    "cr.ui.DeferredAction|DeferredAction",
     "cr.ui.DragWrapperDelegate|DragWrapperDelegate",
     "cr.ui.FocusRowDelegate|FocusRowDelegate",
     "cr.ui.FocusRow|FocusRow",
     "cr.ui.focusWithoutInk|focusWithoutInk",
+    "cr.ui.StoreObserver|StoreObserver",
   ]
 }
 
@@ -289,6 +294,8 @@ js_type_check("ui_resources_modules") {
     ":focus_row.m",
     ":focus_row_behavior.m",
     ":focus_without_ink.m",
+    ":store.m",
+    ":store_client.m",
   ]
 }
 
@@ -338,6 +345,24 @@ js_library("focus_without_ink.m") {
   ]
   sources = [
     "$root_gen_dir/ui/webui/resources/js/cr/ui/focus_without_ink.m.js",
+  ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("store.m") {
+  sources = [
+    "$root_gen_dir/ui/webui/resources/js/cr/ui/store.m.js",
+  ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("store_client.m") {
+  deps = [
+    ":store.m",
+    "../..:assert.m",
+  ]
+  sources = [
+    "$root_gen_dir/ui/webui/resources/js/cr/ui/store_client.m.js",
   ]
   extra_deps = [ ":modulize" ]
 }

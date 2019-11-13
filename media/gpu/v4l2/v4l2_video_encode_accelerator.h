@@ -260,6 +260,10 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   gfx::Size visible_size_;
   // Layout of device accepted input VideoFrame.
   base::Optional<VideoFrameLayout> device_input_layout_;
+
+  // Stands for whether an input buffer is native graphic buffer.
+  bool native_input_mode_;
+
   // Input allocated size calculated by
   // V4L2Device::AllocatedSizeFromV4L2Format().
   // TODO(crbug.com/914700): Remove this once Client::RequireBitstreamBuffers

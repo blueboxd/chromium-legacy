@@ -212,8 +212,17 @@
   "chromeos/components/help_app_ui/resources/help_app_resources.grd": {
     "includes": [14580],
   },
-  "chromeos/resources/chromeos_resources.grd": {
+  # Both media_app_bundle_resources.grd and media_app_bundle_mock_resources.grd start
+  # with the same id because only one of them is built depending on if src_internal is
+  # available. Lower bound for number of resource ids is number of languages (74).
+  "chromeos/components/media_app_ui/resources/app/app/media_app_bundle_resources.grd": {
     "includes": [14680],
+  },
+  "chromeos/components/media_app_ui/resources/mock/media_app_bundle_mock_resources.grd": {
+    "includes": [14680],
+  },
+  "chromeos/resources/chromeos_resources.grd": {
+    "includes": [14780],
   },
   # END chromeos/ section.
 

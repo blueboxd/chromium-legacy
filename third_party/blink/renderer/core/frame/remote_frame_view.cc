@@ -86,14 +86,11 @@ bool RemoteFrameView::UpdateViewportIntersectionsForSubtree(
 }
 
 void RemoteFrameView::SetViewportIntersection(
-    const IntRect& viewport_intersection,
-    FrameOcclusionState occlusion_state) {
-  if (viewport_intersection != last_viewport_intersection_ ||
-      occlusion_state != last_occlusion_state_) {
-    last_viewport_intersection_ = viewport_intersection;
-    last_occlusion_state_ = occlusion_state;
+    const ViewportIntersectionState& intersection_state) {
+  if (intersection_state != last_intersection_state_) {
+    last_intersection_state_ = intersection_state;
     remote_frame_->Client()->UpdateRemoteViewportIntersection(
-        {viewport_intersection, WebRect(), occlusion_state});
+        intersection_state);
   }
 }
 
@@ -147,12 +144,13 @@ IntRect RemoteFrameView::GetCompositingRect() {
   converted_viewport_size.SetHeight(
       std::min(frame_size.Height(), converted_viewport_size.Height()));
   IntPoint expanded_origin;
-  if (!last_viewport_intersection_.IsEmpty()) {
+  const IntRect& last_rect = last_intersection_state_.viewport_intersection;
+  if (!last_rect.IsEmpty()) {
     IntSize expanded_size =
-        last_viewport_intersection_.Size().ExpandedTo(converted_viewport_size);
-    expanded_size -= last_viewport_intersection_.Size();
+        last_rect.Size().ExpandedTo(converted_viewport_size);
+    expanded_size -= last_rect.Size();
     expanded_size.Scale(0.5f, 0.5f);
-    expanded_origin = last_viewport_intersection_.Location() - expanded_size;
+    expanded_origin = last_rect.Location() - expanded_size;
     expanded_origin.ClampNegativeToZero();
   }
   return IntRect(expanded_origin, converted_viewport_size);
@@ -223,17 +221,21 @@ void RemoteFrameView::UpdateGeometry() {
 
 void RemoteFrameView::Hide() {
   SetSelfVisible(false);
-  UpdateFrameVisibility(!last_viewport_intersection_.IsEmpty());
+  UpdateFrameVisibility(
+      !last_intersection_state_.viewport_intersection.IsEmpty());
 }
 
 void RemoteFrameView::Show() {
   SetSelfVisible(true);
-  UpdateFrameVisibility(!last_viewport_intersection_.IsEmpty());
+  UpdateFrameVisibility(
+      !last_intersection_state_.viewport_intersection.IsEmpty());
 }
 
 void RemoteFrameView::ParentVisibleChanged() {
-  if (IsSelfVisible())
-    UpdateFrameVisibility(!last_viewport_intersection_.IsEmpty());
+  if (IsSelfVisible()) {
+    UpdateFrameVisibility(
+        !last_intersection_state_.viewport_intersection.IsEmpty());
+  }
 }
 
 void RemoteFrameView::VisibilityForThrottlingChanged() {

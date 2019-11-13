@@ -17,6 +17,7 @@ public class FakeProfileSyncService extends ProfileSyncService {
     private int mNumberOfSyncedDevices;
     private boolean mPassphraseRequiredForPreferredDataTypes;
     private Set<Integer> mChosenTypes = new HashSet<>();
+    private boolean mCanSyncFeatureStart;
 
     public FakeProfileSyncService() {
         super();
@@ -63,5 +64,14 @@ public class FakeProfileSyncService extends ProfileSyncService {
     public void setPassphraseRequiredForPreferredDataTypes(
             boolean passphraseRequiredForPreferredDataTypes) {
         mPassphraseRequiredForPreferredDataTypes = passphraseRequiredForPreferredDataTypes;
+    }
+
+    @Override
+    public boolean canSyncFeatureStart() {
+        return mCanSyncFeatureStart;
+    }
+
+    public void setCanSyncFeatureStart(boolean canSyncFeatureStart) {
+        mCanSyncFeatureStart = canSyncFeatureStart;
     }
 }

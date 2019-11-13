@@ -110,38 +110,45 @@ bool ShouldShowOnboarding(PrefService* prefs,
                           PasswordUpdateBool is_password_update,
                           BlacklistedBool is_blacklisted,
                           SyncState sync_state) {
-  if (sync_state == NOT_SYNCING) {
-    return false;
-  }
   if (is_blacklisted) {
     return false;
   }
+
   if (is_password_update) {
+    return false;
+  }
+
+  bool was_feature_checked_before = prefs->GetBoolean(
+      password_manager::prefs::kWasOnboardingFeatureCheckedBefore);
+
+  if (was_feature_checked_before) {
+    // This is a signal that the user was at some point eligible for onboarding.
+    // The feature needs to be checked again, irrespective of onboarding status,
+    // in order to ensure data completeness.
+    ignore_result(base::FeatureList::IsEnabled(
+        password_manager::features::kPasswordManagerOnboardingAndroid));
+  }
+
+  if (sync_state == NOT_SYNCING) {
     return false;
   }
 
   int pref_value = prefs->GetInteger(
       password_manager::prefs::kPasswordManagerOnboardingState);
-
   bool should_show =
       (pref_value == static_cast<int>(OnboardingState::kShouldShow));
-  bool already_shown =
-      (pref_value == static_cast<int>(OnboardingState::kShown));
-  bool is_eligible = should_show || already_shown;
-
-  if (!is_eligible) {
+  if (!should_show)
     return false;
-  }
 
-  // It is very important that the feature is checked only for eligible users.
-  // otherwise the data will be diluted. It's also important that the feature is
-  // checked in all eligible cases, even if the onboarding prompt was shown,
-  // otherwise the data will be incomplete.
-  if (!base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordManagerOnboardingAndroid)) {
-    return false;
-  }
-  return should_show;
+  // It is very important that the feature is checked only for users who
+  // are or were eligible for onboarding, otherwise the data will be diluted.
+  // It's also important that the feature is checked in all eligible cases,
+  // including past eligibiliy and users having already seen the onboarding
+  // prompt, otherwise the data will be incomplete.
+  prefs->SetBoolean(password_manager::prefs::kWasOnboardingFeatureCheckedBefore,
+                    true);
+  return base::FeatureList::IsEnabled(
+      password_manager::features::kPasswordManagerOnboardingAndroid);
 }
 
 SavingFlowMetricsRecorder::SavingFlowMetricsRecorder() = default;

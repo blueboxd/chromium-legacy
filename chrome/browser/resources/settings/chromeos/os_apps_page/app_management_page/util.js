@@ -112,9 +112,11 @@ cr.define('app_management.util', function() {
   }
 
   /**
+   * Undefined is returned when the app does not request a permission.
+   *
    * @param {App} app
    * @param {string} permissionType
-   * @return {Permission}
+   * @return {Permission|undefined}
    */
   function getPermission(app, permissionType) {
     return app.permissions[permissionTypeHandle(app, permissionType)];

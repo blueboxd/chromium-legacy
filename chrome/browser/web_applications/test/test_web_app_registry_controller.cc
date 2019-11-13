@@ -57,6 +57,11 @@ void TestWebAppRegistryController::SetInstallWebAppsAfterSyncDelegate(
   install_web_apps_after_sync_delegate_ = delegate;
 }
 
+void TestWebAppRegistryController::SetUninstallWebAppsAfterSyncDelegate(
+    UninstallWebAppsAfterSyncDelegate delegate) {
+  uninstall_web_apps_after_sync_delegate_ = delegate;
+}
+
 void TestWebAppRegistryController::InstallWebAppsAfterSync(
     std::vector<WebApp*> web_apps,
     RepeatingInstallCallback callback) {
@@ -71,8 +76,12 @@ void TestWebAppRegistryController::InstallWebAppsAfterSync(
 void TestWebAppRegistryController::UninstallWebAppsAfterSync(
     std::vector<std::unique_ptr<WebApp>> web_apps,
     RepeatingUninstallCallback callback) {
-  for (const std::unique_ptr<WebApp>& web_app : web_apps)
-    callback.Run(web_app->app_id(), /*uninstalled=*/true);
+  if (uninstall_web_apps_after_sync_delegate_) {
+    uninstall_web_apps_after_sync_delegate_.Run(std::move(web_apps), callback);
+  } else {
+    for (const std::unique_ptr<WebApp>& web_app : web_apps)
+      callback.Run(web_app->app_id(), /*uninstalled=*/true);
+  }
 }
 
 void TestWebAppRegistryController::DestroySubsystems() {

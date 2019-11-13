@@ -15,7 +15,6 @@
 #include "base/at_exit.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/trace_to_file.h"
 #include "build/build_config.h"
 
@@ -92,8 +91,6 @@ class TestSuite {
   test::TraceToFile trace_to_file_;
 
   bool initialized_command_line_ = false;
-
-  test::ScopedFeatureList scoped_feature_list_;
 
   XmlUnitTestResultPrinter* printer_ = nullptr;
 

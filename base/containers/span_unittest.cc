@@ -1302,16 +1302,12 @@ TEST(SpanTest, EnsureConstexprGoodness) {
 TEST(SpanTest, OutOfBoundsDeath) {
   constexpr span<int, 0> kEmptySpan;
   ASSERT_DEATH_IF_SUPPORTED(kEmptySpan[0], "");
-  ASSERT_DEATH_IF_SUPPORTED(kEmptySpan.begin()[0], "");
-  ASSERT_DEATH_IF_SUPPORTED(kEmptySpan.end()[0], "");
   ASSERT_DEATH_IF_SUPPORTED(kEmptySpan.first(1), "");
   ASSERT_DEATH_IF_SUPPORTED(kEmptySpan.last(1), "");
   ASSERT_DEATH_IF_SUPPORTED(kEmptySpan.subspan(1), "");
 
   constexpr span<int> kEmptyDynamicSpan;
   ASSERT_DEATH_IF_SUPPORTED(kEmptyDynamicSpan[0], "");
-  ASSERT_DEATH_IF_SUPPORTED(kEmptyDynamicSpan.begin()[0], "");
-  ASSERT_DEATH_IF_SUPPORTED(kEmptyDynamicSpan.end()[0], "");
   ASSERT_DEATH_IF_SUPPORTED(kEmptyDynamicSpan.front(), "");
   ASSERT_DEATH_IF_SUPPORTED(kEmptyDynamicSpan.first(1), "");
   ASSERT_DEATH_IF_SUPPORTED(kEmptyDynamicSpan.last(1), "");
@@ -1322,10 +1318,8 @@ TEST(SpanTest, OutOfBoundsDeath) {
   constexpr span<const int> kNonEmptyDynamicSpan(kArray);
   EXPECT_EQ(3U, kNonEmptyDynamicSpan.size());
   ASSERT_DEATH_IF_SUPPORTED(kNonEmptyDynamicSpan[4], "");
-  ASSERT_DEATH_IF_SUPPORTED(kNonEmptyDynamicSpan.begin()[-1], "");
-  ASSERT_DEATH_IF_SUPPORTED(kNonEmptyDynamicSpan.begin()[3], "");
-  ASSERT_DEATH_IF_SUPPORTED(kEmptyDynamicSpan.subspan(10), "");
-  ASSERT_DEATH_IF_SUPPORTED(kEmptyDynamicSpan.subspan(1, 7), "");
+  ASSERT_DEATH_IF_SUPPORTED(kNonEmptyDynamicSpan.subspan(10), "");
+  ASSERT_DEATH_IF_SUPPORTED(kNonEmptyDynamicSpan.subspan(1, 7), "");
 }
 
 TEST(SpanTest, IteratorIsRangeMoveSafe) {

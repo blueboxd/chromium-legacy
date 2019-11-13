@@ -29,14 +29,11 @@ struct TriggeredHeuristics {
 };
 
 // Wrapper used to store the results of a reputation check. Specifically, this
-// is passed to the callback given to GetReputationStatus.
-// |user_previously_ignored| indicates whether the use has dismissed the warning
-// previously, and thus should not be warned again. |url| is the URL applicable
-// for this result.
+// is passed to the callback given to GetReputationStatus.  |url| is the URL
+// applicable for this result.
 struct ReputationCheckResult {
   security_state::SafetyTipStatus safety_tip_status =
       security_state::SafetyTipStatus::kNone;
-  bool user_previously_ignored = false;
   GURL url;
   GURL suggested_url;
   TriggeredHeuristics triggered_heuristics;

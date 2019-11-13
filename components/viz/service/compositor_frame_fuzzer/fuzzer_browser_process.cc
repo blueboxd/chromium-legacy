@@ -106,8 +106,8 @@ FuzzerBrowserProcess::BuildRootCompositorFrameSinkParams() {
       display_private_.BindNewEndpointAndPassDedicatedReceiverForTesting();
   params->display_client = display_client_.BindRemote();
   params->external_begin_frame_controller =
-      MakeRequestAssociatedWithDedicatedPipe(
-          &external_begin_frame_controller_ptr_);
+      external_begin_frame_controller_remote_
+           .BindNewEndpointAndPassDedicatedReceiverForTesting();
   return params;
 }
 

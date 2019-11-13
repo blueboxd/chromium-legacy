@@ -132,6 +132,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
     bool has_border;
     int classic_state;  // Used on Windows when uxtheme is not available.
     SkColor background_color;
+    float zoom;
   };
 
   struct FrameTopAreaExtraParams {
@@ -231,6 +232,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
     bool in_drag;
     int thumb_x;
     int thumb_y;
+    float zoom;
   };
 
   struct TextFieldExtraParams {

@@ -24,6 +24,7 @@
 #include "ash/system/session/logout_button_tray.h"
 #include "ash/system/status_area_widget_test_api.h"
 #include "ash/system/status_area_widget_test_helper.h"
+#include "ash/system/tray/status_area_overflow_button_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/virtual_keyboard/virtual_keyboard_tray.h"
@@ -365,13 +366,13 @@ class StatusAreaWidgetCollapseStateTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
 
-    StatusAreaWidget* status_area =
-        StatusAreaWidgetTestHelper::GetStatusAreaWidget();
-    virtual_keyboard_ = status_area->virtual_keyboard_tray_for_testing();
-    ime_menu_ = status_area->ime_menu_tray();
-    palette_ = status_area->palette_tray();
-    dictation_button_ = status_area->dictation_button_tray();
-    select_to_speak_ = status_area->select_to_speak_tray();
+    status_area_ = StatusAreaWidgetTestHelper::GetStatusAreaWidget();
+    overflow_button_ = status_area_->overflow_button_tray();
+    virtual_keyboard_ = status_area_->virtual_keyboard_tray_for_testing();
+    ime_menu_ = status_area_->ime_menu_tray();
+    palette_ = status_area_->palette_tray();
+    dictation_button_ = status_area_->dictation_button_tray();
+    select_to_speak_ = status_area_->select_to_speak_tray();
 
     virtual_keyboard_->SetVisiblePreferred(true);
     ime_menu_->SetVisiblePreferred(true);
@@ -381,8 +382,7 @@ class StatusAreaWidgetCollapseStateTest : public AshTestBase {
   }
 
   void SetCollapseState(StatusAreaWidget::CollapseState collapse_state) {
-    StatusAreaWidgetTestApi test_api(
-        StatusAreaWidgetTestHelper::GetStatusAreaWidget());
+    StatusAreaWidgetTestApi test_api(status_area_);
     test_api.SetCollapseState(collapse_state);
 
     virtual_keyboard_->UpdateAfterStatusAreaCollapseChange();
@@ -392,6 +392,8 @@ class StatusAreaWidgetCollapseStateTest : public AshTestBase {
     select_to_speak_->UpdateAfterStatusAreaCollapseChange();
   }
 
+  StatusAreaWidget* status_area_;
+  TrayBackgroundView* overflow_button_;
   TrayBackgroundView* virtual_keyboard_;
   TrayBackgroundView* ime_menu_;
   TrayBackgroundView* palette_;
@@ -442,6 +444,14 @@ TEST_F(StatusAreaWidgetCollapseStateTest, ImeMenuShownWithVirtualKeyboard) {
   EXPECT_FALSE(virtual_keyboard_->GetVisible());
   EXPECT_FALSE(dictation_button_->GetVisible());
   EXPECT_FALSE(select_to_speak_->GetVisible());
+}
+
+TEST_F(StatusAreaWidgetCollapseStateTest, OverflowButtonShownWhenCollapsible) {
+  EXPECT_FALSE(overflow_button_->GetVisible());
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAshForceStatusAreaCollapsible);
+  status_area_->UpdateCollapseState();
+  EXPECT_TRUE(overflow_button_->GetVisible());
 }
 
 }  // namespace ash

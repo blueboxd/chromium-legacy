@@ -25,16 +25,17 @@
               disabled="[[!navigationEnabled_]]"></oobe-back-button>
           <div class="flex">
           </div>
-          <oobe-text-button id="primary-action-button"
-              on-tap="onPrimaryActionButtonClicked_"
-              hidden="[[!primaryActionButtonLabel_]]"
-              disabled="[[!primaryActionButtonEnabled_]]"
-              >[[primaryActionButtonLabel_]]</oobe-text-button>
           <oobe-text-button id="secondary-action-button"
               on-tap="onSecondaryActionButtonClicked_"
               hidden="[[!secondaryActionButtonLabel_]]"
               disabled="[[!secondaryActionButtonEnabled_]]"
               >[[secondaryActionButtonLabel_]]</oobe-text-button>
+          <oobe-text-button id="primary-action-button"
+              on-tap="onPrimaryActionButtonClicked_"
+              hidden="[[!primaryActionButtonLabel_]]"
+              disabled="[[!primaryActionButtonEnabled_]]"
+              inverse
+              >[[primaryActionButtonLabel_]]</oobe-text-button>
         </div>
       </div>
     </oobe-dialog>

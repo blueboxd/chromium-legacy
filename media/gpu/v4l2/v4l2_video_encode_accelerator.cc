@@ -147,6 +147,7 @@ V4L2VideoEncodeAccelerator::InputFrameInfo::~InputFrameInfo() {}
 V4L2VideoEncodeAccelerator::V4L2VideoEncodeAccelerator(
     const scoped_refptr<V4L2Device>& device)
     : child_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      native_input_mode_(false),
       output_buffer_byte_size_(0),
       output_format_fourcc_(0),
       encoder_state_(kUninitialized),
@@ -231,6 +232,10 @@ void V4L2VideoEncodeAccelerator::InitializeTask(const Config& config,
   base::ScopedClosureRunner signal_event(
       base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(done)));
   *result = false;
+
+  native_input_mode_ =
+      config.storage_type.value_or(Config::StorageType::kShmem) ==
+      Config::StorageType::kDmabuf;
 
   input_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE);
   output_queue_ = device_->GetQueue(V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
@@ -1407,10 +1412,16 @@ bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
                  << device_input_layout_->coded_size().ToString();
         return false;
       }
-      // TODO(crbug.com/914700): Remove this once
-      // Client::RequireBitstreamBuffers uses input's VideoFrameLayout to
-      // allocate input buffer.
-      input_allocated_size_ = V4L2Device::AllocatedSizeFromV4L2Format(format);
+      if (native_input_mode_) {
+        input_allocated_size_ =
+            gfx::Size(device_input_layout_->planes()[0].stride,
+                      device_input_layout_->coded_size().height());
+      } else {
+        // TODO(crbug.com/914700): Remove this once
+        // Client::RequireBitstreamBuffers uses input's VideoFrameLayout to
+        // allocate input buffer.
+        input_allocated_size_ = V4L2Device::AllocatedSizeFromV4L2Format(format);
+      }
       return true;
     }
   }

@@ -9,8 +9,12 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/task_environment.h"
+#include "base/util/type_safety/pass_key.h"
 #include "components/password_manager/core/browser/origin_credential_store.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
+#include "components/ukm/test_ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -50,6 +54,8 @@ struct MockTouchToFillView : TouchToFillView {
 
 class TouchToFillControllerTest : public testing::Test {
  protected:
+  using UkmBuilder = ukm::builders::TouchToFill_Shown;
+
   TouchToFillControllerTest() {
     auto mock_view = std::make_unique<MockTouchToFillView>();
     mock_view_ = mock_view.get();
@@ -63,14 +69,19 @@ class TouchToFillControllerTest : public testing::Test {
 
   MockTouchToFillView& view() { return *mock_view_; }
 
+  ukm::TestAutoSetUkmRecorder& test_recorder() { return test_recorder_; }
+
   TouchToFillController& touch_to_fill_controller() {
     return touch_to_fill_controller_;
   }
 
  private:
+  base::test::TaskEnvironment task_environment_;
   MockTouchToFillView* mock_view_ = nullptr;
   MockPasswordManagerDriver driver_;
-  TouchToFillController touch_to_fill_controller_{nullptr, nullptr};
+  ukm::TestAutoSetUkmRecorder test_recorder_;
+  TouchToFillController touch_to_fill_controller_{
+      util::PassKey<TouchToFillControllerTest>()};
 };
 
 TEST_F(TouchToFillControllerTest, Show_And_Fill) {
@@ -90,6 +101,13 @@ TEST_F(TouchToFillControllerTest, Show_And_Fill) {
   touch_to_fill_controller().OnCredentialSelected(credentials[0]);
   tester.ExpectUniqueSample("PasswordManager.FilledCredentialWasFromAndroidApp",
                             false, 1);
+
+  auto entries = test_recorder().GetEntriesByName(UkmBuilder::kEntryName);
+  ASSERT_EQ(1u, entries.size());
+  test_recorder().ExpectEntryMetric(
+      entries[0], UkmBuilder::kUserActionName,
+      static_cast<int64_t>(
+          TouchToFillController::UserAction::kSelectedCredential));
 }
 
 TEST_F(TouchToFillControllerTest, Show_Insecure_Origin) {
@@ -126,6 +144,13 @@ TEST_F(TouchToFillControllerTest, Show_And_Fill_Android_Credential) {
   touch_to_fill_controller().OnCredentialSelected(credentials[1]);
   tester.ExpectUniqueSample("PasswordManager.FilledCredentialWasFromAndroidApp",
                             true, 1);
+
+  auto entries = test_recorder().GetEntriesByName(UkmBuilder::kEntryName);
+  ASSERT_EQ(1u, entries.size());
+  test_recorder().ExpectEntryMetric(
+      entries[0], UkmBuilder::kUserActionName,
+      static_cast<int64_t>(
+          TouchToFillController::UserAction::kSelectedCredential));
 }
 
 TEST_F(TouchToFillControllerTest, Dismiss) {
@@ -139,4 +164,10 @@ TEST_F(TouchToFillControllerTest, Dismiss) {
 
   EXPECT_CALL(driver(), TouchToFillClosed(ShowVirtualKeyboard(true)));
   touch_to_fill_controller().OnDismiss();
+
+  auto entries = test_recorder().GetEntriesByName(UkmBuilder::kEntryName);
+  ASSERT_EQ(1u, entries.size());
+  test_recorder().ExpectEntryMetric(
+      entries[0], UkmBuilder::kUserActionName,
+      static_cast<int64_t>(TouchToFillController::UserAction::kDismissed));
 }

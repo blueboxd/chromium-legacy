@@ -4,7 +4,13 @@
 
 #include "chrome/browser/ui/webui/print_preview/pdf_printer_handler.h"
 
+#include "base/json/json_reader.h"
+#include "base/optional.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/test/base/browser_with_test_window_test.h"
+#include "chrome/test/base/scoped_browser_locale.h"
 #include "components/url_formatter/url_formatter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -13,7 +19,128 @@
 
 namespace printing {
 
+namespace {
+
+const char kPdfDeviceName[] = "Save as PDF";
+
+const char kPdfPrinterCapability[] =
+    R"({
+        "capabilities":{
+          "printer":{
+            "color":{
+              "option":[
+                {
+                  "is_default":true,
+                  "type":"STANDARD_COLOR",
+                  "vendor_id":"2"
+                }
+              ]
+            },
+            "media_size":{
+              "option":[
+                {
+                  "height_microns":1189000,
+                  "name":"ISO_A0",
+                  "width_microns":841000
+                },
+                {
+                  "height_microns":841000,
+                  "name":"ISO_A1",
+                  "width_microns":594000
+                },
+                {
+                  "height_microns":594000,
+                  "name":"ISO_A2",
+                  "width_microns":420000
+                },
+                {
+                  "height_microns":420000,
+                  "name":"ISO_A3",
+                  "width_microns":297000
+                },
+                {
+                  "height_microns":297000,
+                  "name":"ISO_A4",
+                  "width_microns":210000
+                },
+                {
+                  "height_microns":210000,
+                  "name":"ISO_A5",
+                  "width_microns":148000
+                },
+                {
+                  "height_microns":355600,
+                  "name":"NA_LEGAL",
+                  "width_microns":215900
+                },
+                {
+                  "height_microns":279400,
+                  "is_default":true,
+                  "name":"NA_LETTER",
+                  "width_microns":215900
+                },
+                {
+                  "height_microns":431800,
+                  "name":"NA_LEDGER",
+                  "width_microns":279400
+                }
+              ]
+            },
+            "page_orientation":{
+              "option":[
+                {
+                  "type":"PORTRAIT"
+                },
+                {
+                  "type":"LANDSCAPE"
+                },
+                {
+                  "is_default":true,
+                  "type":"AUTO"
+                }
+              ]
+            }
+          },
+          "version":"1.0"
+        },
+        "deviceName":"Save as PDF"
+      })";
+
+// Used as a callback to StartGetCapability() in tests.
+// Records values returned by StartGetCapability().
+void RecordCapability(base::OnceClosure done_closure,
+                      base::Value* capability_out,
+                      base::Value capability) {
+  *capability_out = std::move(capability);
+  std::move(done_closure).Run();
+}
+
+}  // namespace
+
 using PdfPrinterHandlerTest = testing::Test;
+
+class PdfPrinterHandlerGetCapabilityTest : public BrowserWithTestWindowTest {
+ public:
+  PdfPrinterHandlerGetCapabilityTest() = default;
+  ~PdfPrinterHandlerGetCapabilityTest() override = default;
+
+  void SetUp() override {
+    BrowserWithTestWindowTest::SetUp();
+
+    // Create the PDF printer handler
+    pdf_printer_handler_ = std::make_unique<PdfPrinterHandler>(
+        profile(), browser()->tab_strip_model()->GetActiveWebContents(),
+        /*sticky_settings=*/nullptr);
+  }
+
+ protected:
+  PdfPrinterHandler* GetPdfPrinterHandler() const {
+    return pdf_printer_handler_.get();
+  }
+
+ private:
+  std::unique_ptr<PdfPrinterHandler> pdf_printer_handler_;
+};
 
 TEST_F(PdfPrinterHandlerTest, GetFileNameForPrintJobTitle) {
   static const struct {
@@ -103,6 +230,24 @@ TEST_F(PdfPrinterHandlerTest, GetFileName) {
         PdfPrinterHandler::GetFileName(url, job_title, data.is_savable);
     EXPECT_EQ(data.expected_output, path.value());
   }
+}
+
+TEST_F(PdfPrinterHandlerGetCapabilityTest, GetCapability) {
+  base::Optional<base::Value> expected_capability =
+      base::JSONReader::Read(kPdfPrinterCapability);
+  ASSERT_TRUE(expected_capability.has_value());
+
+  // Set the locale to ensure NA_LETTER is the default paper size.
+  ScopedBrowserLocale scoped_browser_locale("en-US");
+
+  base::RunLoop run_loop;
+  base::Value capability;
+  GetPdfPrinterHandler()->StartGetCapability(
+      kPdfDeviceName,
+      base::BindOnce(&RecordCapability, run_loop.QuitClosure(), &capability));
+  run_loop.Run();
+
+  EXPECT_EQ(expected_capability.value(), capability);
 }
 
 }  // namespace printing

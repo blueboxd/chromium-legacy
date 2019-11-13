@@ -125,8 +125,8 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
 
         mIsNTPVisible = isNTPVisible;
         String accountName = ChromeSigninController.get().getSignedInAccountName();
-        boolean shouldShowIdentityDisc =
-                isNTPVisible && accountName != null && mProfileSyncService.canSyncFeatureStart();
+        boolean shouldShowIdentityDisc = isNTPVisible && accountName != null
+                && ProfileSyncService.get().canSyncFeatureStart();
         @IdentityDiscState
         int oldState = mState;
 
@@ -225,18 +225,18 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
     @Override
     public void onSignedIn() {
         resetIdentityDisc();
-        updateButtonState(mIsNTPVisible);
+        updateButtonState();
     }
 
     @Override
     public void onSignedOut() {
-        updateButtonState(mIsNTPVisible);
+        updateButtonState();
     }
 
     // ProfileSyncService.SyncStateChangedListener implementation.
     @Override
     public void syncStateChanged() {
-        updateButtonState(mIsNTPVisible);
+        updateButtonState();
     }
 
     /**

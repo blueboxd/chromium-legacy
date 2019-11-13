@@ -267,18 +267,17 @@ void RenderWidgetHostViewMac::MigrateNSViewBridge(
   mojo::PendingAssociatedReceiver<remote_cocoa::mojom::RenderWidgetHostNSView>
       view_receiver = remote_ns_view_.BindNewEndpointAndPassReceiver();
 
-  // Cast from mojom::RenderWidgetHostNSViewHostPtr and
+  // Cast from PendingAssociatedRemote<mojom::RenderWidgetHostNSViewHost> and
   // mojo::PendingAssociatedReceiver<mojom::RenderWidgetHostNSView> to the
   // public interfaces accepted by the application.
   // TODO(ccameron): Remove the need for this cast.
   // https://crbug.com/888290
-  mojo::AssociatedInterfacePtrInfo<remote_cocoa::mojom::StubInterface>
-      stub_client(client.PassHandle(), 0);
-  remote_cocoa::mojom::StubInterfaceAssociatedRequest stub_bridge_request(
-      view_receiver.PassHandle());
-
+  mojo::PendingAssociatedRemote<remote_cocoa::mojom::StubInterface> stub_client(
+      client.PassHandle(), 0);
+  mojo::PendingAssociatedReceiver<remote_cocoa::mojom::StubInterface>
+      stub_bridge_receiver(view_receiver.PassHandle());
   remote_cocoa_application->CreateRenderWidgetHostNSView(
-      std::move(stub_client), std::move(stub_bridge_request));
+      std::move(stub_client), std::move(stub_bridge_receiver));
 
   ns_view_ = remote_ns_view_.get();
   remote_ns_view_->SetParentWebContentsNSView(parent_ns_view_id);

@@ -1369,7 +1369,8 @@ const FeatureEntry::FeatureVariation kQuietNotificationPromptsVariations[] = {
 // cache is implemented.
 const FeatureEntry::FeatureParam kBackForwardCache_ExtendedSupport[] = {
     {"service_worker_supported", "true"},
-    {"geolocation_supported", "true"}};
+    {"geolocation_supported", "true"},
+    {"should_ignore_blocklists", "true"}};
 
 const FeatureEntry::FeatureVariation kBackForwardCacheVariations[] = {
     {"experimental extended supported feature set",
@@ -3508,6 +3509,9 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kEnableAccessibilityObjectModel)},
 
 #if defined(OS_ANDROID)
+    {"cct-incognito", flag_descriptions::kCCTIncognitoName,
+     flag_descriptions::kCCTIncognitoDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kCCTIncognito)},
     {"cct-module", flag_descriptions::kCCTModuleName,
      flag_descriptions::kCCTModuleDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kCCTModule)},

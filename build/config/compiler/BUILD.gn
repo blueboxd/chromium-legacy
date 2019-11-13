@@ -1547,6 +1547,9 @@ config("default_warnings") {
 
             # TODO(https://crbug.com/1016945) Clean up, enable.
             "-Wno-builtin-assume-aligned-alignment",
+
+            # TODO(https://crbug.com/1024203) Clean up, enable.
+            "-Wno-tautological-bitwise-compare",
           ]
         }
       }

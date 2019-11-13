@@ -17,6 +17,8 @@
 #include "components/autofill/core/browser/autofill_download_manager.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/password_manager/core/browser/field_info_manager.h"
+#include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/vote_uploads_test_matchers.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -48,6 +50,12 @@ using testing::SaveArg;
 namespace password_manager {
 namespace {
 
+MATCHER_P3(FieldInfoHasData, form_signature, field_signature, field_type, "") {
+  return arg.form_signature == form_signature &&
+         arg.field_signature == field_signature &&
+         arg.field_type == field_type && arg.create_time != base::Time();
+}
+
 constexpr int kNumberOfPasswordAttributes =
     static_cast<int>(PasswordAttribute::kPasswordAttributesCount);
 
@@ -78,6 +86,7 @@ class MockAutofillDownloadManager : public AutofillDownloadManager {
 class MockPasswordManagerClient : public StubPasswordManagerClient {
  public:
   MOCK_METHOD0(GetAutofillDownloadManager, AutofillDownloadManager*());
+  MOCK_CONST_METHOD0(GetFieldInfoManager, FieldInfoManager*());
 };
 
 }  // namespace
@@ -416,6 +425,40 @@ TEST_F(VotesUploaderTest, UploadSingleUsername) {
 
     votes_uploader.MaybeSendSingleUsernameVote(credentials_saved);
   }
+}
+
+TEST_F(VotesUploaderTest, SaveSingleUsernameVote) {
+  VotesUploader votes_uploader(&client_, false);
+  constexpr uint32_t kUsernameRendererId = 101;
+  constexpr uint32_t kUsernameFieldSignature = 1234;
+  constexpr uint64_t kFormSignature = 1000;
+
+  FormPredictions form_predictions;
+  form_predictions.form_signature = kFormSignature;
+
+  // Add the username field.
+  form_predictions.fields.emplace_back();
+  form_predictions.fields.back().renderer_id = kUsernameRendererId;
+  form_predictions.fields.back().signature = kUsernameFieldSignature;
+
+  votes_uploader.set_single_username_vote_data(kUsernameRendererId,
+                                               form_predictions);
+
+  // Init store and expect that adding field info is called.
+  scoped_refptr<MockPasswordStore> store = new MockPasswordStore;
+  store->Init(syncer::SyncableService::StartSyncFlare(), /*prefs=*/nullptr);
+  EXPECT_CALL(*store,
+              AddFieldInfoImpl(FieldInfoHasData(
+                  kFormSignature, kUsernameFieldSignature, SINGLE_USERNAME)));
+
+  // Init FieldInfoManager.
+  FieldInfoManager field_info_manager(store);
+  EXPECT_CALL(client_, GetFieldInfoManager())
+      .WillOnce(Return(&field_info_manager));
+
+  votes_uploader.MaybeSendSingleUsernameVote(true /*  credentials_saved */);
+  task_environment_.RunUntilIdle();
+  store->ShutdownOnUIThread();
 }
 
 }  // namespace password_manager

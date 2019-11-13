@@ -291,6 +291,7 @@ IPC_STRUCT_TRAITS_BEGIN(blink::FramePolicy)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(blink::ViewportIntersectionState)
+  IPC_STRUCT_TRAITS_MEMBER(viewport_offset)
   IPC_STRUCT_TRAITS_MEMBER(viewport_intersection)
   IPC_STRUCT_TRAITS_MEMBER(compositor_visible_rect)
   IPC_STRUCT_TRAITS_MEMBER(occlusion_state)

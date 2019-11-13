@@ -533,6 +533,11 @@ using ViewSourceWithSplitCacheEnabledTest = ViewSourceWithSplitCacheTest;
 // of the network isolation key is a.com (reused).
 IN_PROC_BROWSER_TEST_P(ViewSourceWithSplitCacheEnabledTest,
                        NetworkIsolationKeyReusedForBackNavigation) {
+  if (!GetParam()) {
+    // Flaky in /0 variant: https://crbug.com/1024033.
+    return;
+  }
+
   content::SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
 

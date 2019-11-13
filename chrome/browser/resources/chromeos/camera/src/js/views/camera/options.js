@@ -149,8 +149,8 @@ cca.views.camera.Options.prototype.switchDevice_ = async function() {
   const devices = await this.infoUpdater_.getDevicesInfo();
   cca.util.animateOnce(document.querySelector('#switch-device'));
   var index =
-      devices.findIndex((entry) => entry.deviceId == this.videoDeviceId_);
-  if (index == -1) {
+      devices.findIndex((entry) => entry.deviceId === this.videoDeviceId_);
+  if (index === -1) {
     index = 0;
   }
   if (devices.length > 0) {
@@ -203,7 +203,7 @@ cca.views.camera.Options.prototype.updateValues = async function(stream) {
 cca.views.camera.Options.prototype.updateMirroring_ = function(facingMode) {
   // Update mirroring by detected facing-mode. Enable mirroring by default if
   // facing-mode isn't available.
-  var enabled = facingMode ? facingMode != 'environment' : true;
+  var enabled = facingMode ? facingMode !== 'environment' : true;
 
   // Override mirroring only if mirroring was toggled manually.
   if (this.videoDeviceId_ in this.mirroringToggles_) {
@@ -261,7 +261,7 @@ cca.views.camera.Options.prototype.videoDeviceIds = async function() {
       cros.mojom.CameraFacing.CAMERA_FACING_FRONT;
   // Put the selected video device id first.
   var sorted = devices.map((device) => device.deviceId).sort((a, b) => {
-    if (a == b) {
+    if (a === b) {
       return 0;
     }
     if (this.videoDeviceId_ ? a === this.videoDeviceId_ :

@@ -20,7 +20,5 @@ void TestNewWindowDelegate::RestoreTab() {}
 void TestNewWindowDelegate::ShowKeyboardShortcutViewer() {}
 void TestNewWindowDelegate::ShowTaskManager() {}
 void TestNewWindowDelegate::OpenFeedbackPage(bool from_assistant) {}
-void TestNewWindowDelegate::LaunchCameraApp(const std::string& queries) {}
-void TestNewWindowDelegate::CloseCameraApp() {}
 
 }  // namespace ash

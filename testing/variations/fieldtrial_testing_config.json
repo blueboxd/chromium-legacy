@@ -571,21 +571,6 @@
             ]
         }
     ],
-    "AppListAppRanker": [
-        {
-            "platforms": [
-                "chromeos"
-            ],
-            "experiments": [
-                {
-                    "name": "AppListAppRanker",
-                    "enable_features": [
-                        "EnableAppRanker"
-                    ]
-                }
-            ]
-        }
-    ],
     "AppListLaunchRecorder": [
         {
             "platforms": [
@@ -6514,6 +6499,21 @@
                     },
                     "enable_features": [
                         "ThrottleDelayable"
+                    ]
+                }
+            ]
+        }
+    ],
+    "TopCat": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "TopCat1_20190902",
+                    "enable_features": [
+                        "EnableAppRanker"
                     ]
                 }
             ]

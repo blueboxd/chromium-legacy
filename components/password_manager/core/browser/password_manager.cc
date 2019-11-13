@@ -173,6 +173,8 @@ void PasswordManager::RegisterProfilePrefs(
   registry->RegisterIntegerPref(
       prefs::kPasswordManagerOnboardingState,
       static_cast<int>(metrics_util::OnboardingState::kDoNotShow));
+  registry->RegisterBooleanPref(prefs::kWasOnboardingFeatureCheckedBefore,
+                                false);
 
 #if defined(OS_MACOSX)
   registry->RegisterIntegerPref(prefs::kKeychainMigrationStatus,

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 33
+// Next MinVersion: 34
 
 module arc.mojom;
 
@@ -151,6 +151,14 @@ enum ChromePage {
   LAST = ABOUTHISTORY,
 };
 
+// Describes an unique chrome app.
+[Extensible]
+enum ChromeApp {
+  CAMERA,
+
+  LAST = CAMERA,
+};
+
 // Describes an action given by the android text selection delegate (e.g. open
 // maps).
 struct TextSelectionAction {
@@ -184,7 +192,7 @@ interface CustomTabSession {
 
 // Handles intents from ARC in Chrome.
 // Deprecated method ID: 4
-// Next method ID: 15
+// Next method ID: 16
 interface IntentHelperHost {
   // Called when icons associated with the package are no longer up to date.
   [MinVersion=3] OnIconInvalidated@1(string package_name);
@@ -257,6 +265,9 @@ interface IntentHelperHost {
 
   // Closes Chrome camera app.
   [MinVersion=31] CloseCameraApp@14();
+
+  // Checks if given chrome app is enabled.
+  [MinVersion=33] IsChromeAppEnabled@15(ChromeApp app) => (bool is_enabled);
 };
 
 // Sends intents to ARC on behalf of Chrome.

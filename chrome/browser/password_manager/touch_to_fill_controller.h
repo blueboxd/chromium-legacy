@@ -12,9 +12,11 @@
 #include "base/containers/span.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/util/type_safety/pass_key.h"
 #include "chrome/browser/touch_to_fill/touch_to_fill_view.h"
 #include "chrome/browser/touch_to_fill/touch_to_fill_view_factory.h"
 #include "components/favicon_base/favicon_types.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
 
@@ -31,6 +33,23 @@ class ChromePasswordManagerClient;
 
 class TouchToFillController {
  public:
+  // The action a user took when interacting with the Touch To Fill sheet.
+  //
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused. Needs to stay in sync with
+  // TouchToFill.UserAction in enums.xml and UserAction in
+  // TouchToFillComponent.java.
+  //
+  // TODO(crbug.com/1013134): De-duplicate the Java and C++ enum.
+  enum class UserAction {
+    kSelectedCredential = 0,
+    kDismissed = 1,
+    kSelectedManagePasswords = 2,
+  };
+
+  // No-op constructor for tests.
+  explicit TouchToFillController(
+      util::PassKey<class TouchToFillControllerTest>);
   TouchToFillController(ChromePasswordManagerClient* web_contents,
                         favicon::FaviconService* favicon_service);
   TouchToFillController(const TouchToFillController&) = delete;
@@ -80,6 +99,8 @@ class TouchToFillController {
 
   // The favicon service used to retrieve icons for a given origin.
   favicon::FaviconService* favicon_service_ = nullptr;
+
+  ukm::SourceId source_id_ = ukm::kInvalidSourceId;
 
   // Used to track requested favicons. On destruction, requests are cancelled.
   base::CancelableTaskTracker favicon_tracker_;

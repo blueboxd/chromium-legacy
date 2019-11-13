@@ -151,12 +151,12 @@
       }
     </style>
     <dialog id="dialog" on-close="onNativeDialogClose_"
-        on-cancel="onNativeDialogCancel_" part="dialog">
+        on-cancel="onNativeDialogCancel_" part="dialog" aria-labelledby="title">
       <!-- This wrapper is necessary, such that the "pulse" animation is not
         erroneously played when the user clicks on the outer-most scrollbar. -->
       <div id="content-wrapper" part="wrapper">
         <div class="top-container">
-          <div class="title-container" tabindex="-1">
+          <div id="title" class="title-container" tabindex="-1">
             <slot name="title"></slot>
           </div>
           <cr-icon-button id="close" class="icon-clear"

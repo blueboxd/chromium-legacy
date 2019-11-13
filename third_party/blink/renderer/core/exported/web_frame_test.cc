@@ -12965,6 +12965,61 @@ TEST_F(WebFrameTest, MediaQueriesInLocalFrameInsideRemote) {
   helper.Reset();
 }
 
+TEST_F(WebFrameTest, RemoteViewportIntersection) {
+  frame_test_helpers::WebViewHelper helper;
+  helper.InitializeRemote();
+  WebLocalFrameImpl* local_frame = frame_test_helpers::CreateLocalChild(
+      *helper.RemoteMainFrame(), "frameName");
+  frame_test_helpers::LoadHTMLString(local_frame, R"HTML(
+      <!DOCTYPE html>
+      <style>
+      #target {
+        position: absolute;
+        top: 10px;
+        left: 20px;
+        width: 200px;
+        height: 100px;
+      }
+      </style>
+      <div id=target></div>
+      )HTML",
+                                     ToKURL("about:blank"));
+
+  Element* target =
+      local_frame->GetFrame()->GetDocument()->getElementById("target");
+  ASSERT_TRUE(target);
+  ASSERT_TRUE(target->GetLayoutObject());
+
+  // Simulate the local child frame being positioned at (7, -11) in the parent's
+  // viewport, indicating that the top 11px of the child's content is clipped
+  // by the parent.
+  WebFrameWidget* widget = local_frame->FrameWidget();
+  ASSERT_TRUE(widget);
+  WebPoint viewport_offset(7, -11);
+  WebRect viewport_intersection(0, 11, 200, 89);
+  FrameOcclusionState occlusion_state = FrameOcclusionState::kUnknown;
+  widget->SetRemoteViewportIntersection({viewport_offset, viewport_intersection,
+                                         viewport_intersection,
+                                         occlusion_state});
+
+  // The viewport intersection should be applied by the layout geometry mapping
+  // code when these flags are used.
+  int flags = kTraverseDocumentBoundaries | kApplyRemoteRootFrameOffset;
+
+  // Expectation is: (target location) + (viewport offset) = (20, 10) + (7, -11)
+  PhysicalOffset offset =
+      target->GetLayoutObject()->LocalToAbsolutePoint(PhysicalOffset(), flags);
+  EXPECT_EQ(PhysicalOffset(27, -1), offset);
+
+  PhysicalRect rect(0, 0, 25, 35);
+  local_frame->GetFrame()
+      ->GetDocument()
+      ->GetLayoutView()
+      ->MapToVisualRectInAncestorSpace(nullptr, rect, flags,
+                                       kDefaultVisualRectFlags);
+  EXPECT_EQ(PhysicalRect(7, 0, 25, 24), rect);
+}
+
 class ExternallyHandledPluginDocumentTest
     : public WebFrameTest,
       public testing::WithParamInterface<

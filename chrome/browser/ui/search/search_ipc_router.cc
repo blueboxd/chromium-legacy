@@ -17,6 +17,8 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
 namespace {
@@ -43,7 +45,8 @@ class EmbeddedSearchClientFactoryImpl
     DCHECK(web_contents);
     DCHECK(binding);
     // Before we are connected to a frame we throw away all messages.
-    mojo::MakeRequestAssociatedWithDedicatedPipe(&embedded_search_client_);
+    ignore_result(embedded_search_client_
+                      .BindNewEndpointAndPassDedicatedReceiverForTesting());
   }
 
   chrome::mojom::EmbeddedSearchClient* GetEmbeddedSearchClient() override {
@@ -53,12 +56,14 @@ class EmbeddedSearchClientFactoryImpl
  private:
   void Connect(
       chrome::mojom::EmbeddedSearchAssociatedRequest request,
-      chrome::mojom::EmbeddedSearchClientAssociatedPtrInfo client) override;
+      mojo::PendingAssociatedRemote<chrome::mojom::EmbeddedSearchClient> client)
+      override;
 
   // An interface used to push updates to the frame that connected to us. Before
   // we've been connected to a frame, messages sent on this interface go into
   // the void.
-  chrome::mojom::EmbeddedSearchClientAssociatedPtr embedded_search_client_;
+  mojo::AssociatedRemote<chrome::mojom::EmbeddedSearchClient>
+      embedded_search_client_;
 
   // Used to bind incoming interface requests to the implementation, which lives
   // in SearchIPCRouter.
@@ -73,13 +78,14 @@ class EmbeddedSearchClientFactoryImpl
 
 void EmbeddedSearchClientFactoryImpl::Connect(
     chrome::mojom::EmbeddedSearchAssociatedRequest request,
-    chrome::mojom::EmbeddedSearchClientAssociatedPtrInfo client) {
+    mojo::PendingAssociatedRemote<chrome::mojom::EmbeddedSearchClient> client) {
   content::RenderFrameHost* frame = factory_bindings_.GetCurrentTargetFrame();
   const bool is_main_frame = frame->GetParent() == nullptr;
   if (!IsInInstantProcess(frame) || !is_main_frame) {
     return;
   }
   client_binding_->Bind(std::move(request));
+  embedded_search_client_.reset();
   embedded_search_client_.Bind(std::move(client));
 }
 

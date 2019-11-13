@@ -143,6 +143,22 @@ base::OneShotTimer* VersionUpdater::GetRebootTimerForTesting() {
   return &reboot_timer_;
 }
 
+void VersionUpdater::GetEolInfo(EolInfoCallback callback) {
+  UpdateEngineClient* update_engine_client =
+      DBusThreadManager::Get()->GetUpdateEngineClient();
+  // Request the End of Life (Auto Update Expiration) status. Bind to a weak_ptr
+  // bound method rather than passing |callback| directly so that |callback|
+  // does not outlive |this|.
+  update_engine_client->GetEolInfo(
+      base::BindOnce(&VersionUpdater::OnGetEolInfo,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void VersionUpdater::OnGetEolInfo(EolInfoCallback callback,
+                                  UpdateEngineClient::EolInfo info) {
+  std::move(callback).Run(std::move(info));
+}
+
 void VersionUpdater::UpdateStatusChangedForTesting(
     const update_engine::StatusResult& status) {
   UpdateStatusChanged(status);

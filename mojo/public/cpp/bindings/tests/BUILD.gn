@@ -10,6 +10,7 @@ source_set("tests") {
   sources = [
     "associated_interface_unittest.cc",
     "bind_task_runner_unittest.cc",
+    "binder_map_unittest.cc",
     "bindings_test_base.cc",
     "bindings_test_base.h",
     "buffer_unittest.cc",
@@ -137,6 +138,7 @@ source_set("struct_with_traits_impl") {
 mojom("test_mojom") {
   testonly = true
   sources = [
+    "binder_map_unittest.test-mojom",
     "connection_group_unittest.test-mojom",
     "enum_headers_unittest.test-mojom",
     "idle_tracking_unittest.test-mojom",

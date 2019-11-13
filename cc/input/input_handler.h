@@ -198,6 +198,8 @@ class CC_EXPORT InputHandler {
 
   virtual InputHandlerPointerResult MouseMoveAt(
       const gfx::Point& mouse_position) = 0;
+  // TODO(arakeri): Pass in the modifier instead of a bool once the refactor
+  // (crbug.com/1022097) is done. For details, see crbug.com/1016955.
   virtual InputHandlerPointerResult MouseDown(const gfx::PointF& mouse_position,
                                               bool shift_modifier) = 0;
   virtual InputHandlerPointerResult MouseUp(

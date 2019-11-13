@@ -18,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "base/threading/thread_restrictions.h"
 #include "components/sync/base/cancelation_signal.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -199,7 +200,10 @@ bool HttpBridge::MakeSynchronousPost(int* net_error_code,
 
   // Block until network request completes or is aborted. See
   // OnURLFetchComplete and Abort.
-  http_post_completed_.Wait();
+  {
+    base::ScopedAllowBaseSyncPrimitives allow_wait;
+    http_post_completed_.Wait();
+  }
 
   base::AutoLock lock(fetch_state_lock_);
   DCHECK(fetch_state_.request_completed || fetch_state_.aborted);

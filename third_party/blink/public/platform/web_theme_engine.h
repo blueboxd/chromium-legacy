@@ -117,6 +117,7 @@ class WebThemeEngine {
     bool indeterminate;  // Whether the button state is indeterminate.
     bool has_border;
     SkColor background_color;
+    float zoom;
   };
 
   // Extra parameters for PartTextField
@@ -144,6 +145,7 @@ class WebThemeEngine {
     bool in_drag;
     int thumb_x;
     int thumb_y;
+    float zoom;
   };
 
   // Extra parameters for PartInnerSpinButton

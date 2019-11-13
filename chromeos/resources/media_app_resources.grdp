@@ -15,38 +15,4 @@
   <include name="IDR_MEDIA_APP_APP_HTML"
       file="../components/media_app_ui/resources/app.html"
       type="BINDATA" />
-  <if expr="enable_cros_media_app">
-    <then>
-      <include name="IDR_MEDIA_APP_APP_JS"
-          file="../components/media_app_ui/resources/app/app/js/app_main.js"
-          type="BINDATA" />
-      <include name="IDR_MEDIA_APP_IMAGE_HANDLER_MODULE_JS"
-          file="../components/media_app_ui/resources/app/app/js/app_image_handler_module.js"
-          type="BINDATA" />
-      <include name="IDR_MEDIA_APP_DROP_TARGET_MODULE_JS"
-          file="../components/media_app_ui/resources/app/app/js/app_drop_target_module.js"
-          type="BINDATA" />
-
-      <!-- Note the icon is fetched from the privileged origin. -->
-      <include name="IDR_MEDIA_APP_ICON_256"
-            file="../components/media_app_ui/resources/app/app/assets/app_icon_256.png"
-            type="BINDATA" />
-    </then>
-    <else>
-      <include name="IDR_MEDIA_APP_APP_JS"
-          file="../components/media_app_ui/resources/mock/js/app_main.js"
-          type="BINDATA" />
-      <include name="IDR_MEDIA_APP_IMAGE_HANDLER_MODULE_JS"
-          file="../components/media_app_ui/resources/mock/js/mock_module.js"
-          type="BINDATA" />
-      <include name="IDR_MEDIA_APP_DROP_TARGET_MODULE_JS"
-          file="../components/media_app_ui/resources/mock/js/mock_module.js"
-          type="BINDATA" />
-
-      <!-- Use a placeholder icon when enable_cros_media_app = false. -->
-      <include name="IDR_MEDIA_APP_ICON_256"
-            file="../../ui/file_manager/gallery/images/icon256.png"
-            type="BINDATA" />
-    </else>
-  </if>
 </grit-part>

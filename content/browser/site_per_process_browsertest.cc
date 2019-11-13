@@ -601,6 +601,13 @@ class UpdateViewportIntersectionMessageFilter
     return intersection_state_;
   }
 
+  bool MessageReceived() const { return msg_received_; }
+
+  void Clear() {
+    msg_received_ = false;
+    intersection_state_ = blink::ViewportIntersectionState();
+  }
+
   void Wait() {
     DCHECK(!run_loop_);
     if (msg_received_) {
@@ -11814,9 +11821,9 @@ class CommitMessageOrderReverser : public DidCommitNavigationInterceptor {
 
 // Create an out-of-process iframe that causes itself to be detached during
 // its layout/animate phase. See https://crbug.com/802932.
-// Disabled on Android due to flakiness, https://crbug.com/809580.
-// Disabled on Mac due to flakiness, https://crbug.com/1006122.
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
+//
+// TODO(809580): Disabled on Android, Mac, and ChromeOS due to flakiness.
+#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 #define MAYBE_OOPIFDetachDuringAnimation DISABLED_OOPIFDetachDuringAnimation
 #else
 #define MAYBE_OOPIFDetachDuringAnimation OOPIFDetachDuringAnimation
@@ -12170,6 +12177,76 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       break;
     }
   }
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       FrameViewportOffsetTestSimple) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(c))"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // This will catch b sending viewport intersection information to c.
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  scoped_refptr<UpdateViewportIntersectionMessageFilter> filter =
+      new UpdateViewportIntersectionMessageFilter();
+  root->child_at(0)->current_frame_host()->GetProcess()->AddFilter(
+      filter.get());
+
+  // Force animation frames in `a` and `b` to ensure that viewport intersection
+  // for initial layout state has been propagated. The rAF+setTimeout construct
+  // guarantees that the IPC's have been sent before EvalJs returns. The layout
+  // of `a` will not change again, so we can read back layout info now. The
+  // layout of `b` will change, so we don't read back the layout yet.
+  std::string script(R"(
+    new Promise((resolve, reject) => {
+      requestAnimationFrame(() => { setTimeout(() => {
+        let iframe = document.querySelector("iframe");
+        resolve([iframe.offsetLeft, iframe.offsetTop]);
+      }) })
+    });
+  )");
+  EvalJsResult iframe_b_result = EvalJs(root->current_frame_host(), script);
+  base::ListValue iframe_b_offset = iframe_b_result.ExtractList();
+  int iframe_b_offset_left = iframe_b_offset.GetList()[0].GetInt();
+  int iframe_b_offset_top = iframe_b_offset.GetList()[1].GetInt();
+
+  ASSERT_TRUE(ExecJs(root->child_at(0)->current_frame_host(), script));
+
+  // Make sure a new IPC is sent after dirty-ing layout.
+  filter->Clear();
+
+  // Dirty layout in `b` to generate a new IPC to `c`. This will be the final
+  // layout state for `b`, so read back layout info here.
+  script = R"(
+    let iframe = document.querySelector("iframe");
+    let margin = getComputedStyle(iframe).marginTop.replace("px", "");
+    iframe.style.margin = String(parseInt(margin) + 1) + "px";
+    new Promise((resolve, reject) => {
+      requestAnimationFrame(() => { setTimeout(() => {
+        resolve([iframe.offsetLeft, iframe.offsetTop]);
+      }) })
+    });
+  )";
+  EvalJsResult iframe_c_result =
+      EvalJs(root->child_at(0)->current_frame_host(), script);
+  base::ListValue iframe_c_offset = iframe_c_result.ExtractList();
+  int iframe_c_offset_left = iframe_c_offset.GetList()[0].GetInt();
+  int iframe_c_offset_top = iframe_c_offset.GetList()[1].GetInt();
+
+  // The IPC should already have been sent
+  EXPECT_TRUE(filter->MessageReceived());
+
+  // +4 for a 2px border on each iframe.
+  gfx::PointF expected(iframe_b_offset_left + iframe_c_offset_left + 4,
+                       iframe_b_offset_top + iframe_c_offset_top + 4);
+  ScreenInfo screen_info;
+  root->render_manager()->GetRenderWidgetHostView()->GetScreenInfo(
+      &screen_info);
+  // Convert from CSS to physical pixels
+  expected.Scale(screen_info.device_scale_factor);
+  blink::WebPoint actual = filter->GetIntersectionState().viewport_offset;
+  EXPECT_NEAR(expected.x(), actual.x, 2.0);
+  EXPECT_NEAR(expected.y(), actual.y, 2.0);
 }
 
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,

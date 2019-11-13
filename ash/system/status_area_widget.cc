@@ -5,6 +5,8 @@
 #include "ash/system/status_area_widget.h"
 
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
+#include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -18,7 +20,10 @@
 #include "ash/system/tray/status_area_overflow_button_tray.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/virtual_keyboard/virtual_keyboard_tray.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/display/display.h"
 #include "ui/native_theme/native_theme_dark_aura.h"
 
@@ -143,6 +148,36 @@ void StatusAreaWidget::SetSystemTrayVisibility(bool visible) {
     tray->CloseBubble();
     Hide();
   }
+}
+
+void StatusAreaWidget::UpdateCollapseState() {
+  // The status area is only collapsible in tablet mode. Otherwise, we just show
+  // all trays.
+  if (!Shell::Get()->tablet_mode_controller())
+    return;
+
+  bool is_collapsible =
+      chromeos::switches::ShouldShowShelfHotseat() &&
+      Shell::Get()->tablet_mode_controller()->InTabletMode() &&
+      ShelfConfig::Get()->is_in_app();
+
+  bool force_collapsible = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAshForceStatusAreaCollapsible);
+
+  is_collapsible |= force_collapsible;
+
+  // If the status area is already collapsed/expanded, we should not update the
+  // state again.
+  if (is_collapsible && collapse_state_ == CollapseState::NOT_COLLAPSIBLE)
+    collapse_state_ = CollapseState::COLLAPSED;
+  else if (!is_collapsible)
+    collapse_state_ = CollapseState::NOT_COLLAPSIBLE;
+
+  // TODO(tengs): Right now we simply show the overflow button in the collpase
+  // state. The full calculation of which trays overflow will be done in a
+  // future CL.
+  overflow_button_tray_->SetVisiblePreferred(
+      force_collapsible && collapse_state_ != CollapseState::NOT_COLLAPSIBLE);
 }
 
 TrayBackgroundView* StatusAreaWidget::GetSystemTrayAnchor() const {

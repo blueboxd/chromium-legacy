@@ -27,6 +27,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
+#include "chrome/browser/reputation/reputation_web_contents_observer.h"
 #include "chrome/browser/reputation/safety_tip_test_utils.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
@@ -2297,12 +2298,20 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, SafetyTipFormHistogram) {
     std::string replacement_path = GetFilePathWithHostAndPortReplacement(
         "/ssl/page_with_form_targeting_http_url.html", host_port_pair);
     ui_test_utils::NavigateToURL(browser(), server.GetURL(replacement_path));
-    content::TestNavigationObserver navigation_observer(
-        browser()->tab_strip_model()->GetActiveWebContents());
+
+    ReputationWebContentsObserver* rep_observer =
+        ReputationWebContentsObserver::FromWebContents(
+            browser()->tab_strip_model()->GetActiveWebContents());
+    ASSERT_TRUE(rep_observer);
+    base::RunLoop run_loop;
+    rep_observer->RegisterReputationCheckCallbackForTesting(
+        run_loop.QuitClosure());
+
     ASSERT_TRUE(content::ExecuteScript(
         browser()->tab_strip_model()->GetActiveWebContents(),
         "document.getElementById('submit').click();"));
-    navigation_observer.Wait();
+    // Wait for the reputation check to finish.
+    run_loop.Run();
 
     const security_state::SafetyTipInfo safety_tip_info =
         SecurityStateTabHelper::FromWebContents(

@@ -63,6 +63,7 @@
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "gpu/vulkan/buildflags.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/base/ui_base_switches_util.h"
@@ -424,11 +425,10 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   if (compositor->use_external_begin_frame_control()) {
     // We don't bind the controller mojo interface, since we only use the
     // ExternalBeginFrameSourceMojo directly and not via mojo (plus, as it
-    // is an associated interface, binding it would require a separate pipe).
-    viz::mojom::ExternalBeginFrameControllerAssociatedRequest request = nullptr;
+    // is an associated remote, binding it would require a separate pipe).
     external_begin_frame_source_mojo =
         std::make_unique<viz::ExternalBeginFrameSourceMojo>(
-            GetFrameSinkManager(), std::move(request),
+            GetFrameSinkManager(), mojo::NullAssociatedReceiver(),
             viz::BeginFrameSource::kNotRestartableId);
     begin_frame_source = external_begin_frame_source_mojo.get();
   } else if (disable_frame_rate_limit_) {

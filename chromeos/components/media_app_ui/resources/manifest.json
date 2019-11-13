@@ -7,7 +7,7 @@
   "background_color": "#3c4043",
   "icons": [
     {
-      "src": "assets/app_icon_256.png",
+      "src": "system_assets/app_icon_256.png",
       "sizes": "256x256",
       "type": "image/png"
     }

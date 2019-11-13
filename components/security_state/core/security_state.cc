@@ -85,6 +85,10 @@ std::string GetHistogramSuffixForSafetyTipStatus(
       return "SafetyTip_BadReputation";
     case security_state::SafetyTipStatus::kLookalike:
       return "SafetyTip_Lookalike";
+    case security_state::SafetyTipStatus::kBadReputationIgnored:
+      return "SafetyTip_BadReputationIgnored";
+    case security_state::SafetyTipStatus::kLookalikeIgnored:
+      return "SafetyTip_LookalikeIgnored";
     case security_state::SafetyTipStatus::kBadKeyword:
       NOTREACHED();
       return std::string();
@@ -105,8 +109,9 @@ bool ShouldSetSecurityLevelFromSafetyTip(security_state::SafetyTipStatus status,
     case security_state::SafetyTipStatus::kBadReputation:
       *level = security_state::NONE;
       return true;
+    case security_state::SafetyTipStatus::kBadReputationIgnored:
     case security_state::SafetyTipStatus::kLookalike:
-      // PageInfo doesn't differ for lookalikes, so don't degrade the indicator.
+    case security_state::SafetyTipStatus::kLookalikeIgnored:
     case security_state::SafetyTipStatus::kBadKeyword:
       // TODO(crbug/1012982): Decide whether to degrade the indicator once the
       // UI lands.

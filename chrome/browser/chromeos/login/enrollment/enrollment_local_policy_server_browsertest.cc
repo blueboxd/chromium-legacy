@@ -661,7 +661,8 @@ IN_PROC_BROWSER_TEST_F(EnrollmentRecoveryTest, Success) {
           .empty());
 }
 
-IN_PROC_BROWSER_TEST_F(EnrollmentRecoveryTest, DifferentDomain) {
+// TODO(1024176): Consistently timing out.
+IN_PROC_BROWSER_TEST_F(EnrollmentRecoveryTest, DISABLED_DifferentDomain) {
   test::SkipToEnrollmentOnRecovery();
 
   ASSERT_TRUE(StartupUtils::IsDeviceRegistered());

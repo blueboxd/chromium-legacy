@@ -22,6 +22,11 @@ GpuMemoryBufferVideoFrameMapper::GpuMemoryBufferVideoFrameMapper(
 
 scoped_refptr<VideoFrame> GpuMemoryBufferVideoFrameMapper::Map(
     scoped_refptr<const VideoFrame> video_frame) const {
+  if (!video_frame) {
+    LOG(ERROR) << "Video frame is nullptr";
+    return nullptr;
+  }
+
   if (video_frame->storage_type() !=
       VideoFrame::StorageType::STORAGE_GPU_MEMORY_BUFFER) {
     VLOGF(1) << "VideoFrame's storage type is not GPU_MEMORY_BUFFER: "

@@ -33,6 +33,18 @@ static constexpr uint32_t kMinScreenRectStableTimeMs = 500;
 // Communicates information about the position and visibility of a child frame
 // within the viewport of the top-level main frame.
 struct BLINK_PLATFORM_EXPORT ViewportIntersectionState {
+  bool operator==(const ViewportIntersectionState& other) const {
+    return viewport_offset == other.viewport_offset &&
+           viewport_intersection == other.viewport_intersection &&
+           compositor_visible_rect == other.compositor_visible_rect &&
+           occlusion_state == other.occlusion_state;
+  }
+  bool operator!=(const ViewportIntersectionState& other) const {
+    return !(*this == other);
+  }
+
+  // Child frame's offset from the root frame.
+  WebPoint viewport_offset;
   // Portion of the child frame which is within the root frame's scrolling
   // viewport, in the coordinate system of the child frame.
   WebRect viewport_intersection;

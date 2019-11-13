@@ -63,4 +63,8 @@ IN_PROC_BROWSER_TEST_F(DeclarativeNetRequestAPItest, HeaderRemoval) {
   ASSERT_TRUE(RunExtensionTest("header_removal")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(DeclarativeNetRequestAPItest, OnRulesMatchedDebug) {
+  ASSERT_TRUE(RunExtensionTest("on_rules_matched_debug")) << message_;
+}
+
 }  // namespace

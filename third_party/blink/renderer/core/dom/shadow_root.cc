@@ -248,8 +248,6 @@ void ShadowRoot::SetNeedsDistributionRecalc() {
     return;
   needs_distribution_recalc_ = true;
   host().MarkAncestorsWithChildNeedsDistributionRecalc();
-  if (!IsV1())
-    V0().ClearDistribution();
 }
 
 void ShadowRoot::Trace(Visitor* visitor) {

@@ -6,6 +6,7 @@
 
 #include "chromeos/components/media_app_ui/media_app_guest_ui.h"
 #include "chromeos/components/media_app_ui/url_constants.h"
+#include "chromeos/grit/chromeos_media_app_bundle_resources.h"
 #include "chromeos/grit/chromeos_resources.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -17,10 +18,14 @@ namespace {
 content::WebUIDataSource* CreateHostDataSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(kChromeUIMediaAppHost);
+
+  // Add resources from chromeos_resources.pak.
   source->SetDefaultResource(IDR_MEDIA_APP_INDEX_HTML);
   source->AddResourcePath("pwa.html", IDR_MEDIA_APP_PWA_HTML);
   source->AddResourcePath("manifest.json", IDR_MEDIA_APP_MANIFEST);
-  source->AddResourcePath("assets/app_icon_256.png", IDR_MEDIA_APP_ICON_256);
+  // Add resources from chromeos_media_app_bundle.pak.
+  source->AddResourcePath("system_assets/app_icon_256.png",
+                          IDR_MEDIA_APP_APP_ICON_256_PNG);
   return source;
 }
 

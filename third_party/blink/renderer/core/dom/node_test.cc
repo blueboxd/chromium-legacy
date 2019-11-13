@@ -527,4 +527,43 @@ TEST_F(NodeTest, UpdateChildDirtyAfterSlottingDirtyNode) {
   EXPECT_TRUE(span->NeedsStyleRecalc());
 }
 
+TEST_F(NodeTest, ChildDirtyNeedsV0Distribution) {
+  ScopedFlatTreeStyleRecalcForTest scope(true);
+
+  SetBodyContent("<div id=host><span></span> </div>");
+  ShadowRoot* shadow_root = CreateShadowRootForElementWithIDAndSetInnerHTML(
+      GetDocument(), "host", "<content />");
+  UpdateAllLifecyclePhasesForTest();
+
+#if DCHECK_IS_ON()
+  GetDocument().SetAllowDirtyShadowV0Traversal(true);
+#endif
+
+  auto* host = GetDocument().getElementById("host");
+  auto* span = To<Element>(host->firstChild());
+  auto* content = shadow_root->firstChild();
+
+  host->lastChild()->remove();
+
+  EXPECT_FALSE(GetDocument().documentElement()->ChildNeedsStyleRecalc());
+  EXPECT_TRUE(GetDocument().documentElement()->ChildNeedsDistributionRecalc());
+  EXPECT_EQ(content, host->firstChild()->GetStyleRecalcParent());
+  EXPECT_FALSE(content->ChildNeedsStyleRecalc());
+
+  // Make the span style dirty.
+  span->setAttribute("style", "color:green");
+
+  // Check that the flat tree ancestor chain is child-dirty while the
+  // shadow distribution is still dirty.
+  EXPECT_TRUE(GetDocument().documentElement()->ChildNeedsStyleRecalc());
+  EXPECT_TRUE(GetDocument().body()->ChildNeedsStyleRecalc());
+  EXPECT_TRUE(host->ChildNeedsStyleRecalc());
+  EXPECT_TRUE(content->ChildNeedsStyleRecalc());
+  EXPECT_TRUE(GetDocument().documentElement()->ChildNeedsDistributionRecalc());
+
+#if DCHECK_IS_ON()
+  GetDocument().SetAllowDirtyShadowV0Traversal(false);
+#endif
+}
+
 }  // namespace blink

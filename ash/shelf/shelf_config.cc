@@ -195,8 +195,17 @@ bool ShelfConfig::is_in_app() const {
   const auto* session = shell->session_controller();
   if (!session)
     return false;
+
+  bool is_app_list_visible = is_app_list_visible_;
+  if (IsTabletMode()) {
+    // When transitioning to tablet mode, dependents may request in-app state
+    // before the AppListController knows it is tablet mode. Check whether the
+    // AppList will be visible in this case.
+    is_app_list_visible |=
+        Shell::Get()->app_list_controller()->ShouldHomeLauncherBeVisible();
+  }
   return session->GetSessionState() == session_manager::SessionState::ACTIVE &&
-         !is_app_list_visible_;
+         !is_app_list_visible;
 }
 
 void ShelfConfig::UpdateIsDense() {

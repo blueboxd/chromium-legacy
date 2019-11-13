@@ -12,7 +12,8 @@
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/frame_sinks/frame_sink_observer.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "services/viz/privileged/mojom/compositing/external_begin_frame_controller.mojom.h"
 
 namespace viz {
@@ -32,7 +33,8 @@ class VIZ_SERVICE_EXPORT ExternalBeginFrameSourceMojo
  public:
   ExternalBeginFrameSourceMojo(
       FrameSinkManagerImpl* frame_sink_manager,
-      mojom::ExternalBeginFrameControllerAssociatedRequest controller_request,
+      mojo::PendingAssociatedReceiver<mojom::ExternalBeginFrameController>
+          controller_receiver,
       uint32_t restart_id);
   ~ExternalBeginFrameSourceMojo() override;
 
@@ -74,7 +76,7 @@ class VIZ_SERVICE_EXPORT ExternalBeginFrameSourceMojo
 
   FrameSinkManagerImpl* const frame_sink_manager_;
 
-  mojo::AssociatedBinding<mojom::ExternalBeginFrameController> binding_;
+  mojo::AssociatedReceiver<mojom::ExternalBeginFrameController> receiver_;
   base::OnceCallback<void(const BeginFrameAck& ack)> pending_frame_callback_;
   // The frame source id as specified in BeginFrameArgs passed to
   // IssueExternalBeginFrame. Note this is likely to be different from our

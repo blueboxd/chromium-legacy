@@ -24,6 +24,7 @@
 #include "storage/browser/file_system/file_permission_policy.h"
 #include "storage/browser/file_system/file_stream_reader.h"
 #include "storage/browser/file_system/file_stream_writer.h"
+#include "storage/browser/file_system/file_system_features.h"
 #include "storage/browser/file_system/file_system_file_util.h"
 #include "storage/browser/file_system/file_system_operation.h"
 #include "storage/browser/file_system/file_system_operation_runner.h"
@@ -489,6 +490,11 @@ bool FileSystemContext::CanServeURLRequest(const FileSystemURL& url) const {
     return false;
   if (url.type() == kFileSystemTypeTemporary)
     return true;
+  if (url.type() == kFileSystemTypePersistent &&
+      base::FeatureList::IsEnabled(
+          features::kEnablePersistentFilesystemInIncognito)) {
+    return true;
+  }
   return !is_incognito_ || !FileSystemContext::IsSandboxFileSystem(url.type());
 }
 

@@ -319,6 +319,9 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
 
     NGPhysicalBoxStrut physical_child_margins =
         ComputePhysicalMargins(child_space, child_style);
+    // Set margin because FlexibleBoxAlgorithm reads it from legacy.
+    child.GetLayoutBox()->SetMargin(physical_child_margins);
+
     LayoutUnit main_axis_margin = is_horizontal_flow_
                                       ? physical_child_margins.HorizontalSum()
                                       : physical_child_margins.VerticalSum();

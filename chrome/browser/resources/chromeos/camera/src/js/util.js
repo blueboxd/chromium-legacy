@@ -25,7 +25,7 @@ cca.util.getPhotoOrientation = function(blob) {
     let reader = new FileReader();
     reader.onload = function(event) {
       let view = new DataView(event.target.result);
-      if (view.getUint16(0, false) != 0xFFD8) {
+      if (view.getUint16(0, false) !== 0xFFD8) {
         resolve(1);
         return;
       }
@@ -37,22 +37,22 @@ cca.util.getPhotoOrientation = function(blob) {
         }
         let marker = view.getUint16(offset, false);
         offset += 2;
-        if (marker == 0xFFE1) {
-          if (view.getUint32(offset += 2, false) != 0x45786966) {
+        if (marker === 0xFFE1) {
+          if (view.getUint32(offset += 2, false) !== 0x45786966) {
             break;
           }
 
-          let little = view.getUint16(offset += 6, false) == 0x4949;
+          let little = view.getUint16(offset += 6, false) === 0x4949;
           offset += view.getUint32(offset + 4, little);
           let tags = view.getUint16(offset, little);
           offset += 2;
           for (let i = 0; i < tags; i++) {
-            if (view.getUint16(offset + (i * 12), little) == 0x0112) {
+            if (view.getUint16(offset + (i * 12), little) === 0x0112) {
               resolve(view.getUint16(offset + (i * 12) + 8, little));
               return;
             }
           }
-        } else if ((marker & 0xFF00) != 0xFF00) {
+        } else if ((marker & 0xFF00) !== 0xFF00) {
           break;
         } else {
           offset += view.getUint16(offset, false);
@@ -119,7 +119,7 @@ cca.util.orientPhoto = function(blob, onSuccess, onFailure) {
     context.translate(-centerX, -centerY);
 
     let outputCanvas = document.createElement('canvas');
-    if (orientation.rotation == 90 || orientation.rotation == 270) {
+    if (orientation.rotation === 90 || orientation.rotation === 270) {
       outputCanvas.width = original.height;
       outputCanvas.height = original.width;
     } else {
@@ -143,7 +143,7 @@ cca.util.orientPhoto = function(blob, onSuccess, onFailure) {
   };
 
   cca.util.getPhotoOrientation(blob).then((orientation) => {
-    if (orientation.rotation == 0 && !orientation.flip) {
+    if (orientation.rotation === 0 && !orientation.flip) {
       onSuccess(blob);
     } else {
       let original = document.createElement('img');
@@ -209,7 +209,7 @@ cca.util.animateCancel = function(element) {
 cca.util.waitAnimationCompleted = function(element, callback) {
   var completed = false;
   var onCompleted = (event) => {
-    if (completed || (event && event.target != element)) {
+    if (completed || (event && event.target !== element)) {
       return;
     }
     completed = true;
@@ -372,8 +372,8 @@ cca.util.SmoothScroller.prototype.scrollTo = function(x, y, mode) {
           'translate(' + -dx + 'px, ' + -dy + 'px)';
 
       // If nothing to change, then return.
-      if (this.padder_.style.webkitTransform == transformString ||
-          (dx == 0 && dy == 0 && !this.padder_.style.webkitTransform)) {
+      if (this.padder_.style.webkitTransform === transformString ||
+          (dx === 0 && dy === 0 && !this.padder_.style.webkitTransform)) {
         return;
       }
 
@@ -390,7 +390,7 @@ cca.util.SmoothScroller.prototype.scrollTo = function(x, y, mode) {
       // animation is finished.
       cca.util.waitAnimationCompleted(this.padder_, () => {
         // Check if the animation got invalidated by a later scroll.
-        if (currentAnimationId == this.animationId_) {
+        if (currentAnimationId === this.animationId_) {
           this.flushScroll_();
         }
       });
@@ -453,8 +453,8 @@ cca.util.PointerTracker.prototype.onMouseMove_ = function(event) {
   // Ignore mouse events, which are invoked on the same position, but with
   // changed client coordinates. This will happen eg. when scrolling. We should
   // ignore them, since they are not invoked by an actual mouse move.
-  if (this.lastMousePosition_ && this.lastMousePosition_[0] == event.screenX &&
-      this.lastMousePosition_[1] == event.screenY) {
+  if (this.lastMousePosition_ && this.lastMousePosition_[0] === event.screenX &&
+      this.lastMousePosition_[1] === event.screenY) {
     return;
   }
 
@@ -649,8 +649,8 @@ cca.util.ScrollTracker.prototype.probe_ = function() {
   var scrollTop = this.scroller_.scrollTop;
 
   var scrollChanged =
-      scrollLeft != this.lastScrollPosition_[0] ||
-      scrollTop != this.lastScrollPosition_[1] ||
+      scrollLeft !== this.lastScrollPosition_[0] ||
+      scrollTop !== this.lastScrollPosition_[1] ||
       this.scroller_.animating;
 
   if (scrollChanged) {
@@ -732,7 +732,7 @@ cca.util.MouseScroller = function(scroller) {
  * @private
  */
 cca.util.MouseScroller.prototype.onMouseDown_ = function(event) {
-  if (event.which != 1) {
+  if (event.which !== 1) {
     return;
   }
   this.startPosition_ = [event.screenX, event.screenY];
@@ -754,7 +754,7 @@ cca.util.MouseScroller.prototype.onMouseMove_ = function(event) {
 
   // It may happen that we won't receive the mouseup event, when clicking on
   // the -webkit-app-region: drag area.
-  if (event.which != 1) {
+  if (event.which !== 1) {
     this.startPosition_ = null;
     this.startScrollPosition_ = null;
     return;

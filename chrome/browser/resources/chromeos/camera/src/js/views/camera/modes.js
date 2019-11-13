@@ -210,7 +210,7 @@ cca.views.camera.Modes = function(
  * @param {!cca.views.camera.Mode} mode Mode to be toggled.
  */
 cca.views.camera.Modes.prototype.updateModeUI_ = function(mode) {
-  Object.keys(this.allModes_).forEach((m) => cca.state.set(m, m == mode));
+  Object.keys(this.allModes_).forEach((m) => cca.state.set(m, m === mode));
   const element = document.querySelector(`.mode-item>input[data-mode=${mode}]`);
   element.checked = true;
   const wrapper = element.parentElement;
@@ -373,7 +373,7 @@ cca.views.camera.Modes.prototype.updateModeSelectionUI =
  */
 cca.views.camera.Modes.prototype.updateMode =
     async function(mode, stream, deviceId, captureResolution) {
-  if (this.current != null) {
+  if (this.current !== null) {
     await this.current.stopCapture();
   }
   this.updateModeUI_(mode);
@@ -562,7 +562,7 @@ cca.views.camera.Video.prototype.start_ = async function() {
     this.startSound_ = null;
   }
 
-  if (this.mediaRecorder_ == null) {
+  if (this.mediaRecorder_ === null) {
     try {
       if (!MediaRecorder.isTypeSupported(
               cca.views.camera.Video.VIDEO_MIMETYPE)) {
@@ -600,7 +600,7 @@ cca.views.camera.Video.prototype.stop_ = function() {
   if (this.startSound_ && this.startSound_.cancel) {
     this.startSound_.cancel();
   }
-  if (this.mediaRecorder_ && this.mediaRecorder_.state == 'recording') {
+  if (this.mediaRecorder_ && this.mediaRecorder_.state === 'recording') {
     this.mediaRecorder_.stop();
   }
 };
@@ -696,7 +696,7 @@ cca.views.camera.Photo.prototype = {
  */
 cca.views.camera.Photo.prototype.start_ = async function() {
   cca.sound.play('#sound-shutter');
-  if (this.imageCapture_ == null) {
+  if (this.imageCapture_ === null) {
     try {
       this.imageCapture_ = new ImageCapture(this.stream_.getVideoTracks()[0]);
     } catch (e) {
@@ -903,7 +903,7 @@ cca.views.camera.Portrait.prototype = {
  */
 cca.views.camera.Portrait.prototype.start_ = async function() {
   cca.sound.play('#sound-shutter');
-  if (this.crosImageCapture_ == null) {
+  if (this.crosImageCapture_ === null) {
     try {
       this.crosImageCapture_ =
           new cca.mojo.ImageCapture(this.stream_.getVideoTracks()[0]);

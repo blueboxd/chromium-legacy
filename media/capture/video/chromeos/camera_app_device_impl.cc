@@ -157,15 +157,9 @@ void CameraAppDeviceImpl::SetReprocessOption(
                                  std::move(reprocess_result_callback));
 
   if (effect == cros::mojom::Effect::PORTRAIT_MODE) {
-    std::vector<uint8_t> portrait_mode_value(sizeof(int32_t));
-    *reinterpret_cast<int32_t*>(portrait_mode_value.data()) = 1;
-    cros::mojom::CameraMetadataEntryPtr e =
-        cros::mojom::CameraMetadataEntry::New();
-    e->tag =
-        static_cast<cros::mojom::CameraMetadataTag>(kPortraitModeVendorKey);
-    e->type = cros::mojom::EntryType::TYPE_INT32;
-    e->count = 1;
-    e->data = std::move(portrait_mode_value);
+    auto e = BuildMetadataEntry(
+        static_cast<cros::mojom::CameraMetadataTag>(kPortraitModeVendorKey),
+        int32_t{1});
     task.extra_metadata.push_back(std::move(e));
   }
 

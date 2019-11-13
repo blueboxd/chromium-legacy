@@ -147,22 +147,22 @@ void ApplicationBridge::CreateNativeWidgetNSWindow(
 }
 
 void ApplicationBridge::CreateRenderWidgetHostNSView(
-    mojom::StubInterfaceAssociatedPtrInfo host,
-    mojom::StubInterfaceAssociatedRequest view_request) {
+    mojo::PendingAssociatedRemote<mojom::StubInterface> host,
+    mojo::PendingAssociatedReceiver<mojom::StubInterface> view_receiver) {
   if (!render_widget_host_create_callback_)
     return;
   render_widget_host_create_callback_.Run(host.PassHandle(),
-                                          view_request.PassHandle());
+                                          view_receiver.PassHandle());
 }
 
 void ApplicationBridge::CreateWebContentsNSView(
     uint64_t view_id,
-    mojom::StubInterfaceAssociatedPtrInfo host,
-    mojom::StubInterfaceAssociatedRequest view_request) {
+    mojo::PendingAssociatedRemote<mojom::StubInterface> host,
+    mojo::PendingAssociatedReceiver<mojom::StubInterface> view_receiver) {
   if (!web_conents_create_callback_)
     return;
   web_conents_create_callback_.Run(view_id, host.PassHandle(),
-                                   view_request.PassHandle());
+                                   view_receiver.PassHandle());
 }
 
 ApplicationBridge::ApplicationBridge() = default;

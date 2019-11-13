@@ -10179,4 +10179,115 @@ TEST_F(SpdyNetworkTransactionTest, ZeroRTTConfirmErrorAsync) {
   EXPECT_THAT(out.rv, IsError(ERR_SSL_PROTOCOL_ERROR));
 }
 
+TEST_F(SpdyNetworkTransactionTest, GreaseFrameTypeWithGetRequest) {
+  auto session_deps = std::make_unique<SpdySessionDependencies>();
+
+  const uint8_t type = 0x0b;
+  const uint8_t flags = 0xcc;
+  const std::string payload("foo");
+  session_deps->greased_http2_frame =
+      base::Optional<net::SpdySessionPool::GreasedHttp2Frame>(
+          {type, flags, payload});
+
+  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
+                                     std::move(session_deps));
+
+  spdy::SpdyHeaderBlock headers(
+      spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
+  spdy::SpdySerializedFrame req(
+      spdy_util_.ConstructSpdyHeaders(1, std::move(headers), DEFAULT_PRIORITY,
+                                      /* fin = */ false));
+
+  const char kRawFrameData[] = {
+      0x00, 0x00, 0x03,        // length
+      0x0b,                    // type
+      0xcc,                    // flags
+      0x00, 0x00, 0x00, 0x01,  // stream ID
+      'f',  'o',  'o'          // payload
+  };
+  spdy::SpdySerializedFrame grease(const_cast<char*>(kRawFrameData),
+                                   base::size(kRawFrameData),
+                                   /* owns_buffer = */ false);
+  spdy::SpdySerializedFrame empty_body(
+      spdy_util_.ConstructSpdyDataFrame(1, "", true));
+
+  MockWrite writes[] = {CreateMockWrite(req, 0), CreateMockWrite(grease, 1),
+                        CreateMockWrite(empty_body, 2)};
+
+  spdy::SpdySerializedFrame resp(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  spdy::SpdySerializedFrame response_body(
+      spdy_util_.ConstructSpdyDataFrame(1, true));
+
+  MockRead reads[] = {CreateMockRead(resp, 3), CreateMockRead(response_body, 4),
+                      MockRead(ASYNC, 0, 5)};
+
+  SequencedSocketData data(reads, writes);
+  helper.RunPreTestSetup();
+  helper.AddData(&data);
+
+  TestCompletionCallback callback;
+  int rv = helper.trans()->Start(&request_, callback.callback(), log_);
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
+
+  base::RunLoop().RunUntilIdle();
+
+  helper.VerifyDataConsumed();
+}
+
+TEST_F(SpdyNetworkTransactionTest, GreaseFrameTypeWithPostRequest) {
+  UsePostRequest();
+
+  auto session_deps = std::make_unique<SpdySessionDependencies>();
+
+  const uint8_t type = 0x0b;
+  const uint8_t flags = 0xcc;
+  const std::string payload("foo");
+  session_deps->greased_http2_frame =
+      base::Optional<net::SpdySessionPool::GreasedHttp2Frame>(
+          {type, flags, payload});
+
+  NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_,
+                                     std::move(session_deps));
+
+  spdy::SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
+      kDefaultUrl, 1, kUploadDataSize, LOWEST, nullptr, 0));
+
+  const char kRawFrameData[] = {
+      0x00, 0x00, 0x03,        // length
+      0x0b,                    // type
+      0xcc,                    // flags
+      0x00, 0x00, 0x00, 0x01,  // stream ID
+      'f',  'o',  'o'          // payload
+  };
+  spdy::SpdySerializedFrame grease(const_cast<char*>(kRawFrameData),
+                                   base::size(kRawFrameData),
+                                   /* owns_buffer = */ false);
+  spdy::SpdySerializedFrame request_body(
+      spdy_util_.ConstructSpdyDataFrame(1, true));
+
+  MockWrite writes[] = {CreateMockWrite(req, 0), CreateMockWrite(grease, 1),
+                        CreateMockWrite(request_body, 2)};
+
+  spdy::SpdySerializedFrame resp(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  spdy::SpdySerializedFrame response_body(
+      spdy_util_.ConstructSpdyDataFrame(1, true));
+
+  MockRead reads[] = {CreateMockRead(resp, 3), CreateMockRead(response_body, 4),
+                      MockRead(ASYNC, 0, 5)};
+
+  SequencedSocketData data(reads, writes);
+  helper.RunPreTestSetup();
+  helper.AddData(&data);
+
+  TestCompletionCallback callback;
+  int rv = helper.trans()->Start(&request_, callback.callback(), log_);
+  EXPECT_THAT(callback.GetResult(rv), IsOk());
+
+  base::RunLoop().RunUntilIdle();
+
+  helper.VerifyDataConsumed();
+}
+
 }  // namespace net

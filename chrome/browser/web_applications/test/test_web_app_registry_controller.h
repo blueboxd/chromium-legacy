@@ -44,6 +44,12 @@ class TestWebAppRegistryController : public SyncInstallDelegate {
   void SetInstallWebAppsAfterSyncDelegate(
       InstallWebAppsAfterSyncDelegate delegate);
 
+  using UninstallWebAppsAfterSyncDelegate = base::RepeatingCallback<void(
+      std::vector<std::unique_ptr<WebApp>> web_apps,
+      RepeatingUninstallCallback callback)>;
+  void SetUninstallWebAppsAfterSyncDelegate(
+      UninstallWebAppsAfterSyncDelegate delegate);
+
   // SyncInstallDelegate:
   void InstallWebAppsAfterSync(std::vector<WebApp*> web_apps,
                                RepeatingInstallCallback callback) override;
@@ -60,6 +66,7 @@ class TestWebAppRegistryController : public SyncInstallDelegate {
 
  private:
   InstallWebAppsAfterSyncDelegate install_web_apps_after_sync_delegate_;
+  UninstallWebAppsAfterSyncDelegate uninstall_web_apps_after_sync_delegate_;
 
   std::unique_ptr<TestWebAppDatabaseFactory> database_factory_;
   std::unique_ptr<WebAppRegistrarMutable> mutable_registrar_;

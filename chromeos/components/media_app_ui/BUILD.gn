@@ -20,6 +20,7 @@ static_library("media_app_ui") {
   deps = [
     "//chromeos/constants",
     "//chromeos/resources",
+    "//chromeos/resources:media_app_bundle_resources",
     "//content/public/browser",
     "//ui/webui",
   ]
@@ -29,6 +30,7 @@ js2gtest("browser_tests_js") {
   test_type = "mojo_lite_webui"
 
   sources = [
+    "test/media_app_guest_ui_browsertest.js",
     "test/media_app_ui_browsertest.js",
   ]
 

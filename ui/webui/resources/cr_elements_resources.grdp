@@ -154,6 +154,14 @@
              file="cr_elements/cr_slider/cr_slider.js"
              type="chrome_html"
              compress="gzip" />
+  <structure name="IDR_CR_ELEMENTS_CR_SPLITTER_HTML"
+             file="cr_elements/cr_splitter/cr_splitter.html"
+             type="chrome_html"
+             compress="gzip" />
+  <structure name="IDR_CR_ELEMENTS_CR_SPLITTER_JS"
+             file="cr_elements/cr_splitter/cr_splitter.js"
+             type="chrome_html"
+             compress="gzip" />
   <if expr="chromeos">
     <structure name="IDR_CR_ELEMENTS_CR_SEARCHABLE_DROP_DOWN_HTML"
                file="cr_elements/cr_searchable_drop_down/cr_searchable_drop_down.html"

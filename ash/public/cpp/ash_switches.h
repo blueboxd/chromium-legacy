@@ -30,6 +30,7 @@ ASH_PUBLIC_EXPORT extern const char kAshEnablePaletteOnAllDisplays[];
 ASH_PUBLIC_EXPORT extern const char kAshEnableTabletMode[];
 ASH_PUBLIC_EXPORT extern const char kAshEnableWaylandServer[];
 ASH_PUBLIC_EXPORT extern const char kAshForceEnableStylusTools[];
+ASH_PUBLIC_EXPORT extern const char kAshForceStatusAreaCollapsible[];
 ASH_PUBLIC_EXPORT extern const char kAshPowerButtonPosition[];
 ASH_PUBLIC_EXPORT extern const char kAshUiMode[];
 ASH_PUBLIC_EXPORT extern const char kAshUiModeClamshell[];

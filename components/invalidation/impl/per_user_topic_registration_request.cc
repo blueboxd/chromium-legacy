@@ -183,11 +183,11 @@ void PerUserTopicRegistrationRequest::OnJsonParse(
     return;
   }
 
-  const std::string* private_topic_name = GetTopicName(*result.value);
-  RecordRequestStatus(SubscriptionStatus::kSuccess, type_, topic_);
-  if (private_topic_name) {
+  const std::string* topic_name = GetTopicName(*result.value);
+  if (topic_name) {
+    RecordRequestStatus(SubscriptionStatus::kSuccess, type_, topic_);
     std::move(request_completed_callback_)
-        .Run(Status(StatusCode::SUCCESS, std::string()), *private_topic_name);
+        .Run(Status(StatusCode::SUCCESS, std::string()), *topic_name);
   } else {
     RecordRequestStatus(SubscriptionStatus::kParsingFailure, type_, topic_);
     std::move(request_completed_callback_)

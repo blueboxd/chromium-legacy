@@ -132,6 +132,11 @@ void VideoFrameValidator::ProcessVideoFrame(
     size_t frame_index) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(validator_sequence_checker_);
 
+  if (!video_frame) {
+    LOG(ERROR) << "Video frame is nullptr";
+    return;
+  }
+
   base::AutoLock auto_lock(frame_validator_lock_);
   num_frames_validating_++;
 

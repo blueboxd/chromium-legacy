@@ -60,7 +60,7 @@ var Resolution = class {
    * @return {boolean} Whether aspect ratio of resolutions are equal.
    */
   aspectRatioEquals(resolution) {
-    return this.width * resolution.height == this.height * resolution.width;
+    return this.width * resolution.height === this.height * resolution.width;
   }
 
   /**

@@ -628,7 +628,8 @@ WebInputEventResult MouseEventManager::HandleMouseFocus(
   // If focus shift is blocked, we eat the event. Note we should never
   // clear swallowEvent if the page already set it (e.g., by canceling
   // default behavior).
-  if (element && SlideFocusOnShadowHostIfNecessary(*element))
+  if (element && !element->IsMouseFocusable() &&
+      SlideFocusOnShadowHostIfNecessary(*element))
     return WebInputEventResult::kHandledSystem;
 
   // We call setFocusedElement even with !element in order to blur
@@ -645,7 +646,7 @@ WebInputEventResult MouseEventManager::HandleMouseFocus(
 
 bool MouseEventManager::SlideFocusOnShadowHostIfNecessary(
     const Element& element) {
-  if (Element* delegated_target = element.FindActualFocusTarget()) {
+  if (Element* delegated_target = element.GetFocusableArea()) {
     // Use WebFocusTypeForward instead of WebFocusTypeMouse here to mean the
     // focus has slided.
     delegated_target->focus(FocusParams(SelectionBehaviorOnFocus::kReset,

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 
 namespace syncer {
@@ -115,7 +116,10 @@ SyncerError ModelSafeWorker::DoWorkAndWaitUntilDone(WorkCallback work) {
 
   // Unblocked when the task runs or is deleted or when RequestStop() is called
   // before the task starts running.
-  work_done_or_abandoned_.Wait();
+  {
+    base::ScopedAllowBaseSyncPrimitives allow_wait;
+    work_done_or_abandoned_.Wait();
+  }
 
   return did_run ? error : SyncerError(SyncerError::CANNOT_DO_WORK);
 }

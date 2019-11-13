@@ -824,17 +824,14 @@ void RenderFrameProxy::UpdateRemoteViewportIntersection(
   // TODO(wjmaclean): Maybe we should always call SynchronizeVisualProperties()
   // here? If nothing has changed, it will early out, and it avoids duplicate
   // checks here.
-  gfx::Rect compositor_visible_rect = web_frame_->GetCompositingRect();
-  bool compositor_visible_rect_changed =
-      compositor_visible_rect != pending_visual_properties_.compositor_viewport;
-
-  if (compositor_visible_rect_changed)
+  blink::ViewportIntersectionState new_state(intersection_state);
+  new_state.compositor_visible_rect = web_frame_->GetCompositingRect();
+  if (new_state.compositor_visible_rect !=
+      blink::WebRect(pending_visual_properties_.compositor_viewport)) {
     SynchronizeVisualProperties();
+  }
 
-  Send(new FrameHostMsg_UpdateViewportIntersection(
-      routing_id_,
-      {intersection_state.viewport_intersection, compositor_visible_rect,
-       intersection_state.occlusion_state}));
+  Send(new FrameHostMsg_UpdateViewportIntersection(routing_id_, new_state));
 }
 
 void RenderFrameProxy::SetIsInert(bool inert) {

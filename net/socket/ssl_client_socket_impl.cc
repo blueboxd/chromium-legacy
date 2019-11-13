@@ -1075,12 +1075,18 @@ int SSLClientSocketImpl::DoHandshakeComplete(int result) {
       details = SSLHandshakeDetails::kTLS12Full;
     }
   } else {
+    bool used_hello_retry_request = SSL_used_hello_retry_request(ssl_.get());
     if (SSL_in_early_data(ssl_.get())) {
+      DCHECK(!used_hello_retry_request);
       details = SSLHandshakeDetails::kTLS13Early;
     } else if (SSL_session_reused(ssl_.get())) {
-      details = SSLHandshakeDetails::kTLS13Resume;
+      details = used_hello_retry_request
+                    ? SSLHandshakeDetails::kTLS13ResumeWithHelloRetryRequest
+                    : SSLHandshakeDetails::kTLS13Resume;
     } else {
-      details = SSLHandshakeDetails::kTLS13Full;
+      details = used_hello_retry_request
+                    ? SSLHandshakeDetails::kTLS13FullWithHelloRetryRequest
+                    : SSLHandshakeDetails::kTLS13Full;
     }
   }
   UMA_HISTOGRAM_ENUMERATION("Net.SSLHandshakeDetails", details);

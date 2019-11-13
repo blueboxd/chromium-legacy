@@ -623,9 +623,9 @@ class CORE_EXPORT LocalFrameView final
 
   bool HasVisibleSlowRepaintViewportConstrainedObjects() const;
 
-  bool MapToVisualRectInTopFrameSpace(PhysicalRect&);
+  bool MapToVisualRectInRemoteRootFrame(PhysicalRect&);
 
-  void ApplyTransformForTopFrameSpace(TransformState&);
+  void MapLocalToRemoteRootFrame(TransformState&);
 
   void CrossOriginStatusChanged();
 
@@ -698,8 +698,8 @@ class CORE_EXPORT LocalFrameView final
   void SelfVisibleChanged() override;
   void ParentVisibleChanged() override;
   void NotifyFrameRectsChangedIfNeeded();
-  void SetViewportIntersection(const IntRect& viewport_intersection,
-                               FrameOcclusionState occlusion_state) override {}
+  void SetViewportIntersection(
+      const ViewportIntersectionState& intersection_state) override {}
   void VisibilityForThrottlingChanged() override;
   bool LifecycleUpdatesThrottled() const override {
     return lifecycle_updates_throttled_;

@@ -195,6 +195,12 @@ class VotesUploader {
       std::unique_ptr<autofill::FormStructure> form_to_upload,
       const autofill::ServerFieldTypeSet& available_field_types);
 
+  // Save a vote |field_type| for a field with |field_signature| from a form
+  // with |form_signature| to FieldInfoManager.
+  void SaveFieldVote(uint64_t form_signature,
+                     uint32_t field_signature,
+                     autofill::ServerFieldType field_type);
+
   // The client which implements embedder-specific PasswordManager operations.
   PasswordManagerClient* client_;
 

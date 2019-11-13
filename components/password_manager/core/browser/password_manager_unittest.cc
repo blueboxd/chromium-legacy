@@ -331,6 +331,8 @@ class PasswordManagerTest : public testing::Test {
         prefs::kPasswordManagerOnboardingState,
         static_cast<int>(metrics_util::OnboardingState::kDoNotShow));
     prefs_->registry()->RegisterBooleanPref(
+        prefs::kWasOnboardingFeatureCheckedBefore, false);
+    prefs_->registry()->RegisterBooleanPref(
         prefs::kPasswordLeakDetectionEnabled, true);
     ON_CALL(client_, GetPrefs()).WillByDefault(Return(prefs_.get()));
 

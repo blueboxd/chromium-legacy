@@ -244,6 +244,64 @@ void SetPreferredApp(const std::vector<apps::mojom::ConditionPtr>& conditions,
   }
 }
 
+// Similar to SetPreferredApp(), this method go through every combination of
+// the condition values to clear app_id.
+void RemovePreferredApp(
+    const std::vector<apps::mojom::ConditionPtr>& conditions,
+    size_t index,
+    base::Value* dict,
+    const std::string& app_id) {
+  // If there are no more condition key to add to the dictionary, we reach the
+  // base case, delete the key_value pair if the stored app id is the same as
+  // |app_id|.
+  if (index == conditions.size()) {
+    const std::string* app_id_found = dict->FindStringKey(kAppId);
+    if (app_id_found && *app_id_found == app_id) {
+      dict->RemoveKey(kAppId);
+    }
+    return;
+  }
+
+  const auto& condition = conditions[index];
+  auto* condition_type_dict =
+      dict->FindKey(ConditionTypeToString(condition->condition_type));
+  if (!condition_type_dict) {
+    return;
+  }
+  for (const auto& condition_value : condition->condition_values) {
+    std::string condition_value_key = condition_value->value;
+    base::Value* condition_value_dictionary;
+    // For pattern type, use two nested dictionaries to represent the pattern
+    // and the match type.
+    if (condition->condition_type == apps::mojom::ConditionType::kPattern) {
+      auto* match_type_dict = condition_type_dict->FindKey(condition_value_key);
+      if (!match_type_dict) {
+        continue;
+      }
+      condition_value_dictionary = match_type_dict->FindKey(
+          MatchTypeToString(condition_value->match_type));
+    } else {
+      condition_value_dictionary =
+          condition_type_dict->FindKey(condition_value_key);
+    }
+    if (!condition_value_dictionary) {
+      continue;
+    }
+    // For each |condition_value|, search dictionary for the following
+    // conditions.
+    RemovePreferredApp(conditions, index + 1, condition_value_dictionary,
+                       app_id);
+    // Clean up empty dictionary after remove the app id.
+    if (condition_value_dictionary->DictEmpty()) {
+      condition_type_dict->RemoveKey(condition_value_key);
+    }
+  }
+  // Clean up the empty dictionary if there is no content left.
+  if (condition_type_dict->DictEmpty()) {
+    dict->RemoveKey(ConditionTypeToString(condition->condition_type));
+  }
+}
+
 }  // namespace
 
 namespace apps {
@@ -295,6 +353,48 @@ bool PreferredApps::AddPreferredApp(
   return true;
 }
 
+// static
+// Delete a preferred app for a preferred app dictionary.
+bool PreferredApps::DeletePreferredApp(
+    const std::string& app_id,
+    const apps::mojom::IntentFilterPtr& intent_filter,
+    base::Value* preferred_apps) {
+  if (!preferred_apps) {
+    return false;
+  }
+
+  // For an |intent_filter| there could be multiple |conditions|, and for each
+  // condition, there could be multiple |condition_values|. When we remove
+  // preferred app for and |intent_filter|, we need to remove the preferred app
+  // for all combinations of these |condition_values|.
+  RemovePreferredApp(intent_filter->conditions, 0, preferred_apps, app_id);
+  return true;
+}
+
+// static
+void PreferredApps::DeleteAppId(const std::string& app_id,
+                                base::Value* preferred_apps) {
+  if (!preferred_apps) {
+    return;
+  }
+  std::vector<std::string> keys_to_remove;
+  for (const auto& key_value : preferred_apps->DictItems()) {
+    if (key_value.first == kAppId) {
+      if (key_value.second.GetString() == app_id) {
+        keys_to_remove.push_back(kAppId);
+      }
+    } else {
+      DeleteAppId(app_id, &key_value.second);
+      if (key_value.second.DictEmpty()) {
+        keys_to_remove.push_back(key_value.first);
+      }
+    }
+  }
+  for (const auto& key_to_remove : keys_to_remove) {
+    preferred_apps->RemoveKey(key_to_remove);
+  }
+}
+
 void PreferredApps::Init(std::unique_ptr<base::Value> preferred_apps) {
   if (preferred_apps && VerifyPreferredApps(preferred_apps.get())) {
     preferred_apps_ = std::move(preferred_apps);
@@ -311,6 +411,22 @@ bool PreferredApps::AddPreferredApp(
     return false;
   }
   return AddPreferredApp(app_id, intent_filter, preferred_apps_.get());
+}
+
+bool PreferredApps::DeletePreferredApp(
+    const std::string& app_id,
+    const apps::mojom::IntentFilterPtr& intent_filter) {
+  if (!preferred_apps_) {
+    return false;
+  }
+  return DeletePreferredApp(app_id, intent_filter, preferred_apps_.get());
+}
+
+void PreferredApps::DeleteAppId(const std::string& app_id) {
+  if (!preferred_apps_) {
+    return;
+  }
+  DeleteAppId(app_id, preferred_apps_.get());
 }
 
 base::Optional<std::string> PreferredApps::FindPreferredAppForIntent(

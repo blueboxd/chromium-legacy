@@ -15,13 +15,19 @@ enum class SSLHandshakeDetails {
   kTLS12Resume = 1,
   // TLS 1.2 full handshake with False Start (1-RTT)
   kTLS12FalseStart = 2,
-  // TLS 1.3 full handshake (1-RTT, usually)
-  kTLS13Full = 3,
-  // TLS 1.3 resumption handshake (1-RTT, usually)
-  kTLS13Resume = 4,
+  // 3 was previously used for TLS 1.3 full handshakes with or without HRR.
+  // 4 was previously used for TLS 1.3 resumptions with or without HRR.
   // TLS 1.3 0-RTT handshake (0-RTT)
   kTLS13Early = 5,
-  kMaxValue = kTLS13Early,
+  // TLS 1.3 full handshake without HelloRetryRequest (1-RTT)
+  kTLS13Full = 6,
+  // TLS 1.3 resumption handshake without HelloRetryRequest (1-RTT)
+  kTLS13Resume = 7,
+  // TLS 1.3 full handshake with HelloRetryRequest (2-RTT)
+  kTLS13FullWithHelloRetryRequest = 8,
+  // TLS 1.3 resumption handshake with HelloRetryRequest (2-RTT)
+  kTLS13ResumeWithHelloRetryRequest = 9,
+  kMaxValue = kTLS13ResumeWithHelloRetryRequest,
 };
 
 }  // namespace net

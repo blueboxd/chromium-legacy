@@ -1287,7 +1287,11 @@ WebPluginContainerImpl* LocalFrame::GetWebPluginContainer(Node* node) const {
 }
 
 void LocalFrame::WasHidden() {
-  intersection_state_.viewport_intersection = IntRect();
+  intersection_state_ = ViewportIntersectionState();
+  // The initial value of occlusion_state is kUnknown, and if we leave that
+  // value intact then IntersectionObserver will abort processing. The frame is
+  // hidden, so for the purpose of computing visibility, kPossiblyOccluded will
+  // give the desired behavior (i.e., nothing in the iframe will be visible).
   intersection_state_.occlusion_state = FrameOcclusionState::kPossiblyOccluded;
   // An iframe may get a "was hidden" notification before it has been attached
   // to the frame tree; in that case, skip running IntersectionObserver.
@@ -1318,6 +1322,7 @@ bool LocalFrame::ClipsContent() const {
 
 void LocalFrame::SetViewportIntersectionFromParent(
     const ViewportIntersectionState& intersection_state) {
+  DCHECK(IsLocalRoot());
   // We only schedule an update if the viewport intersection or occlusion state
   // has changed; neither the viewport offset nor the compositing bounds will
   // affect IntersectionObserver.

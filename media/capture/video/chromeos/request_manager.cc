@@ -228,42 +228,27 @@ void RequestManager::UnsetRepeatingCaptureMetadata(
 
 void RequestManager::SetJpegOrientation(
     cros::mojom::CameraMetadataPtr* settings) {
-  std::vector<uint8_t> frame_orientation(sizeof(int32_t));
-  *reinterpret_cast<int32_t*>(frame_orientation.data()) =
-      base::checked_cast<int32_t>(device_context_->GetCameraFrameOrientation());
-  cros::mojom::CameraMetadataEntryPtr e =
-      cros::mojom::CameraMetadataEntry::New();
-  e->tag = cros::mojom::CameraMetadataTag::ANDROID_JPEG_ORIENTATION;
-  e->type = cros::mojom::EntryType::TYPE_INT32;
-  e->count = 1;
-  e->data = std::move(frame_orientation);
+  auto e = BuildMetadataEntry(
+      cros::mojom::CameraMetadataTag::ANDROID_JPEG_ORIENTATION,
+      base::checked_cast<int32_t>(
+          device_context_->GetCameraFrameOrientation()));
   AddOrUpdateMetadataEntry(settings, std::move(e));
 }
 
 void RequestManager::SetSensorTimestamp(
     cros::mojom::CameraMetadataPtr* settings,
     uint64_t shutter_timestamp) {
-  std::vector<uint8_t> sensor_timestamp(sizeof(int64_t));
-  *reinterpret_cast<int64_t*>(sensor_timestamp.data()) =
-      base::checked_cast<int64_t>(shutter_timestamp);
-  cros::mojom::CameraMetadataEntryPtr e =
-      cros::mojom::CameraMetadataEntry::New();
-  e->tag = cros::mojom::CameraMetadataTag::ANDROID_SENSOR_TIMESTAMP;
-  e->type = cros::mojom::EntryType::TYPE_INT64;
-  e->count = 1;
-  e->data = sensor_timestamp;
+  auto e = BuildMetadataEntry(
+      cros::mojom::CameraMetadataTag::ANDROID_SENSOR_TIMESTAMP,
+      base::checked_cast<int64_t>(shutter_timestamp));
   AddOrUpdateMetadataEntry(settings, std::move(e));
 }
 
 void RequestManager::SetZeroShutterLag(cros::mojom::CameraMetadataPtr* settings,
                                        bool enabled) {
-  std::vector<uint8_t> control_enable_zsl = {static_cast<uint8_t>(enabled)};
-  cros::mojom::CameraMetadataEntryPtr e =
-      cros::mojom::CameraMetadataEntry::New();
-  e->tag = cros::mojom::CameraMetadataTag::ANDROID_CONTROL_ENABLE_ZSL;
-  e->type = cros::mojom::EntryType::TYPE_BYTE;
-  e->count = 1;
-  e->data = control_enable_zsl;
+  auto e = BuildMetadataEntry(
+      cros::mojom::CameraMetadataTag::ANDROID_CONTROL_ENABLE_ZSL,
+      static_cast<uint8_t>(enabled));
   AddOrUpdateMetadataEntry(settings, std::move(e));
 }
 

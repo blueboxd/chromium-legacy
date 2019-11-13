@@ -26,20 +26,6 @@ suite('AppManagementPageTests', () => {
         .$$('#no-apps-label');
   }
 
-  /**
-   * @param {Element} element
-   * @return {boolean}
-   */
-  function isElementShown(element) {
-    if (!element) {
-      return false;
-    }
-    if (element.style.display === 'none') {
-      return false;
-    }
-    return true;
-  }
-
   setup(async () => {
     fakeHandler = setupFakeHandler();
     store = replaceStore();
@@ -63,16 +49,16 @@ suite('AppManagementPageTests', () => {
 
   test('No Apps Found Label', async () => {
     expectEquals(0, getAppListChildren());
-    expectTrue(isElementShown(getNoAppsFoundLabel()));
+    expectFalse(isHiddenByDomIf(getNoAppsFoundLabel()));
 
     const app = await fakeHandler.addApp();
     expectEquals(1, getAppListChildren());
-    expectFalse(isElementShown(getNoAppsFoundLabel()));
+    expectTrue(isHiddenByDomIf(getNoAppsFoundLabel()));
 
     fakeHandler.uninstall(app.id);
     await test_util.flushTasks();
     expectEquals(0, getAppListChildren());
-    expectTrue(isElementShown(getNoAppsFoundLabel()));
+    expectFalse(isHiddenByDomIf(getNoAppsFoundLabel()));
   });
 
   test('App list filters when searching', async () => {
@@ -92,7 +78,7 @@ suite('AppManagementPageTests', () => {
     appManagementPage.searchTerm = 'ss';
     await test_util.flushTasks();
     expectEquals(0, getAppListChildren());
-    expectTrue(isElementShown(getNoAppsFoundLabel()));
+    expectFalse(isHiddenByDomIf(getNoAppsFoundLabel()));
 
     appManagementPage.searchTerm = '';
     await test_util.flushTasks();

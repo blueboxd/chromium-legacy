@@ -1234,11 +1234,7 @@ void RenderFrameHostImpl::StartBackForwardCacheEvictionTimer() {
 
 void RenderFrameHostImpl::DisableBackForwardCache() {
   is_back_forward_cache_disabled_ = true;
-  if (is_in_back_forward_cache()) {
-    EvictFromBackForwardCacheWithReason(
-        BackForwardCacheMetrics::NotRestoredReason::
-            kDisableForRenderFrameHostCalled);
-  }
+  MaybeEvictFromBackForwardCache();
 }
 
 void RenderFrameHostImpl::OnGrantedMediaStreamAccess() {

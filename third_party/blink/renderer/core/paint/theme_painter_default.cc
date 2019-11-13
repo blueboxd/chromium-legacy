@@ -148,9 +148,11 @@ bool ThemePainterDefault::PaintCheckbox(const Node* node,
   extra_params.button.indeterminate = LayoutTheme::IsIndeterminate(node);
 
   float zoom_level = style.EffectiveZoom();
+  extra_params.button.zoom = zoom_level;
   GraphicsContextStateSaver state_saver(paint_info.context, false);
   IntRect unzoomed_rect = rect;
-  if (zoom_level != 1) {
+  if (zoom_level != 1 &&
+      !RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
     state_saver.Save();
     unzoomed_rect.SetWidth(unzoomed_rect.Width() / zoom_level);
     unzoomed_rect.SetHeight(unzoomed_rect.Height() / zoom_level);
@@ -331,9 +333,11 @@ bool ThemePainterDefault::PaintSliderTrack(const LayoutObject& o,
   PaintSliderTicks(o, i, rect);
 
   float zoom_level = o.StyleRef().EffectiveZoom();
+  extra_params.slider.zoom = zoom_level;
   GraphicsContextStateSaver state_saver(i.context, false);
   IntRect unzoomed_rect = rect;
-  if (zoom_level != 1) {
+  if (zoom_level != 1 &&
+      !RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
     state_saver.Save();
     unzoomed_rect.SetWidth(unzoomed_rect.Width() / zoom_level);
     unzoomed_rect.SetHeight(unzoomed_rect.Height() / zoom_level);
@@ -354,8 +358,13 @@ bool ThemePainterDefault::PaintSliderTrack(const LayoutObject& o,
     LayoutBox* thumb = thumb_element ? thumb_element->GetLayoutBox() : nullptr;
     if (thumb) {
       IntRect thumb_rect = PixelSnappedIntRect(thumb->FrameRect());
-      extra_params.slider.thumb_x = thumb_rect.X() / zoom_level;
-      extra_params.slider.thumb_y = thumb_rect.Y() / zoom_level;
+      if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
+        extra_params.slider.thumb_x = thumb_rect.X();
+        extra_params.slider.thumb_y = thumb_rect.Y();
+      } else {
+        extra_params.slider.thumb_x = thumb_rect.X() / zoom_level;
+        extra_params.slider.thumb_y = thumb_rect.Y() / zoom_level;
+      }
     }
   }
 
@@ -376,9 +385,11 @@ bool ThemePainterDefault::PaintSliderThumb(const Node* node,
   extra_params.slider.in_drag = LayoutTheme::IsPressed(node);
 
   float zoom_level = style.EffectiveZoom();
+  extra_params.slider.zoom = zoom_level;
   GraphicsContextStateSaver state_saver(paint_info.context, false);
   IntRect unzoomed_rect = rect;
-  if (zoom_level != 1) {
+  if (zoom_level != 1 &&
+      !RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
     state_saver.Save();
     unzoomed_rect.SetWidth(unzoomed_rect.Width() / zoom_level);
     unzoomed_rect.SetHeight(unzoomed_rect.Height() / zoom_level);

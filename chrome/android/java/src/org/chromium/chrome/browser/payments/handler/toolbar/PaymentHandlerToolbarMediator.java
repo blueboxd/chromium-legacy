@@ -26,6 +26,7 @@ import java.net.URISyntaxException;
  * notifies the backend (the coordinator).
  */
 /* package */ class PaymentHandlerToolbarMediator extends WebContentsObserver {
+    // Abbreviated for the length limit.
     private static final String TAG = "PaymentHandlerTb";
     /** The delay (four video frames - for 60Hz) after which the hide progress will be hidden. */
     private static final long HIDE_PROGRESS_BAR_DELAY_MS = (1000 / 60) * 4;

@@ -116,6 +116,11 @@
          use_base_dir="false"
          type="BINDATA"
          compress="gzip" />
+  <include name="IDR_CR_ELEMENTS_CR_SPLITTER_M_JS"
+         file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_splitter/cr_splitter.m.js"
+         use_base_dir="false"
+         type="BINDATA"
+         compress="gzip" />
   <include name="IDR_CR_ELEMENTS_CR_TABS_M_JS"
          file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_tabs/cr_tabs.m.js"
          use_base_dir="false"

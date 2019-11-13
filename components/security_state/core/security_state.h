@@ -126,7 +126,13 @@ enum class SafetyTipStatus {
   // The current page triggered a Safety Tip because a suspicious keyword was
   // found in its hostname.
   kBadKeyword = 4,
-  kMaxValue = kBadKeyword,
+  // The current page had bad reputation, but a Safety Tip was not shown since
+  // it had been previously ignored by the user.
+  kBadReputationIgnored = 5,
+  // The current page had a lookalike URL, but a Safety Tip was not shown since
+  // it had been previously ignored by the user.
+  kLookalikeIgnored = 6,
+  kMaxValue = kLookalikeIgnored,
 };
 
 // Information about the last safety tip shown in the UI. This is used in page

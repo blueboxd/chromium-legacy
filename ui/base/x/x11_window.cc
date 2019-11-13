@@ -742,9 +742,12 @@ void XWindow::SetXWindowAspectRatio(const gfx::SizeF& aspect_ratio) {
   long supplied_return;
 
   XGetWMNormalHints(xdisplay_, xwindow_, &size_hints, &supplied_return);
-  size_hints.flags |= PAspect;
-  size_hints.min_aspect.x = size_hints.max_aspect.x = aspect_ratio.width();
-  size_hints.min_aspect.y = size_hints.max_aspect.y = aspect_ratio.height();
+  // Unforce aspect ratio is parameter length is 0, otherwise set normally.
+  if (!aspect_ratio.IsEmpty()) {
+    size_hints.flags |= PAspect;
+    size_hints.min_aspect.x = size_hints.max_aspect.x = aspect_ratio.width();
+    size_hints.min_aspect.y = size_hints.max_aspect.y = aspect_ratio.height();
+  }
   XSetWMNormalHints(xdisplay_, xwindow_, &size_hints);
 }
 

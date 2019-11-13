@@ -17,6 +17,10 @@
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/version_updater/version_updater.h"
 
+namespace base {
+class Clock;
+}  // namespace base
+
 namespace chromeos {
 
 class ErrorScreensHistogramHelper;
@@ -59,6 +63,9 @@ class UpdateRequiredScreen : public BaseScreen,
 
   VersionUpdater* GetVersionUpdaterForTesting();
 
+  // Set a base clock (used to set current time) for testing EOL.
+  void SetClockForTesting(base::Clock* clock);
+
  private:
   void EnsureScreenIsShown();
 
@@ -82,6 +89,8 @@ class UpdateRequiredScreen : public BaseScreen,
 
   // The user requested an attempt to connect to the network should be made.
   void OnConnectRequested();
+
+  void OnGetEolInfo(const chromeos::UpdateEngineClient::EolInfo& info);
 
   void OnErrorScreenHidden();
 
@@ -112,6 +121,9 @@ class UpdateRequiredScreen : public BaseScreen,
   // If redirect did not happen during this delay, error message is shown
   // instead.
   base::OneShotTimer error_message_timer_;
+
+  // Overridden for testing EOL by setting the current time.
+  base::Clock* clock_;
 
   ErrorScreen::ConnectRequestCallbackSubscription connect_request_subscription_;
 

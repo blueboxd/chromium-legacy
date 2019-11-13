@@ -293,7 +293,7 @@ FloatRect PaintTimingDetector::CalculateVisualRect(
   frame_view_->GetFrame()
       .LocalFrameRoot()
       .View()
-      ->MapToVisualRectInTopFrameSpace(layout_visual_rect);
+      ->MapToVisualRectInRemoteRootFrame(layout_visual_rect);
   WebFloatRect float_rect = FloatRect(layout_visual_rect);
   ConvertViewportToWindow(&float_rect);
   return float_rect;

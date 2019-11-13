@@ -21,6 +21,7 @@
 #include "base/test/mock_entropy_provider.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_field_trial_list_resetter.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_shared_memory_util.h"
 #include "base/test/test_timeouts.h"
@@ -1165,6 +1166,7 @@ TEST(FieldTrialTestWithoutList, StatesStringFormat) {
 }
 
 TEST(FieldTrialDeathTest, OneTimeRandomizedTrialWithoutFieldTrialList) {
+  test::ScopedFieldTrialListResetter resetter;
   // Trying to instantiate a one-time randomized field trial before the
   // FieldTrialList is created should crash.
   EXPECT_DEATH_IF_SUPPORTED(

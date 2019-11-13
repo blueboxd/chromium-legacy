@@ -261,8 +261,8 @@ class TabHoverCardBubbleView::WidgetSlideAnimationDelegate
       if (desired_anchor_view_)
         bubble_delegate_->SetAnchorView(desired_anchor_view_);
     }
-    bubble_delegate_->UpdateTextFade(value);
     bubble_delegate_->GetWidget()->SetBounds(current_bubble_bounds_);
+    bubble_delegate_->UpdateTextFade(value);
   }
 
   void AnimationEnded(const gfx::Animation* animation) override {
@@ -300,16 +300,12 @@ class TabHoverCardBubbleView::FadeLabel : public views::Label {
   // FadeLabel is designed to mask new text with the old and then fade away, the
   // higher the percentage the less opaque the label.
   void SetFade(double percent) {
-    if (percent >= 1.0) {
-      SetVisible(false);
-      return;
-    }
-
+    if (percent >= 1.0)
+      SetText(base::string16());
     const SkAlpha alpha = base::saturated_cast<SkAlpha>(
         std::numeric_limits<SkAlpha>::max() * (1.0 - percent));
     SetBackgroundColor(SkColorSetA(GetBackgroundColor(), alpha));
     SetEnabledColor(SkColorSetA(GetEnabledColor(), alpha));
-    SetVisible(true);
   }
 
  protected:
@@ -552,11 +548,6 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
 
   if (widget_->IsVisible() && !disable_animations_for_testing_) {
     slide_animation_delegate_->AnimateToAnchorView(tab);
-    // Reset the text fade, but only if we're not already animating. If we are,
-    // it will be less disruptive to just continue the animation with the new
-    // text.
-    if (!slide_animation_delegate_->is_animating())
-      UpdateTextFade(0.0);
   } else {
     if (!anchor_view_set)
       SetAnchorView(tab);
@@ -721,6 +712,7 @@ void TabHoverCardBubbleView::UpdateCardContent(const Tab* tab) {
             url_formatter::kFormatUrlTrimAfterHost,
         net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr);
   }
+  UpdateTextFade(0.0);
   title_fade_label_->SetText(title_label_->GetText());
   title_label_->SetText(title);
 

@@ -355,7 +355,7 @@ cca.views.ResolutionSettings.prototype.photoOptTextTempl_ = function(
   const /** number */ d = gcd(r.width, r.height);
   if (resolutions.some(
           (findR) => !findR.equals(r) && r.aspectRatioEquals(findR) &&
-              toMegapixel(r) == toMegapixel(findR))) {
+              toMegapixel(r) === toMegapixel(findR))) {
     return chrome.i18n.getMessage(
         'label_detail_photo_resolution',
         [r.width / d, r.height / d, r.width, r.height, toMegapixel(r)]);
@@ -437,8 +437,8 @@ cca.views.ResolutionSettings.prototype.updateResolutions_ = function() {
   const prevFId = prevFocus && prevFocus.dataset.deviceId;
   const /** number */ focusIdx =
       this.externalSettings_.findIndex(({deviceId}) => deviceId === prevFId);
-  const fTitle = /** @type {?HTMLElement} */ (
-      this.resMenu_.querySelector(`.menu-item[data-device-id="${prevFId}"]`));
+  const fTitle = /** @type {?HTMLElement} */ (this.resMenu_.querySelector(
+      `.external-camera.title-item[data-device-id="${prevFId}"]`));
   /** @type {?string} */
   const focusedId = focusIdx === -1 ? null : prevFId;
 
@@ -515,8 +515,8 @@ cca.views.ResolutionSettings.prototype.updateSelectedPhotoResolution_ =
   } else if (this.backsetting_ && this.backsetting_.deviceId === deviceId) {
     photoItem = this.backPhotoItem_;
   } else {
-    photoItem = /** @type {!HTMLElement} */ (this.resMenu_.querySelectorAll(
-        `.menu-item[data-device-id="${deviceId}"]`)[1]);
+    photoItem = /** @type {!HTMLElement} */ (this.resMenu_.querySelector(
+        `.menu-item.photo-item[data-device-id="${deviceId}"]`));
   }
   photoItem.querySelector('.description>span').textContent =
       this.photoOptTextTempl_(photo.prefResol, photo.resols);
@@ -549,8 +549,8 @@ cca.views.ResolutionSettings.prototype.updateSelectedVideoResolution_ =
   } else if (this.backSetting_ && this.backSetting_.deviceId === deviceId) {
     videoItem = this.backVideoItem_;
   } else {
-    videoItem = /** @type {!HTMLElement} */ (this.resMenu_.querySelectorAll(
-        `.menu-item[data-device-id="${deviceId}"]`)[1]);
+    videoItem = /** @type {!HTMLElement} */ (this.resMenu_.querySelector(
+        `.menu-item.video-item[data-device-id="${deviceId}"]`));
   }
   videoItem.querySelector('.description>span').textContent =
       this.videoOptTextTempl_(video.prefResol);

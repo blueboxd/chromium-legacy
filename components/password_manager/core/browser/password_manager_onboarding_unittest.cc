@@ -48,6 +48,8 @@ class PasswordManagerOnboardingTest : public testing::Test {
     prefs_->registry()->RegisterIntegerPref(
         prefs::kPasswordManagerOnboardingState,
         static_cast<int>(OnboardingState::kDoNotShow));
+    prefs_->registry()->RegisterBooleanPref(
+        prefs::kWasOnboardingFeatureCheckedBefore, false);
   }
 
   void TearDown() override {
@@ -123,7 +125,7 @@ TEST_F(PasswordManagerOnboardingTest,
 TEST_F(PasswordManagerOnboardingTest,
        CredentialsCountThresholdHitAfterShouldShow) {
   // Check that the threshold is handled correctly
-  // in case the current state is |kShouldShow|.
+  // in case the current state was |kShouldShow|.
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
       features::kPasswordManagerOnboardingAndroid);

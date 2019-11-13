@@ -488,16 +488,17 @@ bool RestrictedCookieManager::ValidateAccessToCookiesAt(
     const GURL& url,
     const GURL& site_for_cookies,
     const url::Origin& top_frame_origin) {
-  bool site_for_cookies_ok = true;
+  bool site_for_cookies_ok =
+      (site_for_cookies.is_empty() == site_for_cookies_.is_empty());
   if (!site_for_cookies.is_empty() && !site_for_cookies_.is_empty()) {
     site_for_cookies_ok = net::registry_controlled_domains::SameDomainOrHost(
         site_for_cookies, site_for_cookies_,
         net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-
-    DCHECK(site_for_cookies_ok)
-        << "site_for_cookies from renderer='" << site_for_cookies
-        << "' from browser='" << site_for_cookies_ << "';";
   }
+
+  DCHECK(site_for_cookies_ok)
+      << "site_for_cookies from renderer='" << site_for_cookies
+      << "' from browser='" << site_for_cookies_ << "';";
 
   bool top_frame_origin_ok = (top_frame_origin == top_frame_origin_);
   DCHECK(top_frame_origin_ok)

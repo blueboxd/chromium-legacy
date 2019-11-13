@@ -252,12 +252,14 @@ class SafetyTipPageInfoBubbleViewBrowserTest
 
     switch (expected_safety_tip_status) {
       case security_state::SafetyTipStatus::kBadReputation:
+      case security_state::SafetyTipStatus::kBadReputationIgnored:
         EXPECT_EQ(page_info->GetWindowTitle(),
                   l10n_util::GetStringUTF16(
                       IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE));
         break;
 
       case security_state::SafetyTipStatus::kLookalike:
+      case security_state::SafetyTipStatus::kLookalikeIgnored:
         EXPECT_EQ(page_info->GetWindowTitle(),
                   l10n_util::GetStringFUTF16(
                       IDS_PAGE_INFO_SAFETY_TIP_LOOKALIKE_TITLE,
@@ -473,7 +475,7 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
 }
 
 // If the user closes the bubble, the warning should not re-appear when the user
-// re-visits the page.
+// re-visits the page, but will still show up in PageInfo.
 IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
                        IgnoreWarningStopsWarning) {
   if (ui_status() == UIStatus::kDisabled) {
@@ -491,7 +493,9 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
   EXPECT_EQ(kNavigatedUrl,
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 
-  ASSERT_NO_FATAL_FAILURE(CheckPageInfoDoesNotShowSafetyTipInfo(browser()));
+  ASSERT_NO_FATAL_FAILURE(CheckPageInfoShowsSafetyTipInfo(
+      browser(), security_state::SafetyTipStatus::kBadReputationIgnored,
+      GURL()));
 }
 
 // Non main-frame navigations should be ignored.
@@ -632,9 +636,9 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
   TriggerWarning(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
   CloseWarningIgnore(views::Widget::ClosedReason::kCloseButtonClicked);
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
-  histograms.ExpectBucketCount("Security.SafetyTips.SafetyTipIgnoredPageLoad",
-                               security_state::SafetyTipStatus::kBadReputation,
-                               1);
+  histograms.ExpectBucketCount(
+      "Security.SafetyTips.SafetyTipIgnoredPageLoad",
+      security_state::SafetyTipStatus::kBadReputationIgnored, 1);
 }
 
 // Disabled due to consistent failure: http://crbug.com/1020109

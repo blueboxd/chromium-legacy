@@ -340,6 +340,11 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // viewport intersection and occlusion/obscuration available that accounts for
   // remote ancestor frames and their respective scroll positions, clips, etc.
   void SetViewportIntersectionFromParent(const ViewportIntersectionState&);
+
+  // See viewport_intersection_state.h for more info on these methods.
+  IntPoint RemoteViewportOffset() const {
+    return intersection_state_.viewport_offset;
+  }
   IntRect RemoteViewportIntersection() const {
     return intersection_state_.viewport_intersection;
   }
@@ -572,8 +577,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   mutable mojo::Remote<mojom::blink::ReportingServiceProxy> reporting_service_;
 
   ViewportIntersectionState intersection_state_;
-  // IntRect remote_viewport_intersection_;
-  // FrameOcclusionState occlusion_state_ = FrameOcclusionState::kUnknown;
 
   // Per-frame URLLoader factory.
   std::unique_ptr<WebURLLoaderFactory> url_loader_factory_;

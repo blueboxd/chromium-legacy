@@ -29,7 +29,7 @@ interface EmbeddedSearchConnector {
   // connection used by the embedded search interface implementation to push
   // browser state updates to the client.
   Connect(associated EmbeddedSearch & embedded_search,
-          associated EmbeddedSearchClient client);
+          pending_associated_remote<EmbeddedSearchClient> client);
 };
 
 // See components/omnibox/browser/autocomplete_match.h.

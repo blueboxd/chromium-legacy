@@ -8,7 +8,7 @@
 ##
 ## Top level settings
 ##
-version_id: 38
+version_id: 39
 sampled_ping_probability: 0.01
 max_archived_binaries_to_report: 10
 default_file_type {
@@ -1236,6 +1236,42 @@ file_types {
   }
 }
 file_types {
+  # MS Access database
+  # Similar to mdb
+  extension: "accde"
+  uma_value: 389
+  ping_setting: FULL_PING
+  platform_settings {
+    platform: PLATFORM_WINDOWS
+    danger_level: ALLOW_ON_USER_GESTURE
+    auto_open_hint: ALLOW_AUTO_OPEN
+  }
+}
+file_types {
+  # MS Access database
+  # Similar to mdb
+  extension: "accdr"
+  uma_value: 390
+  ping_setting: FULL_PING
+  platform_settings {
+    platform: PLATFORM_WINDOWS
+    danger_level: ALLOW_ON_USER_GESTURE
+    auto_open_hint: ALLOW_AUTO_OPEN
+  }
+}
+file_types {
+  # MS Access database
+  # Similar to mdb
+  extension: "accda"
+  uma_value: 391
+  ping_setting: FULL_PING
+  platform_settings {
+    platform: PLATFORM_WINDOWS
+    danger_level: ALLOW_ON_USER_GESTURE
+    auto_open_hint: ALLOW_AUTO_OPEN
+  }
+}
+file_types {
   # ActiveX Control
   extension: "ocx"
   uma_value: 90
@@ -2004,6 +2040,28 @@ file_types {
   # Signed certificate file.
   extension: "crt"
   uma_value: 97
+  ping_setting: FULL_PING
+  platform_settings {
+    platform: PLATFORM_WINDOWS
+    danger_level: ALLOW_ON_USER_GESTURE
+    auto_open_hint: ALLOW_AUTO_OPEN
+  }
+}
+file_types {
+  # Signed certificate file.
+  extension: "cer"
+  uma_value: 392
+  ping_setting: FULL_PING
+  platform_settings {
+    platform: PLATFORM_WINDOWS
+    danger_level: ALLOW_ON_USER_GESTURE
+    auto_open_hint: ALLOW_AUTO_OPEN
+  }
+}
+file_types {
+  # Signed certificate file.
+  extension: "der"
+  uma_value: 393
   ping_setting: FULL_PING
   platform_settings {
     platform: PLATFORM_WINDOWS

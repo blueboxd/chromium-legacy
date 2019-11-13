@@ -84,7 +84,7 @@ meter::-webkit-meter-inner-element::after {
 
 meter::-webkit-meter-bar {
   background: #efefef;
-  border-width: 1px;
+  border-width: thin;
   height: 50%;
   border-style: solid;
   border-color: rgba(118, 118, 118, 0.3);

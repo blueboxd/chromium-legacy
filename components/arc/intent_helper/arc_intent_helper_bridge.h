@@ -30,6 +30,7 @@ class BrowserContext;
 namespace arc {
 
 class ArcBridgeService;
+class ControlCameraAppDelegate;
 class FactoryResetDelegate;
 class IntentFilter;
 class OpenUrlDelegate;
@@ -51,6 +52,8 @@ class ArcIntentHelperBridge : public KeyedService,
       const std::string& to_append);
 
   static void SetOpenUrlDelegate(OpenUrlDelegate* delegate);
+
+  static void SetControlCameraAppDelegate(ControlCameraAppDelegate* delegate);
 
   static void SetFactoryResetDelegate(FactoryResetDelegate* delegate);
 
@@ -90,10 +93,12 @@ class ArcIntentHelperBridge : public KeyedService,
                        bool should_handle_result,
                        bool should_down_scale,
                        bool is_secure) override;
-  void CloseCameraApp() override;
   void OnIntentFiltersUpdatedForPackage(
       const std::string& package_name,
       std::vector<IntentFilter> intent_filters) override;
+  void CloseCameraApp() override;
+  void IsChromeAppEnabled(arc::mojom::ChromeApp app,
+                          IsChromeAppEnabledCallback callback) override;
 
   // Retrieves icons for the |activities| and calls |callback|.
   // See ActivityIconLoader::GetActivityIcons() for more details.

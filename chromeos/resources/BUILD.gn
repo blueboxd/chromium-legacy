@@ -54,3 +54,22 @@ grit("help_app_resources") {
   ]
   output_dir = "$root_gen_dir/chromeos"
 }
+
+grit("media_app_bundle_resources") {
+  if (enable_cros_media_app) {
+    # Obtained via src-internal/DEPS.
+    source = "../components/media_app_ui/resources/app/app/media_app_bundle_resources.grd"
+  } else {
+    source = "../components/media_app_ui/resources/mock/media_app_bundle_mock_resources.grd"
+  }
+
+  source_is_generated = true
+
+  outputs = [
+    "grit/chromeos_media_app_bundle_resources.h",
+    "grit/chromeos_media_app_bundle_resources_map.cc",
+    "grit/chromeos_media_app_bundle_resources_map.h",
+    "chromeos_media_app_bundle_resources.pak",
+  ]
+  output_dir = "$root_gen_dir/chromeos"
+}

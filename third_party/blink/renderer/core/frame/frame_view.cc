@@ -52,6 +52,7 @@ void FrameView::UpdateViewportIntersection(unsigned flags,
   if (!owner_element)
     return;
   Document& owner_document = owner_element->GetDocument();
+  IntPoint viewport_offset;
   IntRect viewport_intersection;
   DocumentLifecycle::LifecycleState parent_lifecycle_state =
       owner_document.Lifecycle().GetState();
@@ -92,27 +93,48 @@ void FrameView::UpdateViewportIntersection(unsigned flags,
         rect_in_parent_stable_since_ = base::TimeTicks::Now();
       }
     }
-
-    PhysicalRect intersection_rect = owner_layout_object->AncestorToLocalRect(
-        nullptr, geometry.IntersectionRect());
-    // Map from the box coordinates of the owner to the inner frame.
-    intersection_rect.Move(-owner_layout_object->PhysicalContentBoxOffset());
-    // Don't let EnclosingIntRect turn an empty rect into a non-empty one.
-    if (intersection_rect.IsEmpty()) {
-      viewport_intersection =
-          IntRect(FlooredIntPoint(intersection_rect.offset), IntSize());
-    } else {
-      viewport_intersection = EnclosingIntRect(intersection_rect);
-    }
     if (should_compute_occlusion && !geometry.IsVisible())
       occlusion_state = FrameOcclusionState::kPossiblyOccluded;
+
+    // The coordinate system for the iframe's LayoutObject has its origin at the
+    // top/left of the border box rect. The coordinate system of the child frame
+    // is the same as the coordinate system of the iframe's content box rect.
+    // The iframe's PhysicalContentBoxOffset() can be used to move between them.
+    PhysicalOffset content_box_offset =
+        owner_layout_object->PhysicalContentBoxOffset();
+
+    if (NeedsViewportOffset()) {
+      viewport_offset =
+          RoundedIntPoint(owner_layout_object->LocalToAbsolutePoint(
+              content_box_offset,
+              kTraverseDocumentBoundaries | kApplyRemoteRootFrameOffset));
+    }
+
+    if (geometry.IsIntersecting()) {
+      // geometry.IntersectionRect() is in the coordinate system of the document
+      // containing the iframe. First map it down to border-box coordinates for
+      // the iframe, then apply content_box_offset to translate to the
+      // coordinates of the child frame.
+      PhysicalRect intersection_rect = owner_layout_object->AncestorToLocalRect(
+          nullptr, geometry.IntersectionRect());
+      intersection_rect.Move(-content_box_offset);
+
+      // Don't let EnclosingIntRect turn an empty rect into a non-empty one.
+      if (intersection_rect.IsEmpty()) {
+        viewport_intersection =
+            IntRect(FlooredIntPoint(intersection_rect.offset), IntSize());
+      } else {
+        viewport_intersection = EnclosingIntRect(intersection_rect);
+      }
+    }
   } else if (occlusion_state == FrameOcclusionState::kGuaranteedNotOccluded) {
     // If the parent LocalFrameView is throttled and out-of-date, then we can't
     // get any useful information.
     occlusion_state = FrameOcclusionState::kUnknown;
   }
 
-  SetViewportIntersection(viewport_intersection, occlusion_state);
+  SetViewportIntersection(
+      {viewport_offset, viewport_intersection, WebRect(), occlusion_state});
 
   UpdateFrameVisibility(!viewport_intersection.IsEmpty());
 

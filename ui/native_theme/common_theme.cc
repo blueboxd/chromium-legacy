@@ -135,17 +135,12 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
 
       // Tree
       case NativeTheme::kColorId_TreeBackground:
-        return gfx::kGoogleGrey800;
+        return color_utils::AlphaBlend(SK_ColorWHITE, gfx::kGoogleGrey900,
+                                       0.04f);
       case NativeTheme::kColorId_TreeText:
-        return SkColorSetA(SK_ColorWHITE, 0xDD);
-      case NativeTheme::kColorId_TreeSelectionBackgroundFocused:
-      case NativeTheme::kColorId_TreeSelectionBackgroundUnfocused:
-        return color_utils::AlphaBlend(
-            SK_ColorWHITE,
-            GetAuraColor(
-                NativeTheme::kColorId_LabelTextSelectionBackgroundFocused,
-                base_theme, color_scheme),
-            SkAlpha{0xDD});
+      case NativeTheme::kColorId_TreeSelectedText:
+      case NativeTheme::kColorId_TreeSelectedTextUnfocused:
+        return gfx::kGoogleGrey200;
 
       // Material spinner/throbber
       case NativeTheme::kColorId_ThrobberSpinningColor:
@@ -207,7 +202,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
 
     // MenuItem
     case NativeTheme::kColorId_TouchableMenuItemLabelColor:
-      return gfx::kGoogleGrey900;
+      return kPrimaryTextColor;
     case NativeTheme::kColorId_ActionableSubmenuVerticalSeparatorColor:
       return SkColorSetA(gfx::kGoogleGrey900, 0x24);
     case NativeTheme::kColorId_SelectedMenuItemForegroundColor:
@@ -228,7 +223,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     case NativeTheme::kColorId_HighlightedMenuItemBackgroundColor:
       return gfx::kGoogleGrey050;
     case NativeTheme::kColorId_HighlightedMenuItemForegroundColor:
-      return gfx::kGoogleGrey900;
+      return kPrimaryTextColor;
     case NativeTheme::kColorId_MenuItemAlertBackgroundColorMax:
       return SkColorSetA(gfx::kGoogleBlue600, 0x1A);
     case NativeTheme::kColorId_MenuItemAlertBackgroundColorMin:
@@ -299,10 +294,14 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     case NativeTheme::kColorId_TreeText:
     case NativeTheme::kColorId_TreeSelectedText:
     case NativeTheme::kColorId_TreeSelectedTextUnfocused:
-      return SK_ColorBLACK;
+      return kPrimaryTextColor;
     case NativeTheme::kColorId_TreeSelectionBackgroundFocused:
-    case NativeTheme::kColorId_TreeSelectionBackgroundUnfocused:
-      return SkColorSetRGB(0xEE, 0xEE, 0xEE);
+    case NativeTheme::kColorId_TreeSelectionBackgroundUnfocused: {
+      const SkColor bg = base_theme->GetSystemColor(
+          NativeTheme::kColorId_TreeBackground, color_scheme);
+      return color_utils::BlendForMinContrast(bg, bg, base::nullopt, 1.67f)
+          .color;
+    }
 
     // Table
     case NativeTheme::kColorId_TableBackground:

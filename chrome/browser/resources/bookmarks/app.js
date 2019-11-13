@@ -90,7 +90,6 @@ Polymer({
    */
   initializeSplitter_: function() {
     const splitter = this.$.splitter;
-    cr.ui.Splitter.decorate(splitter);
     const splitterTarget = this.$.sidebar;
 
     // The splitter persists the size of the left component in the local store.

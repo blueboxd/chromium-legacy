@@ -12,6 +12,9 @@
 <dom-module id="app-management-arc-permission-view">
   <template>
     <style include="app-management-shared-css">
+      #no-permissions {
+        border-top: none;
+      }
     </style>
     <div class="permission-list">
       <app-management-pin-to-shelf-item
@@ -33,7 +36,8 @@
           hidden$="[[!isArcSupported_]]">
           <div class="header-text">$i18n{appManagementPermissionsLabel}</div>
         </div>
-        <div class="permission-list indented-permission-block">
+        <div id="subpermission-list"
+            class="permission-list indented-permission-block">
           <app-management-permission-item class="subpermission-row"
             icon="app-management:location"
             permission-label="$i18n{appManagementLocationPermissionLabel}"
@@ -59,6 +63,11 @@
             permission-label="$i18n{appManagementStoragePermissionLabel}"
             permission-type="STORAGE">
           </app-management-permission-item>
+          <template is="dom-if" if="[[noPermissionsRequested_(app_)]]">
+            <div id="no-permissions" class="permission-text-row">
+              $i18n{appManagementNoPermissions}
+            </div>
+          </template>
         </div>
       </div>
       <div id="more-settings"

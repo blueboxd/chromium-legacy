@@ -152,6 +152,8 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
     return &background_animator_;
   }
 
+  ui::Layer* GetOpaqueBackgroundForTest();
+
  private:
   class DelegateView;
   friend class DelegateView;

@@ -55,6 +55,10 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   // notification tray.
   void UpdateAfterLoginStatusChange(LoginStatus login_status);
 
+  // Updates the collapse state of the status area after the state of the shelf
+  // changes.
+  void UpdateCollapseState();
+
   // Sets system tray visibility. Shows or hides widget if needed.
   void SetSystemTrayVisibility(bool visible);
 

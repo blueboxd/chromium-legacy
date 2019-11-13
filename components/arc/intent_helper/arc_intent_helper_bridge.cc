@@ -20,6 +20,7 @@
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/audio/arc_audio_bridge.h"
+#include "components/arc/intent_helper/control_camera_app_delegate.h"
 #include "components/arc/intent_helper/factory_reset_delegate.h"
 #include "components/arc/intent_helper/open_url_delegate.h"
 #include "components/arc/session/arc_bridge_service.h"
@@ -39,6 +40,7 @@ constexpr const char* kArcSchemes[] = {url::kHttpScheme, url::kHttpsScheme,
 // Not owned. Must outlive all ArcIntentHelperBridge instances. Typically this
 // is ChromeNewWindowClient in the browser.
 OpenUrlDelegate* g_open_url_delegate = nullptr;
+ControlCameraAppDelegate* g_control_camera_app_delegate = nullptr;
 FactoryResetDelegate* g_factory_reset_delegate = nullptr;
 
 // Singleton factory for ArcIntentHelperBridge.
@@ -105,6 +107,12 @@ std::string ArcIntentHelperBridge::AppendStringToIntentHelperPackageName(
 // static
 void ArcIntentHelperBridge::SetOpenUrlDelegate(OpenUrlDelegate* delegate) {
   g_open_url_delegate = delegate;
+}
+
+// static
+void ArcIntentHelperBridge::SetControlCameraAppDelegate(
+    ControlCameraAppDelegate* delegate) {
+  g_control_camera_app_delegate = delegate;
 }
 
 // static
@@ -239,13 +247,28 @@ void ArcIntentHelperBridge::LaunchCameraApp(uint32_t intent_id,
           << "&shouldHandleResult=" << should_handle_result
           << "&shouldDownScale=" << should_down_scale
           << "&isSecure=" << is_secure;
-  ash::NewWindowDelegate::GetInstance()->LaunchCameraApp(queries.str());
+  g_control_camera_app_delegate->LaunchCameraApp(queries.str());
 }
 
 void ArcIntentHelperBridge::CloseCameraApp() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  ash::NewWindowDelegate::GetInstance()->CloseCameraApp();
+  g_control_camera_app_delegate->CloseCameraApp();
+}
+
+void ArcIntentHelperBridge::IsChromeAppEnabled(
+    arc::mojom::ChromeApp app,
+    IsChromeAppEnabledCallback callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  if (app == arc::mojom::ChromeApp::CAMERA) {
+    std::move(callback).Run(
+        g_control_camera_app_delegate->IsCameraAppEnabled());
+    return;
+  }
+
+  NOTREACHED() << "Unknown chrome app";
+  std::move(callback).Run(false);
 }
 
 ArcIntentHelperBridge::GetResult ArcIntentHelperBridge::GetActivityIcons(

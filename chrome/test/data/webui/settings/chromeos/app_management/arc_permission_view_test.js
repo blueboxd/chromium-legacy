@@ -143,4 +143,24 @@ suite('<app-management-arc-permission-view>', () => {
     app_management.Store.getInstance().dispatch(
         app_management.actions.updateArcSupported(true));
   });
+
+  test('No permissions requested label', async () => {
+    expectTrue(isHiddenByDomIf(
+        arcPermissionView.root.querySelector('#no-permissions')));
+
+    // Create an ARC app without any permissions.
+    const arcOptions = {
+      type: apps.mojom.AppType.kArc,
+      permissions: app_management.FakePageHandler.createArcPermissions([])
+    };
+
+    // Add an arc app, and make it the currently selected app.
+    const app = await fakeHandler.addApp(null, arcOptions);
+    app_management.Store.getInstance().dispatch(
+        app_management.actions.updateSelectedAppId(app.id));
+    await test_util.flushTasks();
+
+    expectFalse(isHiddenByDomIf(
+        arcPermissionView.root.querySelector('#no-permissions')));
+  });
 });

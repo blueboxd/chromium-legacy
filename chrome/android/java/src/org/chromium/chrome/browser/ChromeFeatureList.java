@@ -185,6 +185,7 @@ public abstract class ChromeFeatureList {
     public static final String CAPTION_SETTINGS = "CaptionSettings";
     public static final String CAPTIVE_PORTAL_CERTIFICATE_LIST = "CaptivePortalCertificateList";
     public static final String CCT_BACKGROUND_TAB = "CCTBackgroundTab";
+    public static final String CCT_INCOGNITO = "CCTIncognito";
     public static final String CCT_MODULE = "CCTModule";
     public static final String CCT_MODULE_CACHE = "CCTModuleCache";
     public static final String CCT_MODULE_CUSTOM_HEADER = "CCTModuleCustomHeader";

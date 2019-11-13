@@ -101,6 +101,11 @@ GenericDmaBufVideoFrameMapper::GenericDmaBufVideoFrameMapper(
 
 scoped_refptr<VideoFrame> GenericDmaBufVideoFrameMapper::Map(
     scoped_refptr<const VideoFrame> video_frame) const {
+  if (!video_frame) {
+    LOG(ERROR) << "Video frame is nullptr";
+    return nullptr;
+  }
+
   if (video_frame->storage_type() != VideoFrame::StorageType::STORAGE_DMABUFS) {
     VLOGF(1) << "VideoFrame's storage type is not DMABUF: "
              << video_frame->storage_type();

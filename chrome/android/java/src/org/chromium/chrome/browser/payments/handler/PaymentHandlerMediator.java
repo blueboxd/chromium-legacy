@@ -23,7 +23,10 @@ import org.chromium.ui.modelutil.PropertyModel;
         extends WebContentsObserver implements BottomSheetObserver {
     private final PropertyModel mModel;
     private final Runnable mHider;
-    /** Postfixed with "Ref" to distinguish from mWebContent in WebContentsObserver. */
+    // Postfixed with "Ref" to distinguish from mWebContent in WebContentsObserver. Although
+    // referencing the same object, mWebContentsRef is preferable to WebContents here because
+    // mWebContents (a weak ref) requires null checks, while mWebContentsRef is guaranteed to be not
+    // null.
     private final WebContents mWebContentsRef;
 
     /**
@@ -37,6 +40,7 @@ import org.chromium.ui.modelutil.PropertyModel;
     /* package */ PaymentHandlerMediator(
             PropertyModel model, Runnable hider, WebContents webContents) {
         super(webContents);
+        assert webContents != null;
         mWebContentsRef = webContents;
         mModel = model;
         mHider = hider;

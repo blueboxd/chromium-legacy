@@ -254,8 +254,10 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
     return {};
   }
 
+  // Aligning may overflow so check that the result doesn't decrease.
   size_t rounded_size = bits::Align(size, kSectionSize);
-  if (rounded_size > static_cast<size_t>(std::numeric_limits<int>::max())) {
+  if (rounded_size < size ||
+      rounded_size > static_cast<size_t>(std::numeric_limits<int>::max())) {
     LogError(CreateError::SIZE_TOO_LARGE, 0);
     return {};
   }

@@ -162,9 +162,11 @@ ChromeNewWindowClient::ChromeNewWindowClient()
       about_pages_(std::cbegin(kAboutPagesMapping),
                    std::cend(kAboutPagesMapping)) {
   arc::ArcIntentHelperBridge::SetOpenUrlDelegate(this);
+  arc::ArcIntentHelperBridge::SetControlCameraAppDelegate(this);
 }
 
 ChromeNewWindowClient::~ChromeNewWindowClient() {
+  arc::ArcIntentHelperBridge::SetControlCameraAppDelegate(nullptr);
   arc::ArcIntentHelperBridge::SetOpenUrlDelegate(nullptr);
 }
 
@@ -332,37 +334,6 @@ void ChromeNewWindowClient::OpenFeedbackPage(bool from_assistant) {
   chrome::OpenFeedbackDialog(chrome::FindBrowserWithActiveWindow(), source);
 }
 
-void ChromeNewWindowClient::LaunchCameraApp(const std::string& queries) {
-  Profile* const profile = ProfileManager::GetActiveUserProfile();
-  const extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(profile);
-  const extensions::Extension* extension =
-      registry->GetInstalledExtension(extension_misc::kChromeCameraAppId);
-
-  auto url = GURL(extensions::Extension::GetBaseURLFromExtensionId(
-                      extension_misc::kChromeCameraAppId)
-                      .spec() +
-                  queries);
-
-  apps::LaunchPlatformAppWithUrl(profile, extension,
-                                 /*handler_id=*/std::string(), url,
-                                 /*referrer_url=*/GURL());
-}
-
-void ChromeNewWindowClient::CloseCameraApp() {
-  const ash::ShelfID shelf_id(ash::kInternalAppIdCamera);
-  AppWindowLauncherItemController* const app_controller =
-      ChromeLauncherController::instance()
-          ->shelf_model()
-          ->GetAppWindowLauncherItemController(shelf_id);
-  if (!app_controller)
-    return;
-
-  DCHECK_LE(app_controller->window_count(), 1lu);
-  if (app_controller->window_count() > 0)
-    app_controller->windows().front()->Close();
-}
-
 void ChromeNewWindowClient::OpenUrlFromArc(const GURL& url) {
   if (!url.is_valid())
     return;
@@ -503,4 +474,42 @@ void ChromeNewWindowClient::OpenChromePageFromArc(ChromePage page) {
   }
 
   NOTREACHED();
+}
+
+void ChromeNewWindowClient::LaunchCameraApp(const std::string& queries) {
+  Profile* const profile = ProfileManager::GetActiveUserProfile();
+  const extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile);
+  const extensions::Extension* extension =
+      registry->GetInstalledExtension(extension_misc::kChromeCameraAppId);
+
+  auto url = GURL(extensions::Extension::GetBaseURLFromExtensionId(
+                      extension_misc::kChromeCameraAppId)
+                      .spec() +
+                  queries);
+
+  apps::LaunchPlatformAppWithUrl(profile, extension,
+                                 /*handler_id=*/std::string(), url,
+                                 /*referrer_url=*/GURL());
+}
+
+void ChromeNewWindowClient::CloseCameraApp() {
+  const ash::ShelfID shelf_id(ash::kInternalAppIdCamera);
+  AppWindowLauncherItemController* const app_controller =
+      ChromeLauncherController::instance()
+          ->shelf_model()
+          ->GetAppWindowLauncherItemController(shelf_id);
+  if (!app_controller)
+    return;
+
+  DCHECK_LE(app_controller->window_count(), 1lu);
+  if (app_controller->window_count() > 0)
+    app_controller->windows().front()->Close();
+}
+
+bool ChromeNewWindowClient::IsCameraAppEnabled() {
+  return extensions::ExtensionRegistry::Get(
+             ProfileManager::GetActiveUserProfile())
+             ->enabled_extensions()
+             .GetByID(extension_misc::kCameraAppId) != nullptr;
 }

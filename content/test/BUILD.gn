@@ -300,8 +300,6 @@ jumbo_static_library("test_support") {
     "test_content_browser_client.h",
     "test_content_client.cc",
     "test_content_client.h",
-    "test_mojo_proxy_resolver_factory.cc",
-    "test_mojo_proxy_resolver_factory.h",
     "test_navigation_url_loader.cc",
     "test_navigation_url_loader.h",
     "test_navigation_url_loader_delegate.cc",
@@ -1906,9 +1904,7 @@ test("content_unittests") {
     "../renderer/worker/worker_thread_registry_unittest.cc",
     "../test/renderer_audio_output_stream_factory_context_impl_unittest.cc",
     "navigation_simulator_unittest.cc",
-    "proxy_service_mojo_unittest.cc",
     "test_render_frame_host_unittest.cc",
-    "url_request_context_builder_mojo_unittest.cc",
   ]
 
   if (is_mac) {
@@ -2019,7 +2015,6 @@ test("content_unittests") {
     "//services/network:test_support",
     "//services/network/public/cpp",
     "//services/network/public/mojom",
-    "//services/proxy_resolver/:lib",
     "//services/service_manager/public/cpp/test:test_support",
     "//services/video_capture/public/cpp:mocks",
     "//services/video_capture/public/mojom",

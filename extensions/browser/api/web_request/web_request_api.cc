@@ -499,8 +499,8 @@ bool FilterResponseHeaders(net::HttpResponseHeaders* response_headers,
 
 // Helper to record a matched DNR action in RulesetManager's ActionTracker.
 void OnDNRActionMatched(content::BrowserContext* browser_context,
-                        const DNRRequestAction& action,
-                        int tab_id) {
+                        const WebRequestInfo& request,
+                        const DNRRequestAction& action) {
   if (action.tracked)
     return;
 
@@ -509,7 +509,7 @@ void OnDNRActionMatched(content::BrowserContext* browser_context,
           ->ruleset_manager()
           ->action_tracker();
 
-  action_tracker.OnRuleMatched(action.extension_id, tab_id);
+  action_tracker.OnRuleMatched(action, request);
   action.tracked = true;
 }
 
@@ -1096,19 +1096,19 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
       case DNRRequestAction::Type::BLOCK:
         ClearPendingCallbacks(*request);
         DCHECK_EQ(1u, actions.size());
-        OnDNRActionMatched(browser_context, action, request->frame_data.tab_id);
+        OnDNRActionMatched(browser_context, *request, action);
         return net::ERR_BLOCKED_BY_CLIENT;
       case DNRRequestAction::Type::COLLAPSE:
         ClearPendingCallbacks(*request);
         DCHECK_EQ(1u, actions.size());
-        OnDNRActionMatched(browser_context, action, request->frame_data.tab_id);
+        OnDNRActionMatched(browser_context, *request, action);
         *should_collapse_initiator = true;
         return net::ERR_BLOCKED_BY_CLIENT;
       case DNRRequestAction::Type::REDIRECT:
         ClearPendingCallbacks(*request);
         DCHECK_EQ(1u, actions.size());
         DCHECK(action.redirect_url);
-        OnDNRActionMatched(browser_context, action, request->frame_data.tab_id);
+        OnDNRActionMatched(browser_context, *request, action);
         *new_url = action.redirect_url.value();
         return net::OK;
       case DNRRequestAction::Type::REMOVE_HEADERS:
@@ -1161,7 +1161,7 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
         RemoveRequestHeadersForAction(headers, action, &removed_headers);
 
     if (headers_removed_for_action)
-      OnDNRActionMatched(browser_context, action, request->frame_data.tab_id);
+      OnDNRActionMatched(browser_context, *request, action);
   }
 
   bool initialize_blocked_requests = false;
@@ -1268,7 +1268,7 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
           mutable_response_headers.get(), action.response_headers_to_remove);
 
       if (headers_filtered_for_action)
-        OnDNRActionMatched(browser_context, action, request->frame_data.tab_id);
+        OnDNRActionMatched(browser_context, *request, action);
 
       headers_filtered |= headers_filtered_for_action;
     }

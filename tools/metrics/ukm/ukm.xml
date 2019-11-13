@@ -8425,6 +8425,19 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="TouchToFill.Shown">
+  <owner>jdoerrie@chromium.org</owner>
+  <owner>fhorschig@chromium.org</owner>
+  <summary>
+    Recorded when the Touch To Fill sheet is shown to the user.
+  </summary>
+  <metric name="UserAction" enum="TouchToFill.UserAction">
+    <summary>
+      The action a user took when interacting with the Touch To Fill sheet.
+    </summary>
+  </metric>
+</event>
+
 <event name="Translate">
   <owner>hamelphi@chromium.org</owner>
   <summary>

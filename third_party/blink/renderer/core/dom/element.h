@@ -648,7 +648,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // Returns true if this is a shadow host, and its ShadowRoot has
   // delegatesFocus flag.
   bool DelegatesFocus() const;
-  Element* FindActualFocusTarget() const;
+  Element* GetFocusableArea() const;
   virtual void focus(const FocusParams& = FocusParams());
   void focus(const FocusOptions*);
 

@@ -356,6 +356,10 @@ source_set("tests") {
   if (!is_ios) {
     sources += [
       "proxy_resolver_factory_mojo_unittest.cc",
+      "proxy_service_mojo_unittest.cc",
+      "test_mojo_proxy_resolver_factory.cc",
+      "test_mojo_proxy_resolver_factory.h",
+      "url_request_context_builder_mojo_unittest.cc",
       "websocket_throttler_unittest.cc",
     ]
 
@@ -407,6 +411,10 @@ source_set("tests") {
 
   if (trial_comparison_cert_verifier_supported) {
     sources += [ "trial_comparison_cert_verifier_mojo_unittest.cc" ]
+  }
+
+  if (!is_ios) {
+    deps += [ "//services/proxy_resolver:lib" ]
   }
 }
 

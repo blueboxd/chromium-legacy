@@ -94,13 +94,13 @@ InvalidatorRegistrarWithMemory::InvalidatorRegistrarWithMemory(
 }
 
 InvalidatorRegistrarWithMemory::~InvalidatorRegistrarWithMemory() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(registered_handler_to_topics_map_.empty());
 }
 
 void InvalidatorRegistrarWithMemory::RegisterHandler(
     InvalidationHandler* handler) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(handler);
   CHECK(!handlers_.HasObserver(handler));
   handlers_.AddObserver(handler);
@@ -108,7 +108,7 @@ void InvalidatorRegistrarWithMemory::RegisterHandler(
 
 void InvalidatorRegistrarWithMemory::UnregisterHandler(
     InvalidationHandler* handler) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(handler);
   CHECK(handlers_.HasObserver(handler));
   handlers_.RemoveObserver(handler);
@@ -122,7 +122,7 @@ void InvalidatorRegistrarWithMemory::UnregisterHandler(
 bool InvalidatorRegistrarWithMemory::UpdateRegisteredTopics(
     InvalidationHandler* handler,
     const Topics& topics) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(handler);
   CHECK(handlers_.HasObserver(handler));
 
@@ -166,7 +166,7 @@ bool InvalidatorRegistrarWithMemory::UpdateRegisteredTopics(
 
 Topics InvalidatorRegistrarWithMemory::GetRegisteredTopics(
     InvalidationHandler* handler) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto lookup = registered_handler_to_topics_map_.find(handler);
   return lookup != registered_handler_to_topics_map_.end() ? lookup->second
                                                            : Topics();
@@ -183,7 +183,7 @@ Topics InvalidatorRegistrarWithMemory::GetAllSubscribedTopics() const {
 
 void InvalidatorRegistrarWithMemory::DispatchInvalidationsToHandlers(
     const TopicInvalidationMap& invalidation_map) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // If we have no handlers, there's nothing to do.
   if (!handlers_.might_have_observers()) {
     return;
@@ -203,7 +203,7 @@ void InvalidatorRegistrarWithMemory::DispatchInvalidationsToHandlers(
 
 void InvalidatorRegistrarWithMemory::UpdateInvalidatorState(
     InvalidatorState state) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(1) << "New invalidator state: " << InvalidatorStateToString(state_)
            << " -> " << InvalidatorStateToString(state);
   state_ = state;
@@ -212,7 +212,7 @@ void InvalidatorRegistrarWithMemory::UpdateInvalidatorState(
 }
 
 InvalidatorState InvalidatorRegistrarWithMemory::GetInvalidatorState() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return state_;
 }
 
@@ -224,7 +224,7 @@ void InvalidatorRegistrarWithMemory::UpdateInvalidatorInstanceId(
 
 std::map<std::string, Topics>
 InvalidatorRegistrarWithMemory::GetHandlerNameToTopicsMap() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::map<std::string, Topics> names_to_topics;
   for (const auto& handler_and_topics : registered_handler_to_topics_map_) {
     names_to_topics[handler_and_topics.first->GetOwnerName()] =

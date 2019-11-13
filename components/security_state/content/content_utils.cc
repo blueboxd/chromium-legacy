@@ -299,6 +299,7 @@ void ExplainSafetyTipSecurity(
 
   switch (visible_security_state.safety_tip_info.status) {
     case security_state::SafetyTipStatus::kBadReputation:
+    case security_state::SafetyTipStatus::kBadReputationIgnored:
       explanations.emplace_back(
           l10n_util::GetStringUTF8(
               IDS_SECURITY_TAB_SAFETY_TIP_BAD_REPUTATION_SUMMARY),
@@ -307,6 +308,7 @@ void ExplainSafetyTipSecurity(
       break;
 
     case security_state::SafetyTipStatus::kLookalike:
+    case security_state::SafetyTipStatus::kLookalikeIgnored:
       explanations.emplace_back(
           l10n_util::GetStringUTF8(
               IDS_SECURITY_TAB_SAFETY_TIP_LOOKALIKE_SUMMARY),

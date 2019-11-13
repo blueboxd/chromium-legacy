@@ -16,7 +16,7 @@
         role="dialog" i18n-values="aria-label:termsOfServiceLoading"
         has-buttons>
       <iron-icon icon="oobe-eula:googleg" slot="oobe-icon"></iron-icon>
-      <h1 slot="title" i18n-content="termsOfServiceLoading"></h1>
+      <h1 slot="title">[[i18nDynamic(locale, 'termsOfServiceLoading')]]</h1>
     </oobe-dialog>
     <oobe-dialog id="eulaDialog" hidden="[[eulaLoadingScreenShown]]"
         role="dialog" i18n-values="aria-label:oobeEulaSectionTitle"
@@ -24,7 +24,7 @@
       <hd-iron-icon slot="oobe-icon"
           icon1x="oobe-32:googleg" icon2x="oobe-64:googleg">
       </hd-iron-icon>
-      <h1 slot="title" i18n-content="oobeEulaSectionTitle"></h1>
+      <h1 slot="title">[[i18nDynamic(locale, 'oobeEulaSectionTitle')]]</h1>
       <div slot="footer" class="flex layout vertical">
         <webview id="crosEulaFrame"
             role="document" class="focus-on-show"
@@ -32,18 +32,19 @@
             on-contentload="onFrameLoad_">
         </webview>
         <a id="installationSettings" href="#"
-            on-tap="onInstallationSettingsClicked_"
-            i18n-content="eulaSystemInstallationSettings">
+            on-tap="onInstallationSettingsClicked_">
+          [[i18nDynamic(locale, 'eulaSystemInstallationSettings')]]
         </a>
         <div id="logging" class="layout horizontal">
           <cr-toggle id="usageStats" checked="{{usageStatsChecked}}"
               on-change="onUsageChanged_" aria-labelledby="usageStatsLabel">
           </cr-toggle>
           <div id="usageStatsLabelContainer">
-            <span id="usageStatsLabel" i18n-content="checkboxLogging"
-                on-click="usageStatsLabelClicked_"></span>
-            <a id="learn-more" href="#" i18n-content="learnMore"
-                on-tap="onUsageStatsHelpLinkClicked_">
+            <span id="usageStatsLabel" on-tap="usageStatsLabelClicked_">
+              [[i18nDynamic(locale, 'checkboxLogging')]]
+            </span>
+            <a id="learn-more" href="#" on-tap="onUsageStatsHelpLinkClicked_">
+              [[i18nDynamic(locale, 'learnMore')]]
             </a>
           </div>
         </div>
@@ -55,8 +56,8 @@
         </div>
         <oobe-text-button id="acceptButton" inverse on-tap="eulaAccepted_"
             disabled="[[acceptButtonDisabled]]">
-          <div i18n-content="oobeEulaAcceptAndContinueButtonText"
-              id="accept-button-text">
+          <div>
+            [[i18nDynamic(locale, 'oobeEulaAcceptAndContinueButtonText')]]
           </div>
         </oobe-text-button>
       </div>
@@ -66,18 +67,27 @@
       <hd-iron-icon slot="oobe-icon"
           icon1x="oobe-32:googleg" icon2x="oobe-64:googleg">
       </hd-iron-icon>
-      <h1 slot="title" i18n-content="eulaSystemInstallationSettings"></h1>
+      <h1 slot="title">
+        [[i18nDynamic(locale, 'eulaSystemInstallationSettings')]]
+      </h1>
+      <!-- TODO(antrim): find out why do we have everything in subtitle -->
       <div slot="subtitle">
-        <div i18n-content="eulaTpmDesc"></div>
+        <div>
+          [[i18nDynamic(locale, 'eulaTpmDesc')]]
+        </div>
         <div class='tpm-password'>
-          <div hidden="[[isPasswordEmpty_(password)]]"
-              i18n-content="eulaTpmKeyDesc"></div>
-          <div hidden="[[!isPasswordEmpty_(password)]]"
-              i18n-content="eulaTpmDescPowerwash"></div>
+          <div hidden="[[isPasswordEmpty_(password)]]">
+            [[i18nDynamic(locale, 'eulaTpmKeyDesc')]]
+          </div>
+          <div hidden="[[!isPasswordEmpty_(password)]]">
+            [[i18nDynamic(locale, 'eulaTpmDescPowerwash')]]
+          </div>
           <div class="layout horizontal"
               hidden="[[!isWaitingForPassword_(password)]]">
             <div class="installation-settings-spinner throbber"></div>
-            <div i18n-content="eulaTpmBusy"></div>
+            <div>
+              [[i18nDynamic(locale, 'eulaTpmBusy')]]
+            </div>
           </div>
           <div class='password-row layout horizontal'>
             <div class="flex"></div>
@@ -90,7 +100,9 @@
         <div class="flex"></div>
         <oobe-text-button id="settings-close-button" inverse
             on-tap="onInstallationSettingsCloseClicked_">
-          <div i18n-content="eulaSystemInstallationSettingsOkButton"></div>
+          <div>
+            [[i18nDynamic(locale, 'eulaSystemInstallationSettingsOkButton')]]
+          </div>
         </oobe-text-button>
       </div>
     </oobe-dialog>

@@ -107,7 +107,7 @@ class HostContextFactoryPrivate : public ContextFactoryPrivate {
     // CompositorFrameSink.
     mojo::AssociatedRemote<viz::mojom::DisplayPrivate> display_private;
     std::unique_ptr<viz::HostDisplayClient> display_client;
-    viz::mojom::ExternalBeginFrameControllerAssociatedPtr
+    mojo::AssociatedRemote<viz::mojom::ExternalBeginFrameController>
         external_begin_frame_controller;
 
     std::unique_ptr<PendingBeginFrameArgs> pending_begin_frame_args;

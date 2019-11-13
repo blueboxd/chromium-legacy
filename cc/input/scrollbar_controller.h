@@ -125,8 +125,9 @@ class CC_EXPORT ScrollbarController {
   void RecomputeAutoscrollStateIfNeeded();
   void ResetState();
 
-  // Shift + click is expected to do a non-animated jump to a certain offset.
-  float GetScrollDeltaForShiftClick(const ScrollbarLayerImplBase* scrollbar);
+  // Shift (or "Option" in case of Mac) + click is expected to do a non-animated
+  // jump to a certain offset.
+  float GetScrollDeltaForAbsoluteJump(const ScrollbarLayerImplBase* scrollbar);
 
   // Determines if the delta needs to be animated.
   ui::input_types::ScrollGranularity Granularity(

@@ -129,6 +129,8 @@ component("bindings") {
     "associated_receiver.h",
     "associated_receiver_set.h",
     "associated_remote.h",
+    "binder_map.cc",
+    "binder_map.h",
     "binding.h",
     "binding_set.h",
     "callback_helpers.h",

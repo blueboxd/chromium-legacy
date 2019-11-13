@@ -4,6 +4,7 @@
 
 import("//build/config/locales.gni")
 import("//chrome/common/features.gni")
+import("//chromeos/components/media_app_ui/media_app_ui.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//ui/base/ui_features.gni")
 import("chrome_repack_locales.gni")
@@ -159,6 +160,7 @@ template("chrome_extra_paks") {
         "$root_gen_dir/chrome/multidevice_setup_resources.pak",
         "$root_gen_dir/chrome/os_settings_resources.pak",
         "$root_gen_dir/chromeos/chromeos_help_app_resources.pak",
+        "$root_gen_dir/chromeos/chromeos_media_app_bundle_resources.pak",
         "$root_gen_dir/chromeos/chromeos_resources.pak",
         "$root_gen_dir/third_party/ink/ink_resources.pak",
         "$root_gen_dir/ui/file_manager/file_manager_resources.pak",
@@ -171,6 +173,7 @@ template("chrome_extra_paks") {
         "//chrome/browser/resources/chromeos:multidevice_setup_resources",
         "//chromeos/resources",
         "//chromeos/resources:help_app_resources",
+        "//chromeos/resources:media_app_bundle_resources",
         "//third_party/ink:ink_resources",
         "//ui/file_manager:resources",
       ]

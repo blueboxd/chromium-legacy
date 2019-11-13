@@ -43,6 +43,8 @@ int GetSafetyTipBannerId(security_state::SafetyTipStatus safety_tip_status) {
         return IDR_SAFETY_TIP_SUSPICIOUS_ILLUSTRATION_DARK;
       case security_state::SafetyTipStatus::kLookalike:
         return IDR_SAFETY_TIP_LOOKALIKE_ILLUSTRATION_DARK;
+      case security_state::SafetyTipStatus::kBadReputationIgnored:
+      case security_state::SafetyTipStatus::kLookalikeIgnored:
       case security_state::SafetyTipStatus::kBadKeyword:
       case security_state::SafetyTipStatus::kUnknown:
       case security_state::SafetyTipStatus::kNone:
@@ -54,6 +56,8 @@ int GetSafetyTipBannerId(security_state::SafetyTipStatus safety_tip_status) {
         return IDR_SAFETY_TIP_SUSPICIOUS_ILLUSTRATION_LIGHT;
       case security_state::SafetyTipStatus::kLookalike:
         return IDR_SAFETY_TIP_LOOKALIKE_ILLUSTRATION_LIGHT;
+      case security_state::SafetyTipStatus::kBadReputationIgnored:
+      case security_state::SafetyTipStatus::kLookalikeIgnored:
       case security_state::SafetyTipStatus::kBadKeyword:
       case security_state::SafetyTipStatus::kUnknown:
       case security_state::SafetyTipStatus::kNone:

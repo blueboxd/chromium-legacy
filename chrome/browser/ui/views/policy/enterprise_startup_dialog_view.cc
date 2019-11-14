@@ -94,6 +94,7 @@ EnterpriseStartupDialogView::EnterpriseStartupDialogView(
     EnterpriseStartupDialog::DialogResultCallback callback)
     : callback_(std::move(callback)) {
   DialogDelegate::set_draggable(true);
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
   DialogDelegate::SetExtraView(CreateLogoView());
   SetBorder(views::CreateEmptyBorder(GetDialogInsets()));
   CreateDialogWidget(this, nullptr, nullptr)->Show();
@@ -192,10 +193,6 @@ bool EnterpriseStartupDialogView::ShouldShowWindowTitle() const {
 
 ui::ModalType EnterpriseStartupDialogView::GetModalType() const {
   return ui::MODAL_TYPE_NONE;
-}
-
-int EnterpriseStartupDialogView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK;
 }
 
 gfx::Size EnterpriseStartupDialogView::CalculatePreferredSize() const {

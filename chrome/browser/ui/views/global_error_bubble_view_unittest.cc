@@ -133,8 +133,6 @@ TEST_F(GlobalErrorBubbleViewTest, ErrorIsNull) {
 
   view_->ShouldShowCloseButton();
 
-  EXPECT_EQ(ui::DIALOG_BUTTON_NONE, view_->GetDialogButtons());
-
   view_->Cancel();
   view_->Accept();
 }

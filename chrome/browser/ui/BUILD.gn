@@ -2443,6 +2443,7 @@ jumbo_static_library("ui") {
       "//ui/base/ime",
       "//ui/events:dom_keycode_converter",
     ]
+    libs += [ "crypt32.lib" ]
 
     if (is_chrome_branded) {
       sources += [
@@ -2621,6 +2622,8 @@ jumbo_static_library("ui") {
       "views/apps/app_info_dialog/app_info_footer_panel.h",
       "views/apps/app_info_dialog/app_info_header_panel.cc",
       "views/apps/app_info_dialog/app_info_header_panel.h",
+      "views/apps/app_info_dialog/app_info_label.cc",
+      "views/apps/app_info_dialog/app_info_label.h",
       "views/apps/app_info_dialog/app_info_panel.cc",
       "views/apps/app_info_dialog/app_info_panel.h",
       "views/apps/app_info_dialog/app_info_permissions_panel.cc",

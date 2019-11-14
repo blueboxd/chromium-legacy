@@ -217,7 +217,8 @@ enum RouteRequestResultCode {
   INCOGNITO_MISMATCH,
   NO_SUPPORTED_PROVIDER,
   CANCELLED,
-  ROUTE_ALREADY_EXISTS
+  ROUTE_ALREADY_EXISTS,
+  DESKTOP_PICKER_FAILED
 // New values must be added here.
 };
 
@@ -585,7 +586,9 @@ interface MediaRouter {
   // Called to get a mirroring.mojom.MirroringServiceHost. These APIs are used
   // by Media Router extension to start mirroring through the mirroring service.
   // TODO(http://crbug.com/809249): Remove these APIs when native Cast MRP with
-  // mirroring support is rolled out.
+  // mirroring support is rolled out.  NOTE(jrw): Removing these methods from
+  // the mojo interface is probably OK, but the implementation still needs
+  // to be called by the native Cast MRP.
   GetMirroringServiceHostForTab(int32 target_tab_id,
       pending_receiver<mirroring.mojom.MirroringServiceHost> receiver);
   GetMirroringServiceHostForDesktop(

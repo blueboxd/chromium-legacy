@@ -35,6 +35,8 @@ class DesktopMediaPicker {
 
   struct Params {
     Params();
+    Params(const Params&);
+    Params& operator=(const Params&);
     ~Params();
 
     // WebContents this picker is relative to, can be null.

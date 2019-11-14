@@ -345,10 +345,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_MenuBorderColor,
     kColorId_HighlightedMenuItemBackgroundColor,
     kColorId_HighlightedMenuItemForegroundColor,
-    kColorId_MenuItemAlertBackgroundColorMax,  // Animation color at max
-                                               // intensity
-    kColorId_MenuItemAlertBackgroundColorMin,  // Animation color at min
-                                               // intensity
+    kColorId_MenuItemAlertBackgroundColor,
     // Label
     kColorId_LabelEnabledColor,
     kColorId_LabelDisabledColor,

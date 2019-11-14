@@ -244,8 +244,12 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
   // Functions for |TextItem| and |GeneratedTextItem|
   using NGTextType = NGPhysicalTextFragment::NGTextType;
   NGTextType TextType() const {
-    DCHECK_EQ(Type(), kText);
-    return static_cast<NGTextType>(sub_type_);
+    if (Type() == kText)
+      return static_cast<NGTextType>(sub_type_);
+    if (Type() == kGeneratedText)
+      return NGTextType::kGeneratedText;
+    NOTREACHED() << this;
+    return NGTextType::kNormalText;
   }
 
   // True if this is a forced line break.

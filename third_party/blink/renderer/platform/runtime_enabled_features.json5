@@ -386,10 +386,6 @@
       status: "experimental",
     },
     {
-      name: "CSSBackdropFilter",
-      status: "stable",
-    },
-    {
       name: "CSSCalcAsInt",
       status: "test",
     },

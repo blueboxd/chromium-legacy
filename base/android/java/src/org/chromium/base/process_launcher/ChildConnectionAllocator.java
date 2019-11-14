@@ -13,8 +13,9 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.util.ArraySet;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.Log;
-import org.chromium.base.VisibleForTesting;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;

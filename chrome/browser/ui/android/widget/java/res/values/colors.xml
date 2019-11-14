@@ -7,7 +7,6 @@
     <color name="black_alpha_11">#1D000000</color>
     <color name="black_alpha_65">#A6000000</color>
 
-    <color name="light_active_color">@color/modern_blue_600</color>
     <color name="toolbar_shadow_color">@color/black_alpha_11</color>
     <color name="modal_dialog_scrim_color">@color/black_alpha_65</color>
 

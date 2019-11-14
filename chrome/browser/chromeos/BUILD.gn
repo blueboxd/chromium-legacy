@@ -476,6 +476,8 @@ source_set("chromeos") {
     "arc/arc_optin_uma.h",
     "arc/arc_support_host.cc",
     "arc/arc_support_host.h",
+    "arc/arc_ui_availability_reporter.cc",
+    "arc/arc_ui_availability_reporter.h",
     "arc/arc_util.cc",
     "arc/arc_util.h",
     "arc/arc_web_contents_data.cc",
@@ -2337,6 +2339,8 @@ source_set("chromeos") {
       "printing/cups_proxy_service_manager_factory.h",
       "printing/cups_wrapper.cc",
       "printing/cups_wrapper.h",
+      "printing/printer_error_codes.cc",
+      "printing/printer_error_codes.h",
       "printing/printer_info_cups.cc",
     ]
   } else {
@@ -2518,6 +2522,7 @@ source_set("unit_tests") {
     "arc/app_shortcuts/arc_app_shortcuts_request_unittest.cc",
     "arc/arc_migration_guide_notification_unittest.cc",
     "arc/arc_support_host_unittest.cc",
+    "arc/arc_ui_availability_reporter_unittest.cc",
     "arc/arc_util_unittest.cc",
     "arc/bluetooth/arc_bluetooth_bridge_unittest.cc",
     "arc/bluetooth/arc_bluetooth_task_queue_unittest.cc",

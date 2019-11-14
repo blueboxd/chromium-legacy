@@ -54,6 +54,9 @@ SigninViewControllerDelegateViews::SigninViewControllerDelegateViews(
   DCHECK(browser_);
   DCHECK(browser_->tab_strip_model()->GetActiveWebContents())
       << "A tab must be active to present the sign-in modal dialog.";
+
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+
   web_contents_->SetDelegate(this);
 
   DCHECK(dialog_modal_type == ui::MODAL_TYPE_CHILD ||
@@ -89,10 +92,6 @@ ui::ModalType SigninViewControllerDelegateViews::GetModalType() const {
 
 bool SigninViewControllerDelegateViews::ShouldShowCloseButton() const {
   return false;
-}
-
-int SigninViewControllerDelegateViews::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
 }
 
 void SigninViewControllerDelegateViews::ResizeNativeView(int height) {

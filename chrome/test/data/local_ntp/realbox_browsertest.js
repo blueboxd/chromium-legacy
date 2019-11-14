@@ -41,6 +41,23 @@ test.realbox.clipboardEvent = function(name) {
 };
 
 /**
+ * @param {string} type
+ * @param {!Object=} modifiers
+ */
+test.realbox.trustedEventFacade = function(type, modifiers = {}) {
+  return Object.assign(
+      {
+        type,
+        isTrusted: true,
+        defaultPrevented: false,
+        preventDefault() {
+          this.defaultPrevented = true;
+        },
+      },
+      modifiers);
+};
+
+/**
  * @param {!Object=} modifiers Things to override about the returned result.
  * @return {!AutocompleteResult}
  */
@@ -48,6 +65,7 @@ test.realbox.getUrlMatch = function(modifiers = {}) {
   return Object.assign(
       {
         allowedToBeDefaultMatch: true,
+        canDisplay: true,
         contents: 'helloworld.com',
         contentsClass: [{offset: 0, style: 1}],
         description: '',
@@ -70,6 +88,7 @@ test.realbox.getSearchMatch = function(modifiers = {}) {
   return Object.assign(
       {
         allowedToBeDefaultMatch: true,
+        canDisplay: true,
         contents: 'hello world',
         contentsClass: [{offset: 0, style: 0}],
         description: 'Google search',
@@ -84,14 +103,17 @@ test.realbox.getSearchMatch = function(modifiers = {}) {
       modifiers);
 };
 
+/** @type {!Array<number>} */
+test.realbox.deletedLines;
+
+/** @type {!Array<Object>} */
+test.realbox.opens;
+
 /** @typedef {{input: string, preventInlineAutocomplete: bool}} */
 let AutocompleteQuery;
 
 /** @type {!Array<AutocompleteQuery>} */
 test.realbox.queries;
-
-/** @type {!Array<number>} */
-test.realbox.deletedLines;
 
 /** @type {!Element} */
 test.realbox.realboxEl;
@@ -111,17 +133,18 @@ test.realbox.setUp = function() {
       deleteAutocompleteMatch(line) {
         test.realbox.deletedLines.push(line);
       },
+      openAutocompleteMatch(index, url, button, alt, ctrl, meta, shift) {
+        test.realbox.opens.push({index, url, button, alt, ctrl, meta, shift});
+      },
       queryAutocomplete(input, preventInlineAutocomplete) {
-        test.realbox.queries.push({
-          input: input,
-          preventInlineAutocomplete: preventInlineAutocomplete
-        });
+        test.realbox.queries.push({input, preventInlineAutocomplete});
       },
       stopAutocomplete(clearResult) {}
     },
   };
 
   test.realbox.deletedLines = [];
+  test.realbox.opens = [];
   test.realbox.queries = [];
 
   initLocalNTP(/*isGooglePage=*/ true);
@@ -702,6 +725,7 @@ test.realbox.testRemoveIcon = function() {
 
   assertEquals(1, test.realbox.deletedLines.length);
   assertEquals(0, test.realbox.deletedLines[0]);
+  assertEquals(0, test.realbox.opens.length);
 
   chrome.embeddedSearch.searchBox.autocompleteresultchanged(
       {input: test.realbox.queries[0].input, matches: []});
@@ -738,6 +762,7 @@ test.realbox.testPressEnterOnSelectedMatch = function() {
   assertTrue(shiftEnter.defaultPrevented);
 
   assertTrue(clicked);
+  assertEquals(0, test.realbox.opens.length);
 };
 
 test.realbox.testPressEnterNoSelectedMatch = function() {
@@ -768,6 +793,7 @@ test.realbox.testPressEnterNoSelectedMatch = function() {
   assertFalse(enter.defaultPrevented);
 
   assertFalse(clicked);
+  assertEquals(0, test.realbox.opens.length);
 };
 
 test.realbox.testArrowDownMovesFocus = function() {
@@ -869,6 +895,7 @@ test.realbox.testPressEnterAfterFocusout = function() {
   assertTrue(enter.defaultPrevented);
 
   assertTrue(clicked);
+  assertEquals(0, test.realbox.opens.length);
 };
 
 test.realbox.testInputAfterFocusoutPrefixMatches = function() {
@@ -989,4 +1016,60 @@ test.realbox.testArrowUpDownShowsMatchesWhenHidden = function() {
   });
 
   assertTrue(test.realbox.areMatchesShowing());
+};
+
+// Test that trying to open e.g. chrome:// links goes through the mojo API.
+test.realbox.testPrivilegedDestinationUrls = function() {
+  test.realbox.realboxEl.value = 'about';
+  test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
+
+  chrome.embeddedSearch.searchBox.autocompleteresultchanged({
+    input: test.realbox.realboxEl.value,
+    matches: [
+      test.realbox.getUrlMatch({
+        canDisplay: false,
+        destinationUrl: 'chrome://settings/',
+        supportsDeletion: true,
+      }),
+    ],
+  });
+
+  const matchEls = $(test.realbox.IDS.REALBOX_MATCHES).children;
+  assertEquals(1, matchEls.length);
+
+  const target = matchEls[0];
+  matchEls[0].onclick(test.realbox.trustedEventFacade('click', {target}));
+  // Accept left clicks.
+  assertEquals(1, test.realbox.opens.length);
+  assertEquals('chrome://settings/', test.realbox.opens[0].url);
+
+  // Accept middle clicks.
+  const middleClick =
+      test.realbox.trustedEventFacade('auxclick', {button: 1, target});
+  matchEls[0].onauxclick(middleClick);
+  assertTrue(middleClick.defaultPrevented);
+  assertEquals(2, test.realbox.opens.length);
+
+  // Ignore right clicks.
+  const rightClick =
+      test.realbox.trustedEventFacade('auxclick', {button: 2, target});
+  matchEls[0].onauxclick(rightClick);
+  assertFalse(rightClick.defaultPrevented);
+  assertEquals(2, test.realbox.opens.length);
+
+  // Accept 'Enter' keypress.
+  const enter = new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: 'Enter',
+  });
+  test.realbox.realboxEl.dispatchEvent(enter);
+  assertTrue(enter.defaultPrevented);
+  assertEquals(3, test.realbox.opens.length);
+
+  // Ensure clicking remove icon doesn't accidentally trigger navigation.
+  assertEquals(0, test.realbox.deletedLines.length);
+  matchEls[0].querySelector(`.${test.realbox.CLASSES.REMOVE_ICON}`).click();
+  assertEquals(1, test.realbox.deletedLines.length);
+  assertEquals(3, test.realbox.opens.length);
 };

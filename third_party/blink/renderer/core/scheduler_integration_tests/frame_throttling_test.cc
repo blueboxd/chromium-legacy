@@ -218,7 +218,7 @@ TEST_P(FrameThrottlingTest, IntersectionObservationOverridesThrottling) {
       kCompositingUpdateRebuildTree);
   EXPECT_EQ(kCompositingUpdateRebuildTree,
             inner_view->Compositor()->pending_update_type_);
-  EXPECT_TRUE(inner_view->Layer()->NeedsRepaint());
+  EXPECT_TRUE(inner_view->Layer()->SelfNeedsRepaint());
 
   CompositeFrame();
   // ...but only for one frame.
@@ -230,7 +230,7 @@ TEST_P(FrameThrottlingTest, IntersectionObservationOverridesThrottling) {
                   ->ShouldDoFullPaintInvalidation());
   EXPECT_EQ(kCompositingUpdateRebuildTree,
             inner_view->Compositor()->pending_update_type_);
-  EXPECT_TRUE(inner_view->Layer()->NeedsRepaint());
+  EXPECT_TRUE(inner_view->Layer()->SelfNeedsRepaint());
 }
 
 TEST_P(FrameThrottlingTest, HiddenCrossOriginZeroByZeroFramesAreNotThrottled) {

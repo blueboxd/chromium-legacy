@@ -12,11 +12,6 @@
     <color name="explanation_text_color">#909090</color>
     <color name="text_highlight_color">@color/highlight_color_on_dark_text</color>
 
-    <!-- Control colors for toggles, checkboxes, ratio buttons, list item highlight, and accent.
-         Note that these should NOT be used for icon tint. -->
-    <color name="control_normal_color">@color/modern_grey_700</color>
-    <color name="control_highlight_color">@color/modern_grey_800_alpha_38</color>
-
     <!-- Other colors -->
     <color name="dark_action_bar_color">#263238</color>
     <color name="dark_status_bar_color">#161E21</color>

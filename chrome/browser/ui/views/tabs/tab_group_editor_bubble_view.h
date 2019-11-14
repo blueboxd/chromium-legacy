@@ -33,7 +33,6 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
   // views::BubbleDialogDelegateView:
   gfx::Size CalculatePreferredSize() const override;
   ui::ModalType GetModalType() const override;
-  int GetDialogButtons() const override;
 
  private:
   TabGroupEditorBubbleView(TabGroupHeader* anchor_view,

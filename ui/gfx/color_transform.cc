@@ -684,7 +684,7 @@ class ColorTransformToLinear : public ColorTransformPerChannelTransferFn {
                   "  float v2 = v;\n"
                   "  #endif\n";
         } else {
-          *src << "  float v2 = v\n";
+          *src << "  " << scalar_type << " v2 = v;\n";
         }
         *src << "  v2 = pow(max(pow(v2, 1.0 / m2) - c1, 0.0) /\n"
                 "              (c2 - c3 * pow(v2, 1.0 / m2)), 1.0 / m1);\n"
@@ -874,32 +874,6 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
     ColorSpace src,
     const ColorSpace& dst,
     ColorTransform::Intent intent) {
-  if (intent == ColorTransform::Intent::INTENT_PERCEPTUAL) {
-    switch (src.transfer_) {
-      case ColorSpace::TransferID::SMPTEST2084:
-        if (!dst.IsHDR()) {
-          // We don't have an HDR display, so replace SMPTE 2084 with
-          // something that returns ranges more or less suitable for a normal
-          // display.
-          src.transfer_ = ColorSpace::TransferID::SMPTEST2084_NON_HDR;
-        }
-        break;
-
-      case ColorSpace::TransferID::ARIB_STD_B67:
-        if (!dst.IsHDR()) {
-          // Interpreting HLG using a gamma 2.4 works reasonably well for SDR
-          // displays.
-          src.transfer_ = ColorSpace::TransferID::GAMMA24;
-        }
-        break;
-
-      default:  // Do nothing
-        break;
-    }
-
-    // TODO(hubbe): shrink gamuts here (never stretch gamuts)
-  }
-
   steps_.push_back(
       std::make_unique<ColorTransformMatrix>(GetRangeAdjustMatrix(src)));
 

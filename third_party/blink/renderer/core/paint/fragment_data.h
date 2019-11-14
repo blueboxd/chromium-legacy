@@ -16,8 +16,6 @@ namespace blink {
 class PaintLayer;
 
 // Represents the data for a particular fragment of a LayoutObject.
-// Only LayoutObjects with a self-painting PaintLayer may have more than one
-// FragmentData, and even then only when they are inside of multicol.
 // See README.md.
 class CORE_EXPORT FragmentData {
   USING_FAST_MALLOC(FragmentData);

@@ -17,16 +17,20 @@
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/browser_context.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "net/base/net_errors.h"
 #include "services/data_decoder/public/cpp/safe_bundled_exchanges_parser.h"
 #include "services/data_decoder/public/mojom/bundled_exchanges_parser.mojom.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
 
 class BundledExchangesSource;
+class BundledExchangesBlobDataSource;
 
 // A class to handle a BundledExchanges that is specified by |source|.
 // It asks the utility process to parse metadata and response structures, and
@@ -39,6 +43,11 @@ class CONTENT_EXPORT BundledExchangesReader final
  public:
   explicit BundledExchangesReader(
       std::unique_ptr<BundledExchangesSource> source);
+  BundledExchangesReader(std::unique_ptr<BundledExchangesSource> source,
+                         int64_t content_length,
+                         mojo::ScopedDataPipeConsumerHandle outer_response_body,
+                         network::mojom::URLLoaderClientEndpointsPtr endpoints,
+                         BrowserContext::BlobContextGetter blob_context_getter);
 
   // Starts parsing, and runs |callback| when meta data gets to be available.
   // |error| is set only on failures.
@@ -119,7 +128,11 @@ class CONTENT_EXPORT BundledExchangesReader final
   const std::unique_ptr<BundledExchangesSource> source_;
 
   data_decoder::SafeBundledExchangesParser parser_;
+  // Used when loading a web bundle from file.
   scoped_refptr<SharedFile> file_;
+  // Used when loading a web bundle from network.
+  std::unique_ptr<BundledExchangesBlobDataSource> blob_data_source_;
+
   GURL primary_url_;
   base::flat_map<GURL, data_decoder::mojom::BundleIndexValuePtr> entries_;
   bool metadata_ready_ = false;

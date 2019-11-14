@@ -213,8 +213,8 @@ TEST_P(PaintLayerTest, CompositedScrollingNoNeedsRepaint) {
             content_layer->LocationWithoutPositionOffset());
   EXPECT_EQ(LayoutSize(1000, 1000),
             content_layer->ContainingLayer()->ScrolledContentOffset());
-  EXPECT_FALSE(content_layer->NeedsRepaint());
-  EXPECT_FALSE(scroll_layer->NeedsRepaint());
+  EXPECT_FALSE(content_layer->SelfNeedsRepaint());
+  EXPECT_FALSE(scroll_layer->SelfNeedsRepaint());
   UpdateAllLifecyclePhasesForTest();
 }
 
@@ -247,8 +247,8 @@ TEST_P(PaintLayerTest, NonCompositedScrollingNeedsRepaint) {
   EXPECT_EQ(LayoutSize(1000, 1000),
             content_layer->ContainingLayer()->ScrolledContentOffset());
 
-  EXPECT_TRUE(scroll_layer->NeedsRepaint());
-  EXPECT_FALSE(content_layer->NeedsRepaint());
+  EXPECT_TRUE(scroll_layer->SelfNeedsRepaint());
+  EXPECT_FALSE(content_layer->SelfNeedsRepaint());
   UpdateAllLifecyclePhasesForTest();
 }
 
@@ -1941,12 +1941,12 @@ TEST_P(PaintLayerTest, NeedsRepaintOnSelfPaintingStatusChange) {
   // Target layer is self painting because it is a multicol container.
   EXPECT_TRUE(target_layer->IsSelfPaintingLayer());
   EXPECT_EQ(span_layer, target_layer->CompositingContainer());
-  EXPECT_FALSE(target_layer->NeedsRepaint());
-  EXPECT_FALSE(span_layer->NeedsRepaint());
+  EXPECT_FALSE(target_layer->SelfNeedsRepaint());
+  EXPECT_FALSE(span_layer->SelfNeedsRepaint());
 
   // Removing column-width: 10px makes target layer no longer self-painting,
   // and change its compositing container. The original compositing container
-  // span_layer should be marked NeedsRepaint.
+  // span_layer should be marked SelfNeedsRepaint.
   target_element->setAttribute(html_names::kStyleAttr,
                                "overflow: hidden; float: left");
 
@@ -1962,9 +1962,9 @@ TEST_P(PaintLayerTest, NeedsRepaintOnSelfPaintingStatusChange) {
   } else {
     EXPECT_EQ(span_layer->Parent(), target_layer->CompositingContainer());
   }
-  EXPECT_TRUE(target_layer->NeedsRepaint());
-  EXPECT_TRUE(target_layer->CompositingContainer()->NeedsRepaint());
-  EXPECT_TRUE(span_layer->NeedsRepaint());
+  EXPECT_TRUE(target_layer->SelfNeedsRepaint());
+  EXPECT_TRUE(target_layer->CompositingContainer()->SelfNeedsRepaint());
+  EXPECT_TRUE(span_layer->SelfNeedsRepaint());
   UpdateAllLifecyclePhasesForTest();
 }
 
@@ -1990,8 +1990,8 @@ TEST_P(PaintLayerTest, NeedsRepaintOnRemovingStackedLayer) {
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
 
   EXPECT_FALSE(target_object->HasLayer());
-  EXPECT_TRUE(body_layer->NeedsRepaint());
-  EXPECT_TRUE(old_compositing_container->NeedsRepaint());
+  EXPECT_TRUE(body_layer->SelfNeedsRepaint());
+  EXPECT_TRUE(old_compositing_container->DescendantNeedsRepaint());
 
   UpdateAllLifecyclePhasesForTest();
 }
@@ -2229,16 +2229,19 @@ TEST_P(PaintLayerTest, SetNeedsRepaintSelfPaintingUnderNonSelfPainting) {
   auto* span_layer = GetPaintLayerByElementId("span");
   auto* floating_layer = GetPaintLayerByElementId("floating");
   auto* multicol_layer = GetPaintLayerByElementId("multicol");
-  EXPECT_FALSE(html_layer->NeedsRepaint());
-  EXPECT_FALSE(span_layer->NeedsRepaint());
-  EXPECT_FALSE(floating_layer->NeedsRepaint());
-  EXPECT_FALSE(multicol_layer->NeedsRepaint());
+  EXPECT_FALSE(html_layer->SelfNeedsRepaint());
+  EXPECT_FALSE(span_layer->SelfNeedsRepaint());
+  EXPECT_FALSE(floating_layer->SelfNeedsRepaint());
+  EXPECT_FALSE(multicol_layer->SelfNeedsRepaint());
 
   multicol_layer->SetNeedsRepaint();
-  EXPECT_TRUE(html_layer->NeedsRepaint());
-  EXPECT_TRUE(span_layer->NeedsRepaint());
-  EXPECT_TRUE(floating_layer->NeedsRepaint());
-  EXPECT_TRUE(multicol_layer->NeedsRepaint());
+  EXPECT_TRUE(html_layer->DescendantNeedsRepaint());
+  if (RuntimeEnabledFeatures::LayoutNGEnabled())
+    EXPECT_TRUE(span_layer->DescendantNeedsRepaint());
+  else
+    EXPECT_TRUE(span_layer->SelfNeedsRepaint());
+  EXPECT_TRUE(floating_layer->DescendantNeedsRepaint());
+  EXPECT_TRUE(multicol_layer->SelfNeedsRepaint());
 }
 
 TEST_P(PaintLayerTest, HitTestPseudoElementWithContinuation) {

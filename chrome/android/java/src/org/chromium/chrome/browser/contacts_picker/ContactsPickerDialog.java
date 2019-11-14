@@ -7,7 +7,8 @@ package org.chromium.chrome.browser.contacts_picker;
 import android.content.Context;
 import android.support.v7.app.AlertDialog;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.chrome.R;
 import org.chromium.ui.ContactsPickerListener;
 

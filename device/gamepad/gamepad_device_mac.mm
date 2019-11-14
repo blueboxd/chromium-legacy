@@ -98,7 +98,8 @@ GamepadDeviceMac::GamepadDeviceMac(int location_id,
       ff_effect_ref_(nullptr) {
   if (Dualshock4Controller::IsDualshock4(vendor_id, product_id)) {
     dualshock4_ = std::make_unique<Dualshock4Controller>(
-        bus_type_, std::make_unique<HidWriterMac>(device_ref));
+        vendor_id, product_id, bus_type_,
+        std::make_unique<HidWriterMac>(device_ref));
     return;
   }
 

@@ -49,7 +49,6 @@ junit_binary("touch_to_fill_junit_tests") {
   deps = [
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
-    "//chrome/android:chrome_junit_test_support",
     "//chrome/android:chrome_test_util_java",
     "//chrome/browser/touch_to_fill/android/internal:java",
     "//components/module_installer/android:module_installer_java",

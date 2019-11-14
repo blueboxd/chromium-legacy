@@ -5,6 +5,7 @@
 #include "content/browser/web_package/bundled_exchanges_handle.h"
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/sequence_checker.h"
 #include "base/strings/stringprintf.h"
@@ -19,8 +20,10 @@
 #include "content/browser/web_package/bundled_exchanges_utils.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_utils.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -28,6 +31,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/data_decoder/public/mojom/bundled_exchanges_parser.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "third_party/blink/public/common/loader/throttling_url_loader.h"
 
 namespace content {
 
@@ -65,15 +69,21 @@ const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     "by Blink, but based on a user initiated navigation."
   )");
 
-void AddMetadataParseErrorMessageToConsole(
-    int frame_tree_node_id,
-    const data_decoder::mojom::BundleMetadataParseErrorPtr& metadata_error) {
+void AddErrorMessageToConsole(int frame_tree_node_id,
+                              const std::string& error_message) {
   WebContents* web_contents =
       WebContents::FromFrameTreeNodeId(frame_tree_node_id);
   if (!web_contents)
     return;
   web_contents->GetMainFrame()->AddMessageToConsole(
-      blink::mojom::ConsoleMessageLevel::kError,
+      blink::mojom::ConsoleMessageLevel::kError, error_message);
+}
+
+void AddMetadataParseErrorMessageToConsole(
+    int frame_tree_node_id,
+    const data_decoder::mojom::BundleMetadataParseErrorPtr& metadata_error) {
+  AddErrorMessageToConsole(
+      frame_tree_node_id,
       std::string("Failed to read metadata of Web Bundle file: ") +
           metadata_error->message);
 }
@@ -128,12 +138,12 @@ class PrimaryURLRedirectLoader final : public network::mojom::URLLoader {
   DISALLOW_COPY_AND_ASSIGN(PrimaryURLRedirectLoader);
 };
 
-// A class to inherit NavigationLoaderInterceptor for the navigation to a
+// A class to inherit NavigationLoaderInterceptor for a navigation to a
 // untrustable BundledExchanges file (eg: "file:///tmp/a.wbn").
 // The overridden methods of NavigationLoaderInterceptor are called in the
 // following sequence:
 // [1] MaybeCreateLoader() is called for all navigation requests. It calls the
-//     |callback| with the a null RequestHandler.
+//     |callback| with a null RequestHandler.
 // [2] MaybeCreateLoaderForResponse() is called for all navigation responses.
 //     If the response mime type is not "application/webbundle", returns false.
 //     Otherwise starts reading the metadata and returns true. Once the metadata
@@ -208,9 +218,9 @@ class InterceptorForFile final : public NavigationLoaderInterceptor {
     if (metadata_error) {
       AddMetadataParseErrorMessageToConsole(frame_tree_node_id_,
                                             metadata_error);
-      forwarding_client_->OnComplete(network::URLLoaderCompletionStatus(
-          net::ERR_INVALID_BUNDLED_EXCHANGES));
-      forwarding_client_.reset();
+      std::move(forwarding_client_)
+          ->OnComplete(network::URLLoaderCompletionStatus(
+              net::ERR_INVALID_BUNDLED_EXCHANGES));
       return;
     }
     DCHECK(reader_);
@@ -254,7 +264,7 @@ class InterceptorForFile final : public NavigationLoaderInterceptor {
   DISALLOW_COPY_AND_ASSIGN(InterceptorForFile);
 };
 
-// A class to inherit NavigationLoaderInterceptor for the navigation to a
+// A class to inherit NavigationLoaderInterceptor for a navigation to a
 // trustable BundledExchanges file (eg: "file:///tmp/a.wbn").
 // The overridden methods of NavigationLoaderInterceptor are called in the
 // following sequence:
@@ -382,7 +392,179 @@ class InterceptorForTrustableFile final : public NavigationLoaderInterceptor {
   DISALLOW_COPY_AND_ASSIGN(InterceptorForTrustableFile);
 };
 
-// A class to inherit NavigationLoaderInterceptor for the navigation within a
+// A class to inherit NavigationLoaderInterceptor for a navigation to a
+// BundledExchanges file on HTTPS server (eg: "https://example.com/a.wbn").
+// The overridden methods of NavigationLoaderInterceptor are called in the
+// following sequence:
+// [1] MaybeCreateLoader() is called for all navigation requests. It calls the
+//     |callback| with a null RequestHandler.
+// [2] MaybeCreateLoaderForResponse() is called for all navigation responses.
+//     - If the response mime type is not "application/webbundle", or attachment
+//       Content-Disposition header is set, returns false.
+//     - If the URL isn't HTTPS nor localhost HTTP, or the Content-Length header
+//       is not a positive value, completes the requests with
+//       ERR_INVALID_BUNDLED_EXCHANGES and returns true.
+//     - Otherwise starts reading the metadata and returns true. Once the
+//       metadata is read, OnMetadataReady() is called, and a redirect loader is
+//       created to redirect the navigation request to the Bundle's primary URL
+//       ("https://example.com/a.html").
+// [3] MaybeCreateLoader() is called again for the redirect. It continues on
+//     StartResponse() to create the loader for the main resource.
+class InterceptorForNetwork final : public NavigationLoaderInterceptor {
+ public:
+  InterceptorForNetwork(DoneCallback done_callback,
+                        BrowserContext* browser_context,
+                        int frame_tree_node_id)
+      : done_callback_(std::move(done_callback)),
+        browser_context_(browser_context),
+        frame_tree_node_id_(frame_tree_node_id) {
+    DCHECK(browser_context_);
+  }
+  ~InterceptorForNetwork() override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  }
+
+ private:
+  // NavigationLoaderInterceptor implementation
+  void MaybeCreateLoader(
+      const network::ResourceRequest& tentative_resource_request,
+      BrowserContext* browser_context,
+      LoaderCallback callback,
+      FallbackCallback fallback_callback) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    if (!reader_) {
+      std::move(callback).Run({});
+      return;
+    }
+    std::move(callback).Run(base::MakeRefCounted<SingleRequestURLLoaderFactory>(
+        base::BindOnce(&InterceptorForNetwork::StartResponse,
+                       weak_factory_.GetWeakPtr())));
+  }
+
+  bool MaybeCreateLoaderForResponse(
+      const network::ResourceRequest& request,
+      const network::ResourceResponseHead& response_head,
+      mojo::ScopedDataPipeConsumerHandle* response_body,
+      network::mojom::URLLoaderPtr* loader,
+      mojo::PendingReceiver<network::mojom::URLLoaderClient>* client_receiver,
+      blink::ThrottlingURLLoader* url_loader,
+      bool* skip_other_interceptors,
+      bool* will_return_and_handle_unsafe_redirect) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    if (response_head.mime_type !=
+        bundled_exchanges_utils::
+            kBundledExchangesFileMimeTypeWithoutParameters) {
+      return false;
+    }
+    if (download_utils::MustDownload(request.url, response_head.headers.get(),
+                                     response_head.mime_type)) {
+      return false;
+    }
+
+    auto source =
+        BundledExchangesSource::MaybeCreateFromNetworkUrl(request.url);
+    if (!source) {
+      AddErrorMessageToConsole(
+          frame_tree_node_id_,
+          "Web Bundle response must be served from HTTPS or localhost HTTP.");
+      *client_receiver = forwarding_client_.BindNewPipeAndPassReceiver();
+      std::move(forwarding_client_)
+          ->OnComplete(network::URLLoaderCompletionStatus(
+              net::ERR_INVALID_BUNDLED_EXCHANGES));
+      return true;
+    }
+
+    if (response_head.content_length <= 0) {
+      AddErrorMessageToConsole(
+          frame_tree_node_id_,
+          "Web Bundle response must have valid Content-Length header.");
+      *client_receiver = forwarding_client_.BindNewPipeAndPassReceiver();
+      std::move(forwarding_client_)
+          ->OnComplete(network::URLLoaderCompletionStatus(
+              net::ERR_INVALID_BUNDLED_EXCHANGES));
+      return true;
+    }
+
+    // TODO(crbug.com/1018640): Check the special HTTP response header if we
+    // decided to require one for WBN navigation.
+
+    reader_ = base::MakeRefCounted<BundledExchangesReader>(
+        std::move(source), response_head.content_length,
+        std::move(*response_body), url_loader->Unbind(),
+        BrowserContext::GetBlobStorageContext(browser_context_));
+    reader_->ReadMetadata(
+        base::BindOnce(&InterceptorForNetwork::OnMetadataReady,
+                       weak_factory_.GetWeakPtr(), request));
+    *client_receiver = forwarding_client_.BindNewPipeAndPassReceiver();
+    return true;
+  }
+
+  void OnMetadataReady(network::ResourceRequest request,
+                       data_decoder::mojom::BundleMetadataParseErrorPtr error) {
+    if (error) {
+      AddMetadataParseErrorMessageToConsole(frame_tree_node_id_, error);
+      std::move(forwarding_client_)
+          ->OnComplete(network::URLLoaderCompletionStatus(
+              net::ERR_INVALID_BUNDLED_EXCHANGES));
+      return;
+    }
+    primary_url_ = reader_->GetPrimaryURL();
+    if (!reader_->HasEntry(primary_url_)) {
+      AddErrorMessageToConsole(
+          frame_tree_node_id_,
+          "The primary URL resource is not found in the web bundle.");
+      std::move(forwarding_client_)
+          ->OnComplete(network::URLLoaderCompletionStatus(
+              net::ERR_INVALID_BUNDLED_EXCHANGES));
+      return;
+    }
+
+    // TODO(crbug.com/1018640): Check the scope to see if it's allowed to load
+    // the URL.
+    if (primary_url_.GetOrigin() != reader_->source().url().GetOrigin()) {
+      AddErrorMessageToConsole(frame_tree_node_id_,
+                               "The origin of primary URL doesn't match with "
+                               "the origin of the web bundle.");
+      std::move(forwarding_client_)
+          ->OnComplete(network::URLLoaderCompletionStatus(
+              net::ERR_INVALID_BUNDLED_EXCHANGES));
+      return;
+    }
+    url_loader_factory_ = std::make_unique<BundledExchangesURLLoaderFactory>(
+        reader_, frame_tree_node_id_);
+    auto redirect_loader =
+        std::make_unique<PrimaryURLRedirectLoader>(forwarding_client_.Unbind());
+    redirect_loader->OnReadyToRedirect(request, primary_url_);
+  }
+
+  void StartResponse(const network::ResourceRequest& resource_request,
+                     mojo::PendingReceiver<network::mojom::URLLoader> receiver,
+                     network::mojom::URLLoaderClientPtr client) {
+    network::ResourceRequest new_resource_request = resource_request;
+    new_resource_request.url = primary_url_;
+    url_loader_factory_->CreateLoaderAndStart(
+        std::move(receiver), 0, 0, 0, new_resource_request, std::move(client),
+        net::MutableNetworkTrafficAnnotationTag(kTrafficAnnotation));
+    std::move(done_callback_).Run(primary_url_, std::move(url_loader_factory_));
+  }
+
+  DoneCallback done_callback_;
+  BrowserContext* browser_context_;
+  const int frame_tree_node_id_;
+  scoped_refptr<BundledExchangesReader> reader_;
+  GURL primary_url_;
+  std::unique_ptr<BundledExchangesURLLoaderFactory> url_loader_factory_;
+
+  mojo::Remote<network::mojom::URLLoaderClient> forwarding_client_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<InterceptorForNetwork> weak_factory_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(InterceptorForNetwork);
+};
+
+// A class to inherit NavigationLoaderInterceptor for a navigation within a
 // trustable BundledExchanges file.
 // For example:
 //   A user opened "file:///tmp/a.wbn", and InterceptorForTrustableFile
@@ -445,7 +627,7 @@ class InterceptorForTrackedNavigationFromTrustableFile final
   DISALLOW_COPY_AND_ASSIGN(InterceptorForTrackedNavigationFromTrustableFile);
 };
 
-// A class to inherit NavigationLoaderInterceptor for the navigation within a
+// A class to inherit NavigationLoaderInterceptor for a navigation within a
 // BundledExchanges file.
 // For example:
 //   A user opened "file:///tmp/a.wbn", and InterceptorForFile redirected to
@@ -660,7 +842,7 @@ std::unique_ptr<BundledExchangesHandle>
 BundledExchangesHandle::CreateForTrustableFile(
     std::unique_ptr<BundledExchangesSource> source,
     int frame_tree_node_id) {
-  DCHECK(source->is_trusted());
+  DCHECK(source->is_trusted_file());
   auto handle = base::WrapUnique(new BundledExchangesHandle());
   handle->SetInterceptor(std::make_unique<InterceptorForTrustableFile>(
       std::move(source),
@@ -672,35 +854,60 @@ BundledExchangesHandle::CreateForTrustableFile(
 
 // static
 std::unique_ptr<BundledExchangesHandle>
+BundledExchangesHandle::CreateForNetwork(BrowserContext* browser_context,
+                                         int frame_tree_node_id) {
+  DCHECK(base::FeatureList::IsEnabled(features::kWebBundlesFromNetwork));
+  auto handle = base::WrapUnique(new BundledExchangesHandle());
+  handle->SetInterceptor(std::make_unique<InterceptorForNetwork>(
+      base::BindOnce(&BundledExchangesHandle::OnBundledExchangesFileLoaded,
+                     handle->weak_factory_.GetWeakPtr()),
+      browser_context, frame_tree_node_id));
+  return handle;
+}
+
+// static
+std::unique_ptr<BundledExchangesHandle>
 BundledExchangesHandle::CreateForTrackedNavigation(
     scoped_refptr<BundledExchangesReader> reader,
     int frame_tree_node_id) {
   auto handle = base::WrapUnique(new BundledExchangesHandle());
-  if (reader->source().is_trusted()) {
-    handle->SetInterceptor(
-        std::make_unique<InterceptorForTrackedNavigationFromTrustableFile>(
-            std::move(reader),
-            base::BindOnce(
-                &BundledExchangesHandle::OnBundledExchangesFileLoaded,
-                handle->weak_factory_.GetWeakPtr()),
-            frame_tree_node_id));
-  } else {
-    handle->SetInterceptor(
-        std::make_unique<InterceptorForTrackedNavigationFromFile>(
-            std::move(reader),
-            base::BindOnce(
-                &BundledExchangesHandle::OnBundledExchangesFileLoaded,
-                handle->weak_factory_.GetWeakPtr()),
-            frame_tree_node_id));
+  switch (reader->source().type()) {
+    case BundledExchangesSource::Type::kTrustedFile:
+      handle->SetInterceptor(
+          std::make_unique<InterceptorForTrackedNavigationFromTrustableFile>(
+              std::move(reader),
+              base::BindOnce(
+                  &BundledExchangesHandle::OnBundledExchangesFileLoaded,
+                  handle->weak_factory_.GetWeakPtr()),
+              frame_tree_node_id));
+      break;
+    case BundledExchangesSource::Type::kFile:
+      handle->SetInterceptor(
+          std::make_unique<InterceptorForTrackedNavigationFromFile>(
+              std::move(reader),
+              base::BindOnce(
+                  &BundledExchangesHandle::OnBundledExchangesFileLoaded,
+                  handle->weak_factory_.GetWeakPtr()),
+              frame_tree_node_id));
+      break;
+    case BundledExchangesSource::Type::kNetwork:
+      // Currently navigation within web bundles from network is not supported.
+      // TODO(crbug.com/1018640): Implement this.
+      NOTREACHED();
+      break;
   }
   return handle;
 }
 
 // static
 std::unique_ptr<BundledExchangesHandle>
-BundledExchangesHandle::CreateForNavigationInfo(
+BundledExchangesHandle::MaybeCreateForNavigationInfo(
     std::unique_ptr<BundledExchangesNavigationInfo> navigation_info,
     int frame_tree_node_id) {
+  // Currently history navigation is not supported for web bundles from network.
+  // TODO(crbug.com/1018640): Implement this.
+  if (navigation_info->source().is_network())
+    return nullptr;
   auto handle = base::WrapUnique(new BundledExchangesHandle());
   handle->SetInterceptor(std::make_unique<InterceptorForNavigationInfo>(
       std::move(navigation_info),
@@ -751,7 +958,7 @@ void BundledExchangesHandle::OnBundledExchangesFileLoaded(
     const GURL& target_inner_url,
     std::unique_ptr<BundledExchangesURLLoaderFactory> url_loader_factory) {
   auto source = url_loader_factory->reader()->source().Clone();
-  if (!source->is_trusted())
+  if (source->is_file())
     base_url_override_ = target_inner_url;
   navigation_info_ = std::make_unique<BundledExchangesNavigationInfo>(
       std::move(source), target_inner_url);

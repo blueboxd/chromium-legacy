@@ -401,7 +401,7 @@ TEST_F(HomeLauncherGestureHandlerTest, TransparentShelfWileDragging) {
 
   // Begin to show the home launcher, the shelf should become transparent.
   DoPress(Mode::kSlideUpToShow);
-  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT,
+  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_HOME_LAUNCHER,
             AshTestBase::GetPrimaryShelf()
                 ->shelf_layout_manager()
                 ->GetShelfBackgroundType());
@@ -411,7 +411,7 @@ TEST_F(HomeLauncherGestureHandlerTest, TransparentShelfWileDragging) {
   GetGestureHandler()->OnScrollEvent(gfx::Point(0, 300), 0.f, -10.f);
   GetGestureHandler()->OnReleaseEvent(gfx::Point(0, 300),
                                       /*velocity_y=*/base::nullopt);
-  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT,
+  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_HOME_LAUNCHER,
             AshTestBase::GetPrimaryShelf()
                 ->shelf_layout_manager()
                 ->GetShelfBackgroundType());
@@ -419,7 +419,7 @@ TEST_F(HomeLauncherGestureHandlerTest, TransparentShelfWileDragging) {
   // Begin to hide the home launcher, the background should still be
   // transparent.
   DoPress(Mode::kSlideDownToHide);
-  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT,
+  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_HOME_LAUNCHER,
             AshTestBase::GetPrimaryShelf()
                 ->shelf_layout_manager()
                 ->GetShelfBackgroundType());
@@ -427,7 +427,7 @@ TEST_F(HomeLauncherGestureHandlerTest, TransparentShelfWileDragging) {
   // Fling down to hide the home launcher, the shelf should still be
   // transparent.
   GetGestureHandler()->OnScrollEvent(gfx::Point(0, 100), 0.f, -10.f);
-  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT,
+  EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_HOME_LAUNCHER,
             AshTestBase::GetPrimaryShelf()
                 ->shelf_layout_manager()
                 ->GetShelfBackgroundType());

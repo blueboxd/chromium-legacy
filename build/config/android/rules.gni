@@ -2054,8 +2054,6 @@ if (enable_java_templates) {
   #     (optional).
   #   secondary_native_lib_placeholders: List of placeholder filenames to add to
   #     the apk for the secondary ABI (optional).
-  #   write_asset_list: Adds an extra file to the assets, which contains a list of
-  #     all other asset files.
   #   generate_buildconfig_java: If defined and false, skip generating the
   #     BuildConfig java class describing the build configuration. The default
   #     is true for non-test APKs.
@@ -3175,7 +3173,6 @@ if (enable_java_templates) {
                                [
                                  "native_lib_placeholders",
                                  "secondary_native_lib_placeholders",
-                                 "write_asset_list",
                                  "uncompress_dex",
                                  "uncompress_shared_libraries",
                                ])
@@ -3468,7 +3465,6 @@ if (enable_java_templates) {
                                "use_chromium_linker",
                                "version_code",
                                "version_name",
-                               "write_asset_list",
                              ])
       is_bundle_module = false
       name = invoker.apk_name
@@ -3501,7 +3497,6 @@ if (enable_java_templates) {
     if (_is_base_module) {
       assert(!defined(invoker.base_module_target))
     } else {
-      assert(!defined(invoker.write_asset_list))
       assert(!defined(invoker.app_as_shared_lib))
       assert(!defined(invoker.shared_resources))
       assert(!defined(invoker.shared_resources_whitelist_target))
@@ -3591,7 +3586,6 @@ if (enable_java_templates) {
                                "verify_manifest",
                                "version_code",
                                "version_name",
-                               "write_asset_list",
                              ])
       is_bundle_module = true
       generate_buildconfig_java = _is_base_module

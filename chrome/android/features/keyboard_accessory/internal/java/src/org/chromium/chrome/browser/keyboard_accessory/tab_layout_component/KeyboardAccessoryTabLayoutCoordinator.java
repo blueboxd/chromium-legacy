@@ -11,7 +11,8 @@ import static org.chromium.chrome.browser.keyboard_accessory.tab_layout_componen
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryCoordinator;
 import org.chromium.ui.modelutil.ListModel;
 import org.chromium.ui.modelutil.ListModelChangeProcessor;

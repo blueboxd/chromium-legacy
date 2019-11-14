@@ -26,9 +26,9 @@ import androidx.annotation.ColorRes;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.toolbar.ToolbarCommonPropertiesModel;
@@ -41,7 +41,7 @@ import org.chromium.ui.widget.Toast;
  */
 public class StatusView extends LinearLayout {
     @VisibleForTesting
-    class StatusViewDelegate {
+    static class StatusViewDelegate {
         /** @see {@link SearchEngineLogoUtils#shouldShowSearchEngineLogo} */
         boolean shouldShowSearchEngineLogo(boolean isIncognito) {
             return SearchEngineLogoUtils.shouldShowSearchEngineLogo(isIncognito);
@@ -123,6 +123,18 @@ public class StatusView extends LinearLayout {
             // layout positioning.
             setPaddingRelative(getPaddingStart(), getPaddingTop(),
                     getEndPaddingPixelSizeForFocusState(false), getPaddingBottom());
+            // Note: the margins and implicit padding were removed from the status view for the
+            // dse icon experiment. Moving padding values that were there to the verbose status
+            // text view and the verbose text extra space.
+            mVerboseStatusTextView.setPaddingRelative(
+                    getResources().getDimensionPixelSize(
+                            R.dimen.sei_location_bar_verbose_start_padding_verbose_text),
+                    mVerboseStatusTextView.getPaddingTop(), mVerboseStatusTextView.getPaddingEnd(),
+                    mVerboseStatusTextView.getPaddingBottom());
+            layoutParams = new LinearLayout.LayoutParams(mStatusExtraSpace.getLayoutParams());
+            layoutParams.width = getResources().getDimensionPixelSize(
+                    R.dimen.sei_location_bar_status_extra_padding_width);
+            mStatusExtraSpace.setLayoutParams(layoutParams);
         }
     }
 

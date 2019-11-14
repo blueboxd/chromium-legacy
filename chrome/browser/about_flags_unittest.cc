@@ -18,6 +18,7 @@
 #include "base/format_macros.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/path_service.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_enum_reader.h"
@@ -133,6 +134,50 @@ std::vector<std::string> LoadFlagNeverExpireList() {
   return result;
 }
 
+bool IsValidLookingOwner(base::StringPiece owner) {
+  // Per the specification at the top of flag-metadata.json, an owner is one of:
+  // 1) A string containing '@', which is treated as a full email address
+  // 2) A string beginning with '//', which is a path to an OWNERS file
+  // 3) Any other string, which is the username part of an @chromium.org email
+
+  const size_t at_pos = owner.find("@");
+  if (at_pos != std::string::npos) {
+    // If there's an @, check for a . after it. This catches one common error:
+    // writing "foo@" in the owners list rather than bare "foo" or full
+    // "foo@domain.com".
+    return owner.find(".", at_pos) != std::string::npos;
+  }
+
+  if (owner.starts_with("//")) {
+    // Looks like a path to a file. It would be nice to check that the file
+    // actually exists here, but that's not possible because when this test
+    // runs it runs in an isolated environment. To check for the presence of the
+    // file the test would need a build-time declaration that it depends on that
+    // file. Instead, just assume any file path ending in 'OWNERS' is valid.
+    // This doesn't check that the entire filename part of the path is 'OWNERS'
+    // because sometimes it is instead 'IPC_OWNERS' or similar.
+    return owner.ends_with("OWNERS");
+  }
+
+  // Otherwise, look for something that seems like the username part of an
+  // @chromium.org email. The criteria here is that it must look like an RFC5322
+  // "atom", which is neatly defined as any printable character *outside* a
+  // specific set:
+  //   https://tools.ietf.org/html/rfc5322#section-3.2.3
+  //
+  // Note two extra wrinkles here:
+  // 1) while '.' IS NOT allowed in atoms by RFC5322 gmail and other mail
+  //    handlers do allow it, so this does not reject '.'.
+  // 2) while '/' IS allowed in atoms by RFC5322, this is not commonly done, and
+  //    checking for it here detects another common syntax error - namely
+  //    writing:
+  //      "owners": [ "foo/bar/OWNERS" ]
+  //    where
+  //      "owners": [ "//foo/bar/OWNERS" ]
+  //    is meant.
+  return owner.find_first_of(R"(()<>[]:;@\,/)") == std::string::npos;
+}
+
 }  // anonymous namespace
 
 // Makes sure there are no separators in any of the entry names.
@@ -199,6 +244,21 @@ TEST(AboutFlagsTest, EveryFlagHasNonEmptyOwners) {
 
   EXPECT_EQ(0u, sad_flags.size())
       << "Flags missing owners: " << base::JoinString(sad_flags, "\n  ");
+}
+
+TEST(AboutFlagsTest, OwnersLookValid) {
+  FlagMetadataMap metadata = LoadFlagMetadata();
+  std::vector<std::string> sad_flags;
+
+  for (const auto& flag : metadata) {
+    for (const auto& owner : flag.second.owners) {
+      if (!IsValidLookingOwner(owner))
+        sad_flags.push_back(flag.first);
+    }
+  }
+
+  EXPECT_EQ(0u, sad_flags.size()) << "Flags with invalid-looking owners: "
+                                  << base::JoinString(sad_flags, "\n");
 }
 
 namespace {

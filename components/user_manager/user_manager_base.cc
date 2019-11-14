@@ -618,6 +618,11 @@ bool UserManagerBase::IsLoggedInAsArcKioskApp() const {
   return IsUserLoggedIn() && active_user_->GetType() == USER_TYPE_ARC_KIOSK_APP;
 }
 
+bool UserManagerBase::IsLoggedInAsWebKioskApp() const {
+  DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
+  return IsUserLoggedIn() && active_user_->GetType() == USER_TYPE_WEB_KIOSK_APP;
+}
+
 bool UserManagerBase::IsLoggedInAsAnyKioskApp() const {
   DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
   return IsUserLoggedIn() && active_user_->IsKioskType();

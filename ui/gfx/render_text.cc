@@ -9,6 +9,8 @@
 #include <algorithm>
 #include <climits>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/i18n/break_iterator.h"
@@ -226,82 +228,138 @@ size_t GetTextIndexForOtherText(const base::string16& text,
   return other_text.length();
 }
 
-// Returns the codepoint at text[index]. This function handles that codepoint
-// can be one or two characters. It also handles offset in a middle of a
-// surrogate pair.
-UChar32 GetCodepointAtIndex(const base::string16& text, size_t index) {
+// Returns the offset (codepoint rank) for the codepoint at text[index].
+size_t GetOffsetForTextIndex(const base::string16& text, size_t index) {
+  DCHECK_LT(index, text.length());
   // Move index to the beginning of the surrogate pair, if needed.
   U16_SET_CP_START(text.data(), 0, index);
-  // Retrieve the codepoint at index.
-  UChar32 codepoint;
-  U16_NEXT(text.data(), index, text.length(), codepoint);
-  return codepoint;
-}
 
-// Replace a the codepoint at text[index] by the codepoint specified in
-// |new_codepoint|. This function handles that codepoint can be one or two
-// characters and enforce to replace a codepoint by a single codepoint.
-void ReplaceCodepointAtIndex(size_t index,
-                             UChar32 new_codepoint,
-                             base::string16* text) {
-  // Move index to the beginning of the surrogate pair, if needed.
-  U16_SET_CP_START(text->data(), 0, index);
-
-  // Gets the range to be replaced.
-  size_t end = index;
-  UChar32 original_codepoint;
-  U16_NEXT(text->data(), end, text->length(), original_codepoint);
-
-  DCHECK_LT(index, end);
-  DCHECK_LT(index, text->length());
-  DCHECK_LE(end, text->length());
-
-  // Encode the codepoint in utf16 (e.g. base::char16).
-  base::char16 replace_chars[U16_MAX_LENGTH];
-  size_t replace_length = U16_LENGTH(new_codepoint);
-  if (replace_length == 1) {
-    replace_chars[0] = new_codepoint;
-  } else {
-    replace_chars[0] = U16_LEAD(new_codepoint);
-    replace_chars[1] = U16_TRAIL(new_codepoint);
+  // Iterates through codepoints until we reach |index| in |text|.
+  for (base::i18n::UTF16CharIterator text_iter(&text); !text_iter.end();
+       text_iter.Advance()) {
+    // Codepoint at |index| is found, returns the corresponding offset.
+    if (text_iter.array_pos() == static_cast<int32_t>(index))
+      return text_iter.char_offset();
   }
 
-  // Replace the codepoint range by the new codepoint characters.
-  text->replace(index, U16_LENGTH(original_codepoint), replace_chars,
-                replace_length);
+  NOTREACHED();
+  return text.length();
 }
 
-// Create an obscured text for the given |text| where characters are replaced by
-// an bullet. In multiline, the newline character is not replaced. If
-// |reveal_index| is specify, the codepoint at |reveal_index| kept its original
-// value.
-base::string16 CreateObscuredText(const base::string16& text,
-                                  bool multiline,
-                                  int reveal_index) {
-  // Make an initial string with the same amount of characters.
-  size_t obscured_text_length =
-      static_cast<size_t>(UTF16IndexToOffset(text, 0, text.length()));
-  base::string16 output_text(obscured_text_length,
-                             RenderText::kPasswordReplacementChar);
+// Applies a conversion function on codepoints in |text|. The resulting text
+// size may differ but the amount of codepoints stay the same. The rewrite
+// function |func| receives the offset (e.g. rank) of the codepoint and the
+// codepoint.
+void RewriteCodepointsInPlace(
+    base::RepeatingCallback<UChar32(size_t, UChar32)> func,
+    base::string16* text) {
+  size_t index = 0;
+  size_t rank = 0;
+  while (index < text->length()) {
+    // Gets the range to be replaced.
+    UChar32 original_codepoint;
+    U16_GET(text->c_str(), 0, index, text->length(), original_codepoint);
 
-  // In multiline, do not replace the newline characters since they are used to
-  // split lines.
-  if (multiline) {
-    for (size_t i = 0; i < text.length(); ++i) {
-      if (text[i] == '\n')
-        output_text[i] = '\n';
+    // Find the codepoint replacement.
+    UChar32 new_codepoint = func.Run(rank, original_codepoint);
+
+    if (new_codepoint != original_codepoint) {
+      // Encode the codepoint in utf16 (e.g. base::char16).
+      base::char16 replace_chars[U16_MAX_LENGTH];
+      size_t replace_length = U16_LENGTH(new_codepoint);
+      if (replace_length == 1) {
+        replace_chars[0] = new_codepoint;
+      } else {
+        replace_chars[0] = U16_LEAD(new_codepoint);
+        replace_chars[1] = U16_TRAIL(new_codepoint);
+      }
+
+      // Replace the codepoint range by the new codepoint characters.
+      text->replace(index, U16_LENGTH(original_codepoint), replace_chars,
+                    replace_length);
+    }
+
+    // Move index of the next codepoint. This must be computed after any
+    // rewriting steps above since codepoint size may differ.
+    U16_NEXT(text->c_str(), index, text->length(), new_codepoint);
+    ++rank;
+  }
+}
+
+// Obscures characters for the given |text|. The obscured characters are
+// replaced by an bullet. In multiline, the newline character is not replaced.
+// If |reveal_index| is specified, the codepoint at |reveal_index| keeps its
+// original value.
+void ObscuredText(bool multiline, int reveal_index, base::string16* text) {
+  DCHECK_LE(-1, reveal_index);
+  // Convert reveal_index to a rank because indexes are invalidated since the
+  // text is replace in-place. Reveal index can be -1 to indicate that no
+  // character should be revealed. If |reveal_index| is out-of-bound, no
+  // character should be revealed.
+  size_t reveal_rank;
+  if (reveal_index != -1 &&
+      base::checked_cast<size_t>(reveal_index) < text->size()) {
+    // Move |reveal_index| to the beginning of the surrogate pair, if needed.
+    U16_SET_CP_START(text->data(), 0, reveal_index);
+    reveal_rank = GetOffsetForTextIndex(*text, reveal_index);
+  } else {
+    reveal_rank = text->length();
+  }
+
+  RewriteCodepointsInPlace(
+      base::BindRepeating(
+          [](bool multiline, size_t reveal_rank, size_t rank,
+             UChar32 codepoint) -> UChar32 {
+            if ((reveal_rank == rank) || (codepoint == '\n' && multiline))
+              return codepoint;
+            return RenderText::kPasswordReplacementChar;
+          },
+          multiline, reveal_rank),
+      text);
+}
+
+// Replaces the unicode control characters, control characters and PUA (Private
+// Use Areas) codepoints.
+UChar32 ReplaceControlCharacter(bool multiline,
+                                size_t index,
+                                UChar32 codepoint) {
+  // 'REPLACEMENT CHARACTER' used to replace an unknown,
+  // unrecognized or unrepresentable character.
+  constexpr base::char16 kReplacementCodepoint = 0xFFFD;
+  // Control Pictures block (see:
+  // https://unicode.org/charts/PDF/U2400.pdf).
+  constexpr base::char16 kSymbolsCodepoint = 0x2400;
+
+  if (codepoint >= 0 && codepoint <= 0x1F) {
+    // The newline character should be kept as-is when
+    // rendertext is multiline.
+    if (codepoint != '\n' || !multiline) {
+      // Replace codepoints with their visual symbols, which are
+      // at the same offset from kSymbolsCodepoint.
+      return kSymbolsCodepoint + codepoint;
+    }
+  } else if (codepoint == 0x7F) {
+    // Replace the 'del' codepoint by its symbol (u2421).
+    return kSymbolsCodepoint + 0x21;
+  } else if (!U_IS_UNICODE_CHAR(codepoint)) {
+    // Unicode codepoint that can't be assigned a character.
+    // This handles:
+    // - single surrogate codepoints,
+    // - last two codepoints on each plane,
+    // - invalid characters (e.g. u+fdd0..u+fdef)
+    // - codepoints above u+10ffff
+    return kReplacementCodepoint;
+  } else if (codepoint > 0x7F) {
+    // Private use codepoints are working with a pair of font
+    // and codepoint, but they are not used in Chrome.
+    const int8_t codepoint_category = u_charType(codepoint);
+    if (codepoint_category == U_PRIVATE_USE_CHAR ||
+        codepoint_category == U_CONTROL_CHAR) {
+      return kReplacementCodepoint;
     }
   }
 
-  // If needed, reveal the character at position |reveal_index|.
-  if (reveal_index >= 0 && reveal_index < static_cast<int>(text.length())) {
-    UChar32 original_codepoint = GetCodepointAtIndex(text, reveal_index);
-    size_t output_index =
-        GetTextIndexForOtherText(text, reveal_index, output_text);
-    ReplaceCodepointAtIndex(output_index, original_codepoint, &output_text);
-  }
-
-  return output_text;
+  return codepoint;
 }
 
 // Replace the codepoints not handled by RenderText by an other compatible
@@ -310,49 +368,8 @@ base::string16 CreateObscuredText(const base::string16& text,
 // their visual symbols can. Replace PUA (Private Use Areas) codepoints with the
 // 'replacement character'.
 void ReplaceControlCharactersWithSymbols(bool multiline, base::string16* text) {
-  // 'REPLACEMENT CHARACTER' used to replace an unknown, unrecognized or
-  // unrepresentable character.
-  constexpr base::char16 kReplacementCodepoint = 0xFFFD;
-  // Control Pictures block (see: https://unicode.org/charts/PDF/U2400.pdf).
-  constexpr base::char16 kSymbolsCodepoint = 0x2400;
-
-  size_t offset = 0;
-  while (offset < text->length()) {
-    UChar32 codepoint;
-    U16_GET(text->c_str(), 0, offset, text->length(), codepoint);
-
-    if (codepoint >= 0 && codepoint <= 0x1F) {
-      // The newline character should be kept as-is when rendertext is
-      // multiline.
-      if (codepoint != '\n' || !multiline) {
-        // Replace codepoints with their visual symbols, which are at the same
-        // offset from kSymbolsCodepoint.
-        (*text)[offset] = kSymbolsCodepoint + codepoint;
-      }
-    } else if (codepoint == 0x7F) {
-      // Replace the 'del' codepoint by its symbol (u2421).
-      (*text)[offset] = kSymbolsCodepoint + 0x21;
-    } else if (!U_IS_UNICODE_CHAR(codepoint)) {
-      // Unicode codepoint that can't be assigned a character. This handles:
-      // - single surrogate codepoints,
-      // - last two codepoints on each plane,
-      // - invalid characters (e.g. u+fdd0..u+fdef)
-      // - codepoints above u+10ffff
-      ReplaceCodepointAtIndex(offset, kReplacementCodepoint, text);
-    } else if (codepoint > 0x7F) {
-      // Private use codepoints are working with a pair of font and codepoint,
-      // but they are not used in Chrome.
-      const int8_t codepoint_category = u_charType(codepoint);
-      if (codepoint_category == U_PRIVATE_USE_CHAR ||
-          codepoint_category == U_CONTROL_CHAR) {
-        ReplaceCodepointAtIndex(offset, kReplacementCodepoint, text);
-      }
-    }
-
-    // Move offset to the index of the next codepoint. This must be computed
-    // after any rewriting steps above since codepoint size may differ.
-    U16_NEXT(text->c_str(), offset, text->length(), codepoint);
-  }
+  RewriteCodepointsInPlace(
+      base::BindRepeating(ReplaceControlCharacter, multiline), text);
 }
 
 }  // namespace
@@ -1785,12 +1802,15 @@ void RenderText::OnTextAttributeChanged() {
   text_elided_ = false;
   line_breaks_.SetMax(0);
 
-  if (obscured_) {
-    layout_text_ =
-        CreateObscuredText(text_, multiline_, obscured_reveal_index_);
-  } else {
-    layout_text_ = text_;
-  }
+  layout_text_ = text_;
+
+  // Obscure the layout text by replacing hidden characters by bullets.
+  if (obscured_)
+    ObscuredText(multiline_, obscured_reveal_index_, &layout_text_);
+
+  // Handle unicode control characters ISO 6429 (block C0). Range from 0 to 0x1F
+  // and 0x7F.
+  ReplaceControlCharactersWithSymbols(multiline_, &layout_text_);
 
   const base::string16& text = layout_text_;
   if (truncate_length_ > 0 && truncate_length_ < text.length()) {
@@ -1815,10 +1835,6 @@ void RenderText::OnTextAttributeChanged() {
       layout_text_.assign(text.substr(0, iter.getIndex()) + kEllipsisUTF16);
     }
   }
-
-  // Handle unicode control characters ISO 6429 (block C0). Range from 0 to 0x1F
-  // and 0x7F.
-  ReplaceControlCharactersWithSymbols(multiline_, &layout_text_);
 
   OnLayoutTextAttributeChanged(true);
 }

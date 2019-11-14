@@ -9,9 +9,10 @@ import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.graphics.RectF;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.compositor.animation.FloatProperty;

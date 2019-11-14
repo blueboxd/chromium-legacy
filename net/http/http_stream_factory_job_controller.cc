@@ -998,6 +998,7 @@ HttpStreamFactory::JobController::GetAlternativeServiceInfoInternal(
   // First alternative service that is not marked as broken.
   AlternativeServiceInfo first_alternative_service_info;
 
+  bool is_any_broken = false;
   for (const AlternativeServiceInfo& alternative_service_info :
        alternative_service_info_vector) {
     DCHECK(IsAlternateProtocolValid(alternative_service_info.protocol()));
@@ -1011,7 +1012,11 @@ HttpStreamFactory::JobController::GetAlternativeServiceInfoInternal(
           return NetLogAltSvcParams(&alternative_service_info, is_broken);
         });
     if (is_broken) {
-      HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_BROKEN, false);
+      if (!is_any_broken) {
+        // Only log the broken alternative service once per request.
+        is_any_broken = true;
+        HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_BROKEN, false);
+      }
       continue;
     }
 

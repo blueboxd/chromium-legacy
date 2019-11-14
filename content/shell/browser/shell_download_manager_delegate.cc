@@ -165,10 +165,12 @@ void ShellDownloadManagerDelegate::ChooseDownloadPath(
   OPENFILENAME save_as;
   ZeroMemory(&save_as, sizeof(save_as));
   save_as.lStructSize = sizeof(OPENFILENAME);
-  save_as.hwndOwner = DownloadItemUtils::GetWebContents(item)
-                          ->GetNativeView()
-                          ->GetHost()
-                          ->GetAcceleratedWidget();
+  WebContents* web_contents = DownloadItemUtils::GetWebContents(item);
+  // |web_contents| could be null if the tab was quickly closed.
+  if (!web_contents)
+    return;
+  save_as.hwndOwner =
+      web_contents->GetNativeView()->GetHost()->GetAcceleratedWidget();
   save_as.lpstrFile = file_name;
   save_as.nMaxFile = base::size(file_name);
 

@@ -21,8 +21,6 @@ namespace media {
 
 enum SampleFormat : int;
 
-class DirectAudioSource;
-class DirectAudioSourceToken;
 class MediaPipelineBackend;
 struct MediaPipelineDeviceParams;
 class VideoPlane;
@@ -75,29 +73,6 @@ class CHROMECAST_EXPORT CastMediaShlib {
 
   // Tests if the implementation supports renderer clock rate adjustments.
   static bool SupportsMediaClockRateChange();
-
-  // Sets up a direct audio source for output. The media backend will pull audio
-  // directly from |source| whenever more output data is needed; this provides
-  // low-latency output. The source must remain valid until
-  // OnAudioPlaybackComplete() has been called on it.
-  // Returns nullptr if a direct source cannot be added. Otherwise, returns a
-  // token that must be passed to RemoveDirectAudioSource() to remove the source
-  // when desired.
-  static DirectAudioSourceToken* AddDirectAudioSource(
-      DirectAudioSource* source,
-      const MediaPipelineDeviceParams& params,
-      int playout_channel) __attribute__((__weak__));
-
-  // Removes a direct audio source, given the |token| that was returned by
-  // AddDirectAudioSource().
-  static void RemoveDirectAudioSource(DirectAudioSourceToken* token)
-      __attribute__((__weak__));
-
-  // Sets the volume multiplier for a direct audio source, given the |token|
-  // that was returned by AddDirectAudioSource().
-  static void SetDirectAudioSourceVolume(DirectAudioSourceToken* token,
-                                         float multiplier)
-      __attribute__((__weak__));
 };
 
 }  // namespace media

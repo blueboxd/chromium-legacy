@@ -2068,8 +2068,14 @@ int HttpCache::Transaction::DoPartialHeadersReceived() {
 
   if (partial_ && mode_ != NONE && !reading_) {
     // We are about to return the headers for a byte-range request to the user,
-    // so let's fix them.
-    partial_->FixResponseHeaders(response_.headers.get(), true);
+    // so let's fix them. This only makes sense if the response is something
+    // that can be turned into a 206, of course.
+    if (response_.headers->response_code() == 200 ||
+        response_.headers->response_code() == 206) {
+      partial_->FixResponseHeaders(response_.headers.get(), true);
+    } else {
+      partial_.reset();
+    }
   }
   TransitionToState(STATE_FINISH_HEADERS);
   return OK;

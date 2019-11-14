@@ -46,7 +46,6 @@ class NetworkProfileBubbleView : public views::BubbleDialogDelegateView,
 
   // views::BubbleDialogDelegateView:
   void Init() override;
-  int GetDialogButtons() const override;
   bool Accept() override;
 
   // views::LinkListener:
@@ -69,6 +68,7 @@ NetworkProfileBubbleView::NetworkProfileBubbleView(
     : BubbleDialogDelegateView(anchor, views::BubbleBorder::TOP_RIGHT),
       navigator_(navigator),
       profile_(profile) {
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
   DialogDelegate::SetExtraView(CreateLearnMoreLink(this));
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::NETWORK_SHARE_PROFILE_WARNING);
@@ -89,10 +89,6 @@ void NetworkProfileBubbleView::Init() {
   label->SizeToFit(kNotificationBubbleWidth);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(label);
-}
-
-int NetworkProfileBubbleView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK;
 }
 
 bool NetworkProfileBubbleView::Accept() {

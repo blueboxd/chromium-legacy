@@ -7,6 +7,7 @@
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
 namespace blink {
 
@@ -60,56 +61,49 @@ void SetUpHTML(PaintAndRasterInvalidationTest& test) {
 
 INSTANTIATE_PAINT_TEST_SUITE_P(PaintAndRasterInvalidationTest);
 
+class ScopedEnablePaintInvalidationTracing {
+ public:
+  ScopedEnablePaintInvalidationTracing() {
+    trace_event::EnableTracing(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"));
+  }
+  ~ScopedEnablePaintInvalidationTracing() { trace_event::DisableTracing(); }
+};
+
 TEST_P(PaintAndRasterInvalidationTest, TrackingForTracing) {
   SetBodyInnerHTML(R"HTML(
     <style>#target { width: 100px; height: 100px; background: blue }</style>
     <div id="target"></div>
   )HTML");
   auto* target = GetDocument().getElementById("target");
-  auto get_debug_info = [&]() -> std::string {
-    auto* cc_layer =
-        RuntimeEnabledFeatures::CompositeAfterPaintEnabled()
-            ? GetDocument()
-                  .View()
-                  ->GetPaintArtifactCompositor()
-                  ->RootLayer()
-                  ->children()[0]
-                  .get()
-            : GetLayoutView().Layer()->GraphicsLayerBacking()->CcLayer();
-    return cc_layer->GetLayerClientForTesting()
-        ->TakeDebugInfo(cc_layer)
-        ->ToString();
-  };
+  auto* cc_layer =
+      RuntimeEnabledFeatures::CompositeAfterPaintEnabled()
+          ? GetDocument()
+                .View()
+                ->GetPaintArtifactCompositor()
+                ->RootLayer()
+                ->children()[0]
+                .get()
+          : GetLayoutView().Layer()->GraphicsLayerBacking()->CcLayer();
 
   {
-    // This is equivalent to enabling disabled-by-default-blink.invalidation
-    // for tracing.
-    ScopedPaintUnderInvalidationCheckingForTest checking(true);
+    ScopedEnablePaintInvalidationTracing tracing;
 
     target->setAttribute(html_names::kStyleAttr, "height: 200px");
     UpdateAllLifecyclePhasesForTest();
-    EXPECT_THAT(
-        get_debug_info(),
-        MatchesRegex(
-            "\\{\"layer_name\":.*\"annotated_invalidation_rects\":\\["
-            "\\{\"geometry_rect\":\\[8,108,100,100\\],"
-            "\"reason\":\"incremental\","
-            "\"client\":\"LayoutN?G?BlockFlow DIV id='target'\"\\}\\]\\}"));
+    ASSERT_TRUE(cc_layer->debug_info());
+    EXPECT_EQ(1u, cc_layer->debug_info()->invalidations.size());
 
     target->setAttribute(html_names::kStyleAttr, "height: 200px; width: 200px");
     UpdateAllLifecyclePhasesForTest();
-    EXPECT_THAT(
-        get_debug_info(),
-        MatchesRegex(
-            "\\{\"layer_name\":.*\"annotated_invalidation_rects\":\\["
-            "\\{\"geometry_rect\":\\[108,8,100,200\\],"
-            "\"reason\":\"incremental\","
-            "\"client\":\"LayoutN?G?BlockFlow DIV id='target'\"\\}\\]\\}"));
+    ASSERT_TRUE(cc_layer->debug_info());
+    EXPECT_EQ(2u, cc_layer->debug_info()->invalidations.size());
   }
 
   target->setAttribute(html_names::kStyleAttr, "height: 300px; width: 300px");
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(std::string::npos, get_debug_info().find("invalidation_rects"));
+  ASSERT_TRUE(cc_layer->debug_info());
+  // No new invalidations tracked.
+  EXPECT_EQ(2u, cc_layer->debug_info()->invalidations.size());
 }
 
 TEST_P(PaintAndRasterInvalidationTest, IncrementalInvalidationExpand) {
@@ -943,7 +937,7 @@ TEST_P(PaintAndRasterInvalidationTest, PaintPropertyChange) {
   GetDocument().View()->SetTracksPaintInvalidations(true);
   target->setAttribute(html_names::kStyleAttr, "transform: scale(3)");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  EXPECT_FALSE(layer->NeedsRepaint());
+  EXPECT_FALSE(layer->SelfNeedsRepaint());
   const auto* transform =
       object->FirstFragment().PaintProperties()->Transform();
   EXPECT_TRUE(transform->Changed(
@@ -1125,15 +1119,17 @@ TEST_F(PaintInvalidatorCustomClientTest,
 
   target->setAttribute(html_names::kStyleAttr, "opacity: 0.98");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  EXPECT_TRUE(GetDocument().View()->GetLayoutView()->Layer()->NeedsRepaint());
+  EXPECT_TRUE(
+      GetDocument().View()->GetLayoutView()->Layer()->DescendantNeedsRepaint());
   EXPECT_TRUE(InvalidationRecorded());
 
   ResetInvalidationRecorded();
   // Let PrePaintTreeWalk do something instead of no-op.
   GetDocument().View()->SetNeedsPaintPropertyUpdate();
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  // The layer NeedsRepaint flag is only cleared after paint.
-  EXPECT_TRUE(GetDocument().View()->GetLayoutView()->Layer()->NeedsRepaint());
+  // The layer DescendantNeedsRepaint flag is only cleared after paint.
+  EXPECT_TRUE(
+      GetDocument().View()->GetLayoutView()->Layer()->DescendantNeedsRepaint());
   EXPECT_FALSE(InvalidationRecorded());
 }
 

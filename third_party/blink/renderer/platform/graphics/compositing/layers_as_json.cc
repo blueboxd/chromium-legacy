@@ -5,8 +5,6 @@
 #include "third_party/blink/renderer/platform/graphics/compositing/layers_as_json.h"
 
 #include "cc/layers/layer.h"
-#include "cc/layers/layer_client.h"
-
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/geometry_as_json.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
@@ -56,11 +54,6 @@ std::unique_ptr<JSONObject> CCLayerAsJSON(
   if (!layer->double_sided())
     json->SetString("backfaceVisibility", "hidden");
 
-  if (flags & kLayerTreeIncludesDebugInfo) {
-    json->SetString("client",
-                    PointerAsString(layer->GetLayerClientForTesting()));
-  }
-
   if (Color(layer->background_color()).Alpha()) {
     json->SetString("backgroundColor",
                     Color(layer->background_color()).NameForLayoutTreeAsText());
@@ -68,13 +61,9 @@ std::unique_ptr<JSONObject> CCLayerAsJSON(
 
   if (flags &
       (kLayerTreeIncludesDebugInfo | kLayerTreeIncludesCompositingReasons)) {
-    bool debug = flags & kLayerTreeIncludesDebugInfo;
-    {
+    if (layer->debug_info()) {
       auto compositing_reasons_json = std::make_unique<JSONArray>();
-      CompositingReasons compositing_reasons = layer->compositing_reasons();
-      auto names = debug ? CompositingReason::Descriptions(compositing_reasons)
-                         : CompositingReason::ShortNames(compositing_reasons);
-      for (const char* name : names)
+      for (const char* name : layer->debug_info()->compositing_reasons)
         compositing_reasons_json->PushString(name);
       json->SetArray("compositingReasons", std::move(compositing_reasons_json));
     }

@@ -34,7 +34,6 @@
 #include <memory>
 
 #include "base/single_thread_task_runner.h"
-#include "cc/layers/layer_client.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -95,8 +94,7 @@ struct PaintPropertyTreeBuilderFragmentContext;
 //
 class CORE_EXPORT VisualViewport final
     : public GarbageCollected<VisualViewport>,
-      public ScrollableArea,
-      public cc::LayerClient {
+      public ScrollableArea {
   USING_GARBAGE_COLLECTED_MIXIN(VisualViewport);
 
  public:
@@ -278,11 +276,6 @@ class CORE_EXPORT VisualViewport final
   void EnqueueScrollEvent();
   void EnqueueResizeEvent();
 
-  // cc::LayerClient implementation.
-  std::string LayerDebugName(const cc::Layer* layer) const override;
-  std::unique_ptr<base::trace_event::TracedValue> TakeDebugInfo(
-      const cc::Layer* layer) override;
-
   int ScrollbarThickness() const;
   void UpdateScrollbarLayer(ScrollbarOrientation);
 
@@ -350,8 +343,6 @@ class CORE_EXPORT VisualViewport final
   CompositorElementId scroll_element_id_;
 
   bool needs_paint_property_update_;
-
-  base::WeakPtrFactory<VisualViewport> weak_ptr_factory_{this};
 };
 
 }  // namespace blink

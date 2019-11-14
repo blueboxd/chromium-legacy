@@ -366,7 +366,7 @@ template("monochrome_public_common_apk_or_module_tmpl") {
 
       _deps += [
         "//android_webview:monochrome_webview_assets",
-        "//android_webview/apk:apk_java",
+        "//android_webview/nonembedded:nonembedded_java",
         "//android_webview/glue",
         "//chrome/android:monochrome_java",
         "//third_party/crashpad/crashpad/handler:crashpad_handler_trampoline",
@@ -462,7 +462,8 @@ template("monochrome_public_common_apk_or_module_tmpl") {
         proguard_configs = []
       }
       if (is_monochrome) {
-        proguard_configs += [ "//android_webview/apk/java/proguard.flags" ]
+        proguard_configs +=
+            [ "//android_webview/nonembedded/java/proguard.flags" ]
       }
     }
 

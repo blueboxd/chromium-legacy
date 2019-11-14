@@ -226,6 +226,14 @@ public final class Tab {
         }
 
         @Override
+        public void onCloseTab() {
+            // This should only be hit if setNewTabCallback() has been called with a non-null
+            // value.
+            assert mNewTabCallback != null;
+            mNewTabCallback.onCloseTab();
+        }
+
+        @Override
         public void onRenderProcessGone() {
             for (TabCallback callback : mCallbacks) {
                 callback.onRenderProcessGone();

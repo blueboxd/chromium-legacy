@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "components/variations/variations_associated_data.h"
@@ -57,7 +56,7 @@ void SetupAndFinalizeTrial(const std::string& trial_name,
 
 class VariationsIdCollectionTest : public ::testing::Test {
  public:
-  VariationsIdCollectionTest() : field_trial_list_(nullptr) {}
+  VariationsIdCollectionTest() {}
 
   ~VariationsIdCollectionTest() override { testing::ClearAllVariationIDs(); }
 
@@ -75,7 +74,6 @@ class VariationsIdCollectionTest : public ::testing::Test {
 
  private:
   base::test::SingleThreadTaskEnvironment task_environment_;
-  base::FieldTrialList field_trial_list_;
   std::unique_ptr<VariationsIdCollection> collection_;
   std::vector<VariationID> new_ids_;
 };

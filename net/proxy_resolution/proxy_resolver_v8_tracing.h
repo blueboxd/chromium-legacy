@@ -17,6 +17,7 @@
 namespace net {
 
 class NetLogWithSource;
+class NetworkIsolationKey;
 class ProxyHostResolver;
 
 // ProxyResolverV8Tracing is a non-blocking proxy resolver.
@@ -56,6 +57,7 @@ class NET_EXPORT ProxyResolverV8Tracing {
   // the proxy resolution information.  Request can be cancelled by resetting
   // |*request|.
   virtual void GetProxyForURL(const GURL& url,
+                              const NetworkIsolationKey& network_isolation_key,
                               ProxyInfo* results,
                               CompletionOnceCallback callback,
                               std::unique_ptr<ProxyResolver::Request>* request,

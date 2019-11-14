@@ -3563,6 +3563,7 @@ if (is_android) {
     bypass_platform_checks = true
     testonly = true
     java_files = [
+      "android/junit/src/org/chromium/base/metrics/test/DisableHistogramsRule.java",
       "android/junit/src/org/chromium/base/metrics/test/ShadowRecordHistogram.java",
       "test/android/junit/src/org/chromium/base/task/test/BackgroundShadowAsyncTask.java",
       "test/android/junit/src/org/chromium/base/task/test/CustomShadowAsyncTask.java",

@@ -1479,7 +1479,7 @@ Polymer({
 
     const pkcs11Id = this.getUserCertPkcs11Id_();
     eap.clientCertType = pkcs11Id ? 'PKCS11Id' : 'None';
-    eap.clientCertPKCS11Id = pkcs11Id || '';
+    eap.clientCertPkcs11Id = pkcs11Id || '';
   },
 
   /**

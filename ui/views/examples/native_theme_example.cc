@@ -107,9 +107,7 @@ std::unique_ptr<View> CreateAllColorsView() {
   InsertColorRow(layout,
                  COLOR_LABEL_ARGS(kColorId_HighlightedMenuItemForegroundColor));
   InsertColorRow(layout,
-                 COLOR_LABEL_ARGS(kColorId_MenuItemAlertBackgroundColorMax));
-  InsertColorRow(layout,
-                 COLOR_LABEL_ARGS(kColorId_MenuItemAlertBackgroundColorMin));
+                 COLOR_LABEL_ARGS(kColorId_MenuItemAlertBackgroundColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_LabelEnabledColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_LabelDisabledColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_LabelTextSelectionColor));

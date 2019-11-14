@@ -697,13 +697,35 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
   Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoClassName(
       env, obj, info,
       base::android::ConvertUTF8ToJavaString(env, node->GetClassName()));
+
+  ScopedJavaLocalRef<jintArray> suggestion_starts_java;
+  ScopedJavaLocalRef<jintArray> suggestion_ends_java;
+  ScopedJavaLocalRef<jobjectArray> suggestion_text_java;
+  std::vector<int> suggestion_starts;
+  std::vector<int> suggestion_ends;
+  node->GetSuggestions(&suggestion_starts, &suggestion_ends);
+  if (suggestion_starts.size() && suggestion_ends.size()) {
+    suggestion_starts_java = base::android::ToJavaIntArray(
+        env, suggestion_starts.data(), suggestion_starts.size());
+    suggestion_ends_java = base::android::ToJavaIntArray(
+        env, suggestion_ends.data(), suggestion_ends.size());
+
+    // Currently we don't retrieve the text of each suggestion, so
+    // store a blank string for now.
+    std::vector<std::string> suggestion_text(suggestion_starts.size());
+    suggestion_text_java =
+        base::android::ToJavaArrayOfStrings(env, suggestion_text);
+  }
+
   Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoText(
       env, obj, info,
       base::android::ConvertUTF16ToJavaString(env, node->GetInnerText()),
       node->IsLink(), node->IsEditableText(),
       base::android::ConvertUTF16ToJavaString(
           env, node->GetInheritedString16Attribute(
-                   ax::mojom::StringAttribute::kLanguage)));
+                   ax::mojom::StringAttribute::kLanguage)),
+      suggestion_starts_java, suggestion_ends_java, suggestion_text_java);
+
   base::string16 element_id;
   if (node->GetHtmlAttribute("id", &element_id)) {
     Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoViewIdResourceName(
@@ -1051,6 +1073,36 @@ jint WebContentsAccessibilityAndroid::GetTextLength(
     return -1;
   base::string16 text = node->GetInnerText();
   return text.size();
+}
+
+void WebContentsAccessibilityAndroid::AddSpellingErrorForTesting(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint unique_id,
+    jint start_offset,
+    jint end_offset) {
+  BrowserAccessibility* node = GetAXFromUniqueID(unique_id);
+  CHECK(node);
+
+  while (node->GetRole() != ax::mojom::Role::kStaticText &&
+         node->InternalChildCount() > 0) {
+    node = node->InternalChildrenBegin().get();
+  }
+
+  CHECK(node->GetRole() == ax::mojom::Role::kStaticText);
+  base::string16 text = node->GetInnerText();
+  CHECK_LT(start_offset, static_cast<int>(text.size()));
+  CHECK_LE(end_offset, static_cast<int>(text.size()));
+
+  ui::AXNodeData data = node->GetData();
+  data.AddIntListAttribute(ax::mojom::IntListAttribute::kMarkerStarts,
+                           {start_offset});
+  data.AddIntListAttribute(ax::mojom::IntListAttribute::kMarkerEnds,
+                           {end_offset});
+  data.AddIntListAttribute(
+      ax::mojom::IntListAttribute::kMarkerTypes,
+      {static_cast<int>(ax::mojom::MarkerType::kSuggestion)});
+  node->node()->SetData(data);
 }
 
 jboolean WebContentsAccessibilityAndroid::PreviousAtGranularity(

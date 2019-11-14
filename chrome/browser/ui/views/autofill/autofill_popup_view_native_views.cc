@@ -940,6 +940,9 @@ base::Optional<int32_t> AutofillPopupViewNativeViews::GetAxUniqueId() {
 void AutofillPopupViewNativeViews::CreateChildViews() {
   RemoveAllChildViews(true /* delete_children */);
   rows_.clear();
+  scroll_view_ = nullptr;
+  body_container_ = nullptr;
+  footer_container_ = nullptr;
 
   int line_number = 0;
   bool has_footer = false;

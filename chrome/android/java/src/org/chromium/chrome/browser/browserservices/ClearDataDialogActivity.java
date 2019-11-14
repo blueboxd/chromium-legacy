@@ -11,8 +11,8 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.util.IntentUtils;

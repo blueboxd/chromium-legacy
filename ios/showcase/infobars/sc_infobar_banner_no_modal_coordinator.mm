@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_delegate.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_transition_driver.h"
+#import "ios/showcase/infobars/sc_infobar_constants.h"
 #import "ios/showcase/infobars/sc_infobar_container_view_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

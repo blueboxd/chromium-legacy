@@ -21,18 +21,20 @@ Element& StyleRecalcRoot::RootElement() const {
     // originating element for simplicity.
     return *root_node->parentElement();
   }
-  if (root_node->IsInShadowTree()) {
-    // Since we traverse in light tree order, we might need to traverse slotted
-    // shadow host children for inheritance for which the recalc root is not an
-    // ancestor. Since we might re-slot slots, we need to start at the outermost
-    // shadow host.
-    TreeScope* tree_scope = &root_node->GetTreeScope();
-    while (!tree_scope->ParentTreeScope()->RootNode().IsDocumentNode())
-      tree_scope = tree_scope->ParentTreeScope();
-    return To<ShadowRoot>(tree_scope->RootNode()).host();
+  if (!RuntimeEnabledFeatures::FlatTreeStyleRecalcEnabled()) {
+    if (root_node->IsInShadowTree()) {
+      // Since we traverse in light tree order, we might need to traverse
+      // slotted shadow host children for inheritance for which the recalc root
+      // is not an ancestor. Since we might re-slot slots, we need to start at
+      // the outermost shadow host.
+      TreeScope* tree_scope = &root_node->GetTreeScope();
+      while (!tree_scope->ParentTreeScope()->RootNode().IsDocumentNode())
+        tree_scope = tree_scope->ParentTreeScope();
+      return To<ShadowRoot>(tree_scope->RootNode()).host();
+    }
   }
   if (root_node->IsTextNode())
-    return *root_node->parentElement();
+    root_node = root_node->GetStyleRecalcParent();
   return To<Element>(*root_node);
 }
 

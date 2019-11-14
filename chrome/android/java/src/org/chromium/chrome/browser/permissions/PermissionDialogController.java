@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.permissions;
 import android.annotation.SuppressLint;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.ui.modaldialog.DialogDismissalCause;

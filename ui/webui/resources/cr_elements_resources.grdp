@@ -219,6 +219,10 @@
                file="cr_elements/chromeos/cr_picture/cr_png_behavior.js"
                type="chrome_html"
                compress="gzip" />
+    <structure name="IDR_CR_ELEMENTS_CHROMEOS_CR_PICTURE_ICONS_HTML"
+               file="cr_elements/chromeos/cr_picture/icons.html"
+               type="chrome_html"
+               compress="gzip" />
     <structure name="IDR_CR_ELEMENTS_CHROMEOS_CR_NETWORK_ICON_HTML"
                file="cr_elements/chromeos/network/cr_network_icon.html"
                type="chrome_html"

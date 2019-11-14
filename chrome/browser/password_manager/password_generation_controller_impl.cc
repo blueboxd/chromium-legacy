@@ -19,6 +19,7 @@
 #include "components/autofill/core/common/signatures_util.h"
 #include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/password_manager/core/browser/password_manager.h"
+#include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 
@@ -137,8 +138,7 @@ void PasswordGenerationControllerImpl::OnGenerationRequested(
     PasswordGenerationType type) {
   if (type == PasswordGenerationType::kManual) {
     manual_generation_requested_ = true;
-    ChromePasswordManagerClient::FromWebContents(web_contents_)
-        ->GeneratePassword();
+    client_->GeneratePassword();
   } else {
     ShowDialog(PasswordGenerationType::kAutomatic);
   }
@@ -173,31 +173,36 @@ gfx::NativeWindow PasswordGenerationControllerImpl::top_level_native_window()
 // static
 void PasswordGenerationControllerImpl::CreateForWebContentsForTesting(
     content::WebContents* web_contents,
-    base::WeakPtr<ManualFillingController> manual_filling_controller_,
+    password_manager::PasswordManagerClient* client,
+    base::WeakPtr<ManualFillingController> manual_filling_controller,
     CreateDialogFactory create_dialog_factory) {
   DCHECK(web_contents) << "Need valid WebContents to attach controller to!";
   DCHECK(!FromWebContents(web_contents)) << "Controller already attached!";
-  DCHECK(manual_filling_controller_);
+  DCHECK(manual_filling_controller);
 
   web_contents->SetUserData(
-      UserDataKey(), base::WrapUnique(new PasswordGenerationControllerImpl(
-                         web_contents, std::move(manual_filling_controller_),
-                         create_dialog_factory)));
+      UserDataKey(),
+      base::WrapUnique(new PasswordGenerationControllerImpl(
+          web_contents, client, std::move(manual_filling_controller),
+          create_dialog_factory)));
 }
 
 PasswordGenerationControllerImpl::PasswordGenerationControllerImpl(
     content::WebContents* web_contents)
     : web_contents_(web_contents),
+      client_(ChromePasswordManagerClient::FromWebContents(web_contents)),
       create_dialog_factory_(
           base::BindRepeating(&PasswordGenerationDialogViewInterface::Create)) {
 }
 
 PasswordGenerationControllerImpl::PasswordGenerationControllerImpl(
     content::WebContents* web_contents,
-    base::WeakPtr<ManualFillingController> manual_filling_controller_,
+    password_manager::PasswordManagerClient* client,
+    base::WeakPtr<ManualFillingController> manual_filling_controller,
     CreateDialogFactory create_dialog_factory)
     : web_contents_(web_contents),
-      manual_filling_controller_(std::move(manual_filling_controller_)),
+      client_(client),
+      manual_filling_controller_(std::move(manual_filling_controller)),
       create_dialog_factory_(create_dialog_factory) {}
 
 void PasswordGenerationControllerImpl::ShowDialog(PasswordGenerationType type) {

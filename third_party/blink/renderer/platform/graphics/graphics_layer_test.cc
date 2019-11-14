@@ -146,23 +146,6 @@ TEST_P(GraphicsLayerTest, SetDrawsContentFalse) {
   EXPECT_EQ(nullptr, GetInternalRasterInvalidator(layers_.graphics_layer()));
 }
 
-TEST_P(GraphicsLayerTest, CcLayerClient) {
-  auto graphics_layer =
-      std::make_unique<FakeGraphicsLayer>(layers_.graphics_layer_client());
-  graphics_layer->SetDrawsContent(true);
-  scoped_refptr<cc::PictureLayer> cc_layer = graphics_layer->CcLayer();
-  ASSERT_TRUE(cc_layer);
-  EXPECT_TRUE(cc_layer->DrawsContent());
-  EXPECT_TRUE(cc_layer->client());
-  EXPECT_TRUE(cc_layer->GetLayerClientForTesting());
-
-  graphics_layer.reset();
-  EXPECT_FALSE(cc_layer->DrawsContent());
-  EXPECT_FALSE(cc_layer->client());
-  EXPECT_FALSE(cc_layer->GetLayerClientForTesting());
-  EXPECT_FALSE(cc_layer->GetPicture());
-}
-
 TEST_P(GraphicsLayerTest, ContentsLayer) {
   auto& graphics_layer = layers_.graphics_layer();
   auto contents_layer = cc::Layer::Create();

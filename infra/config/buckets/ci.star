@@ -271,36 +271,43 @@ android_builder(
 android_builder(
     name = 'android-cronet-arm-dbg',
     goma_backend = goma.backend.RBE_PROD,
+    notifies = ['cronet'],
 )
 
 android_builder(
     name = 'android-cronet-arm-rel',
     goma_backend = goma.backend.RBE_PROD,
+    notifies = ['cronet'],
 )
 
 android_builder(
     name = 'android-cronet-arm64-dbg',
     goma_backend = goma.backend.RBE_PROD,
+    notifies = ['cronet'],
 )
 
 android_builder(
     name = 'android-cronet-arm64-rel',
     goma_backend = goma.backend.RBE_PROD,
+    notifies = ['cronet'],
 )
 
 android_builder(
     name = 'android-cronet-asan-arm-rel',
     goma_backend = goma.backend.RBE_PROD,
+    notifies = ['cronet'],
 )
 
 android_builder(
     name = 'android-cronet-kitkat-arm-rel',
     goma_backend = goma.backend.RBE_PROD,
+    notifies = ['cronet'],
 )
 
 android_builder(
     name = 'android-cronet-lollipop-arm-rel',
     goma_backend = goma.backend.RBE_PROD,
+    notifies = ['cronet'],
 )
 
 # Runs on a specific machine with an attached phone
@@ -310,22 +317,26 @@ android_builder(
     cpu = None,
     executable = luci.recipe(name = 'cronet'),
     goma_backend = goma.backend.RBE_PROD,
+    notifies = ['cronet'],
     os = os.ANDROID,
 )
 
 android_builder(
     name = 'android-cronet-marshmallow-arm64-rel',
     goma_backend = goma.backend.RBE_PROD,
+    notifies = ['cronet'],
 )
 
 android_builder(
     name = 'android-cronet-x86-dbg',
     goma_backend = goma.backend.RBE_PROD,
+    notifies = ['cronet'],
 )
 
 android_builder(
     name = 'android-cronet-x86-rel',
     goma_backend = goma.backend.RBE_PROD,
+    notifies = ['cronet'],
 )
 
 android_builder(
@@ -383,6 +394,7 @@ android_fyi_builder(
 
 android_fyi_builder(
     name = 'Memory Infra Tester',
+    notifies = ['chrome-memory-sheriffs'],
 )
 
 
@@ -408,11 +420,13 @@ chromium_builder(
     name = 'linux-archive-dbg',
     # Bump to 32 if needed.
     cores = 8,
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 chromium_builder(
     name = 'linux-archive-rel',
     cores = 32,
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 chromium_builder(
@@ -858,6 +872,7 @@ def fuzz_builder(*, name, **kwargs):
   return builder(
       name = name,
       mastername = 'chromium.fuzz',
+      notifies = ['chromesec-lkgr-failures'],
       **kwargs
   )
 
@@ -1113,16 +1128,19 @@ fyi_builder(
 fyi_builder(
     name = 'fuchsia-fyi-arm64-rel',
     goma_backend = goma.backend.RBE_PROD,
+    notifies = ['cr-fuchsia'],
 )
 
 fyi_builder(
     name = 'fuchsia-fyi-x64-dbg',
     goma_backend = goma.backend.RBE_PROD,
+    notifies = ['cr-fuchsia'],
 )
 
 fyi_builder(
     name = 'fuchsia-fyi-x64-rel',
     goma_backend = goma.backend.RBE_PROD,
+    notifies = ['cr-fuchsia'],
 )
 
 fyi_builder(
@@ -1132,6 +1150,7 @@ fyi_builder(
 
 fyi_builder(
     name = 'linux-bfcache-debug',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fyi_builder(
@@ -1160,10 +1179,12 @@ fyi_builder(
 
 fyi_builder(
     name = 'linux-fieldtrial-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fyi_builder(
     name = 'linux-oor-cors-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fyi_builder(
@@ -1317,6 +1338,7 @@ fyi_ios_builder(
 
 fyi_ios_builder(
     name = 'ios-simulator-cronet',
+    notifies = ['cronet'],
 )
 
 fyi_ios_builder(
@@ -1907,6 +1929,7 @@ def linux_builder(*, name, goma_jobs=goma.jobs.MANY_JOBS_FOR_CI, **kwargs):
 linux_builder(
     name = 'Fuchsia x64',
     goma_backend = goma.backend.RBE_PROD,
+    notifies = ['cr-fuchsia'],
 )
 
 linux_builder(
@@ -1947,6 +1970,7 @@ linux_builder(
 linux_builder(
     name = 'Fuchsia ARM64',
     goma_backend = goma.backend.RBE_PROD,
+    notifies = ['cr-fuchsia'],
 )
 
 linux_builder(
@@ -1971,15 +1995,19 @@ linux_builder(
 linux_builder(
     name = 'fuchsia-arm64-cast',
     goma_backend = goma.backend.RBE_PROD,
+    notifies = ['cr-fuchsia'],
 )
 
 linux_builder(
     name = 'fuchsia-x64-cast',
     goma_backend = goma.backend.RBE_PROD,
+    notifies = ['cr-fuchsia'],
 )
 
 linux_builder(
     name = 'fuchsia-x64-dbg',
+    goma_backend = goma.backend.RBE_PROD,
+    notifies = ['cr-fuchsia'],
 )
 
 linux_builder(

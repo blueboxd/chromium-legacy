@@ -157,12 +157,14 @@ public class TabListViewHolderTest extends DummyUiActivityTestCase {
                                 mSelectedTabBackgroundDrawableId)
                         .build();
 
-        mGridMCP = PropertyModelChangeProcessor.create(
-                mGridModel, mTabGridView, TabGridViewBinder::bindClosableTab);
-        mStripMCP = PropertyModelChangeProcessor.create(
-                mStripModel, mTabStripView, TabStripViewBinder::bind);
-        mSelectableMCP = PropertyModelChangeProcessor.create(
-                mSelectableModel, mSelectableTabGridView, TabGridViewBinder::bindSelectableTab);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mGridMCP = PropertyModelChangeProcessor.create(
+                    mGridModel, mTabGridView, TabGridViewBinder::bindClosableTab);
+            mStripMCP = PropertyModelChangeProcessor.create(
+                    mStripModel, mTabStripView, TabStripViewBinder::bind);
+            mSelectableMCP = PropertyModelChangeProcessor.create(
+                    mSelectableModel, mSelectableTabGridView, TabGridViewBinder::bindSelectableTab);
+        });
     }
 
     private void testGridSelected(ViewGroup holder, PropertyModel model) {

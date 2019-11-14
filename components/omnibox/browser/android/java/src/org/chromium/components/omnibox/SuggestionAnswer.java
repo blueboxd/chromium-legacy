@@ -7,7 +7,8 @@ package org.chromium.components.omnibox;
 import android.support.v4.util.ObjectsCompat;
 import android.text.TextUtils;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.annotations.CalledByNative;
 
 import java.util.ArrayList;

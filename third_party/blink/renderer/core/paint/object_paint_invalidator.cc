@@ -179,7 +179,8 @@ void ObjectPaintInvalidator::InvalidateDisplayItemClient(
   // Don't set the flag here because getting PaintLayer has cost and the caller
   // can use various ways (e.g. PaintInvalidatinContext::painting_layer) to
   // reduce the cost.
-  DCHECK(!object_.PaintingLayer() || object_.PaintingLayer()->NeedsRepaint());
+  DCHECK(!object_.PaintingLayer() ||
+         object_.PaintingLayer()->SelfNeedsRepaint());
 
   client.Invalidate(reason);
 

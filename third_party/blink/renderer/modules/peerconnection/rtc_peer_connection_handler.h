@@ -140,13 +140,9 @@ class MODULES_EXPORT RTCPeerConnectionHandler
   webrtc::RTCErrorType SetConfiguration(
       const webrtc::PeerConnectionInterface::RTCConfiguration& configuration)
       override;
-  bool AddICECandidate(
-      scoped_refptr<blink::WebRTCICECandidate> candidate) override;
-  bool AddICECandidate(
+  void AddICECandidate(
       blink::RTCVoidRequest* request,
       scoped_refptr<blink::WebRTCICECandidate> candidate) override;
-  virtual void OnaddICECandidateResult(blink::RTCVoidRequest* request,
-                                       bool result);
   void RestartIce() override;
 
   void GetStats(const blink::WebRTCStatsRequest& request) override;

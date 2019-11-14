@@ -29,6 +29,7 @@ js_modulizer("modulize") {
     "cr_toast_manager_test.js",
     "cr_toggle_test.js",
     "cr_view_manager_test.js",
+    "iron_list_focus_test.js",
   ]
   namespace_rewrites = [
     "cr.isMac|isMac",

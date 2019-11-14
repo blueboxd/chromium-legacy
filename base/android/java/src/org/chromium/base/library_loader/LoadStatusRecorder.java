@@ -5,8 +5,8 @@
 package org.chromium.base.library_loader;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 
 import java.lang.annotation.Retention;

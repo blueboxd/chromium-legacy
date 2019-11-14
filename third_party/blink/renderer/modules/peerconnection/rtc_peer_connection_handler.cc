@@ -39,6 +39,7 @@
 #include "third_party/blink/public/web/modules/peerconnection/peer_connection_dependency_factory.h"
 #include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_impl.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/web_rtc_cross_thread_copier.h"
 #include "third_party/blink/renderer/modules/peerconnection/peer_connection_tracker.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_receiver_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/webrtc_set_description_observer.h"
@@ -49,6 +50,8 @@
 #include "third_party/blink/renderer/platform/peerconnection/rtc_offer_options_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_request.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/webrtc/api/rtc_event_log_output.h"
@@ -1558,27 +1561,9 @@ webrtc::RTCErrorType RTCPeerConnectionHandler::SetConfiguration(
   return webrtc_error.type();
 }
 
-bool RTCPeerConnectionHandler::AddICECandidate(
-    blink::RTCVoidRequest* request,
-    scoped_refptr<blink::WebRTCICECandidate> candidate) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::addICECandidate");
-  // Libjingle currently does not accept callbacks for addICECandidate.
-  // For that reason we are going to call callbacks from here.
-
-  // TODO(tommi): Instead of calling addICECandidate here, we can do a
-  // PostTaskAndReply kind of a thing.
-  bool result = AddICECandidate(std::move(candidate));
-  task_runner_->PostTask(
-      FROM_HERE,
-      WTF::Bind(&RTCPeerConnectionHandler::OnaddICECandidateResult,
-                weak_factory_.GetWeakPtr(), WrapPersistent(request), result));
-  // On failure callback will be triggered.
-  return true;
-}
-
-bool RTCPeerConnectionHandler::AddICECandidate(
-    scoped_refptr<blink::WebRTCICECandidate> candidate) {
+void RTCPeerConnectionHandler::AddICECandidate(
+    RTCVoidRequest* request,
+    scoped_refptr<WebRTCICECandidate> candidate) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::addICECandidate");
   std::unique_ptr<webrtc::IceCandidateInterface> native_candidate(
@@ -1588,38 +1573,43 @@ bool RTCPeerConnectionHandler::AddICECandidate(
               ? static_cast<int>(*candidate->SdpMLineIndex())
               : -1,
           candidate->Candidate().Utf8()));
-  bool return_value = false;
 
-  if (native_candidate) {
-    return_value =
-        native_peer_connection_->AddIceCandidate(native_candidate.get());
-    LOG_IF(ERROR, !return_value) << "Error processing ICE candidate.";
-  } else {
-    LOG(ERROR) << "Could not create native ICE candidate.";
-  }
+  auto callback_on_task_runner =
+      [](base::WeakPtr<RTCPeerConnectionHandler> handler_weak_ptr,
+         base::WeakPtr<PeerConnectionTracker> tracker_weak_ptr,
+         scoped_refptr<WebRTCICECandidate> candidate, webrtc::RTCError result,
+         RTCVoidRequest* request) {
+        // Inform tracker (chrome://webrtc-internals).
+        if (handler_weak_ptr && tracker_weak_ptr) {
+          tracker_weak_ptr->TrackAddIceCandidate(
+              handler_weak_ptr.get(), candidate,
+              PeerConnectionTracker::SOURCE_REMOTE, result.ok());
+        }
+        // Resolve promise.
+        if (result.ok())
+          request->RequestSucceeded();
+        else
+          request->RequestFailed(result);
+      };
 
-  if (peer_connection_tracker_) {
-    peer_connection_tracker_->TrackAddIceCandidate(
-        this, std::move(candidate), PeerConnectionTracker::SOURCE_REMOTE,
-        return_value);
-  }
-  return return_value;
-}
-
-void RTCPeerConnectionHandler::OnaddICECandidateResult(
-    blink::RTCVoidRequest* webkit_request,
-    bool result) {
-  DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnaddICECandidateResult");
-  if (!result) {
-    // We don't have the actual error code from the libjingle, so for now
-    // using a generic error string.
-    return webkit_request->RequestFailed(
-        webrtc::RTCError(webrtc::RTCErrorType::UNSUPPORTED_OPERATION,
-                         std::move("Error processing ICE candidate")));
-  }
-
-  return webkit_request->RequestSucceeded();
+  native_peer_connection_->AddIceCandidate(
+      std::move(native_candidate),
+      [task_runner = task_runner_,
+       handler_weak_ptr = weak_factory_.GetWeakPtr(),
+       tracker_weak_ptr = peer_connection_tracker_, candidate,
+       persistent_request = WrapCrossThreadPersistent(request),
+       callback_on_task_runner =
+           std::move(callback_on_task_runner)](webrtc::RTCError result) {
+        // This callback is invoked on the webrtc signaling thread (this is true
+        // in production, not in rtc_peer_connection_handler_test.cc which uses
+        // a fake |native_peer_connection_|). Jump back to the renderer thread.
+        PostCrossThreadTask(
+            *task_runner, FROM_HERE,
+            WTF::CrossThreadBindOnce(std::move(callback_on_task_runner),
+                                     handler_weak_ptr, tracker_weak_ptr,
+                                     candidate, std::move(result),
+                                     std::move(persistent_request)));
+      });
 }
 
 void RTCPeerConnectionHandler::RestartIce() {

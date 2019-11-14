@@ -36,6 +36,7 @@ LocalCardMigrationErrorDialogView::LocalCardMigrationErrorDialogView(
     LocalCardMigrationDialogController* controller,
     content::WebContents* web_contents)
     : controller_(controller), web_contents_(web_contents) {
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_CANCEL);
   set_close_on_deactivate(false);
   set_margins(gfx::Insets());
 }
@@ -70,10 +71,6 @@ ui::ModalType LocalCardMigrationErrorDialogView::GetModalType() const {
 
 bool LocalCardMigrationErrorDialogView::ShouldShowCloseButton() const {
   return false;
-}
-
-int LocalCardMigrationErrorDialogView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_CANCEL;
 }
 
 void LocalCardMigrationErrorDialogView::WindowClosing() {

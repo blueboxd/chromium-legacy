@@ -25,19 +25,33 @@ std::unique_ptr<BundledExchangesHandle>
 BundledExchangesHandleTracker::MaybeCreateBundledExchangesHandle(
     const GURL& url,
     int frame_tree_node_id) {
-  if (reader_->HasEntry(url)) {
-    return BundledExchangesHandle::CreateForTrackedNavigation(
-        reader_, frame_tree_node_id);
-  }
-  if (!reader_->source().is_trusted() &&
-      url == bundled_exchanges_utils::GetSynthesizedUrlForBundledExchanges(
-                 reader_->source().url(), target_inner_url_)) {
-    // This happens when the page in an untrustable bundled exchanges file is
-    // reloaded.
-    return BundledExchangesHandle::CreateForNavigationInfo(
-        std::make_unique<BundledExchangesNavigationInfo>(
-            reader_->source().Clone(), target_inner_url_),
-        frame_tree_node_id);
+  switch (reader_->source().type()) {
+    case BundledExchangesSource::Type::kTrustedFile:
+      if (reader_->HasEntry(url)) {
+        return BundledExchangesHandle::CreateForTrackedNavigation(
+            reader_, frame_tree_node_id);
+      }
+      break;
+    case BundledExchangesSource::Type::kFile:
+      if (reader_->HasEntry(url)) {
+        return BundledExchangesHandle::CreateForTrackedNavigation(
+            reader_, frame_tree_node_id);
+      }
+      if (url == bundled_exchanges_utils::GetSynthesizedUrlForBundledExchanges(
+                     reader_->source().url(), target_inner_url_)) {
+        // This happens when the page in an untrustable bundled exchanges file
+        // is reloaded.
+        return BundledExchangesHandle::MaybeCreateForNavigationInfo(
+            std::make_unique<BundledExchangesNavigationInfo>(
+                reader_->source().Clone(), target_inner_url_),
+            frame_tree_node_id);
+      }
+      break;
+    case BundledExchangesSource::Type::kNetwork:
+      // Currently navigation within web bundles from network is not supported.
+      // TODO(crbug.com/1018640): Implement this.
+      return nullptr;
+      break;
   }
   return nullptr;
 }

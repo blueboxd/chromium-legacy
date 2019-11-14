@@ -109,7 +109,8 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::Clone(
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_CLONE);
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL_1_OUT(clone);
 
-  *clone = CreateTextRangeProvider(owner_, start_->Clone(), end_->Clone());
+  *clone =
+      CreateTextRangeProvider(owner_.Get(), start_->Clone(), end_->Clone());
   return S_OK;
 }
 
@@ -119,8 +120,8 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::Compare(
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_COMPARE);
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL_1_IN_1_OUT(other, result);
 
-  CComPtr<AXPlatformNodeTextRangeProviderWin> other_provider;
-  if (other->QueryInterface(&other_provider) != S_OK)
+  Microsoft::WRL::ComPtr<AXPlatformNodeTextRangeProviderWin> other_provider;
+  if (other->QueryInterface(IID_PPV_ARGS(&other_provider)) != S_OK)
     return UIA_E_INVALIDOPERATION;
 
   if (*start_ == *(other_provider->start_) &&
@@ -138,8 +139,8 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::CompareEndpoints(
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_COMPAREENDPOINTS);
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL_1_IN_1_OUT(other, result);
 
-  CComPtr<AXPlatformNodeTextRangeProviderWin> other_provider;
-  if (other->QueryInterface(&other_provider) != S_OK)
+  Microsoft::WRL::ComPtr<AXPlatformNodeTextRangeProviderWin> other_provider;
+  if (other->QueryInterface(IID_PPV_ARGS(&other_provider)) != S_OK)
     return UIA_E_INVALIDOPERATION;
 
   const AXPositionInstance& this_provider_endpoint =
@@ -405,7 +406,7 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::FindText(
                                &find_length, !ignore_case, !backwards)) {
     const AXPlatformNodeDelegate* delegate = owner()->GetDelegate();
     *result = CreateTextRangeProvider(
-        owner_, delegate->CreateTextPositionAt(find_start),
+        owner_.Get(), delegate->CreateTextPositionAt(find_start),
         delegate->CreateTextPositionAt(find_start + find_length));
   }
   return S_OK;
@@ -427,6 +428,13 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetAttributeValue(
   for (auto it = start_->AsLeafTextPosition();
        it->anchor_id() != end->anchor_id() || it->tree_id() != end->tree_id();
        it = it->CreateNextAnchorPosition()) {
+    // If the iterator creates a null position, then it has likely overrun the
+    // range, return failure. This is unexpected but may happen if the range
+    // became inverted.
+    DCHECK(!it->IsNullPosition());
+    if (it->IsNullPosition())
+      return E_FAIL;
+
     AXPlatformNodeDelegate* delegate = GetDelegate(it.get());
     DCHECK(it && delegate);
 
@@ -695,8 +703,8 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::MoveEndpointByRange(
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_MOVEENPOINTBYRANGE);
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL_1_IN(other);
 
-  CComPtr<AXPlatformNodeTextRangeProviderWin> other_provider;
-  if (other->QueryInterface(&other_provider) != S_OK)
+  Microsoft::WRL::ComPtr<AXPlatformNodeTextRangeProviderWin> other_provider;
+  if (other->QueryInterface(IID_PPV_ARGS(&other_provider)) != S_OK)
     return UIA_E_INVALIDOPERATION;
 
   const AXPositionInstance& other_provider_endpoint =
@@ -893,7 +901,7 @@ base::string16 AXPlatformNodeTextRangeProviderWin::GetString(int max_count) {
 }
 
 AXPlatformNodeWin* AXPlatformNodeTextRangeProviderWin::owner() const {
-  return owner_;
+  return owner_.Get();
 }
 
 AXPlatformNodeDelegate* AXPlatformNodeTextRangeProviderWin::GetDelegate(
@@ -1063,9 +1071,45 @@ AXPlatformNodeTextRangeProviderWin::MoveEndpointByUnitHelper(
   return current_endpoint;
 }
 
+void AXPlatformNodeTextRangeProviderWin::NormalizeAsUnignoredTextRange() {
+  if (!start_->IsValid() || !end_->IsValid())
+    return;
+
+  if (!start_->IsIgnored() && !end_->IsIgnored())
+    return;
+
+  if (start_->IsIgnored()) {
+    AXPositionInstance normalized_start = start_->AsUnignoredTextPosition(
+        AXNodePosition::AdjustmentBehavior::kMoveRight);
+    if (normalized_start->IsNullPosition()) {
+      normalized_start = start_->AsUnignoredTextPosition(
+          AXNodePosition::AdjustmentBehavior::kMoveLeft);
+    }
+    if (!normalized_start->IsNullPosition())
+      start_ = std::move(normalized_start);
+  }
+
+  if (end_->IsIgnored()) {
+    AXPositionInstance normalized_end = end_->AsUnignoredTextPosition(
+        AXNodePosition::AdjustmentBehavior::kMoveRight);
+    if (normalized_end->IsNullPosition()) {
+      normalized_end = end_->AsUnignoredTextPosition(
+          AXNodePosition::AdjustmentBehavior::kMoveLeft);
+    }
+    if (!normalized_end->IsNullPosition())
+      end_ = std::move(normalized_end);
+  }
+
+  DCHECK_LE(*start_, *end_);
+}
+
 void AXPlatformNodeTextRangeProviderWin::NormalizeTextRange() {
   if (!start_->IsValid() || !end_->IsValid())
     return;
+
+  // If either endpoint is anchored to an ignored node,
+  // first snap them both to be unignored positions.
+  NormalizeAsUnignoredTextRange();
 
   // Only normalize non-degenerate ranges.
   if (*start_ != *end_) {
@@ -1082,6 +1126,8 @@ void AXPlatformNodeTextRangeProviderWin::NormalizeTextRange() {
       DCHECK_EQ(*end_, *normalized_end);
       end_ = std::move(normalized_end);
     }
+
+    DCHECK_LE(*start_, *end_);
   }
 }
 

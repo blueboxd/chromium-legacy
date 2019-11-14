@@ -4,11 +4,12 @@
 
 package org.chromium.chrome.browser.feed;
 
+import androidx.annotation.VisibleForTesting;
+
 import com.google.android.libraries.feed.api.host.config.ApplicationInfo;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.components.version_info.Channel;
 import org.chromium.components.version_info.VersionConstants;
 

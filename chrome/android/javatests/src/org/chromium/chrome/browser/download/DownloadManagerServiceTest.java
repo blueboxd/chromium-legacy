@@ -8,7 +8,6 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.test.filters.MediumTest;
-import android.support.test.filters.SmallTest;
 import android.util.Log;
 import android.util.Pair;
 
@@ -484,24 +483,5 @@ public class DownloadManagerServiceTest {
         int resumableIdCount = mService.mAutoResumableDownloadIds.size();
         mService.onConnectionTypeChanged(ConnectionType.CONNECTION_2G);
         Assert.assertEquals(resumableIdCount, mService.mAutoResumableDownloadIds.size());
-    }
-
-    /**
-     * Test to make sure {@link DownloadUtils#shouldAutoOpenDownload}
-     * returns the right result for varying MIME types and Content-Dispositions.
-     */
-    @Test
-    @SmallTest
-    @Feature({"Download"})
-    public void testshouldAutoOpenDownload() {
-        // Should not open any download type MIME types.
-        Assert.assertFalse(DownloadUtils.shouldAutoOpenDownload("application/download", true));
-        Assert.assertFalse(DownloadUtils.shouldAutoOpenDownload("application/x-download", true));
-        Assert.assertFalse(DownloadUtils.shouldAutoOpenDownload("application/octet-stream", true));
-        Assert.assertTrue(DownloadUtils.shouldAutoOpenDownload("application/pdf", true));
-        Assert.assertFalse(DownloadUtils.shouldAutoOpenDownload("application/pdf", false));
-        Assert.assertFalse(DownloadUtils.shouldAutoOpenDownload("application/x-download", true));
-        Assert.assertFalse(DownloadUtils.shouldAutoOpenDownload("application/x-download", true));
-        Assert.assertFalse(DownloadUtils.shouldAutoOpenDownload("application/x-download", true));
     }
 }

@@ -9,7 +9,8 @@ import android.os.ResultReceiver;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.content.browser.input.ImeAdapterImpl;
 
 /**

@@ -330,9 +330,8 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
     WriteUint32(image_data->width());
     WriteUint32(image_data->height());
     DOMArrayBufferBase* pixel_buffer = image_data->BufferBase();
-    uint32_t pixel_buffer_length =
-        pixel_buffer->DeprecatedByteLengthAsUnsigned();
-    WriteUint32(pixel_buffer_length);
+    size_t pixel_buffer_length = pixel_buffer->ByteLengthAsSizeT();
+    WriteUint64(base::strict_cast<uint64_t>(pixel_buffer_length));
     WriteRawBytes(pixel_buffer->Data(), pixel_buffer_length);
     return true;
   }

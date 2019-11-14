@@ -47,7 +47,7 @@ Case: Displaying movie
       "bounds": [15, 600]
     },
     {
-      "name": "",
+      "name": "LayoutVideo VIDEO",
       "position": [8, 8],
       "bounds": [352, 288]
     }

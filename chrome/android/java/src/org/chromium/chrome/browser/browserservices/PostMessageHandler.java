@@ -6,8 +6,12 @@ package org.chromium.chrome.browser.browserservices;
 
 import android.net.Uri;
 
+import androidx.annotation.VisibleForTesting;
+import androidx.browser.customtabs.CustomTabsService;
+import androidx.browser.customtabs.CustomTabsSessionToken;
+import androidx.browser.customtabs.PostMessageBackend;
+
 import org.chromium.base.ContextUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.browserservices.OriginVerifier.OriginVerificationListener;
 import org.chromium.chrome.browser.tab.Tab;
@@ -17,10 +21,6 @@ import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
-
-import androidx.browser.customtabs.CustomTabsService;
-import androidx.browser.customtabs.CustomTabsSessionToken;
-import androidx.browser.customtabs.PostMessageBackend;
 
 /**
  * A class that handles postMessage communications with a designated {@link CustomTabsSessionToken}.

@@ -573,6 +573,11 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // Does need to be called by subclasses such as BrowserAccessibilityAndroid.
   const ui::AXUniqueId& GetUniqueId() const override;
 
+  // Returns a text attribute map indicating the offsets in the text of a leaf
+  // object, such as a text field or static text, where spelling and grammar
+  // errors are present.
+  ui::TextAttributeMap GetSpellingAndGrammarAttributes() const;
+
  private:
   // Return the bounds after converting from this node's coordinate system
   // (which is relative to its nearest scrollable ancestor) to the coordinate
@@ -617,11 +622,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
   // If the node has a child tree, get the root node.
   BrowserAccessibility* PlatformGetRootOfChildTree() const;
-
-  // Returns a text attribute map indicating the offsets in the text of a leaf
-  // object, such as a text field or static text, where spelling and grammar
-  // errors are present.
-  ui::TextAttributeMap GetSpellingAndGrammarAttributes() const;
 
   // Given a set of map of spelling text attributes and a start offset, merge
   // them into the given map of existing text attributes. Merges the given

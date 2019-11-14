@@ -242,16 +242,6 @@
         <item name="android:windowLightNavigationBar" tools:targetApi="28">false</item>
     </style>
 
-    <!-- ThemeOverlay -->
-    <style name="Base.OverflowMenuThemeOverlay" parent="Theme.AppCompat.DayNight">
-        <item name="android:popupBackground">@null</item>
-        <item name="android:listDivider">@null</item>
-        <item name="android:listPreferredItemHeightSmall">48dp</item>
-        <item name="android:textAppearance">@style/TextAppearance.BlackTitle1</item>
-        <item name="colorControlHighlight">@color/control_highlight_color</item>
-    </style>
-    <style name="OverflowMenuThemeOverlay" parent="Base.OverflowMenuThemeOverlay" />
-
     <!-- Preferences styles -->
     <style name="Theme.Chromium.PreferenceTheme">
         <item name="preferenceStyle">@style/Theme.Chromium.PreferenceItem</item>
@@ -412,15 +402,6 @@
         <item name="android:paddingTop">10dp</item>
     </style>
 
-    <!-- Overflow Menu styles-->
-    <style name="OverflowMenuButton">
-        <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">match_parent</item>
-        <item name="android:layout_weight">1</item>
-        <item name="android:background">?attr/listChoiceBackgroundIndicator</item>
-        <item name="android:scaleType">center</item>
-        <item name="tint">@color/standard_mode_tint</item>
-    </style>
     <style name="DistilledPagePrefThemeButton">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
@@ -725,12 +706,6 @@
         <item name="android:layout_height">1dp</item>
         <item name="android:src">@color/hairline_stroke_color</item>
         <item name="android:scaleType">fitXY</item>
-    </style>
-
-    <style name="AppMenuItem">
-        <item name="android:paddingStart">16dp</item>
-        <item name="android:paddingEnd">16dp</item>
-        <item name="android:background">?attr/listChoiceBackgroundIndicator</item>
     </style>
     <style name="TextAppearance.UpdateMenuItem">
         <item name="android:textColor">@color/update_menu_item_text_color</item>

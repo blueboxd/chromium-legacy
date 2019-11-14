@@ -20,6 +20,9 @@ extern const char kExtensionScheme[];
 // The name of the manifest inside an extension.
 extern const base::FilePath::CharType kManifestFilename[];
 
+// The name of the differential fingerprint file inside an extension.
+extern const base::FilePath::CharType kDifferentialFingerprintFilename[];
+
 // The name of locale folder inside an extension.
 extern const base::FilePath::CharType kLocaleFolder[];
 

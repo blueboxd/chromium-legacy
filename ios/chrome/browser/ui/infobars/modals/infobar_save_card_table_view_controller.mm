@@ -9,7 +9,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_constants.h"
-#import "ios/chrome/browser/ui/infobars/modals/infobar_modal_delegate.h"
+#import "ios/chrome/browser/ui/infobars/modals/infobar_save_card_modal_delegate.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item.h"
@@ -36,8 +36,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @interface InfobarSaveCardTableViewController () <UITextFieldDelegate>
 
-// InfobarModalDelegate for this ViewController.
-@property(nonatomic, strong) id<InfobarModalDelegate> infobarModalDelegate;
+// InfobarSaveCardModalDelegate for this ViewController.
+@property(nonatomic, strong) id<InfobarSaveCardModalDelegate>
+    saveCardModalDelegate;
 // Used to build and record metrics.
 @property(nonatomic, strong) InfobarMetricsRecorder* metricsRecorder;
 
@@ -45,11 +46,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @implementation InfobarSaveCardTableViewController
 
-- (instancetype)initWithModalDelegate:(id<InfobarModalDelegate>)modalDelegate {
+- (instancetype)initWithModalDelegate:
+    (id<InfobarSaveCardModalDelegate>)modalDelegate {
   self = [super initWithTableViewStyle:UITableViewStylePlain
                            appBarStyle:ChromeTableViewControllerStyleNoAppBar];
   if (self) {
-    _infobarModalDelegate = modalDelegate;
+    _saveCardModalDelegate = modalDelegate;
     _metricsRecorder = [[InfobarMetricsRecorder alloc]
         initWithType:InfobarType::kInfobarTypeSaveCard];
   }
@@ -84,7 +86,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
-  [self.infobarModalDelegate modalInfobarWasDismissed:self];
+  [self.saveCardModalDelegate modalInfobarWasDismissed:self];
   [self.metricsRecorder recordModalEvent:MobileMessagesModalEvent::Dismissed];
   [super viewDidDisappear:animated];
 }
@@ -151,7 +153,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   saveCardButtonItem.text = @"TOS Agreement";
   saveCardButtonItem.buttonText =
       l10n_util::GetNSString(IDS_IOS_AUTOFILL_SAVE_CARD);
-  saveCardButtonItem.enabled = YES;
+  saveCardButtonItem.enabled = self.currentCardSaved;
   saveCardButtonItem.disableButtonIntrinsicWidth = YES;
   [model addItem:saveCardButtonItem
       toSectionWithIdentifier:SectionIdentifierContent];
@@ -249,7 +251,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (void)saveCardButtonWasPressed:(UIButton*)sender {
-  // TODO(crbug.com/1014652): Implement and record metrics.
+  base::RecordAction(
+      base::UserMetricsAction("MobileMessagesModalAcceptedTapped"));
+  [self.metricsRecorder recordModalEvent:MobileMessagesModalEvent::Accepted];
+  // TODO(crbug.com/1014652): Use current item values once editing is supported.
+  [self.saveCardModalDelegate saveCardWithCardholderName:self.cardholderName
+                                         expirationMonth:self.expirationMonth
+                                          expirationYear:self.expirationYear];
 }
 
 - (void)nameEditDidBegin {
@@ -271,9 +279,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   base::RecordAction(
       base::UserMetricsAction("MobileMessagesModalCancelledTapped"));
   [self.metricsRecorder recordModalEvent:MobileMessagesModalEvent::Canceled];
-  [self.infobarModalDelegate dismissInfobarModal:sender
-                                        animated:YES
-                                      completion:nil];
+  [self.saveCardModalDelegate dismissInfobarModal:sender
+                                         animated:YES
+                                       completion:nil];
 }
 
 #pragma mark - Helpers

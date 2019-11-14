@@ -34,10 +34,6 @@ source_set("lib") {
     "//third_party/perfetto:libperfetto",
     "//third_party/perfetto/protos/perfetto/config:lite",
   ]
-
-  deps = [
-    "//third_party/perfetto:libproto_to_json",
-  ]
 }
 
 source_set("json_trace_exporter") {

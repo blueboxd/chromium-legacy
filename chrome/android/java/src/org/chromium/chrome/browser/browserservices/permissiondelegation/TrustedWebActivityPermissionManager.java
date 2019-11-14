@@ -10,10 +10,10 @@ import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.preferences.website.ContentSettingValues;

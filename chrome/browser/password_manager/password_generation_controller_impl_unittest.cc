@@ -47,55 +47,25 @@ using testing::NiceMock;
 using testing::Return;
 using testing::StrictMock;
 
-class TestPasswordManagerClient : public ChromePasswordManagerClient {
+class TestPasswordManagerClient
+    : public password_manager::StubPasswordManagerClient {
  public:
-  static TestPasswordManagerClient* CreateForWebContents(
-      content::WebContents* web_contents,
-      autofill::AutofillClient* autofill_client);
-
-  TestPasswordManagerClient(content::WebContents* web_contents,
-                            autofill::AutofillClient* autofill_client);
+  TestPasswordManagerClient();
   ~TestPasswordManagerClient() override;
 
-  bool IsSavingAndFillingEnabled(const GURL& url) const override;
-  void GeneratePassword() override;
   password_manager::PasswordStore* GetProfilePasswordStore() const override;
 
  private:
   scoped_refptr<MockPasswordStore> mock_password_store_;
 };
 
-// static
-TestPasswordManagerClient* TestPasswordManagerClient::CreateForWebContents(
-    content::WebContents* web_contents,
-    autofill::AutofillClient* autofill_client) {
-  if (FromWebContents(web_contents))
-    ADD_FAILURE() << "Can't attatch TestPasswordManagerClient to WebContents. "
-                     "A ChromePasswordManagerClient is already attatched to "
-                     "the given WebContents.";
-  TestPasswordManagerClient* test_client =
-      new TestPasswordManagerClient(web_contents, autofill_client);
-  web_contents->SetUserData(UserDataKey(), base::WrapUnique(test_client));
-  return test_client;
-}
-
-TestPasswordManagerClient::TestPasswordManagerClient(
-    content::WebContents* web_contents,
-    autofill::AutofillClient* autofill_client)
-    : ChromePasswordManagerClient(web_contents, autofill_client) {
+TestPasswordManagerClient::TestPasswordManagerClient() {
   mock_password_store_ = new MockPasswordStore();
 }
 
 TestPasswordManagerClient::~TestPasswordManagerClient() {
   mock_password_store_->ShutdownOnUIThread();
 }
-
-bool TestPasswordManagerClient::IsSavingAndFillingEnabled(
-    const GURL& url) const {
-  return true;
-}
-
-void TestPasswordManagerClient::GeneratePassword() {}
 
 password_manager::PasswordStore*
 TestPasswordManagerClient::GetProfilePasswordStore() const {
@@ -193,14 +163,14 @@ class PasswordGenerationControllerTest
  public:
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
+    test_pwd_manager_client_ = std::make_unique<TestPasswordManagerClient>();
     PasswordGenerationControllerImpl::CreateForWebContentsForTesting(
-        web_contents(), mock_manual_filling_controller_.AsWeakPtr(),
+        web_contents(), test_pwd_manager_client_.get(),
+        mock_manual_filling_controller_.AsWeakPtr(),
         mock_dialog_factory_.Get());
-    test_pwd_manager_client_ = TestPasswordManagerClient::CreateForWebContents(
-        web_contents(), &test_autofill_client_);
 
     password_manager_ = std::make_unique<password_manager::PasswordManager>(
-        test_pwd_manager_client_);
+        test_pwd_manager_client_.get());
     mock_password_manager_driver_ =
         std::make_unique<NiceMock<MockPasswordManagerDriver>>();
 
@@ -209,7 +179,7 @@ class PasswordGenerationControllerTest
     password_autofill_manager_ =
         std::make_unique<password_manager::PasswordAutofillManager>(
             mock_password_manager_driver_.get(), &test_autofill_client_,
-            test_pwd_manager_client_);
+            test_pwd_manager_client_.get());
 
     ON_CALL(*mock_password_manager_driver_, GetPasswordManager())
         .WillByDefault(Return(password_manager_.get()));
@@ -262,7 +232,7 @@ class PasswordGenerationControllerTest
   std::unique_ptr<password_manager::PasswordManager> password_manager_;
   std::unique_ptr<password_manager::PasswordAutofillManager>
       password_autofill_manager_;
-  TestPasswordManagerClient* test_pwd_manager_client_ = nullptr;
+  std::unique_ptr<TestPasswordManagerClient> test_pwd_manager_client_;
   autofill::TestAutofillClient test_autofill_client_;
 };
 

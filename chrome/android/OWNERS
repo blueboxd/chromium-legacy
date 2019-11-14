@@ -1,4 +1,5 @@
 agrieve@chromium.org
+bsazonov@chromium.org
 dtrainor@chromium.org
 mthiesse@chromium.org
 nyquist@chromium.org
@@ -16,7 +17,6 @@ per-file chrome_junit_test_java_sources.gni=*
 per-file BUILD.gn=estevenson@chromium.org
 per-file BUILD.gn=tiborg@chromium.org
 per-file BUILD.gn=wnwen@chromium.org
-per-file chrome_bundle_tmpl.gni=tiborg@chromium.org
 # For VR Javatest changes
 per-file BUILD.gn=bsheedy@chromium.org
 

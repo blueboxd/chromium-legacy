@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.payments.ui;
 import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.prefeditor.EditableOption;
 

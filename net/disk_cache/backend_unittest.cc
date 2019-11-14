@@ -245,6 +245,7 @@ void DiskCacheBackendTest::WaitForSimpleCacheIndexAndCheck(
 }
 
 void DiskCacheBackendTest::RunUntilIdle() {
+  DiskCacheTestWithCache::RunUntilIdle();
   base::RunLoop().RunUntilIdle();
   disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
 }
@@ -5198,4 +5199,89 @@ TEST_F(DiskCacheBackendTest, SimpleCacheHardResetDropsValues) {
                     ->index()
                     ->Has(disk_cache::simple_util::GetEntryHashKey("key")));
   }
+}
+
+// Test to make sure cancelation of backend operation that got queued after
+// a pending doom on backend destruction happens properly.
+TEST_F(DiskCacheBackendTest, SimpleCancelOpPendingDoom) {
+  struct CleanupContext {
+    explicit CleanupContext(bool* ran_ptr) : ran_ptr(ran_ptr) {}
+    ~CleanupContext() { *ran_ptr = true; }
+
+    bool* ran_ptr;
+  };
+
+  const char kKey[] = "skeleton";
+
+  // Disable optimistic ops.
+  SetCacheType(net::APP_CACHE);
+  SetSimpleCacheMode();
+  InitCache();
+
+  disk_cache::Entry* entry = nullptr;
+  ASSERT_THAT(CreateEntry(kKey, &entry), IsOk());
+  entry->Close();
+
+  // Queue doom.
+  cache_->DoomEntry(kKey, net::LOWEST, base::DoNothing());
+
+  // Queue create after it.
+  bool cleanup_context_ran = false;
+  auto cleanup_context = std::make_unique<CleanupContext>(&cleanup_context_ran);
+
+  EntryResult entry_result = cache_->CreateEntry(
+      kKey, net::HIGHEST,
+      base::BindOnce(
+          [](std::unique_ptr<CleanupContext>, EntryResult result) {
+            ADD_FAILURE() << "This should not actually run";
+          },
+          std::move(cleanup_context)));
+
+  EXPECT_EQ(net::ERR_IO_PENDING, entry_result.net_error());
+  cache_.reset();
+
+  RunUntilIdle();
+  EXPECT_TRUE(cleanup_context_ran);
+}
+
+TEST_F(DiskCacheBackendTest, SimpleDontLeakPostDoomCreate) {
+  // If an entry has been optimistically created after a pending doom, and the
+  // backend destroyed before the doom completed, the entry would get wedged,
+  // with no operations on it workable and entry leaked.
+  // (See https://crbug.com/1015774).
+  const char kKey[] = "for_lock";
+  const int kBufSize = 2 * 1024;
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBuffer>(kBufSize);
+  CacheTestFillBuffer(buffer->data(), kBufSize, true);
+
+  SetSimpleCacheMode();
+  InitCache();
+
+  disk_cache::Entry* entry = nullptr;
+  ASSERT_THAT(CreateEntry(kKey, &entry), IsOk());
+  entry->Close();
+
+  // Make sure create actually succeeds, not just optimistically.
+  RunUntilIdle();
+
+  // Queue doom.
+  int rv = cache_->DoomEntry(kKey, net::LOWEST, base::DoNothing());
+  ASSERT_EQ(net::ERR_IO_PENDING, rv);
+
+  // And then do a create. This actually succeeds optimistically.
+  EntryResult result =
+      cache_->CreateEntry(kKey, net::LOWEST, base::DoNothing());
+  ASSERT_EQ(net::OK, result.net_error());
+  entry = result.ReleaseEntry();
+
+  cache_.reset();
+
+  // Entry is still supposed to be operable. This part is needed to see the bug
+  // without a leak checker.
+  EXPECT_EQ(kBufSize, WriteData(entry, 1, 0, buffer.get(), kBufSize, false));
+
+  entry->Close();
+
+  // Should not have leaked files here.
 }

@@ -152,7 +152,7 @@ Still reading?
   </issue>
   <issue id="IconMissingDensityFolder">
     <!-- see crbug.com/542435 -->
-    <ignore regexp="android_webview/apk/java/res"/>
+    <ignore regexp="android_webview/nonembedded/java/res"/>
     <ignore regexp="android_webview/tools/system_webview_shell/apk/res"/>
     <ignore regexp="chrome/android/webapk/shell_apk/res"/>
     <ignore regexp="chromecast/internal"/>

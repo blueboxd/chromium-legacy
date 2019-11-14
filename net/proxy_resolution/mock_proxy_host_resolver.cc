@@ -11,6 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 
 namespace net {
 
@@ -61,15 +62,17 @@ MockProxyHostResolver::MockProxyHostResolver(bool synchronous_mode)
 MockProxyHostResolver::~MockProxyHostResolver() = default;
 
 std::unique_ptr<ProxyHostResolver::Request>
-MockProxyHostResolver::CreateRequest(const std::string& hostname,
-                                     ProxyResolveDnsOperation operation) {
+MockProxyHostResolver::CreateRequest(
+    const std::string& hostname,
+    ProxyResolveDnsOperation operation,
+    const net::NetworkIsolationKey& network_isolation_key) {
   ++num_resolve_;
 
   if (fail_all_)
     return std::make_unique<RequestImpl>(std::vector<IPAddress>(),
                                          synchronous_mode_);
 
-  auto match = results_.find({hostname, operation});
+  auto match = results_.find({hostname, operation, network_isolation_key});
   if (match == results_.end())
     return std::make_unique<RequestImpl>(
         std::vector<IPAddress>({IPAddress(127, 0, 0, 1)}), synchronous_mode_);
@@ -77,18 +80,22 @@ MockProxyHostResolver::CreateRequest(const std::string& hostname,
   return std::make_unique<RequestImpl>(match->second, synchronous_mode_);
 }
 
-void MockProxyHostResolver::SetError(const std::string& hostname,
-                                     ProxyResolveDnsOperation operation) {
+void MockProxyHostResolver::SetError(
+    const std::string& hostname,
+    ProxyResolveDnsOperation operation,
+    const net::NetworkIsolationKey& network_isolation_key) {
   fail_all_ = false;
-  results_[{hostname, operation}].clear();
+  results_[{hostname, operation, network_isolation_key}].clear();
 }
 
-void MockProxyHostResolver::SetResult(const std::string& hostname,
-                                      ProxyResolveDnsOperation operation,
-                                      std::vector<IPAddress> result) {
+void MockProxyHostResolver::SetResult(
+    const std::string& hostname,
+    ProxyResolveDnsOperation operation,
+    const net::NetworkIsolationKey& network_isolation_key,
+    std::vector<IPAddress> result) {
   DCHECK(!result.empty());
   fail_all_ = false;
-  results_[{hostname, operation}] = std::move(result);
+  results_[{hostname, operation, network_isolation_key}] = std::move(result);
 }
 
 void MockProxyHostResolver::FailAll() {
@@ -123,8 +130,10 @@ HangingProxyHostResolver::HangingProxyHostResolver(
 HangingProxyHostResolver::~HangingProxyHostResolver() = default;
 
 std::unique_ptr<ProxyHostResolver::Request>
-HangingProxyHostResolver::CreateRequest(const std::string& hostname,
-                                        ProxyResolveDnsOperation operation) {
+HangingProxyHostResolver::CreateRequest(
+    const std::string& hostname,
+    ProxyResolveDnsOperation operation,
+    const net::NetworkIsolationKey& network_isolation_key) {
   return std::make_unique<RequestImpl>(this);
 }
 

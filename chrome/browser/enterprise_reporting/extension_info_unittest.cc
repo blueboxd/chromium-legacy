@@ -26,6 +26,7 @@ const char kHomepage[] = "https://foo.com/extension";
 const char kPermission1[] = "alarms";
 const char kPermission2[] = "idle";
 const char kPermission3[] = "*://*.example.com/*";
+const char kAppLaunchUrl[] = "https://www.example.com/";
 
 }  // namespace
 
@@ -37,24 +38,30 @@ class ExtensionInfoTest : public extensions::ExtensionServiceTestBase {
     service()->Init();
   }
 
-  scoped_refptr<const extensions::Extension> BuildExtension() {
-    return BuildExtension(kId, extensions::Manifest::UNPACKED);
-  }
   scoped_refptr<const extensions::Extension> BuildExtension(
-      const std::string& id,
-      extensions::Manifest::Location location) {
-    auto extension =
-        extensions::ExtensionBuilder(kName)
-            .SetID(id)
-            .SetVersion(kVersion)
-            .SetManifestKey(extensions::manifest_keys::kDescription,
-                            kDescription)
-            .SetManifestKey(extensions::manifest_keys::kHomepageURL, kHomepage)
-            .SetLocation(location)
-            .AddPermission(kPermission1)
-            .AddPermission(kPermission2)
-            .AddPermission(kPermission3)
-            .Build();
+      const std::string& id = kId,
+      extensions::Manifest::Location location = extensions::Manifest::UNPACKED,
+      bool is_app = false,
+      bool from_webstore = false) {
+    extensions::ExtensionBuilder extensionBuilder(
+        kName, (is_app ? extensions::ExtensionBuilder::Type::PLATFORM_APP
+                       : extensions::ExtensionBuilder::Type::EXTENSION));
+    extensionBuilder.SetID(id)
+        .SetVersion(kVersion)
+        .SetManifestKey(extensions::manifest_keys::kDescription, kDescription)
+        .SetManifestKey(extensions::manifest_keys::kHomepageURL, kHomepage)
+        .SetLocation(location)
+        .AddPermission(kPermission1)
+        .AddPermission(kPermission2)
+        .AddPermission(kPermission3);
+    if (is_app) {
+      extensionBuilder.SetManifestPath({"app", "launch", "web_url"},
+                                       kAppLaunchUrl);
+    }
+    if (from_webstore) {
+      extensionBuilder.AddFlags(extensions::Extension::FROM_WEBSTORE);
+    }
+    auto extension = extensionBuilder.Build();
     service()->AddExtension(extension.get());
     return extension;
   }
@@ -82,6 +89,7 @@ TEST_F(ExtensionInfoTest, ExtensionReport) {
   EXPECT_EQ(kHomepage, actual_extension_report.homepage_url());
 
   EXPECT_TRUE(actual_extension_report.enabled());
+  EXPECT_FALSE(actual_extension_report.from_webstore());
 
   EXPECT_EQ(2, actual_extension_report.permissions_size());
   EXPECT_EQ(kPermission1, actual_extension_report.permissions(0));
@@ -91,8 +99,8 @@ TEST_F(ExtensionInfoTest, ExtensionReport) {
 }
 
 TEST_F(ExtensionInfoTest, MultipleExtensions) {
-  auto extension1 = BuildExtension(kId, extensions::Manifest::UNPACKED);
-  auto extension2 = BuildExtension(kId2, extensions::Manifest::UNPACKED);
+  auto extension1 = BuildExtension(kId);
+  auto extension2 = BuildExtension(kId2);
 
   em::ChromeUserProfileInfo info;
   AppendExtensionInfoIntoProfileReport(profile(), &info);
@@ -156,6 +164,34 @@ TEST_F(ExtensionInfoTest, ComponentExtension) {
   AppendExtensionInfoIntoProfileReport(profile(), &info);
 
   EXPECT_EQ(0, info.extensions_size());
+}
+
+TEST_F(ExtensionInfoTest, FromWebstoreFlag) {
+  auto extension1 = BuildExtension(kId, extensions::Manifest::UNPACKED,
+                                   /*is_app=*/false, /*from_webstore=*/false);
+  auto extension2 = BuildExtension(kId2, extensions::Manifest::UNPACKED,
+                                   /*is_app=*/false, /*from_webstore=*/true);
+
+  em::ChromeUserProfileInfo info;
+  AppendExtensionInfoIntoProfileReport(profile(), &info);
+
+  EXPECT_EQ(2, info.extensions_size());
+  EXPECT_FALSE(info.extensions(0).from_webstore());
+  EXPECT_TRUE(info.extensions(1).from_webstore());
+}
+
+TEST_F(ExtensionInfoTest, AppLaunchURLTest) {
+  auto extension1 =
+      BuildExtension(kId, extensions::Manifest::UNPACKED, /*is_app=*/false);
+  auto extension2 =
+      BuildExtension(kId2, extensions::Manifest::UNPACKED, /*is_app=*/true);
+
+  em::ChromeUserProfileInfo info;
+  AppendExtensionInfoIntoProfileReport(profile(), &info);
+
+  EXPECT_EQ(2, info.extensions_size());
+  EXPECT_FALSE(info.extensions(0).has_app_launch_url());
+  EXPECT_EQ(kAppLaunchUrl, info.extensions(1).app_launch_url());
 }
 
 }  // namespace enterprise_reporting

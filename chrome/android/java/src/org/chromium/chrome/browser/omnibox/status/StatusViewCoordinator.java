@@ -10,8 +10,8 @@ import android.text.TextWatcher;
 import android.view.View;
 
 import androidx.annotation.DrawableRes;
+import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.page_info.PageInfoController;

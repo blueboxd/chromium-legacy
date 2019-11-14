@@ -26,7 +26,6 @@ class PasswordSaveConfirmationView : public PasswordBubbleViewBase,
                               int event_flags) override;
 
   // LocationBarBubbleDelegateView:
-  int GetDialogButtons() const override;
   bool ShouldShowCloseButton() const override;
   gfx::Size CalculatePreferredSize() const override;
 

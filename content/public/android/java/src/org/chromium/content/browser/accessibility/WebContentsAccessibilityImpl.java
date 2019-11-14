@@ -27,8 +27,9 @@ import android.view.accessibility.AccessibilityManager.AccessibilityStateChangeL
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeProvider;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.UserData;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -192,6 +193,13 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     @Override
     public void setAccessibilityEnabledForTesting() {
         mAccessibilityEnabledForTesting = true;
+    }
+
+    @VisibleForTesting
+    @Override
+    public void addSpellingErrorForTesting(int virtualViewId, int startOffset, int endOffset) {
+        WebContentsAccessibilityImplJni.get().addSpellingErrorForTesting(mNativeObj,
+                WebContentsAccessibilityImpl.this, virtualViewId, startOffset, endOffset);
     }
 
     // WindowEventObserver
@@ -1229,12 +1237,15 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     @SuppressLint("NewApi")
     @CalledByNative
     private void setAccessibilityNodeInfoText(AccessibilityNodeInfo node, String text,
-            boolean annotateAsLink, boolean isEditableText, String language) {
-        CharSequence computedText = computeText(text, isEditableText, language);
+            boolean annotateAsLink, boolean isEditableText, String language, int[] suggestionStarts,
+            int[] suggestionEnds, String[] suggestions) {
+        CharSequence computedText = computeText(
+                text, isEditableText, language, suggestionStarts, suggestionEnds, suggestions);
         node.setText(computedText);
     }
 
-    protected CharSequence computeText(String text, boolean annotateAsLink, String language) {
+    protected CharSequence computeText(String text, boolean annotateAsLink, String language,
+            int[] suggestionStarts, int[] suggestionEnds, String[] suggestions) {
         if (annotateAsLink) {
             SpannableString spannable = new SpannableString(text);
             spannable.setSpan(new URLSpan(""), 0, spannable.length(), 0);
@@ -1612,5 +1623,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                 WebContentsAccessibilityImpl caller, int id, int start, int len);
         int getTextLength(long nativeWebContentsAccessibilityAndroid,
                 WebContentsAccessibilityImpl caller, int id);
+        void addSpellingErrorForTesting(long nativeWebContentsAccessibilityAndroid,
+                WebContentsAccessibilityImpl caller, int id, int startOffset, int endOffset);
     }
 }

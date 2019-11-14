@@ -4,9 +4,10 @@
 
 package org.chromium.components.module_installer.builder;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.BuildConfig;
 import org.chromium.base.StrictModeContext;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.components.module_installer.engine.InstallEngine;

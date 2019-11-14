@@ -2256,8 +2256,9 @@ LayoutSize CompositedLayerMapping::SubpixelAccumulation() const {
 
 bool CompositedLayerMapping::NeedsRepaint(
     const GraphicsLayer& graphics_layer) const {
-  return IsScrollableAreaLayer(&graphics_layer) ? true
-                                                : owning_layer_.NeedsRepaint();
+  return IsScrollableAreaLayer(&graphics_layer)
+             ? true
+             : owning_layer_.SelfOrDescendantNeedsRepaint();
 }
 
 bool CompositedLayerMapping::AdjustForCompositedScrolling(

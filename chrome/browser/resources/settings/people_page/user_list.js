@@ -133,4 +133,13 @@ Polymer({
   getTooltip_: function(user) {
     return !this.shouldShowEmail_(user) ? user.displayEmail : '';
   },
+
+  /**
+   * @param {!chrome.usersPrivate.User} user
+   * @return {string}
+   * @private
+   */
+  getRemoveUserTooltip_: function(user) {
+    return this.i18n('removeUserTooltip', user.name);
+  },
 });

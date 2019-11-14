@@ -12,7 +12,6 @@
 #include "ui/accessibility/ax_tree_id.h"
 #include "ui/accessibility/platform/aura_window_properties.h"
 #include "ui/aura/client/focus_client.h"
-#include "ui/aura/window.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/widget/widget.h"
 
@@ -66,15 +65,13 @@ AXWindowObjWrapper::AXWindowObjWrapper(AXAuraObjCache* aura_obj_cache,
     : AXAuraObjWrapper(aura_obj_cache),
       window_(window),
       is_root_window_(window->IsRootWindow()) {
-  window->AddObserver(this);
+  observer_.Add(window);
 
   if (is_root_window_)
     aura_obj_cache_->OnRootWindowObjCreated(window);
 }
 
-AXWindowObjWrapper::~AXWindowObjWrapper() {
-  window_->RemoveObserver(this);
-}
+AXWindowObjWrapper::~AXWindowObjWrapper() = default;
 
 bool AXWindowObjWrapper::IsIgnored() {
   return false;

@@ -9,9 +9,9 @@
 #include "base/files/file_path.h"
 #include "base/no_destructor.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
+#include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_factory.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_env.h"
-#include "content/browser/indexed_db/leveldb/transactional_leveldb_database.h"
-#include "content/browser/indexed_db/leveldb/transactional_leveldb_factory.h"
 
 namespace content {
 namespace {

@@ -11,12 +11,6 @@
 
 namespace flag_descriptions {
 
-const char kAppLauncherRefreshName[] = "Enable the new AppLauncher logic";
-const char kAppLauncherRefreshDescription[] =
-    "AppLauncher will always prompt if there is no direct link navigation, "
-    "also Apps will launch asynchronously and there will be no logic that"
-    "depends on the success or the failure of launching an app.";
-
 const char kAutofillCacheQueryResponsesName[] =
     "Cache Autofill Query Responses";
 const char kAutofillCacheQueryResponsesDescription[] =

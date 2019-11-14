@@ -12,7 +12,6 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom-blink.h"
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -236,9 +235,6 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* script_state,
   if (exception_state.HadException())
     return ScriptPromise();
 
-  // Record the eTLD+1 of the frame using the API.
-  Platform::Current()->RecordRapporURL("Bluetooth.APIUsage.Origin", doc.Url());
-
   // Subsequent steps are handled in the browser process.
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -353,9 +349,6 @@ ScriptPromise Bluetooth::requestLEScan(ScriptState* script_state,
 
   if (exception_state.HadException())
     return ScriptPromise();
-
-  // Record the eTLD+1 of the frame using the API.
-  Platform::Current()->RecordRapporURL("Bluetooth.APIUsage.Origin", doc.Url());
 
   // Subsequent steps are handled in the browser process.
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);

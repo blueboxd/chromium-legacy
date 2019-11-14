@@ -6,8 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
-#include "components/sync/base/cancelation_signal.h"
 #include "components/sync/engine/net/http_bridge.h"
 #include "components/sync/engine/net/http_post_provider_factory.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -20,11 +18,9 @@ std::unique_ptr<HttpPostProviderFactory>
 HttpBridgeNetworkResources::GetHttpPostProviderFactory(
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         url_loader_factory_info,
-    const NetworkTimeUpdateCallback& network_time_update_callback,
-    CancelationSignal* cancelation_signal) {
-  return base::WrapUnique<HttpPostProviderFactory>(
-      new HttpBridgeFactory(std::move(url_loader_factory_info),
-                            network_time_update_callback, cancelation_signal));
+    const NetworkTimeUpdateCallback& network_time_update_callback) {
+  return std::make_unique<HttpBridgeFactory>(std::move(url_loader_factory_info),
+                                             network_time_update_callback);
 }
 
 }  // namespace syncer

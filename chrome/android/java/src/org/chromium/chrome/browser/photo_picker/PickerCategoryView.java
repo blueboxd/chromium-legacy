@@ -26,8 +26,9 @@ import android.widget.MediaController;
 import android.widget.RelativeLayout;
 import android.widget.VideoView;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.DiscardableReferencePool.DiscardableReference;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;

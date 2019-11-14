@@ -17,9 +17,9 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.gms.Shadows;
 import org.robolectric.shadows.gms.common.ShadowGoogleApiAvailability;
 
+import org.chromium.base.metrics.test.DisableHistogramsRule;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.test.support.DisableHistogramsRule;
 
 /** Unit tests for GooglePlayServicesChecker. */
 @RunWith(BaseRobolectricTestRunner.class)

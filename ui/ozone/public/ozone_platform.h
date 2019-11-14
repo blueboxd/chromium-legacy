@@ -12,7 +12,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/message_loop/message_pump_type.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
+#include "mojo/public/cpp/bindings/binder_map.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/platform_window/platform_window_base.h"
 #include "ui/platform_window/platform_window_delegate.h"
@@ -175,16 +175,15 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
 
   // Ozone platform implementations may also choose to expose mojo interfaces to
   // internal functionality. Embedders wishing to take advantage of ozone mojo
-  // implementations must invoke AddInterfaces with a valid
-  // service_manager::BinderRegistry* pointer to export all Mojo interfaces
-  // defined within Ozone.
+  // implementations must invoke AddInterfaces with a valid mojo::BinderMap
+  // pointer to export all Mojo interfaces defined within Ozone.
   //
   // Requests arriving before they can be immediately handled will be queued and
   // executed later.
   //
   // A default do-nothing implementation is provided to permit platform
   // implementations to opt out of implementing any Mojo interfaces.
-  virtual void AddInterfaces(service_manager::BinderRegistry* registry);
+  virtual void AddInterfaces(mojo::BinderMap* binders);
 
   // The GPU-specific portion of Ozone would typically run in a sandboxed
   // process for additional security. Some startup might need to wait until

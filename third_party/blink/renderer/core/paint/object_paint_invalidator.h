@@ -38,8 +38,8 @@ class CORE_EXPORT ObjectPaintInvalidator {
   void InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
       PaintInvalidationReason);
 
-  // The caller should ensure the painting layer has been SetNeedsRepaint before
-  // calling this function.
+  // The caller should ensure the painting layer has been SetNeedsRepaint
+  // before calling this function.
   void InvalidateDisplayItemClient(const DisplayItemClient&,
                                    PaintInvalidationReason);
 

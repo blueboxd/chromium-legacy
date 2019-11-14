@@ -31,9 +31,12 @@
 #include "chromecast/media/audio/mixer_service/control_connection.h"
 #include "chromecast/media/cma/backend/audio_buildflags.h"
 #include "chromecast/media/cma/backend/cast_audio_json.h"
-#include "chromecast/media/cma/backend/mixer/stream_mixer.h"
 #include "chromecast/media/cma/backend/system_volume_control.h"
 #include "chromecast/media/cma/backend/volume_map.h"
+
+#if BUILDFLAG(MIXER_IN_CAST_SHELL)
+#include "chromecast/media/cma/backend/mixer/stream_mixer.h"  // nogncheck
+#endif
 
 namespace chromecast {
 namespace media {
@@ -405,7 +408,9 @@ VolumeControlInternal& GetVolumeControl() {
 
 // static
 void VolumeControl::Initialize(const std::vector<std::string>& argv) {
-  StreamMixer::Get();
+#if BUILDFLAG(MIXER_IN_CAST_SHELL)
+  static base::NoDestructor<StreamMixer> g_mixer;
+#endif
   GetVolumeControl();
 }
 

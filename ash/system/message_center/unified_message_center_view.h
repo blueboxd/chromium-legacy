@@ -90,6 +90,9 @@ class ASH_EXPORT UnifiedMessageCenterView
   // Count number of notifications that are above visible area.
   std::vector<message_center::Notification*> GetStackedNotifications() const;
 
+  // Relinquish focus and transfer it to the quick settings widget.
+  void FocusOut(bool reverse);
+
   // Set the first child view to be focused when focus is acquired.
   // This is the first visible child unless reverse is true, in which case
   // it is the last visible child.

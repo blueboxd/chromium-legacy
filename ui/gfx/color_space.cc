@@ -946,6 +946,7 @@ void ColorSpace::GetRangeAdjustMatrix(SkMatrix44* matrix) const {
 
 bool ColorSpace::ToSkYUVColorSpace(SkYUVColorSpace* out) const {
   if (range_ == RangeID::FULL) {
+    // TODO(dalecurtis): This is probably not right for BT.2020.
     *out = kJPEG_SkYUVColorSpace;
     return true;
   }

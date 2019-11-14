@@ -32,6 +32,7 @@ class ProxyResolverImpl : public mojom::ProxyResolver {
   // mojom::ProxyResolver overrides.
   void GetProxyForUrl(
       const GURL& url,
+      const net::NetworkIsolationKey& network_isolation_key,
       mojo::PendingRemote<mojom::ProxyResolverRequestClient> client) override;
 
   void DeleteJob(Job* job);

@@ -1,6 +1,8 @@
 include_rules = [
   "+chrome/app",
   "+chrome/browser/preferences/android/java",
+  "+chrome/browser/ui/android/appmenu",
+  "-chrome/browser/ui/android/appmenu/internal",
   "+chrome/browser/ui/android/styles",
   "+chrome/browser/ui/android/widget",
   "+chrome/browser/util/android",

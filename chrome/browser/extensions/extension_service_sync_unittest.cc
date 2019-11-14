@@ -2134,9 +2134,10 @@ TEST_F(ExtensionServiceTestSupervised,
   // The re-enable should be delayed until the extension is updated to the
   // matching version.
   EXPECT_FALSE(registry()->enabled_extensions().Contains(id));
-  // The logic for HasPendingReenable() is broken since
+  // TODO(crbug/1019813): The logic for HasPendingReenable() is broken since
   // DISABLE_CUSTODIAN_APPROVAL_REQUIRED cannot be a syncable disable reason.
   // The expectation below is supposed to return true but returns false for now.
+  // Fix the behavior of HasPendingReenable().
   EXPECT_FALSE(extension_sync_service()->HasPendingReenable(
       id, base::Version(version3)));
 

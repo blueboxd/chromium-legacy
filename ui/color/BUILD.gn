@@ -30,36 +30,9 @@ jumbo_component("color") {
   ]
 }
 
-jumbo_component("mixers") {
-  sources = [
-    "color_mixers.h",
-  ]
-
-  defines = [ "IS_COLOR_IMPL" ]
-
-  deps = []
-
-  public_deps = [
-    "//base",
-  ]
-
-  if (is_chromeos) {
-    sources += [ "cros/native_color_mixer.cc" ]
-  } else if (is_linux) {
-    sources += [ "linux/native_color_mixer.cc" ]
-  } else if (is_mac) {
-    sources += [ "mac/native_color_mixer.cc" ]
-  } else if (is_win) {
-    sources += [ "win/native_color_mixer.cc" ]
-
-    deps += [
-      ":color",
-      "//ui/gfx:color_utils",
-    ]
-  }
-}
-
 test("color_unittests") {
+  testonly = true
+
   sources = [
     "color_mixer_unittest.cc",
     "color_provider_unittest.cc",
@@ -74,4 +47,34 @@ test("color_unittests") {
     "//base/test:test_support",
     "//testing/gtest",
   ]
+}
+
+jumbo_component("mixers") {
+  sources = [
+    "color_mixers.h",
+    "core_default_color_mixer.cc",
+    "ui_color_mixer.cc",
+  ]
+
+  defines = [ "IS_COLOR_IMPL" ]
+
+  deps = [
+    ":color",
+    "//skia",
+    "//ui/gfx:color_utils",
+  ]
+
+  public_deps = [
+    "//base",
+  ]
+
+  if (is_chromeos) {
+    sources += [ "cros/native_color_mixer.cc" ]
+  } else if (is_linux) {
+    sources += [ "linux/native_color_mixer.cc" ]
+  } else if (is_mac) {
+    sources += [ "mac/native_color_mixer.cc" ]
+  } else if (is_win) {
+    sources += [ "win/native_color_mixer.cc" ]
+  }
 }

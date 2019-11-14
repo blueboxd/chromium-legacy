@@ -6,6 +6,7 @@
 
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/views/apps/app_info_dialog/app_info_label.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/insets.h"
@@ -39,8 +40,7 @@ void AppInfoPanel::OpenLink(const GURL& url) {
 
 std::unique_ptr<views::Label> AppInfoPanel::CreateHeading(
     const base::string16& text) const {
-  auto label = std::make_unique<views::Label>(text);
-  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  auto label = std::make_unique<AppInfoLabel>(text);
   label->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
       ui::ResourceBundle::MediumFont));
   return label;

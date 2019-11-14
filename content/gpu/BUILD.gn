@@ -35,6 +35,8 @@ target(link_target_type, "gpu_sources") {
   visibility = [ "//content/*" ]
 
   sources = [
+    "browser_exposed_gpu_interfaces.cc",
+    "browser_exposed_gpu_interfaces.h",
     "gpu_child_thread.cc",
     "gpu_child_thread.h",
     "gpu_child_thread_receiver_bindings.cc",

@@ -211,6 +211,19 @@ cr.define('gpu', function() {
         } else {
           diagnosticsDiv.hidden = true;
         }
+
+        if (gpuInfo.vulkanInfo) {
+          const vulkanInfo = new gpu.VulkanInfo(gpuInfo.vulkanInfo);
+          const data = [{
+            'description': 'info',
+            'value': vulkanInfo.toString(),
+            'id': 'vulkan-info-value'
+          }];
+          this.setTable_('vulkan-info', data);
+        } else {
+          this.setTable_('vulkan-info', []);
+        }
+
       } else {
         this.setText_('basic-info', '... loading ...');
         diagnosticsDiv.hidden = true;

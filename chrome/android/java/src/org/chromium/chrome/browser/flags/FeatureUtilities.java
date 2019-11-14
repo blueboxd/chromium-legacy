@@ -10,6 +10,7 @@ import android.os.Build;
 import android.speech.RecognizerIntent;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLine;
@@ -18,7 +19,6 @@ import org.chromium.base.FieldTrialList;
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;

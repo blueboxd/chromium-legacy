@@ -5,6 +5,8 @@
 #ifndef UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_TEXTPROVIDER_WIN_H_
 #define UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_TEXTPROVIDER_WIN_H_
 
+#include <wrl/client.h>
+
 #include <string>
 
 #include "ui/accessibility/platform/ax_platform_node_win.h"
@@ -65,7 +67,7 @@ class __declspec(uuid("3e1c192b-4348-45ac-8eb6-4b58eeb3dcca"))
   ui::AXPlatformNodeWin* owner() const;
   HRESULT GetTextRangeProviderFromActiveComposition(ITextRangeProvider** range);
 
-  CComPtr<ui::AXPlatformNodeWin> owner_;
+  Microsoft::WRL::ComPtr<ui::AXPlatformNodeWin> owner_;
 };
 
 }  // namespace ui

@@ -26,6 +26,10 @@
 // The target language to be displayed in the InfobarModal.
 @property(nonatomic, copy) NSString* targetLanguage;
 
+// The text for the Infobar action button (i.e. translate or show
+// original)
+@property(nonatomic, copy) NSString* translateButtonText;
+
 // Whether the current preference is set to always translate |targetLanguage|.
 @property(nonatomic, assign) BOOL shouldAlwaysTranslateSourceLanguage;
 

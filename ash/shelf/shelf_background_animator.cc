@@ -10,6 +10,7 @@
 #include "ash/animation/animation_change_type.h"
 #include "ash/public/cpp/login_constants.h"
 #include "ash/public/cpp/shelf_config.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/wallpaper_types.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_background_animator_observer.h"
@@ -174,6 +175,7 @@ void ShelfBackgroundAnimator::CreateAnimator(
   switch (background_type) {
     case SHELF_BACKGROUND_DEFAULT:
     case SHELF_BACKGROUND_APP_LIST:
+    case SHELF_BACKGROUND_HOME_LAUNCHER:
     case SHELF_BACKGROUND_MAXIMIZED_WITH_APP_LIST:
       duration = base::TimeDelta::FromMilliseconds(500);
       break;
@@ -215,6 +217,7 @@ SkColor ShelfBackgroundAnimator::GetBackgroundColor(
       shelf_target_color = ShelfConfig::Get()->GetShelfWithAppListColor();
       break;
     case SHELF_BACKGROUND_DEFAULT:
+    case SHELF_BACKGROUND_HOME_LAUNCHER:
       shelf_target_color = ShelfConfig::Get()->GetDefaultShelfColor();
       break;
     case SHELF_BACKGROUND_MAXIMIZED:

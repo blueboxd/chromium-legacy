@@ -22,30 +22,7 @@ class NodeWrapper extends SAChildNode {
     this.isGroup_ = SwitchAccessPredicate.isGroup(this.baseNode_, parent);
   }
 
-  /** @override */
-  equals(other) {
-    if (!other || !(other instanceof NodeWrapper)) {
-      return false;
-    }
-
-    other = /** @type {!NodeWrapper} */ (other);
-    return other.baseNode_ === this.baseNode_;
-  }
-
-  /** @override */
-  get role() {
-    return this.baseNode_.role;
-  }
-
-  /** @override */
-  get location() {
-    return this.baseNode_.location;
-  }
-
-  /** @override */
-  get automationNode() {
-    return this.baseNode_;
-  }
+  // ================= Getters and setters =================
 
   /** @override */
   get actions() {
@@ -77,6 +54,51 @@ class NodeWrapper extends SAChildNode {
             action => Object.values(SAConstants.MenuAction).includes(action)));
 
     return actions.concat(standardActions);
+  }
+
+  /** @override */
+  get automationNode() {
+    return this.baseNode_;
+  }
+
+  /** @override */
+  get location() {
+    return this.baseNode_.location;
+  }
+
+  /** @override */
+  get role() {
+    return this.baseNode_.role;
+  }
+
+  // ================= General methods =================
+
+  /** @override */
+  asRootNode() {
+    if (!this.isGroup()) {
+      return null;
+    }
+    return RootNodeWrapper.buildTree(this.baseNode_);
+  }
+
+  /** @override */
+  equals(other) {
+    if (!other || !(other instanceof NodeWrapper)) {
+      return false;
+    }
+
+    other = /** @type {!NodeWrapper} */ (other);
+    return other.baseNode_ === this.baseNode_;
+  }
+
+  /** @override */
+  isEquivalentTo(node) {
+    return this.baseNode_ === node;
+  }
+
+  /** @override */
+  isGroup() {
+    return this.isGroup_;
   }
 
   /** @override */
@@ -125,6 +147,8 @@ class NodeWrapper extends SAChildNode {
     }
   }
 
+  // ================= Private methods =================
+
   /**
    * @return {AutomationNode}
    * @protected
@@ -134,24 +158,6 @@ class NodeWrapper extends SAChildNode {
     while (!ancestor.scrollable && ancestor.parent)
       ancestor = ancestor.parent;
     return ancestor;
-  }
-
-  /** @override */
-  isEquivalentTo(node) {
-    return this.baseNode_ === node;
-  }
-
-  /** @override */
-  isGroup() {
-    return this.isGroup_;
-  }
-
-  /** @override */
-  asRootNode() {
-    if (!this.isGroup()) {
-      return null;
-    }
-    return RootNodeWrapper.buildTree(this.baseNode_);
   }
 }
 
@@ -170,6 +176,20 @@ class RootNodeWrapper extends SARootNode {
     this.baseNode_ = baseNode;
   }
 
+  // ================= Getters and setters =================
+
+  /** @override */
+  get automationNode() {
+    return this.baseNode_;
+  }
+
+  /** @override */
+  get location() {
+    return this.baseNode_.location || super.location;
+  }
+
+  // ================= General methods =================
+
   /** @override */
   equals(other) {
     if (!(other instanceof RootNodeWrapper)) {
@@ -181,8 +201,8 @@ class RootNodeWrapper extends SARootNode {
   }
 
   /** @override */
-  get location() {
-    return this.baseNode_.location || super.location;
+  isEquivalentTo(automationNode) {
+    return this.baseNode_ === automationNode;
   }
 
   /** @override */
@@ -190,51 +210,7 @@ class RootNodeWrapper extends SARootNode {
     return !!this.baseNode_.role;
   }
 
-  /** @override */
-  isEquivalentTo(automationNode) {
-    return this.baseNode_ === automationNode;
-  }
-
-  /** @override */
-  get automationNode() {
-    return this.baseNode_;
-  }
-
-  /**
-   * @param {!AutomationNode} rootNode
-   * @return {!RootNodeWrapper}
-   */
-  static buildTree(rootNode) {
-    const root = new RootNodeWrapper(rootNode);
-    const childConstructor = (node) => new NodeWrapper(node, root);
-
-    RootNodeWrapper.buildHelper(root, childConstructor);
-    return root;
-  }
-
-  /**
-   * Helper function to connect tree elements, given constructors for the root
-   * and child types.
-   * @param {!RootNodeWrapper} root
-   * @param {function(!AutomationNode): !SAChildNode} childConstructor
-   *     Constructs a child node from an automation node.
-   */
-  static buildHelper(root, childConstructor) {
-    const interestingChildren = RootNodeWrapper.getInterestingChildren(root);
-
-    if (interestingChildren.length < 1) {
-      throw SwitchAccess.error(
-          SAConstants.ErrorType.NO_CHILDREN,
-          'Root node must have at least 1 interesting child.');
-    }
-    let children = interestingChildren.map(childConstructor);
-
-    const backButton = new BackButtonNode(root);
-    children.push(backButton);
-
-    SARootNode.connectChildren(children);
-    root.setChildren(children);
-  }
+  // ================= Static methods =================
 
   /**
    * @param {!AutomationNode} desktop
@@ -252,11 +228,41 @@ class RootNodeWrapper extends SARootNode {
 
     const childConstructor = (autoNode) => new NodeWrapper(autoNode, root);
     let children = interestingChildren.map(childConstructor);
-
-    SARootNode.connectChildren(children);
-    root.setChildren(children);
+    root.children = children;
 
     return root;
+  }
+
+  /**
+   * @param {!AutomationNode} rootNode
+   * @return {!RootNodeWrapper}
+   */
+  static buildTree(rootNode) {
+    const root = new RootNodeWrapper(rootNode);
+    const childConstructor = (node) => new NodeWrapper(node, root);
+
+    RootNodeWrapper.findAndSetChildren(root, childConstructor);
+    return root;
+  }
+
+  /**
+   * Helper function to connect tree elements, given the root node and a
+   * constructor for the child type.
+   * @param {!RootNodeWrapper} root
+   * @param {function(!AutomationNode): !SAChildNode} childConstructor
+   *     Constructs a child node from an automation node.
+   */
+  static findAndSetChildren(root, childConstructor) {
+    const interestingChildren = RootNodeWrapper.getInterestingChildren(root);
+
+    if (interestingChildren.length < 1) {
+      throw SwitchAccess.error(
+          SAConstants.ErrorType.NO_CHILDREN,
+          'Root node must have at least 1 interesting child.');
+    }
+    let children = interestingChildren.map(childConstructor);
+    children.push(new BackButtonNode(root));
+    root.children = children;
   }
 
   /**

@@ -179,6 +179,7 @@ SharingDialogView::SharingDialogView(views::View* anchor_view,
                                      SharingDialogData data)
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
       data_(std::move(data)) {
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
   DialogDelegate::SetFootnoteView(
       ::CreateFootnoteView(data_, web_contents, this));
 }
@@ -187,10 +188,6 @@ SharingDialogView::~SharingDialogView() = default;
 
 void SharingDialogView::Hide() {
   CloseBubble();
-}
-
-int SharingDialogView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
 }
 
 void SharingDialogView::StyledLabelLinkClicked(views::StyledLabel* label,

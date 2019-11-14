@@ -88,7 +88,6 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   TranslateBubbleModel* model() { return model_.get(); }
 
   // views::BubbleDialogDelegateView methods.
-  int GetDialogButtons() const override;
   base::string16 GetWindowTitle() const override;
   void Init() override;
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

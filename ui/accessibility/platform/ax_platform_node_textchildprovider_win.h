@@ -5,6 +5,8 @@
 #ifndef UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_TEXTCHILDPROVIDER_WIN_H_
 #define UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_TEXTCHILDPROVIDER_WIN_H_
 
+#include <wrl/client.h>
+
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 
@@ -42,7 +44,7 @@ class AX_EXPORT AXPlatformNodeTextChildProviderWin
  private:
   AXPlatformNodeWin* owner() const;
 
-  CComPtr<AXPlatformNodeWin> owner_;
+  Microsoft::WRL::ComPtr<AXPlatformNodeWin> owner_;
 };
 
 }  // namespace ui

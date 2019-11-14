@@ -21,6 +21,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_with_source.h"
@@ -28,6 +29,8 @@
 #include "net/proxy_resolution/proxy_resolver.h"
 
 namespace net {
+
+class NetworkIsolationKey;
 
 // http://crbug.com/69710
 class MultiThreadedProxyResolverScopedAllowJoinOnIO
@@ -122,6 +125,7 @@ class MultiThreadedProxyResolver : public ProxyResolver,
 
   // ProxyResolver implementation:
   int GetProxyForURL(const GURL& url,
+                     const NetworkIsolationKey& network_isolation_key,
                      ProxyInfo* results,
                      CompletionOnceCallback callback,
                      std::unique_ptr<Request>* request,
@@ -269,6 +273,7 @@ class MultiThreadedProxyResolver::GetProxyForURLJob : public Job {
   // |url|         -- the URL of the query.
   // |results|     -- the structure to fill with proxy resolve results.
   GetProxyForURLJob(const GURL& url,
+                    const NetworkIsolationKey& network_isolation_key,
                     ProxyInfo* results,
                     CompletionOnceCallback callback,
                     const NetLogWithSource& net_log)
@@ -276,6 +281,7 @@ class MultiThreadedProxyResolver::GetProxyForURLJob : public Job {
         results_(results),
         net_log_(net_log),
         url_(url),
+        network_isolation_key_(network_isolation_key),
         was_waiting_for_thread_(false) {
     DCHECK(callback_);
   }
@@ -303,8 +309,9 @@ class MultiThreadedProxyResolver::GetProxyForURLJob : public Job {
   void Run(scoped_refptr<base::SingleThreadTaskRunner> origin_runner) override {
     ProxyResolver* resolver = executor()->resolver();
     DCHECK(resolver);
-    int rv = resolver->GetProxyForURL(
-        url_, &results_buf_, CompletionOnceCallback(), nullptr, net_log_);
+    int rv =
+        resolver->GetProxyForURL(url_, network_isolation_key_, &results_buf_,
+                                 CompletionOnceCallback(), nullptr, net_log_);
     DCHECK_NE(rv, ERR_IO_PENDING);
 
     origin_runner->PostTask(
@@ -334,7 +341,9 @@ class MultiThreadedProxyResolver::GetProxyForURLJob : public Job {
 
   // Can be used on either "origin" or worker thread.
   NetLogWithSource net_log_;
+
   const GURL url_;
+  const NetworkIsolationKey network_isolation_key_;
 
   // Usable from within DoQuery on the worker thread.
   ProxyInfo results_buf_;
@@ -436,6 +445,7 @@ MultiThreadedProxyResolver::~MultiThreadedProxyResolver() {
 
 int MultiThreadedProxyResolver::GetProxyForURL(
     const GURL& url,
+    const NetworkIsolationKey& network_isolation_key,
     ProxyInfo* results,
     CompletionOnceCallback callback,
     std::unique_ptr<Request>* request,
@@ -443,8 +453,8 @@ int MultiThreadedProxyResolver::GetProxyForURL(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!callback.is_null());
 
-  scoped_refptr<GetProxyForURLJob> job(
-      new GetProxyForURLJob(url, results, std::move(callback), net_log));
+  scoped_refptr<GetProxyForURLJob> job(new GetProxyForURLJob(
+      url, network_isolation_key, results, std::move(callback), net_log));
 
   // Completion will be notified through |callback|, unless the caller cancels
   // the request using |request|.

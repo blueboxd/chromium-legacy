@@ -2093,6 +2093,7 @@ void NavigationRequest::OnStartChecksComplete(
   // Initialize the BundledExchangesHandle.
   if (bundled_exchanges_handle_tracker_) {
     DCHECK(base::FeatureList::IsEnabled(features::kWebBundles) ||
+           base::FeatureList::IsEnabled(features::kWebBundlesFromNetwork) ||
            base::CommandLine::ForCurrentProcess()->HasSwitch(
                switches::kTrustableBundledExchangesFileUrl));
     bundled_exchanges_handle_ =
@@ -2101,11 +2102,13 @@ void NavigationRequest::OnStartChecksComplete(
   }
   if (!bundled_exchanges_handle_ && bundled_exchanges_navigation_info_) {
     DCHECK(base::FeatureList::IsEnabled(features::kWebBundles) ||
+           base::FeatureList::IsEnabled(features::kWebBundlesFromNetwork) ||
            base::CommandLine::ForCurrentProcess()->HasSwitch(
                switches::kTrustableBundledExchangesFileUrl));
-    bundled_exchanges_handle_ = BundledExchangesHandle::CreateForNavigationInfo(
-        bundled_exchanges_navigation_info_->Clone(),
-        frame_tree_node_->frame_tree_node_id());
+    bundled_exchanges_handle_ =
+        BundledExchangesHandle::MaybeCreateForNavigationInfo(
+            bundled_exchanges_navigation_info_->Clone(),
+            frame_tree_node_->frame_tree_node_id());
   }
   if (!bundled_exchanges_handle_) {
     if (bundled_exchanges_utils::CanLoadAsTrustableBundledExchangesFile(
@@ -2123,6 +2126,9 @@ void NavigationRequest::OnStartChecksComplete(
                    common_params_->url)) {
       bundled_exchanges_handle_ = BundledExchangesHandle::CreateForFile(
           frame_tree_node_->frame_tree_node_id());
+    } else if (base::FeatureList::IsEnabled(features::kWebBundlesFromNetwork)) {
+      bundled_exchanges_handle_ = BundledExchangesHandle::CreateForNetwork(
+          browser_context, frame_tree_node_->frame_tree_node_id());
     }
   }
 

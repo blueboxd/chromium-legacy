@@ -42,6 +42,7 @@ class FakeProxyResolver : public net::ProxyResolverV8Tracing {
  private:
   // net::ProxyResolverV8Tracing overrides.
   void GetProxyForURL(const GURL& url,
+                      const net::NetworkIsolationKey& network_isolation_key,
                       net::ProxyInfo* results,
                       net::CompletionOnceCallback callback,
                       std::unique_ptr<net::ProxyResolver::Request>* request,
@@ -145,6 +146,7 @@ class ProxyResolverFactoryImplTest
   void ResolveDns(
       const std::string& hostname,
       net::ProxyResolveDnsOperation operation,
+      const net::NetworkIsolationKey& network_isolation_key,
       mojo::PendingRemote<mojom::HostResolverRequestClient> client) override {}
 
   void set_idle_callback(base::OnceClosure callback) {

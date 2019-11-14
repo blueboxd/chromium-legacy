@@ -259,7 +259,7 @@
   },
   {
     "name": "autofill-assistant-chrome-entry",
-    "owners": [ "gogerald,wuandy" ],
+    "owners": [ "gogerald", "wuandy" ],
     "expiry_milestone": 79
   },
   {
@@ -818,7 +818,7 @@
   },
   {
     "name": "document-passive-event-listeners",
-    "owners": [ "nzolghadr, input-dev" ],
+    "owners": [ "nzolghadr", "input-dev" ],
     "expiry_milestone": 76
   },
   {
@@ -966,6 +966,11 @@
     "name": "enable-assistant-launcher-integration",
     "owners": [ "croissant-eng" ],
     "expiry_milestone": 80
+  },
+  {
+    "name": "enable-assistant-launcher-ui",
+    "owners": [ "croissant-eng" ],
+    "expiry_milestone": 81
   },
   {
     "name": "enable-assistant-media-session-integration",
@@ -1170,7 +1175,7 @@
   {
     "name": "enable-cros-ime-input-logic-fst",
     "owners": [ "essential-inputs-team@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 85
   },
   {
     "name": "enable-cros-ime-native-decoder",

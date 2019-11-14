@@ -12,10 +12,10 @@ import android.text.TextUtils;
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.PluralsRes;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -391,7 +391,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
             return false;
         }
 
-        if (DownloadUtils.shouldAutoOpenDownload(offlineItem.mimeType, true)) {
+        if (MimeUtils.canAutoOpenMimeType(offlineItem.mimeType)) {
             return false;
         }
 

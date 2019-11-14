@@ -229,7 +229,9 @@ class InspectorOverlayAgent::InspectorPageOverlayDelegate final
 
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
       layer_->SetBounds(gfx::Size(frame_overlay.Size()));
-      RecordForeignLayer(graphics_context,
+      DEFINE_STATIC_LOCAL(LiteralDebugNameClient, debug_name_client,
+                          ("InspectorOverlay"));
+      RecordForeignLayer(graphics_context, debug_name_client,
                          DisplayItem::kForeignLayerDevToolsOverlay, layer_,
                          FloatPoint(), PropertyTreeState::Root());
       return;

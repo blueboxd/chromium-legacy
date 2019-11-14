@@ -115,39 +115,39 @@ TEST_F(ObjectPaintInvalidatorTest, TraverseFloatUnderCompositedInline) {
   EXPECT_EQ(containing_block_layer, target->PaintingLayer());
 
   // Traversing from target should mark needsRepaint on correct layers.
-  EXPECT_FALSE(containing_block_layer->NeedsRepaint());
-  EXPECT_FALSE(composited_container_layer->NeedsRepaint());
+  EXPECT_FALSE(containing_block_layer->SelfNeedsRepaint());
+  EXPECT_FALSE(composited_container_layer->DescendantNeedsRepaint());
   ObjectPaintInvalidator(*target)
       .InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
           PaintInvalidationReason::kSubtree);
-  EXPECT_TRUE(containing_block_layer->NeedsRepaint());
-  EXPECT_TRUE(composited_container_layer->NeedsRepaint());
-  EXPECT_FALSE(span_layer->NeedsRepaint());
+  EXPECT_TRUE(containing_block_layer->SelfNeedsRepaint());
+  EXPECT_TRUE(composited_container_layer->DescendantNeedsRepaint());
+  EXPECT_FALSE(span_layer->SelfNeedsRepaint());
 
   UpdateAllLifecyclePhasesForTest();
 
   // Traversing from span should mark needsRepaint on correct layers for target.
-  EXPECT_FALSE(containing_block_layer->NeedsRepaint());
-  EXPECT_FALSE(composited_container_layer->NeedsRepaint());
+  EXPECT_FALSE(containing_block_layer->SelfNeedsRepaint());
+  EXPECT_FALSE(composited_container_layer->DescendantNeedsRepaint());
   ObjectPaintInvalidator(*span)
       .InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
           PaintInvalidationReason::kSubtree);
-  EXPECT_TRUE(containing_block_layer->NeedsRepaint());
-  EXPECT_TRUE(composited_container_layer->NeedsRepaint());
-  EXPECT_TRUE(span_layer->NeedsRepaint());
+  EXPECT_TRUE(containing_block_layer->SelfNeedsRepaint());
+  EXPECT_TRUE(composited_container_layer->DescendantNeedsRepaint());
+  EXPECT_TRUE(span_layer->SelfNeedsRepaint());
 
   UpdateAllLifecyclePhasesForTest();
 
   // Traversing from compositedContainer should reach target.
   GetDocument().View()->SetTracksPaintInvalidations(true);
-  EXPECT_FALSE(containing_block_layer->NeedsRepaint());
-  EXPECT_FALSE(composited_container_layer->NeedsRepaint());
+  EXPECT_FALSE(containing_block_layer->SelfNeedsRepaint());
+  EXPECT_FALSE(composited_container_layer->DescendantNeedsRepaint());
   ObjectPaintInvalidator(*composited_container)
       .InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
           PaintInvalidationReason::kSubtree);
-  EXPECT_TRUE(containing_block_layer->NeedsRepaint());
-  EXPECT_TRUE(composited_container_layer->NeedsRepaint());
-  EXPECT_FALSE(span_layer->NeedsRepaint());
+  EXPECT_TRUE(containing_block_layer->SelfNeedsRepaint());
+  EXPECT_TRUE(composited_container_layer->DescendantNeedsRepaint());
+  EXPECT_FALSE(span_layer->SelfNeedsRepaint());
 
   EXPECT_THAT(
       *GetDocument().View()->TrackedObjectPaintInvalidations(),
@@ -207,15 +207,15 @@ TEST_F(ObjectPaintInvalidatorTest,
 
   // Traversing from compositedContainer should reach target.
   GetDocument().View()->SetTracksPaintInvalidations(true);
-  EXPECT_FALSE(containing_block_layer->NeedsRepaint());
-  EXPECT_FALSE(composited_container_layer->NeedsRepaint());
+  EXPECT_FALSE(containing_block_layer->SelfNeedsRepaint());
+  EXPECT_FALSE(composited_container_layer->SelfNeedsRepaint());
   ObjectPaintInvalidator(*composited_container)
       .InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
           PaintInvalidationReason::kSubtree);
-  EXPECT_TRUE(containing_block_layer->NeedsRepaint());
-  EXPECT_TRUE(composited_container_layer->NeedsRepaint());
-  EXPECT_FALSE(span_layer->NeedsRepaint());
-  EXPECT_FALSE(inner_span_layer->NeedsRepaint());
+  EXPECT_TRUE(containing_block_layer->SelfNeedsRepaint());
+  EXPECT_TRUE(composited_container_layer->SelfNeedsRepaint());
+  EXPECT_FALSE(span_layer->SelfNeedsRepaint());
+  EXPECT_FALSE(inner_span_layer->SelfNeedsRepaint());
 
   EXPECT_THAT(
       *GetDocument().View()->TrackedObjectPaintInvalidations(),
@@ -256,11 +256,11 @@ TEST_F(ObjectPaintInvalidatorTest, TraverseStackedFloatUnderCompositedInline) {
 
   // Traversing from span should reach target.
   GetDocument().View()->SetTracksPaintInvalidations(true);
-  EXPECT_FALSE(span_layer->NeedsRepaint());
+  EXPECT_FALSE(span_layer->SelfNeedsRepaint());
   ObjectPaintInvalidator(*span)
       .InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
           PaintInvalidationReason::kSubtree);
-  EXPECT_TRUE(span_layer->NeedsRepaint());
+  EXPECT_TRUE(span_layer->SelfNeedsRepaint());
 
   EXPECT_THAT(
       *GetDocument().View()->TrackedObjectPaintInvalidations(),

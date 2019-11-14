@@ -93,7 +93,6 @@ class ZoomBubbleView : public LocationBarBubbleDelegateView,
 
   // LocationBarBubbleDelegateView:
   base::string16 GetAccessibleWindowTitle() const override;
-  int GetDialogButtons() const override;
   void OnFocus() override;
   void OnBlur() override;
   void OnGestureEvent(ui::GestureEvent* event) override;

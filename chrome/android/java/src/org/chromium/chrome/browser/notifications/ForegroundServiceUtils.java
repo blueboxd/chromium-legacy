@@ -10,9 +10,10 @@ import android.content.Intent;
 import android.support.v4.app.ServiceCompat;
 import android.support.v4.content.ContextCompat;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.AppHooks;
 
 /**

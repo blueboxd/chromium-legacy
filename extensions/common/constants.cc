@@ -13,6 +13,8 @@ const char kExtensionScheme[] = "chrome-extension";
 
 const base::FilePath::CharType kManifestFilename[] =
     FILE_PATH_LITERAL("manifest.json");
+const base::FilePath::CharType kDifferentialFingerprintFilename[] =
+    FILE_PATH_LITERAL("manifest.fingerprint");
 const base::FilePath::CharType kLocaleFolder[] =
     FILE_PATH_LITERAL("_locales");
 const base::FilePath::CharType kMessagesFilename[] =

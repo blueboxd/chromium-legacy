@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.preferences.privacy;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataType;

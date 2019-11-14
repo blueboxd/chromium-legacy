@@ -129,6 +129,9 @@ bool CreateVerifiedMatcher(const std::vector<TestRule>& rules,
     return false;
   }
 
+  if (!result.warnings.empty())
+    return false;
+
   if (expected_checksum)
     *expected_checksum = result.ruleset_checksum;
 

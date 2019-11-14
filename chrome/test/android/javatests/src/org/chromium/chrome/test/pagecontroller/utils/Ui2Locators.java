@@ -10,8 +10,7 @@ import android.support.test.uiautomator.By;
 
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
-
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
 
 import java.util.regex.Pattern;
 

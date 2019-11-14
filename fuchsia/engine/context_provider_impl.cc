@@ -232,7 +232,9 @@ void ContextProviderImpl::Create(
     launch_command.AppendSwitchNative(
         switches::kRemoteDebuggingPort,
         base::NumberToString(params.remote_debugging_port()));
-  } else if (devtools_listeners_.size() != 0) {
+  }
+
+  if (devtools_listeners_.size() != 0) {
     // Connect DevTools listeners to the new Context process.
     std::vector<std::string> handles_ids;
     for (auto& devtools_listener : devtools_listeners_.ptrs()) {
@@ -390,6 +392,18 @@ void ContextProviderImpl::Create(
           &launch_options)) {
     context_request.Close(ZX_ERR_INVALID_ARGS);
     return;
+  }
+
+  if (params.has_unsafely_treat_insecure_origins_as_secure()) {
+    const std::vector<std::string>& insecure_origins =
+        params.unsafely_treat_insecure_origins_as_secure();
+    if (std::find(insecure_origins.begin(), insecure_origins.end(),
+                  switches::kAllowRunningInsecureContent) !=
+        insecure_origins.end()) {
+      launch_command.AppendSwitch(switches::kAllowRunningInsecureContent);
+    }
+    // TODO(crbug.com/1023510): Pass the rest of the list to the Context
+    // process.
   }
 
   if (launch_for_test_)

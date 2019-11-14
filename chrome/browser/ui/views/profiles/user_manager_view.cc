@@ -68,6 +68,7 @@ UserManagerProfileDialogDelegate::UserManagerProfileDialogDelegate(
     const std::string& email_address,
     const GURL& url)
     : parent_(parent), web_view_(web_view), email_address_(email_address) {
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
   DialogDelegate::set_use_custom_frame(false);
 
   AddChildView(web_view_);
@@ -112,10 +113,6 @@ void UserManagerProfileDialogDelegate::DeleteDelegate() {
 
 base::string16 UserManagerProfileDialogDelegate::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_PROFILES_GAIA_SIGNIN_TITLE);
-}
-
-int UserManagerProfileDialogDelegate::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
 }
 
 views::View* UserManagerProfileDialogDelegate::GetInitiallyFocusedView() {
@@ -298,6 +295,7 @@ UserManagerView::UserManagerView()
     : web_view_(nullptr),
       delegate_(nullptr),
       user_manager_started_showing_(base::Time()) {
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
   DialogDelegate::set_use_custom_frame(false);
   keep_alive_ = std::make_unique<ScopedKeepAlive>(
       KeepAliveOrigin::USER_MANAGER_VIEW, KeepAliveRestartOption::DISABLED);
@@ -458,10 +456,6 @@ bool UserManagerView::CanMinimize() const {
 
 base::string16 UserManagerView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
-}
-
-int UserManagerView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
 }
 
 void UserManagerView::WindowClosing() {

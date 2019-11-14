@@ -567,12 +567,11 @@ void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
       block_for_flipping = ContainingBlock();
     NGInlineCursor cursor;
     for (cursor.MoveTo(*this); cursor; cursor.MoveToNextForSameLayoutObject()) {
-      const unsigned start_offset = cursor.CurrentTextStartOffset();
-      const unsigned end_offset = cursor.CurrentTextEndOffset();
-      if (start > end_offset || end < start_offset)
+      const NGTextOffset offset = cursor.CurrentTextOffset();
+      if (start > offset.end || end < offset.start)
         continue;
-      const unsigned clamped_start = std::max(start, start_offset);
-      const unsigned clamped_end = std::min(end, end_offset);
+      const unsigned clamped_start = std::max(start, offset.start);
+      const unsigned clamped_end = std::min(end, offset.end);
       PhysicalRect rect = cursor.CurrentLocalRect(clamped_start, clamped_end);
       rect.Move(cursor.CurrentOffset());
       const FloatQuad quad = LocalRectToAbsoluteQuad(rect);

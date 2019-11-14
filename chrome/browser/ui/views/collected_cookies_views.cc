@@ -280,10 +280,6 @@ base::string16 CollectedCookiesViews::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_DIALOG_TITLE);
 }
 
-int CollectedCookiesViews::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK;
-}
-
 bool CollectedCookiesViews::Accept() {
   // If the user closes our parent tab while we're still open, this method will
   // (eventually) be called in response to a WebContentsDestroyed() call from
@@ -372,6 +368,7 @@ void CollectedCookiesViews::ViewHierarchyChanged(
 
 CollectedCookiesViews::CollectedCookiesViews(content::WebContents* web_contents)
     : web_contents_(web_contents) {
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
                                    l10n_util::GetStringUTF16(IDS_DONE));
 

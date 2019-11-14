@@ -314,7 +314,7 @@ net::Error SimpleEntryImpl::DoomEntry(net::CompletionOnceCallback callback) {
   MarkAsDoomed(DOOM_QUEUED);
   if (backend_.get()) {
     if (optimistic_create_pending_doom_state_ == CREATE_NORMAL) {
-      backend_->OnDoomStart(entry_hash_);
+      post_doom_waiting_ = backend_->OnDoomStart(entry_hash_);
     } else {
       DCHECK_EQ(STATE_IO_PENDING, state_);
       DCHECK_EQ(CREATE_OPTIMISTIC_PENDING_DOOM,
@@ -348,7 +348,7 @@ void SimpleEntryImpl::NotifyDoomBeforeCreateComplete() {
   DCHECK_NE(CREATE_NORMAL, optimistic_create_pending_doom_state_);
   if (backend_.get() && optimistic_create_pending_doom_state_ ==
                             CREATE_OPTIMISTIC_PENDING_DOOM_FOLLOWED_BY_DOOM)
-    backend_->OnDoomStart(entry_hash_);
+    post_doom_waiting_ = backend_->OnDoomStart(entry_hash_);
 
   state_ = STATE_UNINITIALIZED;
   optimistic_create_pending_doom_state_ = CREATE_NORMAL;
@@ -1691,8 +1691,10 @@ void SimpleEntryImpl::DoomOperationComplete(
   net_log_.AddEvent(net::NetLogEventType::SIMPLE_CACHE_ENTRY_DOOM_END);
   PostClientCallback(std::move(callback), result);
   RunNextOperationIfNeeded();
-  if (backend_)
-    backend_->OnDoomComplete(entry_hash_);
+  if (post_doom_waiting_) {
+    post_doom_waiting_->OnDoomComplete(entry_hash_);
+    post_doom_waiting_ = nullptr;
+  }
 }
 
 void SimpleEntryImpl::RecordReadResultConsideringChecksum(

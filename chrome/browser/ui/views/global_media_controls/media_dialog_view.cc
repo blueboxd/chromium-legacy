@@ -96,10 +96,6 @@ std::unique_ptr<OverlayMediaNotification> MediaDialogView::PopOut(
   return active_sessions_view_->PopOut(id, bounds);
 }
 
-int MediaDialogView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
-}
-
 bool MediaDialogView::Close() {
   return Cancel();
 }
@@ -166,6 +162,7 @@ MediaDialogView::MediaDialogView(views::View* anchor_view,
       service_(service),
       active_sessions_view_(
           AddChildView(std::make_unique<MediaNotificationListView>())) {
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
   DCHECK(service_);
 }
 

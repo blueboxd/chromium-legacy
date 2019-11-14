@@ -365,7 +365,7 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
       SerializedColorSpace canvas_color_space = SerializedColorSpace::kSRGB;
       SerializedImageDataStorageFormat image_data_storage_format =
           SerializedImageDataStorageFormat::kUint8Clamped;
-      uint32_t width = 0, height = 0, byte_length = 0;
+      uint32_t width = 0, height = 0;
       const void* pixels = nullptr;
       if (Version() >= 18) {
         bool is_done = false;
@@ -395,14 +395,21 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
           }
         } while (!is_done);
       }
+
+      uint64_t byte_length_64 = 0;
+      size_t byte_length = 0;
       if (!ReadUint32(&width) || !ReadUint32(&height) ||
-          !ReadUint32(&byte_length) || !ReadRawBytes(byte_length, &pixels))
+          !ReadUint64(&byte_length_64) ||
+          !base::MakeCheckedNum(byte_length_64).AssignIfValid(&byte_length) ||
+          !ReadRawBytes(byte_length, &pixels)) {
         return nullptr;
+      }
+
       SerializedColorParams color_params(
           canvas_color_space, SerializedPixelFormat::kRGBA8,
           SerializedOpacityMode::kNonOpaque, image_data_storage_format);
       ImageDataStorageFormat storage_format = color_params.GetStorageFormat();
-      base::CheckedNumeric<uint32_t> computed_byte_length = width;
+      base::CheckedNumeric<size_t> computed_byte_length = width;
       computed_byte_length *= height;
       computed_byte_length *= 4;
       computed_byte_length *= ImageData::StorageFormatDataSize(storage_format);
@@ -414,7 +421,7 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
       if (!image_data)
         return nullptr;
       DOMArrayBufferBase* pixel_buffer = image_data->BufferBase();
-      DCHECK_EQ(pixel_buffer->DeprecatedByteLengthAsUnsigned(), byte_length);
+      DCHECK_EQ(pixel_buffer->ByteLengthAsSizeT(), byte_length);
       memcpy(pixel_buffer->Data(), pixels, byte_length);
       return image_data;
     }

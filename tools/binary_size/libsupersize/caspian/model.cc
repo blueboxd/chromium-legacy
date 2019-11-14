@@ -5,13 +5,16 @@
 #include "tools/binary_size/libsupersize/caspian/model.h"
 
 #include <algorithm>
+#include <deque>
 #include <functional>
 #include <iostream>
 #include <list>
 #include <string>
+#include <tuple>
 #include <unordered_map>
 
 #include "tools/binary_size/libsupersize/caspian/file_format.h"
+#include "tools/binary_size/libsupersize/caspian/function_signature.h"
 
 namespace {
 struct SymbolMatchIndex {
@@ -80,6 +83,48 @@ Symbol Symbol::DiffSymbolFrom(const Symbol* before_sym,
   }
 
   return ret;
+}
+
+void Symbol::DeriveNames() const {
+  if (name.data() != nullptr) {
+    return;
+  }
+  if (IsPak()) {
+    // full_name: "about_ui_resources.grdp: IDR_ABOUT_UI_CREDITS_HTML".
+    size_t space_idx = full_name.rfind(' ');
+    template_name = full_name.substr(space_idx + 1);
+    name = template_name;
+  } else if ((!full_name.empty() && full_name[0] == '*') || IsOverhead() ||
+             IsOther()) {
+    template_name = full_name;
+    name = full_name;
+  } else if (IsDex()) {
+    std::tuple<std::string_view, std::string_view, std::string_view>
+        parsed_names = ParseJava(full_name, &size_info->owned_strings);
+    template_name = std::get<1>(parsed_names);
+    name = std::get<2>(parsed_names);
+  } else if (IsStringLiteral()) {
+    template_name = full_name;
+    name = full_name;
+  } else if (IsNative()) {
+    std::tuple<std::string_view, std::string_view, std::string_view>
+        parsed_names = ParseCpp(full_name, &size_info->owned_strings);
+    template_name = std::get<1>(parsed_names);
+    name = std::get<2>(parsed_names);
+  } else {
+    template_name = full_name;
+    name = full_name;
+  }
+}
+
+std::string_view Symbol::TemplateName() const {
+  DeriveNames();
+  return template_name;
+}
+
+std::string_view Symbol::Name() const {
+  DeriveNames();
+  return name;
 }
 
 TreeNode::TreeNode() = default;
@@ -201,13 +246,13 @@ DiffSizeInfo::DiffSizeInfo(SizeInfo* before, SizeInfo* after)
   // (hopefully <2k objects) needs to consider the derived full_name. Should
   // do this lazily for efficiency - name derivation is costly.
 
-  std::vector<const caspian::Symbol*> unmatched_before;
-  for (const caspian::Symbol& sym : before->raw_symbols) {
+  std::vector<const Symbol*> unmatched_before;
+  for (const Symbol& sym : before->raw_symbols) {
     unmatched_before.push_back(&sym);
   }
 
-  std::vector<const caspian::Symbol*> unmatched_after;
-  for (const caspian::Symbol& sym : after->raw_symbols) {
+  std::vector<const Symbol*> unmatched_after;
+  for (const Symbol& sym : after->raw_symbols) {
     unmatched_after.push_back(&sym);
   }
 
@@ -219,18 +264,27 @@ DiffSizeInfo::DiffSizeInfo(SizeInfo* before, SizeInfo* after)
   }
 
   // Add removals or deletions for any unmatched symbols.
-  for (const caspian::Symbol* after_sym : unmatched_after) {
+  for (const Symbol* after_sym : unmatched_after) {
     raw_symbols.push_back(Symbol::DiffSymbolFrom(nullptr, after_sym));
   }
-  for (const caspian::Symbol* before_sym : unmatched_before) {
+  for (const Symbol* before_sym : unmatched_before) {
     raw_symbols.push_back(Symbol::DiffSymbolFrom(before_sym, nullptr));
+  }
+
+  for (Symbol& sym : raw_symbols) {
+    sym.size_info = this;
   }
 }
 
 DiffSizeInfo::~DiffSizeInfo() {}
 
 void TreeNode::WriteIntoJson(Json::Value* out, int depth) {
-  (*out)["idPath"] = std::string(this->id_path);
+  if (symbol) {
+    (*out)["idPath"] = std::string(symbol->IsDex() ? symbol->full_name
+                                                   : symbol->TemplateName());
+  } else {
+    (*out)["idPath"] = std::string(this->id_path);
+  }
   (*out)["shortNameIndex"] = this->short_name_index;
   std::string type;
   if (container_type != ContainerType::kSymbol) {

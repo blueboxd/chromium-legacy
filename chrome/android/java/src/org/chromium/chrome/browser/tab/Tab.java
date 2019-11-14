@@ -17,6 +17,7 @@ import android.view.accessibility.AccessibilityEvent;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -24,7 +25,6 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.UserDataHost;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
@@ -878,27 +878,36 @@ public class Tab {
     }
 
     /**
-     * Notify observers of the new attachment state to activity. If attached, {@link WindowAndroid}
-     * and {@link TabDelegateFactory} for the new activity are provided. Passing {@code null}
-     * for both indicates that the tab is not attached.
-     * @param window A new {@link WindowAndroid} to attach the tab to.
-     * @param tabDelegateFactory The new delegate factory this tab should be using.
+     * Update the attachment state to Window(Activity).
+     * @param window A new {@link WindowAndroid} to attach the tab to. If {@code null},
+     *        the tab is being detached. See {@link ReparentingTask#detach()} for details.
+     * @param tabDelegateFactory The new delegate factory this tab should be using. Can be
+     *        {@code null} even when {@code window} is not, meaning we simply want to swap out
+     *        {@link WindowAndroid} for this tab and keep using the current delegate factory.
      */
-    public void notifyActivityAttachmentChanged(
+    public void updateAttachment(
             @Nullable WindowAndroid window, @Nullable TabDelegateFactory tabDelegateFactory) {
-        boolean attached = (window != null && tabDelegateFactory != null);
-        assert attached || (window == null && tabDelegateFactory == null);
+        // Non-null delegate factory while being detached is not valid.
+        assert !(window == null && tabDelegateFactory != null);
 
+        boolean attached = window != null;
         if (attached) {
             updateWindowAndroid(window);
-            setDelegateFactory(tabDelegateFactory);
+            if (tabDelegateFactory != null) setDelegateFactory(tabDelegateFactory);
 
             // Reload the NativePage (if any), since the old NativePage has a reference to the old
             // activity.
-            maybeShowNativePage(getUrl(), true);
+            if (isNativePage()) maybeShowNativePage(getUrl(), true);
         }
-        for (TabObserver observer : mObservers) {
-            observer.onActivityAttachmentChanged(this, attached);
+
+        // Notify the event to observers only when we do the reparenting task, not when we simply
+        // switch window in which case a new window is non-null but delegate is null.
+        boolean notify = (window != null && tabDelegateFactory != null)
+                || (window == null && tabDelegateFactory == null);
+        if (notify) {
+            for (TabObserver observer : mObservers) {
+                observer.onActivityAttachmentChanged(this, attached);
+            }
         }
     }
 
@@ -906,7 +915,7 @@ public class Tab {
      * Update and propagate the new WindowAndroid.
      * @param windowAndroid The WindowAndroid to propagate.
      */
-    public void updateWindowAndroid(WindowAndroid windowAndroid) {
+    void updateWindowAndroid(WindowAndroid windowAndroid) {
         // TODO(yusufo): mWindowAndroid can never be null until crbug.com/657007 is fixed.
         assert windowAndroid != null;
         mWindowAndroid = windowAndroid;

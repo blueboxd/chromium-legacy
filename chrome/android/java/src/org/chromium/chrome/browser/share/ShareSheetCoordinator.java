@@ -6,7 +6,8 @@ package org.chromium.chrome.browser.share;
 
 import android.app.Activity;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.chrome.browser.tab.Tab;
 
 /**

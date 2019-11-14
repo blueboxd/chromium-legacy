@@ -581,6 +581,7 @@ constexpr struct GamepadInfo {
     {0x2dc8, 0x3820, kXInputTypeNone},
     {0x2dc8, 0x9001, kXInputTypeNone},
     {0x2dfa, 0x0001, kXInputTypeNone},
+    {0x2e95, 0x7725, kXInputTypeNone},
     {0x3767, 0x0101, kXInputTypeXbox},
     {0x3820, 0x0009, kXInputTypeNone},
     {0x4c50, 0x5453, kXInputTypeNone},

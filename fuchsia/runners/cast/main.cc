@@ -48,6 +48,11 @@ int main(int argc, char** argv) {
   const uint16_t kRemoteDebuggingPort = 9222;
   create_context_params.set_remote_debugging_port(kRemoteDebuggingPort);
 
+  // TODO(crbug.com/1023514): Remove this switch when it is no longer
+  // necessary.
+  create_context_params.set_unsafely_treat_insecure_origins_as_secure(
+      {"allow-running-insecure-content"});
+
   CastRunner runner(
       base::fuchsia::ComponentContextForCurrentProcess()->outgoing().get(),
       std::move(create_context_params));

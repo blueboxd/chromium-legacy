@@ -20,6 +20,8 @@ namespace device {
 
 namespace {
 
+constexpr uint16_t kVendorIdSony = 0x054c;
+constexpr uint16_t kProductIdDualShock4 = 0x05c4;
 constexpr size_t kUsbReportLength = 32;
 constexpr size_t kBluetoothReportLength = 78;
 
@@ -126,13 +128,15 @@ class Dualshock4ControllerTest : public testing::Test {
     // for Bluetooth.
     auto usb_writer = std::make_unique<FakeHidWriter>();
     usb_writer_ = usb_writer.get();
-    ds4_usb_ = std::make_unique<Dualshock4Controller>(GAMEPAD_BUS_USB,
-                                                      std::move(usb_writer));
+    ds4_usb_ = std::make_unique<Dualshock4Controller>(
+        kVendorIdSony, kProductIdDualShock4, GAMEPAD_BUS_USB,
+        std::move(usb_writer));
 
     auto bluetooth_writer = std::make_unique<FakeHidWriter>();
     bluetooth_writer_ = bluetooth_writer.get();
     ds4_bluetooth_ = std::make_unique<Dualshock4Controller>(
-        GAMEPAD_BUS_BLUETOOTH, std::move(bluetooth_writer));
+        kVendorIdSony, kProductIdDualShock4, GAMEPAD_BUS_BLUETOOTH,
+        std::move(bluetooth_writer));
   }
 
   void TearDown() override {

@@ -455,6 +455,12 @@ url::Origin GetOriginForURLLoaderFactoryUnchecked(
   if (!navigation_request)
     return url::Origin();
 
+  // GetOriginForURLLoaderFactory should only be called at the ready-to-commit
+  // time, when the RFHI to commit the navigation is already known.
+  DCHECK_LE(NavigationRequest::READY_TO_COMMIT, navigation_request->state());
+  RenderFrameHostImpl* target_frame = navigation_request->GetRenderFrameHost();
+  DCHECK(target_frame);
+
   // Check if this is loadDataWithBaseUrl (which needs special treatment).
   auto& common_params = navigation_request->common_params();
   if (IsLoadDataWithBaseURL(common_params)) {
@@ -482,6 +488,16 @@ url::Origin GetOriginForURLLoaderFactoryUnchecked(
   // TODO(lukasza): Cover MHTML main frames here.
   if (navigation_request->IsForMhtmlSubframe())
     return url::Origin();
+
+  // Srcdoc subframes need to inherit their origin from their parent frame.
+  if (navigation_request->GetURL().IsAboutSrcdoc()) {
+    // Srcdoc navigations in main frames should be blocked before this function
+    // is called.  This should guarantee existence of a parent here.
+    RenderFrameHostImpl* parent = target_frame->GetParent();
+    DCHECK(parent);
+
+    return parent->GetLastCommittedOrigin();
+  }
 
   // In cases not covered above, URLLoaderFactory should be associated with the
   // origin of |common_params.url| and/or |common_params.initiator_origin|.
@@ -5221,26 +5237,14 @@ void RenderFrameHostImpl::CommitNavigation(
 
   bool is_srcdoc = common_params->url.IsAboutSrcdoc();
   if (is_srcdoc) {
-    if (frame_tree_node_->IsMainFrame()) {
-      // Main frame srcdoc navigation are meaningless. They are blocked whenever
-      // a navigation attempt is made.
-      //
-      // TODO(arthursonzogni): Replace DumpWithoutCrashing by a CHECK on M79 if
-      // it is never reached.
-      NOTREACHED();
-      base::debug::DumpWithoutCrashing();
-    } else {
-      // An about:srcdoc document is always same SiteInstance with its parent.
-      // Otherwise, it won't be able to load. The parent's document contains the
-      // iframe and its srcdoc attribute.
-      //
-      // TODO(arthursonzogni): Replace DumpWithoutCrashing by a CHECK on M80 if
-      // it is never reached.
-      if (GetSiteInstance() != parent_->GetSiteInstance()) {
-        NOTREACHED();
-        base::debug::DumpWithoutCrashing();
-      }
-    }
+    // Main frame srcdoc navigation are meaningless. They are blocked whenever a
+    // navigation attempt is made. It shouldn't reach CommitNavigation.
+    CHECK(!frame_tree_node_->IsMainFrame());
+
+    // An about:srcdoc document is always same SiteInstance with its parent.
+    // Otherwise, it won't be able to load. The parent's document contains the
+    // iframe and its srcdoc attribute.
+    CHECK_EQ(GetSiteInstance(), parent_->GetSiteInstance());
   }
 
   // If this is an attempt to commit a URL in an incompatible process, capture a
@@ -5313,6 +5317,8 @@ void RenderFrameHostImpl::CommitNavigation(
   }
   DCHECK(network_isolation_key_.IsFullyPopulated());
 
+  url::Origin origin_for_url_loader_factory =
+      GetOriginForURLLoaderFactory(navigation_request);
   std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
       subresource_loader_factories;
   if ((!is_same_document || is_first_navigation) && !is_srcdoc) {
@@ -5338,8 +5344,8 @@ void RenderFrameHostImpl::CommitNavigation(
           GetContentClient()->browser()->WillCreateURLLoaderFactory(
               browser_context, this, GetProcess()->GetID(),
               ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
-              GetOriginForURLLoaderFactory(navigation_request),
-              &appcache_proxied_receiver, nullptr /* header_client */,
+              origin_for_url_loader_factory, &appcache_proxied_receiver,
+              nullptr /* header_client */,
               nullptr /* bypass_redirect_checks */);
       if (use_proxy) {
         appcache_remote->Clone(std::move(appcache_proxied_receiver));
@@ -5379,7 +5385,7 @@ void RenderFrameHostImpl::CommitNavigation(
       GetContentClient()->browser()->WillCreateURLLoaderFactory(
           browser_context, this, GetProcess()->GetID(),
           ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
-          GetOriginForURLLoaderFactory(navigation_request), &factory_receiver,
+          origin_for_url_loader_factory, &factory_receiver,
           nullptr /* header_client */, nullptr /* bypass_redirect_checks */);
       CreateWebUIURLLoaderBinding(this, scheme, std::move(factory_receiver));
       // If the renderer has webui bindings, then don't give it access to
@@ -5409,8 +5415,7 @@ void RenderFrameHostImpl::CommitNavigation(
       recreate_default_url_loader_factory_after_network_service_crash_ = true;
       bool bypass_redirect_checks =
           CreateNetworkServiceDefaultFactoryAndObserve(
-              GetOriginForURLLoaderFactory(navigation_request),
-              network_isolation_key_,
+              origin_for_url_loader_factory, network_isolation_key_,
               pending_default_factory.InitWithNewPipeAndPassReceiver());
       subresource_loader_factories->set_bypass_redirect_checks(
           bypass_redirect_checks);
@@ -5499,7 +5504,7 @@ void RenderFrameHostImpl::CommitNavigation(
       GetContentClient()->browser()->WillCreateURLLoaderFactory(
           browser_context, this, GetProcess()->GetID(),
           ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
-          GetOriginForURLLoaderFactory(navigation_request), &factory_receiver,
+          origin_for_url_loader_factory, &factory_receiver,
           nullptr /* header_client */, nullptr /* bypass_redirect_checks */);
       // Keep DevTools proxy last, i.e. closest to the network.
       devtools_instrumentation::WillCreateURLLoaderFactory(

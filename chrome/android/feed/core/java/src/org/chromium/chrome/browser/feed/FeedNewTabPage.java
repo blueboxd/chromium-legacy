@@ -11,10 +11,11 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 
+import androidx.annotation.VisibleForTesting;
+
 import com.google.android.libraries.feed.api.client.stream.Stream;
 import com.google.android.libraries.feed.api.host.action.ActionApi;
 
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;

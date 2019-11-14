@@ -15,6 +15,8 @@
 
 namespace net {
 
+class NetworkIsolationKey;
+
 // Interface for a limited (compared to the standard HostResolver) host resolver
 // used just for proxy resolution.
 class NET_EXPORT ProxyHostResolver {
@@ -30,7 +32,8 @@ class NET_EXPORT ProxyHostResolver {
 
   virtual std::unique_ptr<Request> CreateRequest(
       const std::string& hostname,
-      ProxyResolveDnsOperation operation) = 0;
+      ProxyResolveDnsOperation operation,
+      const net::NetworkIsolationKey& network_isolation_key) = 0;
 };
 
 }  // namespace net

@@ -12,11 +12,13 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
+import org.chromium.chrome.browser.ui.appmenu.CustomViewBinder;
 
 /**
  * A custom binder used to bind the update menu item.
@@ -94,7 +96,7 @@ class UpdateMenuItemViewBinder implements CustomViewBinder {
 
     private static class UpdateMenuItemViewHolder {
         public TextView text;
-        public AppMenuItemIcon image;
+        public ImageView image;
         public TextView summary;
     }
 }

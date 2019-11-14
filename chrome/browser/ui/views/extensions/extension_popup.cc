@@ -73,10 +73,6 @@ void ExtensionPopup::AddedToWidget() {
       gfx::Insets(contents_has_rounded_corners ? 0 : radius, 0)));
 }
 
-int ExtensionPopup::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
-}
-
 void ExtensionPopup::OnWidgetActivationChanged(views::Widget* widget,
                                                bool active) {
   BubbleDialogDelegateView::OnWidgetActivationChanged(widget, active);
@@ -174,6 +170,7 @@ ExtensionPopup::ExtensionPopup(
                                views::BubbleBorder::SMALL_SHADOW),
       host_(std::move(host)),
       show_action_(show_action) {
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
   DialogDelegate::set_use_round_corners(false);
 
   set_margins(gfx::Insets());

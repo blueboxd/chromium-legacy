@@ -23,7 +23,14 @@ class ColorMixer;
 using ColorTransform =
     base::RepeatingCallback<SkColor(SkColor input, const ColorMixer& mixer)>;
 
-// Functions to create common transform:
+// Functions to create common transforms:
+
+// A transform which blends the result of |foreground_transform| atop the result
+// of |background_transform| with alpha |alpha|.
+COMPONENT_EXPORT(COLOR)
+ColorTransform AlphaBlend(ColorTransform foreground_transform,
+                          ColorTransform background_transform,
+                          SkAlpha alpha);
 
 // A transform which modifies the result of |foreground_transform| to contrast
 // with the result of |background_transform| by at least |contrast_ratio|, if
@@ -36,6 +43,13 @@ ColorTransform BlendForMinContrast(
     base::Optional<ColorTransform> high_contrast_foreground_transform =
         base::nullopt,
     float contrast_ratio = color_utils::kMinimumReadableContrastRatio);
+
+// A transform which blends the result of |transform| toward the color with max
+// contrast until it has contrast of at least |contrast_ratio| with its original
+// value.
+COMPONENT_EXPORT(COLOR)
+ColorTransform BlendForMinContrastWithSelf(ColorTransform transform,
+                                           float contrast_ratio);
 
 // A transform which blends the result of |transform| toward the color with max
 // contrast by |alpha|.
@@ -88,6 +102,10 @@ ColorTransform SelectBasedOnDarkInput(
     ColorTransform input_transform,
     ColorTransform output_transform_for_dark_input,
     ColorTransform output_transform_for_light_input);
+
+// A transform which sets the result of |transform| to have alpha |alpha|.
+COMPONENT_EXPORT(COLOR)
+ColorTransform SetAlpha(ColorTransform transform, SkAlpha alpha);
 
 }  // namespace ui
 

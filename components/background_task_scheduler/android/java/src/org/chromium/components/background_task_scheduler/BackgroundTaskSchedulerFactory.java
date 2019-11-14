@@ -6,8 +6,9 @@ package org.chromium.components.background_task_scheduler;
 
 import android.os.Build;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.VisibleForTesting;
 
 /**
  * A factory for {@link BackgroundTaskScheduler} that ensures there is only ever a single instance.

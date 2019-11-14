@@ -146,7 +146,7 @@ static bool ShouldRepaintSubsequence(
     PaintLayer& paint_layer,
     const PaintLayerPaintingInfo& painting_info) {
   // Repaint subsequence if the layer is marked for needing repaint.
-  if (paint_layer.NeedsRepaint())
+  if (paint_layer.SelfOrDescendantNeedsRepaint())
     return true;
 
   // Repaint if previously the layer may be clipped by cull rect, and cull rect
@@ -254,7 +254,7 @@ void PaintLayerPainter::AdjustForPaintProperties(
       // transform space. Convert cull_rect from the root layer's local space.
       cull_rect.MoveBy(RoundedIntPoint(first_root_fragment.PaintOffset()));
       base::Optional<CullRect> old_cull_rect;
-      if (!paint_layer_.NeedsRepaint()) {
+      if (!paint_layer_.SelfOrDescendantNeedsRepaint()) {
         old_cull_rect = paint_layer_.PreviousCullRect();
         // Convert old_cull_rect into the layer's transform space.
         old_cull_rect->MoveBy(RoundedIntPoint(first_fragment.PaintOffset()));

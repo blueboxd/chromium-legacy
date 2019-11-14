@@ -87,6 +87,12 @@ namespace autotestPrivate {
     FullscreenSearch
   };
 
+  enum MouseButton {
+    Left,
+    Middle,
+    Right
+  };
+
   // A paramter used in setArcAppWindowState() function.
   dictionary WindowStateChangeDict {
     // The WM event to change the ARC window state.
@@ -259,6 +265,11 @@ namespace autotestPrivate {
     boolean vpnProvider;
   };
   callback GetArcPackageCallback = void (ArcPackageDict package);
+
+  dictionary Location {
+    double x;
+    double y;
+  };
 
   dictionary Bounds {
     double left;
@@ -815,6 +826,34 @@ namespace autotestPrivate {
     // failure if the currently active desk is the last available desk which
     // cannot be removed.
     static void removeActiveDesk(DesksCallback callback);
+
+    // Create mouse events to cause a mouse click.
+    // |button|: the mouse button for the click event.
+    // |callback|: called after the mouse click finishes.
+    static void mouseClick(MouseButton button, VoidCallback callback);
+
+    // Create a mouse event to cause mouse pressing. The mouse button stays
+    // in the pressed state.
+    // |button|: the mouse button to be pressed.
+    // |callback|: called after the mouse pressed event is handled.
+    static void mousePress(MouseButton button, VoidCallback callback);
+
+    // Create a mouse event to release a mouse button. This does nothing and
+    // returns immediately if the specified button is not pressed.
+    // |button|: the mouse button to be released.
+    // |callback|: called after the mouse is released.
+    static void mouseRelease(MouseButton button, VoidCallback callback);
+
+    // Create mouse events to move a mouse cursor to the location. This can
+    // cause a dragging if a button is pressed. It starts from the last mouse
+    // location. It does not support the move or drag across display boundaries.
+    // |location|: the target location (in display's coordinate).
+    // |duration_in_ms|: the duration (in milliseconds) for the mouse movement.
+    //    The mouse will move linearly. 0 means moving immediately.
+    // |callback|: called after the mouse move finishes.
+    static void mouseMove(Location location,
+                          double duration_in_ms,
+                          VoidCallback callback);
   };
 
   interface Events {

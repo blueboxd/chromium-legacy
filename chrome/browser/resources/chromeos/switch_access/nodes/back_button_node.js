@@ -21,14 +21,16 @@ class BackButtonNode extends SAChildNode {
     this.node_ = SwitchAccess.get().getBackButtonAutomationNode();
   }
 
+  // ================= Getters and setters =================
+
   /** @override */
-  equals(other) {
-    return other instanceof BackButtonNode;
+  get actions() {
+    return [SAConstants.MenuAction.SELECT];
   }
 
   /** @override */
-  get role() {
-    return chrome.automation.RoleType.BUTTON;
+  get automationNode() {
+    return this.node_;
   }
 
   /** @override */
@@ -39,13 +41,42 @@ class BackButtonNode extends SAChildNode {
   }
 
   /** @override */
-  get automationNode() {
-    return this.node_;
+  get role() {
+    return chrome.automation.RoleType.BUTTON;
+  }
+
+  // ================= General methods =================
+
+  /** @override */
+  asRootNode() {
+    return null;
   }
 
   /** @override */
-  get actions() {
-    return [SAConstants.MenuAction.SELECT];
+  equals(other) {
+    return other instanceof BackButtonNode;
+  }
+
+  /** @override */
+  isEquivalentTo(node) {
+    return this.node_ === node;
+  }
+
+  /** @override */
+  isGroup() {
+    return false;
+  }
+
+  /** @override */
+  onFocus() {
+    chrome.accessibilityPrivate.setSwitchAccessMenuState(
+        true, this.group_.location, 0 /* num_actions */);
+  }
+
+  /** @override */
+  onUnfocus() {
+    chrome.accessibilityPrivate.setSwitchAccessMenuState(
+        false, RectHelper.ZERO_RECT, 0 /* num_actions */);
   }
 
   /** @override */
@@ -60,32 +91,7 @@ class BackButtonNode extends SAChildNode {
     return true;
   }
 
-  /** @override */
-  isEquivalentTo(node) {
-    return this.node_ === node;
-  }
-
-  /** @override */
-  isGroup() {
-    return false;
-  }
-
-  /** @override */
-  asRootNode() {
-    return null;
-  }
-
-  /** @override */
-  onFocus() {
-    chrome.accessibilityPrivate.setSwitchAccessMenuState(
-        true, this.group_.location, 0 /* num_actions */);
-  }
-
-  /** @override */
-  onUnfocus() {
-    chrome.accessibilityPrivate.setSwitchAccessMenuState(
-        false, RectHelper.ZERO_RECT, 0 /* num_actions */);
-  }
+  // ================= Debug methods =================
 
   /** @override */
   debugString() {

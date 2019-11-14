@@ -15,6 +15,7 @@ import android.os.Looper;
 import android.os.RemoteException;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ChildBindingState;
 import org.chromium.base.Log;
@@ -22,7 +23,6 @@ import org.chromium.base.MemoryPressureLevel;
 import org.chromium.base.MemoryPressureListener;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.memory.MemoryPressureCallback;
 
 import java.util.Arrays;

@@ -114,14 +114,16 @@ public class WebLayerShellActivity extends FragmentActivity {
             // BrowserFragment immediately, resulting in synchronous init. By the time this line
             // executes, the synchronous init has already happened.
             WebLayer.create(getApplication())
-                    .addCallback(webLayer -> onWebLayerReady(savedInstanceState));
+                    .addCallback(webLayer -> onWebLayerReady(webLayer, savedInstanceState));
         } catch (UnsupportedVersionException e) {
             throw new RuntimeException("Failed to initialize WebLayer", e);
         }
     }
 
-    private void onWebLayerReady(Bundle savedInstanceState) {
+    private void onWebLayerReady(WebLayer webLayer, Bundle savedInstanceState) {
         if (isFinishing() || isDestroyed()) return;
+
+        webLayer.setRemoteDebuggingEnabled(true);
 
         Fragment fragment = getOrCreateBrowserFragment(savedInstanceState);
         mBrowser = Browser.fromFragment(fragment);

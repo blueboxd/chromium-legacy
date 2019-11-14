@@ -17,7 +17,6 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/message_loop/message_pump_type.h"
-#include "base/no_destructor.h"
 #include "base/numerics/ranges.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -153,12 +152,6 @@ class StreamMixer::ExternalMediaVolumeChangeRequestObserver
 
 float StreamMixer::VolumeInfo::GetEffectiveVolume() {
   return std::min(volume, limit);
-}
-
-// static
-StreamMixer* StreamMixer::Get() {
-  static base::NoDestructor<StreamMixer> mixer_instance;
-  return mixer_instance.get();
 }
 
 StreamMixer::StreamMixer()

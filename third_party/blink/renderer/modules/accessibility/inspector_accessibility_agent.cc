@@ -572,7 +572,10 @@ void InspectorAccessibilityAgent::AddAncestors(
     std::unique_ptr<AXNode> parent_node_object = BuildProtocolAXObject(
         *ancestor, inspected_ax_object, true, nodes, cache);
     auto child_ids = std::make_unique<protocol::Array<AXNodeId>>();
-    child_ids->emplace_back(String::Number(child->AXObjectID()));
+    if (child)
+      child_ids->emplace_back(String::Number(child->AXObjectID()));
+    else
+      child_ids->emplace_back(String::Number(kIDForInspectedNodeWithNoAXNode));
     parent_node_object->setChildIds(std::move(child_ids));
     nodes->emplace_back(std::move(parent_node_object));
     child = ancestor;
@@ -653,16 +656,7 @@ void InspectorAccessibilityAgent::PopulateDOMNodeAncestors(
     return;
 
   // Populate parent and ancestors.
-  std::unique_ptr<AXNode> parent_node_object =
-      BuildProtocolAXObject(*parent_ax_object, nullptr, true, nodes, cache);
-  auto child_ids = std::make_unique<protocol::Array<AXNodeId>>();
-  child_ids->emplace_back(String::Number(kIDForInspectedNodeWithNoAXNode));
-  parent_node_object->setChildIds(std::move(child_ids));
-  nodes->emplace_back(std::move(parent_node_object));
-
-  AXObject* grandparent_ax_object = parent_ax_object->ParentObjectUnignored();
-  if (grandparent_ax_object)
-    AddAncestors(*grandparent_ax_object, nullptr, nodes, cache);
+  AddAncestors(*parent_ax_object, nullptr, nodes, cache);
 }
 
 std::unique_ptr<AXNode> InspectorAccessibilityAgent::BuildProtocolAXObject(

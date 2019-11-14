@@ -77,6 +77,22 @@ ScriptPromise WindowNativeFileSystem::chooseFileSystemEntries(
         MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
   }
 
+  if (!document->GetSecurityOrigin()->CanAccessNativeFileSystem()) {
+    if (document->IsSandboxed(WebSandboxFlags::kOrigin)) {
+      return ScriptPromise::RejectWithDOMException(
+          script_state,
+          MakeGarbageCollected<DOMException>(
+              DOMExceptionCode::kSecurityError,
+              "Sandboxed documents aren't allowed to show a file picker."));
+    } else {
+      return ScriptPromise::RejectWithDOMException(
+          script_state,
+          MakeGarbageCollected<DOMException>(
+              DOMExceptionCode::kSecurityError,
+              "This document isn't allowed to show a file picker."));
+    }
+  }
+
   LocalFrame* local_frame = window.GetFrame();
   if (!local_frame || local_frame->IsCrossOriginSubframe()) {
     return ScriptPromise::RejectWithDOMException(

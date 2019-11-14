@@ -18,8 +18,82 @@ using ColorId = int;
 enum ColorIds : ColorId {
   kUiColorsStart = 0,
 
-  // TODO(pkasting): Define this list.
-  kColorX = kUiColorsStart,
+  // Core color concepts
+  kColorAccent = kUiColorsStart,
+  kColorAlertHighSeverity,
+  kColorAlertLowSeverity,
+  kColorAlertMediumSeverity,
+  kColorButtonForeground,
+  kColorDisabledForeground,
+  kColorIconForeground,
+  kColorLinkForeground,
+  kColorPrimaryBackground,
+  kColorPrimaryForeground,
+  kColorSecondaryBackground,
+  kColorSecondaryBackgroundSubtle,
+  kColorSecondaryForeground,
+  kColorSeparatorForeground,
+  kColorTextSelectionBackground,
+
+  // Further UI element colors
+  kColorBubbleBackground,
+  kColorBubbleFooterBackground,
+  kColorButtonBackground,
+  kColorButtonBorder,
+  kColorButtonDisabledForeground,
+  kColorButtonProminentBackground,
+  kColorButtonProminentDisabledBackground,
+  kColorButtonProminentFocusedBackground,
+  kColorButtonProminentForeground,
+  kColorDialogBackground,
+  kColorFocusableBorderFocused,
+  kColorFocusableBorderUnfocused,
+  kColorLabelDisabledForeground,
+  kColorLabelForeground,
+  kColorLabelSelectionBackground,
+  kColorLabelSelectionForeground,
+  kColorLinkDisabledForeground,  // TODO(estade): Where are disabled links used?
+  kColorLinkPressedForeground,
+  kColorMenuBackground,
+  kColorMenuBorder,
+  kColorMenuItemAlertedBackground,
+  kColorMenuItemDisabledForeground,
+  kColorMenuItemForeground,
+  kColorMenuItemHighlightedBackground,
+  kColorMenuItemHighlightedForeground,
+  kColorMenuItemSecondaryForeground,
+  kColorMenuItemSelectedBackground,
+  kColorMenuItemSelectedForeground,
+  kColorMenuSeparator,
+  kColorTabContentSeparator,
+  kColorTabForeground,
+  kColorTabSelectedForeground,
+  kColorTableBackground,
+  kColorTableForeground,
+  kColorTableGroupingIndicator,
+  kColorTableHeaderBackground,
+  kColorTableHeaderForeground,
+  kColorTableHeaderSeparator,
+  kColorTableSelectedFocusedBackground,
+  kColorTableSelectedFocusedForeground,
+  kColorTableSelectedUnfocusedBackground,
+  kColorTableSelectedUnfocusedForeground,
+  kColorTextfieldBackground,
+  kColorTextfieldDisabledBackground,
+  kColorTextfieldDisabledForeground,
+  kColorTextfieldForeground,
+  kColorTextfieldSelectionBackground,
+  kColorTextfieldSelectionForeground,
+  kColorThrobber,
+  kColorTooltipBackground,
+  kColorTooltipForeground,
+  kColorTreeBackground,
+  kColorTreeNodeForeground,
+  kColorTreeNodeSelectedFocusedBackground,
+  kColorTreeNodeSelectedFocusedForeground,
+  kColorTreeNodeSelectedUnfocusedBackground,
+  kColorTreeNodeSelectedUnfocusedForeground,
+  kColorWindowBackground,
 
 #if defined(OS_WIN)
   // Windows native colors
@@ -55,6 +129,8 @@ enum ColorIds : ColorId {
   kColorNativeWindowText,
 #endif  // defined(OS_WIN)
 
+  // TODO(pkasting): Other native colors
+
   // Embedders must start color IDs from this value.
   kUiColorsEnd,
 
@@ -72,11 +148,13 @@ using ColorSetId = int;
 enum ColorSetIds : ColorSetId {
   kUiColorSetsStart = kUiColorsLast + 1,
 
-  // TODO(pkasting): Define this list.
-
   // A set of color IDs whose values match the native platform as closely as
   // possible.
   kColorSetNative = kUiColorSetsStart,
+
+  // A set of color IDs representing the default values for core color concepts,
+  // in the absence of native colors.
+  kColorSetCoreDefaults,
 
   // Embedders must start color set IDs from this value.
   kUiColorSetsEnd,

@@ -82,6 +82,11 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
   DCHECK(error_);
 
   DialogDelegate::set_default_button(error_->GetDefaultDialogButton());
+  DialogDelegate::set_buttons(
+      (error_->ShouldUseExtraView() &&
+       !error_->GetBubbleViewCancelButtonLabel().empty())
+          ? (ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL)
+          : ui::DIALOG_BUTTON_OK);
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
                                    error_->GetBubbleViewAcceptButtonLabel());
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
@@ -164,16 +169,6 @@ void GlobalErrorBubbleView::Init() {
 
 bool GlobalErrorBubbleView::ShouldShowCloseButton() const {
   return error_ && error_->ShouldShowCloseButton();
-}
-
-int GlobalErrorBubbleView::GetDialogButtons() const {
-  if (!error_)
-    return ui::DIALOG_BUTTON_NONE;
-  return ui::DIALOG_BUTTON_OK |
-         (error_->ShouldUseExtraView() ||
-                  error_->GetBubbleViewCancelButtonLabel().empty()
-              ? 0
-              : ui::DIALOG_BUTTON_CANCEL);
 }
 
 void GlobalErrorBubbleView::OnDialogInitialized() {

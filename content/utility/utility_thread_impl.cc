@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/unique_ptr_adapters.h"
+#include "base/debug/crash_logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
@@ -46,6 +47,13 @@ class ServiceBinderImpl {
   ~ServiceBinderImpl() = default;
 
   void BindServiceInterface(mojo::GenericPendingReceiver* receiver) {
+    // Set a crash key so utility process crash reports indicate which service
+    // was running in the process.
+    static auto* service_name_crash_key = base::debug::AllocateCrashKeyString(
+        "service-name", base::debug::CrashKeySize::Size32);
+    base::debug::SetCrashKeyString(service_name_crash_key,
+                                   receiver->interface_name().value());
+
     // We watch for and terminate on PEER_CLOSED, but we also terminate if the
     // watcher is cancelled (meaning the local endpoint was closed rather than
     // the peer). Hence any breakage of the service pipe leads to termination.

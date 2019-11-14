@@ -777,7 +777,7 @@ TEST_P(PaintLayerScrollableAreaTest, OverflowHiddenScrollOffsetInvalidation) {
   // Going from zero scroll offset to non-zero may require a new paint property
   // and should invalidate paint and paint properties.
   scrollable_area->SetScrollOffset(ScrollOffset(0, 1), kProgrammaticScroll);
-  EXPECT_TRUE(scroller->PaintingLayer()->NeedsRepaint());
+  EXPECT_TRUE(scroller->PaintingLayer()->SelfNeedsRepaint());
   EXPECT_TRUE(scroller->NeedsPaintPropertyUpdate());
   UpdateAllLifecyclePhasesForTest();
 
@@ -797,7 +797,7 @@ TEST_P(PaintLayerScrollableAreaTest, OverflowHiddenScrollOffsetInvalidation) {
   // Going from non-zero scroll offset to zero may require destroying a paint
   // property and should invalidate paint and paint properties.
   scrollable_area->SetScrollOffset(ScrollOffset(0, 0), kProgrammaticScroll);
-  EXPECT_TRUE(scroller->PaintingLayer()->NeedsRepaint());
+  EXPECT_TRUE(scroller->PaintingLayer()->SelfNeedsRepaint());
   EXPECT_TRUE(scroller->NeedsPaintPropertyUpdate());
   UpdateAllLifecyclePhasesForTest();
 

@@ -19,6 +19,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_field_trial_list_resetter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -143,6 +144,7 @@ TEST_F(FeatureListTest, FieldTrialOverrides) {
     const auto& test_case = test_cases[i];
     SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "]", i));
 
+    test::ScopedFieldTrialListResetter resetter;
     FieldTrialList field_trial_list(nullptr);
     auto feature_list = std::make_unique<FeatureList>();
 
@@ -176,7 +178,6 @@ TEST_F(FeatureListTest, FieldTrialOverrides) {
 }
 
 TEST_F(FeatureListTest, FieldTrialAssociateUseDefault) {
-  FieldTrialList field_trial_list(nullptr);
   auto feature_list = std::make_unique<FeatureList>();
 
   FieldTrial* trial1 = FieldTrialList::CreateFieldTrial("TrialExample1", "A");
@@ -206,7 +207,6 @@ TEST_F(FeatureListTest, FieldTrialAssociateUseDefault) {
 }
 
 TEST_F(FeatureListTest, CommandLineEnableTakesPrecedenceOverFieldTrial) {
-  FieldTrialList field_trial_list(nullptr);
   auto feature_list = std::make_unique<FeatureList>();
 
   // The feature is explicitly enabled on the command-line.
@@ -229,7 +229,6 @@ TEST_F(FeatureListTest, CommandLineEnableTakesPrecedenceOverFieldTrial) {
 }
 
 TEST_F(FeatureListTest, CommandLineDisableTakesPrecedenceOverFieldTrial) {
-  FieldTrialList field_trial_list(nullptr);
   auto feature_list = std::make_unique<FeatureList>();
 
   // The feature is explicitly disabled on the command-line.
@@ -252,7 +251,6 @@ TEST_F(FeatureListTest, CommandLineDisableTakesPrecedenceOverFieldTrial) {
 }
 
 TEST_F(FeatureListTest, IsFeatureOverriddenFromCommandLine) {
-  FieldTrialList field_trial_list(nullptr);
   auto feature_list = std::make_unique<FeatureList>();
 
   // No features are overridden from the command line yet
@@ -326,6 +324,7 @@ TEST_F(FeatureListTest, AssociateReportingFieldTrial) {
                                     test_case.enable_features,
                                     test_case.disable_features));
 
+    test::ScopedFieldTrialListResetter resetter;
     FieldTrialList field_trial_list(nullptr);
     auto feature_list = std::make_unique<FeatureList>();
     feature_list->InitializeFromCommandLine(test_case.enable_features,
@@ -410,7 +409,6 @@ TEST_F(FeatureListTest, InitializeFromCommandLineThenRegisterExtraOverrides) {
 }
 
 TEST_F(FeatureListTest, GetFeatureOverrides) {
-  FieldTrialList field_trial_list(nullptr);
   auto feature_list = std::make_unique<FeatureList>();
   feature_list->InitializeFromCommandLine("A,X", "D");
 
@@ -445,7 +443,6 @@ TEST_F(FeatureListTest, GetFeatureOverrides) {
 }
 
 TEST_F(FeatureListTest, GetFeatureOverrides_UseDefault) {
-  FieldTrialList field_trial_list(nullptr);
   auto feature_list = std::make_unique<FeatureList>();
   feature_list->InitializeFromCommandLine("A,X", "D");
 
@@ -465,7 +462,6 @@ TEST_F(FeatureListTest, GetFeatureOverrides_UseDefault) {
 }
 
 TEST_F(FeatureListTest, GetFieldTrial) {
-  FieldTrialList field_trial_list(nullptr);
   FieldTrial* trial = FieldTrialList::CreateFieldTrial("Trial", "Group");
   auto feature_list = std::make_unique<FeatureList>();
   feature_list->RegisterFieldTrialOverride(
@@ -478,7 +474,6 @@ TEST_F(FeatureListTest, GetFieldTrial) {
 }
 
 TEST_F(FeatureListTest, InitializeFromCommandLine_WithFieldTrials) {
-  FieldTrialList field_trial_list(nullptr);
   FieldTrialList::CreateFieldTrial("Trial", "Group");
   auto feature_list = std::make_unique<FeatureList>();
   feature_list->InitializeFromCommandLine("A,OffByDefault<Trial,X", "D");
@@ -491,7 +486,6 @@ TEST_F(FeatureListTest, InitializeFromCommandLine_WithFieldTrials) {
 }
 
 TEST_F(FeatureListTest, InitializeFromCommandLine_UseDefault) {
-  FieldTrialList field_trial_list(nullptr);
   FieldTrialList::CreateFieldTrial("T1", "Group");
   FieldTrialList::CreateFieldTrial("T2", "Group");
   auto feature_list = std::make_unique<FeatureList>();
@@ -578,7 +572,6 @@ TEST_F(FeatureListTest, StoreAndRetrieveFeaturesFromSharedMemory) {
 }
 
 TEST_F(FeatureListTest, StoreAndRetrieveAssociatedFeaturesFromSharedMemory) {
-  FieldTrialList field_trial_list(nullptr);
   std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
 
   // Create some overrides.

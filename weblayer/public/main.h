@@ -36,14 +36,6 @@ struct MainParams {
 
   // The name of the file that has the PAK data.
   std::string pak_name;
-
-  std::string brand;
-
-  // e.g. 1.2.3.4
-  std::string full_version;
-
-  // e.g. 1
-  std::string major_version;
 };
 
 int Main(MainParams params

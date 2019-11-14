@@ -10,6 +10,7 @@
 #include "base/containers/span.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_text_offset.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_view.h"
@@ -26,12 +27,12 @@ class NGFragmentItems;
 class NGInlineBreakToken;
 class NGPaintFragment;
 class NGPhysicalBoxFragment;
-enum class NGStyleVariant;
 class Node;
+class ShapeResultView;
+enum class NGStyleVariant;
 struct PhysicalOffset;
 struct PhysicalRect;
 struct PhysicalSize;
-class ShapeResultView;
 
 // This class traverses fragments in an inline formatting context.
 //
@@ -184,8 +185,9 @@ class CORE_EXPORT NGInlineCursor {
 
   // Returns start/end of offset in text content of current text fragment.
   // It is error when this cursor doesn't point to text fragment.
-  unsigned CurrentTextStartOffset() const;
-  unsigned CurrentTextEndOffset() const;
+  NGTextOffset CurrentTextOffset() const;
+  unsigned CurrentTextStartOffset() const { return CurrentTextOffset().start; }
+  unsigned CurrentTextEndOffset() const { return CurrentTextOffset().end; }
 
   // Returns text of the current position. It is error to call other than
   // text.

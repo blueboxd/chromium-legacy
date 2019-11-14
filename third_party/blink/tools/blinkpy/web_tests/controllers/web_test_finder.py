@@ -185,7 +185,7 @@ class WebTestFinder(object):
     def split_into_chunks(self, test_names):
         """split into a list to run and a set to skip, based on --shard_index and --total_shards."""
         if self._options.shard_index is None and self._options.total_shards is None:
-            return test_names, set()
+            return test_names
 
         if self._options.shard_index is None:
             raise ValueError('Must provide --shard-index or GTEST_SHARD_INDEX when sharding.')
@@ -207,15 +207,11 @@ class WebTestFinder(object):
             test_name
             for test_name, test_index in tests_and_indices
             if test_index == index]
-        other_tests = [
-            test_name
-            for test_name, test_index in tests_and_indices
-            if test_index != index]
 
         _log.debug('chunk %d of %d contains %d tests of %d',
                    index, count, len(tests_to_run), len(test_names))
 
-        return tests_to_run, other_tests
+        return tests_to_run
 
 
 def filter_tests(tests, filters):

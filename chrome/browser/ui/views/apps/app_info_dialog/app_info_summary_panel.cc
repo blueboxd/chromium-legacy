@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/views/apps/app_info_dialog/app_info_label.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/browser/extension_prefs.h"
@@ -132,9 +133,8 @@ void AppInfoSummaryPanel::AddDescriptionAndLinksControl(
       text += base::ASCIIToUTF16(" ... ");
     }
 
-    auto description_label = std::make_unique<views::Label>(text);
+    auto description_label = std::make_unique<AppInfoLabel>(text);
     description_label->SetMultiLine(true);
-    description_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     description_and_labels_stack->AddChildView(std::move(description_label));
   }
 
@@ -143,6 +143,7 @@ void AppInfoSummaryPanel::AddDescriptionAndLinksControl(
         l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_HOMEPAGE_LINK));
     homepage_link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     homepage_link->set_listener(this);
+    homepage_link->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
     homepage_link_ =
         description_and_labels_stack->AddChildView(std::move(homepage_link));
   }
@@ -152,6 +153,7 @@ void AppInfoSummaryPanel::AddDescriptionAndLinksControl(
         l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_LICENSES_BUTTON_TEXT));
     licenses_link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     licenses_link->set_listener(this);
+    licenses_link->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
     licenses_link_ =
         description_and_labels_stack->AddChildView(std::move(licenses_link));
   }
@@ -169,13 +171,11 @@ void AppInfoSummaryPanel::AddDetailsControl(views::View* vertical_stack) {
           DISTANCE_RELATED_CONTROL_VERTICAL_SMALL));
 
   // Add the size.
-  auto size_title = std::make_unique<views::Label>(
+  auto size_title = std::make_unique<AppInfoLabel>(
       l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_SIZE_LABEL));
-  size_title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
-  auto size_value = std::make_unique<views::Label>(
+  auto size_value = std::make_unique<AppInfoLabel>(
       l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_SIZE_LOADING_LABEL));
-  size_value->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   size_value_ = size_value.get();
   StartCalculatingAppSize();
 
@@ -184,13 +184,11 @@ void AppInfoSummaryPanel::AddDetailsControl(views::View* vertical_stack) {
 
   // The version doesn't make sense for bookmark apps.
   if (!app_->from_bookmark()) {
-    auto version_title = std::make_unique<views::Label>(
+    auto version_title = std::make_unique<AppInfoLabel>(
         l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_VERSION_LABEL));
-    version_title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
-    auto version_value = std::make_unique<views::Label>(
+    auto version_value = std::make_unique<AppInfoLabel>(
         base::UTF8ToUTF16(app_->GetVersionForDisplay()));
-    version_value->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
     details_list->AddChildView(CreateKeyValueField(std::move(version_title),
                                                    std::move(version_value)));

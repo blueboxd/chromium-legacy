@@ -6,7 +6,6 @@
 
 #include "base/trace_event/traced_value.h"
 #include "cc/input/scrollbar.h"
-#include "cc/layers/layer_client.h"
 #include "cc/layers/painted_overlay_scrollbar_layer.h"
 #include "cc/layers/painted_scrollbar_layer.h"
 #include "cc/layers/solid_color_scrollbar_layer.h"
@@ -17,41 +16,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_recorder.h"
 
 namespace blink {
-
-namespace {
-
-class LayerClientForFixedDebugName : public cc::LayerClient {
- public:
-  LayerClientForFixedDebugName(const char* name) : name_(name) {}
-
-  std::unique_ptr<base::trace_event::TracedValue> TakeDebugInfo(
-      const cc::Layer* layer) override {
-    auto traced_value = std::make_unique<base::trace_event::TracedValue>();
-    traced_value->SetString("layer_name", LayerDebugName(layer));
-    return traced_value;
-  }
-  std::string LayerDebugName(const cc::Layer*) const override { return name_; }
-
-  base::WeakPtr<cc::LayerClient> GetWeakPtr() {
-    return weak_ptr_factory_.GetWeakPtr();
-  }
-
- private:
-  const char* name_;
-  base::WeakPtrFactory<LayerClientForFixedDebugName> weak_ptr_factory_{this};
-};
-
-base::WeakPtr<cc::LayerClient> LayerClientForScrollbar(
-    cc::ScrollbarOrientation orientation) {
-  DEFINE_STATIC_LOCAL(LayerClientForFixedDebugName, horizontal_client,
-                      ("HorizontalScrollbar"));
-  DEFINE_STATIC_LOCAL(LayerClientForFixedDebugName, vertical_client,
-                      ("VerticalScrollbar"));
-  return orientation == cc::HORIZONTAL ? horizontal_client.GetWeakPtr()
-                                       : vertical_client.GetWeakPtr();
-}
-
-}  // anonymous namespace
 
 ScrollbarDisplayItem::ScrollbarDisplayItem(
     const DisplayItemClient& client,
@@ -108,7 +72,6 @@ scoped_refptr<cc::Layer> ScrollbarDisplayItem::CreateLayer() const {
     layer = cc::PaintedScrollbarLayer::Create(scrollbar_);
   }
 
-  layer->SetLayerClient(LayerClientForScrollbar(scrollbar_->Orientation()));
   layer->SetIsDrawable(true);
   layer->SetElementId(element_id_);
   if (scroll_translation_) {

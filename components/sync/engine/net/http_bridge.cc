@@ -19,7 +19,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
-#include "components/sync/base/cancelation_signal.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_cache.h"
@@ -55,30 +54,16 @@ base::LazyInstance<scoped_refptr<base::SequencedTaskRunner>>::Leaky
 HttpBridgeFactory::HttpBridgeFactory(
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         url_loader_factory_info,
-    const NetworkTimeUpdateCallback& network_time_update_callback,
-    CancelationSignal* cancelation_signal)
-    : network_time_update_callback_(network_time_update_callback),
-      cancelation_signal_(cancelation_signal) {
+    const NetworkTimeUpdateCallback& network_time_update_callback)
+    : network_time_update_callback_(network_time_update_callback) {
   // Some tests pass null'ed out url_loader_factory_info instances.
   if (url_loader_factory_info) {
     url_loader_factory_ = network::SharedURLLoaderFactory::Create(
         std::move(url_loader_factory_info));
   }
-  // This registration is happening on the Sync thread, while signalling occurs
-  // on the UI thread. We must handle the possibility signalling has already
-  // occurred.
-  if (cancelation_signal_->TryRegisterHandler(this)) {
-    registered_for_cancelation_ = true;
-  } else {
-    OnSignalReceived();
-  }
 }
 
-HttpBridgeFactory::~HttpBridgeFactory() {
-  if (registered_for_cancelation_) {
-    cancelation_signal_->UnregisterHandler(this);
-  }
-}
+HttpBridgeFactory::~HttpBridgeFactory() = default;
 
 void HttpBridgeFactory::Init(const std::string& user_agent) {
   user_agent_ = user_agent;
@@ -95,16 +80,6 @@ HttpPostProviderInterface* HttpBridgeFactory::Create() {
 
 void HttpBridgeFactory::Destroy(HttpPostProviderInterface* http) {
   static_cast<HttpBridge*>(http)->Release();
-}
-
-void HttpBridgeFactory::OnSignalReceived() {
-  // TODO(tonikitoo): Remove this method.
-  //
-  // Prior to the URLLoader conversion the sync code was holding on to a
-  // scoped_refptr of a URLRequestContextGetter it was changing the lifetime
-  // of net objects. With URLLoader, it's only holding on to mojo pipes
-  // that issue doesn't exist.
-  NOTIMPLEMENTED();
 }
 
 HttpBridge::URLFetchState::URLFetchState()

@@ -116,7 +116,8 @@ bool DrmDisplay::Configure(const drmModeModeInfo* mode,
   VLOG(1) << "DRM configuring: device=" << drm_->device_path().value()
           << " crtc=" << crtc_ << " connector=" << connector_
           << " origin=" << origin.ToString()
-          << " size=" << (mode ? GetDrmModeSize(*mode).ToString() : "0x0");
+          << " size=" << (mode ? GetDrmModeSize(*mode).ToString() : "0x0")
+          << " refresh_rate=" << (mode ? mode->vrefresh : 0) << "Hz";
 
   if (mode) {
     if (!screen_manager_->ConfigureDisplayController(

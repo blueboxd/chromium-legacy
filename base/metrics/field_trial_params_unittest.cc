@@ -30,7 +30,7 @@ scoped_refptr<FieldTrial> CreateFieldTrial(
 
 class FieldTrialParamsTest : public ::testing::Test {
  public:
-  FieldTrialParamsTest() : field_trial_list_(nullptr) {}
+  FieldTrialParamsTest() = default;
 
   ~FieldTrialParamsTest() override {
     // Ensure that the maps are cleared between tests, since they are stored as
@@ -48,7 +48,6 @@ class FieldTrialParamsTest : public ::testing::Test {
   }
 
  private:
-  FieldTrialList field_trial_list_;
   test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(FieldTrialParamsTest);

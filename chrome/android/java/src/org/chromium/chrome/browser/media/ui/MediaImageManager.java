@@ -8,8 +8,9 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.text.TextUtils;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.FileUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.content_public.browser.ImageDownloadCallback;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.services.media_session.MediaImage;

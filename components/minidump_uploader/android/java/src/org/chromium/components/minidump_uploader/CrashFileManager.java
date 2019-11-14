@@ -5,9 +5,9 @@
 package org.chromium.components.minidump_uploader;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
-import org.chromium.base.VisibleForTesting;
 
 import java.io.File;
 import java.io.FileDescriptor;

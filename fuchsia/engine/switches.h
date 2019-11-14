@@ -32,6 +32,12 @@ extern const char kRemoteDebuggerHandles[];
 // Specifies a custom UserAgent product & version to use.
 extern const char kUserAgentProductAndVersion[];
 
+// By default, an https page cannot run JavaScript, CSS or resources from http
+// URLs. This provides an override to get the old insecure behavior.
+// TODO(crbug.com/1023514): Remove this switch when it is no longer
+// necessary.
+extern const char kAllowRunningInsecureContent[];
+
 }  // namespace switches
 
 #endif  // FUCHSIA_ENGINE_SWITCHES_H_

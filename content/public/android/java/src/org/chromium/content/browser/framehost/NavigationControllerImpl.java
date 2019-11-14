@@ -6,7 +6,8 @@ package org.chromium.content.browser.framehost;
 
 import android.graphics.Bitmap;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;

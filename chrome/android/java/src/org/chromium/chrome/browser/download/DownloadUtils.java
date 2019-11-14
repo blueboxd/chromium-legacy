@@ -20,6 +20,7 @@ import android.text.TextUtils;
 import androidx.annotation.IntDef;
 import androidx.annotation.MainThread;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
@@ -29,7 +30,6 @@ import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.TimeUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryProcessType;
@@ -80,11 +80,8 @@ import java.io.File;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
 /**
@@ -106,13 +103,6 @@ public class DownloadUtils {
 
     private static final int[] BYTES_STRINGS = {
             R.string.download_ui_kb, R.string.download_ui_mb, R.string.download_ui_gb};
-
-    // Set will be more expensive to initialize, so use an ArrayList here.
-    private static final List<String> MIME_TYPES_TO_OPEN = new ArrayList<String>(Arrays.asList(
-            MimeUtils.OMA_DOWNLOAD_DESCRIPTOR_MIME, "application/pdf", "application/x-x509-ca-cert",
-            "application/x-x509-user-cert", "application/x-x509-server-cert",
-            "application/x-pkcs12", "application/application/x-pem-file", "application/pkix-cert",
-            "application/x-wifi-config"));
 
     private static final String TAG = "download";
 
@@ -387,21 +377,6 @@ public class DownloadUtils {
         if (ContentUriUtils.isContentUri(filePath)) return filePath;
         Uri uri = getUriForItem(filePath);
         return uri != null ? uri.toString() : new String();
-    }
-
-
-    /**
-     * Determines if the download should be immediately opened after
-     * downloading.
-     *
-     * @param mimeType The mime type of the download.
-     * @param hasUserGesture Whether the download is associated with an user gesture.
-     * @return true if the downloaded content should be opened, or false otherwise.
-     */
-    @VisibleForTesting
-    @CalledByNative
-    public static boolean shouldAutoOpenDownload(String mimeType, boolean hasUserGesture) {
-        return hasUserGesture && MIME_TYPES_TO_OPEN.contains(mimeType);
     }
 
     /**
@@ -1012,25 +987,6 @@ public class DownloadUtils {
         if (primaryDir == null || path == null) return false;
         String primaryPath = primaryDir.getAbsolutePath();
         return primaryPath == null ? false : path.contains(primaryPath);
-    }
-
-    /**
-     * Parses an originating URL string and returns a valid Uri that can be inserted into
-     * DownloadProvider. The returned Uri has to be null or non-empty http(s) scheme.
-     * @param originalUrl String representation of the originating URL.
-     * @return A valid Uri that can be accepted by DownloadProvider.
-     */
-    public static Uri parseOriginalUrl(String originalUrl) {
-        Uri originalUri = TextUtils.isEmpty(originalUrl) ? null : Uri.parse(originalUrl);
-        if (originalUri != null) {
-            String scheme = originalUri.normalizeScheme().getScheme();
-            if (scheme == null
-                    || (!scheme.equals(UrlConstants.HTTPS_SCHEME)
-                            && !scheme.equals(UrlConstants.HTTP_SCHEME))) {
-                originalUri = null;
-            }
-        }
-        return originalUri;
     }
 
     /**

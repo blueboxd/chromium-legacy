@@ -27,6 +27,7 @@ class MojoProxyResolverV8TracingBindingsTest : public testing::Test {
   void ResolveDns(
       const std::string& hostname,
       net::ProxyResolveDnsOperation operation,
+      const net::NetworkIsolationKey& network_isolation_key,
       mojo::PendingRemote<mojom::HostResolverRequestClient> client) {}
 
  protected:

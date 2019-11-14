@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
 <link rel="import" href="cr_png_behavior.html">
+<link rel="import" href="icons.html">
 
 <dom-module id="cr-camera">
   <template>
@@ -118,23 +119,19 @@
       }
 
       #takePhoto {
-        --cr-icon-image: url(camera_shutter_icon.svg);
+        --cr-icon-button-fill-color-focus: #ededed;
+        --cr-icon-button-fill-color: #ededed;
+        --cr-icon-button-stroke-color-focus: var(--google-blue-500);
+        --cr-icon-button-stroke-color: white;
       }
 
       :host([videomode]) #takePhoto {
-        --cr-icon-image: url(videocam_shutter_icon.svg);
+        --cr-icon-button-fill-color: red;
+        --cr-icon-button-fill-color-focus: red;
       }
 
       :host-context([dir=rtl]) #switchMode {
         float: left;
-      }
-
-      #switchMode {
-       --cr-icon-image: url(videocam_icon.svg);
-      }
-
-      :host([videomode]) #switchMode {
-        --cr-icon-image: url(camera_alt_icon.svg);
       }
     </style>
     <div id="perspectiveBox">
@@ -152,14 +149,16 @@
         <cr-icon-button id="takePhoto" tabindex="1"
             title="[[getTakePhotoLabel_(videomode, takePhotoLabel,
                 captureVideoLabel)]]" on-click="takePhoto"
-            disabled="[[!cameraOnline_]]">
+            disabled="[[!cameraOnline_]]"
+            iron-icon="[[getTakePhotoIcon_(videomode)]]">
         </cr-icon-button>
       </div>
       <div>
         <cr-icon-button hidden="[[!videoModeEnabled]]" id="switchMode"
             tabindex="2" on-click="onTapSwitchMode_"
             title="[[getSwitchModeLabel_(videomode, switchModeToCameraLabel,
-                switchModeToVideoLabel)]]" disabled="[[!cameraOnline_]]">
+                switchModeToVideoLabel)]]" disabled="[[!cameraOnline_]]"
+            iron-icon="[[getSwitchModeIcon_(videomode)]]">
         </cr-icon-button>
       </div>
     </div>

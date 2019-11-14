@@ -37,7 +37,6 @@ class MediaDialogView : public views::BubbleDialogDelegateView,
                                                    gfx::Rect bounds) override;
 
   // views::DialogDelegate implementation.
-  int GetDialogButtons() const override;
   bool Close() override;
 
   // views::View implementation.

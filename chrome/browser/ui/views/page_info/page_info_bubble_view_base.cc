@@ -49,13 +49,11 @@ PageInfoBubbleViewBase::PageInfoBubbleViewBase(
   g_shown_bubble_type = type;
   g_page_info_bubble = this;
 
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+
   set_parent_window(parent_window);
   if (!anchor_view)
     SetAnchorRect(anchor_rect);
-}
-
-int PageInfoBubbleViewBase::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
 }
 
 base::string16 PageInfoBubbleViewBase::GetWindowTitle() const {

@@ -521,9 +521,6 @@ bool Animation::PreCommit(
 }
 
 void Animation::PostCommit(double timeline_time) {
-  PlayStateUpdateScope update_scope(*this, kTimingUpdateOnDemand,
-                                    kDoNotSetCompositorPending);
-
   compositor_pending_ = false;
 
   if (!compositor_state_ || compositor_state_->pending_action == kNone)

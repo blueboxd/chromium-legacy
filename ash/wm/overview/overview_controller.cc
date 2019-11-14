@@ -414,6 +414,9 @@ void OverviewController::ToggleOverview(
     OverviewSession::EnterExitOverviewType new_type =
         MaybeOverrideEnterExitTypeForHomeScreen(type, /*enter=*/false, windows);
     overview_session_->set_enter_exit_overview_type(new_type);
+
+    overview_session_->set_is_shutting_down(true);
+
     if (type == OverviewSession::EnterExitOverviewType::kSlideOutExit ||
         type == OverviewSession::EnterExitOverviewType::kFadeOutExit ||
         type == OverviewSession::EnterExitOverviewType::kSwipeFromShelf) {
@@ -438,7 +441,6 @@ void OverviewController::ToggleOverview(
       OnStartingAnimationComplete(/*canceled=*/true);
     start_animations_.clear();
 
-    overview_session_->set_is_shutting_down(true);
     // Do not show mask and show during overview shutdown.
     overview_session_->UpdateRoundedCornersAndShadow();
 

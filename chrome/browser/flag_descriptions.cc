@@ -739,10 +739,6 @@ const char kDownloadAutoResumptionNativeName[] =
 const char kDownloadAutoResumptionNativeDescription[] =
     "Enables download auto-resumption in native";
 
-const char kEnableCSSBackdropFilterName[] = "Enable backdrop-filter";
-const char kEnableCSSBackdropFilterDescription[] =
-    "Enable a new CSS property called backdrop-filter.";
-
 const char kEnableDisplayLockingName[] = "Enable Display Locking";
 const char kEnableDisplayLockingDescription[] =
     "Enable Display Locking JavaScript API. The syntax and the APIs exposed "
@@ -3455,6 +3451,11 @@ const char kEnableAssistantLauncherIntegrationName[] =
 const char kEnableAssistantLauncherIntegrationDescription[] =
     "Combine Launcher search with the power of Assistant to provide the most "
     "useful answer for each query. Requires Assistant to be enabled.";
+
+const char kEnableAssistantLauncherUIName[] = "Assistant Launcher UI";
+const char kEnableAssistantLauncherUIDescription[] =
+    "Enables the embedded Assistant UI in the app list. Requires Assistant to "
+    "be enabled.";
 
 const char kEnableAssistantMediaSessionIntegrationName[] =
     "Assistant Media Session integration";

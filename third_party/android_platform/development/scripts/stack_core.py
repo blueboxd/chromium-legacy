@@ -325,7 +325,7 @@ class PreProcessLog:
           soname = self._DetectSharedLibrary(lib, symbol_present)
           if soname:
             line = line.replace('/' + os.path.basename(lib), '/' + soname)
-          elif not apks_directory:
+          elif not self._apks_directory:
             # If the trace line suggests a direct load from APK, replace the
             # APK name with _FALLBACK_SO, unless an APKs directory was
             # explicitly specified (in which case, the correct .so should always
@@ -562,7 +562,7 @@ def _FindSharedLibraryFromAPKs(output_directory, apks_directory, offset):
       raise Exception('Explicit APKs directory does not exist: %s',
                       repr(apks_directory))
   else:
-    apks_directory = os.path.join(out_dir, 'apks')
+    apks_directory = os.path.join(output_directory, 'apks')
     if not os.path.isdir(apks_directory):
       return (None, None)
 

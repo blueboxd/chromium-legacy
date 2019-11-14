@@ -44,9 +44,7 @@ static int g_s_property_tree_sequence_number = 1;
 
 PaintArtifactCompositor::PaintArtifactCompositor(
     base::WeakPtr<CompositorScrollCallbacks> scroll_callbacks)
-    : scroll_callbacks_(std::move(scroll_callbacks)),
-      tracks_raster_invalidations_(false),
-      needs_update_(true) {
+    : scroll_callbacks_(std::move(scroll_callbacks)) {
   root_layer_ = cc::Layer::Create();
 }
 
@@ -1149,10 +1147,6 @@ void PaintArtifactCompositor::Update(
     layer->SetDoubleSided(!backface_hidden);
     layer->SetShouldCheckBackfaceVisibility(backface_hidden);
 
-    layer->set_owner_node_id(
-        pending_layer.FirstPaintChunk(*paint_artifact).id.client.OwnerNodeId());
-    // TODO(wangxianzhu): cc_picture_layer_->set_compositing_reasons(...);
-
     // If the property tree state has changed between the layer and the root,
     // we need to inform the compositor so damage can be calculated. Calling
     // |PropertyTreeStateChanged| for every pending layer is O(|property
@@ -1163,7 +1157,29 @@ void PaintArtifactCompositor::Update(
       layer->SetSubtreePropertyChanged();
       root_layer_->SetNeedsCommit();
     }
+
+    if (!layer_debug_info_enabled_) {
+      layer->ClearDebugInfo();
+    } else if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
+               !layer->debug_info()) {
+      // About the above condition: in pre-CompositeAfterPaint, debug info of
+      // cc::Layers that are created by GraphicsLayers are updated in
+      // LocalFrameView, so here we only update the other layers that don't
+      // have debug info yet.
+      RasterInvalidationTracking* tracking = nullptr;
+      if (new_content_layer_clients.size() &&
+          &new_content_layer_clients.back()->Layer() == layer) {
+        tracking = new_content_layer_clients.back()
+                       ->GetRasterInvalidator()
+                       .GetTracking();
+      }
+      // TODO(wangxianzhu): pass real compositing reasons.
+      UpdateLayerDebugInfo(layer.get(),
+                           pending_layer.FirstPaintChunk(*paint_artifact).id,
+                           CompositingReason::kNone, tracking);
+    }
   }
+
   property_tree_manager.Finalize();
   content_layer_clients_.swap(new_content_layer_clients);
   scroll_hit_test_layers_.swap(new_scroll_hit_test_layers);
@@ -1357,6 +1373,44 @@ void PaintArtifactCompositor::UpdateRenderSurfaceForEffects(
     // Mark we have visited this effect.
     effect_layer_counts[id] = -1;
 #endif
+  }
+}
+
+void PaintArtifactCompositor::SetLayerDebugInfoEnabled(bool enabled) {
+  if (enabled == layer_debug_info_enabled_)
+    return;
+
+  DCHECK(needs_update_);
+  layer_debug_info_enabled_ = enabled;
+
+  if (enabled)
+    root_layer_->EnsureDebugInfo().name = "root";
+  else
+    root_layer_->ClearDebugInfo();
+}
+
+void PaintArtifactCompositor::UpdateLayerDebugInfo(
+    cc::Layer* layer,
+    const PaintChunk::Id& id,
+    CompositingReasons compositing_reasons,
+    RasterInvalidationTracking* raster_invalidation_tracking) {
+  cc::LayerDebugInfo& debug_info = layer->EnsureDebugInfo();
+
+  debug_info.name = id.client.DebugName().Utf8();
+  if (id.type == DisplayItem::kForeignLayerContentsWrapper) {
+    // This is for backward compatibility in pre-CompositeAfterPaint mode.
+    DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+    debug_info.name = std::string("ContentsLayer for ") + debug_info.name;
+  }
+
+  debug_info.compositing_reasons =
+      CompositingReason::Descriptions(compositing_reasons);
+  debug_info.owner_node_id = id.client.OwnerNodeId();
+
+  if (RasterInvalidationTracking::IsTracingRasterInvalidations() &&
+      raster_invalidation_tracking) {
+    raster_invalidation_tracking->AddToLayerDebugInfo(debug_info);
+    raster_invalidation_tracking->ClearInvalidations();
   }
 }
 

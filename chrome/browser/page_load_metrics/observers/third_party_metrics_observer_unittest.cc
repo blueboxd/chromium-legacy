@@ -6,6 +6,11 @@
 
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "components/page_load_metrics/browser/page_load_tracker.h"
+#include "components/page_load_metrics/common/page_load_metrics.mojom.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/test/navigation_simulator.h"
+#include "content/public/test/test_renderer_host.h"
 #include "net/cookies/canonical_cookie.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,6 +22,12 @@ const char kAccessLocalStorageHistogram[] =
     "PageLoad.Clients.ThirdParty.Origins.LocalStorageAccess";
 const char kAccessSessionStorageHistogram[] =
     "PageLoad.Clients.ThirdParty.Origins.SessionStorageAccess";
+const char kSubframeFCPHistogram[] =
+    "PageLoad.Clients.ThirdParty.Frames.NavigationToFirstContentfulPaint";
+
+using content::NavigationSimulator;
+using content::RenderFrameHost;
+using content::RenderFrameHostTester;
 
 class ThirdPartyMetricsObserverTest
     : public page_load_metrics::PageLoadMetricsObserverTestHarness {
@@ -27,9 +38,132 @@ class ThirdPartyMetricsObserverTest
     tracker->AddObserver(base::WrapUnique(new ThirdPartyMetricsObserver()));
   }
 
+  // Returns the final RenderFrameHost after navigation commits.
+  RenderFrameHost* NavigateFrame(const std::string& url,
+                                 content::RenderFrameHost* frame) {
+    auto navigation_simulator =
+        NavigationSimulator::CreateRendererInitiated(GURL(url), frame);
+    navigation_simulator->Commit();
+    return navigation_simulator->GetFinalRenderFrameHost();
+  }
+
+  // Returns the final RenderFrameHost after navigation commits.
+  content::RenderFrameHost* NavigateMainFrame(const std::string& url) {
+    return NavigateFrame(url, web_contents()->GetMainFrame());
+  }
+
+  // Returns the final RenderFrameHost after navigation commits.
+  RenderFrameHost* CreateAndNavigateSubFrame(const std::string& url,
+                                             content::RenderFrameHost* parent) {
+    RenderFrameHost* subframe =
+        RenderFrameHostTester::For(parent)->AppendChild("frame_name");
+    auto navigation_simulator =
+        NavigationSimulator::CreateRendererInitiated(GURL(url), subframe);
+    navigation_simulator->Commit();
+
+    return navigation_simulator->GetFinalRenderFrameHost();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ThirdPartyMetricsObserverTest);
 };
+
+TEST_F(ThirdPartyMetricsObserverTest, NoThirdPartyFrame_NoneRecorded) {
+  RenderFrameHost* main_frame = NavigateMainFrame("https://top.com");
+  RenderFrameHost* sub_frame =
+      CreateAndNavigateSubFrame("https://top.com/foo", main_frame);
+
+  page_load_metrics::mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
+  timing.paint_timing->first_contentful_paint = base::TimeDelta::FromSeconds(1);
+  tester()->SimulateTimingUpdate(timing, sub_frame);
+  tester()->histogram_tester().ExpectTotalCount(kSubframeFCPHistogram, 0);
+}
+
+TEST_F(ThirdPartyMetricsObserverTest, OneThirdPartyFrame_OneRecorded) {
+  RenderFrameHost* main_frame = NavigateMainFrame("https://top.com");
+  RenderFrameHost* sub_frame =
+      CreateAndNavigateSubFrame("https://x-origin.com", main_frame);
+
+  page_load_metrics::mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
+  timing.paint_timing->first_contentful_paint = base::TimeDelta::FromSeconds(1);
+  tester()->SimulateTimingUpdate(timing, sub_frame);
+  tester()->histogram_tester().ExpectUniqueSample(kSubframeFCPHistogram, 1000,
+                                                  1);
+}
+
+TEST_F(ThirdPartyMetricsObserverTest,
+       OneThirdPartyFrameWithTwoSameUpdates_OneRecorded) {
+  RenderFrameHost* main_frame = NavigateMainFrame("https://top.com");
+  RenderFrameHost* sub_frame =
+      CreateAndNavigateSubFrame("https://x-origin.com", main_frame);
+
+  page_load_metrics::mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
+  timing.paint_timing->first_contentful_paint = base::TimeDelta::FromSeconds(1);
+  tester()->SimulateTimingUpdate(timing, sub_frame);
+  tester()->SimulateTimingUpdate(timing, sub_frame);
+  tester()->histogram_tester().ExpectUniqueSample(kSubframeFCPHistogram, 1000,
+                                                  1);
+}
+
+TEST_F(ThirdPartyMetricsObserverTest, SixtyFrames_FiftyRecorded) {
+  RenderFrameHost* main_frame = NavigateMainFrame("https://top.com");
+
+  // Add more frames than we're supposed to track.
+  for (int i = 0; i < 60; ++i) {
+    RenderFrameHost* sub_frame =
+        CreateAndNavigateSubFrame("https://x-origin.com", main_frame);
+
+    page_load_metrics::mojom::PageLoadTiming timing;
+    page_load_metrics::InitPageLoadTimingForTest(&timing);
+    timing.paint_timing->first_contentful_paint =
+        base::TimeDelta::FromSeconds(1);
+    tester()->SimulateTimingUpdate(timing, sub_frame);
+  }
+
+  // Keep this synchronized w/ the max frame count in the cc file.
+  tester()->histogram_tester().ExpectTotalCount(kSubframeFCPHistogram, 50);
+}
+
+TEST_F(ThirdPartyMetricsObserverTest, ThreeThirdPartyFrames_ThreeRecorded) {
+  RenderFrameHost* main_frame = NavigateMainFrame("https://top.com");
+
+  // Create three third-party frames.
+  RenderFrameHost* sub_frame_a =
+      CreateAndNavigateSubFrame("https://x-origin.com", main_frame);
+  RenderFrameHost* sub_frame_b =
+      CreateAndNavigateSubFrame("https://y-origin.com", main_frame);
+  RenderFrameHost* sub_frame_c =
+      CreateAndNavigateSubFrame("https://x-origin.com", main_frame);
+
+  // Create a same-origin frame.
+  RenderFrameHost* sub_frame_d =
+      CreateAndNavigateSubFrame("https://top.com/foo", main_frame);
+
+  page_load_metrics::mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
+  timing.paint_timing->first_contentful_paint = base::TimeDelta::FromSeconds(1);
+  tester()->SimulateTimingUpdate(timing, sub_frame_a);
+
+  timing.paint_timing->first_contentful_paint = base::TimeDelta::FromSeconds(2);
+  tester()->SimulateTimingUpdate(timing, sub_frame_b);
+
+  timing.paint_timing->first_contentful_paint = base::TimeDelta::FromSeconds(3);
+  tester()->SimulateTimingUpdate(timing, sub_frame_c);
+
+  timing.paint_timing->first_contentful_paint = base::TimeDelta::FromSeconds(4);
+  tester()->SimulateTimingUpdate(timing, sub_frame_d);
+
+  tester()->histogram_tester().ExpectTotalCount(kSubframeFCPHistogram, 3);
+  tester()->histogram_tester().ExpectTimeBucketCount(
+      kSubframeFCPHistogram, base::TimeDelta::FromSeconds(1), 1);
+  tester()->histogram_tester().ExpectTimeBucketCount(
+      kSubframeFCPHistogram, base::TimeDelta::FromSeconds(2), 1);
+  tester()->histogram_tester().ExpectTimeBucketCount(
+      kSubframeFCPHistogram, base::TimeDelta::FromSeconds(3), 1);
+}
 
 TEST_F(ThirdPartyMetricsObserverTest, NoCookiesRead_NoneRecorded) {
   NavigateAndCommit(GURL("https://top.com"));

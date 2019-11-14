@@ -478,26 +478,6 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallFunction(
   return result;
 }
 
-v8::MaybeLocal<v8::Value> V8ScriptRunner::CallInternalFunction(
-    v8::Isolate* isolate,
-    v8::MicrotaskQueue* microtask_queue,
-    v8::Local<v8::Function> function,
-    v8::Local<v8::Value> receiver,
-    int argc,
-    v8::Local<v8::Value> args[]) {
-  TRACE_EVENT0("v8", "v8.callFunction");
-  RuntimeCallStatsScopedTracer rcs_scoped_tracer(isolate);
-  RUNTIME_CALL_TIMER_SCOPE(isolate, RuntimeCallStats::CounterId::kV8);
-
-  v8::Isolate::SafeForTerminationScope safe_for_termination(isolate);
-  v8::MicrotasksScope microtasks_scope(
-      isolate, microtask_queue, v8::MicrotasksScope::kDoNotRunMicrotasks);
-  v8::MaybeLocal<v8::Value> result =
-      function->Call(isolate->GetCurrentContext(), receiver, argc, args);
-  CHECK(!isolate->IsDead());
-  return result;
-}
-
 v8::MaybeLocal<v8::Value> V8ScriptRunner::EvaluateModule(
     v8::Isolate* isolate,
     ExecutionContext* execution_context,

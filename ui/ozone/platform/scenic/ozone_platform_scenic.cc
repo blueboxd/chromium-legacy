@@ -166,8 +166,8 @@ class OzonePlatformScenic
     }
   }
 
-  void AddInterfaces(service_manager::BinderRegistry* registry) override {
-    registry->AddInterface<mojom::ScenicGpuService>(
+  void AddInterfaces(mojo::BinderMap* binders) override {
+    binders->Add<mojom::ScenicGpuService>(
         scenic_gpu_service_->GetBinderCallback(),
         base::ThreadTaskRunnerHandle::Get());
   }

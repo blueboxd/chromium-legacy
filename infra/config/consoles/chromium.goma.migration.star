@@ -707,6 +707,36 @@ luci.console_view(
             short_name = 'tsan',
         ),
         luci.console_view_entry(
+            builder = 'ci/fuchsia-x64-dbg',
+            category = 'week15a|fuchsia',
+            short_name = 'x64dbg',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/linux-archive-dbg',
+            category = 'week15a|linux|archive',
+            short_name = 'dbg',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/linux-archive-rel',
+            category = 'week15a|linux|archive',
+            short_name = 'rel',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/linux-bfcache-debug',
+            category = 'week15a|linux',
+            short_name = 'bfc',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/linux-fieldtrial-rel',
+            category = 'week15a|linux',
+            short_name = 'field',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/linux-oor-cors-rel',
+            category = 'week15a|linux',
+            short_name = 'oorcors',
+        ),
+        luci.console_view_entry(
             builder = 'ci/Win ASan Release',
             category = 'win|week1|asan',
         ),

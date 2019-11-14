@@ -9,7 +9,8 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.view.View;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.chrome.browser.ui.widget.MaterialProgressBar;
 import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
 

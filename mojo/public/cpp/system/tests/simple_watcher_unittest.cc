@@ -27,7 +27,7 @@ void RunResultHandler(Handler f, MojoResult result) {
 
 template <typename Handler>
 SimpleWatcher::ReadyCallback OnReady(Handler f) {
-  return base::Bind(&RunResultHandler<Handler>, f);
+  return base::BindRepeating(&RunResultHandler<Handler>, f);
 }
 
 SimpleWatcher::ReadyCallback NotReached() {
@@ -229,7 +229,7 @@ TEST_F(SimpleWatcherTest, UnarmedCancel) {
   base::RunLoop loop;
   EXPECT_EQ(MOJO_RESULT_OK,
             b_watcher.Watch(b.get(), MOJO_HANDLE_SIGNAL_READABLE,
-                            base::Bind(
+                            base::BindRepeating(
                                 [](base::RunLoop* loop, MojoResult result) {
                                   EXPECT_EQ(result, MOJO_RESULT_CANCELLED);
                                   loop->Quit();
@@ -253,7 +253,7 @@ TEST_F(SimpleWatcherTest, ManualArming) {
   base::RunLoop loop;
   EXPECT_EQ(MOJO_RESULT_OK,
             b_watcher.Watch(b.get(), MOJO_HANDLE_SIGNAL_READABLE,
-                            base::Bind(
+                            base::BindRepeating(
                                 [](base::RunLoop* loop, MojoResult result) {
                                   EXPECT_EQ(result, MOJO_RESULT_OK);
                                   loop->Quit();
@@ -276,7 +276,7 @@ TEST_F(SimpleWatcherTest, ManualArmOrNotifyWhileSignaled) {
   EXPECT_EQ(MOJO_RESULT_OK,
             b_watcher1.Watch(
                 b.get(), MOJO_HANDLE_SIGNAL_READABLE,
-                base::Bind(
+                base::BindRepeating(
                     [](base::RunLoop* loop, bool* notified, MojoResult result) {
                       EXPECT_EQ(result, MOJO_RESULT_OK);
                       *notified = true;
@@ -290,7 +290,7 @@ TEST_F(SimpleWatcherTest, ManualArmOrNotifyWhileSignaled) {
   EXPECT_EQ(MOJO_RESULT_OK,
             b_watcher2.Watch(
                 b.get(), MOJO_HANDLE_SIGNAL_READABLE,
-                base::Bind(
+                base::BindRepeating(
                     [](base::RunLoop* loop, bool* notified, MojoResult result) {
                       EXPECT_EQ(result, MOJO_RESULT_OK);
                       *notified = true;

@@ -24,12 +24,29 @@ class ChromiumDepGraph {
     // It is provided here from manual lookups. Note that licenseUrl must provide textual content
     // rather than be an html page.
     final def FALLBACK_PROPERTIES = [
+        'com_github_kevinstern_software_and_algorithms': new PropertyOverride(
+            licenseUrl: "https://raw.githubusercontent.com/KevinStern/software-and-algorithms/master/LICENSE"),
+        'com_google_auto_auto_common': new PropertyOverride(
+            licenseUrl: "https://www.apache.org/licenses/LICENSE-2.0.txt",
+            licenseName: "Apache 2.0"),
+        'com_google_auto_service_auto_service': new PropertyOverride(
+            licenseUrl: "https://www.apache.org/licenses/LICENSE-2.0.txt",
+            licenseName: "Apache 2.0"),
+        'com_google_auto_service_auto_service_annotations': new PropertyOverride(
+            licenseUrl: "https://www.apache.org/licenses/LICENSE-2.0.txt",
+            licenseName: "Apache 2.0"),
+        'com_google_code_findbugs_jFormatString': new PropertyOverride(
+            licenseUrl: "https://raw.githubusercontent.com/spotbugs/spotbugs/master/spotbugs/licenses/LICENSE.txt"),
         'com_google_errorprone_error_prone_annotations': new PropertyOverride(
             url: "https://errorprone.info/",
             licenseUrl: "https://www.apache.org/licenses/LICENSE-2.0.txt",
             licenseName: "Apache 2.0"),
         'com_google_googlejavaformat_google_java_format': new PropertyOverride(
             url: "https://github.com/google/google-java-format",
+            licenseUrl: "https://www.apache.org/licenses/LICENSE-2.0.txt",
+            licenseName: "Apache 2.0"),
+        'com_google_guava_failureaccess': new PropertyOverride(
+            url: "https://github.com/google/guava",
             licenseUrl: "https://www.apache.org/licenses/LICENSE-2.0.txt",
             licenseName: "Apache 2.0"),
         'com_google_guava_guava': new PropertyOverride(
@@ -45,9 +62,6 @@ class ChromiumDepGraph {
             licenseUrl: "https://raw.githubusercontent.com/mojohaus/animal-sniffer/master/animal-sniffer-annotations/pom.xml",
             licensePath: "licenses/Codehaus_License-2009.txt",
             licenseName: "MIT"),
-        'org_checkerframework_checker_compat_qual': new PropertyOverride(
-            licenseUrl: "https://raw.githubusercontent.com/typetools/checker-framework/master/LICENSE.txt",
-            licenseName: "GPL v2 with the classpath exception"),
         'com_google_protobuf_protobuf_lite': new PropertyOverride(
             url: "https://github.com/protocolbuffers/protobuf/blob/master/java/lite.md",
             licenseUrl: "https://raw.githubusercontent.com/protocolbuffers/protobuf/master/LICENSE",
@@ -63,6 +77,20 @@ class ChromiumDepGraph {
         'net_sf_kxml_kxml2': new PropertyOverride(
             licenseUrl: "https://raw.githubusercontent.com/stefanhaustein/kxml2/master/license.txt",
             licenseName: "MIT"),
+        'org_checkerframework_checker_compat_qual': new PropertyOverride(
+            licenseUrl: "https://raw.githubusercontent.com/typetools/checker-framework/master/LICENSE.txt",
+            licenseName: "GPL v2 with the classpath exception"),
+        'org_checkerframework_checker_qual': new PropertyOverride(
+            licenseUrl: "https://raw.githubusercontent.com/typetools/checker-framework/master/LICENSE.txt",
+            licenseName: "GPL v2 with the classpath exception"),
+        'org_checkerframework_dataflow': new PropertyOverride(
+            licenseUrl: "https://raw.githubusercontent.com/typetools/checker-framework/master/LICENSE.txt",
+            licenseName: "GPL v2 with the classpath exception"),
+        'org_checkerframework_javacutil': new PropertyOverride(
+            licenseUrl: "https://raw.githubusercontent.com/typetools/checker-framework/master/LICENSE.txt",
+            licenseName: "GPL v2 with the classpath exception"),
+        'org_pcollections_pcollections': new PropertyOverride(
+            licenseUrl: "https://raw.githubusercontent.com/hrldcpr/pcollections/master/LICENSE")
     ]
 
     Project project

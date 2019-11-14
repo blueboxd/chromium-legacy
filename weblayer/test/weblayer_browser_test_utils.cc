@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "url/gurl.h"
+#include "weblayer/browser/tab_impl.h"
 #include "weblayer/public/navigation_controller.h"
 #include "weblayer/public/tab.h"
 #include "weblayer/shell/browser/shell.h"
@@ -51,6 +52,12 @@ base::Value ExecuteScript(Shell* shell,
           }));
   run_loop.Run();
   return final_result;
+}
+
+const base::string16& GetTitle(Shell* shell) {
+  TabImpl* tab_impl = static_cast<TabImpl*>(shell->tab());
+
+  return tab_impl->web_contents()->GetTitle();
 }
 
 }  // namespace weblayer

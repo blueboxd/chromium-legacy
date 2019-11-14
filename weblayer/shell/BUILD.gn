@@ -15,12 +15,6 @@ if (is_android) {
   import("//build/config/android/config.gni")
 }
 
-declare_args() {
-  weblayer_shell_product_name = "WebLayer Shell"
-  weblayer_shell_version = "99.77.34.5"
-  weblayer_shell_major_version = "99"
-}
-
 jumbo_static_library("weblayer_shell_lib") {
   testonly = true
   sources = [
@@ -38,11 +32,6 @@ jumbo_static_library("weblayer_shell_lib") {
 
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
-  ]
-
-  defines = [
-    "WEBLAYER_SHELL_VERSION=\"$weblayer_shell_version\"",
-    "WEBLAYER_SHELL_MAJOR_VERSION=\"$weblayer_shell_major_version\"",
   ]
 
   public_deps = [

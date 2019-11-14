@@ -164,6 +164,36 @@
             ]
         }
     ],
+    "AndroidClipboardSuggestionsRemoval": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OmniboxRemoveSuggestionsFromClipboard"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AndroidClipboardTextSuggestions": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OmniboxEnableClipboardProviderTextSuggestions"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidGooglePasswordManager": [
         {
             "platforms": [
@@ -1716,9 +1746,11 @@
             ],
             "experiments": [
                 {
-                    "name": "V1Enabled",
+                    "name": "V2EnabledWithCopyingAndLimited",
                     "enable_features": [
-                        "D3D11VideoDecoder"
+                        "D3D11VideoDecoder",
+                        "D3D11VideoDecoderCopyPictures",
+                        "D3D11VideoDecoderLimitTo11_0"
                     ]
                 }
             ]
@@ -3608,32 +3640,6 @@
                     "params": {
                         "version": "5_shortname-control"
                     }
-                }
-            ]
-        }
-    ],
-    "NTPRicherPickerAndColors": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "EnableRicherPicker",
-                    "enable_features": [
-                        "NtpCustomizationMenuV2"
-                    ]
-                },
-                {
-                    "name": "EnableRicherPickerWithColors",
-                    "enable_features": [
-                        "ChromeColors",
-                        "ChromeColorsCustomColorPicker",
-                        "NtpCustomizationMenuV2"
-                    ]
                 }
             ]
         }
@@ -6761,6 +6767,9 @@
                     "name": "UMA_Enabled",
                     "enable_features": [
                         "DemographicMetricsReporting"
+                    ],
+                    "disable_features": [
+                        "UkmReportNoisedUserBirthYearAndGender"
                     ]
                 }
             ]
@@ -7602,7 +7611,10 @@
             ],
             "experiments": [
                 {
-                    "name": "ZippedSystemLogsUpload"
+                    "name": "ZippedSystemLogsUpload",
+                    "enable_features": [
+                        "UploadZippedSystemLogs"
+                    ]
                 }
             ]
         }

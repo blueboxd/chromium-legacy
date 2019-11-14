@@ -54,8 +54,8 @@ AXPlatformNodeTextChildProviderWin* AXPlatformNodeTextChildProviderWin::Create(
 void AXPlatformNodeTextChildProviderWin::CreateIUnknown(
     AXPlatformNodeWin* owner,
     IUnknown** unknown) {
-  CComPtr<AXPlatformNodeTextChildProviderWin> text_child_provider(
-      Create(owner));
+  Microsoft::WRL::ComPtr<AXPlatformNodeTextChildProviderWin>
+      text_child_provider(Create(owner));
   if (text_child_provider)
     *unknown = text_child_provider.Detach();
 }
@@ -67,7 +67,7 @@ STDMETHODIMP AXPlatformNodeTextChildProviderWin::get_TextContainer(
 
   *result = nullptr;
 
-  AXPlatformNodeWin* container = GetTextContainer(owner_);
+  AXPlatformNodeWin* container = GetTextContainer(owner_.Get());
   if (container)
     container->QueryInterface(IID_PPV_ARGS(result));
 
@@ -81,7 +81,7 @@ STDMETHODIMP AXPlatformNodeTextChildProviderWin::get_TextRange(
 
   *result = nullptr;
 
-  AXPlatformNodeWin* container = GetTextContainer(owner_);
+  AXPlatformNodeWin* container = GetTextContainer(owner_.Get());
   if (container && container->IsDescendant(owner())) {
     *result =
         AXPlatformNodeTextProviderWin::GetRangeFromChild(container, owner());
@@ -103,7 +103,7 @@ AXPlatformNodeWin* AXPlatformNodeTextChildProviderWin::GetTextContainer(
 }
 
 AXPlatformNodeWin* AXPlatformNodeTextChildProviderWin::owner() const {
-  return owner_;
+  return owner_.Get();
 }
 
 }  // namespace ui

@@ -10,9 +10,11 @@
 #include "base/numerics/safe_math.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "content/browser/web_package/bundled_exchanges_blob_data_source.h"
 #include "content/browser/web_package/bundled_exchanges_source.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "mojo/public/cpp/system/file_data_source.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -135,7 +137,25 @@ class BundledExchangesReader::SharedFileDataSource final
 BundledExchangesReader::BundledExchangesReader(
     std::unique_ptr<BundledExchangesSource> source)
     : source_(std::move(source)),
-      file_(base::MakeRefCounted<SharedFile>(source_->Clone())) {}
+      file_(base::MakeRefCounted<SharedFile>(source_->Clone())) {
+  DCHECK(source_->is_trusted_file() || source_->is_file());
+}
+
+BundledExchangesReader::BundledExchangesReader(
+    std::unique_ptr<BundledExchangesSource> source,
+    int64_t content_length,
+    mojo::ScopedDataPipeConsumerHandle outer_response_body,
+    network::mojom::URLLoaderClientEndpointsPtr endpoints,
+    BrowserContext::BlobContextGetter blob_context_getter)
+    : source_(std::move(source)) {
+  DCHECK(source_->is_network());
+  mojo::PendingRemote<data_decoder::mojom::BundleDataSource> pending_remote;
+  blob_data_source_ = std::make_unique<BundledExchangesBlobDataSource>(
+      content_length, std::move(outer_response_body), std::move(endpoints),
+      std::move(blob_context_getter),
+      pending_remote.InitWithNewPipeAndPassReceiver());
+  parser_.OpenDataSource(std::move(pending_remote));
+}
 
 BundledExchangesReader::~BundledExchangesReader() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -144,10 +164,17 @@ BundledExchangesReader::~BundledExchangesReader() {
 void BundledExchangesReader::ReadMetadata(MetadataCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!metadata_ready_);
-
-  file_->DuplicateFile(
-      base::BindOnce(&BundledExchangesReader::ReadMetadataInternal, this,
-                     std::move(callback)));
+  if (!blob_data_source_) {
+    DCHECK(source_->is_trusted_file() || source_->is_file());
+    file_->DuplicateFile(
+        base::BindOnce(&BundledExchangesReader::ReadMetadataInternal, this,
+                       std::move(callback)));
+    return;
+  }
+  DCHECK(source_->is_network());
+  parser_.ParseMetadata(
+      base::BindOnce(&BundledExchangesReader::OnMetadataParsed,
+                     base::Unretained(this), std::move(callback)));
 }
 
 void BundledExchangesReader::ReadResponse(const GURL& url,
@@ -185,19 +212,28 @@ void BundledExchangesReader::ReadResponseBody(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(metadata_ready_);
 
-  auto data_producer =
-      std::make_unique<mojo::DataPipeProducer>(std::move(producer_handle));
-  mojo::DataPipeProducer* raw_producer = data_producer.get();
-  raw_producer->Write(
-      std::make_unique<SharedFileDataSource>(file_, response->payload_offset,
-                                             response->payload_length),
-      base::BindOnce(
-          [](std::unique_ptr<mojo::DataPipeProducer> producer,
-             BodyCompletionCallback callback, MojoResult result) {
-            std::move(callback).Run(
-                result == MOJO_RESULT_OK ? net::OK : net::ERR_UNEXPECTED);
-          },
-          std::move(data_producer), std::move(callback)));
+  if (!blob_data_source_) {
+    DCHECK(source_->is_trusted_file() || source_->is_file());
+    auto data_producer =
+        std::make_unique<mojo::DataPipeProducer>(std::move(producer_handle));
+    mojo::DataPipeProducer* raw_producer = data_producer.get();
+    raw_producer->Write(
+        std::make_unique<SharedFileDataSource>(file_, response->payload_offset,
+                                               response->payload_length),
+        base::BindOnce(
+            [](std::unique_ptr<mojo::DataPipeProducer> producer,
+               BodyCompletionCallback callback, MojoResult result) {
+              std::move(callback).Run(
+                  result == MOJO_RESULT_OK ? net::OK : net::ERR_UNEXPECTED);
+            },
+            std::move(data_producer), std::move(callback)));
+    return;
+  }
+
+  DCHECK(source_->is_network());
+  blob_data_source_->ReadToDataPipe(
+      response->payload_offset, response->payload_length,
+      std::move(producer_handle), std::move(callback));
 }
 
 bool BundledExchangesReader::HasEntry(const GURL& url) const {
@@ -228,6 +264,7 @@ void BundledExchangesReader::SetBundledExchangesParserFactoryForTesting(
 
 void BundledExchangesReader::ReadMetadataInternal(MetadataCallback callback,
                                                   base::File file) {
+  DCHECK(source_->is_trusted_file() || source_->is_file());
   base::File::Error error = parser_.OpenFile(std::move(file));
   if (base::File::FILE_OK != error) {
     base::PostTask(

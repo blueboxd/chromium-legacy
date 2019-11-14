@@ -84,6 +84,8 @@ void RequestSender::SendInternal() {
     url = BuildUpdateUrl(url, request_query_string);
   }
 
+  DVLOG(2) << "Sending Omaha request: " << request_body_;
+
   network_fetcher_ = config_->GetNetworkFetcherFactory()->Create();
   if (!network_fetcher_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(

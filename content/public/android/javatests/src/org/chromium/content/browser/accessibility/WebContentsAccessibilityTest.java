@@ -15,6 +15,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.test.filters.MediumTest;
 import android.text.InputType;
+import android.text.Spannable;
+import android.text.style.SuggestionSpan;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
@@ -484,7 +486,6 @@ public class WebContentsAccessibilityTest {
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-
     public void testEditTextFieldValidNoErrorMessage() {
         final String data = "<input type='text'><br>\n";
         mActivityTestRule.launchContentShellWithUrl(UrlUtils.encodeHtmlDataUri(data));
@@ -497,5 +498,49 @@ public class WebContentsAccessibilityTest {
         Assert.assertNotEquals(textNode, null);
         Assert.assertEquals(textNode.isContentInvalid(), false);
         Assert.assertEquals(textNode.getError(), "");
+    }
+
+    /**
+     * Test spelling error is encoded as a Spannable.
+     **/
+    @Test
+    @MediumTest
+    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public void testSpellingError() {
+        // Load a web page containing a text field with one misspelling.
+        // Note that for content_shell, no spelling suggestions are enabled
+        // by default.
+        final String data = "<input type='text' value='one wordd has an error'>";
+        mActivityTestRule.launchContentShellWithUrl(UrlUtils.encodeHtmlDataUri(data));
+        mActivityTestRule.waitForActiveShellToBeDoneLoading();
+        AccessibilityNodeProvider provider = enableAccessibilityAndWaitForNodeProvider();
+        int textNodeVirtualViewId = waitForNodeWithClassName(provider, "android.widget.EditText");
+
+        // Call a test API to explicitly add a spelling error in the same format as
+        // would be generated if spelling correction was enabled.
+        final WebContentsAccessibilityImpl wcax = mActivityTestRule.getWebContentsAccessibility();
+        wcax.addSpellingErrorForTesting(textNodeVirtualViewId, 4, 9);
+
+        // Now get that AccessibilityNodeInfo and retrieve its text.
+        AccessibilityNodeInfo textNode =
+                provider.createAccessibilityNodeInfo(textNodeVirtualViewId);
+        Assert.assertNotEquals(textNode, null);
+        CharSequence text = textNode.getText();
+        Assert.assertEquals(text.toString(), "one wordd has an error");
+
+        // Assert that the text has a SuggestionSpan surrounding the proper word.
+        Assert.assertTrue(text instanceof Spannable);
+        Spannable spannable = (Spannable) text;
+        Object spans[] = spannable.getSpans(0, text.length(), Object.class);
+        boolean foundSuggestionSpan = false;
+        for (Object span : spans) {
+            if (span instanceof SuggestionSpan) {
+                Assert.assertEquals(4, spannable.getSpanStart(span));
+                Assert.assertEquals(9, spannable.getSpanEnd(span));
+                foundSuggestionSpan = true;
+            }
+        }
+        Assert.assertTrue(foundSuggestionSpan);
     }
 }

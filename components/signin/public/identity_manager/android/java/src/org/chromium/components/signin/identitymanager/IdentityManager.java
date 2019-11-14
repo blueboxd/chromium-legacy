@@ -8,8 +8,9 @@ import android.accounts.Account;
 import android.support.annotation.MainThread;
 import android.support.annotation.Nullable;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ObserverList;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.components.signin.AccountManagerFacade;

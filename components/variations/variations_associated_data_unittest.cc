@@ -36,7 +36,7 @@ scoped_refptr<base::FieldTrial> CreateFieldTrial(
 
 class VariationsAssociatedDataTest : public ::testing::Test {
  public:
-  VariationsAssociatedDataTest() : field_trial_list_(nullptr) {}
+  VariationsAssociatedDataTest() {}
 
   ~VariationsAssociatedDataTest() override {
     // Ensure that the maps are cleared between tests, since they are stored as
@@ -45,8 +45,6 @@ class VariationsAssociatedDataTest : public ::testing::Test {
   }
 
  private:
-  base::FieldTrialList field_trial_list_;
-
   DISALLOW_COPY_AND_ASSIGN(VariationsAssociatedDataTest);
 };
 

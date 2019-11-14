@@ -29,6 +29,8 @@ class ArcDataRemover;
 class ArcFastAppReinstallStarter;
 class ArcPaiStarter;
 class ArcTermsOfServiceNegotiator;
+class ArcUiAvailabilityReporter;
+
 enum class ProvisioningResult : int;
 
 // This class is responsible for handing stages of ARC life-cycle.
@@ -375,6 +377,7 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   std::unique_ptr<ScopedOptInFlowTracker> scoped_opt_in_tracker_;
   std::unique_ptr<ArcPaiStarter> pai_starter_;
   std::unique_ptr<ArcFastAppReinstallStarter> fast_app_reinstall_starter_;
+  std::unique_ptr<ArcUiAvailabilityReporter> arc_ui_availability_reporter_;
 
   // The time when the sign in process started.
   base::TimeTicks sign_in_start_time_;

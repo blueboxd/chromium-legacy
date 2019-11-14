@@ -267,11 +267,8 @@ ImageBitmap* OffscreenCanvasRenderingContext2D::TransferToImageBitmap(
   // "Transfer" means no retained buffer. Matrix transformations need to be
   // preserved though.
   Host()->DiscardResourceProvider();
-  if (is_deferral_enabled_) {
-    recorder_->getRecordingCanvas()->restore();
-    recorder_->getRecordingCanvas()->save();
-    Host()->SetNeedsMatrixClipRestore();
-  }
+  if (is_deferral_enabled_)
+    RestoreMatrixClipStack(recorder_->getRecordingCanvas());
 
   return ImageBitmap::Create(std::move(image));
 }

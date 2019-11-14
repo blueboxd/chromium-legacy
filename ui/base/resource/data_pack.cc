@@ -21,6 +21,7 @@
 #include "base/synchronization/lock.h"
 #include "base/sys_byteorder.h"
 #include "build/build_config.h"
+#include "net/filter/gzip_header.h"
 #include "third_party/zlib/google/compression_utils.h"
 
 // For details of the file layout, see
@@ -156,6 +157,14 @@ class ScopedFileWriter {
   DISALLOW_COPY_AND_ASSIGN(ScopedFileWriter);
 };
 
+bool MmapHasGzipHeader(const base::MemoryMappedFile* mmap) {
+  net::GZipHeader header;
+  const char* header_end = nullptr;
+  net::GZipHeader::Status header_status = header.ReadMore(
+      reinterpret_cast<const char*>(mmap->data()), mmap->length(), &header_end);
+  return header_status == net::GZipHeader::COMPLETE_HEADER;
+}
+
 }  // namespace
 
 namespace ui {
@@ -270,7 +279,7 @@ bool DataPack::LoadFromPath(const base::FilePath& path) {
     LogDataPackError(INIT_FAILED);
     return false;
   }
-  if (path.FinalExtension() == FILE_PATH_LITERAL(".gz")) {
+  if (MmapHasGzipHeader(mmap.get())) {
     base::StringPiece compressed(reinterpret_cast<char*>(mmap->data()),
                                  mmap->length());
     std::string data;

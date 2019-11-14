@@ -7,4 +7,7 @@
 #include "chrome/browser/media/webrtc/desktop_media_picker.h"
 
 DesktopMediaPicker::Params::Params() = default;
+DesktopMediaPicker::Params::Params(const Params&) = default;
+DesktopMediaPicker::Params& DesktopMediaPicker::Params::operator=(
+    const Params&) = default;
 DesktopMediaPicker::Params::~Params() = default;

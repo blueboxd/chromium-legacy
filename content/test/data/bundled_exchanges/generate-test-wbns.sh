@@ -45,3 +45,21 @@ xxd -p broken_bundle_base.wbn |
   tr -d '\n' |
   sed 's/3a737461747573/3a787878787878/3' |
   xxd -r -p > broken_bundle_broken_script_entry.wbn
+
+
+# Keep consistent with BundledExchangesNetworkBrowserTest::kNetworkTestPort.
+NETWORK_TEST_PORT=39600
+
+gen-bundle \
+  -version b1 \
+  -baseURL http://localhost:$NETWORK_TEST_PORT/bundled_exchanges/network/ \
+  -primaryURL http://localhost:$NETWORK_TEST_PORT/bundled_exchanges/network/ \
+  -dir bundled_exchanges_browsertest/ \
+  -o bundled_exchanges_browsertest_network.wbn
+
+gen-bundle \
+  -version b1 \
+  -baseURL http://localhost:$NETWORK_TEST_PORT/bundled_exchanges/network/ \
+  -primaryURL http://localhost:$NETWORK_TEST_PORT/bundled_exchanges/network/not_found.html \
+  -dir bundled_exchanges_browsertest/ \
+  -o bundled_exchanges_browsertest_network_primary_url_not_found.wbn

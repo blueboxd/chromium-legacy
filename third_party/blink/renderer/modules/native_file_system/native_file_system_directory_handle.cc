@@ -12,6 +12,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/modules/native_file_system/file_system_get_directory_options.h"
 #include "third_party/blink/renderer/modules/native_file_system/file_system_get_file_options.h"
@@ -19,6 +20,7 @@
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_directory_iterator.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_error.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_file_handle.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -158,6 +160,23 @@ ScriptPromise NativeFileSystemDirectoryHandle::removeEntry(
 ScriptPromise NativeFileSystemDirectoryHandle::getSystemDirectory(
     ScriptState* script_state,
     const GetSystemDirectoryOptions* options) {
+  ExecutionContext* context = ExecutionContext::From(script_state);
+  if (!context->GetSecurityOrigin()->CanAccessNativeFileSystem()) {
+    if (context->GetSecurityContext().IsSandboxed(WebSandboxFlags::kOrigin)) {
+      return ScriptPromise::RejectWithDOMException(
+          script_state,
+          MakeGarbageCollected<DOMException>(
+              DOMExceptionCode::kSecurityError,
+              "System directory access is denied because the context is "
+              "sandboxed and lacks the 'allow-same-origin' flag."));
+    } else {
+      return ScriptPromise::RejectWithDOMException(
+          script_state, MakeGarbageCollected<DOMException>(
+                            DOMExceptionCode::kSecurityError,
+                            "System directory access is denied."));
+    }
+  }
+
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise result = resolver->Promise();
 
@@ -166,7 +185,7 @@ ScriptPromise NativeFileSystemDirectoryHandle::getSystemDirectory(
   // for each operation, and can avoid code duplication between here and other
   // uses.
   mojo::Remote<mojom::blink::NativeFileSystemManager> manager;
-  auto* provider = ExecutionContext::From(script_state)->GetInterfaceProvider();
+  auto* provider = context->GetInterfaceProvider();
   if (!provider) {
     resolver->Reject(file_error::CreateDOMException(
         base::File::FILE_ERROR_INVALID_OPERATION));

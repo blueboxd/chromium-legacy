@@ -14,8 +14,9 @@ import android.view.Gravity;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.ImageView;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.VisibleForTesting;
 
 /**
  * An alternative progress bar implemented using ClipDrawable for simplicity and performance.

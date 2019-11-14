@@ -169,6 +169,28 @@ public final class WebLayer {
         return Profile.of(iprofile);
     }
 
+    /**
+     * To enable or disable DevTools remote debugging.
+     */
+    public void setRemoteDebuggingEnabled(boolean enabled) {
+        try {
+            mImpl.setRemoteDebuggingEnabled(enabled);
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /**
+     * @return Whether or not DevTools remote debugging is enabled.
+     */
+    public boolean isRemoteDebuggingEnabled() {
+        try {
+            return mImpl.isRemoteDebuggingEnabled();
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
     @NonNull
     public static Fragment createBrowserFragment(@Nullable String profilePath) {
         ThreadCheck.ensureOnUiThread();

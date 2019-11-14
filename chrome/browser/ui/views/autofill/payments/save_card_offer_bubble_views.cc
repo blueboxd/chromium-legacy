@@ -55,7 +55,9 @@ SaveCardOfferBubbleViews::SaveCardOfferBubbleViews(
     views::View* anchor_view,
     content::WebContents* web_contents,
     SaveCardBubbleController* controller)
-    : SaveCardBubbleViews(anchor_view, web_contents, controller) {}
+    : SaveCardBubbleViews(anchor_view, web_contents, controller) {
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
+}
 
 void SaveCardOfferBubbleViews::Init() {
   SaveCardBubbleViews::Init();
@@ -87,10 +89,6 @@ bool SaveCardOfferBubbleViews::Accept() {
                               : base::string16()});
   }
   return true;
-}
-
-int SaveCardOfferBubbleViews::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
 }
 
 bool SaveCardOfferBubbleViews::IsDialogButtonEnabled(

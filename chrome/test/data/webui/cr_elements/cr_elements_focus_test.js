@@ -201,3 +201,24 @@ CrElementsTabsTest.prototype = {
 TEST_F('CrElementsTabsTest', 'All', function() {
   mocha.run();
 });
+
+// eslint-disable-next-line no-var
+var IronListFocusTest = class extends CrElementsFocusTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://resources/polymer/v1_0/iron-list/iron-list.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return [
+      ...PolymerTest.prototype.extraLibraries,
+      '../test_util.js',
+      'iron_list_focus_test.js',
+    ];
+  }
+};
+
+TEST_F('IronListFocusTest', 'All', function() {
+  mocha.run();
+});

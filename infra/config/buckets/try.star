@@ -258,8 +258,6 @@ android_builder(
 
 android_builder(
     name = 'android-pie-arm64-rel',
-    goma_backend = goma.backend.RBE_PROD,
-    goma_jobs = goma.jobs.J300,
     tryjob = tryjob(
         experiment_percentage = 50,
     ),
@@ -392,6 +390,7 @@ android_builder(
 
 android_builder(
     name = 'linux_android_dbg_ng',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
@@ -436,18 +435,22 @@ angle_builder(
 
 angle_builder(
     name = 'fuchsia-angle-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 angle_builder(
     name = 'linux-angle-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 angle_builder(
     name = 'linux_angle_deqp_rel_ng',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 angle_builder(
     name = 'linux_angle_ozone_rel_ng',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 angle_builder(
@@ -487,6 +490,7 @@ def blink_builder(*, name, **kwargs):
 
 blink_builder(
     name = 'linux-blink-rel',
+    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(
         location_regexp = [
             '.+/[+]/cc/.+',
@@ -623,6 +627,7 @@ def dawn_builder(*, name, **kwargs):
 
 dawn_builder(
     name = 'dawn-linux-x64-deps-rel',
+    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(
         location_regexp = [
             '.+/[+]/gpu/.+',
@@ -848,6 +853,7 @@ gpu_linux_builder(
 
 gpu_linux_builder(
     name = 'gpu-fyi-try-linux-intel-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_linux_builder(
@@ -890,6 +896,7 @@ gpu_linux_builder(
 
 gpu_linux_builder(
     name = 'linux_optional_gpu_tests_rel',
+    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(
         location_regexp = [
             '.+/[+]/chrome/browser/vr/.+',
@@ -1174,6 +1181,7 @@ linux_builder(
 
 linux_builder(
     name = 'fuchsia-compile-x64-dbg',
+    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(
         experiment_percentage = 50,
     ),
@@ -1265,6 +1273,7 @@ linux_builder(
 linux_builder(
     name = 'linux-libfuzzer-asan-rel',
     executable = luci.recipe(name = 'chromium_libfuzzer_trybot'),
+    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(),
 )
 
@@ -1359,6 +1368,7 @@ linux_builder(
             path = 'linux_debug',
         ),
     ],
+    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
     tryjob = tryjob(),
 )
@@ -1404,6 +1414,7 @@ linux_builder(
 
 linux_builder(
     name = 'linux_layout_tests_composite_after_paint',
+    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(
         location_regexp = [
             '.+/[+]/third_party/blink/renderer/core/paint/.+',
@@ -1417,6 +1428,7 @@ linux_builder(
 
 linux_builder(
     name = 'linux_layout_tests_layout_ng_disabled',
+    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(
         location_regexp = [
             '.+/[+]/third_party/blink/renderer/core/editing/.+',

@@ -92,6 +92,15 @@ class UpdateDataProviderTest : public ExtensionsTest {
                     bool enabled,
                     int disable_reasons,
                     Manifest::Location location) {
+    AddExtension(extension_id, version, "", enabled, disable_reasons, location);
+  }
+
+  void AddExtension(const std::string& extension_id,
+                    const std::string& version,
+                    const std::string& fingerprint,
+                    bool enabled,
+                    int disable_reasons,
+                    Manifest::Location location) {
     base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
     ASSERT_TRUE(base::PathExists(temp_dir.GetPath()));
@@ -104,11 +113,13 @@ class UpdateDataProviderTest : public ExtensionsTest {
     ASSERT_TRUE(AddFileToDirectory(temp_dir.GetPath(), bar_html, "world"));
 
     ExtensionBuilder builder;
-    builder.SetManifest(DictionaryBuilder()
-                            .Set("name", "My First Extension")
-                            .Set("version", version)
-                            .Set("manifest_version", 2)
-                            .Build());
+    DictionaryBuilder manifest_builder;
+    manifest_builder.Set("name", "My First Extension")
+        .Set("version", version)
+        .Set("manifest_version", 2);
+    if (!fingerprint.empty())
+      manifest_builder.Set("differential_fingerprint", fingerprint);
+    builder.SetManifest(manifest_builder.Build());
     builder.SetID(extension_id);
     builder.SetPath(temp_dir.GetPath());
     builder.SetLocation(location);
@@ -142,6 +153,32 @@ TEST_F(UpdateDataProviderTest, GetData_NoDataAdded) {
   const auto data = data_provider->GetData(
       false /*install_immediately*/, ExtensionUpdateDataMap(), {kExtensionId1});
   EXPECT_EQ(0UL, data.size());
+}
+
+TEST_F(UpdateDataProviderTest, GetData_Fingerprint) {
+  scoped_refptr<UpdateDataProvider> data_provider =
+      base::MakeRefCounted<UpdateDataProvider>(browser_context());
+
+  const std::string version = "0.1.2.3";
+  const std::string fingerprint = "1.0123456789abcdef";
+  AddExtension(kExtensionId1, version, true,
+               disable_reason::DisableReason::DISABLE_NONE, Manifest::INTERNAL);
+  AddExtension(kExtensionId2, version, fingerprint, true,
+               disable_reason::DisableReason::DISABLE_NONE, Manifest::INTERNAL);
+
+  ExtensionUpdateDataMap update_data;
+  update_data[kExtensionId1] = {};
+  update_data[kExtensionId2] = {};
+
+  const auto data =
+      data_provider->GetData(false /*install_immediately*/, update_data,
+                             {kExtensionId1, kExtensionId2});
+
+  ASSERT_EQ(2UL, data.size());
+  EXPECT_EQ(version, data[0]->version.GetString());
+  EXPECT_EQ(version, data[1]->version.GetString());
+  EXPECT_EQ("2." + version, data[0]->fingerprint);
+  EXPECT_EQ(fingerprint, data[1]->fingerprint);
 }
 
 TEST_F(UpdateDataProviderTest, GetData_EnabledExtension) {

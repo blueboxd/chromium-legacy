@@ -37,7 +37,6 @@ class LocalCardMigrationBubbleViews : public LocalCardMigrationBubble,
   bool Accept() override;
   bool Cancel() override;
   bool Close() override;
-  int GetDialogButtons() const override;
   gfx::Size CalculatePreferredSize() const override;
   void AddedToWidget() override;
   bool ShouldShowCloseButton() const override;

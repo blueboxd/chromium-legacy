@@ -15,7 +15,6 @@ class SharedURLLoaderFactoryInfo;
 
 namespace syncer {
 
-class CancelationSignal;
 class HttpPostProviderFactory;
 
 class NetworkResources {
@@ -25,8 +24,7 @@ class NetworkResources {
   virtual std::unique_ptr<HttpPostProviderFactory> GetHttpPostProviderFactory(
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           url_loader_factory_info,
-      const NetworkTimeUpdateCallback& network_time_update_callback,
-      CancelationSignal* cancelation_signal) = 0;
+      const NetworkTimeUpdateCallback& network_time_update_callback) = 0;
 };
 
 }  // namespace syncer

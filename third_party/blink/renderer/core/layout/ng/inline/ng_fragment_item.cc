@@ -186,6 +186,10 @@ NGTextFragmentPaintInfo NGFragmentItem::TextPaintInfo(
     return {items.Text(UsesFirstLineStyle()), text_.start_offset,
             text_.end_offset, text_.shape_result.get()};
   }
+  if (Type() == kGeneratedText) {
+    return {generated_text_.text, 0, generated_text_.text.length(),
+            generated_text_.shape_result.get()};
+  }
   NOTREACHED();
   return {};
 }

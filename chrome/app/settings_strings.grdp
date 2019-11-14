@@ -2122,6 +2122,9 @@
     <message name="IDS_SETTINGS_INTERNET_NETWORK_NAMESERVERS_GOOGLE" desc="Settings > Internet > Network details: Label for setting Google name servers.">
       Google name servers
     </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_NAMESERVERS_INPUT_ACCESSIBILITY_LABEL" desc="Settings > Internet > Network details: Accessibility only label for custom nameserver input box.">
+      Custom nameserver <ph name="INPUT_INDEX">$1<ex>1</ex></ph>
+    </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_WPAD" desc="Settings > Internet > Network details: Web Proxy Auto Discovery (WPAD) label.">
       Web Proxy Auto Discovery URL:
     </message>
@@ -2215,6 +2218,9 @@
     <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_USE_SAME" desc="Settings > Internet > Network details: Label for checkbox indicating that a network proxy uses the same value for all protocols.">
       Use the same proxy for all protocols
     </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_EXCEPTION_INPUT_ACCESSIBILITY_LABEL" desc="Settings > Internet > Accessibility only label for input field to add proxy exceptions.">
+      Host or domain to exclude
+    </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_EXCEPTION_LIST" desc="Settings > Internet > Network details: Label for list of network proxy exceptions.">
       Do not use the proxy settings for these hosts and domains:
     </message>
@@ -2233,6 +2239,9 @@
     <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_PROXY" desc="Settings > Internet > Network details: Label for all proxies.">
       Proxy
     </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_HOST_INPUT_ACCESSIBILITY_LABEL" desc="Settings > Internet > Network details: Accessibility only label for proxy host input field.">
+      <ph name="INPUT_LABEL">$1<ex>HTTP Proxy</ex></ph> - Host
+    </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_HTTP_PROXY" desc="Settings > Internet > Network details: Label for HTTP proxy.">
       HTTP Proxy
     </message>
@@ -2247,6 +2256,9 @@
     </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_PORT" desc="Settings > Internet > Network details: Label for proxy port input.">
       Port
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_PORT_INPUT_ACCESSIBILITY_LABEL" desc="Settings > Internet > Network details: Accessibility only label for proxy port number input field.">
+      <ph name="INPUT_LABEL">$1<ex>HTTP Proxy</ex></ph> - Port
     </message>
 
     <!-- Settings > Internet > SIM lock/unlock dialog -->
@@ -4354,7 +4366,7 @@
       <ph name="USER_NAME">$1<ex>John Smith</ex></ph> (owner)
     </message>
     <message name="IDS_SETTINGS_USERS_REMOVE_USER_TOOLTIP" desc="Tooltip for the button that removes a user from the list of restricted sign in users.">
-      Remove
+      Remove <ph name="USER_NAME">$1<ex>John Smith</ex></ph>
     </message>
     <message name="IDS_SETTINGS_USERS_ADD_USERS" desc="Label the dialog for adding users.">
       Add user

@@ -406,7 +406,7 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
   }
 
   if (password_recovery_enabled) {
-    ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmEscrowServiceServerUrl,
+    ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEscrowServiceServerUrl,
                                             L"https://escrow.com"));
   }
 
@@ -471,8 +471,7 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
       is_last_login_stale ||
       (internet_available &&
        ((mdm_url_set && !mdm_enrolled) || !token_handle_valid ||
-        (mdm_url_set && password_recovery_enabled &&
-         !contains_stored_password)));
+        (password_recovery_enabled && !contains_stored_password)));
 
   bool should_user_be_blocked =
       should_user_locking_be_enabled && is_get_auth_enforced;
@@ -558,7 +557,7 @@ TEST_F(AssociatedUserValidatorTest, InvalidTokenHandle_MissingPasswordLsaData) {
                       L"gaia-id", base::string16(), &sid));
   ASSERT_EQ(S_OK, SetUserProperty(OLE2W(sid), kUserTokenHandle, L"th"));
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmEscrowServiceServerUrl,
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEscrowServiceServerUrl,
                                           L"https://escrow.com"));
   GoogleMdmEnrolledStatusForTesting force_success(true);
 
@@ -587,7 +586,7 @@ TEST_F(AssociatedUserValidatorTest, ValidTokenHandle_PresentPasswordLsaData) {
                       L"gaia-id", base::string16(), &sid));
   ASSERT_EQ(S_OK, SetUserProperty(OLE2W(sid), kUserTokenHandle, L"th"));
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmEscrowServiceServerUrl,
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEscrowServiceServerUrl,
                                           L"https://escrow.com"));
   GoogleMdmEnrolledStatusForTesting force_success(true);
 

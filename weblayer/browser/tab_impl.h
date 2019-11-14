@@ -121,6 +121,7 @@ class TabImpl : public Tab,
                       const gfx::Rect& initial_rect,
                       bool user_gesture,
                       bool* was_blocked) override;
+  void CloseContents(content::WebContents* source) override;
 
   // content::WebContentsObserver:
   void DidFinishNavigation(

@@ -90,11 +90,9 @@ std::string ConvertFromBase16String(const std::string& base_16) {
   DCHECK_EQ(base_16.size() % 2, 0u) << "Must be a multiple of 2";
   compressed.reserve(base_16.size() / 2);
 
-  std::vector<uint8_t> v;
-  if (!base::HexStringToBytes(base_16, &v)) {
+  if (!base::HexStringToString(base_16, &compressed)) {
     NOTREACHED();
   }
-  compressed.assign(reinterpret_cast<const char*>(&v[0]), v.size());
   return compressed;
 }
 

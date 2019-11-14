@@ -7,14 +7,14 @@
 
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
-@protocol InfobarModalDelegate;
+@protocol InfobarSaveCardModalDelegate;
 
 // InfobarSaveCardTableViewController represents the content for the Save Card
 // InfobarModal.
 @interface InfobarSaveCardTableViewController : ChromeTableViewController
 
-- (instancetype)initWithModalDelegate:(id<InfobarModalDelegate>)modalDelegate
-    NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithModalDelegate:
+    (id<InfobarSaveCardModalDelegate>)modalDelegate NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithTableViewStyle:(UITableViewStyle)style
                            appBarStyle:
                                (ChromeTableViewControllerStyle)appBarStyle
@@ -34,6 +34,9 @@
 
 // Card Expiration Year to be displayed.
 @property(nonatomic, copy) NSString* expirationYear;
+
+// YES if the Card being displayed has been saved.
+@property(nonatomic, assign) BOOL currentCardSaved;
 
 @end
 

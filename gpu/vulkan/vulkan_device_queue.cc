@@ -8,10 +8,10 @@
 #include <utility>
 #include <vector>
 
+#include "gpu/config/vulkan_info.h"
 #include "gpu/vulkan/vulkan_command_pool.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
-#include "gpu/vulkan/vulkan_info.h"
 
 namespace gpu {
 

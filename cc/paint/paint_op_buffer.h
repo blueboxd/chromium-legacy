@@ -937,6 +937,12 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
   void Playback(SkCanvas* canvas) const;
   void Playback(SkCanvas* canvas, const PlaybackParams& params) const;
 
+  // Deserialize PaintOps from |input|. The original content will be
+  // overwritten.
+  bool Deserialize(const volatile void* input,
+                   size_t input_size,
+                   const PaintOp::DeserializeOptions& options);
+
   static sk_sp<PaintOpBuffer> MakeFromMemory(
       const volatile void* input,
       size_t input_size,
@@ -949,6 +955,8 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
   size_t bytes_used() const {
     return sizeof(*this) + reserved_ + subrecord_bytes_used_;
   }
+  // Returns the number of bytes used by paint ops.
+  size_t paint_ops_size() const { return used_ + subrecord_bytes_used_; }
   // Returns the total number of ops including sub-records.
   size_t total_op_count() const { return op_count_ + subrecord_op_count_; }
 

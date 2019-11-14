@@ -183,6 +183,16 @@ interface EmbeddedSearch {
 
   // Called when a user dismisses a promo.
   BlocklistPromo(string promo_id);
+
+  // Handles navigation to a link that points to a chrome: url by calling the
+  // browser to do the navigation.
+  OpenAutocompleteMatch(uint8 line,
+                        url.mojom.Url url,
+                        double button,
+                        bool alt_key,
+                        bool ctrl_key,
+                        bool meta_key,
+                        bool shift_key);
 };
 
 [Native]

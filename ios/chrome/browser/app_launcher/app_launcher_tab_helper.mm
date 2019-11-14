@@ -11,7 +11,6 @@
 #import "base/strings/sys_string_conversions.h"
 #include "components/reading_list/core/reading_list_model.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_abuse_detector.h"
-#include "ios/chrome/browser/app_launcher/app_launcher_flags.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper_delegate.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/chrome_url_util.h"
@@ -222,7 +221,6 @@ bool AppLauncherTabHelper::ShouldAllowRequest(
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
 
-  if (base::FeatureList::IsEnabled(kAppLauncherRefresh)) {
     if (!is_link_transition && original_pending_url.is_valid()) {
       // At this stage the navigation will be canceled in all cases. If this
       // was a redirection, the |source_url| may not have been reported to
@@ -236,24 +234,6 @@ bool AppLauncherTabHelper::ShouldAllowRequest(
       RequestToLaunchApp(request_url, last_committed_url, is_link_transition);
     }
     return false;
-  }
-
-  if (RequestToLaunchApp(request_url, last_committed_url, is_link_transition)) {
-    // Clears pending navigation history after successfully launching the
-    // external app.
-    web_state_->GetNavigationManager()->DiscardNonCommittedItems();
-
-    // When opening applications, the navigation is cancelled. Report the
-    // opening of the application to the ReadingListWebStateObserver to mark the
-    // entry as read if needed.
-    if (original_pending_url.is_valid()) {
-      ReadingListModel* model =
-          ReadingListModelFactory::GetForBrowserState(browser_state);
-      if (model && model->loaded())
-        model->SetReadStatus(original_pending_url, true);
-    }
-  }
-  return false;
 }
 
 WEB_STATE_USER_DATA_KEY_IMPL(AppLauncherTabHelper)

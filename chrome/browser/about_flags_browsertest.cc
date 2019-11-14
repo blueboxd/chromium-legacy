@@ -327,7 +327,8 @@ IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, PRE_ExpiredFlagDoesntApply) {
   ToggleEnableDropdown(contents, kExpiredFlagName, true);
 }
 
-IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, ExpiredFlagDoesntApply) {
+// Flaky everywhere: https://crbug.com/1024028
+IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, DISABLED_ExpiredFlagDoesntApply) {
   set_expiration_enabled(true);
   NavigateToFlagsPage();
   content::WebContents* contents =

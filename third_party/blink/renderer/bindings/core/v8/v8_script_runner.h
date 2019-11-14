@@ -79,13 +79,6 @@ class CORE_EXPORT V8ScriptRunner final {
       ExecutionContext*,
       int argc = 0,
       v8::Local<v8::Value> argv[] = nullptr);
-  static v8::MaybeLocal<v8::Value> CallInternalFunction(
-      v8::Isolate*,
-      v8::MicrotaskQueue*,
-      v8::Local<v8::Function>,
-      v8::Local<v8::Value> receiver,
-      int argc,
-      v8::Local<v8::Value> info[]);
   static v8::MaybeLocal<v8::Value> CallFunction(v8::Local<v8::Function>,
                                                 ExecutionContext*,
                                                 v8::Local<v8::Value> receiver,

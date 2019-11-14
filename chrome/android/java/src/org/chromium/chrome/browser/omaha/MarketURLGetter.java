@@ -6,8 +6,9 @@ package org.chromium.chrome.browser.omaha;
 
 import android.content.SharedPreferences;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.VisibleForTesting;
 
 /**
  * Grabs the URL that points to the Android Market page for Chrome.

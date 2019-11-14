@@ -20,10 +20,10 @@ import android.widget.FrameLayout.LayoutParams;
 import android.widget.ProgressBar;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ui.widget.ClipDrawableProgressBar;
 import org.chromium.chrome.browser.util.ColorUtils;

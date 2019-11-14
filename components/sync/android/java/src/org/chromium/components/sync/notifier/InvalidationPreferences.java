@@ -10,13 +10,13 @@ import android.content.SharedPreferences;
 import android.util.Base64;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import com.google.ipc.invalidation.external.client.types.ObjectId;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.VisibleForTesting;
 
 import java.util.Collection;
 import java.util.Collections;

@@ -30,15 +30,16 @@
       </template>
       <template is="dom-if" if="[[!isChild_]]">
         <div class="start settings-box-text">
-          <div>
+          <div id="label" aria-describedby="sub-label">
             $i18n{parentalControlsPageTitle}
           </div>
-          <div class="secondary">
+          <div class="secondary" id="sub-label" aria-hidden="true">
             [[getSetupLabelText_(online_)]]
           </div>
         </div>
         <div class="separator"></div>
-        <cr-button on-click="handleSetupButtonClick_" disabled$="[[!online_]]">
+        <cr-button on-click="handleSetupButtonClick_" disabled$="[[!online_]]"
+            aria-describedby="sub-label">
           $i18n{parentalControlsSetUpButtonLabel}
         </cr-button>
       </template>

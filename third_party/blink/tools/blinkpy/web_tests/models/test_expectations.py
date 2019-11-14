@@ -768,12 +768,6 @@ class TestExpectationsModel(object):
 
         return ' '.join(retval)
 
-    def remove_expectation_line(self, test):
-        if not self.has_test(test):
-            return
-        self._clear_expectations_for_test(test)
-        del self._test_to_expectation_line[test]
-
     def add_expectation_line(self, expectation_line,
                              model_all_expectations=False):
         """Returns a list of warnings encountered while matching specifiers."""
@@ -1155,18 +1149,6 @@ class TestExpectations(object):
             expectation_line = self._parser.expectation_for_skipped_test(test_name)
             model.add_expectation_line(expectation_line)
         self._model.merge_model(model)
-
-    def remove_tests_from_expectations(self, tests_to_remove):
-        for test in self._expectations:
-            if not test.name:
-                continue
-            if test.name not in tests_to_remove:
-                continue
-            self._expectations.remove(test)
-            if not self._model.has_test(test.name):
-                continue
-            line = self._model.get_expectation_line(test.name)
-            self._model.remove_expectation_line(line)
 
     def add_expectations_from_bot(self):
         # FIXME: With mode 'very-flaky' and 'maybe-flaky', this will show the expectations entry in the flakiness

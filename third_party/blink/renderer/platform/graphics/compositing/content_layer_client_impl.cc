@@ -27,9 +27,7 @@ ContentLayerClientImpl::ContentLayerClientImpl()
       raster_invalidator_(
           base::BindRepeating(&ContentLayerClientImpl::InvalidateRect,
                               base::Unretained(this))),
-      layer_state_(PropertyTreeState::Uninitialized()) {
-  cc_picture_layer_->SetLayerClient(weak_ptr_factory_.GetWeakPtr());
-}
+      layer_state_(PropertyTreeState::Uninitialized()) {}
 
 ContentLayerClientImpl::~ContentLayerClientImpl() {
   cc_picture_layer_->ClearClient();
@@ -57,26 +55,6 @@ void ContentLayerClientImpl::AppendAdditionalInfoAsJSON(
 #endif
 }
 
-std::unique_ptr<base::trace_event::TracedValue>
-ContentLayerClientImpl::TakeDebugInfo(const cc::Layer* layer) {
-  DCHECK_EQ(layer, cc_picture_layer_.get());
-  auto traced_value = std::make_unique<base::trace_event::TracedValue>();
-  traced_value->SetString("layer_name", LayerDebugName(layer));
-  if (auto* tracking = raster_invalidator_.GetTracking()) {
-    tracking->AddToTracedValue(*traced_value);
-    tracking->ClearInvalidations();
-  }
-  // TODO(wangxianzhu): Do we need compositing_reasons,
-  // squashing_disallowed_reasons and owner_node_id?
-  return traced_value;
-}
-
-std::string ContentLayerClientImpl::LayerDebugName(
-    const cc::Layer* layer) const {
-  DCHECK_EQ(layer, cc_picture_layer_.get());
-  return debug_name_.Utf8();
-}
-
 scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
     scoped_refptr<const PaintArtifact> paint_artifact,
     const PaintChunkSubset& paint_chunks,
@@ -87,8 +65,6 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
   else
     id_ = base::nullopt;
 
-  // TODO(wangxianzhu): Avoid calling DebugName() in official release build.
-  debug_name_ = paint_chunks[0].id.client.DebugName();
   const auto& display_item_list = paint_artifact->GetDisplayItemList();
 
 #if DCHECK_IS_ON()
@@ -128,7 +104,7 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
     params.emplace(*raster_invalidator_.GetTracking(),
                    IntRect(0, 0, layer_bounds.width(), layer_bounds.height()),
-                   debug_name_);
+                   paint_chunks[0].id.client.DebugName());
   }
   cc_display_item_list_ = PaintChunksToCcLayer::Convert(
       paint_chunks, layer_state, layer_bounds.OffsetFromOrigin(),

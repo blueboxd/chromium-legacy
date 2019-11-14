@@ -161,12 +161,12 @@ bool SimpleWatcher::IsWatching() const {
 MojoResult SimpleWatcher::Watch(Handle handle,
                                 MojoHandleSignals signals,
                                 MojoTriggerCondition condition,
-                                const ReadyCallbackWithState& callback) {
+                                ReadyCallbackWithState callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!IsWatching());
   DCHECK(!callback.is_null());
 
-  callback_ = callback;
+  callback_ = std::move(callback);
   handle_ = handle;
   watch_id_ += 1;
 

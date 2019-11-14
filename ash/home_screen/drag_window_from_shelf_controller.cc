@@ -361,10 +361,12 @@ void DragWindowFromShelfController::UpdateDraggedWindow(
   ::wm::ConvertRectToScreen(window_->parent(), &bounds);
 
   // Calculate the window's transform based on the location.
-  // For scale, at |initial_location_in_screen_|, the scale is 1.0, and at the
-  // middle y position of its bounds, it reaches to its minimum scale 0.2.
-  // Calculate the desired scale based on the current y position.
-  int y_full = bounds.bottom() - bounds.CenterPoint().y();
+  // For scale, at |initial_location_in_screen_| or bounds.bottom(), the scale
+  // is 1.0, and at the middle y position of its bounds, it reaches to its
+  // minimum scale 0.2. Calculate the desired scale based on the current y
+  // position.
+  int y_full = std::min(initial_location_in_screen_.y(), bounds.bottom()) -
+               bounds.CenterPoint().y();
   int y_diff = location_in_screen.y() - bounds.CenterPoint().y();
   float scale = (1.0f - kMinimumWindowScaleDuringDragging) * y_diff / y_full +
                 kMinimumWindowScaleDuringDragging;

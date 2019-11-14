@@ -454,7 +454,7 @@
       "bounds": [15, 600]
     },
     {
-      "name": "",
+      "name": "LayoutVideo VIDEO id='video'",
       "position": [15, 859],
       "bounds": [150, 60]
     }

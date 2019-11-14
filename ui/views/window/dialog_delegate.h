@@ -49,6 +49,10 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
     // the Views-styled one.
     bool custom_frame = true;
 
+    // A bitmask of buttons (from ui::DialogButton) that are present in this
+    // dialog.
+    int buttons = ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
+
     // Text labels for the buttons on this dialog. Any button without a label
     // here will get the default text for its type from GetDialogButtonLabel.
     // Prefer to use this field (via set_button_label) rather than override
@@ -86,6 +90,8 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
 
   // Returns a mask specifying which of the available DialogButtons are visible
   // for the dialog. Note: Dialogs with just an OK button are frowned upon.
+  // DEPRECATED: Prefer to use set_buttons() below; this method is being
+  // removed. See https://crbug.com/1011446.
   virtual int GetDialogButtons() const;
 
   // Returns the default dialog button. This should not be a mask as only
@@ -186,6 +192,7 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   bool draggable() const { return params_.draggable; }
   void set_use_custom_frame(bool use) { params_.custom_frame = use; }
   bool use_custom_frame() const { return params_.custom_frame; }
+  void set_buttons(int buttons) { params_.buttons = buttons; }
 
   void set_button_label(ui::DialogButton button, base::string16 label) {
     params_.button_labels[button] = label;

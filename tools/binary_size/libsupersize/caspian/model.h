@@ -9,6 +9,7 @@
 
 #include <deque>
 #include <map>
+#include <string>
 #include <string_view>
 #include <vector>
 
@@ -41,6 +42,8 @@ enum class SectionId : char {
   kPakTranslations = 'p',
 };
 
+struct BaseSizeInfo;
+
 struct Symbol {
   Symbol();
   Symbol(const Symbol& other);
@@ -68,9 +71,16 @@ struct Symbol {
             sectionId == SectionId::kText || sectionId == SectionId::kRoData);
   }
 
+  bool IsStringLiteral() const { return full_name.substr(0, 1) == "\""; }
+
   int32_t SizeWithoutPadding() const { return size - padding; }
 
   int32_t EndAddress() const { return address + SizeWithoutPadding(); }
+
+  // Derived from |full_name|. Generated lazily and cached.
+  void DeriveNames() const;
+  std::string_view TemplateName() const;
+  std::string_view Name() const;
 
   int32_t address = 0;
   int32_t size = 0;
@@ -85,6 +95,15 @@ struct Symbol {
   const char* source_path = nullptr;
   const char* component = nullptr;
   std::vector<Symbol*>* aliases = nullptr;
+
+  // The SizeInfo the symbol was constructed from. Primarily used for
+  // allocating commonly-reused strings in a context where they won't outlive
+  // the symbol.
+  BaseSizeInfo* size_info = nullptr;
+
+ private:
+  mutable std::string_view template_name;
+  mutable std::string_view name;
 };
 
 std::ostream& operator<<(std::ostream& os, const Symbol& sym);
@@ -94,6 +113,7 @@ struct BaseSizeInfo {
   ~BaseSizeInfo();
   std::vector<caspian::Symbol> raw_symbols;
   Json::Value metadata;
+  std::deque<std::string> owned_strings;
 };
 
 struct SizeInfo : BaseSizeInfo {
@@ -158,17 +178,11 @@ struct TreeNode {
   int32_t flags = 0;
   int32_t short_name_index = 0;
 
-  /*
-    type,
-    numAliases,
-    childStats,
-  */
-
   ContainerType container_type = ContainerType::kSymbol;
 
   std::vector<TreeNode*> children;
   TreeNode* parent = nullptr;
-  Symbol* symbol = nullptr;
+  const Symbol* symbol = nullptr;
 };
 
 }  // namespace caspian

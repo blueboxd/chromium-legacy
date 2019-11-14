@@ -12,11 +12,6 @@
 #error "This file requires ARC support."
 #endif
 
-NSString* const kInfobarBannerTitleLabel = @"Test Infobar";
-NSString* const kInfobarBannerSubtitleLabel = @"This a test Infobar.";
-NSString* const kInfobarBannerButtonLabel = @"Accept";
-NSString* const kInfobarBannerPresentedModalLabel = @"Modal Infobar";
-
 @implementation ContainerViewController
 - (void)viewDidAppear:(BOOL)animated {
   [super viewDidAppear:animated];

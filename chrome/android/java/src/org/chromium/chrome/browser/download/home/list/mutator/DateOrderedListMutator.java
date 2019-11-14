@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.download.home.list.mutator;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.CollectionUtil;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.download.home.JustNowProvider;
 import org.chromium.chrome.browser.download.home.filter.OfflineItemFilterObserver;
 import org.chromium.chrome.browser.download.home.filter.OfflineItemFilterSource;

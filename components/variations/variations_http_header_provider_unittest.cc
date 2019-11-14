@@ -43,8 +43,12 @@ scoped_refptr<base::FieldTrial> CreateTrialAndAssociateId(
     VariationID id) {
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::CreateFieldTrial(trial_name, default_group_name));
+  EXPECT_TRUE(trial);
 
-  AssociateGoogleVariationID(key, trial->trial_name(), trial->group_name(), id);
+  if (trial) {
+    AssociateGoogleVariationID(key, trial->trial_name(), trial->group_name(),
+                               id);
+  }
 
   return trial;
 }
@@ -123,7 +127,6 @@ TEST_F(VariationsHttpHeaderProviderTest, ForceVariationIds_Invalid) {
 
 TEST_F(VariationsHttpHeaderProviderTest, OnFieldTrialGroupFinalized) {
   base::test::SingleThreadTaskEnvironment task_environment;
-  base::FieldTrialList field_trial_list(nullptr);
   VariationsHttpHeaderProvider provider;
   provider.InitVariationIDsCacheIfNeeded();
 
@@ -172,7 +175,6 @@ TEST_F(VariationsHttpHeaderProviderTest, OnFieldTrialGroupFinalized) {
 
 TEST_F(VariationsHttpHeaderProviderTest, GetVariationsString) {
   base::test::SingleThreadTaskEnvironment task_environment;
-  base::FieldTrialList field_trial_list(nullptr);
 
   CreateTrialAndAssociateId("t1", "g1", GOOGLE_WEB_PROPERTIES, 123);
   CreateTrialAndAssociateId("t2", "g2", GOOGLE_WEB_PROPERTIES, 124);
@@ -186,8 +188,6 @@ TEST_F(VariationsHttpHeaderProviderTest, GetVariationsString) {
 
 TEST_F(VariationsHttpHeaderProviderTest, GetVariationsVector) {
   base::test::SingleThreadTaskEnvironment task_environment;
-  base::FieldTrialList field_trial_list(nullptr);
-
   CreateTrialAndAssociateId("t1", "g1", GOOGLE_WEB_PROPERTIES, 121);
   CreateTrialAndAssociateId("t2", "g2", GOOGLE_WEB_PROPERTIES, 122);
   CreateTrialAndAssociateId("t3", "g3", GOOGLE_WEB_PROPERTIES_TRIGGER, 123);

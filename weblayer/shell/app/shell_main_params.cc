@@ -121,9 +121,6 @@ MainParams CreateMainParams() {
 
   params.pak_name = "weblayer.pak";
 
-  params.brand = "weblayer_shell";
-  params.full_version = WEBLAYER_SHELL_VERSION;
-  params.major_version = WEBLAYER_SHELL_MAJOR_VERSION;
   return params;
 }
 

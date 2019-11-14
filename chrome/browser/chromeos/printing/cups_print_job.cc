@@ -35,7 +35,7 @@ base::WeakPtr<CupsPrintJob> CupsPrintJob::GetWeakPtr() {
 }
 
 bool CupsPrintJob::IsExpired() const {
-  return error_code_ == ErrorCode::PRINTER_UNREACHABLE;
+  return error_code_ == PrinterErrorCode::PRINTER_UNREACHABLE;
 }
 
 // static
@@ -51,7 +51,7 @@ bool CupsPrintJob::IsJobFinished() const {
 }
 
 bool CupsPrintJob::PipelineDead() const {
-  return error_code_ == CupsPrintJob::ErrorCode::FILTER_FAILED;
+  return error_code_ == PrinterErrorCode::FILTER_FAILED;
 }
 
 }  // namespace chromeos

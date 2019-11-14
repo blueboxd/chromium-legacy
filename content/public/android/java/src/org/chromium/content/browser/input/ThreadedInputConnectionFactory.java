@@ -10,8 +10,9 @@ import android.os.HandlerThread;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.Log;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.content_public.browser.InputMethodManagerWrapper;
 
 /**

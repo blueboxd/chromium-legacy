@@ -18,10 +18,10 @@ import android.support.v4.app.ServiceCompat;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.notifications.ForegroundServiceUtils;
 
 import java.lang.annotation.Retention;

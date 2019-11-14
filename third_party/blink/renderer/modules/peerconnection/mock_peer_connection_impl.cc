@@ -523,6 +523,15 @@ bool MockPeerConnectionImpl::AddIceCandidate(
   return candidate->ToString(&ice_sdp_);
 }
 
+void MockPeerConnectionImpl::AddIceCandidate(
+    std::unique_ptr<webrtc::IceCandidateInterface> candidate,
+    std::function<void(webrtc::RTCError)> callback) {
+  bool result = AddIceCandidate(candidate.get());
+  callback(result
+               ? webrtc::RTCError::OK()
+               : webrtc::RTCError(webrtc::RTCErrorType::UNSUPPORTED_OPERATION));
+}
+
 webrtc::RTCError MockPeerConnectionImpl::SetBitrate(
     const webrtc::BitrateSettings& bitrate) {
   NOTIMPLEMENTED();

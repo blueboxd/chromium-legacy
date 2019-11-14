@@ -33,6 +33,9 @@ class DevToolsSocketFactory : public content::DevToolsSocketFactory {
         ip_end_point_(std::move(ip_end_point)) {}
   ~DevToolsSocketFactory() override = default;
 
+  DevToolsSocketFactory(const DevToolsSocketFactory&) = delete;
+  DevToolsSocketFactory& operator=(const DevToolsSocketFactory&) = delete;
+
   // content::DevToolsSocketFactory implementation.
   std::unique_ptr<net::ServerSocket> CreateForHttpServer() override {
     const int kTcpListenBackLog = 5;
@@ -60,8 +63,6 @@ class DevToolsSocketFactory : public content::DevToolsSocketFactory {
  private:
   OnDevToolsPortChanged on_devtools_port_;
   net::IPEndPoint ip_end_point_;
-
-  DISALLOW_COPY_AND_ASSIGN(DevToolsSocketFactory);
 };
 
 void StartRemoteDebuggingServer(OnDevToolsPortChanged on_devtools_port,
@@ -80,6 +81,9 @@ class NoopController : public WebEngineDevToolsController {
   NoopController() = default;
   ~NoopController() override = default;
 
+  NoopController(const NoopController&) = delete;
+  NoopController& operator=(const NoopController&) = delete;
+
   // WebEngineDevToolsController implementation:
   void OnContextCreated() override {}
   void OnContextDestroyed() override {}
@@ -95,9 +99,6 @@ class NoopController : public WebEngineDevToolsController {
   void GetDevToolsPort(base::OnceCallback<void(uint16_t)> callback) override {
     std::move(callback).Run(0);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NoopController);
 };
 
 // "User-mode" makes DevTools accessible to remote devices for Frames specified
@@ -107,8 +108,10 @@ class UserModeController : public WebEngineDevToolsController {
  public:
   explicit UserModeController(uint16_t server_port)
       : ip_endpoint_(net::IPAddress::IPv6AllZeros(), server_port) {}
-
   ~UserModeController() override { DCHECK(!is_remote_debugging_started_); }
+
+  UserModeController(const UserModeController&) = delete;
+  UserModeController& operator=(const UserModeController&) = delete;
 
   // WebEngineDevToolsController implementation:
   void OnContextCreated() override {}
@@ -188,16 +191,12 @@ class UserModeController : public WebEngineDevToolsController {
   base::flat_set<content::WebContents*> debuggable_contents_;
 
   std::vector<base::OnceCallback<void(uint16_t)>> get_port_callbacks_;
-
-  DISALLOW_COPY_AND_ASSIGN(UserModeController);
 };
 
 // "Debug-mode" is used for on-device testing, and makes all Frames available
-// for debugging by clients on the same device. DevTools is only started when
+// for debugging by clients on the same device. DevTools is only reported when
 // the first Frame finishes loading its main document, so that the
 // DevToolsPerContextListeners can start interacting with it immediately.
-// Derives from NoopController to inherit its handling of requests for
-// user-mode debugging, and for the DevTools port, by clients.
 class DebugModeController : public WebEngineDevToolsController {
  public:
   explicit DebugModeController(
@@ -206,8 +205,10 @@ class DebugModeController : public WebEngineDevToolsController {
       devtools_listeners_.AddInterfacePtr(std::move(listener));
     }
   }
-
   ~DebugModeController() override = default;
+
+  DebugModeController(const DebugModeController&) = delete;
+  DebugModeController& operator=(const DebugModeController&) = delete;
 
   // DevToolsController implementation:
   void OnContextCreated() override {
@@ -263,8 +264,94 @@ class DebugModeController : public WebEngineDevToolsController {
 
   fidl::InterfacePtrSet<fuchsia::web::DevToolsPerContextListener>
       devtools_listeners_;
+};
 
-  DISALLOW_COPY_AND_ASSIGN(DebugModeController);
+// "Mixed-mode" is used when both user and debug remote debugging are active at
+// the same time. The service lifespan is tied to the Context and all Frames are
+// available for remote debugging.
+class MixedModeController : public WebEngineDevToolsController {
+ public:
+  explicit MixedModeController(
+      std::vector<fuchsia::web::DevToolsPerContextListenerPtr> listeners,
+      uint16_t server_port)
+      : ip_endpoint_(net::IPAddress::IPv6AllZeros(), server_port) {
+    for (auto& listener : listeners) {
+      devtools_listeners_.AddInterfacePtr(std::move(listener));
+    }
+  }
+  ~MixedModeController() override = default;
+
+  MixedModeController(const MixedModeController&) = delete;
+  MixedModeController& operator=(const MixedModeController&) = delete;
+
+  // WebEngineDevToolsController implementation:
+  void OnContextCreated() override {
+    StartRemoteDebuggingServer(
+        base::BindOnce(&MixedModeController::OnDevToolsPortChanged,
+                       base::Unretained(this)),
+        ip_endpoint_);
+  }
+  void OnContextDestroyed() override {
+    content::DevToolsAgentHost::StopRemoteDebuggingServer();
+  }
+  bool OnFrameCreated(content::WebContents* contents,
+                      bool user_debugging) override {
+    return true;
+  }
+  void OnFrameLoaded(content::WebContents* contents) override {
+    frame_loaded_ = true;
+    MaybeSendRemoteDebuggingCallbacks();
+  }
+  void OnFrameDestroyed(content::WebContents* contents) override {}
+  content::DevToolsAgentHost::List RemoteDebuggingTargets() override {
+    return content::DevToolsAgentHost::GetOrCreateAll();
+  }
+  void GetDevToolsPort(base::OnceCallback<void(uint16_t)> callback) override {
+    get_port_callbacks_.emplace_back(std::move(callback));
+    MaybeNotifyGetPortCallbacks();
+  }
+
+ private:
+  void OnDevToolsPortChanged(uint16_t port) {
+    devtools_port_ = port;
+    MaybeNotifyGetPortCallbacks();
+    MaybeSendRemoteDebuggingCallbacks();
+  }
+
+  void MaybeNotifyGetPortCallbacks() {
+    if (!devtools_port_)
+      return;
+    for (auto& callback : get_port_callbacks_)
+      std::move(callback).Run(devtools_port_.value());
+    get_port_callbacks_.clear();
+  }
+
+  void MaybeSendRemoteDebuggingCallbacks() {
+    if (!frame_loaded_ || !devtools_port_)
+      return;
+
+    // If |devtools_port_| is valid then notify all listeners, otherwise
+    // disconnect them.
+    if (devtools_port_.value() == 0) {
+      devtools_listeners_.CloseAll();
+    } else {
+      for (const auto& listener : devtools_listeners_.ptrs()) {
+        listener->get()->OnHttpPortOpen(devtools_port_.value());
+      }
+    }
+  }
+
+  const net::IPEndPoint ip_endpoint_;
+
+  // Currently active DevTools port. Set to 0 on service startup error.
+  base::Optional<uint16_t> devtools_port_;
+
+  std::vector<base::OnceCallback<void(uint16_t)>> get_port_callbacks_;
+
+  bool frame_loaded_ = false;
+
+  fidl::InterfacePtrSet<fuchsia::web::DevToolsPerContextListener>
+      devtools_listeners_;
 };
 
 }  //  namespace
@@ -273,6 +360,7 @@ class DebugModeController : public WebEngineDevToolsController {
 std::unique_ptr<WebEngineDevToolsController>
 WebEngineDevToolsController::CreateFromCommandLine(
     const base::CommandLine& command_line) {
+  base::Optional<uint16_t> devtools_port;
   if (command_line.HasSwitch(switches::kRemoteDebuggingPort)) {
     // Set up DevTools to listen on all network routes on the command-line
     // provided port.
@@ -289,12 +377,12 @@ WebEngineDevToolsController::CreateFromCommandLine(
         (!net::IsPortValid(parsed_port) || net::IsWellKnownPort(parsed_port))) {
       LOG(WARNING) << "Invalid HTTP debugger service port number "
                    << command_line_port_value;
-      return nullptr;
+    } else {
+      devtools_port = parsed_port;
     }
-
-    return std::make_unique<UserModeController>(parsed_port);
   }
 
+  std::vector<fuchsia::web::DevToolsPerContextListenerPtr> listeners;
   if (command_line.HasSwitch(switches::kRemoteDebuggerHandles)) {
     // Initialize the Debug devtools listeners.
     std::string handle_ids_str =
@@ -302,7 +390,6 @@ WebEngineDevToolsController::CreateFromCommandLine(
 
     // Extract individual handle IDs from the comma-separated list.
     base::StringTokenizer tokenizer(handle_ids_str, ",");
-    std::vector<fuchsia::web::DevToolsPerContextListenerPtr> listeners;
     while (tokenizer.GetNext()) {
       uint32_t handle_id = 0;
       if (!base::StringToUint(tokenizer.token(), &handle_id))
@@ -311,9 +398,18 @@ WebEngineDevToolsController::CreateFromCommandLine(
       listener.Bind(zx::channel(zx_take_startup_handle(handle_id)));
       listeners.emplace_back(std::move(listener));
     }
-
-    return std::make_unique<DebugModeController>(std::move(listeners));
   }
 
-  return std::make_unique<NoopController>();
+  if (devtools_port) {
+    if (listeners.empty()) {
+      return std::make_unique<UserModeController>(devtools_port.value());
+    } else {
+      return std::make_unique<MixedModeController>(std::move(listeners),
+                                                   devtools_port.value());
+    }
+  } else if (listeners.empty()) {
+    return std::make_unique<NoopController>();
+  } else {
+    return std::make_unique<DebugModeController>(std::move(listeners));
+  }
 }

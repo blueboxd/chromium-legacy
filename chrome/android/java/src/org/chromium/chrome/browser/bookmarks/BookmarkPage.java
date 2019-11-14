@@ -6,7 +6,8 @@ package org.chromium.chrome.browser.bookmarks;
 
 import android.view.View;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.native_page.BasicNativePage;

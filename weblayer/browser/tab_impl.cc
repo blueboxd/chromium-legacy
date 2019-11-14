@@ -345,6 +345,11 @@ void TabImpl::AddNewContents(content::WebContents* source,
                               NewTabTypeFromWindowDisposition(disposition));
 }
 
+void TabImpl::CloseContents(content::WebContents* source) {
+  if (new_tab_delegate_)
+    new_tab_delegate_->CloseTab();
+}
+
 void TabImpl::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
 #if defined(OS_ANDROID)
@@ -363,9 +368,8 @@ void TabImpl::DidFinishNavigation(
 }
 
 void TabImpl::RenderProcessGone(base::TerminationStatus status) {
-  for (auto& observer : observers_) {
+  for (auto& observer : observers_)
     observer.OnRenderProcessGone();
-  }
 }
 
 void TabImpl::OnExitFullscreen() {

@@ -7,14 +7,12 @@
 
 #include <stdint.h>
 
+#include "base/scoped_observer.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
-
-namespace aura {
-class Window;
-}  // namespace aura
 
 namespace views {
 class AXAuraObjCache;
@@ -61,6 +59,8 @@ class AXWindowObjWrapper : public AXAuraObjWrapper,
   bool is_root_window_;
 
   const ui::AXUniqueId unique_id_;
+
+  ScopedObserver<aura::Window, aura::WindowObserver> observer_{this};
 };
 
 }  // namespace views

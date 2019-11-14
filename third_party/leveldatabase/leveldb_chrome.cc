@@ -61,17 +61,22 @@ std::string GetDumpNameForMemEnv(const leveldb::Env* memenv) {
 class Globals {
  public:
   static Globals* GetInstance() {
-    static Globals* globals = new Globals();
-    return globals;
+    static base::NoDestructor<Globals> singleton;
+    return singleton.get();
   }
 
-  Globals() : browser_block_cache_(NewLRUCache(DefaultBlockCacheSize())) {
-    if (!base::SysInfo::IsLowEndDevice())
-      web_block_cache_.reset(NewLRUCache(DefaultBlockCacheSize()));
-
-    memory_pressure_listener_.reset(new base::MemoryPressureListener(
-        base::Bind(&Globals::OnMemoryPressure, base::Unretained(this))));
-  }
+  Globals()
+      : web_block_cache_(base::SysInfo::IsLowEndDevice()
+                             ? nullptr
+                             : NewLRUCache(DefaultBlockCacheSize())),
+        browser_block_cache_(NewLRUCache(DefaultBlockCacheSize())),
+        // Using |this| here (when Globals is only partially constructed) is
+        // safe because base::MemoryPressureListener calls our callback
+        // asynchronously, so this instance will be fully constructed by the
+        // time it is called.
+        memory_pressure_listener_(
+            base::BindRepeating(&Globals::OnMemoryPressure,
+                                base::Unretained(this))) {}
 
   Cache* web_block_cache() const {
     if (web_block_cache_)
@@ -132,14 +137,17 @@ class Globals {
   }
 
  private:
-  ~Globals() {}
+  // Instances are never destroyed.
+  // If this destructor needs to exist in the future, the callback given to
+  // base::MemoryPressureListener() must use a WeakPtr.
+  ~Globals() = delete;
 
   std::unique_ptr<Cache> web_block_cache_;      // null on low end devices.
   std::unique_ptr<Cache> browser_block_cache_;  // Never null.
-  // Listens for the system being under memory pressure.
-  std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
   mutable leveldb::port::Mutex env_mutex_;
   base::flat_set<leveldb::Env*> in_memory_envs_;
+  // Listens for the system being under memory pressure.
+  const base::MemoryPressureListener memory_pressure_listener_;
 
   DISALLOW_COPY_AND_ASSIGN(Globals);
 };

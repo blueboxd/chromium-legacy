@@ -18,10 +18,8 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/simple_enclosed_region.h"
-#include "cc/layers/layer_client.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/picture_layer.h"
-#include "cc/tiles/frame_viewer_instrumentation.h"
 #include "cc/trees/clip_node.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/layer_tree_host.h"
@@ -69,23 +67,24 @@ struct SameSizeAsLayer : public base::RefCounted<SameSizeAsLayer> {
     Region non_fast_scrollable_region;
     TouchActionRegion touch_action_region;
     ElementId element_id;
-    base::WeakPtr<LayerClient> client;
-    std::unique_ptr<base::trace_event::TracedValue> debug_info;
     base::RepeatingCallback<void()> did_scroll_callback;
     std::vector<std::unique_ptr<viz::CopyOutputRequest>> copy_requests;
   } inputs;
-  int int_fields[7];
+  int int_fields[6];
   gfx::Vector2dF offset;
   unsigned bitfields;
   SkColor safe_opaque_background_color;
-  int owner_node_id;
-  uint64_t compositing_reasons;
+  void* debug_info;
 };
 
 static_assert(sizeof(Layer) == sizeof(SameSizeAsLayer),
               "Layer should stay small");
 
 base::AtomicSequenceNumber g_next_layer_id;
+
+LayerDebugInfo::LayerDebugInfo() = default;
+LayerDebugInfo::LayerDebugInfo(const LayerDebugInfo&) = default;
+LayerDebugInfo::~LayerDebugInfo() = default;
 
 Layer::Inputs::Inputs(int layer_id)
     : mask_layer(nullptr),
@@ -122,7 +121,6 @@ Layer::Layer()
       layer_tree_host_(nullptr),
       // Layer IDs start from 1.
       inputs_(g_next_layer_id.GetNext() + 1),
-      paint_count_(0),
       num_descendants_that_draw_content_(0),
       transform_tree_index_(TransformTree::kInvalidNodeId),
       effect_tree_index_(EffectTree::kInvalidNodeId),
@@ -140,9 +138,7 @@ Layer::Layer()
       has_transform_node_(false),
       has_clip_node_(false),
       subtree_has_copy_request_(false),
-      safe_opaque_background_color_(0),
-      owner_node_id_(0),
-      compositing_reasons_(0) {}
+      safe_opaque_background_color_(0) {}
 
 Layer::~Layer() {
   // Our parent should be holding a reference to us so there should be no
@@ -1220,8 +1216,27 @@ void Layer::SetPropertyTreesNeedRebuild() {
     layer_tree_host_->property_trees()->needs_rebuild = true;
 }
 
+LayerDebugInfo& Layer::EnsureDebugInfo() {
+  if (!debug_info_) {
+    debug_info_ = std::make_unique<LayerDebugInfo>();
+    // We just enabled debug info collection. Force PushPropertiesTo() to ensure
+    // the first layer tree snapshot contains the debug info. Otherwise we will
+    // push debug_info when we have other changes to push.
+    SetNeedsPushProperties();
+  }
+  return *debug_info_;
+}
+
+void Layer::ClearDebugInfo() {
+  if (!debug_info_)
+    return;
+
+  debug_info_.reset();
+  SetNeedsPushProperties();
+}
+
 std::string Layer::DebugName() const {
-  return inputs_.client ? inputs_.client->LayerDebugName(this) : "";
+  return debug_info_ ? debug_info_->name : "";
 }
 
 std::string Layer::ToString() const {
@@ -1292,11 +1307,6 @@ void Layer::SetNeedsDisplayRect(const gfx::Rect& dirty_rect) {
     layer_tree_host_->SetNeedsUpdateLayers();
 }
 
-void Layer::SetLayerClient(base::WeakPtr<LayerClient> client) {
-  inputs_.client = std::move(client);
-  inputs_.debug_info = nullptr;
-}
-
 bool Layer::IsSnappedToPixelGridInTarget() {
   return false;
 }
@@ -1319,7 +1329,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetBackgroundColor(inputs_.background_color);
   layer->SetSafeOpaqueBackgroundColor(safe_opaque_background_color_);
   layer->SetBounds(inputs_.bounds);
-  layer->SetDebugInfo(std::move(inputs_.debug_info));
   layer->SetTransformTreeIndex(transform_tree_index());
   layer->SetEffectTreeIndex(effect_tree_index());
   layer->SetClipTreeIndex(clip_tree_index());
@@ -1376,6 +1385,9 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->UnionUpdateRect(inputs_.update_rect);
   layer->SetHasWillChangeTransformHint(has_will_change_transform_hint());
   layer->SetNeedsPushProperties();
+
+  // debug_info_->invalidations, if exist, will be cleared in the function.
+  layer->UpdateDebugInfo(debug_info_.get());
 
   // Reset any state that should be cleared for the next update.
   needs_show_scrollbars_ = false;
@@ -1435,12 +1447,6 @@ int Layer::NumDescendantsThatDrawContent() const {
 bool Layer::Update() {
   DCHECK(layer_tree_host_);
   return false;
-}
-
-void Layer::UpdateDebugInfo() {
-  DCHECK(frame_viewer_instrumentation::IsTracingLayerTreeSnapshots());
-  if (inputs_.client)
-    inputs_.debug_info = inputs_.client->TakeDebugInfo(this);
 }
 
 void Layer::SetSubtreePropertyChanged() {

@@ -1,8 +1,2 @@
-# For build parallelism configs.
-per-file cr-buildbucket.cfg=sque@chromium.org
-per-file cr-buildbucket.cfg=tikuta@chromium.org
-per-file cr-buildbucket.cfg=ukai@chromium.org
-per-file cr-buildbucket.cfg=yyanagisawa@chromium.org
-
 # TEAM: infra-dev@chromium.org
 # COMPONENT: Infra>Client>Chrome

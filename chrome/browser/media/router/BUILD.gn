@@ -10,7 +10,9 @@ import("//testing/test.gni")
 static_library("router") {
   deps = [
     "//base",
+    "//chrome:strings",
     "//chrome/common:constants",
+    "//components/cast_channel",
     "//components/cast_channel",
     "//components/keyed_service/content",
     "//components/keyed_service/core",

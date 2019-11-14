@@ -4,7 +4,8 @@
 
 package org.chromium.chrome.browser.send_tab_to_self;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfMetrics.SendTabToSelfShareClickResult;
 import org.chromium.chrome.browser.share.ShareActivity;

@@ -34,7 +34,6 @@ class InfoBubble : public BubbleDialogDelegateView {
   void OnWidgetDestroyed(Widget* widget) override;
   void OnWidgetBoundsChanged(Widget* widget,
                              const gfx::Rect& new_bounds) override;
-  int GetDialogButtons() const override;
 
   View* anchor() { return anchor_; }
   const View* anchor() const { return anchor_; }

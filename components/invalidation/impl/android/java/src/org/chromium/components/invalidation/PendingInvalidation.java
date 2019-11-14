@@ -8,9 +8,9 @@ import android.os.Bundle;
 import android.util.Base64;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.components.invalidation.SerializedInvalidation.Invalidation;
 
 import java.io.IOException;

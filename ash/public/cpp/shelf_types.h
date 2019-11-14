@@ -67,8 +67,11 @@ enum ShelfBackgroundType {
   // for a split view.
   SHELF_BACKGROUND_MAXIMIZED,
 
-  // The background when app list is visible.
+  // The background when the app list is visible in clamshell mode.
   SHELF_BACKGROUND_APP_LIST,
+
+  // The background when the app list is visible in tablet mode.
+  SHELF_BACKGROUND_HOME_LAUNCHER,
 
   // The background when a maximized window exists or two windows are maximized
   // for a split view, and the app list is visible. If the app list were not

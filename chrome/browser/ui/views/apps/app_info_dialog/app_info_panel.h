@@ -49,6 +49,8 @@ class AppInfoPanel : public views::View {
 
   // Given a key and a value, displays them side-by-side as a field and its
   // value.
+  // TODO(dfried): for ease of navigation, use GetStringFUTF16() and format the
+  // key and value together, eliminating this method.
   std::unique_ptr<views::View> CreateKeyValueField(
       std::unique_ptr<views::View> key,
       std::unique_ptr<views::View> value) const;

@@ -356,8 +356,7 @@ void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
   args.service_url = params.service_url;
   args.enable_local_sync_backend = params.enable_local_sync_backend;
   args.local_sync_backend_folder = params.local_sync_backend_folder;
-  args.post_factory = std::move(params.http_factory_getter)
-                          .Run(&release_request_context_signal_);
+  args.post_factory = std::move(params.http_factory_getter).Run();
   // Finish initializing the HttpBridgeFactory.  We do this here because
   // building the user agent may block on some platforms.
   args.post_factory->Init(params.sync_user_agent);
@@ -491,14 +490,6 @@ void SyncEngineBackend::ShutdownOnUIThread() {
   // initialized yet.  Those classes will receive the message when the sync
   // thread finally getes around to constructing them.
   stop_syncing_signal_.Signal();
-
-  // This will drop the HttpBridgeFactory's reference to the
-  // RequestContextGetter.  Once this has been called, the HttpBridgeFactory can
-  // no longer be used to create new HttpBridge instances.  We can get away with
-  // this because the stop_syncing_signal_ has already been signalled, which
-  // guarantees that the ServerConnectionManager will no longer attempt to
-  // create new connections.
-  release_request_context_signal_.Signal();
 }
 
 void SyncEngineBackend::DoShutdown(ShutdownReason reason) {

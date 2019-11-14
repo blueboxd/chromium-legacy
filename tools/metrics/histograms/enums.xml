@@ -21302,6 +21302,11 @@ Called by update_net_error_codes.py.-->
   <int value="1405" label="AUTOTESTPRIVATE_ENABLEASSISTANTANDWAITFORREADY"/>
   <int value="1406" label="INPUTMETHODPRIVATE_FINISHCOMPOSINGTEXT"/>
   <int value="1407" label="DECLARATIVENETREQUEST_UPDATEDYNAMICRULES"/>
+  <int value="1408" label="AUTOTESTPRIVATE_MOUSECLICK"/>
+  <int value="1409" label="AUTOTESTPRIVATE_MOUSEPRESS"/>
+  <int value="1410" label="AUTOTESTPRIVATE_MOUSERELEASE"/>
+  <int value="1411" label="AUTOTESTPRIVATE_MOUSEMOVE"/>
+  <int value="1412" label="WEBSTOREPRIVATE_GETEXTENSIONSTATUS"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -35592,6 +35597,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2113705745"
       label="CrossOriginMediaPlaybackRequiresUserGesture:enabled"/>
   <int value="-2112547309" label="ClickToCallReceiver:enabled"/>
+  <int value="-2111196530" label="EnableAssistantLauncherUI:disabled"/>
   <int value="-2108564200" label="AutofillUpstream:disabled"/>
   <int value="-2106960993" label="HarfBuzzPDFSubsetter:disabled"/>
   <int value="-2105133782" label="GesturePropertiesDBusService:enabled"/>
@@ -35991,6 +35997,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="AutofillUpstreamEditableCardholderName:disabled"/>
   <int value="-1624854957" label="enable-es3-apis"/>
   <int value="-1624593106" label="NewTabPageBackgrounds:enabled"/>
+  <int value="-1621963267" label="EnableAssistantLauncherUI:enabled"/>
   <int value="-1620804800" label="NoScriptPreviews:disabled"/>
   <int value="-1620568042" label="FeaturePolicy:disabled"/>
   <int value="-1619757314" label="touch-scrolling-mode"/>
@@ -40815,6 +40822,7 @@ Called by update_use_counter_css.py.-->
   <int value="7" label="NoSupportedProvider"/>
   <int value="8" label="Cancelled"/>
   <int value="9" label="RouteAlreadyExists"/>
+  <int value="10" label="DesktopPickerFailed"/>
 </enum>
 
 <enum name="MediaRouteProviderVersion">
@@ -62149,6 +62157,10 @@ Full version information for the fingerprint enum values:
   <int value="4" label="Unsupported language"/>
   <int value="5" label="Identical language"/>
   <int value="6" label="Translation error"/>
+  <int value="7" label="Translation timeout"/>
+  <int value="8" label="Unexpected script error"/>
+  <int value="9" label="Bad origin"/>
+  <int value="10" label="Script load error"/>
 </enum>
 
 <enum name="TranslateExplicitAskPromptEventType">

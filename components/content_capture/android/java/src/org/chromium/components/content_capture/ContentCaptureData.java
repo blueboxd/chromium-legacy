@@ -6,7 +6,8 @@ package org.chromium.components.content_capture;
 
 import android.graphics.Rect;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.annotations.CalledByNative;
 
 import java.util.ArrayList;

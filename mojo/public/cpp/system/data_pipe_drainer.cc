@@ -20,9 +20,9 @@ DataPipeDrainer::DataPipeDrainer(Client* client,
                       SimpleWatcher::ArmingPolicy::AUTOMATIC,
                       base::SequencedTaskRunnerHandle::Get()) {
   DCHECK(client_);
-  handle_watcher_.Watch(
-      source_.get(), MOJO_HANDLE_SIGNAL_READABLE,
-      base::Bind(&DataPipeDrainer::WaitComplete, weak_factory_.GetWeakPtr()));
+  handle_watcher_.Watch(source_.get(), MOJO_HANDLE_SIGNAL_READABLE,
+                        base::BindRepeating(&DataPipeDrainer::WaitComplete,
+                                            weak_factory_.GetWeakPtr()));
 }
 
 DataPipeDrainer::~DataPipeDrainer() {}

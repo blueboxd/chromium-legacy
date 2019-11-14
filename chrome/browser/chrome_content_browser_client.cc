@@ -36,7 +36,6 @@
 #include "build/build_config.h"
 #include "chrome/app/builtin_service_manifests.h"
 #include "chrome/app/chrome_content_browser_overlay_manifest.h"
-#include "chrome/app/chrome_content_gpu_overlay_manifest.h"
 #include "chrome/app/chrome_content_renderer_overlay_manifest.h"
 #include "chrome/browser/accessibility/accessibility_labels_service.h"
 #include "chrome/browser/accessibility/accessibility_labels_service_factory.h"
@@ -3713,8 +3712,6 @@ base::Optional<service_manager::Manifest>
 ChromeContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
   if (name == content::mojom::kBrowserServiceName)
     return GetChromeContentBrowserOverlayManifest();
-  if (name == content::mojom::kGpuServiceName)
-    return GetChromeContentGpuOverlayManifest();
   if (name == content::mojom::kRendererServiceName)
     return GetChromeContentRendererOverlayManifest();
   return base::nullopt;

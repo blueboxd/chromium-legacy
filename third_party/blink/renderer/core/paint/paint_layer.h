@@ -988,7 +988,11 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       const PhysicalOffset& sub_pixel_accumulation,
       GlobalPaintFlags = kGlobalPaintNormalPhase);
 
-  bool NeedsRepaint() const { return needs_repaint_; }
+  bool SelfNeedsRepaint() const { return self_needs_repaint_; }
+  bool DescendantNeedsRepaint() const { return descendant_needs_repaint_; }
+  bool SelfOrDescendantNeedsRepaint() const {
+    return self_needs_repaint_ || descendant_needs_repaint_;
+  }
   void SetNeedsRepaint();
   void ClearNeedsRepaintRecursively();
 
@@ -1239,7 +1243,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void UpdatePaginationRecursive(bool needs_pagination_update = false);
   void ClearPaginationRecursive();
 
-  void SetNeedsRepaintInternal();
+  void SetSelfNeedsRepaint();
   void MarkCompositingContainerChainForNeedsRepaint();
 
   PaintLayerRareData& EnsureRareData() {
@@ -1327,7 +1331,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // graphics layer this Layer will be assigned.
   unsigned lost_grouped_mapping_ : 1;
 
-  unsigned needs_repaint_ : 1;
+  unsigned self_needs_repaint_ : 1;
+  unsigned descendant_needs_repaint_ : 1;
   unsigned previous_paint_result_ : 1;  // PaintResult
   static_assert(kMaxPaintResult <= 2,
                 "Should update number of bits of previous_paint_result_");

@@ -56,7 +56,10 @@ class DevToolsManagerDelegate : public content::DevToolsManagerDelegate {
 
 WebEngineContentBrowserClient::WebEngineContentBrowserClient(
     fidl::InterfaceRequest<fuchsia::web::Context> request)
-    : request_(std::move(request)), cdm_service_(&mojo_service_registry_) {}
+    : request_(std::move(request)), cdm_service_(&mojo_service_registry_) {
+  allow_insecure_content_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAllowRunningInsecureContent);
+}
 
 WebEngineContentBrowserClient::~WebEngineContentBrowserClient() = default;
 
@@ -99,6 +102,9 @@ void WebEngineContentBrowserClient::OverrideWebkitPrefs(
     content::WebPreferences* web_prefs) {
   // Disable WebSQL support since it's being removed from the web platform.
   web_prefs->databases_enabled = false;
+
+  if (allow_insecure_content_)
+    web_prefs->allow_running_insecure_content = true;
 }
 
 void WebEngineContentBrowserClient::BindInterfaceRequestFromFrame(

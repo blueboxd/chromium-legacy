@@ -716,6 +716,11 @@ void BaseAudioContext::HandleStoppableSourceNodes() {
 
 void BaseAudioContext::PerformCleanupOnMainThread() {
   DCHECK(IsMainThread());
+
+  // When a posted task is performed, the execution context might be gone.
+  if (!GetExecutionContext())
+    return;
+
   GraphAutoLocker locker(this);
 
   if (is_resolving_resume_promises_) {
@@ -737,6 +742,8 @@ void BaseAudioContext::PerformCleanupOnMainThread() {
 }
 
 void BaseAudioContext::ScheduleMainThreadCleanup() {
+  DCHECK(IsAudioThread());
+
   if (has_posted_cleanup_task_)
     return;
   PostCrossThreadTask(

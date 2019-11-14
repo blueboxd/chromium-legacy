@@ -18,6 +18,7 @@ import android.view.View;
 import android.widget.ScrollView;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import com.google.android.libraries.feed.api.client.scope.ProcessScope;
 import com.google.android.libraries.feed.api.client.scope.StreamScope;
@@ -32,7 +33,6 @@ import com.google.android.libraries.feed.api.host.stream.StreamConfiguration;
 import com.google.android.libraries.feed.api.host.stream.TooltipApi;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.feed.tooltip.BasicTooltipApi;

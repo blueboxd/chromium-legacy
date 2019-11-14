@@ -8,8 +8,8 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 
 import java.util.ArrayList;

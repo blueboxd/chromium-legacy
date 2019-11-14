@@ -152,6 +152,7 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @Feature({"RenderTest"})
     @CommandLineFlags.Add({BASE_PARAMS})
+    @DisabledTest(message = "crbug.com/1024608 This test is flaky")
     public void testRenderGrid_3WebTabs() throws InterruptedException, IOException {
         mSkipAssertThumbnailsAreReleased = true;
 
@@ -169,6 +170,7 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @Feature({"RenderTest"})
     @CommandLineFlags.Add({BASE_PARAMS})
+    @DisabledTest(message = "crbug.com/1024608 This test is flaky")
     public void testRenderGrid_10WebTabs() throws InterruptedException, IOException {
         mSkipAssertThumbnailsAreReleased = true;
 
@@ -186,6 +188,7 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @Feature({"RenderTest"})
     @CommandLineFlags.Add({BASE_PARAMS})
+    @DisabledTest(message = "crbug.com/1024608 This test is flaky")
     public void testRenderGrid_10WebTabs_InitialScroll() throws InterruptedException, IOException {
         mSkipAssertThumbnailsAreReleased = true;
 
@@ -206,6 +209,7 @@ public class StartSurfaceLayoutTest {
     @MediumTest
     @Feature({"RenderTest"})
     @CommandLineFlags.Add({BASE_PARAMS})
+    @DisabledTest(message = "crbug.com/1024608 This test is flaky")
     public void testRenderGrid_Incognito() throws InterruptedException, IOException {
         mSkipAssertThumbnailsAreReleased = true;
 

@@ -16,6 +16,7 @@
 #include "cc/trees/property_tree.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/layers_as_json.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/property_tree_manager.h"
+#include "third_party/blink/renderer/platform/graphics/compositing_reasons.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -200,6 +201,15 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   // on any of the PropertyTrees constructed by |Update|.
   bool HasComposited(CompositorElementId element_id) const;
 
+  void SetLayerDebugInfoEnabled(bool);
+
+  // TODO(wangxianzhu): Make this private and refactor when removing
+  // pre-CompositeAfterPaint.
+  static void UpdateLayerDebugInfo(cc::Layer* layer,
+                                   const PaintChunk::Id&,
+                                   CompositingReasons,
+                                   RasterInvalidationTracking*);
+
  private:
   // A pending layer is a collection of paint chunks that will end up in
   // the same cc::Layer.
@@ -323,8 +333,9 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   // For notifying blink of composited scrolling.
   base::WeakPtr<CompositorScrollCallbacks> scroll_callbacks_;
 
-  bool tracks_raster_invalidations_;
-  bool needs_update_;
+  bool tracks_raster_invalidations_ = false;
+  bool needs_update_ = true;
+  bool layer_debug_info_enabled_ = false;
 
   scoped_refptr<cc::Layer> root_layer_;
   Vector<std::unique_ptr<ContentLayerClientImpl>> content_layer_clients_;

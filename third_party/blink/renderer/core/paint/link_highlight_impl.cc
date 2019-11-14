@@ -312,9 +312,13 @@ void LinkHighlightImpl::Paint(GraphicsContext& context) {
       layer->SetNeedsDisplay();
     }
 
+    DEFINE_STATIC_LOCAL(LiteralDebugNameClient, debug_name_client,
+                        ("LinkHighlight"));
+
     auto property_tree_state = fragment->LocalBorderBoxProperties();
     property_tree_state.SetEffect(Effect());
-    RecordForeignLayer(context, DisplayItem::kForeignLayerLinkHighlight, layer,
+    RecordForeignLayer(context, debug_name_client,
+                       DisplayItem::kForeignLayerLinkHighlight, layer,
                        bounding_rect.Location(), property_tree_state);
   }
 

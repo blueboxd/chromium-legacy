@@ -8,6 +8,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.WebContentsFactory;
+import org.chromium.chrome.browser.payments.PaymentsExperimentalFeatures;
 import org.chromium.chrome.browser.payments.handler.toolbar.PaymentHandlerToolbarCoordinator;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.components.embedder_support.view.ContentView;
@@ -90,6 +91,9 @@ public class PaymentHandlerCoordinator {
      *     solution.
      */
     public static boolean isEnabled() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.SCROLL_TO_EXPAND_PAYMENT_HANDLER);
+        // Enabling the flag of either ScrollToExpand or PaymentsExperimentalFeatures will enable
+        // this feature.
+        return PaymentsExperimentalFeatures.isEnabled(
+                ChromeFeatureList.SCROLL_TO_EXPAND_PAYMENT_HANDLER);
     }
 }

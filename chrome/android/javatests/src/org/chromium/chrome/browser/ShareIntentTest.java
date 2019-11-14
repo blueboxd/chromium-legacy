@@ -165,7 +165,7 @@ public class ShareIntentTest {
             };
         });
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { mockActivity.getActivityTab().updateWindowAndroid(window); });
+                () -> mockActivity.getActivityTab().updateAttachment(window, null));
 
         TestThreadUtils.runOnUiThreadBlocking(
                 ()

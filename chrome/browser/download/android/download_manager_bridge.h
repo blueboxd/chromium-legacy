@@ -9,7 +9,7 @@
 #include "components/download/public/common/download_item.h"
 
 using DownloadItem = download::DownloadItem;
-using AddCompletedDownloadCallback = base::OnceCallback<void(int64_t, bool)>;
+using AddCompletedDownloadCallback = base::OnceCallback<void(int64_t)>;
 
 // This class pairs with DownloadManagerBridge on Java side, that handles all
 // the android DownloadManager related functionalities. Both classes have only

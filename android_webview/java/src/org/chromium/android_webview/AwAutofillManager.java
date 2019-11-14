@@ -12,8 +12,9 @@ import android.view.View;
 import android.view.autofill.AutofillManager;
 import android.view.autofill.AutofillValue;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.Log;
-import org.chromium.base.VisibleForTesting;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;

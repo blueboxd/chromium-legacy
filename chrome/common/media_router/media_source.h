@@ -76,8 +76,21 @@ class MediaSource {
   // Returns MediaSource URI depending on the type of source.
   static MediaSource ForTab(int tab_id);
   static MediaSource ForTabContentRemoting(int tab_id);
-  static MediaSource ForDesktop();
   static MediaSource ForPresentationUrl(const GURL& presentation_url);
+
+  // Creates a media source for a specific desktop.
+  static MediaSource ForDesktop(const std::string& desktop_media_id);
+
+  // Creates a media source representing "the" desktop.  When possible, prefer
+  // the form with an argument instead.  This type of source is used to
+  // represent using a desktop as a media source at a point where, in the case
+  // of multiple desktops, the actual desktop to use cannot be determined.
+  // Before a route can be created using the source, the desktop picker must be
+  // invoked to choose a specific desktop.
+  //
+  // TODO(crbug.com/809249): See if this method can be removed after the
+  // extension-based Cast MRP is removed.
+  static MediaSource ForDesktop();
 
   // Returns true if source outputs its content via mirroring.
   bool IsDesktopMirroringSource() const;
@@ -90,6 +103,12 @@ class MediaSource {
   // Parses the ID and returns the SessionTabHelper tab ID referencing a source
   // tab. Returns a non-positive value on error.
   int TabId() const;
+
+  // When this source was created by ForDesktop(string), returns a stream ID
+  // suitable for passing to
+  // content::DesktopStreamsRegistry::RequestMediaForStreamId().  Otherwise
+  // returns base::nullopt.
+  base::Optional<std::string> DesktopStreamId() const;
 
   // Checks that this is a parseable URN and is of a known type.
   // Does not deeper protocol-level syntax checks.

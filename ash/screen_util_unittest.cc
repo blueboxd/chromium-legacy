@@ -223,6 +223,13 @@ TEST_F(ScreenUtilTest, SnapBoundsToDisplayEdge) {
   bounds = gfx::Rect(0, 552, 800, 48);
   snapped_bounds = screen_util::SnapBoundsToDisplayEdge(bounds, window);
   EXPECT_EQ(snapped_bounds, gfx::Rect(0, 552, 800, 48));
+
+  UpdateDisplay("2400x1800*1.8/r");
+  EXPECT_EQ(gfx::Size(1000, 1333),
+            display::Screen::GetScreen()->GetPrimaryDisplay().size());
+  bounds = gfx::Rect(950, 0, 50, 1333);
+  snapped_bounds = screen_util::SnapBoundsToDisplayEdge(bounds, window);
+  EXPECT_EQ(snapped_bounds, gfx::Rect(950, 0, 50, 1334));
 }
 
 // Tests that making a window fullscreen while the Docked Magnifier is enabled

@@ -6,10 +6,11 @@ package org.chromium.chrome.browser.feed;
 
 import android.text.TextUtils;
 
+import androidx.annotation.VisibleForTesting;
+
 import com.google.android.libraries.feed.api.host.config.Configuration;
 import com.google.android.libraries.feed.api.host.config.Configuration.ConfigKey;
 
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeFeatureList;
 
 /**

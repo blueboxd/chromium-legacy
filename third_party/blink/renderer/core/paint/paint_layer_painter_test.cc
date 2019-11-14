@@ -376,7 +376,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceRetainsPreviousPaintResult) {
   GetDocument().getElementById("change")->setAttribute(html_names::kStyleAttr,
                                                        "display: block");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  EXPECT_FALSE(target_layer->NeedsRepaint());
+  EXPECT_FALSE(target_layer->SelfNeedsRepaint());
   EXPECT_TRUE(PaintWithoutCommit());
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     EXPECT_EQ(3, NumCachedNewItems());
@@ -413,9 +413,9 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceRetainsPreviousPaintResult) {
   GetLayoutView().GetScrollableArea()->SetScrollOffset(ScrollOffset(0, 3000),
                                                        kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  // Scrolling doesn't set NeedsRepaint flag. Change of paint dirty rect of
+  // Scrolling doesn't set SelfNeedsRepaint flag. Change of paint dirty rect of
   // a partially painted layer will trigger repaint.
-  EXPECT_FALSE(target_layer->NeedsRepaint());
+  EXPECT_FALSE(target_layer->SelfNeedsRepaint());
   EXPECT_TRUE(PaintWithoutCommit());
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
     EXPECT_EQ(3, NumCachedNewItems());

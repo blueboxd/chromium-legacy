@@ -666,7 +666,7 @@ HRESULT PasswordRecoveryManager::StoreWindowsPasswordIfNeeded(
     const base::string16& sid,
     const std::string& access_token,
     const base::string16& password) {
-  if (!MdmPasswordRecoveryEnabled())
+  if (!PasswordRecoveryEnabled())
     return E_NOTIMPL;
 
   base::string16 machine_guid;
@@ -730,7 +730,7 @@ HRESULT PasswordRecoveryManager::RecoverWindowsPasswordIfPossible(
     const base::string16& sid,
     const std::string& access_token,
     base::string16* recovered_password) {
-  if (!MdmPasswordRecoveryEnabled())
+  if (!PasswordRecoveryEnabled())
     return E_NOTIMPL;
 
   DCHECK(recovered_password);
@@ -778,10 +778,10 @@ HRESULT PasswordRecoveryManager::RecoverWindowsPasswordIfPossible(
 }
 
 GURL PasswordRecoveryManager::GetEscrowServiceGenerateKeyPairUrl() {
-  if (!MdmPasswordRecoveryEnabled())
+  if (!PasswordRecoveryEnabled())
     return GURL();
 
-  GURL escrow_service_server = MdmEscrowServiceUrl();
+  GURL escrow_service_server = EscrowServiceUrl();
 
   if (escrow_service_server.is_empty()) {
     LOGFN(ERROR) << "No escrow service server specified";
@@ -793,10 +793,10 @@ GURL PasswordRecoveryManager::GetEscrowServiceGenerateKeyPairUrl() {
 
 GURL PasswordRecoveryManager::GetEscrowServiceGetPrivateKeyUrl(
     const std::string& resource_id) {
-  if (!MdmPasswordRecoveryEnabled())
+  if (!PasswordRecoveryEnabled())
     return GURL();
 
-  GURL escrow_service_server = MdmEscrowServiceUrl();
+  GURL escrow_service_server = EscrowServiceUrl();
 
   if (escrow_service_server.is_empty()) {
     LOGFN(ERROR) << "No escrow service server specified";

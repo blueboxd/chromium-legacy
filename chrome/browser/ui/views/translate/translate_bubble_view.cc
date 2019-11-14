@@ -220,11 +220,6 @@ void TranslateBubbleView::CloseBubble() {
   LocationBarBubbleDelegateView::CloseBubble();
 }
 
-int TranslateBubbleView::GetDialogButtons() const {
-  // TODO(estade): this should be using GetDialogButtons().
-  return ui::DIALOG_BUTTON_NONE;
-}
-
 base::string16 TranslateBubbleView::GetWindowTitle() const {
   int id = 0;
   switch (model_->GetViewState()) {

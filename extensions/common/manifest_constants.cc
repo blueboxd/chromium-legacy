@@ -50,6 +50,7 @@ const char kDeclarativeRuleResourcesKey[] = "rule_resources";
 const char kDefaultLocale[] = "default_locale";
 const char kDescription[] = "description";
 const char kDevToolsPage[] = "devtools_page";
+const char kDifferentialFingerprint[] = "differential_fingerprint";
 const char kDisplayInLauncher[] = "display_in_launcher";
 const char kDisplayInNewTabPage[] = "display_in_new_tab_page";
 const char kEventName[] = "event_name";
@@ -310,6 +311,9 @@ const char kDefaultStateShouldNotBeSet[] =
     "keys.";
 const char kExpectString[] = "Expect string value.";
 const char kFileNotFound[] = "File not found: *.";
+const char kHasDifferentialFingerprint[] =
+    "Manifest contains a differential_fingerprint key that will be overridden "
+    "on extension update.";
 const char kInvalidAboutPage[] = "Invalid value for 'about_page'.";
 const char kInvalidAboutPageExpectRelativePath[] =
     "Invalid value for 'about_page'. Value must be a relative path.";

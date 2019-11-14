@@ -2397,4 +2397,23 @@ TEST_F(StyleEngineTest, MoveSlottedOutsideFlatTreeCrash) {
   EXPECT_EQ(host2, GetStyleRecalcRoot());
 }
 
+TEST_F(StyleEngineTest, StyleRecalcRootInShadowTree) {
+  ScopedFlatTreeStyleRecalcForTest feature_scope(true);
+
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <div id="host"></div>
+  )HTML");
+  Element* host = GetDocument().getElementById("host");
+  ShadowRoot& shadow_root =
+      host->AttachShadowRootInternal(ShadowRootType::kOpen);
+  shadow_root.SetInnerHTMLFromString("<div><span></span></div>");
+  UpdateAllLifecyclePhases();
+
+  Element* span = To<Element>(shadow_root.firstChild()->firstChild());
+  // Mark style dirty.
+  span->SetInlineStyleProperty(CSSPropertyID::kColor, "blue");
+
+  EXPECT_EQ(span, GetStyleRecalcRoot());
+}
+
 }  // namespace blink

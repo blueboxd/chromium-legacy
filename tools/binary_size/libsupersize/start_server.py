@@ -22,7 +22,7 @@ class SupersizeHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler,
   def translate_path(self, path):
     f = super(SupersizeHTTPRequestHandler, self).translate_path(path)
     relative_path = os.path.relpath(f, os.getcwd())
-    if relative_path == 'data.ndjson':
+    if relative_path in ['data.ndjson', 'data.size']:
       return SupersizeHTTPRequestHandler.data_file_path
     if relative_path == 'before.size':
       return SupersizeHTTPRequestHandler.before_file_path
@@ -59,8 +59,10 @@ def Run(args, _parser):
   httpd = BaseHTTPServer.HTTPServer(server_addr, SupersizeHTTPRequestHandler)
 
   sa = httpd.socket.getsockname()
-  before_suffix = '&before_url=before.size&wasm=1' if args.before_file else ''
+  is_ndjson = args.report_file.endswith('ndjson')
+  data_file = 'data.ndjson' if is_ndjson else 'data.size'
+  maybe_before_file = '&before_url=before.size' if args.before_file else ''
   logging.warning(
-      'Server ready at http://%s:%d/viewer.html?load_url=data.ndjson' +
-      before_suffix, sa[0], sa[1])
+      'Server ready at http://%s:%d/viewer.html?load_url=' + data_file +
+      maybe_before_file, sa[0], sa[1])
   httpd.serve_forever()

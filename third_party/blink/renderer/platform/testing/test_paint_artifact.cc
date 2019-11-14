@@ -96,8 +96,10 @@ TestPaintArtifact& TestPaintArtifact::RectDrawing(FakeDisplayItemClient& client,
 TestPaintArtifact& TestPaintArtifact::ForeignLayer(
     scoped_refptr<cc::Layer> layer,
     const FloatPoint& offset) {
+  DEFINE_STATIC_LOCAL(LiteralDebugNameClient, client, ("ForeignLayer"));
   display_item_list_.AllocateAndConstruct<ForeignLayerDisplayItem>(
-      DisplayItem::kForeignLayerFirst, std::move(layer), offset, nullptr);
+      client, DisplayItem::kForeignLayerFirst, std::move(layer), offset,
+      nullptr);
   return *this;
 }
 

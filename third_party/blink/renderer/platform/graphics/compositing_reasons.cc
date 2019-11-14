@@ -160,7 +160,8 @@ constexpr CompositingReasonStringMap kCompositingReasonsStringMap[] = {
 
 }  // anonymous namespace
 
-Vector<const char*> CompositingReason::ShortNames(CompositingReasons reasons) {
+std::vector<const char*> CompositingReason::ShortNames(
+    CompositingReasons reasons) {
 #define V(name)                                                             \
   static_assert(                                                            \
       CompositingReason::k##name ==                                         \
@@ -170,7 +171,7 @@ Vector<const char*> CompositingReason::ShortNames(CompositingReasons reasons) {
   FOR_EACH_COMPOSITING_REASON(V)
 #undef V
 
-  Vector<const char*> result;
+  std::vector<const char*> result;
   if (reasons == kNone)
     return result;
   for (auto& map : kCompositingReasonsStringMap) {
@@ -180,9 +181,9 @@ Vector<const char*> CompositingReason::ShortNames(CompositingReasons reasons) {
   return result;
 }
 
-Vector<const char*> CompositingReason::Descriptions(
+std::vector<const char*> CompositingReason::Descriptions(
     CompositingReasons reasons) {
-  Vector<const char*> result;
+  std::vector<const char*> result;
   if (reasons == kNone)
     return result;
   for (auto& map : kCompositingReasonsStringMap) {

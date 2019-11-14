@@ -249,12 +249,11 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
   WeakHandle<JsBackend> js_backend_;
   WeakHandle<DataTypeDebugInfoListener> debug_info_listener_;
 
-  // These signals allow us to send requests to shut down the HttpBridgeFactory
-  // and ServerConnectionManager without having to wait for those classes to
-  // finish initializing first.
+  // This signal allows us to send requests to shut down the
+  // ServerConnectionManager without having to wait for it to finish
+  // initializing first.
   //
-  // See comments in SyncEngineBackend::ShutdownOnUIThread() for more details.
-  CancelationSignal release_request_context_signal_;
+  // See comment in ShutdownOnUIThread() for more details.
   CancelationSignal stop_syncing_signal_;
 
   // Set when we've been asked to forward sync protocol events to the frontend.

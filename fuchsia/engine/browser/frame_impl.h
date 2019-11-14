@@ -20,6 +20,7 @@
 #include "base/memory/platform_shared_memory_region.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "fuchsia/engine/browser/accessibility_bridge.h"
 #include "fuchsia/engine/browser/discarding_event_filter.h"
 #include "fuchsia/engine/browser/navigation_controller_impl.h"
 #include "fuchsia/engine/browser/url_request_rewrite_rules_manager.h"
@@ -56,6 +57,14 @@ class FrameImpl : public fuchsia::web::Frame,
   void set_javascript_console_message_hook_for_test(
       base::RepeatingCallback<void(base::StringPiece)> hook) {
     console_log_message_hook_ = std::move(hook);
+  }
+  AccessibilityBridge* accessibility_bridge_for_test() const {
+    return accessibility_bridge_.get();
+  }
+  void set_semantics_manager_for_test(
+      fuchsia::accessibility::semantics::SemanticsManagerPtr
+          semantics_manager) {
+    test_semantics_manager_ptr_ = std::move(semantics_manager);
   }
 
  private:
@@ -170,6 +179,9 @@ class FrameImpl : public fuchsia::web::Frame,
   const std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<wm::FocusController> focus_controller_;
   ContextImpl* const context_;
+  std::unique_ptr<AccessibilityBridge> accessibility_bridge_;
+  fuchsia::accessibility::semantics::SemanticsManagerPtr
+      test_semantics_manager_ptr_;
 
   DiscardingEventFilter discarding_event_filter_;
   NavigationControllerImpl navigation_controller_;

@@ -12,7 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "content/public/common/content_client.h"
 #include "media/media_buildflags.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
+#include "mojo/public/cpp/bindings/binder_map.h"
 
 namespace base {
 class Token;
@@ -39,17 +39,15 @@ class CONTENT_EXPORT ContentGpuClient {
  public:
   virtual ~ContentGpuClient() {}
 
-  // Initializes the registry. |registry| will be passed to a ConnectionFilter
-  // (which lives on the IO thread). Unlike other childthreads, the client must
-  // register additional interfaces on this registry rather than just creating
-  // more ConnectionFilters as the ConnectionFilter that wraps this registry
-  // specifically does not bind any interface requests until after the Gpu
-  // process receives CreateGpuService() from the browser.
-  virtual void InitializeRegistry(service_manager::BinderRegistry* registry) {}
-
   // Called during initialization once the GpuService has been initialized.
-  virtual void GpuServiceInitialized(
-      const gpu::GpuPreferences& gpu_preferences) {}
+  virtual void GpuServiceInitialized() {}
+
+  // Registers Mojo interface binders that can handle interface requests from
+  // the browser. Binders registered here will never run until the GPU process
+  // has received a |CreateGpuService()| call from the browser.
+  virtual void ExposeInterfacesToBrowser(
+      const gpu::GpuPreferences& gpu_preferences,
+      mojo::BinderMap* binders) {}
 
   // Called right after the IO/compositor thread is created.
   virtual void PostIOThreadCreated(

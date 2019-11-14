@@ -75,6 +75,16 @@ class MockCloudPolicyClient : public CloudPolicyClient {
                void(enterprise_management::ChromeDesktopReportRequest*,
                     const StatusCallback&));
 
+  void UploadChromeOsUserReport(
+      std::unique_ptr<enterprise_management::ChromeOsUserReportRequest> request,
+      const StatusCallback& callback) override {
+    UploadChromeOsUserReportProxy(request.get(), callback);
+  }
+  // Use Proxy function because unique_ptr can't be used in mock function.
+  MOCK_METHOD2(UploadChromeOsUserReportProxy,
+               void(enterprise_management::ChromeOsUserReportRequest*,
+                    const StatusCallback&));
+
   MOCK_METHOD2(UploadRealtimeReport, void(base::Value, const StatusCallback&));
 
   // Sets the DMToken.

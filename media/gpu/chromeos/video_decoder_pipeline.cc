@@ -347,6 +347,10 @@ void VideoDecoderPipeline::OnFrameConverted(scoped_refptr<VideoFrame> frame) {
     return;
   }
 
+  frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
+  // TODO(crbug.com/998547): Remove this specific statement when not needed.
+  frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT, true);
+
   // MojoVideoDecoderService expects the |output_cb_| to be called on the client
   // task runner, even though media::VideoDecoder states frames should be output
   // without any thread jumping.

@@ -247,6 +247,7 @@ PasswordItemsView::PasswordItemsView(content::WebContents* web_contents,
                              anchor_view,
                              reason,
                              /*easily_dismissable=*/true) {
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
   DialogDelegate::SetExtraView(CreateManageButton(this));
   DCHECK_EQ(password_manager::ui::MANAGE_STATE, model()->state());
 
@@ -300,10 +301,6 @@ void PasswordItemsView::NotifyPasswordFormAction(
   // After the view is consistent, notify the model that the password needs to
   // be updated (either removed or put back into the store, as appropriate.
   model()->OnPasswordAction(password_form, action);
-}
-
-int PasswordItemsView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK;
 }
 
 bool PasswordItemsView::ShouldShowCloseButton() const {

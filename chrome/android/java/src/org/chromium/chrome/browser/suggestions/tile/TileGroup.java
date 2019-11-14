@@ -14,9 +14,9 @@ import android.view.View.OnCreateContextMenuListener;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.explore_sites.ExploreSitesBridge;
 import org.chromium.chrome.browser.explore_sites.ExploreSitesCatalogUpdateRequestSource;
 import org.chromium.chrome.browser.favicon.IconType;

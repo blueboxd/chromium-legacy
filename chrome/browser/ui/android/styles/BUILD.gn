@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/android/rules.gni")
+import("//ui/android/features.gni")
 
 android_library("java") {
   java_files =
@@ -11,6 +12,7 @@ android_library("java") {
     ":java_resources",
     "//base:base_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
+    "//third_party/android_deps:com_android_support_design_java",
 
     # TODO(crbug.com/1017190): Remove this workaround.
     "//ui/android:ui_java",
@@ -21,6 +23,11 @@ android_resources("java_resources") {
   custom_package = "org.chromium.chrome.browser.ui.styles"
   resource_dirs = [ "java/res" ]
   deps = [
+    "//third_party/android_deps:com_android_support_design_java",
     "//ui/android:ui_java_resources",
   ]
+
+  if (enable_android_night_mode) {
+    resource_dirs += [ "java/res_night" ]
+  }
 }

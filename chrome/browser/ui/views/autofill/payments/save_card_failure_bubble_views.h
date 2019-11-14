@@ -16,9 +16,6 @@ class SaveCardFailureBubbleViews : public SaveCardBubbleViews {
                              content::WebContents* web_contents,
                              SaveCardBubbleController* controller);
 
-  // SaveCardBubbleViews:
-  int GetDialogButtons() const override;
-
  protected:
   ~SaveCardFailureBubbleViews() override = default;
 

@@ -113,9 +113,8 @@ class MediaPipelineBackendManager {
   void RemoveAllowVolumeFeedbackObserver(AllowVolumeFeedbackObserver* observer);
 
   // Add/remove a playing audio stream that is not accounted for by a
-  // CmaBackend instance (for example, direct audio output using
-  // CastMediaShlib::AddDirectAudioSource()). |sfx| indicates whether or not
-  // the stream is a sound effects stream (has no effect on volume feedback).
+  // CmaBackend instance. |sfx| indicates whether or not the stream is a sound
+  // effects stream (has no effect on volume feedback).
   void AddExtraPlayingStream(bool sfx, const AudioContentType type);
   void RemoveExtraPlayingStream(bool sfx, const AudioContentType type);
 

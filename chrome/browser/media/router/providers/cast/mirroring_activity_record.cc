@@ -29,7 +29,6 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/ip_address.h"
-#include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 
 using blink::mojom::PresentationConnectionMessagePtr;
 using cast_channel::Result;
@@ -54,16 +53,29 @@ MirroringActivityRecord::MirroringActivityRecord(
       channel_id_(cast_data.cast_channel_id),
       // TODO(jrw): MirroringType::kOffscreenTab should be a possible value here
       // once the Presentation API 1UA mode is supported.
-      mirroring_type_(target_tab_id == -1 ? MirroringType::kTab
-                                          : MirroringType::kDesktop),
+      mirroring_type_(target_tab_id == -1 ? MirroringType::kDesktop
+                                          : MirroringType::kTab),
       on_stop_(std::move(callback)) {
   // TODO(jrw): Detect and report errors.
 
   mirroring_tab_id_ = target_tab_id;
 
   // Get a reference to the mirroring service host.
-  media_router->GetMirroringServiceHostForTab(
-      target_tab_id, host_.BindNewPipeAndPassReceiver());
+  switch (mirroring_type_) {
+    case MirroringType::kDesktop: {
+      auto stream_id = route.media_source().DesktopStreamId();
+      DCHECK(stream_id);
+      media_router->GetMirroringServiceHostForDesktop(
+          /* tab_id */ -1, *stream_id, host_.BindNewPipeAndPassReceiver());
+      break;
+    }
+    case MirroringType::kTab:
+      media_router->GetMirroringServiceHostForTab(
+          target_tab_id, host_.BindNewPipeAndPassReceiver());
+      break;
+    default:
+      NOTREACHED();
+  }
 
   // Bind Mojo receivers for the interfaces this object implements.
   mojo::PendingRemote<mirroring::mojom::SessionObserver> observer_remote;

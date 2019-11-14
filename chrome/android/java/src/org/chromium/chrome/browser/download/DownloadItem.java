@@ -21,12 +21,10 @@ import org.chromium.components.offline_items_collection.OfflineItemState;
  * DownloadManager must be queried for the correct status.
  */
 public class DownloadItem {
-    static final long INVALID_DOWNLOAD_ID = -1L;
-
     private final ContentId mContentId = new ContentId();
     private boolean mUseAndroidDownloadManager;
     private DownloadInfo mDownloadInfo;
-    private long mDownloadId = INVALID_DOWNLOAD_ID;
+    private long mDownloadId = DownloadConstants.INVALID_DOWNLOAD_ID;
     private long mStartTime;
     private long mEndTime;
     private boolean mHasBeenExternallyRemoved;

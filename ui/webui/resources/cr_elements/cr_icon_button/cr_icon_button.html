@@ -8,7 +8,16 @@
   <template>
     <style>
       :host {
+        /* TODO(aee): Delete --cr-icon-button-color and replace all usages with
+         *     --cr-icon-button-fill-color. */
         --cr-icon-button-color: var(--google-grey-refresh-700);
+        --cr-icon-button-fill-color-focus: var(--cr-icon-button-focus-color);
+        --cr-icon-button-fill-color: var(--cr-icon-button-color);
+        /* TODO(aee): Delete --cr-icon-button-focus-color and replace all usages
+         *     with --cr-icon-button-fill-color-focus. */
+        --cr-icon-button-focus-color: white;
+        --cr-icon-button-stroke-color-focus: none;
+        --cr-icon-button-stroke-color: none;
         --cr-icon-button-icon-start-offset: 0;
         --cr-icon-button-icon-size: 20px;
         --cr-icon-button-size: 36px;
@@ -60,7 +69,7 @@
       }
 
       :host-context([a11y-enhanced]):host([ripple-showing_]) #maskedImage {
-        background-color: var(--cr-icon-button-focus-color, white);
+        background-color: var(--cr-icon-button-fill-color-focus);
       }
 
       #icon {
@@ -76,15 +85,18 @@
       }
 
       iron-icon {
-        --iron-icon-fill-color: var(--cr-icon-button-color);
+        --iron-icon-fill-color: var(--cr-icon-button-fill-color);
+        --iron-icon-stroke-color: var(--cr-icon-button-stroke-color);
         --iron-icon-height: var(--cr-icon-button-icon-size);
         --iron-icon-width: var(--cr-icon-button-icon-size);
-        transition: fill var(--cr-icon-button-transition);
+        transition: fill var(--cr-icon-button-transition),
+            stroke var(--cr-icon-button-transition);
         z-index: 1;
       }
 
       :host-context([a11y-enhanced]):host([ripple-showing_]) iron-icon {
-        --iron-icon-fill-color: var(--cr-icon-button-focus-color, white);
+        --iron-icon-fill-color: var(--cr-icon-button-fill-color-focus);
+        --iron-icon-stroke-color: var(--cr-icon-button-stroke-color-focus);
       }
 
       paper-ripple {
@@ -93,35 +105,21 @@
       }
 
 
-      :host-context([a11y-enhanced]) paper-ripple {
-        --paper-ripple-opacity: 1;
-        opacity: 0;
-        transition: opacity var(--cr-icon-button-transition);
-      }
-
       @media (prefers-color-scheme: dark) {
         :host {
           --cr-icon-button-color: var(--google-grey-refresh-500);
-        }
-
-        :host-context([a11y-enhanced]):host([ripple-showing_]) iron-icon {
-          --iron-icon-fill-color: var(--cr-icon-button-focus-color,
-              var(--google-grey-900));
-        }
-
-        :host(:not([iron-icon])) #maskedImage {
-          background-color: var(--cr-icon-button-color,
-              var(--google-grey-refresh-500));
-        }
-
-        :host-context([a11y-enhanced]):host([ripple-showing_]) #maskedImage {
-          background-color: var(--cr-icon-button-focus-color,
-              var(--google-grey-900));
+          --cr-icon-button-focus-color: var(--google-grey-900);
         }
 
         paper-ripple {
           --paper-ripple-opacity: var(--cr-icon-button-ripple-opacity, .4);
         }
+      }
+
+      :host-context([a11y-enhanced]) paper-ripple {
+        --paper-ripple-opacity: 1;
+        opacity: 0;
+        transition: opacity var(--cr-icon-button-transition);
       }
 
       :host-context([a11y-enhanced]):host([ripple-showing_]) paper-ripple {

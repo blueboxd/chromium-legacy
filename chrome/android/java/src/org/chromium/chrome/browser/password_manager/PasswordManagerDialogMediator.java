@@ -17,9 +17,9 @@ import android.text.style.StyleSpan;
 import android.view.View;
 
 import androidx.annotation.DrawableRes;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;

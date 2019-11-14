@@ -74,6 +74,8 @@ QRCodeGeneratorBubble::QRCodeGeneratorBubble(
       url_(url),
       controller_(controller) {
   DCHECK(controller);
+
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
 }
 
 QRCodeGeneratorBubble::~QRCodeGeneratorBubble() = default;
@@ -128,10 +130,6 @@ void QRCodeGeneratorBubble::WindowClosing() {
 
 bool QRCodeGeneratorBubble::Close() {
   return Cancel();
-}
-
-int QRCodeGeneratorBubble::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;  // No OK/Cancel buttons.
 }
 
 const char* QRCodeGeneratorBubble::GetClassName() const {

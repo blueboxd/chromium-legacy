@@ -144,6 +144,8 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kMovedOrResizedPopup2sAfterCreation,
           WebFeature::kDOMWindowOpenPositioningFeatures,
           WebFeature::kCSSSelectorInternalMediaControlsOverlayCastButton,
+          WebFeature::kWebBluetoothRequestDevice,
+          WebFeature::kWebBluetoothRequestScan,
       }));
   return *opt_in_features;
 }

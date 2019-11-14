@@ -51,6 +51,7 @@
 #if BUILDFLAG(ENABLE_VULKAN)
 #include "gpu/vulkan/init/vulkan_factory.h"
 #include "gpu/vulkan/vulkan_implementation.h"
+#include "gpu/vulkan/vulkan_instance.h"
 #endif
 
 namespace gpu {
@@ -659,6 +660,9 @@ void GpuInit::InitializeVulkan() {
     gpu_preferences_.use_vulkan = gpu::VulkanImplementationName::kNone;
     gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_VULKAN] =
         gpu::kGpuFeatureStatusDisabled;
+  } else {
+    gpu_info_.vulkan_info =
+        vulkan_implementation_->GetVulkanInstance()->vulkan_info();
   }
 #else
   gpu_preferences_.use_vulkan = gpu::VulkanImplementationName::kNone;

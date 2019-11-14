@@ -4,6 +4,8 @@
 
 #include "chrome/common/media_router/media_source.h"
 
+#include <string>
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media_router {
@@ -76,8 +78,9 @@ TEST(MediaSourceTest, ForTabContentRemoting) {
 }
 
 TEST(MediaSourceTest, ForDesktop) {
-  auto source = MediaSource::ForDesktop();
-  EXPECT_EQ("urn:x-org.chromium.media:source:desktop", source.id());
+  std::string media_id = "fakeMediaId";
+  auto source = MediaSource::ForDesktop(media_id);
+  EXPECT_EQ("urn:x-org.chromium.media:source:desktop:" + media_id, source.id());
   EXPECT_TRUE(source.IsValid());
   EXPECT_TRUE(source.IsDesktopMirroringSource());
   EXPECT_FALSE(source.IsTabMirroringSource());

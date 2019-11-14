@@ -32,7 +32,6 @@ class FirstRunDialog : public views::DialogDelegateView,
 
   // views::DialogDelegate:
   bool Accept() override;
-  int GetDialogButtons() const override;
 
   // views::WidgetDelegate:
   void WindowClosing() override;

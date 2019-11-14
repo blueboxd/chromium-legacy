@@ -14,11 +14,6 @@
         {
           "object": "LayoutTextControl (floating) TEXTAREA id='target'",
           "rect": [8, 8, 306, 306],
-          "reason": "chunk appeared"
-        },
-        {
-          "object": "LayoutTextControl (floating) TEXTAREA id='target'",
-          "rect": [8, 8, 306, 306],
           "reason": "chunk disappeared"
         },
         {
@@ -29,7 +24,7 @@
         {
           "object": "LayoutTextControl (floating) TEXTAREA id='target'",
           "rect": [8, 8, 306, 306],
-          "reason": "chunk disappeared"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutTextControl (floating) TEXTAREA id='target'",

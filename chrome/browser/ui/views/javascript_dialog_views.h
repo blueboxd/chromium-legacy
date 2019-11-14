@@ -42,7 +42,6 @@ class JavaScriptDialogViews : public JavaScriptDialog,
   base::string16 GetUserInput() override;
 
   // views::DialogDelegate:
-  int GetDialogButtons() const override;
   base::string16 GetWindowTitle() const override;
   bool Cancel() override;
   bool Accept() override;
@@ -70,7 +69,6 @@ class JavaScriptDialogViews : public JavaScriptDialog,
       base::OnceClosure dialog_force_closed_callback);
 
   base::string16 title_;
-  content::JavaScriptDialogType dialog_type_;
   base::string16 message_text_;
   base::string16 default_prompt_text_;
   content::JavaScriptDialogManager::DialogClosedCallback dialog_callback_;

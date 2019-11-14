@@ -13,9 +13,10 @@ import android.print.PageRange;
 import android.print.PrintAttributes;
 import android.print.PrintDocumentInfo;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.printing.PrintDocumentAdapterWrapper.PdfGenerator;
 
 import java.io.IOException;

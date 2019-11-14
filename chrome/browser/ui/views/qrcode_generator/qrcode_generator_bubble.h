@@ -64,7 +64,6 @@ class QRCodeGeneratorBubble : public QRCodeGeneratorBubbleView,
   bool ShouldShowCloseButton() const override;
   void WindowClosing() override;
   bool Close() override;
-  int GetDialogButtons() const override;
   const char* GetClassName() const override;
 
   // views::BubbleDialogDelegateView:

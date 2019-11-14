@@ -23,13 +23,14 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import androidx.annotation.VisibleForTesting;
+
 import com.google.vr.ndk.base.AndroidCompat;
 import com.google.vr.ndk.base.GvrLayout;
 
 import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -531,7 +532,7 @@ public class VrShell extends GvrLayout
         // Reparent all existing tabs.
         for (TabModel model : mActivity.getTabModelSelector().getModels()) {
             for (int i = 0; i < model.getCount(); ++i) {
-                model.getTabAt(i).updateWindowAndroid(window);
+                model.getTabAt(i).updateAttachment(window, null);
             }
         }
     }

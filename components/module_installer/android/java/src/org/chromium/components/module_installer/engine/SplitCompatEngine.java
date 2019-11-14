@@ -6,13 +6,14 @@ package org.chromium.components.module_installer.engine;
 
 import android.app.Activity;
 
+import androidx.annotation.VisibleForTesting;
+
 import com.google.android.play.core.splitinstall.SplitInstallException;
 import com.google.android.play.core.splitinstall.SplitInstallRequest;
 import com.google.android.play.core.splitinstall.SplitInstallStateUpdatedListener;
 import com.google.android.play.core.splitinstall.model.SplitInstallSessionStatus;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.VisibleForTesting;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -51,6 +51,8 @@ InfoBubble::InfoBubble(View* anchor, const base::string16& message)
   DCHECK(anchor_);
   SetAnchorView(anchor_);
 
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+
   set_margins(LayoutProvider::Get()->GetInsetsMetric(
       InsetsMetric::INSETS_TOOLTIP_BUBBLE));
   SetCanActivate(false);
@@ -105,10 +107,6 @@ void InfoBubble::OnWidgetBoundsChanged(Widget* widget,
   BubbleDialogDelegateView::OnWidgetBoundsChanged(widget, new_bounds);
   if (anchor_widget() == widget)
     frame_->set_available_bounds(widget->GetWindowBoundsInScreen());
-}
-
-int InfoBubble::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
 }
 
 void InfoBubble::UpdatePosition() {

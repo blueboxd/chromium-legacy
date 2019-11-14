@@ -8,6 +8,8 @@
 #include <memory>
 #include <string>
 
+#include "base/scoped_observer.h"
+#include "ui/aura/env.h"
 #include "ui/aura/env_observer.h"
 #include "ui/views/views_export.h"
 
@@ -34,7 +36,6 @@ class VIEWS_EXPORT AccessibilityAlertWindow : public aura::EnvObserver {
 
  private:
   // aura::EnvObserver:
-  void OnWindowInitialized(aura::Window* window) override;
   void OnWillDestroyEnv() override;
 
   // The child alert window.
@@ -42,6 +43,8 @@ class VIEWS_EXPORT AccessibilityAlertWindow : public aura::EnvObserver {
 
   // The accessibility cache associated with |alert_window_|.
   views::AXAuraObjCache* cache_;
+
+  ScopedObserver<aura::Env, aura::EnvObserver> observer_{this};
 };
 
 }  // namespace views

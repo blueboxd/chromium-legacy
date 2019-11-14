@@ -22,7 +22,10 @@ namespace {
 // Prefixes used to format and detect various protocols' media source URNs.
 // See: https://www.ietf.org/rfc/rfc3406.txt
 constexpr char kTabMediaUrnFormat[] = "urn:x-org.chromium.media:source:tab:%d";
-constexpr char kDesktopMediaUrn[] = "urn:x-org.chromium.media:source:desktop";
+constexpr base::StringPiece kDesktopMediaUrnPrefix =
+    "urn:x-org.chromium.media:source:desktop:";
+constexpr base::StringPiece kUnknownDesktopMediaUrn =
+    "urn:x-org.chromium.media:source:desktop";
 constexpr char kTabRemotingUrnFormat[] =
     "urn:x-org.chromium.media:source:tab_content_remoting:%d";
 
@@ -77,8 +80,13 @@ MediaSource MediaSource::ForTabContentRemoting(int tab_id) {
 }
 
 // static
+MediaSource MediaSource::ForDesktop(const std::string& desktop_media_id) {
+  return MediaSource(kDesktopMediaUrnPrefix.as_string() + desktop_media_id);
+}
+
+// static
 MediaSource MediaSource::ForDesktop() {
-  return MediaSource(std::string(kDesktopMediaUrn));
+  return MediaSource(kUnknownDesktopMediaUrn.as_string());
 }
 
 // static
@@ -87,7 +95,9 @@ MediaSource MediaSource::ForPresentationUrl(const GURL& presentation_url) {
 }
 
 bool MediaSource::IsDesktopMirroringSource() const {
-  return base::StartsWith(id(), kDesktopMediaUrn, base::CompareCase::SENSITIVE);
+  return id() == kUnknownDesktopMediaUrn ||
+         base::StartsWith(id(), kDesktopMediaUrnPrefix,
+                          base::CompareCase::SENSITIVE);
 }
 
 bool MediaSource::IsTabMirroringSource() const {
@@ -113,6 +123,14 @@ int MediaSource::TabId() const {
     return tab_id;
   else
     return -1;
+}
+
+base::Optional<std::string> MediaSource::DesktopStreamId() const {
+  if (base::StartsWith(id_, kDesktopMediaUrnPrefix,
+                       base::CompareCase::SENSITIVE)) {
+    return std::string(id_.begin() + kDesktopMediaUrnPrefix.size(), id_.end());
+  }
+  return base::nullopt;
 }
 
 bool MediaSource::IsValid() const {

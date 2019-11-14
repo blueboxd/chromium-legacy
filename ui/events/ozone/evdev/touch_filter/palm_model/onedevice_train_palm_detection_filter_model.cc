@@ -48,8 +48,8 @@ OneDeviceTrainNeuralStylusPalmDetectionFilterModel::config() const {
 
 OneDeviceTrainNeuralStylusPalmDetectionFilterModel::
     OneDeviceTrainNeuralStylusPalmDetectionFilterModel() {
-  config_.nearest_neighbor_count = 1;
-  config_.biggest_near_neighbor_count = 1;
+  config_.nearest_neighbor_count = 0;
+  config_.biggest_near_neighbor_count = 2;
   config_.include_sequence_count_in_strokes = true;
   config_.max_neighbor_distance_in_mm = 100.0f;
   config_.min_sample_count = 6;

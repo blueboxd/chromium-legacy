@@ -6,6 +6,7 @@
 
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/drag_drop/drag_image_view.h"
+#include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf_focus_cycler.h"
@@ -14,7 +15,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/numerics/ranges.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -63,6 +64,40 @@ constexpr int kGradientZoneLength = 26;
 // Delay to show a new page of shelf icons.
 constexpr base::TimeDelta kShelfPageFlipDelay =
     base::TimeDelta::FromMilliseconds(500);
+
+// Histogram names for the scrollable shelf dragging metrics.
+constexpr char kScrollDraggingTabletLauncherVisibleHistogram[] =
+    "Apps.ScrollableShelf.Drag.PresentationTime.TabletMode.LauncherVisible";
+constexpr char kScrollDraggingTabletLauncherVisibleMaxLatencyHistogram[] =
+    "Apps.ScrollableShelf.Drag.PresentationTime.MaxLatency.TabletMode."
+    "LauncherVisible";
+constexpr char kScrollDraggingTabletLauncherHiddenHistogram[] =
+    "Apps.ScrollableShelf.Drag.PresentationTime.TabletMode.LauncherHidden";
+constexpr char kScrollDraggingTabletLauncherHiddenMaxLatencyHistogram[] =
+    "Apps.ScrollableShelf.Drag.PresentationTime.MaxLatency.TabletMode."
+    "LauncherHidden";
+constexpr char kScrollDraggingClamshellLauncherVisibleHistogram[] =
+    "Apps.ScrollableShelf.Drag.PresentationTime.ClamshellMode.LauncherVisible";
+constexpr char kScrollDraggingClamshellLauncherVisibleMaxLatencyHistogram[] =
+    "Apps.ScrollableShelf.Drag.PresentationTime.MaxLatency.ClamshellMode."
+    "LauncherVisible";
+constexpr char kScrollDraggingClamshellLauncherHiddenHistogram[] =
+    "Apps.ScrollableShelf.Drag.PresentationTime.ClamshellMode.LauncherHidden";
+constexpr char kScrollDraggingClamshellLauncherHiddenMaxLatencyHistogram[] =
+    "Apps.ScrollableShelf.Drag.PresentationTime.MaxLatency.ClamshellMode."
+    "LauncherHidden";
+
+// Histogram names for the scrollable shelf animation smoothness metrics.
+constexpr char kAnimationSmoothnessHistogram[] =
+    "Apps.ScrollableShelf.AnimationSmoothness";
+constexpr char kAnimationSmoothnessTabletLauncherVisibleHistogram[] =
+    "Apps.ScrollableShelf.AnimationSmoothness.TabletMode.LauncherVisible";
+constexpr char kAnimationSmoothnessTabletLauncherHiddenHistogram[] =
+    "Apps.ScrollableShelf.AnimationSmoothness.TabletMode.LauncherHidden";
+constexpr char kAnimationSmoothnessClamshellLauncherVisibleHistogram[] =
+    "Apps.ScrollableShelf.AnimationSmoothness.ClamshellMode.LauncherVisible";
+constexpr char kAnimationSmoothnessClamshellLauncherHiddenHistogram[] =
+    "Apps.ScrollableShelf.AnimationSmoothness.ClamshellMode.LauncherHidden";
 
 // Sum of the shelf button size and the gap between shelf buttons.
 int GetUnit() {
@@ -228,15 +263,23 @@ class ScrollableShelfAnimationMetricsReporter
 
   // ui::AnimationMetricsReporter:
   void Report(int value) override {
-    UMA_HISTOGRAM_PERCENTAGE("Apps.ScrollableShelf.AnimationSmoothness", value);
-    if (Shell::Get()->app_list_controller()->IsVisible()) {
-      UMA_HISTOGRAM_PERCENTAGE(
-          "Apps.ScrollableShelf.AnimationSmoothness.VisibleHomeLauncher",
-          value);
+    base::UmaHistogramPercentage(kAnimationSmoothnessHistogram, value);
+    if (IsInTabletMode()) {
+      if (Shell::Get()->app_list_controller()->IsVisible()) {
+        base::UmaHistogramPercentage(
+            kAnimationSmoothnessTabletLauncherVisibleHistogram, value);
+      } else {
+        base::UmaHistogramPercentage(
+            kAnimationSmoothnessTabletLauncherHiddenHistogram, value);
+      }
     } else {
-      UMA_HISTOGRAM_PERCENTAGE(
-          "Apps.ScrollableShelf.AnimationSmoothness.NotVisibleHomeLauncher",
-          value);
+      if (Shell::Get()->app_list_controller()->IsVisible()) {
+        base::UmaHistogramPercentage(
+            kAnimationSmoothnessClamshellLauncherVisibleHistogram, value);
+      } else {
+        base::UmaHistogramPercentage(
+            kAnimationSmoothnessClamshellLauncherHiddenHistogram, value);
+      }
     }
   }
 
@@ -1118,8 +1161,41 @@ bool ScrollableShelfView::ProcessGestureEvent(const ui::GestureEvent& event) {
 
   // Handle scroll-related events, but don't do anything special for begin and
   // end.
-  if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN ||
-      event.type() == ui::ET_GESTURE_SCROLL_END) {
+  if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN) {
+    DCHECK(!presentation_time_recorder_);
+    if (IsInTabletMode()) {
+      if (Shell::Get()->app_list_controller()->IsVisible()) {
+        presentation_time_recorder_ =
+            ash::CreatePresentationTimeHistogramRecorder(
+                GetWidget()->GetCompositor(),
+                kScrollDraggingTabletLauncherVisibleHistogram,
+                kScrollDraggingTabletLauncherVisibleMaxLatencyHistogram);
+      } else {
+        presentation_time_recorder_ =
+            ash::CreatePresentationTimeHistogramRecorder(
+                GetWidget()->GetCompositor(),
+                kScrollDraggingTabletLauncherHiddenHistogram,
+                kScrollDraggingTabletLauncherHiddenMaxLatencyHistogram);
+      }
+    } else {
+      if (Shell::Get()->app_list_controller()->IsVisible()) {
+        presentation_time_recorder_ =
+            ash::CreatePresentationTimeHistogramRecorder(
+                GetWidget()->GetCompositor(),
+                kScrollDraggingClamshellLauncherVisibleHistogram,
+                kScrollDraggingClamshellLauncherVisibleMaxLatencyHistogram);
+      } else {
+        presentation_time_recorder_ =
+            ash::CreatePresentationTimeHistogramRecorder(
+                GetWidget()->GetCompositor(),
+                kScrollDraggingClamshellLauncherHiddenHistogram,
+                kScrollDraggingClamshellLauncherHiddenMaxLatencyHistogram);
+      }
+    }
+    return true;
+  }
+  if (event.type() == ui::ET_GESTURE_SCROLL_END) {
+    presentation_time_recorder_.reset();
     return true;
   }
 
@@ -1158,6 +1234,8 @@ bool ScrollableShelfView::ProcessGestureEvent(const ui::GestureEvent& event) {
   if (event.type() != ui::ET_GESTURE_SCROLL_UPDATE)
     return false;
 
+  DCHECK(presentation_time_recorder_);
+  presentation_time_recorder_->RequestNext();
   if (GetShelf()->IsHorizontalAlignment())
     ScrollByXOffset(-event.details().scroll_x(), /*animate=*/false);
   else

@@ -213,9 +213,6 @@ void MailboxVideoFrameConverter::WrapMailboxAndVideoFrameAndOutput(
   mailbox_frame->metadata()->MergeMetadataFrom(frame->metadata());
   mailbox_frame->metadata()->SetBoolean(
       VideoFrameMetadata::READ_LOCK_FENCES_ENABLED, true);
-  // TODO(crbug.com/998547): Remove this specific statement when not needed.
-  mailbox_frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT,
-                                        true);
 
   output_cb_.Run(mailbox_frame);
 }

@@ -46,7 +46,8 @@ AXPlatformNodeTextProviderWin* AXPlatformNodeTextProviderWin::Create(
 // static
 void AXPlatformNodeTextProviderWin::CreateIUnknown(AXPlatformNodeWin* owner,
                                                    IUnknown** unknown) {
-  CComPtr<AXPlatformNodeTextProviderWin> text_provider(Create(owner));
+  Microsoft::WRL::ComPtr<AXPlatformNodeTextProviderWin> text_provider(
+      Create(owner));
   if (text_provider)
     *unknown = text_provider.Detach();
 }
@@ -110,9 +111,9 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::GetSelection(
   if (!anchor_object->GetDelegate()->HasVisibleCaretOrSelection())
     return S_OK;
 
-  CComPtr<ITextRangeProvider> text_range_provider =
+  Microsoft::WRL::ComPtr<ITextRangeProvider> text_range_provider =
       AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
-          owner_, std::move(start), std::move(end));
+          owner_.Get(), std::move(start), std::move(end));
   if (&text_range_provider == nullptr)
     return E_OUTOFMEMORY;
 
@@ -127,7 +128,7 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::GetSelection(
 
   LONG index = 0;
   HRESULT hr = SafeArrayPutElement(selections_to_return.Get(), &index,
-                                   text_range_provider);
+                                   text_range_provider.Get());
   DCHECK(SUCCEEDED(hr));
 
   // Since DCHECK only happens in debug builds, return immediately to ensure
@@ -159,7 +160,7 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::GetVisibleRanges(
 
   // SAFEARRAYs are not dynamic, so fill the visible ranges in a vector
   // and then transfer to an appropriately-sized SAFEARRAY
-  std::vector<CComPtr<ITextRangeProvider>> ranges;
+  std::vector<Microsoft::WRL::ComPtr<ITextRangeProvider>> ranges;
 
   auto current_line_start = start->Clone();
   while (!current_line_start->IsNullPosition() && *current_line_start < *end) {
@@ -173,9 +174,10 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::GetVisibleRanges(
         AXCoordinateSystem::kFrame, AXClippingBehavior::kUnclipped);
 
     if (frame_rect.Contains(current_rect)) {
-      CComPtr<ITextRangeProvider> text_range_provider =
+      Microsoft::WRL::ComPtr<ITextRangeProvider> text_range_provider =
           AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
-              owner_, current_line_start->Clone(), current_line_end->Clone());
+              owner_.Get(), current_line_start->Clone(),
+              current_line_end->Clone());
 
       ranges.emplace_back(text_range_provider);
     }
@@ -192,9 +194,9 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::GetVisibleRanges(
     return E_OUTOFMEMORY;
 
   LONG index = 0;
-  for (CComPtr<ITextRangeProvider>& current_provider : ranges) {
+  for (Microsoft::WRL::ComPtr<ITextRangeProvider>& current_provider : ranges) {
     HRESULT hr = SafeArrayPutElement(scoped_visible_ranges.Get(), &index,
-                                     current_provider);
+                                     current_provider.Get());
     DCHECK(SUCCEEDED(hr));
 
     // Since DCHECK only happens in debug builds, return immediately to ensure
@@ -300,7 +302,7 @@ STDMETHODIMP AXPlatformNodeTextProviderWin::get_DocumentRange(
   }
 
   *range = AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
-      owner_, std::move(start), std::move(end));
+      owner_.Get(), std::move(start), std::move(end));
 
   return S_OK;
 }
@@ -360,7 +362,7 @@ ITextRangeProvider* AXPlatformNodeTextProviderWin::GetRangeFromChild(
 }
 
 ui::AXPlatformNodeWin* AXPlatformNodeTextProviderWin::owner() const {
-  return owner_;
+  return owner_.Get();
 }
 
 HRESULT
@@ -386,7 +388,7 @@ AXPlatformNodeTextProviderWin::GetTextRangeProviderFromActiveComposition(
             /*offset*/ active_composition_offset.end());
 
     *range = AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
-        owner_, std::move(start), std::move(end));
+        owner_.Get(), std::move(start), std::move(end));
   }
 
   return S_OK;

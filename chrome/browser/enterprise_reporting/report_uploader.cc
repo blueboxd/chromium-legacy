@@ -52,7 +52,7 @@ void ReportUploader::Upload() {
                                       weak_ptr_factory_.GetWeakPtr());
 
 #if defined(OS_CHROMEOS)
-  // Pending for another change list for cloud_policy_client.
+  client_->UploadChromeOsUserReport(std::move(request), std::move(callback));
 #else
   client_->UploadChromeDesktopReport(std::move(request), std::move(callback));
 #endif

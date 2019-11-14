@@ -7,10 +7,10 @@ package org.chromium.chrome.browser.feed;
 import android.app.Activity;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import com.google.android.libraries.feed.api.client.stream.Stream;
 
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;

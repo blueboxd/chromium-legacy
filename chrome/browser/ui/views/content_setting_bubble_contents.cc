@@ -411,6 +411,7 @@ ContentSettingBubbleContents::ContentSettingBubbleContents(
   DCHECK(content_setting_bubble_model_);
   const base::string16& done_text =
       content_setting_bubble_model_->bubble_content().done_button_text;
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
   DialogDelegate::set_button_label(
       ui::DIALOG_BUTTON_OK,
       done_text.empty() ? l10n_util::GetStringUTF16(IDS_DONE) : done_text);
@@ -590,10 +591,6 @@ bool ContentSettingBubbleContents::Accept() {
 
 bool ContentSettingBubbleContents::Close() {
   return true;
-}
-
-int ContentSettingBubbleContents::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK;
 }
 
 void ContentSettingBubbleContents::StyleLearnMoreButton() {

@@ -2580,8 +2580,6 @@ if (enable_java_templates) {
   #     secondary ABI.
   #   secondary_abi_native_libs_filearg: (optional). @FileArg() of additional
   #     secondary ABI native libs.
-  #   write_asset_list: Adds an extra file to the assets, which contains a list of
-  #     all other asset files.
   #   keystore_path: Path to keystore to use for signing.
   #   keystore_name: Key alias to use.
   #   keystore_password: Keystore password.
@@ -2662,9 +2660,6 @@ if (enable_java_templates) {
         # TODO(mlopatkin) We are relying on the fact that assets_build_config is
         # an APK build_config.
         args += [ "--java-resources=@FileArg($_rebased_build_config:java_resources_jars)" ]
-      }
-      if (defined(invoker.write_asset_list) && invoker.write_asset_list) {
-        args += [ "--write-asset-list" ]
       }
       if (defined(invoker.dex_path)) {
         _rebased_dex_path = rebase_path(invoker.dex_path, root_build_dir)
@@ -2841,23 +2836,18 @@ if (enable_java_templates) {
         args += [ "--jar-info-exclude-globs=${invoker.jar_excluded_patterns}" ]
       }
 
-      # Use errorprone with checks disabled when !enable_errorprone so that
-      # compile results are the same across machines.
-      # TODO(crbug.com/693079): Add javac to DEPS and use it for the
-      #     !enable_errorprone case.
-      deps += [ "//third_party/errorprone:errorprone($default_toolchain)" ]
-      args += [
-        "--errorprone-path",
-        "bin/errorprone",
-      ]
-
       if (invoker.enable_errorprone) {
-        deps += [ "//tools/android/errorprone_plugin:errorprone_plugin_java($default_toolchain)" ]
-        _rebased_errorprone_processorpath = [
-          "lib.java/tools/android/errorprone_plugin/errorprone_plugin_java.jar",
-        ]
+        # Our custom plugin pulls in the main errorprone dep transitively.
+        _errorprone_dep =
+            "//tools/android/errorprone_plugin:errorprone_plugin_java"
+        deps += [ _errorprone_dep ]
+        _dep_gen_dir = get_label_info(_errorprone_dep, "target_gen_dir")
+        _dep_name = get_label_info(_errorprone_dep, "name")
+        _rebased_errorprone_buildconfig =
+            rebase_path("$_dep_gen_dir/$_dep_name.build_config", root_build_dir)
         args += [
-          "--processorpath=$_rebased_errorprone_processorpath",
+          "--processorpath=@FileArg($_rebased_errorprone_buildconfig:deps_info:jar_path)",
+          "--processorpath=@FileArg($_rebased_errorprone_buildconfig:deps_info:javac_full_classpath)",
           "--enable-errorprone",
         ]
       }

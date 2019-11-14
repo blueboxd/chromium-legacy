@@ -28,6 +28,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarCommonPropertiesModel;
 import org.chromium.chrome.test.util.browser.Features;
@@ -41,6 +42,8 @@ import org.chromium.ui.modelutil.PropertyModel;
 public final class StatusMediatorUnitTest {
     private static final String TEST_SEARCH_URL = "https://www.test.com";
 
+    @Mock
+    NewTabPage mNewTabPage;
     @Mock
     Resources mResources;
     @Mock
@@ -86,6 +89,45 @@ public final class StatusMediatorUnitTest {
 
     @Test
     @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
+    public void searchEngineLogo_showGoogleLogo_hideAfterAnimationFinished() {
+        setupSearchEngineLogoForTesting(true, false, false);
+        doReturn(mNewTabPage).when(mToolbarCommonPropertiesModel).getNewTabPageForCurrentTab();
+        doReturn("chrome://newtab").when(mToolbarCommonPropertiesModel).getCurrentUrl();
+
+        mMediator.updateSearchEngineStatusIcon(true, true, TEST_SEARCH_URL);
+        mMediator.setUrlHasFocus(false);
+        mMediator.setUrlFocusChangePercent(0);
+        mMediator.setUrlAnimationFinished(true);
+        Assert.assertFalse(mModel.get(StatusProperties.SHOW_STATUS_ICON));
+    }
+
+    @Test
+    @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
+    public void searchEngineLogo_showGoogleLogo_noHideIconAfterAnimationFinishedWhenScrolled() {
+        setupSearchEngineLogoForTesting(true, false, false);
+
+        mMediator.setUrlHasFocus(false);
+        mMediator.setShowIconsWhenUrlFocused(true);
+        mMediator.updateSearchEngineStatusIcon(true, true, TEST_SEARCH_URL);
+        mMediator.setUrlFocusChangePercent(1f);
+        mMediator.setUrlAnimationFinished(true);
+        Assert.assertTrue(mModel.get(StatusProperties.SHOW_STATUS_ICON));
+    }
+
+    @Test
+    @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
+    public void searchEngineLogo_showGoogleLogoOnNtpScroll() {
+        setupSearchEngineLogoForTesting(true, false, false);
+
+        mMediator.setUrlHasFocus(false);
+        mMediator.setShowIconsWhenUrlFocused(true);
+        mMediator.updateSearchEngineStatusIcon(true, true, TEST_SEARCH_URL);
+        mMediator.setUrlFocusChangePercent(1f);
+        Assert.assertTrue(mModel.get(StatusProperties.SHOW_STATUS_ICON));
+    }
+
+    @Test
+    @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
     public void searchEngineLogo_showGoogleLogo_whenScrolled() {
         setupSearchEngineLogoForTesting(true, false, false);
 
@@ -95,6 +137,7 @@ public final class StatusMediatorUnitTest {
         mMediator.updateSearchEngineStatusIcon(true, true, TEST_SEARCH_URL);
         Assert.assertEquals(
                 R.drawable.ic_logo_googleg_24dp, mModel.get(StatusProperties.STATUS_ICON_RES));
+        Assert.assertTrue(mModel.get(StatusProperties.SHOW_STATUS_ICON));
     }
 
     @Test

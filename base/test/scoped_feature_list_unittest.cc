@@ -114,7 +114,6 @@ TEST_F(ScopedFeatureListTest, EnableWithFeatureParameters) {
 }
 
 TEST_F(ScopedFeatureListTest, OverrideWithFeatureParameters) {
-  FieldTrialList field_trial_list(nullptr);
   scoped_refptr<FieldTrial> trial =
       FieldTrialList::CreateFieldTrial("foo", "bar");
   const char kParam[] = "param_1";
@@ -185,7 +184,6 @@ TEST_F(ScopedFeatureListTest, OverrideWithFeatureParameters) {
 }
 
 TEST_F(ScopedFeatureListTest, OverrideMultipleFeaturesWithParameters) {
-  FieldTrialList field_trial_list(nullptr);
   scoped_refptr<FieldTrial> trial1 =
       FieldTrialList::CreateFieldTrial("foo1", "bar1");
   const char kParam[] = "param_1";
@@ -344,7 +342,6 @@ TEST_F(ScopedFeatureListTest, FeatureOverrideFeatureWithEnabledFieldTrial) {
   test::ScopedFeatureList feature_list1;
 
   std::unique_ptr<FeatureList> feature_list(new FeatureList);
-  FieldTrialList field_trial_list(nullptr);
   FieldTrial* trial = FieldTrialList::CreateFieldTrial("TrialExample", "A");
   feature_list->RegisterFieldTrialOverride(
       kTestFeature1.name, FeatureList::OVERRIDE_ENABLE_FEATURE, trial);
@@ -361,7 +358,6 @@ TEST_F(ScopedFeatureListTest, FeatureOverrideFeatureWithDisabledFieldTrial) {
   test::ScopedFeatureList feature_list1;
 
   std::unique_ptr<FeatureList> feature_list(new FeatureList);
-  FieldTrialList field_trial_list(nullptr);
   FieldTrial* trial = FieldTrialList::CreateFieldTrial("TrialExample", "A");
   feature_list->RegisterFieldTrialOverride(
       kTestFeature1.name, FeatureList::OVERRIDE_DISABLE_FEATURE, trial);

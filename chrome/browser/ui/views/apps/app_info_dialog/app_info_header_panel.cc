@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/views/apps/app_info_dialog/app_info_label.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -81,9 +82,8 @@ void AppInfoHeaderPanel::CreateControls() {
   auto* vertical_info_container_ptr =
       AddChildView(std::move(vertical_info_container));
 
-  auto app_name_label = std::make_unique<views::Label>(
+  auto app_name_label = std::make_unique<AppInfoLabel>(
       base::UTF8ToUTF16(app_->name()), views::style::CONTEXT_DIALOG_TITLE);
-  app_name_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   auto* app_name_label_ptr =
       vertical_info_container_ptr->AddChildView(std::move(app_name_label));
 
@@ -92,6 +92,7 @@ void AppInfoHeaderPanel::CreateControls() {
         l10n_util::GetStringUTF16(IDS_APPLICATION_INFO_WEB_STORE_LINK));
     view_in_store_link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     view_in_store_link->set_listener(this);
+    view_in_store_link->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
     view_in_store_link_ = vertical_info_container_ptr->AddChildView(
         std::move(view_in_store_link));
   } else {

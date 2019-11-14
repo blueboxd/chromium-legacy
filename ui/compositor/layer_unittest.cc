@@ -967,24 +967,6 @@ class LayerWithNullDelegateTest : public LayerWithDelegateTest {
   DISALLOW_COPY_AND_ASSIGN(LayerWithNullDelegateTest);
 };
 
-TEST_F(LayerWithNullDelegateTest, EscapedDebugNames) {
-  std::unique_ptr<Layer> layer = CreateLayer(LAYER_NOT_DRAWN);
-  std::string name = "\"\'\\/\b\f\n\r\t\n";
-  layer->set_name(name);
-  std::unique_ptr<base::trace_event::ConvertableToTraceFormat> debug_info =
-      layer->TakeDebugInfo(layer->cc_layer_for_testing());
-  EXPECT_TRUE(debug_info.get());
-  std::string json;
-  debug_info->AppendAsTraceFormat(&json);
-  base::JSONReader json_reader;
-  base::Optional<base::Value> debug_info_value = json_reader.ReadToValue(json);
-  ASSERT_TRUE(debug_info_value.has_value());
-  ASSERT_TRUE(debug_info_value->is_dict());
-  const std::string* roundtrip = debug_info_value->FindStringKey("layer_name");
-  ASSERT_TRUE(roundtrip);
-  EXPECT_EQ(name, *roundtrip);
-}
-
 TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {
   std::unique_ptr<Layer> l1 = CreateLayer(LAYER_SOLID_COLOR);
   l1->SetFillsBoundsOpaquely(true);
@@ -3143,17 +3125,6 @@ TEST_P(LayerWithRealCompositorTest, CompositorAnimationObserverTest) {
   EXPECT_FALSE(animation_observer.shutdown());
   ResetCompositor();
   EXPECT_TRUE(animation_observer.shutdown());
-}
-
-TEST(LayerDebugInfoTest, LayerNameDoesNotClobber) {
-  Layer layer(LAYER_NOT_DRAWN);
-  layer.set_name("foo");
-  std::unique_ptr<base::trace_event::ConvertableToTraceFormat> debug_info =
-      layer.TakeDebugInfo(nullptr);
-  std::string trace_format("bar,");
-  debug_info->AppendAsTraceFormat(&trace_format);
-  std::string expected("bar,{\"layer_name\":\"foo\"}");
-  EXPECT_EQ(expected, trace_format);
 }
 
 }  // namespace ui

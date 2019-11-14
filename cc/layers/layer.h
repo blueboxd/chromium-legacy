@@ -39,24 +39,36 @@
 #include "ui/gfx/rrect_f.h"
 #include "ui/gfx/transform.h"
 
-namespace base {
-namespace trace_event {
-class TracedValue;
-}
-}
-
 namespace viz {
 class CopyOutputRequest;
 }
 
 namespace cc {
 
-class LayerClient;
 class LayerImpl;
 class LayerTreeHost;
 class LayerTreeHostCommon;
 class LayerTreeImpl;
 class PictureLayer;
+
+// For tracing and debugging. The info will be attached to this layer's tracing
+// output.
+struct LayerDebugInfo {
+  LayerDebugInfo();
+  LayerDebugInfo(const LayerDebugInfo&);
+  ~LayerDebugInfo();
+
+  std::string name;
+  NodeId owner_node_id = kInvalidNodeId;
+  int paint_count = 0;
+  std::vector<const char*> compositing_reasons;
+  struct Invalidation {
+    gfx::Rect rect;
+    const char* reason;
+    std::string client;
+  };
+  std::vector<Invalidation> invalidations;
+};
 
 // Base class for composited layers. Special layer types are derived from
 // this class. Each layer is an independent unit in the compositor, be that
@@ -78,12 +90,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   Layer(const Layer&) = delete;
   Layer& operator=(const Layer&) = delete;
-
-  // Sets an optional client on this layer, that will be called when relevant
-  // events happen. The client is a WeakPtr so it can be destroyed without
-  // unsetting itself as the client.
-  void SetLayerClient(base::WeakPtr<LayerClient> client);
-  LayerClient* GetLayerClientForTesting() const { return inputs_.client.get(); }
 
   // A unique and stable id for the Layer. Ids are always positive.
   int id() const { return inputs_.layer_id; }
@@ -545,9 +551,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // display.
   virtual sk_sp<SkPicture> GetPicture() const;
 
-  // For tracing. Calls out to the LayerClient to get tracing data that will
-  // be attached to this layer's tracing outputs under the 'debug_info' key.
-  void UpdateDebugInfo();
+  const LayerDebugInfo* debug_info() const { return debug_info_.get(); }
+  LayerDebugInfo& EnsureDebugInfo();
+  void ClearDebugInfo();
 
   // For telemetry testing. Runs a given test behaviour implemented in
   // |benchmark| for this layer. The base class does nothing as benchmarks
@@ -679,25 +685,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // in PropertyTreeManager when handling scroll offsets.
   void SetNeedsCommit();
 
-  // The following data are for profiling and debugging. They will be displayed
-  // e.g. in the Layers panel of DevTools.
-
-  // The compositing reasons of the layer. The values are defined in
-  // third_party/blink/renderer/platform/graphics/compositing_reasons.h.
-  void set_compositing_reasons(uint64_t compositing_reasons) {
-    compositing_reasons_ = compositing_reasons;
-  }
-  uint64_t compositing_reasons() const { return compositing_reasons_; }
-
-  // The id of the DOM node that owns this layer.
-  void set_owner_node_id(int node_id) { owner_node_id_ = node_id; }
-  int owner_node_id() const { return owner_node_id_; }
-
-  // How many times this layer has been repainted.
-  int paint_count() const { return paint_count_; }
-
-  // End of data for profiling and debugging.
-
  protected:
   friend class LayerImpl;
   friend class TreeSynchronizer;
@@ -736,7 +723,10 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // be changed while the frame is being generated for commit.
   bool IsPropertyChangeAllowed() const;
 
-  void IncreasePaintCount() { ++paint_count_; }
+  void IncreasePaintCount() {
+    if (debug_info_)
+      ++debug_info_->paint_count;
+  }
 
   base::AutoReset<bool> IgnoreSetNeedsCommit() {
     return base::AutoReset<bool>(&ignore_set_needs_commit_, true);
@@ -861,10 +851,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
     ElementId element_id;
 
-    // The following elements can not and are not serialized.
-    base::WeakPtr<LayerClient> client;
-    std::unique_ptr<base::trace_event::TracedValue> debug_info;
-
     // These for for layer tree mode (ui compositor) only.
     base::RepeatingCallback<void(const gfx::ScrollOffset&, const ElementId&)>
         did_scroll_callback;
@@ -880,7 +866,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   Inputs inputs_;
 
-  int paint_count_;
   int num_descendants_that_draw_content_;
   int transform_tree_index_;
   int effect_tree_index_;
@@ -908,8 +893,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   bool subtree_has_copy_request_ : 1;
 
   SkColor safe_opaque_background_color_;
-  int owner_node_id_;
-  uint64_t compositing_reasons_;
+
+  std::unique_ptr<LayerDebugInfo> debug_info_;
 };
 
 }  // namespace cc

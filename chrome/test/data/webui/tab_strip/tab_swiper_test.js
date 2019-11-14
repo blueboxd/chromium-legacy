@@ -178,4 +178,25 @@ suite('TabSwiper', () => {
     document.body.appendChild(tabElement);
     await testHighSpeedSwipe(false);
   });
+
+  test('pointerdown should reset the animation time', async () => {
+    tabElement.style.setProperty('--tabstrip-tab-width', '100px');
+    const tabElStyle = window.getComputedStyle(tabElement);
+    const pointerState = {clientY: 50, pointerId: 1};
+    tabElement.dispatchEvent(new PointerEvent('pointerdown', pointerState));
+
+    // Mimic a swipe that turns into a scroll.
+    pointerState.clientY += SWIPE_FINISH_THRESHOLD_PX;
+    pointerState.movementY = 1; /* Any non-0 value here is fine. */
+    tabElement.dispatchEvent(new PointerEvent('pointermove', pointerState));
+    tabElement.dispatchEvent(new PointerEvent('pointerleave', pointerState));
+
+    // Mimic a tap.
+    pointerState.clientY = 50;
+    tabElement.dispatchEvent(new PointerEvent('pointerdown', pointerState));
+
+    // Style should reset to defaults.
+    assertEquals(tabElStyle.maxWidth, '100px');
+    assertEquals(tabElStyle.opacity, '1');
+  });
 });

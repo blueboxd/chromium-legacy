@@ -8,6 +8,10 @@
 #include "base/logging.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 
+#if BUILDFLAG(ENABLE_VULKAN)
+#include "gpu/ipc/common/vulkan_info_mojom_traits.h"
+#endif
+
 namespace mojo {
 
 // static
@@ -413,7 +417,11 @@ bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
          data.ReadVideoEncodeAcceleratorSupportedProfiles(
              &out->video_encode_accelerator_supported_profiles) &&
          data.ReadImageDecodeAcceleratorSupportedProfiles(
-             &out->image_decode_accelerator_supported_profiles);
+             &out->image_decode_accelerator_supported_profiles) &&
+#if BUILDFLAG(ENABLE_VULKAN)
+         data.ReadVulkanInfo(&out->vulkan_info) &&
+#endif
+         true;
 }
 
 }  // namespace mojo

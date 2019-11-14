@@ -24,6 +24,7 @@ class NewTabCallbackProxy : public NewTabDelegate {
 
   // NewTabDelegate:
   void OnNewTab(std::unique_ptr<Tab> tab, NewTabType type) override;
+  void CloseTab() override;
 
  private:
   TabImpl* tab_;

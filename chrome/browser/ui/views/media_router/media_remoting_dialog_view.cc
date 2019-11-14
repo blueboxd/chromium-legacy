@@ -82,10 +82,6 @@ base::string16 MediaRemotingDialogView::GetWindowTitle() const {
   return dialog_title_;
 }
 
-int MediaRemotingDialogView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-}
-
 bool MediaRemotingDialogView::Accept() {
   ReportPermission(true);
   return true;

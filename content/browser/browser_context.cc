@@ -220,10 +220,8 @@ class BrowserContextServiceManagerConnectionHolder
  public:
   explicit BrowserContextServiceManagerConnectionHolder(
       BrowserContext* browser_context,
-      service_manager::mojom::ServiceRequest request,
-      scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner)
+      service_manager::mojom::ServiceRequest request)
       : browser_context_(browser_context),
-        main_thread_task_runner_(std::move(main_thread_task_runner)),
         service_manager_connection_(ServiceManagerConnection::Create(
             std::move(request),
             base::CreateSingleThreadTaskRunner({BrowserThread::IO}))) {
@@ -264,7 +262,6 @@ class BrowserContextServiceManagerConnectionHolder
   }
 
   BrowserContext* const browser_context_;
-  const scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner_;
   std::unique_ptr<ServiceManagerConnection> service_manager_connection_;
   std::map<service_manager::Service*, std::unique_ptr<service_manager::Service>>
       running_services_;
@@ -608,8 +605,7 @@ void BrowserContext::Initialize(BrowserContext* browser_context,
 
     BrowserContextServiceManagerConnectionHolder* connection_holder =
         new BrowserContextServiceManagerConnectionHolder(
-            browser_context, std::move(service_receiver),
-            base::SequencedTaskRunnerHandle::Get());
+            browser_context, std::move(service_receiver));
     browser_context->SetUserData(kServiceManagerConnection,
                                  base::WrapUnique(connection_holder));
     ServiceManagerConnection* connection =

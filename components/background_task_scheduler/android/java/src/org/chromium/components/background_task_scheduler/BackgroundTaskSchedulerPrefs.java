@@ -10,12 +10,13 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Base64;
 
+import androidx.annotation.VisibleForTesting;
+
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.VisibleForTesting;
 
 import java.util.HashMap;
 import java.util.HashSet;

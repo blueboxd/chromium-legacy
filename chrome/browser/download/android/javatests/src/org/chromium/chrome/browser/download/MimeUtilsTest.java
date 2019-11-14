@@ -27,4 +27,22 @@ public class MimeUtilsTest {
         Assert.assertEquals("txt", MimeUtils.getFileExtension("http://file.ext", "file.txt"));
         Assert.assertEquals("txt", MimeUtils.getFileExtension("http://file.ext", "file name.txt"));
     }
+
+    /**
+     * Test to make sure {@link DownloadUtils#shouldAutoOpenDownload}
+     * returns the right result for varying MIME types and Content-Dispositions.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Download"})
+    public void testCanAutoOpenMimeType() {
+        // Should not open any download type MIME types.
+        Assert.assertFalse(MimeUtils.canAutoOpenMimeType("application/download"));
+        Assert.assertFalse(MimeUtils.canAutoOpenMimeType("application/x-download"));
+        Assert.assertFalse(MimeUtils.canAutoOpenMimeType("application/octet-stream"));
+        Assert.assertTrue(MimeUtils.canAutoOpenMimeType("application/pdf"));
+        Assert.assertTrue(MimeUtils.canAutoOpenMimeType("application/x-x509-server-cert"));
+        Assert.assertTrue(MimeUtils.canAutoOpenMimeType("application/x-wifi-config"));
+        Assert.assertTrue(MimeUtils.canAutoOpenMimeType("application/pkix-cert"));
+    }
 }

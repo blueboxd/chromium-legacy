@@ -126,7 +126,7 @@ class Device : public mojom::Device, public device::BluetoothAdapter::Observer {
 
   // The services request queue which holds callbacks that are waiting for
   // services to be discovered for this device.
-  std::vector<base::Closure> pending_services_requests_;
+  std::vector<base::OnceClosure> pending_services_requests_;
 
   base::WeakPtrFactory<Device> weak_ptr_factory_{this};
 

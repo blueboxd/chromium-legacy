@@ -4,6 +4,7 @@
 
 #include "base/android/library_loader/library_loader_hooks.h"
 #include "base/logging.h"
+#include "components/version_info/version_info.h"
 #include "components/version_info/version_info_values.h"
 #include "content/public/app/content_jni_onload.h"
 #include "content/public/app/content_main.h"
@@ -21,11 +22,12 @@ class MainDelegateImpl : public MainDelegate {
 bool OnJNIOnLoadInit() {
   if (!content::android::OnJNIOnLoadInit())
     return false;
+
+  base::android::SetVersionNumber(version_info::GetVersionNumber().c_str());
+
   weblayer::MainParams params;
   params.delegate = new weblayer::MainDelegateImpl;
-  params.brand = "WebLayer";
 
-  base::android::SetVersionNumber(PRODUCT_VERSION);
   content::SetContentMainDelegate(
       new weblayer::ContentMainDelegateImpl(params));
   return true;

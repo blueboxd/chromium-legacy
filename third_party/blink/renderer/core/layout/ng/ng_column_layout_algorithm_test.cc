@@ -562,8 +562,7 @@ TEST_F(NGColumnLayoutAlgorithmTest, UnusedSpaceInBlock) {
   EXPECT_EQ(expectation, dump);
 }
 
-// TODO(crbug.com/915929): Fix inline-level float fragmentation.
-TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_FloatInOneColumn) {
+TEST_F(NGColumnLayoutAlgorithmTest, FloatInOneColumn) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {
@@ -587,13 +586,11 @@ TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_FloatInOneColumn) {
     offset:0,0 size:320x100
       offset:0,0 size:100x100
         offset:0,0 size:75x100
-        offset:75,0 size:0x0
 )DUMP";
   EXPECT_EQ(expectation, dump);
 }
 
-// TODO(crbug.com/915929): Fix inline-level float fragmentation.
-TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_TwoFloatsInOneColumn) {
+TEST_F(NGColumnLayoutAlgorithmTest, TwoFloatsInOneColumn) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {
@@ -619,13 +616,11 @@ TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_TwoFloatsInOneColumn) {
       offset:0,0 size:100x100
         offset:0,0 size:15x100
         offset:84,0 size:16x100
-        offset:15,0 size:0x0
 )DUMP";
   EXPECT_EQ(expectation, dump);
 }
 
-// TODO(crbug.com/915929): Fix inline-level float fragmentation.
-TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_TwoFloatsInTwoColumns) {
+TEST_F(NGColumnLayoutAlgorithmTest, TwoFloatsInTwoColumns) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {
@@ -651,7 +646,6 @@ TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_TwoFloatsInTwoColumns) {
       offset:0,0 size:100x100
         offset:0,0 size:15x100
         offset:84,0 size:16x100
-        offset:15,0 size:0x0
       offset:110,0 size:100x50
         offset:0,0 size:15x50
         offset:84,0 size:16x50

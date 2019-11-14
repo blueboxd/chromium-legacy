@@ -45,6 +45,9 @@ struct UpgradeParams {
   // Account ID of the user to start ARC for.
   std::string account_id;
 
+  // Whether the account is managed.
+  bool is_account_managed;
+
   // Option to disable ACTION_BOOT_COMPLETED broadcast for 3rd party apps.
   // The constructor automatically populates this from command-line.
   bool skip_boot_completed_broadcast;

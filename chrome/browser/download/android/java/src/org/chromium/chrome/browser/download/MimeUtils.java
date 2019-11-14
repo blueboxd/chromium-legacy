@@ -9,8 +9,10 @@ import android.webkit.MimeTypeMap;
 
 import org.chromium.base.annotations.CalledByNative;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * Utility class for MIME type related operations.
@@ -29,6 +31,14 @@ public class MimeUtils {
     private static final HashSet<String> GENERIC_MIME_TYPES = new HashSet<String>(Arrays.asList(
             "text/plain", "application/octet-stream", "binary/octet-stream", "octet/stream",
             "application/download", "application/force-download", "application/unknown"));
+
+    // Set will be more expensive to initialize, so use an ArrayList here.
+    private static final List<String> MIME_TYPES_TO_OPEN = new ArrayList<String>(Arrays.asList(
+            MimeUtils.OMA_DOWNLOAD_DESCRIPTOR_MIME, "application/pdf", "application/x-x509-ca-cert",
+            "application/x-x509-user-cert", "application/x-x509-server-cert",
+            "application/x-pkcs12", "application/application/x-pem-file", "application/pkix-cert",
+            "application/x-wifi-config"));
+
     /**
      * If the given MIME type is null, or one of the "generic" types (text/plain
      * or application/octet-stream) map it to a type that Android can deal with.
@@ -81,5 +91,17 @@ public class MimeUtils {
     @CalledByNative
     public static boolean isOMADownloadDescription(String mimeType) {
         return OMA_DOWNLOAD_DESCRIPTOR_MIME.equalsIgnoreCase(mimeType);
+    }
+
+    /**
+     * Determines if the download should be immediately opened after
+     * downloading.
+     *
+     * @param mimeType The mime type of the download.
+     * @return true if the downloaded content should be opened, or false otherwise.
+     */
+    @CalledByNative
+    public static boolean canAutoOpenMimeType(String mimeType) {
+        return MIME_TYPES_TO_OPEN.contains(mimeType);
     }
 }

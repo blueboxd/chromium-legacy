@@ -531,13 +531,10 @@ using ViewSourceWithSplitCacheEnabledTest = ViewSourceWithSplitCacheTest;
 // In the end, the test checks whether the back navigation request resource
 // exists in the cache. |exists_in_cache == true| implies the top_frame_origin
 // of the network isolation key is a.com (reused).
+//
+// Flaky. http://crbug.com/1024033
 IN_PROC_BROWSER_TEST_P(ViewSourceWithSplitCacheEnabledTest,
-                       NetworkIsolationKeyReusedForBackNavigation) {
-  if (!GetParam()) {
-    // Flaky in /0 variant: https://crbug.com/1024033.
-    return;
-  }
-
+                       DISABLED_NetworkIsolationKeyReusedForBackNavigation) {
   content::SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
 

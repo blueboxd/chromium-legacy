@@ -163,15 +163,6 @@ const service_manager::Manifest& GetContentBrowserOverlayManifest() {
   return *manifest;
 }
 
-const service_manager::Manifest& GetContentGpuOverlayManifest() {
-  static base::NoDestructor<service_manager::Manifest> manifest{
-      service_manager::ManifestBuilder()
-          .ExposeCapability("browser", service_manager::Manifest::InterfaceList<
-                                           mojom::PowerMonitorTest>())
-          .Build()};
-  return *manifest;
-}
-
 const service_manager::Manifest& GetContentRendererOverlayManifest() {
   static base::NoDestructor<service_manager::Manifest> manifest{
       service_manager::ManifestBuilder()
@@ -319,8 +310,6 @@ base::Optional<service_manager::Manifest>
 ShellContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
   if (name == content::mojom::kBrowserServiceName)
     return GetContentBrowserOverlayManifest();
-  if (name == content::mojom::kGpuServiceName)
-    return GetContentGpuOverlayManifest();
   if (name == content::mojom::kRendererServiceName)
     return GetContentRendererOverlayManifest();
   if (name == content::mojom::kUtilityServiceName)

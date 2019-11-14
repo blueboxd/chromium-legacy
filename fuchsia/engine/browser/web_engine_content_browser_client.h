@@ -71,6 +71,8 @@ class WebEngineContentBrowserClient : public content::ContentBrowserClient {
       mojo_service_registry_;
   WebEngineCdmService cdm_service_;
 
+  bool allow_insecure_content_;
+
   DISALLOW_COPY_AND_ASSIGN(WebEngineContentBrowserClient);
 };
 

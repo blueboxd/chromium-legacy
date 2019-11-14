@@ -996,7 +996,7 @@
     </activity>
     <activity
         android:label="@string/license_activity_title"
-        android:name="org.chromium.android_webview.app.LicenseActivity"
+        android:name="org.chromium.android_webview.nonembedded.LicenseActivity"
         android:process=":webview_apk">
       <intent-filter>
         <action android:name="android.settings.WEBVIEW_LICENSE"/>
@@ -1325,7 +1325,7 @@
     <provider
         android:authorities="org.chromium.chrome.LicenseContentProvider"
         android:exported="true"
-        android:name="org.chromium.android_webview.app.LicenseContentProvider"
+        android:name="org.chromium.android_webview.nonembedded.LicenseContentProvider"
         android:process=":webview_apk"/>
     <receiver
         android:exported="false"

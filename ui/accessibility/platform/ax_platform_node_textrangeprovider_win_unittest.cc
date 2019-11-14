@@ -92,26 +92,26 @@ namespace ui {
 
 #define EXPECT_UIA_TEXTATTRIBUTE_MIXED(provider, attribute)                \
   {                                                                        \
-    CComPtr<IUnknown> expected_mixed;                                      \
+    ComPtr<IUnknown> expected_mixed;                                       \
     EXPECT_HRESULT_SUCCEEDED(                                              \
         ::UiaGetReservedMixedAttributeValue(&expected_mixed));             \
     base::win::ScopedVariant scoped_variant;                               \
     EXPECT_HRESULT_SUCCEEDED(                                              \
         provider->GetAttributeValue(attribute, scoped_variant.Receive())); \
     EXPECT_EQ(VT_UNKNOWN, scoped_variant.type());                          \
-    EXPECT_EQ(expected_mixed, V_UNKNOWN(scoped_variant.ptr()));            \
+    EXPECT_EQ(expected_mixed.Get(), V_UNKNOWN(scoped_variant.ptr()));      \
   }
 
-#define EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(provider, attribute)         \
-  {                                                                        \
-    CComPtr<IUnknown> expected_notsupported;                               \
-    EXPECT_HRESULT_SUCCEEDED(                                              \
-        ::UiaGetReservedNotSupportedValue(&expected_notsupported));        \
-    base::win::ScopedVariant scoped_variant;                               \
-    EXPECT_HRESULT_SUCCEEDED(                                              \
-        provider->GetAttributeValue(attribute, scoped_variant.Receive())); \
-    EXPECT_EQ(VT_UNKNOWN, scoped_variant.type());                          \
-    EXPECT_EQ(expected_notsupported, V_UNKNOWN(scoped_variant.ptr()));     \
+#define EXPECT_UIA_TEXTATTRIBUTE_NOTSUPPORTED(provider, attribute)           \
+  {                                                                          \
+    ComPtr<IUnknown> expected_notsupported;                                  \
+    EXPECT_HRESULT_SUCCEEDED(                                                \
+        ::UiaGetReservedNotSupportedValue(&expected_notsupported));          \
+    base::win::ScopedVariant scoped_variant;                                 \
+    EXPECT_HRESULT_SUCCEEDED(                                                \
+        provider->GetAttributeValue(attribute, scoped_variant.Receive()));   \
+    EXPECT_EQ(VT_UNKNOWN, scoped_variant.type());                            \
+    EXPECT_EQ(expected_notsupported.Get(), V_UNKNOWN(scoped_variant.ptr())); \
   }
 
 #define EXPECT_UIA_TEXTRANGE_EQ(provider, expected_content) \
@@ -125,7 +125,7 @@ namespace ui {
 #define EXPECT_UIA_FIND_TEXT(text_range_provider, search_term, ignore_case) \
   {                                                                         \
     base::win::ScopedBstr find_string(search_term);                         \
-    CComPtr<ITextRangeProvider> text_range_provider_found;                  \
+    ComPtr<ITextRangeProvider> text_range_provider_found;                   \
     EXPECT_HRESULT_SUCCEEDED(text_range_provider->FindText(                 \
         find_string, false, ignore_case, &text_range_provider_found));      \
     base::win::ScopedBstr found_content;                                    \
@@ -141,7 +141,7 @@ namespace ui {
                                       ignore_case)                      \
   {                                                                     \
     base::win::ScopedBstr find_string(search_term);                     \
-    CComPtr<ITextRangeProvider> text_range_provider_found;              \
+    ComPtr<ITextRangeProvider> text_range_provider_found;               \
     EXPECT_HRESULT_SUCCEEDED(text_range_provider->FindText(             \
         find_string, false, ignore_case, &text_range_provider_found));  \
     EXPECT_EQ(nullptr, text_range_provider_found);                      \
@@ -193,11 +193,20 @@ class AXPlatformNodeTextRangeProviderTest : public ui::AXPlatformNodeWinTest {
 
   ui::AXPlatformNodeWin* GetOwner(
       const AXPlatformNodeTextRangeProviderWin* text_range) {
-    return text_range->owner_;
+    return text_range->owner_.Get();
   }
 
   void NormalizeTextRange(AXPlatformNodeTextRangeProviderWin* text_range) {
     text_range->NormalizeTextRange();
+  }
+
+  ComPtr<AXPlatformNodeTextRangeProviderWin> CloneTextRangeProviderWin(
+      AXPlatformNodeTextRangeProviderWin* text_range) {
+    ComPtr<ITextRangeProvider> clone;
+    text_range->Clone(&clone);
+    ComPtr<AXPlatformNodeTextRangeProviderWin> clone_win;
+    clone->QueryInterface(IID_PPV_ARGS(&clone_win));
+    return clone_win;
   }
 
   void GetTextRangeProviderFromTextNode(
@@ -3843,7 +3852,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderSelect) {
   AXPlatformNodeDelegate* delegate =
       GetOwner(document_text_range.Get())->GetDelegate();
 
-  CComPtr<ITextRangeProvider> selected_text_range_provider;
+  ComPtr<ITextRangeProvider> selected_text_range_provider;
   base::win::ScopedSafearray selection;
   LONG index = 0;
   LONG ubound;
@@ -3869,10 +3878,11 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderSelect) {
     EXPECT_HRESULT_SUCCEEDED(SafeArrayGetLBound(selection.Get(), 1, &lbound));
     EXPECT_EQ(0, lbound);
     EXPECT_HRESULT_SUCCEEDED(SafeArrayGetElement(
-        selection.Get(), &index, &selected_text_range_provider));
+        selection.Get(), &index,
+        static_cast<void**>(&selected_text_range_provider)));
     EXPECT_UIA_TEXTRANGE_EQ(selected_text_range_provider, L"some text");
 
-    selected_text_range_provider.Release();
+    selected_text_range_provider.Reset();
     selection.Reset();
   }
 
@@ -3896,10 +3906,11 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderSelect) {
     EXPECT_HRESULT_SUCCEEDED(SafeArrayGetLBound(selection.Get(), 1, &lbound));
     EXPECT_EQ(0, lbound);
     EXPECT_HRESULT_SUCCEEDED(SafeArrayGetElement(
-        selection.Get(), &index, &selected_text_range_provider));
+        selection.Get(), &index,
+        static_cast<void**>(&selected_text_range_provider)));
     EXPECT_UIA_TEXTRANGE_EQ(selected_text_range_provider, L"more text2");
 
-    selected_text_range_provider.Release();
+    selected_text_range_provider.Reset();
     selection.Reset();
   }
 
@@ -3939,7 +3950,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderSelect) {
     document_provider->GetSelection(selection.Receive());
     ASSERT_EQ(nullptr, selection.Get());
 
-    selected_text_range_provider.Release();
+    selected_text_range_provider.Reset();
     selection.Reset();
   }
 }
@@ -3985,7 +3996,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   ComPtr<ITextRangeProvider> text_node3_range;
   GetTextRangeProviderFromTextNode(text_node3_range, root_node->children()[2]);
 
-  CComPtr<ITextRangeProvider> text_range_provider_found;
+  ComPtr<ITextRangeProvider> text_range_provider_found;
   base::win::ScopedBstr find_string(L"text");
   BOOL range_equal;
 
@@ -4757,6 +4768,90 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   NormalizeTextRange(text_range_provider_win.Get());
   EXPECT_EQ(*start_after_move, *GetStart(text_range_provider_win.Get()));
   EXPECT_EQ(*end_after_move, *GetEnd(text_range_provider_win.Get()));
+}
+
+TEST_F(AXPlatformNodeTextRangeProviderTest,
+       TestNormalizeTextRangeInsideIgnoredNodes) {
+  ui::AXTreeUpdate initial_state;
+  ui::AXTreeID tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  initial_state.tree_data.tree_id = tree_id;
+  initial_state.has_tree_data = true;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(4);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].child_ids = {2, 3, 4};
+  initial_state.nodes[0].role = ax::mojom::Role::kRootWebArea;
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[1].role = ax::mojom::Role::kStaticText;
+  initial_state.nodes[1].SetName("before");
+  initial_state.nodes[2].id = 3;
+  initial_state.nodes[2].role = ax::mojom::Role::kStaticText;
+  initial_state.nodes[2].AddState(ax::mojom::State::kIgnored);
+  initial_state.nodes[2].SetName("ignored");
+  initial_state.nodes[3].id = 4;
+  initial_state.nodes[3].role = ax::mojom::Role::kStaticText;
+  initial_state.nodes[3].SetName("after");
+
+  Init(initial_state);
+  AXNodePosition::SetTree(tree_.get());
+
+  ComPtr<AXPlatformNodeTextRangeProviderWin> ignored_range_win;
+  {
+    // Making |owner| AXID:1 so that |TestAXNodeWrapper::BuildAllWrappers|
+    // will build the entire tree.
+    AXPlatformNodeWin* owner = static_cast<AXPlatformNodeWin*>(
+        AXPlatformNodeFromNode(GetNodeFromTree(tree_id, 1)));
+
+    AXNodePosition::AXPositionInstance range_start =
+        AXNodePosition::CreateTextPosition(
+            tree_id, /*anchor_id=*/3, /*text_offset=*/1,
+            ax::mojom::TextAffinity::kDownstream);
+    AXNodePosition::AXPositionInstance range_end =
+        AXNodePosition::CreateTextPosition(
+            tree_id, /*anchor_id=*/3, /*text_offset=*/6,
+            ax::mojom::TextAffinity::kDownstream);
+
+    ComPtr<ITextRangeProvider> text_range_provider =
+        AXPlatformNodeTextRangeProviderWin::CreateTextRangeProvider(
+            owner, std::move(range_start), std::move(range_end));
+    text_range_provider->QueryInterface(IID_PPV_ARGS(&ignored_range_win));
+  }
+
+  EXPECT_TRUE(GetStart(ignored_range_win.Get())->IsIgnored());
+  EXPECT_TRUE(GetEnd(ignored_range_win.Get())->IsIgnored());
+
+  ComPtr<AXPlatformNodeTextRangeProviderWin> normalized_range_win =
+      CloneTextRangeProviderWin(ignored_range_win.Get());
+  NormalizeTextRange(normalized_range_win.Get());
+
+  EXPECT_FALSE(GetStart(normalized_range_win.Get())->IsIgnored());
+  EXPECT_FALSE(GetEnd(normalized_range_win.Get())->IsIgnored());
+  EXPECT_LE(*GetStart(ignored_range_win.Get()),
+            *GetStart(normalized_range_win.Get()));
+  EXPECT_LE(*GetEnd(ignored_range_win.Get()),
+            *GetEnd(normalized_range_win.Get()));
+  EXPECT_LE(*GetStart(normalized_range_win.Get()),
+            *GetEnd(normalized_range_win.Get()));
+
+  // Remove the last node, forcing |NormalizeTextRange| to normalize
+  // using the opposite AdjustmentBehavior.
+  AXTreeUpdate update;
+  update.nodes.resize(1);
+  update.nodes[0] = initial_state.nodes[0];
+  update.nodes[0].child_ids = {2, 3};
+  ASSERT_TRUE(tree_->Unserialize(update));
+
+  normalized_range_win = CloneTextRangeProviderWin(ignored_range_win.Get());
+  NormalizeTextRange(normalized_range_win.Get());
+
+  EXPECT_FALSE(GetStart(normalized_range_win.Get())->IsIgnored());
+  EXPECT_FALSE(GetEnd(normalized_range_win.Get())->IsIgnored());
+  EXPECT_GE(*GetStart(ignored_range_win.Get()),
+            *GetStart(normalized_range_win.Get()));
+  EXPECT_GE(*GetEnd(ignored_range_win.Get()),
+            *GetEnd(normalized_range_win.Get()));
+  EXPECT_LE(*GetStart(normalized_range_win.Get()),
+            *GetEnd(normalized_range_win.Get()));
 }
 
 }  // namespace ui

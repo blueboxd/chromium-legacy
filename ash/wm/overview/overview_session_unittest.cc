@@ -3006,6 +3006,7 @@ TEST_P(OverviewSessionWithDragFromShelfFeatureTest, FadeOutExit) {
   // session ends.
   OverviewItem* item = GetOverviewItemForWindow(test_widget->GetNativeWindow());
   views::Widget* grid_item_widget = item_widget(item);
+  gfx::Rect item_bounds = grid_item_widget->GetWindowBoundsInScreen();
 
   ToggleOverview(OverviewSession::EnterExitOverviewType::kFadeOutExit);
   ASSERT_FALSE(InOverviewSession());
@@ -3014,10 +3015,11 @@ TEST_P(OverviewSessionWithDragFromShelfFeatureTest, FadeOutExit) {
   EXPECT_TRUE(test_widget->IsMinimized());
 
   // Verify that the item widget's transform is not animated as part of the
-  // animation, and that no transform is applied after minimizing the window.
+  // animation, and that item widget bounds are not changed after minimizing the
+  // window.
   EXPECT_FALSE(grid_item_widget->GetLayer()->GetAnimator()->IsAnimatingProperty(
       ui::LayerAnimationElement::TRANSFORM));
-  EXPECT_EQ(gfx::Transform(), grid_item_widget->GetLayer()->transform());
+  EXPECT_EQ(item_bounds, grid_item_widget->GetWindowBoundsInScreen());
 
   // Opacity should be animated to zero opacity.
   EXPECT_EQ(0.0f, grid_item_widget->GetLayer()->GetTargetOpacity());

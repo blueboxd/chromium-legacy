@@ -1707,6 +1707,69 @@ base::string16 BrowserAccessibilityAndroid::GetTargetUrl() const {
   return {};
 }
 
+void BrowserAccessibilityAndroid::GetSuggestions(
+    std::vector<int>* suggestion_starts,
+    std::vector<int>* suggestion_ends) const {
+  DCHECK(suggestion_starts);
+  DCHECK(suggestion_ends);
+
+  if (!IsRichTextField() && !IsPlainTextField())
+    return;
+
+  // TODO: using FindTextOnlyObjectsInRange or NextInTreeOrder doesn't
+  // work because Android's PlatformIsLeafIncludingIgnored implementation
+  // deliberately excludes a lot of nodes. We need a version of
+  // FindTextOnlyObjectsInRange and/or NextInTreeOrder that only walk
+  // the internal tree.
+  BrowserAccessibility* node = InternalGetFirstChild();
+  int start_offset = 0;
+  while (node && node != this) {
+    if (node->IsTextOnlyObject()) {
+      const std::vector<int32_t>& marker_types =
+          node->GetData().GetIntListAttribute(
+              ax::mojom::IntListAttribute::kMarkerTypes);
+      if (!marker_types.empty()) {
+        const std::vector<int>& marker_starts =
+            node->GetData().GetIntListAttribute(
+                ax::mojom::IntListAttribute::kMarkerStarts);
+        const std::vector<int>& marker_ends =
+            node->GetData().GetIntListAttribute(
+                ax::mojom::IntListAttribute::kMarkerEnds);
+
+        for (size_t i = 0; i < marker_types.size(); ++i) {
+          // On Android, both spelling errors and alternatives from dictation
+          // are both encoded as suggestions.
+          if (!(marker_types[i] &
+                static_cast<int32_t>(ax::mojom::MarkerType::kSuggestion))) {
+            continue;
+          }
+
+          int suggestion_start = start_offset + marker_starts[i];
+          int suggestion_end = start_offset + marker_ends[i];
+          suggestion_starts->push_back(suggestion_start);
+          suggestion_ends->push_back(suggestion_end);
+        }
+      }
+      start_offset += node->GetText().length();
+    }
+
+    // Implementation of NextInTreeOrder, but walking the internal tree.
+    if (node->InternalChildCount()) {
+      node = node->InternalGetFirstChild();
+    } else {
+      while (node && node != this) {
+        BrowserAccessibility* sibling = node->InternalGetNextSibling();
+        if (sibling) {
+          node = sibling;
+          break;
+        }
+
+        node = node->InternalGetParent();
+      }
+    }
+  }
+}
+
 bool BrowserAccessibilityAndroid::HasNonEmptyValue() const {
   return IsEditableText() && !GetValue().empty();
 }

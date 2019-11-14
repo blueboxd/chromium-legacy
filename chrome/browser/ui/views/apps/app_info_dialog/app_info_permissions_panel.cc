@@ -14,6 +14,7 @@
 #include "base/strings/string_split.h"
 #include "chrome/browser/apps/platform_apps/app_load_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/views/apps/app_info_dialog/app_info_label.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/browser/api/device_permissions_manager.h"
@@ -142,15 +143,13 @@ class BulletedPermissionsList : public views::View {
     if (!revoke_callback.is_null())
       revoke_button = std::make_unique<RevokeButton>(revoke_callback, message);
 
-    auto permission_label = std::make_unique<views::Label>(message);
-    permission_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    auto permission_label = std::make_unique<AppInfoLabel>(message);
     permission_label->SetMultiLine(true);
     AddSinglePermissionBullet(false, std::move(permission_label),
                               std::move(revoke_button));
 
     for (const auto& submessage : submessages) {
-      auto sub_permission_label = std::make_unique<views::Label>(submessage);
-      sub_permission_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+      auto sub_permission_label = std::make_unique<AppInfoLabel>(submessage);
       sub_permission_label->SetElideBehavior(elide_behavior_for_submessages);
       AddSinglePermissionBullet(true, std::move(sub_permission_label), nullptr);
     }
@@ -212,11 +211,10 @@ void AppInfoPermissionsPanel::CreatePermissionsList() {
   if (!HasActivePermissionMessages() && GetRetainedDeviceCount() == 0 &&
       GetRetainedFileCount() == 0) {
     auto no_permissions_text =
-        std::make_unique<views::Label>(l10n_util::GetStringUTF16(
+        std::make_unique<AppInfoLabel>(l10n_util::GetStringUTF16(
             app_->is_extension()
                 ? IDS_APPLICATION_INFO_EXTENSION_NO_PERMISSIONS_TEXT
                 : IDS_APPLICATION_INFO_APP_NO_PERMISSIONS_TEXT));
-    no_permissions_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     AddChildView(std::move(no_permissions_text));
     return;
   }

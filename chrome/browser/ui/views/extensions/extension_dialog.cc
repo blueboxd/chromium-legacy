@@ -39,6 +39,7 @@ ExtensionDialog::ExtensionDialog(
     std::unique_ptr<extensions::ExtensionViewHost> host,
     ExtensionDialogObserver* observer)
     : host_(std::move(host)), observer_(observer) {
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
   DialogDelegate::set_use_custom_frame(false);
 
   AddRef();  // Balanced in DeleteDelegate();
@@ -168,11 +169,6 @@ void ExtensionDialog::MaybeFocusRenderView() {
 
 /////////////////////////////////////////////////////////////////////////////
 // views::DialogDelegate overrides.
-
-int ExtensionDialog::GetDialogButtons() const {
-  // The only user, SelectFileDialogExtension, provides its own buttons.
-  return ui::DIALOG_BUTTON_NONE;
-}
 
 bool ExtensionDialog::CanResize() const {
 #if defined(OS_CHROMEOS)

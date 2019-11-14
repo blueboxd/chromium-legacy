@@ -68,6 +68,12 @@ extern const char kUpgradeTokenSwitchName[];
 // NativeMessagingHost switch to check for required OS permissions and request
 // them if necessary.
 extern const char kCheckPermissionSwitchName[];
+
+// Command line switch to check for Accessibility permission.
+extern const char kCheckAccessibilityPermissionSwitchName[];
+
+// Command line switch to check for Screen Recording permission.
+extern const char kCheckScreenRecordingPermissionSwitchName[];
 #endif  // defined OS_MACOSX
 
 }  // namespace remoting

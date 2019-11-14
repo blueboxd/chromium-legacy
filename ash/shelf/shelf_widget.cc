@@ -142,8 +142,6 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   ui::Layer* opaque_background() { return &opaque_background_; }
   ui::Layer* animating_background() { return &animating_background_; }
 
-  ui::Layer* GetOpaqueBackgroundForTest();
-
  private:
   // Whether |opaque_background_| is explicitly hidden during an animation.
   // Prevents calls to UpdateOpaqueBackground from inadvertently showing
@@ -296,7 +294,6 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
 
   bool show_opaque_background =
       !tablet_mode || in_app || !chromeos::switches::ShouldShowShelfHotseat();
-
   if (show_opaque_background != opaque_background_.visible())
     opaque_background_.SetVisible(show_opaque_background);
 
@@ -400,10 +397,6 @@ SkColor ShelfWidget::DelegateView::GetShelfBackgroundColor() const {
   return opaque_background_.background_color();
 }
 
-ui::Layer* ShelfWidget::DelegateView::GetOpaqueBackgroundForTest() {
-  return &opaque_background_;
-}
-
 bool ShelfWidget::GetHitTestRects(aura::Window* target,
                                   gfx::Rect* hit_test_rect_mouse,
                                   gfx::Rect* hit_test_rect_touch) {
@@ -438,10 +431,6 @@ ui::Layer* ShelfWidget::GetOpaqueBackground() {
 
 ui::Layer* ShelfWidget::GetAnimatingBackground() {
   return delegate_view_->animating_background();
-}
-
-ui::Layer* ShelfWidget::GetOpaqueBackgroundForTest() {
-  return delegate_view_->GetOpaqueBackgroundForTest();
 }
 
 ShelfWidget::ShelfWidget(Shelf* shelf)

@@ -16,10 +16,11 @@ import android.content.Intent;
 import android.os.Build;
 import android.text.TextUtils;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ChromeTabbedActivity;

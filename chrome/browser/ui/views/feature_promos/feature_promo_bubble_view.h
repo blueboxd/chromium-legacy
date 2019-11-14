@@ -72,7 +72,6 @@ class FeaturePromoBubbleView : public views::BubbleDialogDelegateView {
       std::unique_ptr<FeaturePromoBubbleTimeout> feature_promo_bubble_timeout);
 
   // BubbleDialogDelegateView:
-  int GetDialogButtons() const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;

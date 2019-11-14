@@ -20,6 +20,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_checker.h"
 #include "net/base/completion_once_callback.h"
+#include "net/base/network_isolation_key.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_proc.h"
@@ -485,9 +486,19 @@ class HangingHostResolver : public HostResolver {
   // differentiation between a cancelled and a hung task.
   int num_cancellations() const { return num_cancellations_; }
 
+  // Return the corresponding values passed to the most recent call to
+  // CreateRequest()
+  const HostPortPair& last_host() const { return last_host_; }
+  const NetworkIsolationKey& last_network_isolation_key() const {
+    return last_network_isolation_key_;
+  }
+
  private:
   class RequestImpl;
   class ProbeRequestImpl;
+
+  HostPortPair last_host_;
+  NetworkIsolationKey last_network_isolation_key_;
 
   int num_cancellations_ = 0;
   bool shutting_down_ = false;

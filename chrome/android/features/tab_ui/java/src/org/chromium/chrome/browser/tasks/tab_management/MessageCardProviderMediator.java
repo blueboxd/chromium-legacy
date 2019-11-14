@@ -4,7 +4,8 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.ArrayList;

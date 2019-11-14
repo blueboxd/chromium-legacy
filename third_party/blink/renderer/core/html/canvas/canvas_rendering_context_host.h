@@ -78,7 +78,6 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
 
   virtual void Commit(scoped_refptr<CanvasResource> canvas_resource,
                       const SkIRect& damage_rect);
-  virtual void SetNeedsMatrixClipRestore() {}
 
   bool IsPaintable() const;
 

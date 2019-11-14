@@ -514,7 +514,7 @@ AssociatedUserValidator::GetAuthEnforceReason(const base::string16& sid) {
   if (NeedsToEnrollWithMdm())
     return AssociatedUserValidator::EnforceAuthReason::NOT_ENROLLED_WITH_MDM;
 
-  if (MdmPasswordRecoveryEnabled()) {
+  if (PasswordRecoveryEnabled()) {
     base::string16 store_key = GetUserPasswordLsaStoreKey(sid);
     auto policy = ScopedLsaPolicy::Create(POLICY_ALL_ACCESS);
     if (!policy->PrivateDataExists(store_key.c_str())) {

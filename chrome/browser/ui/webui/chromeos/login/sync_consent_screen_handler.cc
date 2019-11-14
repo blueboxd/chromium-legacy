@@ -98,43 +98,6 @@ void SyncConsentScreenHandler::DeclareLocalizedValues(
       "syncConsentReviewSyncOptionsText",
       IDS_LOGIN_SYNC_CONSENT_SCREEN_REVIEW_SYNC_OPTIONS_LATER, builder);
 
-  RememberLocalizedValue("syncConsentNewScreenTitle",
-                         IDS_LOGIN_SYNC_CONSENT_GET_GOOGLE_SMARTS, builder);
-  RememberLocalizedValue("syncConsentNewBookmarksDesc",
-                         IDS_LOGIN_SYNC_CONSENT_YOUR_BOOKMARKS_ON_ALL_DEVICES,
-                         builder);
-  RememberLocalizedValue("syncConsentNewServicesDesc",
-                         IDS_LOGIN_SYNC_CONSENT_PERSONALIZED_GOOGLE_SERVICES,
-                         builder);
-  RememberLocalizedValue("syncConsentNewImproveChrome",
-                         IDS_LOGIN_SYNC_CONSENT_IMPROVE_CHROME, builder);
-  RememberLocalizedValue("syncConsentNewGoogleMayUse",
-                         IDS_LOGIN_SYNC_CONSENT_GOOGLE_MAY_USE, builder);
-  RememberLocalizedValue("syncConsentNewMoreOptions",
-                         IDS_LOGIN_SYNC_CONSENT_MORE_OPTIONS, builder);
-  RememberLocalizedValue("syncConsentNewYesIAmIn",
-                         IDS_LOGIN_SYNC_CONSENT_YES_I_AM_IN, builder);
-  RememberLocalizedValue("syncConsentNewSyncOptions",
-                         IDS_LOGIN_SYNC_CONSENT_SYNC_OPTIONS, builder);
-  RememberLocalizedValue("syncConsentNewSyncOptionsSubtitle",
-                         IDS_LOGIN_SYNC_CONSENT_SYNC_OPTIONS_SUBTITLE, builder);
-  RememberLocalizedValue("syncConsentNewChooseOption",
-                         IDS_LOGIN_SYNC_CONSENT_CHOOSE_OPTION, builder);
-  RememberLocalizedValue("syncConsentNewOptionReview",
-                         IDS_LOGIN_SYNC_CONSENT_OPTION_REVIEW, builder);
-  RememberLocalizedValue("syncConsentNewOptionReviewDsc",
-                         IDS_LOGIN_SYNC_CONSENT_OPTION_REVIEW_DSC, builder);
-  RememberLocalizedValue("syncConsentNewOptionJustSync",
-                         IDS_LOGIN_SYNC_CONSENT_OPTION_JUST_SYNC, builder);
-  RememberLocalizedValue("syncConsentNewOptionJustSyncDsc",
-                         IDS_LOGIN_SYNC_CONSENT_OPTION_JUST_SYNC_DSC, builder);
-  RememberLocalizedValue("syncConsentNewOptionSyncAndPersonalization",
-                         IDS_LOGIN_SYNC_CONSENT_OPTION_SYNC_AND_PERSONALIZATION,
-                         builder);
-  RememberLocalizedValue(
-      "syncConsentNewOptionSyncAndPersonalizationDsc",
-      IDS_LOGIN_SYNC_CONSENT_OPTION_SYNC_AND_PERSONALIZATION_DSC, builder);
-
   RememberLocalizedValue("syncConsentAcceptAndContinue",
                          IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT_AND_CONTINUE,
                          builder);
@@ -170,8 +133,6 @@ void SyncConsentScreenHandler::GetAdditionalParameters(
     base::DictionaryValue* parameters) {
   parameters->SetBoolean("splitSettingsSync",
                          chromeos::features::IsSplitSettingsSyncEnabled());
-  parameters->Set("syncConsentMakeBetter",
-                  std::make_unique<base::Value>(false));
   BaseScreenHandler::GetAdditionalParameters(parameters);
 }
 

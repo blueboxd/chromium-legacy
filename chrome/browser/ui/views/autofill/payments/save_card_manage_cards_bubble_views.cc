@@ -40,6 +40,7 @@ SaveCardManageCardsBubbleViews::SaveCardManageCardsBubbleViews(
     content::WebContents* web_contents,
     SaveCardBubbleController* controller)
     : SaveCardBubbleViews(anchor_view, web_contents, controller) {
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
   DialogDelegate::SetExtraView(CreateManageCardsButton(this));
 }
 
@@ -76,10 +77,6 @@ SaveCardManageCardsBubbleViews::CreateFootnoteView() {
   InitFootnoteView(promo_view.get());
   return promo_view;
 #endif
-}
-
-int SaveCardManageCardsBubbleViews::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK;
 }
 
 SaveCardManageCardsBubbleViews::~SaveCardManageCardsBubbleViews() {}

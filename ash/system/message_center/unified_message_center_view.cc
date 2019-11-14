@@ -497,6 +497,10 @@ void UnifiedMessageCenterView::NotifyRectBelowScroll() {
   SetNotificationRectBelowScroll(rect_below_scroll);
 }
 
+void UnifiedMessageCenterView::FocusOut(bool reverse) {
+  message_center_bubble_->FocusOut(reverse);
+}
+
 void UnifiedMessageCenterView::FocusEntered(bool reverse) {
   views::View* focus_view =
       reverse ? GetLastFocusableChild() : GetFirstFocusableChild();

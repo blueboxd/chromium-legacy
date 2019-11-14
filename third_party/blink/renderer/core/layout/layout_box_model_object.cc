@@ -472,7 +472,7 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
     SetNeedsPaintPropertyUpdate();
   }
 
-  if (old_style && HasLayer() && !Layer()->NeedsRepaint() &&
+  if (old_style && HasLayer() && !Layer()->SelfNeedsRepaint() &&
       diff.TransformChanged() &&
       (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
        !Layer()->HasStyleDeterminedDirectCompositingReasons())) {

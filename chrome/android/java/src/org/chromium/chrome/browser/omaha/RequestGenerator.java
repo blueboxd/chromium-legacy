@@ -11,11 +11,12 @@ import android.os.Build;
 import android.text.format.DateUtils;
 import android.util.Xml;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.xmlpull.v1.XmlSerializer;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.Log;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.identity.SettingsSecureBasedIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;

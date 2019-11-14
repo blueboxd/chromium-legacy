@@ -67,6 +67,10 @@
   color: rgb(128, 128, 128);
 }
 
+#vulkan-info-value {
+  white-space: pre;
+}
+
 #copy-to-clipboard {
   user-select: none;
 }

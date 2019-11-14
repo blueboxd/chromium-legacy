@@ -2214,6 +2214,10 @@ jumbo_static_library("browser") {
     "//ui/web_dialogs",
   ]
 
+  if (is_win) {
+    libs += [ "secur32.lib" ]
+  }
+
   if (is_posix || is_fuchsia) {
     sources += [
       "download/trusted_sources_manager_posix.cc",

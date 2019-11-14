@@ -7,7 +7,7 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "",
+      "name": "LayoutVideo VIDEO id='video'",
       "position": [8, 8],
       "bounds": [320, 240]
     },

@@ -22,7 +22,7 @@ class HandleSignalTrackerTest : public testing::Test {
 
   void WaitForNextNotification(HandleSignalTracker* tracker) {
     base::RunLoop loop;
-    tracker->set_notification_callback(base::Bind(
+    tracker->set_notification_callback(base::BindRepeating(
         [](base::RunLoop* loop, const HandleSignalsState& signals_state) {
           loop->Quit();
         },

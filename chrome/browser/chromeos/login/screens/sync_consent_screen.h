@@ -67,7 +67,6 @@ class SyncConsentScreen : public BaseScreen,
   // BaseScreen:
   void Show() override;
   void Hide() override;
-  void OnUserAction(const std::string& action_id) override;
 
   // syncer::SyncServiceObserver:
   void OnStateChanged(syncer::SyncService* sync) override;

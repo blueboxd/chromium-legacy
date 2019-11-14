@@ -29,7 +29,7 @@
         {
           "object": "LayoutTextControl TEXTAREA id='editor'",
           "rect": [7, 7, 183, 40],
-          "reason": "chunk appeared"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutTextControl TEXTAREA id='editor'",
@@ -44,7 +44,7 @@
         {
           "object": "LayoutTextControl TEXTAREA id='editor'",
           "rect": [8, 8, 181, 38],
-          "reason": "chunk disappeared"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutTextControl TEXTAREA id='editor'",

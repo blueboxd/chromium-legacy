@@ -43,11 +43,6 @@ base::string16 JavaScriptDialogViews::GetUserInput() {
   return message_box_view_->GetInputText();
 }
 
-int JavaScriptDialogViews::GetDialogButtons() const {
-  const bool is_alert = dialog_type_ == content::JAVASCRIPT_DIALOG_TYPE_ALERT;
-  return ui::DIALOG_BUTTON_OK | (is_alert ? 0 : ui::DIALOG_BUTTON_CANCEL);
-}
-
 base::string16 JavaScriptDialogViews::GetWindowTitle() const {
   return title_;
 }
@@ -100,12 +95,17 @@ JavaScriptDialogViews::JavaScriptDialogViews(
     content::JavaScriptDialogManager::DialogClosedCallback dialog_callback,
     base::OnceClosure dialog_force_closed_callback)
     : title_(title),
-      dialog_type_(dialog_type),
       message_text_(message_text),
       default_prompt_text_(default_prompt_text),
       dialog_callback_(std::move(dialog_callback)),
       dialog_force_closed_callback_(std::move(dialog_force_closed_callback)) {
   DialogDelegate::set_default_button(ui::DIALOG_BUTTON_OK);
+  const bool is_alert = dialog_type == content::JAVASCRIPT_DIALOG_TYPE_ALERT;
+  DialogDelegate::set_buttons(
+      // Alerts only have an OK button, no Cancel, because there is no choice
+      // being made.
+      is_alert ? ui::DIALOG_BUTTON_OK
+               : (ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL));
 
   int options = views::MessageBoxView::DETECT_DIRECTIONALITY;
   if (dialog_type == content::JAVASCRIPT_DIALOG_TYPE_PROMPT)

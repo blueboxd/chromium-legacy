@@ -25,6 +25,8 @@ PasswordSaveConfirmationView::PasswordSaveConfirmationView(
                              /*auto_dismissable=*/false) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+
   auto label = std::make_unique<views::StyledLabel>(
       model()->save_confirmation_text(), this);
   label->SetTextContext(CONTEXT_BODY_TEXT_LARGE);
@@ -37,10 +39,6 @@ PasswordSaveConfirmationView::PasswordSaveConfirmationView(
 }
 
 PasswordSaveConfirmationView::~PasswordSaveConfirmationView() = default;
-
-int PasswordSaveConfirmationView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
-}
 
 bool PasswordSaveConfirmationView::ShouldShowCloseButton() const {
   return true;

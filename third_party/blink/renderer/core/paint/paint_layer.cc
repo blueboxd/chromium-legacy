@@ -155,7 +155,8 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
       has_compositing_descendant_(false),
       should_isolate_composited_descendants_(false),
       lost_grouped_mapping_(false),
-      needs_repaint_(false),
+      self_needs_repaint_(false),
+      descendant_needs_repaint_(false),
       previous_paint_result_(kFullyPainted),
       needs_paint_phase_descendant_outlines_(false),
       needs_paint_phase_float_(false),
@@ -3192,7 +3193,7 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
   UpdateBackdropFilters(old_style, new_style);
   UpdateClipPath(old_style, new_style);
 
-  if (!NeedsRepaint()) {
+  if (!SelfNeedsRepaint()) {
     if (diff.ZIndexChanged()) {
       // We don't need to invalidate paint of objects when paint order
       // changes. However, we do need to repaint the containing stacking
@@ -3366,7 +3367,7 @@ bool PaintLayer::HasFilterThatMovesPixels() const {
 }
 
 void PaintLayer::SetNeedsRepaint() {
-  SetNeedsRepaintInternal();
+  SetSelfNeedsRepaint();
 
   // If you need repaint, then you might issue raster invalidations, and in
   // Composite after Paint mode, we do these in PAC::Update().
@@ -3380,8 +3381,8 @@ void PaintLayer::SetNeedsRepaint() {
   MarkCompositingContainerChainForNeedsRepaint();
 }
 
-void PaintLayer::SetNeedsRepaintInternal() {
-  needs_repaint_ = true;
+void PaintLayer::SetSelfNeedsRepaint() {
+  self_needs_repaint_ = true;
   // Invalidate as a display item client.
   static_cast<DisplayItemClient*>(this)->Invalidate();
 }
@@ -3419,10 +3420,10 @@ void PaintLayer::MarkCompositingContainerChainForNeedsRepaint() {
       container = owner->EnclosingLayer();
     }
 
-    if (container->needs_repaint_)
+    if (container->descendant_needs_repaint_)
       break;
 
-    container->SetNeedsRepaintInternal();
+    container->descendant_needs_repaint_ = true;
     layer = container;
   }
 }
@@ -3430,7 +3431,8 @@ void PaintLayer::MarkCompositingContainerChainForNeedsRepaint() {
 void PaintLayer::ClearNeedsRepaintRecursively() {
   for (PaintLayer* child = FirstChild(); child; child = child->NextSibling())
     child->ClearNeedsRepaintRecursively();
-  needs_repaint_ = false;
+  self_needs_repaint_ = false;
+  descendant_needs_repaint_ = false;
 }
 
 const PaintLayer* PaintLayer::CommonAncestor(const PaintLayer* other) const {

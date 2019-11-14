@@ -108,7 +108,7 @@ OzonePlatform::GetInitializedHostProperties() {
   return host_properties;
 }
 
-void OzonePlatform::AddInterfaces(service_manager::BinderRegistry* registry) {}
+void OzonePlatform::AddInterfaces(mojo::BinderMap* binders) {}
 
 void OzonePlatform::AfterSandboxEntry() {
   // This should not be called in single-process mode.

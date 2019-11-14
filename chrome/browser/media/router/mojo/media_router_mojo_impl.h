@@ -14,6 +14,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/media/router/issue_manager.h"
 #include "chrome/browser/media/router/media_router_base.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
+#include "chrome/browser/media/webrtc/desktop_media_picker_controller.h"
 #include "chrome/common/media_router/issue.h"
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "chrome/common/media_router/route_request_result.h"
@@ -123,6 +125,18 @@ class MediaRouterMojoImpl : public MediaRouterBase, public mojom::MediaRouter {
       const std::string& presentation_id);
   base::Optional<MediaRouteProviderId> GetProviderIdForRoute(
       const MediaRoute::Id& route_id);
+
+  void CreateRouteWithSelectedDesktop(
+      MediaRouteProviderId provider_id,
+      const std::string& sink_id,
+      const std::string& presentation_id,
+      const url::Origin& origin,
+      content::WebContents* web_contents,
+      base::TimeDelta timeout,
+      bool incognito,
+      mojom::MediaRouteProvider::CreateRouteCallback mr_callback,
+      const std::string& err,
+      content::DesktopMediaID media_id);
 
   content::BrowserContext* context() const { return context_; }
 
@@ -306,6 +320,14 @@ class MediaRouterMojoImpl : public MediaRouterBase, public mojom::MediaRouter {
     SinkAvailability overall_availability_ = SinkAvailability::UNAVAILABLE;
   };
 
+  // See note in OnDesktopPickerDone().
+  struct PendingStreamRequest {
+    std::string stream_id;
+    int render_process_id;
+    int render_frame_id;
+    url::Origin origin;
+  };
+
   // MediaRouter implementation.
   bool RegisterMediaSinksObserver(MediaSinksObserver* observer) override;
   void UnregisterMediaSinksObserver(MediaSinksObserver* observer) override;
@@ -424,6 +446,10 @@ class MediaRouterMojoImpl : public MediaRouterBase, public mojom::MediaRouter {
   mojo::ReceiverSet<mojom::MediaRouter> receivers_;
 
   content::BrowserContext* const context_;
+
+  DesktopMediaPickerController desktop_picker_;
+
+  base::Optional<PendingStreamRequest> pending_stream_request_;
 
   base::WeakPtrFactory<MediaRouterMojoImpl> weak_factory_{this};
 

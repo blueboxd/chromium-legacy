@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.background_sync;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.Log;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;

@@ -10,6 +10,10 @@ import("//media/media_options.gni")
 declare_args() {
   system_owns_volume =
       use_alsa && !enable_assistant && chromecast_branding != "google"
+
+  # If true, the mixer will be instantiated inside cast_shell. When false, the
+  # mixer is expected to be running in another process.
+  mixer_in_cast_shell = true
 }
 
 cast_source_set("backend") {
@@ -76,6 +80,7 @@ buildflag_header("audio_buildflags") {
     "MEDIA_CLOCK_MONOTONIC_RAW=$media_clock_monotonic_raw",
     "SYSTEM_OWNS_VOLUME=$system_owns_volume",
     "VOLUME_CONTROL_IN_MEDIA_SHLIB=$volume_control_in_media_shlib",
+    "MIXER_IN_CAST_SHELL=$mixer_in_cast_shell",
   ]
 }
 
@@ -222,7 +227,6 @@ cast_source_set("for_mixer_audio") {
     "//chromecast/media/audio/mixer_service:output_stream_connection",
     "//chromecast/media/audio/mixer_service:proto",
     "//chromecast/media/base:monotonic_clock",
-    "//chromecast/media/cma/backend/mixer",
     "//chromecast/media/cma/base",
     "//chromecast/media/cma/decoder",
     "//chromecast/net:io_buffer_pool",
@@ -231,6 +235,10 @@ cast_source_set("for_mixer_audio") {
     "//media",
     "//media:shared_memory_support",
   ]
+
+  if (mixer_in_cast_shell) {
+    deps += [ "//chromecast/media/cma/backend/mixer" ]
+  }
 }
 
 test("cast_audio_backend_unittests") {

@@ -253,6 +253,7 @@
 #include "chrome/browser/first_run/upgrade_util_win.h"
 #include "chrome/browser/ui/network_profile_bubble.h"
 #include "chrome/browser/ui/views/try_chrome_dialog_win/try_chrome_dialog.h"
+#include "chrome/browser/web_applications/components/web_app_file_handler_registration_win.h"
 #include "chrome/browser/win/browser_util.h"
 #include "chrome/browser/win/chrome_select_file_dialog_factory.h"
 #include "chrome/install_static/install_util.h"
@@ -1412,6 +1413,13 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   if (downgrade_manager_.IsMigrationRequired(user_data_dir_))
     return chrome::RESULT_CODE_DOWNGRADE_AND_RELAUNCH;
   downgrade_manager_.UpdateLastVersion(user_data_dir_);
+
+  // Write current executable path to |user_data_dir_| to inform Progressive Web
+  // App launchers inside |user_data_dir_| which chrome.exe to launch from.
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+      base::BindOnce(&web_app::UpdateChromeExePath, user_data_dir_));
 #endif
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)

@@ -462,14 +462,6 @@ def _ParseOptions(argv):
   options.jar_info_exclude_globs = build_utils.ParseGnList(
       options.jar_info_exclude_globs)
 
-  if options.java_version == '1.8' and options.bootclasspath:
-    # Android's boot jar doesn't contain all java 8 classes.
-    # See: https://github.com/evant/gradle-retrolambda/issues/23.
-    # Get the path of the jdk folder by searching for the 'jar' executable. We
-    # cannot search for the 'javac' executable because goma provides a custom
-    # version of 'javac'.
-    options.bootclasspath.append(build_utils.RT_JAR_PATH)
-
   additional_jar_files = []
   for arg in options.additional_jar_files or []:
     filepath, jar_filepath = arg.split(':')
@@ -503,10 +495,7 @@ def main(argv):
   # * With javac: 17 seconds
   # * With errorprone (checks disabled): 20 seconds
   # * With errorprone (checks enabled): 30 seconds
-  if options.errorprone_path:
-    javac_path = options.errorprone_path
-  else:
-    javac_path = distutils.spawn.find_executable('javac')
+  javac_path = build_utils.JAVA_PATH + 'c'
 
   javac_cmd = [
       javac_path,
@@ -522,18 +511,21 @@ def main(argv):
   ]
 
   if options.enable_errorprone:
+    errorprone_flags = ['-Xplugin:ErrorProne']
     for warning in ERRORPRONE_WARNINGS_TO_TURN_OFF:
-      javac_cmd.append('-Xep:{}:OFF'.format(warning))
+      errorprone_flags.append('-Xep:{}:OFF'.format(warning))
     for warning in ERRORPRONE_WARNINGS_TO_ERROR:
-      javac_cmd.append('-Xep:{}:ERROR'.format(warning))
-  elif options.errorprone_path:
-    javac_cmd.append('-XepDisableAllChecks')
+      errorprone_flags.append('-Xep:{}:ERROR'.format(warning))
+    javac_cmd += ['-XDcompilePolicy=simple', ' '.join(errorprone_flags)]
 
   if options.java_version:
     javac_cmd.extend([
       '-source', options.java_version,
       '-target', options.java_version,
     ])
+  if options.java_version == '1.8':
+    # Android's boot jar doesn't contain all java 8 classes.
+    options.bootclasspath.append(build_utils.RT_JAR_PATH)
 
   if options.chromium_code:
     javac_cmd.extend(['-Werror'])

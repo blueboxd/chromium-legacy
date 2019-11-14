@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_copier.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "third_party/webrtc/api/rtc_error.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
 
 namespace cricket {
@@ -118,6 +119,16 @@ template <>
 struct CrossThreadCopier<blink::P2PQuicNegotiatedParams>
     : public CrossThreadCopierPassThrough<blink::P2PQuicNegotiatedParams> {
   STATIC_ONLY(CrossThreadCopier);
+};
+
+template <>
+struct CrossThreadCopier<webrtc::RTCError>
+    : public CrossThreadCopierPassThrough<webrtc::RTCError> {
+  STATIC_ONLY(CrossThreadCopier);
+  using Type = webrtc::RTCError;
+  static webrtc::RTCError Copy(webrtc::RTCError error) {
+    return error;  // This is in fact a move.
+  }
 };
 
 }  // namespace WTF

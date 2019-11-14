@@ -291,12 +291,12 @@ public class OMADownloadHandlerTest {
                 4, true);
 
         DownloadQueryResultVerifier verifier =
-                new DownloadQueryResultVerifier(DownloadManagerService.DownloadStatus.COMPLETE);
+                new DownloadQueryResultVerifier(DownloadStatus.COMPLETE);
         DownloadManagerBridge.queryDownloadResult(downloadId1, verifier);
         waitForQueryCompletion(verifier);
 
         manager.remove(downloadId1);
-        verifier = new DownloadQueryResultVerifier(DownloadManagerService.DownloadStatus.CANCELLED);
+        verifier = new DownloadQueryResultVerifier(DownloadStatus.CANCELLED);
         DownloadManagerBridge.queryDownloadResult(downloadId1, verifier);
         waitForQueryCompletion(verifier);
     }

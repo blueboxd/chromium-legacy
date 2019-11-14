@@ -12,9 +12,12 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/sequence_checker.h"
+#include "base/time/time.h"
 #include "components/metrics/enabled_state_provider.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_service_client.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 
 class PrefService;
 
@@ -90,7 +93,8 @@ enum class BackfillInstallDate {
 // the sample, it then calls MetricsService::Start(). If consent was not
 // granted, MaybeStartMetrics() instead clears the client ID, if any.
 class AwMetricsServiceClient : public metrics::MetricsServiceClient,
-                               public metrics::EnabledStateProvider {
+                               public metrics::EnabledStateProvider,
+                               public content::NotificationObserver {
   friend struct base::LazyInstanceTraitsBase<AwMetricsServiceClient>;
 
  public:
@@ -102,6 +106,7 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient,
   void Initialize(PrefService* pref_service);
   void SetHaveMetricsConsent(bool user_consent, bool app_consent);
   void SetFastStartupForTesting(bool fast_startup_for_testing);
+  void SetUploadIntervalForTesting(const base::TimeDelta& upload_interval);
   std::unique_ptr<const base::FieldTrial::EntropyProvider>
   CreateLowEntropyProvider();
 
@@ -131,6 +136,11 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient,
   // Gets the embedding app's package name if it's OK to log. Otherwise, this
   // returns the empty string.
   std::string GetAppPackageName() override;
+
+  // content::NotificationObserver
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
  protected:
   // Returns the metrics sampling rate, to be used by IsInSample(). This is a
@@ -164,9 +174,11 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient,
 
  private:
   void MaybeStartMetrics();
+  void RegisterForNotifications();
 
   std::unique_ptr<metrics::MetricsStateManager> metrics_state_manager_;
   std::unique_ptr<metrics::MetricsService> metrics_service_;
+  content::NotificationRegistrar registrar_;
   PrefService* pref_service_ = nullptr;
   bool init_finished_ = false;
   bool set_consent_finished_ = false;
@@ -174,6 +186,10 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient,
   bool app_consent_ = false;
   bool is_in_sample_ = false;
   bool fast_startup_for_testing_ = false;
+
+  // When non-zero, this overrides the default value in
+  // GetStandardUploadInterval().
+  base::TimeDelta overridden_upload_interval_;
 
   // AwMetricsServiceClient may be created before the UI thread is promoted to
   // BrowserThread::UI. Use |sequence_checker_| to enforce that the

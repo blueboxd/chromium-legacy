@@ -91,7 +91,7 @@ TEST(AnalyzeTest, NormalizeTopLevelClangLambda) {
 }
 
 TEST(AnalyzeTest, ParseJavaFunctionSignature) {
-  ::std::deque<std::string> owned_strings;
+  std::deque<std::string> owned_strings;
   // Java method with no args
   auto do_test = [&owned_strings](std::string sig, std::string exp_full_name,
                                   std::string exp_template_name,
@@ -127,9 +127,11 @@ TEST(AnalyzeTest, ParseJavaFunctionSignature) {
 }
 
 TEST(AnalyzeTest, ParseFunctionSignature) {
-  auto check = [](std::string ret_part, std::string name_part,
-                  std::string params_part, std::string after_part = "",
-                  std::string name_without_templates = "") {
+  std::deque<std::string> owned_strings;
+  auto check = [&owned_strings](std::string ret_part, std::string name_part,
+                                std::string params_part,
+                                std::string after_part = "",
+                                std::string name_without_templates = "") {
     if (name_without_templates.empty()) {
       name_without_templates = name_part;
       // Heuristic to drop templates: std::vector<int> -> std::vector<>
@@ -137,7 +139,7 @@ TEST(AnalyzeTest, ParseFunctionSignature) {
       name_without_templates += after_part;
     }
     std::string signature = name_part + params_part + after_part;
-    auto result = caspian::ParseCpp(signature);
+    auto result = caspian::ParseCpp(signature, &owned_strings);
     EXPECT_EQ(name_without_templates, std::get<2>(result));
     EXPECT_EQ(name_part + after_part, std::get<1>(result));
     EXPECT_EQ(name_part + params_part + after_part, std::get<0>(result));
@@ -145,7 +147,7 @@ TEST(AnalyzeTest, ParseFunctionSignature) {
     if (!ret_part.empty()) {
       // Parse should be unchanged when we prepend |ret_part|
       signature = ret_part + name_part + params_part + after_part;
-      result = caspian::ParseCpp(signature);
+      result = caspian::ParseCpp(signature, &owned_strings);
       EXPECT_EQ(name_without_templates, std::get<2>(result));
       EXPECT_EQ(name_part + after_part, std::get<1>(result));
       EXPECT_EQ(name_part + params_part + after_part, std::get<0>(result));
@@ -214,7 +216,7 @@ TEST(AnalyzeTest, ParseFunctionSignature) {
   // See function_signature_test.py for full comment
   std::string sig =
       "(anonymous namespace)::Foo::Baz() const::GLSLFP::onData(Foo, Bar)";
-  auto ret = caspian::ParseCpp(sig);
+  auto ret = caspian::ParseCpp(sig, &owned_strings);
   EXPECT_EQ("(anonymous namespace)::Foo::Baz", std::get<2>(ret));
   EXPECT_EQ("(anonymous namespace)::Foo::Baz", std::get<1>(ret));
   EXPECT_EQ(sig, std::get<0>(ret));
@@ -222,13 +224,13 @@ TEST(AnalyzeTest, ParseFunctionSignature) {
   // Top-level lambda.
   // Note: Inline lambdas do not seem to be broken into their own symbols.
   sig = "cc::{lambda(cc::PaintOp*)#63}::_FUN(cc::PaintOp*)";
-  ret = caspian::ParseCpp(sig);
+  ret = caspian::ParseCpp(sig, &owned_strings);
   EXPECT_EQ("cc::$lambda#63", std::get<2>(ret));
   EXPECT_EQ("cc::$lambda#63", std::get<1>(ret));
   EXPECT_EQ("cc::$lambda#63(cc::PaintOp*)", std::get<0>(ret));
 
   sig = "cc::$_63::__invoke(cc::PaintOp*)";
-  ret = caspian::ParseCpp(sig);
+  ret = caspian::ParseCpp(sig, &owned_strings);
   EXPECT_EQ("cc::$lambda#63", std::get<2>(ret));
   EXPECT_EQ("cc::$lambda#63", std::get<1>(ret));
   EXPECT_EQ("cc::$lambda#63(cc::PaintOp*)", std::get<0>(ret));

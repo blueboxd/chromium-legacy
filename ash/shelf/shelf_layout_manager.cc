@@ -20,6 +20,7 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_config.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
@@ -702,11 +703,11 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
       Shell::Get()->app_list_controller()->IsVisible();
   if (IsTabletModeEnabled()) {
     // If the home launcher is shown, being animated, or dragged, show the
-    // default background.
+    // home launcher background.
     if (app_list_is_visible ||
         Shell::Get()->app_list_controller()->home_launcher_transition_state() !=
             AppListControllerImpl::HomeLauncherTransitionState::kFinished)
-      return SHELF_BACKGROUND_DEFAULT;
+      return SHELF_BACKGROUND_HOME_LAUNCHER;
   } else if (app_list_is_visible) {
     return maximized ? SHELF_BACKGROUND_MAXIMIZED_WITH_APP_LIST
                      : SHELF_BACKGROUND_APP_LIST;

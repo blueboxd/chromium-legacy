@@ -11,7 +11,8 @@ import android.graphics.Rect;
 import android.util.Pair;
 import android.view.WindowManager;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;

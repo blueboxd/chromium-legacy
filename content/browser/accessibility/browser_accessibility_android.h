@@ -157,6 +157,12 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
   // Return the target of a link or the source of an image.
   base::string16 GetTargetUrl() const;
 
+  // On Android, spelling errors are returned as "suggestions". Retreive
+  // all of the suggestions for a given text field as vectors of start
+  // and end offsets.
+  void GetSuggestions(std::vector<int>* suggestion_starts,
+                      std::vector<int>* suggestion_ends) const;
+
   // Used to keep track of when to stop reporting content_invalid.
   // Timer only applies if node has focus.
   void ResetContentInvalidTimer();

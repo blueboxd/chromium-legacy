@@ -111,10 +111,13 @@ class WebEngineDebugIntegrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebEngineDebugIntegrationTest);
 };
 
+enum class UserModeDebugging { kEnabled = 0, kDisabled = 1 };
+
 // Helper struct to intiialize all data necessary for a Context to create a
 // Frame and navigate it to a specific URL.
 struct TestContextAndFrame {
   explicit TestContextAndFrame(fuchsia::web::ContextProvider* context_provider,
+                               UserModeDebugging user_mode_debugging,
                                std::string url) {
     // Create a Context, a Frame and navigate it to |url|.
     auto directory = base::fuchsia::OpenDirectory(
@@ -124,6 +127,8 @@ struct TestContextAndFrame {
 
     fuchsia::web::CreateContextParams create_params;
     create_params.set_service_directory(std::move(directory));
+    if (user_mode_debugging == UserModeDebugging::kEnabled)
+      create_params.set_remote_debugging_port(0);
     context_provider->Create(std::move(create_params), context.NewRequest());
     context->CreateFrame(frame.NewRequest());
     frame->GetNavigationController(controller.NewRequest());
@@ -148,7 +153,8 @@ struct TestContextAndFrame {
 // Test the Debug service is properly started and accessible.
 TEST_F(WebEngineDebugIntegrationTest, DebugService) {
   std::string url = test_server_.GetURL("/title1.html").spec();
-  TestContextAndFrame frame_data(web_context_provider_.get(), url);
+  TestContextAndFrame frame_data(web_context_provider_.get(),
+                                 UserModeDebugging::kDisabled, url);
   ASSERT_TRUE(frame_data.context);
 
   // Test the debug information is correct.
@@ -175,7 +181,8 @@ TEST_F(WebEngineDebugIntegrationTest, DebugService) {
 
 TEST_F(WebEngineDebugIntegrationTest, MultipleDebugClients) {
   std::string url1 = test_server_.GetURL("/title1.html").spec();
-  TestContextAndFrame frame_data1(web_context_provider_.get(), url1);
+  TestContextAndFrame frame_data1(web_context_provider_.get(),
+                                  UserModeDebugging::kDisabled, url1);
   ASSERT_TRUE(frame_data1.context);
 
   // Test the debug information is correct.
@@ -204,7 +211,8 @@ TEST_F(WebEngineDebugIntegrationTest, MultipleDebugClients) {
 
   // Create a second Context, a second Frame and navigate it to title2.html.
   std::string url2 = test_server_.GetURL("/title2.html").spec();
-  TestContextAndFrame frame_data2(web_context_provider_.get(), url2);
+  TestContextAndFrame frame_data2(web_context_provider_.get(),
+                                  UserModeDebugging::kDisabled, url2);
   ASSERT_TRUE(frame_data2.context);
 
   // Ensure each DevTools listener has the right information.
@@ -237,4 +245,46 @@ TEST_F(WebEngineDebugIntegrationTest, MultipleDebugClients) {
   frame_data2.context.Unbind();
   dev_tools_listener_.RunUntilNumberOfPortsIs(0);
   dev_tools_listener2.RunUntilNumberOfPortsIs(0);
+}
+
+// Test the Debug service is accessible when the User service is requested.
+TEST_F(WebEngineDebugIntegrationTest, DebugAndUserService) {
+  std::string url = test_server_.GetURL("/title1.html").spec();
+  TestContextAndFrame frame_data(web_context_provider_.get(),
+                                 UserModeDebugging::kEnabled, url);
+  ASSERT_TRUE(frame_data.context);
+
+  dev_tools_listener_.RunUntilNumberOfPortsIs(1u);
+
+  // Check we are getting the same port on both the debug and user APIs.
+  base::RunLoop run_loop;
+  cr_fuchsia::ResultReceiver<
+      fuchsia::web::Context_GetRemoteDebuggingPort_Result>
+      port_receiver(run_loop.QuitClosure());
+  frame_data.context->GetRemoteDebuggingPort(
+      cr_fuchsia::CallbackToFitFunction(port_receiver.GetReceiveCallback()));
+  run_loop.Run();
+
+  ASSERT_TRUE(port_receiver->is_response());
+  uint16_t remote_debugging_port = port_receiver->response().port;
+  ASSERT_EQ(remote_debugging_port, *dev_tools_listener_.debug_ports().begin());
+
+  // Test the debug information is correct.
+  base::Value devtools_list =
+      cr_fuchsia::GetDevToolsListFromPort(remote_debugging_port);
+  ASSERT_TRUE(devtools_list.is_list());
+  EXPECT_EQ(devtools_list.GetList().size(), 1u);
+
+  base::Value* devtools_url = devtools_list.GetList()[0].FindPath("url");
+  ASSERT_TRUE(devtools_url->is_string());
+  EXPECT_EQ(devtools_url->GetString(), url);
+
+  base::Value* devtools_title = devtools_list.GetList()[0].FindPath("title");
+  ASSERT_TRUE(devtools_title->is_string());
+  EXPECT_EQ(devtools_title->GetString(), "title 1");
+
+  // Unbind the context and wait for the listener to no longer have any active
+  // DevTools port.
+  frame_data.context.Unbind();
+  dev_tools_listener_.RunUntilNumberOfPortsIs(0);
 }

@@ -336,8 +336,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
   // function and using feature string name with EnableFeatureFromString.
   const RuntimeFeatureToChromiumFeatureMap<const char*>
       runtimeFeatureNameToChromiumFeatureMapping[] = {
-          {"CSSBackdropFilter", blink::features::kCSSBackdropFilter,
-           kUseFeatureState},
           {"FastBorderRadius", blink::features::kFastBorderRadius,
            kUseFeatureState},
           {"FontSrcLocalMatching", features::kFontSrcLocalMatching,
@@ -554,7 +552,6 @@ void SetCustomizedRuntimeFeaturesFromCombinedArgs(
     WebRuntimeFeatures::EnableNetInfoDownlinkMax(true);
     WebRuntimeFeatures::EnableFetchMetadata(true);
     WebRuntimeFeatures::EnableFetchMetadataDestination(true);
-    WebRuntimeFeatures::EnableFeatureFromString("CSSBackdropFilter", true);
     WebRuntimeFeatures::EnableFeatureFromString("FastBorderRadius", true);
     WebRuntimeFeatures::EnableDisplayLocking(true);
   }

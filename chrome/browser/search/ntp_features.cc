@@ -14,11 +14,11 @@ namespace ntp_features {
 
 // If enabled, 'Chrome Colors' menu becomes visible in the customization picker.
 const base::Feature kChromeColors{"ChromeColors",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
+                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, custom color picker becomes visible in 'Chrome Colors' menu.
 const base::Feature kChromeColorsCustomColorPicker{
-    "ChromeColorsCustomColorPicker", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ChromeColorsCustomColorPicker", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, shows a confirm dialog before removing search suggestions from
 // the New Tab page real search box ("realbox").
@@ -27,7 +27,7 @@ const base::Feature kConfirmSuggestionRemovals{
 
 // If enabled, the user will see the second version of the customization picker.
 const base::Feature kCustomizationMenuV2{"NtpCustomizationMenuV2",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, "middle slot" promos on the bottom of the NTP will show a dismiss
 // UI that allows users to close them and not see them again.

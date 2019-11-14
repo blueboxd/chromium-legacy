@@ -1772,14 +1772,7 @@ ScriptPromise RTCPeerConnection::addIceCandidate(
   ScriptPromise promise = resolver->Promise();
   auto* request = MakeGarbageCollected<RTCVoidRequestPromiseImpl>(
       base::nullopt, this, resolver, "RTCPeerConnection", "addIceCandidate");
-  bool implemented =
-      peer_handler_->AddICECandidate(request, std::move(web_candidate));
-  if (!implemented) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kOperationError,
-        "This operation could not be completed."));
-  }
-
+  peer_handler_->AddICECandidate(request, std::move(web_candidate));
   return promise;
 }
 
@@ -1814,15 +1807,7 @@ ScriptPromise RTCPeerConnection::addIceCandidate(
   auto* request = MakeGarbageCollected<RTCVoidRequestImpl>(
       GetExecutionContext(), base::nullopt, this, success_callback,
       error_callback);
-  bool implemented =
-      peer_handler_->AddICECandidate(request, std::move(web_candidate));
-  if (!implemented) {
-    AsyncCallErrorCallback(error_callback,
-                           MakeGarbageCollected<DOMException>(
-                               DOMExceptionCode::kOperationError,
-                               "This operation could not be completed."));
-  }
-
+  peer_handler_->AddICECandidate(request, std::move(web_candidate));
   return ScriptPromise::CastUndefined(script_state);
 }
 

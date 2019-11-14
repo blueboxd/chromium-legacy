@@ -959,11 +959,11 @@ void MaybeShowSaveLocalCardSignInPromo(Browser* browser) {
 void CloseSaveLocalCardSignInPromo(Browser* browser) {
   WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
-  autofill::SaveCardBubbleControllerImpl::CreateForWebContents(web_contents);
   autofill::SaveCardBubbleControllerImpl* controller =
       autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents);
 
-  controller->HideBubbleForSignInPromo();
+  if (controller)
+    controller->HideBubbleForSignInPromo();
 }
 
 void Translate(Browser* browser) {

@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.feed;
 
 import android.util.Base64;
 
+import androidx.annotation.VisibleForTesting;
+
 import com.google.android.libraries.feed.api.host.config.Configuration;
 import com.google.android.libraries.feed.api.host.network.HttpRequest;
 import com.google.android.libraries.feed.api.host.network.HttpRequest.HttpMethod;
@@ -23,7 +25,6 @@ import com.google.search.now.wire.feed.ResponseProto.Response;
 import com.google.search.now.wire.feed.mockserver.MockServerProto.ConditionalResponse;
 import com.google.search.now.wire.feed.mockserver.MockServerProto.MockServer;
 
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.PostTask;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 

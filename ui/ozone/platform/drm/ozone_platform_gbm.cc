@@ -19,7 +19,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/events/ozone/device/device_manager.h"
@@ -120,11 +119,11 @@ class OzonePlatformGbm : public OzonePlatform {
   // ignored. While the caller may choose to invoke this method before entering
   // the sandbox, the actual interface adding has to happen on the DRM Device
   // thread and so will be deferred until the DRM thread is running.
-  void AddInterfaces(service_manager::BinderRegistry* registry) override {
+  void AddInterfaces(mojo::BinderMap* binders) override {
     if (!using_mojo_)
       return;
 
-    registry->AddInterface<ozone::mojom::DrmDevice>(
+    binders->Add<ozone::mojom::DrmDevice>(
         base::BindRepeating(&OzonePlatformGbm::CreateDrmDeviceReceiver,
                             weak_factory_.GetWeakPtr()),
         base::ThreadTaskRunnerHandle::Get());

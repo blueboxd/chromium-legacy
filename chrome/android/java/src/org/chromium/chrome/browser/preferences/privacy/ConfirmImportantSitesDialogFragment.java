@@ -25,9 +25,10 @@ import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.ListView;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.FaviconUtils;
 import org.chromium.chrome.browser.favicon.IconType;

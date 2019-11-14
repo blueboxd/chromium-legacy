@@ -431,6 +431,9 @@ struct EnumTraits<media_router::mojom::RouteRequestResultCode,
       case media_router::RouteRequestResult::ROUTE_ALREADY_EXISTS:
         return media_router::mojom::RouteRequestResultCode::
             ROUTE_ALREADY_EXISTS;
+      case media_router::RouteRequestResult::DESKTOP_PICKER_FAILED:
+        return media_router::mojom::RouteRequestResultCode::
+            DESKTOP_PICKER_FAILED;
       default:
         NOTREACHED() << "Unknown RouteRequestResultCode "
                      << static_cast<int>(code);
@@ -470,6 +473,9 @@ struct EnumTraits<media_router::mojom::RouteRequestResultCode,
         return true;
       case media_router::mojom::RouteRequestResultCode::ROUTE_ALREADY_EXISTS:
         *output = media_router::RouteRequestResult::ROUTE_ALREADY_EXISTS;
+        return true;
+      case media_router::mojom::RouteRequestResultCode::DESKTOP_PICKER_FAILED:
+        *output = media_router::RouteRequestResult::DESKTOP_PICKER_FAILED;
         return true;
     }
     return false;

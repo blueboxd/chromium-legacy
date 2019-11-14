@@ -39,7 +39,7 @@
 namespace blink {
 
 class BLINK_PLATFORM_EXPORT WebRTCICECandidate final
-    : public base::RefCounted<WebRTCICECandidate> {
+    : public base::RefCountedThreadSafe<WebRTCICECandidate> {
  public:
   REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
 
@@ -76,7 +76,7 @@ class BLINK_PLATFORM_EXPORT WebRTCICECandidate final
   const WebString& UsernameFragment() const { return username_fragment_; }
 
  private:
-  friend class base::RefCounted<WebRTCICECandidate>;
+  friend class base::RefCountedThreadSafe<WebRTCICECandidate>;
 
   WebRTCICECandidate(WebString candidate,
                      WebString sdp_mid,

@@ -18,19 +18,21 @@ namespace blink {
 
 namespace {
 
+// It uses DebugName and OwnerNodeId of the input DisplayItemClient, while
+// calculate VisualRect from the layer's offset and bounds.
 class ForeignLayerDisplayItemClient final : public DisplayItemClient {
  public:
-  ForeignLayerDisplayItemClient(scoped_refptr<cc::Layer> layer,
+  ForeignLayerDisplayItemClient(const DisplayItemClient& client,
+                                scoped_refptr<cc::Layer> layer,
                                 const FloatPoint& offset)
-      : layer_(std::move(layer)), offset_(offset) {
+      : client_(client), layer_(std::move(layer)), offset_(offset) {
+    DCHECK(layer_);
     Invalidate(PaintInvalidationReason::kUncacheable);
   }
 
-  String DebugName() const final {
-    return String("ForeignLayer for ") + layer_->DebugName().c_str();
-  }
+  String DebugName() const final { return client_.DebugName(); }
 
-  DOMNodeId OwnerNodeId() const final { return layer_->owner_node_id(); }
+  DOMNodeId OwnerNodeId() const final { return client_.OwnerNodeId(); }
 
   IntRect VisualRect() const final {
     const auto& bounds = layer_->bounds();
@@ -41,6 +43,7 @@ class ForeignLayerDisplayItemClient final : public DisplayItemClient {
   cc::Layer* GetLayer() const { return layer_.get(); }
 
  private:
+  const DisplayItemClient& client_;
   scoped_refptr<cc::Layer> layer_;
   FloatPoint offset_;
 };
@@ -48,21 +51,19 @@ class ForeignLayerDisplayItemClient final : public DisplayItemClient {
 }  // anonymous namespace
 
 ForeignLayerDisplayItem::ForeignLayerDisplayItem(
+    const DisplayItemClient& client,
     Type type,
     scoped_refptr<cc::Layer> layer,
     const FloatPoint& offset,
     const LayerAsJSONClient* json_client)
-    : DisplayItem(*new ForeignLayerDisplayItemClient(std::move(layer), offset),
-                  type,
-                  sizeof(*this)),
+    : DisplayItem(
+          *new ForeignLayerDisplayItemClient(client, std::move(layer), offset),
+          type,
+          sizeof(*this)),
       offset_(offset),
       json_client_(json_client) {
   DCHECK(IsForeignLayerType(type));
-  DCHECK(GetLayer());
   DCHECK(!IsCacheable());
-  // TODO(959734): This CHECK is intended to find stack traces that are causing
-  // a segfault.
-  CHECK(GetLayer());
 }
 
 ForeignLayerDisplayItem::~ForeignLayerDisplayItem() {
@@ -92,8 +93,9 @@ void ForeignLayerDisplayItem::PropertiesAsJSON(JSONObject& json) const {
 }
 #endif
 
-void RecordForeignLayerInternal(
+static void RecordForeignLayerInternal(
     GraphicsContext& context,
+    const DisplayItemClient& client,
     DisplayItem::Type type,
     scoped_refptr<cc::Layer> layer,
     const FloatPoint& offset,
@@ -112,7 +114,7 @@ void RecordForeignLayerInternal(
                                                        *properties);
   }
   paint_controller.CreateAndAppend<ForeignLayerDisplayItem>(
-      type, std::move(layer), offset, json_client);
+      client, type, std::move(layer), offset, json_client);
   if (properties) {
     paint_controller.UpdateCurrentPaintChunkProperties(base::nullopt,
                                                        *previous_properties);
@@ -120,18 +122,27 @@ void RecordForeignLayerInternal(
 }
 
 void RecordForeignLayer(GraphicsContext& context,
+                        const DisplayItemClient& client,
                         DisplayItem::Type type,
                         scoped_refptr<cc::Layer> layer,
                         const FloatPoint& offset,
                         const base::Optional<PropertyTreeState>& properties) {
-  RecordForeignLayerInternal(context, type, layer, offset, nullptr, properties);
+  RecordForeignLayerInternal(context, client, type, std::move(layer), offset,
+                             nullptr, properties);
 }
 
 void RecordGraphicsLayerAsForeignLayer(GraphicsContext& context,
                                        DisplayItem::Type type,
                                        const GraphicsLayer& graphics_layer) {
+  // In pre-CompositeAfterPaint, the GraphicsLayer hierarchy is still built
+  // during CompositingUpdate, and we have to clear them here to ensure no
+  // extraneous layers are still attached. In future we will disable all
+  // those layer hierarchy code so we won't need this line.
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+  graphics_layer.CcLayer()->RemoveAllChildren();
+
   RecordForeignLayerInternal(
-      context, type, graphics_layer.CcLayer(),
+      context, graphics_layer, type, graphics_layer.CcLayer(),
       FloatPoint(graphics_layer.GetOffsetFromTransformNode()), &graphics_layer,
       graphics_layer.GetPropertyTreeState());
 }

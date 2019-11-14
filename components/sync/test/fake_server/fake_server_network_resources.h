@@ -32,8 +32,8 @@ class FakeServerNetworkResources : public syncer::NetworkResources {
   std::unique_ptr<syncer::HttpPostProviderFactory> GetHttpPostProviderFactory(
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           url_loader_factory_info,
-      const syncer::NetworkTimeUpdateCallback& network_time_update_callback,
-      syncer::CancelationSignal* cancelation_signal) override;
+      const syncer::NetworkTimeUpdateCallback& network_time_update_callback)
+      override;
 
  private:
   base::WeakPtr<FakeServer> fake_server_;

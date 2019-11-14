@@ -3,7 +3,8 @@
 // found in the LICENSE file.
 
 package org.chromium.chrome.browser.metrics;
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.annotations.NativeMethods;
 
 /**

@@ -329,6 +329,8 @@ class MockPeerConnectionImpl : public webrtc::DummyPeerConnection {
       const RTCConfiguration& configuration) override;
 
   bool AddIceCandidate(const webrtc::IceCandidateInterface* candidate) override;
+  void AddIceCandidate(std::unique_ptr<webrtc::IceCandidateInterface> candidate,
+                       std::function<void(webrtc::RTCError)> callback) override;
   bool RemoveIceCandidates(
       const std::vector<cricket::Candidate>& candidates) override {
     NOTIMPLEMENTED();

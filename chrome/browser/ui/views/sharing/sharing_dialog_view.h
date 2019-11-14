@@ -43,7 +43,6 @@ class SharingDialogView : public SharingDialog,
   base::string16 GetWindowTitle() const override;
   void WindowClosing() override;
   void WebContentsDestroyed() override;
-  int GetDialogButtons() const override;
   gfx::Size CalculatePreferredSize() const override;
   void AddedToWidget() override;
   void OnThemeChanged() override;

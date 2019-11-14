@@ -52,7 +52,6 @@ class PageInfoBubbleViewBase : public views::BubbleDialogDelegateView,
                          content::WebContents* web_contents);
 
   // views::BubbleDialogDelegateView:
-  int GetDialogButtons() const override;
   base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
   void OnWidgetDestroying(views::Widget* widget) override;

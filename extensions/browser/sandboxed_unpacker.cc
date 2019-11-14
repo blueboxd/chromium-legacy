@@ -945,6 +945,8 @@ void SandboxedUnpacker::ReportSuccess(
 
 base::DictionaryValue* SandboxedUnpacker::RewriteManifestFile(
     const base::DictionaryValue& manifest) {
+  constexpr int64_t kMaxFingerprintSize = 1024;
+
   // Add the public key extracted earlier to the parsed manifest and overwrite
   // the original manifest. We do this to ensure the manifest doesn't contain an
   // exploitable bug that could be used to compromise the browser.
@@ -952,6 +954,16 @@ base::DictionaryValue* SandboxedUnpacker::RewriteManifestFile(
   std::unique_ptr<base::DictionaryValue> final_manifest =
       manifest.CreateDeepCopy();
   final_manifest->SetString(manifest_keys::kPublicKey, public_key_);
+
+  {
+    std::string differential_fingerprint;
+    if (base::ReadFileToStringWithMaxSize(
+            extension_root_.Append(kDifferentialFingerprintFilename),
+            &differential_fingerprint, kMaxFingerprintSize)) {
+      final_manifest->SetStringKey(manifest_keys::kDifferentialFingerprint,
+                                   std::move(differential_fingerprint));
+    }
+  }
 
   std::string manifest_json;
   JSONStringValueSerializer serializer(&manifest_json);

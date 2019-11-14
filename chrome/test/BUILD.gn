@@ -2189,6 +2189,7 @@ if (!is_android) {
         "../browser/chromeos/login/screens/recommend_apps/scoped_test_recommend_apps_fetcher_factory.h",
         "../browser/chromeos/login/screens/recommend_apps_screen_browsertest.cc",
         "../browser/chromeos/login/screens/supervision_transition_screen_browsertest.cc",
+        "../browser/chromeos/login/screens/sync_consent_browsertest.cc",
         "../browser/chromeos/login/screens/update_required_screen_browsertest.cc",
         "../browser/chromeos/login/screens/update_screen_browsertest.cc",
         "../browser/chromeos/login/screens/user_selection_screen_browsertest.cc",
@@ -2197,7 +2198,6 @@ if (!is_android) {
         "../browser/chromeos/login/session_login_browsertest.cc",
         "../browser/chromeos/login/signin/device_id_browsertest.cc",
         "../browser/chromeos/login/signin/oauth2_browsertest.cc",
-        "../browser/chromeos/login/sync_consent_interactive_ui_test.cc",
         "../browser/chromeos/login/test/active_directory_login_mixin.cc",
         "../browser/chromeos/login/test/active_directory_login_mixin.h",
         "../browser/chromeos/login/test/device_state_mixin.cc",
@@ -3708,6 +3708,8 @@ test("unit_tests") {
       "../browser/enterprise_reporting/profile_report_generator_unittest.cc",
       "../browser/enterprise_reporting/report_generator_unittest.cc",
       "../browser/enterprise_reporting/report_request_queue_generator_unittest.cc",
+      "../browser/enterprise_reporting/report_scheduler_unittest.cc",
+      "../browser/enterprise_reporting/report_uploader_unittest.cc",
       "../browser/enterprise_reporting/request_timer_unittest.cc",
       "../browser/first_run/first_run_unittest.cc",
       "../browser/font_family_cache_unittest.cc",
@@ -3994,15 +3996,6 @@ test("unit_tests") {
     }
     if (is_mac) {
       deps += [ ":firefox_importer_interface" ]
-    }
-
-    # TODO(anqing): finally these two set of unit test will be suitable to
-    # other platforms, rather than Chrome OS only.
-    if (!is_chromeos) {
-      sources += [
-        "../browser/enterprise_reporting/report_scheduler_unittest.cc",
-        "../browser/enterprise_reporting/report_uploader_unittest.cc",
-      ]
     }
   }
 
@@ -4351,6 +4344,7 @@ test("unit_tests") {
       "../browser/extensions/api/web_request/web_request_event_details_unittest.cc",
       "../browser/extensions/api/web_request/web_request_permissions_unittest.cc",
       "../browser/extensions/api/webstore_private/extension_install_status_unittest.cc",
+      "../browser/extensions/api/webstore_private/webstore_private_unittest.cc",
       "../browser/extensions/app_data_migrator_unittest.cc",
       "../browser/extensions/blacklist_check_unittest.cc",
       "../browser/extensions/blacklist_state_fetcher_unittest.cc",

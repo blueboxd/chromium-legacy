@@ -4,6 +4,7 @@
       "isolated-persistent-storage"
     ],
     "services": [
+      "fuchsia.accessibility.semantics.SemanticsManager",
       "fuchsia.deprecatedtimezone.Timezone",
       "fuchsia.device.NameProvider",
       "fuchsia.fonts.Provider",

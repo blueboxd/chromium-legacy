@@ -409,12 +409,6 @@ base::FilePath ResourceBundle::GetLocaleFilePath(
   if (base::PathExists(locale_file_path))
     return locale_file_path;
 
-  // If a compressed version of the file exists, load that.
-  base::FilePath compressed_locale_file_path =
-      locale_file_path.AddExtension(FILE_PATH_LITERAL(".gz"));
-  if (base::PathExists(compressed_locale_file_path))
-    return compressed_locale_file_path;
-
   return base::FilePath();
 }
 #endif
@@ -436,7 +430,7 @@ std::string ResourceBundle::LoadLocaleResources(
 
   std::unique_ptr<DataPack> data_pack(new DataPack(SCALE_FACTOR_100P));
   if (!data_pack->LoadFromPath(locale_file_path)) {
-    LOG(ERROR) << "failed to load locale.pak";
+    LOG(ERROR) << "failed to load locale file: " << locale_file_path;
     NOTREACHED();
     return std::string();
   }

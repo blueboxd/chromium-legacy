@@ -16,11 +16,12 @@
 
 namespace content {
 
-class BundledExchangesSource;
-class BundledExchangesURLLoaderFactory;
+class BrowserContext;
 class BundledExchangesHandleTracker;
 class BundledExchangesNavigationInfo;
 class BundledExchangesReader;
+class BundledExchangesSource;
+class BundledExchangesURLLoaderFactory;
 class NavigationLoaderInterceptor;
 
 // A class to provide interfaces to communicate with a BundledExchanges for
@@ -32,10 +33,13 @@ class BundledExchangesHandle {
   static std::unique_ptr<BundledExchangesHandle> CreateForTrustableFile(
       std::unique_ptr<BundledExchangesSource> source,
       int frame_tree_node_id);
+  static std::unique_ptr<BundledExchangesHandle> CreateForNetwork(
+      BrowserContext* browser_context,
+      int frame_tree_node_id);
   static std::unique_ptr<BundledExchangesHandle> CreateForTrackedNavigation(
       scoped_refptr<BundledExchangesReader> reader,
       int frame_tree_node_id);
-  static std::unique_ptr<BundledExchangesHandle> CreateForNavigationInfo(
+  static std::unique_ptr<BundledExchangesHandle> MaybeCreateForNavigationInfo(
       std::unique_ptr<BundledExchangesNavigationInfo> navigation_info,
       int frame_tree_node_id);
 

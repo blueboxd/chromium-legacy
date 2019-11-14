@@ -718,6 +718,7 @@ void ExtensionApps::OnExtensionUninstalled(
   }
 
   enable_flow_map_.erase(extension->id());
+  paused_apps.erase(extension->id());
 
   // Construct an App with only the information required to identify an
   // uninstallation.

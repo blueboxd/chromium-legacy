@@ -25,11 +25,6 @@
 namespace chromeos {
 namespace {
 
-constexpr const char kUserActionContinueWithSyncOnly[] =
-    "continue-with-sync-only";
-constexpr const char kUserActionContinueWithSyncAndPersonalization[] =
-    "continue-with-sync-and-personalization";
-
 // Delay showing chrome sync settings by this amount of time to make them
 // show on top of the restored tabs and windows.
 constexpr base::TimeDelta kSyncConsentSettingsShowDelay =
@@ -106,20 +101,6 @@ void SyncConsentScreen::Hide() {
   shown_ = false;
   sync_service_observer_.RemoveAll();
   view_->Hide();
-}
-
-void SyncConsentScreen::OnUserAction(const std::string& action_id) {
-  if (action_id == kUserActionContinueWithSyncOnly) {
-    // TODO(alemate) https://crbug.com/822889
-    exit_callback_.Run();
-    return;
-  }
-  if (action_id == kUserActionContinueWithSyncAndPersonalization) {
-    // TODO(alemate) https://crbug.com/822889
-    exit_callback_.Run();
-    return;
-  }
-  BaseScreen::OnUserAction(action_id);
 }
 
 void SyncConsentScreen::OnStateChanged(syncer::SyncService* sync) {

@@ -10,8 +10,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.VisibleForTesting;
 
 /**
  * An implementation of {@link BackgroundTaskSchedulerDelegate} that uses the system API

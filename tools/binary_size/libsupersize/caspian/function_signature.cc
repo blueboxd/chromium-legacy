@@ -161,7 +161,9 @@ size_t FindReturnValueSpace(std::string_view name, size_t paren_idx) {
   return space_idx;
 }
 
-std::string StripTemplateArgs(std::string name) {
+std::string StripTemplateArgs(std::string_view name_view) {
+  // TODO(jaspercb): Could pass in |owned_strings| to avoid this allocation.
+  std::string name(name_view);
   size_t last_right_idx = std::string::npos;
   while (true) {
     last_right_idx = name.substr(0, last_right_idx).rfind('>');
@@ -293,38 +295,48 @@ size_t FindParameterListParen(std::string_view name) {
   }
 }
 
-std::tuple<std::string, std::string, std::string> ParseCpp(
-    const std::string& input_name) {
-  std::string name = input_name;
-  size_t left_paren_idx = FindParameterListParen(input_name);
-  std::string full_name = input_name;
+std::tuple<std::string_view, std::string_view, std::string_view> ParseCpp(
+    std::string_view full_name,
+    std::deque<std::string>* owned_strings) {
+  std::string name;
+  std::string_view name_view;
+  size_t left_paren_idx = FindParameterListParen(full_name);
   if (left_paren_idx != std::string::npos && left_paren_idx > 0) {
-    size_t right_paren_idx = name.rfind(')');
+    size_t right_paren_idx = full_name.rfind(')');
     if (right_paren_idx <= left_paren_idx) {
-      std::cerr << "ParseCpp() received bad symbol: " << name << std::endl;
+      std::cerr << "ParseCpp() received bad symbol: " << full_name << std::endl;
       exit(1);
     }
-    size_t space_idx = FindReturnValueSpace(name, left_paren_idx);
+    size_t space_idx = FindReturnValueSpace(full_name, left_paren_idx);
     std::string name_no_params =
-        std::string(Slice(name, space_idx + 1, left_paren_idx));
+        std::string(Slice(full_name, space_idx + 1, left_paren_idx));
     // Special case for top-level lambdas.
     if (EndsWith(name_no_params, "}::_FUN")) {
       // Don't use |name_no_params| in here since prior _idx will be off if
       // there was a return value.
-      name = NormalizeTopLevelGccLambda(name, left_paren_idx);
-      return ParseCpp(name);
+      owned_strings->push_back(
+          NormalizeTopLevelGccLambda(full_name, left_paren_idx));
+      return ParseCpp(owned_strings->back(), owned_strings);
     } else if (EndsWith(name_no_params, "::__invoke") &&
                name_no_params.find('$') != std::string::npos) {
-      name = NormalizeTopLevelClangLambda(name, left_paren_idx);
-      return ParseCpp(name);
+      owned_strings->push_back(
+          NormalizeTopLevelClangLambda(full_name, left_paren_idx));
+      return ParseCpp(owned_strings->back(), owned_strings);
     }
 
-    full_name = name.substr(space_idx + 1);
-    name = name_no_params + name.substr(right_paren_idx + 1);
+    name = name_no_params + std::string(full_name.substr(right_paren_idx + 1));
+    name_view = name;
+    full_name = full_name.substr(space_idx + 1);
+  } else {
+    name_view = full_name;
   }
 
-  std::string template_name = name;
-  name = StripTemplateArgs(name);
-  return std::make_tuple(full_name, template_name, name);
+  owned_strings->emplace_back(name_view);
+  std::string_view template_name = owned_strings->back();
+
+  owned_strings->push_back(StripTemplateArgs(name_view));
+  std::string_view returned_name = owned_strings->back();
+
+  return std::make_tuple(full_name, template_name, returned_name);
 }
 }  // namespace caspian

@@ -252,13 +252,6 @@ bool IntentPickerBubbleView::ShouldShowCloseButton() const {
   return true;
 }
 
-int IntentPickerBubbleView::GetDialogButtons() const {
-  // The cancel button here refers to the 'Stay in Chrome' button
-  if (show_stay_in_chrome_)
-    return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-  return ui::DIALOG_BUTTON_OK;
-}
-
 base::string16 IntentPickerBubbleView::GetWindowTitle() const {
   if (icon_type_ == PageActionIconType::kClickToCall) {
     return l10n_util::GetStringUTF16(
@@ -288,6 +281,9 @@ IntentPickerBubbleView::IntentPickerBubbleView(
       icon_view_(icon_view),
       icon_type_(icon_type),
       initiating_origin_(initiating_origin) {
+  DialogDelegate::set_buttons(
+      show_stay_in_chrome_ ? (ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL)
+                           : ui::DIALOG_BUTTON_OK);
   DialogDelegate::set_button_label(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(

@@ -18,8 +18,9 @@ import android.view.inputmethod.InputConnection;
 import android.widget.FrameLayout.LayoutParams;
 import android.widget.ImageView;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ObserverList;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.compat.ApiHelperForN;

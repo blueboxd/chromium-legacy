@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.ui.widget.dragreorder;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
 
 /**
  * Responsible for keeping track of the drag state (whether drag is enabled, and if so, whether drag

@@ -244,36 +244,39 @@ void WebAppSyncBridge::UpdateSync(
   if (!change_processor()->IsTrackingMetadata())
     return;
 
-  for (const std::unique_ptr<WebApp>& app : update_data.apps_to_create) {
-    if (app->IsSynced()) {
-      change_processor()->Put(app->app_id(), CreateSyncEntityData(*app),
+  for (const std::unique_ptr<WebApp>& new_app : update_data.apps_to_create) {
+    if (new_app->IsSynced()) {
+      change_processor()->Put(new_app->app_id(), CreateSyncEntityData(*new_app),
                               metadata_change_list);
     }
   }
 
-  // An app may obtain or may loose IsSynced flag without being deleted. We
-  // should conservatively include or exclude the app from the synced apps
-  // subset. TODO(loyso): Use previous state of the app (and CoW) to detect
-  // if IsSynced flag changed.
-  //
-  // TODO(loyso): Send an update to sync server only if any sync-specific
-  // data was changed. Implement some dirty flags in WebApp setter methods.
-  for (const std::unique_ptr<WebApp>& app : update_data.apps_to_update) {
-    if (app->IsSynced()) {
-      change_processor()->Put(app->app_id(), CreateSyncEntityData(*app),
+  for (const std::unique_ptr<WebApp>& new_state : update_data.apps_to_update) {
+    const AppId& app_id = new_state->app_id();
+    // Find the current state of the app to be overritten.
+    const WebApp* current_state = registrar_->GetAppById(app_id);
+    DCHECK(current_state);
+
+    // Include the app in the sync "view" if IsSynced flag becomes true. Update
+    // the app if IsSynced flag stays true. Exclude the app from the sync "view"
+    // if IsSynced flag becomes false.
+    //
+    // TODO(loyso): Send an update to sync server only if any sync-specific
+    // data was changed. Implement some dirty flags in WebApp setter methods.
+    if (new_state->IsSynced()) {
+      change_processor()->Put(app_id, CreateSyncEntityData(*new_state),
                               metadata_change_list);
-    } else {
-      change_processor()->Delete(app->app_id(), metadata_change_list);
+    } else if (current_state->IsSynced()) {
+      change_processor()->Delete(app_id, metadata_change_list);
     }
   }
 
-  // We should unconditionally delete from sync (in case IsSynced flag was
-  // removed during the update). TODO(loyso): Use previous state of the app (and
-  // CoW) to detect if IsSynced flag changed.
-  for (const AppId& app_id : update_data.apps_to_delete) {
-    const WebApp* app = registrar_->GetAppById(app_id);
-    DCHECK(app);
-    change_processor()->Delete(app_id, metadata_change_list);
+  for (const AppId& app_id_to_delete : update_data.apps_to_delete) {
+    const WebApp* current_state = registrar_->GetAppById(app_id_to_delete);
+    DCHECK(current_state);
+    // Exclude the app from the sync "view" if IsSynced flag was true.
+    if (current_state->IsSynced())
+      change_processor()->Delete(app_id_to_delete, metadata_change_list);
   }
 }
 

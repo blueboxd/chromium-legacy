@@ -25,6 +25,8 @@ import android.view.View;
 import android.webkit.URLUtil;
 import android.widget.TextView;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -36,7 +38,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.PackageManagerUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.content.ContentUtils;
@@ -289,7 +290,7 @@ public class OMADownloadHandler extends BroadcastReceiver {
             OMAInfo omaInfo = null;
             final DownloadManager manager =
                     (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
-            boolean isContentUri = (mDownloadId == DownloadItem.INVALID_DOWNLOAD_ID)
+            boolean isContentUri = (mDownloadId == DownloadConstants.INVALID_DOWNLOAD_ID)
                     && ContentUriUtils.isContentUri(mDownloadInfo.getFilePath());
             try {
                 ParcelFileDescriptor fd = null;
@@ -335,14 +336,14 @@ public class OMADownloadHandler extends BroadcastReceiver {
             // Send notification if required attributes are missing.
             if (omaInfo.getTypes().isEmpty() || getSize(omaInfo) <= 0
                     || omaInfo.isValueEmpty(OMA_OBJECT_URI)) {
-                sendNotification(omaInfo, mDownloadInfo, DownloadItem.INVALID_DOWNLOAD_ID,
+                sendNotification(omaInfo, mDownloadInfo, DownloadConstants.INVALID_DOWNLOAD_ID,
                         DOWNLOAD_STATUS_INVALID_DESCRIPTOR);
                 return;
             }
             // Check version. Null version are treated as 1.0.
             String version = omaInfo.getValue(OMA_DD_VERSION);
             if (version != null && !version.startsWith("1.")) {
-                sendNotification(omaInfo, mDownloadInfo, DownloadItem.INVALID_DOWNLOAD_ID,
+                sendNotification(omaInfo, mDownloadInfo, DownloadConstants.INVALID_DOWNLOAD_ID,
                         DOWNLOAD_STATUS_INVALID_DDVERSION);
                 return;
             }
@@ -368,8 +369,8 @@ public class OMADownloadHandler extends BroadcastReceiver {
         String action = intent.getAction();
         if (!DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(action)) return;
         long downloadId = intent.getLongExtra(
-                DownloadManager.EXTRA_DOWNLOAD_ID, DownloadItem.INVALID_DOWNLOAD_ID);
-        if (downloadId == DownloadItem.INVALID_DOWNLOAD_ID) return;
+                DownloadManager.EXTRA_DOWNLOAD_ID, DownloadConstants.INVALID_DOWNLOAD_ID);
+        if (downloadId == DownloadConstants.INVALID_DOWNLOAD_ID) return;
         boolean isPendingOMADownload = isPendingOMADownload(downloadId);
         boolean isInOMASharedPrefs = isDownloadIdInOMASharedPrefs(downloadId);
         if (isPendingOMADownload || isInOMASharedPrefs) {
@@ -516,8 +517,7 @@ public class OMADownloadHandler extends BroadcastReceiver {
             if (which == AlertDialog.BUTTON_POSITIVE) {
                 downloadOMAContent(downloadId, downloadInfo, omaInfo);
             } else {
-                sendNotification(omaInfo, downloadInfo,
-                        DownloadItem.INVALID_DOWNLOAD_ID,
+                sendNotification(omaInfo, downloadInfo, DownloadConstants.INVALID_DOWNLOAD_ID,
                         DOWNLOAD_STATUS_USER_CANCELLED);
             }
         };
@@ -548,7 +548,7 @@ public class OMADownloadHandler extends BroadcastReceiver {
         DialogInterface.OnClickListener clickListener = (dialog, which) -> {
             if (which == AlertDialog.BUTTON_POSITIVE) {
                 sendInstallNotificationAndNextStep(omaInfo, downloadInfo,
-                        DownloadItem.INVALID_DOWNLOAD_ID, statusMessage);
+                        DownloadConstants.INVALID_DOWNLOAD_ID, statusMessage);
             }
         };
         new AlertDialog
@@ -852,11 +852,11 @@ public class OMADownloadHandler extends BroadcastReceiver {
 
             @Override
             protected void onPostExecute(Boolean canResolve) {
-                if (result.downloadStatus == DownloadManagerService.DownloadStatus.COMPLETE) {
+                if (result.downloadStatus == DownloadStatus.COMPLETE) {
                     onDownloadCompleted(item.getDownloadInfo(), downloadId, installNotifyURI);
                     removeOMADownloadFromSharedPrefs(downloadId);
                     showDownloadOnInfoBar(item, result.downloadStatus);
-                } else if (result.downloadStatus == DownloadManagerService.DownloadStatus.FAILED) {
+                } else if (result.downloadStatus == DownloadStatus.FAILED) {
                     onDownloadFailed(item.getDownloadInfo(), downloadId, result.failureReason,
                             installNotifyURI);
                     removeOMADownloadFromSharedPrefs(downloadId);
@@ -874,9 +874,9 @@ public class OMADownloadHandler extends BroadcastReceiver {
         if (infobarController == null) return;
         OfflineItem offlineItem = DownloadItem.createOfflineItem(downloadItem);
         offlineItem.id.namespace = LegacyHelpers.LEGACY_ANDROID_DOWNLOAD_NAMESPACE;
-        if (downloadStatus == DownloadManagerService.DownloadStatus.COMPLETE) {
+        if (downloadStatus == DownloadStatus.COMPLETE) {
             offlineItem.state = OfflineItemState.COMPLETE;
-        } else if (downloadStatus == DownloadManagerService.DownloadStatus.FAILED) {
+        } else if (downloadStatus == DownloadStatus.FAILED) {
             offlineItem.state = OfflineItemState.FAILED;
         }
 
@@ -1049,7 +1049,7 @@ public class OMADownloadHandler extends BroadcastReceiver {
         protected void onPostExecute(Boolean success) {
             if (success) {
                 showNextUrlDialog(mOMAInfo);
-            } else if (mDownloadId != DownloadItem.INVALID_DOWNLOAD_ID) {
+            } else if (mDownloadId != DownloadConstants.INVALID_DOWNLOAD_ID) {
                 // Remove the downloaded content.
                 ((DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE))
                         .remove(mDownloadId);

@@ -166,6 +166,7 @@ export class TabSwiper {
       return;
     }
 
+    this.animation_.currentTime = SWIPE_ANIMATION_BASELINE_PX;
     this.animationInitiated_ = false;
     this.currentPointerDownEvent_ = event;
 

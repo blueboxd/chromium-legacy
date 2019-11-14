@@ -6,7 +6,6 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/platform/aura_window_properties.h"
-#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
@@ -24,12 +23,10 @@ AccessibilityAlertWindow::AccessibilityAlertWindow(aura::Window* parent,
   alert_window_->Init(ui::LayerType::LAYER_NOT_DRAWN);
   alert_window_->SetProperty(ui::kAXRoleOverride, ax::mojom::Role::kAlert);
   parent->AddChild(alert_window_.get());
-  aura::Env::GetInstance()->AddObserver(this);
+  observer_.Add(aura::Env::GetInstance());
 }
 
-AccessibilityAlertWindow::~AccessibilityAlertWindow() {
-  aura::Env::GetInstance()->RemoveObserver(this);
-}
+AccessibilityAlertWindow::~AccessibilityAlertWindow() = default;
 
 void AccessibilityAlertWindow::HandleAlert(const std::string& alert_string) {
   if (!alert_window_->parent())
@@ -40,10 +37,8 @@ void AccessibilityAlertWindow::HandleAlert(const std::string& alert_string) {
                     ax::mojom::Event::kAlert);
 }
 
-void AccessibilityAlertWindow::OnWindowInitialized(aura::Window* window) {}
-
 void AccessibilityAlertWindow::OnWillDestroyEnv() {
+  observer_.RemoveAll();
   alert_window_.reset();
 }
-
 }  // namespace views

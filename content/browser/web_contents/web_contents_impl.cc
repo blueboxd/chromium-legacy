@@ -2563,9 +2563,6 @@ void WebContentsImpl::FullscreenFrameSetUpdated() {
 
 void WebContentsImpl::UpdateVisibilityAndNotifyPageAndView(
     Visibility new_visibility) {
-  if (new_visibility == Visibility::VISIBLE)
-    controller_.SetActive(true);
-
   // Only hide the page if there are no entities capturing screenshots
   // or video (e.g. mirroring).
   const bool page_is_visible =
@@ -2574,12 +2571,26 @@ void WebContentsImpl::UpdateVisibilityAndNotifyPageAndView(
   // the "disable rendering" optimization.
   const bool view_is_visible = page_is_visible || HasPictureInPictureVideo();
 
-  // This shows the Page before showing the individual RenderWidgets, as
-  // RenderWidgets will work to produce compositor frames and handle input
-  // as soon as they are shown. But the Page and other classes do not expect to
-  // be producing frames when the Page is hidden. So we make sure the Page is
-  // shown first.
   if (page_is_visible) {
+    // We cannot show a page or capture video unless there is a valid renderer
+    // associated with this web contents. The navigation controller for this
+    // page must be set to active (allowing navigation to complete, a renderer
+    // and its associated views to be created, etc.) if any of these conditions
+    // holds.
+    //
+    // Previously, it was possible for browser-side code to try to capture video
+    // from a restored tab (for a variety of reasons, including the browser
+    // creating preview thumbnails) and the tab would never actually load. By
+    // keying this behavior off of |page_is_visible| instead of just
+    // |new_visibility| we avoid this case. See crbug.com/1020782 for more
+    // context.
+    controller_.SetActive(true);
+
+    // This shows the Page before showing the individual RenderWidgets, as
+    // RenderWidgets will work to produce compositor frames and handle input
+    // as soon as they are shown. But the Page and other classes do not expect
+    // to be producing frames when the Page is hidden. So we make sure the Page
+    // is shown first.
     SendPageMessage(new PageMsg_VisibilityChanged(
         MSG_ROUTING_NONE, PageVisibilityState::kVisible));
   }

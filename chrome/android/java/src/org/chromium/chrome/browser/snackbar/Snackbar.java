@@ -7,9 +7,9 @@ package org.chromium.chrome.browser.snackbar;
 import android.graphics.drawable.Drawable;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 

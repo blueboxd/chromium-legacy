@@ -87,6 +87,7 @@ enum class GamepadId : uint32_t {
   kVendor2378Product1008 = 0x23781008,
   kVendor2378Product100a = 0x2378100a,
   kVendor2836Product0001 = 0x28360001,
+  kVendor2e95Product7725 = 0x2e957725,
 };
 
 class DEVICE_GAMEPAD_EXPORT GamepadIdList {

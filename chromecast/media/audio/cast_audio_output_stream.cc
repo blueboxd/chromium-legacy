@@ -491,8 +491,7 @@ void CastAudioOutputStream::OnGetMultiroomInfo(
     POST_TO_CMA_WRAPPER(Initialize, application_session_id,
                         std::move(multiroom_info));
   } else {
-    DCHECK(!(audio_params_.effects() & ::media::AudioParameters::MULTIZONE) &&
-           CastMediaShlib::AddDirectAudioSource);
+    DCHECK(!(audio_params_.effects() & ::media::AudioParameters::MULTIZONE));
 
     mixer_service_wrapper_ =
         std::make_unique<MixerServiceWrapper>(audio_params_, device_id_);

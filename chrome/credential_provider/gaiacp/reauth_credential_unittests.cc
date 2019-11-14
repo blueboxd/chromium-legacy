@@ -14,6 +14,7 @@
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
 #include "chrome/credential_provider/gaiacp/gaia_resources.h"
+#include "chrome/credential_provider/gaiacp/gcpw_strings.h"
 #include "chrome/credential_provider/gaiacp/mdm_utils.h"
 #include "chrome/credential_provider/gaiacp/reauth_credential.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
@@ -160,12 +161,14 @@ INSTANTIATE_TEST_SUITE_P(,
                                             ::testing::Bool()));
 
 // Tests the GetStringValue method specific to FID_DESCRIPTION label for reasons
+// Tests the GetStringValue method specific to FID_DESCRIPTION label for reasons
 // to enforce GLS. Parameters are:
 // 1. Is enrolled with mdm.
 // 2. Is encrypted data missing in lsa store.
+// 3. Is online login stale.
 class GcpReauthCredentialEnforceAuthReasonGetStringValueTest
     : public GcpReauthCredentialTest,
-      public ::testing::WithParamInterface<std::tuple<bool, bool>> {
+      public ::testing::WithParamInterface<std::tuple<bool, bool, bool>> {
  protected:
   FakeAssociatedUserValidator* fake_associated_user_validator() {
     return &fake_associated_user_validator_;
@@ -185,9 +188,10 @@ TEST_P(GcpReauthCredentialEnforceAuthReasonGetStringValueTest, FidDescription) {
 
   const bool enrolled_mdm = std::get<0>(GetParam());
   const bool store_encrypted_data = std::get<1>(GetParam());
+  const bool is_stale_login = std::get<2>(GetParam());
 
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmEscrowServiceServerUrl,
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEscrowServiceServerUrl,
                                           L"https://escrow.com"));
 
   GoogleMdmEnrolledStatusForTesting forced_enrolled_status(enrolled_mdm);
@@ -220,6 +224,17 @@ TEST_P(GcpReauthCredentialEnforceAuthReasonGetStringValueTest, FidDescription) {
     EXPECT_TRUE(policy->PrivateDataExists(store_key.c_str()));
   }
 
+  if (is_stale_login) {
+    ASSERT_EQ(S_OK, SetUserProperty((BSTR)sid,
+                                    base::UTF8ToUTF16(std::string(
+                                        kKeyLastSuccessfulOnlineLoginMillis)),
+                                    L"0"));
+    ASSERT_EQ(S_OK,
+              SetGlobalFlagForTesting(
+                  base::UTF8ToUTF16(std::string(kKeyValidityPeriodInDays)),
+                  (DWORD)0));
+  }
+
   // Populate the associated users list. The created user's token handle
   // should be valid so that no reauth credential is created.
   fake_associated_user_validator()->StartRefreshingTokenHandleValidity();
@@ -248,6 +263,10 @@ TEST_P(GcpReauthCredentialEnforceAuthReasonGetStringValueTest, FidDescription) {
             GetStringResource(
                 IDS_REAUTH_MISSING_PASSWORD_RECOVERY_INFO_FID_DESCRIPTION_BASE)
                 .c_str()));
+  } else if (is_stale_login) {
+    ASSERT_STREQ(
+        string_value,
+        W2COLE(GetStringResource(IDS_REAUTH_FID_DESCRIPTION_BASE).c_str()));
   } else {
     ASSERT_STREQ(
         string_value,
@@ -258,6 +277,7 @@ TEST_P(GcpReauthCredentialEnforceAuthReasonGetStringValueTest, FidDescription) {
 INSTANTIATE_TEST_SUITE_P(,
                          GcpReauthCredentialEnforceAuthReasonGetStringValueTest,
                          ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool(),
                                             ::testing::Bool()));
 
 class GcpReauthCredentialGlsRunnerTest : public GlsRunnerTestBase {};

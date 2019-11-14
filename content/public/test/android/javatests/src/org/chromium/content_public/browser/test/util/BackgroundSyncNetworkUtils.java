@@ -4,7 +4,8 @@
 
 package org.chromium.content_public.browser.test.util;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.content.browser.BackgroundSyncNetworkObserver;
 import org.chromium.net.ConnectionType;
 

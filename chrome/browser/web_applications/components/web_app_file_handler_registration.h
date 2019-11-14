@@ -14,7 +14,7 @@ class Profile;
 
 namespace web_app {
 
-// returns true if Chrome supports WebApp File Handling on this OS.
+// Returns true if Chrome supports WebApp File Handling on this OS.
 bool OsSupportsWebAppFileHandling();
 
 // Do OS-specific registration to handle opening files with the specified

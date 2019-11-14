@@ -123,7 +123,6 @@ junit_binary("media_router_junit_tests") {
     ":java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
-    "//chrome/android:chrome_junit_test_support",
   ]
 }
 

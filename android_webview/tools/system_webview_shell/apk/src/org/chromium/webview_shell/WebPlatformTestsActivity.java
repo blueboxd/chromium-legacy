@@ -20,11 +20,12 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import androidx.annotation.VisibleForTesting;
+
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
 import org.chromium.base.Log;
-import org.chromium.base.VisibleForTesting;
 
 /**
  * A main activity to handle WPT requests.

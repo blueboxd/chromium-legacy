@@ -4,7 +4,8 @@
 
 package org.chromium.net.impl;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.net.NetError;
 
 /**

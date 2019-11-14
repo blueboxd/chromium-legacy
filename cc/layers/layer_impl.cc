@@ -69,7 +69,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       clip_tree_index_(ClipTree::kInvalidNodeId),
       scroll_tree_index_(ScrollTree::kInvalidNodeId),
       current_draw_mode_(DRAW_MODE_NONE),
-      debug_info_(nullptr),
       has_will_change_transform_hint_(false),
       needs_push_properties_(false),
       is_scrollbar_(false),
@@ -102,10 +101,24 @@ ElementListType LayerImpl::GetElementTypeForAnimation() const {
   return IsActive() ? ElementListType::ACTIVE : ElementListType::PENDING;
 }
 
-void LayerImpl::SetDebugInfo(
-    std::unique_ptr<base::trace_event::TracedValue> debug_info) {
-  owned_debug_info_ = std::move(debug_info);
-  debug_info_ = owned_debug_info_.get();
+void LayerImpl::UpdateDebugInfo(LayerDebugInfo* debug_info) {
+  // nullptr means we have stopped collecting debug info.
+  if (!debug_info) {
+    debug_info_.reset();
+    return;
+  }
+  auto new_invalidations = std::move(debug_info->invalidations);
+  if (!debug_info_) {
+    debug_info_ = std::make_unique<LayerDebugInfo>(*debug_info);
+    debug_info_->invalidations = std::move(new_invalidations);
+    return;
+  }
+  // Accumulate invalidations until we draw the layer.
+  auto existing_invalidations = std::move(debug_info_->invalidations);
+  *debug_info_ = *debug_info;
+  debug_info_->invalidations.insert(debug_info_->invalidations.begin(),
+                                    existing_invalidations.begin(),
+                                    existing_invalidations.end());
 }
 
 void LayerImpl::SetTransformTreeIndex(int index) {
@@ -394,8 +407,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
 
   layer->UnionUpdateRect(update_rect_);
 
-  if (owned_debug_info_)
-    layer->SetDebugInfo(std::move(owned_debug_info_));
+  layer->UpdateDebugInfo(debug_info_.get());
 
   // Reset any state that should be cleared for the next update.
   needs_show_scrollbars_ = false;
@@ -513,6 +525,8 @@ void LayerImpl::ResetChangeTracking() {
   needs_push_properties_ = false;
 
   update_rect_.SetRect(0, 0, 0, 0);
+  if (debug_info_)
+    debug_info_->invalidations.clear();
 }
 
 bool LayerImpl::IsActive() const {
@@ -705,6 +719,18 @@ void LayerImpl::GetAllPrioritizedTilesForTracing(
 }
 
 void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
+  // The output is consumed at least by
+  // 1. DevTools for showing layer tree information for frame snapshots in
+  //    performance timeline (third_party/devtools_frontend/src/front_end/
+  //    timeline_model/TracingLayerTree.js),
+  // 2. trace_viewer
+  //    (third_party/catapult/tracing/tracing/extras/chrome/cc/layer_impl.html)
+  //    Note that trace_viewer uses "namingStyle" style instead of
+  //    "naming_style". The difference is intentional and the names are
+  //    converted automatically, but we need to keep this in mind when we
+  //    search trace_viewer code for the usage of the names here.
+  // When making changes here, we need to make sure we won't break these
+  // consumers.
   viz::TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
       TRACE_DISABLED_BY_DEFAULT("cc.debug"), state, "cc::LayerImpl",
       LayerTypeAsString(), this);
@@ -761,8 +787,30 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   state->SetBoolean("has_will_change_transform_hint",
                     has_will_change_transform_hint());
 
-  if (debug_info_)
-    state->SetValue("debug_info", debug_info_);
+  if (debug_info_) {
+    state->SetString("layer_name", debug_info_->name);
+    if (debug_info_->owner_node_id)
+      state->SetInteger("owner_node", debug_info_->owner_node_id);
+
+    if (debug_info_->compositing_reasons.size()) {
+      state->BeginArray("compositing_reasons");
+      for (const char* reason : debug_info_->compositing_reasons)
+        state->AppendString(reason);
+      state->EndArray();
+    }
+
+    if (debug_info_->invalidations.size()) {
+      state->BeginArray("annotated_invalidation_rects");
+      for (auto& invalidation : debug_info_->invalidations) {
+        state->BeginDictionary();
+        MathUtil::AddToTracedValue("geometry_rect", invalidation.rect, state);
+        state->SetString("reason", invalidation.reason);
+        state->SetString("client", invalidation.client);
+        state->EndDictionary();
+      }
+      state->EndArray();
+    }
+  }
 }
 
 std::string LayerImpl::ToString() const {

@@ -14,7 +14,7 @@
 
 namespace ui {
 
-void AddMixerForNativeColors(ui::ColorProvider* provider) {
+void AddMixerForNativeColors(ColorProvider* provider) {
   // TODO(pkasting): Not clear whether this is really the set of interest.
   // Maybe there's some way to query colors used by UxTheme.dll, or maybe we
   // should be hardcoding a list of colors for system light/dark modes based on
@@ -58,11 +58,11 @@ void AddMixerForNativeColors(ui::ColorProvider* provider) {
        }});
 }
 
-void AddMixerToMapToCrossPlatformIds(ui::ColorProvider* provider) {
+void AddMixerToMapToCrossPlatformIds(ColorProvider* provider) {
   // TODO(pkasting): Add recipes
 }
 
-void AddNativeColorMixers(ui::ColorProvider* provider) {
+void AddNativeColorMixers(ColorProvider* provider) {
   AddMixerForNativeColors(provider);
   AddMixerToMapToCrossPlatformIds(provider);
 }

@@ -103,7 +103,7 @@ class Manager(object):
             # This is raised if --test-list doesn't exist
             return test_run_results.RunDetails(exit_code=exit_codes.NO_TESTS_EXIT_STATUS)
 
-        test_names, tests_in_other_chunks = self._finder.split_into_chunks(all_test_names)
+        test_names = self._finder.split_into_chunks(all_test_names)
 
         if self._options.order == 'natural':
             test_names.sort(key=self._port.test_key)
@@ -115,8 +115,6 @@ class Manager(object):
         self._expectations = test_expectations.TestExpectations(self._port, test_names)
 
         tests_to_run, tests_to_skip = self._prepare_lists(paths, test_names)
-
-        self._expectations.remove_tests_from_expectations(tests_in_other_chunks)
 
         self._printer.print_found(
             len(all_test_names), len(test_names), len(tests_to_run),

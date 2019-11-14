@@ -10,6 +10,7 @@
 #include "ash/system/message_center/unified_message_center_view.h"
 #include "ash/system/message_center/unified_message_list_view.h"
 #include "ui/gfx/animation/animation_delegate.h"
+#include "ui/message_center/message_center_observer.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/image_view.h"
@@ -27,7 +28,8 @@ namespace ash {
 // notifications. There are currently two UI implementations toggled by the
 // NotificationStackedBarRedesign feature flag.
 class StackedNotificationBar : public views::View,
-                               public views::ButtonListener {
+                               public views::ButtonListener,
+                               public message_center::MessageCenterObserver {
  public:
   explicit StackedNotificationBar(
       UnifiedMessageCenterView* message_center_view);
@@ -55,8 +57,18 @@ class StackedNotificationBar : public views::View,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  // message_center::MessageCenterObserver:
+  void OnNotificationAdded(const std::string& id) override;
+  void OnNotificationRemoved(const std::string& id, bool by_user) override;
+  void OnNotificationUpdated(const std::string& id) override;
+
  private:
+  class StackedNotificationBarIcon;
   friend class UnifiedMessageCenterViewTest;
+
+  // Search for a icon view in the stacked notification bar based on a provided
+  // notification id.
+  const StackedNotificationBarIcon* GetIconFromId(const std::string& id);
 
   // Set visibility based on number of stacked notifications or animation state.
   void UpdateVisibility();

@@ -77,6 +77,7 @@ void FirstRunDialog::Show(Profile* profile) {
 }
 
 FirstRunDialog::FirstRunDialog(Profile* profile) : profile_(profile) {
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
   DialogDelegate::SetExtraView(CreateLearnMoreLink(this));
 
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
@@ -126,10 +127,6 @@ bool FirstRunDialog::Accept() {
 
   Done();
   return true;
-}
-
-int FirstRunDialog::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK;
 }
 
 void FirstRunDialog::WindowClosing() {

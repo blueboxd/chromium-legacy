@@ -23,6 +23,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/proxy_delegate.h"
 #include "net/base/url_util.h"
 #include "net/log/net_log.h"
@@ -217,13 +218,13 @@ class ProxyResolverNull : public ProxyResolver {
 
   // ProxyResolver implementation.
   int GetProxyForURL(const GURL& url,
+                     const NetworkIsolationKey& network_isolation_key,
                      ProxyInfo* results,
                      CompletionOnceCallback callback,
                      std::unique_ptr<Request>* request,
                      const NetLogWithSource& net_log) override {
     return ERR_NOT_IMPLEMENTED;
   }
-
 };
 
 // ProxyResolver that simulates a PAC script which returns
@@ -234,6 +235,7 @@ class ProxyResolverFromPacString : public ProxyResolver {
       : pac_string_(pac_string) {}
 
   int GetProxyForURL(const GURL& url,
+                     const NetworkIsolationKey& network_isolation_key,
                      ProxyInfo* results,
                      CompletionOnceCallback callback,
                      std::unique_ptr<Request>* request,
@@ -945,8 +947,9 @@ int ProxyResolutionService::RequestImpl::Start() {
   if (service_->ApplyPacBypassRules(url_, results_))
     return OK;
 
+  // TODO(mmenke): Pass in a NetworkIsolationKey.
   return resolver()->GetProxyForURL(
-      url_, results_,
+      url_, NetworkIsolationKey(), results_,
       base::BindOnce(&ProxyResolutionService::RequestImpl::QueryComplete,
                      base::Unretained(this)),
       &resolve_job_, net_log_);

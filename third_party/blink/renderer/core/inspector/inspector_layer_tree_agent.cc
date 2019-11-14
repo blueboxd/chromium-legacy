@@ -201,12 +201,15 @@ static std::unique_ptr<protocol::LayerTree::Layer> BuildObjectForLayer(
           .setOffsetY(0)
           .setWidth(layer->bounds().width())
           .setHeight(layer->bounds().height())
-          .setPaintCount(layer->paint_count())
+          .setPaintCount(layer->debug_info() ? layer->debug_info()->paint_count
+                                             : 0)
           .setDrawsContent(draws_content)
           .build();
 
-  if (auto node_id = layer->owner_node_id())
-    layer_object->setBackendNodeId(node_id);
+  if (layer->debug_info()) {
+    if (auto node_id = layer->debug_info()->owner_node_id)
+      layer_object->setBackendNodeId(node_id);
+  }
 
   if (const auto* parent = layer->parent())
     layer_object->setParentLayerId(IdForLayer(parent));
@@ -264,10 +267,12 @@ Response InspectorLayerTreeAgent::enable() {
   if (!document)
     return Response::Error("The root frame doesn't have document");
 
-  if (document->Lifecycle().GetState() >= DocumentLifecycle::kPaintClean) {
-    LayerTreePainted();
-    LayerTreeDidChange();
-  }
+  inspected_frames_->Root()->View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kOther);
+
+  LayerTreePainted();
+  LayerTreeDidChange();
+
   return Response::OK();
 }
 
@@ -282,8 +287,7 @@ void InspectorLayerTreeAgent::LayerTreeDidChange() {
 }
 
 void InspectorLayerTreeAgent::LayerTreePainted() {
-  for (const auto& layer :
-       inspected_frames_->Root()->View()->RootCcLayer()->children()) {
+  for (const auto& layer : RootLayer()->children()) {
     if (!layer->update_rect().IsEmpty()) {
       GetFrontend()->layerPainted(IdForLayer(layer.get()),
                                   BuildObjectForRect(layer->update_rect()));
@@ -365,10 +369,11 @@ Response InspectorLayerTreeAgent::compositingReasons(
   Response response = LayerById(layer_id, layer);
   if (!response.isSuccess())
     return response;
-  CompositingReasons reasons = layer->compositing_reasons();
   *reason_strings = std::make_unique<protocol::Array<String>>();
-  for (const char* name : CompositingReason::ShortNames(reasons))
-    (*reason_strings)->emplace_back(name);
+  if (layer->debug_info()) {
+    for (const char* name : layer->debug_info()->compositing_reasons)
+      (*reason_strings)->emplace_back(name);
+  }
   return Response::OK();
 }
 

@@ -218,6 +218,13 @@ bool Manifest::ValidateManifest(
           it.key()));
     }
   }
+
+  if (IsUnpackedLocation(location_) &&
+      value_->FindPath(manifest_keys::kDifferentialFingerprint)) {
+    warnings->push_back(
+        InstallWarning(manifest_errors::kHasDifferentialFingerprint,
+                       manifest_keys::kDifferentialFingerprint));
+  }
   return true;
 }
 

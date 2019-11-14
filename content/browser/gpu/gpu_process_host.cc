@@ -567,8 +567,8 @@ void GpuProcessHost::BindInterface(
             std::move(interface_pipe)));
     return;
   }
-  process_->child_connection()->BindInterface(interface_name,
-                                              std::move(interface_pipe));
+  process_->child_process()->BindReceiver(
+      mojo::GenericPendingReceiver(interface_name, std::move(interface_pipe)));
 }
 
 void GpuProcessHost::RunService(

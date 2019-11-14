@@ -8,9 +8,9 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;

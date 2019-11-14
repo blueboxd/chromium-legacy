@@ -2,15 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("base") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = []
-  public_deps = [
-    "//ios/testing:block_swizzler",
-  ]
-}
-
 source_set("perf_test_support") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true

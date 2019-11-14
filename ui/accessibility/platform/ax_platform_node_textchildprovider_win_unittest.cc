@@ -150,7 +150,7 @@ class AXPlatformNodeTextChildProviderTest : public ui::AXPlatformNodeWinTest {
 
 TEST_F(AXPlatformNodeTextChildProviderTest,
        TestITextChildProviderTextContainerFromRoot) {
-  CComPtr<IRawElementProviderSimple> text_container;
+  ComPtr<IRawElementProviderSimple> text_container;
   ASSERT_HRESULT_SUCCEEDED(
       root_text_child_provider_->get_TextContainer(&text_container));
   ASSERT_EQ(nullptr, text_container);
@@ -158,87 +158,87 @@ TEST_F(AXPlatformNodeTextChildProviderTest,
 
 TEST_F(AXPlatformNodeTextChildProviderTest,
        TestITextChildProviderTextContainerFromNontextChildOfRoot) {
-  CComPtr<IRawElementProviderSimple> text_container;
+  ComPtr<IRawElementProviderSimple> text_container;
   ASSERT_HRESULT_SUCCEEDED(
       nontext_child_of_root_text_child_provider_->get_TextContainer(
           &text_container));
   ASSERT_NE(nullptr, text_container);
 
-  ASSERT_EQ(root_provider_raw_.Get(), text_container);
+  ASSERT_EQ(root_provider_raw_, text_container);
 
-  CComPtr<ITextProvider> text_container_text_provider;
-  text_container->GetPatternProvider(
-      UIA_TextPatternId,
-      reinterpret_cast<IUnknown**>(&text_container_text_provider));
-  ASSERT_NE(nullptr, text_container_text_provider);
+  ComPtr<IUnknown> pattern_provider;
+  ComPtr<ITextProvider> text_container_text_provider;
+  text_container->GetPatternProvider(UIA_TextPatternId, &pattern_provider);
+  ASSERT_NE(nullptr, pattern_provider);
+  ASSERT_HRESULT_SUCCEEDED(pattern_provider.As(&text_container_text_provider));
 }
 
 TEST_F(AXPlatformNodeTextChildProviderTest,
        TestITextChildProviderTextContainerFromTextChildOfRoot) {
-  CComPtr<IRawElementProviderSimple> text_container;
+  ComPtr<IRawElementProviderSimple> text_container;
   ASSERT_HRESULT_SUCCEEDED(
       text_child_of_root_text_child_provider_->get_TextContainer(
           &text_container));
   ASSERT_NE(nullptr, text_container);
 
-  ASSERT_EQ(root_provider_raw_.Get(), text_container);
+  ASSERT_EQ(root_provider_raw_, text_container);
 
-  CComPtr<ITextProvider> text_container_text_provider;
-  text_container->GetPatternProvider(
-      UIA_TextPatternId,
-      reinterpret_cast<IUnknown**>(&text_container_text_provider));
-  ASSERT_NE(nullptr, text_container_text_provider);
+  ComPtr<IUnknown> pattern_provider;
+  ComPtr<ITextProvider> text_container_text_provider;
+  text_container->GetPatternProvider(UIA_TextPatternId, &pattern_provider);
+  ASSERT_NE(nullptr, pattern_provider);
+  ASSERT_HRESULT_SUCCEEDED(pattern_provider.As(&text_container_text_provider));
 }
 
 TEST_F(AXPlatformNodeTextChildProviderTest,
        TestITextChildProviderTextContainerFromNontextChildOfNontext) {
-  CComPtr<IRawElementProviderSimple> text_container;
+  ComPtr<IRawElementProviderSimple> text_container;
   ASSERT_HRESULT_SUCCEEDED(
       nontext_child_of_nontext_text_child_provider_->get_TextContainer(
           &text_container));
   ASSERT_NE(nullptr, text_container);
 
-  ASSERT_EQ(root_provider_raw_.Get(), text_container);
+  ASSERT_EQ(root_provider_raw_, text_container);
 
-  CComPtr<ITextProvider> text_container_text_provider;
-  text_container->GetPatternProvider(
-      UIA_TextPatternId,
-      reinterpret_cast<IUnknown**>(&text_container_text_provider));
-  ASSERT_NE(nullptr, text_container_text_provider);
+  ComPtr<IUnknown> pattern_provider;
+  ComPtr<ITextProvider> text_container_text_provider;
+  text_container->GetPatternProvider(UIA_TextPatternId, &pattern_provider);
+  ASSERT_NE(nullptr, pattern_provider);
+  ASSERT_HRESULT_SUCCEEDED(pattern_provider.As(&text_container_text_provider));
 }
 
 TEST_F(AXPlatformNodeTextChildProviderTest,
        TestITextChildProviderTextContainerFromTextChildOfNontext) {
-  CComPtr<IRawElementProviderSimple> text_container;
+  ComPtr<IRawElementProviderSimple> text_container;
   ASSERT_HRESULT_SUCCEEDED(
       text_child_of_nontext_text_child_provider_->get_TextContainer(
           &text_container));
   ASSERT_NE(nullptr, text_container);
 
-  ASSERT_EQ(root_provider_raw_.Get(), text_container);
+  ASSERT_EQ(root_provider_raw_, text_container);
 
-  CComPtr<ITextProvider> text_container_text_provider;
-  text_container->GetPatternProvider(
-      UIA_TextPatternId,
-      reinterpret_cast<IUnknown**>(&text_container_text_provider));
-  ASSERT_NE(nullptr, text_container_text_provider);
+  ComPtr<IUnknown> pattern_provider;
+  ComPtr<ITextProvider> text_container_text_provider;
+  text_container->GetPatternProvider(UIA_TextPatternId, &pattern_provider);
+  ASSERT_NE(nullptr, pattern_provider);
+  ASSERT_HRESULT_SUCCEEDED(pattern_provider.As(&text_container_text_provider));
 }
 
 TEST_F(AXPlatformNodeTextChildProviderTest,
        TestITextChildProviderTextContainerFromTextChildOfText) {
-  CComPtr<IRawElementProviderSimple> text_container;
+  ComPtr<IRawElementProviderSimple> text_container;
   ASSERT_HRESULT_SUCCEEDED(
       text_child_of_text_text_child_provider_->get_TextContainer(
           &text_container));
   ASSERT_NE(nullptr, text_container);
 
-  ASSERT_EQ(text_child_of_root_text_provider_raw_.Get(), text_container);
+  ASSERT_EQ(text_child_of_root_text_provider_raw_, text_container);
 
-  CComPtr<ITextProvider> text_container_text_provider;
-  text_container->GetPatternProvider(
-      UIA_TextPatternId,
-      reinterpret_cast<IUnknown**>(&text_container_text_provider));
-  ASSERT_NE(nullptr, text_container_text_provider);
+  ComPtr<IUnknown> pattern_provider;
+  ComPtr<ITextProvider> text_container_text_provider;
+  text_container->GetPatternProvider(UIA_TextPatternId, &pattern_provider);
+  ASSERT_NE(nullptr, pattern_provider);
+  ASSERT_HRESULT_SUCCEEDED(pattern_provider.As(&text_container_text_provider));
 }
 
 // ITextChildProvider::TextRange Tests
@@ -249,7 +249,7 @@ TEST_F(AXPlatformNodeTextChildProviderTest,
 // 2) Any retrieved text range encloses the child element.
 TEST_F(AXPlatformNodeTextChildProviderTest,
        TestITextChildProviderTextRangeFromRoot) {
-  CComPtr<ITextRangeProvider> text_range_provider;
+  ComPtr<ITextRangeProvider> text_range_provider;
   ASSERT_HRESULT_SUCCEEDED(
       root_text_child_provider_->get_TextRange(&text_range_provider));
   ASSERT_EQ(nullptr, text_range_provider);
@@ -257,69 +257,67 @@ TEST_F(AXPlatformNodeTextChildProviderTest,
 
 TEST_F(AXPlatformNodeTextChildProviderTest,
        TestITextChildProviderTextRangeFromNontextChildOfRoot) {
-  CComPtr<ITextRangeProvider> text_range_provider;
+  ComPtr<ITextRangeProvider> text_range_provider;
   ASSERT_HRESULT_SUCCEEDED(
       nontext_child_of_root_text_child_provider_->get_TextRange(
           &text_range_provider));
   ASSERT_NE(nullptr, text_range_provider);
 
-  CComPtr<IRawElementProviderSimple> enclosing_element;
+  ComPtr<IRawElementProviderSimple> enclosing_element;
   text_range_provider->GetEnclosingElement(&enclosing_element);
-  ASSERT_EQ(nontext_child_of_nontext_text_provider_raw_.Get(),
-            enclosing_element);
+  ASSERT_EQ(nontext_child_of_nontext_text_provider_raw_, enclosing_element);
 }
 
 TEST_F(AXPlatformNodeTextChildProviderTest,
        TestITextChildProviderTextRangeFromTextChildOfRoot) {
-  CComPtr<ITextRangeProvider> text_range_provider;
+  ComPtr<ITextRangeProvider> text_range_provider;
   ASSERT_HRESULT_SUCCEEDED(
       text_child_of_root_text_child_provider_->get_TextRange(
           &text_range_provider));
   ASSERT_NE(nullptr, text_range_provider);
 
-  CComPtr<IRawElementProviderSimple> enclosing_element;
+  ComPtr<IRawElementProviderSimple> enclosing_element;
   text_range_provider->GetEnclosingElement(&enclosing_element);
-  ASSERT_EQ(text_child_of_text_text_provider_raw_.Get(), enclosing_element);
+  ASSERT_EQ(text_child_of_text_text_provider_raw_, enclosing_element);
 }
 
 TEST_F(AXPlatformNodeTextChildProviderTest,
        TestITextChildProviderTextRangeFromNontextChildOfNontext) {
-  CComPtr<ITextRangeProvider> text_range_provider;
+  ComPtr<ITextRangeProvider> text_range_provider;
   ASSERT_HRESULT_SUCCEEDED(
       nontext_child_of_nontext_text_child_provider_->get_TextRange(
           &text_range_provider));
   ASSERT_NE(nullptr, text_range_provider);
 
-  CComPtr<IRawElementProviderSimple> enclosing_element;
+  ComPtr<IRawElementProviderSimple> enclosing_element;
   text_range_provider->GetEnclosingElement(&enclosing_element);
-  ASSERT_EQ(nontext_child_of_nontext_text_provider_raw_.Get(),
-            enclosing_element);
+  ASSERT_EQ(nontext_child_of_nontext_text_provider_raw_, enclosing_element);
 }
 
 TEST_F(AXPlatformNodeTextChildProviderTest,
        TestITextChildProviderTextRangeFromTextChildOfNontext) {
-  CComPtr<ITextRangeProvider> text_range_provider;
+  ComPtr<ITextRangeProvider> text_range_provider;
   ASSERT_HRESULT_SUCCEEDED(
       text_child_of_nontext_text_child_provider_->get_TextRange(
           &text_range_provider));
   ASSERT_NE(nullptr, text_range_provider);
 
-  CComPtr<IRawElementProviderSimple> enclosing_element;
+  ComPtr<IRawElementProviderSimple> enclosing_element;
   text_range_provider->GetEnclosingElement(&enclosing_element);
-  ASSERT_EQ(text_child_of_nontext_text_provider_raw_.Get(), enclosing_element);
+  ASSERT_EQ(text_child_of_nontext_text_provider_raw_, enclosing_element);
 }
 
 TEST_F(AXPlatformNodeTextChildProviderTest,
        TestITextChildProviderTextRangeFromTextChildOfText) {
-  CComPtr<ITextRangeProvider> text_range_provider;
+  ComPtr<ITextRangeProvider> text_range_provider;
   ASSERT_HRESULT_SUCCEEDED(
       text_child_of_text_text_child_provider_->get_TextRange(
           &text_range_provider));
   ASSERT_NE(nullptr, text_range_provider);
 
-  CComPtr<IRawElementProviderSimple> enclosing_element;
+  ComPtr<IRawElementProviderSimple> enclosing_element;
   text_range_provider->GetEnclosingElement(&enclosing_element);
-  ASSERT_EQ(text_child_of_text_text_provider_raw_.Get(), enclosing_element);
+  ASSERT_EQ(text_child_of_text_text_provider_raw_, enclosing_element);
 }
 
 // ITextChildProvider Tests - Inactive AX Tree
@@ -331,13 +329,13 @@ TEST_F(AXPlatformNodeTextChildProviderTest,
   tree_.reset();
 
   // Test that GetTextContainer fails under an inactive tree.
-  CComPtr<IRawElementProviderSimple> text_container;
+  ComPtr<IRawElementProviderSimple> text_container;
   HRESULT hr = nontext_child_of_root_text_child_provider_->get_TextContainer(
       &text_container);
   ASSERT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE), hr);
 
   // Test that GetTextRange fails under an inactive tree.
-  CComPtr<ITextRangeProvider> text_range_provider;
+  ComPtr<ITextRangeProvider> text_range_provider;
   hr = nontext_child_of_root_text_child_provider_->get_TextRange(
       &text_range_provider);
   ASSERT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE), hr);

@@ -530,6 +530,44 @@ TEST_P(OverviewControllerTestWithDragFromShelfToHomeOrOverview,
             overview_controller->HasBlurAnimationForTest());
 }
 
+// Tests that overview session exits cleanly if exit is requested before
+// previous enter animations finish.
+TEST_P(OverviewControllerTestWithDragFromShelfToHomeOrOverview,
+       OverviewExitWhileStillEntering) {
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  // Ensure calls to SetEnabledForTest complete.
+  base::RunLoop().RunUntilIdle();
+
+  const gfx::Rect bounds(200, 200);
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(bounds));
+  wm::ActivateWindow(window.get());
+
+  // Start overview session - set non zero animation duration so overview is
+  // started asynchronously.
+  ui::ScopedAnimationDurationScaleMode non_zero(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  Shell::Get()->overview_controller()->StartOverview();
+
+  // Exit to home launcher using either fade out or slide out animation. This
+  // should minimize all windows.
+  const bool is_homerview_enabled = GetParam();
+  TestOverviewObserver observer(/*should_monitor_animation_state = */ true);
+  Shell::Get()->overview_controller()->EndOverview(
+      is_homerview_enabled
+          ? OverviewSession::EnterExitOverviewType::kFadeOutExit
+          : OverviewSession::EnterExitOverviewType::kSlideOutExit);
+
+  EXPECT_EQ(is_homerview_enabled, observer.last_animation_was_fade());
+  EXPECT_EQ(!is_homerview_enabled, observer.last_animation_was_slide());
+
+  // Verify that the overview exits cleanly.
+  observer.WaitForEndingAnimationComplete();
+
+  EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_TRUE(WindowState::Get(window.get())->IsMinimized());
+}
+
 INSTANTIATE_TEST_SUITE_P(
     ,
     OverviewControllerTestWithDragFromShelfToHomeOrOverview,

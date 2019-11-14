@@ -130,6 +130,10 @@
     "channel": "stable",
     "extension_types": "all"
   },
+  "differential_fingerprint": {
+    "channel": "stable",
+    "extension_types": "all"
+  },
   "externally_connectable": {
     "channel": "stable",
     "extension_types": [

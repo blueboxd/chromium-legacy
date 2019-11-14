@@ -24,8 +24,10 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckedTextView;
 import android.widget.ListView;
 
+import androidx.annotation.VisibleForTesting;
+import androidx.browser.customtabs.CustomTabsIntent;
+
 import org.chromium.base.ContextUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeStringConstants;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -37,8 +39,6 @@ import org.chromium.ui.widget.TextViewWithClickableSpans;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
-
-import androidx.browser.customtabs.CustomTabsIntent;
 
 /**
  * Dialog to ask the user select what type of password to use for encryption.

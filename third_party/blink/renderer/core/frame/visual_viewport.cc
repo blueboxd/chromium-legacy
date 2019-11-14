@@ -331,13 +331,6 @@ PaintPropertyChangeType VisualViewport::UpdatePaintPropertyNodesIfNeeded(
 }
 
 VisualViewport::~VisualViewport() {
-  if (scroll_layer_)
-    scroll_layer_->SetLayerClient(nullptr);
-  if (scrollbar_layer_horizontal_)
-    scrollbar_layer_horizontal_->SetLayerClient(nullptr);
-  if (scrollbar_layer_vertical_)
-    scrollbar_layer_vertical_->SetLayerClient(nullptr);
-
   SendUMAMetrics();
 }
 
@@ -590,7 +583,6 @@ void VisualViewport::CreateLayers() {
   scroll_layer_->SetScrollable(gfx::Size(size_));
   scroll_layer_->SetBounds(gfx::Size(ContentsSize()));
   scroll_layer_->SetElementId(GetCompositorScrollElementId());
-  scroll_layer_->SetLayerClient(weak_ptr_factory_.GetWeakPtr());
 
   ScrollingCoordinator* coordinator = GetPage().GetScrollingCoordinator();
   DCHECK(coordinator);
@@ -653,7 +645,6 @@ void VisualViewport::UpdateScrollbarLayer(ScrollbarOrientation orientation) {
         orientation, thumb_thickness, scrollbar_margin, false,
         GetScrollbarElementId(orientation));
     scrollbar_layer->SetScrollElementId(scroll_layer_->element_id());
-    scrollbar_layer->SetLayerClient(weak_ptr_factory_.GetWeakPtr());
   }
 
   scrollbar_layer->SetBounds(
@@ -1062,25 +1053,6 @@ PaintArtifactCompositor* VisualViewport::GetPaintArtifactCompositor() const {
   return nullptr;
 }
 
-std::string VisualViewport::LayerDebugName(const cc::Layer* layer) const {
-  if (layer == scroll_layer_.get())
-    return "Inner Viewport Scroll Layer";
-  if (layer == scrollbar_layer_horizontal_.get())
-    return "Overlay Scrollbar Horizontal Layer";
-  if (layer == scrollbar_layer_vertical_.get())
-    return "Overlay Scrollbar Vertical Layer";
-
-  NOTREACHED();
-  return "";
-}
-
-std::unique_ptr<base::trace_event::TracedValue> VisualViewport::TakeDebugInfo(
-    const cc::Layer* layer) {
-  auto traced_value = std::make_unique<base::trace_event::TracedValue>();
-  traced_value->SetString("layer_name", LayerDebugName(layer));
-  return traced_value;
-}
-
 std::unique_ptr<TracedValue> VisualViewport::ViewportToTracedValue() const {
   auto value = std::make_unique<TracedValue>();
   IntRect viewport = VisibleContentRect();
@@ -1112,26 +1084,33 @@ void VisualViewport::Paint(GraphicsContext& context) const {
   if (scroll_layer_ && !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     PropertyTreeState state = parent_property_tree_state_;
     state.SetTransform(*scroll_translation_node_);
-    RecordForeignLayer(context, DisplayItem::kForeignLayerViewportScroll,
-                       scroll_layer_, FloatPoint(), state);
+    DEFINE_STATIC_LOCAL(LiteralDebugNameClient, debug_name_client,
+                        ("Inner Viewport Scroll Layer"));
+    RecordForeignLayer(context, debug_name_client,
+                       DisplayItem::kForeignLayerViewportScroll, scroll_layer_,
+                       FloatPoint(), state);
   }
 
   if (scrollbar_layer_horizontal_) {
     PropertyTreeState state = parent_property_tree_state_;
     state.SetEffect(*horizontal_scrollbar_effect_node_);
-    RecordForeignLayer(context, DisplayItem::kForeignLayerViewportScrollbar,
-                       scrollbar_layer_horizontal_,
-                       FloatPoint(0, size_.Height() - ScrollbarThickness()),
-                       state);
+    DEFINE_STATIC_LOCAL(LiteralDebugNameClient, debug_name_client,
+                        ("Inner Viewport Horizontal Scrollbar"));
+    RecordForeignLayer(
+        context, debug_name_client, DisplayItem::kForeignLayerViewportScrollbar,
+        scrollbar_layer_horizontal_,
+        FloatPoint(0, size_.Height() - ScrollbarThickness()), state);
   }
 
   if (scrollbar_layer_vertical_) {
     PropertyTreeState state = parent_property_tree_state_;
     state.SetEffect(*vertical_scrollbar_effect_node_);
-    RecordForeignLayer(context, DisplayItem::kForeignLayerViewportScrollbar,
-                       scrollbar_layer_vertical_,
-                       FloatPoint(size_.Width() - ScrollbarThickness(), 0),
-                       state);
+    DEFINE_STATIC_LOCAL(LiteralDebugNameClient, debug_name_client,
+                        ("Inner Viewport Vertical Scrollbar"));
+    RecordForeignLayer(
+        context, debug_name_client, DisplayItem::kForeignLayerViewportScrollbar,
+        scrollbar_layer_vertical_,
+        FloatPoint(size_.Width() - ScrollbarThickness(), 0), state);
   }
 }
 

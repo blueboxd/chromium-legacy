@@ -2,7 +2,7 @@ Layer list
 {
   "layers": [
     {
-      "name": "",
+      "name": "LayoutView #document",
       "bounds": [780, 580],
       "drawsContent": false
     },

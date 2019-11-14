@@ -53,6 +53,12 @@ class ExtensionSyncService : public syncer::SyncableService,
   // it is updated to the given |version|. This happens when we get a Sync
   // update telling us to re-enable a newer version than what is currently
   // installed.
+  // TODO(crbug/1019813): The logic for this function was broken after forced
+  // custodian installations were removed. See
+  // ExtensionServiceTestSupervised.
+  // UpdateWithPermissionIncreaseApprovalNewVersion
+  // for an example of when this function should return true but returns false
+  // instead in the test code.
   bool HasPendingReenable(const std::string& id,
                           const base::Version& version) const;
 

@@ -10,7 +10,7 @@
 Polymer({
   is: 'settings-manage-a11y-page',
 
-  behaviors: [WebUIListenerBehavior],
+  behaviors: [WebUIListenerBehavior, settings.RouteObserverBehavior],
 
   properties: {
     /**
@@ -19,6 +19,41 @@ Polymer({
     prefs: {
       type: Object,
       notify: true,
+    },
+
+    /** @private {!Map<string, string>} */
+    focusConfig_: {
+      type: Object,
+      value: function() {
+        const map = new Map();
+        if (settings.routes.MANAGE_TTS_SETTINGS) {
+          map.set(
+              settings.routes.MANAGE_TTS_SETTINGS.path, '#ttsSubpageButton');
+        }
+        if (settings.routes.MANAGE_CAPTION_SETTINGS) {
+          map.set(
+              settings.routes.MANAGE_CAPTION_SETTINGS.path,
+              '#captionsSubpageButton');
+        }
+        if (settings.routes.MANAGE_SWITCH_ACCESS_SETTINGS) {
+          map.set(
+              settings.routes.MANAGE_SWITCH_ACCESS_SETTINGS.path,
+              '#switchAccessSubpageButton');
+        }
+        if (settings.routes.DISPLAY) {
+          map.set(settings.routes.DISPLAY.path, '#displaySubpageButton');
+        }
+        if (settings.routes.APPEARANCE) {
+          map.set(settings.routes.APPEARANCE.path, '#appearanceSubpageButton');
+        }
+        if (settings.routes.KEYBOARD) {
+          map.set(settings.routes.KEYBOARD.path, '#keyboardSubpageButton');
+        }
+        if (settings.routes.POINTERS) {
+          map.set(settings.routes.POINTERS.path, '#pointerSubpageButton');
+        }
+        return map;
+      },
     },
 
     screenMagnifierZoomOptions_: {
@@ -134,6 +169,12 @@ Polymer({
     hasKeyboard_: Boolean,
   },
 
+  /**
+   * The route corresponding to this page.
+   * @private {!settings.Route|undefined}
+   */
+  route_: settings.routes.MANAGE_ACCESSIBILITY,
+
   /** @override */
   attached: function() {
     this.addWebUIListener(
@@ -147,6 +188,28 @@ Polymer({
         'startup-sound-enabled-updated',
         this.updateStartupSoundEnabled_.bind(this));
     chrome.send('getStartupSoundEnabled');
+  },
+
+  /**
+   * settings.RouteObserverBehavior
+   * @param {!settings.Route} newRoute
+   * @param {!settings.Route} oldRoute
+   * @protected
+   */
+  currentRouteChanged: function(newRoute, oldRoute) {
+    // Don't attempt to focus any anchor element, unless last navigation was a
+    // 'pop' (backwards) navigation.
+    if (!settings.lastRouteChangeWasPopstate()) {
+      return;
+    }
+
+    const focusSelector = this.focusConfig_.get(oldRoute.path);
+
+    if (this.route_ != newRoute || !focusSelector) {
+      return;
+    }
+
+    cr.ui.focusWithoutInk(assert(this.$$(focusSelector)));
   },
 
   /**

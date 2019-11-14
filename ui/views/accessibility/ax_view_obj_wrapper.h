@@ -7,12 +7,13 @@
 
 #include <stdint.h>
 
+#include "base/scoped_observer.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
+#include "ui/views/view.h"
 #include "ui/views/view_observer.h"
 
 namespace views {
 class AXAuraObjCache;
-class View;
 
 // Describes a |View| for use with other AX classes.
 class AXViewObjWrapper : public AXAuraObjWrapper, public ViewObserver {
@@ -38,6 +39,8 @@ class AXViewObjWrapper : public AXAuraObjWrapper, public ViewObserver {
 
  private:
   View* view_;
+
+  ScopedObserver<View, ViewObserver> observer_{this};
 };
 
 }  // namespace views

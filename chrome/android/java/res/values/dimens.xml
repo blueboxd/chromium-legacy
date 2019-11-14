@@ -55,17 +55,9 @@
     <dimen name="default_rounded_corner_radius">8dp</dimen>
 
     <!-- Custom Menu dimensions -->
-    <dimen name="menu_width">258dp</dimen>
     <dimen name="tab_switcher_menu_width">222dp</dimen>
 
-    <!-- The amount to fade the edges of the menu to indicate more content is available
-         via scrolling. -->
-    <dimen name="menu_vertical_fade_distance">15dp</dimen>
     <dimen name="menu_badge_translation_y_distance">6dp</dimen>
-    <dimen name="menu_negative_vertical_offset_not_top_anchored">44dp</dimen>
-
-    <!-- Menu button dragging related dimensions -->
-    <dimen name="auto_scroll_full_velocity">500dp</dimen>
 
     <!-- Infobar dimensions -->
     <!-- Text size of the infobar message and other controls. -->
@@ -317,6 +309,8 @@
     <dimen name="location_bar_status_icon_width">24dp</dimen>
     <dimen name="sei_location_bar_icon_end_padding">4dp</dimen>
     <dimen name="sei_location_bar_icon_end_padding_focused">16dp</dimen>
+    <dimen name="sei_location_bar_verbose_start_padding_verbose_text">4dp</dimen>
+    <dimen name="sei_location_bar_status_extra_padding_width">4dp</dimen>
 
     <dimen name="tablet_toolbar_start_padding">4dp</dimen>
     <dimen name="tablet_toolbar_end_padding">6dp</dimen>

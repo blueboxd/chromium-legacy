@@ -2914,7 +2914,7 @@ void MenuController::SendMouseReleaseToActiveView(SubmenuView* event_source,
                                event.changed_button_flags());
   // Reset the active mouse view before sending mouse released. That way if it
   // calls back to us, we aren't in a weird state.
-  active_mouse_view_tracker_->Clear();
+  active_mouse_view_tracker_->SetView(nullptr);
   active_mouse_view->OnMouseReleased(release_event);
 }
 
@@ -2925,7 +2925,7 @@ void MenuController::SendMouseCaptureLostToActiveView() {
 
   // Reset the active mouse view before sending mouse capture lost. That way if
   // it calls back to us, we aren't in a weird state.
-  active_mouse_view_tracker_->Clear();
+  active_mouse_view_tracker_->SetView(nullptr);
   active_mouse_view->OnMouseCaptureLost();
 }
 

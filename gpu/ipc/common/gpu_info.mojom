@@ -9,6 +9,9 @@ import "gpu/ipc/common/dx_diag_node.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 
+[EnableIf=supports_vulkan]
+import "gpu/ipc/common/vulkan_info.mojom";
+
 // gpu::GPUInfo::GPUDevice
 struct GpuDevice {
   uint32 vendor_id;
@@ -173,4 +176,7 @@ struct GpuInfo {
   uint64 rgba_visual;
   bool oop_rasterization_supported;
   bool subpixel_font_rendering;
+
+  [EnableIf=supports_vulkan]
+  VulkanInfo? vulkan_info;
 };

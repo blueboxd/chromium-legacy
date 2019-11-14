@@ -43,6 +43,10 @@ const char kUpgradeTokenSwitchName[] = "upgrade-token";
 
 #if defined(OS_MACOSX)
 const char kCheckPermissionSwitchName[] = "check-permission";
+const char kCheckAccessibilityPermissionSwitchName[] =
+    "check-accessibility-permission";
+const char kCheckScreenRecordingPermissionSwitchName[] =
+    "check-screen-recording-permission";
 #endif  // defined OS_MACOSX
 
 }  // namespace remoting

@@ -103,6 +103,9 @@ without changes to the corresponding grd file. -->
       <include name="IDR_WEBUI_JS_CR_UI_FOCUS_WITHOUT_INK_M_JS"
                file="${root_gen_dir}/ui/webui/resources/js/cr/ui/focus_without_ink.m.js"
                use_base_dir="false" type="BINDATA" compress="gzip" />
+      <include name="IDR_WEBUI_JS_CR_UI_KEYBOARD_SHORTCUT_LIST_M_JS"
+               file="${root_gen_dir}/ui/webui/resources/js/cr/ui/keyboard_shortcut_list.m.js"
+               use_base_dir="false" type="BINDATA" compress="gzip" />
       <include name="IDR_WEBUI_JS_CR_UI_STORE_M_JS"
                file="${root_gen_dir}/ui/webui/resources/js/cr/ui/store.m.js"
                use_base_dir="false" type="BINDATA" compress="gzip" />

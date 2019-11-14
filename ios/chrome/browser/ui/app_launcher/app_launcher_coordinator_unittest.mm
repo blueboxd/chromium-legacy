@@ -7,8 +7,6 @@
 #import <UIKit/UIKit.h>
 
 #include "base/mac/foundation_util.h"
-#include "base/test/scoped_feature_list.h"
-#include "ios/chrome/browser/app_launcher/app_launcher_flags.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/scoped_key_window.h"
@@ -65,27 +63,9 @@ TEST_F(AppLauncherCoordinatorTest, ItmsUrlShowsAlert) {
               alert_controller.message);
 }
 
-// Tests that an app URL attempts to launch the application.
-TEST_F(AppLauncherCoordinatorTest, AppUrlLaunchesApp) {
-  // Make sure that the new AppLauncherRefresh logic is disabled.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(kAppLauncherRefresh);
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-  OCMExpect([application_ openURL:[NSURL URLWithString:@"some-app://1234"]]);
-#pragma clang diagnostic pop
-  [coordinator_ appLauncherTabHelper:tab_helper()
-                    launchAppWithURL:GURL("some-app://1234")
-                      linkTransition:NO];
-  [application_ verify];
-}
-
 // Tests that in the new AppLauncher, an app URL attempts to launch the
 // application.
-TEST_F(AppLauncherCoordinatorTest, AppLauncherRefreshAppUrlLaunchesApp) {
-  // Make sure that the new AppLauncherRefresh logic is enabled.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kAppLauncherRefresh);
+TEST_F(AppLauncherCoordinatorTest, AppUrlLaunchesApp) {
   OCMExpect([application_ openURL:[NSURL URLWithString:@"some-app://1234"]
                           options:@{}
                 completionHandler:nil]);
@@ -97,10 +77,7 @@ TEST_F(AppLauncherCoordinatorTest, AppLauncherRefreshAppUrlLaunchesApp) {
 
 // Tests that in the new AppLauncher, an app URL shows a prompt if there was no
 // link transition.
-TEST_F(AppLauncherCoordinatorTest, AppLauncherRefreshAppUrlShowsPrompt) {
-  // Make sure that the new AppLauncherRefresh logic is enabled.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(kAppLauncherRefresh);
+TEST_F(AppLauncherCoordinatorTest, AppUrlShowsPrompt) {
   [coordinator_ appLauncherTabHelper:tab_helper()
                     launchAppWithURL:GURL("some-app://1234")
                       linkTransition:NO];
@@ -111,24 +88,4 @@ TEST_F(AppLauncherCoordinatorTest, AppLauncherRefreshAppUrlShowsPrompt) {
           base_view_controller_.presentedViewController);
   EXPECT_NSEQ(l10n_util::GetNSString(IDS_IOS_OPEN_IN_ANOTHER_APP),
               alert_controller.message);
-}
-
-// Tests that |-appLauncherTabHelper:launchAppWithURL:linkTransition:| returns
-// NO if there is no application that corresponds to a given URL.
-TEST_F(AppLauncherCoordinatorTest, NoApplicationForUrl) {
-  // Make sure that the new AppLauncherRefresh logic is disabled.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(kAppLauncherRefresh);
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-  OCMStub(
-      [application_ openURL:[NSURL URLWithString:@"no-app-installed://1234"]])
-      .andReturn(NO);
-#pragma clang diagnostic pop
-  BOOL app_exists =
-      [coordinator_ appLauncherTabHelper:tab_helper()
-                        launchAppWithURL:GURL("no-app-installed://1234")
-                          linkTransition:NO];
-  EXPECT_FALSE(app_exists);
 }

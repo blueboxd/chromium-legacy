@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/test/scoped_field_trial_list_resetter.h"
 
 namespace base {
 class CommandLine;
@@ -88,6 +89,7 @@ class VariationParamsManager {
       base::CommandLine* command_line);
 
  private:
+  base::test::ScopedFieldTrialListResetter field_trial_list_resetter_;
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
   std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
 

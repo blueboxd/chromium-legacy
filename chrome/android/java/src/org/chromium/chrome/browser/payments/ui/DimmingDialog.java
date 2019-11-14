@@ -23,8 +23,9 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.widget.FrameLayout;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ui.widget.AlwaysDismissedDialog;
 import org.chromium.chrome.browser.ui.widget.animation.AnimatorProperties;

@@ -21,6 +21,46 @@ class GroupNode extends SAChildNode {
     this.children_ = children;
   }
 
+  // ================= Getters and setters =================
+
+  /** @override */
+  get actions() {
+    return [];
+  }
+
+  /** @override */
+  get automationNode() {
+    return null;
+  }
+
+  /** @override */
+  get location() {
+    const childLocations = this.children_.map(c => c.location);
+    return RectHelper.unionAll(childLocations);
+  }
+
+  /** @override */
+  get role() {
+    return chrome.automation.RoleType.GROUP;
+  }
+
+  // ================= General methods =================
+
+  /** @override */
+  asRootNode() {
+    const root = new SARootNode();
+
+    let children = [];
+    for (const child of this.children_) {
+      children.push(child);
+    }
+
+    children.push(new BackButtonNode(root));
+    root.children = children;
+
+    return root;
+  }
+
   /** @override */
   equals(other) {
     if (!(other instanceof GroupNode)) {
@@ -40,32 +80,6 @@ class GroupNode extends SAChildNode {
   }
 
   /** @override */
-  get role() {
-    return chrome.automation.RoleType.GROUP;
-  }
-
-  /** @override */
-  get location() {
-    const childLocations = this.children_.map(c => c.location);
-    return RectHelper.unionAll(childLocations);
-  }
-
-  /** @override */
-  get automationNode() {
-    return null;
-  }
-
-  /** @override */
-  get actions() {
-    return [];
-  }
-
-  /** @override */
-  performAction(action) {
-    return true;
-  }
-
-  /** @override */
   isEquivalentTo(node) {
     return false;
   }
@@ -76,22 +90,11 @@ class GroupNode extends SAChildNode {
   }
 
   /** @override */
-  asRootNode() {
-    const root = new SARootNode();
-
-    let children = [];
-    for (const child of this.children_) {
-      children.push(child);
-    }
-
-    const backButton = new BackButtonNode(root);
-    children.push(backButton);
-
-    SARootNode.connectChildren(children);
-    root.setChildren(children);
-
-    return root;
+  performAction(action) {
+    return true;
   }
+
+  // ================= Static methods =================
 
   /**
    * Assumes nodes are visually in rows.

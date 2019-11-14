@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="../controls/settings_slider.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
@@ -66,8 +67,8 @@
           label="$i18n{selectToSpeakOptionsLabel}" external></cr-link-row>
     </iron-collapse>
 
-    <cr-link-row class="hr" label="$i18n{manageTtsSettings}"
-        on-click="onManageTtsSettingsTap_"
+    <cr-link-row id="ttsSubpageButton" class="hr"
+        label="$i18n{manageTtsSettings}" on-click="onManageTtsSettingsTap_"
         sub-label="$i18n{ttsSettingsLinkDescription}" embedded></cr-link-row>
 
     <h2>$i18n{displayHeading}</h2>
@@ -109,11 +110,11 @@
         </settings-dropdown-menu>
       </div>
     </template>
-    <cr-link-row class="hr" label="$i18n{displaySettingsTitle}"
-        on-click="onDisplayTap_" sub-label="$i18n{displaySettingsDescription}"
-        embedded></cr-link-row>
-    <cr-link-row class="hr" label="$i18n{appearanceSettingsTitle}"
-        on-click="onAppearanceTap_"
+    <cr-link-row id="displaySubpageButton" class="hr"
+        label="$i18n{displaySettingsTitle}" on-click="onDisplayTap_"
+        sub-label="$i18n{displaySettingsDescription}" embedded></cr-link-row>
+    <cr-link-row id="appearanceSubpageButton" class="hr"
+        label="$i18n{appearanceSettingsTitle}" on-click="onAppearanceTap_"
         sub-label="$i18n{appearanceSettingsDescription}"
         external="[[isOSSettings_]]" embedded></cr-link-row>
 
@@ -146,14 +147,15 @@
       </settings-toggle-button>
       <iron-collapse
           opened="[[prefs.settings.a11y.switch_access.enabled.value]]">
-        <cr-link-row label="$i18n{switchAccessOptionsLabel}"
+        <cr-link-row id="switchAccessSubpageButton"
+            label="$i18n{switchAccessOptionsLabel}"
             on-click="onSwitchAccessSettingsTap_" embedded>
         </cr-link-row>
       </iron-collapse>
     </template>
-    <cr-link-row class="hr" label="$i18n{keyboardSettingsTitle}"
-        on-click="onKeyboardTap_" sub-label="$i18n{keyboardSettingsDescription}"
-        embedded></cr-link-row>
+    <cr-link-row id="keyboardSubpageButton" class="hr"
+        label="$i18n{keyboardSettingsTitle}" on-click="onKeyboardTap_"
+        sub-label="$i18n{keyboardSettingsDescription}" embedded></cr-link-row>
 
     <h2>$i18n{mouseAndTouchpadHeading}</h2>
     <settings-toggle-button class="first"
@@ -218,13 +220,13 @@
         pref="{{prefs.settings.a11y.cursor_highlight}}"
         label="$i18n{cursorHighlightLabel}">
     </settings-toggle-button>
-    <cr-link-row class="hr" label="$i18n{mouseSettingsTitle}"
-        on-click="onMouseTap_" sub-label="$i18n{mouseSettingsDescription}"
-        embedded></cr-link-row>
+    <cr-link-row id="pointerSubpageButton" class="hr"
+        label="$i18n{mouseSettingsTitle}" on-click="onMouseTap_"
+        sub-label="$i18n{mouseSettingsDescription}" embedded></cr-link-row>
 
     <h2>$i18n{audioAndCaptionsHeading}</h2>
-    <cr-link-row class="first" label="$i18n{captionsTitle}"
-        on-click="onCaptionsClick_"></cr-link-row>
+    <cr-link-row id="captionsSubpageButton" class="first"
+        label="$i18n{captionsTitle}" on-click="onCaptionsClick_"></cr-link-row>
     <settings-toggle-button
         pref="{{prefs.settings.a11y.mono_audio}}"
         label="$i18n{monoAudioLabel}">

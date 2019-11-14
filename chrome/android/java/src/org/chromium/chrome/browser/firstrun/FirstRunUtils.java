@@ -12,8 +12,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.UserManager;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ContextUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.components.signin.AccountManagerFacade;

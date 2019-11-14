@@ -31,12 +31,13 @@ import android.os.Handler;
 import android.os.Looper;
 import android.telephony.TelephonyManager;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BuildConfig;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.StrictModeContext;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.compat.ApiHelperForM;
 
 import java.io.IOException;

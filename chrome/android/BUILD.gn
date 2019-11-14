@@ -8,7 +8,6 @@ import("//build/config/android/rules.gni")
 import("//build/config/python.gni")
 import("//build/util/process_version.gni")
 import("//build/util/version.gni")
-import("//chrome/android/chrome_bundle_tmpl.gni")
 import("//chrome/android/chrome_common_shared_library.gni")
 import("//chrome/android/chrome_public_apk_tmpl.gni")
 import("//chrome/android/features/dev_ui/dev_ui_module.gni")
@@ -16,6 +15,7 @@ import("//chrome/android/features/tab_ui/buildflags.gni")
 import("//chrome/android/features/tab_ui/tab_management_java_sources.gni")
 import("//chrome/android/features/vr/public_vr_java_sources.gni")
 import("//chrome/android/feed/feed_java_sources.gni")
+import("//chrome/android/modules/chrome_bundle_tmpl.gni")
 import("//chrome/android/modules/chrome_feature_module_tmpl.gni")
 import("//chrome/android/monochrome_android_manifest_jinja_variables.gni")
 import("//chrome/browser/share/android/java_sources.gni")
@@ -117,6 +117,7 @@ android_resources("chrome_app_java_resources") {
     ":ui_locale_string_resources",
     "//chrome/android/webapk/libs/common:splash_resources",
     "//chrome/app:java_strings_grd",
+    "//chrome/browser/ui/android/appmenu:java_resources",
     "//chrome/browser/ui/android/strings:ui_strings_grd",
     "//chrome/browser/ui/android/styles:java_resources",
     "//chrome/browser/ui/android/widget:ui_widget_java_resources",
@@ -238,6 +239,8 @@ android_library("chrome_java") {
     "//chrome/browser/notifications/chime/android:java",
     "//chrome/browser/preferences:java",
     "//chrome/browser/share/android:java_resources",
+    "//chrome/browser/ui/android/appmenu:factory_java",
+    "//chrome/browser/ui/android/appmenu:java",
     "//chrome/browser/ui/android/styles:java",
     "//chrome/browser/ui/android/widget:java",
     "//chrome/browser/util:java",
@@ -459,6 +462,7 @@ java_group("chrome_all_java") {
     "//chrome/android/features/test_dummy/internal:base_module_java",
     "//chrome/android/modules/extra_icu/provider:java",
     "//chrome/browser/touch_to_fill/android/internal:java",
+    "//chrome/browser/ui/android/appmenu/internal:java",
   ]
 
   if (disable_autofill_assistant_dfm) {
@@ -606,6 +610,7 @@ java_cpp_template("resource_id_javagen") {
   ]
 }
 
+# TODO(twellington): Remove after downstream patch to remove as dependency cycles through.
 android_library("chrome_junit_test_support") {
   # Skip platform checks since Robolectric depends on requires_android targets.
   bypass_platform_checks = true
@@ -630,7 +635,6 @@ junit_binary("chrome_junit_tests") {
     ":app_hooks_java",
     ":chrome_app_java_resources",
     ":chrome_java",
-    ":chrome_junit_test_support",
     ":partner_location_descriptor_proto_java",
     "$google_play_services_package:google_play_services_base_java",
     "$google_play_services_package:google_play_services_basement_java",
@@ -646,6 +650,7 @@ junit_binary("chrome_junit_tests") {
     "//chrome/android/webapk/libs/common:common_java",
     "//chrome/android/webapk/test:junit_test_support",
     "//chrome/browser/image_fetcher:java",
+    "//chrome/browser/ui/android/appmenu/internal:junit",
     "//chrome/browser/ui/android/widget:ui_widget_junit_tests",
     "//chrome/test/android:chrome_java_test_support",
     "//components/background_task_scheduler:background_task_scheduler_java",
@@ -714,6 +719,7 @@ android_library("chrome_test_util_java") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//chrome/android:chrome_java",
+    "//chrome/browser/ui/android/appmenu:java",
     "//chrome/test/android:chrome_java_test_support",
     "//content/public/android:content_java",
     "//content/public/test/android:content_java_test_support",
@@ -762,6 +768,8 @@ android_library("chrome_test_java") {
     "//chrome/browser/android/metrics:ukm_javatests",
     "//chrome/browser/download/android:java",
     "//chrome/browser/preferences:java",
+    "//chrome/browser/ui/android/appmenu:java",
+    "//chrome/browser/ui/android/appmenu:test_support_java",
     "//chrome/browser/ui/android/styles:java",
     "//chrome/browser/ui/android/widget:java",
     "//chrome/browser/ui/android/widget:test_support_java",
@@ -1662,8 +1670,8 @@ chrome_public_apk_or_module_tmpl("chrome_modern_public_base_bundle_module") {
 
 android_library("monochrome_java") {
   deps = [
-    "//android_webview/apk:apk_java",
     "//android_webview/glue",
+    "//android_webview/nonembedded:nonembedded_java",
     "//android_webview/support_library:support_lib_glue_java",
     "//base:base_java",
     "//chrome/android:chrome_java",
@@ -1715,7 +1723,7 @@ template("monochrome_public_apk_or_module_tmpl") {
         _arch = "_64"
       }
       input = "java/AndroidManifest_monochrome.xml"
-      includes += [ "//android_webview/apk/java/AndroidManifest.xml" ]
+      includes += [ "//android_webview/nonembedded/java/AndroidManifest.xml" ]
       variables += monochrome_android_manifest_jinja_variables + [
                      "target_sdk_version=$android_sdk_version",
                      "webview_library=libmonochrome${_arch}.so",
@@ -1914,7 +1922,7 @@ jinja_template("monochrome_public_test_ar_apk_manifest") {
     "java/AndroidManifest.xml",
     "java/AndroidManifest_monochrome.xml",
     "javatests/AndroidManifest.xml",
-    "//android_webview/apk/java/AndroidManifest.xml",
+    "//android_webview/nonembedded/java/AndroidManifest.xml",
   ]
   output = monochrome_public_test_ar_apk_manifest
   variables = chrome_public_jinja_variables +
@@ -2040,6 +2048,7 @@ chrome_test_apk_tmpl("chrome_public_test_apk") {
     "//chrome/browser/profiling_host:profiling_host_javatests",
     "//chrome/browser/subresource_filter:subresource_filter_javatests",
     "//chrome/browser/touch_to_fill/android:test_java",
+    "//chrome/browser/ui/android/appmenu/internal:javatests",
     "//chrome/browser/ui/android/widget:ui_widget_java_tests",
     "//chrome/browser/util:javatests",
   ]
@@ -2584,7 +2593,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/download/DownloadController.java",
     "java/src/org/chromium/chrome/browser/download/DownloadItem.java",
     "java/src/org/chromium/chrome/browser/download/DownloadLocationDialogBridge.java",
-    "java/src/org/chromium/chrome/browser/download/DownloadManagerBridge.java",
     "java/src/org/chromium/chrome/browser/download/DownloadManagerService.java",
     "java/src/org/chromium/chrome/browser/download/DownloadMediaData.java",
     "java/src/org/chromium/chrome/browser/download/DownloadMediaParserBridge.java",

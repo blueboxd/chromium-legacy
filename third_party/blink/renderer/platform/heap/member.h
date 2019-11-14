@@ -488,11 +488,20 @@ class ConstructTraits<blink::Member<T>, Traits, Allocator> {
 
  public:
   template <typename... Args>
+  static blink::Member<T>* Construct(void* location, Args&&... args) {
+    return new (NotNull, location)
+        blink::Member<T>(std::forward<Args>(args)...);
+  }
+
+  static void NotifyNewElement(blink::Member<T>* element) {
+    element->WriteBarrier();
+  }
+
+  template <typename... Args>
   static blink::Member<T>* ConstructAndNotifyElement(void* location,
                                                      Args&&... args) {
-    blink::Member<T>* object =
-        new (NotNull, location) blink::Member<T>(std::forward<Args>(args)...);
-    object->WriteBarrier();
+    blink::Member<T>* object = Construct(location, std::forward<Args>(args)...);
+    NotifyNewElement(object);
     return object;
   }
 

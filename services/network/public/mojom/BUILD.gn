@@ -23,6 +23,28 @@ mojom("mojom_ip_address") {
   ]
 }
 
+# As with mojom_ip_address, this is a separate target to avoid a circular
+# dependency, which comes from the fact that proxy_resolver service uses
+# this interfaces, and the network service uses the proxy_resolver service.
+# Separate from |mojom_ip_address| because a bunch of other consumers are
+# depending on that and don't need this.
+mojom("mojom_network_isolation_key") {
+  generate_java = true
+  sources = [
+    "network_isolation_key.mojom",
+  ]
+
+  public_deps = [
+    "//url/mojom:url_mojom_origin",
+  ]
+
+  if (!is_ios) {
+    export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
+    export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
+    export_header_blink = "third_party/blink/public/platform/web_common.h"
+  }
+}
+
 # These interfaces are put in their own target to avoid a circular dependency,
 # which comes from the fact that the typemap for url_loader.mojom
 # (ResourceRequestBody) uses these interfaces.
@@ -97,7 +119,6 @@ mojom("mojom") {
     "network_change_manager.mojom",
     "network_context.mojom",
     "network_interface.mojom",
-    "network_isolation_key.mojom",
     "network_quality_estimator_manager.mojom",
     "network_service.mojom",
     "network_service_test.mojom",
@@ -124,6 +145,7 @@ mojom("mojom") {
   public_deps = [
     ":data_pipe_interfaces",
     ":mojom_ip_address",
+    ":mojom_network_isolation_key",
     ":mutable_network_traffic_annotation_interface",
     ":websocket_mojom",
     "//components/content_settings/core/common:mojo_bindings",

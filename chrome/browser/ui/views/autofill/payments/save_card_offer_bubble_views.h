@@ -36,7 +36,6 @@ class SaveCardOfferBubbleViews : public SaveCardBubbleViews,
   void Init() override;
   std::unique_ptr<views::View> CreateFootnoteView() override;
   bool Accept() override;
-  int GetDialogButtons() const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
 
   // views::StyledLabelListener:

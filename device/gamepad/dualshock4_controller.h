@@ -20,7 +20,9 @@ class HidWriter;
 class DEVICE_GAMEPAD_EXPORT Dualshock4Controller final
     : public AbstractHapticGamepad {
  public:
-  Dualshock4Controller(GamepadBusType bus_type,
+  Dualshock4Controller(uint16_t vendor_id,
+                       uint16_t product_id,
+                       GamepadBusType bus_type,
                        std::unique_ptr<HidWriter> hid_writer);
   ~Dualshock4Controller() override;
 
@@ -55,6 +57,8 @@ class DEVICE_GAMEPAD_EXPORT Dualshock4Controller final
   // Dualshock4.
   void SetVibrationBluetooth(double strong_magnitude, double weak_magnitude);
 
+  uint16_t vendor_id_;
+  uint16_t product_id_;
   GamepadBusType bus_type_;
   std::unique_ptr<HidWriter> writer_;
   base::WeakPtrFactory<Dualshock4Controller> weak_factory_{this};

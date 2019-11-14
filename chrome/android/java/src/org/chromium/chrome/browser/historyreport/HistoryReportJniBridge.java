@@ -6,8 +6,9 @@ package org.chromium.chrome.browser.historyreport;
 
 import static org.chromium.base.ThreadUtils.assertOnBackgroundThread;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.Log;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;

@@ -62,6 +62,8 @@ ExtensionsMenuView::ExtensionsMenuView(
   model_observer_.Add(model_);
   set_margins(gfx::Insets(0));
 
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+
   EnableUpDownKeyboardAccelerators();
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -82,10 +84,6 @@ base::string16 ExtensionsMenuView::GetWindowTitle() const {
 
 bool ExtensionsMenuView::ShouldShowCloseButton() const {
   return true;
-}
-
-int ExtensionsMenuView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
 }
 
 gfx::Size ExtensionsMenuView::CalculatePreferredSize() const {

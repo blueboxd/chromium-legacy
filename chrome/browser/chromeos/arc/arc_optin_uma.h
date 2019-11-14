@@ -238,8 +238,14 @@ void UpdatePlayAutoInstallRequestState(mojom::PaiFlowState state,
                                        const Profile* profile);
 void UpdatePlayAutoInstallRequestTime(const base::TimeDelta& elapsed_time,
                                       const Profile* profile);
-void UpdatePlayStoreShowTime(const base::TimeDelta& elapsed_time,
-                             const Profile* profile);
+void UpdateArcUiAvailableTime(const base::TimeDelta& elapsed_time,
+                              const std::string& mode,
+                              const Profile* profile);
+void UpdatePlayStoreLaunchTime(const base::TimeDelta& elapsed_time);
+// TODO(khmel): Remove this in favor of UpdateArcUiAvailableTime once it is
+// rolled and has confirmed usability.
+void UpdatePlayStoreShownTimeDeprecated(const base::TimeDelta& elapsed_time,
+                                        const Profile* profile);
 void UpdateSilentAuthCodeUMA(OptInSilentAuthCode state);
 void UpdateSupervisionTransitionResultUMA(
     mojom::SupervisionChangeStatus result);

@@ -31,6 +31,7 @@
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/binder_map.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/shared_remote.h"
@@ -168,6 +169,11 @@ class CONTENT_EXPORT ChildThreadImpl
   // |false| on ChildThreadImpl construction.
   void StartServiceManagerConnection();
 
+  // Must be called by subclasses during initialization if and only if they set
+  // |Options::expose_interfaces_to_browser| to |true|. This makes |binders|
+  // available to handle incoming interface requests from the browser.
+  void ExposeInterfacesToBrowser(mojo::BinderMap binders);
+
   virtual bool OnControlMessageReceived(const IPC::Message& msg);
   // IPC::Listener implementation:
   bool OnMessageReceived(const IPC::Message& msg) override;
@@ -181,6 +187,8 @@ class CONTENT_EXPORT ChildThreadImpl
   bool IsInBrowserProcess() const;
 
  private:
+  class IOThreadState;
+
   class ChildThreadMessageRouter : public IPC::MessageRouter {
    public:
     // |sender| must outlive this object.
@@ -268,6 +276,10 @@ class CONTENT_EXPORT ChildThreadImpl
   // An interface to the browser's process host object.
   mojo::SharedRemote<mojom::ChildProcessHost> child_process_host_;
 
+  // ChlidThreadImpl state which lives on the IO thread, including its
+  // implementation of the mojom ChildProcess interface.
+  scoped_refptr<IOThreadState> io_thread_state_;
+
   base::WeakPtrFactory<ChildThreadImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChildThreadImpl);
@@ -286,6 +298,12 @@ struct ChildThreadImpl::Options {
   mojo::OutgoingInvitation* mojo_invitation;
   std::string in_process_service_request_token;
   scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner;
+
+  // Indicates that this child process exposes one or more Mojo interfaces to
+  // the browser process. Subclasses which initialize this to |true| must
+  // explicitly call |ExposeInterfacesToBrowser()| some time during
+  // initialization.
+  bool exposes_interfaces_to_browser = false;
 
   using ServiceBinder =
       base::RepeatingCallback<void(mojo::GenericPendingReceiver*)>;
@@ -306,6 +324,7 @@ class ChildThreadImpl::Options::Builder {
   Builder& IPCTaskRunner(
       scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner);
   Builder& ServiceBinder(ServiceBinder binder);
+  Builder& ExposesInterfacesToBrowser();
 
   Options Build();
 

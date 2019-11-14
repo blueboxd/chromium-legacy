@@ -31,7 +31,11 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public NativeThemeBase {
     kFill,
     kDisabledFill,
     kHoveredFill,
-    kLightenLayer
+    kLightenLayer,
+    kProgressValue,
+    kSlider,
+    kDisabledSlider,
+    kHoveredSlider
   };
 
   explicit NativeThemeAura(bool use_overlay_scrollbars);
@@ -53,6 +57,8 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public NativeThemeBase {
                                     ColorScheme color_scheme) const;
   SkColor ControlsBackgroundColorForState(State state,
                                           ColorScheme color_scheme) const;
+  SkColor ControlsSliderColorForState(State state,
+                                      ColorScheme color_scheme) const;
   SkColor GetHighContrastControlColor(ControlColorId color_id,
                                       ColorScheme color_scheme) const;
   SkColor GetControlColor(ControlColorId color_id,

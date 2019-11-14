@@ -78,10 +78,6 @@ class RulesetMatcher : public RulesetMatcherInterface {
       uint8_t ignored_mask,
       std::vector<RequestAction>* remove_headers_actions) const override;
   bool IsExtraHeadersMatcher() const override;
-  const ExtensionId& extension_id() const override { return extension_id_; }
-  api::declarative_net_request::SourceType source_type() const override {
-    return source_type_;
-  }
 
   // Returns a RequestAction constructed from the matching redirect or upgrade
   // rule with the highest priority, or base::nullopt if no matching redirect or
@@ -110,11 +106,6 @@ class RulesetMatcher : public RulesetMatcherInterface {
 
   const size_t id_;
   const size_t priority_;
-
-  const api::declarative_net_request::SourceType source_type_;
-
-  // The ID of the extension from which this matcher's ruleset originates from.
-  const ExtensionId extension_id_;
 
   // Underlying matcher for filter-list style rules supported using the
   // |url_pattern_index| component.

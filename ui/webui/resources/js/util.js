@@ -488,6 +488,6 @@ if (!('key' in KeyboardEvent.prototype)) {
  * @param {!Element} el
  * @return {boolean} Whether the element is interactive via text input.
  */
-function isTextInputElement(el) {
+/* #export */ function isTextInputElement(el) {
   return el.tagName == 'INPUT' || el.tagName == 'TEXTAREA';
 }

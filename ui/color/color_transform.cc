@@ -9,6 +9,20 @@
 
 namespace ui {
 
+ColorTransform AlphaBlend(ColorTransform foreground_transform,
+                          ColorTransform background_transform,
+                          SkAlpha alpha) {
+  const auto generator = [](ColorTransform foreground_transform,
+                            ColorTransform background_transform, SkAlpha alpha,
+                            SkColor input_color, const ColorMixer& mixer) {
+    return color_utils::AlphaBlend(foreground_transform.Run(input_color, mixer),
+                                   background_transform.Run(input_color, mixer),
+                                   alpha);
+  };
+  return base::Bind(generator, std::move(foreground_transform),
+                    std::move(background_transform), alpha);
+}
+
 ColorTransform BlendForMinContrast(
     ColorTransform foreground_transform,
     ColorTransform background_transform,
@@ -38,6 +52,12 @@ ColorTransform BlendForMinContrast(
                     std::move(background_transform),
                     std::move(high_contrast_foreground_transform),
                     contrast_ratio);
+}
+
+ColorTransform BlendForMinContrastWithSelf(ColorTransform transform,
+                                           float contrast_ratio) {
+  return BlendForMinContrast(transform, transform, base::nullopt,
+                             contrast_ratio);
 }
 
 ColorTransform BlendTowardMaxContrast(ColorTransform transform, SkAlpha alpha) {
@@ -155,6 +175,14 @@ ColorTransform SelectBasedOnDarkInput(
   return base::Bind(generator, std::move(input_transform),
                     std::move(output_transform_for_dark_input),
                     std::move(output_transform_for_light_input));
+}
+
+ColorTransform SetAlpha(ColorTransform transform, SkAlpha alpha) {
+  const auto generator = [](ColorTransform transform, SkAlpha alpha,
+                            SkColor input_color, const ColorMixer& mixer) {
+    return SkColorSetA(transform.Run(input_color, mixer), alpha);
+  };
+  return base::Bind(generator, std::move(transform), alpha);
 }
 
 }  // namespace ui

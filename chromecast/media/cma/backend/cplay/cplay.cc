@@ -21,12 +21,13 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/numerics/ranges.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "chromecast/media/cma/backend/cast_audio_json.h"
 #include "chromecast/media/cma/backend/cplay/wav_header.h"
-#include "chromecast/media/cma/backend/mixer_input.h"
-#include "chromecast/media/cma/backend/mixer_pipeline.h"
-#include "chromecast/media/cma/backend/post_processing_pipeline_impl.h"
-#include "chromecast/media/cma/backend/post_processing_pipeline_parser.h"
+#include "chromecast/media/cma/backend/mixer/mixer_input.h"
+#include "chromecast/media/cma/backend/mixer/mixer_pipeline.h"
+#include "chromecast/media/cma/backend/mixer/post_processing_pipeline_impl.h"
+#include "chromecast/media/cma/backend/mixer/post_processing_pipeline_parser.h"
 #include "chromecast/media/cma/backend/volume_map.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "media/audio/wav_audio_handler.h"
@@ -41,11 +42,6 @@ namespace media {
 VolumeMap& GetVolumeMap() {
   static base::NoDestructor<VolumeMap> volume_map;
   return *volume_map;
-}
-
-// static
-float VolumeControl::DbFSToVolume(float db) {
-  return GetVolumeMap().DbFSToVolume(db);
 }
 
 namespace {
@@ -65,7 +61,7 @@ void PrintHelp(const std::string& command) {
 struct Parameters {
   double cast_volume = 1.0;
   double duration_s = std::numeric_limits<double>::infinity();
-  int output_samples_per_second = -1.0;
+  int output_samples_per_second = -1;
   std::string device_id = "default";
   base::FilePath input_file_path;
   base::FilePath output_file_path;
@@ -110,6 +106,7 @@ class WavMixerInputSource : public MixerInput::Source {
     return input_handler_->sample_rate();
   }
   bool primary() override { return true; }
+  bool active() override { return true; }
   const std::string& device_id() override { return device_id_; }
   AudioContentType content_type() override { return AudioContentType::kMedia; }
   int desired_read_size() override { return kReadSize; }
@@ -280,6 +277,10 @@ Parameters ReadArgs(int argc, char* argv[]) {
 int CplayMain(int argc, char* argv[]) {
   Parameters params = ReadArgs(argc, argv);
 
+  // Comply with CastAudioJsonProviderImpl.
+  base::ThreadPoolInstance::CreateAndStartWithDefaultParams(
+      "cplay_thread_pool");
+
   // Read input file.
   WavMixerInputSource input_source(params);
   if (params.output_samples_per_second <= 0) {
@@ -296,7 +297,8 @@ int CplayMain(int argc, char* argv[]) {
   // Build Processing Pipeline.
   PostProcessingPipelineParser parser(params.cast_audio_json_path);
   auto factory = std::make_unique<PostProcessingPipelineFactoryImpl>();
-  auto pipeline = MixerPipeline::CreateMixerPipeline(&parser, factory.get());
+  auto pipeline = MixerPipeline::CreateMixerPipeline(
+      &parser, factory.get(), input_source.num_channels());
   CHECK(pipeline);
   pipeline->Initialize(params.output_samples_per_second, kReadSize);
   LOG(INFO) << "Initialized Cast Audio Pipeline at "
@@ -337,6 +339,7 @@ int CplayMain(int argc, char* argv[]) {
   }
 
   audio_metrics.PrintReport();
+  base::ThreadPoolInstance::Get()->Shutdown();
   return 0;
 }
 

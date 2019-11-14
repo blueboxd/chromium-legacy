@@ -18,6 +18,7 @@ class PasswordGenerationDialogViewInterface;
 
 namespace password_manager {
 class PasswordManagerDriver;
+class PasswordManagerClient;
 }  // namespace password_manager
 
 // In its current state, this class is not involved in the editing flow for
@@ -63,6 +64,7 @@ class PasswordGenerationControllerImpl
   // testing.
   static void CreateForWebContentsForTesting(
       content::WebContents* web_contents,
+      password_manager::PasswordManagerClient* client,
       base::WeakPtr<ManualFillingController> manual_filling_controller,
       CreateDialogFactory create_dialog_callback);
 
@@ -77,9 +79,10 @@ class PasswordGenerationControllerImpl
 
   friend class content::WebContentsUserData<PasswordGenerationControllerImpl>;
 
-  // Constructor that allows to inject a mock or fake view.
+  // Constructor that allows to inject a mock or fake dependencies
   PasswordGenerationControllerImpl(
       content::WebContents* web_contents,
+      password_manager::PasswordManagerClient* client,
       base::WeakPtr<ManualFillingController> manual_filling_controller,
       CreateDialogFactory create_dialog_callback);
 
@@ -101,6 +104,10 @@ class PasswordGenerationControllerImpl
 
   // The tab for which this class is scoped.
   content::WebContents* web_contents_;
+
+  // The PasswordManagerClient associated with the current |web_contents_|.
+  // Used to tell the renderer that manual generation was requested.
+  password_manager::PasswordManagerClient* client_ = nullptr;
 
   // Data for the generation element used to generate the password.
   std::unique_ptr<GenerationElementData> generation_element_data_;

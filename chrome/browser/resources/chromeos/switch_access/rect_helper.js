@@ -8,6 +8,12 @@ const RectHelper = {
   ZERO_RECT: {top: 0, left: 0, width: 0, height: 0},
 
   /**
+   * @param {chrome.accessibilityPrivate.ScreenRect|undefined} rect
+   * @return {number}
+   */
+  area: (rect) => rect ? rect.width * rect.height : 0,
+
+  /**
    * Returns true if the two rects are equal.
    *
    * @param {chrome.accessibilityPrivate.ScreenRect=} rect1
@@ -45,12 +51,108 @@ const RectHelper = {
   },
 
   /**
+   * @param {chrome.accessibilityPrivate.ScreenRect} outer
+   * @param {chrome.accessibilityPrivate.ScreenRect} inner
+   * @return {boolean}
+   */
+  contains: (outer, inner) => {
+    if (!outer || !inner) {
+      return false;
+    }
+    return outer.left <= inner.left && outer.top <= inner.top &&
+        RectHelper.right(outer) >= RectHelper.right(inner) &&
+        RectHelper.bottom(outer) >= RectHelper.bottom(inner);
+  },
+
+  /**
    * @param {!chrome.accessibilityPrivate.ScreenRect} rect
    * @return {!chrome.accessibilityPrivate.ScreenRect}
    */
   deepCopy: (rect) => {
     const copy = (Object.assign({}, rect));
     return /** @type {!chrome.accessibilityPrivate.ScreenRect} */ (copy);
+  },
+
+  /**
+   * Returns the largest rectangle contained within the outer rect that does not
+   * overlap with the subtrahend (what is being subtracted).
+   * @param {chrome.accessibilityPrivate.ScreenRect|undefined} outer
+   * @param {chrome.accessibilityPrivate.ScreenRect|undefined} subtrahend
+   * @return {chrome.accessibilityPrivate.ScreenRect|undefined}
+   */
+  difference: (outer, subtrahend) => {
+    if (!outer || !subtrahend) {
+      return outer;
+    }
+
+    if (outer.left >= RectHelper.right(subtrahend) ||
+        RectHelper.right(outer) <= subtrahend.left ||
+        outer.top >= RectHelper.bottom(subtrahend) ||
+        RectHelper.bottom(outer) <= subtrahend.top) {
+      // If the rectangles do not overlap, return the outer rect.
+      return outer;
+    }
+
+    if (RectHelper.contains(subtrahend, outer)) {
+      // If the subtrahend contains the outer rect, there is no region that does
+      // not overlap. Return the zero rect.
+      return RectHelper.ZERO_RECT;
+    }
+
+    let above, below, toTheLeft, toTheRight;
+
+    if (outer.top < subtrahend.top) {
+      above = {
+        top: outer.top,
+        left: outer.left,
+        width: outer.width,
+        height: (subtrahend.top - outer.top)
+      };
+    }
+
+    if (RectHelper.bottom(outer) > RectHelper.bottom(subtrahend)) {
+      below = {
+        top: RectHelper.bottom(subtrahend),
+        left: outer.left,
+        width: outer.width,
+        height: (RectHelper.bottom(outer) - RectHelper.bottom(subtrahend))
+      };
+    }
+
+    if (outer.left < subtrahend.left) {
+      toTheLeft = {
+        top: outer.top,
+        left: outer.left,
+        width: (subtrahend.left - outer.left),
+        height: outer.height
+      };
+    }
+
+    if (RectHelper.right(outer) > RectHelper.right(subtrahend)) {
+      toTheRight = {
+        top: outer.top,
+        left: RectHelper.right(subtrahend),
+        width: (RectHelper.right(outer) - RectHelper.right(subtrahend)),
+        height: outer.height
+      };
+    }
+
+    // Of the four rects calculated above, find the one with the greatest area.
+    const areaAbove = RectHelper.area(above);
+    const areaBelow = RectHelper.area(below);
+    const areaToTheLeft = RectHelper.area(toTheLeft);
+    const areaToTheRight = RectHelper.area(toTheRight);
+
+    if (areaAbove > areaBelow && areaAbove > areaToTheLeft &&
+        areaAbove > areaToTheRight) {
+      return above;
+    }
+
+    if (areaBelow > areaToTheLeft && areaBelow > areaToTheRight) {
+      return below;
+    }
+
+    return areaToTheLeft > areaToTheRight ? toTheLeft : toTheRight;
   },
 
   /**
@@ -86,6 +188,31 @@ const RectHelper = {
     }
 
     return newOuter;
+  },
+
+  /**
+   * @param {chrome.accessibilityPrivate.ScreenRect=} rect1
+   * @param {chrome.accessibilityPrivate.ScreenRect=} rect2
+   * @return {chrome.accessibilityPrivate.ScreenRect}
+   */
+  intersection: (rect1, rect2) => {
+    if (!rect1 || !rect2) {
+      return RectHelper.ZERO_RECT;
+    }
+
+    const left = Math.max(rect1.left, rect2.left);
+    const top = Math.max(rect1.top, rect2.top);
+    const right = Math.min(RectHelper.right(rect1), RectHelper.right(rect2));
+    const bottom = Math.min(RectHelper.bottom(rect1), RectHelper.bottom(rect2));
+
+    if (right <= left || bottom <= top) {
+      return RectHelper.ZERO_RECT;
+    }
+
+    const width = right - left;
+    const height = bottom - top;
+
+    return {left, top, width, height};
   },
 
   /**

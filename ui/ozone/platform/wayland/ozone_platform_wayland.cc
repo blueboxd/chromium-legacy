@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_pump_type.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/base/ime/linux/input_method_auralinux.h"
@@ -210,11 +211,12 @@ class OzonePlatformWayland : public OzonePlatform {
     return kWaylandPlatformProperties;
   }
 
-  void AddInterfaces(service_manager::BinderRegistry* registry) override {
-    registry->AddInterface<ozone::mojom::WaylandBufferManagerGpu>(
+  void AddInterfaces(mojo::BinderMap* binders) override {
+    binders->Add<ozone::mojom::WaylandBufferManagerGpu>(
         base::BindRepeating(
             &OzonePlatformWayland::CreateWaylandBufferManagerGpuBinding,
-            base::Unretained(this)));
+            base::Unretained(this)),
+        base::SequencedTaskRunnerHandle::Get());
   }
 
   void CreateWaylandBufferManagerGpuBinding(

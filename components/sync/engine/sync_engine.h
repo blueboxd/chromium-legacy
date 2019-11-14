@@ -32,7 +32,6 @@ class GURL;
 
 namespace syncer {
 
-class CancelationSignal;
 class HttpPostProviderFactory;
 class SyncEngineHost;
 class SyncManagerFactory;
@@ -47,8 +46,7 @@ class SyncEngine : public ModelTypeConfigurer {
   using AllNodesCallback =
       base::OnceCallback<void(ModelType, std::unique_ptr<base::ListValue>)>;
   using HttpPostProviderFactoryGetter =
-      base::OnceCallback<std::unique_ptr<HttpPostProviderFactory>(
-          CancelationSignal*)>;
+      base::OnceCallback<std::unique_ptr<HttpPostProviderFactory>()>;
 
   // Utility struct for holding initialization options.
   struct InitParams {

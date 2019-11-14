@@ -5,6 +5,8 @@
 #ifndef ASH_SHELF_SCROLLABLE_SHELF_VIEW_H_
 #define ASH_SHELF_SCROLLABLE_SHELF_VIEW_H_
 
+#include <memory>
+
 #include "ash/app_list/views/app_list_drag_and_drop_host.h"
 #include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_model.h"
@@ -24,6 +26,7 @@ class FocusSearch;
 }
 
 namespace ash {
+class PresentationTimeRecorder;
 
 class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
                                        public ShellObserver,
@@ -378,6 +381,9 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // Metric reporter for scrolling animations.
   const std::unique_ptr<ui::AnimationMetricsReporter>
       animation_metrics_reporter_;
+
+  // Records the presentation time for the scrollable shelf dragging.
+  std::unique_ptr<PresentationTimeRecorder> presentation_time_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollableShelfView);
 };

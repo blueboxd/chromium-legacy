@@ -109,6 +109,17 @@ cr.define('downloads', function() {
 
       this.boundOnKeyDown_ = e => this.onKeyDown_(e);
       document.addEventListener('keydown', this.boundOnKeyDown_);
+
+      this.loaded_.promise.then(() => {
+        requestIdleCallback(function() {
+          chrome.send(
+              'metricsHandler:recordTime',
+              ['Download.ResultsRenderedTime', window.performance.now()]);
+          document.fonts.load('bold 12px Roboto');
+        });
+      });
+
+      this.searchService_.loadMore();
     },
 
     /** @override */
@@ -256,15 +267,6 @@ cr.define('downloads', function() {
       this.hasShadow_ = container.scrollTop > 0;
     },
 
-    /**
-     * @return {!Promise}
-     * @private
-     */
-    onLoad_: function() {
-      this.searchService_.loadMore();
-      return this.loaded_.promise;
-    },
-
     /** @private */
     onSearchChanged_: function() {
       this.inSearchMode_ = this.searchService_.isSearching();
@@ -342,16 +344,6 @@ cr.define('downloads', function() {
       return this.$.toolbar.isSearchFocused();
     },
   });
-
-  /** @return {!downloads.Manager} */
-  Manager.get = function() {
-    return /** @type {!downloads.Manager} */ (
-        queryRequiredElement('downloads-manager'));
-  };
-  /** @return {!Promise} */
-  Manager.onLoad = function() {
-    return Manager.get().onLoad_();
-  };
 
   return {Manager: Manager};
 });

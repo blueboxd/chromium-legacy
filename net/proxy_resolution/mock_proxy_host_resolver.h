@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -17,6 +18,8 @@
 #include "net/proxy_resolution/proxy_resolve_dns_operation.h"
 
 namespace net {
+
+class NetworkIsolationKey;
 
 // Mock of ProxyHostResolver that resolves by default to 127.0.0.1, except for
 // hostnames with more specific results set using SetError() or SetResult().
@@ -30,13 +33,16 @@ class MockProxyHostResolver : public ProxyHostResolver {
 
   std::unique_ptr<Request> CreateRequest(
       const std::string& hostname,
-      ProxyResolveDnsOperation operation) override;
+      ProxyResolveDnsOperation operation,
+      const net::NetworkIsolationKey& network_isolation_key) override;
 
   void SetError(const std::string& hostname,
-                ProxyResolveDnsOperation operation);
+                ProxyResolveDnsOperation operation,
+                const NetworkIsolationKey& network_isolation_key);
 
   void SetResult(const std::string& hostname,
                  ProxyResolveDnsOperation operation,
+                 const NetworkIsolationKey& network_isolation_key,
                  std::vector<IPAddress> result);
 
   void FailAll();
@@ -44,7 +50,8 @@ class MockProxyHostResolver : public ProxyHostResolver {
   unsigned num_resolve() const { return num_resolve_; }
 
  private:
-  using ResultKey = std::pair<std::string, ProxyResolveDnsOperation>;
+  using ResultKey =
+      std::tuple<std::string, ProxyResolveDnsOperation, NetworkIsolationKey>;
 
   class RequestImpl;
 
@@ -59,13 +66,14 @@ class MockProxyHostResolver : public ProxyHostResolver {
 class HangingProxyHostResolver : public ProxyHostResolver {
  public:
   // If not null, |hang_callback| will be invoked whenever a request is started.
-  HangingProxyHostResolver(
+  explicit HangingProxyHostResolver(
       base::RepeatingClosure hang_callback = base::RepeatingClosure());
   ~HangingProxyHostResolver() override;
 
   std::unique_ptr<Request> CreateRequest(
       const std::string& hostname,
-      ProxyResolveDnsOperation operation) override;
+      ProxyResolveDnsOperation operation,
+      const net::NetworkIsolationKey& network_isolation_key) override;
 
   int num_cancelled_requests() const { return num_cancelled_requests_; }
 

@@ -773,9 +773,8 @@ bool SupervisedUserService::MustRemainDisabled(
   if (must_remain_disabled) {
     if (error)
       *error = GetExtensionsLockedMessage();
-    // If the extension must remain disabled due to permission increase,
-    // then the update request has been already sent at update time.
-    // We do nothing and we don't add an extra disable reason.
+    // If the extension must remain disabled due to permission increase, then we
+    // do nothing and we don't add an extra disable reason.
     ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile_);
     if (extension_prefs->HasDisableReason(
             extension->id(),

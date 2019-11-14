@@ -102,7 +102,6 @@ template("test") {
         "target_sdk_version",
         "use_default_launcher",
         "use_native_activity",
-        "write_asset_list",
       ]
 
       # Adds the unwind tables from unstripped binary as an asset file in the

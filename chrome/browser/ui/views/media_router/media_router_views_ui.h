@@ -13,17 +13,15 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/observer_list.h"
-#include "chrome/browser/ui/media_router/cast_dialog_controller.h"
-#include "chrome/browser/ui/media_router/cast_dialog_model.h"
-
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/router/issues_observer.h"
 #include "chrome/browser/media/router/media_router_dialog_controller.h"
 #include "chrome/browser/media/router/presentation/presentation_service_delegate_impl.h"
+#include "chrome/browser/ui/media_router/cast_dialog_controller.h"
+#include "chrome/browser/ui/media_router/cast_dialog_model.h"
 #include "chrome/browser/ui/media_router/media_cast_mode.h"
 #include "chrome/browser/ui/media_router/media_router_file_dialog.h"
 #include "chrome/browser/ui/media_router/media_router_ui_helper.h"

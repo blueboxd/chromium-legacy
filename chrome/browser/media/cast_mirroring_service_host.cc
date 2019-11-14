@@ -156,6 +156,15 @@ void CastMirroringServiceHost::GetForDesktop(
 }
 
 // static
+void CastMirroringServiceHost::GetForDesktop(
+    const content::DesktopMediaID& media_id,
+    mojo::PendingReceiver<mojom::MirroringServiceHost> receiver) {
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<CastMirroringServiceHost>(media_id),
+      std::move(receiver));
+}
+
+// static
 void CastMirroringServiceHost::GetForOffscreenTab(
     content::BrowserContext* context,
     const GURL& presentation_url,

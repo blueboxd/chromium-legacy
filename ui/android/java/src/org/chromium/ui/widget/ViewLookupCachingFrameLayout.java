@@ -12,9 +12,9 @@ import android.view.ViewGroup;
 
 import androidx.annotation.IdRes;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.BuildConfig;
-import org.chromium.base.VisibleForTesting;
 
 import java.lang.ref.WeakReference;
 

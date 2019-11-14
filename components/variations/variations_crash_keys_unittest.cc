@@ -30,7 +30,7 @@ std::string GetNumExperimentsCrashKey() {
 
 class VariationsCrashKeysTest : public ::testing::Test {
  public:
-  VariationsCrashKeysTest() : field_trial_list_(nullptr) {
+  VariationsCrashKeysTest() {
     crash_reporter::ResetCrashKeysForTesting();
     crash_reporter::InitializeCrashKeysForTesting();
   }
@@ -43,8 +43,6 @@ class VariationsCrashKeysTest : public ::testing::Test {
 
  private:
   base::test::SingleThreadTaskEnvironment task_environment_;
-
-  base::FieldTrialList field_trial_list_;
 
   DISALLOW_COPY_AND_ASSIGN(VariationsCrashKeysTest);
 };

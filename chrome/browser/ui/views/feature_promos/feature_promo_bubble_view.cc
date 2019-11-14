@@ -106,6 +106,7 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(
 
   set_margins(gfx::Insets());
   set_title_margins(gfx::Insets());
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
 
   set_color(background_color);
 
@@ -137,10 +138,6 @@ FeaturePromoBubbleView* FeaturePromoBubbleView::CreateOwned(
 
 void FeaturePromoBubbleView::CloseBubble() {
   GetWidget()->Close();
-}
-
-int FeaturePromoBubbleView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
 }
 
 bool FeaturePromoBubbleView::OnMousePressed(const ui::MouseEvent& event) {

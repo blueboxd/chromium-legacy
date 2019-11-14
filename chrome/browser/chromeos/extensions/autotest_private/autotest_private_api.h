@@ -34,6 +34,7 @@ namespace extensions {
 
 class AssistantInteractionHelper;
 class WindowStateChangeObserver;
+class EventGenerator;
 
 class AutotestPrivateInitializeEventsFunction : public ExtensionFunction {
  public:
@@ -1050,6 +1051,60 @@ class AutotestPrivateRemoveActiveDeskFunction : public ExtensionFunction {
   ResponseAction Run() override;
 
   void OnAnimationComplete();
+};
+
+class AutotestPrivateMouseClickFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateMouseClickFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.mouseClick",
+                             AUTOTESTPRIVATE_MOUSECLICK)
+
+ private:
+  ~AutotestPrivateMouseClickFunction() override;
+  ResponseAction Run() override;
+
+  std::unique_ptr<EventGenerator> event_generator_;
+};
+
+class AutotestPrivateMousePressFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateMousePressFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.mousePress",
+                             AUTOTESTPRIVATE_MOUSEPRESS)
+
+ private:
+  ~AutotestPrivateMousePressFunction() override;
+  ResponseAction Run() override;
+
+  std::unique_ptr<EventGenerator> event_generator_;
+};
+
+class AutotestPrivateMouseReleaseFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateMouseReleaseFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.mouseRelease",
+                             AUTOTESTPRIVATE_MOUSERELEASE)
+
+ private:
+  ~AutotestPrivateMouseReleaseFunction() override;
+  ResponseAction Run() override;
+
+  std::unique_ptr<EventGenerator> event_generator_;
+};
+
+class AutotestPrivateMouseMoveFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateMouseMoveFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.mouseMove",
+                             AUTOTESTPRIVATE_MOUSEMOVE)
+
+ private:
+  ~AutotestPrivateMouseMoveFunction() override;
+  ResponseAction Run() override;
+
+  void OnDone();
+
+  std::unique_ptr<EventGenerator> event_generator_;
 };
 
 template <>

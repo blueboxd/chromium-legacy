@@ -99,6 +99,8 @@ const std::map<int, std::string> CreateContentResourceIdToAliasMap() {
        "mojo/mojo/public/mojom/base/unguessable_token.mojom-lite.js"},
       {IDR_URL_MOJO_HTML, "mojo/url/mojom/url.mojom.html"},
       {IDR_URL_MOJO_JS, "mojo/url/mojom/url.mojom-lite.js"},
+      {IDR_VULKAN_INFO_MOJO_JS, "gpu/ipc/common/vulkan_info.mojom-lite.js"},
+      {IDR_VULKAN_TYPES_MOJO_JS, "gpu/ipc/common/vulkan_types.mojom-lite.js"},
   };
 }
 

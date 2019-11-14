@@ -1039,10 +1039,8 @@ void NGBoxFragmentPainter::PaintInlineItems(
     DCHECK(item);
     switch (item->Type()) {
       case NGFragmentItem::kText:
-        PaintTextItem(cursor, paint_info, paint_offset);
-        break;
       case NGFragmentItem::kGeneratedText:
-        // TODO(kojii): Implement.
+        PaintTextItem(cursor, paint_info, paint_offset);
         break;
       case NGFragmentItem::kLine:
         if (PaintLineBoxItem(*item, paint_info, paint_offset) ==
@@ -1272,7 +1270,7 @@ void NGBoxFragmentPainter::PaintTextItem(const NGInlineCursor& cursor,
                                          const PhysicalOffset& paint_offset) {
   DCHECK(cursor.CurrentItem());
   const NGFragmentItem& item = *cursor.CurrentItem();
-  DCHECK_EQ(item.Type(), NGFragmentItem::kText);
+  DCHECK(cursor.IsText()) << item;
   DCHECK(items_);
 
   // Only paint during the foreground/selection phases.

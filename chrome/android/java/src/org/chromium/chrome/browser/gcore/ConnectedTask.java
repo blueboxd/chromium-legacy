@@ -6,9 +6,10 @@ package org.chromium.chrome.browser.gcore;
 
 import android.text.format.DateUtils;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.RemovableInRelease;
 
 /**

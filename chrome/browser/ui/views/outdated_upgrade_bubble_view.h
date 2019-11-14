@@ -28,7 +28,6 @@ class OutdatedUpgradeBubbleView : public views::BubbleDialogDelegateView {
   bool ShouldShowCloseButton() const override;
   bool Accept() override;
   bool Close() override;
-  int GetDialogButtons() const override;
   void Init() override;
 
  private:

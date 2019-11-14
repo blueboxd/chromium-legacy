@@ -88,16 +88,10 @@ int ScriptRegexp::Match(const String& string,
   v8::TryCatch try_catch(isolate);
 
   v8::Local<v8::RegExp> regex = regex_.NewLocal(isolate);
-  v8::Local<v8::Value> exec;
-  if (!regex->Get(context, V8AtomicString(isolate, "exec")).ToLocal(&exec))
-    return -1;
-  v8::Local<v8::Value> argv[] = {
-      V8String(isolate, string.Substring(start_from))};
+  v8::Local<v8::String> subject =
+      V8String(isolate, string.Substring(start_from));
   v8::Local<v8::Value> return_value;
-  if (!V8ScriptRunner::CallInternalFunction(isolate, nullptr,
-                                            exec.As<v8::Function>(), regex,
-                                            base::size(argv), argv)
-           .ToLocal(&return_value))
+  if (!regex->Exec(context, subject).ToLocal(&return_value))
     return -1;
 
   // RegExp#exec returns null if there's no match, otherwise it returns an

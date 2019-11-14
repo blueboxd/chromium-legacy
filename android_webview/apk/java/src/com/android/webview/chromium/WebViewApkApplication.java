@@ -5,4 +5,5 @@
 package com.android.webview.chromium;
 
 // TODO(crbug.com/934152): Delete this once Clank points to the new WebViewApkApplication package.
-public class WebViewApkApplication extends org.chromium.android_webview.app.WebViewApkApplication {}
+public class WebViewApkApplication
+        extends org.chromium.android_webview.nonembedded.WebViewApkApplication {}

@@ -1022,6 +1022,9 @@ HangingHostResolver::CreateRequest(
     const NetworkIsolationKey& network_isolation_key,
     const NetLogWithSource& source_net_log,
     const base::Optional<ResolveHostParameters>& optional_parameters) {
+  last_host_ = host;
+  last_network_isolation_key_ = network_isolation_key;
+
   if (shutting_down_)
     return CreateFailingRequest(ERR_CONTEXT_SHUT_DOWN);
 

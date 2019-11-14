@@ -14,8 +14,8 @@ import android.view.ContextThemeWrapper;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.StyleRes;
+import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;

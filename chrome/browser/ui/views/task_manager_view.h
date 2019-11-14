@@ -64,7 +64,6 @@ class TaskManagerView : public TableViewDelegate,
   std::string GetWindowName() const override;
   bool Accept() override;
   bool Close() override;
-  int GetDialogButtons() const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   void WindowClosing() override;
 

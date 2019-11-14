@@ -292,6 +292,8 @@ ZoomBubbleView::ZoomBubbleView(
       immersive_mode_controller_(immersive_mode_controller),
       session_id_(
           chrome::FindBrowserWithWebContents(web_contents)->session_id()) {
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+
   set_notify_enter_exit_on_child(true);
   if (immersive_mode_controller_)
     immersive_mode_controller_->AddObserver(this);
@@ -312,10 +314,6 @@ base::string16 ZoomBubbleView::GetAccessibleWindowTitle() const {
       ->toolbar_button_provider()
       ->GetPageActionIconView(PageActionIconType::kZoom)
       ->GetTextForTooltipAndAccessibleName();
-}
-
-int ZoomBubbleView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
 }
 
 void ZoomBubbleView::OnFocus() {

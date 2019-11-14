@@ -24,6 +24,7 @@
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_interfaces.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/trace_constants.h"
 #include "net/log/net_log_with_source.h"
 #include "net/proxy_resolution/proxy_host_resolver.h"
@@ -110,6 +111,7 @@ class Job : public base::RefCountedThreadSafe<Job>,
 
   // Called from origin thread.
   void StartGetProxyForURL(const GURL& url,
+                           const NetworkIsolationKey& network_isolation_key,
                            ProxyInfo* results,
                            CompletionOnceCallback callback);
 
@@ -256,6 +258,7 @@ class Job : public base::RefCountedThreadSafe<Job>,
 
   ProxyInfo* user_results_;  // Owned by caller, lives on origin thread.
   GURL url_;
+  NetworkIsolationKey network_isolation_key_;
   ProxyInfo results_;
 
   // ---------------------------------------------------------------------------
@@ -309,6 +312,7 @@ class ProxyResolverV8TracingImpl : public ProxyResolverV8Tracing {
 
   // ProxyResolverV8Tracing overrides.
   void GetProxyForURL(const GURL& url,
+                      const NetworkIsolationKey& network_isolation_key,
                       ProxyInfo* results,
                       CompletionOnceCallback callback,
                       std::unique_ptr<ProxyResolver::Request>* request,
@@ -355,6 +359,13 @@ void Job::StartCreateV8Resolver(const scoped_refptr<PacFileData>& script_data,
                                 CompletionOnceCallback callback) {
   CheckIsOnOriginThread();
 
+  // |network_isolation_key_| is not populated, so any resolutions done while
+  // loading the PAC sript will be done with an empty NetworkIsolationKey. Since
+  // a PAC script is considered trusted, and is loaded once and then handles
+  // requests made by multiple NetworkIsolationKeys, using an empty key makes
+  // sense.
+  DCHECK(network_isolation_key_.IsEmpty());
+
   resolver_out_ = resolver;
   script_data_ = script_data;
 
@@ -366,11 +377,13 @@ void Job::StartCreateV8Resolver(const scoped_refptr<PacFileData>& script_data,
 }
 
 void Job::StartGetProxyForURL(const GURL& url,
+                              const NetworkIsolationKey& network_isolation_key,
                               ProxyInfo* results,
                               CompletionOnceCallback callback) {
   CheckIsOnOriginThread();
 
   url_ = url;
+  network_isolation_key_ = network_isolation_key;
   user_results_ = results;
 
   Start(GET_PROXY_FOR_URL, false /*non-blocking*/, std::move(callback));
@@ -729,11 +742,12 @@ void Job::DoDnsOperation() {
   if (cancelled_.IsSet())
     return;
 
-  bool is_myip_request =
+  bool is_my_ip_request =
       pending_dns_op_ == ProxyResolveDnsOperation::MY_IP_ADDRESS ||
       pending_dns_op_ == ProxyResolveDnsOperation::MY_IP_ADDRESS_EX;
   pending_dns_ = host_resolver()->CreateRequest(
-      is_myip_request ? GetHostName() : pending_dns_host_, pending_dns_op_);
+      is_my_ip_request ? GetHostName() : pending_dns_host_, pending_dns_op_,
+      is_my_ip_request ? NetworkIsolationKey() : network_isolation_key_);
   int result =
       pending_dns_->Start(base::BindOnce(&Job::OnDnsOperationComplete, this));
 
@@ -947,6 +961,7 @@ LoadState ProxyResolverV8TracingImpl::RequestImpl::GetLoadState() {
 
 void ProxyResolverV8TracingImpl::GetProxyForURL(
     const GURL& url,
+    const NetworkIsolationKey& network_isolation_key,
     ProxyInfo* results,
     CompletionOnceCallback callback,
     std::unique_ptr<ProxyResolver::Request>* request,
@@ -958,9 +973,9 @@ void ProxyResolverV8TracingImpl::GetProxyForURL(
 
   request->reset(new RequestImpl(job));
 
-  job->StartGetProxyForURL(url, results, std::move(callback));
+  job->StartGetProxyForURL(url, network_isolation_key, results,
+                           std::move(callback));
 }
-
 
 class ProxyResolverV8TracingFactoryImpl : public ProxyResolverV8TracingFactory {
  public:

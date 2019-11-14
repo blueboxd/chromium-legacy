@@ -25,6 +25,7 @@
 #include "net/base/cache_type.h"
 #include "net/base/net_export.h"
 #include "net/disk_cache/disk_cache.h"
+#include "net/disk_cache/simple/post_doom_waiter.h"
 #include "net/disk_cache/simple/simple_entry_impl.h"
 #include "net/disk_cache/simple/simple_index_delegate.h"
 
@@ -93,12 +94,9 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
 
   // The entry for |entry_hash| is being doomed; the backend will not attempt
   // run new operations for this |entry_hash| until the Doom is completed.
-  void OnDoomStart(uint64_t entry_hash);
-
-  // The entry for |entry_hash| has been successfully doomed, we can now allow
-  // operations on this entry, and we can run any operations enqueued while the
-  // doom completed.
-  void OnDoomComplete(uint64_t entry_hash);
+  //
+  // The return value should be used to call OnDoomComplete.
+  scoped_refptr<SimplePostDoomWaiterTable> OnDoomStart(uint64_t entry_hash);
 
   // SimpleIndexDelegate:
   void DoomEntries(std::vector<uint64_t>* entry_hashes,
@@ -170,18 +168,6 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
     int net_error;
   };
 
-  struct PostDoomWaiter {
-    PostDoomWaiter();
-    // Also initializes |time_queued|.
-    explicit PostDoomWaiter(base::OnceClosure to_run_post_doom);
-    explicit PostDoomWaiter(PostDoomWaiter&& other);
-    ~PostDoomWaiter();
-    PostDoomWaiter& operator=(PostDoomWaiter&& other);
-
-    base::TimeTicks time_queued;
-    base::OnceClosure run_post_doom;
-  };
-
   void InitializeIndex(CompletionOnceCallback callback,
                        const DiskStatResult& result);
 
@@ -219,7 +205,7 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
       uint64_t entry_hash,
       const std::string& key,
       net::RequestPriority request_priority,
-      std::vector<PostDoomWaiter>** post_doom);
+      std::vector<SimplePostDoomWaiter>** post_doom);
 
   // If post-doom and settings indicates that optimistically succeeding a create
   // due to being immediately after a doom is possible, sets up an entry for
@@ -231,7 +217,7 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
       uint64_t entry_hash,
       const std::string& key,
       net::RequestPriority request_priority,
-      std::vector<PostDoomWaiter>* post_doom);
+      std::vector<SimplePostDoomWaiter>* post_doom);
 
   // Given a hash, will try to open the corresponding Entry. If we have an Entry
   // corresponding to |hash| in the map of active entries, opens it. Otherwise,
@@ -294,10 +280,10 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
 
   // The set of all entries which are currently being doomed. To avoid races,
   // these entries cannot have Doom/Create/Open operations run until the doom
-  // is complete. The base::Closure |PostDoomWaiter::run_post_doom| field is
-  // used to store deferred operations to be run at the completion of the Doom.
-  std::unordered_map<uint64_t, std::vector<PostDoomWaiter>>
-      entries_pending_doom_;
+  // is complete. The base::Closure |SimplePostDoomWaiter::run_post_doom| field
+  // is used to store deferred operations to be run at the completion of the
+  // Doom.
+  scoped_refptr<SimplePostDoomWaiterTable> post_doom_waiting_;
 
   net::NetLog* const net_log_;
 

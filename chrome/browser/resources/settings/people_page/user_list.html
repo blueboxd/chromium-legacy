@@ -57,7 +57,7 @@
           </div>
           <cr-icon-button class="icon-clear"
               hidden="[[shouldHideCloseButton_(disabled, item.isOwner)]]"
-              title="$i18n{removeUserTooltip}" on-click="removeUser_">
+              title="[[getRemoveUserTooltip_(item)]]" on-click="removeUser_">
           </cr-icon-button>
         </div>
       </template>

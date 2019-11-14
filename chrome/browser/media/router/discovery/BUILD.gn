@@ -88,5 +88,6 @@ static_library("discovery") {
 
   if (is_win) {
     sources += [ "discovery_network_list_win.cc" ]
+    libs = [ "iphlpapi.lib" ]
   }
 }

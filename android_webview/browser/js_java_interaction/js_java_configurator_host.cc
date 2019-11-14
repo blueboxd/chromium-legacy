@@ -64,6 +64,10 @@ JsJavaConfiguratorHost::AddWebMessageListener(
                                       &native_allowed_origin_rule_strings);
 
   net::ProxyBypassRules native_allowed_origin_rules;
+  // We don't want to inject js object to origins that matches implicit rules
+  // automatically. Later rules override earilier rules, so we add subtracing
+  // rules first.
+  native_allowed_origin_rules.AddRulesToSubtractImplicit();
   for (auto& rule : native_allowed_origin_rule_strings) {
     if (!native_allowed_origin_rules.AddRuleFromString(rule)) {
       return base::android::ConvertUTF8ToJavaString(

@@ -189,13 +189,28 @@ void GLVersionInfo::ExtractDriverVendorANGLE(const char* renderer_str) {
   DCHECK_EQ("ANGLE", driver_vendor);
   base::StringPiece rstr(renderer_str);
   DCHECK(base::StartsWith(rstr, "ANGLE (", base::CompareCase::SENSITIVE));
-  rstr = rstr.substr(sizeof("ANGLE (") - 1);
+  rstr = rstr.substr(sizeof("ANGLE (") - 1, rstr.size() - sizeof("ANGLE ("));
+  if (base::StartsWith(rstr, "Vulkan ", base::CompareCase::SENSITIVE)) {
+    size_t pos = rstr.find('(');
+    if (pos != std::string::npos)
+      rstr = rstr.substr(pos + 1, rstr.size() - 2);
+  }
+
   if (base::StartsWith(rstr, "NVIDIA ", base::CompareCase::SENSITIVE))
     driver_vendor = "ANGLE (NVIDIA)";
   else if (base::StartsWith(rstr, "Radeon ", base::CompareCase::SENSITIVE))
     driver_vendor = "ANGLE (AMD)";
-  else if (base::StartsWith(rstr, "Intel(R) ", base::CompareCase::SENSITIVE))
-    driver_vendor = "ANGLE (Intel)";
+  else if (base::StartsWith(rstr, "Intel", base::CompareCase::SENSITIVE)) {
+    std::vector<base::StringPiece> pieces = base::SplitStringPiece(
+        rstr, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    for (size_t ii = 0; ii < pieces.size(); ++ii) {
+      if (base::StartsWith(pieces[ii], "Intel(R) ",
+                           base::CompareCase::SENSITIVE)) {
+        driver_vendor = "ANGLE (Intel)";
+        break;
+      }
+    }
+  }
 }
 
 bool GLVersionInfo::IsES3Capable(const gfx::ExtensionSet& extensions) const {

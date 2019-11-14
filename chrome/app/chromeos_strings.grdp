@@ -766,54 +766,6 @@
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT_AND_CONTINUE" desc="The label on the button that closes dialog while accepting the selected settings.">
     Accept and continue
   </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_GET_GOOGLE_SMARTS" desc="The title of the dialog that explains Chrome Sync and privacy options.">
-    Get Google smarts in <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_YOUR_BOOKMARKS_ON_ALL_DEVICES" desc="Example of how user will benefit from enabling sync and personalization Chrome features.">
-    Your bookmarks, passwords, history, and more on all your devices
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_PERSONALIZED_GOOGLE_SERVICES" desc="Example of how user will benefit from enabling sync and personalization Chrome features.">
-    Personalized Google services like Play
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_IMPROVE_CHROME" desc="Example of how user can help to make Chrome better by enabling sync and personalization Chrome features.">
-    Improve <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> and its security by sending system information and usage to Google
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_GOOGLE_MAY_USE" desc="The explanation how google may use statistics.">
-    Google may use content on sites you visit and browsing activity and interactions to personalize <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> and other Google services like Translate, Search, and ads. You can customize this anytime in Settings.
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_MORE_OPTIONS" desc="Label on the button that will open a new dialog with options.">
-    More options
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_YES_I_AM_IN" desc="Label on the button that user should press to agree with displayed options.">
-    Yes, I'm in.
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_SYNC_OPTIONS" desc="The title of the dialog that allows user to adjust Chrome sync options.">
-    Sync and personalization options
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_SYNC_OPTIONS_SUBTITLE" desc="A paragraph below the dialog title explaining the meaning of the selectable options in the dialog.">
-    To help you more easily manage your experience in <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph>, features related to sync and personalization are now under a single control. Turning this on may change your current settings.
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_CHOOSE_OPTION" desc="A paragraph below the dialog title explaining that user needs to choose one of the displayed options below.">
-    To continue, choose an option:
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_OPTION_REVIEW" desc="A label displayed next to the radio-button that will open features review dialog after setup is completed.">
-    Review sync and personalization features following setup
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_OPTION_REVIEW_DSC" desc="A short description that is displayed under the option label, explaining what this option is about. This option will allow user to review individual settings later.">
-    Review the settings for each feature and change them if you want
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_OPTION_JUST_SYNC" desc="A label displayed next to the radio-button that will turn on only Chrome sync feature and no personalization.">
-    Just sync
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_OPTION_JUST_SYNC_DSC" desc="A short description that is displayed under the selectable option name, explaining that this option will turn on only Chrome sync and no personalization.">
-    Only enable features related to <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> Sync
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_OPTION_SYNC_AND_PERSONALIZATION" desc="A label displayed next to the radio-button that will turn on both Chrome sync and personalization features.">
-    Go ahead, turn on sync and personalization features
-  </message>
-  <message name="IDS_LOGIN_SYNC_CONSENT_OPTION_SYNC_AND_PERSONALIZATION_DSC" desc="A short description that is displayed under the selectable 'all features' option name, explaining user can always change this selection later in Chrome Settings.">
-    You can always change this later in settings
-  </message>
   <message name="IDS_LOGIN_RECOMMEND_APPS_SCREEN_TITLE" desc="The title of the dialog that recommend apps which user has installed in other devices">
     Install apps from your other devices
   </message>

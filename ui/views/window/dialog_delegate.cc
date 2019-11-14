@@ -106,7 +106,7 @@ Widget::InitParams DialogDelegate::GetDialogWidgetInitParams(
 }
 
 int DialogDelegate::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
+  return params_.buttons;
 }
 
 int DialogDelegate::GetDefaultDialogButton() const {

@@ -96,6 +96,7 @@ class USER_MANAGER_EXPORT FakeUserManager : public UserManagerBase {
   bool IsLoggedInAsSupervisedUser() const override;
   bool IsLoggedInAsKioskApp() const override;
   bool IsLoggedInAsArcKioskApp() const override;
+  bool IsLoggedInAsWebKioskApp() const override;
   bool IsLoggedInAsAnyKioskApp() const override;
   bool IsLoggedInAsStub() const override;
   bool IsUserNonCryptohomeDataEphemeral(

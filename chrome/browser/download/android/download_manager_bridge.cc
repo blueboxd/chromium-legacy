@@ -10,7 +10,7 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/feature_list.h"
-#include "chrome/android/chrome_jni_headers/DownloadManagerBridge_jni.h"
+#include "chrome/browser/download/android/jni_headers/DownloadManagerBridge_jni.h"
 #include "components/download/public/common/download_features.h"
 #include "url/gurl.h"
 
@@ -22,14 +22,13 @@ using download::DownloadItem;
 static void JNI_DownloadManagerBridge_OnAddCompletedDownloadDone(
     JNIEnv* env,
     jlong callback_id,
-    jlong download_id,
-    jboolean can_resolve) {
+    jlong download_id) {
   DCHECK(callback_id);
 
   // Convert java long long int to c++ pointer, take ownership.
   std::unique_ptr<AddCompletedDownloadCallback> cb(
       reinterpret_cast<AddCompletedDownloadCallback*>(callback_id));
-  std::move(*cb).Run(download_id, can_resolve);
+  std::move(*cb).Run(download_id);
 }
 
 void DownloadManagerBridge::AddCompletedDownload(

@@ -22,12 +22,12 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.metrics.test.DisableHistogramsRule;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.blink.mojom.document_metadata.CopylessPaste;
 import org.chromium.blink.mojom.document_metadata.WebPage;
 import org.chromium.chrome.browser.historyreport.AppIndexingReporter;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.support.DisableHistogramsRule;
 import org.chromium.url.mojom.Url;
 
 /**

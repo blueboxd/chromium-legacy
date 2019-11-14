@@ -240,19 +240,21 @@ void DumpMessages(std::string output_directory) {
 
   /* Call methods in various ways to generate interesting messages. */
   fuzz->FuzzBasic();
-  fuzz->FuzzBasicResp(base::Bind(FuzzCallback));
+  fuzz->FuzzBasicResp(base::BindOnce(FuzzCallback));
   fuzz->FuzzBasicSyncResp();
   fuzz->FuzzArgs(fuzz::mojom::FuzzStruct::New(),
                  fuzz::mojom::FuzzStructPtr(nullptr));
   fuzz->FuzzArgs(fuzz::mojom::FuzzStruct::New(), GetPopulatedFuzzStruct());
   fuzz->FuzzArgsResp(fuzz::mojom::FuzzStruct::New(), GetPopulatedFuzzStruct(),
-                     base::Bind(FuzzCallback));
+                     base::BindOnce(FuzzCallback));
   fuzz->FuzzArgsResp(fuzz::mojom::FuzzStruct::New(), GetPopulatedFuzzStruct(),
-                     base::Bind(FuzzCallback));
+                     base::BindOnce(FuzzCallback));
   fuzz->FuzzArgsSyncResp(fuzz::mojom::FuzzStruct::New(),
-                         GetPopulatedFuzzStruct(), base::Bind(FuzzCallback));
+                         GetPopulatedFuzzStruct(),
+                         base::BindOnce(FuzzCallback));
   fuzz->FuzzArgsSyncResp(fuzz::mojom::FuzzStruct::New(),
-                         GetPopulatedFuzzStruct(), base::Bind(FuzzCallback));
+                         GetPopulatedFuzzStruct(),
+                         base::BindOnce(FuzzCallback));
   fuzz->FuzzAssociated(dummy.BindNewEndpointAndPassReceiver());
   dummy->Ping();
 }

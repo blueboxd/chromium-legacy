@@ -7,7 +7,6 @@
 """Adds the code parts to a resource APK."""
 
 import argparse
-import itertools
 import os
 import shutil
 import sys
@@ -205,12 +204,6 @@ def _AddAssets(apk, path_tuples, disable_compression=False):
                                        compress=compress)
 
 
-def _CreateAssetsList(path_tuples):
-  """Returns a newline-separated list of asset paths for the given paths."""
-  dests = sorted(t[1] for t in path_tuples)
-  return '\n'.join(dests) + '\n'
-
-
 def _AddNativeLibraries(out_apk, native_libs, android_abi, uncompress):
   """Add native libraries to APK."""
   has_crazy_linker = any(
@@ -312,10 +305,6 @@ def main(args):
           resource_apk.getinfo('AndroidManifest.xml'), out_dir=apk_manifest_dir)
 
       # 2. Assets
-      if options.write_asset_list:
-        data = _CreateAssetsList(itertools.chain(assets, uncompressed_assets))
-        build_utils.AddToZipHermetic(out_apk, 'assets/assets_list', data=data)
-
       _AddAssets(out_apk, assets, disable_compression=False)
       _AddAssets(out_apk, uncompressed_assets, disable_compression=True)
 

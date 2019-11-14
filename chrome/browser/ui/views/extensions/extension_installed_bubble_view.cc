@@ -171,7 +171,6 @@ class ExtensionInstalledBubbleView : public BubbleSyncPromoDelegate,
   gfx::ImageSkia GetWindowIcon() override;
   bool ShouldShowWindowIcon() const override;
   bool ShouldShowCloseButton() const override;
-  int GetDialogButtons() const override;
   void Init() override;
 
   // BubbleSyncPromoDelegate:
@@ -206,6 +205,7 @@ ExtensionInstalledBubbleView::ExtensionInstalledBubbleView(
       bubble_reference_(bubble_reference),
       manage_shortcut_(nullptr) {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::EXTENSION_INSTALLED);
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
   DialogDelegate::SetFootnoteView(CreateSigninPromoView(
       controller->options(), controller->browser()->profile(), this));
 }
@@ -252,10 +252,6 @@ gfx::ImageSkia ExtensionInstalledBubbleView::GetWindowIcon() {
 
 bool ExtensionInstalledBubbleView::ShouldShowWindowIcon() const {
   return true;
-}
-
-int ExtensionInstalledBubbleView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
 }
 
 bool ExtensionInstalledBubbleView::ShouldShowCloseButton() const {

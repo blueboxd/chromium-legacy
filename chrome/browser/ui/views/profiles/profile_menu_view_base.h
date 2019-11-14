@@ -217,7 +217,6 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   void Init() final;
   void WindowClosing() override;
   void OnThemeChanged() override;
-  int GetDialogButtons() const override;
   ax::mojom::Role GetAccessibleWindowRole() override;
 
   // content::WebContentsDelegate:

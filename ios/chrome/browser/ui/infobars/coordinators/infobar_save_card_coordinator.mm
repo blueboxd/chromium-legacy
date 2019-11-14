@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator_implementation.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container.h"
+#import "ios/chrome/browser/ui/infobars/modals/infobar_save_card_modal_delegate.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_save_card_table_view_controller.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -21,7 +22,8 @@
 #error "This file requires ARC support."
 #endif
 
-@interface InfobarSaveCardCoordinator () <InfobarCoordinatorImplementation>
+@interface InfobarSaveCardCoordinator () <InfobarCoordinatorImplementation,
+                                          InfobarSaveCardModalDelegate>
 
 // InfobarBannerViewController owned by this Coordinator.
 @property(nonatomic, strong) InfobarBannerViewController* bannerViewController;
@@ -62,9 +64,14 @@
         initWithDelegate:self
            presentsModal:self.hasBadge
                     type:InfobarType::kInfobarTypeSaveCard];
-    self.bannerViewController.buttonText =
-        base::SysUTF16ToNSString(self.saveCardInfoBarDelegate->GetButtonLabel(
-            ConfirmInfoBarDelegate::BUTTON_OK));
+    if (self.saveCardInfoBarDelegate->upload()) {
+      // TODO(crbug.com/1014652): Use real string once its been created.
+      self.bannerViewController.buttonText = @"Save...";
+    } else {
+      self.bannerViewController.buttonText =
+          base::SysUTF16ToNSString(self.saveCardInfoBarDelegate->GetButtonLabel(
+              ConfirmInfoBarDelegate::BUTTON_OK));
+    }
     self.bannerViewController.titleText = base::SysUTF16ToNSString(
         self.saveCardInfoBarDelegate->GetMessageText());
     self.bannerViewController.subTitleText =
@@ -94,29 +101,15 @@
 }
 
 - (void)performInfobarAction {
-  if (self.saveCardInfoBarDelegate->upload()) {
-    // TODO(crbug.com/1014652): Open Modal if CreditCard details will be
-    // uploaded. Meaning that the ToS needs to be displayed.
-  } else if (self.saveCardInfoBarDelegate->Accept()) {
-    self.infobarAccepted = YES;
-    // TODO(crbug.com/1014652): Until a post save editing functionality is
-    // implemented the Infobar will be completely removed after its been
-    // accepted.
-    if (self.modalViewController) {
-      [self dismissInfobarModal:self
-                       animated:YES
-                     completion:^{
-                       // TODO(crbug.com/1014652): Once the badge is created
-                       // confirm detachView completely removes it.
-                       [self detachView];
-                     }];
-    } else {
-      [self dismissInfobarBannerAnimated:YES
-                              completion:^{
-                                [self detachView];
-                              }];
-    }
+  // Display the modal (thus the ToS) if the card will be uploaded, this is a
+  // legal requirement and shouldn't be changed.
+  if (!self.modalViewController && self.saveCardInfoBarDelegate->upload()) {
+    [self presentInfobarModalFromBanner];
+    return;
   }
+  // Ignore the Accept() return value since it always returns YES.
+  self.saveCardInfoBarDelegate->Accept();
+  self.infobarAccepted = YES;
 }
 
 - (void)infobarWasDismissed {
@@ -170,6 +163,7 @@
       self.saveCardInfoBarDelegate->expiration_date_month());
   self.modalViewController.expirationYear = base::SysUTF16ToNSString(
       self.saveCardInfoBarDelegate->expiration_date_year());
+  self.modalViewController.currentCardSaved = !self.infobarAccepted;
 
   return YES;
 }
@@ -194,6 +188,16 @@
                                     .navigationBar.frame.size.height;
 
   return tableView.contentSize.height + navigationBarHeight;
+}
+
+#pragma mark - InfobarSaveCardModalDelegate
+
+- (void)saveCardWithCardholderName:(NSString*)cardholderName
+                   expirationMonth:(NSString*)month
+                    expirationYear:(NSString*)year {
+  // TODO(crbug.com/1014652): Once editing is supported send these parameters to
+  // the Delegate for saving.
+  [self modalInfobarButtonWasAccepted:self];
 }
 
 @end

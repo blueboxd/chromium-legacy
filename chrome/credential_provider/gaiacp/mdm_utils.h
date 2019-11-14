@@ -23,7 +23,7 @@ namespace credential_provider {
 extern const wchar_t kRegMdmUrl[];
 
 // Base server url for the password recovery escrow service.
-extern const wchar_t kRegMdmEscrowServiceServerUrl[];
+extern const wchar_t kRegEscrowServiceServerUrl[];
 
 // Determines if multiple users can be added to a system managed by MDM.
 extern const wchar_t kRegMdmSupportsMultiUser[];
@@ -76,13 +76,13 @@ bool NeedsToEnrollWithMdm();
 // to a valid URL. Returns false otherwise.
 bool MdmEnrollmentEnabled();
 
-// Checks whether the |kRegMdmEscrowServiceServerUrl| is not empty on this
+// Checks whether the |kRegEscrowServiceServerUrl| is not empty on this
 // machine.
-bool MdmPasswordRecoveryEnabled();
+bool PasswordRecoveryEnabled();
 
 // Gets the escrow service URL as defined in the registry or a default value if
 // nothing is set.
-GURL MdmEscrowServiceUrl();
+GURL EscrowServiceUrl();
 
 // Enrolls the machine to with the Google MDM server if not already.
 HRESULT EnrollToGoogleMdmIfNeeded(const base::Value& properties);

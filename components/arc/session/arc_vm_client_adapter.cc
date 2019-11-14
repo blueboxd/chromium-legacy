@@ -294,6 +294,7 @@ std::vector<std::string> GenerateKernelCmdline(
   }
 
   // TODO(yusukes): Handle |demo_session_apps_path| in |upgrade_params|.
+  // TODO(yusukes): Handle |is_managed_account| in |upgrade_params|.
   return result;
 }
 

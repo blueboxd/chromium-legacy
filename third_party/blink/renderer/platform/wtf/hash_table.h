@@ -1353,7 +1353,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
   DCHECK(!IsEmptyOrDeletedBucket(*entry));
   // Translate constructs an element so we need to notify using the trait. Avoid
   // doing that in the translator so that they can be easily customized.
-  ConstructTraits<ValueType, Traits, Allocator>::NotifyNewElements(entry, 1);
+  ConstructTraits<ValueType, Traits, Allocator>::NotifyNewElement(entry);
 
   ++key_count_;
 
@@ -1421,7 +1421,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
   DCHECK(!IsEmptyOrDeletedBucket(*entry));
   // Translate constructs an element so we need to notify using the trait. Avoid
   // doing that in the translator so that they can be easily customized.
-  ConstructTraits<ValueType, Traits, Allocator>::NotifyNewElements(entry, 1);
+  ConstructTraits<ValueType, Traits, Allocator>::NotifyNewElement(entry);
 
   ++key_count_;
   if (ShouldExpand())

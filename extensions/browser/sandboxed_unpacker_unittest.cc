@@ -30,6 +30,7 @@
 #include "extensions/common/extension_paths.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/switches.h"
+#include "extensions/common/value_builder.h"
 #include "extensions/common/verifier_formats.h"
 #include "extensions/strings/grit/extensions_strings.h"
 #include "extensions/test/test_extensions_client.h"
@@ -244,6 +245,19 @@ class SandboxedUnpackerTest : public ExtensionsTest {
     EXPECT_TRUE(client_deleted);
   }
 
+  void SetPublicKey(const std::string& key) {
+    sandboxed_unpacker_->public_key_ = key;
+  }
+
+  void SetExtensionRoot(const base::FilePath& path) {
+    sandboxed_unpacker_->extension_root_ = path;
+  }
+
+  base::DictionaryValue* RewriteManifestFile(
+      const base::DictionaryValue& manifest) {
+    return sandboxed_unpacker_->RewriteManifestFile(manifest);
+  }
+
   data_decoder::test::InProcessDataDecoder& in_process_data_decoder() {
     return in_process_data_decoder_;
   }
@@ -406,6 +420,31 @@ TEST_F(SandboxedUnpackerTest, FailHashCheck) {
   EXPECT_EQ(static_cast<int>(
                 SandboxedUnpackerFailureReason::CRX_HASH_VERIFICATION_FAILED),
             GetInstallErrorDetail());
+}
+
+TEST_F(SandboxedUnpackerTest, TestRewriteManifestInjections) {
+  constexpr char kTestKey[] = "test_key";
+  constexpr char kTestVersion[] = "1.2.3";
+  constexpr char kVersionStr[] = "version";
+  SetPublicKey(kTestKey);
+  SetExtensionRoot(extensions_dir_.GetPath());
+  std::string fingerprint = "1.0123456789abcdef";
+  base::WriteFile(extensions_dir_.GetPath().Append(
+                      FILE_PATH_LITERAL("manifest.fingerprint")),
+                  fingerprint.c_str(),
+                  base::checked_cast<int>(fingerprint.size()));
+  std::unique_ptr<base::DictionaryValue> manifest(RewriteManifestFile(
+      *DictionaryBuilder().Set(kVersionStr, kTestVersion).Build()));
+  auto* key = manifest->FindStringKey("key");
+  auto* version = manifest->FindStringKey(kVersionStr);
+  auto* differential_fingerprint =
+      manifest->FindStringKey("differential_fingerprint");
+  ASSERT_NE(nullptr, key);
+  ASSERT_NE(nullptr, version);
+  ASSERT_NE(nullptr, differential_fingerprint);
+  EXPECT_EQ(kTestKey, *key);
+  EXPECT_EQ(kTestVersion, *version);
+  EXPECT_EQ(fingerprint, *differential_fingerprint);
 }
 
 TEST_F(SandboxedUnpackerTest, InvalidMessagesFile) {

@@ -34,10 +34,10 @@ class DataPipeReader {
         watcher_(FROM_HERE,
                  SimpleWatcher::ArmingPolicy::AUTOMATIC,
                  base::SequencedTaskRunnerHandle::Get()) {
-    watcher_.Watch(
-        consumer_handle_.get(), MOJO_HANDLE_SIGNAL_READABLE,
-        MOJO_WATCH_CONDITION_SATISFIED,
-        base::Bind(&DataPipeReader::OnDataAvailable, base::Unretained(this)));
+    watcher_.Watch(consumer_handle_.get(), MOJO_HANDLE_SIGNAL_READABLE,
+                   MOJO_WATCH_CONDITION_SATISFIED,
+                   base::BindRepeating(&DataPipeReader::OnDataAvailable,
+                                       base::Unretained(this)));
   }
   ~DataPipeReader() = default;
 

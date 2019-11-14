@@ -13,6 +13,18 @@
 namespace ui {
 namespace {
 
+// Tests that AlphaBlend() produces a transform that blends its inputs.
+TEST(ColorTransformTest, AlphaBlend) {
+  const auto blend = [](SkAlpha alpha) {
+    const ColorTransform transform =
+        AlphaBlend(FromColor(SK_ColorWHITE), FromColor(SK_ColorBLACK), alpha);
+    return transform.Run(gfx::kPlaceholderColor, ColorMixer());
+  };
+  EXPECT_EQ(SK_ColorBLACK, blend(SK_AlphaTRANSPARENT));
+  EXPECT_EQ(SK_ColorWHITE, blend(SK_AlphaOPAQUE));
+  EXPECT_EQ(SK_ColorGRAY, blend(SkColorGetR(SK_ColorGRAY)));
+}
+
 // Tests that BlendForMinContrast(), with the default args, produces a transform
 // that blends its foreground color to produce readable contrast against its
 // background color.
@@ -53,6 +65,23 @@ TEST(ColorTransformTest, BlendForMinContrastOptionalArgs) {
   verify_contrast(SK_ColorBLACK);
   verify_contrast(SK_ColorWHITE);
   verify_contrast(gfx::kGoogleBlue500);
+}
+
+// Tests that BlendForMinContrastWithSelf() produces a transform that blends its
+// input color towards the color with max contrast.
+TEST(ColorTransformTest, BlendForMinContrastWithSelf) {
+  constexpr float kContrastRatio = 2;
+  const ColorTransform transform =
+      BlendForMinContrastWithSelf(FromTransformInput(), kContrastRatio);
+  const auto verify_blend = [&](SkColor input) {
+    const SkColor target = color_utils::GetColorWithMaxContrast(input);
+    EXPECT_LT(color_utils::GetContrastRatio(transform.Run(input, ColorMixer()),
+                                            target),
+              color_utils::GetContrastRatio(input, target));
+  };
+  verify_blend(SK_ColorBLACK);
+  verify_blend(SK_ColorWHITE);
+  verify_blend(SK_ColorRED);
 }
 
 // Tests that BlendTowardMaxContrast() produces a transform that blends its
@@ -215,6 +244,14 @@ TEST(ColorTransformTest, SelectBasedOnDarkInput) {
   EXPECT_EQ(kLightOutput, transform.Run(SK_ColorWHITE, ColorMixer()));
   EXPECT_EQ(kDarkOutput, transform.Run(SK_ColorBLUE, ColorMixer()));
   EXPECT_EQ(kLightOutput, transform.Run(SK_ColorRED, ColorMixer()));
+}
+
+// Tests that SetAlpha() produces a transform that sets its input's alpha.
+TEST(ColorTransformTest, SetAlpha) {
+  constexpr SkAlpha kAlpha = 0x20;
+  const ColorTransform transform = SetAlpha(FromTransformInput(), kAlpha);
+  for (auto color : {SK_ColorBLACK, SK_ColorRED, SK_ColorTRANSPARENT})
+    EXPECT_EQ(SkColorSetA(color, kAlpha), transform.Run(color, ColorMixer()));
 }
 
 }  // namespace

@@ -26,7 +26,6 @@ class SaveCardManageCardsBubbleViews : public SaveCardBubbleViews,
 
   // views::WidgetDelegate:
   std::unique_ptr<views::View> CreateFootnoteView() override;
-  int GetDialogButtons() const override;
 
  private:
   std::unique_ptr<views::View> CreateMainContentView() override;

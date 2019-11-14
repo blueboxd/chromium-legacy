@@ -27,10 +27,6 @@
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "third_party/skia/include/core/SkFontLCDConfig.h"
 
-#if defined(USE_OZONE)
-#include "ui/ozone/public/ozone_platform.h"
-#endif
-
 namespace {
 
 std::unique_ptr<base::Thread> CreateAndStartIOThread() {
@@ -109,10 +105,6 @@ VizMainImpl::VizMainImpl(Delegate* delegate,
       base::BindOnce(&VizMainImpl::ExitProcess, base::Unretained(this)));
   if (dependencies_.create_display_compositor)
     gpu_service_->set_oopd_enabled();
-
-#if defined(USE_OZONE)
-  ui::OzonePlatform::GetInstance()->AddInterfaces(&registry_);
-#endif
 }
 
 VizMainImpl::~VizMainImpl() {
@@ -145,17 +137,6 @@ void VizMainImpl::BindAssociated(
     mojo::PendingAssociatedReceiver<mojom::VizMain> pending_receiver) {
   receiver_.Bind(std::move(pending_receiver));
 }
-
-#if defined(USE_OZONE)
-bool VizMainImpl::CanBindInterface(const std::string& interface_name) const {
-  return registry_.CanBindInterface(interface_name);
-}
-
-void VizMainImpl::BindInterface(const std::string& interface_name,
-                                mojo::ScopedMessagePipeHandle interface_pipe) {
-  registry_.BindInterface(interface_name, std::move(interface_pipe));
-}
-#endif
 
 void VizMainImpl::CreateGpuService(
     mojo::PendingReceiver<mojom::GpuService> pending_receiver,

@@ -164,8 +164,7 @@ class GpuIntegrationTest(
       cls.StartBrowser()
 
   def _RunGpuTest(self, url, test_name, *args):
-    expected_results, should_retry_on_failure = (
-        self.GetExpectationsForTest())
+    expected_results, should_retry_on_failure = self.GetExpectationsForTest()[:2]
     try:
       # TODO(nednguyen): For some reason the arguments are getting wrapped
       # in another tuple sometimes (like in the WebGL extension tests).

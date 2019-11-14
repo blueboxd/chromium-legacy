@@ -63,6 +63,8 @@ PaymentRequestDialogView::PaymentRequestDialogView(
     : request_(request), observer_for_testing_(observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+
   request->spec()->AddObserver(this);
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
@@ -137,13 +139,6 @@ bool PaymentRequestDialogView::ShouldShowCloseButton() const {
   // Moreover, the title (and back arrow) should animate with the view they're
   // attached to.
   return false;
-}
-
-int PaymentRequestDialogView::GetDialogButtons() const {
-  // The buttons should animate along with the different dialog sheets since
-  // each sheet presents a different set of buttons. Because of this, hide the
-  // usual dialog buttons.
-  return ui::DIALOG_BUTTON_NONE;
 }
 
 void PaymentRequestDialogView::ShowDialog() {

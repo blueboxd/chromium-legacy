@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/printing/history/print_job_info.pb.h"
+#include "chrome/browser/chromeos/printing/printer_error_codes.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chromeos/printing/printer_configuration.h"
 
@@ -28,17 +29,6 @@ class CupsPrintJob {
     STATE_DOCUMENT_DONE,
     STATE_FAILED,
     STATE_ERROR,
-  };
-
-  enum class ErrorCode {
-    NO_ERROR,
-    PAPER_JAM,
-    OUT_OF_PAPER,
-    OUT_OF_INK,
-    DOOR_OPEN,
-    PRINTER_UNREACHABLE,
-    FILTER_FAILED,
-    UNKNOWN_ERROR,
   };
 
   CupsPrintJob(const Printer& printer,
@@ -73,14 +63,14 @@ class CupsPrintJob {
   const printing::proto::PrintSettings& settings() const { return settings_; }
   base::Time creation_time() const { return creation_time_; }
   State state() const { return state_; }
-  ErrorCode error_code() const { return error_code_; }
+  PrinterErrorCode error_code() const { return error_code_; }
 
   // Setters.
   void set_printed_page_number(int page_number) {
     printed_page_number_ = page_number;
   }
   void set_state(State state) { state_ = state; }
-  void set_error_code(ErrorCode error_code) { error_code_ = error_code; }
+  void set_error_code(PrinterErrorCode error_code) { error_code_ = error_code; }
 
   // Returns true if |state_| represents a terminal state.
   bool IsJobFinished() const;
@@ -101,7 +91,7 @@ class CupsPrintJob {
   const base::Time creation_time_;
 
   State state_ = State::STATE_NONE;
-  ErrorCode error_code_ = ErrorCode::NO_ERROR;
+  PrinterErrorCode error_code_ = PrinterErrorCode::NO_ERROR;
 
   base::WeakPtrFactory<CupsPrintJob> weak_factory_{this};
 

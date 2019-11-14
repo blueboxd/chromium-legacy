@@ -128,8 +128,10 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/filename_util.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/accelerators/accelerator_history.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
@@ -137,11 +139,14 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/events/event_constants.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification_list.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/coordinate_conversion.h"
+#include "ui/wm/core/cursor_manager.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 #include "url/gurl.h"
@@ -585,6 +590,27 @@ bool IsFrameVisible(views::Widget* widget) {
   return frame_view && frame_view->GetEnabled() && frame_view->GetVisible();
 }
 
+void ConvertPointToHost(aura::Window* root_window, gfx::PointF* location) {
+  gfx::Point3F transformed_location_in_root(*location);
+  root_window->GetHost()->GetRootTransform().TransformPoint(
+      &transformed_location_in_root);
+  *location = transformed_location_in_root.AsPointF();
+}
+
+int GetMouseEventFlags(api::autotest_private::MouseButton button) {
+  switch (button) {
+    case api::autotest_private::MOUSE_BUTTON_LEFT:
+      return ui::EF_LEFT_MOUSE_BUTTON;
+    case api::autotest_private::MOUSE_BUTTON_RIGHT:
+      return ui::EF_RIGHT_MOUSE_BUTTON;
+    case api::autotest_private::MOUSE_BUTTON_MIDDLE:
+      return ui::EF_MIDDLE_MOUSE_BUTTON;
+    default:
+      NOTREACHED();
+  }
+  return ui::EF_NONE;
+}
+
 }  // namespace
 
 class WindowStateChangeObserver : public aura::WindowObserver {
@@ -622,6 +648,65 @@ class WindowStateChangeObserver : public aura::WindowObserver {
   base::OnceCallback<void(bool)> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowStateChangeObserver);
+};
+
+class EventGenerator {
+ public:
+  EventGenerator(aura::WindowTreeHost* host, base::OnceClosure closure)
+      : host_(host), closure_(std::move(closure)), weak_ptr_factory_(this) {}
+  ~EventGenerator() = default;
+
+  void ScheduleMouseEvent(ui::EventType type,
+                          gfx::PointF location_in_host,
+                          int flags) {
+    int last_flags = (events_.empty())
+                         ? aura::Env::GetInstance()->mouse_button_flags()
+                         : events_.back()->flags();
+    events_.push_back(std::make_unique<ui::MouseEvent>(
+        type, location_in_host, location_in_host, base::TimeTicks::Now(), flags,
+        flags ^ last_flags));
+  }
+
+  void Run() {
+    last_event_timestamp_ = base::TimeTicks::Now();
+    SendEvent();
+  }
+
+  base::TimeDelta GetInterval() const {
+    return base::TimeDelta::FromSeconds(1) /
+           host_->compositor()->refresh_rate();
+  }
+
+ private:
+  void SendEvent() {
+    if (events_.empty()) {
+      std::move(closure_).Run();
+      return;
+    }
+    auto event = ui::Event::Clone(*events_.front());
+    events_.pop_front();
+    {
+      ui::Event::DispatcherApi api(event.get());
+      api.set_time_stamp(base::TimeTicks::Now());
+    }
+    host_->SendEventToSink(event.get());
+    base::TimeTicks current_timestamp = base::TimeTicks::Now();
+    base::TimeDelta interval =
+        last_event_timestamp_ + GetInterval() - current_timestamp;
+    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&EventGenerator::SendEvent,
+                       weak_ptr_factory_.GetWeakPtr()),
+        interval);
+    last_event_timestamp_ = current_timestamp;
+  }
+
+  base::TimeTicks last_event_timestamp_;
+  aura::WindowTreeHost* const host_;
+  base::OnceClosure closure_;
+  std::deque<std::unique_ptr<ui::Event>> events_;
+
+  base::WeakPtrFactory<EventGenerator> weak_ptr_factory_;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3519,6 +3604,185 @@ AutotestPrivateRemoveActiveDeskFunction::Run() {
 
 void AutotestPrivateRemoveActiveDeskFunction::OnAnimationComplete() {
   Respond(OneArgument(std::make_unique<base::Value>(true)));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateMouseClickFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateMouseClickFunction::AutotestPrivateMouseClickFunction() =
+    default;
+
+AutotestPrivateMouseClickFunction::~AutotestPrivateMouseClickFunction() =
+    default;
+
+ExtensionFunction::ResponseAction AutotestPrivateMouseClickFunction::Run() {
+  std::unique_ptr<api::autotest_private::MouseClick::Params> params(
+      api::autotest_private::MouseClick::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  auto* env = aura::Env::GetInstance();
+  if (env->mouse_button_flags() != 0) {
+    return RespondNow(Error(base::StringPrintf("Already pressed; flags %d",
+                                               env->mouse_button_flags())));
+  }
+
+  int64_t display_id = ash::Shell::Get()->cursor_manager()->GetDisplay().id();
+  auto* root_window = ash::Shell::GetRootWindowForDisplayId(display_id);
+  if (!root_window)
+    return RespondNow(Error("Failed to find the root window"));
+
+  gfx::PointF location_in_host(env->last_mouse_location().x(),
+                               env->last_mouse_location().y());
+  wm::ConvertPointFromScreen(root_window, &location_in_host);
+  ConvertPointToHost(root_window, &location_in_host);
+
+  int flags = GetMouseEventFlags(params->button);
+  event_generator_ = std::make_unique<EventGenerator>(
+      root_window->GetHost(),
+      base::BindOnce(&AutotestPrivateMouseClickFunction::Respond, this,
+                     NoArguments()));
+  event_generator_->ScheduleMouseEvent(ui::ET_MOUSE_PRESSED, location_in_host,
+                                       flags);
+  event_generator_->ScheduleMouseEvent(ui::ET_MOUSE_RELEASED, location_in_host,
+                                       0);
+  event_generator_->Run();
+
+  return RespondLater();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateMousePressFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateMousePressFunction::AutotestPrivateMousePressFunction() =
+    default;
+AutotestPrivateMousePressFunction::~AutotestPrivateMousePressFunction() =
+    default;
+
+ExtensionFunction::ResponseAction AutotestPrivateMousePressFunction::Run() {
+  std::unique_ptr<api::autotest_private::MousePress::Params> params(
+      api::autotest_private::MousePress::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  auto* env = aura::Env::GetInstance();
+  int flags = env->mouse_button_flags() | GetMouseEventFlags(params->button);
+  if (flags == env->mouse_button_flags())
+    return RespondNow(NoArguments());
+
+  int64_t display_id = ash::Shell::Get()->cursor_manager()->GetDisplay().id();
+  auto* root_window = ash::Shell::GetRootWindowForDisplayId(display_id);
+  if (!root_window)
+    return RespondNow(Error("Failed to find the root window"));
+
+  gfx::PointF location_in_host(env->last_mouse_location().x(),
+                               env->last_mouse_location().y());
+  wm::ConvertPointFromScreen(root_window, &location_in_host);
+  ConvertPointToHost(root_window, &location_in_host);
+
+  event_generator_ = std::make_unique<EventGenerator>(
+      root_window->GetHost(),
+      base::BindOnce(&AutotestPrivateMousePressFunction::Respond, this,
+                     NoArguments()));
+  event_generator_->ScheduleMouseEvent(ui::ET_MOUSE_PRESSED, location_in_host,
+                                       flags);
+  event_generator_->Run();
+
+  return RespondLater();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateMouseReleaseFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateMouseReleaseFunction::AutotestPrivateMouseReleaseFunction() =
+    default;
+AutotestPrivateMouseReleaseFunction::~AutotestPrivateMouseReleaseFunction() =
+    default;
+
+ExtensionFunction::ResponseAction AutotestPrivateMouseReleaseFunction::Run() {
+  std::unique_ptr<api::autotest_private::MouseRelease::Params> params(
+      api::autotest_private::MouseRelease::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  auto* env = aura::Env::GetInstance();
+
+  int flags = env->mouse_button_flags() & (~GetMouseEventFlags(params->button));
+  if (flags == env->mouse_button_flags())
+    return RespondNow(NoArguments());
+
+  int64_t display_id = ash::Shell::Get()->cursor_manager()->GetDisplay().id();
+  auto* root_window = ash::Shell::GetRootWindowForDisplayId(display_id);
+  if (!root_window)
+    return RespondNow(Error("Failed to find the root window"));
+
+  gfx::PointF location_in_host(env->last_mouse_location().x(),
+                               env->last_mouse_location().y());
+  wm::ConvertPointFromScreen(root_window, &location_in_host);
+  ConvertPointToHost(root_window, &location_in_host);
+
+  event_generator_ = std::make_unique<EventGenerator>(
+      root_window->GetHost(),
+      base::BindOnce(&AutotestPrivateMouseReleaseFunction::Respond, this,
+                     NoArguments()));
+  event_generator_->ScheduleMouseEvent(ui::ET_MOUSE_RELEASED, location_in_host,
+                                       flags);
+  event_generator_->Run();
+
+  return RespondLater();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateMouseMoveFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateMouseMoveFunction::AutotestPrivateMouseMoveFunction() = default;
+AutotestPrivateMouseMoveFunction::~AutotestPrivateMouseMoveFunction() = default;
+ExtensionFunction::ResponseAction AutotestPrivateMouseMoveFunction::Run() {
+  std::unique_ptr<api::autotest_private::MouseMove::Params> params(
+      api::autotest_private::MouseMove::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  int64_t display_id = ash::Shell::Get()->cursor_manager()->GetDisplay().id();
+  auto* root_window = ash::Shell::GetRootWindowForDisplayId(display_id);
+  if (!root_window)
+    return RespondNow(Error("Failed to find the root window"));
+
+  auto* host = root_window->GetHost();
+  const gfx::PointF location_in_root(params->location.x, params->location.y);
+  gfx::PointF location_in_screen = location_in_root;
+  wm::ConvertPointToScreen(root_window, &location_in_screen);
+  auto* env = aura::Env::GetInstance();
+  const gfx::Point last_mouse_location(env->last_mouse_location());
+  if (last_mouse_location == gfx::ToFlooredPoint(location_in_screen))
+    return RespondNow(NoArguments());
+
+  gfx::PointF location_in_host = location_in_root;
+  ConvertPointToHost(root_window, &location_in_host);
+
+  event_generator_ = std::make_unique<EventGenerator>(
+      host, base::BindOnce(&AutotestPrivateMouseMoveFunction::Respond, this,
+                           NoArguments()));
+  gfx::PointF start_in_host(last_mouse_location.x(), last_mouse_location.y());
+  wm::ConvertPointFromScreen(root_window, &start_in_host);
+  ConvertPointToHost(root_window, &start_in_host);
+
+  int64_t steps =
+      std::max(base::TimeDelta::FromMilliseconds(params->duration_in_ms) /
+                   event_generator_->GetInterval(),
+               static_cast<int64_t>(1));
+  int flags = env->mouse_button_flags();
+  ui::EventType type = (flags == 0) ? ui::ET_MOUSE_MOVED : ui::ET_MOUSE_DRAGGED;
+  for (int64_t i = 1; i <= steps; ++i) {
+    double progress = double(i) / double(steps);
+    gfx::PointF point(gfx::Tween::FloatValueBetween(progress, start_in_host.x(),
+                                                    location_in_host.x()),
+                      gfx::Tween::FloatValueBetween(progress, start_in_host.y(),
+                                                    location_in_host.y()));
+    event_generator_->ScheduleMouseEvent(type, point, flags);
+  }
+  event_generator_->Run();
+  return RespondLater();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

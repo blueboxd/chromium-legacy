@@ -147,6 +147,14 @@ SkColor NativeThemeAura::GetControlColor(ControlColorId color_id,
       return SkColorSetARGB(0x4D, 0xEF, 0xEF, 0xEF);
     case kLightenLayer:
       return SkColorSetARGB(0x33, 0xA9, 0xA9, 0xA9);
+    case kProgressValue:
+      return SkColorSetRGB(0x00, 0x75, 0xFF);
+    case kSlider:
+      return SkColorSetRGB(0x00, 0x75, 0xFF);
+    case kHoveredSlider:
+      return SkColorSetRGB(0x00, 0x5C, 0xC8);
+    case kDisabledSlider:
+      return SkColorSetRGB(0xCB, 0xCB, 0xCB);
   }
   NOTREACHED();
   return gfx::kPlaceholderColor;
@@ -159,12 +167,16 @@ SkColor NativeThemeAura::GetHighContrastControlColor(
     switch (color_id) {
       case kDisabledBorder:
       case kDisabledAccent:
+      case kDisabledSlider:
         return system_colors_[SystemThemeColor::kGrayText];
       case kBorder:
       case kHoveredBorder:
         return system_colors_[SystemThemeColor::kButtonText];
       case kAccent:
       case kHoveredAccent:
+      case kProgressValue:
+      case kSlider:
+      case kHoveredSlider:
         return system_colors_[SystemThemeColor::kHighlight];
       case kBackground:
       case kDisabledBackground:
@@ -179,12 +191,16 @@ SkColor NativeThemeAura::GetHighContrastControlColor(
     switch (color_id) {
       case kDisabledBorder:
       case kDisabledAccent:
+      case kDisabledSlider:
         return SK_ColorGREEN;
       case kBorder:
       case kHoveredBorder:
         return SK_ColorWHITE;
       case kAccent:
       case kHoveredAccent:
+      case kProgressValue:
+      case kSlider:
+      case kHoveredSlider:
         return SK_ColorCYAN;
       case kBackground:
       case kDisabledBackground:
@@ -445,6 +461,22 @@ SkColor NativeThemeAura::ControlsAccentColorForState(
     color_id = kDisabledAccent;
   } else {
     color_id = kAccent;
+  }
+  return GetControlColor(color_id, color_scheme);
+}
+
+SkColor NativeThemeAura::ControlsSliderColorForState(
+    State state,
+    ColorScheme color_scheme) const {
+  ControlColorId color_id;
+  if (state == kHovered) {
+    color_id = kHoveredSlider;
+  } else if (state == kPressed) {
+    color_id = kHoveredSlider;
+  } else if (state == kDisabled) {
+    color_id = kDisabledSlider;
+  } else {
+    color_id = kSlider;
   }
   return GetControlColor(color_id, color_scheme);
 }
@@ -766,14 +798,25 @@ void NativeThemeAura::PaintSliderTrack(cc::PaintCanvas* canvas,
   flags.setColor(ControlsFillColorForState(state, color_scheme));
   const float track_height = kSliderTrackHeight * slider.zoom;
   SkRect track_rect = AlignSliderTrack(rect, slider, false, track_height);
+  // Shrink the track by 1 pixel so the thumb can completely cover the track on
+  // both ends.
+  if (slider.vertical)
+    track_rect.inset(0, 1);
+  else
+    track_rect.inset(1, 0);
   canvas->drawRoundRect(track_rect, kSliderTrackBorderRadius,
                         kSliderTrackBorderRadius, flags);
 
+  // Clip the track to create rounded corners for the value bar.
+  SkRRect rounded_rect;
+  rounded_rect.setRectXY(track_rect, kSliderTrackBorderRadius,
+                         kSliderTrackBorderRadius);
+  canvas->clipRRect(rounded_rect, SkClipOp::kIntersect, true);
+
   // Paint the value slider track.
-  flags.setColor(ControlsAccentColorForState(state, color_scheme));
+  flags.setColor(ControlsSliderColorForState(state, color_scheme));
   SkRect value_rect = AlignSliderTrack(rect, slider, true, track_height);
-  canvas->drawRoundRect(value_rect, kSliderTrackBorderRadius,
-                        kSliderTrackBorderRadius, flags);
+  canvas->drawRect(value_rect, flags);
 
   // Paint the border.
   flags.setStyle(cc::PaintFlags::kStroke_Style);
@@ -810,14 +853,8 @@ void NativeThemeAura::PaintSliderThumb(cc::PaintCanvas* canvas,
 
   // Paint the background (is not visible behind the rounded corners).
   thumb_rect.inset(border_width / 2, border_width / 2);
-  flags.setColor(GetControlColor(kFill, color_scheme));
+  flags.setColor(ControlsSliderColorForState(state, color_scheme));
   flags.setStyle(cc::PaintFlags::kFill_Style);
-  canvas->drawRoundRect(thumb_rect, radius, radius, flags);
-
-  // Paint the border.
-  flags.setColor(ControlsBorderColorForState(state, color_scheme));
-  flags.setStyle(cc::PaintFlags::kStroke_Style);
-  flags.setStrokeWidth(border_width);
   canvas->drawRoundRect(thumb_rect, radius, radius, flags);
 }
 

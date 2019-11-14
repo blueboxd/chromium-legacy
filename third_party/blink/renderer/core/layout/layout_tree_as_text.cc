@@ -710,7 +710,7 @@ static void Write(WTF::TextStream& ts,
     }
   }
 
-  if ((behavior & kLayoutAsTextShowPaintProperties) && layer.NeedsRepaint())
+  if ((behavior & kLayoutAsTextShowPaintProperties) && layer.SelfNeedsRepaint())
     ts << " needsRepaint";
 
   ts << "\n";

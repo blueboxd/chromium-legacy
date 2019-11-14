@@ -17,6 +17,7 @@ namespace autofill {
 VerifyPendingDialogViewImpl::VerifyPendingDialogViewImpl(
     VerifyPendingDialogController* controller)
     : controller_(controller) {
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_CANCEL);
   DialogDelegate::set_button_label(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(
@@ -64,10 +65,6 @@ bool VerifyPendingDialogViewImpl::Cancel() {
     controller_->OnCancel();
 
   return true;
-}
-
-int VerifyPendingDialogViewImpl::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_CANCEL;
 }
 
 ui::ModalType VerifyPendingDialogViewImpl::GetModalType() const {

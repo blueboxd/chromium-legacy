@@ -65,7 +65,6 @@ class InvertBubbleView : public views::BubbleDialogDelegateView,
 
  private:
   // Overridden from views::BubbleDialogDelegateView:
-  int GetDialogButtons() const override;
   void Init() override;
 
   // Overridden from views::WidgetDelegate:
@@ -93,6 +92,7 @@ InvertBubbleView::InvertBubbleView(Browser* browser, views::View* anchor_view)
       browser_(browser),
       high_contrast_(nullptr),
       dark_theme_(nullptr) {
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
                                    l10n_util::GetStringUTF16(IDS_DONE));
   DialogDelegate::SetExtraView(::CreateExtraView(this));
@@ -101,10 +101,6 @@ InvertBubbleView::InvertBubbleView(Browser* browser, views::View* anchor_view)
 }
 
 InvertBubbleView::~InvertBubbleView() {
-}
-
-int InvertBubbleView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK;
 }
 
 void InvertBubbleView::Init() {

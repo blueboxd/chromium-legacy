@@ -48,9 +48,6 @@ class EnterpriseStartupDialogView : public views::DialogDelegateView {
   bool ShouldShowWindowTitle() const override;
   ui::ModalType GetModalType() const override;
 
-  // override ui::DialogModal
-  int GetDialogButtons() const override;
-
   // override views::View
   gfx::Size CalculatePreferredSize() const override;
 

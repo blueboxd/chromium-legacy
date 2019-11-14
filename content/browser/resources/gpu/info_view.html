@@ -61,6 +61,11 @@ found in the LICENSE file.
     <div id="video-acceleration-info"></div>
   </div>
 
+  <div>
+    <h3>Vulkan Information</h3>
+    <div id="vulkan-info"></div>
+  </div>
+
   <div class="diagnostics">
     <h3>Diagnostics</h3>
     <div class="diagnostics-loading">... loading ...</div>
@@ -112,7 +117,7 @@ found in the LICENSE file.
             <span class="row-title" jscontent="description">title</span>
           </td>
           <td jsdisplay="!(value instanceof Array)">
-            <span jscontent="value">value</span>
+            <span jscontent="value" jsvalues=".id:id">value</span>
           </td>
           <td jsdisplay="value instanceof Array" colspan=2>
             <span jscontent="description" class="row-title"></span>

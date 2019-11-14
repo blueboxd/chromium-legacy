@@ -835,6 +835,8 @@ class CORE_EXPORT LocalFrameView final
 
   void LayoutFromRootObject(LayoutObject& root);
 
+  void UpdateLayerDebugInfoEnabled();
+
   LayoutSize size_;
 
   typedef HashSet<scoped_refptr<LayoutEmbeddedObject>> EmbeddedObjectSet;
@@ -940,6 +942,10 @@ class CORE_EXPORT LocalFrameView final
   // True if the frame has deferred commits at least once per document load.
   // We won't defer again for the same document.
   bool have_deferred_commits_ = false;
+
+  // Whether to collect layer debug information for debugging, tracing,
+  // inspection, etc. Applies to local root only.
+  bool layer_debug_info_enabled_ = DCHECK_IS_ON();
 
   LifecycleData lifecycle_data_;
 

@@ -4,6 +4,8 @@
 
 #include "android_webview/browser/metrics/aw_metrics_service_client.h"
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -15,6 +17,7 @@
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_switches.h"
 #include "components/prefs/testing_pref_service.h"
+#include "content/public/browser/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace android_webview {
@@ -96,7 +99,9 @@ std::unique_ptr<TestClient> CreateAndInitTestClient(PrefService* prefs) {
 
 class AwMetricsServiceClientTest : public testing::Test {
  public:
-  AwMetricsServiceClientTest() : task_runner_(new base::TestSimpleTaskRunner) {
+  AwMetricsServiceClientTest()
+      : task_runner_(new base::TestSimpleTaskRunner),
+        notification_service_(content::NotificationService::Create()) {
     // Required by MetricsService.
     base::SetRecordActionTaskRunner(task_runner_);
   }
@@ -107,6 +112,11 @@ class AwMetricsServiceClientTest : public testing::Test {
  private:
   base::test::TaskEnvironment task_environment_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+
+  // AwMetricsServiceClient::RegisterForNotifications() requires the
+  // NotificationService to be up and running. Initialize it here, throw away
+  // the value because we don't need it directly.
+  std::unique_ptr<content::NotificationService> notification_service_;
 
   DISALLOW_COPY_AND_ASSIGN(AwMetricsServiceClientTest);
 };

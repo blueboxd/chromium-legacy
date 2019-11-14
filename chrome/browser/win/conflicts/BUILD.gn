@@ -33,6 +33,8 @@ source_set("module_info") {
     "//base:i18n",
     "//chrome/common/safe_browsing:pe_image_reader",
   ]
+
+  libs = [ "crypt32.lib" ]
 }
 
 loadable_module("conflicts_dll") {

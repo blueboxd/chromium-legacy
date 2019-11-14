@@ -15,6 +15,7 @@
 #include "chromecast/media/audio/audio_buildflags.h"
 #include "chromecast/media/audio/cast_audio_mixer.h"
 #include "chromecast/media/audio/cast_audio_output_stream.h"
+#include "chromecast/media/audio/mixer_service/constants.h"
 #include "chromecast/media/cma/backend/cma_backend_factory.h"
 #include "chromecast/public/cast_media_shlib.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
@@ -288,8 +289,7 @@ bool CastAudioManager::UseMixerOutputStream(
     const ::media::AudioParameters& params) {
   bool use_cma_backend =
       (params.effects() & ::media::AudioParameters::MULTIZONE) ||
-      !CastMediaShlib::AddDirectAudioSource ||
-      force_use_cma_backend_for_output_;
+      !mixer_service::HaveFullMixer() || force_use_cma_backend_for_output_;
 
   return !use_cma_backend;
 }

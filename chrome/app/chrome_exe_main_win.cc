@@ -221,7 +221,9 @@ int main() {
   // The exit manager is in charge of calling the dtors of singletons.
   base::AtExitManager exit_manager;
 
-  base::win::EnableHighDPISupport();
+  // Only enable High DPI support for browser process.
+  if (process_type.empty())
+    base::win::EnableHighDPISupport();
 
   if (AttemptFastNotify(*command_line))
     return 0;

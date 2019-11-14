@@ -6,7 +6,7 @@ package org.chromium.components.background_task_scheduler;
 
 import android.content.Context;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
 
 /**
  * The internal representation of a {@link BackgroundTaskScheduler} to make it possible to use

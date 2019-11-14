@@ -15,8 +15,9 @@ import android.os.BatteryManager;
 import android.os.Build;
 import android.os.PowerManager;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.net.ConnectionType;
 import org.chromium.net.NetworkChangeNotifier;
 

@@ -499,28 +499,16 @@ bool NGInlineCursor::UsesFirstLineStyle() const {
   return CurrentStyleVariant() == NGStyleVariant::kFirstLine;
 }
 
-unsigned NGInlineCursor::CurrentTextStartOffset() const {
+NGTextOffset NGInlineCursor::CurrentTextOffset() const {
   if (current_paint_fragment_) {
-    return To<NGPhysicalTextFragment>(
-               current_paint_fragment_->PhysicalFragment())
-        .StartOffset();
+    const auto& text_fragment =
+        To<NGPhysicalTextFragment>(current_paint_fragment_->PhysicalFragment());
+    return {text_fragment.StartOffset(), text_fragment.EndOffset()};
   }
   if (current_item_)
-    return current_item_->StartOffset();
+    return {current_item_->StartOffset(), current_item_->EndOffset()};
   NOTREACHED();
-  return 0u;
-}
-
-unsigned NGInlineCursor::CurrentTextEndOffset() const {
-  if (current_paint_fragment_) {
-    return To<NGPhysicalTextFragment>(
-               current_paint_fragment_->PhysicalFragment())
-        .EndOffset();
-  }
-  if (current_item_)
-    return current_item_->EndOffset();
-  NOTREACHED();
-  return 0u;
+  return {};
 }
 
 StringView NGInlineCursor::CurrentText() const {

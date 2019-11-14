@@ -367,7 +367,7 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
             PaintPropertyChangeType::kChangedOnlyCompositedValues) {
           const auto* paint_invalidation_layer =
               paint_invalidator_context.paint_invalidation_container->Layer();
-          if (!paint_invalidation_layer->NeedsRepaint()) {
+          if (!paint_invalidation_layer->SelfNeedsRepaint()) {
             auto* mapping =
                 paint_invalidation_layer->GetCompositedLayerMapping();
             if (!mapping)

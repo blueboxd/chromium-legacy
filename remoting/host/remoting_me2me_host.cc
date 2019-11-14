@@ -189,18 +189,6 @@ const char kWindowIdSwitchName[] = "window-id";
 // Command line switch used to send a custom offline reason and exit.
 const char kReportOfflineReasonSwitchName[] = "report-offline-reason";
 
-#if defined(OS_MACOSX)
-
-// Command line switch to check for Accessibility permission.
-const char kCheckAccessibilityPermissionSwitchName[] =
-    "check-accessibility-permission";
-
-// Command line switch to check for Screen Recording permission.
-const char kCheckScreenRecordingPermissionSwitchName[] =
-    "check-screen-recording-permission";
-
-#endif  // defined(OS_MACOSX)
-
 // Maximum time to wait for clean shutdown to occur, before forcing termination
 // of the process.
 const int kShutdownTimeoutSeconds = 15;

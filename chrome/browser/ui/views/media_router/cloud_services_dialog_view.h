@@ -36,7 +36,6 @@ class CloudServicesDialogView : public views::BubbleDialogDelegateView,
   base::string16 GetWindowTitle() const override;
 
   // views::DialogDelegate:
-  int GetDialogButtons() const override;
   bool Accept() override;
   bool Cancel() override;
 

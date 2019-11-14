@@ -261,6 +261,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const base::Version& version() const { return version_; }
   const std::string& version_name() const { return version_name_; }
   const std::string VersionString() const;
+  const std::string DifferentialFingerprint() const;
   const std::string GetVersionForDisplay() const;
   const std::string& name() const { return display_name_; }
   const std::string& short_name() const { return short_name_; }

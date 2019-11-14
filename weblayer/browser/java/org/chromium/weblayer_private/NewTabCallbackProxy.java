@@ -57,6 +57,11 @@ public final class NewTabCallbackProxy {
         mTab.getClient().onNewTab(tab.getId(), mode);
     }
 
+    @CalledByNative
+    private void onCloseTab() throws RemoteException {
+        mTab.getClient().onCloseTab();
+    }
+
     @NativeMethods
     interface Natives {
         long createNewTabCallbackProxy(NewTabCallbackProxy proxy, long tab);

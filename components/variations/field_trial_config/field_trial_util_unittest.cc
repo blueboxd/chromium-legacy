@@ -52,7 +52,7 @@ class TestOverrideStringCallback {
 
 class FieldTrialUtilTest : public ::testing::Test {
  public:
-  FieldTrialUtilTest() : field_trial_list_(nullptr) {}
+  FieldTrialUtilTest() {}
 
   ~FieldTrialUtilTest() override {
     // Ensure that the maps are cleared between tests, since they are stored as
@@ -75,7 +75,6 @@ class FieldTrialUtilTest : public ::testing::Test {
   }
 
  protected:
-  base::FieldTrialList field_trial_list_;
   TestOverrideStringCallback override_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FieldTrialUtilTest);

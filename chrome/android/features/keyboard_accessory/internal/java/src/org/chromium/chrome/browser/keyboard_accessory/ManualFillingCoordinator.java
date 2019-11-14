@@ -7,7 +7,8 @@ package org.chromium.chrome.browser.keyboard_accessory;
 import android.view.View;
 import android.view.ViewStub;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.CompositorViewResizer;
 import org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryCoordinator;

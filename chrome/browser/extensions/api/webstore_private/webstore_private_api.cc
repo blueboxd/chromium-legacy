@@ -20,6 +20,7 @@
 #include "base/version.h"
 #include "chrome/browser/bitmap_fetcher/bitmap_fetcher.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/api/webstore_private/extension_install_status.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -42,6 +43,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/manifest_constants.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
@@ -61,6 +63,7 @@ namespace CompleteInstall = api::webstore_private::CompleteInstall;
 namespace GetBrowserLogin = api::webstore_private::GetBrowserLogin;
 namespace GetEphemeralAppsEnabled =
     api::webstore_private::GetEphemeralAppsEnabled;
+namespace GetExtensionStatus = api::webstore_private::GetExtensionStatus;
 namespace GetIsLauncherEnabled = api::webstore_private::GetIsLauncherEnabled;
 namespace GetStoreLogin = api::webstore_private::GetStoreLogin;
 namespace GetWebGLStatus = api::webstore_private::GetWebGLStatus;
@@ -728,6 +731,67 @@ WebstorePrivateGetReferrerChainFunction::Run() {
   return RespondNow(
       ArgumentList(api::webstore_private::GetReferrerChain::Results::Create(
           serialized_referrer_proto)));
+}
+
+WebstorePrivateGetExtensionStatusFunction::
+    WebstorePrivateGetExtensionStatusFunction()
+    : chrome_details_(this) {}
+WebstorePrivateGetExtensionStatusFunction::
+    ~WebstorePrivateGetExtensionStatusFunction() = default;
+
+ExtensionFunction::ResponseAction
+WebstorePrivateGetExtensionStatusFunction::Run() {
+  std::unique_ptr<GetExtensionStatus::Params> params(
+      GetExtensionStatus::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  Profile* profile = chrome_details_.GetProfile();
+  const ExtensionId& extension_id = params->id;
+
+  if (!crx_file::id_util::IdIsValid(extension_id)) {
+    return RespondNow(Error(kWebstoreInvalidIdError));
+  }
+
+  ExtensionInstallStatus status =
+      GetWebstoreExtensionInstallStatus(extension_id, profile);
+  api::webstore_private::ExtensionInstallStatus api_status =
+      api::webstore_private::EXTENSION_INSTALL_STATUS_NONE;
+  switch (status) {
+    case kCanRequest:
+      api_status = api::webstore_private::ExtensionInstallStatus::
+          EXTENSION_INSTALL_STATUS_CAN_REQUEST;
+      break;
+    case kRequestPending:
+      api_status = api::webstore_private::ExtensionInstallStatus::
+          EXTENSION_INSTALL_STATUS_REQUEST_PENDING;
+      break;
+    case kBlockedByPolicy:
+      api_status = api::webstore_private::ExtensionInstallStatus::
+          EXTENSION_INSTALL_STATUS_BLOCKED_BY_POLICY;
+      break;
+    case kInstallable:
+      api_status = api::webstore_private::ExtensionInstallStatus::
+          EXTENSION_INSTALL_STATUS_INSTALLABLE;
+      break;
+    case kEnabled:
+      api_status = api::webstore_private::ExtensionInstallStatus::
+          EXTENSION_INSTALL_STATUS_ENABLED;
+      break;
+    case kDisabled:
+      api_status = api::webstore_private::ExtensionInstallStatus::
+          EXTENSION_INSTALL_STATUS_DISABLED;
+      break;
+    case kTerminated:
+      api_status = api::webstore_private::ExtensionInstallStatus::
+          EXTENSION_INSTALL_STATUS_TERMINATED;
+      break;
+    case kBlacklisted:
+      api_status = api::webstore_private::ExtensionInstallStatus::
+          EXTENSION_INSTALL_STATUS_BLACKLISTED;
+      break;
+  }
+  return RespondNow(
+      OneArgument(GetExtensionStatus::Results::Create(api_status)));
 }
 
 }  // namespace extensions

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.feed;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import com.google.android.libraries.feed.api.client.scope.ProcessScope;
 import com.google.android.libraries.feed.api.client.scope.ProcessScopeBuilder;
@@ -17,7 +18,6 @@ import com.google.android.libraries.feed.api.host.storage.JournalStorageDirect;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.SequencedTaskRunner;
 import org.chromium.base.task.TaskTraits;

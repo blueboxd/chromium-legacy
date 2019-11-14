@@ -5,6 +5,7 @@
 #include "chrome/browser/enterprise_reporting/extension_info.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_url_handlers.h"
@@ -104,6 +105,11 @@ void AddExtensions(const extensions::ExtensionSet& extensions,
     extension_info->set_enabled(enabled);
     AddPermission(extension.get(), extension_info);
     AddHostPermission(extension.get(), extension_info);
+    extension_info->set_from_webstore(extension->from_webstore());
+    if (extension->is_app()) {
+      extension_info->set_app_launch_url(
+          extensions::AppLaunchInfo::GetFullLaunchURL(extension.get()).spec());
+    }
   }
 }
 

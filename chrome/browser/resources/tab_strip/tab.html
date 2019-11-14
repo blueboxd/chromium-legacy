@@ -19,8 +19,18 @@
     width: var(--tabstrip-tab-width);
   }
 
+  #tab:focus {
+    box-shadow: 0 0 0 2px var(--tabstrip-focus-outline-color);
+    outline: none;
+  }
+
   :host([active]) #tab {
     box-shadow: 0 0 0 2px var(--tabstrip-tab-active-border-color);
+  }
+
+  :host([active]) #tab:focus {
+    box-shadow: 0 0 0 4px var(--tabstrip-focus-outline-color),
+                0 0 0 2px var(--tabstrip-tab-active-border-color);
   }
 
   #title {
@@ -188,6 +198,7 @@
     flex-shrink: 0;
     height: 100%;
     justify-content: center;
+    outline: none;
     padding: 0;
     position: relative;
     width: 36px;
@@ -195,12 +206,21 @@
 
   #closeIcon {
     -webkit-mask:
-        url(chrome://resources/images/icon_clear.svg)center/contain no-repeat;
+        url(chrome://resources/images/icon_clear.svg) center/contain no-repeat;
     background-color: currentColor;
     display: block;
     height: 18px;
     position: relative;
     width: 18px;
+  }
+
+  #close:focus #closeIconFocus {
+    background: currentColor;
+    border-radius: 50%;
+    height: 24px;
+    opacity: 0.16;
+    position: absolute;
+    width: 24px;
   }
 
   #thumbnail {
@@ -276,6 +296,7 @@
     <h2 id="titleText"></h2>
     <tabstrip-alert-indicators id="alertIndicators"></tabstrip-alert-indicators>
     <button id="close" aria-describedby="titleText">
+      <span id="closeIconFocus"></span>
       <span id="closeIcon"></span>
     </button>
   </header>

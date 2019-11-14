@@ -29,7 +29,7 @@ class SystemMenuRootNode extends RootNodeWrapper {
     const root = new SystemMenuRootNode(menuNode);
     const childConstructor = (node) => new NodeWrapper(node, root);
 
-    RootNodeWrapper.buildHelper(root, childConstructor);
+    RootNodeWrapper.findAndSetChildren(root, childConstructor);
     return root;
   }
 }

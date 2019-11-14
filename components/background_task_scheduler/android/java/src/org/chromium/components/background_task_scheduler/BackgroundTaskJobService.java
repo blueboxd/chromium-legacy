@@ -9,10 +9,11 @@ import android.app.job.JobParameters;
 import android.app.job.JobService;
 import android.os.Build;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.VisibleForTesting;
 
 import java.util.HashMap;
 import java.util.Map;

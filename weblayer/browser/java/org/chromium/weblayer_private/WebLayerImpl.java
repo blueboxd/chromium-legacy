@@ -23,6 +23,8 @@ import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.StrictModeContext;
+import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
@@ -47,6 +49,7 @@ import java.lang.reflect.Method;
  * Root implementation class for WebLayer.
  * This is constructed by the client library using reflection.
  */
+@JNINamespace("weblayer")
 @UsedByReflection("WebLayer")
 public final class WebLayerImpl extends IWebLayer.Stub {
     // TODO: should there be one tag for all this code?
@@ -164,6 +167,16 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         return mProfileManager.getProfile(profilePath);
     }
 
+    @Override
+    public void setRemoteDebuggingEnabled(boolean enabled) {
+        WebLayerImplJni.get().setRemoteDebuggingEnabled(enabled);
+    }
+
+    @Override
+    public boolean isRemoteDebuggingEnabled() {
+        return WebLayerImplJni.get().isRemoteDebuggingEnabled();
+    }
+
     /**
      * Returns the package ID to use when calling R.onResourcesLoaded().
      */
@@ -192,5 +205,11 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @NativeMethods
+    interface Natives {
+        void setRemoteDebuggingEnabled(boolean enabled);
+        boolean isRemoteDebuggingEnabled();
     }
 }

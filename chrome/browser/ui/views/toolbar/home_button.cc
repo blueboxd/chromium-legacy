@@ -44,7 +44,6 @@ class HomePageUndoBubble : public views::BubbleDialogDelegateView,
   ~HomePageUndoBubble() override;
 
   // views::BubbleDialogDelegateView:
-  int GetDialogButtons() const override;
   void Init() override;
   void WindowClosing() override;
 
@@ -89,17 +88,13 @@ HomePageUndoBubble::HomePageUndoBubble(
       browser_(browser),
       undo_value_is_ntp_(undo_value_is_ntp),
       undo_url_(undo_url) {
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
   set_margins(
       ChromeLayoutProvider::Get()->GetInsetsMetric(views::INSETS_DIALOG));
   chrome::RecordDialogCreation(chrome::DialogIdentifier::HOME_PAGE_UNDO);
 }
 
-HomePageUndoBubble::~HomePageUndoBubble() {
-}
-
-int HomePageUndoBubble::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
-}
+HomePageUndoBubble::~HomePageUndoBubble() = default;
 
 void HomePageUndoBubble::Init() {
   SetLayoutManager(std::make_unique<views::FillLayout>());

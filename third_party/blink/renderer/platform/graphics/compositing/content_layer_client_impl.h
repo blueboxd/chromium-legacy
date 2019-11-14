@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "cc/layers/content_layer_client.h"
-#include "cc/layers/layer_client.h"
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/layers_as_json.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
@@ -24,7 +23,6 @@ class PaintArtifact;
 class PaintChunkSubset;
 
 class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient,
-                                               public cc::LayerClient,
                                                public LayerAsJSONClient {
   USING_FAST_MALLOC(ContentLayerClientImpl);
 
@@ -45,11 +43,6 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient,
     // TODO(jbroman): Actually calculate memory usage.
     return 0;
   }
-
-  // cc::LayerClient
-  std::unique_ptr<base::trace_event::TracedValue> TakeDebugInfo(
-      const cc::Layer*) override;
-  std::string LayerDebugName(const cc::Layer*) const override;
 
   // LayerAsJSONClient implementation
   void AppendAdditionalInfoAsJSON(LayerTreeFlags,
@@ -87,8 +80,6 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient,
 #if DCHECK_IS_ON()
   std::unique_ptr<JSONArray> paint_chunk_debug_data_;
 #endif
-
-  base::WeakPtrFactory<ContentLayerClientImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ContentLayerClientImpl);
 };

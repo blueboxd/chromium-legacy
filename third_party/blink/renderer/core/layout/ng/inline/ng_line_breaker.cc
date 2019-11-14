@@ -1621,24 +1621,6 @@ void NGLineBreaker::HandleCloseTag(const NGInlineItem& item,
   ComputeCanBreakAfter(item_result, auto_wrap_, break_iterator_);
 }
 
-// Returns whether this item contains only spaces that can hang.
-bool NGLineBreaker::ShouldHangTraillingSpaces(const NGInlineItem& item) {
-  if (!item.Length())
-    return false;
-
-  const ComputedStyle& style = *item.Style();
-  if (!style.AutoWrap() || (!style.CollapseWhiteSpace() &&
-                            style.WhiteSpace() == EWhiteSpace::kBreakSpaces))
-    return false;
-
-  const String& text = Text();
-  for (unsigned i = item.StartOffset(); i < item.EndOffset(); ++i) {
-    if (!IsBreakableSpace(text[i]))
-      return false;
-  }
-  return true;
-}
-
 // Handles when the last item overflows.
 // At this point, item_results does not fit into the current line, and there
 // are no break opportunities in item_results.back().

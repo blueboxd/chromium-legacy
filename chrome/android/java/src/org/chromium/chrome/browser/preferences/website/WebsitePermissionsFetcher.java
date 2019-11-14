@@ -6,9 +6,10 @@ package org.chromium.chrome.browser.preferences.website;
 
 import android.util.Pair;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.content_public.browser.ContentFeatureList;
 import org.chromium.content_public.common.ContentSwitches;

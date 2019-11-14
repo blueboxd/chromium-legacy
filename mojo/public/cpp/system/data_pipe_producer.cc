@@ -77,7 +77,7 @@ class DataPipeProducer::SequenceState
           base::SequencedTaskRunnerHandle::Get());
       watcher_->Watch(producer_handle_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
                       MOJO_WATCH_CONDITION_SATISFIED,
-                      base::Bind(&SequenceState::OnHandleReady, this));
+                      base::BindRepeating(&SequenceState::OnHandleReady, this));
     }
   }
 

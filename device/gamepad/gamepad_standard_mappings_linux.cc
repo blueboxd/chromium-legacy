@@ -786,6 +786,8 @@ constexpr struct MappingData {
     {GamepadId::kVendor2378Product100a, MapperOnLiveWireless},
     // OUYA Controller
     {GamepadId::kVendor2836Product0001, MapperOUYA},
+    // SCUF Vantage, SCUF Vantage 2
+    {GamepadId::kVendor2e95Product7725, MapperDualshock4},
     // boom PSX+N64 USB Converter
     {GamepadId::kPrototypeVendorProduct0667, MapperBoomN64Psx},
     // Stadia Controller prototype

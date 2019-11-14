@@ -25,9 +25,6 @@ class SaveCardSignInPromoBubbleViews : public SaveCardBubbleViews {
                                  content::WebContents* web_contents,
                                  SaveCardBubbleController* controller);
 
-  // views::BubbleDialogDelegateView:
-  int GetDialogButtons() const override;
-
  private:
   std::unique_ptr<views::View> CreateMainContentView() override;
 

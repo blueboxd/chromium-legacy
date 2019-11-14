@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/printing/cups_print_job_manager.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_manager_factory.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_notification_manager.h"
+#include "chrome/browser/chromeos/printing/printer_error_codes.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -42,16 +43,16 @@ base::string16 GetNotificationTitleForError(
   DCHECK_EQ(CupsPrintJob::State::STATE_ERROR, print_job->state());
 
   switch (print_job->error_code()) {
-    case CupsPrintJob::ErrorCode::PAPER_JAM:
+    case PrinterErrorCode::PAPER_JAM:
       return l10n_util::GetStringUTF16(
           IDS_PRINT_JOB_PAPER_JAM_NOTIFICATION_TITLE);
-    case CupsPrintJob::ErrorCode::OUT_OF_INK:
+    case PrinterErrorCode::OUT_OF_INK:
       return l10n_util::GetStringUTF16(
           IDS_PRINT_JOB_OUT_OF_INK_NOTIFICATION_TITLE);
-    case CupsPrintJob::ErrorCode::OUT_OF_PAPER:
+    case PrinterErrorCode::OUT_OF_PAPER:
       return l10n_util::GetStringUTF16(
           IDS_PRINT_JOB_OUT_OF_PAPER_NOTIFICATION_TITLE);
-    case CupsPrintJob::ErrorCode::DOOR_OPEN:
+    case PrinterErrorCode::DOOR_OPEN:
       return l10n_util::GetStringUTF16(
           IDS_PRINT_JOB_DOOR_OPEN_NOTIFICATION_TITLE);
     default:

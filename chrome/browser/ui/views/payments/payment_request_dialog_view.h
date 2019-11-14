@@ -103,7 +103,6 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   // views::DialogDelegate:
   bool Cancel() override;
   bool ShouldShowCloseButton() const override;
-  int GetDialogButtons() const override;
 
   // payments::PaymentRequestDialog:
   void ShowDialog() override;

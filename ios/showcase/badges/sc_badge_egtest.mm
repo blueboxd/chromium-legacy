@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
-
 #import "ios/chrome/browser/ui/badges/badge_constants.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
-#import "ios/showcase/badges/sc_badge_coordinator.h"
+#import "ios/showcase/badges/sc_badge_constants.h"
 #import "ios/showcase/test/showcase_eg_utils.h"
 #import "ios/showcase/test/showcase_test_case.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

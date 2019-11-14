@@ -579,15 +579,15 @@ IsolationPiercing vs IsolationBlocked subtree update reasons.
 #### Fragments
 
 In the absence of multicolumn/pagination, there is a 1:1 correspondence between
-self-painting `PaintLayer`s and `FragmentData`. If there is
-multicolumn/pagination, there may be more `FragmentData`s.. If a `PaintLayer`
-has a property node, each of its fragments will have one. The parent of a
-fragment's property node is the property node that belongs to the ancestor
-`PaintLayer` which is part of the same column. For example, if there are 3
-columns and both a parent and child `PaintLayer` have a transform, there will be
-3 `FragmentData` objects for the parent, 3 for the child, each `FragmentData`
-will have its own `TransformPaintPropertyNode`, and the child's ith fragment's
-transform will point to the ith parent's transform.
+`LayoutObject`s and `FragmentData`. If there is multicolumn/pagination,
+there may be more `FragmentData`s. If a `LayoutObject` has a property node,
+each of its fragments will have one. The parent of a fragment's property node is
+the property node that belongs to the ancestor `LayoutObject` which is part of
+the same column. For example, if there are 3 columns and both a parent and child
+`LayoutObject` have a transform, there will be 3 `FragmentData` objects for
+the parent, 3 for the child, each `FragmentData` will have its own
+`TransformPaintPropertyNode`, and the child's ith fragment's transform will
+point to the ith parent's transform.
 
 Each `FragmentData` receives its own `ClipPaintPropertyNode`. They
 also store a unique `PaintOffset, `PaginationOffset and

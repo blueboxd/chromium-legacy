@@ -99,7 +99,7 @@
            presentsModal:self.hasBadge
                     type:InfobarType::kInfobarTypeTranslate];
     self.bannerViewController.titleText = [self titleText];
-    self.bannerViewController.buttonText = [self buttonText];
+    self.bannerViewController.buttonText = [self infobarButtonText];
     self.bannerViewController.iconImage =
         [UIImage imageNamed:@"infobar_translate_icon"];
     self.bannerViewController.optionalAccessibilityLabel =
@@ -173,13 +173,17 @@
 
   self.modalViewController =
       [[InfobarTranslateTableViewController alloc] initWithDelegate:self];
-  self.modalViewController.title = @"Translate Page";
+  self.modalViewController.title =
+      l10n_util::GetNSString(IDS_IOS_TRANSLATE_INFOBAR_MODAL_TITLE);
   self.modalViewController.sourceLanguage = base::SysUTF16ToNSString(
       self.translateInfoBarDelegate->original_language_name());
   self.modalViewController.targetLanguage = base::SysUTF16ToNSString(
       self.translateInfoBarDelegate->target_language_name());
   self.modalViewController.shouldAlwaysTranslateSourceLanguage =
       self.translateInfoBarDelegate->ShouldAlwaysTranslate();
+  self.modalViewController.translateButtonText = [self infobarButtonText];
+  // TODO(crbug.com/1014959): Need to be able to toggle the modal button for
+  // when translate is in progress.
   return YES;
 }
 
@@ -229,10 +233,23 @@
                                                     ->target_language_name())];
 }
 
-- (NSString*)buttonText {
-  // TODO(crbug.com/1014959): Return different strings depending on
-  // TranslateStep.
-  return l10n_util::GetNSString(IDS_IOS_TRANSLATE_INFOBAR_TRANSLATE_ACTION);
+// Returns the text of the banner and modal action button depending on the
+// |currentStep|.
+- (NSString*)infobarButtonText {
+  switch (self.currentStep) {
+    case translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE:
+      return l10n_util::GetNSString(IDS_IOS_TRANSLATE_INFOBAR_TRANSLATE_ACTION);
+    case translate::TranslateStep::TRANSLATE_STEP_AFTER_TRANSLATE:
+      return l10n_util::GetNSString(
+          IDS_IOS_TRANSLATE_INFOBAR_TRANSLATE_UNDO_ACTION);
+    case translate::TranslateStep::TRANSLATE_STEP_TRANSLATING:
+      return nil;
+    case translate::TranslateStep::TRANSLATE_STEP_NEVER_TRANSLATE:
+    case translate::TranslateStep::TRANSLATE_STEP_TRANSLATE_ERROR:
+      NOTREACHED() << "Translate infobar should not be presenting anything in "
+                      "this state.";
+      return nil;
+  }
 }
 
 @end

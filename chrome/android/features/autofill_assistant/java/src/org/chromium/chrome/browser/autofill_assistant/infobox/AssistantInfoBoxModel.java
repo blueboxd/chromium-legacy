@@ -4,7 +4,8 @@
 
 package org.chromium.chrome.browser.autofill_assistant.infobox;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.ui.modelutil.PropertyModel;

@@ -33,6 +33,10 @@ void NewTabCallbackProxy::OnNewTab(std::unique_ptr<Tab> tab, NewTabType type) {
                                     static_cast<int>(type));
 }
 
+void NewTabCallbackProxy::CloseTab() {
+  Java_NewTabCallbackProxy_onCloseTab(AttachCurrentThread(), java_impl_);
+}
+
 static jlong JNI_NewTabCallbackProxy_CreateNewTabCallbackProxy(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& proxy,

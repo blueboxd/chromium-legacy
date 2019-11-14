@@ -323,4 +323,13 @@ Polymer({
   doNothing_: function(event) {
     event.stopPropagation();
   },
+
+  /**
+   * @param {number} index
+   * @return {string} Accessibility label for nameserver input with given index.
+   * @private
+   */
+  getCustomNameServerInputA11yLabel_: function(index) {
+    return this.i18n('networkNameserversCustomInputA11yLabel', index + 1);
+  },
 });

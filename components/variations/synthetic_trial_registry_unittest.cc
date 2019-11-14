@@ -21,7 +21,7 @@ namespace {
 
 class SyntheticTrialRegistryTest : public ::testing::Test {
  public:
-  SyntheticTrialRegistryTest() : field_trial_list_(nullptr) { InitCrashKeys(); }
+  SyntheticTrialRegistryTest() { InitCrashKeys(); }
   ~SyntheticTrialRegistryTest() override { ClearCrashKeysInstanceForTesting(); }
 
   // Returns true if there is a synthetic trial in the given vector that matches
@@ -48,8 +48,6 @@ class SyntheticTrialRegistryTest : public ::testing::Test {
 
  private:
   base::test::SingleThreadTaskEnvironment task_environment_;
-
-  base::FieldTrialList field_trial_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SyntheticTrialRegistryTest);
 };

@@ -22,10 +22,6 @@ lucicfg.config(
 # Copy the not-yet migrated files to the generated outputs
 # TODO(https://crbug.com/1011908) Migrate the configuration in these files to starlark
 [lucicfg.emit(dest = f, data = io.read_file(f)) for f in (
-    # TODO(https://crbug.com/1015148) lucicfg generates luci-notify.cfg very
-    # differently from our hand-written file and doesn't do any normalization
-    # for luci-notify.cfg so the semantic diff is large and confusing
-    'luci-notify.cfg',
     # TODO(https://crbug.com/819899) There are a number of noop jobs for dummy
     # builders defined due to legacy requirements that trybots mirror CI bots
     # and noop scheduler jobs cannot be created in lucicfg, so the trybots need
@@ -45,6 +41,7 @@ luci.project(
     buildbucket = 'cr-buildbucket.appspot.com',
     logdog = 'luci-logdog.appspot.com',
     milo = 'luci-milo.appspot.com',
+    notify = 'luci-notify.appspot.com',
     swarming = 'chromium-swarm.appspot.com',
     acls = [
         acl.entry(
@@ -120,6 +117,8 @@ exec('//consoles/tryserver.chromium.linux.star')
 exec('//consoles/tryserver.chromium.mac.star')
 exec('//consoles/tryserver.chromium.swangle.star')
 exec('//consoles/tryserver.chromium.win.star')
+
+exec('//notifiers.star')
 
 exec('//generators/cq-builders-md.star')
 

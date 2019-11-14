@@ -21,7 +21,6 @@ suite('manager tests', function() {
 
     manager = document.createElement('downloads-manager');
     document.body.appendChild(manager);
-    assertEquals(manager, downloads.Manager.get());
   });
 
   test('long URLs elide', async () => {

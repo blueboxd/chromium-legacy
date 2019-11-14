@@ -71,6 +71,7 @@ class DumbProxyResolverFactoryRequestClient
   void ResolveDns(
       const std::string& hostname,
       net::ProxyResolveDnsOperation operation,
+      const net::NetworkIsolationKey& network_isolation_key,
       mojo::PendingRemote<proxy_resolver::mojom::HostResolverRequestClient>
           client) override {}
 

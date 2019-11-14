@@ -66,12 +66,7 @@ class PostProcessingPipelineFactory;
 //  * Otherwise, the output sample rate remains unchanged.
 class StreamMixer {
  public:
-  // Returns the mixer instance for this process. Caller must not delete the
-  // returned instance!
-  static StreamMixer* Get();
-
   StreamMixer();
-  // Only public to allow tests to create/destroy mixers.
   ~StreamMixer();
 
   int num_output_channels() const { return num_output_channels_; }

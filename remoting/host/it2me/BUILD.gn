@@ -233,6 +233,7 @@ if (!is_chromeos && enable_remoting_host) {
         deps += [
           ":remote_assistance_host_dialog_icon",
           "//remoting/host:remoting_infoplist_strings",
+          "//remoting/host/mac:permission_checking",
           "//remoting/resources:copy_locales",
         ]
         if (icu_use_data_file) {

@@ -110,9 +110,9 @@ std::string DownloadUtils::RemapGenericMimeType(const std::string& mime_type,
 // static
 bool DownloadUtils::ShouldAutoOpenDownload(download::DownloadItem* item) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_DownloadUtils_shouldAutoOpenDownload(
-      env, ConvertUTF8ToJavaString(env, item->GetMimeType()),
-      IsDownloadUserInitiated(item));
+  return Java_MimeUtils_canAutoOpenMimeType(
+             env, ConvertUTF8ToJavaString(env, item->GetMimeType())) &&
+         IsDownloadUserInitiated(item);
 }
 
 // static

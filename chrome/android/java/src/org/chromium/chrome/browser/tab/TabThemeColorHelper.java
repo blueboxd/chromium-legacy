@@ -7,9 +7,9 @@ package org.chromium.chrome.browser.tab;
 import android.graphics.Color;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.UserData;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ui.styles.ChromeColors;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;

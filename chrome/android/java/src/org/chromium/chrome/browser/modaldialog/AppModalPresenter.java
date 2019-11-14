@@ -10,7 +10,8 @@ import android.support.v4.view.ViewCompat;
 import android.view.LayoutInflater;
 import android.view.Window;
 
-import org.chromium.base.VisibleForTesting;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.chrome.R;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;

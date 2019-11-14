@@ -211,8 +211,6 @@ crbug.com/730267 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligibl
 
 crbug.com/1022460 [ Win ] storage/indexeddb/key-type-array.html [ Pass Crash ]
 
-crbug.com/1024248 [ Win ] virtual/disable-deferred-rendering/fast/canvas/canvas-drawImage-live-video.html [ Failure Pass ]
-
 # Flaky virtual/threaded/fast/scrolling tests
 crbug.com/841567 virtual/threaded-prefer-compositing/fast/scrolling/absolute-position-behind-scrollbar.html [ Failure Pass ]
 crbug.com/841567 virtual/threaded-prefer-compositing/fast/scrolling/fixed-position-behind-scrollbar.html [ Failure Pass ]
@@ -1723,6 +1721,7 @@ crbug.com/891427 virtual/android/rootscroller/rootscroller-during-fullscreen.htm
 crbug.com/891427 external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 fast/canvas/canvas-drawImage-live-video.html [ Pass Failure Timeout Crash ]
 crbug.com/816914 virtual/gpu/fast/canvas/canvas-drawImage-live-video.html [ Pass Failure Timeout Crash ]
+crbug.com/816914 virtual/disable-deferred-rendering/fast/canvas/canvas-drawImage-live-video.html [ Pass Failure Timeout Crash ]
 # Next 1 here: https://ci.chromium.org/buildbot/tryserver.blink/win7-blink-rel/1180
 # Next 2 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux-blink-rel/1541
 crbug.com/891427 virtual/android/rootscroller/gesture-scroll-document-not-root-scroller.html [ Pass Failure Timeout Crash ]
@@ -5858,6 +5857,9 @@ external/wpt/trusted-types/eval-csp-no-tt.tentative.html [ Failure ]
 external/wpt/trusted-types/eval-no-csp-no-tt.tentative.html [ Failure ]
 external/wpt/trusted-types/eval-no-csp-no-tt-default-policy.tentative.html [ Failure ]
 
+# Temporarily disabled to change the API contract in V8
+crbug.com/1018029 virtual/wasm-site-isolated-code-cache/http/tests/devtools/wasm-isolated-code-cache/wasm-cache-test.js [ Pass Failure ]
+
 # Sheriff 2019-10-31
 crbug.com/1020036 [ Debug ] external/wpt/lifecycle/freeze.html [ Failure Pass ]
 
@@ -5884,6 +5886,9 @@ crbug.com/1011466 virtual/threaded/http/tests/devtools/tracing/timeline-network/
 crbug.com/1021407 [ Retina Release ] virtual/audio-service/media/video-controls-rendering.html [ Pass Failure ]
 crbug.com/1021407 [ Mac10.11 ] virtual/audio-service/media/controls/video-overlay-cast-dark-rendering.html [ Pass Failure ]
 crbug.com/1021407 [ Mac10.11 ] media/controls/video-overlay-cast-dark-rendering.html [ Pass Failure ]
+
+# Sheriff 2019-11-13
+crbug.com/1024398 [ Debug ] http/tests/appcache/remove-cache.html [ Pass Failure ]
 
 # Temporarily disabled to land scope changes in DevTools
 crbug.com/963183 http/tests/devtools/sources/debugger-pause/set-return-value.js [ Pass Failure ]

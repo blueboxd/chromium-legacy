@@ -43,9 +43,6 @@
       <structure name="IDR_DOWNLOADS_CONSTANTS_JS"
           file="constants.js"
           type="chrome_html" />
-      <structure name="IDR_DOWNLOADS_DOWNLOADS_JS"
-          file="downloads.js"
-          type="chrome_html" />
       <structure name="IDR_DOWNLOADS_I18N_SETUP_HTML"
           file="i18n_setup.html"
           type="chrome_html" />

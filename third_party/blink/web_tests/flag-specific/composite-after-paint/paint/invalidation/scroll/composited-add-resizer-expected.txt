@@ -7,7 +7,7 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutNGBlockFlow DIV id='target'",
+      "name": "HorizontalScrollbar",
       "bounds": [100, 100],
       "paintInvalidations": [
         {

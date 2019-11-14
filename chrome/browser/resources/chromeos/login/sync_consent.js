@@ -68,10 +68,6 @@ Polymer({
     if (loadTimeData.getBoolean('splitSettingsSync')) {
       // SplitSettingsSync version.
       this.showScreen_('osSyncConsentDialog');
-    } else if (loadTimeData.getBoolean('syncConsentMakeBetter')) {
-      // Unified Consent version.
-      if (this.$.syncConsentMakeChromeSyncOptionsDialog.hidden)
-        this.showScreen_('syncConsentNewDialog');
     } else {
       // Regular version.
       this.showScreen_('syncConsentOverviewDialog');
@@ -147,45 +143,5 @@ Polymer({
             .map(element => element.innerHTML.trim());
     assert(consentDescription);
     return consentDescription;
-  },
-
-  /******************************************************
-   * Get Google smarts in Chrome dialog.
-   ******************************************************/
-
-  /**
-   * @private
-   */
-  onMoreOptionsButton_: function() {
-    this.showScreen_('syncConsentMakeChromeSyncOptionsDialog');
-  },
-
-  /**
-   * @private
-   */
-  onConfirm_: function() {
-    chrome.send(
-        'login.SyncConsentScreen.userActed',
-        ['continue-with-sync-and-personalization']);
-  },
-
-  /******************************************************
-   * Get Google smarts ... options dialog
-   ******************************************************/
-
-  /** @private */
-  onOptionsAcceptAndContinue_: function() {
-    const selected = this.$.optionsGroup.selected;
-    if (selected == 'justSync') {
-      chrome.send(
-          'login.SyncConsentScreen.userActed', ['continue-with-sync-only']);
-    } else if (selected == 'syncAndPersonalization') {
-      chrome.send(
-          'login.SyncConsentScreen.userActed',
-          ['continue-with-sync-and-personalization']);
-    } else {
-      // 'Continue and review' is default option.
-      chrome.send('login.SyncConsentScreen.userActed', ['continue-and-review']);
-    }
   },
 });

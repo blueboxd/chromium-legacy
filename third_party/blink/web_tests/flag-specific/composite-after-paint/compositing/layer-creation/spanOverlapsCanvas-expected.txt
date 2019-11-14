@@ -7,7 +7,7 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "",
+      "name": "LayoutHTMLCanvas CANVAS id='world'",
       "position": [8, 8],
       "bounds": [100, 50]
     },

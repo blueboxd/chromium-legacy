@@ -421,6 +421,20 @@ const std::string Extension::VersionString() const {
   return version_.GetString();
 }
 
+const std::string Extension::DifferentialFingerprint() const {
+  std::string fingerprint;
+  // We currently support two sources of differential fingerprints:
+  // server-provided and synthesized. Fingerprints are of the format V.FP, where
+  // V indicates the fingerprint type (1 for SHA256 hash, 2 for app version) and
+  // FP indicates the value. The hash-based FP from the server is more precise
+  // (a hash of the extension CRX), so use that when available, otherwise
+  // synthesize a 2.VERSION fingerprint for use. For more information, see
+  // https://github.com/google/omaha/blob/master/doc/ServerProtocolV3.md#packages--fingerprints
+  return manifest_->GetString(keys::kDifferentialFingerprint, &fingerprint)
+             ? fingerprint
+             : "2." + VersionString();
+}
+
 const std::string Extension::GetVersionForDisplay() const {
   if (version_name_.size() > 0)
     return version_name_;

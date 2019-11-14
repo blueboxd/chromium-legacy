@@ -287,10 +287,6 @@
       <structure name="IDR_SETTINGS_CR_SETTINGS_PAGE_CSS_HTML"
                  file="settings_page_css.html"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_CR_SETTINGS_ICONS_CSS_HTML"
-                 file="settings_icons_css.html"
-                 flattenhtml="true"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_MAIN_PAGE_BEHAVIOR_HTML"
                  file="settings_page/main_page_behavior.html"
                  type="chrome_html" />
@@ -668,6 +664,10 @@
                   file="chromeos/os_icons.html"
                   type="chrome_html"
                   preprocess="true" />
+        <structure name="IDR_OS_SETTINGS_OS_SETTINGS_ICONS_CSS_HTML"
+                   file="chromeos/os_settings_icons_css.html"
+                   flattenhtml="true"
+                   type="chrome_html" />
       </if>
       <structure name="IDR_SETTINGS_POWERWASH_DIALOG_HTML"
                  file="reset_page/powerwash_dialog.html"

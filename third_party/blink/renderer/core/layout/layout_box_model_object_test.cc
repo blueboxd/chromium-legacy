@@ -1080,8 +1080,8 @@ TEST_F(LayoutBoxModelObjectTest, InvalidatePaintLayerOnStackedChange) {
   GetDocument().View()->UpdateLifecycleToLayoutClean();
 
   EXPECT_FALSE(target->StyleRef().IsStacked());
-  EXPECT_TRUE(target->Layer()->NeedsRepaint());
-  EXPECT_TRUE(original_compositing_container->NeedsRepaint());
+  EXPECT_TRUE(target->Layer()->SelfNeedsRepaint());
+  EXPECT_TRUE(original_compositing_container->DescendantNeedsRepaint());
   auto* new_compositing_container = target->Layer()->CompositingContainer();
   EXPECT_EQ(parent, new_compositing_container->GetLayoutObject());
 
@@ -1090,8 +1090,8 @@ TEST_F(LayoutBoxModelObjectTest, InvalidatePaintLayerOnStackedChange) {
   GetDocument().View()->UpdateLifecycleToLayoutClean();
 
   EXPECT_TRUE(target->StyleRef().IsStacked());
-  EXPECT_TRUE(target->Layer()->NeedsRepaint());
-  EXPECT_TRUE(new_compositing_container->NeedsRepaint());
+  EXPECT_TRUE(target->Layer()->SelfNeedsRepaint());
+  EXPECT_TRUE(new_compositing_container->DescendantNeedsRepaint());
   EXPECT_EQ(original_compositing_container,
             target->Layer()->CompositingContainer());
 }
@@ -1154,20 +1154,20 @@ TEST_F(LayoutBoxModelObjectTest, BackfaceVisibilityChange) {
   auto* target_layer =
       ToLayoutBoxModelObject(target->GetLayoutObject())->Layer();
   ASSERT_NE(nullptr, target_layer);
-  EXPECT_FALSE(target_layer->NeedsRepaint());
+  EXPECT_FALSE(target_layer->SelfNeedsRepaint());
 
   target->setAttribute(html_names::kStyleAttr,
                        base_style + "; backface-visibility: hidden");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  EXPECT_TRUE(target_layer->NeedsRepaint());
+  EXPECT_TRUE(target_layer->SelfNeedsRepaint());
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_FALSE(target_layer->NeedsRepaint());
+  EXPECT_FALSE(target_layer->SelfNeedsRepaint());
 
   target->setAttribute(html_names::kStyleAttr, base_style);
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  EXPECT_TRUE(target_layer->NeedsRepaint());
+  EXPECT_TRUE(target_layer->SelfNeedsRepaint());
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_FALSE(target_layer->NeedsRepaint());
+  EXPECT_FALSE(target_layer->SelfNeedsRepaint());
 }
 
 TEST_F(LayoutBoxModelObjectTest, UpdateStackingContextForOption) {

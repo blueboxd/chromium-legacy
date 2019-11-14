@@ -124,7 +124,7 @@ TEST(CastMediaSourceTest, FromMirroringURN) {
 }
 
 TEST(CastMediaSourceTest, FromDesktopUrn) {
-  MediaSource::Id source_id("urn:x-org.chromium.media:source:desktop");
+  MediaSource::Id source_id("urn:x-org.chromium.media:source:desktop:foo");
   std::unique_ptr<CastMediaSource> source =
       CastMediaSource::FromMediaSourceId(source_id);
   ASSERT_TRUE(source);

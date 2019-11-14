@@ -13,10 +13,10 @@ import android.os.BatteryManager;
 import android.os.Build;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.device.mojom.BatteryStatus;
 
 /**

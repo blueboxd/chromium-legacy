@@ -77,10 +77,6 @@ android_resources("ui_widget_java_resources") {
     "//third_party/android_deps:com_android_support_design_java",
     "//ui/android:ui_java_resources",
   ]
-
-  if (enable_android_night_mode) {
-    resource_dirs += [ "java/res_night" ]
-  }
 }
 
 android_library("test_support_java") {

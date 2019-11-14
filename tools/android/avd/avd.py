@@ -78,7 +78,18 @@ def main(raw_args):
 
   create_parser.set_defaults(func=create_cmd)
 
-  # TODO(jbudorick): Expose `start` as a subcommand.
+  start_parser = subparsers.add_parser(
+      'start',
+      help='Start an AVD instance with the given config.')
+  add_common_arguments(start_parser)
+
+  def start_cmd(args):
+    inst = avd.AvdConfig(args.avd_config).CreateInstance()
+    inst.Start(read_only=False, snapshot_save=True)
+    print('%s started (pid: %d)' % (str(inst), inst._emulator_proc.pid))
+    return 0
+
+  start_parser.set_defaults(func=start_cmd)
 
   args = parser.parse_args(raw_args)
   logging_common.InitializeLogging(args)

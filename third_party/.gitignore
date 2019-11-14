@@ -84,6 +84,7 @@
 /freetype/src
 /fuchsia-sdk/images
 /fuchsia-sdk/sdk
+/fuchsia-sdk-arm64
 /gestures/gestures
 /gles2_conform
 /glfw/src
@@ -194,6 +195,7 @@
 /python_26
 /pywebsocket/src
 /pywebsocket/src
+/qemu-linux-arm64
 /qemu-linux-x64
 /qemu-mac-x64
 /quic_trace/src

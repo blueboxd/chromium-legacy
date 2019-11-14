@@ -2480,14 +2480,10 @@ void PaintOpBuffer::Playback(SkCanvas* canvas,
   }
 }
 
-sk_sp<PaintOpBuffer> PaintOpBuffer::MakeFromMemory(
-    const volatile void* input,
-    size_t input_size,
-    const PaintOp::DeserializeOptions& options) {
-  auto buffer = sk_make_sp<PaintOpBuffer>();
-  if (input_size == 0)
-    return buffer;
-
+bool PaintOpBuffer::Deserialize(const volatile void* input,
+                                size_t input_size,
+                                const PaintOp::DeserializeOptions& options) {
+  Reset();
   size_t total_bytes_read = 0u;
   while (total_bytes_read < input_size) {
     const volatile void* next_op =
@@ -2497,26 +2493,39 @@ sk_sp<PaintOpBuffer> PaintOpBuffer::MakeFromMemory(
     uint32_t skip;
     if (!PaintOpReader::ReadAndValidateOpHeader(
             next_op, input_size - total_bytes_read, &type, &skip)) {
-      return nullptr;
+      return false;
     }
 
     size_t op_skip = ComputeOpSkip(g_type_to_size[type]);
     const auto* op = g_deserialize_functions[type](
-        next_op, skip, buffer->AllocatePaintOp(op_skip), op_skip, options);
+        next_op, skip, AllocatePaintOp(op_skip), op_skip, options);
     if (!op) {
       // The last allocated op has already been destroyed if it failed to
       // deserialize. Update the buffer's op tracking to exclude it to avoid
       // access during cleanup at destruction.
-      buffer->used_ -= op_skip;
-      buffer->op_count_--;
-      return nullptr;
+      used_ -= op_skip;
+      op_count_--;
+      return false;
     }
 
-    g_analyze_op_functions[type](buffer.get(), op);
+    g_analyze_op_functions[type](this, op);
     total_bytes_read += skip;
   }
 
-  DCHECK_GT(buffer->size(), 0u);
+  DCHECK_GT(size(), 0u);
+  return true;
+}
+
+// static
+sk_sp<PaintOpBuffer> PaintOpBuffer::MakeFromMemory(
+    const volatile void* input,
+    size_t input_size,
+    const PaintOp::DeserializeOptions& options) {
+  auto buffer = sk_make_sp<PaintOpBuffer>();
+  if (input_size == 0)
+    return buffer;
+  if (!buffer->Deserialize(input, input_size, options))
+    return nullptr;
   return buffer;
 }
 

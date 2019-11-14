@@ -5,6 +5,7 @@
 #ifndef WEBLAYER_TEST_WEBLAYER_BROWSER_TEST_UTILS_H_
 #define WEBLAYER_TEST_WEBLAYER_BROWSER_TEST_UTILS_H_
 
+#include "base/strings/string16.h"
 #include "base/values.h"
 
 class GURL;
@@ -22,6 +23,9 @@ void NavigateAndWaitForFailure(const GURL& url, Shell* shell);
 base::Value ExecuteScript(Shell* shell,
                           const std::string& script,
                           bool use_separate_isolate);
+
+// Gets the title of the current webpage in |shell|.
+const base::string16& GetTitle(Shell* shell);
 
 }  // namespace weblayer
 

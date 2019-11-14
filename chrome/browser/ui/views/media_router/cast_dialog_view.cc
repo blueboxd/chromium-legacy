@@ -140,10 +140,6 @@ base::string16 CastDialogView::GetWindowTitle() const {
   }
 }
 
-int CastDialogView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
-}
-
 bool CastDialogView::Close() {
   return Cancel();
 }
@@ -267,6 +263,7 @@ CastDialogView::CastDialogView(views::View* anchor_view,
       controller_(controller),
       profile_(profile),
       metrics_(start_time) {
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
   sources_button_ = DialogDelegate::SetExtraView(CreateSourcesButton(this));
   ShowNoSinksView();
 }

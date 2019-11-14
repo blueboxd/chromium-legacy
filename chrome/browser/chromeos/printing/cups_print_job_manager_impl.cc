@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/printing/cups_wrapper.h"
 #include "chrome/browser/chromeos/printing/history/print_job_info.pb.h"
 #include "chrome/browser/chromeos/printing/history/print_job_info_proto_conversions.h"
+#include "chrome/browser/chromeos/printing/printer_error_codes.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -51,7 +52,7 @@ const int kRetryMax = 6;
 const char kJobCompletedWithErrors[] = "job-completed-with-errors";
 
 using State = chromeos::CupsPrintJob::State;
-using ErrorCode = chromeos::CupsPrintJob::ErrorCode;
+using PrinterErrorCode = chromeos::PrinterErrorCode;
 
 using PrinterReason = printing::PrinterStatus::PrinterReason;
 
@@ -117,32 +118,6 @@ bool JobContainsReason(const ::printing::CupsJob& job,
   return base::Contains(job.state_reasons, reason);
 }
 
-// Extracts an ErrorCode from PrinterStatus#reasons.  Returns NO_ERROR if there
-// are no reasons which indicate an error.
-ErrorCode ErrorCodeFromReasons(const printing::PrinterStatus& printer_status) {
-  for (const auto& reason : printer_status.reasons) {
-    switch (reason.reason) {
-      case PrinterReason::MEDIA_EMPTY:
-      case PrinterReason::MEDIA_NEEDED:
-      case PrinterReason::MEDIA_LOW:
-        return ErrorCode::OUT_OF_PAPER;
-      case PrinterReason::MEDIA_JAM:
-        return ErrorCode::PAPER_JAM;
-      case PrinterReason::TONER_EMPTY:
-      case PrinterReason::TONER_LOW:
-        return ErrorCode::OUT_OF_INK;
-      case PrinterReason::TIMED_OUT:
-        return ErrorCode::PRINTER_UNREACHABLE;
-      case PrinterReason::DOOR_OPEN:
-      case PrinterReason::COVER_OPEN:
-        return ErrorCode::DOOR_OPEN;
-      default:
-        break;
-    }
-  }
-  return ErrorCode::NO_ERROR;
-}
-
 // Update the current printed page.  Returns true of the page has been updated.
 bool UpdateCurrentPage(const printing::CupsJob& job,
                        chromeos::CupsPrintJob* print_job) {
@@ -172,8 +147,10 @@ bool UpdatePrintJob(const ::printing::PrinterStatus& printer_status,
   switch (job.state) {
     case ::printing::CupsJob::PROCESSING:
       pages_updated = UpdateCurrentPage(job, print_job);
-      if (ErrorCodeFromReasons(printer_status) != ErrorCode::NO_ERROR) {
-        print_job->set_error_code(ErrorCodeFromReasons(printer_status));
+      if (chromeos::PrinterErrorCodeFromPrinterStatusReasons(printer_status) !=
+          PrinterErrorCode::NO_ERROR) {
+        print_job->set_error_code(
+            chromeos::PrinterErrorCodeFromPrinterStatusReasons(printer_status));
         print_job->set_state(State::STATE_ERROR);
       } else {
         print_job->set_state(State::STATE_STARTED);
@@ -186,7 +163,7 @@ bool UpdatePrintJob(const ::printing::PrinterStatus& printer_status,
     case ::printing::CupsJob::STOPPED:
       // If cups job STOPPED but with filter failure, treat as ERROR
       if (JobContainsReason(job, kJobCompletedWithErrors)) {
-        print_job->set_error_code(ErrorCode::FILTER_FAILED);
+        print_job->set_error_code(PrinterErrorCode::FILTER_FAILED);
         print_job->set_state(State::STATE_FAILED);
       } else {
         print_job->set_state(ConvertState(job.state));
@@ -194,7 +171,8 @@ bool UpdatePrintJob(const ::printing::PrinterStatus& printer_status,
       break;
     case ::printing::CupsJob::ABORTED:
     case ::printing::CupsJob::CANCELED:
-      print_job->set_error_code(ErrorCodeFromReasons(printer_status));
+      print_job->set_error_code(
+          chromeos::PrinterErrorCodeFromPrinterStatusReasons(printer_status));
       FALLTHROUGH;
     default:
       print_job->set_state(ConvertState(job.state));

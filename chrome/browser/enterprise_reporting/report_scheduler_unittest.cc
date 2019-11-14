@@ -79,7 +79,7 @@ class FakeRequestTimer : public RequestTimer {
 ACTION_P(ScheduleGeneratorCallback, request_number) {
   ReportGenerator::Requests requests;
   for (int i = 0; i < request_number; i++)
-    requests.push(std::make_unique<em::ChromeDesktopReportRequest>());
+    requests.push(std::make_unique<ReportGenerator::Request>());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(arg0), std::move(requests)));
 }
@@ -170,7 +170,7 @@ class ReportSchedulerTest : public ::testing::Test {
   ReportGenerator::Requests CreateRequests(int number) {
     ReportGenerator::Requests requests;
     for (int i = 0; i < number; i++)
-      requests.push(std::make_unique<em::ChromeDesktopReportRequest>());
+      requests.push(std::make_unique<ReportGenerator::Request>());
     return requests;
   }
 

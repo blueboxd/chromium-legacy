@@ -30,11 +30,9 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "cc/input/scroll_snap_data.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/layer.h"
-#include "cc/layers/layer_client.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
@@ -74,8 +72,7 @@ typedef Vector<GraphicsLayer*, 64> GraphicsLayerVector;
 
 // GraphicsLayer is an abstraction for a rendering surface with backing store,
 // which may have associated transformation and animations.
-class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
-                                      public DisplayItemClient,
+class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
                                       public LayerAsJSONClient,
                                       private cc::ContentLayerClient {
   USING_FAST_MALLOC(GraphicsLayer);
@@ -86,8 +83,12 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   GraphicsLayerClient& Client() const { return client_; }
 
-  void SetCompositingReasons(CompositingReasons reasons);
-  CompositingReasons GetCompositingReasons() const;
+  void SetCompositingReasons(CompositingReasons reasons) {
+    compositing_reasons_ = reasons;
+  }
+  CompositingReasons GetCompositingReasons() const {
+    return compositing_reasons_;
+  }
 
   SquashingDisallowedReasons GetSquashingDisallowedReasons() const {
     return squashing_disallowed_reasons_;
@@ -96,7 +97,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
     squashing_disallowed_reasons_ = reasons;
   }
 
-  void SetOwnerNodeId(int id);
+  void SetOwnerNodeId(DOMNodeId id) { owner_node_id_ = id; }
 
   GraphicsLayer* Parent() const { return parent_; }
   void SetParent(GraphicsLayer*);  // Internal use only.
@@ -216,11 +217,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   // Returns true if this layer is repainted.
   bool Paint(GraphicsContext::DisabledMode = GraphicsContext::kNothingDisabled);
 
-  // cc::LayerClient implementation.
-  std::unique_ptr<base::trace_event::TracedValue> TakeDebugInfo(
-      const cc::Layer*) override;
-  std::string LayerDebugName(const cc::Layer*) const override;
-
   PaintController& GetPaintController() const;
 
   void SetElementId(const CompositorElementId&);
@@ -228,6 +224,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   // DisplayItemClient methods
   String DebugName() const final { return client_.DebugName(this); }
   IntRect VisualRect() const override;
+  DOMNodeId OwnerNodeId() const final { return owner_node_id_; }
 
   // LayerAsJSONClient implementation.
   void AppendAdditionalInfoAsJSON(LayerTreeFlags,
@@ -364,7 +361,8 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   std::unique_ptr<RasterInvalidator> raster_invalidator_;
 
-  base::WeakPtrFactory<GraphicsLayer> weak_ptr_factory_{this};
+  DOMNodeId owner_node_id_ = kInvalidDOMNodeId;
+  CompositingReasons compositing_reasons_ = CompositingReason::kNone;
 
   FRIEND_TEST_ALL_PREFIXES(CompositingLayerPropertyUpdaterTest, MaskLayerState);
 

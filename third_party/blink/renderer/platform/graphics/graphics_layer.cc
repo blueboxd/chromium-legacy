@@ -89,14 +89,12 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
   layer_ = cc::PictureLayer::Create(this);
   CcLayer()->SetIsDrawable(draws_content_ && contents_visible_);
   CcLayer()->SetHitTestable(hit_testable_);
-  CcLayer()->SetLayerClient(weak_ptr_factory_.GetWeakPtr());
 
   UpdateTrackingRasterInvalidations();
 }
 
 GraphicsLayer::~GraphicsLayer() {
   CcLayer()->ClearClient();
-  CcLayer()->SetLayerClient(nullptr);
   SetContentsLayer(nullptr);
 
 #if DCHECK_IS_ON()
@@ -179,18 +177,6 @@ void GraphicsLayer::AppendAdditionalInfoAsJSON(LayerTreeFlags flags,
 void GraphicsLayer::SetHasWillChangeTransformHint(
     bool has_will_change_transform) {
   CcLayer()->SetHasWillChangeTransformHint(has_will_change_transform);
-}
-
-void GraphicsLayer::SetCompositingReasons(CompositingReasons reasons) {
-  CcLayer()->set_compositing_reasons(reasons);
-}
-
-CompositingReasons GraphicsLayer::GetCompositingReasons() const {
-  return CcLayer()->compositing_reasons();
-}
-
-void GraphicsLayer::SetOwnerNodeId(int node_id) {
-  CcLayer()->set_owner_node_id(node_id);
 }
 
 void GraphicsLayer::SetParent(GraphicsLayer* layer) {
@@ -477,7 +463,6 @@ void GraphicsLayer::UnregisterContentsLayer(cc::Layer* layer) {
   DCHECK(g_registered_layer_set);
   CHECK(g_registered_layer_set->Contains(layer->id()));
   g_registered_layer_set->erase(layer->id());
-  layer->SetLayerClient(nullptr);
 }
 
 void GraphicsLayer::SetContentsTo(cc::Layer* layer,
@@ -528,17 +513,11 @@ void GraphicsLayer::ClearContentsLayerIfUnregistered() {
 }
 
 void GraphicsLayer::SetContentsLayer(cc::Layer* contents_layer) {
-  // If we have a previous contents layer which is still registered, then unset
-  // this client pointer. If unregistered, it has already nulled out the client
-  // pointer and may have been deleted.
-  if (contents_layer_ && g_registered_layer_set->Contains(contents_layer_id_))
-    contents_layer_->SetLayerClient(nullptr);
   contents_layer_ = contents_layer;
   if (!contents_layer_) {
     contents_layer_id_ = 0;
     return;
   }
-  contents_layer_->SetLayerClient(weak_ptr_factory_.GetWeakPtr());
   contents_layer_id_ = contents_layer_->id();
 }
 
@@ -778,7 +757,6 @@ void GraphicsLayer::SetContentsToImage(
             .TakePaintImage();
     if (!image_layer_) {
       image_layer_ = cc::PictureImageLayer::Create();
-      image_layer_->set_owner_node_id(CcLayer()->owner_node_id());
       RegisterContentsLayer(image_layer_.get());
     }
     image_layer_->SetImage(std::move(paint_image), matrix,
@@ -809,39 +787,6 @@ void GraphicsLayer::SetPaintingPhase(GraphicsLayerPaintingPhase phase) {
     return;
   painting_phase_ = phase;
   SetNeedsDisplay();
-}
-
-std::unique_ptr<base::trace_event::TracedValue> GraphicsLayer::TakeDebugInfo(
-    const cc::Layer* layer) {
-  auto traced_value = std::make_unique<base::trace_event::TracedValue>();
-
-  traced_value->SetString("layer_name", LayerDebugName(layer));
-
-  traced_value->BeginArray("compositing_reasons");
-  for (const char* description :
-       CompositingReason::Descriptions(GetCompositingReasons()))
-    traced_value->AppendString(description);
-  traced_value->EndArray();
-
-  traced_value->BeginArray("squashing_disallowed_reasons");
-  for (const char* description :
-       SquashingDisallowedReason::Descriptions(squashing_disallowed_reasons_))
-    traced_value->AppendString(description);
-  traced_value->EndArray();
-
-  if (auto node_id = layer_->owner_node_id())
-    traced_value->SetInteger("owner_node", node_id);
-
-  if (auto* tracking = GetRasterInvalidationTracking()) {
-    tracking->AddToTracedValue(*traced_value);
-    tracking->ClearInvalidations();
-  }
-
-  return traced_value;
-}
-
-std::string GraphicsLayer::LayerDebugName(const cc::Layer* layer) const {
-  return DebugName(layer).Utf8();
 }
 
 PaintController& GraphicsLayer::GetPaintController() const {

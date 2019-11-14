@@ -16,6 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/scoped_observer.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/lazy_task_runner.h"
@@ -36,6 +37,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_file_task_runner.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/constants/chromeos_switches.h"
+#endif
+
 using content::BrowserThread;
 
 namespace {
@@ -43,8 +48,31 @@ namespace {
 constexpr base::FilePath::CharType kExternalExtensionJson[] =
     FILE_PATH_LITERAL("external_extensions.json");
 
+// Extension installations are skipped here as excluding these in the overlay
+// is a bit complicated.
+// TODO(crbug.com/1023268) This is a temporary measure and should be replaced.
+bool SkipInstallForChromeOSTablet(const base::FilePath& file_path) {
+#if defined(OS_CHROMEOS)
+  if (!chromeos::switches::IsTabletFormFactor())
+    return false;
+
+  constexpr char const* kIdsNotToBeInstalledOnTabletFormFactor[] = {
+      "blpcfgokakmgnkcojhhkbfbldkacnbeo.json",  // Youtube file name.
+      "ejjicmeblgpmajnghnpcppodonldlgfn.json",  // Calendar file name.
+      "hcglmfcclpfgljeaiahehebeoaiicbko.json",  // Google Photos file name.
+      "lneaknkopdijkpnocmklfnjbeapigfbh.json",  // Google Maps file name.
+      "pjkljhegncpnkpknbcohdijeoejaedia.json",  // Gmail file name.
+  };
+
+  return base::Contains(kIdsNotToBeInstalledOnTabletFormFactor,
+                        file_path.BaseName().value());
+#else
+  return false;
+#endif
+}
+
 std::set<base::FilePath> GetPrefsCandidateFilesFromFolder(
-      const base::FilePath& external_extension_search_path) {
+    const base::FilePath& external_extension_search_path) {
   std::set<base::FilePath> external_extension_paths;
 
   if (!base::PathExists(external_extension_search_path)) {
@@ -68,6 +96,8 @@ std::set<base::FilePath> GetPrefsCandidateFilesFromFolder(
     if (file.empty())
       break;
     if (file.MatchesExtension(extension)) {
+      if (SkipInstallForChromeOSTablet(file))
+        continue;
       external_extension_paths.insert(file.BaseName());
     } else {
       DVLOG(1) << "Not considering: " << file.LossyDisplayName()
@@ -315,8 +345,8 @@ void ExternalPrefLoader::ReadStandaloneExtensionPrefFiles(
   CHECK(NULL != prefs);
 
   // First list the potential .json candidates.
-  std::set<base::FilePath>
-      candidates = GetPrefsCandidateFilesFromFolder(base_path_);
+  std::set<base::FilePath> candidates =
+      GetPrefsCandidateFilesFromFolder(base_path_);
   if (candidates.empty()) {
     DVLOG(1) << "Extension candidates list empty";
     return;

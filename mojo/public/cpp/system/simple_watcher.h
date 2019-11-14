@@ -120,7 +120,7 @@ class MOJO_CPP_SYSTEM_EXPORT SimpleWatcher {
   MojoResult Watch(Handle handle,
                    MojoHandleSignals signals,
                    MojoTriggerCondition condition,
-                   const ReadyCallbackWithState& callback);
+                   ReadyCallbackWithState callback);
 
   // DEPRECATED: Please use the above signature instead.
   //
@@ -129,9 +129,9 @@ class MOJO_CPP_SYSTEM_EXPORT SimpleWatcher {
   // a notification.
   MojoResult Watch(Handle handle,
                    MojoHandleSignals signals,
-                   const ReadyCallback& callback) {
+                   ReadyCallback callback) {
     return Watch(handle, signals, MOJO_WATCH_CONDITION_SATISFIED,
-                 base::Bind(&DiscardReadyState, callback));
+                 base::BindRepeating(&DiscardReadyState, std::move(callback)));
   }
 
   // Cancels the current watch. Once this returns, the ReadyCallback previously

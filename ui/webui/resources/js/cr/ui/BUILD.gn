@@ -272,6 +272,7 @@ js_modulizer("modulize") {
     "focus_row.js",
     "focus_row_behavior.js",
     "focus_without_ink.js",
+    "keyboard_shortcut_list.js",
     "store.js",
     "store_client.js",
   ]
@@ -294,6 +295,7 @@ js_type_check("ui_resources_modules") {
     ":focus_row.m",
     ":focus_row_behavior.m",
     ":focus_without_ink.m",
+    ":keyboard_shortcut_list.m",
     ":store.m",
     ":store_client.m",
   ]
@@ -345,6 +347,13 @@ js_library("focus_without_ink.m") {
   ]
   sources = [
     "$root_gen_dir/ui/webui/resources/js/cr/ui/focus_without_ink.m.js",
+  ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("keyboard_shortcut_list.m") {
+  sources = [
+    "$root_gen_dir/ui/webui/resources/js/cr/ui/keyboard_shortcut_list.m.js",
   ]
   extra_deps = [ ":modulize" ]
 }

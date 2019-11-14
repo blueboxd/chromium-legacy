@@ -155,8 +155,9 @@ ScopedVariant SELF(CHILDID_SELF);
     size_t count = array_upper_bound - array_lower_bound + 1;                 \
     ASSERT_EQ(expected_property_values.size(), count);                        \
     for (size_t i = 0; i < count; ++i) {                                      \
-      CComPtr<IRawElementProviderSimple> element;                             \
-      ASSERT_HRESULT_SUCCEEDED(array_data[i]->QueryInterface(&element));      \
+      ComPtr<IRawElementProviderSimple> element;                              \
+      ASSERT_HRESULT_SUCCEEDED(                                               \
+          array_data[i]->QueryInterface(IID_PPV_ARGS(&element)));             \
       EXPECT_UIA_BSTR_EQ(element, element_test_property_id,                   \
                          expected_property_values[i].c_str());                \
     }                                                                         \
@@ -198,8 +199,9 @@ ScopedVariant SELF(CHILDID_SELF);
     ASSERT_EQ(expected_property_values.size(), count);                         \
     std::vector<std::wstring> property_values;                                 \
     for (size_t i = 0; i < count; ++i) {                                       \
-      CComPtr<IRawElementProviderSimple> element;                              \
-      ASSERT_HRESULT_SUCCEEDED(array_data[i]->QueryInterface(&element));       \
+      ComPtr<IRawElementProviderSimple> element;                               \
+      ASSERT_HRESULT_SUCCEEDED(                                                \
+          array_data[i]->QueryInterface(IID_PPV_ARGS(&element)));              \
       ScopedVariant actual;                                                    \
       ASSERT_HRESULT_SUCCEEDED(element->GetPropertyValue(                      \
           element_test_property_id, actual.Receive()));                        \
@@ -420,7 +422,7 @@ AXPlatformNodeWinTest::GetSupportedPatternsFromNodeId(int32_t id) {
       UIA_ValuePatternId,
   };
   for (LONG property_id : all_supported_patterns_) {
-    CComPtr<IUnknown> provider = nullptr;
+    ComPtr<IUnknown> provider;
     if (SUCCEEDED(raw_element_provider_simple->GetPatternProvider(property_id,
                                                                   &provider)) &&
         provider) {
@@ -5879,10 +5881,10 @@ TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderGetSelectionContainer) {
   ComPtr<ISelectionItemProvider> item_provider =
       QueryInterfaceFromNode<ISelectionItemProvider>(row->children()[0]);
 
-  CComPtr<IRawElementProviderSimple> container;
+  ComPtr<IRawElementProviderSimple> container;
   EXPECT_HRESULT_SUCCEEDED(item_provider->get_SelectionContainer(&container));
   EXPECT_NE(nullptr, container);
-  EXPECT_EQ(container, container_provider.Get());
+  EXPECT_EQ(container, container_provider);
 }
 
 TEST_F(AXPlatformNodeWinTest, TestIValueProvider_GetValue) {

@@ -47,18 +47,6 @@
   <include name="IDR_WEBUI_IMAGES_OPEN_IN_NEW"
            file="images/open_in_new.svg" type="BINDATA" compress="gzip" />
   <if expr="chromeos">
-    <include name="IDR_CR_ELEMENTS_CAMERA_ALT_ICON_SVG"
-             file="cr_elements/chromeos/cr_picture/camera_alt_icon.svg"
-             type="BINDATA" compress="gzip" />
-    <include name="IDR_CR_ELEMENTS_CAMERA_SHUTTER_ICON_SVG"
-             file="cr_elements/chromeos/cr_picture/camera_shutter_icon.svg"
-             type="BINDATA" compress="gzip" />
-    <include name="IDR_CR_ELEMENTS_VIDEOCAM_ICON_SVG"
-             file="cr_elements/chromeos/cr_picture/videocam_icon.svg"
-             type="BINDATA" compress="gzip" />
-    <include name="IDR_CR_ELEMENTS_VIDEOCAM_SHUTTER_ICON_SVG"
-             file="cr_elements/chromeos/cr_picture/videocam_shutter_icon.svg"
-             type="BINDATA" compress="gzip" />
     <include name="IDR_CR_ELEMENTS_CELLULAR_0_WITH_X_SVG"
              file="cr_elements/chromeos/network/cellular_0_with_x.svg"
              type="BINDATA" compress="gzip" />

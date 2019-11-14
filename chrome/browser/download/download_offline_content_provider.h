@@ -116,9 +116,8 @@ class DownloadOfflineContentProvider
                             VisualsCallback callback,
                             const SkBitmap& bitmap);
   void AddCompletedDownload(DownloadItem* item);
-  void AddCompletedDownloadDone(DownloadItem* item,
-                                int64_t system_download_id,
-                                bool can_resolve);
+  void AddCompletedDownloadDone(const std::string& download_guid,
+                                int64_t system_download_id);
   void OnRenameDownloadCallbackDone(RenameCallback callback,
                                     DownloadItem* item,
                                     DownloadItem::DownloadRenameResult result);

@@ -33,6 +33,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantCardElementView
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
   void OnFocus() override;
   void OnGestureEvent(ui::GestureEvent* event) override;
+  void ScrollRectToVisible(const gfx::Rect& rect) override;
 
   // content::NavigableContentsObserver:
   void DidAutoResizeView(const gfx::Size& new_size) override;
@@ -55,6 +56,9 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantCardElementView
 
   // Owned by AssistantCardElement.
   content::NavigableContents* const contents_;
+
+  // Rect of the focused node in the |contents_|.
+  gfx::Rect focused_node_rect_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantCardElementView);
 };

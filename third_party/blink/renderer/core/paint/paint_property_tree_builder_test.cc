@@ -5307,7 +5307,7 @@ TEST_P(PaintPropertyTreeBuilderTest,
   Element* opacity_element = GetDocument().getElementById("opacity");
   const auto* target = GetLayoutObjectByElementId("target");
 
-  EXPECT_FALSE(ToLayoutBoxModelObject(target)->Layer()->NeedsRepaint());
+  EXPECT_FALSE(ToLayoutBoxModelObject(target)->Layer()->SelfNeedsRepaint());
 
   opacity_element->setAttribute(html_names::kStyleAttr, "opacity: 0.5");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
@@ -5316,11 +5316,11 @@ TEST_P(PaintPropertyTreeBuilderTest,
     // TODO(crbug.com/900241): Without CompositeAfterPaint, we create effect and
     // filter nodes when the transform node needs compositing for
     // will-change:transform, for crbug.com/942681.
-    EXPECT_FALSE(ToLayoutBoxModelObject(target)->Layer()->NeedsRepaint());
+    EXPECT_FALSE(ToLayoutBoxModelObject(target)->Layer()->SelfNeedsRepaint());
   } else {
     // All paint chunks contained by the new opacity effect node need to be
     // re-painted.
-    EXPECT_TRUE(ToLayoutBoxModelObject(target)->Layer()->NeedsRepaint());
+    EXPECT_TRUE(ToLayoutBoxModelObject(target)->Layer()->SelfNeedsRepaint());
   }
 }
 
@@ -5502,11 +5502,11 @@ TEST_P(PaintPropertyTreeBuilderTest, ClipHitTestChangeDoesNotCauseFullRepaint) {
   UpdateAllLifecyclePhasesForTest();
 
   auto* child_layer = ToLayoutBox(GetLayoutObjectByElementId("child"))->Layer();
-  EXPECT_FALSE(child_layer->NeedsRepaint());
+  EXPECT_FALSE(child_layer->SelfNeedsRepaint());
 
   GetDocument().body()->setAttribute(html_names::kClassAttr, "noscrollbars");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  EXPECT_FALSE(child_layer->NeedsRepaint());
+  EXPECT_FALSE(child_layer->SelfNeedsRepaint());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, ClipPathInheritanceWithoutMutation) {
@@ -6099,7 +6099,8 @@ TEST_P(PaintPropertyTreeBuilderTest, WillChangeOpacityInducesAnEffectNode) {
   auto* div = GetDocument().getElementById("div");
   div->setAttribute(html_names::kClassAttr, "transluscent");
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
-  EXPECT_FALSE(ToLayoutBox(div->GetLayoutObject())->Layer()->NeedsRepaint());
+  EXPECT_FALSE(
+      ToLayoutBox(div->GetLayoutObject())->Layer()->SelfNeedsRepaint());
 
   ASSERT_TRUE(properties->Effect());
   EXPECT_FLOAT_EQ(properties->Effect()->Opacity(), 0.5f);

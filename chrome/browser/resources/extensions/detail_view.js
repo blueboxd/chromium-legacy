@@ -329,8 +329,6 @@ Polymer({
     switch (type) {
       case 'POLICY':
         return 'cr20:domain';
-      case 'CHILD_CUSTODIAN':
-        return 'cr:account-child-invert';
       case 'SUPERVISED_USER_CUSTODIAN':
         return 'cr:supervisor-account';
       default:

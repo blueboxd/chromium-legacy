@@ -20,6 +20,11 @@ public class NewTabCallbackImpl extends NewTabCallback {
         tab.getBrowser().setActiveTab(tab);
     }
 
+    @Override
+    public void onCloseTab() {
+        assert false;
+    }
+
     public void waitForNewTab() {
         try {
             // waitForFirst() only handles a single call. If you need more convert from

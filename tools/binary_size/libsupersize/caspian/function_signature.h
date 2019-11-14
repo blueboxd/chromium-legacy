@@ -31,8 +31,9 @@ std::tuple<std::string_view, std::string_view, std::string_view> ParseJava(
 //   * name without return type (symbol.full_name),
 //   * full_name without params (symbol.template_name),
 //   * full_name without params and template args (symbol.name)
-std::tuple<std::string, std::string, std::string> ParseCpp(
-    const std::string& name);
+std::tuple<std::string_view, std::string_view, std::string_view> ParseCpp(
+    std::string_view name,
+    std::deque<std::string>* owned_strings);
 
 // Returns the last index of |target_char| that is not within ()s nor <>s.
 size_t FindLastCharOutsideOfBrackets(std::string_view name,
@@ -53,7 +54,7 @@ std::string NormalizeTopLevelClangLambda(std::string_view name,
                                          size_t left_paren_idx);
 
 // Strips the contents of <>, leaving empty <>s to denote that it's a template.
-std::string StripTemplateArgs(std::string name);
+std::string StripTemplateArgs(std::string_view name);
 }  // namespace caspian
 
 #endif  // TOOLS_BINARY_SIZE_LIBSUPERSIZE_CASPIAN_FUNCTION_SIGNATURE_H_

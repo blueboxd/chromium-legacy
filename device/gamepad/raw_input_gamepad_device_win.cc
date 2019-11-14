@@ -78,7 +78,8 @@ RawInputGamepadDeviceWin::RawInputGamepadDeviceWin(
       GamepadBusType bus_type =
           Dualshock4Controller::BusTypeFromVersionNumber(version_number_);
       dualshock4_ = std::make_unique<Dualshock4Controller>(
-          bus_type, std::make_unique<HidWriterWin>(handle_));
+          vendor_id_, product_id_, bus_type,
+          std::make_unique<HidWriterWin>(handle_));
     } else if (HidHapticGamepad::IsHidHaptic(vendor_id_, product_id_)) {
       hid_haptics_ = HidHapticGamepad::Create(
           vendor_id_, product_id_, std::make_unique<HidWriterWin>(handle_));

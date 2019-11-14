@@ -24,7 +24,8 @@ class LayerAsJSONClient;
 // GraphicsLayer tree.
 class PLATFORM_EXPORT ForeignLayerDisplayItem final : public DisplayItem {
  public:
-  ForeignLayerDisplayItem(Type,
+  ForeignLayerDisplayItem(const DisplayItemClient& client,
+                          Type,
                           scoped_refptr<cc::Layer>,
                           const FloatPoint& offset,
                           const LayerAsJSONClient*);
@@ -47,10 +48,30 @@ class PLATFORM_EXPORT ForeignLayerDisplayItem final : public DisplayItem {
   const LayerAsJSONClient* json_client_;
 };
 
+// When a foreign layer's debug name is a literal string, define a instance of
+// LiteralDebugNameClient with DEFINE_STATIC_LOCAL() and pass the instance as
+// client to RecordForeignLayer().
+class LiteralDebugNameClient : public DisplayItemClient {
+ public:
+  LiteralDebugNameClient(const char* name) : name_(name) {}
+
+  String DebugName() const override { return name_; }
+  IntRect VisualRect() const override {
+    NOTREACHED();
+    return IntRect();
+  }
+
+ private:
+  const char* name_;
+};
+
 // Records a foreign layer into a GraphicsContext.
 // Use this where you would use a recorder class.
+// |client| provides DebugName and optionally DOMNodeId, while VisualRect will
+// be calculated automatically based on layer bounds and offset.
 PLATFORM_EXPORT void RecordForeignLayer(
     GraphicsContext& context,
+    const DisplayItemClient& client,
     DisplayItem::Type type,
     scoped_refptr<cc::Layer> layer,
     const FloatPoint& offset,

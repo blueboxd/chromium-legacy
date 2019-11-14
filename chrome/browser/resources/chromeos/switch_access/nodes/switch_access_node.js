@@ -21,54 +21,7 @@ class SAChildNode {
     this.next_ = null;
   }
 
-  /**
-   * @param {!SAChildNode} previous
-   * @protected
-   */
-  setPrevious_(previous) {
-    this.previous_ = previous;
-  }
-
-  /**
-   * @param {!SAChildNode} next
-   * @protected
-   */
-  setNext_(next) {
-    this.next_ = next;
-  }
-
-  /**
-   * @param {SAChildNode} other
-   * @return {boolean}
-   * @abstract
-   */
-  equals(other) {}
-
-  /**
-   * @return {chrome.automation.RoleType|undefined}
-   * @abstract
-   */
-  get role() {}
-
-  /**
-   * @return {chrome.accessibilityPrivate.ScreenRect|undefined}
-   * @abstract
-   */
-  get location() {}
-
-  /**
-   * Returns the underlying automation node, if one exists.
-   * @return {chrome.automation.AutomationNode}
-   * @abstract
-   */
-  get automationNode() {}
-
-  /**
-   * Returns whether this node should be displayed as a group.
-   * @return {boolean}
-   * @abstract
-   */
-  isGroup() {}
+  // ================= Getters and setters =================
 
   /**
    * Returns a list of all the actions available for this node.
@@ -78,29 +31,22 @@ class SAChildNode {
   get actions() {}
 
   /**
-   * Given a menu action, returns whether it can be performed on this node.
-   * @param {SAConstants.MenuAction} action
-   * @return {boolean}
+   * Returns the underlying automation node, if one exists.
+   * @return {chrome.automation.AutomationNode}
+   * @abstract
    */
-  hasAction(action) {
-    return this.actions.includes(action);
+  get automationNode() {}
+
+  /**
+   * @return {chrome.accessibilityPrivate.ScreenRect|undefined}
+   * @abstract
+   */
+  get location() {}
+
+  /** @param {!SAChildNode} newVal */
+  set next(newVal) {
+    this.next_ = newVal;
   }
-
-  /**
-   * Performs the specified action on the node, if it is available.
-   * @param {SAConstants.MenuAction} action
-   * @return {boolean} Whether to close the menu. True if the menu should close,
-   *     false otherwise.
-   * @abstract
-   */
-  performAction(action) {}
-
-  /**
-   * @param {!chrome.automation.AutomationNode} node
-   * @return {boolean}
-   * @abstract
-   */
-  isEquivalentTo(node) {}
 
   /**
    * Returns the next node in pre-order traversal.
@@ -113,6 +59,11 @@ class SAChildNode {
           'Next node must be set on all SAChildNodes before navigating');
     }
     return this.next_;
+  }
+
+  /** @param {!SAChildNode} newVal */
+  set previous(newVal) {
+    this.previous_ = newVal;
   }
 
   /**
@@ -129,6 +80,14 @@ class SAChildNode {
   }
 
   /**
+   * @return {chrome.automation.RoleType|undefined}
+   * @abstract
+   */
+  get role() {}
+
+  // ================= General methods =================
+
+  /**
    * If this node is a group, returns the analogous SARootNode.
    * @return {SARootNode}
    * @abstract
@@ -136,14 +95,55 @@ class SAChildNode {
   asRootNode() {}
 
   /**
-   * Called when a node becomes the primary highlighted node.
+   * @param {SAChildNode} other
+   * @return {boolean}
+   * @abstract
+   */
+  equals(other) {}
+
+  /**
+   * Given a menu action, returns whether it can be performed on this node.
+   * @param {SAConstants.MenuAction} action
+   * @return {boolean}
+   */
+  hasAction(action) {
+    return this.actions.includes(action);
+  }
+
+  /**
+   * @param {!chrome.automation.AutomationNode} node
+   * @return {boolean}
+   * @abstract
+   */
+  isEquivalentTo(node) {}
+
+  /**
+   * Returns whether this node should be displayed as a group.
+   * @return {boolean}
+   * @abstract
+   */
+  isGroup() {}
+
+  /**
+   * Called when this node becomes the primary highlighted node.
    */
   onFocus() {}
 
   /**
-   * Called when a node stops being the primary highlighted node.
+   * Called when this node stops being the primary highlighted node.
    */
   onUnfocus() {}
+
+  /**
+   * Performs the specified action on the node, if it is available.
+   * @param {SAConstants.MenuAction} action
+   * @return {boolean} Whether to close the menu. True if the menu should close,
+   *     false otherwise.
+   * @abstract
+   */
+  performAction(action) {}
+
+  // ================= Debug methods =================
 
   /**
    * String-ifies the node (for debugging purposes).
@@ -187,33 +187,15 @@ class SARootNode {
     this.children_ = [];
   }
 
-  /** @param {!Array<!SAChildNode>} children */
-  setChildren(children) {
-    this.children_ = children;
-  }
+  // ================= Getters and setters =================
 
-  /**
-   * @param {SARootNode} other
-   * @return {boolean}
-   */
-  equals(other) {
-    if (!other) {
-      return false;
-    }
-    if (this.children_.length !== other.children_.length) {
-      return false;
-    }
+  /** @return {chrome.automation.AutomationNode} */
+  get automationNode() {}
 
-    let result = true;
-    for (let i = 0; i < this.children_.length; i++) {
-      if (!this.children_[i]) {
-        throw SwitchAccess.error(
-            SAConstants.ErrorType.NULL_CHILD, 'Child cannot be null.');
-      }
-      result = result && this.children_[i].equals(other.children_[i]);
-    }
-
-    return result;
+  /** @param {!Array<!SAChildNode>} newVal */
+  set children(newVal) {
+    this.children_ = newVal;
+    this.connectChildren_();
   }
 
   /** @return {!Array<!SAChildNode>} */
@@ -243,16 +225,37 @@ class SARootNode {
     }
   }
 
-  /** @return {boolean} */
-  isValid() {
-    return true;
-  }
-
   /** @return {!chrome.accessibilityPrivate.ScreenRect} */
   get location() {
     let children = this.children_.filter((c) => !(c instanceof BackButtonNode));
     let childLocations = children.map((c) => c.location);
     return RectHelper.unionAll(childLocations);
+  }
+
+  // ================= General methods =================
+
+  /**
+   * @param {SARootNode} other
+   * @return {boolean}
+   */
+  equals(other) {
+    if (!other) {
+      return false;
+    }
+    if (this.children_.length !== other.children_.length) {
+      return false;
+    }
+
+    let result = true;
+    for (let i = 0; i < this.children_.length; i++) {
+      if (!this.children_[i]) {
+        throw SwitchAccess.error(
+            SAConstants.ErrorType.NULL_CHILD, 'Child cannot be null.');
+      }
+      result = result && this.children_[i].equals(other.children_[i]);
+    }
+
+    return result;
   }
 
   /**
@@ -263,11 +266,15 @@ class SARootNode {
     return false;
   }
 
-  /** @return {chrome.automation.AutomationNode} */
-  get automationNode() {}
+  /** @return {boolean} */
+  isValid() {
+    return true;
+  }
 
   /** Called when a group is exiting. */
   onExit() {}
+
+  // ================= Debug methods =================
 
   /**
    * String-ifies the node (for debugging purposes).
@@ -300,23 +307,25 @@ class SARootNode {
     return str;
   }
 
+  // ================= Private methods =================
+
   /**
    * Helper function to connect children.
-   * @param {!Array<!SAChildNode>} children
+   * @private
    */
-  static connectChildren(children) {
-    if (children.length < 1) {
+  connectChildren_() {
+    if (this.children_.length < 1) {
       throw SwitchAccess.error(
           SAConstants.ErrorType.NO_CHILDREN,
           'Root node must have at least 1 interesting child.');
     }
 
-    let previous = children[children.length - 1];
+    let previous = this.children_[this.children_.length - 1];
 
-    for (let i = 0; i < children.length; i++) {
-      let current = children[i];
-      previous.setNext_(current);
-      current.setPrevious_(previous);
+    for (let i = 0; i < this.children_.length; i++) {
+      let current = this.children_[i];
+      previous.next = current;
+      current.previous = previous;
 
       previous = current;
     }

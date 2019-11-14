@@ -341,6 +341,10 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
                      color_utils::SkColorToRgbaString(
                          ui::NativeTheme::GetInstanceForWeb()->GetSystemColor(
                              ui::NativeTheme::kColorId_ProminentButtonColor)));
+    colors.SetString("--tabstrip-focus-outline-color",
+                     color_utils::SkColorToRgbaString(
+                         ui::NativeTheme::GetInstanceForWeb()->GetSystemColor(
+                             ui::NativeTheme::kColorId_FocusedBorderColor)));
 
     ResolveJavascriptCallback(callback_id, colors);
   }

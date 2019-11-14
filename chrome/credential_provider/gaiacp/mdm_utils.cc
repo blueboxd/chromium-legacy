@@ -33,7 +33,7 @@ namespace credential_provider {
 constexpr wchar_t kRegMdmUrl[] = L"mdm";
 constexpr wchar_t kRegMdmEnableForcePasswordReset[] =
     L"mdm_enable_force_password";
-constexpr wchar_t kRegMdmEscrowServiceServerUrl[] = L"mdm_ess_url";
+constexpr wchar_t kRegEscrowServiceServerUrl[] = L"mdm_ess_url";
 constexpr wchar_t kRegMdmSupportsMultiUser[] = L"mdm_mu";
 constexpr wchar_t kRegMdmAllowConsumerAccounts[] = L"mdm_aca";
 constexpr wchar_t kUserPasswordLsaStoreKeyPrefix[] =
@@ -364,9 +364,9 @@ bool MdmEnrollmentEnabled() {
   return !mdm_url.empty();
 }
 
-GURL MdmEscrowServiceUrl() {
+GURL EscrowServiceUrl() {
   base::string16 escrow_service_url = GetGlobalFlagOrDefault(
-      kRegMdmEscrowServiceServerUrl, kDefaultEscrowServiceServerUrl);
+      kRegEscrowServiceServerUrl, kDefaultEscrowServiceServerUrl);
 
   if (escrow_service_url.empty())
     return GURL();
@@ -374,17 +374,13 @@ GURL MdmEscrowServiceUrl() {
   return GURL(base::UTF16ToUTF8(escrow_service_url));
 }
 
-bool MdmPasswordRecoveryEnabled() {
+bool PasswordRecoveryEnabled() {
 #if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (g_escrow_service_enabled == EscrowServiceStatus::kDisabled)
     return false;
 #endif
 
-  // Password recovery is enabled only if MDM is enabled.
-  if (!MdmEnrollmentEnabled())
-    return false;
-
-  if (MdmEscrowServiceUrl().is_empty())
+  if (EscrowServiceUrl().is_empty())
     return false;
 
   return true;

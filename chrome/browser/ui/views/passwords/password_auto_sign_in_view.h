@@ -31,7 +31,6 @@ class PasswordAutoSignInView : public PasswordBubbleViewBase,
   ~PasswordAutoSignInView() override;
 
   // LocationBarBubbleDelegateView:
-  int GetDialogButtons() const override;
   gfx::Size CalculatePreferredSize() const override;
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
 

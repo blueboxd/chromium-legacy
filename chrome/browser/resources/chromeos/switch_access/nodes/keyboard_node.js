@@ -15,12 +15,32 @@ class KeyboardNode extends NodeWrapper {
     super(node, parent);
   }
 
+  // ================= Getters and setters =================
+
   /** @override */
   get actions() {
     if (this.isGroup()) {
       return [];
     }
     return [SAConstants.MenuAction.SELECT];
+  }
+
+  // ================= General methods =================
+
+  /** @override */
+  asRootNode() {
+    if (!this.isGroup()) {
+      return null;
+    }
+
+    const node = this.automationNode;
+    if (!node) {
+      throw new TypeError('Keyboard nodes must have an automation node.');
+    }
+
+    const root = new RootNodeWrapper(node);
+    KeyboardNode.findAndSetChildren(root);
+    return root;
   }
 
   /** @override */
@@ -45,27 +65,13 @@ class KeyboardNode extends NodeWrapper {
     return true;
   }
 
-  /** @override */
-  asRootNode() {
-    if (!this.isGroup()) {
-      return null;
-    }
-
-    const node = this.automationNode;
-    if (!node) {
-      throw new TypeError('Keyboard nodes must have an automation node.');
-    }
-
-    const root = new RootNodeWrapper(node);
-    KeyboardNode.buildHelper(root);
-    return root;
-  }
+  // ================= Static methods =================
 
   /**
-   * Builds a tree of KeyboardNodes.
+   * Helper function to connect tree elements, given the root node.
    * @param {!RootNodeWrapper} root
    */
-  static buildHelper(root) {
+  static findAndSetChildren(root) {
     const childConstructor = (node) => new KeyboardNode(node, root);
 
     /** @type {!Array<!chrome.automation.AutomationNode>} */
@@ -75,11 +81,8 @@ class KeyboardNode extends NodeWrapper {
       children = GroupNode.separateByRow(children);
     }
 
-    const backButton = new BackButtonNode(root);
-    children.push(backButton);
-
-    SARootNode.connectChildren(children);
-    root.setChildren(children);
+    children.push(new BackButtonNode(root));
+    root.children = children;
   }
 }
 
@@ -96,10 +99,14 @@ class KeyboardRootNode extends RootNodeWrapper {
     super(keyboard);
   }
 
+  // ================= General methods =================
+
   /** @override */
   onExit() {
     chrome.accessibilityPrivate.setVirtualKeyboardVisible(false);
   }
+
+  // ================= Private methods =================
 
   /**
    * Custom logic when entering the node.
@@ -107,6 +114,8 @@ class KeyboardRootNode extends RootNodeWrapper {
   onEnter_() {
     chrome.accessibilityPrivate.setVirtualKeyboardVisible(true);
   }
+
+  // ================= Static methods =================
 
   /**
    * Creates the tree structure for the system menu.
@@ -126,7 +135,7 @@ class KeyboardRootNode extends RootNodeWrapper {
 
     const root = new KeyboardRootNode(keyboard);
     root.onEnter_();
-    KeyboardNode.buildHelper(root);
+    KeyboardNode.findAndSetChildren(root);
     return root;
   }
 }

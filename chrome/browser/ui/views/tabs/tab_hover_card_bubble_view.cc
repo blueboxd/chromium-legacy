@@ -386,6 +386,8 @@ class TabHoverCardBubbleView::ThumbnailWatcher {
 
 TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
     : BubbleDialogDelegateView(tab, views::BubbleBorder::TOP_LEFT) {
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+
   // We'll do all of our own layout inside the bubble, so no need to inset this
   // view inside the client view.
   set_margins(gfx::Insets());
@@ -630,10 +632,6 @@ ax::mojom::Role TabHoverCardBubbleView::GetAccessibleWindowRole() {
   // Override the role so that hover cards are not read when they appear because
   // tabs handle accessibility text.
   return ax::mojom::Role::kIgnored;
-}
-
-int TabHoverCardBubbleView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
 }
 
 void TabHoverCardBubbleView::Layout() {

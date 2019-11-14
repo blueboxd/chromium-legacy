@@ -9,11 +9,12 @@ import android.content.Context;
 import android.net.Uri;
 import android.support.v7.app.AlertDialog;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.ui.PhotoPickerListener;
 

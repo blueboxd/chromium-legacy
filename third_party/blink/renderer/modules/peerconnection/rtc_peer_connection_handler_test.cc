@@ -215,6 +215,22 @@ class MockPeerConnectionTracker : public PeerConnectionTracker {
                     const blink::WebMediaStreamTrack& track));
 };
 
+class DummyRTCVoidRequest final : public RTCVoidRequest {
+ public:
+  ~DummyRTCVoidRequest() override {}
+
+  bool was_called() const { return was_called_; }
+
+  void RequestSucceeded() override { was_called_ = true; }
+  void RequestFailed(const webrtc::RTCError&) override { was_called_ = true; }
+  void Trace(blink::Visitor* visitor) override {
+    RTCVoidRequest::Trace(visitor);
+  }
+
+ private:
+  bool was_called_ = false;
+};
+
 void OnStatsDelivered(std::unique_ptr<RTCStatsReportPlatform>* result,
                       scoped_refptr<base::SingleThreadTaskRunner> main_thread,
                       std::unique_ptr<RTCStatsReportPlatform> report) {
@@ -776,7 +792,10 @@ TEST_F(RTCPeerConnectionHandlerTest, addICECandidate) {
   EXPECT_CALL(*mock_tracker_.get(),
               TrackAddIceCandidate(pc_handler_.get(), candidate,
                                    PeerConnectionTracker::SOURCE_REMOTE, true));
-  EXPECT_TRUE(pc_handler_->AddICECandidate(candidate));
+  auto* request = MakeGarbageCollected<DummyRTCVoidRequest>();
+  pc_handler_->AddICECandidate(request, candidate);
+  RunMessageLoopsUntilIdle();
+  EXPECT_TRUE(request->was_called());
   EXPECT_EQ(kDummySdp, mock_peer_connection_->ice_sdp());
   EXPECT_EQ(1, mock_peer_connection_->sdp_mline_index());
   EXPECT_EQ("sdpMid", mock_peer_connection_->sdp_mid());

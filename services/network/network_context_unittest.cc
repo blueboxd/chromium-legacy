@@ -4416,8 +4416,8 @@ TEST_F(NetworkContextTest, ProxyErrorClientNotNotifiedOfUnreachableError) {
 }
 
 // Test mojom::ProxyResolver that completes calls to GetProxyForUrl() with a
-// DIRECT "proxy". It additionall emits a script error on line 42 for every call
-// to GetProxyForUrl().
+// DIRECT "proxy". It additionally emits a script error on line 42 for every
+// call to GetProxyForUrl().
 class MockMojoProxyResolver : public proxy_resolver::mojom::ProxyResolver {
  public:
   MockMojoProxyResolver() {}
@@ -4426,6 +4426,7 @@ class MockMojoProxyResolver : public proxy_resolver::mojom::ProxyResolver {
   // Overridden from proxy_resolver::mojom::ProxyResolver:
   void GetProxyForUrl(
       const GURL& url,
+      const net::NetworkIsolationKey& network_isolation_key,
       mojo::PendingRemote<proxy_resolver::mojom::ProxyResolverRequestClient>
           pending_client) override {
     // Report a Javascript error and then complete the request successfully,

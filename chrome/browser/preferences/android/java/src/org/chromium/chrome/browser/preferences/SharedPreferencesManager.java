@@ -7,10 +7,10 @@ package org.chromium.chrome.browser.preferences;
 import android.content.SharedPreferences;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.StrictModeContext;
-import org.chromium.base.VisibleForTesting;
 
 import java.util.Collections;
 import java.util.HashMap;

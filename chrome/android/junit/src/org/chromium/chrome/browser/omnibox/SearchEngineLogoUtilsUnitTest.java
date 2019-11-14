@@ -30,6 +30,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadow.api.Shadow;
 
 import org.chromium.base.Callback;
+import org.chromium.base.metrics.test.DisableHistogramsRule;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
@@ -37,7 +38,6 @@ import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils.Delegate;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.ui.widget.RoundedIconGenerator;
-import org.chromium.chrome.test.support.DisableHistogramsRule;
 import org.chromium.components.search_engines.TemplateUrlService;
 
 /**

@@ -4,15 +4,19 @@
 
 #include "chrome/browser/media/router/providers/cast/cast_media_route_provider.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/stl_util.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/media/router/providers/cast/cast_activity_manager.h"
 #include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
+#include "chrome/common/media_router/media_source.h"
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
 #include "components/cast_channel/cast_message_handler.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "url/origin.h"
 
 namespace media_router {
@@ -85,7 +89,7 @@ CastMediaRouteProvider::~CastMediaRouteProvider() {
   DCHECK(sink_queries_.empty());
 }
 
-void CastMediaRouteProvider::CreateRoute(const std::string& media_source,
+void CastMediaRouteProvider::CreateRoute(const std::string& source_id,
                                          const std::string& sink_id,
                                          const std::string& presentation_id,
                                          const url::Origin& origin,
@@ -105,7 +109,7 @@ void CastMediaRouteProvider::CreateRoute(const std::string& media_source,
   }
 
   std::unique_ptr<CastMediaSource> cast_source =
-      CastMediaSource::FromMediaSourceId(media_source);
+      CastMediaSource::FromMediaSourceId(source_id);
   if (!cast_source) {
     std::move(callback).Run(
         base::nullopt, nullptr, std::string("Invalid source"),

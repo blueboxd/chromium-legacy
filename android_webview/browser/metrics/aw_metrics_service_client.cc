@@ -19,6 +19,7 @@
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "components/metrics/android_metrics_provider.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/cpu_metrics_provider.h"
@@ -36,6 +37,8 @@
 #include "components/version_info/android/channel_getter.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 
 namespace android_webview {
 
@@ -182,6 +185,10 @@ void AwMetricsServiceClient::MaybeStartMetrics() {
     if (app_consent_ && user_consent_or_flag) {
       metrics_service_ = CreateMetricsService(metrics_state_manager_.get(),
                                               this, pref_service_);
+      // Register for notifications so we can detect when the user or app are
+      // interacting with WebView. We use these as signals to wake up the
+      // MetricsService.
+      RegisterForNotifications();
       metrics_state_manager_->ForceClientIdCreation();
       is_in_sample_ = IsInSample();
       if (IsReportingEnabled()) {
@@ -193,6 +200,17 @@ void AwMetricsServiceClient::MaybeStartMetrics() {
       pref_service_->ClearPref(metrics::prefs::kMetricsClientID);
     }
   }
+}
+
+void AwMetricsServiceClient::RegisterForNotifications() {
+  registrar_.Add(this, content::NOTIFICATION_LOAD_START,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this, content::NOTIFICATION_LOAD_STOP,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
+                 content::NotificationService::AllSources());
+  registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_HOST_HANG,
+                 content::NotificationService::AllSources());
 }
 
 void AwMetricsServiceClient::SetHaveMetricsConsent(bool user_consent,
@@ -208,6 +226,12 @@ void AwMetricsServiceClient::SetFastStartupForTesting(
     bool fast_startup_for_testing) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   fast_startup_for_testing_ = fast_startup_for_testing;
+}
+
+void AwMetricsServiceClient::SetUploadIntervalForTesting(
+    const base::TimeDelta& upload_interval) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  overridden_upload_interval_ = upload_interval;
 }
 
 std::unique_ptr<const base::FieldTrial::EntropyProvider>
@@ -292,6 +316,9 @@ base::TimeDelta AwMetricsServiceClient::GetStandardUploadInterval() {
   // controlled by the platform logging mechanism. Since this mechanism has its
   // own logic for rate-limiting on cellular connections, we disable the
   // component-layer logic.
+  if (!overridden_upload_interval_.is_zero()) {
+    return overridden_upload_interval_;
+  }
   return metrics::GetUploadInterval(false /* use_cellular_upload_interval */);
 }
 
@@ -309,6 +336,24 @@ std::string AwMetricsServiceClient::GetAppPackageName() {
       return ConvertJavaStringToUTF8(env, j_app_name);
   }
   return std::string();
+}
+
+void AwMetricsServiceClient::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  switch (type) {
+    case content::NOTIFICATION_LOAD_STOP:
+    case content::NOTIFICATION_LOAD_START:
+    case content::NOTIFICATION_RENDERER_PROCESS_CLOSED:
+    case content::NOTIFICATION_RENDER_WIDGET_HOST_HANG:
+      metrics_service_->OnApplicationNotIdle();
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 // WebView metrics are sampled at (possibly) different rates depending on
@@ -376,6 +421,14 @@ void JNI_AwMetricsServiceClient_SetFastStartupForTesting(
     jboolean fast_startup_for_testing) {
   AwMetricsServiceClient::GetInstance()->SetFastStartupForTesting(
       fast_startup_for_testing);
+}
+
+// static
+void JNI_AwMetricsServiceClient_SetUploadIntervalForTesting(
+    JNIEnv* env,
+    jlong upload_interval_ms) {
+  AwMetricsServiceClient::GetInstance()->SetUploadIntervalForTesting(
+      base::TimeDelta::FromMilliseconds(upload_interval_ms));
 }
 
 }  // namespace android_webview

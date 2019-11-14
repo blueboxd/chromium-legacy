@@ -24,13 +24,21 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "components/crash/core/common/crash_key.h"
 
 namespace discardable_memory {
 namespace {
 
 // Default allocation size.
+#if defined(OS_WIN) && defined(ARCH_CPU_32_BITS)
+// On Windows 32 bit, use a smaller chunk, as address space fragmentation may
+// make a 4MiB allocation impossible to fulfill in the browser process.
+// See crbug.com/983348 for details.
+const size_t kAllocationSize = 1 * 1024 * 1024;
+#else
 const size_t kAllocationSize = 4 * 1024 * 1024;
+#endif
 
 // Global atomic to generate unique discardable shared memory IDs.
 base::AtomicSequenceNumber g_next_discardable_shared_memory_id;

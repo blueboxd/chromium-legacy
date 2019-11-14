@@ -475,23 +475,6 @@ source_set("chrome_content_browser_overlay_manifest") {
   }
 }
 
-source_set("chrome_content_gpu_overlay_manifest") {
-  sources = [
-    "chrome_content_gpu_overlay_manifest.cc",
-    "chrome_content_gpu_overlay_manifest.h",
-  ]
-
-  deps = [
-    "//base",
-    "//components/services/heap_profiling/public/mojom",
-    "//services/service_manager/public/cpp",
-  ]
-
-  if (is_chromeos) {
-    deps += [ "//components/arc/mojom:media" ]
-  }
-}
-
 source_set("chrome_content_renderer_overlay_manifest") {
   sources = [
     "chrome_content_renderer_overlay_manifest.cc",
@@ -559,7 +542,6 @@ source_set("chrome_service_manifests") {
   public_deps = [
     ":builtin_service_manifests",
     ":chrome_content_browser_overlay_manifest",
-    ":chrome_content_gpu_overlay_manifest",
     ":chrome_content_renderer_overlay_manifest",
   ]
 }

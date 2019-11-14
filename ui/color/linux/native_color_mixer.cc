@@ -8,7 +8,7 @@
 
 namespace ui {
 
-void AddNativeColorMixers(ui::ColorProvider* provider) {
+void AddNativeColorMixers(ColorProvider* provider) {
   NOTIMPLEMENTED();
 }
 

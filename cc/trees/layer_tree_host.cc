@@ -43,7 +43,6 @@
 #include "cc/layers/painted_scrollbar_layer.h"
 #include "cc/paint/paint_worklet_layer_painter.h"
 #include "cc/resources/ui_resource_manager.h"
-#include "cc/tiles/frame_viewer_instrumentation.h"
 #include "cc/trees/clip_node.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/effect_node.h"
@@ -458,22 +457,6 @@ void LayerTreeHost::PushPropertyTreesTo(LayerTreeImpl* tree_impl) {
 void LayerTreeHost::WillCommit() {
   swap_promise_manager_.WillCommit();
   client_->WillCommit();
-
-  if (frame_viewer_instrumentation::IsTracingLayerTreeSnapshots()) {
-    bool is_new_trace;
-    TRACE_EVENT_IS_NEW_TRACE(&is_new_trace);
-    if (is_new_trace) {
-      // We'll be dumping layer trees as part of trace, so make sure
-      // PushPropertiesTo() propagates layer debug info to the impl side --
-      // otherwise this won't happen for the layers that remain unchanged since
-      // tracing started.
-      for (auto* layer : *this)
-        layer->SetNeedsPushProperties();
-    }
-
-    for (Layer* layer : LayersThatShouldPushProperties())
-      layer->UpdateDebugInfo();
-  }
 }
 
 void LayerTreeHost::UpdateDeferMainFrameUpdateInternal() {

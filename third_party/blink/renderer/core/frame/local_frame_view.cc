@@ -36,6 +36,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/picture_layer.h"
+#include "cc/tiles/frame_viewer_instrumentation.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -148,6 +149,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 // Used to check for dirty layouts violating document lifecycle rules.
@@ -1363,7 +1365,7 @@ bool LocalFrameView::InvalidateViewportConstrainedObjects() {
     // layer->SubtreeIsInvisible() here.
     layout_object->SetSubtreeShouldCheckForPaintInvalidation();
     if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-        !layer->NeedsRepaint()) {
+        !layer->SelfOrDescendantNeedsRepaint()) {
       // Paint properties of the layer relative to its containing graphics
       // layer may change if the paint properties escape the graphics layer's
       // property state. Need to check raster invalidation for relative paint
@@ -2239,6 +2241,9 @@ bool LocalFrameView::UpdateLifecyclePhases(
   if (!frame_->GetDocument()->IsActive())
     return false;
 
+  if (frame_->IsLocalRoot())
+    UpdateLayerDebugInfoEnabled();
+
   // This is used to guard against reentrance. It is also used in conjunction
   // with the current lifecycle state to determine which phases are yet to run
   // in this cycle.
@@ -2594,21 +2599,11 @@ void LocalFrameView::PerformScrollAnchoringAdjustments() {
   }
 }
 
-static void RecordGraphicsLayerAsForeignLayer(
-    GraphicsContext& context,
-    const GraphicsLayer* graphics_layer) {
-  // TODO(trchen): Currently the GraphicsLayer hierarchy is still built during
-  // CompositingUpdate, and we have to clear them here to ensure no extraneous
-  // layers are still attached. In future we will disable all those layer
-  // hierarchy code so we won't need this line.
-  graphics_layer->CcLayer()->RemoveAllChildren();
-  RecordGraphicsLayerAsForeignLayer(context, DisplayItem::kForeignLayerWrapper,
-                                    *graphics_layer);
-}
-
-static void CollectDrawableLayersForLayerListRecursively(
-    GraphicsContext& context,
-    const GraphicsLayer* layer) {
+template <typename MainLayerFunction, typename ContentsLayerFunction>
+static void ForAllDrawableGraphicsLayers(
+    const GraphicsLayer* layer,
+    const MainLayerFunction& main_layer_function,
+    const ContentsLayerFunction& contents_layer_function) {
   if (!layer || layer->Client().ShouldThrottleRendering() ||
       layer->Client().IsUnderSVGHiddenContainer()) {
     return;
@@ -2627,18 +2622,53 @@ static void CollectDrawableLayersForLayerListRecursively(
   // will not draw content but needs to create a layer to ensure scroll events
   // do not pass through it.
   if (layer->PaintsContentOrHitTest() || layer->GetHitTestable())
-    RecordGraphicsLayerAsForeignLayer(context, layer);
+    main_layer_function(layer);
 
-  if (auto* contents_layer = layer->ContentsLayer()) {
-    RecordForeignLayer(context, DisplayItem::kForeignLayerContentsWrapper,
-                       contents_layer,
-                       FloatPoint(layer->GetContentsOffsetFromTransformNode()),
-                       layer->GetContentsPropertyTreeState());
+  if (auto* contents_layer = layer->ContentsLayer())
+    contents_layer_function(layer, contents_layer);
+
+  for (const auto* child : layer->Children()) {
+    ForAllDrawableGraphicsLayers(child, main_layer_function,
+                                 contents_layer_function);
   }
+  ForAllDrawableGraphicsLayers(layer->MaskLayer(), main_layer_function,
+                               contents_layer_function);
+}
 
-  for (const auto* child : layer->Children())
-    CollectDrawableLayersForLayerListRecursively(context, child);
-  CollectDrawableLayersForLayerListRecursively(context, layer->MaskLayer());
+static void CollectDrawableLayersForLayerListRecursively(
+    GraphicsContext& context,
+    const GraphicsLayer* root) {
+  ForAllDrawableGraphicsLayers(
+      root,
+      [&](const GraphicsLayer* layer) {
+        RecordGraphicsLayerAsForeignLayer(
+            context, DisplayItem::kForeignLayerWrapper, *layer);
+      },
+      [&](const GraphicsLayer* layer, cc::Layer* contents_layer) {
+        RecordForeignLayer(
+            context, *layer, DisplayItem::kForeignLayerContentsWrapper,
+            contents_layer,
+            FloatPoint(layer->GetContentsOffsetFromTransformNode()),
+            layer->GetContentsPropertyTreeState());
+      });
+}
+
+static void UpdateLayerDebugInfoRecursively(const GraphicsLayer* root) {
+  ForAllDrawableGraphicsLayers(
+      root,
+      [](const GraphicsLayer* layer) {
+        PaintArtifactCompositor::UpdateLayerDebugInfo(
+            layer->CcLayer(),
+            PaintChunk::Id(*layer, DisplayItem::kForeignLayerWrapper),
+            layer->GetCompositingReasons(),
+            layer->GetRasterInvalidationTracking());
+      },
+      [](const GraphicsLayer* layer, cc::Layer* contents_layer) {
+        PaintArtifactCompositor::UpdateLayerDebugInfo(
+            contents_layer,
+            PaintChunk::Id(*layer, DisplayItem::kForeignLayerContentsWrapper),
+            layer->GetCompositingReasons(), nullptr);
+      });
 }
 
 static bool PaintGraphicsLayerRecursively(GraphicsLayer* layer) {
@@ -2671,7 +2701,8 @@ void LocalFrameView::PaintTree() {
     auto* web_local_frame_impl = WebLocalFrameImpl::FromFrame(frame_);
     bool has_dev_tools_overlays =
         web_local_frame_impl && web_local_frame_impl->HasDevToolsOverlays();
-    if (!GetLayoutView()->Layer()->NeedsRepaint() && !has_dev_tools_overlays) {
+    if (!GetLayoutView()->Layer()->SelfOrDescendantNeedsRepaint() &&
+        !has_dev_tools_overlays) {
       paint_controller_->UpdateUMACountsOnFullyCached();
     } else {
       GraphicsContext graphics_context(*paint_controller_);
@@ -2755,12 +2786,21 @@ void LocalFrameView::PushPaintArtifactToCompositor() {
   SCOPED_UMA_AND_UKM_TIMER(EnsureUkmAggregator(),
                            LocalFrameUkmAggregator::kCompositingCommit);
 
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
+      layer_debug_info_enabled_) {
+    UpdateLayerDebugInfoRecursively(
+        GetLayoutView()->Compositor()->PaintRootGraphicsLayer());
+  }
+
   // Skip updating property trees, pushing cc::Layers, and issuing raster
   // invalidations if possible.
   if (!paint_artifact_compositor_->NeedsUpdate()) {
     DCHECK(paint_controller_);
     return;
   }
+
+  paint_artifact_compositor_->SetLayerDebugInfoEnabled(
+      layer_debug_info_enabled_);
 
   PaintArtifactCompositor::ViewportProperties viewport_properties;
   if (GetFrame().IsMainFrame()) {
@@ -2803,9 +2843,6 @@ void LocalFrameView::PushPaintArtifactToCompositor() {
     GraphicsContext context(*paint_controller_);
     if (frame_->IsMainFrame())
       frame_->GetPage()->GetVisualViewport().Paint(context);
-    // Before CompositeAfterPaint, |PaintRootGraphicsLayer| is the ancestor of
-    // all drawable layers (see: PaintLayerCompositor::PaintRootGraphicsLayer)
-    // so we do not need to collect scrollbars separately.
     auto* root = GetLayoutView()->Compositor()->PaintRootGraphicsLayer();
     CollectDrawableLayersForLayerListRecursively(context, root);
 
@@ -4374,5 +4411,22 @@ LocalFrameView::DisallowLayoutInvalidationScope::
 }
 
 #endif
+
+void LocalFrameView::UpdateLayerDebugInfoEnabled() {
+  DCHECK(frame_->IsLocalRoot());
+#if DCHECK_IS_ON()
+  DCHECK(layer_debug_info_enabled_);
+  return;
+#endif
+
+  bool should_enable =
+      cc::frame_viewer_instrumentation::IsTracingLayerTreeSnapshots() ||
+      WebTestSupport::IsRunningWebTest() ||
+      CoreProbeSink::HasAgentsGlobal(CoreProbeSink::kInspectorLayerTreeAgent);
+  if (should_enable != layer_debug_info_enabled_) {
+    layer_debug_info_enabled_ = should_enable;
+    SetPaintArtifactCompositorNeedsUpdate();
+  }
+}
 
 }  // namespace blink

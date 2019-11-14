@@ -74,10 +74,6 @@ base::string16 CloudServicesDialogView::GetWindowTitle() const {
       IDS_MEDIA_ROUTER_CLOUD_SERVICES_DIALOG_TITLE);
 }
 
-int CloudServicesDialogView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-}
-
 bool CloudServicesDialogView::Accept() {
   PrefService* pref_service = browser_->profile()->GetPrefs();
   pref_service->SetBoolean(::prefs::kMediaRouterEnableCloudServices, true);

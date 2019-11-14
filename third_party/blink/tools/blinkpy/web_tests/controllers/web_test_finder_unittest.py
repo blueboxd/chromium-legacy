@@ -100,34 +100,34 @@ class WebTestFinderTests(unittest.TestCase):
         with mock.patch('__builtin__.hash', int):
 
           tests = [1, 2, 3, 4]
-          self.assertEqual(([1, 2, 3, 4], []), split(tests, 0, 1))
+          self.assertEqual([1, 2, 3, 4], split(tests, 0, 1))
 
-          self.assertEqual(([2, 4], [1, 3]), split(tests, 0, 2))
-          self.assertEqual(([1, 3], [2, 4]), split(tests, 1, 2))
+          self.assertEqual([2, 4], split(tests, 0, 2))
+          self.assertEqual([1, 3], split(tests, 1, 2))
 
-          self.assertEqual(([3], [1, 2, 4]), split(tests, 0, 3))
-          self.assertEqual(([1, 4], [2, 3]), split(tests, 1, 3))
-          self.assertEqual(([2], [1, 3, 4]), split(tests, 2, 3))
+          self.assertEqual([3], split(tests, 0, 3))
+          self.assertEqual([1, 4], split(tests, 1, 3))
+          self.assertEqual([2], split(tests, 2, 3))
 
           tests = [1, 2, 3, 4, 5]
-          self.assertEqual(([1, 2, 3, 4, 5], []), split(tests, 0, 1))
+          self.assertEqual([1, 2, 3, 4, 5], split(tests, 0, 1))
 
-          self.assertEqual(([2, 4], [1, 3, 5]), split(tests, 0, 2))
-          self.assertEqual(([1, 3, 5], [2, 4]), split(tests, 1, 2))
+          self.assertEqual([2, 4], split(tests, 0, 2))
+          self.assertEqual([1, 3, 5], split(tests, 1, 2))
 
-          self.assertEqual(([3], [1, 2, 4, 5]), split(tests, 0, 3))
-          self.assertEqual(([1, 4], [2, 3, 5]), split(tests, 1, 3))
-          self.assertEqual(([2, 5], [1, 3, 4]), split(tests, 2, 3))
+          self.assertEqual([3], split(tests, 0, 3))
+          self.assertEqual([1, 4], split(tests, 1, 3))
+          self.assertEqual([2, 5], split(tests, 2, 3))
 
           tests = [1, 2, 3, 4, 5, 6]
-          self.assertEqual(([1, 2, 3, 4, 5, 6], []), split(tests, 0, 1))
+          self.assertEqual([1, 2, 3, 4, 5, 6], split(tests, 0, 1))
 
-          self.assertEqual(([2, 4, 6], [1, 3, 5]), split(tests, 0, 2))
-          self.assertEqual(([1, 3, 5], [2, 4, 6]), split(tests, 1, 2))
+          self.assertEqual([2, 4, 6], split(tests, 0, 2))
+          self.assertEqual([1, 3, 5], split(tests, 1, 2))
 
-          self.assertEqual(([3, 6], [1, 2, 4, 5]), split(tests, 0, 3))
-          self.assertEqual(([1, 4], [2, 3, 5, 6]), split(tests, 1, 3))
-          self.assertEqual(([2, 5], [1, 3, 4, 6]), split(tests, 2, 3))
+          self.assertEqual([3, 6], split(tests, 0, 3))
+          self.assertEqual([1, 4], split(tests, 1, 3))
+          self.assertEqual([2, 5], split(tests, 2, 3))
 
 
 class FilterTestsTests(unittest.TestCase):

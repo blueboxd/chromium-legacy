@@ -13,11 +13,6 @@
 @class InfobarBannerTransitionDriver;
 @class InfobarBannerViewController;
 
-extern NSString* const kInfobarBannerTitleLabel;
-extern NSString* const kInfobarBannerSubtitleLabel;
-extern NSString* const kInfobarBannerButtonLabel;
-extern NSString* const kInfobarBannerPresentedModalLabel;
-
 @interface ContainerViewController
     : UIViewController <InfobarBannerPositioner, InfobarModalPositioner>
 @property(nonatomic, strong) InfobarBannerViewController* bannerViewController;

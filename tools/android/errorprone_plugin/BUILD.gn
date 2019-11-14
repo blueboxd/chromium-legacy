@@ -23,9 +23,10 @@ java_library("errorprone_plugin_java") {
   # So that we don't need to inject jacoco runtime into the compiler's classpath.
   jacoco_never_instrument = true
 
-  annotation_processor_deps = [ "//third_party/auto:auto_service_processor" ]
+  annotation_processor_deps =
+      [ "//third_party/android_deps:auto_service_processor" ]
   deps = [
-    "//third_party/auto:auto_service_java",
-    "//third_party/errorprone:errorprone_java",
+    "//third_party/android_deps:com_google_auto_service_auto_service_annotations_java",
+    "//third_party/android_deps:com_google_errorprone_error_prone_core_java",
   ]
 }

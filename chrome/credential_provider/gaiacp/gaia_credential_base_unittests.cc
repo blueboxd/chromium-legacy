@@ -1476,7 +1476,7 @@ TEST_P(GcpGaiaCredentialBasePasswordRecoveryTest, PasswordRecovery) {
   int generate_public_key_again_result = std::get<2>(GetParam());
 
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmUrl, L"https://mdm.com"));
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmEscrowServiceServerUrl,
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEscrowServiceServerUrl,
                                           L"https://escrow.com"));
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmAllowConsumerAccounts, 1));
   ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmSupportsMultiUser, 0));
@@ -1712,14 +1712,14 @@ TEST_P(GcpGaiaCredentialBasePasswordRecoveryDisablingTest,
   // SetGlobalFlagForTesting effectively deletes the registry when the provided
   // registry value is empty. That implicitly enables escrow service without a
   // registry override.
-  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegMdmEscrowServiceServerUrl, L""));
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegEscrowServiceServerUrl, L""));
 
   if (escrow_service_url) {
     base::win::RegKey key;
     ASSERT_EQ(ERROR_SUCCESS,
               key.Create(HKEY_LOCAL_MACHINE, kGcpRootKeyName, KEY_WRITE));
-    ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(kRegMdmEscrowServiceServerUrl,
-                                            escrow_service_url));
+    ASSERT_EQ(ERROR_SUCCESS,
+              key.WriteValue(kRegEscrowServiceServerUrl, escrow_service_url));
   }
 
   GoogleMdmEnrolledStatusForTesting force_success(true);

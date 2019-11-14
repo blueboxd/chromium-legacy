@@ -114,15 +114,8 @@ class WebRTCPeerConnectionHandler {
   virtual webrtc::RTCErrorType SetConfiguration(
       const webrtc::PeerConnectionInterface::RTCConfiguration&) = 0;
 
-  // DEPRECATED
-  virtual bool AddICECandidate(scoped_refptr<WebRTCICECandidate>) {
-    return false;
-  }
-
-  virtual bool AddICECandidate(RTCVoidRequest*,
-                               scoped_refptr<WebRTCICECandidate>) {
-    return false;
-  }
+  virtual void AddICECandidate(RTCVoidRequest*,
+                               scoped_refptr<WebRTCICECandidate>) = 0;
   virtual void RestartIce() = 0;
   virtual void GetStats(const WebRTCStatsRequest&) = 0;
   // Gets stats using the new stats collection API, see

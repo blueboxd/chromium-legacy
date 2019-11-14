@@ -80,10 +80,6 @@ ui::ModalType TabGroupEditorBubbleView::GetModalType() const {
   return ui::MODAL_TYPE_NONE;
 }
 
-int TabGroupEditorBubbleView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_NONE;
-}
-
 TabGroupEditorBubbleView::TabGroupEditorBubbleView(
     TabGroupHeader* anchor_view,
     TabController* tab_controller,
@@ -94,6 +90,8 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
       menu_button_listener_(tab_controller, anchor_view, group) {
   SetAnchorView(anchor_view);
   set_margins(gfx::Insets());
+
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
 
   const auto* layout_provider = ChromeLayoutProvider::Get();
   const TabGroupVisualData* current_data =

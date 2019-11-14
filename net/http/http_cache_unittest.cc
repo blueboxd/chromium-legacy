@@ -391,12 +391,14 @@ class RangeTransactionServer {
     not_modified_ = false;
     modified_ = false;
     bad_200_ = false;
+    redirect_ = false;
     length_ = 80;
   }
   ~RangeTransactionServer() {
     not_modified_ = false;
     modified_ = false;
     bad_200_ = false;
+    redirect_ = false;
     length_ = 80;
   }
 
@@ -411,6 +413,9 @@ class RangeTransactionServer {
 
   // Sets how long the resource is. (Default is 80)
   void set_length(int64_t length) { length_ = length; }
+
+  // Sets whether to return a 301 instead of normal return.
+  void set_redirect(bool redirect) { redirect_ = redirect; }
 
   // Other than regular range related behavior (and the flags mentioned above),
   // the server reacts to requests headers like so:
@@ -428,12 +433,14 @@ class RangeTransactionServer {
   static bool not_modified_;
   static bool modified_;
   static bool bad_200_;
+  static bool redirect_;
   static int64_t length_;
   DISALLOW_COPY_AND_ASSIGN(RangeTransactionServer);
 };
 bool RangeTransactionServer::not_modified_ = false;
 bool RangeTransactionServer::modified_ = false;
 bool RangeTransactionServer::bad_200_ = false;
+bool RangeTransactionServer::redirect_ = false;
 int64_t RangeTransactionServer::length_ = 80;
 
 // A dummy extra header that must be preserved on a given request.
@@ -469,6 +476,13 @@ void RangeTransactionServer::RangeHandler(const HttpRequestInfo* request,
   if (require_auth && !request->extra_headers.HasHeader("Authorization")) {
     response_status->assign("HTTP/1.1 401 Unauthorized");
     response_data->assign("WWW-Authenticate: Foo\n");
+    return;
+  }
+
+  if (redirect_) {
+    response_status->assign("HTTP/1.1 301 Moved Permanently");
+    response_headers->assign("Location: /elsewhere\nContent-Length: 5");
+    response_data->assign("12345");
     return;
   }
 
@@ -2781,6 +2795,77 @@ TEST_F(HttpCacheTest, RangeGET_ParallelValidationRestartDoneHeaders) {
   }
 
   EXPECT_EQ(4, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+}
+
+// A test of doing a range request to a cached 301 response
+TEST_F(HttpCacheTest, RangeGET_CachedRedirect) {
+  RangeTransactionServer handler;
+  handler.set_redirect(true);
+
+  MockHttpCache cache;
+  ScopedMockTransaction transaction(kRangeGET_TransactionOK);
+  transaction.request_headers = "Range: bytes = 0-\r\n" EXTRA_HEADER;
+  transaction.status = "HTTP/1.1 301 Moved Permanently";
+  transaction.response_headers = "Location: /elsewhere\nContent-Length:5";
+  transaction.data = "12345";
+  MockHttpRequest request(transaction);
+
+  TestCompletionCallback callback;
+
+  // Write to the cache.
+  {
+    std::unique_ptr<HttpTransaction> trans;
+    ASSERT_THAT(cache.CreateTransaction(&trans), IsOk());
+
+    int rv = trans->Start(&request, callback.callback(), NetLogWithSource());
+    if (rv == ERR_IO_PENDING)
+      rv = callback.WaitForResult();
+    ASSERT_THAT(rv, IsOk());
+
+    const HttpResponseInfo* info = trans->GetResponseInfo();
+    ASSERT_TRUE(info);
+
+    EXPECT_EQ(info->headers->response_code(), 301);
+
+    std::string location;
+    info->headers->EnumerateHeader(nullptr, "Location", &location);
+    EXPECT_EQ(location, "/elsewhere");
+
+    ReadAndVerifyTransaction(trans.get(), transaction);
+  }
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  // Active entries in the cache are not retired synchronously. Make
+  // sure the next run hits the MockHttpCache and open_count is
+  // correct.
+  base::RunLoop().RunUntilIdle();
+
+  // Read from the cache.
+  {
+    std::unique_ptr<HttpTransaction> trans;
+    ASSERT_THAT(cache.CreateTransaction(&trans), IsOk());
+
+    int rv = trans->Start(&request, callback.callback(), NetLogWithSource());
+    if (rv == ERR_IO_PENDING)
+      rv = callback.WaitForResult();
+    ASSERT_THAT(rv, IsOk());
+
+    const HttpResponseInfo* info = trans->GetResponseInfo();
+    ASSERT_TRUE(info);
+
+    EXPECT_EQ(info->headers->response_code(), 301);
+
+    std::string location;
+    info->headers->EnumerateHeader(nullptr, "Location", &location);
+    EXPECT_EQ(location, "/elsewhere");
+
+    trans->DoneReading();
+  }
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
   EXPECT_EQ(1, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 }

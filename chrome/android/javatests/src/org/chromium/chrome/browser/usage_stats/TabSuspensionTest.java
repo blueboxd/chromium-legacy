@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.usage_stats;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.doReturn;
 
 import android.content.Context;
@@ -23,6 +24,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -75,7 +77,11 @@ public class TabSuspensionTest {
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
     @Rule
     public CustomTabActivityTestRule mCustomTabActivityTestRule = new CustomTabActivityTestRule();
+    @Rule
+    public JniMocker jniMocker = new JniMocker();
 
+    @Mock
+    private UsageStatsBridge.Natives mUsageStatsNativeMock;
     @Mock
     private UsageStatsBridge mUsageStatsBridge;
     @Mock
@@ -94,6 +100,8 @@ public class TabSuspensionTest {
     @Before
     public void setUp() throws InterruptedException {
         MockitoAnnotations.initMocks(this);
+        jniMocker.mock(UsageStatsBridgeJni.TEST_HOOKS, mUsageStatsNativeMock);
+        doReturn(123456l).when(mUsageStatsNativeMock).init(anyObject(), anyObject());
         // TokenTracker and EventTracker hold a promise, and Promises can only be used on a single
         // thread, so we have to initialize them on the thread where they will be used.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -107,8 +115,10 @@ public class TabSuspensionTest {
         mActivityTestRule.startMainActivityOnBlankPage();
         mActivity = mActivityTestRule.getActivity();
         mTab = mActivity.getActivityTab();
-        mPageViewObserver = new PageViewObserver(mActivity, mActivity.getTabModelSelector(),
-                mEventTracker, mTokenTracker, mSuspensionTracker);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mPageViewObserver = new PageViewObserver(mActivity, mActivity.getTabModelSelector(),
+                    mEventTracker, mTokenTracker, mSuspensionTracker);
+        });
     }
 
     @After

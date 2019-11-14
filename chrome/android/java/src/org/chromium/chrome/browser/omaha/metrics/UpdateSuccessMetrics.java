@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.omaha.metrics;
 import android.text.TextUtils;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.omaha.UpdateConfigs;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateInteractionSource;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateState;

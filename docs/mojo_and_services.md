@@ -162,7 +162,7 @@ earlier via `BindNewPipeAndPassReceiver`:
 
 ``` cpp
 RenderFrame* my_frame = GetMyFrame();
-my_frame->GetBrowserInterfaceBrokerProxy()->GetInterface(std::move(receiver));
+my_frame->GetBrowserInterfaceBroker().GetInterface(std::move(receiver));
 ```
 
 This will transfer the `PendingReceiver` endpoint to the browser process

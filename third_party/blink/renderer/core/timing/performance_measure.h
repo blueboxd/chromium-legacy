@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_MEASURE_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/public/mojom/timing/performance_mark_or_measure.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/timing/performance_entry.h"
 #include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
@@ -38,7 +39,7 @@ namespace blink {
 
 class ExceptionState;
 
-class PerformanceMeasure final : public PerformanceEntry {
+class CORE_EXPORT PerformanceMeasure final : public PerformanceEntry {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -60,6 +61,8 @@ class PerformanceMeasure final : public PerformanceEntry {
 
   AtomicString entryType() const override;
   PerformanceEntryType EntryTypeEnum() const override;
+  mojom::blink::PerformanceMarkOrMeasurePtr ToMojoPerformanceMarkOrMeasure()
+      override;
 
   void Trace(blink::Visitor* visitor) override;
 

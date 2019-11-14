@@ -123,7 +123,7 @@ bool AvailableOfflineContentHelper::BindProvider() {
     return true;
   }
 
-  blink::Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+  blink::Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
       std::move(receiver));
   return true;
 }

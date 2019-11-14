@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "net/base/net_errors.h"
 #include "net/dns/host_resolver.h"
+#include "net/http/http_auth.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/http/http_auth_sspi_win.h"
 
@@ -43,7 +44,7 @@ int HttpAuthHandlerNTLM::Factory::CreateAuthHandler(
 HttpAuthHandlerNTLM::HttpAuthHandlerNTLM(
     SSPILibrary* sspi_library,
     const HttpAuthPreferences* http_auth_preferences)
-    : auth_sspi_(sspi_library, "NTLM"),
+    : auth_sspi_(sspi_library, HttpAuth::AUTH_SCHEME_NTLM),
       http_auth_preferences_(http_auth_preferences) {}
 
 int HttpAuthHandlerNTLM::GenerateAuthTokenImpl(

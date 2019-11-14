@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/timing/performance_measure.h"
 
+#include "third_party/blink/public/mojom/timing/performance_mark_or_measure.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/performance_entry_names.h"
@@ -65,6 +66,14 @@ AtomicString PerformanceMeasure::entryType() const {
 
 PerformanceEntryType PerformanceMeasure::EntryTypeEnum() const {
   return PerformanceEntry::EntryType::kMeasure;
+}
+
+mojom::blink::PerformanceMarkOrMeasurePtr
+PerformanceMeasure::ToMojoPerformanceMarkOrMeasure() {
+  auto mojo_performance_mark_or_measure =
+      PerformanceEntry::ToMojoPerformanceMarkOrMeasure();
+  mojo_performance_mark_or_measure->detail = serialized_detail_->GetWireData();
+  return mojo_performance_mark_or_measure;
 }
 
 void PerformanceMeasure::Trace(blink::Visitor* visitor) {

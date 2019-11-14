@@ -801,10 +801,10 @@ void FocusController::SetFocusedFrame(Frame* frame, bool notify_embedder) {
 
   is_changing_focused_frame_ = false;
 
-  // Checking client() is necessary, as the frame might have been detached as
-  // part of dispatching the focus event above. See https://crbug.com/570874.
-  if (focused_frame_ && focused_frame_->Client() && notify_embedder)
-    focused_frame_->Client()->FrameFocused();
+  // Checking IsAttached() is necessary, as the frame might have been detached
+  // as part of dispatching the focus event above. See https://crbug.com/570874.
+  if (notify_embedder && focused_frame_ && focused_frame_->IsAttached())
+    focused_frame_->DidFocus();
 
   NotifyFocusChangedObservers();
 }

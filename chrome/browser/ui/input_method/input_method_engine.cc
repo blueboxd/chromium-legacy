@@ -97,6 +97,11 @@ bool InputMethodEngine::SetCompositionRange(
   return false;
 }
 
+bool InputMethodEngine::SetSelectionRange(uint32_t start, uint32_t end) {
+  // Not supported on non-Chrome OS platforms.
+  return false;
+}
+
 void InputMethodEngine::CommitTextToInputContext(int context_id,
                                                  const std::string& text) {
   ui::IMEInputContextHandlerInterface* input_context =

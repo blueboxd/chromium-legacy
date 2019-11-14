@@ -11,8 +11,10 @@
 #include "net/base/net_errors.h"
 #include "net/base/network_interfaces.h"
 #include "net/dns/host_resolver.h"
+#include "net/http/http_auth.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_auth_handler_ntlm.h"
+#include "net/http/http_auth_multi_round_parse.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/http/http_auth_scheme.h"
 #include "net/ssl/ssl_info.h"
@@ -75,10 +77,10 @@ HttpAuthHandlerNTLM::HttpAuthHandlerNTLM(
                                 : true)) {}
 
 bool HttpAuthHandlerNTLM::NeedsIdentity() {
-  // This gets called for each round-trip.  Only require identity on
-  // the first call (when auth_data_ is empty).  On subsequent calls,
-  // we use the initially established identity.
-  return auth_data_.empty();
+  // This gets called for each round-trip. Only require identity on the first
+  // call (when challenge_token_ is empty). On subsequent calls, we use the
+  // initially established identity.
+  return challenge_token_.empty();
 }
 
 bool HttpAuthHandlerNTLM::AllowsDefaultCredentials() {
@@ -118,22 +120,16 @@ int HttpAuthHandlerNTLM::GenerateAuthTokenImpl(
   domain_ = domain;
   credentials_.Set(user, credentials->password());
 
-  std::string decoded_auth_data;
-  if (auth_data_.empty()) {
-    // There is no |auth_data_| because the client sends the first message.
+  if (challenge_token_.empty()) {
+    // There is no |challenge_token_| because the client sends the first
+    // message.
     int rv = InitializeBeforeFirstChallenge();
     if (rv != OK)
       return rv;
-  } else {
-    // When |auth_data_| is present it contains the Challenge message.
-    if (!base::Base64Decode(auth_data_, &decoded_auth_data)) {
-      LOG(ERROR) << "Unexpected problem Base64 decoding.";
-      return ERR_UNEXPECTED;
-    }
   }
 
   std::vector<uint8_t> next_token =
-      GetNextToken(base::as_bytes(base::make_span(decoded_auth_data)));
+      GetNextToken(base::as_bytes(base::make_span(challenge_token_)));
   if (next_token.empty())
     return ERR_UNEXPECTED;
 
@@ -199,24 +195,14 @@ std::vector<uint8_t> HttpAuthHandlerNTLM::GetNextToken(
 HttpAuth::AuthorizationResult HttpAuthHandlerNTLM::ParseChallenge(
     HttpAuthChallengeTokenizer* tok,
     bool initial_challenge) {
-  auth_data_.clear();
+  challenge_token_.clear();
 
-  // Verify the challenge's auth-scheme.
-  if (!base::LowerCaseEqualsASCII(tok->scheme(), kNtlmAuthScheme))
-    return HttpAuth::AUTHORIZATION_RESULT_INVALID;
+  if (initial_challenge)
+    return ParseFirstRoundChallenge(HttpAuth::Scheme::AUTH_SCHEME_NTLM, tok);
 
-  std::string base64_param = tok->base64_param();
-  if (base64_param.empty()) {
-    if (!initial_challenge)
-      return HttpAuth::AUTHORIZATION_RESULT_REJECT;
-    return HttpAuth::AUTHORIZATION_RESULT_ACCEPT;
-  } else {
-    if (initial_challenge)
-      return HttpAuth::AUTHORIZATION_RESULT_INVALID;
-  }
-
-  auth_data_ = base64_param;
-  return HttpAuth::AUTHORIZATION_RESULT_ACCEPT;
+  std::string encoded_token;
+  return ParseLaterRoundChallenge(HttpAuth::Scheme::AUTH_SCHEME_NTLM, tok,
+                                  &encoded_token, &challenge_token_);
 }
 
 }  // namespace net

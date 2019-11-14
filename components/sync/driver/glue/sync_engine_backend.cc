@@ -357,9 +357,6 @@ void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
   args.enable_local_sync_backend = params.enable_local_sync_backend;
   args.local_sync_backend_folder = params.local_sync_backend_folder;
   args.post_factory = std::move(params.http_factory_getter).Run();
-  // Finish initializing the HttpBridgeFactory.  We do this here because
-  // building the user agent may block on some platforms.
-  args.post_factory->Init(params.sync_user_agent);
   registrar_->GetWorkers(&args.workers);
   args.encryption_observer_proxy = std::move(params.encryption_observer_proxy);
   args.extensions_activity = params.extensions_activity.get();

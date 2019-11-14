@@ -141,12 +141,13 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool android_surface_control = false;
     bool khr_robust_buffer_access_behavior = false;
     bool webgl_multi_draw = false;
-    bool webgl_multi_draw_instanced = false;
     bool nv_internalformat_sample_query = false;
     bool amd_framebuffer_multisample_advanced = false;
     bool ext_float_blend = false;
     bool chromium_completion_query = false;
     bool oes_fbo_render_mipmap = false;
+    bool webgl_draw_instanced_base_vertex_base_instance = false;
+    bool webgl_multi_draw_instanced_base_vertex_base_instance = false;
   };
 
   FeatureInfo();

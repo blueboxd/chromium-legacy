@@ -63,8 +63,6 @@ struct PP_PrivateAccessibilityPageInfo {
   struct PP_Rect bounds;
   uint32_t text_run_count;
   uint32_t char_count;
-  uint32_t link_count;
-  uint32_t image_count;
 };
 
 // See PDF Reference 1.7, page 402, table 5.3.

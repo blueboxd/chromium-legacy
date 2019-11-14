@@ -247,11 +247,6 @@
     "args": ["--blink-settings=darkModeEnabled=true,darkModeInversionAlgorithm=3,darkModePagePolicy=1,darkModeTextBrightnessThreshold=256,darkModeBackgroundBrightnessThreshold=0"]
   },
   {
-    "prefix": "dark-mode-svg-invert-all",
-    "bases": [],
-    "args": ["--blink-settings=darkModeEnabled=true,darkModeInversionAlgorithm=3,darkModeImagePolicy=0,darkModeTextBrightnessThreshold=256,darkModeBackgroundBrightnessThreshold=0"]
-  },
-  {
     "prefix": "presentation",
     "bases": [],
     "args": ["--force-presentation-receiver-for-testing"]

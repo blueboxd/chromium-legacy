@@ -17,12 +17,13 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/gl/test/gl_surface_test_support.h"
+#include "ui/views/buildflags.h"
 #include "ui/views/test/platform_test_helper.h"
 #include "ui/views/test/test_platform_native_widget.h"
 
 #if defined(USE_AURA)
 #include "ui/views/widget/native_widget_aura.h"
-#if !defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA)
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #endif
 #elif defined(OS_MACOSX)
@@ -167,7 +168,7 @@ NativeWidget* ViewsTestBase::CreateNativeWidgetForTest(
   }
 
   if (native_widget_type_ == NativeWidgetType::kDesktop) {
-#if !defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA)
     return new test::TestPlatformNativeWidget<DesktopNativeWidgetAura>(
         delegate, false, nullptr);
 #else

@@ -153,6 +153,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   bool BubbleLogicalScrollFromChildFrame(ScrollDirection direction,
                                          ScrollGranularity granularity,
                                          Frame* child) override;
+  void DidFocus() override;
 
   void DidChangeThemeColor();
 

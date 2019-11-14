@@ -265,12 +265,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // Swap, the frame is being replaced in-place by WebFrame::swap().
   virtual void FrameDetached(DetachType) {}
 
-  // This frame has become focused.
-  virtual void FrameFocused() {}
-
-  // A provisional load is about to commit.
-  virtual void WillCommitProvisionalLoad() {}
-
   // This frame's name has changed.
   virtual void DidChangeName(const WebString& name) {}
 

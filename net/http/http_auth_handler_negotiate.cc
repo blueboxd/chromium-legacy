@@ -19,6 +19,7 @@
 #include "net/base/net_errors.h"
 #include "net/cert/x509_util.h"
 #include "net/dns/host_resolver.h"
+#include "net/http/http_auth.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/log/net_log_capture_mode.h"
@@ -59,9 +60,10 @@ std::unique_ptr<HttpNegotiateAuthSystem> CreateAuthSystem(
 #if defined(OS_ANDROID)
   return std::make_unique<net::android::HttpAuthNegotiateAndroid>(prefs);
 #elif defined(OS_WIN)
-  return std::make_unique<HttpAuthSSPI>(auth_library, "Negotiate");
+  return std::make_unique<HttpAuthSSPI>(auth_library,
+                                        HttpAuth::AUTH_SCHEME_NEGOTIATE);
 #elif defined(OS_POSIX)
-  return std::make_unique<HttpAuthGSSAPI>(auth_library, "Negotiate",
+  return std::make_unique<HttpAuthGSSAPI>(auth_library,
                                           CHROME_GSS_SPNEGO_MECH_OID_DESC);
 #endif
 }

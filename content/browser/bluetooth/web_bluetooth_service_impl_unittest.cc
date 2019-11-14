@@ -180,6 +180,20 @@ class WebBluetoothServiceImplTest : public RenderViewHostImplTestHarness {
   DISALLOW_COPY_AND_ASSIGN(WebBluetoothServiceImplTest);
 };
 
+TEST_F(WebBluetoothServiceImplTest, ClearStateDuringRequestDevice) {
+  auto options = blink::mojom::WebBluetoothRequestDeviceOptions::New();
+  options->accept_all_devices = true;
+
+  base::RunLoop loop;
+  service_->RequestDevice(
+      std::move(options),
+      base::BindLambdaForTesting(
+          [&loop](blink::mojom::WebBluetoothResult,
+                  blink::mojom::WebBluetoothDevicePtr) { loop.Quit(); }));
+  service_->ClearState();
+  loop.Run();
+}
+
 TEST_F(WebBluetoothServiceImplTest, PermissionAllowed) {
   blink::mojom::WebBluetoothLeScanFilterPtr filter = CreateScanFilter("a", "b");
   base::Optional<WebBluetoothServiceImpl::ScanFilters> filters;

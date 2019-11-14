@@ -648,7 +648,7 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Mojo ---------------------------------------------------------------
 
-  // DEPRECATED: Use |GetBrowserInterfaceBrokerProxy()| instead. The same
+  // DEPRECATED: Use |GetBrowserInterfaceBroker()| instead. The same
   // interfaces are reachable through either method.
   virtual InterfaceProvider* GetInterfaceProvider();
 
@@ -664,8 +664,7 @@ class BLINK_PLATFORM_EXPORT Platform {
   // instances have less overhead since they don't need to be thread-safe.
   // Using a more narrowly defined scope when possible is also generally better
   // for security.
-  virtual ThreadSafeBrowserInterfaceBrokerProxy*
-  GetBrowserInterfaceBrokerProxy();
+  virtual ThreadSafeBrowserInterfaceBrokerProxy* GetBrowserInterfaceBroker();
 
   // Media Capabilities --------------------------------------------------
 

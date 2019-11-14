@@ -17,19 +17,15 @@
 #include "chrome/browser/sharing/sharing_send_message_result.h"
 #include "components/gcm_driver/web_push_common.h"
 #include "components/sync/protocol/sharing_message.pb.h"
-#include "components/sync_device_info/device_info.h"
 
 namespace gcm {
 class GCMDriver;
 enum class SendWebPushMessageResult;
 }  // namespace gcm
 
-namespace syncer {
-class DeviceInfo;
-}  // namespace syncer
-
 class SharingSyncPreference;
 class VapidKeyManager;
+struct SharingTargetInfo;
 
 // Responsible for sending FCM messages within Sharing infrastructure.
 class SharingFCMSender {
@@ -47,11 +43,10 @@ class SharingFCMSender {
   // Sends a |message| to device identified by |target|, which expires
   // after |time_to_live| seconds. |callback| will be invoked with message_id if
   // asynchronous operation succeeded, or base::nullopt if operation failed.
-  virtual void SendMessageToDevice(
-      syncer::DeviceInfo::SharingInfo target,
-      base::TimeDelta time_to_live,
-      SharingMessage message,
-      SendMessageCallback callback);
+  virtual void SendMessageToDevice(SharingTargetInfo target,
+                                   base::TimeDelta time_to_live,
+                                   SharingMessage message,
+                                   SendMessageCallback callback);
 
  private:
   void OnMessageSent(SendMessageCallback callback,

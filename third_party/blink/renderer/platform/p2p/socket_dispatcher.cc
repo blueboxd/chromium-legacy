@@ -78,7 +78,7 @@ void P2PSocketDispatcher::RequestInterfaceIfNecessary() {
   if (!p2p_socket_manager_request_.is_pending())
     return;
 
-  blink::Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+  blink::Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
       std::move(p2p_socket_manager_request_));
 }
 

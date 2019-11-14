@@ -678,7 +678,6 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::WebFrame* FindFrame(const blink::WebString& name) override;
   void DidChangeOpener(blink::WebFrame* frame) override;
   void FrameDetached(DetachType type) override;
-  void FrameFocused() override;
   void DidChangeName(const blink::WebString& name) override;
   void DidEnforceInsecureRequestPolicy(
       blink::WebInsecureRequestPolicy policy) override;

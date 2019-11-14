@@ -4421,6 +4421,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"crostini-webui-installer", flag_descriptions::kCrostiniWebUIInstallerName,
      flag_descriptions::kCrostiniWebUIInstallerDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniWebUIInstaller)},
+    {"crostini-webui-upgrader", flag_descriptions::kCrostiniWebUIUpgraderName,
+     flag_descriptions::kCrostiniWebUIUpgraderDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kCrostiniWebUIUpgrader)},
 #endif  // OS_CHROMEOS
 
     {"turn-off-streaming-media-caching",

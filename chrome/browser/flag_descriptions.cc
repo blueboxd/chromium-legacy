@@ -3346,6 +3346,10 @@ const char kCrostiniWebUIInstallerName[] = "Crostini WebUI Installer";
 const char kCrostiniWebUIInstallerDescription[] =
     "Enable the new WebUI Crostini Installer.";
 
+const char kCrostiniWebUIUpgraderName[] = "Crostini WebUI Upgrader";
+const char kCrostiniWebUIUpgraderDescription[] =
+    "Enable the new WebUI Crostini Upgrader Dialog.";
+
 const char kCryptAuthV1DeviceSyncDeprecateName[] =
     "Deprecate CryptAuth v1 DeviceSync";
 const char kCryptAuthV1DeviceSyncDeprecateDescription[] =

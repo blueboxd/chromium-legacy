@@ -11,6 +11,7 @@
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/ime_input_context_handler_interface.h"
 #include "ui/events/event.h"
+#include "ui/gfx/range/range.h"
 
 namespace ui {
 class InputMethod;
@@ -20,7 +21,7 @@ class COMPONENT_EXPORT(UI_BASE_IME) MockIMEInputContextHandler
  public:
   struct UpdateCompositionTextArg {
     CompositionText composition_text;
-    uint32_t cursor_pos;
+    gfx::Range selection;
     bool is_visible;
   };
 
@@ -42,6 +43,8 @@ class COMPONENT_EXPORT(UI_BASE_IME) MockIMEInputContextHandler
       uint32_t before,
       uint32_t after,
       const std::vector<ui::ImeTextSpan>& text_spans) override;
+
+  bool SetSelectionRange(uint32_t start, uint32_t end) override;
 #endif
 
   void DeleteSurroundingText(int32_t offset, uint32_t length) override;
@@ -52,7 +55,9 @@ class COMPONENT_EXPORT(UI_BASE_IME) MockIMEInputContextHandler
   bool HasCompositionText() override;
 
   int commit_text_call_count() const { return commit_text_call_count_; }
-
+  int set_selection_range_call_count() const {
+    return set_selection_range_call_count_;
+  }
   int update_preedit_text_call_count() const {
     return update_preedit_text_call_count_;
   }
@@ -80,6 +85,7 @@ class COMPONENT_EXPORT(UI_BASE_IME) MockIMEInputContextHandler
 
  private:
   int commit_text_call_count_;
+  int set_selection_range_call_count_;
   int update_preedit_text_call_count_;
   int delete_surrounding_text_call_count_;
   std::string last_commit_text_;

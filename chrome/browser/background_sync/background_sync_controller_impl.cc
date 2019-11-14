@@ -226,7 +226,21 @@ void BackgroundSyncControllerImpl::NotifyPeriodicBackgroundSyncCompleted(
       origin, status_code, num_attempts, max_attempts);
 }
 
-void BackgroundSyncControllerImpl::ScheduleBrowserWakeUp(
+void BackgroundSyncControllerImpl::ScheduleBrowserWakeUpWithDelay(
+    blink::mojom::BackgroundSyncType sync_type,
+    base::TimeDelta delay) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (profile_->IsOffTheRecord())
+    return;
+
+#if defined(OS_ANDROID)
+  BackgroundSyncLauncherAndroid::ScheduleBrowserWakeUpWithDelay(sync_type,
+                                                                delay);
+#endif
+}
+
+void BackgroundSyncControllerImpl::CancelBrowserWakeup(
     blink::mojom::BackgroundSyncType sync_type) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -234,7 +248,7 @@ void BackgroundSyncControllerImpl::ScheduleBrowserWakeUp(
     return;
 
 #if defined(OS_ANDROID)
-  BackgroundSyncLauncherAndroid::ScheduleBrowserWakeUp(sync_type);
+  BackgroundSyncLauncherAndroid::CancelBrowserWakeup(sync_type);
 #endif
 }
 

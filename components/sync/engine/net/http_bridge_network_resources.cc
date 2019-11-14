@@ -4,6 +4,7 @@
 
 #include "components/sync/engine/net/http_bridge_network_resources.h"
 
+#include <string>
 #include <utility>
 
 #include "components/sync/engine/net/http_bridge.h"
@@ -16,10 +17,12 @@ HttpBridgeNetworkResources::~HttpBridgeNetworkResources() {}
 
 std::unique_ptr<HttpPostProviderFactory>
 HttpBridgeNetworkResources::GetHttpPostProviderFactory(
+    const std::string& user_agent,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         url_loader_factory_info,
     const NetworkTimeUpdateCallback& network_time_update_callback) {
-  return std::make_unique<HttpBridgeFactory>(std::move(url_loader_factory_info),
+  return std::make_unique<HttpBridgeFactory>(user_agent,
+                                             std::move(url_loader_factory_info),
                                              network_time_update_callback);
 }
 

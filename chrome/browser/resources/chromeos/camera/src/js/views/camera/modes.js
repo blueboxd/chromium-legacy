@@ -84,7 +84,7 @@ cca.views.camera.Mode = {
 /**
  * Mode controller managing capture sequence of different camera mode.
  * @param {!cca.views.camera.Mode} defaultMode Default mode to be switched to.
- * @param {cca.device.PhotoResolPreferrer} photoResolPreferrer
+ * @param {cca.device.PhotoConstraintsPreferrer} photoPreferrer
  * @param {cca.device.VideoConstraintsPreferrer} videoPreferrer
  * @param {!DoSwitchMode} doSwitchMode
  * @param {!DoSavePhoto} doSavePhoto
@@ -93,7 +93,7 @@ cca.views.camera.Mode = {
  * @constructor
  */
 cca.views.camera.Modes = function(
-    defaultMode, photoResolPreferrer, videoPreferrer, doSwitchMode, doSavePhoto,
+    defaultMode, photoPreferrer, videoPreferrer, doSwitchMode, doSavePhoto,
     createVideoSaver, doSaveVideo) {
   /**
    * @type {!DoSwitchMode}
@@ -145,7 +145,7 @@ cca.views.camera.Modes = function(
       captureFactory: () => new cca.views.camera.Photo(
           this.stream_, doSavePhoto, this.captureResolution_),
       isSupported: async () => true,
-      resolutionConfig: photoResolPreferrer,
+      resolutionConfig: photoPreferrer,
       v1Config: cca.views.camera.Modes.getV1Constraints.bind(this, false),
       nextMode: 'square-mode',
       captureIntent: cros.mojom.CaptureIntent.STILL_CAPTURE,
@@ -154,7 +154,7 @@ cca.views.camera.Modes = function(
       captureFactory: () => new cca.views.camera.Square(
           this.stream_, doSavePhoto, this.captureResolution_),
       isSupported: async () => true,
-      resolutionConfig: photoResolPreferrer,
+      resolutionConfig: photoPreferrer,
       v1Config: cca.views.camera.Modes.getV1Constraints.bind(this, false),
       nextMode: 'portrait-mode',
       captureIntent: cros.mojom.CaptureIntent.STILL_CAPTURE,
@@ -172,7 +172,7 @@ cca.views.camera.Modes = function(
         }
         return await deviceOperator.isPortraitModeSupported(deviceId);
       },
-      resolutionConfig: photoResolPreferrer,
+      resolutionConfig: photoPreferrer,
       v1Config: cca.views.camera.Modes.getV1Constraints.bind(this, false),
       nextMode: 'photo-mode',
       captureIntent: cros.mojom.CaptureIntent.STILL_CAPTURE,

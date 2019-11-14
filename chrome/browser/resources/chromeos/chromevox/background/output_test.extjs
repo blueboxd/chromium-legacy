@@ -530,11 +530,8 @@ TEST_F('ChromeVoxOutputE2ETest', 'ListBox', function() {
 
 SYNC_TEST_F('ChromeVoxOutputE2ETest', 'MessageIdAndEarconValidity', function() {
   const kNoBrailleMessageRequired = new Set([
-    'annotationAttribution',
-    'annotationCommentary',
-    'annotationPresence',
-    'annotationRevision',
-    'annotationSuggestion',
+    'comment',
+    'commentSection',
     'contentDeletion',
     'contentInsertion',
     'docAbstract',
@@ -579,6 +576,8 @@ SYNC_TEST_F('ChromeVoxOutputE2ETest', 'MessageIdAndEarconValidity', function() {
     'graphicsDocument',
     'graphicsObject',
     'graphicsSymbol',
+    'revision',
+    'suggestion',
   ]);
   for (var key in Output.ROLE_INFO_) {
     var value = Output.ROLE_INFO_[key];

@@ -32,10 +32,9 @@ class NET_EXPORT_PRIVATE HttpAuthChallengeTokenizer {
     return std::string(begin_, end_);
   }
 
-  // Get the auth scheme of the challenge.
-  base::StringPiece scheme() const {
-    return base::StringPiece(scheme_begin_, scheme_end_);
-  }
+  // Get the authenthication scheme of the challenge. The returned scheme is
+  // always lowercase.
+  const std::string& auth_scheme() const { return lower_case_scheme_; }
 
   std::string::const_iterator params_begin() const { return params_begin_; }
   std::string::const_iterator params_end() const { return params_end_; }
@@ -49,11 +48,10 @@ class NET_EXPORT_PRIVATE HttpAuthChallengeTokenizer {
   std::string::const_iterator begin_;
   std::string::const_iterator end_;
 
-  std::string::const_iterator scheme_begin_;
-  std::string::const_iterator scheme_end_;
-
   std::string::const_iterator params_begin_;
   std::string::const_iterator params_end_;
+
+  std::string lower_case_scheme_;
 };
 
 }  // namespace net

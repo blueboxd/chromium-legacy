@@ -1587,8 +1587,215 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Blink.PageLoad">
+  <owner>schenney@chromium.org</owner>
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    The aggregated time spent in each metric's component from creation of the
+    local frame view to the First Contentful Paint signal. The event is reported
+    once per page load when First Contentful Paint is signaled.
+  </summary>
+  <metric name="Animate">
+    <summary>
+      The time spent in main frame animation, between navigation and First
+      Contentful Paint, in microseconds.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Compositing">
+    <summary>
+      The time spent in main thread compositing, between navigation and First
+      Contentful Paint, in microseconds.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="CompositingCommit">
+    <summary>
+      The time spent committing main thread compositing results, between
+      navigation and First Contentful Paint, in microseconds.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="ForcedStyleAndLayout">
+    <summary>
+      The time spent in forced style recalc and layouts, between navigation and
+      First Contentful Paint, in microseconds.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="HandleInputEvents">
+    <summary>
+      The time spent in processing rAF-aligned input for the main frame, between
+      navigation and First Contentful Paint, in microseconds.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="IntersectionObservation">
+    <summary>
+      The time spent computing intersection observer state, between navigation
+      and First Contentful Paint, in microseconds.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Layout">
+    <summary>
+      The time spent in layout document lifecycle work, between navigation and
+      First Contentful Paint, in microseconds.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="MainFrame">
+    <summary>
+      The time spent in ProxyMain::BeginMainFrame, between navigation and First
+      Contentful Paint, in microseconds.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Paint">
+    <summary>
+      The time spent in paint document lifecycle work, between navigation and
+      First Contentful Paint, in microseconds.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="PrePaint">
+    <summary>
+      The time spent in pre-paint document lifecycle work, between navigation
+      and First Contentful Paint, in microseconds.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="ProxyCommit">
+    <summary>
+      The time spent committing main thread to impl layer tree information,
+      between navigation and First Contentful Paint, in microseconds.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="ScrollingCoordinator">
+    <summary>
+      The time spent in ScrollingCoordinator, between navigation and First
+      Contentful Paint, in microseconds.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Style">
+    <summary>
+      The time spent in style document lifecycle work, between navigation and
+      First Contentful Paint, in microseconds.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="StyleAndLayout">
+    <summary>
+      The time spent in layout and style document lifecycle work, between
+      navigation and First Contentful Paint, in microseconds. Will be obsolete
+      in M-82.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="UpdateLayers">
+    <summary>
+      The time spent in for LayerTreeHost::UpdateLayers, between navigation and
+      First Contentful Paint, in microseconds.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
 <event name="Blink.UpdateTime">
   <owner>schenney@chromium.org</owner>
+  <owner>paint-dev@chromium.org</owner>
   <summary>
     Metrics that measure various update times in Blink. This includes paint,
     compositing, and layout update times. The metrics are recorded at first

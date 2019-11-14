@@ -198,7 +198,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void DidChangeOpener(blink::WebFrame* opener) override;
   void AdvanceFocus(blink::WebFocusType type,
                     blink::WebLocalFrame* source) override;
-  void FrameFocused() override;
   base::UnguessableToken GetDevToolsFrameToken() override;
   uint32_t Print(const blink::WebRect& rect, cc::PaintCanvas* canvas) override;
 

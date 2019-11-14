@@ -479,21 +479,6 @@ void SearchIPCRouter::BlocklistPromo(const std::string& promo_id) {
   delegate_->BlocklistPromo(promo_id);
 }
 
-void SearchIPCRouter::OpenAutocompleteMatch(uint8_t line,
-                                            const GURL& url,
-                                            double button,
-                                            bool alt_key,
-                                            bool ctrl_key,
-                                            bool meta_key,
-                                            bool shift_key) {
-  if (!policy_->ShouldProcessOpenAutocompleteMatch(is_active_tab_)) {
-    return;
-  }
-
-  delegate_->OpenAutocompleteMatch(line, url, button, alt_key, ctrl_key,
-                                   meta_key, shift_key);
-}
-
 void SearchIPCRouter::DeleteAutocompleteMatch(uint8_t line) {
   if (!policy_->ShouldProcessDeleteAutocompleteMatch()) {
     return;

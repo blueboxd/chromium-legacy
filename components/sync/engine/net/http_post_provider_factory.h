@@ -21,8 +21,6 @@ class HttpPostProviderFactory {
  public:
   virtual ~HttpPostProviderFactory() {}
 
-  virtual void Init(const std::string& user_agent) = 0;
-
   // Obtain a new HttpPostProviderInterface instance, owned by caller.
   virtual HttpPostProviderInterface* Create() = 0;
 

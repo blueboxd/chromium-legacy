@@ -1553,6 +1553,27 @@ void MultiDrawArraysInstancedCHROMIUM(GLenum mode,
   }
 }
 
+void MultiDrawArraysInstancedBaseInstanceCHROMIUM(
+    GLenum mode,
+    uint32_t firsts_shm_id,
+    uint32_t firsts_shm_offset,
+    uint32_t counts_shm_id,
+    uint32_t counts_shm_offset,
+    uint32_t instance_counts_shm_id,
+    uint32_t instance_counts_shm_offset,
+    uint32_t baseinstances_shm_id,
+    uint32_t baseinstances_shm_offset,
+    GLsizei drawcount) {
+  gles2::cmds::MultiDrawArraysInstancedBaseInstanceCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::MultiDrawArraysInstancedBaseInstanceCHROMIUM>();
+  if (c) {
+    c->Init(mode, firsts_shm_id, firsts_shm_offset, counts_shm_id,
+            counts_shm_offset, instance_counts_shm_id,
+            instance_counts_shm_offset, baseinstances_shm_id,
+            baseinstances_shm_offset, drawcount);
+  }
+}
+
 void MultiDrawElementsCHROMIUM(GLenum mode,
                                uint32_t counts_shm_id,
                                uint32_t counts_shm_offset,
@@ -1583,6 +1604,33 @@ void MultiDrawElementsInstancedCHROMIUM(GLenum mode,
     c->Init(mode, counts_shm_id, counts_shm_offset, type, offsets_shm_id,
             offsets_shm_offset, instance_counts_shm_id,
             instance_counts_shm_offset, drawcount);
+  }
+}
+
+void MultiDrawElementsInstancedBaseVertexBaseInstanceCHROMIUM(
+    GLenum mode,
+    uint32_t counts_shm_id,
+    uint32_t counts_shm_offset,
+    GLenum type,
+    uint32_t offsets_shm_id,
+    uint32_t offsets_shm_offset,
+    uint32_t instance_counts_shm_id,
+    uint32_t instance_counts_shm_offset,
+    uint32_t basevertices_shm_id,
+    uint32_t basevertices_shm_offset,
+    uint32_t baseinstances_shm_id,
+    uint32_t baseinstances_shm_offset,
+    GLsizei drawcount) {
+  gles2::cmds::MultiDrawElementsInstancedBaseVertexBaseInstanceCHROMIUM* c =
+      GetCmdSpace<
+          gles2::cmds::
+              MultiDrawElementsInstancedBaseVertexBaseInstanceCHROMIUM>();
+  if (c) {
+    c->Init(mode, counts_shm_id, counts_shm_offset, type, offsets_shm_id,
+            offsets_shm_offset, instance_counts_shm_id,
+            instance_counts_shm_offset, basevertices_shm_id,
+            basevertices_shm_offset, baseinstances_shm_id,
+            baseinstances_shm_offset, drawcount);
   }
 }
 
@@ -2794,6 +2842,18 @@ void DrawArraysInstancedANGLE(GLenum mode,
   }
 }
 
+void DrawArraysInstancedBaseInstanceANGLE(GLenum mode,
+                                          GLint first,
+                                          GLsizei count,
+                                          GLsizei primcount,
+                                          GLuint baseinstance) {
+  gles2::cmds::DrawArraysInstancedBaseInstanceANGLE* c =
+      GetCmdSpace<gles2::cmds::DrawArraysInstancedBaseInstanceANGLE>();
+  if (c) {
+    c->Init(mode, first, count, primcount, baseinstance);
+  }
+}
+
 void DrawElementsInstancedANGLE(GLenum mode,
                                 GLsizei count,
                                 GLenum type,
@@ -2803,6 +2863,22 @@ void DrawElementsInstancedANGLE(GLenum mode,
       GetCmdSpace<gles2::cmds::DrawElementsInstancedANGLE>();
   if (c) {
     c->Init(mode, count, type, index_offset, primcount);
+  }
+}
+
+void DrawElementsInstancedBaseVertexBaseInstanceANGLE(GLenum mode,
+                                                      GLsizei count,
+                                                      GLenum type,
+                                                      GLuint index_offset,
+                                                      GLsizei primcount,
+                                                      GLint basevertex,
+                                                      GLuint baseinstance) {
+  gles2::cmds::DrawElementsInstancedBaseVertexBaseInstanceANGLE* c =
+      GetCmdSpace<
+          gles2::cmds::DrawElementsInstancedBaseVertexBaseInstanceANGLE>();
+  if (c) {
+    c->Init(mode, count, type, index_offset, primcount, basevertex,
+            baseinstance);
   }
 }
 

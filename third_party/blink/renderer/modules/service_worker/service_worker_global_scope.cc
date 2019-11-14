@@ -39,6 +39,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom-blink.h"
+#include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_error.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -1402,9 +1403,12 @@ void ServiceWorkerGlobalScope::DispatchFetchEventInternal(
       !fetch_request.is_main_resource_load ? String() : params->client_id);
   event_init->setIsReload(fetch_request.is_reload);
   ScriptState* script_state = ScriptController()->GetScriptState();
-  FetchEvent* fetch_event = FetchEvent::Create(
+  FetchEvent* fetch_event = MakeGarbageCollected<FetchEvent>(
       script_state, event_type_names::kFetch, event_init, respond_with_observer,
-      wait_until_observer, navigation_preload_sent);
+      wait_until_observer,
+      mojo::PendingRemote<mojom::blink::WorkerTimingContainer>(
+          std::move(params->worker_timing_remote)),
+      navigation_preload_sent);
   if (navigation_preload_sent) {
     // Keep |fetchEvent| until OnNavigationPreloadComplete() or
     // onNavigationPreloadError() will be called.

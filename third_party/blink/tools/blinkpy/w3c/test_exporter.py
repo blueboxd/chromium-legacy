@@ -19,6 +19,7 @@ from blinkpy.w3c.common import (
 )
 from blinkpy.w3c.gerrit import GerritAPI, GerritCL, GerritError
 from blinkpy.w3c.wpt_github import WPTGitHub, MergeError
+from blinkpy.w3c.export_notifier import ExportNotifier
 
 _log = logging.getLogger(__name__)
 
@@ -84,7 +85,19 @@ class TestExporter(object):
             for error in git_errors:
                 _log.error(error)
 
-        return not (gerrit_error or git_errors)
+        export_error = gerrit_error or git_errors
+        if export_error:
+            return not export_error
+
+        _log.info('Automatic export process has finished successfully.')
+
+        export_notifier_failure = False
+        if options.surface_failures_to_gerrit:
+            _log.info('Starting surfacing cross-browser failures to Gerrit.')
+            export_notifier_failure = ExportNotifier(
+                self.host, self.wpt_github, self.gerrit, self.dry_run).main()
+
+        return not export_notifier_failure
 
     def parse_args(self, argv):
         parser = argparse.ArgumentParser(description=__doc__)
@@ -99,6 +112,10 @@ class TestExporter(object):
             '--credentials-json', required=True,
             help='A JSON file with an object containing zero or more of the '
                  'following keys: GH_USER, GH_TOKEN, GERRIT_USER, GERRIT_TOKEN')
+        parser.add_argument(
+            '--surface-failures-to-gerrit', action='store_true',
+            help='Indicates whether to run the service that surfaces GitHub '
+                 'faliures to Gerrit through comments.')
         return parser.parse_args(argv)
 
     def process_gerrit_cls(self, gerrit_cls):

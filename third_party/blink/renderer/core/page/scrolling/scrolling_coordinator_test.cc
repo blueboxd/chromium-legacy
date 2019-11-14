@@ -1562,6 +1562,8 @@ TEST_P(ScrollingCoordinatorTest, UpdateUMAMetricUpdated) {
       "Blink.ScrollingCoordinator.UpdateTime.PreFCP", 0);
   histogram_tester.ExpectTotalCount(
       "Blink.ScrollingCoordinator.UpdateTime.PostFCP", 0);
+  histogram_tester.ExpectTotalCount(
+      "Blink.ScrollingCoordinator.UpdateTime.AggregatedPreFCP", 0);
 
   // After an initial compositing update, we should have one scrolling update
   // recorded as PreFCP.
@@ -1571,6 +1573,8 @@ TEST_P(ScrollingCoordinatorTest, UpdateUMAMetricUpdated) {
       "Blink.ScrollingCoordinator.UpdateTime.PreFCP", 1);
   histogram_tester.ExpectTotalCount(
       "Blink.ScrollingCoordinator.UpdateTime.PostFCP", 0);
+  histogram_tester.ExpectTotalCount(
+      "Blink.ScrollingCoordinator.UpdateTime.AggregatedPreFCP", 0);
 
   // An update with no scrolling changes should not cause a scrolling update.
   ForceFullCompositingUpdate();
@@ -1579,6 +1583,8 @@ TEST_P(ScrollingCoordinatorTest, UpdateUMAMetricUpdated) {
       "Blink.ScrollingCoordinator.UpdateTime.PreFCP", 1);
   histogram_tester.ExpectTotalCount(
       "Blink.ScrollingCoordinator.UpdateTime.PostFCP", 0);
+  histogram_tester.ExpectTotalCount(
+      "Blink.ScrollingCoordinator.UpdateTime.AggregatedPreFCP", 0);
 
   // A change to background color does not need to cause a scrolling update but,
   // because hit test display items paint, we also cause a scrolling coordinator
@@ -1592,6 +1598,8 @@ TEST_P(ScrollingCoordinatorTest, UpdateUMAMetricUpdated) {
       "Blink.ScrollingCoordinator.UpdateTime.PreFCP", 1);
   histogram_tester.ExpectTotalCount(
       "Blink.ScrollingCoordinator.UpdateTime.PostFCP", 1);
+  histogram_tester.ExpectTotalCount(
+      "Blink.ScrollingCoordinator.UpdateTime.AggregatedPreFCP", 1);
 
   // Removing a scrollable area should cause a scrolling update.
   auto* scroller = GetFrame()->GetDocument()->getElementById("scroller");
@@ -1602,6 +1610,8 @@ TEST_P(ScrollingCoordinatorTest, UpdateUMAMetricUpdated) {
       "Blink.ScrollingCoordinator.UpdateTime.PreFCP", 1);
   histogram_tester.ExpectTotalCount(
       "Blink.ScrollingCoordinator.UpdateTime.PostFCP", 2);
+  histogram_tester.ExpectTotalCount(
+      "Blink.ScrollingCoordinator.UpdateTime.AggregatedPreFCP", 1);
 }
 
 TEST_P(ScrollingCoordinatorTest, NonCompositedNonFastScrollableRegion) {

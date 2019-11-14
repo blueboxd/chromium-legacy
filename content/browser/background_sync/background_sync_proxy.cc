@@ -76,12 +76,6 @@ class BackgroundSyncProxy::Core {
               },
               std::move(delayed_task)));
     }
-
-    // TODO(crbug.com/996166): Remove this call once the logic to schedule
-    // browser wakeup has moved to BackgroundTaskScheduler.
-    auto* controller = browser_context()->GetBackgroundSyncController();
-    DCHECK(controller);
-    controller->ScheduleBrowserWakeUp(sync_type);
   }
 
   void SendSuspendedPeriodicSyncOrigins(

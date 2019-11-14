@@ -141,16 +141,6 @@ Output.ROLE_INFO_ = {
   alert: {msgId: 'role_alert'},
   alertDialog: {msgId: 'role_alertdialog', outputContextFirst: true},
   article: {msgId: 'role_article', inherits: 'abstractItem'},
-  annotationAttribution:
-      {msgId: 'role_annotation_attribution', inherits: 'abstractContainer'},
-  annotationCommentary:
-      {msgId: 'role_annotation_commentary', inherits: 'abstractContainer'},
-  annotationPresence:
-      {msgId: 'role_annotation_presence', inherits: 'abstractContainer'},
-  annotationRevision:
-      {msgId: 'role_annotation_revision', inherits: 'abstractContainer'},
-  annotationSuggestion:
-      {msgId: 'role_annotation_suggestion', inherits: 'abstractContainer'},
   application: {msgId: 'role_application', inherits: 'abstractContainer'},
   banner: {msgId: 'role_banner', inherits: 'abstractContainer'},
   button: {msgId: 'role_button', earconId: 'BUTTON'},
@@ -159,6 +149,9 @@ Output.ROLE_INFO_ = {
   columnHeader: {msgId: 'role_columnheader', inherits: 'cell'},
   comboBoxMenuButton: {msgId: 'role_combobox', earconId: 'LISTBOX'},
   complementary: {msgId: 'role_complementary', inherits: 'abstractContainer'},
+  comment: {msgId: 'role_comment', inherits: 'abstractContainer'},
+  commentSection:
+      {msgId: 'role_comment_section', inherits: 'abstractContainer'},
   contentDeletion:
       {msgId: 'role_content_deletion', inherits: 'abstractContainer'},
   contentInsertion:
@@ -276,6 +269,7 @@ Output.ROLE_INFO_ = {
   radioButton: {msgId: 'role_radio'},
   radioGroup: {msgId: 'role_radiogroup', inherits: 'abstractContainer'},
   region: {msgId: 'role_region', inherits: 'abstractContainer'},
+  revision: {msgId: 'role_revision', inherits: 'abstractContainer'},
   rootWebArea: {outputContextFirst: true},
   row: {msgId: 'role_row', inherits: 'abstractContainer'},
   rowHeader: {msgId: 'role_rowheader', inherits: 'cell'},
@@ -289,6 +283,7 @@ Output.ROLE_INFO_ = {
     earconId: 'LISTBOX'
   },
   status: {msgId: 'role_status', inherits: 'abstractNameFromContents'},
+  suggestion: {msgId: 'role_suggestion', inherits: 'abstractContainer'},
   tab: {msgId: 'role_tab'},
   tabList: {msgId: 'role_tablist', inherits: 'abstractContainer'},
   tabPanel: {msgId: 'role_tabpanel'},

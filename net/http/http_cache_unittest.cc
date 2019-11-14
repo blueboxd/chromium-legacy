@@ -10311,6 +10311,47 @@ TEST_F(HttpCacheTest, SplitCache) {
   EXPECT_FALSE(response.was_cached);
 }
 
+TEST_F(HttpCacheTest, SplitCacheWithRegistrableDomain) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {net::features::kSplitCacheByNetworkIsolationKey,
+       net::features::kUseRegistrableDomainInNetworkIsolationKey},
+      {});
+
+  base::HistogramTester histograms;
+  MockHttpCache cache;
+  HttpResponseInfo response;
+  MockHttpRequest trans_info = MockHttpRequest(kSimpleGET_Transaction);
+
+  url::Origin origin_a = url::Origin::Create(GURL("http://a.foo.com"));
+  url::Origin origin_b = url::Origin::Create(GURL("http://b.foo.com"));
+
+  net::NetworkIsolationKey key_a(origin_a, origin_a);
+  trans_info.network_isolation_key = key_a;
+  RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
+                                trans_info, &response);
+  EXPECT_FALSE(response.was_cached);
+  histograms.ExpectBucketCount(
+      "HttpCache.NetworkIsolationKeyPresent2",
+      HttpCache::Transaction::NetworkIsolationKeyPresent::kPresent, 1);
+
+  // The second request with a different origin but the same registrable domain
+  // should be a cache hit.
+  net::NetworkIsolationKey key_b(origin_b, origin_b);
+  trans_info.network_isolation_key = key_b;
+  RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
+                                trans_info, &response);
+  EXPECT_TRUE(response.was_cached);
+
+  // Request with a different registrable domain. It should be a cache miss.
+  url::Origin new_origin_a = url::Origin::Create(GURL("http://a.bar.com"));
+  net::NetworkIsolationKey new_key_a(new_origin_a, new_origin_a);
+  trans_info.network_isolation_key = new_key_a;
+  RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
+                                trans_info, &response);
+  EXPECT_FALSE(response.was_cached);
+}
+
 TEST_F(HttpCacheTest, NonSplitCache) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(

@@ -295,28 +295,28 @@ public class NFCTest {
 
         // Test mime record conversion with "text/plain" mime type.
         android.nfc.NdefMessage mimeNdefMessage =
-                new android.nfc.NdefMessage(android.nfc.NdefRecord.createMime(
-                        TEXT_MIME, ApiCompatibilityUtils.getBytesUtf8(TEST_TEXT)));
+                new android.nfc.NdefMessage(NdefMessageUtils.createPlatformMimeRecord(
+                        TEXT_MIME, DUMMY_RECORD_ID, ApiCompatibilityUtils.getBytesUtf8(TEST_TEXT)));
         NdefMessage mimeMojoNdefMessage = NdefMessageUtils.toNdefMessage(mimeNdefMessage);
         assertNull(mimeMojoNdefMessage.url);
         assertEquals(1, mimeMojoNdefMessage.data.length);
         assertEquals(NdefMessageUtils.RECORD_TYPE_MIME, mimeMojoNdefMessage.data[0].recordType);
         assertEquals(TEXT_MIME, mimeMojoNdefMessage.data[0].mediaType);
-        assertEquals(true, mimeMojoNdefMessage.data[0].id.isEmpty());
+        assertEquals(DUMMY_RECORD_ID, mimeMojoNdefMessage.data[0].id);
         assertNull(mimeMojoNdefMessage.data[0].encoding);
         assertNull(mimeMojoNdefMessage.data[0].lang);
         assertEquals(TEST_TEXT, new String(mimeMojoNdefMessage.data[0].data));
 
         // Test mime record conversion with "application/json" mime type.
         android.nfc.NdefMessage jsonNdefMessage =
-                new android.nfc.NdefMessage(android.nfc.NdefRecord.createMime(
-                        JSON_MIME, ApiCompatibilityUtils.getBytesUtf8(TEST_JSON)));
+                new android.nfc.NdefMessage(NdefMessageUtils.createPlatformMimeRecord(
+                        JSON_MIME, DUMMY_RECORD_ID, ApiCompatibilityUtils.getBytesUtf8(TEST_JSON)));
         NdefMessage jsonMojoNdefMessage = NdefMessageUtils.toNdefMessage(jsonNdefMessage);
         assertNull(jsonMojoNdefMessage.url);
         assertEquals(1, jsonMojoNdefMessage.data.length);
         assertEquals(NdefMessageUtils.RECORD_TYPE_MIME, jsonMojoNdefMessage.data[0].recordType);
         assertEquals(JSON_MIME, jsonMojoNdefMessage.data[0].mediaType);
-        assertEquals(true, jsonMojoNdefMessage.data[0].id.isEmpty());
+        assertEquals(DUMMY_RECORD_ID, jsonMojoNdefMessage.data[0].id);
         assertNull(jsonMojoNdefMessage.data[0].encoding);
         assertNull(jsonMojoNdefMessage.data[0].lang);
         assertEquals(TEST_JSON, new String(jsonMojoNdefMessage.data[0].data));
@@ -373,8 +373,8 @@ public class NFCTest {
         assertEquals(TEST_TEXT, new String(payloadMojoMessage.data[0].data));
 
         // Test NdefMessage with an additional WebNFC author record.
-        android.nfc.NdefRecord jsonNdefRecord = android.nfc.NdefRecord.createMime(
-                JSON_MIME, ApiCompatibilityUtils.getBytesUtf8(TEST_JSON));
+        android.nfc.NdefRecord jsonNdefRecord = NdefMessageUtils.createPlatformMimeRecord(
+                JSON_MIME, DUMMY_RECORD_ID, ApiCompatibilityUtils.getBytesUtf8(TEST_JSON));
         android.nfc.NdefRecord extNdefRecord =
                 android.nfc.NdefRecord.createExternal(AUTHOR_RECORD_DOMAIN, AUTHOR_RECORD_TYPE,
                         ApiCompatibilityUtils.getBytesUtf8(TEST_URL));
@@ -384,6 +384,7 @@ public class NFCTest {
         assertEquals(TEST_URL, webMojoNdefMessage.url);
         assertEquals(1, webMojoNdefMessage.data.length);
         assertEquals(NdefMessageUtils.RECORD_TYPE_MIME, webMojoNdefMessage.data[0].recordType);
+        assertEquals(DUMMY_RECORD_ID, webMojoNdefMessage.data[0].id);
         assertEquals(JSON_MIME, webMojoNdefMessage.data[0].mediaType);
         assertNull(webMojoNdefMessage.data[0].encoding);
         assertNull(webMojoNdefMessage.data[0].lang);
@@ -490,6 +491,7 @@ public class NFCTest {
         NdefRecord mimeMojoNdefRecord = new NdefRecord();
         mimeMojoNdefRecord.recordType = NdefMessageUtils.RECORD_TYPE_MIME;
         mimeMojoNdefRecord.mediaType = TEXT_MIME;
+        mimeMojoNdefRecord.id = DUMMY_RECORD_ID;
         mimeMojoNdefRecord.data = ApiCompatibilityUtils.getBytesUtf8(TEST_TEXT);
         NdefMessage mimeMojoNdefMessage = createMojoNdefMessage(TEST_URL, mimeMojoNdefRecord);
         android.nfc.NdefMessage mimeNdefMessage =
@@ -498,6 +500,7 @@ public class NFCTest {
         assertEquals(
                 android.nfc.NdefRecord.TNF_MIME_MEDIA, mimeNdefMessage.getRecords()[0].getTnf());
         assertEquals(TEXT_MIME, mimeNdefMessage.getRecords()[0].toMimeType());
+        assertEquals(DUMMY_RECORD_ID, new String(mimeNdefMessage.getRecords()[0].getId()));
         assertEquals(TEST_TEXT, new String(mimeNdefMessage.getRecords()[0].getPayload()));
         assertEquals(
                 android.nfc.NdefRecord.TNF_EXTERNAL_TYPE, mimeNdefMessage.getRecords()[1].getTnf());
@@ -506,6 +509,7 @@ public class NFCTest {
         NdefRecord jsonMojoNdefRecord = new NdefRecord();
         jsonMojoNdefRecord.recordType = NdefMessageUtils.RECORD_TYPE_MIME;
         jsonMojoNdefRecord.mediaType = JSON_MIME;
+        jsonMojoNdefRecord.id = DUMMY_RECORD_ID;
         jsonMojoNdefRecord.data = ApiCompatibilityUtils.getBytesUtf8(TEST_JSON);
         NdefMessage jsonMojoNdefMessage = createMojoNdefMessage(TEST_URL, jsonMojoNdefRecord);
         android.nfc.NdefMessage jsonNdefMessage =
@@ -514,6 +518,7 @@ public class NFCTest {
         assertEquals(
                 android.nfc.NdefRecord.TNF_MIME_MEDIA, jsonNdefMessage.getRecords()[0].getTnf());
         assertEquals(JSON_MIME, jsonNdefMessage.getRecords()[0].toMimeType());
+        assertEquals(DUMMY_RECORD_ID, new String(jsonNdefMessage.getRecords()[0].getId()));
         assertEquals(TEST_JSON, new String(jsonNdefMessage.getRecords()[0].getPayload()));
         assertEquals(
                 android.nfc.NdefRecord.TNF_EXTERNAL_TYPE, jsonNdefMessage.getRecords()[1].getTnf());

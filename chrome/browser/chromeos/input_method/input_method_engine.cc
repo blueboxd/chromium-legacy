@@ -273,6 +273,14 @@ bool InputMethodEngine::SetCompositionRange(
   return input_context->SetCompositionRange(before, after, text_spans);
 }
 
+bool InputMethodEngine::SetSelectionRange(uint32_t start, uint32_t end) {
+  ui::IMEInputContextHandlerInterface* input_context =
+      ui::IMEBridge::Get()->GetInputContextHandler();
+  if (!input_context)
+    return false;
+  return input_context->SetSelectionRange(start, end);
+}
+
 void InputMethodEngine::CommitTextToInputContext(int context_id,
                                                  const std::string& text) {
   ui::IMEInputContextHandlerInterface* input_context =

@@ -91,11 +91,6 @@ Frame* RemoteFrameClientImpl::FirstChild() const {
   return ToCoreFrame(web_frame_->FirstChild());
 }
 
-void RemoteFrameClientImpl::FrameFocused() const {
-  if (web_frame_->Client())
-    web_frame_->Client()->FrameFocused();
-}
-
 base::UnguessableToken RemoteFrameClientImpl::GetDevToolsFrameToken() const {
   if (web_frame_->Client()) {
     return web_frame_->Client()->GetDevToolsFrameToken();

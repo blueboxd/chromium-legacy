@@ -2516,7 +2516,6 @@
     'origin_trials': ['chasej+watch@chromium.org',
                       'iclelland+watch@chromium.org'],
     'ozone': ['kalyan.kondapally@intel.com',
-              'msisov@igalia.com',
               'ozone-reviews@chromium.org'],
     'ozone_scenic': ['dworsham@google.com',
                      'rjkroege@chromium.org',

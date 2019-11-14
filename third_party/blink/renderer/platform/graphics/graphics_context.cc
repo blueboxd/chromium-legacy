@@ -1040,24 +1040,24 @@ void GraphicsContext::DrawImageTiled(Image* image,
   paint_controller_.SetImagePainted();
 }
 
-void GraphicsContext::DrawOval(const SkRect& oval, const PaintFlags& flags) {
+void GraphicsContext::DrawOval(const SkRect& oval,
+                               const PaintFlags& flags,
+                               const DarkModeFilter::ElementRole role) {
   if (ContextDisabled())
     return;
   DCHECK(canvas_);
 
-  canvas_->drawOval(
-      oval,
-      DarkModeFlags(this, flags, DarkModeFilter::ElementRole::kBackground));
+  canvas_->drawOval(oval, DarkModeFlags(this, flags, role));
 }
 
-void GraphicsContext::DrawPath(const SkPath& path, const PaintFlags& flags) {
+void GraphicsContext::DrawPath(const SkPath& path,
+                               const PaintFlags& flags,
+                               const DarkModeFilter::ElementRole role) {
   if (ContextDisabled())
     return;
   DCHECK(canvas_);
 
-  canvas_->drawPath(
-      path,
-      DarkModeFlags(this, flags, DarkModeFilter::ElementRole::kBackground));
+  canvas_->drawPath(path, DarkModeFlags(this, flags, role));
 }
 
 void GraphicsContext::DrawRect(const SkRect& rect,

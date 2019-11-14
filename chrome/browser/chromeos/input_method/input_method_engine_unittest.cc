@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
@@ -41,6 +42,8 @@ namespace {
 const char kTestExtensionId[] = "mppnpdlheglhdfmldimlhpnegondlapf";
 const char kTestExtensionId2[] = "dmpipdbjkoajgdeppkffbjhngfckdloi";
 const char kTestImeComponentId[] = "test_engine_id";
+const char kErrorNotActive[] = "IME is not active";
+const char kErrorInvalidValue[] = "Argument '%s' with value '%d' is not valid";
 
 enum CallsBitmap {
   NONE = 0U,
@@ -332,6 +335,39 @@ TEST_F(InputMethodEngineTest, TestCompositionBoundsChanged) {
   // Enable/disable with focus.
   engine_->SetCompositionBounds({gfx::Rect()});
   EXPECT_EQ(ONCOMPOSITIONBOUNDSCHANGED, observer_->GetCallsBitmapAndReset());
+}
+
+TEST_F(InputMethodEngineTest, TestSetSelectionRange) {
+  CreateEngine(true);
+  const int context = engine_->GetContextIdForTesting();
+  std::string error;
+  engine_->::input_method::InputMethodEngineBase::SetSelectionRange(
+      context, /* start */ 0, /* end */ 0, &error);
+  EXPECT_EQ(kErrorNotActive, error);
+  EXPECT_EQ(0,
+            mock_ime_input_context_handler_->set_selection_range_call_count());
+  error = "";
+
+  engine_->Enable(kTestImeComponentId);
+  engine_->::input_method::InputMethodEngineBase::SetSelectionRange(
+      context, /* start */ 0, /* end */ 0, &error);
+  EXPECT_EQ("", error);
+  EXPECT_EQ(1,
+            mock_ime_input_context_handler_->set_selection_range_call_count());
+  error = "";
+
+  engine_->::input_method::InputMethodEngineBase::SetSelectionRange(
+      context, /* start */ -1, /* end */ 0, &error);
+  EXPECT_EQ(base::StringPrintf(kErrorInvalidValue, "start", -1), error);
+  EXPECT_EQ(1,
+            mock_ime_input_context_handler_->set_selection_range_call_count());
+  error = "";
+
+  engine_->::input_method::InputMethodEngineBase::SetSelectionRange(
+      context, /* start */ 0, /* end */ -1, &error);
+  EXPECT_EQ(base::StringPrintf(kErrorInvalidValue, "end", -1), error);
+  EXPECT_EQ(1,
+            mock_ime_input_context_handler_->set_selection_range_call_count());
 }
 
 // See https://crbug.com/980437.

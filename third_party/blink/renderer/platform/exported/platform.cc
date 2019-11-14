@@ -79,7 +79,7 @@ class DefaultInterfaceProvider : public InterfaceProvider {
   // InterfaceProvider implementation:
   void GetInterface(const char* interface_name,
                     mojo::ScopedMessagePipeHandle interface_pipe) override {
-    Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+    Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
         mojo::GenericPendingReceiver(interface_name,
                                      std::move(interface_pipe)));
   }
@@ -292,8 +292,7 @@ InterfaceProvider* Platform::GetInterfaceProvider() {
   return &provider;
 }
 
-ThreadSafeBrowserInterfaceBrokerProxy*
-Platform::GetBrowserInterfaceBrokerProxy() {
+ThreadSafeBrowserInterfaceBrokerProxy* Platform::GetBrowserInterfaceBroker() {
   DEFINE_STATIC_LOCAL(DefaultBrowserInterfaceBrokerProxy, proxy, ());
   return &proxy;
 }

@@ -55,7 +55,7 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
   bool AllowScriptExtensionForServiceWorker(
       const blink::WebSecurityOrigin& script_origin) override;
   blink::WebCrypto* Crypto() override;
-  blink::ThreadSafeBrowserInterfaceBrokerProxy* GetBrowserInterfaceBrokerProxy()
+  blink::ThreadSafeBrowserInterfaceBrokerProxy* GetBrowserInterfaceBroker()
       override;
 
   scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() const override;

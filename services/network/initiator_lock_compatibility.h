@@ -44,9 +44,6 @@ enum class InitiatorLockCompatibility {
   // - HTML Imports (see https://crbug.com/871827#c9).
   kIncorrectLock = 4,
 
-  // Covered by ExcludeSchemeFromRequestInitiatorSiteLockChecks.
-  kExcludedScheme = 5,
-
   // Covered by CrossOriginReadBlocking::ShouldAllowForPlugin.
   kExcludedUniversalAccessPlugin = 6,
 
@@ -93,15 +90,6 @@ InitiatorLockCompatibility VerifyRequestInitiatorLock(
 url::Origin GetTrustworthyInitiator(
     const base::Optional<url::Origin>& request_initiator_site_lock,
     const base::Optional<url::Origin>& request_initiator);
-
-// Registers a scheme that should not be subject to
-// |request_initiator_site_lock| checks (e.g. a scheme that is typically
-// used in isolated worlds, with a separate origin, such as
-// "chrome-extensions").
-//
-// TODO(lukasza): https://crbug.com/940068: Remove this method once isolated
-// worlds use the same |request_initiator| as the main world.
-void ExcludeSchemeFromRequestInitiatorSiteLockChecks(const std::string& scheme);
 
 }  // namespace network
 

@@ -26,7 +26,8 @@ namespace syncer {
 class DeviceInfo {
  public:
   struct SharingInfo {
-    SharingInfo(std::string fcm_token,
+    SharingInfo(std::string vapid_fcm_token,
+                std::string sharing_fcm_token,
                 std::string p256dh,
                 std::string auth_secret,
                 std::set<sync_pb::SharingSpecificFields::EnabledFeatures>
@@ -36,8 +37,11 @@ class DeviceInfo {
     SharingInfo& operator=(const SharingInfo& other);
     ~SharingInfo();
 
-    // FCM registration token of device for sending Sharing messages.
-    std::string fcm_token;
+    // FCM registration token of device subscribed using VAPID key.
+    std::string vapid_fcm_token;
+
+    // FCM registration token of device subscribed using Sharing sender ID.
+    std::string sharing_fcm_token;
 
     // Subscription public key required for Sharing message encryption[RFC8291].
     std::string p256dh;

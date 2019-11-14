@@ -51,6 +51,18 @@ INSTANTIATE_TEST_SUITE_P(Service, GLES2DecoderTest3, ::testing::Bool());
 INSTANTIATE_TEST_SUITE_P(Service, GLES3DecoderTest3, ::testing::Bool());
 
 template <>
+void GLES2DecoderTestBase::SpecializedSetup<cmds::Uniform4fvImmediate, 0>(
+    bool /* valid */) {
+  SetupShaderForUniform(GL_FLOAT_VEC4);
+}
+
+template <>
+void GLES2DecoderTestBase::SpecializedSetup<cmds::Uniform4i, 0>(
+    bool /* valid */) {
+  SetupShaderForUniform(GL_INT_VEC4);
+}
+
+template <>
 void GLES2DecoderTestBase::SpecializedSetup<cmds::Uniform4ivImmediate, 0>(
     bool /* valid */) {
   SetupShaderForUniform(GL_INT_VEC4);

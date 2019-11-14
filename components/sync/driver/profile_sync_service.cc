@@ -294,6 +294,7 @@ SyncEngine::HttpPostProviderFactoryGetter
 ProfileSyncService::MakeHttpPostProviderFactoryGetter() {
   return base::BindOnce(&NetworkResources::GetHttpPostProviderFactory,
                         base::Unretained(network_resources_.get()),
+                        MakeUserAgentForSync(channel_),
                         url_loader_factory_->Clone(),
                         network_time_update_callback_);
 }
@@ -484,7 +485,6 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
   params.extensions_activity = sync_client_->GetExtensionsActivity();
   params.event_handler = GetJsEventHandler();
   params.service_url = sync_service_url_;
-  params.sync_user_agent = MakeUserAgentForSync(channel_);
   params.http_factory_getter = MakeHttpPostProviderFactoryGetter();
   params.authenticated_account_id = GetAuthenticatedAccountInfo().account_id;
   DCHECK(!params.authenticated_account_id.empty() || IsLocalSyncEnabled());

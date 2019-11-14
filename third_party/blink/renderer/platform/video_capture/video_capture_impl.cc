@@ -288,7 +288,7 @@ VideoCaptureImpl::VideoCaptureImpl(media::VideoCaptureSessionId session_id)
   CHECK(!session_id.is_empty());
   DETACH_FROM_THREAD(io_thread_checker_);
 
-  Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+  Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
       pending_video_capture_host_.InitWithNewPipeAndPassReceiver());
 
   gpu_factories_ = Platform::Current()->GetGpuFactories();

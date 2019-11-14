@@ -25,6 +25,7 @@
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
@@ -189,7 +190,7 @@ std::string BrowserDMTokenStorageWin::InitDMToken() {
   DCHECK_LE(size, installer::kMaxDMTokenLength);
   std::string dm_token;
   dm_token.assign(raw_value.data(), size);
-  return dm_token;
+  return base::TrimWhitespaceASCII(dm_token, base::TRIM_ALL).as_string();
 }
 
 bool BrowserDMTokenStorageWin::InitEnrollmentErrorOption() {

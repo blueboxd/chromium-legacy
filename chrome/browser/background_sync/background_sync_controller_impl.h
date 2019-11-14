@@ -91,8 +91,10 @@ class BackgroundSyncControllerImpl : public content::BackgroundSyncController,
       blink::ServiceWorkerStatusCode status_code,
       int num_attempts,
       int max_attempts) override;
-  void ScheduleBrowserWakeUp(
-      blink::mojom::BackgroundSyncType sync_type) override;
+  void ScheduleBrowserWakeUpWithDelay(
+      blink::mojom::BackgroundSyncType sync_type,
+      base::TimeDelta delay) override;
+  void CancelBrowserWakeup(blink::mojom::BackgroundSyncType sync_type) override;
 
   base::TimeDelta GetNextEventDelay(
       const content::BackgroundSyncRegistration& registration,

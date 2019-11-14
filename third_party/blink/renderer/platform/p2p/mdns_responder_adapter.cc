@@ -46,7 +46,7 @@ MdnsResponderAdapter::MdnsResponderAdapter() {
   shared_remote_client_ =
       mojo::SharedRemote<network::mojom::blink::MdnsResponder>(
           std::move(client));
-  blink::Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+  blink::Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
       std::move(receiver));
 }
 

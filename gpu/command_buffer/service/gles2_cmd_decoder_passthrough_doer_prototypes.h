@@ -857,11 +857,24 @@ error::Error DoDrawArraysInstancedANGLE(GLenum mode,
                                         GLint first,
                                         GLsizei count,
                                         GLsizei primcount);
+error::Error DoDrawArraysInstancedBaseInstanceANGLE(GLenum mode,
+                                                    GLint first,
+                                                    GLsizei count,
+                                                    GLsizei primcount,
+                                                    GLuint baseinstance);
 error::Error DoDrawElementsInstancedANGLE(GLenum mode,
                                           GLsizei count,
                                           GLenum type,
                                           const void* indices,
                                           GLsizei primcount);
+error::Error DoDrawElementsInstancedBaseVertexBaseInstanceANGLE(
+    GLenum mode,
+    GLsizei count,
+    GLenum type,
+    const void* indices,
+    GLsizei primcount,
+    GLint basevertices,
+    GLuint baseinstances);
 error::Error DoVertexAttribDivisorANGLE(GLuint index, GLuint divisor);
 error::Error DoProduceTextureDirectCHROMIUM(GLuint texture_client_id,
                                             const volatile GLbyte* mailbox);

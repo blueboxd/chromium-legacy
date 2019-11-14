@@ -24,7 +24,6 @@
 #include "fuchsia/base/test_navigation_listener.h"
 #include "fuchsia/base/url_request_rewrite_test_util.h"
 #include "fuchsia/engine/browser/frame_impl.h"
-#include "fuchsia/engine/test/test_data.h"
 #include "fuchsia/engine/test/web_engine_browser_test.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -63,6 +62,7 @@ const char kPage2Title[] = "title 2";
 const char kPage3Title[] = "websql not available";
 const char kDataUrl[] =
     "data:text/html;base64,PGI+SGVsbG8sIHdvcmxkLi4uPC9iPg==";
+const char kTestServerRoot[] = FILE_PATH_LITERAL("fuchsia/engine/test/data");
 const int64_t kOnLoadScriptId = 0;
 
 MATCHER_P(NavigationHandleUrlEquals,
@@ -100,7 +100,7 @@ class FrameImplTest : public cr_fuchsia::WebEngineBrowserTest {
   FrameImplTest()
       : run_timeout_(TestTimeouts::action_timeout(),
                      base::MakeExpectedNotRunClosure(FROM_HERE)) {
-    set_test_server_root(base::FilePath(cr_fuchsia::kTestServerRoot));
+    set_test_server_root(base::FilePath(kTestServerRoot));
   }
 
   ~FrameImplTest() = default;

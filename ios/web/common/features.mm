@@ -44,6 +44,9 @@ const base::Feature kLogLoadStartedInDidStartNavigation{
 const base::Feature kEnablePersistentDownloads{
     "EnablePersistentDownloads", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kUseJSForErrorPage{"UseJSForErrorPage",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 // The feature kUseWKWebViewLoading will change the CPM if
 // kLogLoadStartedInDidStartNavigation is not enabled, so
 // kLogLoadStartedInDidStartNavigation is required. The feature flag

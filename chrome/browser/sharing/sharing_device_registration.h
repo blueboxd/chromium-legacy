@@ -69,14 +69,24 @@ class SharingDeviceRegistration {
   FRIEND_TEST_ALL_PREFIXES(SharingDeviceRegistrationTest,
                            RegisterDeviceTest_Success);
 
-  // Callback function responsible for validating FCM registration token and
-  // retrieving public encryption key and authentication secret associated with
-  // FCM App ID of Sharing. Also responsible for calling |callback| with
+  // Callback function responsible for validating VAPID FCM registration token
+  // and retrieving public encryption key and authentication secret associated
+  // with FCM App ID of Sharing. Also responsible for calling |callback| with
   // |result| of GetToken.
-  void OnFCMTokenReceived(RegistrationCallback callback,
-                          const std::string& authorized_entity,
-                          const std::string& fcm_registration_token,
-                          instance_id::InstanceID::Result result);
+  void OnVapidFCMTokenReceived(RegistrationCallback callback,
+                               const std::string& authorized_entity,
+                               const std::string& vapid_fcm_token,
+                               instance_id::InstanceID::Result result);
+
+  // Callback function responsible for validating Sharing FCM registration token
+  // and retrieving public encryption key and authentication secret associated
+  // with FCM App ID of Sharing. Also responsible for calling |callback| with
+  // |result| of GetToken.
+  void OnSharingFCMTokenReceived(RegistrationCallback callback,
+                                 const std::string& authorized_entity,
+                                 const std::string& vapid_fcm_token,
+                                 const std::string& sharing_fcm_token,
+                                 instance_id::InstanceID::Result result);
 
   // Callback function responsible for deleting FCM registration token
   // associated with FCM App ID of Sharing. Also responsible for calling
@@ -87,13 +97,15 @@ class SharingDeviceRegistration {
   // Retrieve encryption info from InstanceID.
   void RetrieveEncryptionInfo(RegistrationCallback callback,
                               const std::string& authorized_entity,
-                              const std::string& fcm_registration_token);
+                              const std::string& vapid_fcm_token,
+                              const std::string& sharing_fcm_token);
 
   // Callback function responsible for saving device registration information in
   // SharingSyncPreference.
   void OnEncryptionInfoReceived(RegistrationCallback callback,
                                 const std::string& authorized_entity,
-                                const std::string& fcm_registration_token,
+                                const std::string& vapid_fcm_token,
+                                const std::string& sharing_fcm_token,
                                 std::string p256dh,
                                 std::string auth_secret);
 

@@ -4,12 +4,10 @@
 
 #include "fuchsia/engine/browser/frame_impl.h"
 
-#include <lib/sys/cpp/component_context.h>
 #include <lib/ui/scenic/cpp/view_ref_pair.h>
 #include <limits>
 
 #include "base/bind_helpers.h"
-#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/json/json_writer.h"
 #include "base/strings/strcat.h"
@@ -26,7 +24,6 @@
 #include "content/public/common/was_activated_option.mojom.h"
 #include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/base/message_port.h"
-#include "fuchsia/engine/browser/accessibility_bridge.h"
 #include "fuchsia/engine/browser/context_impl.h"
 #include "fuchsia/engine/browser/web_engine_devtools_controller.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -467,27 +464,6 @@ void FrameImpl::CreateView(fuchsia::ui::views::ViewToken view_token) {
   ui::PlatformWindowInitProperties properties;
   properties.view_token = std::move(view_token);
   properties.view_ref_pair = scenic::ViewRefPair::New();
-
-  // Create a ViewRef and register it to the Fuchsia SemanticsManager.
-  fuchsia::ui::views::ViewRef accessibility_view_ref;
-  zx_status_t status = properties.view_ref_pair.view_ref.reference.duplicate(
-      ZX_RIGHT_SAME_RIGHTS, &accessibility_view_ref.reference);
-  if (status == ZX_OK) {
-    fuchsia::accessibility::semantics::SemanticsManagerPtr semantics_manager;
-    if (test_semantics_manager_ptr_) {
-      semantics_manager = std::move(test_semantics_manager_ptr_);
-    } else {
-      semantics_manager =
-          base::fuchsia::ComponentContextForCurrentProcess()
-              ->svc()
-              ->Connect<fuchsia::accessibility::semantics::SemanticsManager>();
-    }
-    accessibility_bridge_ = std::make_unique<AccessibilityBridge>(
-        std::move(semantics_manager), std::move(accessibility_view_ref),
-        web_contents_.get());
-  } else {
-    ZX_LOG(ERROR, status) << "zx_object_duplicate";
-  }
 
   window_tree_host_ =
       std::make_unique<FrameWindowTreeHost>(std::move(properties));

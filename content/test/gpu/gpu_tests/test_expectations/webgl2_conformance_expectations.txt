@@ -49,9 +49,6 @@ crbug.com/945970 [ android ] WebglExtension_EXT_float_blend [ Skip ]
 # Conformance expectations
 # ========================
 
-# Need to merge WEBGL_multi_draw_instanced into WEBGL_multi_draw
-crbug.com/890539 conformance/extensions/webgl-multi-draw.html [ Skip ]
-
 crbug.com/953120 conformance/programs/program-handling.html [ Failure ]
 
 crbug.com/949249 [ passthrough ] conformance2/extensions/ovr_multiview2.html [ Failure ]

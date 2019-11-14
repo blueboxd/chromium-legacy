@@ -20,13 +20,13 @@ cca.device = cca.device || {};
  */
 cca.device.DeviceInfoUpdater = class {
   /**
-   * @param {!cca.device.PhotoResolPreferrer} photoPreferrer
+   * @param {!cca.device.PhotoConstraintsPreferrer} photoPreferrer
    * @param {!cca.device.VideoConstraintsPreferrer} videoPreferrer
    * @public
    * */
   constructor(photoPreferrer, videoPreferrer) {
     /**
-     * @type {!cca.device.PhotoResolPreferrer}
+     * @type {!cca.device.PhotoConstraintsPreferrer}
      * @private
      */
     this.photoPreferrer_ = photoPreferrer;

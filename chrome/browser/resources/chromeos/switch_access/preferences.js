@@ -71,10 +71,15 @@ class SwitchAccessPreferences {
    * @private
    */
   init_(onReady) {
-    let readyFunction = function(onReady) {
+    let readyFunction = () => {
       this.isReady_ = true;
       onReady();
-    }.bind(this, onReady);
+
+      if (!this.settingsAreConfigured()) {
+        chrome.accessibilityPrivate.openSettingsSubpage(
+            'manageAccessibility/switchAccess');
+      }
+    };
 
     chrome.settingsPrivate.onPrefsChanged.addListener(
         this.updateFromSettings_.bind(this));
@@ -167,6 +172,32 @@ class SwitchAccessPreferences {
       return /** @type {number} */ (pref.value);
     }
     return null;
+  }
+
+  /**
+   * Whether the current settings configuration is reasonably usable;
+   * specifically, whether there is a way to select and a way to navigate.
+   * @return {boolean}
+   */
+  settingsAreConfigured() {
+    const selectSetting = this.getNumberPreferenceIfDefined(
+        SAConstants.Preference.SELECT_SETTING);
+    const nextSetting =
+        this.getNumberPreferenceIfDefined(SAConstants.Preference.NEXT_SETTING);
+    const previousSetting = this.getNumberPreferenceIfDefined(
+        SAConstants.Preference.PREVIOUS_SETTING);
+    const autoScanEnabled =
+        this.getBooleanPreference(SAConstants.Preference.AUTO_SCAN_ENABLED);
+
+    if (!selectSetting) {
+      return false;
+    }
+
+    if (nextSetting || previousSetting) {
+      return true;
+    }
+
+    return autoScanEnabled;
   }
 }
 

@@ -54,6 +54,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   bool BubbleLogicalScrollFromChildFrame(ScrollDirection direction,
                                          ScrollGranularity granularity,
                                          Frame* child) override;
+  void DidFocus() override;
 
   void SetCcLayer(cc::Layer*,
                   bool prevent_contents_opaque_changes,

@@ -107,7 +107,7 @@ void ReportingContext::CountReport(Report* report) {
 const mojo::Remote<mojom::blink::ReportingServiceProxy>&
 ReportingContext::GetReportingService() const {
   if (!reporting_service_) {
-    Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+    Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
         reporting_service_.BindNewPipeAndPassReceiver());
   }
   return reporting_service_;

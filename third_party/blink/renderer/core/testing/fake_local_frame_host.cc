@@ -49,6 +49,8 @@ void FakeLocalFrameHost::VisibilityChanged(
 void FakeLocalFrameHost::DidChangeThemeColor(
     const base::Optional<::SkColor>& theme_color) {}
 
+void FakeLocalFrameHost::DidFocusFrame() {}
+
 void FakeLocalFrameHost::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   receiver_.Bind(mojo::PendingAssociatedReceiver<mojom::blink::LocalFrameHost>(

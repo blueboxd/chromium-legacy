@@ -30,8 +30,6 @@ TestHttpBridgeFactory::TestHttpBridgeFactory() {}
 
 TestHttpBridgeFactory::~TestHttpBridgeFactory() {}
 
-void TestHttpBridgeFactory::Init(const std::string& user_agent) {}
-
 syncer::HttpPostProviderInterface* TestHttpBridgeFactory::Create() {
   return new TestHttpBridge();
 }

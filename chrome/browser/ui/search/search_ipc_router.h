@@ -163,14 +163,6 @@ class SearchIPCRouter : public content::WebContentsObserver,
 
     virtual void BlocklistPromo(const std::string& promo_id) = 0;
 
-    virtual void OpenAutocompleteMatch(uint8_t line,
-                                       const GURL& url,
-                                       double button,
-                                       bool alt_key,
-                                       bool ctrl_key,
-                                       bool meta_key,
-                                       bool shift_key) = 0;
-
     virtual void DeleteAutocompleteMatch(uint8_t line) = 0;
   };
 
@@ -214,7 +206,6 @@ class SearchIPCRouter : public content::WebContentsObserver,
     virtual bool ShouldProcessQueryAutocomplete(bool is_active_tab) = 0;
     virtual bool ShouldProcessStopAutocomplete() = 0;
     virtual bool ShouldProcessBlocklistPromo() = 0;
-    virtual bool ShouldProcessOpenAutocompleteMatch(bool is_active_tab) = 0;
     virtual bool ShouldProcessDeleteAutocompleteMatch() = 0;
   };
 
@@ -328,13 +319,6 @@ class SearchIPCRouter : public content::WebContentsObserver,
                          bool prevent_inline_autocomplete) override;
   void StopAutocomplete(bool clear_result) override;
   void BlocklistPromo(const std::string& promo_id) override;
-  void OpenAutocompleteMatch(uint8_t line,
-                             const GURL& url,
-                             double button,
-                             bool alt_key,
-                             bool ctrl_key,
-                             bool meta_key,
-                             bool shift_key) override;
   void DeleteAutocompleteMatch(uint8_t line) override;
   void set_embedded_search_client_factory_for_testing(
       std::unique_ptr<EmbeddedSearchClientFactory> factory) {

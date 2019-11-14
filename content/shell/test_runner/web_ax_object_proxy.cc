@@ -37,16 +37,6 @@ std::string RoleToString(ax::mojom::Role role) {
       return result.append("Alert");
     case ax::mojom::Role::kAnchor:
       return result.append("Anchor");
-    case ax::mojom::Role::kAnnotationAttribution:
-      return result.append("AnnotationAttribution");
-    case ax::mojom::Role::kAnnotationCommentary:
-      return result.append("AnnotationCommentary");
-    case ax::mojom::Role::kAnnotationPresence:
-      return result.append("AnnotationPresence");
-    case ax::mojom::Role::kAnnotationRevision:
-      return result.append("AnnotationRevision");
-    case ax::mojom::Role::kAnnotationSuggestion:
-      return result.append("AnnotationSuggestion");
     case ax::mojom::Role::kApplication:
       return result.append("Application");
     case ax::mojom::Role::kArticle:
@@ -79,6 +69,10 @@ std::string RoleToString(ax::mojom::Role role) {
       return result.append("ComboBoxGrouping");
     case ax::mojom::Role::kComboBoxMenuButton:
       return result.append("ComboBoxMenuButton");
+    case ax::mojom::Role::kComment:
+      return result.append("Comment");
+    case ax::mojom::Role::kCommentSection:
+      return result.append("CommentSection");
     case ax::mojom::Role::kComplementary:
       return result.append("Complementary");
     case ax::mojom::Role::kContentDeletion:
@@ -305,6 +299,8 @@ std::string RoleToString(ax::mojom::Role role) {
       return result.append("RadioGroup");
     case ax::mojom::Role::kRegion:
       return result.append("Region");
+    case ax::mojom::Role::kRevision:
+      return result.append("Revision");
     case ax::mojom::Role::kRowHeader:
       return result.append("RowHeader");
     case ax::mojom::Role::kRow:
@@ -337,9 +333,10 @@ std::string RoleToString(ax::mojom::Role role) {
       return result.append("Status");
     case ax::mojom::Role::kStrong:
       return result.append("Strong");
-      ;
     case ax::mojom::Role::kSwitch:
       return result.append("Switch");
+    case ax::mojom::Role::kSuggestion:
+      return result.append("Suggestion");
     case ax::mojom::Role::kTabList:
       return result.append("TabList");
     case ax::mojom::Role::kTabPanel:

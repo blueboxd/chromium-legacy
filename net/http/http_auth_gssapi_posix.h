@@ -220,7 +220,6 @@ class ScopedSecurityContext {
 class NET_EXPORT_PRIVATE HttpAuthGSSAPI : public HttpNegotiateAuthSystem {
  public:
   HttpAuthGSSAPI(GSSAPILibrary* library,
-                 const std::string& scheme,
                  const gss_OID gss_oid);
   ~HttpAuthGSSAPI() override;
 
@@ -245,7 +244,6 @@ class NET_EXPORT_PRIVATE HttpAuthGSSAPI : public HttpNegotiateAuthSystem {
                            gss_buffer_t out_token,
                            const NetLogWithSource& net_log);
 
-  std::string scheme_;
   gss_OID gss_oid_;
   GSSAPILibrary* library_;
   std::string decoded_server_auth_token_;

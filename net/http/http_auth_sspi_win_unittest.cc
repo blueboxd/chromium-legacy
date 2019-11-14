@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_auth.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/mock_sspi_library_win.h"
 #include "net/log/net_log_entry.h"
@@ -81,7 +82,7 @@ TEST(HttpAuthSSPITest, DetermineMaxTokenLength_InvalidPackage) {
 TEST(HttpAuthSSPITest, ParseChallenge_FirstRound) {
   // The first round should just consist of an unadorned "Negotiate" header.
   MockSSPILibrary mock_library{NEGOSSP_NAME};
-  HttpAuthSSPI auth_sspi(&mock_library, "Negotiate");
+  HttpAuthSSPI auth_sspi(&mock_library, HttpAuth::AUTH_SCHEME_NEGOTIATE);
   std::string challenge_text = "Negotiate";
   HttpAuthChallengeTokenizer challenge(challenge_text.begin(),
                                        challenge_text.end());
@@ -93,7 +94,7 @@ TEST(HttpAuthSSPITest, ParseChallenge_TwoRounds) {
   // The first round should just have "Negotiate", and the second round should
   // have a valid base64 token associated with it.
   MockSSPILibrary mock_library{NEGOSSP_NAME};
-  HttpAuthSSPI auth_sspi(&mock_library, "Negotiate");
+  HttpAuthSSPI auth_sspi(&mock_library, HttpAuth::AUTH_SCHEME_NEGOTIATE);
   std::string first_challenge_text = "Negotiate";
   HttpAuthChallengeTokenizer first_challenge(first_challenge_text.begin(),
                                              first_challenge_text.end());
@@ -118,7 +119,7 @@ TEST(HttpAuthSSPITest, ParseChallenge_UnexpectedTokenFirstRound) {
   // If the first round challenge has an additional authentication token, it
   // should be treated as an invalid challenge from the server.
   MockSSPILibrary mock_library{NEGOSSP_NAME};
-  HttpAuthSSPI auth_sspi(&mock_library, "Negotiate");
+  HttpAuthSSPI auth_sspi(&mock_library, HttpAuth::AUTH_SCHEME_NEGOTIATE);
   std::string challenge_text = "Negotiate Zm9vYmFy";
   HttpAuthChallengeTokenizer challenge(challenge_text.begin(),
                                        challenge_text.end());
@@ -130,7 +131,7 @@ TEST(HttpAuthSSPITest, ParseChallenge_MissingTokenSecondRound) {
   // If a later-round challenge is simply "Negotiate", it should be treated as
   // an authentication challenge rejection from the server or proxy.
   MockSSPILibrary mock_library{NEGOSSP_NAME};
-  HttpAuthSSPI auth_sspi(&mock_library, "Negotiate");
+  HttpAuthSSPI auth_sspi(&mock_library, HttpAuth::AUTH_SCHEME_NEGOTIATE);
   std::string first_challenge_text = "Negotiate";
   HttpAuthChallengeTokenizer first_challenge(first_challenge_text.begin(),
                                              first_challenge_text.end());
@@ -153,7 +154,7 @@ TEST(HttpAuthSSPITest, ParseChallenge_NonBase64EncodedToken) {
   // If a later-round challenge has an invalid base64 encoded token, it should
   // be treated as an invalid challenge.
   MockSSPILibrary mock_library{NEGOSSP_NAME};
-  HttpAuthSSPI auth_sspi(&mock_library, "Negotiate");
+  HttpAuthSSPI auth_sspi(&mock_library, HttpAuth::AUTH_SCHEME_NEGOTIATE);
   std::string first_challenge_text = "Negotiate";
   HttpAuthChallengeTokenizer first_challenge(first_challenge_text.begin(),
                                              first_challenge_text.end());
@@ -175,7 +176,7 @@ TEST(HttpAuthSSPITest, ParseChallenge_NonBase64EncodedToken) {
 // Runs through a full handshake against the MockSSPILibrary.
 TEST(HttpAuthSSPITest, GenerateAuthToken_FullHandshake_AmbientCreds) {
   MockSSPILibrary mock_library{NEGOSSP_NAME};
-  HttpAuthSSPI auth_sspi(&mock_library, "Negotiate");
+  HttpAuthSSPI auth_sspi(&mock_library, HttpAuth::AUTH_SCHEME_NEGOTIATE);
   std::string first_challenge_text = "Negotiate";
   HttpAuthChallengeTokenizer first_challenge(first_challenge_text.begin(),
                                              first_challenge_text.end());
@@ -216,7 +217,7 @@ TEST(HttpAuthSSPITest, GenerateAuthToken_FullHandshake_AmbientCreds) {
 TEST(HttpAuthSSPITest, GenerateAuthToken_FullHandshake_AmbientCreds_Logging) {
   BoundTestNetLog net_log;
   MockSSPILibrary mock_library{NEGOSSP_NAME};
-  HttpAuthSSPI auth_sspi(&mock_library, "Negotiate");
+  HttpAuthSSPI auth_sspi(&mock_library, HttpAuth::AUTH_SCHEME_NEGOTIATE);
   std::string first_challenge_text = "Negotiate";
   HttpAuthChallengeTokenizer first_challenge(first_challenge_text.begin(),
                                              first_challenge_text.end());

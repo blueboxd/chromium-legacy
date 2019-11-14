@@ -20,6 +20,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_auth.h"
 #include "net/http/http_auth_gssapi_posix.h"
 #include "net/http/http_auth_multi_round_parse.h"
 #include "net/log/net_log_event_type.h"
@@ -645,13 +646,8 @@ ScopedSecurityContext::~ScopedSecurityContext() {
   }
 }
 
-HttpAuthGSSAPI::HttpAuthGSSAPI(GSSAPILibrary* library,
-                               const std::string& scheme,
-                               gss_OID gss_oid)
-    : scheme_(scheme),
-      gss_oid_(gss_oid),
-      library_(library),
-      scoped_sec_context_(library) {
+HttpAuthGSSAPI::HttpAuthGSSAPI(GSSAPILibrary* library, gss_OID gss_oid)
+    : gss_oid_(gss_oid), library_(library), scoped_sec_context_(library) {
   DCHECK(library_);
 }
 
@@ -678,10 +674,11 @@ void HttpAuthGSSAPI::SetDelegation(DelegationType delegation_type) {
 HttpAuth::AuthorizationResult HttpAuthGSSAPI::ParseChallenge(
     HttpAuthChallengeTokenizer* tok) {
   if (scoped_sec_context_.get() == GSS_C_NO_CONTEXT) {
-    return net::ParseFirstRoundChallenge(scheme_, tok);
+    return net::ParseFirstRoundChallenge(HttpAuth::AUTH_SCHEME_NEGOTIATE, tok);
   }
   std::string encoded_auth_token;
-  return net::ParseLaterRoundChallenge(scheme_, tok, &encoded_auth_token,
+  return net::ParseLaterRoundChallenge(HttpAuth::AUTH_SCHEME_NEGOTIATE, tok,
+                                       &encoded_auth_token,
                                        &decoded_server_auth_token_);
 }
 
@@ -710,7 +707,7 @@ int HttpAuthGSSAPI::GenerateAuthToken(const AuthCredentials* credentials,
                            output_token.length);
   std::string encode_output;
   base::Base64Encode(encode_input, &encode_output);
-  *auth_token = scheme_ + " " + encode_output;
+  *auth_token = "Negotiate " + encode_output;
   return OK;
 }
 

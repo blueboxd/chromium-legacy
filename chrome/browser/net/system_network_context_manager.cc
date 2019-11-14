@@ -620,11 +620,6 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
          "text/csv"});
   }
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  network_service->ExcludeSchemeFromRequestInitiatorSiteLockChecks(
-      extensions::kExtensionScheme, base::DoNothing::Once());
-#endif
-
   int max_connections_per_proxy =
       local_state_->GetInteger(prefs::kMaxConnectionsPerProxy);
   if (max_connections_per_proxy != -1)

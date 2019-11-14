@@ -8,6 +8,7 @@
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
+#include "chrome/browser/sharing/sharing_target_info.h"
 #include "chrome/browser/sharing/sharing_utils.h"
 #include "components/sync_device_info/local_device_info_provider.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -47,9 +48,9 @@ void SharingMessageSender::SendMessageToDevice(
   // GetDeviceCandidates, so both DeviceInfoTracker and LocalDeviceInfoProvider
   // are already ready. It's better to queue up the message and wait until
   // DeviceInfoTracker and LocalDeviceInfoProvider are ready.
-  base::Optional<syncer::DeviceInfo::SharingInfo> target_sharing_info =
-      sync_prefs_->GetSharingInfo(device_guid);
-  if (!target_sharing_info) {
+  base::Optional<SharingTargetInfo> target_info =
+      sync_prefs_->GetTargetInfo(device_guid);
+  if (!target_info) {
     InvokeSendMessageCallback(message_guid, message_type,
                               SharingSendMessageResult::kDeviceNotFound,
                               /*response=*/nullptr);
@@ -79,13 +80,13 @@ void SharingMessageSender::SendMessageToDevice(
       GetSharingDeviceNames(local_device_info).full_name);
 
   auto* sender_info = message.mutable_sender_info();
-  sender_info->set_fcm_token(sharing_info->fcm_token);
+  sender_info->set_fcm_token(sharing_info->vapid_fcm_token);
   sender_info->set_p256dh(sharing_info->p256dh);
   sender_info->set_auth_secret(sharing_info->auth_secret);
 
   DCHECK_GE(response_timeout, kAckTimeToLive);
   fcm_sender_->SendMessageToDevice(
-      std::move(*target_sharing_info), response_timeout - kAckTimeToLive,
+      std::move(*target_info), response_timeout - kAckTimeToLive,
       std::move(message),
       base::BindOnce(&SharingMessageSender::OnMessageSent,
                      weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now(),

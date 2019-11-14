@@ -48,6 +48,9 @@ extern const base::Feature kLogLoadStartedInDidStartNavigation;
 // Feature flag enabling persistent downloads.
 extern const base::Feature kEnablePersistentDownloads;
 
+// Feature flag for the new error page workflow, using JavaScript.
+extern const base::Feature kUseJSForErrorPage;
+
 // Use WKWebView.loading to update WebState::IsLoading.
 // TODO(crbug.com/1006012): Clean up this flag after experiment.
 bool UseWKWebViewLoading();

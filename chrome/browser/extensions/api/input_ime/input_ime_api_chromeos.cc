@@ -48,6 +48,8 @@ namespace NotifyImeMenuItemActivated =
     extensions::api::input_method_private::NotifyImeMenuItemActivated;
 namespace OnScreenProjectionChanged =
     extensions::api::input_method_private::OnScreenProjectionChanged;
+namespace SetSelectionRange =
+    extensions::api::input_method_private::SetSelectionRange;
 using ui::IMEEngineHandlerInterface;
 using input_method::InputMethodEngineBase;
 using chromeos::InputMethodEngine;

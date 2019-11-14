@@ -307,9 +307,14 @@ bool CSSComputedStyleDeclaration::IsMonospaceFont() const {
 const ComputedStyle* CSSComputedStyleDeclaration::ComputeComputedStyle() const {
   Node* styled_node = this->StyledNode();
   DCHECK(styled_node);
-  return styled_node->EnsureComputedStyle(styled_node->IsPseudoElement()
-                                              ? kPseudoIdNone
-                                              : pseudo_element_specifier_);
+  const ComputedStyle* style = styled_node->EnsureComputedStyle(
+      styled_node->IsPseudoElement() ? kPseudoIdNone
+                                     : pseudo_element_specifier_);
+  if (style && style->IsEnsuredOutsideFlatTree()) {
+    UseCounter::Count(node_->GetDocument(),
+                      WebFeature::kGetComputedStyleOutsideFlatTree);
+  }
+  return style;
 }
 
 Node* CSSComputedStyleDeclaration::StyledNode() const {

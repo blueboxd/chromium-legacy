@@ -171,9 +171,13 @@
 #define glMultiDrawArraysWEBGL GLES2_GET_FUN(MultiDrawArraysWEBGL)
 #define glMultiDrawArraysInstancedWEBGL \
   GLES2_GET_FUN(MultiDrawArraysInstancedWEBGL)
+#define glMultiDrawArraysInstancedBaseInstanceWEBGL \
+  GLES2_GET_FUN(MultiDrawArraysInstancedBaseInstanceWEBGL)
 #define glMultiDrawElementsWEBGL GLES2_GET_FUN(MultiDrawElementsWEBGL)
 #define glMultiDrawElementsInstancedWEBGL \
   GLES2_GET_FUN(MultiDrawElementsInstancedWEBGL)
+#define glMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGL \
+  GLES2_GET_FUN(MultiDrawElementsInstancedBaseVertexBaseInstanceWEBGL)
 #define glStencilFunc GLES2_GET_FUN(StencilFunc)
 #define glStencilFuncSeparate GLES2_GET_FUN(StencilFuncSeparate)
 #define glStencilMask GLES2_GET_FUN(StencilMask)
@@ -318,7 +322,11 @@
 #define glCopyTextureCHROMIUM GLES2_GET_FUN(CopyTextureCHROMIUM)
 #define glCopySubTextureCHROMIUM GLES2_GET_FUN(CopySubTextureCHROMIUM)
 #define glDrawArraysInstancedANGLE GLES2_GET_FUN(DrawArraysInstancedANGLE)
+#define glDrawArraysInstancedBaseInstanceANGLE \
+  GLES2_GET_FUN(DrawArraysInstancedBaseInstanceANGLE)
 #define glDrawElementsInstancedANGLE GLES2_GET_FUN(DrawElementsInstancedANGLE)
+#define glDrawElementsInstancedBaseVertexBaseInstanceANGLE \
+  GLES2_GET_FUN(DrawElementsInstancedBaseVertexBaseInstanceANGLE)
 #define glVertexAttribDivisorANGLE GLES2_GET_FUN(VertexAttribDivisorANGLE)
 #define glProduceTextureDirectCHROMIUM \
   GLES2_GET_FUN(ProduceTextureDirectCHROMIUM)

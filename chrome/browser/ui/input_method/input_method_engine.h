@@ -35,6 +35,9 @@ class InputMethodEngine : public InputMethodEngineBase,
       uint32_t before,
       uint32_t after,
       const std::vector<ui::ImeTextSpan>& text_spans) override;
+
+  bool SetSelectionRange(uint32_t start, uint32_t end) override;
+
   void CommitTextToInputContext(int context_id,
                                 const std::string& text) override;
   bool SendKeyEvent(ui::KeyEvent* ui_event, const std::string& code) override;

@@ -2,67 +2,56 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <EarlGrey/EarlGrey.h>
 #include <TargetConditionals.h>
 
 #include <utility>
 
 #include "base/callback.h"
 #include "base/ios/ios_util.h"
-#include "base/mac/foundation_util.h"
-#include "base/memory/ref_counted.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
-#import "base/test/ios/wait_util.h"
 #include "base/time/time.h"
-#include "components/autofill/core/common/password_form.h"
-#include "components/keyed_service/core/service_access_type.h"
-#include "components/password_manager/core/browser/password_store.h"
-#include "components/password_manager/core/browser/password_store_consumer.h"
-#include "components/password_manager/core/common/password_manager_pref_names.h"
-#include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
-#import "ios/chrome/browser/ui/settings/password/password_details_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/password/passwords_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/password/reauthentication_module.h"
+#include "ios/chrome/browser/ui/settings/password/passwords_settings_app_interface.h"
+#import "ios/chrome/browser/ui/settings/password/passwords_table_view_constants.h"
+#import "ios/chrome/browser/ui/settings/settings_root_table_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/chrome/test/app/password_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
-#include "ios/web/public/test/earl_grey/web_view_actions.h"
-#include "ios/web/public/test/earl_grey/web_view_matchers.h"
+#import "ios/testing/earl_grey/earl_grey_test.h"
 #include "ios/web/public/test/element_selector.h"
-#include "ios/web/public/test/http_server/http_server.h"
-#include "ios/web/public/test/http_server/http_server_util.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "url/gurl.h"
-#include "url/origin.h"
+
+#if defined(CHROME_EARL_GREY_2)
+#include "ios/third_party/earl_grey2/src/CommonLib/Matcher/GREYLayoutConstraint.h"  // nogncheck
+#endif  // defined(CHROME_EARL_GREY_2)
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+#if defined(CHROME_EARL_GREY_2)
+// TODO(crbug.com/1015113) The EG2 macro is breaking indexing for some reason
+// without the trailing semicolon.  For now, disable the extra semi warning
+// so Xcode indexing works for the egtest.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc++98-compat-extra-semi"
+GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(PasswordSettingsAppInterface);
+#pragma clang diagnostic pop
+#endif  // defined(CHROME_EARL_GREY_2)
 
 // This test complements
 // password_details_collection_view_controller_unittest.mm. Very simple
 // integration tests and features which are not currently unittestable should
 // go here, the rest into the unittest.
 
-using autofill::PasswordForm;
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::NavigationBarDoneButton;
 using chrome_test_util::SettingsDoneButton;
 using chrome_test_util::SettingsMenuBackButton;
-using chrome_test_util::SetUpAndReturnMockReauthenticationModule;
-using chrome_test_util::SetUpAndReturnMockReauthenticationModuleForExport;
 using chrome_test_util::TurnSettingsSwitchOn;
 
 namespace {
@@ -226,20 +215,50 @@ id<GREYMatcher> NavigationBarEditButton() {
                     grey_userInteractionEnabled(), nil);
 }
 
+#if defined(CHROME_EARL_GREY_2)
+// Matches the pop-up (call-out) menu item with accessibility label equal to the
+// translated string identified by |label|.
+id<GREYMatcher> PopUpMenuItemWithLabel(int label) {
+  if (@available(iOS 13, *)) {
+    // iOS13 reworked menu button subviews to no longer be accessibility
+    // elements.  Multiple menu button subviews no longer show up as potential
+    // matches, which means the matcher logic does not need to be as complex as
+    // the iOS 11/12 logic.  Various table view cells may share the same
+    // accesibility label, but those can be filtered out by ignoring
+    // UIAccessibilityTraitButton.
+    return grey_allOf(
+        grey_accessibilityLabel(l10n_util::GetNSString(label)),
+        grey_not(grey_accessibilityTrait(UIAccessibilityTraitButton)), nil);
+  } else {
+    // This is a hack relying on UIKit's internal structure. There are multiple
+    // items with the label the test is looking for, because the menu items
+    // likely have the same labels as the buttons for the same function. There
+    // is no easy way to identify elements which are part of the pop-up, because
+    // the associated classes are internal to UIKit. However, the pop-up items
+    // are of internal classs UICalloutBarButton, which can be tested easily
+    // in EG2.
+    return grey_allOf(grey_kindOfClassName(@"UICalloutBarButton"),
+                      grey_accessibilityLabel(l10n_util::GetNSString(label)),
+                      nullptr);
+  }
+}
+#endif  // defined(CHROME_EARL_GREY_2)
+
+#if defined(CHROME_EARL_GREY_1)
 // This is similar to grey_ancestor, but only limited to the immediate parent.
 id<GREYMatcher> MatchParentWith(id<GREYMatcher> parentMatcher) {
-  MatchesBlock matches = ^BOOL(id element) {
+  GREYMatchesBlock matches = ^BOOL(id element) {
     id parent = [element isKindOfClass:[UIView class]]
                     ? [element superview]
                     : [element accessibilityContainer];
     return (parent && [parentMatcher matches:parent]);
   };
-  DescribeToBlock describe = ^void(id<GREYDescription> description) {
+  GREYDescribeToBlock describe = ^void(id<GREYDescription> description) {
     [description appendText:[NSString stringWithFormat:@"parentThatMatches(%@)",
                                                        parentMatcher]];
   };
   return grey_allOf(
-      grey_anyOf(grey_kindOfClass([UIView class]),
+      grey_anyOf(grey_kindOfClassName(@"UIView"),
                  grey_respondsToSelector(@selector(accessibilityContainer)),
                  nil),
       [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
@@ -275,130 +294,39 @@ id<GREYMatcher> PopUpMenuItemWithLabel(int label) {
         nullptr);
   }
 }
-
-scoped_refptr<password_manager::PasswordStore> GetPasswordStore() {
-  // ServiceAccessType governs behaviour in Incognito: only modifications with
-  // EXPLICIT_ACCESS, which correspond to user's explicit gesture, succeed.
-  // This test does not deal with Incognito, and should not run in Incognito
-  // context. Therefore IMPLICIT_ACCESS is used to let the test fail if in
-  // Incognito context.
-  return IOSChromePasswordStoreFactory::GetForBrowserState(
-      chrome_test_util::GetOriginalBrowserState(),
-      ServiceAccessType::IMPLICIT_ACCESS);
-}
-
-// This class is used to obtain results from the PasswordStore and hence both
-// check the success of store updates and ensure that store has finished
-// processing.
-class TestStoreConsumer : public password_manager::PasswordStoreConsumer {
- public:
-  void OnGetPasswordStoreResults(
-      std::vector<std::unique_ptr<autofill::PasswordForm>> obtained) override {
-    obtained_ = std::move(obtained);
-  }
-
-  const std::vector<autofill::PasswordForm>& GetStoreResults() {
-    results_.clear();
-    ResetObtained();
-    GetPasswordStore()->GetAllLogins(this);
-    bool responded = base::test::ios::WaitUntilConditionOrTimeout(2.0, ^bool {
-      return !AreObtainedReset();
-    });
-    GREYAssert(responded, @"Obtaining fillable items took too long.");
-    AppendObtainedToResults();
-    return results_;
-  }
-
- private:
-  // Puts |obtained_| in a known state not corresponding to any PasswordStore
-  // state.
-  void ResetObtained() {
-    obtained_.clear();
-    obtained_.emplace_back(nullptr);
-  }
-
-  // Returns true if |obtained_| are in the reset state.
-  bool AreObtainedReset() { return obtained_.size() == 1 && !obtained_[0]; }
-
-  void AppendObtainedToResults() {
-    for (const auto& source : obtained_) {
-      results_.emplace_back(*source);
-    }
-    ResetObtained();
-  }
-
-  // Temporary cache of obtained store results.
-  std::vector<std::unique_ptr<autofill::PasswordForm>> obtained_;
-
-  // Combination of fillable and blacklisted credentials from the store.
-  std::vector<autofill::PasswordForm> results_;
-};
-
-// Saves |form| to the password store and waits until the async processing is
-// done.
-void SaveToPasswordStore(const PasswordForm& form) {
-  GetPasswordStore()->AddLogin(form);
-  // When we retrieve the form from the store, |from_store| should be set.
-  autofill::PasswordForm expected_form = form;
-  expected_form.from_store = autofill::PasswordForm::Store::kProfileStore;
-  // Check the result and ensure PasswordStore processed this.
-  TestStoreConsumer consumer;
-  for (const auto& result : consumer.GetStoreResults()) {
-    if (result == expected_form)
-      return;
-  }
-  GREYFail(@"Stored form was not found in the PasswordStore results.");
-}
+#endif  // defined(CHROME_EARL_GREY_1)
 
 // Saves an example form in the store.
 void SaveExamplePasswordForm() {
-  PasswordForm example;
-  example.username_value = base::ASCIIToUTF16("concrete username");
-  example.password_value = base::ASCIIToUTF16("concrete password");
-  example.origin = GURL("https://example.com");
-  example.signon_realm = example.origin.spec();
-  SaveToPasswordStore(example);
+  GREYAssert(
+      [PasswordSettingsAppInterface saveExamplePassword:@"concrete password"
+                                               userName:@"concrete username"
+                                                 origin:@"https://example.com"],
+      @"Stored form was not found in the PasswordStore results.");
 }
 
 // Saves two example forms in the store.
 void SaveExamplePasswordForms() {
-  PasswordForm example1;
-  example1.username_value = base::ASCIIToUTF16("user1");
-  example1.password_value = base::ASCIIToUTF16("password1");
-  example1.origin = GURL("https://example11.com");
-  example1.signon_realm = example1.origin.spec();
-  SaveToPasswordStore(example1);
-
-  PasswordForm example2;
-  example2.username_value = base::ASCIIToUTF16("user2");
-  example2.password_value = base::ASCIIToUTF16("password2");
-  example2.origin = GURL("https://example12.com");
-  example2.signon_realm = example2.origin.spec();
-  SaveToPasswordStore(example2);
+  GREYAssert([PasswordSettingsAppInterface
+                 saveExamplePassword:@"password1"
+                            userName:@"user1"
+                              origin:@"https://example11.com"],
+             @"Stored form was not found in the PasswordStore results.");
+  GREYAssert([PasswordSettingsAppInterface
+                 saveExamplePassword:@"password2"
+                            userName:@"user2"
+                              origin:@"https://example12.com"],
+             @"Stored form was not found in the PasswordStore results.");
 }
 
 // Saves two example blacklisted forms in the store.
 void SaveExampleBlacklistedForms() {
-  PasswordForm blacklisted1;
-  blacklisted1.origin = GURL("https://exclude1.com");
-  blacklisted1.signon_realm = blacklisted1.origin.spec();
-  blacklisted1.blacklisted_by_user = true;
-  SaveToPasswordStore(blacklisted1);
-
-  PasswordForm blacklisted2;
-  blacklisted2.origin = GURL("https://exclude2.com");
-  blacklisted2.signon_realm = blacklisted2.origin.spec();
-  blacklisted2.blacklisted_by_user = true;
-  SaveToPasswordStore(blacklisted2);
-}
-
-// Removes all credentials stored.
-void ClearPasswordStore() {
-  GetPasswordStore()->RemoveLoginsCreatedBetween(base::Time(), base::Time(),
-                                                 base::Closure());
-  TestStoreConsumer consumer;
-  GREYAssert(consumer.GetStoreResults().empty(),
-             @"PasswordStore was not cleared.");
+  GREYAssert([PasswordSettingsAppInterface
+                 saveExampleBlacklistedOrigin:@"https://exclude1.com"],
+             @"Stored form was not found in the PasswordStore results.");
+  GREYAssert([PasswordSettingsAppInterface
+                 saveExampleBlacklistedOrigin:@"https://exclude2.com"],
+             @"Stored form was not found in the PasswordStore results.");
 }
 
 // Opens the passwords page from the NTP. It requires no menus to be open.
@@ -411,27 +339,13 @@ void OpenPasswordSettings() {
   // background task runner and waits until it is finished. Because the
   // background task runner is sequenced, this means that previously posted
   // tasks are also finished when this function exits.
-  TestStoreConsumer consumer;
-  consumer.GetStoreResults();
+  [PasswordSettingsAppInterface passwordStoreResultsCount];
 }
 
 // Tap Edit in any settings view.
 void TapEdit() {
   [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
       performAction:grey_tap()];
-}
-
-// Creates a PasswordForm with |index| being part of the username, password,
-// origin and realm.
-PasswordForm CreateSampleFormWithIndex(int index) {
-  PasswordForm form;
-  form.username_value =
-      base::ASCIIToUTF16(base::StringPrintf("concrete username %02d", index));
-  form.password_value =
-      base::ASCIIToUTF16(base::StringPrintf("concrete password %02d", index));
-  form.origin = GURL(base::StringPrintf("https://www%02d.example.com", index));
-  form.signon_realm = form.origin.spec();
-  return form;
 }
 
 }  // namespace
@@ -446,10 +360,9 @@ PasswordForm CreateSampleFormWithIndex(int index) {
   // Snackbars triggered by tests stay up for a limited time even if the
   // settings get closed. Ensure that they are closed to avoid interference with
   // other tests.
-  [MDCSnackbarManager
-      dismissAndCallCompletionBlocksWithCategory:@"PasswordsSnackbarCategory"];
-
-  ClearPasswordStore();
+  [PasswordSettingsAppInterface dismissSnackBar];
+  GREYAssert([PasswordSettingsAppInterface clearPasswordStore],
+             @"PasswordStore was not cleared.");
 
   [super tearDown];
 }
@@ -491,11 +404,10 @@ PasswordForm CreateSampleFormWithIndex(int index) {
   [GetInteractionForPasswordEntry(@"example.com, concrete username")
       performAction:grey_tap()];
 
-  MockReauthenticationModule* mock_reauthentication_module =
-      SetUpAndReturnMockReauthenticationModule();
+  [PasswordSettingsAppInterface setUpMockReauthenticationModule];
+  [PasswordSettingsAppInterface mockReauthenticationModuleShouldSucceed:YES];
 
   // Check the snackbar in case of successful reauthentication.
-  mock_reauthentication_module.shouldSucceed = YES;
   [GetInteractionForPasswordDetailItem(CopyPasswordButton())
       performAction:grey_tap()];
 
@@ -506,7 +418,7 @@ PasswordForm CreateSampleFormWithIndex(int index) {
       performAction:grey_tap()];
 
   // Check the snackbar in case of failed reauthentication.
-  mock_reauthentication_module.shouldSucceed = NO;
+  [PasswordSettingsAppInterface mockReauthenticationModuleShouldSucceed:NO];
   [GetInteractionForPasswordDetailItem(CopyPasswordButton())
       performAction:grey_tap()];
 
@@ -535,11 +447,10 @@ PasswordForm CreateSampleFormWithIndex(int index) {
   [GetInteractionForPasswordEntry(@"example.com, concrete username")
       performAction:grey_tap()];
 
-  MockReauthenticationModule* mock_reauthentication_module =
-      SetUpAndReturnMockReauthenticationModule();
+  [PasswordSettingsAppInterface setUpMockReauthenticationModule];
+  [PasswordSettingsAppInterface mockReauthenticationModuleShouldSucceed:YES];
 
   // Check the snackbar in case of successful reauthentication.
-  mock_reauthentication_module.shouldSucceed = YES;
   [GetInteractionForPasswordDetailItem(ShowPasswordButton())
       performAction:grey_tap()];
 
@@ -567,11 +478,10 @@ PasswordForm CreateSampleFormWithIndex(int index) {
   [GetInteractionForPasswordEntry(@"example.com, concrete username")
       performAction:grey_tap()];
 
-  MockReauthenticationModule* mock_reauthentication_module =
-      SetUpAndReturnMockReauthenticationModule();
+  [PasswordSettingsAppInterface setUpMockReauthenticationModule];
+  [PasswordSettingsAppInterface mockReauthenticationModuleShouldSucceed:NO];
 
   // Check the snackbar in case of failed reauthentication.
-  mock_reauthentication_module.shouldSucceed = NO;
   [GetInteractionForPasswordDetailItem(ShowPasswordButton())
       performAction:grey_tap()];
 
@@ -679,9 +589,8 @@ PasswordForm CreateSampleFormWithIndex(int index) {
                             nullptr)] assertWithMatcher:grey_notNil()];
 
   // Verify that the deletion was propagated to the PasswordStore.
-  TestStoreConsumer consumer;
-  GREYAssert(consumer.GetStoreResults().empty(),
-             @"Stored password was not removed from PasswordStore.");
+  GREYAssertEqual(0, [PasswordSettingsAppInterface passwordStoreResultsCount],
+                  @"Stored password was not removed from PasswordStore.");
 
   // Also verify that the removed password is no longer in the list.
   [GetInteractionForPasswordEntry(@"example.com, concrete username")
@@ -713,12 +622,11 @@ PasswordForm CreateSampleFormWithIndex(int index) {
   // Save duplicate of the previously saved form to be deleted at the same time.
   // This entry is considered duplicated because it maps to the same sort key
   // as the previous one.
-  PasswordForm exampleDuplicate;
-  exampleDuplicate.username_value = base::ASCIIToUTF16("concrete username");
-  exampleDuplicate.password_value = base::ASCIIToUTF16("concrete password");
-  exampleDuplicate.origin = GURL("https://example.com/example");
-  exampleDuplicate.signon_realm = exampleDuplicate.origin.spec();
-  SaveToPasswordStore(exampleDuplicate);
+  GREYAssert([PasswordSettingsAppInterface
+                 saveExamplePassword:@"concrete password"
+                            userName:@"concrete username"
+                              origin:@"https://example.com/example"],
+             @"Stored form was not found in the PasswordStore results.");
 
   OpenPasswordSettings();
 
@@ -744,9 +652,8 @@ PasswordForm CreateSampleFormWithIndex(int index) {
                             nullptr)] assertWithMatcher:grey_notNil()];
 
   // Verify that the deletion was propagated to the PasswordStore.
-  TestStoreConsumer consumer;
-  GREYAssert(consumer.GetStoreResults().empty(),
-             @"Stored password was not removed from PasswordStore.");
+  GREYAssertEqual(0, [PasswordSettingsAppInterface passwordStoreResultsCount],
+                  @"Stored password was not removed from PasswordStore.");
 
   // Also verify that the removed password is no longer in the list.
   [GetInteractionForPasswordEntry(@"example.com, concrete username")
@@ -773,11 +680,9 @@ PasswordForm CreateSampleFormWithIndex(int index) {
     EARL_GREY_TEST_SKIPPED(@"Test disabled on iPad and iOS 13.2+");
   }
   // Save blacklisted form to be deleted later.
-  PasswordForm blacklisted;
-  blacklisted.origin = GURL("https://blacklisted.com");
-  blacklisted.signon_realm = blacklisted.origin.spec();
-  blacklisted.blacklisted_by_user = true;
-  SaveToPasswordStore(blacklisted);
+  GREYAssert([PasswordSettingsAppInterface
+                 saveExampleBlacklistedOrigin:@"https://blacklisted.com"],
+             @"Stored form was not found in the PasswordStore results.");
 
   OpenPasswordSettings();
 
@@ -802,9 +707,8 @@ PasswordForm CreateSampleFormWithIndex(int index) {
                             nullptr)] assertWithMatcher:grey_notNil()];
 
   // Verify that the deletion was propagated to the PasswordStore.
-  TestStoreConsumer consumer;
-  GREYAssert(consumer.GetStoreResults().empty(),
-             @"Stored password was not removed from PasswordStore.");
+  GREYAssertEqual(0, [PasswordSettingsAppInterface passwordStoreResultsCount],
+                  @"Stored password was not removed from PasswordStore.");
 
   // Also verify that the removed password is no longer in the list.
   [GetInteractionForPasswordEntry(@"secret.com")
@@ -855,8 +759,7 @@ PasswordForm CreateSampleFormWithIndex(int index) {
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Verify that the deletion did not happen.
-  TestStoreConsumer consumer;
-  GREYAssertEqual(1u, consumer.GetStoreResults().size(),
+  GREYAssertEqual(1u, [PasswordSettingsAppInterface passwordStoreResultsCount],
                   @"Stored password was removed from PasswordStore.");
 
   // Go back to the list view and verify that the password is still in the
@@ -991,9 +894,8 @@ PasswordForm CreateSampleFormWithIndex(int index) {
   // Make sure to capture the reauthentication module in a variable until the
   // end of the test, otherwise it might get deleted too soon and break the
   // functionality of copying and viewing passwords.
-  MockReauthenticationModule* mock_reauthentication_module =
-      SetUpAndReturnMockReauthenticationModule();
-  mock_reauthentication_module.shouldSucceed = YES;
+  [PasswordSettingsAppInterface setUpMockReauthenticationModule];
+  [PasswordSettingsAppInterface mockReauthenticationModuleShouldSucceed:YES];
 
   // Tap the context menu item for copying.
   [[EarlGrey
@@ -1034,9 +936,8 @@ PasswordForm CreateSampleFormWithIndex(int index) {
   // Make sure to capture the reauthentication module in a variable until the
   // end of the test, otherwise it might get deleted too soon and break the
   // functionality of copying and viewing passwords.
-  MockReauthenticationModule* mock_reauthentication_module =
-      SetUpAndReturnMockReauthenticationModule();
-  mock_reauthentication_module.shouldSucceed = YES;
+  [PasswordSettingsAppInterface setUpMockReauthenticationModule];
+  [PasswordSettingsAppInterface mockReauthenticationModuleShouldSucceed:YES];
 
   // Tap the context menu item for showing.
   [[EarlGrey
@@ -1069,13 +970,11 @@ PasswordForm CreateSampleFormWithIndex(int index) {
 
 // Checks that federated credentials have no password but show the federation.
 - (void)testFederated {
-  PasswordForm federated;
-  federated.username_value = base::ASCIIToUTF16("federated username");
-  federated.origin = GURL("https://example.com");
-  federated.signon_realm = federated.origin.spec();
-  federated.federation_origin =
-      url::Origin::Create(GURL("https://famous.provider.net"));
-  SaveToPasswordStore(federated);
+  GREYAssert([PasswordSettingsAppInterface
+                 saveExampleFederatedOrigin:@"https://famous.provider.net"
+                                   userName:@"federated username"
+                                     origin:@"https://example.com"],
+             @"Stored form was not found in the PasswordStore results.");
 
   OpenPasswordSettings();
 
@@ -1136,7 +1035,7 @@ PasswordForm CreateSampleFormWithIndex(int index) {
 
   id<GREYMatcher> passwordHeader =
       grey_allOf(PasswordHeader(),
-                 grey_kindOfClass([UITableViewHeaderFooterView class]), nil);
+                 grey_kindOfClassName(@"UITableViewHeaderFooterView"), nil);
   [GetInteractionForPasswordDetailItem(passwordHeader)
       assertWithMatcher:grey_layout(@[ Below() ], CopyUsernameButton())];
   id<GREYMatcher> passwordCell = grey_accessibilityLabel(
@@ -1168,11 +1067,9 @@ PasswordForm CreateSampleFormWithIndex(int index) {
 // Checks the order of the elements in the detail view layout for a blacklisted
 // credential.
 - (void)testLayoutBlacklisted {
-  PasswordForm blacklisted;
-  blacklisted.origin = GURL("https://example.com");
-  blacklisted.signon_realm = blacklisted.origin.spec();
-  blacklisted.blacklisted_by_user = true;
-  SaveToPasswordStore(blacklisted);
+  GREYAssert([PasswordSettingsAppInterface
+                 saveExampleBlacklistedOrigin:@"https://example.com"],
+             @"Stored form was not found in the PasswordStore results.");
 
   OpenPasswordSettings();
 
@@ -1210,13 +1107,11 @@ PasswordForm CreateSampleFormWithIndex(int index) {
 // Checks the order of the elements in the detail view layout for a federated
 // credential.
 - (void)testLayoutFederated {
-  PasswordForm federated;
-  federated.username_value = base::ASCIIToUTF16("federated username");
-  federated.origin = GURL("https://example.com");
-  federated.signon_realm = federated.origin.spec();
-  federated.federation_origin =
-      url::Origin::Create(GURL("https://famous.provider.net"));
-  SaveToPasswordStore(federated);
+  GREYAssert([PasswordSettingsAppInterface
+                 saveExampleFederatedOrigin:@"https://famous.provider.net"
+                                   userName:@"federated username"
+                                     origin:@"https://example.com"],
+             @"Stored form was not found in the PasswordStore results.");
 
   OpenPasswordSettings();
 
@@ -1267,11 +1162,9 @@ PasswordForm CreateSampleFormWithIndex(int index) {
 - (void)testStoredEntriesAlwaysShown {
   SaveExamplePasswordForm();
 
-  PasswordForm blacklisted;
-  blacklisted.origin = GURL("https://blacklisted.com");
-  blacklisted.signon_realm = blacklisted.origin.spec();
-  blacklisted.blacklisted_by_user = true;
-  SaveToPasswordStore(blacklisted);
+  GREYAssert([PasswordSettingsAppInterface
+                 saveExampleBlacklistedOrigin:@"https://blacklisted.com"],
+             @"Stored form was not found in the PasswordStore results.");
 
   OpenPasswordSettings();
 
@@ -1318,12 +1211,9 @@ PasswordForm CreateSampleFormWithIndex(int index) {
                                             @"savePasswordsItem_switch",
                                             expected_initial_state)]
         performAction:TurnSettingsSwitchOn(!expected_initial_state)];
-    ios::ChromeBrowserState* browserState =
-        chrome_test_util::GetOriginalBrowserState();
     const bool expected_final_state = !expected_initial_state;
     GREYAssertEqual(expected_final_state,
-                    browserState->GetPrefs()->GetBoolean(
-                        password_manager::prefs::kCredentialsEnableService),
+                    [PasswordSettingsAppInterface isCredentialsServiceEnabled],
                     @"State of the UI toggle differs from real preferences.");
   }
 
@@ -1350,9 +1240,8 @@ PasswordForm CreateSampleFormWithIndex(int index) {
       performAction:grey_tap()];
 
   // Verify that the deletion was propagated to the PasswordStore.
-  TestStoreConsumer consumer;
-  GREYAssert(consumer.GetStoreResults().empty(),
-             @"Stored password was not removed from PasswordStore.");
+  GREYAssertEqual(0, [PasswordSettingsAppInterface passwordStoreResultsCount],
+                  @"Stored password was not removed from PasswordStore.");
   // Verify that the removed password is no longer in the list.
   [GetInteractionForPasswordEntry(@"example.com, concrete username")
       assertWithMatcher:grey_not(grey_sufficientlyVisible())];
@@ -1374,10 +1263,9 @@ PasswordForm CreateSampleFormWithIndex(int index) {
   [GetInteractionForPasswordEntry(@"example.com, concrete username")
       performAction:grey_tap()];
 
-  MockReauthenticationModule* mock_reauthentication_module =
-      SetUpAndReturnMockReauthenticationModule();
+  [PasswordSettingsAppInterface setUpMockReauthenticationModule];
+  [PasswordSettingsAppInterface mockReauthenticationModuleCanAttempt:NO];
 
-  mock_reauthentication_module.canAttempt = NO;
   [GetInteractionForPasswordDetailItem(CopyPasswordButton())
       performAction:grey_tap()];
 
@@ -1402,10 +1290,8 @@ PasswordForm CreateSampleFormWithIndex(int index) {
   [GetInteractionForPasswordEntry(@"example.com, concrete username")
       performAction:grey_tap()];
 
-  MockReauthenticationModule* mock_reauthentication_module =
-      SetUpAndReturnMockReauthenticationModule();
-
-  mock_reauthentication_module.canAttempt = NO;
+  [PasswordSettingsAppInterface setUpMockReauthenticationModule];
+  [PasswordSettingsAppInterface mockReauthenticationModuleCanAttempt:NO];
   [GetInteractionForPasswordDetailItem(ShowPasswordButton())
       performAction:grey_tap()];
 
@@ -1453,14 +1339,12 @@ PasswordForm CreateSampleFormWithIndex(int index) {
   constexpr int kPasswordsCount = 15;
 
   // Send the passwords to the queue to be added to the PasswordStore.
-  for (int i = 1; i <= kPasswordsCount; ++i) {
-    GetPasswordStore()->AddLogin(CreateSampleFormWithIndex(i));
-  }
+  [PasswordSettingsAppInterface saveExamplePasswordWithCount:kPasswordsCount];
 
   // Use TestStoreConsumer::GetStoreResults to wait for the background storing
   // task to complete and to verify that the passwords have been stored.
-  TestStoreConsumer consumer;
-  GREYAssertEqual(kPasswordsCount, consumer.GetStoreResults().size(),
+  GREYAssertEqual(kPasswordsCount,
+                  [PasswordSettingsAppInterface passwordStoreResultsCount],
                   @"Unexpected PasswordStore results.");
 
   OpenPasswordSettings();
@@ -1533,9 +1417,8 @@ PasswordForm CreateSampleFormWithIndex(int index) {
 
   OpenPasswordSettings();
 
-  MockReauthenticationModule* mock_reauthentication_module =
-      SetUpAndReturnMockReauthenticationModuleForExport();
-  mock_reauthentication_module.shouldSucceed = YES;
+  [PasswordSettingsAppInterface setUpMockReauthenticationModuleForExport];
+  [PasswordSettingsAppInterface mockReauthenticationModuleShouldSucceed:YES];
 
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(

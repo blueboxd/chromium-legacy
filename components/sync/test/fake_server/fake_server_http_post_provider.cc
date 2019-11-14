@@ -26,8 +26,6 @@ FakeServerHttpPostProviderFactory::FakeServerHttpPostProviderFactory(
 
 FakeServerHttpPostProviderFactory::~FakeServerHttpPostProviderFactory() {}
 
-void FakeServerHttpPostProviderFactory::Init(const std::string& user_agent) {}
-
 syncer::HttpPostProviderInterface* FakeServerHttpPostProviderFactory::Create() {
   FakeServerHttpPostProvider* http =
       new FakeServerHttpPostProvider(fake_server_, fake_server_task_runner_);

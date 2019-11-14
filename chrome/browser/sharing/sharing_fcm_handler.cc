@@ -7,11 +7,11 @@
 #include "base/no_destructor.h"
 #include "base/strings/strcat.h"
 #include "chrome/browser/sharing/sharing_constants.h"
-#include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
+#include "chrome/browser/sharing/sharing_target_info.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "third_party/re2/src/re2/re2.h"
 
@@ -126,7 +126,7 @@ void SharingFCMHandler::OnMessage(const std::string& app_id,
     if (sharing_message.payload_case() != SharingMessage::kAckMessage) {
       done_callback = base::BindOnce(
           &SharingFCMHandler::SendAckMessage, weak_ptr_factory_.GetWeakPtr(),
-          std::move(message_id), message_type, GetSharingInfo(sharing_message));
+          std::move(message_id), message_type, GetTargetInfo(sharing_message));
     }
 
     it->second->OnMessage(std::move(sharing_message), std::move(done_callback));
@@ -148,26 +148,24 @@ void SharingFCMHandler::OnStoreReset() {
   // TODO: Handle GCM store reset.
 }
 
-base::Optional<syncer::DeviceInfo::SharingInfo>
-SharingFCMHandler::GetSharingInfo(const SharingMessage& original_message) {
+base::Optional<SharingTargetInfo> SharingFCMHandler::GetTargetInfo(
+    const SharingMessage& original_message) {
   if (original_message.has_sender_info()) {
     auto& sender_info = original_message.sender_info();
-    return syncer::DeviceInfo::SharingInfo(
-        sender_info.fcm_token(), sender_info.p256dh(),
-        sender_info.auth_secret(),
-        std::set<sync_pb::SharingSpecificFields::EnabledFeatures>());
+    return SharingTargetInfo{sender_info.fcm_token(), sender_info.p256dh(),
+                             sender_info.auth_secret()};
   }
 
-  return sync_preference_->GetSharingInfo(original_message.sender_guid());
+  return sync_preference_->GetTargetInfo(original_message.sender_guid());
 }
 
 void SharingFCMHandler::SendAckMessage(
     std::string original_message_id,
     chrome_browser_sharing::MessageType original_message_type,
-    base::Optional<syncer::DeviceInfo::SharingInfo> sharing_info,
+    base::Optional<SharingTargetInfo> target_info,
     std::unique_ptr<chrome_browser_sharing::ResponseMessage> response) {
-  if (!sharing_info) {
-    LOG(ERROR) << "Unable to find sharing info";
+  if (!target_info) {
+    LOG(ERROR) << "Unable to find target info";
     LogSendSharingAckMessageResult(original_message_type,
                                    SharingSendMessageResult::kDeviceNotFound);
     return;
@@ -182,7 +180,7 @@ void SharingFCMHandler::SendAckMessage(
     ack_message->set_allocated_response_message(response.release());
 
   sharing_fcm_sender_->SendMessageToDevice(
-      std::move(*sharing_info), kAckTimeToLive, std::move(sharing_message),
+      std::move(*target_info), kAckTimeToLive, std::move(sharing_message),
       base::BindOnce(&SharingFCMHandler::OnAckMessageSent,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(original_message_id), original_message_type));

@@ -23,6 +23,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/webrtc/webrtc_browsertest_base.h"
 #include "chrome/browser/media/webrtc/webrtc_browsertest_common.h"
+#include "chrome/browser/media/webrtc/webrtc_browsertest_perf.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -224,10 +225,16 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
     printf("Output was:\n\n%s\n", output.c_str());
     bool has_result_lines = output.find("RESULT") != std::string::npos;
     if (!ok || !has_result_lines) {
-      LOG(ERROR) << "Failed to compare videos; see output above to see what "
-                 << "the error was.";
+      LOG(ERROR) << "Failed to compare videos; see output to see what "
+                 << "the error was:\n\n"
+                 << output;
       return false;
     }
+    // TODO(http://crbug.com/1874811): Enable this and drop the printf above
+    // when ready to switch to histogram sets.
+    // if (!test::WriteCompareVideosOutputAsHistogram(test_label, output))
+    //  return false;
+
     return true;
   }
 

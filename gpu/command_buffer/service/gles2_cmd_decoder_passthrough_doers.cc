@@ -2332,6 +2332,12 @@ error::Error GLES2DecoderPassthroughImpl::DoMultiDrawEndCHROMIUM() {
           result.mode, result.firsts.data(), result.counts.data(),
           result.instance_counts.data(), result.drawcount);
       return error::kNoError;
+    case MultiDrawManager::DrawFunction::DrawArraysInstancedBaseInstance:
+      api()->glMultiDrawArraysInstancedBaseInstanceANGLEFn(
+          result.mode, result.firsts.data(), result.counts.data(),
+          result.instance_counts.data(), result.baseinstances.data(),
+          result.drawcount);
+      return error::kNoError;
     case MultiDrawManager::DrawFunction::DrawElements:
       api()->glMultiDrawElementsANGLEFn(result.mode, result.counts.data(),
                                         result.type, result.indices.data(),
@@ -2341,6 +2347,13 @@ error::Error GLES2DecoderPassthroughImpl::DoMultiDrawEndCHROMIUM() {
       api()->glMultiDrawElementsInstancedANGLEFn(
           result.mode, result.counts.data(), result.type, result.indices.data(),
           result.instance_counts.data(), result.drawcount);
+      return error::kNoError;
+    case MultiDrawManager::DrawFunction::
+        DrawElementsInstancedBaseVertexBaseInstance:
+      api()->glMultiDrawElementsInstancedBaseVertexBaseInstanceANGLEFn(
+          result.mode, result.counts.data(), result.type, result.indices.data(),
+          result.instance_counts.data(), result.basevertices.data(),
+          result.baseinstances.data(), result.drawcount);
       return error::kNoError;
     default:
       NOTREACHED();
@@ -4404,6 +4417,19 @@ error::Error GLES2DecoderPassthroughImpl::DoDrawArraysInstancedANGLE(
   return error::kNoError;
 }
 
+error::Error
+GLES2DecoderPassthroughImpl::DoDrawArraysInstancedBaseInstanceANGLE(
+    GLenum mode,
+    GLint first,
+    GLsizei count,
+    GLsizei primcount,
+    GLuint baseinstance) {
+  BindPendingImagesForSamplersIfNeeded();
+  api()->glDrawArraysInstancedBaseInstanceANGLEFn(mode, first, count, primcount,
+                                                  baseinstance);
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderPassthroughImpl::DoDrawElementsInstancedANGLE(
     GLenum mode,
     GLsizei count,
@@ -4412,6 +4438,21 @@ error::Error GLES2DecoderPassthroughImpl::DoDrawElementsInstancedANGLE(
     GLsizei primcount) {
   BindPendingImagesForSamplersIfNeeded();
   api()->glDrawElementsInstancedANGLEFn(mode, count, type, indices, primcount);
+  return error::kNoError;
+}
+
+error::Error
+GLES2DecoderPassthroughImpl::DoDrawElementsInstancedBaseVertexBaseInstanceANGLE(
+    GLenum mode,
+    GLsizei count,
+    GLenum type,
+    const void* indices,
+    GLsizei primcount,
+    GLint basevertex,
+    GLuint baseinstance) {
+  BindPendingImagesForSamplersIfNeeded();
+  api()->glDrawElementsInstancedBaseVertexBaseInstanceANGLEFn(
+      mode, count, type, indices, primcount, basevertex, baseinstance);
   return error::kNoError;
 }
 

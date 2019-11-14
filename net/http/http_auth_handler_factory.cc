@@ -200,13 +200,12 @@ int HttpAuthHandlerRegistryFactory::CreateAuthHandler(
     const NetLogWithSource& net_log,
     HostResolver* host_resolver,
     std::unique_ptr<HttpAuthHandler>* handler) {
-  auto scheme = challenge->scheme();
+  auto scheme = challenge->auth_scheme();
   if (scheme.empty()) {
     handler->reset();
     return ERR_INVALID_RESPONSE;
   }
-  std::string lower_scheme = base::ToLowerASCII(scheme);
-  auto it = factory_map_.find(lower_scheme);
+  auto it = factory_map_.find(scheme);
   if (it == factory_map_.end()) {
     handler->reset();
     return ERR_UNSUPPORTED_AUTH_SCHEME;

@@ -179,6 +179,10 @@ const char kEnableClipboardProviderTextSuggestionsName[] =
 const char kEnableClipboardProviderTextSuggestionsDescription[] =
     "Enable suggesting a search for text copied to the clipboard";
 
+const char kUseJSForErrorPageName[] = "Enable new error page workflow";
+const char kUseJSForErrorPageDescription[] =
+    "Use JavaScript for the error pages";
+
 const char kEnablePersistentDownloadsName[] = "Enable persistent downloads";
 const char kEnablePersistentDownloadsDescription[] =
     "Enables the new, experimental implementation of persistent downloads";

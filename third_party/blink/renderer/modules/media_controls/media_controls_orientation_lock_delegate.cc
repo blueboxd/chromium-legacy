@@ -195,7 +195,7 @@ void MediaControlsOrientationLockDelegate::MaybeListenToDeviceOrientation() {
 // Check whether the user locked screen orientation at the OS level.
 #if defined(OS_ANDROID)
   DCHECK(!monitor_.is_bound());
-  Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+  Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
       monitor_.BindNewPipeAndPassReceiver());
   monitor_->IsAutoRotateEnabledByUser(WTF::Bind(
       &MediaControlsOrientationLockDelegate::GotIsAutoRotateEnabledByUser,

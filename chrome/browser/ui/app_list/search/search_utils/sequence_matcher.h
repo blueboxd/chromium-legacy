@@ -37,9 +37,7 @@ class SequenceMatcher {
   ~SequenceMatcher() = default;
 
   // Calculates similarity ratio of |first_string_| and |second_string_|.
-  // |use_edit_distance| is the option to use edit distance or block matching
-  // as the algorithm.
-  double Ratio(bool use_edit_distance = true);
+  double Ratio();
   // Calculates the Damerau–Levenshtein distance between |first_string_| and
   // |second_string_|.
   // See https://en.wikipedia.org/wiki/Damerau–Levenshtein_distance for more
@@ -65,6 +63,8 @@ class SequenceMatcher {
   double block_matching_ratio_ = -1.0;
   std::vector<Match> matching_blocks_;
 
+  // Controls whether to use edit distance to calculate ratio.
+  bool use_edit_distance_;
   int edit_distance_ = -1;
   // For each character |c| in |second_string_|, this variable
   // |char_to_positions_| stores all positions where |c| occurs in

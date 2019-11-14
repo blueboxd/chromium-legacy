@@ -404,12 +404,10 @@ void UiControllerAndroid::SetupForState() {
 }
 
 void UiControllerAndroid::OnStatusMessageChanged(const std::string& message) {
-  if (!message.empty()) {
-    JNIEnv* env = AttachCurrentThread();
-    Java_AssistantHeaderModel_setStatusMessage(
-        env, GetHeaderModel(),
-        base::android::ConvertUTF8ToJavaString(env, message));
-  }
+  JNIEnv* env = AttachCurrentThread();
+  Java_AssistantHeaderModel_setStatusMessage(
+      env, GetHeaderModel(),
+      base::android::ConvertUTF8ToJavaString(env, message));
 }
 
 void UiControllerAndroid::OnBubbleMessageChanged(const std::string& message) {

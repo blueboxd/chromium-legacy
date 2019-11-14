@@ -303,6 +303,12 @@ MOCK_METHOD3(DrawArrays, void(GLenum mode, GLint first, GLsizei count));
 MOCK_METHOD2(DrawArraysIndirect, void(GLenum mode, const void* indirect));
 MOCK_METHOD4(DrawArraysInstancedANGLE,
              void(GLenum mode, GLint first, GLsizei count, GLsizei primcount));
+MOCK_METHOD5(DrawArraysInstancedBaseInstanceANGLE,
+             void(GLenum mode,
+                  GLint first,
+                  GLsizei count,
+                  GLsizei primcount,
+                  GLuint baseinstance));
 MOCK_METHOD1(DrawBuffer, void(GLenum mode));
 MOCK_METHOD2(DrawBuffersARB, void(GLsizei n, const GLenum* bufs));
 MOCK_METHOD4(
@@ -316,6 +322,14 @@ MOCK_METHOD5(DrawElementsInstancedANGLE,
                   GLenum type,
                   const void* indices,
                   GLsizei primcount));
+MOCK_METHOD7(DrawElementsInstancedBaseVertexBaseInstanceANGLE,
+             void(GLenum mode,
+                  GLsizei count,
+                  GLenum type,
+                  const void* indices,
+                  GLsizei primcount,
+                  GLint baseVertex,
+                  GLuint baseInstance));
 MOCK_METHOD6(DrawRangeElements,
              void(GLenum mode,
                   GLuint start,
@@ -914,6 +928,13 @@ MOCK_METHOD5(MultiDrawArraysInstancedANGLE,
                   const GLsizei* counts,
                   const GLsizei* instanceCounts,
                   GLsizei drawcount));
+MOCK_METHOD6(MultiDrawArraysInstancedBaseInstanceANGLE,
+             void(GLenum mode,
+                  const GLint* firsts,
+                  const GLsizei* counts,
+                  const GLsizei* instanceCounts,
+                  const GLuint* baseInstances,
+                  GLsizei drawcount));
 MOCK_METHOD5(MultiDrawElementsANGLE,
              void(GLenum mode,
                   const GLsizei* counts,
@@ -926,6 +947,15 @@ MOCK_METHOD6(MultiDrawElementsInstancedANGLE,
                   GLenum type,
                   const GLvoid* const* indices,
                   const GLsizei* instanceCounts,
+                  GLsizei drawcount));
+MOCK_METHOD8(MultiDrawElementsInstancedBaseVertexBaseInstanceANGLE,
+             void(GLenum mode,
+                  const GLsizei* counts,
+                  GLenum type,
+                  const GLvoid* const* indices,
+                  const GLsizei* instanceCounts,
+                  const GLint* baseVertices,
+                  const GLuint* baseInstances,
                   GLsizei drawcount));
 MOCK_METHOD4(
     ObjectLabel,

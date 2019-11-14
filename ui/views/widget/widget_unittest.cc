@@ -24,6 +24,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
+#include "ui/views/buildflags.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/event_monitor.h"
 #include "ui/views/layout/fill_layout.h"
@@ -55,7 +56,7 @@
 #include "base/mac/mac_util.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if defined(USE_AURA) && !BUILDFLAG(ENABLE_DESKTOP_AURA)
 #include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/focus_controller.h"
 #include "ui/wm/core/shadow_controller.h"
@@ -2317,7 +2318,7 @@ TEST_F(WidgetTest, CloseWidgetWhileAnimating) {
 // Test Widget::CloseAllSecondaryWidgets works as expected across platforms.
 // ChromeOS doesn't implement or need CloseAllSecondaryWidgets() since
 // everything is under a single root window.
-#if !defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_MACOSX)
 TEST_F(DesktopWidgetTest, CloseAllSecondaryWidgets) {
   Widget* widget1 = CreateTopLevelNativeWidget();
   Widget* widget2 = CreateTopLevelNativeWidget();
@@ -3930,7 +3931,7 @@ class WidgetShadowTest : public WidgetTest {
   }
 
   void TearDown() override {
-#if defined(OS_CHROMEOS)
+#if defined(USE_AURA) && !BUILDFLAG(ENABLE_DESKTOP_AURA)
     shadow_controller_.reset();
     focus_controller_.reset();
 #endif
@@ -3953,7 +3954,7 @@ class WidgetShadowTest : public WidgetTest {
   bool force_child_ = false;
 
  private:
-#if !defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_MACOSX)
   void InitControllers() {}
 #else
   class TestFocusRules : public wm::BaseFocusRules {
@@ -3977,7 +3978,7 @@ class WidgetShadowTest : public WidgetTest {
 
   std::unique_ptr<wm::FocusController> focus_controller_;
   std::unique_ptr<wm::ShadowController> shadow_controller_;
-#endif  // OS_CHROMEOS
+#endif  // !BUILDFLAG(ENABLE_DESKTOP_AURA) && !defined(OS_MACOSX)
 
   DISALLOW_COPY_AND_ASSIGN(WidgetShadowTest);
 };
@@ -3993,7 +3994,7 @@ class WidgetShadowTest : public WidgetTest {
 // activation. Test that shadows are added to non-root windows even if not
 // activated.
 TEST_F(WidgetShadowTest, MAYBE_ShadowsInRootWindow) {
-#if defined(OS_CHROMEOS)
+#if defined(USE_AURA) && !BUILDFLAG(ENABLE_DESKTOP_AURA)
   // On ChromeOS, top-levels have shadows.
   bool top_level_window_should_have_shadow = true;
 #else
@@ -4161,7 +4162,7 @@ TEST_F(DesktopWidgetTest, WindowModalOwnerDestroyedEnabledTest) {
 
 #endif  // defined(OS_WIN)
 
-#if !defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_MACOSX)
 
 namespace {
 
@@ -4258,7 +4259,7 @@ TEST_F(CompositingWidgetTest, Transparency_DesktopWidgetTranslucent) {
   CheckAllWidgetsForOpacity(Widget::InitParams::TRANSLUCENT_WINDOW);
 }
 
-#endif  // !defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_MACOSX)
 
 }  // namespace test
 }  // namespace views

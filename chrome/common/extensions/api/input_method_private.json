@@ -256,6 +256,44 @@
           }
         ]
       }, {
+        "name": "setSelectionRange",
+        "type": "function",
+        "description": "Sets the selection range",
+        "parameters": [
+          {
+            "name": "parameters",
+            "type": "object",
+            "properties": {
+              "contextID": {
+                "description": "ID of the context where we want to set the selection",
+                "type": "integer"
+              },
+              "selectionStart": {
+                "description": "Selection start position. Must be a valid uint32 value (Positive and less than 0xFFFFFFFF).",
+                "optional": true,
+                "type": "integer"
+              },
+              "selectionEnd": {
+                "description": "Selection end position. Must be a valid uint32 value (Positive and less than 0xFFFFFFFF).",
+                "optional": true,
+                "type": "integer"
+              }
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "Called when the operation completes with a boolean indicating if the text was accepted or not.",
+            "parameters": [
+              {
+                "name": "success",
+                "type": "boolean"
+              }
+            ]
+          }
+        ]
+      }, {
         "name": "notifyImeMenuItemActivated",
         "type": "function",
         "description": "Fires the input.ime.onMenuItemActivated event.",

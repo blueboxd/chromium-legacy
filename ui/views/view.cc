@@ -47,6 +47,7 @@
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/buildflags.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/drag_controller.h"
 #include "ui/views/layout/layout_manager.h"
@@ -1330,7 +1331,7 @@ bool View::CanHandleAccelerators() const {
   const Widget* widget = GetWidget();
   if (!GetEnabled() || !IsDrawn() || !widget || !widget->IsVisible())
     return false;
-#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA)
   // Non-ChromeOS aura windows have an associated FocusManagerEventHandler which
   // adds currently focused view as an event PreTarget (see
   // DesktopNativeWidgetAura::InitNativeWidget). However, the focused view isn't

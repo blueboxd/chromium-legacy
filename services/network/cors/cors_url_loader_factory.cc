@@ -208,7 +208,6 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
   switch (initiator_lock_compatibility) {
     case InitiatorLockCompatibility::kCompatibleLock:
     case InitiatorLockCompatibility::kBrowserProcess:
-    case InitiatorLockCompatibility::kExcludedScheme:
     case InitiatorLockCompatibility::kExcludedUniversalAccessPlugin:
       break;
 

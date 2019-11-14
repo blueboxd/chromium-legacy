@@ -55,6 +55,21 @@ grit("help_app_resources") {
   output_dir = "$root_gen_dir/chromeos"
 }
 
+# Resources used by chrome://media-app, and parts of the sandboxed app it hosts
+# that do no come from the app bundle (below).
+grit("media_app_resources") {
+  source = "../components/media_app_ui/resources/media_app_resources.grd"
+
+  source_is_generated = true
+
+  outputs = [
+    "grit/chromeos_media_app_resources.h",
+    "chromeos_media_app_resources.pak",
+  ]
+  output_dir = "$root_gen_dir/chromeos"
+}
+
+# Resources automatically served by the chrome://media-app bundle, obtained via DEPS.
 grit("media_app_bundle_resources") {
   if (enable_cros_media_app) {
     # Obtained via src-internal/DEPS.

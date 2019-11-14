@@ -182,9 +182,9 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNTLM : public HttpAuthHandler {
   AuthCredentials credentials_;
   std::string channel_bindings_;
 
-  // The base64-encoded string following "NTLM" in the "WWW-Authenticate" or
-  // "Proxy-Authenticate" response header.
-  std::string auth_data_;
+  // Decoded authentication token that the server returned as part of an NTLM
+  // challenge.
+  std::string challenge_token_;
 
 #if defined(NTLM_SSPI)
   const HttpAuthPreferences* http_auth_preferences_;

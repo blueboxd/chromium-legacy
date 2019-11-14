@@ -65,8 +65,7 @@ bool HttpAuthHandlerBasic::Init(HttpAuthChallengeTokenizer* challenge,
 
 bool HttpAuthHandlerBasic::ParseChallenge(
     HttpAuthChallengeTokenizer* challenge) {
-  // Verify the challenge's auth-scheme.
-  if (!base::LowerCaseEqualsASCII(challenge->scheme(), kBasicAuthScheme))
+  if (challenge->auth_scheme() != kBasicAuthScheme)
     return false;
 
   std::string realm;

@@ -30,6 +30,7 @@
 #include "extensions/common/extension_set.h"
 
 #if defined(OS_MACOSX)
+#include "chrome/browser/apps/platform_apps/app_shim_registry_mac.h"
 #include "chrome/common/mac/app_mode_common.h"
 #endif
 
@@ -112,6 +113,11 @@ void AppShortcutManager::OnExtensionWillBeInstalled(
   if (!extension->is_app())
     return;
 
+#if defined(OS_MACOSX)
+  AppShimRegistry::Get()->OnAppInstalledForProfile(extension->id(),
+                                                   profile_->GetPath());
+#endif
+
   // If the app is being updated, update any existing shortcuts but do not
   // create new ones. If it is being installed, automatically create a
   // shortcut in the applications menu (e.g., Start Menu).
@@ -127,6 +133,15 @@ void AppShortcutManager::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
     const Extension* extension,
     extensions::UninstallReason reason) {
+#if defined(OS_MACOSX)
+  if (extension->is_app()) {
+    AppShimRegistry::Get()->OnAppUninstalledForProfile(extension->id(),
+                                                       profile_->GetPath());
+    // TODO(https://crbug.com/1001213): Plumb the return result through
+    // DeleteAllShortcuts, to appropriately delete multi-profile apps.
+  }
+#endif
+
   web_app::DeleteAllShortcuts(profile_, extension);
 }
 
@@ -135,6 +150,7 @@ void AppShortcutManager::OnProfileWillBeRemoved(
   if (profile_path != profile_->GetPath())
     return;
 
+  // TODO(https://crbug.com/1001213): Update AppShimRegistry here.
   web_app::internals::GetShortcutIOTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&web_app::internals::DeleteAllShortcutsForProfile,

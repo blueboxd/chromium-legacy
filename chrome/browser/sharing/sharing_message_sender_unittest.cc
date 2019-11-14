@@ -9,6 +9,7 @@
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
+#include "chrome/browser/sharing/sharing_target_info.h"
 #include "chrome/browser/sharing/sharing_utils.h"
 #include "components/sync_device_info/fake_device_info_sync_service.h"
 #include "components/sync_device_info/fake_local_device_info_provider.h"
@@ -23,9 +24,11 @@ const char kReceiverGUID[] = "kReceiverGUID";
 const char kReceiverDeviceName[] = "receiver_device";
 const char kP256dh[] = "p256dh";
 const char kAuthSecret[] = "auth_secret";
-const char kFcmToken[] = "fcm_token";
+const char kVapidFcmToken[] = "vapid_fcm_token";
+const char kSharingFcmToken[] = "sharing_fcm_token";
 const char kAuthorizedEntity[] = "authorized_entity";
-const char kSenderFcmToken[] = "sender_fcm_token";
+const char kSenderVapidFcmToken[] = "sender_vapid_fcm_token";
+const char kSenderSharingFcmToken[] = "sender_sharing_fcm_token";
 const char kSenderP256dh[] = "sender_p256dh";
 const char kSenderAuthSecret[] = "sender_auth_secret";
 const char kSenderMessageID[] = "sender_message_id";
@@ -37,7 +40,7 @@ class MockSharingFCMSender : public SharingFCMSender {
   ~MockSharingFCMSender() override = default;
 
   MOCK_METHOD4(SendMessageToDevice,
-               void(syncer::DeviceInfo::SharingInfo target,
+               void(SharingTargetInfo target,
                     base::TimeDelta time_to_live,
                     SharingMessage message,
                     SendMessageCallback callback));
@@ -72,7 +75,8 @@ class SharingMessageSenderTest : public testing::Test {
 
 static syncer::DeviceInfo::SharingInfo CreateLocalSharingInfo() {
   return syncer::DeviceInfo::SharingInfo(
-      kSenderFcmToken, kSenderP256dh, kSenderAuthSecret,
+      kSenderVapidFcmToken, kSenderSharingFcmToken, kSenderP256dh,
+      kSenderAuthSecret,
       std::set<sync_pb::SharingSpecificFields::EnabledFeatures>());
 }
 
@@ -86,7 +90,7 @@ static std::unique_ptr<syncer::DeviceInfo> CreateFakeDeviceInfo(
       /*last_updated_timestamp=*/base::Time::Now(),
       /*send_tab_to_self_receiving_enabled=*/false,
       syncer::DeviceInfo::SharingInfo(
-          kFcmToken, kP256dh, kAuthSecret,
+          kVapidFcmToken, kSharingFcmToken, kP256dh, kAuthSecret,
           std::set<sync_pb::SharingSpecificFields::EnabledFeatures>{
               sync_pb::SharingSpecificFields::CLICK_TO_CALL}));
 }
@@ -119,7 +123,7 @@ TEST_F(SharingMessageSenderTest, MessageSent_AckTimedout) {
               Run(testing::Eq(SharingSendMessageResult::kAckTimeout),
                   testing::Eq(nullptr)));
 
-  auto simulate_timeout = [&](syncer::DeviceInfo::SharingInfo target,
+  auto simulate_timeout = [&](SharingTargetInfo target,
                               base::TimeDelta time_to_live,
                               chrome_browser_sharing::SharingMessage message,
                               SharingFCMSender::SendMessageCallback callback) {
@@ -161,7 +165,7 @@ TEST_F(SharingMessageSenderTest, SendMessageToDevice_InternalError) {
                   testing::Eq(nullptr)));
 
   auto simulate_internal_error =
-      [&](syncer::DeviceInfo::SharingInfo target, base::TimeDelta time_to_live,
+      [&](SharingTargetInfo target, base::TimeDelta time_to_live,
           chrome_browser_sharing::SharingMessage message,
           SharingFCMSender::SendMessageCallback callback) {
         // FCM message not sent succesfully.
@@ -205,7 +209,7 @@ TEST_F(SharingMessageSenderTest, MessageSent_AckReceived) {
                   ProtoEquals(expected_response_message)));
 
   auto simulate_expected_ack_message_received =
-      [&](syncer::DeviceInfo::SharingInfo target, base::TimeDelta time_to_live,
+      [&](SharingTargetInfo target, base::TimeDelta time_to_live,
           chrome_browser_sharing::SharingMessage message,
           SharingFCMSender::SendMessageCallback callback) {
         // FCM message sent successfully.
@@ -220,7 +224,7 @@ TEST_F(SharingMessageSenderTest, MessageSent_AckReceived) {
         ASSERT_EQ(GetSharingDeviceNames(local_device).full_name,
                   message.sender_device_name());
         ASSERT_TRUE(local_device->sharing_info().has_value());
-        ASSERT_EQ(kSenderFcmToken, message.sender_info().fcm_token());
+        ASSERT_EQ(kSenderVapidFcmToken, message.sender_info().fcm_token());
         ASSERT_EQ(kSenderP256dh, message.sender_info().p256dh());
         ASSERT_EQ(kSenderAuthSecret, message.sender_info().auth_secret());
 

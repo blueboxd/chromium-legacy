@@ -246,6 +246,24 @@ class InputMethodPrivateSetCompositionRangeFunction : public ExtensionFunction {
   ResponseAction Run() override;
 };
 
+class InputMethodPrivateSetSelectionRangeFunction : public ExtensionFunction {
+ public:
+  InputMethodPrivateSetSelectionRangeFunction(
+      const InputMethodPrivateSetSelectionRangeFunction&) = delete;
+  InputMethodPrivateSetSelectionRangeFunction& operator=(
+      const InputMethodPrivateSetSelectionRangeFunction&) = delete;
+  InputMethodPrivateSetSelectionRangeFunction() = default;
+
+ protected:
+  ~InputMethodPrivateSetSelectionRangeFunction() override = default;
+  // ExtensionFunction:
+  ResponseAction Run() override;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.setSelectionRange",
+                             INPUTMETHODPRIVATE_SETSELECTIONRANGE)
+};
+
 class InputMethodAPI : public BrowserContextKeyedAPI,
                        public extensions::EventRouter::Observer {
  public:

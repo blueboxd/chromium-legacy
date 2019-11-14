@@ -13,6 +13,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/auth.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_auth.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_auth_multi_round_parse.h"
 #include "net/http/http_auth_preferences.h"
@@ -86,10 +87,11 @@ HttpAuth::AuthorizationResult HttpAuthNegotiateAndroid::ParseChallenge(
     net::HttpAuthChallengeTokenizer* tok) {
   if (first_challenge_) {
     first_challenge_ = false;
-    return net::ParseFirstRoundChallenge("negotiate", tok);
+    return net::ParseFirstRoundChallenge(HttpAuth::AUTH_SCHEME_NEGOTIATE, tok);
   }
   std::string decoded_auth_token;
-  return net::ParseLaterRoundChallenge("negotiate", tok, &server_auth_token_,
+  return net::ParseLaterRoundChallenge(HttpAuth::AUTH_SCHEME_NEGOTIATE, tok,
+                                       &server_auth_token_,
                                        &decoded_auth_token);
 }
 

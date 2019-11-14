@@ -8,11 +8,14 @@
 #include "base/time/time.h"
 #include "net/base/backoff_entry.h"
 
-// InstanceID scope for Google Cloud Messaging to get GCM enabled token.
+// InstanceID scope for Firebase Cloud Messaging to get FCM enabled token.
 extern const char kFCMScope[];
 
-// Sender ID linked to GCM messages for Sharing.
+// App ID linked to FCM messages for Sharing.
 extern const char kSharingFCMAppID[];
+
+// Sender ID for Sharing.
+extern const char kSharingSenderID[];
 
 // Amount of time before a message is considered timeout if no ack is received.
 extern const base::TimeDelta kSendMessageTimeout;

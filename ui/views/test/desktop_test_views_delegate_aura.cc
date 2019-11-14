@@ -5,9 +5,10 @@
 #include "ui/views/test/desktop_test_views_delegate.h"
 
 #include "build/build_config.h"
+#include "ui/views/buildflags.h"
 #include "ui/views/widget/native_widget_aura.h"
 
-#if !defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA)
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #endif
 
@@ -20,7 +21,7 @@ DesktopTestViewsDelegate::~DesktopTestViewsDelegate() = default;
 void DesktopTestViewsDelegate::OnBeforeWidgetInit(
     Widget::InitParams* params,
     internal::NativeWidgetDelegate* delegate) {
-#if !defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA)
   // If we already have a native_widget, we don't have to try to come
   // up with one.
   if (params->native_widget)

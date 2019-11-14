@@ -600,6 +600,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "crostini-webui-upgrader",
+    "owners": [ "nverne", "davidmunro", "benwells" ],
+    "expiry_milestone": 84
+  },
+  {
     "name": "cryptauth-v1-devicesync-deprecate",
     "owners": [ "khorimoto", "nohle" ],
     "expiry_milestone": 87

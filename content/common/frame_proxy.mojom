@@ -7,7 +7,7 @@ module content.mojom;
 // Mojo interface for communicating from RenderFrameProxy to
 // RenderFrameProxyHost.
 interface RenderFrameProxyHost {
-  // Sent by the renderer when the frame becomes focused.
-  FrameFocused();
+  // TODO(dtapuska): Keep this interface for now. All methods have moved to
+  // blink::RemoteFrameHost but we might still need this.
 };
 

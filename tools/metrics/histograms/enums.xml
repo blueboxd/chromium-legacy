@@ -2219,6 +2219,12 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="DOODLE_CLICKED"/>
 </enum>
 
+<enum name="AppListDriveQuickAccessResultPresence">
+  <int value="0" label="Present and shown"/>
+  <int value="1" label="Present and not shown"/>
+  <int value="2" label="Absent"/>
+</enum>
+
 <enum name="AppListEnableSource">
   <obsolete>
     Deprecated 03/2018 with Mash AppList refactoring.
@@ -21307,6 +21313,7 @@ Called by update_net_error_codes.py.-->
   <int value="1410" label="AUTOTESTPRIVATE_MOUSERELEASE"/>
   <int value="1411" label="AUTOTESTPRIVATE_MOUSEMOVE"/>
   <int value="1412" label="WEBSTOREPRIVATE_GETEXTENSIONSTATUS"/>
+  <int value="1413" label="INPUTMETHODPRIVATE_SETSELECTIONRANGE"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -25409,7 +25416,7 @@ Called by update_net_error_codes.py.-->
   <int value="3047" label="PluginElementLoadedImage"/>
   <int value="3048" label="PluginElementLoadedExternal"/>
   <int value="3049" label="RenderSubtreeAttribute"/>
-  <int value="3050" label="ARIAAnnotationRoles"/>
+  <int value="3050" label="ARIAAnnotations"/>
   <int value="3051" label="IntersectionObserverV2"/>
   <int value="3052" label="HeavyAdIntervention"/>
   <int value="3053" label="UserTimingL3"/>
@@ -25449,6 +25456,7 @@ Called by update_net_error_codes.py.-->
   <int value="3085" label="ModuleDedicatedWorker"/>
   <int value="3086" label="FetchBodyStreamInServiceWorker"/>
   <int value="3087" label="FetchBodyStreamOutsideServiceWorker"/>
+  <int value="3088" label="GetComputedStyleOutsideFlatTree"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -35855,6 +35863,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1836854634" label="CloseTabSuggestions:enabled"/>
   <int value="-1835975804" label="disable-offline-auto-reload"/>
   <int value="-1835608319" label="EnableHeuristicPalmDetectionFilter:disabled"/>
+  <int value="-1834841895" label="CrostiniWebUIUpgrader:enabled"/>
   <int value="-1834536026" label="AppServiceIntentHandling:enabled"/>
   <int value="-1833149810" label="enable-accessibility-tab-switcher"/>
   <int value="-1832575380" label="show-saved-copy"/>
@@ -36210,6 +36219,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1375111024" label="enable-fixed-position-compositing"/>
   <int value="-1373942769" label="WebAuthenticationCtap2:disabled"/>
   <int value="-1373705581" label="ManualSaving:enabled"/>
+  <int value="-1371984027" label="CrostiniWebUIUpgrader:disabled"/>
   <int value="-1371239786" label="EnablePasswordsAccountStorage:enabled"/>
   <int value="-1370532920" label="AppServiceAsh:enabled"/>
   <int value="-1368499577" label="OnTheFlyMhtmlHashComputation:enabled"/>
@@ -54185,8 +54195,8 @@ Called by update_net_trust_anchors.py.-->
     |factory_params_.request_initiator_site_lock|.
   </int>
   <int value="5" label="ExcludedScheme">
-    Scheme excluded from request_initiator_site_lock checks (e.g.
-    chrome-extension).
+    Scheme excluded from request_initiator_site_lock checks. Since ~M80 this
+    value can only be recorded during tests.
   </int>
   <int value="6" label="ExcludedUniversalAccessPlugin">
     Requests from a renderer processes that embeds an universal access plugin
@@ -59930,6 +59940,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="9" label="FailedCreatingSentinelFile"/>
   <int value="10" label="FailedDeletingSentinelFile"/>
   <int value="11" label="AbortedBecauseSentinelFileWasPresent"/>
+</enum>
+
+<enum name="SuccessTimeoutStarted">
+  <int value="0" label="Success"/>
+  <int value="1" label="Timeout"/>
+  <int value="2" label="Started"/>
 </enum>
 
 <enum name="SuggestAppsDialogCloseReason">

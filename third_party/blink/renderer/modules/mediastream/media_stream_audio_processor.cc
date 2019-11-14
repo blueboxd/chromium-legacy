@@ -413,6 +413,7 @@ void MediaStreamAudioProcessor::OnPlayoutData(media::AudioBus* audio_bus,
                                               int audio_delay_milliseconds) {
   DCHECK_CALLED_ON_VALID_THREAD(render_thread_checker_);
   DCHECK_GE(audio_bus->channels(), 1);
+  DCHECK_LE(audio_bus->channels(), media::limits::kMaxChannels);
   int frames_per_10_ms = sample_rate / 100;
   if (audio_bus->frames() != frames_per_10_ms) {
     if (unsupported_buffer_size_log_count_ < 10) {
@@ -429,16 +430,24 @@ void MediaStreamAudioProcessor::OnPlayoutData(media::AudioBus* audio_bus,
             std::numeric_limits<base::subtle::Atomic32>::max());
   base::subtle::Release_Store(&render_delay_ms_, audio_delay_milliseconds);
 
-  DCHECK_LE(audio_bus->channels(), media::limits::kMaxChannels);
+  webrtc::StreamConfig input_stream_config(sample_rate, audio_bus->channels());
+  // If the input audio appears to contain upmixed mono audio, then APM is only
+  // given the left channel. This reduces computational complexity and improves
+  // convergence of audio processing algorithms.
+  // TODO(crbug.com/1023337): Ensure correct channel count in input audio bus.
+  assume_upmixed_mono_playout_ = assume_upmixed_mono_playout_ &&
+                                 LeftAndRightChannelsAreSymmetric(*audio_bus);
+  if (assume_upmixed_mono_playout_) {
+    input_stream_config.set_num_channels(1);
+  }
   std::array<const float*, media::limits::kMaxChannels> input_ptrs;
-  for (int i = 0; i < audio_bus->channels(); ++i)
+  for (int i = 0; i < static_cast<int>(input_stream_config.num_channels()); ++i)
     input_ptrs[i] = audio_bus->channel(i);
 
   // TODO(ajm): Should AnalyzeReverseStream() account for the
   // |audio_delay_milliseconds|?
   const int apm_error = audio_processing_->AnalyzeReverseStream(
-      input_ptrs.data(),
-      webrtc::StreamConfig(sample_rate, audio_bus->channels()));
+      input_ptrs.data(), input_stream_config);
   if (apm_error != webrtc::AudioProcessing::kNoError &&
       apm_playout_error_code_log_count_ < 10) {
     LOG(ERROR) << "MSAP::OnPlayoutData: AnalyzeReverseStream error="

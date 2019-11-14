@@ -91,6 +91,8 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
       BluetoothDeviceScanningPromptController* prompt_controller);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(WebBluetoothServiceImplTest,
+                           ClearStateDuringRequestDevice);
   FRIEND_TEST_ALL_PREFIXES(WebBluetoothServiceImplTest, PermissionAllowed);
   FRIEND_TEST_ALL_PREFIXES(WebBluetoothServiceImplTest,
                            PermissionPromptCanceled);
@@ -245,13 +247,13 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
   void RequestDeviceImpl(
       blink::mojom::WebBluetoothRequestDeviceOptionsPtr options,
       RequestDeviceCallback callback,
-      device::BluetoothAdapter* adapter);
+      scoped_refptr<device::BluetoothAdapter> adapter);
 
   void RequestScanningStartImpl(
       mojo::AssociatedRemote<blink::mojom::WebBluetoothScanClient> client,
       blink::mojom::WebBluetoothRequestLEScanOptionsPtr options,
       RequestScanningStartCallback callback,
-      device::BluetoothAdapter* adapter);
+      scoped_refptr<device::BluetoothAdapter> adapter);
 
   void OnStartDiscoverySession(
       mojo::AssociatedRemote<blink::mojom::WebBluetoothScanClient> client,

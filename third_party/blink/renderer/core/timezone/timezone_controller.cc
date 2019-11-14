@@ -83,7 +83,7 @@ void TimeZoneController::Init() {
     return;
 
   mojo::Remote<device::mojom::blink::TimeZoneMonitor> monitor;
-  Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+  Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
       monitor.BindNewPipeAndPassReceiver());
   monitor->AddClient(instance().receiver_.BindNewPipeAndPassRemote());
 }

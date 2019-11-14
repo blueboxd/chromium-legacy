@@ -144,7 +144,7 @@ class SSPILibraryDefault : public SSPILibrary {
 
 class NET_EXPORT_PRIVATE HttpAuthSSPI : public HttpNegotiateAuthSystem {
  public:
-  HttpAuthSSPI(SSPILibrary* sspi_library, const std::string& scheme);
+  HttpAuthSSPI(SSPILibrary* sspi_library, HttpAuth::Scheme scheme);
   ~HttpAuthSSPI() override;
 
   // HttpNegotiateAuthSystem implementation:
@@ -176,7 +176,7 @@ class NET_EXPORT_PRIVATE HttpAuthSSPI : public HttpNegotiateAuthSystem {
   void ResetSecurityContext();
 
   SSPILibrary* library_;
-  std::string scheme_;
+  HttpAuth::Scheme scheme_;
   std::string decoded_server_auth_token_;
   CredHandle cred_;
   CtxtHandle ctxt_;

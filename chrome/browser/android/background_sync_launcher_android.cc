@@ -72,17 +72,25 @@ BackgroundSyncLauncherAndroid* BackgroundSyncLauncherAndroid::Get() {
 }
 
 // static
-void BackgroundSyncLauncherAndroid::ScheduleBrowserWakeUp(
-    blink::mojom::BackgroundSyncType sync_type) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  Get()->ScheduleBrowserWakeUpImpl(sync_type);
-}
-
-// static
 void BackgroundSyncLauncherAndroid::SetPlayServicesVersionCheckDisabledForTests(
     bool disabled) {
   disable_play_services_version_check_for_tests = disabled;
+}
+
+// static
+void BackgroundSyncLauncherAndroid::ScheduleBrowserWakeUpWithDelay(
+    blink::mojom::BackgroundSyncType sync_type,
+    base::TimeDelta delay) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  Get()->ScheduleBrowserWakeUpWithDelayImpl(sync_type, delay);
+}
+
+// static
+void BackgroundSyncLauncherAndroid::CancelBrowserWakeup(
+    blink::mojom::BackgroundSyncType sync_type) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  Get()->CancelBrowserWakeupImpl(sync_type);
 }
 
 // static
@@ -94,21 +102,7 @@ bool BackgroundSyncLauncherAndroid::ShouldDisableBackgroundSync() {
       base::android::AttachCurrentThread());
 }
 
-void BackgroundSyncLauncherAndroid::ScheduleBrowserWakeUpImpl(
-    blink::mojom::BackgroundSyncType sync_type) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  auto* profile = ProfileManager::GetLastUsedProfile();
-  DCHECK(profile);
-
-  content::BackgroundSyncContext::GetSoonestWakeupDeltaAcrossPartitions(
-      sync_type, profile,
-      base::BindOnce(&BackgroundSyncLauncherAndroid::
-                         ScheduleBrowserWakeUpWithWakeUpDeltaImpl,
-                     base::Unretained(this), sync_type));
-}
-
-void BackgroundSyncLauncherAndroid::ScheduleBrowserWakeUpWithWakeUpDeltaImpl(
+void BackgroundSyncLauncherAndroid::ScheduleBrowserWakeUpWithDelayImpl(
     blink::mojom::BackgroundSyncType sync_type,
     base::TimeDelta soonest_wakeup_delta) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -120,6 +114,19 @@ void BackgroundSyncLauncherAndroid::ScheduleBrowserWakeUpWithWakeUpDeltaImpl(
       env, java_background_sync_background_task_scheduler_launcher_,
       GetBackgroundTaskType(sync_type), !soonest_wakeup_delta.is_max(),
       min_delay_ms);
+}
+
+void BackgroundSyncLauncherAndroid::CancelBrowserWakeupImpl(
+    blink::mojom::BackgroundSyncType sync_type) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+
+  // TODO(crbug.com/996166): Add a new method to cancel browser launch.
+  Java_BackgroundSyncBackgroundTaskScheduler_launchBrowserIfStopped(
+      env, java_background_sync_background_task_scheduler_launcher_,
+      GetBackgroundTaskType(sync_type), /* shouldLaunch= */ false,
+      /* minDelayMs= */ 0);
 }
 
 void BackgroundSyncLauncherAndroid::FireBackgroundSyncEvents(

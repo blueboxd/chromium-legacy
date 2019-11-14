@@ -19,6 +19,7 @@
 namespace app_list {
 
 namespace {
+constexpr bool kDefaultUseWeightedRatio = true;
 constexpr double kDefaultRelevanceThreshold = 0.3;
 constexpr double kMinScore = 0.0;
 constexpr double kMaxScore = 1.0;
@@ -139,12 +140,10 @@ double FuzzyTokenizedStringMatch::TokenSetRatio(
                      PartialRatio(query_rewritten, text_rewritten)});
   }
 
-  return std::max({SequenceMatcher(intersection_string, query_rewritten)
-                       .Ratio(false /*use_edit_distance*/),
-                   SequenceMatcher(intersection_string, text_rewritten)
-                       .Ratio(false /*use_edit_distance*/),
-                   SequenceMatcher(query_rewritten, text_rewritten)
-                       .Ratio(false /*use_edit_distance*/)});
+  return std::max(
+      {SequenceMatcher(intersection_string, query_rewritten).Ratio(),
+       SequenceMatcher(intersection_string, text_rewritten).Ratio(),
+       SequenceMatcher(query_rewritten, text_rewritten).Ratio()});
 }
 
 double FuzzyTokenizedStringMatch::TokenSortRatio(
@@ -159,8 +158,7 @@ double FuzzyTokenizedStringMatch::TokenSortRatio(
   if (partial) {
     return PartialRatio(query_sorted, text_sorted);
   }
-  return SequenceMatcher(query_sorted, text_sorted)
-      .Ratio(false /*use_edit_distance*/);
+  return SequenceMatcher(query_sorted, text_sorted).Ratio();
 }
 
 double FuzzyTokenizedStringMatch::PartialRatio(const base::string16& query,
@@ -191,7 +189,7 @@ double FuzzyTokenizedStringMatch::PartialRatio(const base::string16& query,
     partial_ratio = std::max(
         partial_ratio,
         SequenceMatcher(shorter, longer.substr(long_start, shorter.size()))
-            .Ratio(false /*use_edit_distance*/));
+            .Ratio());
     if (partial_ratio > 0.995) {
       return kMaxScore;
     }
@@ -209,8 +207,8 @@ double FuzzyTokenizedStringMatch::WeightedRatio(
       base::JoinString(query.tokens(), base::UTF8ToUTF16(" ")));
   const base::string16 text_normalized(
       base::JoinString(text.tokens(), base::UTF8ToUTF16(" ")));
-  double weighted_ratio = SequenceMatcher(query_normalized, text_normalized)
-                              .Ratio(false /*use_edit_distance*/);
+  double weighted_ratio =
+      SequenceMatcher(query_normalized, text_normalized).Ratio();
   const double length_ratio =
       static_cast<double>(
           std::max(query_normalized.size(), text_normalized.size())) /
@@ -254,13 +252,51 @@ bool FuzzyTokenizedStringMatch::IsRelevant(const ash::TokenizedString& query,
                                  match.pos_second_string + match.length));
     }
   }
-  // |relevance_| is the average of WeightedRatio and PrefixMatcher scores.
-  relevance_ = (WeightedRatio(query, text) + PrefixMatcher(query, text)) / 2;
+
+  // If the query is much longer than the text then it's often not a match.
+  if (query.text().size() >= text.text().size() * 2) {
+    return false;
+  }
 
   const double relevance_threshold = base::GetFieldTrialParamByFeatureAsDouble(
       app_list_features::kEnableFuzzyAppSearch, "relevance_threshold",
       kDefaultRelevanceThreshold);
-  return relevance_ > relevance_threshold;
+  const double prefix_score = PrefixMatcher(query, text);
+
+  if (base::GetFieldTrialParamByFeatureAsBool(
+          app_list_features::kEnableFuzzyAppSearch, "use_prefix_only", false) &&
+      prefix_score >= relevance_threshold) {
+    // If the prefix score is already higher than |relevance_threshold|, use
+    // prefix score as final score.
+    relevance_ = prefix_score;
+    return true;
+  }
+
+  const bool use_weighted_ratio = base::GetFieldTrialParamByFeatureAsBool(
+      app_list_features::kEnableFuzzyAppSearch, "use_weighted_ratio",
+      kDefaultUseWeightedRatio);
+
+  if (use_weighted_ratio) {
+    // If WeightedRatio is used, |relevance_| is the average of WeightedRatio
+    // and PrefixMatcher scores.
+    relevance_ = (WeightedRatio(query, text) + prefix_score) / 2;
+  } else {
+    // Use simple algorithm to calculate match ratio.
+    double partial_match = 0.0;
+    for (const auto& query_token : query.tokens()) {
+      for (const auto& text_token : text.tokens()) {
+        partial_match = std::max(
+            partial_match, SequenceMatcher(query_token, text_token).Ratio());
+      }
+    }
+    const double partial_scale = 0.9;
+    relevance_ = (std::max(SequenceMatcher(query.text(), text.text()).Ratio(),
+                           partial_match * partial_scale) +
+                  prefix_score) /
+                 2;
+  }
+
+  return relevance_ >= relevance_threshold;
 }
 
 }  // namespace app_list

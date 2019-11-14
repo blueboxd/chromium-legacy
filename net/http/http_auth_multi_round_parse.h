@@ -16,11 +16,11 @@ namespace net {
 class HttpAuthChallengeTokenizer;
 
 NET_EXPORT_PRIVATE HttpAuth::AuthorizationResult ParseFirstRoundChallenge(
-    base::StringPiece scheme,
+    HttpAuth::Scheme scheme,
     HttpAuthChallengeTokenizer* challenge);
 
 NET_EXPORT_PRIVATE HttpAuth::AuthorizationResult ParseLaterRoundChallenge(
-    base::StringPiece scheme,
+    HttpAuth::Scheme scheme,
     HttpAuthChallengeTokenizer* challenge,
     std::string* encoded_token,
     std::string* decoded_token);

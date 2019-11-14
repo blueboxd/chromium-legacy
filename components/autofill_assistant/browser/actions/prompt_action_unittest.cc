@@ -28,6 +28,7 @@ using ::testing::IsNull;
 using ::testing::Pointee;
 using ::testing::Property;
 using ::testing::SizeIs;
+using ::testing::StrEq;
 using ::testing::UnorderedElementsAre;
 
 class PromptActionTest : public testing::Test {
@@ -250,6 +251,44 @@ TEST_F(PromptActionTest, Terminate) {
   ASSERT_THAT(user_actions_, Pointee(SizeIs(1)));
   EXPECT_TRUE((*user_actions_)[0].HasCallback());
   (*user_actions_)[0].Call(TriggerContext::CreateEmpty());
+}
+
+TEST_F(PromptActionTest, NoMessageSet) {
+  auto* ok_proto = prompt_proto_->add_choices();
+  ok_proto->mutable_chip()->set_text("Ok");
+  ok_proto->mutable_chip()->set_type(HIGHLIGHTED_ACTION);
+  ok_proto->set_server_payload("ok");
+
+  EXPECT_CALL(mock_action_delegate_, SetStatusMessage(_)).Times(0);
+
+  PromptAction action(&mock_action_delegate_, proto_);
+  action.ProcessAction(callback_.Get());
+}
+
+TEST_F(PromptActionTest, EmptyMessage) {
+  prompt_proto_->set_message("");
+  auto* ok_proto = prompt_proto_->add_choices();
+  ok_proto->mutable_chip()->set_text("Ok");
+  ok_proto->mutable_chip()->set_type(HIGHLIGHTED_ACTION);
+  ok_proto->set_server_payload("ok");
+
+  EXPECT_CALL(mock_action_delegate_, SetStatusMessage(StrEq("")));
+
+  PromptAction action(&mock_action_delegate_, proto_);
+  action.ProcessAction(callback_.Get());
+}
+
+TEST_F(PromptActionTest, NormalMessageSet) {
+  prompt_proto_->set_message(" test message ");
+  auto* ok_proto = prompt_proto_->add_choices();
+  ok_proto->mutable_chip()->set_text("Ok");
+  ok_proto->mutable_chip()->set_type(HIGHLIGHTED_ACTION);
+  ok_proto->set_server_payload("ok");
+
+  EXPECT_CALL(mock_action_delegate_, SetStatusMessage(StrEq(" test message ")));
+
+  PromptAction action(&mock_action_delegate_, proto_);
+  action.ProcessAction(callback_.Get());
 }
 
 }  // namespace

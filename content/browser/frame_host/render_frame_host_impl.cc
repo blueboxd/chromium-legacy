@@ -2506,7 +2506,7 @@ void RenderFrameHostImpl::OnDetach() {
   PendingDeletionCheckCompletedOnSubtree();  // Can delete |this|.
 }
 
-void RenderFrameHostImpl::FrameFocused() {
+void RenderFrameHostImpl::DidFocusFrame() {
   if (!is_active())
     return;
 

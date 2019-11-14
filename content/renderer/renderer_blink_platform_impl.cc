@@ -201,7 +201,7 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
   top_level_blame_context_.Initialize();
   main_thread_scheduler_->SetTopLevelBlameContext(&top_level_blame_context_);
 
-  GetBrowserInterfaceBrokerProxy()->GetInterface(
+  GetBrowserInterfaceBroker()->GetInterface(
       code_cache_host_remote_.InitWithNewPipeAndPassReceiver());
 }
 

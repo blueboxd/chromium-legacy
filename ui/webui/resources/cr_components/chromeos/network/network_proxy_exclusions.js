@@ -12,6 +12,8 @@
 Polymer({
   is: 'network-proxy-exclusions',
 
+  behaviors: [I18nBehavior],
+
   properties: {
     /** Whether or not the proxy values can be edited. */
     editable: {

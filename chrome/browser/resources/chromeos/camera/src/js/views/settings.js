@@ -132,7 +132,7 @@ cca.views.MasterSettings.prototype.openFeedback = function() {
 /**
  * Creates the controller of resolution settings view.
  * @param {!cca.device.DeviceInfoUpdater} infoUpdater
- * @param {!cca.device.PhotoResolPreferrer} photoPreferrer
+ * @param {!cca.device.PhotoConstraintsPreferrer} photoPreferrer
  * @param {!cca.device.VideoConstraintsPreferrer} videoPreferrer
  * @extends {cca.views.BaseSettings}
  * @constructor
@@ -172,7 +172,7 @@ cca.views.ResolutionSettings = function(
   });
 
   /**
-   * @type {!cca.device.PhotoResolPreferrer}
+   * @type {!cca.device.PhotoConstraintsPreferrer}
    * @private
    */
   this.photoPreferrer_ = photoPreferrer;
@@ -373,7 +373,7 @@ cca.views.ResolutionSettings.prototype.photoOptTextTempl_ = function(
  */
 cca.views.ResolutionSettings.prototype.videoOptTextTempl_ = function(r) {
   return chrome.i18n.getMessage(
-      'label_video_resolution', [r.width, r.height].map(String));
+      'label_video_resolution', [r.height, r.width].map(String));
 };
 
 /**

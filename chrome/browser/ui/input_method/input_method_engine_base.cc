@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "ui/aura/window.h"
@@ -40,6 +41,7 @@ namespace {
 
 const char kErrorNotActive[] = "IME is not active";
 const char kErrorWrongContext[] = "Context is not active";
+const char kErrorInvalidValue[] = "Argument '%s' with value '%d' is not valid";
 
 #if defined(OS_CHROMEOS)
 std::string GetKeyFromEvent(const ui::KeyEvent& event) {
@@ -135,6 +137,10 @@ void GetExtensionKeyboardEventFromKeyEvent(
 #else
   ext_event->key = ui::KeycodeConverter::DomKeyToKeyString(event.GetDomKey());
 #endif  // defined(OS_CHROMEOS)
+}
+
+bool IsUint32Value(int i) {
+  return 0 <= i && i <= std::numeric_limits<uint32_t>::max();
 }
 
 }  // namespace
@@ -446,8 +452,44 @@ bool InputMethodEngineBase::SetCompositionRange(
     text_span.end_offset = segment.end;
     text_spans.push_back(text_span);
   }
+  if (!IsUint32Value(selection_before)) {
+    *error = base::StringPrintf(kErrorInvalidValue, "selection_before",
+                                selection_before);
+    return false;
+  }
+  if (!IsUint32Value(selection_after)) {
+    *error = base::StringPrintf(kErrorInvalidValue, "selection_after",
+                                selection_after);
+    return false;
+  }
+  return SetCompositionRange(static_cast<uint32_t>(selection_before),
+                             static_cast<uint32_t>(selection_after),
+                             text_spans);
+}
 
-  return SetCompositionRange(selection_before, selection_after, text_spans);
+bool InputMethodEngineBase::SetSelectionRange(int context_id,
+                                              int start,
+                                              int end,
+                                              std::string* error) {
+  if (!IsActive()) {
+    *error = kErrorNotActive;
+    return false;
+  }
+  if (context_id != context_id_ || context_id_ == -1) {
+    *error = kErrorWrongContext;
+    return false;
+  }
+  if (!IsUint32Value(start)) {
+    *error = base::StringPrintf(kErrorInvalidValue, "start", start);
+    return false;
+  }
+  if (!IsUint32Value(end)) {
+    *error = base::StringPrintf(kErrorInvalidValue, "end", end);
+    return false;
+  }
+
+  return SetSelectionRange(static_cast<uint32_t>(start),
+                           static_cast<uint32_t>(end));
 }
 
 void InputMethodEngineBase::KeyEventHandled(const std::string& extension_id,

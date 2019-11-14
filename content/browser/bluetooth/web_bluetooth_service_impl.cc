@@ -644,7 +644,8 @@ void WebBluetoothServiceImpl::GetAvailability(
   }
 
   auto get_availability_impl = base::BindOnce(
-      [](GetAvailabilityCallback callback, device::BluetoothAdapter* adapter) {
+      [](GetAvailabilityCallback callback,
+         scoped_refptr<device::BluetoothAdapter> adapter) {
         std::move(callback).Run(adapter->IsPresent());
       },
       std::move(callback));
@@ -1236,7 +1237,7 @@ void WebBluetoothServiceImpl::RequestScanningStartImpl(
     mojo::AssociatedRemote<blink::mojom::WebBluetoothScanClient> client,
     blink::mojom::WebBluetoothRequestLEScanOptionsPtr options,
     RequestScanningStartCallback callback,
-    device::BluetoothAdapter* adapter) {
+    scoped_refptr<device::BluetoothAdapter> adapter) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // The renderer should never send invalid options.
@@ -1354,7 +1355,7 @@ void WebBluetoothServiceImpl::OnDiscoverySessionError() {
 void WebBluetoothServiceImpl::RequestDeviceImpl(
     blink::mojom::WebBluetoothRequestDeviceOptionsPtr options,
     RequestDeviceCallback callback,
-    device::BluetoothAdapter* adapter) {
+    scoped_refptr<device::BluetoothAdapter> adapter) {
   // The renderer should never send invalid options.
   if (IsRequestDeviceOptionsInvalid(options)) {
     CrashRendererAndClosePipe(bad_message::BDH_INVALID_OPTIONS);
@@ -1369,8 +1370,8 @@ void WebBluetoothServiceImpl::RequestDeviceImpl(
   // the new one to make sure they can't conflict.
   device_chooser_controller_.reset();
 
-  device_chooser_controller_.reset(
-      new BluetoothDeviceChooserController(this, render_frame_host_, adapter));
+  device_chooser_controller_.reset(new BluetoothDeviceChooserController(
+      this, render_frame_host_, std::move(adapter)));
 
   // TODO(crbug.com/730593): Remove AdaptCallbackForRepeating() by updating
   // the callee interface.

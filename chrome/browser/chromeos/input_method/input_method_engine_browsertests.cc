@@ -604,8 +604,11 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
                                        set_composition_test_script));
     EXPECT_EQ(1, mock_input_context->update_preedit_text_call_count());
 
-    EXPECT_EQ(4U,
-              mock_input_context->last_update_composition_arg().cursor_pos);
+    EXPECT_EQ(
+        4U,
+        mock_input_context->last_update_composition_arg().selection.start());
+    EXPECT_EQ(
+        4U, mock_input_context->last_update_composition_arg().selection.end());
     EXPECT_TRUE(mock_input_context->last_update_composition_arg().is_visible);
 
     const ui::CompositionText& composition_text =
@@ -1063,7 +1066,11 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
 
     ASSERT_TRUE(content::ExecuteScript(host->host_contents(),
                                        set_composition_test_script));
-    EXPECT_EQ(2U, mock_input_context->last_update_composition_arg().cursor_pos);
+    EXPECT_EQ(
+        2U,
+        mock_input_context->last_update_composition_arg().selection.start());
+    EXPECT_EQ(
+        2U, mock_input_context->last_update_composition_arg().selection.end());
     EXPECT_TRUE(mock_input_context->last_update_composition_arg().is_visible);
 
     const ui::CompositionText& composition_text =

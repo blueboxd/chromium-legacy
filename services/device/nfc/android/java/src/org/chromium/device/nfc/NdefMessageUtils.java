@@ -4,6 +4,7 @@
 
 package org.chromium.device.nfc;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.nfc.FormatException;
 
@@ -118,7 +119,7 @@ public final class NdefMessageUtils {
                 return new android.nfc.NdefRecord(android.nfc.NdefRecord.TNF_WELL_KNOWN,
                         android.nfc.NdefRecord.RTD_TEXT, null, payload);
             case RECORD_TYPE_MIME:
-                return android.nfc.NdefRecord.createMime(record.mediaType, record.data);
+                return createPlatformMimeRecord(record.mediaType, record.id, record.data);
             case RECORD_TYPE_UNKNOWN:
                 return new android.nfc.NdefRecord(
                         android.nfc.NdefRecord.TNF_UNKNOWN, null, null, record.data);
@@ -298,6 +299,31 @@ public final class NdefMessageUtils {
                     ApiCompatibilityUtils.getBytesUtf8(uriString), null, null);
         }
         return android.nfc.NdefRecord.createUri(new String(url, "UTF-8"));
+    }
+
+    /**
+     * Creates a TNF_MIME_MEDIA android.nfc.NdefRecord.
+     */
+    public static android.nfc.NdefRecord createPlatformMimeRecord(
+            String mimeType, String id, byte[] payload) {
+        // Already verified by NdefMessageValidator.
+        assert mimeType != null && !mimeType.isEmpty();
+
+        // We only do basic MIME type validation: trying to follow the
+        // RFCs strictly only ends in tears, since there are lots of MIME
+        // types in common use that are not strictly valid as per RFC rules.
+        mimeType = Intent.normalizeMimeType(mimeType);
+        if (mimeType.length() == 0) throw new IllegalArgumentException("mimeType is empty");
+        int slashIndex = mimeType.indexOf('/');
+        if (slashIndex == 0) throw new IllegalArgumentException("mimeType must have major type");
+        if (slashIndex == mimeType.length() - 1) {
+            throw new IllegalArgumentException("mimeType must have minor type");
+        }
+        // missing '/' is allowed
+
+        return new android.nfc.NdefRecord(android.nfc.NdefRecord.TNF_MIME_MEDIA,
+                ApiCompatibilityUtils.getBytesUtf8(mimeType),
+                id == null ? null : ApiCompatibilityUtils.getBytesUtf8(id), payload);
     }
 
     /**

@@ -159,18 +159,22 @@ GL_APICALL void         GL_APIENTRY glShallowFinishCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glShallowFlushCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glOrderingBarrierCHROMIUM (void);
 
-// Extensions WEBGL_multi_draw and WEBGL_multi_draw_instanced
+// Extensions WEBGL_multi_draw
 // WEBGL entrypoints are public, CHROMIUM entrypoints are internal to the command buffer
 GL_APICALL void         GL_APIENTRY glMultiDrawBeginCHROMIUM (GLsizei drawcount);
 GL_APICALL void         GL_APIENTRY glMultiDrawEndCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glMultiDrawArraysCHROMIUM (GLenumDrawMode mode, const GLint* firsts, const GLsizei* counts, GLsizei drawcount);
 GL_APICALL void         GL_APIENTRY glMultiDrawArraysInstancedCHROMIUM (GLenumDrawMode mode, const GLint* firsts, const GLsizei* counts, const GLsizei* instance_counts, GLsizei drawcount);
+GL_APICALL void         GL_APIENTRY glMultiDrawArraysInstancedBaseInstanceCHROMIUM (GLenumDrawMode mode, const GLint* firsts, const GLsizei* counts, const GLsizei* instance_counts, const GLuint* baseinstances, GLsizei drawcount);
 GL_APICALL void         GL_APIENTRY glMultiDrawElementsCHROMIUM (GLenumDrawMode mode, const GLsizei* counts, GLenumIndexType type, const GLsizei* offsets, GLsizei drawcount);
 GL_APICALL void         GL_APIENTRY glMultiDrawElementsInstancedCHROMIUM (GLenumDrawMode mode, const GLsizei* counts, GLenumIndexType type, const GLsizei* offsets, const GLsizei* instance_counts, GLsizei drawcount);
+GL_APICALL void         GL_APIENTRY glMultiDrawElementsInstancedBaseVertexBaseInstanceCHROMIUM (GLenumDrawMode mode, const GLsizei* counts, GLenumIndexType type, const GLsizei* offsets, const GLsizei* instance_counts, GLint* basevertices, GLuint* baseinstances, GLsizei drawcount);
 GL_APICALL void         GL_APIENTRY glMultiDrawArraysWEBGL (GLenumDrawMode mode, const GLint* firsts, const GLsizei* counts, GLsizei drawcount);
 GL_APICALL void         GL_APIENTRY glMultiDrawArraysInstancedWEBGL (GLenumDrawMode mode, const GLint* firsts, const GLsizei* counts, const GLsizei* instance_counts, GLsizei drawcount);
+GL_APICALL void         GL_APIENTRY glMultiDrawArraysInstancedBaseInstanceWEBGL (GLenumDrawMode mode, const GLint* firsts, const GLsizei* counts, const GLsizei* instance_counts, const GLuint* baseinstances, GLsizei drawcount);
 GL_APICALL void         GL_APIENTRY glMultiDrawElementsWEBGL (GLenumDrawMode mode, const GLsizei* counts, GLenumIndexType type, const GLsizei* offsets, GLsizei drawcount);
 GL_APICALL void         GL_APIENTRY glMultiDrawElementsInstancedWEBGL (GLenumDrawMode mode, const GLsizei* counts, GLenumIndexType type, const GLsizei* offsets, const GLsizei* instance_counts, GLsizei drawcount);
+GL_APICALL void         GL_APIENTRY glMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGL (GLenumDrawMode mode, const GLsizei* counts, GLenumIndexType type, const GLsizei* offsets, const GLsizei* instance_counts, const GLint* basevertices, const GLuint* baseinstances, GLsizei drawcount);
 
 GL_APICALL void         GL_APIENTRY glStencilFunc (GLenumCmpFunction func, GLint ref, GLuint mask);
 GL_APICALL void         GL_APIENTRY glStencilFuncSeparate (GLenumFaceType face, GLenumCmpFunction func, GLint ref, GLuint mask);
@@ -314,7 +318,9 @@ GL_APICALL void         GL_APIENTRY glPostSubBufferCHROMIUM (GLuint64 swap_id, G
 GL_APICALL void         GL_APIENTRY glCopyTextureCHROMIUM (GLuint source_id, GLint source_level, GLenumTextureTarget dest_target, GLuint dest_id, GLint dest_level, GLintTextureInternalFormat internalformat, GLenumPixelType dest_type, GLboolean unpack_flip_y, GLboolean unpack_premultiply_alpha, GLboolean unpack_unmultiply_alpha);
 GL_APICALL void         GL_APIENTRY glCopySubTextureCHROMIUM (GLuint source_id, GLint source_level, GLenumTextureTarget dest_target, GLuint dest_id, GLint dest_level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height, GLboolean unpack_flip_y, GLboolean unpack_premultiply_alpha, GLboolean unpack_unmultiply_alpha);
 GL_APICALL void         GL_APIENTRY glDrawArraysInstancedANGLE (GLenumDrawMode mode, GLint first, GLsizei count, GLsizei primcount);
+GL_APICALL void         GL_APIENTRY glDrawArraysInstancedBaseInstanceANGLE (GLenumDrawMode mode, GLint first, GLsizei count, GLsizei primcount, GLuint baseinstance);
 GL_APICALL void         GL_APIENTRY glDrawElementsInstancedANGLE (GLenumDrawMode mode, GLsizei count, GLenumIndexType type, const void* indices, GLsizei primcount);
+GL_APICALL void         GL_APIENTRY glDrawElementsInstancedBaseVertexBaseInstanceANGLE (GLenumDrawMode mode, GLsizei count, GLenumIndexType type, const void* indices, GLsizei primcount, GLint basevertex, GLuint baseinstance);
 GL_APICALL void         GL_APIENTRY glVertexAttribDivisorANGLE (GLuint index, GLuint divisor);
 GL_APICALL void         GL_APIENTRY glProduceTextureDirectCHROMIUM (GLidBindTexture texture, GLbyte* mailbox);
 GL_APICALL GLuint       GL_APIENTRY glCreateAndConsumeTextureCHROMIUM (const GLbyte* mailbox);

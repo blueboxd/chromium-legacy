@@ -19,8 +19,9 @@ TellAction::TellAction(ActionDelegate* delegate, const ActionProto& proto)
 TellAction::~TellAction() {}
 
 void TellAction::InternalProcessAction(ProcessActionCallback callback) {
-  // tell.message in the proto is localized.
-  delegate_->SetStatusMessage(proto_.tell().message());
+  if (proto_.tell().has_message()) {
+    delegate_->SetStatusMessage(proto_.tell().message());
+  }
 
   if (proto_.tell().needs_ui())
     delegate_->RequireUI();

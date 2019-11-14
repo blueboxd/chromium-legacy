@@ -67,6 +67,8 @@ namespace GetSetting = extensions::api::input_method_private::GetSetting;
 namespace SetSetting = extensions::api::input_method_private::SetSetting;
 namespace SetCompositionRange =
     extensions::api::input_method_private::SetCompositionRange;
+namespace SetSelectionRange =
+    extensions::api::input_method_private::SetSelectionRange;
 namespace OnSettingsChanged =
     extensions::api::input_method_private::OnSettingsChanged;
 
@@ -78,6 +80,7 @@ namespace {
 const char kXkbPrefix[] = "xkb:";
 const char kErrorFailToShowInputView[] =
     "Unable to show the input view window.";
+const char kInputImeApiEngineNotAvaliable[] = "Engine is not available";
 
 }  // namespace
 
@@ -388,6 +391,35 @@ InputMethodPrivateSetCompositionRangeFunction::Run() {
       results->Append(std::make_unique<base::Value>(false));
       return RespondNow(ErrorWithArguments(std::move(results), error));
     }
+  }
+  return RespondNow(OneArgument(std::make_unique<base::Value>(true)));
+}
+
+ExtensionFunction::ResponseAction
+InputMethodPrivateSetSelectionRangeFunction::Run() {
+  InputImeEventRouter* event_router =
+      GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()));
+  InputMethodEngineBase* engine =
+      event_router ? event_router->GetEngineIfActive(extension_id()) : nullptr;
+
+  if (!engine) {
+    auto results = std::make_unique<base::ListValue>();
+    results->Append(std::make_unique<base::Value>(false));
+    return RespondNow(
+        ErrorWithArguments(std::move(results), kInputImeApiEngineNotAvaliable));
+  }
+
+  std::unique_ptr<SetSelectionRange::Params> parent_params(
+      SetSelectionRange::Params::Create(*args_));
+  const SetSelectionRange::Params::Parameters& params =
+      parent_params->parameters;
+
+  std::string error;
+  if (!engine->SetSelectionRange(params.context_id, *params.selection_start,
+                                 *params.selection_end, &error)) {
+    auto results = std::make_unique<base::ListValue>();
+    results->Append(std::make_unique<base::Value>(false));
+    return RespondNow(ErrorWithArguments(std::move(results), error));
   }
   return RespondNow(OneArgument(std::make_unique<base::Value>(true)));
 }

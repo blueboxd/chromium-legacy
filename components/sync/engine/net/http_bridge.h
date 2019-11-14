@@ -196,19 +196,19 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
 class HttpBridgeFactory : public HttpPostProviderFactory {
  public:
   HttpBridgeFactory(
+      const std::string& user_agent,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           url_loader_factory_info,
       const NetworkTimeUpdateCallback& network_time_update_callback);
   ~HttpBridgeFactory() override;
 
   // HttpPostProviderFactory:
-  void Init(const std::string& user_agent) override;
   HttpPostProviderInterface* Create() override;
   void Destroy(HttpPostProviderInterface* http) override;
 
  private:
   // The user agent to use in all requests.
-  std::string user_agent_;
+  const std::string user_agent_;
 
   // The URL loader factory used for making all requests.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;

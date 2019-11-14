@@ -61,10 +61,8 @@ void MojoInterfaceInterceptor::start(ExceptionState& exception_state) {
   std::string interface_name = interface_name_.Utf8();
 
   if (process_scope_) {
-    ThreadSafeBrowserInterfaceBrokerProxy* proxy =
-        Platform::Current()->GetBrowserInterfaceBrokerProxy();
     started_ = true;
-    if (!proxy->SetBinderForTesting(
+    if (!Platform::Current()->GetBrowserInterfaceBroker()->SetBinderForTesting(
             interface_name,
             WTF::BindRepeating(&MojoInterfaceInterceptor::OnInterfaceRequest,
                                WrapWeakPersistent(this)))) {
@@ -121,7 +119,7 @@ void MojoInterfaceInterceptor::stop() {
   std::string interface_name = interface_name_.Utf8();
 
   if (process_scope_) {
-    Platform::Current()->GetBrowserInterfaceBrokerProxy()->SetBinderForTesting(
+    Platform::Current()->GetBrowserInterfaceBroker()->SetBinderForTesting(
         interface_name, {});
     return;
   }

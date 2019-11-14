@@ -1778,6 +1778,27 @@ error::Error GLES2DecoderPassthroughImpl::HandleDrawArraysInstancedANGLE(
   return DoDrawArraysInstancedANGLE(mode, first, count, primcount);
 }
 
+error::Error
+GLES2DecoderPassthroughImpl::HandleDrawArraysInstancedBaseInstanceANGLE(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  if (!features().webgl_draw_instanced_base_vertex_base_instance) {
+    return error::kUnknownCommand;
+  }
+  const volatile gles2::cmds::DrawArraysInstancedBaseInstanceANGLE& c =
+      *static_cast<
+          const volatile gles2::cmds::DrawArraysInstancedBaseInstanceANGLE*>(
+          cmd_data);
+  GLenum mode = static_cast<GLenum>(c.mode);
+  GLint first = static_cast<GLint>(c.first);
+  GLsizei count = static_cast<GLsizei>(c.count);
+  GLsizei primcount = static_cast<GLsizei>(c.primcount);
+  GLuint baseinstance = static_cast<GLsizei>(c.baseinstance);
+
+  return DoDrawArraysInstancedBaseInstanceANGLE(mode, first, count, primcount,
+                                                baseinstance);
+}
+
 error::Error GLES2DecoderPassthroughImpl::HandleDrawElementsInstancedANGLE(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
@@ -1795,6 +1816,30 @@ error::Error GLES2DecoderPassthroughImpl::HandleDrawElementsInstancedANGLE(
   GLsizei primcount = static_cast<GLsizei>(c.primcount);
 
   return DoDrawElementsInstancedANGLE(mode, count, type, indices, primcount);
+}
+
+error::Error GLES2DecoderPassthroughImpl::
+    HandleDrawElementsInstancedBaseVertexBaseInstanceANGLE(
+        uint32_t immediate_data_size,
+        const volatile void* cmd_data) {
+  if (!features().webgl_draw_instanced_base_vertex_base_instance) {
+    return error::kUnknownCommand;
+  }
+  const volatile gles2::cmds::DrawElementsInstancedBaseVertexBaseInstanceANGLE&
+      c = *static_cast<const volatile gles2::cmds::
+                           DrawElementsInstancedBaseVertexBaseInstanceANGLE*>(
+          cmd_data);
+  GLenum mode = static_cast<GLenum>(c.mode);
+  GLsizei count = static_cast<GLsizei>(c.count);
+  GLenum type = static_cast<GLenum>(c.type);
+  const GLvoid* indices =
+      reinterpret_cast<const GLvoid*>(static_cast<uintptr_t>(c.index_offset));
+  GLsizei primcount = static_cast<GLsizei>(c.primcount);
+  GLsizei basevertex = static_cast<GLsizei>(c.basevertex);
+  GLsizei baseinstance = static_cast<GLsizei>(c.baseinstance);
+
+  return DoDrawElementsInstancedBaseVertexBaseInstanceANGLE(
+      mode, count, type, indices, primcount, basevertex, baseinstance);
 }
 
 error::Error GLES2DecoderPassthroughImpl::HandleMultiDrawArraysCHROMIUM(
@@ -1878,6 +1923,62 @@ GLES2DecoderPassthroughImpl::HandleMultiDrawArraysInstancedCHROMIUM(
   }
   if (!multi_draw_manager_->MultiDrawArraysInstanced(
           mode, firsts, counts, instance_counts, drawcount)) {
+    return error::kInvalidArguments;
+  }
+  return error::kNoError;
+}
+
+error::Error
+GLES2DecoderPassthroughImpl::HandleMultiDrawArraysInstancedBaseInstanceCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::MultiDrawArraysInstancedBaseInstanceCHROMIUM& c =
+      *static_cast<const volatile gles2::cmds::
+                       MultiDrawArraysInstancedBaseInstanceCHROMIUM*>(cmd_data);
+  if (!features().webgl_multi_draw_instanced_base_vertex_base_instance) {
+    return error::kUnknownCommand;
+  }
+
+  GLenum mode = static_cast<GLenum>(c.mode);
+  GLsizei drawcount = static_cast<GLsizei>(c.drawcount);
+
+  uint32_t firsts_size, counts_size, instance_counts_size, baseinstances_size;
+  base::CheckedNumeric<uint32_t> checked_size(drawcount);
+  if (!(checked_size * sizeof(GLint)).AssignIfValid(&firsts_size)) {
+    return error::kOutOfBounds;
+  }
+  if (!(checked_size * sizeof(GLsizei)).AssignIfValid(&counts_size)) {
+    return error::kOutOfBounds;
+  }
+  if (!(checked_size * sizeof(GLsizei)).AssignIfValid(&instance_counts_size)) {
+    return error::kOutOfBounds;
+  }
+  if (!(checked_size * sizeof(GLuint)).AssignIfValid(&baseinstances_size)) {
+    return error::kOutOfBounds;
+  }
+  const GLint* firsts = GetSharedMemoryAs<const GLint*>(
+      c.firsts_shm_id, c.firsts_shm_offset, firsts_size);
+  const GLsizei* counts = GetSharedMemoryAs<const GLsizei*>(
+      c.counts_shm_id, c.counts_shm_offset, counts_size);
+  const GLsizei* instance_counts = GetSharedMemoryAs<const GLsizei*>(
+      c.instance_counts_shm_id, c.instance_counts_shm_offset,
+      instance_counts_size);
+  const GLuint* baseinstances = GetSharedMemoryAs<const GLuint*>(
+      c.baseinstances_shm_id, c.baseinstances_shm_offset, baseinstances_size);
+  if (firsts == nullptr) {
+    return error::kOutOfBounds;
+  }
+  if (counts == nullptr) {
+    return error::kOutOfBounds;
+  }
+  if (instance_counts == nullptr) {
+    return error::kOutOfBounds;
+  }
+  if (baseinstances == nullptr) {
+    return error::kOutOfBounds;
+  }
+  if (!multi_draw_manager_->MultiDrawArraysInstancedBaseInstance(
+          mode, firsts, counts, instance_counts, baseinstances, drawcount)) {
     return error::kInvalidArguments;
   }
   return error::kNoError;
@@ -1967,6 +2068,70 @@ GLES2DecoderPassthroughImpl::HandleMultiDrawElementsInstancedCHROMIUM(
   }
   if (!multi_draw_manager_->MultiDrawElementsInstanced(
           mode, counts, type, offsets, instance_counts, drawcount)) {
+    return error::kInvalidArguments;
+  }
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderPassthroughImpl::
+    HandleMultiDrawElementsInstancedBaseVertexBaseInstanceCHROMIUM(
+        uint32_t immediate_data_size,
+        const volatile void* cmd_data) {
+  const volatile gles2::cmds::
+      MultiDrawElementsInstancedBaseVertexBaseInstanceCHROMIUM& c =
+          *static_cast<
+              const volatile gles2::cmds::
+                  MultiDrawElementsInstancedBaseVertexBaseInstanceCHROMIUM*>(
+              cmd_data);
+  if (!features().webgl_multi_draw_instanced_base_vertex_base_instance) {
+    return error::kUnknownCommand;
+  }
+
+  GLenum mode = static_cast<GLenum>(c.mode);
+  GLenum type = static_cast<GLenum>(c.type);
+  GLsizei drawcount = static_cast<GLsizei>(c.drawcount);
+
+  uint32_t counts_size, offsets_size, instance_counts_size, basevertices_size,
+      baseinstances_size;
+  base::CheckedNumeric<uint32_t> checked_size(drawcount);
+  if (!(checked_size * sizeof(GLsizei)).AssignIfValid(&counts_size)) {
+    return error::kOutOfBounds;
+  }
+  if (!(checked_size * sizeof(GLsizei)).AssignIfValid(&offsets_size)) {
+    return error::kOutOfBounds;
+  }
+  if (!(checked_size * sizeof(GLsizei)).AssignIfValid(&instance_counts_size)) {
+    return error::kOutOfBounds;
+  }
+  if (!(checked_size * sizeof(GLint)).AssignIfValid(&basevertices_size)) {
+    return error::kOutOfBounds;
+  }
+  if (!(checked_size * sizeof(GLuint)).AssignIfValid(&baseinstances_size)) {
+    return error::kOutOfBounds;
+  }
+  const GLsizei* counts = GetSharedMemoryAs<const GLsizei*>(
+      c.counts_shm_id, c.counts_shm_offset, counts_size);
+  const GLsizei* offsets = GetSharedMemoryAs<const GLsizei*>(
+      c.offsets_shm_id, c.offsets_shm_offset, offsets_size);
+  const GLsizei* instance_counts = GetSharedMemoryAs<const GLsizei*>(
+      c.instance_counts_shm_id, c.instance_counts_shm_offset,
+      instance_counts_size);
+  const GLint* basevertices = GetSharedMemoryAs<const GLint*>(
+      c.basevertices_shm_id, c.basevertices_shm_offset, basevertices_size);
+  const GLuint* baseinstances = GetSharedMemoryAs<const GLuint*>(
+      c.baseinstances_shm_id, c.baseinstances_shm_offset, baseinstances_size);
+  if (counts == nullptr) {
+    return error::kOutOfBounds;
+  }
+  if (offsets == nullptr) {
+    return error::kOutOfBounds;
+  }
+  if (instance_counts == nullptr) {
+    return error::kOutOfBounds;
+  }
+  if (!multi_draw_manager_->MultiDrawElementsInstancedBaseVertexBaseInstance(
+          mode, counts, type, offsets, instance_counts, basevertices,
+          baseinstances, drawcount)) {
     return error::kInvalidArguments;
   }
   return error::kNoError;

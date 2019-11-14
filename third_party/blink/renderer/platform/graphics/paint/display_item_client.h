@@ -123,6 +123,7 @@ class PLATFORM_EXPORT DisplayItemClient {
 
  private:
   friend class FakeDisplayItemClient;
+  friend class ObjectPaintInvalidatorTest;
   friend class PaintController;
 
   void Validate() const {

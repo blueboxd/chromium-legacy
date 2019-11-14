@@ -169,6 +169,10 @@ class MODULES_EXPORT MediaStreamAudioProcessor
   // Receives processing output.
   std::unique_ptr<MediaStreamAudioBus> output_bus_;
 
+  // Indicates whether the audio processor playout signal has ever had
+  // asymmetric left and right channel content.
+  bool assume_upmixed_mono_playout_ = true;
+
   // These are mutated on the main render thread in OnCaptureFormatChanged().
   // The caller guarantees this does not run concurrently with accesses on the
   // capture audio thread.

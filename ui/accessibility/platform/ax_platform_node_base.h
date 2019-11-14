@@ -376,6 +376,7 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // The greatest of the two offsets is one past the last character of the
   // selection.)
   void GetSelectionOffsets(int* selection_start, int* selection_end);
+  void GetSelectionOffsetsFromTree(int* selection_start, int* selection_end);
 
   // Returns the hyperlink at the given text position, or nullptr if no
   // hyperlink can be found.

@@ -408,6 +408,8 @@ Program::Program(ProgramManager* manager, GLuint service_id)
       link_status_(false),
       uniforms_cleared_(false),
       draw_id_uniform_location_(-1),
+      base_vertex_uniform_location_(-1),
+      base_instance_uniform_location_(-1),
       transform_feedback_buffer_mode_(GL_NONE),
       effective_transform_feedback_buffer_mode_(GL_NONE),
       fragment_output_type_mask_(0u),
@@ -436,6 +438,8 @@ void Program::Reset() {
   fragment_output_type_mask_ = 0u;
   fragment_output_written_mask_ = 0u;
   draw_id_uniform_location_ = -1;
+  base_vertex_uniform_location_ = -1;
+  base_instance_uniform_location_ = -1;
   ClearVertexInputMasks();
 }
 
@@ -578,6 +582,24 @@ void Program::UpdateDrawIDUniformLocation() {
   draw_id_uniform_location_ = -1;
   GLint array_index;
   GetUniformInfoByFakeLocation(fake_location, &draw_id_uniform_location_,
+                               &array_index);
+}
+
+void Program::UpdateBaseVertexUniformLocation() {
+  DCHECK(IsValid());
+  GLint fake_location = GetUniformFakeLocation("gl_BaseVertex");
+  base_vertex_uniform_location_ = -1;
+  GLint array_index;
+  GetUniformInfoByFakeLocation(fake_location, &base_vertex_uniform_location_,
+                               &array_index);
+}
+
+void Program::UpdateBaseInstanceUniformLocation() {
+  DCHECK(IsValid());
+  GLint fake_location = GetUniformFakeLocation("gl_BaseInstance");
+  base_instance_uniform_location_ = -1;
+  GLint array_index;
+  GetUniformInfoByFakeLocation(fake_location, &base_instance_uniform_location_,
                                &array_index);
 }
 
@@ -2770,6 +2792,16 @@ void ProgramManager::ClearUniforms(Program* program) {
 void ProgramManager::UpdateDrawIDUniformLocation(Program* program) {
   DCHECK(program);
   program->UpdateDrawIDUniformLocation();
+}
+
+void ProgramManager::UpdateBaseVertexUniformLocation(Program* program) {
+  DCHECK(program);
+  program->UpdateBaseVertexUniformLocation();
+}
+
+void ProgramManager::UpdateBaseInstanceUniformLocation(Program* program) {
+  DCHECK(program);
+  program->UpdateBaseInstanceUniformLocation();
 }
 
 int32_t ProgramManager::MakeFakeLocation(int32_t index, int32_t element) {

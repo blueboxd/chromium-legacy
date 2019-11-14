@@ -355,11 +355,13 @@ SECURITY_STATUS SSPILibraryDefault::FreeContextBuffer(PVOID pvContextBuffer) {
   return ::FreeContextBuffer(pvContextBuffer);
 }
 
-HttpAuthSSPI::HttpAuthSSPI(SSPILibrary* library, const std::string& scheme)
+HttpAuthSSPI::HttpAuthSSPI(SSPILibrary* library, HttpAuth::Scheme scheme)
     : library_(library),
       scheme_(scheme),
       delegation_type_(DelegationType::kNone) {
   DCHECK(library_);
+  DCHECK(scheme_ == HttpAuth::AUTH_SCHEME_NEGOTIATE ||
+         scheme_ == HttpAuth::AUTH_SCHEME_NTLM);
   SecInvalidateHandle(&cred_);
   SecInvalidateHandle(&ctxt_);
 }
@@ -437,7 +439,11 @@ int HttpAuthSSPI::GenerateAuthToken(const AuthCredentials* credentials,
   base::Base64Encode(encode_input, &encode_output);
   // OK, we are done with |out_buf|
   free(out_buf);
-  *auth_token = scheme_ + " " + encode_output;
+  if (scheme_ == HttpAuth::AUTH_SCHEME_NEGOTIATE) {
+    *auth_token = "Negotiate " + encode_output;
+  } else {
+    *auth_token = "NTLM " + encode_output;
+  }
   return OK;
 }
 

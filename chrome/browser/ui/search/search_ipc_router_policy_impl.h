@@ -58,7 +58,6 @@ class SearchIPCRouterPolicyImpl : public SearchIPCRouter::Policy {
   bool ShouldProcessQueryAutocomplete(bool is_active_tab) override;
   bool ShouldProcessStopAutocomplete() override;
   bool ShouldProcessBlocklistPromo() override;
-  bool ShouldProcessOpenAutocompleteMatch(bool is_active_tab) override;
   bool ShouldProcessDeleteAutocompleteMatch() override;
 
   // Used by unit tests.

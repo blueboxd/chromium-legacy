@@ -857,18 +857,6 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::Uniform4f, 0>(
 }
 
 template <>
-void GLES2DecoderTestBase::SpecializedSetup<cmds::Uniform4i, 0>(
-    bool /* valid */) {
-  SetupShaderForUniform(GL_INT_VEC4);
-}
-
-template <>
-void GLES2DecoderTestBase::SpecializedSetup<cmds::Uniform4fvImmediate, 0>(
-    bool /* valid */) {
-  SetupShaderForUniform(GL_FLOAT_VEC4);
-}
-
-template <>
 void GLES2DecoderTestBase::SpecializedSetup<cmds::UniformMatrix2fvImmediate, 0>(
     bool /* valid */) {
   SetupShaderForUniform(GL_FLOAT_MAT2);

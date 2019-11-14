@@ -4375,7 +4375,7 @@ LocalFrameUkmAggregator& LocalFrameView::EnsureUkmAggregator() {
 void LocalFrameView::OnFirstContentfulPaint() {
   GetPage()->GetChromeClient().StopDeferringCommits(
       *frame_, cc::PaintHoldingCommitTrigger::kFirstContentfulPaint);
-  EnsureUkmAggregator().DidReachFirstContentfulPaint();
+  EnsureUkmAggregator().DidReachFirstContentfulPaint(frame_->IsMainFrame());
 }
 
 void LocalFrameView::RegisterForLifecycleNotifications(

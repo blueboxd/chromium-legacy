@@ -91,11 +91,6 @@ struct RoleEntry {
 const RoleEntry kRoles[] = {
     {"alert", ax::mojom::Role::kAlert},
     {"alertdialog", ax::mojom::Role::kAlertDialog},
-    {"annotation-attribution", ax::mojom::Role::kAnnotationAttribution},
-    {"annotation-commentary", ax::mojom::Role::kAnnotationCommentary},
-    {"annotation-presence", ax::mojom::Role::kAnnotationPresence},
-    {"annotation-revision", ax::mojom::Role::kAnnotationRevision},
-    {"annotation-suggestion", ax::mojom::Role::kAnnotationSuggestion},
     {"application", ax::mojom::Role::kApplication},
     {"article", ax::mojom::Role::kArticle},
     {"banner", ax::mojom::Role::kBanner},
@@ -107,6 +102,8 @@ const RoleEntry kRoles[] = {
     {"checkbox", ax::mojom::Role::kCheckBox},
     {"columnheader", ax::mojom::Role::kColumnHeader},
     {"combobox", ax::mojom::Role::kComboBoxGrouping},
+    {"comment", ax::mojom::Role::kComment},
+    {"commentsection", ax::mojom::Role::kCommentSection},
     {"complementary", ax::mojom::Role::kComplementary},
     {"contentinfo", ax::mojom::Role::kContentInfo},
     {"definition", ax::mojom::Role::kDefinition},
@@ -190,6 +187,7 @@ const RoleEntry kRoles[] = {
     {"menuitem", ax::mojom::Role::kMenuItem},
     {"menuitemcheckbox", ax::mojom::Role::kMenuItemCheckBox},
     {"menuitemradio", ax::mojom::Role::kMenuItemRadio},
+    {"mark", ax::mojom::Role::kMark},
     {"meter", ax::mojom::Role::kMeter},
     {"navigation", ax::mojom::Role::kNavigation},
     {"none", ax::mojom::Role::kNone},
@@ -203,6 +201,7 @@ const RoleEntry kRoles[] = {
     // TODO(accessibility) region should only be mapped
     // if name present. See http://crbug.com/840819.
     {"region", ax::mojom::Role::kRegion},
+    {"revision", ax::mojom::Role::kRevision},
     {"row", ax::mojom::Role::kRow},
     {"rowheader", ax::mojom::Role::kRowHeader},
     {"scrollbar", ax::mojom::Role::kScrollBar},
@@ -213,6 +212,7 @@ const RoleEntry kRoles[] = {
     {"spinbutton", ax::mojom::Role::kSpinButton},
     {"status", ax::mojom::Role::kStatus},
     {"strong", ax::mojom::Role::kStrong},
+    {"suggestion", ax::mojom::Role::kSuggestion},
     {"switch", ax::mojom::Role::kSwitch},
     {"tab", ax::mojom::Role::kTab},
     {"table", ax::mojom::Role::kTable},
@@ -240,11 +240,8 @@ const InternalRoleEntry kInternalRoles[] = {
     {ax::mojom::Role::kAlertDialog, "AlertDialog"},
     {ax::mojom::Role::kAlert, "Alert"},
     {ax::mojom::Role::kAnchor, "Anchor"},
-    {ax::mojom::Role::kAnnotationAttribution, "kAnnotationAttribution"},
-    {ax::mojom::Role::kAnnotationCommentary, "AnnotationCommentary"},
-    {ax::mojom::Role::kAnnotationPresence, "AnnotationPresence"},
-    {ax::mojom::Role::kAnnotationRevision, "AnnotationRevision"},
-    {ax::mojom::Role::kAnnotationSuggestion, "AnnotationSuggestion"},
+    {ax::mojom::Role::kComment, "Comment"},
+    {ax::mojom::Role::kComment, "CommentSection"},
     {ax::mojom::Role::kApplication, "Application"},
     {ax::mojom::Role::kArticle, "Article"},
     {ax::mojom::Role::kAudio, "Audio"},
@@ -392,6 +389,7 @@ const InternalRoleEntry kInternalRoles[] = {
     {ax::mojom::Role::kRadioButton, "RadioButton"},
     {ax::mojom::Role::kRadioGroup, "RadioGroup"},
     {ax::mojom::Role::kRegion, "Region"},
+    {ax::mojom::Role::kRevision, "Revision"},
     {ax::mojom::Role::kRootWebArea, "WebArea"},
     {ax::mojom::Role::kRowHeader, "RowHeader"},
     {ax::mojom::Role::kRow, "Row"},
@@ -410,6 +408,7 @@ const InternalRoleEntry kInternalRoles[] = {
     {ax::mojom::Role::kStaticText, "StaticText"},
     {ax::mojom::Role::kStatus, "Status"},
     {ax::mojom::Role::kStrong, "Strong"},
+    {ax::mojom::Role::kSuggestion, "Suggestion"},
     {ax::mojom::Role::kSwitch, "Switch"},
     {ax::mojom::Role::kTab, "Tab"},
     {ax::mojom::Role::kTabList, "TabList"},
@@ -2081,12 +2080,12 @@ ax::mojom::Role AXObject::DetermineAriaRoleAttribute() const {
   ax::mojom::Role role = AriaRoleToWebCoreRole(aria_role);
 
   switch (role) {
-    case ax::mojom::Role::kAnnotationAttribution:
-    case ax::mojom::Role::kAnnotationCommentary:
-    case ax::mojom::Role::kAnnotationPresence:
-    case ax::mojom::Role::kAnnotationRevision:
-    case ax::mojom::Role::kAnnotationSuggestion:
-      UseCounter::Count(GetDocument(), WebFeature::kARIAAnnotationRoles);
+    case ax::mojom::Role::kComment:
+    case ax::mojom::Role::kCommentSection:
+    case ax::mojom::Role::kMark:
+    case ax::mojom::Role::kRevision:
+    case ax::mojom::Role::kSuggestion:
+      UseCounter::Count(GetDocument(), WebFeature::kARIAAnnotations);
       if (!RuntimeEnabledFeatures::AccessibilityExposeARIAAnnotationsEnabled(
               GetDocument())) {
         role = ax::mojom::Role::kGenericContainer;
@@ -3441,11 +3440,6 @@ bool AXObject::NameFromContents(bool recursive) const {
     // containers for many subobjects. Superset of nameFrom:author ARIA roles.
     case ax::mojom::Role::kAlert:
     case ax::mojom::Role::kAlertDialog:
-    case ax::mojom::Role::kAnnotationAttribution:
-    case ax::mojom::Role::kAnnotationCommentary:
-    case ax::mojom::Role::kAnnotationPresence:
-    case ax::mojom::Role::kAnnotationRevision:
-    case ax::mojom::Role::kAnnotationSuggestion:
     case ax::mojom::Role::kApplication:
     case ax::mojom::Role::kAudio:
     case ax::mojom::Role::kArticle:
@@ -3457,6 +3451,8 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::Role::kColorWell:
     case ax::mojom::Role::kColumn:
     case ax::mojom::Role::kComboBoxGrouping:
+    case ax::mojom::Role::kComment:
+    case ax::mojom::Role::kCommentSection:
     case ax::mojom::Role::kComplementary:
     case ax::mojom::Role::kContentInfo:
     case ax::mojom::Role::kDate:
@@ -3532,6 +3528,7 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::Role::kPane:
     case ax::mojom::Role::kProgressIndicator:
     case ax::mojom::Role::kRadioGroup:
+    case ax::mojom::Role::kRevision:
     case ax::mojom::Role::kRootWebArea:
     case ax::mojom::Role::kScrollBar:
     case ax::mojom::Role::kScrollView:
@@ -3543,6 +3540,7 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::Role::kStatus:
     case ax::mojom::Role::kSliderThumb:
     case ax::mojom::Role::kStrong:
+    case ax::mojom::Role::kSuggestion:
     case ax::mojom::Role::kSvgRoot:
     case ax::mojom::Role::kTable:
     case ax::mojom::Role::kTableHeaderContainer:

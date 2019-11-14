@@ -53,7 +53,7 @@ const base::Feature kCrostiniBackup{"CrostiniBackup",
 
 // Enables or disables Crostini using Buster container images.
 const base::Feature kCrostiniUseBusterImage{"CrostiniUseBusterImage",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables Crostini GPU support.
 const base::Feature kCrostiniGpuSupport{"CrostiniGpuSupport",
@@ -66,6 +66,10 @@ const base::Feature kCrostiniUsbAllowUnsupported{
 // Enables or disables the new WebUI Crostini installer.
 const base::Feature kCrostiniWebUIInstaller{"CrostiniWebUIInstaller",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables or disables the new WebUI Crostini upgrader.
+const base::Feature kCrostiniWebUIUpgrader{"CrostiniWebUIUpgrader",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Deprecates the CryptAuth v1 DeviceSync flow. Note: During the first phase
 // of the v2 DeviceSync rollout, v1 and v2 DeviceSync run in parallel. This flag

@@ -19,6 +19,8 @@ void FakeRemoteFrameHost::SetInheritedEffectiveTouchAction(
 void FakeRemoteFrameHost::VisibilityChanged(
     mojom::blink::FrameVisibility visibility) {}
 
+void FakeRemoteFrameHost::DidFocusFrame() {}
+
 void FakeRemoteFrameHost::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   receiver_.Bind(mojo::PendingAssociatedReceiver<mojom::blink::RemoteFrameHost>(

@@ -1078,21 +1078,6 @@
       <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'alert dialog' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_ALERTDIALOG_BRL">
         alrt dlg
       </message>
-      <message  desc="Accessibility role description for attribution, meaning authoring information tied to specific content" name="IDS_CHROMEVOX_ROLE_ANNOTATION_ATTRIBUTION">
-        Authoring info
-      </message>
-      <message desc="Accessibility role description for commentary" name="IDS_CHROMEVOX_ROLE_ANNOTATION_COMMENTARY">
-        Comments
-      </message>
-      <message desc="Accessibility role description for presence, meaning information about another collaborator who is currently reviewing or editing this content" name="IDS_CHROMEVOX_ROLE_ANNOTATION_PRESENCE">
-        Live presence
-      </message>
-      <message desc="Accessibility role description for revision, meaining historical change info tied to this content" name="IDS_CHROMEVOX_ROLE_ANNOTATION_REVISION">
-        Revision
-      </message>
-      <message desc="Accessibility role description for suggestion, meaning a suggested change to some content" name="IDS_CHROMEVOX_ROLE_ANNOTATION_SUGGESTION" >
-        Suggestion
-      </message>
       <message desc="Describes an element with the ARIA role button." name="IDS_CHROMEVOX_ROLE_BUTTON">
         Button
       </message>
@@ -1107,6 +1092,12 @@
       </message>
       <message desc="Describes an element with the ARIA role combobox." name="IDS_CHROMEVOX_ROLE_COMBOBOX">
         Combo box
+      </message>
+      <message desc="Accessibility role description for a single comment" name="IDS_CHROMEVOX_ROLE_COMMENT">
+        Comment
+      </message>
+      <message desc="Accessibility role description for a comment section" name="IDS_CHROMEVOX_ROLE_COMMENT_SECTION">
+        Comment section
       </message>
       <message desc="Accessibility role description for content deletion, meaning content that is has been or is suggested to be removed from a document, such as in a revision review" name="IDS_CHROMEVOX_ROLE_CONTENT_DELETION">
         Deletion
@@ -1348,6 +1339,9 @@
       <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'radio button group' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_RADIOGROUP_BRL">
         rdgrp
       </message>
+      <message desc="Accessibility role description for revision, meaning historical change info tied to this content" name="IDS_CHROMEVOX_ROLE_REVISION">
+        Revision
+      </message>
       <message desc="Describes an element with the ARIA role scrollbar." name="IDS_CHROMEVOX_ROLE_SCROLLBAR">
         Scroll bar
       </message>
@@ -1371,6 +1365,9 @@
       </message>
       <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'status' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_STATUS_BRL">
         sts
+      </message>
+      <message desc="Accessibility role description for suggestion, meaning a suggested change to some content" name="IDS_CHROMEVOX_ROLE_SUGGESTION" >
+        Suggestion
       </message>
       <message desc="Describes an element with the ARIA role tab." name="IDS_CHROMEVOX_ROLE_TAB" meaning="UI element">
         Tab

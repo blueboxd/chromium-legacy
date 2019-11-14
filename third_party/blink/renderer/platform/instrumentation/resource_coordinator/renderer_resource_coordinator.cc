@@ -29,7 +29,7 @@ void RendererResourceCoordinator::MaybeInitialize() {
   mojo::PendingRemote<
       performance_manager::mojom::blink::ProcessCoordinationUnit>
       remote;
-  platform->GetBrowserInterfaceBrokerProxy()->GetInterface(
+  platform->GetBrowserInterfaceBroker()->GetInterface(
       remote.InitWithNewPipeAndPassReceiver());
   g_renderer_resource_coordinator =
       new RendererResourceCoordinator(std::move(remote));

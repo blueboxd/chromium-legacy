@@ -25,9 +25,6 @@ IPC_SYNC_MESSAGE_ROUTED1_1(WebTestHostMsg_ReadFileToString,
 IPC_SYNC_MESSAGE_ROUTED1_1(WebTestHostMsg_RegisterIsolatedFileSystem,
                            std::vector<base::FilePath> /* absolute_filenames */,
                            std::string /* filesystem_id */)
-IPC_SYNC_MESSAGE_ROUTED1_0(
-    WebTestHostMsg_ExcludeSchemeFromRequestInitiatorSiteLockChecks,
-    std::string /* scheme */)
 
 IPC_MESSAGE_ROUTED0(WebTestHostMsg_ClearAllDatabases)
 IPC_MESSAGE_ROUTED1(WebTestHostMsg_SetDatabaseQuota, int /* quota */)

@@ -27,6 +27,7 @@
 #include "chrome/browser/apps/app_shim/app_shim_listener.h"
 #include "chrome/browser/apps/app_shim/app_shim_termination_manager.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
+#include "chrome/browser/apps/platform_apps/app_shim_registry_mac.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -623,11 +624,12 @@ void ExtensionAppShimHandler::OnAppEnabled(const base::FilePath& profile_path,
 base::FilePath ExtensionAppShimHandler::SelectProfileForApp(
     const std::string& app_id,
     const base::FilePath& specified_profile_path,
-    const std::vector<base::FilePath>& profile_paths) const {
+    const std::vector<base::FilePath>& installed_profile_paths) const {
+  DCHECK(!installed_profile_paths.empty());
   // If the specified profile path is valid, and the app is installed for that
   // profile, then use the specified profile.
   if (!specified_profile_path.empty()) {
-    if (base::Contains(profile_paths, specified_profile_path))
+    if (base::Contains(installed_profile_paths, specified_profile_path))
       return specified_profile_path;
   }
 
@@ -643,9 +645,19 @@ base::FilePath ExtensionAppShimHandler::SelectProfileForApp(
     }
   }
 
-  // Otherwise, return the first profile. This assumes that |profile_paths|
-  // are sorted in most-recently-used order.
-  return profile_paths.front();
+  // See if there is a registered last-active profile.
+  {
+    std::set<base::FilePath> last_active_paths =
+        AppShimRegistry::Get()->GetLastActiveProfilesForApp(app_id);
+    if (!last_active_paths.empty()) {
+      // TODO(https://crbug.com/1001213): Allow opening multiple profiles at
+      // once.
+      return *last_active_paths.begin();
+    }
+  }
+
+  // Otherwise, return an arbitrary profile from |installed_profile_paths|.
+  return installed_profile_paths.front();
 }
 
 void ExtensionAppShimHandler::OnShimProcessConnectedAndProfilesRetrieved(

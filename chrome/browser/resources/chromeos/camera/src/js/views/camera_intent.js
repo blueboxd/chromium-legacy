@@ -29,7 +29,7 @@ cca.views.CameraIntent = class extends cca.views.Camera {
   /**
    * @param {!cca.intent.Intent} intent
    * @param {!cca.device.DeviceInfoUpdater} infoUpdater
-   * @param {!cca.device.PhotoResolPreferrer} photoPreferrer
+   * @param {!cca.device.PhotoConstraintsPreferrer} photoPreferrer
    * @param {!cca.device.VideoConstraintsPreferrer} videoPreferrer
    */
   constructor(intent, infoUpdater, photoPreferrer, videoPreferrer) {

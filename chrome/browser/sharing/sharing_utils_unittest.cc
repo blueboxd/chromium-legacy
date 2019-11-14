@@ -20,7 +20,7 @@ static std::unique_ptr<syncer::DeviceInfo> CreateFakeDeviceInfo(
       /*last_updated_timestamp=*/base::Time::Now(),
       /*send_tab_to_self_receiving_enabled=*/false,
       syncer::DeviceInfo::SharingInfo(
-          "fcm_token", "P256dh", "auth_secret",
+          "vapid_fcm_token", "sharing_fcm_token", "P256dh", "auth_secret",
           std::set<sync_pb::SharingSpecificFields::EnabledFeatures>{
               sync_pb::SharingSpecificFields::CLICK_TO_CALL}));
 }

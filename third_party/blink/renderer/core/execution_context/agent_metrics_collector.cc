@@ -163,7 +163,7 @@ void AgentMetricsCollector::ReportingTimerFired(TimerBase*) {
 mojo::Remote<blink::mojom::blink::AgentMetricsCollectorHost>&
 AgentMetricsCollector::GetAgentMetricsCollectorHost() {
   if (!agent_metrics_collector_host_) {
-    blink::Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+    blink::Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
         agent_metrics_collector_host_.BindNewPipeAndPassReceiver());
   }
   return agent_metrics_collector_host_;

@@ -110,6 +110,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
         base::debug::Alias(&referrer_policy);
         DEBUG_ALIAS_FOR_GURL(target_buf, request.url);
         DEBUG_ALIAS_FOR_GURL(referrer_buf, request.referrer);
+        DEBUG_ALIAS_FOR_GURL(
+            initiator_buf,
+            request.request_initiator.value_or(url::Origin()).GetURL())
         base::debug::DumpWithoutCrashing();
       }
     }

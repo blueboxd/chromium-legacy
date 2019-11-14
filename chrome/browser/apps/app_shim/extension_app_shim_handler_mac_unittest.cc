@@ -19,11 +19,13 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
+#include "chrome/browser/apps/platform_apps/app_shim_registry_mac.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/mac/app_shim.mojom.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/prefs/testing_pref_service.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/common/extension.h"
@@ -317,12 +319,18 @@ class TestHost : public AppShimHost {
 class ExtensionAppShimHandlerTestBase : public testing::Test {
  protected:
   ExtensionAppShimHandlerTestBase() {}
+  ~ExtensionAppShimHandlerTestBase() override {}
 
   void SetUp() override {
+    local_state_ = std::make_unique<TestingPrefServiceSimple>();
+    AppShimRegistry::Get()->RegisterLocalPrefs(local_state_->registry());
+    AppShimRegistry::Get()->SetPrefServiceAndUserDataDirForTesting(
+        local_state_.get(), base::FilePath("/User/Data/Dir/"));
+
     delegate_ = new MockDelegate;
     handler_.reset(new TestingExtensionAppShimHandler(delegate_));
-    profile_path_a_ = base::FilePath("Profile A");
-    profile_path_b_ = base::FilePath("Profile B");
+    profile_path_a_ = base::FilePath("/User/Data/Dir/Profile A");
+    profile_path_b_ = base::FilePath("/User/Data/Dir/Profile B");
     AppShimHostBootstrap::SetClient(handler_.get());
     bootstrap_aa_ = (new TestingAppShimHostBootstrap(
                          profile_path_a_, kTestAppIdA,
@@ -423,7 +431,7 @@ class ExtensionAppShimHandlerTestBase : public testing::Test {
         .WillRepeatedly(Return());
   }
 
-  ~ExtensionAppShimHandlerTestBase() override {
+  void TearDown() override {
     host_aa_unique_.reset();
     host_ab_unique_.reset();
     host_bb_unique_.reset();
@@ -443,6 +451,9 @@ class ExtensionAppShimHandlerTestBase : public testing::Test {
     delete bootstrap_aa_thethird_.get();
 
     AppShimHostBootstrap::SetClient(nullptr);
+
+    AppShimRegistry::Get()->SetPrefServiceAndUserDataDirForTesting(
+        nullptr, base::FilePath());
   }
 
   void DoShimLaunch(base::WeakPtr<TestingAppShimHostBootstrap> bootstrap,
@@ -531,6 +542,7 @@ class ExtensionAppShimHandlerTestBase : public testing::Test {
   scoped_refptr<const Extension> extension_b_;
 
  private:
+  std::unique_ptr<TestingPrefServiceSimple> local_state_;
   DISALLOW_COPY_AND_ASSIGN(ExtensionAppShimHandlerTestBase);
 };
 

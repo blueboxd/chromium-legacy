@@ -565,6 +565,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"force-unstacked-tabstrip", flag_descriptions::kForceUnstackedTabstripName,
      flag_descriptions::kForceUnstackedTabstripDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kForceUnstackedTabstrip)},
+    {"use-js-error-page", flag_descriptions::kUseJSForErrorPageName,
+     flag_descriptions::kUseJSForErrorPageDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(web::features::kUseJSForErrorPage)},
 };
 
 // Add all switches from experimental flags to |command_line|.

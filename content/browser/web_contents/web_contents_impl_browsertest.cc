@@ -1267,6 +1267,21 @@ class WebContentsSplitCacheWithFrameOriginBrowserTest
   base::test::ScopedFeatureList feature_list;
 };
 
+class WebContentsSplitCacheRegistrableDomainBrowserTest
+    : public WebContentsSplitCacheBrowserTest {
+ public:
+  WebContentsSplitCacheRegistrableDomainBrowserTest() {
+    feature_list.InitWithFeatures(
+        {net::features::kSplitCacheByNetworkIsolationKey,
+         net::features::kUseRegistrableDomainInNetworkIsolationKey,
+         net::features::kAppendFrameOriginToNetworkIsolationKey},
+        {});
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list;
+};
+
 class WebContentsSplitCacheBrowserTestEnabled
     : public WebContentsSplitCacheBrowserTest,
       public ::testing::WithParamInterface<bool> {
@@ -1439,6 +1454,27 @@ IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheWithFrameOriginBrowserTest,
   // (g.com, g.com).
   EXPECT_FALSE(TestResourceLoadFromPopup(GenURL("a.com", "/title1.html"),
                                          GenURL("g.com", "/title1.html")));
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheRegistrableDomainBrowserTest,
+                       SplitCache) {
+  // Load a cacheable resource for the first time, and it's not cached.
+  EXPECT_FALSE(TestResourceLoad(GenURL("a.foo.com", "/title1.html"), GURL()));
+
+  // The second time, it's cached when accessed with the same eTLD+1.
+  EXPECT_TRUE(TestResourceLoad(GenURL("b.foo.com", "/title1.html"), GURL()));
+
+  // Now load it from a different site, and the resource isn't cached.
+  EXPECT_FALSE(TestResourceLoad(GenURL("b.com", "/title1.html"), GURL()));
+
+  // Now load it from 3p.com, which is same-site to the cacheable
+  // resource. Still not supposed to be cached.
+  EXPECT_FALSE(TestResourceLoad(GenURL("3p.com", "/title1.html"), GURL()));
+
+  // Test case with iframe. This should be a cache hit since the network
+  // isolation key is (foo.com, foo.com) as in the first case.
+  EXPECT_TRUE(TestResourceLoad(GenURL("a.foo.com", "/title1.html"),
+                               GenURL("iframe.foo.com", "/title1.html")));
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsSplitCacheBrowserTestDisabled,

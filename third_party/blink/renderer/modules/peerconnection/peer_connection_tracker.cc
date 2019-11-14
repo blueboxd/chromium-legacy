@@ -652,7 +652,7 @@ PeerConnectionTracker::PeerConnectionTracker(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
     : next_local_id_(1),
       main_thread_task_runner_(std::move(main_thread_task_runner)) {
-  blink::Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+  blink::Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
       peer_connection_tracker_host_.BindNewPipeAndPassReceiver());
 }
 

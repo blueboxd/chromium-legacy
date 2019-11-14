@@ -108,7 +108,7 @@ WorkerThreadScheduler::WorkerThreadScheduler(
       ukm_source_id_(proxy ? proxy->ukm_source_id() : ukm::kInvalidSourceId) {
   if (base::SequencedTaskRunnerHandle::IsSet()) {
     mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> recorder;
-    Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+    Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
         recorder.InitWithNewPipeAndPassReceiver());
     ukm_recorder_ = std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder));
   }

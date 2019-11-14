@@ -96,6 +96,8 @@ class NET_EXPORT NetworkIsolationKey {
       WARN_UNUSED_RESULT;
 
  private:
+  void ReplaceOriginsWithRegistrableDomains();
+
   // Whether or not to use the |frame_origin_| as part of the key.
   bool use_frame_origin_;
 

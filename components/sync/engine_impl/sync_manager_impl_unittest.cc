@@ -880,7 +880,6 @@ class TestHttpPostProviderInterface : public HttpPostProviderInterface {
 class TestHttpPostProviderFactory : public HttpPostProviderFactory {
  public:
   ~TestHttpPostProviderFactory() override {}
-  void Init(const std::string& user_agent) override {}
   HttpPostProviderInterface* Create() override {
     return new TestHttpPostProviderInterface();
   }

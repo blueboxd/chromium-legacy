@@ -510,9 +510,6 @@ interface FrameHost {
                     ui.mojom.WindowOpenDisposition disposition,
                     gfx.mojom.Rect rect, bool opened_by_user_gesture);
 
-  // Sent by the renderer when the frame becomes focused.
-  FrameFocused();
-
   // Notifies the browser process about a new Content Security Policy that needs
   // to be applies to the frame. This message is sent when a frame commits
   // navigation to a new location (reporting accumulated policies from HTTP

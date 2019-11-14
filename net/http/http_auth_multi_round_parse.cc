@@ -14,20 +14,16 @@ namespace net {
 namespace {
 
 // Check that the scheme in the challenge matches the expected scheme
-bool SchemeIsValid(base::StringPiece scheme,
+bool SchemeIsValid(HttpAuth::Scheme scheme,
                    HttpAuthChallengeTokenizer* challenge) {
-  // There is no guarantee that challenge->scheme() is valid ASCII, but
-  // LowerCaseEqualsASCII will do the right thing even if it isn't.
-  return base::LowerCaseEqualsASCII(challenge->scheme(),
-                                    base::ToLowerASCII(scheme));
+  return challenge->auth_scheme() == HttpAuth::SchemeToString(scheme);
 }
 
 }  // namespace
 
 HttpAuth::AuthorizationResult ParseFirstRoundChallenge(
-    base::StringPiece scheme,
+    HttpAuth::Scheme scheme,
     HttpAuthChallengeTokenizer* challenge) {
-  // Verify the challenge's auth-scheme.
   if (!SchemeIsValid(scheme, challenge))
     return HttpAuth::AUTHORIZATION_RESULT_INVALID;
 
@@ -39,11 +35,10 @@ HttpAuth::AuthorizationResult ParseFirstRoundChallenge(
 }
 
 HttpAuth::AuthorizationResult ParseLaterRoundChallenge(
-    base::StringPiece scheme,
+    HttpAuth::Scheme scheme,
     HttpAuthChallengeTokenizer* challenge,
     std::string* encoded_token,
     std::string* decoded_token) {
-  // Verify the challenge's auth-scheme.
   if (!SchemeIsValid(scheme, challenge))
     return HttpAuth::AUTHORIZATION_RESULT_INVALID;
 
@@ -51,7 +46,6 @@ HttpAuth::AuthorizationResult ParseLaterRoundChallenge(
   if (encoded_token->empty())
     return HttpAuth::AUTHORIZATION_RESULT_REJECT;
 
-  // Make sure the additional token is base64 encoded.
   if (!base::Base64Decode(*encoded_token, decoded_token))
     return HttpAuth::AUTHORIZATION_RESULT_INVALID;
   return HttpAuth::AUTHORIZATION_RESULT_ACCEPT;

@@ -677,12 +677,6 @@ void BlinkTestRunner::ForceTextInputStateUpdate(WebLocalFrame* frame) {
   ForceTextInputStateUpdateForRenderFrame(RenderFrame::FromWebFrame(frame));
 }
 
-void BlinkTestRunner::ExcludeSchemeFromRequestInitiatorSiteLockChecks(
-    const std::string& scheme) {
-  Send(new WebTestHostMsg_ExcludeSchemeFromRequestInitiatorSiteLockChecks(
-      routing_id(), scheme));
-}
-
 // RenderViewObserver  --------------------------------------------------------
 
 void BlinkTestRunner::DidClearWindowObject(WebLocalFrame* frame) {

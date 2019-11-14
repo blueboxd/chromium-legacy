@@ -330,9 +330,6 @@ void VideoDecoderPipeline::OnFrameDecoded(scoped_refptr<VideoFrame> frame) {
   DCHECK(frame_converter_);
   DVLOGF(4);
 
-  // Flag that the video frame was decoded in a power efficient way.
-  frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT, true);
-
   frame_converter_->ConvertFrame(std::move(frame));
 }
 
@@ -347,8 +344,9 @@ void VideoDecoderPipeline::OnFrameConverted(scoped_refptr<VideoFrame> frame) {
     return;
   }
 
+  // Flag that the video frame is capable of being put in an overlay.
   frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
-  // TODO(crbug.com/998547): Remove this specific statement when not needed.
+  // Flag that the video frame was decoded in a power efficient way.
   frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT, true);
 
   // MojoVideoDecoderService expects the |output_cb_| to be called on the client

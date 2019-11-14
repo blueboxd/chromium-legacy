@@ -241,10 +241,11 @@ class CORE_EXPORT LocalFrameUkmAggregator
   void BeginMainFrame();
 
   // Inform the aggregator that we have reached First Contentful Paint.
-  // The UKM event reports this.
-  void DidReachFirstContentfulPaint() { is_before_fcp_ = false; }
+  // The UKM event reports this and UMA for aggregated contributions to
+  // FCP are reported if are_painting_main_frame is true.
+  void DidReachFirstContentfulPaint(bool are_painting_main_frame);
 
-  bool InMainFrame() { return in_main_frame_update_; }
+  bool InMainFrameUpdate() { return in_main_frame_update_; }
 
   // Populate a BeginMainFrameMetrics structure with the latency numbers for
   // the most recent frame. Must be called when within a main frame update.
@@ -261,10 +262,12 @@ class CORE_EXPORT LocalFrameUkmAggregator
     std::unique_ptr<CustomCountHistogram> uma_counter;
     std::unique_ptr<CustomCountHistogram> pre_fcp_uma_counter;
     std::unique_ptr<CustomCountHistogram> post_fcp_uma_counter;
+    std::unique_ptr<CustomCountHistogram> uma_aggregate_counter;
 
     // Accumulated at each sample, then reset with a call to
     // RecordEndOfFrameMetrics.
     base::TimeDelta interval_duration;
+    base::TimeDelta pre_fcp_aggregate;
 
     void reset() { interval_duration = base::TimeDelta(); }
   };
@@ -292,6 +295,9 @@ class CORE_EXPORT LocalFrameUkmAggregator
   void FramesToNextEventForTest(unsigned num_frames) {
     frames_to_next_event_for_test_ = num_frames;
   }
+
+  // Used to check that we only for the MainFrame of a document.
+  bool AllMetricsAreZero();
 
   // UKM system data
   const int64_t source_id_;

@@ -1916,21 +1916,6 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   }
 
   switch ([self internalRole]) {
-    case ax::mojom::Role::kAnnotationAttribution:
-      return base::SysUTF16ToNSString(content_client->GetLocalizedString(
-          IDS_AX_ROLE_ANNOTATION_ATTRIBUTION));
-    case ax::mojom::Role::kAnnotationCommentary:
-      return base::SysUTF16ToNSString(content_client->GetLocalizedString(
-          IDS_AX_ROLE_ANNOTATION_COMMENTARY));
-    case ax::mojom::Role::kAnnotationPresence:
-      return base::SysUTF16ToNSString(
-          content_client->GetLocalizedString(IDS_AX_ROLE_ANNOTATION_PRESENCE));
-    case ax::mojom::Role::kAnnotationRevision:
-      return base::SysUTF16ToNSString(
-          content_client->GetLocalizedString(IDS_AX_ROLE_ANNOTATION_REVISION));
-    case ax::mojom::Role::kAnnotationSuggestion:
-      return base::SysUTF16ToNSString(content_client->GetLocalizedString(
-          IDS_AX_ROLE_ANNOTATION_SUGGESTION));
     case ax::mojom::Role::kArticle:
       return base::SysUTF16ToNSString(
           content_client->GetLocalizedString(IDS_AX_ROLE_ARTICLE));
@@ -1940,6 +1925,12 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     case ax::mojom::Role::kCheckBox:
       return base::SysUTF16ToNSString(
           content_client->GetLocalizedString(IDS_AX_ROLE_CHECK_BOX));
+    case ax::mojom::Role::kComment:
+      return base::SysUTF16ToNSString(
+          content_client->GetLocalizedString(IDS_AX_ROLE_COMMENT));
+    case ax::mojom::Role::kCommentSection:
+      return base::SysUTF16ToNSString(
+          content_client->GetLocalizedString(IDS_AX_ROLE_COMMENT_SECTION));
     case ax::mojom::Role::kComplementary:
       return base::SysUTF16ToNSString(
           content_client->GetLocalizedString(IDS_AX_ROLE_COMPLEMENTARY));
@@ -1985,6 +1976,9 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     case ax::mojom::Role::kRegion:
       return base::SysUTF16ToNSString(
           content_client->GetLocalizedString(IDS_AX_ROLE_REGION));
+    case ax::mojom::Role::kRevision:
+      return base::SysUTF16ToNSString(
+          content_client->GetLocalizedString(IDS_AX_ROLE_REVISION));
     case ax::mojom::Role::kSection:
       // A <section> element uses the 'region' ARIA role mapping.
       return base::SysUTF16ToNSString(
@@ -1999,6 +1993,9 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     case ax::mojom::Role::kSearchBox:
       return base::SysUTF16ToNSString(
           content_client->GetLocalizedString(IDS_AX_ROLE_SEARCH_BOX));
+    case ax::mojom::Role::kSuggestion:
+      return base::SysUTF16ToNSString(
+          content_client->GetLocalizedString(IDS_AX_ROLE_SUGGESTION));
     case ax::mojom::Role::kSwitch:
       return base::SysUTF16ToNSString(
           content_client->GetLocalizedString(IDS_AX_ROLE_SWITCH));

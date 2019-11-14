@@ -391,6 +391,13 @@ virtual void MultiDrawArraysInstancedWEBGL(GLenum mode,
                                            const GLsizei* counts,
                                            const GLsizei* instance_counts,
                                            GLsizei drawcount) = 0;
+virtual void MultiDrawArraysInstancedBaseInstanceWEBGL(
+    GLenum mode,
+    const GLint* firsts,
+    const GLsizei* counts,
+    const GLsizei* instance_counts,
+    const GLuint* baseinstances,
+    GLsizei drawcount) = 0;
 virtual void MultiDrawElementsWEBGL(GLenum mode,
                                     const GLsizei* counts,
                                     GLenum type,
@@ -402,6 +409,15 @@ virtual void MultiDrawElementsInstancedWEBGL(GLenum mode,
                                              const GLsizei* offsets,
                                              const GLsizei* instance_counts,
                                              GLsizei drawcount) = 0;
+virtual void MultiDrawElementsInstancedBaseVertexBaseInstanceWEBGL(
+    GLenum mode,
+    const GLsizei* counts,
+    GLenum type,
+    const GLsizei* offsets,
+    const GLsizei* instance_counts,
+    const GLint* basevertices,
+    const GLuint* baseinstances,
+    GLsizei drawcount) = 0;
 virtual void StencilFunc(GLenum func, GLint ref, GLuint mask) = 0;
 virtual void StencilFuncSeparate(GLenum face,
                                  GLenum func,
@@ -785,11 +801,24 @@ virtual void DrawArraysInstancedANGLE(GLenum mode,
                                       GLint first,
                                       GLsizei count,
                                       GLsizei primcount) = 0;
+virtual void DrawArraysInstancedBaseInstanceANGLE(GLenum mode,
+                                                  GLint first,
+                                                  GLsizei count,
+                                                  GLsizei primcount,
+                                                  GLuint baseinstance) = 0;
 virtual void DrawElementsInstancedANGLE(GLenum mode,
                                         GLsizei count,
                                         GLenum type,
                                         const void* indices,
                                         GLsizei primcount) = 0;
+virtual void DrawElementsInstancedBaseVertexBaseInstanceANGLE(
+    GLenum mode,
+    GLsizei count,
+    GLenum type,
+    const void* indices,
+    GLsizei primcount,
+    GLint basevertex,
+    GLuint baseinstance) = 0;
 virtual void VertexAttribDivisorANGLE(GLuint index, GLuint divisor) = 0;
 virtual void ProduceTextureDirectCHROMIUM(GLuint texture, GLbyte* mailbox) = 0;
 virtual GLuint CreateAndConsumeTextureCHROMIUM(const GLbyte* mailbox) = 0;

@@ -19,8 +19,8 @@ static_library("media_app_ui") {
 
   deps = [
     "//chromeos/constants",
-    "//chromeos/resources",
     "//chromeos/resources:media_app_bundle_resources",
+    "//chromeos/resources:media_app_resources",
     "//content/public/browser",
     "//ui/webui",
   ]

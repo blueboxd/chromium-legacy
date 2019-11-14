@@ -344,6 +344,13 @@ bool InputMethodChromeOS::SetCompositionRange(
   }
 }
 
+bool InputMethodChromeOS::SetSelectionRange(uint32_t start, uint32_t end) {
+  if (IsTextInputTypeNone())
+    return false;
+  return GetTextInputClient()->SetEditableSelectionRange(
+      gfx::Range(start, end));
+}
+
 void InputMethodChromeOS::ConfirmCompositionText(bool reset_engine,
                                                  bool keep_selection) {
   InputMethodBase::ConfirmCompositionText(reset_engine, keep_selection);

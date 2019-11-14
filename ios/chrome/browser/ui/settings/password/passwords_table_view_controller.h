@@ -13,12 +13,6 @@ namespace ios {
 class ChromeBrowserState;
 }  // namespace ios
 
-// The accessibility identifier of the password details table view.
-extern NSString* const kPasswordsTableViewId;
-extern NSString* const kPasswordsExportConfirmViewId;
-extern NSString* const kPasswordsSearchBarId;
-extern NSString* const kPasswordsScrimViewId;
-
 @protocol ReauthenticationProtocol;
 @class PasswordExporter;
 

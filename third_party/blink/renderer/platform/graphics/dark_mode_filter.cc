@@ -172,22 +172,27 @@ bool DarkModeFilter::IsDarkModeActive() const {
 // perform some other logic in between confirming dark mode is active and
 // checking the color classifiers.
 bool DarkModeFilter::ShouldApplyToColor(const Color& color, ElementRole role) {
-  if (role == ElementRole::kBackground) {
-    // Calling get() is necessary below because operator<< in std::unique_ptr is
-    // a C++20 feature.
-    // TODO(https://crbug.com/980914): Drop .get() once we move to C++20.
-    DCHECK_NE(background_classifier_.get(), nullptr);
-    return background_classifier_->ShouldInvertColor(color) ==
-           DarkModeClassification::kApplyFilter;
-  }
+  switch (role) {
+    case ElementRole::kText:
+      DCHECK(text_classifier_);
+      return text_classifier_->ShouldInvertColor(color) ==
+             DarkModeClassification::kApplyFilter;
+    case ElementRole::kBackground:
+      DCHECK(background_classifier_);
+      return background_classifier_->ShouldInvertColor(color) ==
+             DarkModeClassification::kApplyFilter;
+    case ElementRole::kSVG:
+      // 1) Inline SVG images are considered as individual shapes and do not
+      // have an Image object associated with them. So they do not go through
+      // the regular image classification pipeline. Do not apply any filter to
+      // the SVG shapes until there is a way to get the classification for the
+      // entire image to which these shapes belong.
 
-  DCHECK_EQ(role, ElementRole::kText);
-  // Calling get() is necessary below because operator<< in std::unique_ptr is
-  // a C++20 feature.
-  // TODO(https://crbug.com/980914): Drop .get() once we move to C++20.
-  DCHECK_NE(text_classifier_.get(), nullptr);
-  return text_classifier_->ShouldInvertColor(color) ==
-         DarkModeClassification::kApplyFilter;
+      // 2) Non-inline SVG images are already classified at this point and have
+      // a filter applied if necessary.
+      return false;
+  }
+  NOTREACHED();
 }
 
 }  // namespace blink

@@ -37,6 +37,9 @@ const float kMinimumPercentOnScreenArea = 0.3f;
 // This makes it easier to resize the window.
 const int kMaximizedWindowInset = 10;  // DIPs.
 
+constexpr char kSnapWindowSmoothnessHistogramName[] =
+    "Ash.Window.AnimationSmoothness.Snap";
+
 gfx::Size GetWindowMaximumSize(aura::Window* window) {
   return window->delegate() ? window->delegate()->GetMaximumSize()
                             : gfx::Size();
@@ -73,6 +76,27 @@ void MoveToDisplayForRestore(WindowState* window_state) {
 }
 
 }  // namespace
+
+class ScopedMeasureBoundsAnimation {
+ public:
+  ScopedMeasureBoundsAnimation(WindowState* window_state,
+                               const std::string& histogram_name)
+      : window_state_(window_state) {
+    window_state_->set_animation_smoothness_histogram_name(
+        base::make_optional(histogram_name));
+  }
+  ~ScopedMeasureBoundsAnimation() {
+    window_state_->set_animation_smoothness_histogram_name(base::nullopt);
+  }
+
+  ScopedMeasureBoundsAnimation(const ScopedMeasureBoundsAnimation& other) =
+      delete;
+  ScopedMeasureBoundsAnimation& operator=(
+      const ScopedMeasureBoundsAnimation& rhs) = delete;
+
+ private:
+  WindowState* window_state_;
+};
 
 DefaultState::DefaultState(WindowStateType initial_state_type)
     : BaseState(initial_state_type), stored_window_state_(nullptr) {}
@@ -596,7 +620,16 @@ void DefaultState::UpdateBoundsFromState(WindowState* window_state,
     // TODO(oshima): Consider fixing it and re-enable the animation.
     window_state->SetBoundsDirect(bounds_in_parent);
   } else {
-    window_state->SetBoundsDirectAnimated(bounds_in_parent);
+    // Record smoothness of the snapping animation if the size of the window
+    // changes.
+    if (window_state->IsSnapped() &&
+        bounds_in_parent.size() != window->bounds().size()) {
+      ScopedMeasureBoundsAnimation scoped(window_state,
+                                          kSnapWindowSmoothnessHistogramName);
+      window_state->SetBoundsDirectAnimated(bounds_in_parent);
+    } else {
+      window_state->SetBoundsDirectAnimated(bounds_in_parent);
+    }
   }
 }
 

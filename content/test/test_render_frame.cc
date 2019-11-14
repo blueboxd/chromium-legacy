@@ -100,7 +100,6 @@ class MockFrameHost : public mojom::FrameHost {
                          const gfx::Rect& initial_rect,
                          bool user_gesture) override {}
 
-  void FrameFocused() override {}
   void DidAddContentSecurityPolicies(
       const std::vector<ContentSecurityPolicy>&) override {}
 

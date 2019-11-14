@@ -459,23 +459,6 @@ function disableIframesAndVoiceSearchForTesting() {
 }
 
 /**
- * TODO(dbeam): reconcile this with //ui/webui/resources/js/util.js.
- * @param {?Node} node The node to check.
- * @param {function(?Node):boolean} predicate The function that tests the
- *     nodes.
- * @return {?Node} The found ancestor or null if not found.
- */
-function findAncestor(node, predicate) {
-  while (node !== null) {
-    if (predicate(node)) {
-      break;
-    }
-    node = node.parentNode;
-  }
-  return node;
-}
-
-/**
  * Animates the pop-up notification to float down, and clears the timeout to
  * hide the notification.
  * @param {?Element} notification The notification element.
@@ -1068,24 +1051,6 @@ function listen() {
 }
 
 /**
- * @param {!AutocompleteMatch} match
- * @param {!Event} e
- */
-function navigateToMatch(match, e) {
-  const line = autocompleteMatches.indexOf(match);
-  assert(line >= 0);
-  if (match.canDisplay) {
-    const matchEl = $(IDS.REALBOX_MATCHES).children[line];
-    matchEl.dispatchEvent(new MouseEvent('click', e));
-  } else {
-    window.chrome.embeddedSearch.searchBox.openAutocompleteMatch(
-        line, match.destinationUrl, e.button || 0, e.altKey, e.ctrlKey,
-        e.metaKey, e.shiftKey);
-  }
-  e.preventDefault();
-}
-
-/**
  * Callback for embeddedSearch.newTabPage.onaddcustomlinkdone. Called when the
  * custom link was successfully added. Shows the "Shortcut added" notification.
  * @param {boolean} success True if the link was successfully added.
@@ -1209,12 +1174,14 @@ function onRealboxWrapperFocusIn(e) {
   if (e.target.matches(`#${IDS.REALBOX}`) && !$(IDS.REALBOX).value) {
     queryAutocomplete('');
   } else if (e.target.matches(`#${IDS.REALBOX_MATCHES} *`)) {
-    const target = /** @type {Element} */ (e.target);
-    const link = findAncestor(target, el => el.nodeName === 'A');
-    if (!link) {
+    let target = e.target;
+    while (target && target.nodeName !== 'A') {
+      target = target.parentNode;
+    }
+    if (!target) {
       return;
     }
-    const selectedIndex = selectMatchEl(link);
+    const selectedIndex = selectMatchEl(target);
     // It doesn't really make sense to use fillFromMatch() here as the focus
     // change drops the selection (and is probably just noisy to
     // screenreaders).
@@ -1235,16 +1202,9 @@ function onRealboxWrapperFocusOut(e) {
       updateRealboxOutput({inline: '', text: ''});
     }
     setRealboxMatchesVisible(false);
-
-    // Stop autocomplete but leave (potentially stale) results and continue
-    // listening for key presses. These stale results should never be shown, but
-    // correspond to the potentially stale suggestion left in the realbox when
-    // blurred. That stale result may be navigated to by focusing and pressing
-    // Enter, and that match may be privileged, so we need to keep the data
-    // around in order to ascertain this. If matches are reshown, fresh
-    // autocomplete data will be fetched.
-    window.chrome.embeddedSearch.searchBox.stopAutocomplete(
-        /*clearResult=*/ false);
+    // Note: intentionally leaving keydown listening (see
+    // onRealboxWrapperKeydown) intact.
+    clearAutocompleteMatches();
   }
 }
 
@@ -1285,11 +1245,14 @@ function onRealboxWrapperKeydown(e) {
     return matchEl.classList.contains(CLASSES.SELECTED);
   });
 
-  assert(autocompleteMatches.length === matchEls.length);
-
+  // Enter should work whether or not matches are visible.
   if (key === 'Enter') {
     if (matchEls[selected] && matchEls.concat(realboxEl).includes(e.target)) {
-      navigateToMatch(autocompleteMatches[selected], e);
+      // Note: dispatching a MouseEvent here instead of using e.g. .click() as
+      // this forwards key modifiers. This enables Shift+Enter to open a match
+      // in a new window, for example.
+      matchEls[selected].dispatchEvent(new MouseEvent('click', e));
+      e.preventDefault();
     }
     return;
   }
@@ -1304,6 +1267,9 @@ function onRealboxWrapperKeydown(e) {
     }
     return;
   }
+
+  // If the matches are visible, the autocomplete results must also be intact.
+  assert(autocompleteMatches.length === matchEls.length);
 
   if (key === 'Delete') {
     if (e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey) {
@@ -1440,20 +1406,6 @@ function populateAutocompleteMatches(matches) {
     matchEl.href = match.destinationUrl;
     matchEl.setAttribute('role', 'option');
 
-    matchEl.onclick = matchEl.onauxclick = e => {
-      if (!e.isTrusted || e.defaultPrevented || e.button > 1) {
-        // Don't re-handle events dispatched from navigateToMatch(). Ignore
-        // already handled events (i.e. remove button, defaultPrevented). Ignore
-        // right clicks (but do handle middle click, button == 1).
-        return;
-      }
-      const target = /** @type {Element} */ (e.target);
-      const link = findAncestor(target, el => el.nodeName === 'A');
-      if (link === matchEl) {
-        navigateToMatch(match, e);
-      }
-    };
-
     if (match.isSearchType) {
       const icon = document.createElement('div');
       const isSearchHistory = SEARCH_HISTORY_MATCH_TYPES.includes(match.type);
@@ -1501,12 +1453,6 @@ function populateAutocompleteMatches(matches) {
       icon.classList.add(CLASSES.REMOVE_ICON);
       icon.onmousedown = e => {
         e.preventDefault();  // Stops default browser action (focus)
-      };
-      icon.onauxclick = e => {
-        if (e.button == 1) {
-          // Middle click on delete should just noop for now (matches omnibox).
-          e.preventDefault();
-        }
       };
       icon.onclick = e => {
         window.chrome.embeddedSearch.searchBox.deleteAutocompleteMatch(i);

@@ -56,12 +56,15 @@ LocalFrameUkmAggregator::LocalFrameUkmAggregator(int64_t source_id,
       "Blink.MainFrame.UpdateTime.PreFCP", 0, 10000000, 50));
   primary_metric_.post_fcp_uma_counter.reset(new CustomCountHistogram(
       "Blink.MainFrame.UpdateTime.PostFCP", 0, 10000000, 50));
+  primary_metric_.uma_aggregate_counter.reset(new CustomCountHistogram(
+      "Blink.MainFrame.UpdateTime.AggregatedPreFCP", 0, 10000000, 50));
 
   // Set up the substrings to create the UMA names
   const String uma_preamble = "Blink.";
   const String uma_postscript = ".UpdateTime";
   const String uma_prefcp_postscript = ".PreFCP";
   const String uma_postfcp_postscript = ".PostFCP";
+  const String uma_pre_fcp_aggregated_postscript = ".AggregatedPreFCP";
   const String uma_percentage_preamble = "Blink.MainFrame.";
   const String uma_percentage_postscript = "Ratio";
 
@@ -95,6 +98,7 @@ LocalFrameUkmAggregator::LocalFrameUkmAggregator(int64_t source_id,
     // They have an associated UMA too that we own and allocate here.
     auto& absolute_record = absolute_metric_records_.emplace_back();
     absolute_record.reset();
+    absolute_record.pre_fcp_aggregate = base::TimeDelta();
     if (metric_data.has_uma) {
       StringBuilder uma_name;
       uma_name.Append(uma_preamble);
@@ -112,6 +116,11 @@ LocalFrameUkmAggregator::LocalFrameUkmAggregator(int64_t source_id,
       post_fcp_uma_name.Append(uma_postfcp_postscript);
       absolute_record.post_fcp_uma_counter.reset(new CustomCountHistogram(
           post_fcp_uma_name.ToString().Utf8().c_str(), 0, 10000000, 50));
+      StringBuilder aggregated_uma_name;
+      aggregated_uma_name.Append(uma_name);
+      aggregated_uma_name.Append(uma_pre_fcp_aggregated_postscript);
+      absolute_record.uma_aggregate_counter.reset(new CustomCountHistogram(
+          aggregated_uma_name.ToString().Utf8().c_str(), 0, 10000000, 50));
     }
 
     // Percentage records report the ratio of each metric to the primary metric.
@@ -144,7 +153,7 @@ void LocalFrameUkmAggregator::BeginMainFrame() {
 
 std::unique_ptr<cc::BeginMainFrameMetrics>
 LocalFrameUkmAggregator::GetBeginMainFrameMetrics() {
-  DCHECK(InMainFrame());
+  DCHECK(InMainFrameUpdate());
 
   // Use the main_frame_percentage_records_ because they are the ones that
   // only count time between the Begin and End of a main frame update.
@@ -206,6 +215,59 @@ void LocalFrameUkmAggregator::RecordForcedStyleLayoutUMA(
   }
 }
 
+void LocalFrameUkmAggregator::DidReachFirstContentfulPaint(
+    bool are_painting_main_frame) {
+  DCHECK(is_before_fcp_);
+
+  is_before_fcp_ = false;
+
+  if (!are_painting_main_frame) {
+    DCHECK(AllMetricsAreZero());
+    return;
+  }
+
+#define CASE_FOR_ID(name)                                                  \
+  case k##name:                                                            \
+    builder.Set##name(absolute_record.pre_fcp_aggregate.InMicroseconds()); \
+    break
+
+  ukm::builders::Blink_PageLoad builder(source_id_);
+  builder.SetMainFrame(primary_metric_.pre_fcp_aggregate.InMicroseconds());
+  primary_metric_.uma_aggregate_counter->CountMicroseconds(
+      primary_metric_.pre_fcp_aggregate);
+  for (unsigned i = 0; i < (unsigned)kCount; ++i) {
+    auto& absolute_record = absolute_metric_records_[i];
+    if (absolute_record.uma_aggregate_counter) {
+      absolute_record.uma_aggregate_counter->CountMicroseconds(
+          absolute_record.pre_fcp_aggregate);
+    }
+
+    switch (static_cast<MetricId>(i)) {
+      CASE_FOR_ID(Compositing);
+      CASE_FOR_ID(CompositingCommit);
+      CASE_FOR_ID(IntersectionObservation);
+      CASE_FOR_ID(Paint);
+      CASE_FOR_ID(PrePaint);
+      CASE_FOR_ID(StyleAndLayout);
+      CASE_FOR_ID(Style);
+      CASE_FOR_ID(Layout);
+      CASE_FOR_ID(ForcedStyleAndLayout);
+      CASE_FOR_ID(ScrollingCoordinator);
+      CASE_FOR_ID(HandleInputEvents);
+      CASE_FOR_ID(Animate);
+      CASE_FOR_ID(UpdateLayers);
+      CASE_FOR_ID(ProxyCommit);
+      case kCount:
+      case kMainFrame:
+        NOTREACHED();
+        break;
+    }
+  }
+  builder.Record(recorder_);
+
+#undef CASE_FOR_ID
+}
+
 void LocalFrameUkmAggregator::RecordSample(size_t metric_index,
                                            base::TimeTicks start,
                                            base::TimeTicks end) {
@@ -215,6 +277,8 @@ void LocalFrameUkmAggregator::RecordSample(size_t metric_index,
   DCHECK_LT(metric_index, absolute_metric_records_.size());
   auto& record = absolute_metric_records_[metric_index];
   record.interval_duration += duration;
+  if (is_before_fcp_)
+    record.pre_fcp_aggregate += duration;
   // Record the UMA
   // ForcedStyleAndLayout happen so frequently on some pages that we overflow
   // the signed 32 counter for number of events in a 30 minute period. So
@@ -264,6 +328,8 @@ void LocalFrameUkmAggregator::RecordEndOfFrameMetrics(base::TimeTicks start,
 
   // Record primary time information
   primary_metric_.interval_duration = duration;
+  if (is_before_fcp_)
+    primary_metric_.pre_fcp_aggregate += duration;
 
   // Compute all the dependent metrics, after finding which bucket we're in
   // for UMA data.
@@ -302,88 +368,36 @@ void LocalFrameUkmAggregator::UpdateEventTimeAndRecordEventIfNeeded() {
 }
 
 void LocalFrameUkmAggregator::RecordEvent() {
+#define CASE_FOR_ID(name)                                                 \
+  case k##name:                                                           \
+    builder.Set##name(absolute_record.interval_duration.InMicroseconds()) \
+        .Set##name##Percentage(percentage);                               \
+    break
+
   ukm::builders::Blink_UpdateTime builder(source_id_);
   builder.SetMainFrame(primary_metric_.interval_duration.InMicroseconds());
   builder.SetMainFrameIsBeforeFCP(is_before_fcp_);
   for (unsigned i = 0; i < (unsigned)kCount; ++i) {
-    MetricId id = static_cast<MetricId>(i);
-    auto& absolute_record = absolute_metric_records_[(unsigned)id];
-    auto& percentage_record = main_frame_percentage_records_[(unsigned)id];
+    auto& absolute_record = absolute_metric_records_[i];
+    auto& percentage_record = main_frame_percentage_records_[i];
     unsigned percentage = (unsigned)floor(
         percentage_record.interval_duration.InMicrosecondsF() * 100.0 /
         primary_metric_.interval_duration.InMicrosecondsF());
-    switch (id) {
-      case kCompositing:
-        builder
-            .SetCompositing(absolute_record.interval_duration.InMicroseconds())
-            .SetCompositingPercentage(percentage);
-        break;
-      case kCompositingCommit:
-        builder
-            .SetCompositingCommit(
-                absolute_record.interval_duration.InMicroseconds())
-            .SetCompositingCommitPercentage(percentage);
-        break;
-      case kIntersectionObservation:
-        builder
-            .SetIntersectionObservation(
-                absolute_record.interval_duration.InMicroseconds())
-            .SetIntersectionObservationPercentage(percentage);
-        break;
-      case kPaint:
-        builder.SetPaint(absolute_record.interval_duration.InMicroseconds())
-            .SetPaintPercentage(percentage);
-        break;
-      case kPrePaint:
-        builder.SetPrePaint(absolute_record.interval_duration.InMicroseconds())
-            .SetPrePaintPercentage(percentage);
-        break;
-      case kStyleAndLayout:
-        builder
-            .SetStyleAndLayout(
-                absolute_record.interval_duration.InMicroseconds())
-            .SetStyleAndLayoutPercentage(percentage);
-        break;
-      case kStyle:
-        builder.SetStyle(absolute_record.interval_duration.InMicroseconds())
-            .SetStylePercentage(percentage);
-        break;
-      case kLayout:
-        builder.SetLayout(absolute_record.interval_duration.InMicroseconds())
-            .SetLayoutPercentage(percentage);
-        break;
-      case kForcedStyleAndLayout:
-        builder
-            .SetForcedStyleAndLayout(
-                absolute_record.interval_duration.InMicroseconds())
-            .SetForcedStyleAndLayoutPercentage(percentage);
-        break;
-      case kScrollingCoordinator:
-        builder
-            .SetScrollingCoordinator(
-                absolute_record.interval_duration.InMicroseconds())
-            .SetScrollingCoordinatorPercentage(percentage);
-        break;
-      case kHandleInputEvents:
-        builder
-            .SetHandleInputEvents(
-                absolute_record.interval_duration.InMicroseconds())
-            .SetHandleInputEventsPercentage(percentage);
-        break;
-      case kAnimate:
-        builder.SetAnimate(absolute_record.interval_duration.InMicroseconds())
-            .SetAnimatePercentage(percentage);
-        break;
-      case kUpdateLayers:
-        builder
-            .SetUpdateLayers(absolute_record.interval_duration.InMicroseconds())
-            .SetUpdateLayersPercentage(percentage);
-        break;
-      case kProxyCommit:
-        builder
-            .SetProxyCommit(absolute_record.interval_duration.InMicroseconds())
-            .SetProxyCommitPercentage(percentage);
-        break;
+    switch (static_cast<MetricId>(i)) {
+      CASE_FOR_ID(Compositing);
+      CASE_FOR_ID(CompositingCommit);
+      CASE_FOR_ID(IntersectionObservation);
+      CASE_FOR_ID(Paint);
+      CASE_FOR_ID(PrePaint);
+      CASE_FOR_ID(StyleAndLayout);
+      CASE_FOR_ID(Style);
+      CASE_FOR_ID(Layout);
+      CASE_FOR_ID(ForcedStyleAndLayout);
+      CASE_FOR_ID(ScrollingCoordinator);
+      CASE_FOR_ID(HandleInputEvents);
+      CASE_FOR_ID(Animate);
+      CASE_FOR_ID(UpdateLayers);
+      CASE_FOR_ID(ProxyCommit);
       case kCount:
       case kMainFrame:
         NOTREACHED();
@@ -391,6 +405,7 @@ void LocalFrameUkmAggregator::RecordEvent() {
     }
   }
   builder.Record(recorder_);
+#undef CASE_FOR_ID
 }
 
 void LocalFrameUkmAggregator::ResetAllMetrics() {
@@ -429,6 +444,17 @@ unsigned LocalFrameUkmAggregator::SampleFramesToNextEvent() {
   // sample. That's OK because it just means we'll stop reporting metrics
   // for that session.
   return (unsigned)std::ceil(float_sample);
+}
+
+bool LocalFrameUkmAggregator::AllMetricsAreZero() {
+  if (primary_metric_.interval_duration.InMicroseconds())
+    return false;
+  for (auto& record : absolute_metric_records_) {
+    if (record.interval_duration.InMicroseconds()) {
+      return false;
+    }
+  }
+  return true;
 }
 
 }  // namespace blink

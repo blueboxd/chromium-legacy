@@ -631,7 +631,7 @@ jumbo_static_library("browsertest_support") {
     deps += [ "//content/public/browser" ]
   }
 
-  if (use_aura && toolkit_views) {
+  if (use_aura && toolkit_views && !is_chromecast) {
     deps += [ "//ui/views" ]
   }
 

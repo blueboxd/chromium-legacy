@@ -4,14 +4,6 @@
 
 package org.chromium.chrome.browser.background_sync;
 
-import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.after;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.verify;
-
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.support.test.InstrumentationRegistry;
@@ -23,24 +15,18 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.background_task_scheduler.ChromeBackgroundTaskFactory;
+import org.chromium.chrome.browser.background_sync.BackgroundSyncBackgroundTaskScheduler.BackgroundSyncTask;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.TabTitleObserver;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
-import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
-import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
-import org.chromium.components.background_task_scheduler.TaskInfo;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 import org.chromium.content_public.browser.test.util.BackgroundSyncNetworkUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -48,6 +34,8 @@ import org.chromium.net.ConnectionType;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.ServerCertificate;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -56,9 +44,6 @@ import java.util.concurrent.TimeoutException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public final class BackgroundSyncTest {
-    @Mock
-    private BackgroundTaskScheduler mTaskScheduler;
-
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
@@ -72,17 +57,15 @@ public final class BackgroundSyncTest {
     private static final int TITLE_UPDATE_TIMEOUT_SECONDS = (int) scaleTimeout(10);
     private static final long WAIT_TIME_MS = scaleTimeout(5000);
 
+    private CountDownLatch mScheduleLatch, mCancelLatch;
+
+    private BackgroundSyncBackgroundTaskScheduler.Observer mSchedulerObserver;
+
     @Before
     public void setUp() throws InterruptedException {
-        MockitoAnnotations.initMocks(this);
+        addSchedulerObserver();
 
-        BackgroundTaskSchedulerFactory.setSchedulerForTesting(mTaskScheduler);
-        ChromeBackgroundTaskFactory.setAsDefault();
-        doReturn(true)
-                .when(mTaskScheduler)
-                .schedule(eq(ContextUtils.getApplicationContext()), any(TaskInfo.class));
-
-        // loadNativeLibraryAndInitBrowserProcess will access AccountManagerFacade, so it should
+        // loadNativeLibraryNoBrowserProcess will access AccountManagerFacade, so it should
         // be initialized beforehand.
         SigninTestUtil.setUpAuthForTest();
 
@@ -108,6 +91,7 @@ public final class BackgroundSyncTest {
     public void tearDown() {
         if (mTestServer != null) mTestServer.stopAndDestroyServer();
         SigninTestUtil.tearDownAuthForTest();
+        BackgroundSyncBackgroundTaskScheduler.getInstance().removeObserver(mSchedulerObserver);
     }
 
     @Test
@@ -122,25 +106,13 @@ public final class BackgroundSyncTest {
         // Register Sync.
         runJavaScript("RegisterSyncForTag('tagSucceedsSync');");
         assertTitleBecomes("registered sync");
-        verify(mTaskScheduler, timeout(WAIT_TIME_MS))
-                .schedule(eq(ContextUtils.getApplicationContext()),
-                        argThat(taskInfo
-                                -> taskInfo.getBackgroundTaskClass()
-                                        == BackgroundSyncBackgroundTask.class));
+        Assert.assertTrue(mScheduleLatch.await(WAIT_TIME_MS, TimeUnit.MILLISECONDS));
 
         forceConnectionType(ConnectionType.CONNECTION_WIFI);
         assertTitleBecomes("onsync: tagSucceedsSync");
 
-        // Another invocation when all events are firing but haven't completed, to cover the case
-        // when the browser is closed mid-event. This one races with the completion of the sync
-        // event, and might not happen.
-        // The wait is to ensure we wait for this invocation to happen, since it happens in
-        // parallel with dispatching the sync event.
-        verify(mTaskScheduler, after(WAIT_TIME_MS).atMost(2))
-                .schedule(eq(ContextUtils.getApplicationContext()),
-                        argThat(taskInfo
-                                -> taskInfo.getBackgroundTaskClass()
-                                        == BackgroundSyncBackgroundTask.class));
+        // Now that sync has completed, browser wakeup should get canceled.
+        Assert.assertTrue(mCancelLatch.await(WAIT_TIME_MS, TimeUnit.MILLISECONDS));
     }
 
     @Test
@@ -155,25 +127,11 @@ public final class BackgroundSyncTest {
         // Register Sync.
         runJavaScript("RegisterSyncForTag('tagFailsSync');");
         assertTitleBecomes("registered sync");
-        verify(mTaskScheduler, timeout(WAIT_TIME_MS))
-                .schedule(eq(ContextUtils.getApplicationContext()),
-                        argThat(taskInfo
-                                -> taskInfo.getBackgroundTaskClass()
-                                        == BackgroundSyncBackgroundTask.class));
-
+        Assert.assertTrue(mScheduleLatch.await(WAIT_TIME_MS, TimeUnit.MILLISECONDS));
         forceConnectionType(ConnectionType.CONNECTION_WIFI);
 
-        // Wait for some time that is less than the retry time period (default 5 minutes).
-        // One call to schedule wake-up a few minutes after firing the first sync event, to cover
-        // our bases if the browser is closed mid-sync. This one races with the completion of the
-        // sync event, and might not happen.
-        // Another call to waking up the browser for attempt two after completion of the first
-        // event. This will always happen.
-        verify(mTaskScheduler, after(WAIT_TIME_MS).atMost(3))
-                .schedule(eq(ContextUtils.getApplicationContext()),
-                        argThat(taskInfo
-                                -> taskInfo.getBackgroundTaskClass()
-                                        == BackgroundSyncBackgroundTask.class));
+        // Browser wakeup must not be canceled.
+        Assert.assertFalse(mCancelLatch.await(WAIT_TIME_MS, TimeUnit.MILLISECONDS));
     }
 
     /**
@@ -206,5 +164,27 @@ public final class BackgroundSyncTest {
                     .setPlayServicesVersionCheckDisabledForTests(
                             /* disabled= */ true);
         });
+    }
+
+    private void addSchedulerObserver() {
+        mScheduleLatch = new CountDownLatch(1);
+        mCancelLatch = new CountDownLatch(1);
+        mSchedulerObserver = new BackgroundSyncBackgroundTaskScheduler.Observer() {
+            @Override
+            public void oneOffTaskScheduledFor(@BackgroundSyncTask int taskType, long delay) {
+                if (taskType == BackgroundSyncTask.ONE_SHOT_SYNC_CHROME_WAKE_UP) {
+                    mScheduleLatch.countDown();
+                }
+            }
+
+            @Override
+            public void oneOffTaskCanceledFor(@BackgroundSyncTask int taskType) {
+                if (taskType == BackgroundSyncTask.ONE_SHOT_SYNC_CHROME_WAKE_UP) {
+                    mCancelLatch.countDown();
+                }
+            }
+        };
+
+        BackgroundSyncBackgroundTaskScheduler.getInstance().addObserver(mSchedulerObserver);
     }
 }

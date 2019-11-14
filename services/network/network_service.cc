@@ -656,14 +656,6 @@ void NetworkService::AddExtraMimeTypesForCorb(
   CrossOriginReadBlocking::AddExtraMimeTypesForCorb(mime_types);
 }
 
-void NetworkService::ExcludeSchemeFromRequestInitiatorSiteLockChecks(
-    const std::string& scheme,
-    mojom::NetworkService::
-        ExcludeSchemeFromRequestInitiatorSiteLockChecksCallback callback) {
-  network::ExcludeSchemeFromRequestInitiatorSiteLockChecks(scheme);
-  std::move(callback).Run();
-}
-
 void NetworkService::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
   base::MemoryPressureListener::NotifyMemoryPressure(memory_pressure_level);

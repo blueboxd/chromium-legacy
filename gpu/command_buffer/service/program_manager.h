@@ -437,6 +437,14 @@ class GPU_GLES2_EXPORT Program : public base::RefCounted<Program> {
 
   GLint draw_id_uniform_location() const { return draw_id_uniform_location_; }
 
+  GLint base_vertex_uniform_location() const {
+    return base_vertex_uniform_location_;
+  }
+
+  GLint base_instance_uniform_location() const {
+    return base_instance_uniform_location_;
+  }
+
   // See member declaration for details.
   // The data are only valid after a successful link.
   uint32_t fragment_output_type_mask() const {
@@ -521,6 +529,12 @@ class GPU_GLES2_EXPORT Program : public base::RefCounted<Program> {
   // Updates the draw id uniform location used by ANGLE_multi_draw
   void UpdateDrawIDUniformLocation();
 
+  // Updates the base vertex and base instance uniform location used by
+  // ANGLE_base_vertex_base_instance
+  void UpdateBaseVertexUniformLocation();
+
+  void UpdateBaseInstanceUniformLocation();
+
   // If long attribate names are mapped during shader translation, call
   // glBindAttribLocation() again with the mapped names.
   // This is called right before the glLink() call, but after shaders are
@@ -601,6 +615,10 @@ class GPU_GLES2_EXPORT Program : public base::RefCounted<Program> {
 
   // ANGLE_multi_draw
   GLint draw_id_uniform_location_;
+
+  // ANGLE_base_vertex_base_instance
+  GLint base_vertex_uniform_location_;
+  GLint base_instance_uniform_location_;
 
   // Log info
   std::unique_ptr<std::string> log_info_;
@@ -698,6 +716,14 @@ class GPU_GLES2_EXPORT ProgramManager {
 
   // Updates the draw id location for this program for ANGLE_multi_draw
   void UpdateDrawIDUniformLocation(Program* program);
+
+  // Updates the base vertex location for this program for
+  // ANGLE_base_vertex_base_instance
+  void UpdateBaseVertexUniformLocation(Program* program);
+
+  // Updates the base instance location for this program for
+  // ANGLE_base_vertex_base_instance
+  void UpdateBaseInstanceUniformLocation(Program* program);
 
   // Returns true if |name| has a prefix that is intended for GL built-in shader
   // variables.

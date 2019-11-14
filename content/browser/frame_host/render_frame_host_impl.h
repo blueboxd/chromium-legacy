@@ -1206,6 +1206,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void EvictFromBackForwardCache() override;
   void VisibilityChanged(blink::mojom::FrameVisibility) override;
   void DidChangeThemeColor(const base::Optional<SkColor>& theme_color) override;
+  void DidFocusFrame() override;
 
  protected:
   friend class RenderFrameHostFactory;
@@ -1503,7 +1504,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
                          WindowOpenDisposition disposition,
                          const gfx::Rect& initial_rect,
                          bool user_gesture) override;
-  void FrameFocused() override;
   void DidAddContentSecurityPolicies(
       const std::vector<ContentSecurityPolicy>& policies) override;
 #if defined(OS_ANDROID)

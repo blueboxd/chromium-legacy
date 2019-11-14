@@ -35,7 +35,7 @@ component("cpp") {
   ]
 
   deps = []
-  if (toolkit_views) {
+  if (toolkit_views && !is_chromecast) {
     deps += [ "//ui/views" ]
   }
 

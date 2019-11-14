@@ -11,7 +11,6 @@
       "zero"
     ],
     "services": [
-      "fuchsia.accessibility.semantics.SemanticsManager",
       "fuchsia.device.NameProvider",
       "fuchsia.deprecatedtimezone.Timezone",
       "fuchsia.fonts.Provider",

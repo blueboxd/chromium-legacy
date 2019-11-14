@@ -62,14 +62,6 @@ ContentIndexContext* GetContentIndexContext(const url::Origin& origin) {
   return storage_partition->GetContentIndexContext();
 }
 
-void ExcludeSchemeFromRequestInitiatorSiteLockChecksOnUIThread(
-    const std::string& scheme,
-    base::OnceClosure completion_callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  GetNetworkService()->ExcludeSchemeFromRequestInitiatorSiteLockChecks(
-      scheme, std::move(completion_callback));
-}
-
 }  // namespace
 
 WebTestMessageFilter::WebTestMessageFilter(
@@ -119,9 +111,6 @@ bool WebTestMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(WebTestHostMsg_ReadFileToString, OnReadFileToString)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_RegisterIsolatedFileSystem,
                         OnRegisterIsolatedFileSystem)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(
-        WebTestHostMsg_ExcludeSchemeFromRequestInitiatorSiteLockChecks,
-        OnExcludeSchemeFromRequestInitiatorSiteLockChecks)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_ClearAllDatabases, OnClearAllDatabases)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_SetDatabaseQuota, OnSetDatabaseQuota)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_SimulateWebNotificationClick,
@@ -167,20 +156,6 @@ void WebTestMessageFilter::OnRegisterIsolatedFileSystem(
   *filesystem_id =
       storage::IsolatedContext::GetInstance()->RegisterDraggedFileSystem(files);
   policy->GrantReadFileSystem(render_process_id_, *filesystem_id);
-}
-
-void WebTestMessageFilter::OnExcludeSchemeFromRequestInitiatorSiteLockChecks(
-    const std::string& scheme,
-    IPC::Message* reply_msg) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  base::OnceClosure completion_callback =
-      base::BindOnce(base::IgnoreResult(&IPC::Sender::Send), this, reply_msg);
-
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&ExcludeSchemeFromRequestInitiatorSiteLockChecksOnUIThread,
-                     scheme, base::Passed(std::move(completion_callback))));
 }
 
 void WebTestMessageFilter::OnClearAllDatabases() {

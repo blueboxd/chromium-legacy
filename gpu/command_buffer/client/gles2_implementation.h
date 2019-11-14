@@ -515,6 +515,14 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
                                            const GLsizei* instanceCounts,
                                            GLsizei drawcount);
 
+  void MultiDrawArraysInstancedBaseInstanceWEBGLHelper(
+      GLenum mode,
+      const GLint* firsts,
+      const GLsizei* counts,
+      const GLsizei* instanceCounts,
+      const GLuint* baseInstances,
+      GLsizei drawcount);
+
   void MultiDrawElementsWEBGLHelper(GLenum mode,
                                     const GLsizei* counts,
                                     GLenum type,
@@ -527,6 +535,16 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
                                              const GLsizei* offsets,
                                              const GLsizei* instanceCounts,
                                              GLsizei drawcount);
+
+  void MultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLHelper(
+      GLenum mode,
+      const GLsizei* counts,
+      GLenum type,
+      const GLsizei* offsets,
+      const GLsizei* instanceCounts,
+      const GLint* baseVertices,
+      const GLuint* baseInstances,
+      GLsizei drawcount);
 
   GLuint CreateImageCHROMIUMHelper(ClientBuffer buffer,
                                    GLsizei width,

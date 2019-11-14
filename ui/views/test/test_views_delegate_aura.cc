@@ -6,11 +6,11 @@
 
 #include "build/build_config.h"
 #include "ui/aura/env.h"
+#include "ui/views/buildflags.h"
 
-#if !defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA)
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
-#endif  // !defined(OS_CHROMEOS)
-
+#endif  // BUILDFLAG(ENABLE_DESKTOP_AURA)
 
 namespace views {
 
@@ -32,10 +32,10 @@ void TestViewsDelegate::OnBeforeWidgetInit(
         Widget::InitParams::TRANSLUCENT_WINDOW :
         Widget::InitParams::OPAQUE_WINDOW;
   }
-#if !defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA)
   if (!params->native_widget && use_desktop_native_widgets_)
     params->native_widget = new DesktopNativeWidgetAura(delegate);
-#endif  // !defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(ENABLE_DESKTOP_AURA)
 }
 
 ui::ContextFactory* TestViewsDelegate::GetContextFactory() {

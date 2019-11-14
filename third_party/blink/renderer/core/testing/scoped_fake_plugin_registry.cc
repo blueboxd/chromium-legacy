@@ -55,13 +55,13 @@ class FakePluginRegistryImpl : public mojom::blink::PluginRegistry {
 }  // namespace
 
 ScopedFakePluginRegistry::ScopedFakePluginRegistry() {
-  Platform::Current()->GetBrowserInterfaceBrokerProxy()->SetBinderForTesting(
+  Platform::Current()->GetBrowserInterfaceBroker()->SetBinderForTesting(
       mojom::blink::PluginRegistry::Name_,
       WTF::BindRepeating(&FakePluginRegistryImpl::Bind));
 }
 
 ScopedFakePluginRegistry::~ScopedFakePluginRegistry() {
-  Platform::Current()->GetBrowserInterfaceBrokerProxy()->SetBinderForTesting(
+  Platform::Current()->GetBrowserInterfaceBroker()->SetBinderForTesting(
       mojom::blink::PluginRegistry::Name_, {});
 }
 

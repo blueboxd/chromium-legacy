@@ -63,7 +63,7 @@ class MockHttpAuthHandlerFactory : public HttpAuthHandlerFactory {
                         std::unique_ptr<HttpAuthHandler>* handler) override {
     handler->reset();
 
-    return challenge->scheme() == supported_scheme_
+    return challenge->auth_scheme() == supported_scheme_
                ? return_code_
                : ERR_UNSUPPORTED_AUTH_SCHEME;
   }
@@ -139,7 +139,7 @@ TEST_F(URLRequestContextBuilderTest, CustomHttpAuthHandlerFactory) {
   const int kBasicReturnCode = OK;
   std::unique_ptr<HttpAuthHandler> handler;
   builder_.SetHttpAuthHandlerFactory(
-      std::make_unique<MockHttpAuthHandlerFactory>("ExtraScheme",
+      std::make_unique<MockHttpAuthHandlerFactory>("extrascheme",
                                                    kBasicReturnCode));
   std::unique_ptr<URLRequestContext> context(builder_.Build());
   SSLInfo null_ssl_info;

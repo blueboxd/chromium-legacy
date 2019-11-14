@@ -2292,11 +2292,10 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
       return ATK_ROLE_DIALOG;
     case ax::mojom::Role::kAnchor:
       return ATK_ROLE_LINK;
-    case ax::mojom::Role::kAnnotationAttribution:
-    case ax::mojom::Role::kAnnotationCommentary:
-    case ax::mojom::Role::kAnnotationPresence:
-    case ax::mojom::Role::kAnnotationRevision:
-    case ax::mojom::Role::kAnnotationSuggestion:
+    case ax::mojom::Role::kComment:
+    case ax::mojom::Role::kCommentSection:
+    case ax::mojom::Role::kRevision:
+    case ax::mojom::Role::kSuggestion:
       return ATK_ROLE_SECTION;
     case ax::mojom::Role::kApplication:
       // Only use ATK_ROLE_APPLICATION for elements with no parent, since it
@@ -3317,8 +3316,6 @@ void AXPlatformNodeAuraLinux::EmitSelectionChangedSignal(bool had_selection) {
 
   AtkObject* atk_object = GetOrCreateAtkObject();
   DCHECK(ATK_IS_TEXT(atk_object));
-  std::pair<int, int> selection;
-  GetSelectionOffsets(&selection.first, &selection.second);
 
   // ATK does not consider a collapsed selection a selection, so
   // when the collapsed selection changes (caret movement), we should
@@ -3335,8 +3332,7 @@ void AXPlatformNodeAuraLinux::EmitCaretChangedSignal() {
   }
 
   DCHECK(HasCaret());
-  std::pair<int, int> selection;
-  GetSelectionOffsets(&selection.first, &selection.second);
+  std::pair<int, int> selection = GetSelectionOffsetsForAtk();
 
   AtkObject* atk_object = GetOrCreateAtkObject();
   DCHECK(ATK_IS_TEXT(atk_object));
@@ -4023,9 +4019,8 @@ int AXPlatformNodeAuraLinux::GetCaretOffset() {
     return -1;
   }
 
-  int selection_start, selection_end;
-  GetSelectionOffsets(&selection_start, &selection_end);
-  return UTF16ToUnicodeOffsetInText(selection_end);
+  std::pair<int, int> selection = GetSelectionOffsetsForAtk();
+  return UTF16ToUnicodeOffsetInText(selection.second);
 }
 
 bool AXPlatformNodeAuraLinux::SetCaretOffset(int offset) {
@@ -4064,9 +4059,8 @@ bool AXPlatformNodeAuraLinux::SetTextSelectionForAtkText(int start_offset,
 
   // Even if we don't change anything, we still want to act like we
   // were successful.
-  int old_start_offset, old_end_offset;
-  GetSelectionExtents(&old_start_offset, &old_end_offset);
-  if (old_start_offset == start_offset && old_end_offset == end_offset)
+  std::pair<int, int> old_offsets = GetSelectionOffsetsForAtk();
+  if (old_offsets.first == start_offset && old_offsets.second == end_offset)
     return true;
 
   if (!SetHypertextSelection(start_offset, end_offset))
@@ -4076,8 +4070,7 @@ bool AXPlatformNodeAuraLinux::SetTextSelectionForAtkText(int start_offset,
 }
 
 bool AXPlatformNodeAuraLinux::HasSelection() {
-  std::pair<int, int> selection;
-  GetSelectionOffsets(&selection.first, &selection.second);
+  std::pair<int, int> selection = GetSelectionOffsetsForAtk();
   return selection.first >= 0 && selection.second >= 0 &&
          selection.first != selection.second;
 }
@@ -4089,26 +4082,25 @@ void AXPlatformNodeAuraLinux::GetSelectionExtents(int* start_offset,
   if (end_offset)
     *end_offset = 0;
 
-  int selection_start, selection_end;
-  GetSelectionOffsets(&selection_start, &selection_end);
-  if (selection_start < 0 || selection_end < 0 ||
-      selection_start == selection_end)
+  std::pair<int, int> selection = GetSelectionOffsetsForAtk();
+  if (selection.first < 0 || selection.second < 0 ||
+      selection.first == selection.second)
     return;
 
   // We should ignore the direction of the selection when exposing start and
   // end offsets. According to the ATK documentation the end offset is always
   // the offset immediately past the end of the selection. This wouldn't make
   // sense if end < start.
-  if (selection_end < selection_start)
-    std::swap(selection_start, selection_end);
+  if (selection.second < selection.first)
+    std::swap(selection.first, selection.second);
 
-  selection_start = UTF16ToUnicodeOffsetInText(selection_start);
-  selection_end = UTF16ToUnicodeOffsetInText(selection_end);
+  selection.first = UTF16ToUnicodeOffsetInText(selection.first);
+  selection.second = UTF16ToUnicodeOffsetInText(selection.second);
 
   if (start_offset)
-    *start_offset = selection_start;
+    *start_offset = selection.first;
   if (end_offset)
-    *end_offset = selection_end;
+    *end_offset = selection.second;
 }
 
 // Since this method doesn't return a static gchar*, we expect the caller of
@@ -4401,6 +4393,20 @@ gfx::Point AXPlatformNodeAuraLinux::ConvertPointToScreenCoordinates(
     default:
       return point;
   }
+}
+
+std::pair<int, int> AXPlatformNodeAuraLinux::GetSelectionOffsetsForAtk() {
+  // In web content we always want to look at the selection from the tree
+  // instead of the selection that might be set via node attributes. This is
+  // because the tree selection is the absolute truth about what is visually
+  // selected, whereas node attributes might contain selection extents that are
+  // no longer part of the visual selection.
+  std::pair<int, int> selection;
+  if (GetDelegate()->IsWebContent())
+    GetSelectionOffsetsFromTree(&selection.first, &selection.second);
+  else
+    GetSelectionOffsets(&selection.first, &selection.second);
+  return selection;
 }
 
 }  // namespace ui

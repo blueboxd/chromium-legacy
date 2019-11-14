@@ -11,6 +11,7 @@
 #include "base/value_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/sharing/features.h"
+#include "chrome/browser/sharing/sharing_target_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync_device_info/device_info_sync_service.h"
@@ -31,7 +32,8 @@ const char kDeviceCapabilities[] = "device_capabilities";
 const char kRegistrationAuthorizedEntity[] = "registration_authorized_entity";
 const char kRegistrationTimestamp[] = "registration_timestamp";
 
-const char kSharingInfoFcmToken[] = "sharing_info_fcm_token";
+const char kSharingInfoVapidFcmToken[] = "sharing_info_vapid_fcm_token";
+const char kSharingInfoSharingFcmToken[] = "sharing_info_sharing_fcm_token";
 const char kSharingInfoP256dh[] = "sharing_info_p256dh";
 const char kSharingInfoAuthSecret[] = "sharing_info_auth_secret";
 const char kSharingInfoEnabledFeatures[] = "sharing_info_enabled_features";
@@ -164,31 +166,68 @@ void SharingSyncPreference::ClearFCMRegistration() {
   prefs_->ClearPref(prefs::kSharingFCMRegistration);
 }
 
-base::Optional<syncer::DeviceInfo::SharingInfo>
-SharingSyncPreference::GetSharingInfo(const std::string& guid) const {
-  return GetSharingInfo(device_info_tracker_->GetDeviceInfo(guid).get());
+std::set<sync_pb::SharingSpecificFields::EnabledFeatures>
+SharingSyncPreference::GetEnabledFeatures(
+    const syncer::DeviceInfo* device_info) const {
+  DCHECK(device_info);
+  if (device_info->sharing_info())
+    return device_info->sharing_info()->enabled_features;
+
+  // Fallback to read from prefs::kSharingSyncedDevices if reading from sync
+  // provider failed.
+  std::set<SharingSpecificFields::EnabledFeatures> enabled_features;
+  const base::DictionaryValue* devices_preferences =
+      prefs_->GetDictionary(prefs::kSharingSyncedDevices);
+  const base::Value* value = devices_preferences->FindKey(device_info->guid());
+  if (!value)
+    return enabled_features;
+
+  base::Optional<int> capabilities = value->FindIntKey(kDeviceCapabilities);
+  if (!capabilities)
+    return enabled_features;
+
+  // Legacy device store EnabledFeatures as bit-mask. They won't support new
+  // features.
+  if ((*capabilities & kClickToCall) == kClickToCall)
+    enabled_features.insert(SharingSpecificFields::CLICK_TO_CALL);
+  if ((*capabilities & kSharedClipboard) == kSharedClipboard)
+    enabled_features.insert(SharingSpecificFields::SHARED_CLIPBOARD);
+
+  return enabled_features;
 }
 
-base::Optional<syncer::DeviceInfo::SharingInfo>
-SharingSyncPreference::GetSharingInfo(
-    const syncer::DeviceInfo* device_info) const {
-  if (!device_info)
-    return base::nullopt;
-
-  const base::Optional<syncer::DeviceInfo::SharingInfo>& sharing_info =
-      device_info->sharing_info();
-  if (sharing_info)
-    return sharing_info;
+base::Optional<SharingTargetInfo> SharingSyncPreference::GetTargetInfo(
+    const std::string& guid) const {
+  auto device_info = device_info_tracker_->GetDeviceInfo(guid);
+  if (device_info && device_info->sharing_info()) {
+    auto& sharing_info = device_info->sharing_info();
+    return SharingTargetInfo{sharing_info->vapid_fcm_token,
+                             sharing_info->p256dh, sharing_info->auth_secret};
+  }
 
   // Fallback to read from prefs::kSharingSyncedDevices if reading from sync
   // provider failed.
   const base::DictionaryValue* devices_preferences =
       prefs_->GetDictionary(prefs::kSharingSyncedDevices);
-  const base::Value* value = devices_preferences->FindKey(device_info->guid());
+  const base::Value* value = devices_preferences->FindKey(guid);
   if (!value)
     return base::nullopt;
 
-  return ValueToSharingInfo(*value);
+  const std::string* vapid_fcm_token = value->FindStringKey(kDeviceFcmToken);
+  const std::string* base64_p256dh = value->FindStringKey(kDeviceP256dh);
+  const std::string* base64_auth_secret =
+      value->FindStringKey(kDeviceAuthSecret);
+
+  std::string p256dh, auth_secret;
+  if (!vapid_fcm_token || !base64_p256dh || !base64_auth_secret ||
+      !base::Base64Decode(*base64_p256dh, &p256dh) ||
+      !base::Base64Decode(*base64_auth_secret, &auth_secret)) {
+    LOG(ERROR) << "Could not convert synced value to device object.";
+    return base::nullopt;
+  }
+
+  return SharingTargetInfo{std::move(*vapid_fcm_token), std::move(p256dh),
+                           std::move(auth_secret)};
 }
 
 base::Optional<syncer::DeviceInfo::SharingInfo>
@@ -239,8 +278,10 @@ void SharingSyncPreference::SetLocalSharingInfo(
 
   DictionaryPrefUpdate local_sharing_info_update(
       prefs_, prefs::kSharingLocalSharingInfo);
-  local_sharing_info_update->SetStringKey(kSharingInfoFcmToken,
-                                          std::move(sharing_info.fcm_token));
+  local_sharing_info_update->SetStringKey(
+      kSharingInfoVapidFcmToken, std::move(sharing_info.vapid_fcm_token));
+  local_sharing_info_update->SetStringKey(
+      kSharingInfoSharingFcmToken, std::move(sharing_info.sharing_fcm_token));
   local_sharing_info_update->SetStringKey(kSharingInfoP256dh,
                                           std::move(base64_p256dh));
   local_sharing_info_update->SetStringKey(kSharingInfoAuthSecret,
@@ -275,16 +316,18 @@ base::Optional<syncer::DeviceInfo::SharingInfo>
 SharingSyncPreference::GetLocalSharingInfo(PrefService* prefs) {
   const base::DictionaryValue* registration =
       prefs->GetDictionary(prefs::kSharingLocalSharingInfo);
-  const std::string* fcm_token =
-      registration->FindStringKey(kSharingInfoFcmToken);
+  const std::string* vapid_fcm_token =
+      registration->FindStringKey(kSharingInfoVapidFcmToken);
+  const std::string* sharing_fcm_token =
+      registration->FindStringKey(kSharingInfoSharingFcmToken);
   const std::string* base64_p256dh =
       registration->FindStringKey(kSharingInfoP256dh);
   const std::string* base64_auth_secret =
       registration->FindStringKey(kSharingInfoAuthSecret);
   const base::Value* enabled_features_value =
       registration->FindListKey(kSharingInfoEnabledFeatures);
-  if (!fcm_token || !base64_p256dh || !base64_auth_secret ||
-      !enabled_features_value) {
+  if (!vapid_fcm_token || !sharing_fcm_token || !base64_p256dh ||
+      !base64_auth_secret || !enabled_features_value) {
     return base::nullopt;
   }
 
@@ -303,7 +346,8 @@ SharingSyncPreference::GetLocalSharingInfo(PrefService* prefs) {
         static_cast<SharingSpecificFields::EnabledFeatures>(value.GetInt()));
   }
 
-  return syncer::DeviceInfo::SharingInfo(*fcm_token, p256dh, auth_secret,
+  return syncer::DeviceInfo::SharingInfo(*vapid_fcm_token, *sharing_fcm_token,
+                                         p256dh, auth_secret,
                                          std::move(enabled_features));
 }
 
@@ -323,43 +367,9 @@ base::Value SharingSyncPreference::SharingInfoToValue(
     capabilities |= kSharedClipboard;
 
   base::Value result(base::Value::Type::DICTIONARY);
-  result.SetStringKey(kDeviceFcmToken, device.fcm_token);
+  result.SetStringKey(kDeviceFcmToken, device.vapid_fcm_token);
   result.SetStringKey(kDeviceP256dh, base64_p256dh);
   result.SetStringKey(kDeviceAuthSecret, base64_auth_secret);
   result.SetIntKey(kDeviceCapabilities, capabilities);
   return result;
-}
-
-// static
-base::Optional<syncer::DeviceInfo::SharingInfo>
-SharingSyncPreference::ValueToSharingInfo(const base::Value& value) {
-  const std::string* fcm_token = value.FindStringKey(kDeviceFcmToken);
-  if (!fcm_token)
-    return base::nullopt;
-
-  const std::string* base64_p256dh = value.FindStringKey(kDeviceP256dh);
-  const std::string* base64_auth_secret =
-      value.FindStringKey(kDeviceAuthSecret);
-  const base::Optional<int> capabilities =
-      value.FindIntKey(kDeviceCapabilities);
-
-  std::string p256dh, auth_secret;
-  if (!base64_p256dh || !base64_auth_secret || !capabilities ||
-      !base::Base64Decode(*base64_p256dh, &p256dh) ||
-      !base::Base64Decode(*base64_auth_secret, &auth_secret)) {
-    LOG(ERROR) << "Could not convert synced value to device object.";
-    return base::nullopt;
-  }
-
-  // Legacy device store EnabledFeatures as bit-mask. They won't support new
-  // features.
-  std::set<SharingSpecificFields::EnabledFeatures> enabled_features;
-  if ((*capabilities & kClickToCall) == kClickToCall)
-    enabled_features.insert(SharingSpecificFields::CLICK_TO_CALL);
-  if ((*capabilities & kSharedClipboard) == kSharedClipboard)
-    enabled_features.insert(SharingSpecificFields::SHARED_CLIPBOARD);
-
-  return syncer::DeviceInfo::SharingInfo(*fcm_token, std::move(p256dh),
-                                         std::move(auth_secret),
-                                         std::move(enabled_features));
 }

@@ -31,7 +31,7 @@ cca.views.CameraSuspendedError = class extends Error {
  * Creates the camera-view controller.
  * @param {!cca.models.ResultSaver} resultSaver
  * @param {!cca.device.DeviceInfoUpdater} infoUpdater
- * @param {!cca.device.PhotoResolPreferrer} photoPreferrer
+ * @param {!cca.device.PhotoConstraintsPreferrer} photoPreferrer
  * @param {!cca.device.VideoConstraintsPreferrer} videoPreferrer
  * @constructor
  */

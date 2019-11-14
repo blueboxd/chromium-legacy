@@ -2524,6 +2524,36 @@ void GLES2Implementation::MultiDrawArraysInstancedWEBGLHelper(
   helper_->MultiDrawEndCHROMIUM();
 }
 
+void GLES2Implementation::MultiDrawArraysInstancedBaseInstanceWEBGLHelper(
+    GLenum mode,
+    const GLint* firsts,
+    const GLsizei* counts,
+    const GLsizei* instance_counts,
+    const GLuint* baseinstances,
+    GLsizei drawcount) {
+  DCHECK_GT(drawcount, 0);
+
+  uint32_t buffer_size = ComputeCombinedCopySize(
+      drawcount, firsts, counts, instance_counts, baseinstances);
+  ScopedTransferBufferPtr buffer(buffer_size, helper_, transfer_buffer_);
+
+  helper_->MultiDrawBeginCHROMIUM(drawcount);
+  auto DoMultiDraw = [&](const std::array<uint32_t, 4>& offsets, uint32_t,
+                         uint32_t copy_count) {
+    helper_->MultiDrawArraysInstancedBaseInstanceCHROMIUM(
+        mode, buffer.shm_id(), buffer.offset() + offsets[0], buffer.shm_id(),
+        buffer.offset() + offsets[1], buffer.shm_id(),
+        buffer.offset() + offsets[2], buffer.shm_id(),
+        buffer.offset() + offsets[3], copy_count);
+  };
+  if (!TransferArraysAndExecute(drawcount, &buffer, DoMultiDraw, firsts, counts,
+                                instance_counts, baseinstances)) {
+    SetGLError(GL_OUT_OF_MEMORY, "glMultiDrawArraysInstancedBaseInstanceWEBGL",
+               "out of memory");
+  }
+  helper_->MultiDrawEndCHROMIUM();
+}
+
 void GLES2Implementation::MultiDrawElementsWEBGLHelper(GLenum mode,
                                                        const GLsizei* counts,
                                                        GLenum type,
@@ -2572,6 +2602,42 @@ void GLES2Implementation::MultiDrawElementsInstancedWEBGLHelper(
   if (!TransferArraysAndExecute(drawcount, &buffer, DoMultiDraw, counts,
                                 offsets, instance_counts)) {
     SetGLError(GL_OUT_OF_MEMORY, "glMultiDrawElementsInstancedWEBGL",
+               "out of memory");
+  }
+  helper_->MultiDrawEndCHROMIUM();
+}
+
+void GLES2Implementation::
+    MultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLHelper(
+        GLenum mode,
+        const GLsizei* counts,
+        GLenum type,
+        const GLsizei* offsets,
+        const GLsizei* instance_counts,
+        const GLint* basevertices,
+        const GLuint* baseinstances,
+        GLsizei drawcount) {
+  DCHECK_GT(drawcount, 0);
+
+  uint32_t buffer_size = ComputeCombinedCopySize(
+      drawcount, counts, offsets, instance_counts, basevertices, baseinstances);
+  ScopedTransferBufferPtr buffer(buffer_size, helper_, transfer_buffer_);
+
+  helper_->MultiDrawBeginCHROMIUM(drawcount);
+  auto DoMultiDraw = [&](const std::array<uint32_t, 5>& offsets, uint32_t,
+                         uint32_t copy_count) {
+    helper_->MultiDrawElementsInstancedBaseVertexBaseInstanceCHROMIUM(
+        mode, buffer.shm_id(), buffer.offset() + offsets[0], type,
+        buffer.shm_id(), buffer.offset() + offsets[1], buffer.shm_id(),
+        buffer.offset() + offsets[2], buffer.shm_id(),
+        buffer.offset() + offsets[3], buffer.shm_id(),
+        buffer.offset() + offsets[4], copy_count);
+  };
+  if (!TransferArraysAndExecute(drawcount, &buffer, DoMultiDraw, counts,
+                                offsets, instance_counts, basevertices,
+                                baseinstances)) {
+    SetGLError(GL_OUT_OF_MEMORY,
+               "glMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGL",
                "out of memory");
   }
   helper_->MultiDrawEndCHROMIUM();
@@ -2629,6 +2695,39 @@ void GLES2Implementation::MultiDrawArraysInstancedWEBGL(
   }
   MultiDrawArraysInstancedWEBGLHelper(mode, firsts, counts, instance_counts,
                                       drawcount);
+  CheckGLError();
+}
+
+void GLES2Implementation::MultiDrawArraysInstancedBaseInstanceWEBGL(
+    GLenum mode,
+    const GLint* firsts,
+    const GLsizei* counts,
+    const GLsizei* instance_counts,
+    const GLuint* baseinstances,
+    GLsizei drawcount) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix()
+                     << "] glMultiDrawArraysInstancedBaseInstanceWEBGL("
+                     << GLES2Util::GetStringDrawMode(mode) << ", " << firsts
+                     << ", " << counts << ", " << instance_counts << ", "
+                     << baseinstances << ", " << drawcount << ")");
+  if (drawcount < 0) {
+    SetGLError(GL_INVALID_VALUE, "glMultiDrawArraysInstancedBaseInstanceWEBGL",
+               "drawcount < 0");
+    return;
+  }
+  if (drawcount == 0) {
+    return;
+  }
+  // This is for an extension for WebGL which doesn't support client side arrays
+  if (vertex_array_object_manager_->SupportsClientSideBuffers()) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glMultiDrawArraysInstancedBaseInstanceWEBGL",
+               "Missing array buffer for vertex attribute");
+    return;
+  }
+  MultiDrawArraysInstancedBaseInstanceWEBGLHelper(
+      mode, firsts, counts, instance_counts, baseinstances, drawcount);
   CheckGLError();
 }
 
@@ -2698,6 +2797,50 @@ void GLES2Implementation::MultiDrawElementsInstancedWEBGL(
   }
   MultiDrawElementsInstancedWEBGLHelper(mode, counts, type, offsets,
                                         instance_counts, drawcount);
+  CheckGLError();
+}
+
+void GLES2Implementation::MultiDrawElementsInstancedBaseVertexBaseInstanceWEBGL(
+    GLenum mode,
+    const GLsizei* counts,
+    GLenum type,
+    const GLsizei* offsets,
+    const GLsizei* instance_counts,
+    const GLint* basevertices,
+    const GLuint* baseinstances,
+    GLsizei drawcount) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG(
+      "[" << GetLogPrefix()
+          << "] glMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGL("
+          << GLES2Util::GetStringDrawMode(mode) << ", " << counts << ", "
+          << GLES2Util::GetStringIndexType(type) << ", " << offsets << ", "
+          << instance_counts << ", " << basevertices << ", " << baseinstances
+          << drawcount << ")");
+  if (drawcount < 0) {
+    SetGLError(GL_INVALID_VALUE, "glMultiDrawElementsInstancedWEBGL",
+               "drawcount < 0");
+    return;
+  }
+  if (drawcount == 0) {
+    return;
+  }
+  // This is for an extension for WebGL which doesn't support client side arrays
+  if (vertex_array_object_manager_->bound_element_array_buffer() == 0) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGL",
+               "No element array buffer");
+    return;
+  }
+  if (vertex_array_object_manager_->SupportsClientSideBuffers()) {
+    SetGLError(GL_INVALID_OPERATION,
+               "glMultiDrawElementsInstancedBaseVertexBaseInstanceWEBGL",
+               "Missing array buffer for vertex attribute");
+    return;
+  }
+  MultiDrawElementsInstancedBaseVertexBaseInstanceWEBGLHelper(
+      mode, counts, type, offsets, instance_counts, basevertices, baseinstances,
+      drawcount);
   CheckGLError();
 }
 
@@ -6471,6 +6614,51 @@ void GLES2Implementation::DrawArraysInstancedANGLE(GLenum mode,
   CheckGLError();
 }
 
+void GLES2Implementation::DrawArraysInstancedBaseInstanceANGLE(
+    GLenum mode,
+    GLint first,
+    GLsizei count,
+    GLsizei primcount,
+    GLuint baseinstance) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG(
+      "[" << GetLogPrefix() << "] glDrawArraysInstancedBaseInstanceANGLE("
+          << GLES2Util::GetStringDrawMode(mode) << ", " << first << ", "
+          << count << ", " << primcount << ", " << baseinstance << ")");
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE, "glDrawArraysInstancedBaseInstanceANGLE",
+               "count < 0");
+    return;
+  }
+  if (primcount < 0) {
+    SetGLError(GL_INVALID_VALUE, "glDrawArraysInstancedBaseInstanceANGLE",
+               "primcount < 0");
+    return;
+  }
+  if (primcount == 0) {
+    return;
+  }
+  bool simulated = false;
+  if (vertex_array_object_manager_->SupportsClientSideBuffers()) {
+    GLsizei num_elements;
+    if (!base::CheckAdd(first, count).AssignIfValid(&num_elements)) {
+      SetGLError(GL_INVALID_VALUE, "glDrawArraysInstancedBaseInstanceANGLE",
+                 "first+count overflow");
+      return;
+    }
+    // Client side buffer is not used by WebGL so leave it as is.
+    if (!vertex_array_object_manager_->SetupSimulatedClientSideBuffers(
+            "glDrawArraysInstancedBaseInstanceANGLE", this, helper_,
+            num_elements, primcount, &simulated)) {
+      return;
+    }
+  }
+  helper_->DrawArraysInstancedBaseInstanceANGLE(mode, first, count, primcount,
+                                                baseinstance);
+  RestoreArrayBuffer(simulated);
+  CheckGLError();
+}
+
 void GLES2Implementation::DrawElementsInstancedANGLE(GLenum mode,
                                                      GLsizei count,
                                                      GLenum type,
@@ -6507,6 +6695,54 @@ void GLES2Implementation::DrawElementsInstancedANGLE(GLenum mode,
     }
   }
   helper_->DrawElementsInstancedANGLE(mode, count, type, offset, primcount);
+  RestoreElementAndArrayBuffers(simulated);
+  CheckGLError();
+}
+
+void GLES2Implementation::DrawElementsInstancedBaseVertexBaseInstanceANGLE(
+    GLenum mode,
+    GLsizei count,
+    GLenum type,
+    const void* indices,
+    GLsizei primcount,
+    GLint basevertex,
+    GLuint baseinstance) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix()
+                     << "] glDrawElementsInstancedBaseVertexBaseInstanceANGLE("
+                     << GLES2Util::GetStringDrawMode(mode) << ", " << count
+                     << ", " << GLES2Util::GetStringIndexType(type) << ", "
+                     << static_cast<const void*>(indices) << ", " << primcount
+                     << ", " << basevertex << ", " << baseinstance << ")");
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE,
+               "glDrawElementsInstancedBaseVertexBaseInstanceANGLE",
+               "count less than 0.");
+    return;
+  }
+  if (primcount < 0) {
+    SetGLError(GL_INVALID_VALUE,
+               "glDrawElementsInstancedBaseVertexBaseInstanceANGLE",
+               "primcount < 0");
+    return;
+  }
+  GLuint offset = 0;
+  bool simulated = false;
+  if (count > 0 && primcount > 0) {
+    if (vertex_array_object_manager_->bound_element_array_buffer() != 0 &&
+        !ValidateOffset("glDrawElementsInstancedBaseVertexBaseInstanceANGLE",
+                        reinterpret_cast<GLintptr>(indices))) {
+      return;
+    }
+    // Client side buffer is not used by WebGL so leave it as is.
+    if (!vertex_array_object_manager_->SetupSimulatedIndexAndClientSideBuffers(
+            "glDrawElementsInstancedBaseVertexBaseInstanceANGLE", this, helper_,
+            count, type, primcount, indices, &offset, &simulated)) {
+      return;
+    }
+  }
+  helper_->DrawElementsInstancedBaseVertexBaseInstanceANGLE(
+      mode, count, type, offset, primcount, basevertex, baseinstance);
   RestoreElementAndArrayBuffers(simulated);
   CheckGLError();
 }

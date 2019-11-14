@@ -9,7 +9,9 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -17,7 +19,7 @@
 
 namespace content {
 
-class StoragePartition;
+class StoragePartitionImpl;
 
 // This contains the logic to schedule delayed processing of (periodic)
 // Background Sync registrations.
@@ -36,7 +38,7 @@ class CONTENT_EXPORT BackgroundSyncScheduler
   // TODO(crbug.com/996166): Add logic to schedule browser wakeup on Android.
   // Must be called on the UI thread.
   virtual void ScheduleDelayedProcessing(
-      StoragePartition* storage_partition,
+      StoragePartitionImpl* storage_partition,
       blink::mojom::BackgroundSyncType sync_type,
       base::TimeDelta delay,
       base::OnceClosure delayed_task);
@@ -44,7 +46,7 @@ class CONTENT_EXPORT BackgroundSyncScheduler
   // Cancels delayed_processing for |sync_type| for |storage_partition|.
   // Must be called on the UI thread.
   virtual void CancelDelayedProcessing(
-      StoragePartition* storage_partition,
+      StoragePartitionImpl* storage_partition,
       blink::mojom::BackgroundSyncType sync_type);
 
  private:
@@ -53,13 +55,23 @@ class CONTENT_EXPORT BackgroundSyncScheduler
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   friend class base::DeleteHelper<BackgroundSyncScheduler>;
 
-  std::map<StoragePartition*, std::unique_ptr<base::OneShotTimer>>&
-  GetDelayedProcessingInfo(blink::mojom::BackgroundSyncType sync_type);
+  std::map<StoragePartitionImpl*, std::unique_ptr<base::OneShotTimer>>&
+  GetDelayedProcessingInfoMap(blink::mojom::BackgroundSyncType sync_type);
+  void RunDelayedTaskAndPruneInfoMap(blink::mojom::BackgroundSyncType sync_type,
+                                     StoragePartitionImpl* storage_partition,
+                                     base::OnceClosure delayed_task);
+#if defined(OS_ANDROID)
+  void ScheduleOrCancelBrowserWakeupForSyncType(
+      blink::mojom::BackgroundSyncType sync_type,
+      StoragePartitionImpl* storage_partition);
+#endif
 
-  std::map<StoragePartition*, std::unique_ptr<base::OneShotTimer>>
+  std::map<StoragePartitionImpl*, std::unique_ptr<base::OneShotTimer>>
       delayed_processing_info_one_shot_;
-  std::map<StoragePartition*, std::unique_ptr<base::OneShotTimer>>
+  std::map<StoragePartitionImpl*, std::unique_ptr<base::OneShotTimer>>
       delayed_processing_info_periodic_;
+
+  base::WeakPtrFactory<BackgroundSyncScheduler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncScheduler);
 };

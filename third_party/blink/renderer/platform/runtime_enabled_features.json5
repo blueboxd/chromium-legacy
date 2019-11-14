@@ -1501,6 +1501,10 @@
       status: "experimental",
     },
     {
+      name: "ServiceWorkerFetchEventWorkerTiming",
+      status: "experimental",
+    },
+    {
       name: "SetRootScroller",
       status: "experimental",
     },

@@ -420,7 +420,7 @@ WebAppSyncBridge::CreateMetadataChangeList() {
 base::Optional<syncer::ModelError> WebAppSyncBridge::MergeSyncData(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_data) {
-  DCHECK(change_processor()->IsTrackingMetadata());
+  CHECK(change_processor()->IsTrackingMetadata());
 
   auto update_local_data = std::make_unique<RegistryUpdateData>();
 
@@ -441,7 +441,7 @@ base::Optional<syncer::ModelError> WebAppSyncBridge::MergeSyncData(
 base::Optional<syncer::ModelError> WebAppSyncBridge::ApplySyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_changes) {
-  DCHECK(change_processor()->IsTrackingMetadata());
+  CHECK(change_processor()->IsTrackingMetadata());
 
   auto update_local_data = std::make_unique<RegistryUpdateData>();
 

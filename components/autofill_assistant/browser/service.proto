@@ -822,6 +822,11 @@ message SelectOptionProto {
 
 // Contain a localized text message from the server.
 message TellProto {
+  // The message to show in the status bar. The behavior is now the following
+  //
+  //  * If the field is set, the status bar is updated (explicitly setting an
+  //    empty string clears the status bar).
+  //  * If the field is not set, the status bar is not updated.
   optional string message = 1;
 
   // Show the UI if it's not shown yet, such as when a script has been started

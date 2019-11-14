@@ -2845,6 +2845,17 @@ TEST_F(GLES2ImplementationTest, DrawArraysInstancedANGLE) {
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
+TEST_F(GLES2ImplementationTest, DrawArraysInstancedBaseInstanceANGLE) {
+  struct Cmds {
+    cmds::DrawArraysInstancedBaseInstanceANGLE cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(GL_POINTS, 2, 3, 4, 5);
+
+  gl_->DrawArraysInstancedBaseInstanceANGLE(GL_POINTS, 2, 3, 4, 5);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
 TEST_F(GLES2ImplementationTest, VertexAttribDivisorANGLE) {
   struct Cmds {
     cmds::VertexAttribDivisorANGLE cmd;

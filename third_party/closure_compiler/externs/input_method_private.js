@@ -169,6 +169,18 @@ chrome.inputMethodPrivate.setXkbLayout = function(xkb_name, callback) {};
 chrome.inputMethodPrivate.finishComposingText = function(callback) {};
 
 /**
+ * Sets the selection range
+ * @param {{
+ *   contextID: number,
+ *   selectionStart: (number|undefined),
+ *   selectionEnd: (number|undefined)
+ * }} parameters
+ * @param {function(boolean):void=} callback Called when the operation completes
+ *     with a boolean indicating if the text was accepted or not.
+ */
+chrome.inputMethodPrivate.setSelectionRange = function(parameters, callback) {};
+
+/**
  * Fires the input.ime.onMenuItemActivated event.
  * @param {string} engineID ID of the engine to use.
  * @param {string} name Name of the MenuItem which was activated

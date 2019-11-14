@@ -1182,6 +1182,18 @@ MockGLInterface::Mock_glDrawArraysInstancedARB(GLenum mode,
   interface_->DrawArraysInstancedANGLE(mode, first, count, primcount);
 }
 
+void GL_BINDING_CALL
+MockGLInterface::Mock_glDrawArraysInstancedBaseInstanceANGLE(
+    GLenum mode,
+    GLint first,
+    GLsizei count,
+    GLsizei primcount,
+    GLuint baseinstance) {
+  MakeGlMockFunctionUnique("glDrawArraysInstancedBaseInstanceANGLE");
+  interface_->DrawArraysInstancedBaseInstanceANGLE(mode, first, count,
+                                                   primcount, baseinstance);
+}
+
 void GL_BINDING_CALL MockGLInterface::Mock_glDrawBuffer(GLenum mode) {
   MakeGlMockFunctionUnique("glDrawBuffer");
   interface_->DrawBuffer(mode);
@@ -1249,6 +1261,21 @@ MockGLInterface::Mock_glDrawElementsInstancedARB(GLenum mode,
                                                  GLsizei primcount) {
   MakeGlMockFunctionUnique("glDrawElementsInstancedARB");
   interface_->DrawElementsInstancedANGLE(mode, count, type, indices, primcount);
+}
+
+void GL_BINDING_CALL
+MockGLInterface::Mock_glDrawElementsInstancedBaseVertexBaseInstanceANGLE(
+    GLenum mode,
+    GLsizei count,
+    GLenum type,
+    const void* indices,
+    GLsizei primcount,
+    GLint baseVertex,
+    GLuint baseInstance) {
+  MakeGlMockFunctionUnique(
+      "glDrawElementsInstancedBaseVertexBaseInstanceANGLE");
+  interface_->DrawElementsInstancedBaseVertexBaseInstanceANGLE(
+      mode, count, type, indices, primcount, baseVertex, baseInstance);
 }
 
 void GL_BINDING_CALL
@@ -3129,6 +3156,19 @@ void GL_BINDING_CALL MockGLInterface::Mock_glMultiDrawArraysInstancedANGLE(
 }
 
 void GL_BINDING_CALL
+MockGLInterface::Mock_glMultiDrawArraysInstancedBaseInstanceANGLE(
+    GLenum mode,
+    const GLint* firsts,
+    const GLsizei* counts,
+    const GLsizei* instanceCounts,
+    const GLuint* baseInstances,
+    GLsizei drawcount) {
+  MakeGlMockFunctionUnique("glMultiDrawArraysInstancedBaseInstanceANGLE");
+  interface_->MultiDrawArraysInstancedBaseInstanceANGLE(
+      mode, firsts, counts, instanceCounts, baseInstances, drawcount);
+}
+
+void GL_BINDING_CALL
 MockGLInterface::Mock_glMultiDrawElementsANGLE(GLenum mode,
                                                const GLsizei* counts,
                                                GLenum type,
@@ -3148,6 +3188,23 @@ void GL_BINDING_CALL MockGLInterface::Mock_glMultiDrawElementsInstancedANGLE(
   MakeGlMockFunctionUnique("glMultiDrawElementsInstancedANGLE");
   interface_->MultiDrawElementsInstancedANGLE(mode, counts, type, indices,
                                               instanceCounts, drawcount);
+}
+
+void GL_BINDING_CALL
+MockGLInterface::Mock_glMultiDrawElementsInstancedBaseVertexBaseInstanceANGLE(
+    GLenum mode,
+    const GLsizei* counts,
+    GLenum type,
+    const GLvoid* const* indices,
+    const GLsizei* instanceCounts,
+    const GLint* baseVertices,
+    const GLuint* baseInstances,
+    GLsizei drawcount) {
+  MakeGlMockFunctionUnique(
+      "glMultiDrawElementsInstancedBaseVertexBaseInstanceANGLE");
+  interface_->MultiDrawElementsInstancedBaseVertexBaseInstanceANGLE(
+      mode, counts, type, indices, instanceCounts, baseVertices, baseInstances,
+      drawcount);
 }
 
 void GL_BINDING_CALL MockGLInterface::Mock_glObjectLabel(GLenum identifier,
@@ -5380,6 +5437,9 @@ MockGLInterface::GetGLProcAddress(const char* name) {
   if (strcmp(name, "glDrawArraysInstancedARB") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glDrawArraysInstancedARB);
+  if (strcmp(name, "glDrawArraysInstancedBaseInstanceANGLE") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glDrawArraysInstancedBaseInstanceANGLE);
   if (strcmp(name, "glDrawBuffer") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glDrawBuffer);
   if (strcmp(name, "glDrawBuffers") == 0)
@@ -5401,6 +5461,9 @@ MockGLInterface::GetGLProcAddress(const char* name) {
   if (strcmp(name, "glDrawElementsInstancedARB") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glDrawElementsInstancedARB);
+  if (strcmp(name, "glDrawElementsInstancedBaseVertexBaseInstanceANGLE") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glDrawElementsInstancedBaseVertexBaseInstanceANGLE);
   if (strcmp(name, "glDrawRangeElements") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glDrawRangeElements);
   if (strcmp(name, "glEGLImageTargetRenderbufferStorageOES") == 0)
@@ -5969,12 +6032,19 @@ MockGLInterface::GetGLProcAddress(const char* name) {
   if (strcmp(name, "glMultiDrawArraysInstancedANGLE") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glMultiDrawArraysInstancedANGLE);
+  if (strcmp(name, "glMultiDrawArraysInstancedBaseInstanceANGLE") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glMultiDrawArraysInstancedBaseInstanceANGLE);
   if (strcmp(name, "glMultiDrawElementsANGLE") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glMultiDrawElementsANGLE);
   if (strcmp(name, "glMultiDrawElementsInstancedANGLE") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glMultiDrawElementsInstancedANGLE);
+  if (strcmp(name, "glMultiDrawElementsInstancedBaseVertexBaseInstanceANGLE") ==
+      0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glMultiDrawElementsInstancedBaseVertexBaseInstanceANGLE);
   if (strcmp(name, "glObjectLabel") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glObjectLabel);
   if (strcmp(name, "glObjectLabelKHR") == 0)

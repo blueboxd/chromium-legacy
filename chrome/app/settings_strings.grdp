@@ -2224,6 +2224,9 @@
     <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_EXCEPTION_LIST" desc="Settings > Internet > Network details: Label for list of network proxy exceptions.">
       Do not use the proxy settings for these hosts and domains:
     </message>
+    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_EXCEPT_REMOVE_ACCESSIBILITY_LABEL" desc="Settings > Internet > Network details: Accessibility only label for button to remove proxy exception.">
+      Remove exception for <ph name="HOST_NAME">$1<ex>example.com</ex></ph>
+    </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_ADD_EXCEPTION" desc="Settings > Internet > Network details: Label for button to add a network proxy exception.">
       Add exception
     </message>

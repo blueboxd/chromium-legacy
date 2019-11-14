@@ -11,6 +11,7 @@ import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.ObserverList;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask;
@@ -26,6 +27,12 @@ import org.chromium.components.background_task_scheduler.TaskInfo;
  * Thread model: This class is to be run on the UI thread only.
  */
 public class BackgroundSyncBackgroundTaskScheduler {
+    /** An observer interface for BackgroundSyncBackgroundTaskScheduler. */
+    interface Observer {
+        void oneOffTaskScheduledFor(@BackgroundSyncTask int taskType, long delay);
+        void oneOffTaskCanceledFor(@BackgroundSyncTask int taskType);
+    }
+
     /**
      * Any tasks scheduled using GCMNetworkManager directly to wake up Chrome
      * would use this TASK_TAG. We no longer use GCMNetworkManager directly, so
@@ -58,6 +65,8 @@ public class BackgroundSyncBackgroundTaskScheduler {
     public static final String SOONEST_EXPECTED_WAKETIME = "SoonestWakeupTime";
 
     private static BackgroundSyncBackgroundTaskScheduler sInstance;
+
+    private final ObserverList<Observer> mObservers = new ObserverList<>();
 
     @CalledByNative
     public static BackgroundSyncBackgroundTaskScheduler getInstance() {
@@ -109,6 +118,17 @@ public class BackgroundSyncBackgroundTaskScheduler {
         }
     }
 
+    /** @param observer The observer to add. */
+    @VisibleForTesting
+    public void addObserver(Observer observer) {
+        mObservers.addObserver(observer);
+    }
+
+    /** @param observer The observer to remove. */
+    public void removeObserver(Observer observer) {
+        mObservers.removeObserver(observer);
+    }
+
     /**
      * Cancels a Background Sync one-off task, if there's one scheduled.
      *
@@ -118,6 +138,10 @@ public class BackgroundSyncBackgroundTaskScheduler {
     protected void cancelOneOffTask(@BackgroundSyncTask int taskType) {
         BackgroundTaskSchedulerFactory.getScheduler().cancel(
                 ContextUtils.getApplicationContext(), getAppropriateTaskId(taskType));
+
+        for (Observer observer : mObservers) {
+            observer.oneOffTaskCanceledFor(taskType);
+        }
     }
 
     /**
@@ -148,8 +172,14 @@ public class BackgroundSyncBackgroundTaskScheduler {
                                     .setExtras(taskExtras)
                                     .build();
         // This will overwrite any existing task with this ID.
-        return BackgroundTaskSchedulerFactory.getScheduler().schedule(
+        boolean didSchedule = BackgroundTaskSchedulerFactory.getScheduler().schedule(
                 ContextUtils.getApplicationContext(), taskInfo);
+
+        for (Observer observer : mObservers) {
+            observer.oneOffTaskScheduledFor(taskType, minDelayMs);
+        }
+
+        return didSchedule;
     }
 
     /**

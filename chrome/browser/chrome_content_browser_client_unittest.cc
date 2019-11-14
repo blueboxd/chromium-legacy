@@ -25,7 +25,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/variations/entropy_provider.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
@@ -230,8 +229,7 @@ class BlinkSettingsFieldTrialTest : public testing::Test {
   static const char kFakeGroupName[];
 
   BlinkSettingsFieldTrialTest()
-      : trial_list_(NULL),
-        command_line_(base::CommandLine::NO_PROGRAM) {}
+      : command_line_(base::CommandLine::NO_PROGRAM) {}
 
   void SetUp() override {
     command_line_.AppendSwitchASCII(
@@ -274,7 +272,6 @@ class BlinkSettingsFieldTrialTest : public testing::Test {
   static const int kFakeChildProcessId = 1;
 
   ChromeContentBrowserClient client_;
-  base::FieldTrialList trial_list_;
   base::CommandLine command_line_;
 
   content::BrowserTaskEnvironment task_environment_;
@@ -319,12 +316,6 @@ namespace content {
 
 class InstantNTPURLRewriteTest : public BrowserWithTestWindowTest {
  protected:
-  void SetUp() override {
-    BrowserWithTestWindowTest::SetUp();
-    field_trial_list_.reset(new base::FieldTrialList(
-        std::make_unique<variations::SHA1EntropyProvider>("42")));
-  }
-
   void InstallTemplateURLWithNewTabPage(GURL new_tab_page_url) {
     TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
         profile(),
@@ -341,8 +332,6 @@ class InstantNTPURLRewriteTest : public BrowserWithTestWindowTest {
         template_url_service->Add(std::make_unique<TemplateURL>(data));
     template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
   }
-
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
 };
 
 TEST_F(InstantNTPURLRewriteTest, UberURLHandler_InstantExtendedNewTabPage) {

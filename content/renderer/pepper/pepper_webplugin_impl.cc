@@ -321,9 +321,8 @@ bool PepperWebPluginImpl::ExecuteEditCommand(const blink::WebString& name,
       return false;
 
     if (!clipboard_) {
-      blink::Platform::Current()
-          ->GetBrowserInterfaceBrokerProxy()
-          ->GetInterface(clipboard_.BindNewPipeAndPassReceiver());
+      blink::Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
+          clipboard_.BindNewPipeAndPassReceiver());
     }
     base::string16 markup;
     base::string16 text;
@@ -348,9 +347,8 @@ bool PepperWebPluginImpl::ExecuteEditCommand(const blink::WebString& name,
       return false;
 
     if (!clipboard_) {
-      blink::Platform::Current()
-          ->GetBrowserInterfaceBrokerProxy()
-          ->GetInterface(clipboard_.BindNewPipeAndPassReceiver());
+      blink::Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
+          clipboard_.BindNewPipeAndPassReceiver());
     }
     base::string16 text;
     clipboard_->ReadText(ui::ClipboardBuffer::kCopyPaste, &text);

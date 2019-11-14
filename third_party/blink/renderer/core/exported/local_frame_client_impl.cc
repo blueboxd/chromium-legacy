@@ -874,11 +874,6 @@ WebRemotePlaybackClient* LocalFrameClientImpl::CreateWebRemotePlaybackClient(
       html_media_element);
 }
 
-void LocalFrameClientImpl::FrameFocused() const {
-  if (web_frame_->Client())
-    web_frame_->Client()->FrameFocused();
-}
-
 void LocalFrameClientImpl::DidChangeName(const String& name) {
   if (!web_frame_->Client())
     return;

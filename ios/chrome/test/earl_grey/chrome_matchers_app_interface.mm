@@ -44,9 +44,9 @@
 #import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/advanced_signin_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/import_data_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/password/passwords_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/password/passwords_table_view_constants.h"
 #import "ios/chrome/browser/ui/settings/privacy_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/settings_root_table_constants.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/static_content/static_html_view_controller.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_constants.h"
@@ -544,9 +544,16 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
       SubviewWithAccessibilityIdentifier(
           @"SettingNavigationBar",
           [[UIApplication sharedApplication] keyWindow]));
+#if defined(CHROME_EARL_GREY_2)
+  id<GREYMatcher> buttonLabelClassMatcher = grey_anyOf(
+      grey_kindOfClassName(@"UIButton"),
+      grey_kindOfClassName(@"UIAccessibilityBackButtonElement"), nil);
+#else
+  id<GREYMatcher> buttonLabelClassMatcher = grey_kindOfClass([UIButton class]);
+#endif
   return grey_allOf(grey_anyOf(grey_accessibilityLabel(navBar.backItem.title),
                                grey_accessibilityLabel(@"Back"), nil),
-                    grey_kindOfClass([UIButton class]),
+                    buttonLabelClassMatcher,
                     grey_ancestor(grey_kindOfClass([UINavigationBar class])),
                     nil);
 }

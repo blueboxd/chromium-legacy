@@ -267,7 +267,6 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   Frame* FirstChild() const override { return nullptr; }
   void WillBeDetached() override {}
   void Detached(FrameDetachType) override {}
-  void FrameFocused() const override {}
 
   void DispatchWillSendRequest(ResourceRequest&) override {}
   void DispatchDidLoadResourceFromMemoryCache(
@@ -481,7 +480,6 @@ class CORE_EXPORT EmptyRemoteFrameClient : public RemoteFrameClient {
   Frame* Top() const override { return nullptr; }
   Frame* NextSibling() const override { return nullptr; }
   Frame* FirstChild() const override { return nullptr; }
-  void FrameFocused() const override {}
   base::UnguessableToken GetDevToolsFrameToken() const override {
     return base::UnguessableToken::Create();
   }

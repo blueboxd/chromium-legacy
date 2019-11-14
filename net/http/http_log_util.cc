@@ -22,7 +22,7 @@ bool ShouldRedactChallenge(HttpAuthChallengeTokenizer* challenge) {
   if (challenge->challenge_text().find(',') != std::string::npos)
     return false;
 
-  std::string scheme = base::ToLowerASCII(challenge->scheme());
+  std::string scheme = challenge->auth_scheme();
   // Invalid input.
   if (scheme.empty())
     return false;

@@ -7,7 +7,7 @@
 #include "chromeos/components/media_app_ui/media_app_guest_ui.h"
 #include "chromeos/components/media_app_ui/url_constants.h"
 #include "chromeos/grit/chromeos_media_app_bundle_resources.h"
-#include "chromeos/grit/chromeos_resources.h"
+#include "chromeos/grit/chromeos_media_app_resources.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"

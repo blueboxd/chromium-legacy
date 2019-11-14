@@ -30,6 +30,13 @@ AtkObject* FindAtkObjectParentFrame(AtkObject* atk_object) {
   return nullptr;
 }
 
+static bool IsAtkObjectFocused(AtkObject* object) {
+  AtkStateSet* state_set = atk_object_ref_state_set(object);
+  bool result = atk_state_set_contains_state(state_set, ATK_STATE_FOCUSED);
+  g_object_unref(state_set);
+  return result;
+}
+
 }  // namespace
 
 class AccessibilityAuraLinuxBrowserTest : public AccessibilityBrowserTest {
@@ -1011,13 +1018,6 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
 IN_PROC_BROWSER_TEST_F(
     AccessibilityAuraLinuxBrowserTest,
     DISABLED_TestSetCaretSetsSequentialFocusNavigationStartingPoint) {
-  auto is_focused = [](AtkObject* object) {
-    AtkStateSet* state_set = atk_object_ref_state_set(object);
-    bool result = atk_state_set_contains_state(state_set, ATK_STATE_FOCUSED);
-    g_object_unref(state_set);
-    return result;
-  };
-
   LoadInitialAccessibilityTreeFromHtml(
       R"HTML(<!DOCTYPE html>
       <html>
@@ -1065,7 +1065,7 @@ IN_PROC_BROWSER_TEST_F(
   SimulateKeyPress(shell()->web_contents(), ui::DomKey::TAB, ui::DomCode::TAB,
                    ui::VKEY_TAB, false, false, false, false);
   waiter->WaitForNotification();
-  ASSERT_TRUE(is_focused(child_3));
+  ASSERT_TRUE(IsAtkObjectFocused(child_3));
 
   // Now we repeat a similar test, but this time setting the caret offset on
   // the document. In this case, the sequential navigation starting point
@@ -1079,7 +1079,7 @@ IN_PROC_BROWSER_TEST_F(
                    ui::VKEY_TAB, false, false, false, false);
   waiter->WaitForNotification();
 
-  ASSERT_TRUE(is_focused(child_7));
+  ASSERT_TRUE(IsAtkObjectFocused(child_7));
 
   // Now test setting the caret in a node that can accept focus. That
   // node should actually receive focus.
@@ -1087,7 +1087,7 @@ IN_PROC_BROWSER_TEST_F(
   SimulateKeyPress(shell()->web_contents(), ui::DomKey::TAB, ui::DomCode::TAB,
                    ui::VKEY_TAB, false, false, false, false);
   waiter->WaitForNotification();
-  ASSERT_TRUE(is_focused(child_3));
+  ASSERT_TRUE(IsAtkObjectFocused(child_3));
 
   AtkObject* link_section = atk_object_ref_accessible_child(child_7, 0);
   EXPECT_NE(link_section, nullptr);
@@ -1095,13 +1095,96 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_NE(link_text, nullptr);
   atk_text_set_caret_offset(ATK_TEXT(link_text), 0);
   waiter->WaitForNotification();
-  ASSERT_TRUE(is_focused(child_7));
+  ASSERT_TRUE(IsAtkObjectFocused(child_7));
 
   g_object_unref(link_section);
   g_object_unref(link_text);
   g_object_unref(child_2);
   g_object_unref(child_3);
   g_object_unref(child_7);
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
+                       TestFocusInputTextFields) {
+  auto verify_selection = [](AtkObject* object, const char* selection) {
+    gchar* selected_text =
+        atk_text_get_selection(ATK_TEXT(object), 0, nullptr, nullptr);
+    EXPECT_STREQ(selected_text, selection);
+    g_free(selected_text);
+
+    int n_selections = atk_text_get_n_selections(ATK_TEXT(object));
+    EXPECT_EQ(n_selections, selection ? 1 : 0);
+  };
+
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<!DOCTYPE html>
+      <html>
+      <body>
+      <div>
+        <input value="First Field">
+        <input value="Second Field">
+        <input value="Third Field">
+        <input value="Fourth Field">
+      </div>
+      </body>
+      </html>)HTML");
+
+  // Retrieve the AtkObject interface for the document node.
+  AtkObject* document = GetRendererAccessible();
+  ASSERT_TRUE(ATK_IS_COMPONENT(document));
+
+  AtkObject* container = atk_object_ref_accessible_child(document, 0);
+
+  AtkObject* field_1 = atk_object_ref_accessible_child(container, 0);
+  AtkObject* field_2 = atk_object_ref_accessible_child(container, 1);
+  AtkObject* field_3 = atk_object_ref_accessible_child(container, 2);
+  AtkObject* field_4 = atk_object_ref_accessible_child(container, 3);
+  EXPECT_NE(field_1, nullptr);
+  EXPECT_NE(field_2, nullptr);
+  EXPECT_NE(field_3, nullptr);
+  EXPECT_NE(field_4, nullptr);
+
+  auto waiter = std::make_unique<AccessibilityNotificationWaiter>(
+      shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kFocus);
+  atk_component_grab_focus(ATK_COMPONENT(field_1));
+  waiter->WaitForNotification();
+
+  waiter = std::make_unique<AccessibilityNotificationWaiter>(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kTextSelectionChanged);
+  EXPECT_TRUE(atk_text_set_selection(ATK_TEXT(field_1), 0, 0, 5));
+  waiter->WaitForNotification();
+
+  EXPECT_TRUE(atk_text_set_selection(ATK_TEXT(field_2), 0, 0, -1));
+  waiter->WaitForNotification();
+
+  // Only the field that is currently focused should return a selection.
+  ASSERT_FALSE(IsAtkObjectFocused(field_1));
+  ASSERT_TRUE(IsAtkObjectFocused(field_2));
+  verify_selection(field_1, nullptr);
+  verify_selection(field_2, "Second Field");
+  verify_selection(field_3, nullptr);
+  verify_selection(field_4, nullptr);
+
+  waiter = std::make_unique<AccessibilityNotificationWaiter>(
+      shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kFocus);
+  atk_component_grab_focus(ATK_COMPONENT(field_1));
+  waiter->WaitForNotification();
+
+  // Now that the focus has returned to the first field, it should return the
+  // original selection that we set on it.
+  ASSERT_TRUE(IsAtkObjectFocused(field_1));
+  ASSERT_FALSE(IsAtkObjectFocused(field_2));
+  verify_selection(field_1, "First");
+  verify_selection(field_2, nullptr);
+  verify_selection(field_3, nullptr);
+  verify_selection(field_4, nullptr);
+
+  g_object_unref(field_1);
+  g_object_unref(field_2);
+  g_object_unref(field_3);
+  g_object_unref(field_4);
+  g_object_unref(container);
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,

@@ -281,6 +281,8 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
                                          const gfx::ExtensionSet& extensions) {
   ext.b_GL_AMD_framebuffer_multisample_advanced =
       gfx::HasExtension(extensions, "GL_AMD_framebuffer_multisample_advanced");
+  ext.b_GL_ANGLE_base_vertex_base_instance =
+      gfx::HasExtension(extensions, "GL_ANGLE_base_vertex_base_instance");
   ext.b_GL_ANGLE_framebuffer_blit =
       gfx::HasExtension(extensions, "GL_ANGLE_framebuffer_blit");
   ext.b_GL_ANGLE_framebuffer_multisample =
@@ -936,6 +938,12 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glDrawArraysInstancedANGLE"));
   }
 
+  if (ext.b_GL_ANGLE_base_vertex_base_instance) {
+    fn.glDrawArraysInstancedBaseInstanceANGLEFn =
+        reinterpret_cast<glDrawArraysInstancedBaseInstanceANGLEProc>(
+            GetGLProcAddress("glDrawArraysInstancedBaseInstanceANGLE"));
+  }
+
   if (!ver->is_es) {
     fn.glDrawBufferFn =
         reinterpret_cast<glDrawBufferProc>(GetGLProcAddress("glDrawBuffer"));
@@ -969,6 +977,12 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
     fn.glDrawElementsInstancedANGLEFn =
         reinterpret_cast<glDrawElementsInstancedANGLEProc>(
             GetGLProcAddress("glDrawElementsInstancedANGLE"));
+  }
+
+  if (ext.b_GL_ANGLE_base_vertex_base_instance) {
+    fn.glDrawElementsInstancedBaseVertexBaseInstanceANGLEFn = reinterpret_cast<
+        glDrawElementsInstancedBaseVertexBaseInstanceANGLEProc>(
+        GetGLProcAddress("glDrawElementsInstancedBaseVertexBaseInstanceANGLE"));
   }
 
   if (!ver->is_es || ver->IsAtLeastGLES(3u, 0u)) {
@@ -1977,6 +1991,12 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glMultiDrawArraysInstancedANGLE"));
   }
 
+  if (ext.b_GL_ANGLE_base_vertex_base_instance) {
+    fn.glMultiDrawArraysInstancedBaseInstanceANGLEFn =
+        reinterpret_cast<glMultiDrawArraysInstancedBaseInstanceANGLEProc>(
+            GetGLProcAddress("glMultiDrawArraysInstancedBaseInstanceANGLE"));
+  }
+
   if (ext.b_GL_ANGLE_multi_draw) {
     fn.glMultiDrawElementsANGLEFn =
         reinterpret_cast<glMultiDrawElementsANGLEProc>(
@@ -1987,6 +2007,14 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
     fn.glMultiDrawElementsInstancedANGLEFn =
         reinterpret_cast<glMultiDrawElementsInstancedANGLEProc>(
             GetGLProcAddress("glMultiDrawElementsInstancedANGLE"));
+  }
+
+  if (ext.b_GL_ANGLE_base_vertex_base_instance) {
+    fn.glMultiDrawElementsInstancedBaseVertexBaseInstanceANGLEFn =
+        reinterpret_cast<
+            glMultiDrawElementsInstancedBaseVertexBaseInstanceANGLEProc>(
+            GetGLProcAddress(
+                "glMultiDrawElementsInstancedBaseVertexBaseInstanceANGLE"));
   }
 
   if (ver->IsAtLeastGL(4u, 3u) || ver->IsAtLeastGLES(3u, 2u)) {
@@ -3521,6 +3549,15 @@ void GLApiBase::glDrawArraysInstancedANGLEFn(GLenum mode,
   driver_->fn.glDrawArraysInstancedANGLEFn(mode, first, count, primcount);
 }
 
+void GLApiBase::glDrawArraysInstancedBaseInstanceANGLEFn(GLenum mode,
+                                                         GLint first,
+                                                         GLsizei count,
+                                                         GLsizei primcount,
+                                                         GLuint baseinstance) {
+  driver_->fn.glDrawArraysInstancedBaseInstanceANGLEFn(mode, first, count,
+                                                       primcount, baseinstance);
+}
+
 void GLApiBase::glDrawBufferFn(GLenum mode) {
   driver_->fn.glDrawBufferFn(mode);
 }
@@ -3549,6 +3586,18 @@ void GLApiBase::glDrawElementsInstancedANGLEFn(GLenum mode,
                                                GLsizei primcount) {
   driver_->fn.glDrawElementsInstancedANGLEFn(mode, count, type, indices,
                                              primcount);
+}
+
+void GLApiBase::glDrawElementsInstancedBaseVertexBaseInstanceANGLEFn(
+    GLenum mode,
+    GLsizei count,
+    GLenum type,
+    const void* indices,
+    GLsizei primcount,
+    GLint baseVertex,
+    GLuint baseInstance) {
+  driver_->fn.glDrawElementsInstancedBaseVertexBaseInstanceANGLEFn(
+      mode, count, type, indices, primcount, baseVertex, baseInstance);
 }
 
 void GLApiBase::glDrawRangeElementsFn(GLenum mode,
@@ -4757,6 +4806,17 @@ void GLApiBase::glMultiDrawArraysInstancedANGLEFn(GLenum mode,
                                                 instanceCounts, drawcount);
 }
 
+void GLApiBase::glMultiDrawArraysInstancedBaseInstanceANGLEFn(
+    GLenum mode,
+    const GLint* firsts,
+    const GLsizei* counts,
+    const GLsizei* instanceCounts,
+    const GLuint* baseInstances,
+    GLsizei drawcount) {
+  driver_->fn.glMultiDrawArraysInstancedBaseInstanceANGLEFn(
+      mode, firsts, counts, instanceCounts, baseInstances, drawcount);
+}
+
 void GLApiBase::glMultiDrawElementsANGLEFn(GLenum mode,
                                            const GLsizei* counts,
                                            GLenum type,
@@ -4775,6 +4835,20 @@ void GLApiBase::glMultiDrawElementsInstancedANGLEFn(
     GLsizei drawcount) {
   driver_->fn.glMultiDrawElementsInstancedANGLEFn(mode, counts, type, indices,
                                                   instanceCounts, drawcount);
+}
+
+void GLApiBase::glMultiDrawElementsInstancedBaseVertexBaseInstanceANGLEFn(
+    GLenum mode,
+    const GLsizei* counts,
+    GLenum type,
+    const GLvoid* const* indices,
+    const GLsizei* instanceCounts,
+    const GLint* baseVertices,
+    const GLuint* baseInstances,
+    GLsizei drawcount) {
+  driver_->fn.glMultiDrawElementsInstancedBaseVertexBaseInstanceANGLEFn(
+      mode, counts, type, indices, instanceCounts, baseVertices, baseInstances,
+      drawcount);
 }
 
 void GLApiBase::glObjectLabelFn(GLenum identifier,
@@ -6851,6 +6925,17 @@ void TraceGLApi::glDrawArraysInstancedANGLEFn(GLenum mode,
   gl_api_->glDrawArraysInstancedANGLEFn(mode, first, count, primcount);
 }
 
+void TraceGLApi::glDrawArraysInstancedBaseInstanceANGLEFn(GLenum mode,
+                                                          GLint first,
+                                                          GLsizei count,
+                                                          GLsizei primcount,
+                                                          GLuint baseinstance) {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "TraceGLAPI::glDrawArraysInstancedBaseInstanceANGLE")
+  gl_api_->glDrawArraysInstancedBaseInstanceANGLEFn(mode, first, count,
+                                                    primcount, baseinstance);
+}
+
 void TraceGLApi::glDrawBufferFn(GLenum mode) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDrawBuffer")
   gl_api_->glDrawBufferFn(mode);
@@ -6885,6 +6970,20 @@ void TraceGLApi::glDrawElementsInstancedANGLEFn(GLenum mode,
                                 "TraceGLAPI::glDrawElementsInstancedANGLE")
   gl_api_->glDrawElementsInstancedANGLEFn(mode, count, type, indices,
                                           primcount);
+}
+
+void TraceGLApi::glDrawElementsInstancedBaseVertexBaseInstanceANGLEFn(
+    GLenum mode,
+    GLsizei count,
+    GLenum type,
+    const void* indices,
+    GLsizei primcount,
+    GLint baseVertex,
+    GLuint baseInstance) {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "TraceGLAPI::glDrawElementsInstancedBaseVertexBaseInstanceANGLE")
+  gl_api_->glDrawElementsInstancedBaseVertexBaseInstanceANGLEFn(
+      mode, count, type, indices, primcount, baseVertex, baseInstance);
 }
 
 void TraceGLApi::glDrawRangeElementsFn(GLenum mode,
@@ -8322,6 +8421,19 @@ void TraceGLApi::glMultiDrawArraysInstancedANGLEFn(
                                              instanceCounts, drawcount);
 }
 
+void TraceGLApi::glMultiDrawArraysInstancedBaseInstanceANGLEFn(
+    GLenum mode,
+    const GLint* firsts,
+    const GLsizei* counts,
+    const GLsizei* instanceCounts,
+    const GLuint* baseInstances,
+    GLsizei drawcount) {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "TraceGLAPI::glMultiDrawArraysInstancedBaseInstanceANGLE")
+  gl_api_->glMultiDrawArraysInstancedBaseInstanceANGLEFn(
+      mode, firsts, counts, instanceCounts, baseInstances, drawcount);
+}
+
 void TraceGLApi::glMultiDrawElementsANGLEFn(GLenum mode,
                                             const GLsizei* counts,
                                             GLenum type,
@@ -8342,6 +8454,23 @@ void TraceGLApi::glMultiDrawElementsInstancedANGLEFn(
                                 "TraceGLAPI::glMultiDrawElementsInstancedANGLE")
   gl_api_->glMultiDrawElementsInstancedANGLEFn(mode, counts, type, indices,
                                                instanceCounts, drawcount);
+}
+
+void TraceGLApi::glMultiDrawElementsInstancedBaseVertexBaseInstanceANGLEFn(
+    GLenum mode,
+    const GLsizei* counts,
+    GLenum type,
+    const GLvoid* const* indices,
+    const GLsizei* instanceCounts,
+    const GLint* baseVertices,
+    const GLuint* baseInstances,
+    GLsizei drawcount) {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu",
+      "TraceGLAPI::glMultiDrawElementsInstancedBaseVertexBaseInstanceANGLE")
+  gl_api_->glMultiDrawElementsInstancedBaseVertexBaseInstanceANGLEFn(
+      mode, counts, type, indices, instanceCounts, baseVertices, baseInstances,
+      drawcount);
 }
 
 void TraceGLApi::glObjectLabelFn(GLenum identifier,
@@ -10870,6 +10999,18 @@ void DebugGLApi::glDrawArraysInstancedANGLEFn(GLenum mode,
   gl_api_->glDrawArraysInstancedANGLEFn(mode, first, count, primcount);
 }
 
+void DebugGLApi::glDrawArraysInstancedBaseInstanceANGLEFn(GLenum mode,
+                                                          GLint first,
+                                                          GLsizei count,
+                                                          GLsizei primcount,
+                                                          GLuint baseinstance) {
+  GL_SERVICE_LOG("glDrawArraysInstancedBaseInstanceANGLE"
+                 << "(" << GLEnums::GetStringEnum(mode) << ", " << first << ", "
+                 << count << ", " << primcount << ", " << baseinstance << ")");
+  gl_api_->glDrawArraysInstancedBaseInstanceANGLEFn(mode, first, count,
+                                                    primcount, baseinstance);
+}
+
 void DebugGLApi::glDrawBufferFn(GLenum mode) {
   GL_SERVICE_LOG("glDrawBuffer"
                  << "(" << GLEnums::GetStringEnum(mode) << ")");
@@ -10915,6 +11056,23 @@ void DebugGLApi::glDrawElementsInstancedANGLEFn(GLenum mode,
                  << ")");
   gl_api_->glDrawElementsInstancedANGLEFn(mode, count, type, indices,
                                           primcount);
+}
+
+void DebugGLApi::glDrawElementsInstancedBaseVertexBaseInstanceANGLEFn(
+    GLenum mode,
+    GLsizei count,
+    GLenum type,
+    const void* indices,
+    GLsizei primcount,
+    GLint baseVertex,
+    GLuint baseInstance) {
+  GL_SERVICE_LOG("glDrawElementsInstancedBaseVertexBaseInstanceANGLE"
+                 << "(" << GLEnums::GetStringEnum(mode) << ", " << count << ", "
+                 << GLEnums::GetStringEnum(type) << ", "
+                 << static_cast<const void*>(indices) << ", " << primcount
+                 << ", " << baseVertex << ", " << baseInstance << ")");
+  gl_api_->glDrawElementsInstancedBaseVertexBaseInstanceANGLEFn(
+      mode, count, type, indices, primcount, baseVertex, baseInstance);
 }
 
 void DebugGLApi::glDrawRangeElementsFn(GLenum mode,
@@ -12844,6 +13002,24 @@ void DebugGLApi::glMultiDrawArraysInstancedANGLEFn(
                                              instanceCounts, drawcount);
 }
 
+void DebugGLApi::glMultiDrawArraysInstancedBaseInstanceANGLEFn(
+    GLenum mode,
+    const GLint* firsts,
+    const GLsizei* counts,
+    const GLsizei* instanceCounts,
+    const GLuint* baseInstances,
+    GLsizei drawcount) {
+  GL_SERVICE_LOG("glMultiDrawArraysInstancedBaseInstanceANGLE"
+                 << "(" << GLEnums::GetStringEnum(mode) << ", "
+                 << static_cast<const void*>(firsts) << ", "
+                 << static_cast<const void*>(counts) << ", "
+                 << static_cast<const void*>(instanceCounts) << ", "
+                 << static_cast<const void*>(baseInstances) << ", " << drawcount
+                 << ")");
+  gl_api_->glMultiDrawArraysInstancedBaseInstanceANGLEFn(
+      mode, firsts, counts, instanceCounts, baseInstances, drawcount);
+}
+
 void DebugGLApi::glMultiDrawElementsANGLEFn(GLenum mode,
                                             const GLsizei* counts,
                                             GLenum type,
@@ -12872,6 +13048,28 @@ void DebugGLApi::glMultiDrawElementsInstancedANGLEFn(
                  << drawcount << ")");
   gl_api_->glMultiDrawElementsInstancedANGLEFn(mode, counts, type, indices,
                                                instanceCounts, drawcount);
+}
+
+void DebugGLApi::glMultiDrawElementsInstancedBaseVertexBaseInstanceANGLEFn(
+    GLenum mode,
+    const GLsizei* counts,
+    GLenum type,
+    const GLvoid* const* indices,
+    const GLsizei* instanceCounts,
+    const GLint* baseVertices,
+    const GLuint* baseInstances,
+    GLsizei drawcount) {
+  GL_SERVICE_LOG("glMultiDrawElementsInstancedBaseVertexBaseInstanceANGLE"
+                 << "(" << GLEnums::GetStringEnum(mode) << ", "
+                 << static_cast<const void*>(counts) << ", "
+                 << GLEnums::GetStringEnum(type) << ", " << indices << ", "
+                 << static_cast<const void*>(instanceCounts) << ", "
+                 << static_cast<const void*>(baseVertices) << ", "
+                 << static_cast<const void*>(baseInstances) << ", " << drawcount
+                 << ")");
+  gl_api_->glMultiDrawElementsInstancedBaseVertexBaseInstanceANGLEFn(
+      mode, counts, type, indices, instanceCounts, baseVertices, baseInstances,
+      drawcount);
 }
 
 void DebugGLApi::glObjectLabelFn(GLenum identifier,
@@ -15491,6 +15689,15 @@ void NoContextGLApi::glDrawArraysInstancedANGLEFn(GLenum mode,
   NoContextHelper("glDrawArraysInstancedANGLE");
 }
 
+void NoContextGLApi::glDrawArraysInstancedBaseInstanceANGLEFn(
+    GLenum mode,
+    GLint first,
+    GLsizei count,
+    GLsizei primcount,
+    GLuint baseinstance) {
+  NoContextHelper("glDrawArraysInstancedBaseInstanceANGLE");
+}
+
 void NoContextGLApi::glDrawBufferFn(GLenum mode) {
   NoContextHelper("glDrawBuffer");
 }
@@ -15518,6 +15725,17 @@ void NoContextGLApi::glDrawElementsInstancedANGLEFn(GLenum mode,
                                                     const void* indices,
                                                     GLsizei primcount) {
   NoContextHelper("glDrawElementsInstancedANGLE");
+}
+
+void NoContextGLApi::glDrawElementsInstancedBaseVertexBaseInstanceANGLEFn(
+    GLenum mode,
+    GLsizei count,
+    GLenum type,
+    const void* indices,
+    GLsizei primcount,
+    GLint baseVertex,
+    GLuint baseInstance) {
+  NoContextHelper("glDrawElementsInstancedBaseVertexBaseInstanceANGLE");
 }
 
 void NoContextGLApi::glDrawRangeElementsFn(GLenum mode,
@@ -16716,6 +16934,16 @@ void NoContextGLApi::glMultiDrawArraysInstancedANGLEFn(
   NoContextHelper("glMultiDrawArraysInstancedANGLE");
 }
 
+void NoContextGLApi::glMultiDrawArraysInstancedBaseInstanceANGLEFn(
+    GLenum mode,
+    const GLint* firsts,
+    const GLsizei* counts,
+    const GLsizei* instanceCounts,
+    const GLuint* baseInstances,
+    GLsizei drawcount) {
+  NoContextHelper("glMultiDrawArraysInstancedBaseInstanceANGLE");
+}
+
 void NoContextGLApi::glMultiDrawElementsANGLEFn(GLenum mode,
                                                 const GLsizei* counts,
                                                 GLenum type,
@@ -16732,6 +16960,18 @@ void NoContextGLApi::glMultiDrawElementsInstancedANGLEFn(
     const GLsizei* instanceCounts,
     GLsizei drawcount) {
   NoContextHelper("glMultiDrawElementsInstancedANGLE");
+}
+
+void NoContextGLApi::glMultiDrawElementsInstancedBaseVertexBaseInstanceANGLEFn(
+    GLenum mode,
+    const GLsizei* counts,
+    GLenum type,
+    const GLvoid* const* indices,
+    const GLsizei* instanceCounts,
+    const GLint* baseVertices,
+    const GLuint* baseInstances,
+    GLsizei drawcount) {
+  NoContextHelper("glMultiDrawElementsInstancedBaseVertexBaseInstanceANGLE");
 }
 
 void NoContextGLApi::glObjectLabelFn(GLenum identifier,

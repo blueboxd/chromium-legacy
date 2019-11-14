@@ -40,6 +40,7 @@
 #import "ios/chrome/browser/ui/settings/password/password_details_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/password_details_table_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_exporter.h"
+#import "ios/chrome/browser/ui/settings/password/passwords_table_view_constants.h"
 #import "ios/chrome/browser/ui/settings/password/reauthentication_module.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/settings/utils/settings_utils.h"
@@ -62,11 +63,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-NSString* const kPasswordsTableViewId = @"PasswordsTableViewId";
-NSString* const kPasswordsExportConfirmViewId = @"PasswordsExportConfirmViewId";
-NSString* const kPasswordsSearchBarId = @"PasswordsSearchBar";
-NSString* const kPasswordsScrimViewId = @"PasswordsScrimViewId";
 
 namespace {
 

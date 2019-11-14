@@ -576,7 +576,7 @@ void RenderFrameProxyHost::OnAdvanceFocus(blink::WebFocusType type,
       source_rfh);
 }
 
-void RenderFrameProxyHost::FrameFocused() {
+void RenderFrameProxyHost::DidFocusFrame() {
   frame_tree_node_->current_frame_host()->delegate()->SetFocusedFrame(
       frame_tree_node_, GetSiteInstance());
 }

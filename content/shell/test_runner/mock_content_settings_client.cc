@@ -19,7 +19,7 @@ MockContentSettingsClient::MockContentSettingsClient(
     WebTestRuntimeFlags* web_test_runtime_flags)
     : delegate_(nullptr), flags_(web_test_runtime_flags) {
   mojo::PendingRemote<client_hints::mojom::ClientHints> host_observer;
-  blink::Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+  blink::Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
       host_observer.InitWithNewPipeAndPassReceiver());
   remote_.Bind(std::move(host_observer));
 }

@@ -74,7 +74,9 @@ public class CurrentPageVerifierTest {
         MockitoAnnotations.initMocks(this);
         when(mTabProvider.getTab()).thenReturn(mTab);
         when(mClientPackageNameProvider.get()).thenReturn(PACKAGE_NAME);
-        doNothing().when(mTabObserverRegistrar).registerTabObserver(mTabObserverCaptor.capture());
+        doNothing()
+                .when(mTabObserverRegistrar)
+                .registerActivityTabObserver(mTabObserverCaptor.capture());
         when(mIntentDataProvider.getTrustedWebActivityAdditionalOrigins())
                 .thenReturn(Collections.singletonList("https://www.origin2.com/"));
         mCurrentPageVerifier = new CurrentPageVerifier(mLifecycleDispatcher, mTabObserverRegistrar,

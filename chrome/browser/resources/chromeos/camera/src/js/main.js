@@ -25,11 +25,11 @@ cca.App = function() {
   this.gallery_ = new cca.models.Gallery();
 
   /**
-   * @type {cca.device.PhotoResolPreferrer}
+   * @type {cca.device.PhotoConstraintsPreferrer}
    * @private
    */
-  this.photoPreferrer_ =
-      new cca.device.PhotoResolPreferrer(() => this.cameraView_.restart());
+  this.photoPreferrer_ = new cca.device.PhotoConstraintsPreferrer(
+      () => this.cameraView_.restart());
 
   /**
    * @type {cca.device.VideoConstraintsPreferrer}

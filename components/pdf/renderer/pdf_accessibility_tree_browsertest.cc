@@ -168,8 +168,6 @@ class PdfAccessibilityTreeTest : public content::RenderViewTest {
     page_info_.page_index = 0;
     page_info_.text_run_count = 0;
     page_info_.char_count = 0;
-    page_info_.link_count = 0;
-    page_info_.image_count = 0;
     page_info_.bounds = PP_MakeRectFromXYWH(0, 0, 1, 1);
   }
 
@@ -255,8 +253,6 @@ TEST_F(PdfAccessibilityTreeTest, TestPdfAccessibilityTreeCreation) {
 
   page_info_.text_run_count = text_runs_.size();
   page_info_.char_count = chars_.size();
-  page_info_.link_count = links_.size();
-  page_info_.image_count = images_.size();
 
   content::RenderFrame* render_frame = view_->GetMainRenderFrame();
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
@@ -353,7 +349,6 @@ TEST_F(PdfAccessibilityTreeTest, TestPreviousNextOnLine) {
 
   page_info_.text_run_count = text_runs_.size();
   page_info_.char_count = chars_.size();
-  page_info_.link_count = links_.size();
 
   content::RenderFrame* render_frame = view_->GetMainRenderFrame();
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
@@ -512,7 +507,6 @@ TEST_F(PdfAccessibilityTreeTest, UnsortedLinkVector) {
 
   page_info_.text_run_count = text_runs_.size();
   page_info_.char_count = chars_.size();
-  page_info_.link_count = links_.size();
 
   content::RenderFrame* render_frame = view_->GetMainRenderFrame();
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
@@ -548,7 +542,6 @@ TEST_F(PdfAccessibilityTreeTest, OutOfBoundLink) {
 
   page_info_.text_run_count = text_runs_.size();
   page_info_.char_count = chars_.size();
-  page_info_.link_count = links_.size();
 
   content::RenderFrame* render_frame = view_->GetMainRenderFrame();
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
@@ -592,7 +585,6 @@ TEST_F(PdfAccessibilityTreeTest, UnsortedImageVector) {
 
   page_info_.text_run_count = text_runs_.size();
   page_info_.char_count = chars_.size();
-  page_info_.image_count = images_.size();
 
   content::RenderFrame* render_frame = view_->GetMainRenderFrame();
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
@@ -627,7 +619,6 @@ TEST_F(PdfAccessibilityTreeTest, OutOfBoundImage) {
 
   page_info_.text_run_count = text_runs_.size();
   page_info_.char_count = chars_.size();
-  page_info_.image_count = images_.size();
 
   content::RenderFrame* render_frame = view_->GetMainRenderFrame();
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);
@@ -739,7 +730,6 @@ TEST_F(PdfAccessibilityTreeTest, TestClickActionDataConversion) {
 
   page_info_.text_run_count = text_runs_.size();
   page_info_.char_count = chars_.size();
-  page_info_.link_count = links_.size();
 
   content::RenderFrame* render_frame = view_->GetMainRenderFrame();
   render_frame->SetAccessibilityModeForTest(ui::AXMode::kWebContents);

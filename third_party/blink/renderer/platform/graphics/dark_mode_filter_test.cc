@@ -49,6 +49,13 @@ TEST(DarkModeFilterTest, ApplyDarkModeToColorsAndFlags) {
             filter.InvertColorIfNeeded(
                 Color::kBlack, DarkModeFilter::ElementRole::kBackground));
 
+  EXPECT_EQ(Color::kWhite,
+            filter.InvertColorIfNeeded(Color::kWhite,
+                                       DarkModeFilter::ElementRole::kSVG));
+  EXPECT_EQ(Color::kBlack,
+            filter.InvertColorIfNeeded(Color::kBlack,
+                                       DarkModeFilter::ElementRole::kSVG));
+
   cc::PaintFlags flags;
   flags.setColor(SK_ColorWHITE);
   auto flags_or_nullopt = filter.ApplyToFlagsIfNeeded(

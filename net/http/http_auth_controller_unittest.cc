@@ -189,7 +189,7 @@ TEST(HttpAuthControllerTest, NoExplicitCredentialsAllowed) {
       set_allows_explicit_credentials(false);
       set_connection_based(true);
       // Pretend to be SCHEME_BASIC so we can test failover logic.
-      if (challenge->scheme() == "Basic") {
+      if (challenge->auth_scheme() == "basic") {
         auth_scheme_ = HttpAuth::AUTH_SCHEME_BASIC;
         --score_;  // Reduce score, so we rank below Mock.
         set_allows_explicit_credentials(true);

@@ -567,6 +567,10 @@ bool LocalFrame::BubbleLogicalScrollFromChildFrame(
                                           owner_element);
 }
 
+void LocalFrame::DidFocus() {
+  GetLocalFrameHostRemote().DidFocusFrame();
+}
+
 void LocalFrame::DidChangeThemeColor() {
   if (Tree().Parent())
     return;
@@ -1499,7 +1503,7 @@ const base::UnguessableToken& LocalFrame::GetAgentClusterId() const {
 const mojo::Remote<mojom::blink::ReportingServiceProxy>&
 LocalFrame::GetReportingService() const {
   if (!reporting_service_) {
-    Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+    Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
         reporting_service_.BindNewPipeAndPassReceiver());
   }
   return reporting_service_;

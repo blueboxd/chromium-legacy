@@ -81,6 +81,9 @@ interface LocalFrameHost {
   // and indicates if a theme color has been specified or not, e.g. removal
   // of a theme color meta tag  will generate a null value.
   DidChangeThemeColor(skia.mojom.SkColor? theme_color);
+
+  // Sent by the renderer when the associated frame becomes focused.
+  DidFocusFrame();
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will
@@ -136,6 +139,9 @@ interface RemoteFrameHost {
   // of the viewport, or the need for a layout object changes, e.g. if the
   // frame owner assigns a display: none style.
   VisibilityChanged(blink.mojom.FrameVisibility visibility);
+
+  // Sent by the renderer when the frame becomes focused.
+  DidFocusFrame();
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will

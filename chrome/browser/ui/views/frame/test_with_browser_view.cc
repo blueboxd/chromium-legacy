@@ -11,6 +11,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
+#include "chrome/browser/extensions/extension_action_test_util.h"
+#include "chrome/browser/extensions/load_error_reporter.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/search_engines/chrome_template_url_service_client.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -102,6 +104,10 @@ TestingProfile* TestWithBrowserView::CreateProfile() {
   // location bar.
   AutocompleteClassifierFactory::GetInstance()->SetTestingFactory(
       profile, base::BindRepeating(&CreateAutocompleteClassifier));
+  // ToolbarActionsModel must exist before the toolbar initializes the
+  // extensions area.
+  extensions::LoadErrorReporter::Init(/* enable_noisy_errors */ false);
+  extensions::extension_action_test_util::CreateToolbarModelForProfile(profile);
 
   // Configure the GaiaCookieManagerService to return no accounts.
   signin::SetListAccountsResponseHttpNotFound(test_url_loader_factory());

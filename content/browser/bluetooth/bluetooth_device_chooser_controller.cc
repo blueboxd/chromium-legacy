@@ -232,8 +232,8 @@ void RecordScanningDuration(const base::TimeDelta& duration) {
 BluetoothDeviceChooserController::BluetoothDeviceChooserController(
     WebBluetoothServiceImpl* web_bluetooth_service,
     RenderFrameHost* render_frame_host,
-    device::BluetoothAdapter* adapter)
-    : adapter_(adapter),
+    scoped_refptr<device::BluetoothAdapter> adapter)
+    : adapter_(std::move(adapter)),
       web_bluetooth_service_(web_bluetooth_service),
       render_frame_host_(render_frame_host),
       web_contents_(WebContents::FromRenderFrameHost(render_frame_host_)),

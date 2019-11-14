@@ -116,6 +116,9 @@ NET_EXPORT extern const base::Feature kCertVerifierBuiltinFeature;
 
 NET_EXPORT extern const base::Feature kAppendFrameOriginToNetworkIsolationKey;
 
+NET_EXPORT extern const base::Feature
+    kUseRegistrableDomainInNetworkIsolationKey;
+
 // Turns off streaming media caching to disk.
 NET_EXPORT extern const base::Feature kTurnOffStreamingMediaCaching;
 

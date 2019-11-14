@@ -187,7 +187,7 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport(
   std::string flags("--expose-gc");
   v8::V8::SetFlagsFromString(flags.c_str(), flags.size());
 
-  GetBrowserInterfaceBrokerProxy()->SetBinderForTesting(
+  GetBrowserInterfaceBroker()->SetBinderForTesting(
       blink::mojom::ClipboardHost::Name_,
       base::BindRepeating(&TestBlinkWebUnitTestSupport::BindClipboardHost,
                           weak_factory_.GetWeakPtr()));

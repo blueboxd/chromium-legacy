@@ -6,6 +6,7 @@
 #define COMPONENTS_SYNC_TEST_FAKE_SERVER_FAKE_SERVER_NETWORK_RESOURCES_H_
 
 #include <memory>
+#include <string>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -30,6 +31,7 @@ class FakeServerNetworkResources : public syncer::NetworkResources {
 
   // NetworkResources
   std::unique_ptr<syncer::HttpPostProviderFactory> GetHttpPostProviderFactory(
+      const std::string& user_agent,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           url_loader_factory_info,
       const syncer::NetworkTimeUpdateCallback& network_time_update_callback)

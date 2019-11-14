@@ -121,7 +121,7 @@ HttpAuth::AuthorizationResult HttpAuthHandlerMock::HandleAnotherChallengeImpl(
     return HttpAuth::AUTHORIZATION_RESULT_REJECT;
   }
 
-  if (!base::LowerCaseEqualsASCII(challenge->scheme(), "mock")) {
+  if (challenge->auth_scheme() != "mock") {
     state_ = State::DONE;
     return HttpAuth::AUTHORIZATION_RESULT_INVALID;
   }

@@ -494,6 +494,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   self.currentPageViewController.view.accessibilityElementsHidden = YES;
   _currentPage = currentPage;
   self.currentPageViewController.view.accessibilityElementsHidden = NO;
+  // Force VoiceOver to update its accessibility element tree immediately.
+  UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification,
+                                  nil);
 }
 
 // Sets the value of |currentPage|, adjusting the position of the scroll view
@@ -503,6 +506,14 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   // This method should never early return if |targetPage| == |_currentPage|;
   // the ivar may have been set before the scroll view could be updated. Calling
   // this method should always update the scroll view's offset if possible.
+
+  // When VoiceOver is running, the animation can cause state to get out of
+  // sync. If the user swipes right during the animation, the VoiceOver cursor
+  // goes to the old page, instead of the new page. See crbug.com/978673 for
+  // more details.
+  if (UIAccessibilityIsVoiceOverRunning()) {
+    animated = NO;
+  }
 
   // If the view isn't loaded yet, just do bookkeeping on |currentPage|.
   if (!self.viewLoaded) {

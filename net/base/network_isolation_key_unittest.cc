@@ -288,6 +288,27 @@ TEST(NetworkIsolationKeyTest, FromValueBadData) {
   }
 }
 
+TEST(NetworkIsolationKeyTest, UseRegistrableDomain) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      net::features::kUseRegistrableDomainInNetworkIsolationKey);
+
+  // Both origins are non-opaque.
+  url::Origin origin_a = url::Origin::Create(GURL("http://a.foo.test:80"));
+  url::Origin origin_b = url::Origin::Create(GURL("https://b.foo.test:2395"));
+
+  // Resultant NIK should have the same scheme as the initial origin and
+  // default port. Note that frame_origin will be empty as triple keying is not
+  // enabled.
+  url::Origin expected_domain_a = url::Origin::Create(GURL("http://foo.test"));
+  net::NetworkIsolationKey key(origin_a, origin_b);
+  EXPECT_EQ(expected_domain_a, key.GetTopFrameOrigin().value());
+  EXPECT_FALSE(key.GetFrameOrigin().has_value());
+
+  // More tests for using registrable domain are in
+  // NetworkIsolationKeyWithFrameOriginTest.UseRegistrableDomain.
+}
+
 class NetworkIsolationKeyWithFrameOriginTest : public testing::Test {
  public:
   NetworkIsolationKeyWithFrameOriginTest() {
@@ -371,6 +392,45 @@ TEST_F(NetworkIsolationKeyWithFrameOriginTest, OpaqueOriginKeyBoth) {
   EXPECT_EQ("", key1.ToString());
   EXPECT_EQ("", key2.ToString());
   EXPECT_EQ("", key3.ToString());
+}
+
+TEST_F(NetworkIsolationKeyWithFrameOriginTest, UseRegistrableDomain) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {net::features::kAppendFrameOriginToNetworkIsolationKey,
+       net::features::kUseRegistrableDomainInNetworkIsolationKey},
+      {});
+
+  // Both origins are non-opaque.
+  url::Origin origin_a = url::Origin::Create(GURL("http://a.foo.test:80"));
+  url::Origin origin_b = url::Origin::Create(GURL("https://b.foo.test:2395"));
+
+  // Resultant NIK should have the same schemes as the initial origins and
+  // default port.
+  url::Origin expected_domain_a = url::Origin::Create(GURL("http://foo.test"));
+  url::Origin expected_domain_b = url::Origin::Create(GURL("https://foo.test"));
+  net::NetworkIsolationKey key(origin_a, origin_b);
+  EXPECT_EQ(expected_domain_a, key.GetTopFrameOrigin().value());
+  EXPECT_EQ(expected_domain_b, key.GetFrameOrigin().value());
+
+  // Top frame origin is opaque but not the frame origin.
+  url::Origin origin_data =
+      url::Origin::Create(GURL("data:text/html,<body>Hello World</body>"));
+  key = NetworkIsolationKey(origin_data, origin_b);
+  EXPECT_TRUE(key.GetTopFrameOrigin()->opaque());
+  EXPECT_EQ(origin_data, key.GetTopFrameOrigin().value());
+  EXPECT_EQ(expected_domain_b, key.GetFrameOrigin().value());
+
+  // Top frame origin is non-opaque but frame origin is opaque.
+  key = NetworkIsolationKey(origin_a, origin_data);
+  EXPECT_EQ(expected_domain_a, key.GetTopFrameOrigin().value());
+  EXPECT_EQ(origin_data, key.GetFrameOrigin().value());
+  EXPECT_TRUE(key.GetFrameOrigin()->opaque());
+
+  // Empty NIK stays empty.
+  net::NetworkIsolationKey empty_key;
+  EXPECT_FALSE(empty_key.GetTopFrameOrigin().has_value());
+  EXPECT_FALSE(empty_key.GetFrameOrigin().has_value());
 }
 
 }  // namespace net

@@ -16,7 +16,6 @@ namespace KeyEventHandled = extensions::api::input_ime::KeyEventHandled;
 namespace SetComposition = extensions::api::input_ime::SetComposition;
 namespace CommitText = extensions::api::input_ime::CommitText;
 namespace SendKeyEvents = extensions::api::input_ime::SendKeyEvents;
-using ui::IMEEngineHandlerInterface;
 using input_method::InputMethodEngineBase;
 
 namespace {

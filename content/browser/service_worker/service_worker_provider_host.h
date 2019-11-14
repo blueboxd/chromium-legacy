@@ -788,6 +788,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   base::Optional<network::mojom::CrossOriginEmbedderPolicy>
       cross_origin_embedder_policy_;
 
+  // TODO(yuzus): This bit will be unnecessary once ServiceWorkerProviderHost
+  // and RenderFrameHost have the same lifetime.
+  bool is_in_back_forward_cache_;
+
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderHost);
 };
 

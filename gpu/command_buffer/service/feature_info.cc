@@ -1574,6 +1574,40 @@ void FeatureInfo::InitializeFeatures() {
     }
   }
 
+#if defined(OS_MACOSX)
+  if (false) {
+#else
+  if ((!is_passthrough_cmd_decoder_ &&
+       ((gl_version_info_->IsAtLeastGLES(3, 2) &&
+         gfx::HasExtension(extensions, "GL_EXT_base_instance")) ||
+        (gl_version_info_->is_desktop_core_profile &&
+         gl_version_info_->IsAtLeastGL(4, 2)))) ||
+      gfx::HasExtension(extensions, "GL_ANGLE_base_vertex_base_instance")) {
+#endif
+    // TODO(shrekshao): change condition to the following after workaround for
+    // Mac AMD and non-native base instance support are implemented, or when
+    // angle is universally used.
+    //
+    // if ((!is_passthrough_cmd_decoder_ &&
+    //      ((gl_version_info_->IsAtLeastGLES(3, 2) ||
+    //        gfx::HasExtension(extensions,
+    //          "GL_OES_draw_elements_base_vertex_base_instance") ||
+    //        gfx::HasExtension(extensions,
+    //          "GL_EXT_draw_elements_base_vertex_base_instance")) ||
+    //       (gl_version_info_->is_desktop_core_profile &&
+    //        gl_version_info_->IsAtLeastGL(3, 2)))) ||
+    //     gfx::HasExtension(extensions, "GL_ANGLE_base_vertex_base_instance"))
+    //     {
+    feature_flags_.webgl_draw_instanced_base_vertex_base_instance = true;
+    AddExtensionString("GL_WEBGL_draw_instanced_base_vertex_base_instance");
+    if (feature_flags_.webgl_multi_draw) {
+      feature_flags_.webgl_multi_draw_instanced_base_vertex_base_instance =
+          true;
+      AddExtensionString(
+          "GL_WEBGL_multi_draw_instanced_base_vertex_base_instance");
+    }
+  }
+
   if (gfx::HasExtension(extensions, "GL_NV_internalformat_sample_query")) {
     feature_flags_.nv_internalformat_sample_query = true;
   }

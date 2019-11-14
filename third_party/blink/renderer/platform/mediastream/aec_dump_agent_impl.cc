@@ -13,7 +13,7 @@ namespace blink {
 // static
 std::unique_ptr<AecDumpAgentImpl> AecDumpAgentImpl::Create(Delegate* delegate) {
   mojo::Remote<mojom::blink::AecDumpManager> manager;
-  Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+  Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
       manager.BindNewPipeAndPassReceiver());
 
   mojo::PendingRemote<AecDumpAgent> remote;

@@ -39,6 +39,7 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
   void VisibilityChanged(mojom::blink::FrameVisibility visibility) override;
   void DidChangeThemeColor(
       const base::Optional<::SkColor>& theme_color) override;
+  void DidFocusFrame() override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

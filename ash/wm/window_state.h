@@ -329,6 +329,11 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   const DragDetails* drag_details() const { return drag_details_.get(); }
   DragDetails* drag_details() { return drag_details_.get(); }
 
+  void set_animation_smoothness_histogram_name(
+      base::Optional<std::string> val) {
+    animation_smoothness_histogram_name_ = val;
+  }
+
   // Returns the Display that this WindowState is on.
   display::Display GetDisplay();
 
@@ -457,6 +462,10 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool can_consume_system_keys_;
   std::unique_ptr<DragDetails> drag_details_;
 
+  // If this has a value when an animation starts, animation smoothness metrics
+  // with this name will be logged for the animation.
+  base::Optional<std::string> animation_smoothness_histogram_name_;
+
   bool unminimize_to_restore_bounds_;
   bool ignore_keyboard_bounds_change_ = false;
   bool hide_shelf_when_fullscreen_;
@@ -470,12 +479,12 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   base::Optional<float> snapped_width_ratio_;
 
   // A property to remember the window position which was set before the
-  // auto window position manager changed the window bounds, so that it can get
-  // restored when only this one window gets shown.
+  // auto window position manager changed the window bounds, so that it can
+  // get restored when only this one window gets shown.
   base::Optional<gfx::Rect> pre_auto_manage_window_bounds_;
 
-  // A property which resets when bounds is changed by user and sets when it is
-  // nullptr, and window is removing from a workspace.
+  // A property which resets when bounds is changed by user and sets when it
+  // is nullptr, and window is removing from a workspace.
   base::Optional<gfx::Rect> pre_added_to_workspace_window_bounds_;
 
   // A property to remember the persistent window info used in multi-displays

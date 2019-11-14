@@ -19,4 +19,12 @@ webrtc::StreamConfig CreateStreamConfig(const AudioParameters& parameters) {
   return webrtc::StreamConfig(rate, channels, has_keyboard);
 }
 
+bool LeftAndRightChannelsAreSymmetric(const AudioBus& audio) {
+  if (audio.channels() <= 1) {
+    return true;
+  }
+  return std::equal(audio.channel(0), audio.channel(0) + audio.frames(),
+                    audio.channel(1));
+}
+
 }  // namespace media

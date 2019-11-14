@@ -21,16 +21,6 @@
 
 namespace network {
 
-namespace {
-
-base::flat_set<std::string>&
-GetSchemesExcludedFromRequestInitiatorSiteLockChecks() {
-  static base::NoDestructor<base::flat_set<std::string>> s_scheme;
-  return *s_scheme;
-}
-
-}  // namespace
-
 InitiatorLockCompatibility VerifyRequestInitiatorLock(
     const base::Optional<url::Origin>& request_initiator_site_lock,
     const base::Optional<url::Origin>& request_initiator) {
@@ -62,13 +52,6 @@ InitiatorLockCompatibility VerifyRequestInitiatorLock(
       lock_domain.erase(lock_domain.length() - 1);
     if (initiator.DomainIs(lock_domain))
       return InitiatorLockCompatibility::kCompatibleLock;
-  }
-
-  // TODO(lukasza): https://crbug.com/940068: Stop excluding specific schemes
-  // after request_initiator=website also for requests from isolated worlds.
-  if (base::Contains(GetSchemesExcludedFromRequestInitiatorSiteLockChecks(),
-                     initiator.scheme())) {
-    return InitiatorLockCompatibility::kExcludedScheme;
   }
 
   return InitiatorLockCompatibility::kIncorrectLock;
@@ -113,13 +96,6 @@ url::Origin GetTrustworthyInitiator(
 
   // If all the checks above passed, then |request_initiator| is trustworthy.
   return request_initiator.value();
-}
-
-void ExcludeSchemeFromRequestInitiatorSiteLockChecks(
-    const std::string& scheme) {
-  base::flat_set<std::string>& excluded_schemes =
-      GetSchemesExcludedFromRequestInitiatorSiteLockChecks();
-  excluded_schemes.insert(scheme);
 }
 
 }  // namespace network

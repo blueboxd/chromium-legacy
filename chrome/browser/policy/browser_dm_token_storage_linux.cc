@@ -145,7 +145,7 @@ std::string BrowserDMTokenStorageLinux::InitDMToken() {
   if (!base::ReadFileToString(token_file_path, &token))
     return std::string();
 
-  return token;
+  return base::TrimWhitespaceASCII(token, base::TRIM_ALL).as_string();
 }
 
 bool BrowserDMTokenStorageLinux::InitEnrollmentErrorOption() {

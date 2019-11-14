@@ -107,7 +107,10 @@ SAConstants.Preference = {
   AUTO_SCAN_ENABLED: 'settings.a11y.switch_access.auto_scan.enabled',
   AUTO_SCAN_TIME: 'settings.a11y.switch_access.auto_scan.speed_ms',
   AUTO_SCAN_KEYBOARD_TIME:
-      'settings.a11y.switch_access.auto_scan.keyboard.speed_ms'
+      'settings.a11y.switch_access.auto_scan.keyboard.speed_ms',
+  NEXT_SETTING: 'settings.a11y.switch_access.next.setting',
+  PREVIOUS_SETTING: 'settings.a11y.switch_access.previous.setting',
+  SELECT_SETTING: 'settings.a11y.switch_access.select.setting',
 };
 
 /**

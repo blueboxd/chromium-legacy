@@ -55,6 +55,7 @@ source_set("clear_browsing_data") {
     "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/table_view:styler",
     "//ios/chrome/browser/ui/table_view/cells",
+    "//ios/chrome/browser/ui/table_view/cells:cells_constants",
     "//ios/chrome/common",
     "//ios/chrome/common/colors",
     "//ios/public/provider/chrome/browser",

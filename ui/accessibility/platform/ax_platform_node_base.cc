@@ -1470,6 +1470,13 @@ void AXPlatformNodeBase::GetSelectionOffsets(int* selection_start,
     return;
   }
 
+  GetSelectionOffsetsFromTree(selection_start, selection_end);
+}
+
+void AXPlatformNodeBase::GetSelectionOffsetsFromTree(int* selection_start,
+                                                     int* selection_end) {
+  DCHECK(selection_start && selection_end);
+
   *selection_start = GetUnignoredSelectionAnchor();
   *selection_end = GetUnignoredSelectionFocus();
   if (*selection_start < 0 || *selection_end < 0)

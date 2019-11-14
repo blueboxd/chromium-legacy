@@ -259,7 +259,7 @@ uint64_t MediaStreamTrackMetrics::MakeUniqueId(const std::string& track_id,
 mojo::Remote<blink::mojom::blink::MediaStreamTrackMetricsHost>&
 MediaStreamTrackMetrics::GetMediaStreamTrackMetricsHost() {
   if (!track_metrics_host_) {
-    blink::Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+    blink::Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
         track_metrics_host_.BindNewPipeAndPassReceiver());
   }
   return track_metrics_host_;

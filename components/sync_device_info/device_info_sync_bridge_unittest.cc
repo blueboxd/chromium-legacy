@@ -68,7 +68,8 @@ MATCHER_P(ModelEqualsSpecifics, expected_specifics, "") {
   if (expected_specifics.has_sharing_fields()) {
     auto& expected_fields = expected_specifics.sharing_fields();
     auto& arg_info = *arg.sharing_info();
-    if (expected_fields.fcm_token() != arg_info.fcm_token ||
+    if (expected_fields.vapid_fcm_token() != arg_info.vapid_fcm_token ||
+        expected_fields.sharing_fcm_token() != arg_info.sharing_fcm_token ||
         expected_fields.p256dh() != arg_info.p256dh ||
         expected_fields.auth_secret() != arg_info.auth_secret ||
         static_cast<size_t>(expected_fields.enabled_features_size()) !=
@@ -167,8 +168,12 @@ std::string ManufacturerForSuffix(int suffix) {
   return base::StringPrintf("manufacturer %d", suffix);
 }
 
-std::string SharingFcmTokenForSuffix(int suffix) {
-  return base::StringPrintf("sharing fcm token %d", suffix);
+std::string SharingVapidFcmTokenForSuffix(int suffix) {
+  return base::StringPrintf("sharing vapid fcm token %d", suffix);
+}
+
+std::string SharingSharingFcmTokenForSuffix(int suffix) {
+  return base::StringPrintf("sharing sharing fcm token %d", suffix);
 }
 
 std::string SharingP256dhForSuffix(int suffix) {
@@ -207,8 +212,10 @@ DeviceInfoSpecifics CreateSpecifics(
   specifics.set_last_updated_timestamp(TimeToProtoTime(last_updated));
   specifics.mutable_feature_fields()->set_send_tab_to_self_receiving_enabled(
       true);
-  specifics.mutable_sharing_fields()->set_fcm_token(
-      SharingFcmTokenForSuffix(suffix));
+  specifics.mutable_sharing_fields()->set_vapid_fcm_token(
+      SharingVapidFcmTokenForSuffix(suffix));
+  specifics.mutable_sharing_fields()->set_sharing_fcm_token(
+      SharingSharingFcmTokenForSuffix(suffix));
   specifics.mutable_sharing_fields()->set_p256dh(
       SharingP256dhForSuffix(suffix));
   specifics.mutable_sharing_fields()->set_auth_secret(
@@ -279,7 +286,8 @@ class TestLocalDeviceInfoProvider : public MutableLocalDeviceInfoProvider {
         SigninScopedDeviceIdForSuffix(kLocalSuffix), hardware_info,
         base::Time(),
         /*send_tab_to_self_receiving_enabled=*/true,
-        DeviceInfo::SharingInfo(SharingFcmTokenForSuffix(kLocalSuffix),
+        DeviceInfo::SharingInfo(SharingVapidFcmTokenForSuffix(kLocalSuffix),
+                                SharingSharingFcmTokenForSuffix(kLocalSuffix),
                                 SharingP256dhForSuffix(kLocalSuffix),
                                 SharingAuthSecretForSuffix(kLocalSuffix),
                                 sharing_enabled_features));

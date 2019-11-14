@@ -149,6 +149,10 @@ extern const char kEnableClipboardProviderImageSuggestionsDescription[];
 extern const char kEnableClipboardProviderTextSuggestionsName[];
 extern const char kEnableClipboardProviderTextSuggestionsDescription[];
 
+// Title and description for the flag to enable the new error page workflow.
+extern const char kUseJSForErrorPageName[];
+extern const char kUseJSForErrorPageDescription[];
+
 // Title and description for the flag to enable persistent downloads.
 extern const char kEnablePersistentDownloadsName[];
 extern const char kEnablePersistentDownloadsDescription[];

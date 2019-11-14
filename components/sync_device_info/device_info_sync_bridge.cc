@@ -65,7 +65,8 @@ base::Optional<DeviceInfo::SharingInfo> SpecificsToSharingInfo(
   for (int i = 0; i < specifics.sharing_fields().enabled_features_size(); ++i) {
     enabled_features.insert(specifics.sharing_fields().enabled_features(i));
   }
-  return DeviceInfo::SharingInfo(specifics.sharing_fields().fcm_token(),
+  return DeviceInfo::SharingInfo(specifics.sharing_fields().vapid_fcm_token(),
+                                 specifics.sharing_fields().sharing_fcm_token(),
                                  specifics.sharing_fields().p256dh(),
                                  specifics.sharing_fields().auth_secret(),
                                  std::move(enabled_features));
@@ -122,7 +123,8 @@ std::unique_ptr<DeviceInfoSpecifics> MakeLocalDeviceSpecifics(
       info.sharing_info();
   if (sharing_info) {
     SharingSpecificFields* sharing_fields = specifics->mutable_sharing_fields();
-    sharing_fields->set_fcm_token(sharing_info->fcm_token);
+    sharing_fields->set_vapid_fcm_token(sharing_info->vapid_fcm_token);
+    sharing_fields->set_sharing_fcm_token(sharing_info->sharing_fcm_token);
     sharing_fields->set_p256dh(sharing_info->p256dh);
     sharing_fields->set_auth_secret(sharing_info->auth_secret);
     for (sync_pb::SharingSpecificFields::EnabledFeatures feature :

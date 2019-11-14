@@ -148,6 +148,7 @@ class RenderFrameProxyHost : public IPC::Listener,
   // blink::mojom::RemoteFrameHost
   void SetInheritedEffectiveTouchAction(cc::TouchAction touch_action) override;
   void VisibilityChanged(blink::mojom::FrameVisibility visibility) override;
+  void DidFocusFrame() override;
 
  private:
   // IPC Message handlers.
@@ -165,9 +166,6 @@ class RenderFrameProxyHost : public IPC::Listener,
       mojo::ScopedInterfaceEndpointHandle handle) override;
 
   blink::AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces();
-
-  // mojom::RenderFrameProxyHost
-  void FrameFocused() override;
 
   // This RenderFrameProxyHost's routing id.
   int routing_id_;

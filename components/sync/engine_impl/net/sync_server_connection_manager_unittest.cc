@@ -55,7 +55,6 @@ class BlockingHttpPost : public HttpPostProviderInterface {
 class BlockingHttpPostFactory : public HttpPostProviderFactory {
  public:
   ~BlockingHttpPostFactory() override {}
-  void Init(const std::string& user_agent) override {}
 
   HttpPostProviderInterface* Create() override {
     return new BlockingHttpPost();
@@ -157,7 +156,6 @@ class FailingHttpPostFactory : public HttpPostProviderFactory {
   explicit FailingHttpPostFactory(int net_error_code)
       : net_error_code_(net_error_code) {}
   ~FailingHttpPostFactory() override {}
-  void Init(const std::string& user_agent) override {}
 
   HttpPostProviderInterface* Create() override {
     return new FailingHttpPost(net_error_code_);

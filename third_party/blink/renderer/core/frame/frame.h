@@ -237,6 +237,9 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   bool GetVisibleToHitTesting() const { return visible_to_hit_testing_; }
   void UpdateVisibleToHitTesting();
 
+  // Called when the focus controller changes the focus to this frame.
+  virtual void DidFocus() = 0;
+
  protected:
   // |inheriting_agent_factory| should basically be set to the parent frame or
   // opener's WindowAgentFactory. Pass nullptr if the frame is isolated from

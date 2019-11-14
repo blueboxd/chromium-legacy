@@ -539,6 +539,13 @@ void MultiDrawArraysInstancedWEBGL(GLenum mode,
                                    const GLsizei* instance_counts,
                                    GLsizei drawcount) override;
 
+void MultiDrawArraysInstancedBaseInstanceWEBGL(GLenum mode,
+                                               const GLint* firsts,
+                                               const GLsizei* counts,
+                                               const GLsizei* instance_counts,
+                                               const GLuint* baseinstances,
+                                               GLsizei drawcount) override;
+
 void MultiDrawElementsWEBGL(GLenum mode,
                             const GLsizei* counts,
                             GLenum type,
@@ -551,6 +558,16 @@ void MultiDrawElementsInstancedWEBGL(GLenum mode,
                                      const GLsizei* offsets,
                                      const GLsizei* instance_counts,
                                      GLsizei drawcount) override;
+
+void MultiDrawElementsInstancedBaseVertexBaseInstanceWEBGL(
+    GLenum mode,
+    const GLsizei* counts,
+    GLenum type,
+    const GLsizei* offsets,
+    const GLsizei* instance_counts,
+    const GLint* basevertices,
+    const GLuint* baseinstances,
+    GLsizei drawcount) override;
 
 void StencilFunc(GLenum func, GLint ref, GLuint mask) override;
 
@@ -1056,11 +1073,26 @@ void DrawArraysInstancedANGLE(GLenum mode,
                               GLsizei count,
                               GLsizei primcount) override;
 
+void DrawArraysInstancedBaseInstanceANGLE(GLenum mode,
+                                          GLint first,
+                                          GLsizei count,
+                                          GLsizei primcount,
+                                          GLuint baseinstance) override;
+
 void DrawElementsInstancedANGLE(GLenum mode,
                                 GLsizei count,
                                 GLenum type,
                                 const void* indices,
                                 GLsizei primcount) override;
+
+void DrawElementsInstancedBaseVertexBaseInstanceANGLE(
+    GLenum mode,
+    GLsizei count,
+    GLenum type,
+    const void* indices,
+    GLsizei primcount,
+    GLint basevertex,
+    GLuint baseinstance) override;
 
 void VertexAttribDivisorANGLE(GLuint index, GLuint divisor) override;
 

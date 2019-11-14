@@ -82,7 +82,7 @@ void AwContentRendererClient::RenderThreadStarted() {
   visited_link_slave_.reset(new visitedlink::VisitedLinkSlave);
 
   browser_interface_broker_ =
-      blink::Platform::Current()->GetBrowserInterfaceBrokerProxy();
+      blink::Platform::Current()->GetBrowserInterfaceBroker();
 
   auto registry = std::make_unique<service_manager::BinderRegistry>();
   registry->AddInterface(visited_link_slave_->GetBindCallback(),

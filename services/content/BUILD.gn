@@ -38,7 +38,7 @@ source_set("impl") {
     "//services/content/public/mojom",
   ]
 
-  if (toolkit_views) {
+  if (toolkit_views && !is_chromecast) {
     deps += [
       "//ui/base",
       "//ui/views",

@@ -23,7 +23,8 @@ namespace device {
 // http://crbug.com/603291
 class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFactoryWrapper {
  public:
-  using AcquireAdapterCallback = base::OnceCallback<void(BluetoothAdapter*)>;
+  using AcquireAdapterCallback =
+      base::OnceCallback<void(scoped_refptr<BluetoothAdapter>)>;
 
   ~BluetoothAdapterFactoryWrapper();
 

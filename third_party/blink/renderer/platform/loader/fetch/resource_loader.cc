@@ -481,7 +481,7 @@ void ResourceLoader::Start() {
 
   if (request.IsAutomaticUpgrade()) {
     mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> pending_recorder;
-    Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+    Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
         pending_recorder.InitWithNewPipeAndPassReceiver());
     auto recorder =
         std::make_unique<ukm::MojoUkmRecorder>(std::move(pending_recorder));
@@ -913,7 +913,7 @@ void ResourceLoader::DidReceiveResponseInternal(
 
   if (request.IsAutomaticUpgrade()) {
     mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> pending_recorder;
-    Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+    Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
         pending_recorder.InitWithNewPipeAndPassReceiver());
     auto recorder =
         std::make_unique<ukm::MojoUkmRecorder>(std::move(pending_recorder));
@@ -1186,7 +1186,7 @@ void ResourceLoader::DidFail(const WebURLError& error,
 
   if (request.IsAutomaticUpgrade()) {
     mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> pending_recorder;
-    Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+    Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
         pending_recorder.InitWithNewPipeAndPassReceiver());
     auto recorder =
         std::make_unique<ukm::MojoUkmRecorder>(std::move(pending_recorder));

@@ -7,9 +7,13 @@
 #include <algorithm>
 #include <queue>
 
+#include "ash/public/cpp/app_list/app_list_features.h"
+#include "base/metrics/field_trial_params.h"
+
 namespace app_list {
 
 namespace {
+constexpr bool kDefaultUseEditDistance = false;
 using Match = SequenceMatcher::Match;
 using Matches = std::vector<Match>;
 
@@ -36,6 +40,9 @@ SequenceMatcher::SequenceMatcher(const base::string16& first_string,
   for (size_t i = 0; i < second_string_.size(); i++) {
     char_to_positions_[second_string_[i]].emplace_back(i);
   }
+  use_edit_distance_ = base::GetFieldTrialParamByFeatureAsBool(
+      app_list_features::kEnableFuzzyAppSearch, "use_edit_distance",
+      kDefaultUseEditDistance);
 }
 
 Match SequenceMatcher::FindLongestMatch(int first_start,
@@ -171,8 +178,8 @@ int SequenceMatcher::EditDistance() {
   return edit_distance_;
 }
 
-double SequenceMatcher::Ratio(bool use_edit_distance) {
-  if (use_edit_distance) {
+double SequenceMatcher::Ratio() {
+  if (use_edit_distance_) {
     if (edit_distance_ratio_ < 0) {
       const int edit_distance = EditDistance();
       edit_distance_ratio_ =

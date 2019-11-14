@@ -2985,6 +2985,31 @@ _FUNCTION_INFO = {
     'internal': True,
     'trace_level': 2,
   },
+  'MultiDrawArraysInstancedBaseInstanceCHROMIUM': {
+    'type': 'Custom',
+    'cmd_args': 'GLenumDrawMode mode, '
+                'uint32_t firsts_shm_id, uint32_t firsts_shm_offset, '
+                'uint32_t counts_shm_id, uint32_t counts_shm_offset, '
+                'uint32_t instance_counts_shm_id, '
+                'uint32_t instance_counts_shm_offset, '
+                'uint32_t baseinstances_shm_id, '
+                'uint32_t baseinstances_shm_offset, '
+                'GLsizei drawcount',
+    'extension': 'WEBGL_multi_draw_instanced_base_vertex_base_instance',
+    'extension_flag': 'webgl_multi_draw_instanced_base_vertex_base_instance',
+    'data_transfer_methods': ['shm'],
+    'size_args': {
+      'firsts': 'drawcount * sizeof(GLint)',
+      'counts': 'drawcount * sizeof(GLsizei)',
+      'instance_counts': 'drawcount * sizeof(GLsizei)',
+      'baseinstances': 'drawcount * sizeof(GLuint)',
+    },
+    'defer_draws': True,
+    'impl_func': False,
+    'client_test': False,
+    'internal': True,
+    'trace_level': 2,
+  },
   'MultiDrawElementsCHROMIUM': {
     'type': 'Custom',
     'cmd_args': 'GLenumDrawMode mode, '
@@ -3025,6 +3050,35 @@ _FUNCTION_INFO = {
     'internal': True,
     'trace_level': 2,
   },
+  'MultiDrawElementsInstancedBaseVertexBaseInstanceCHROMIUM': {
+    'type': 'Custom',
+    'cmd_args': 'GLenumDrawMode mode, '
+                'uint32_t counts_shm_id, uint32_t counts_shm_offset, '
+                'GLenumIndexType type, '
+                'uint32_t offsets_shm_id, uint32_t offsets_shm_offset, '
+                'uint32_t instance_counts_shm_id, '
+                'uint32_t instance_counts_shm_offset, '
+                'uint32_t basevertices_shm_id, '
+                'uint32_t basevertices_shm_offset, '
+                'uint32_t baseinstances_shm_id, '
+                'uint32_t baseinstances_shm_offset, '
+                'GLsizei drawcount',
+    'extension': 'WEBGL_multi_draw_instanced_base_vertex_base_instance',
+    'extension_flag': 'webgl_multi_draw_instanced_base_vertex_base_instance',
+    'data_transfer_methods': ['shm'],
+    'size_args': {
+      'counts': 'drawcount * sizeof(GLsizei)',
+      'offsets': 'drawcount * sizeof(GLsizei)',
+      'instance_counts': 'drawcount * sizeof(GLsizei)',
+      'basevertices': 'drawcount * sizeof(GLint)',
+      'baseinstances': 'drawcount * sizeof(GLuint)',
+    },
+    'defer_draws': True,
+    'impl_func': False,
+    'client_test': False,
+    'internal': True,
+    'trace_level': 2,
+  },
   'MultiDrawArraysWEBGL': {
     'type': 'NoCommand',
     'extension': 'WEBGL_multi_draw',
@@ -3035,6 +3089,11 @@ _FUNCTION_INFO = {
     'extension': 'WEBGL_multi_draw',
     'extension_flag': 'webgl_multi_draw',
   },
+  'MultiDrawArraysInstancedBaseInstanceWEBGL': {
+    'type': 'NoCommand',
+    'extension': 'WEBGL_multi_draw_instanced_base_vertex_base_instance',
+    'extension_flag': 'webgl_multi_draw_instanced_base_vertex_base_instance',
+  },
   'MultiDrawElementsWEBGL': {
     'type': 'NoCommand',
     'extension': 'WEBGL_multi_draw',
@@ -3044,6 +3103,11 @@ _FUNCTION_INFO = {
     'type': 'NoCommand',
     'extension': 'WEBGL_multi_draw',
     'extension_flag': 'webgl_multi_draw',
+  },
+  'MultiDrawElementsInstancedBaseVertexBaseInstanceWEBGL': {
+    'type': 'NoCommand',
+    'extension': 'WEBGL_multi_draw_instanced_base_vertex_base_instance',
+    'extension_flag': 'webgl_multi_draw_instanced_base_vertex_base_instance',
   },
   'OverlayPromotionHintCHROMIUM': {
     'decoder_func': 'DoOverlayPromotionHintCHROMIUM',
@@ -3633,6 +3697,15 @@ _FUNCTION_INFO = {
     'defer_draws': True,
     'trace_level': 2,
   },
+  'DrawArraysInstancedBaseInstanceANGLE': {
+    'type': 'Custom',
+    'impl_func': False,
+    'cmd_args': 'GLenumDrawMode mode, GLint first, GLsizei count, '
+                'GLsizei primcount, GLuint baseinstance',
+    'extension': 'ANGLE_base_vertex_base_instance',
+    'defer_draws': True,
+    'trace_level': 2,
+  },
   'DrawBuffersEXT': {
     'type': 'PUTn',
     'decoder_func': 'DoDrawBuffersEXT',
@@ -3652,6 +3725,17 @@ _FUNCTION_INFO = {
     'extension': 'ANGLE_instanced_arrays',
     'client_test': False,
     'pepper_interface': 'InstancedArrays',
+    'defer_draws': True,
+    'trace_level': 2,
+  },
+  'DrawElementsInstancedBaseVertexBaseInstanceANGLE': {
+    'type': 'Custom',
+    'impl_func': False,
+    'cmd_args': 'GLenumDrawMode mode, GLsizei count, '
+                'GLenumIndexType type, GLuint index_offset, GLsizei primcount, '
+                'GLint basevertex, GLuint baseinstance',
+    'extension': 'ANGLE_base_vertex_base_instance',
+    'client_test': False,
     'defer_draws': True,
     'trace_level': 2,
   },

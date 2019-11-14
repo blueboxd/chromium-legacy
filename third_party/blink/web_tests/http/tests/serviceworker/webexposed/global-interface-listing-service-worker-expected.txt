@@ -497,6 +497,7 @@ interface FetchEvent : ExtendableEvent
     getter preloadResponse
     getter request
     getter resultingClientId
+    method addPerformanceEntry
     method constructor
     method respondWith
 interface File : Blob

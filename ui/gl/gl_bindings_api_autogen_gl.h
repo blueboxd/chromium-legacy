@@ -346,6 +346,11 @@ void glDrawArraysInstancedANGLEFn(GLenum mode,
                                   GLint first,
                                   GLsizei count,
                                   GLsizei primcount) override;
+void glDrawArraysInstancedBaseInstanceANGLEFn(GLenum mode,
+                                              GLint first,
+                                              GLsizei count,
+                                              GLsizei primcount,
+                                              GLuint baseinstance) override;
 void glDrawBufferFn(GLenum mode) override;
 void glDrawBuffersARBFn(GLsizei n, const GLenum* bufs) override;
 void glDrawElementsFn(GLenum mode,
@@ -360,6 +365,14 @@ void glDrawElementsInstancedANGLEFn(GLenum mode,
                                     GLenum type,
                                     const void* indices,
                                     GLsizei primcount) override;
+void glDrawElementsInstancedBaseVertexBaseInstanceANGLEFn(
+    GLenum mode,
+    GLsizei count,
+    GLenum type,
+    const void* indices,
+    GLsizei primcount,
+    GLint baseVertex,
+    GLuint baseInstance) override;
 void glDrawRangeElementsFn(GLenum mode,
                            GLuint start,
                            GLuint end,
@@ -920,6 +933,13 @@ void glMultiDrawArraysInstancedANGLEFn(GLenum mode,
                                        const GLsizei* counts,
                                        const GLsizei* instanceCounts,
                                        GLsizei drawcount) override;
+void glMultiDrawArraysInstancedBaseInstanceANGLEFn(
+    GLenum mode,
+    const GLint* firsts,
+    const GLsizei* counts,
+    const GLsizei* instanceCounts,
+    const GLuint* baseInstances,
+    GLsizei drawcount) override;
 void glMultiDrawElementsANGLEFn(GLenum mode,
                                 const GLsizei* counts,
                                 GLenum type,
@@ -931,6 +951,15 @@ void glMultiDrawElementsInstancedANGLEFn(GLenum mode,
                                          const GLvoid* const* indices,
                                          const GLsizei* instanceCounts,
                                          GLsizei drawcount) override;
+void glMultiDrawElementsInstancedBaseVertexBaseInstanceANGLEFn(
+    GLenum mode,
+    const GLsizei* counts,
+    GLenum type,
+    const GLvoid* const* indices,
+    const GLsizei* instanceCounts,
+    const GLint* baseVertices,
+    const GLuint* baseInstances,
+    GLsizei drawcount) override;
 void glObjectLabelFn(GLenum identifier,
                      GLuint name,
                      GLsizei length,

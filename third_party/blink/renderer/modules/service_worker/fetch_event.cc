@@ -7,6 +7,8 @@
 #include "third_party/blink/renderer/modules/service_worker/fetch_event.h"
 
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/public/mojom/timing/performance_mark_or_measure.mojom-blink.h"
+#include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_error.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
@@ -14,6 +16,8 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/request.h"
 #include "third_party/blink/renderer/core/fetch/response.h"
+#include "third_party/blink/renderer/core/timing/performance_mark.h"
+#include "third_party/blink/renderer/core/timing/performance_measure.h"
 #include "third_party/blink/renderer/core/timing/worker_global_scope_performance.h"
 #include "third_party/blink/renderer/modules/service_worker/fetch_respond_with_observer.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_error.h"
@@ -30,18 +34,8 @@ FetchEvent* FetchEvent::Create(ScriptState* script_state,
                                const AtomicString& type,
                                const FetchEventInit* initializer) {
   return MakeGarbageCollected<FetchEvent>(script_state, type, initializer,
-                                          nullptr, nullptr, false);
-}
-
-FetchEvent* FetchEvent::Create(ScriptState* script_state,
-                               const AtomicString& type,
-                               const FetchEventInit* initializer,
-                               FetchRespondWithObserver* respond_with_observer,
-                               WaitUntilObserver* wait_until_observer,
-                               bool navigation_preload_sent) {
-  return MakeGarbageCollected<FetchEvent>(
-      script_state, type, initializer, respond_with_observer,
-      wait_until_observer, navigation_preload_sent);
+                                          nullptr, nullptr, mojo::NullRemote(),
+                                          false);
 }
 
 Request* FetchEvent::request() const {
@@ -93,6 +87,8 @@ FetchEvent::FetchEvent(ScriptState* script_state,
                        const FetchEventInit* initializer,
                        FetchRespondWithObserver* respond_with_observer,
                        WaitUntilObserver* wait_until_observer,
+                       mojo::PendingRemote<mojom::blink::WorkerTimingContainer>
+                           worker_timing_remote,
                        bool navigation_preload_sent)
     : ExtendableEvent(type, initializer, wait_until_observer),
       ContextClient(ExecutionContext::From(script_state)),
@@ -100,7 +96,8 @@ FetchEvent::FetchEvent(ScriptState* script_state,
       preload_response_property_(MakeGarbageCollected<PreloadResponseProperty>(
           ExecutionContext::From(script_state),
           this,
-          PreloadResponseProperty::kPreloadResponse)) {
+          PreloadResponseProperty::kPreloadResponse)),
+      worker_timing_remote_(std::move(worker_timing_remote)) {
   if (!navigation_preload_sent)
     preload_response_property_->ResolveWithUndefined();
 
@@ -210,6 +207,24 @@ void FetchEvent::OnNavigationPreloadComplete(
                                                        : encoded_data_length);
   WorkerGlobalScopePerformance::performance(*worker_global_scope)
       ->GenerateAndAddResourceTiming(*info);
+}
+
+void FetchEvent::addPerformanceEntry(PerformanceMark* performance_mark) {
+  if (worker_timing_remote_) {
+    auto mojo_performance_mark =
+        performance_mark->ToMojoPerformanceMarkOrMeasure();
+    worker_timing_remote_->AddPerformanceEntry(
+        std::move(mojo_performance_mark));
+  }
+}
+
+void FetchEvent::addPerformanceEntry(PerformanceMeasure* performance_measure) {
+  if (worker_timing_remote_) {
+    auto mojo_performance_measure =
+        performance_measure->ToMojoPerformanceMarkOrMeasure();
+    worker_timing_remote_->AddPerformanceEntry(
+        std::move(mojo_performance_measure));
+  }
 }
 
 void FetchEvent::Trace(blink::Visitor* visitor) {

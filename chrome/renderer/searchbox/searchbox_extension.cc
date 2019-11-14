@@ -32,7 +32,6 @@
 #include "components/ntp_tiles/ntp_tile_impression.h"
 #include "components/ntp_tiles/tile_source.h"
 #include "components/ntp_tiles/tile_visual_type.h"
-#include "content/public/common/url_constants.h"
 #include "content/public/renderer/chrome_object_extensions_utils.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
@@ -414,16 +413,12 @@ SearchBox* GetSearchBoxForCurrentContext() {
 }
 
 base::Value CreateAutocompleteMatches(
-    const std::vector<chrome::mojom::AutocompleteMatchPtr>& matches,
-    const blink::WebLocalFrame* frame) {
-  DCHECK(frame);
+    const std::vector<chrome::mojom::AutocompleteMatchPtr>& matches) {
   base::Value list(base::Value::Type::LIST);
   for (const chrome::mojom::AutocompleteMatchPtr& match : matches) {
     base::Value dict(base::Value::Type::DICTIONARY);
     dict.SetBoolKey("allowedToBeDefaultMatch",
                     match->allowed_to_be_default_match);
-    dict.SetBoolKey("canDisplay", frame->GetSecurityOrigin().CanDisplay(
-                                      GURL(match->destination_url)));
     dict.SetStringKey("contents", match->contents);
     base::Value contents_class(base::Value::Type::LIST);
     for (const auto& classification : match->contents_class) {
@@ -605,13 +600,6 @@ class SearchBoxBindings : public gin::Wrappable<SearchBoxBindings> {
   static void StopAutocomplete(bool clear_result);
   static void StartCapturingKeyStrokes();
   static void StopCapturingKeyStrokes();
-  static void OpenAutocompleteMatch(int line,
-                                    const std::string& url,
-                                    double button,
-                                    bool alt_key,
-                                    bool ctrl_key,
-                                    bool meta_key,
-                                    bool shift_key);
 
   DISALLOW_COPY_AND_ASSIGN(SearchBoxBindings);
 };
@@ -631,8 +619,6 @@ gin::ObjectTemplateBuilder SearchBoxBindings::GetObjectTemplateBuilder(
                    &SearchBoxBindings::IsKeyCaptureEnabled)
       .SetMethod("deleteAutocompleteMatch",
                  &SearchBoxBindings::DeleteAutocompleteMatch)
-      .SetMethod("openAutocompleteMatch",
-                 &SearchBoxBindings::OpenAutocompleteMatch)
       .SetMethod("paste", &SearchBoxBindings::Paste)
       .SetMethod("queryAutocomplete", &SearchBoxBindings::QueryAutocomplete)
       .SetMethod("stopAutocomplete", &SearchBoxBindings::StopAutocomplete)
@@ -666,24 +652,6 @@ void SearchBoxBindings::DeleteAutocompleteMatch(int line) {
   if (!search_box)
     return;
   search_box->DeleteAutocompleteMatch(line);
-}
-
-// static
-void SearchBoxBindings::OpenAutocompleteMatch(int line,
-                                              const std::string& url,
-                                              double button,
-                                              bool alt_key,
-                                              bool ctrl_key,
-                                              bool meta_key,
-                                              bool shift_key) {
-  DCHECK_GE(line, 0);
-  DCHECK_LE(line, 255);
-  SearchBox* search_box = GetSearchBoxForCurrentContext();
-  if (!search_box)
-    return;
-
-  search_box->OpenAutocompleteMatch(line, GURL(url), button, alt_key, ctrl_key,
-                                    meta_key, shift_key);
 }
 
 // static
@@ -1450,7 +1418,7 @@ void SearchBoxExtension::DispatchAutocompleteResultChanged(
     chrome::mojom::AutocompleteResultPtr result) {
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetStringKey("input", result->input);
-  dict.SetKey("matches", CreateAutocompleteMatches(result->matches, frame));
+  dict.SetKey("matches", CreateAutocompleteMatches(result->matches));
 
   std::string json;
   base::JSONWriter::Write(dict, &json);

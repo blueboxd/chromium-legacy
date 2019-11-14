@@ -205,6 +205,10 @@ bool RemoteFrame::BubbleLogicalScrollFromChildFrame(
   return false;
 }
 
+void RemoteFrame::DidFocus() {
+  GetRemoteFrameHostRemote().DidFocusFrame();
+}
+
 void RemoteFrame::SetView(RemoteFrameView* view) {
   // Oilpan: as RemoteFrameView performs no finalization actions,
   // no explicit Dispose() of it needed here. (cf. LocalFrameView::Dispose().)

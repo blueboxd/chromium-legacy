@@ -73,6 +73,12 @@ constexpr char kAppListResultLaunchIndexAndQueryLength[] =
 constexpr char kAppListTileLaunchIndexAndQueryLength[] =
     "Apps.AppListTileLaunchIndexAndQueryLength";
 
+// The UMA histogram that logs the presence or absence of Drive QuickAccess
+// search results in the zero-state results list. Differentiates between results
+// existing in the model's results list, but not being displayed in the view.
+constexpr char kDriveQuickAccessResultPresence[] =
+    "Apps.AppListDriveQuickAccessProvider.ResultPresence";
+
 // The UMA histogram that logs which page gets opened by the user.
 constexpr char kPageOpenedHistogram[] = "Apps.AppListPageOpened";
 
@@ -228,6 +234,16 @@ enum AppListAppMovingType {
   kMoveByKeyboardIntoFolder = 7,
   kMoveByKeyboardOutOfFolder = 8,
   kMaxAppListAppMovingType = 9,
+};
+
+// The presence of Drive QuickAccess search results when updating the zero-state
+// results list. These values are persisted to logs. Entries should not be
+// renumbered and numeric values should never be reused.
+enum class DriveQuickAccessResultPresence {
+  kPresentAndShown = 0,
+  kPresentAndNotShown = 1,
+  kAbsent = 2,
+  kMaxValue = kAbsent
 };
 
 // Different places a search result can be launched from. These values do not

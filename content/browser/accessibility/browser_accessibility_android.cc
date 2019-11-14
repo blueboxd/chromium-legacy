@@ -617,21 +617,6 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
     case ax::mojom::Role::kAnchor:
       // No role description.
       break;
-    case ax::mojom::Role::kAnnotationAttribution:
-      message_id = IDS_AX_ROLE_ANNOTATION_ATTRIBUTION;
-      break;
-    case ax::mojom::Role::kAnnotationCommentary:
-      message_id = IDS_AX_ROLE_ANNOTATION_COMMENTARY;
-      break;
-    case ax::mojom::Role::kAnnotationPresence:
-      message_id = IDS_AX_ROLE_ANNOTATION_PRESENCE;
-      break;
-    case ax::mojom::Role::kAnnotationRevision:
-      message_id = IDS_AX_ROLE_ANNOTATION_REVISION;
-      break;
-    case ax::mojom::Role::kAnnotationSuggestion:
-      message_id = IDS_AX_ROLE_ANNOTATION_SUGGESTION;
-      break;
     case ax::mojom::Role::kApplication:
       message_id = IDS_AX_ROLE_APPLICATION;
       break;
@@ -685,6 +670,12 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
       break;
     case ax::mojom::Role::kComboBoxMenuButton:
       // No role descripotion.
+      break;
+    case ax::mojom::Role::kComment:
+      message_id = IDS_AX_ROLE_COMMENT;
+      break;
+    case ax::mojom::Role::kCommentSection:
+      message_id = IDS_AX_ROLE_COMMENT_SECTION;
       break;
     case ax::mojom::Role::kComplementary:
       message_id = IDS_AX_ROLE_COMPLEMENTARY;
@@ -1039,6 +1030,9 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
     case ax::mojom::Role::kRegion:
       message_id = IDS_AX_ROLE_REGION;
       break;
+    case ax::mojom::Role::kRevision:
+      message_id = IDS_AX_ROLE_REVISION;
+      break;
     case ax::mojom::Role::kRootWebArea:
       // No role description.
       break;
@@ -1093,6 +1087,9 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
       break;
     case ax::mojom::Role::kStrong:
       // No role description.
+      break;
+    case ax::mojom::Role::kSuggestion:
+      message_id = IDS_AX_ROLE_SUGGESTION;
       break;
     case ax::mojom::Role::kSwitch:
       message_id = IDS_AX_ROLE_SWITCH;

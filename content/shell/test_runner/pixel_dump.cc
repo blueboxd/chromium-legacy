@@ -92,7 +92,7 @@ void CopyImageAtAndCapturePixels(
     int y,
     base::OnceCallback<void(const SkBitmap&)> callback) {
   mojo::Remote<blink::mojom::ClipboardHost> clipboard;
-  blink::Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+  blink::Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
       clipboard.BindNewPipeAndPassReceiver());
 
   uint64_t sequence_number_before = 0;

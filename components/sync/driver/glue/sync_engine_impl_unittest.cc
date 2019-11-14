@@ -225,8 +225,8 @@ class SyncEngineImplTest : public testing::Test {
     SyncEngine::HttpPostProviderFactoryGetter
         http_post_provider_factory_getter =
             base::BindOnce(&NetworkResources::GetHttpPostProviderFactory,
-                           base::Unretained(network_resources_.get()), nullptr,
-                           base::DoNothing());
+                           base::Unretained(network_resources_.get()), "",
+                           nullptr, base::DoNothing());
 
     SyncEngine::InitParams params;
     params.sync_task_runner = sync_thread_.task_runner();

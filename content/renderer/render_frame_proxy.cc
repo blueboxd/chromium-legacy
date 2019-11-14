@@ -866,10 +866,6 @@ void RenderFrameProxy::AdvanceFocus(blink::WebFocusType type,
   Send(new FrameHostMsg_AdvanceFocus(routing_id_, type, source_routing_id));
 }
 
-void RenderFrameProxy::FrameFocused() {
-  GetFrameProxyHost()->FrameFocused();
-}
-
 base::UnguessableToken RenderFrameProxy::GetDevToolsFrameToken() {
   return devtools_frame_token_;
 }

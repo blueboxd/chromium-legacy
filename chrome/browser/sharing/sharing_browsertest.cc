@@ -15,6 +15,7 @@
 #include "chrome/browser/sharing/sharing_device_registration_result.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
+#include "chrome/browser/sharing/sharing_target_info.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/sessions_helper.h"
@@ -147,11 +148,11 @@ std::unique_ptr<TestRenderViewContextMenu> SharingBrowserTest::InitContextMenu(
 
 void SharingBrowserTest::CheckLastReceiver(
     const std::string& device_guid) const {
-  auto sharing_info =
-      sharing_service_->GetSyncPreferencesForTesting()->GetSharingInfo(
+  auto target_info =
+      sharing_service_->GetSyncPreferencesForTesting()->GetTargetInfo(
           device_guid);
-  ASSERT_TRUE(sharing_info);
-  EXPECT_EQ(sharing_info->fcm_token, gcm_service_->last_receiver_id());
+  ASSERT_TRUE(target_info);
+  EXPECT_EQ(target_info->fcm_token, gcm_service_->last_receiver_id());
 }
 
 chrome_browser_sharing::SharingMessage

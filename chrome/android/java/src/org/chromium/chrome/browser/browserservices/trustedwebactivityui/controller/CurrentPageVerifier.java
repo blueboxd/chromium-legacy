@@ -95,7 +95,7 @@ public class CurrentPageVerifier implements NativeInitObserver {
         mIntentDataProvider = intentDataProvider;
         mDelegate = delegate;
 
-        tabObserverRegistrar.registerTabObserver(mVerifyOnPageLoadObserver);
+        tabObserverRegistrar.registerActivityTabObserver(mVerifyOnPageLoadObserver);
         tabProvider.addObserver(mVerifyOnTabSwitchObserver);
         lifecycleDispatcher.register(this);
     }

@@ -533,6 +533,11 @@ GL_FUNCTIONS = [
             'glDrawArraysInstanced'],
   'arguments': 'GLenum mode, GLint first, GLsizei count, GLsizei primcount', },
 { 'return_type': 'void',
+  'versions' : [{'name': 'glDrawArraysInstancedBaseInstanceANGLE',
+                 'extensions': ['GL_ANGLE_base_vertex_base_instance'] }],
+  'arguments': 'GLenum mode, GLint first, GLsizei count, GLsizei primcount, '
+  'GLuint baseinstance', },
+{ 'return_type': 'void',
   'names': ['glDrawBuffer'],
   'arguments': 'GLenum mode', },
 { 'return_type': 'void',
@@ -552,6 +557,12 @@ GL_FUNCTIONS = [
   'arguments':
       'GLenum mode, GLsizei count, GLenum type, const void* indices, '
       'GLsizei primcount', },
+{ 'return_type': 'void',
+  'versions' : [{'name': 'glDrawElementsInstancedBaseVertexBaseInstanceANGLE',
+                 'extensions': ['GL_ANGLE_base_vertex_base_instance'] }],
+  'arguments':
+      'GLenum mode, GLsizei count, GLenum type, const void* indices, '
+      'GLsizei primcount, GLint baseVertex, GLuint baseInstance', },
 { 'return_type': 'void',
   'versions': [{ 'name': 'glDrawRangeElements' }],
   'arguments': 'GLenum mode, GLuint start, GLuint end, GLsizei count, '
@@ -1420,6 +1431,12 @@ GL_FUNCTIONS = [
                'const GLsizei* counts, const GLsizei* instanceCounts, '
                'GLsizei drawcount', },
 { 'return_type': 'void',
+  'versions' : [{'name': 'glMultiDrawArraysInstancedBaseInstanceANGLE',
+                 'extensions': ['GL_ANGLE_base_vertex_base_instance'] }],
+  'arguments': 'GLenum mode, const GLint* firsts, '
+               'const GLsizei* counts, const GLsizei* instanceCounts, '
+               'const GLuint* baseInstances, GLsizei drawcount', },
+{ 'return_type': 'void',
   'versions' : [{'name': 'glMultiDrawElementsANGLE',
                  'extensions': ['GL_ANGLE_multi_draw'] }],
   'arguments': 'GLenum mode, const GLsizei* counts, '
@@ -1431,6 +1448,14 @@ GL_FUNCTIONS = [
   'arguments': 'GLenum mode, const GLsizei* counts, '
                'GLenum type, const GLvoid* const* indices, '
                'const GLsizei* instanceCounts, GLsizei drawcount', },
+{ 'return_type': 'void',
+  'versions' : [{'name': 'glMultiDrawElementsInstancedBaseVertexBaseInstanceANGLE',
+                 'extensions': ['GL_ANGLE_base_vertex_base_instance'] }],
+  'arguments': 'GLenum mode, '
+               'const GLsizei* counts, GLenum type, '
+               'const GLvoid* const* indices, const GLsizei* instanceCounts, '
+               'const GLint* baseVertices, const GLuint* baseInstances, '
+               'GLsizei drawcount', },
 { 'return_type': 'void',
   'versions': [{ 'name': 'glObjectLabel' },
                { 'name': 'glObjectLabelKHR',

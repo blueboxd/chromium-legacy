@@ -53,6 +53,7 @@ source_set("autofill") {
     "//ios/chrome/browser/ui/settings/credit_card_scanner",
     "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/table_view/cells",
+    "//ios/chrome/browser/ui/table_view/cells:cells_constants",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/colors",
     "//ui/base",

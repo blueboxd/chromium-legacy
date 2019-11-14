@@ -1582,6 +1582,7 @@ jumbo_static_library("browser") {
     "sharing/sharing_service_proxy_android.h",
     "sharing/sharing_sync_preference.cc",
     "sharing/sharing_sync_preference.h",
+    "sharing/sharing_target_info.h",
     "sharing/sharing_utils.cc",
     "sharing/sharing_utils.h",
     "sharing/sms/sms_fetch_request_handler.cc",

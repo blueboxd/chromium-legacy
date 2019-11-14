@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import base64
+import datetime
 import json
 import logging
 import re
@@ -208,6 +209,48 @@ class WPTGitHub(object):
             state=item['state'],
             labels=labels)
 
+    def recent_failing_chromium_exports(self):
+        """Fetches open PRs with an export label, failing status, and updated
+        within the last month.
+
+        API doc: https://developer.github.com/v3/search/#search-issues-and-pull-requests
+
+        Returns:
+            A list of PullRequest namedtuples.
+        """
+        one_month_ago = datetime.date.today() - datetime.timedelta(days=31)
+        path = (
+            '/search/issues'
+            '?q=repo:{}/{}%20type:pr+is:open%20label:{}%20status:failure%20updated:>{}'
+            '&sort=updated'
+            '&page=1'
+            '&per_page={}'
+        ).format(
+            WPT_GH_ORG,
+            WPT_GH_REPO_NAME,
+            EXPORT_PR_LABEL,
+            one_month_ago.isoformat(),
+            MAX_PER_PAGE
+        )
+
+        failing_prs = []
+        while path is not None:
+            response = self.request(path, method='GET')
+            if response.status_code == 200:
+                if response.data['incomplete_results']:
+                    raise GitHubError('complete results', 'incomplete results',
+                                      'fetch failing open chromium exports', path)
+
+                prs = [self.make_pr_from_item(item) for item in response.data['items']]
+                failing_prs += prs
+            else:
+                raise GitHubError(200, response.status_code,
+                                  'fetch failing open chromium exports', path)
+            path = self.extract_link_next(response.getheader('Link'))
+
+        _log.info('Fetched %d PRs from GitHub.', len(failing_prs))
+        return failing_prs
+
     @memoized
     def all_pull_requests(self):
         """Fetches the most recent (open and closed) PRs with the export label.
@@ -218,7 +261,7 @@ class WPTGitHub(object):
         can't really find *all* of them; we fetch the most recently updated ones
         because we only check whether recent commits have been exported.
 
-        API doc: https://developer.github.com/v3/search/#search-issues
+        API doc: https://developer.github.com/v3/search/#search-issues-and-pull-requests
 
         Returns:
             A list of PullRequest namedtuples.
@@ -257,6 +300,26 @@ class WPTGitHub(object):
 
         _log.info('Fetched %d PRs from GitHub.', len(all_prs))
         return all_prs
+
+    def get_branch_statuses(self, branch_name):
+        """Gets the status of a PR.
+
+        API doc: https://developer.github.com/v3/repos/statuses/#get-the-combined-status-for-a-specific-ref
+
+        Returns:
+            The list of check statuses of the PR.
+        """
+        path = '/repos/{}/{}/commits/{}/status'.format(
+            WPT_GH_ORG,
+            WPT_GH_REPO_NAME,
+            branch_name
+        )
+        response = self.request(path, method='GET')
+
+        if response.status_code != 200:
+            raise GitHubError(200, response.status_code, 'get the statuses of PR %d' % branch_name)
+
+        return response.data['statuses']
 
     def get_pr_branch(self, pr_number):
         """Gets the remote branch name of a PR.

@@ -67,7 +67,9 @@ class AssistantInfoBoxViewBinder
     }
 
     private void setInfoBox(AssistantInfoBox infoBox, ViewHolder viewHolder) {
-        viewHolder.mExplanationView.setText(infoBox.getExplanation());
+        String explanation = infoBox.getExplanation();
+        viewHolder.mExplanationView.setText(explanation);
+        viewHolder.mExplanationView.announceForAccessibility(explanation);
         if (infoBox.getImagePath().isEmpty()) {
             viewHolder.mExplanationView.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
         } else {

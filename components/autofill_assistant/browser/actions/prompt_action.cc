@@ -33,7 +33,11 @@ void PromptAction::InternalProcessAction(ProcessActionCallback callback) {
   }
 
   callback_ = std::move(callback);
-  delegate_->SetStatusMessage(proto_.prompt().message());
+  if (proto_.prompt().has_message()) {
+    // TODO(b/144468818): Deprecate and remove message from this action and use
+    // tell instead.
+    delegate_->SetStatusMessage(proto_.prompt().message());
+  }
 
   SetupPreconditions();
   UpdateUserActions();

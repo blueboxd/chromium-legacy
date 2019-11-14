@@ -10263,26 +10263,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       App paused
     </message>
 
-    <message name="IDS_APP_PAUSE_HEADING_HOURS_AND_MINUTES" desc="Tells the user the app will be paused.">
-      The limit on "<ph name="APP_NAME">$1<ex>Google Photos</ex></ph>" that your parent set ran out. You can use it for <ph name="HOURS">$2<ex>2 hours</ex></ph> <ph name="MINUTES">$3<ex>30 minutes</ex></ph> tomorrow.
+    <message name="IDS_APP_PAUSE_HEADING" desc="Tells the user the app will be paused.">
+      The limit on "<ph name="APP_NAME">$1<ex>Google Photos</ex></ph>" that your parent set ran out. You can use it for <ph name="TIME_LIMIT">$2<ex>2 hours and 30 minutes</ex></ph> tomorrow.
     </message>
-    <message name="IDS_APP_PAUSE_HEADING_HOURS_ONLY" desc="Tells the user the app will be paused.">
-      The limit on "<ph name="APP_NAME">$1<ex>Google Photos</ex></ph>" that your parent set ran out. You can use it for <ph name="HOURS">$2<ex>2 hours</ex></ph> tomorrow.
-    </message>
-    <message name="IDS_APP_PAUSE_HEADING_MINUTES_ONLY" desc="Tells the user the app will be paused.">
-      The limit on "<ph name="APP_NAME">$1<ex>Google Photos</ex></ph>" that your parent set ran out. You can use it for <ph name="MINUTES">$2<ex>30 minutes</ex></ph> tomorrow.
-    </message>
-    <message name="IDS_APP_PAUSE_HEADING_HOURS" desc="Tells the user the app can be run how many hours. [ICU Syntax]">
-       {HOURS, plural,
-        =1 {# hour}
-        other {# hours}}
-    </message>
-    <message name="IDS_APP_PAUSE_HEADING_MINUTES" desc="Tells the user the app can be run how many minutes. [ICU Syntax]">
-       {MINUTES, plural,
-        =1 {# minute}
-        other {# minutes}}
-    </message>
-
 
   </messages>
 </release>

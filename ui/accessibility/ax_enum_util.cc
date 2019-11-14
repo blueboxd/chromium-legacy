@@ -275,16 +275,6 @@ const char* ToString(ax::mojom::Role role) {
       return "alert";
     case ax::mojom::Role::kAnchor:
       return "anchor";
-    case ax::mojom::Role::kAnnotationAttribution:
-      return "annotationAttribution";
-    case ax::mojom::Role::kAnnotationCommentary:
-      return "annotationCommentary";
-    case ax::mojom::Role::kAnnotationPresence:
-      return "annotationPresence";
-    case ax::mojom::Role::kAnnotationRevision:
-      return "annotationRevision";
-    case ax::mojom::Role::kAnnotationSuggestion:
-      return "annotationSuggestion";
     case ax::mojom::Role::kApplication:
       return "application";
     case ax::mojom::Role::kArticle:
@@ -321,6 +311,10 @@ const char* ToString(ax::mojom::Role role) {
       return "comboBoxGrouping";
     case ax::mojom::Role::kComboBoxMenuButton:
       return "comboBoxMenuButton";
+    case ax::mojom::Role::kComment:
+      return "comment";
+    case ax::mojom::Role::kCommentSection:
+      return "commentSection";
     case ax::mojom::Role::kComplementary:
       return "complementary";
     case ax::mojom::Role::kContentDeletion:
@@ -559,6 +553,8 @@ const char* ToString(ax::mojom::Role role) {
       return "radioGroup";
     case ax::mojom::Role::kRegion:
       return "region";
+    case ax::mojom::Role::kRevision:
+      return "revision";
     case ax::mojom::Role::kRootWebArea:
       return "rootWebArea";
     case ax::mojom::Role::kRowHeader:
@@ -573,6 +569,8 @@ const char* ToString(ax::mojom::Role role) {
       return "section";
     case ax::mojom::Role::kStrong:
       return "strong";
+    case ax::mojom::Role::kSuggestion:
+      return "suggestion";
     case ax::mojom::Role::kSvgRoot:
       return "svgRoot";
     case ax::mojom::Role::kScrollBar:
@@ -657,16 +655,6 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kAlert;
   if (0 == strcmp(role, "anchor"))
     return ax::mojom::Role::kAnchor;
-  if (0 == strcmp(role, "annotationAttribution"))
-    return ax::mojom::Role::kAnnotationAttribution;
-  if (0 == strcmp(role, "annotationCommentary"))
-    return ax::mojom::Role::kAnnotationCommentary;
-  if (0 == strcmp(role, "annotationPresence"))
-    return ax::mojom::Role::kAnnotationPresence;
-  if (0 == strcmp(role, "annotationRevision"))
-    return ax::mojom::Role::kAnnotationRevision;
-  if (0 == strcmp(role, "annotationSuggestion"))
-    return ax::mojom::Role::kAnnotationSuggestion;
   if (0 == strcmp(role, "application"))
     return ax::mojom::Role::kApplication;
   if (0 == strcmp(role, "article"))
@@ -703,6 +691,10 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kComboBoxGrouping;
   if (0 == strcmp(role, "comboBoxMenuButton"))
     return ax::mojom::Role::kComboBoxMenuButton;
+  if (0 == strcmp(role, "comment"))
+    return ax::mojom::Role::kComment;
+  if (0 == strcmp(role, "commentSection"))
+    return ax::mojom::Role::kCommentSection;
   if (0 == strcmp(role, "complementary"))
     return ax::mojom::Role::kComplementary;
   if (0 == strcmp(role, "contentDeletion"))
@@ -941,6 +933,8 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kRadioGroup;
   if (0 == strcmp(role, "region"))
     return ax::mojom::Role::kRegion;
+  if (0 == strcmp(role, "revision"))
+    return ax::mojom::Role::kRevision;
   if (0 == strcmp(role, "rootWebArea"))
     return ax::mojom::Role::kRootWebArea;
   if (0 == strcmp(role, "rowHeader"))
@@ -953,8 +947,6 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kRubyAnnotation;
   if (0 == strcmp(role, "section"))
     return ax::mojom::Role::kSection;
-  if (0 == strcmp(role, "svgRoot"))
-    return ax::mojom::Role::kSvgRoot;
   if (0 == strcmp(role, "scrollBar"))
     return ax::mojom::Role::kScrollBar;
   if (0 == strcmp(role, "scrollView"))
@@ -975,6 +967,10 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kStaticText;
   if (0 == strcmp(role, "status"))
     return ax::mojom::Role::kStatus;
+  if (0 == strcmp(role, "suggestion"))
+    return ax::mojom::Role::kSuggestion;
+  if (0 == strcmp(role, "svgRoot"))
+    return ax::mojom::Role::kSvgRoot;
   if (0 == strcmp(role, "switch"))
     return ax::mojom::Role::kSwitch;
   if (0 == strcmp(role, "strong"))

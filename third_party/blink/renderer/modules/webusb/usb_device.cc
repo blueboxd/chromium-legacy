@@ -50,6 +50,15 @@ const char kInterfaceNotFound[] =
 const char kInterfaceStateChangeInProgress[] =
     "An operation that changes interface state is in progress.";
 const char kOpenRequired[] = "The device must be opened first.";
+const char kExtensionProtocol[] = "chrome-extension";
+const char kImprivataLoginScreenProdExtensionId[] =
+    "lpimkpkllnkdlcigdbgmabfplniahkgm";
+const char kImprivataLoginScreenDevExtensionId[] =
+    "cdgickkdpbekbnalbmpgochbninibkko";
+const char kImprivataInSessionProdExtensionId[] =
+    "cokoeepjbmmnhgdhlkpahohdaiedfjgn";
+const char kImprivataInSessionDevExtensionId[] =
+    "omificdfgpipkkpdhbjmefgfgbppehke";
 
 DOMException* ConvertFatalTransferStatus(const UsbTransferStatus& status) {
   switch (status) {
@@ -583,7 +592,7 @@ bool USBDevice::IsProtectedInterfaceClass(wtf_size_t interface_index) const {
   DCHECK_NE(interface_index, kNotFound);
 
   // USB Class Codes are defined by the USB-IF:
-  // http://www.usb.org/developers/defined_class
+  // https://www.usb.org/defined-class-codes
   const uint8_t kProtectedClasses[] = {
       0x01,  // Audio
       0x03,  // HID
@@ -604,11 +613,28 @@ bool USBDevice::IsProtectedInterfaceClass(wtf_size_t interface_index) const {
     if (std::binary_search(std::begin(kProtectedClasses),
                            std::end(kProtectedClasses),
                            alternate->class_code)) {
-      return true;
+      return !IsClassWhitelistedForExtension(alternate->class_code);
     }
   }
 
   return false;
+}
+
+bool USBDevice::IsClassWhitelistedForExtension(uint8_t class_code) const {
+  const KURL& url = GetExecutionContext()->Url();
+  if (url.Protocol() != kExtensionProtocol)
+    return false;
+
+  const String host = url.Host();
+  switch (class_code) {
+    case 0x03:  // HID
+      return host == kImprivataLoginScreenProdExtensionId ||
+             host == kImprivataLoginScreenDevExtensionId ||
+             host == kImprivataInSessionProdExtensionId ||
+             host == kImprivataInSessionDevExtensionId;
+    default:
+      return false;
+  }
 }
 
 bool USBDevice::EnsureNoDeviceChangeInProgress(

@@ -250,6 +250,10 @@ bool InputMethodBase::SetCompositionRange(
     const std::vector<ui::ImeTextSpan>& text_spans) {
   return false;
 }
+
+bool InputMethodBase::SetSelectionRange(uint32_t start, uint32_t end) {
+  return false;
+}
 #endif
 
 void InputMethodBase::DeleteSurroundingText(int32_t offset, uint32_t length) {}

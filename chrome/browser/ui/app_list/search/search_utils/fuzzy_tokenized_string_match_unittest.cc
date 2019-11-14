@@ -256,4 +256,20 @@ TEST_F(FuzzyTokenizedStringMatchTest, ParamThresholdTest2) {
   }
 }
 
+TEST_F(FuzzyTokenizedStringMatchTest, OtherParamTest) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeaturesAndParameters(
+      {{app_list_features::kEnableFuzzyAppSearch,
+        {{"relevance_threshold", "0.35"},
+         {"use_weighted_ratio", "false"},
+         {"use_edit_distance", "true"}}}},
+      {});
+  FuzzyTokenizedStringMatch match;
+  base::string16 query(base::UTF8ToUTF16("anonymous"));
+  base::string16 text(base::UTF8ToUTF16("famous"));
+  EXPECT_FALSE(match.IsRelevant(ash::TokenizedString(query),
+                                ash::TokenizedString(text)));
+  EXPECT_NEAR(match.relevance(), 0.33, 0.01);
+}
+
 }  // namespace app_list

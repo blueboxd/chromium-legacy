@@ -92,6 +92,7 @@ class COMPONENT_EXPORT(UI_BASE_IME) InputMethodBase
       uint32_t before,
       uint32_t after,
       const std::vector<ui::ImeTextSpan>& text_spans) override;
+  bool SetSelectionRange(uint32_t start, uint32_t end) override;
 #endif
 
   void DeleteSurroundingText(int32_t offset, uint32_t length) override;

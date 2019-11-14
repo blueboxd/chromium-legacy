@@ -262,6 +262,11 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
   params->request = blink::mojom::FetchAPIRequest::From(resource_request_);
   params->client_id = controller_connector_->client_id();
 
+  // TODO(https://crbug.com/900700): Implement this, making the remote
+  // connected to a receiver which is passed to
+  // blink::PerformanceResourceTiming.
+  params->worker_timing_remote = mojo::NullRemote();
+
   // TODO(falken): Grant the controller service worker's process access to files
   // in the body, like ServiceWorkerFetchDispatcher::DispatchFetchEvent() does.
   controller->DispatchFetchEventForSubresource(

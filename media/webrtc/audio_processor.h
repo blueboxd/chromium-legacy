@@ -94,6 +94,10 @@ class COMPONENT_EXPORT(MEDIA_WEBRTC) AudioProcessor final
   std::atomic<base::TimeDelta> render_delay_ = {base::TimeDelta()};
   bool has_reverse_stream_ = false;
 
+  // Indicates whether the audio processor playout signal has ever had
+  // asymmetric left and right channel content.
+  bool assume_upmixed_mono_playout_ = true;
+
   // The APM writes the processed data here.
   std::unique_ptr<AudioBus> output_bus_;
   std::vector<float*> output_ptrs_;

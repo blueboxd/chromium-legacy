@@ -25,6 +25,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/text_elider.h"
+#include "ui/views/buildflags.h"
 #include "ui/views/corewm/test/tooltip_aura_test_api.h"
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/corewm/tooltip_controller_test_helper.h"
@@ -43,7 +44,7 @@
 #include "ui/base/win/scoped_ole_initializer.h"
 #endif
 
-#if !defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA)
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #endif
@@ -61,7 +62,7 @@ views::Widget* CreateWidget(aura::Window* root) {
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   params.accept_events = true;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#if !BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_WIN)
   params.parent = root;
 #endif
   params.bounds = gfx::Rect(0, 0, 200, 100);
@@ -83,7 +84,7 @@ class TooltipControllerTest : public ViewsTestBase {
   ~TooltipControllerTest() override = default;
 
   void SetUp() override {
-#if !defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA)
     set_native_widget_type(NativeWidgetType::kDesktop);
 #endif
 
@@ -93,7 +94,7 @@ class TooltipControllerTest : public ViewsTestBase {
 
     if (root_window)
       new wm::DefaultActivationClient(root_window);
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#if !BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_WIN)
     if (root_window) {
       tooltip_aura_ = new views::corewm::TooltipAura();
       controller_ = std::make_unique<TooltipController>(
@@ -113,7 +114,7 @@ class TooltipControllerTest : public ViewsTestBase {
   }
 
   void TearDown() override {
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#if !BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_WIN)
     aura::Window* root_window = GetContext();
     if (root_window) {
       root_window->RemovePreTargetHandler(controller_.get());
@@ -165,7 +166,7 @@ class TooltipControllerTest : public ViewsTestBase {
   std::unique_ptr<ui::test::EventGenerator> generator_;
 
  protected:
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#if !BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_WIN)
   TooltipAura* tooltip_aura_;  // not owned.
 #endif
 
@@ -237,7 +238,7 @@ TEST_F(TooltipControllerTest, DontShowTooltipOnTouch) {
   EXPECT_EQ(GetWindow(), helper_->GetTooltipWindow());
 }
 
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#if !BUILDFLAG(ENABLE_DESKTOP_AURA) || defined(OS_WIN)
 // crbug.com/664370.
 TEST_F(TooltipControllerTest, MaxWidth) {
   base::string16 text = base::ASCIIToUTF16(
@@ -693,7 +694,7 @@ class TooltipControllerTest3 : public ViewsTestBase {
   ~TooltipControllerTest3() override = default;
 
   void SetUp() override {
-#if !defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_DESKTOP_AURA)
     set_native_widget_type(NativeWidgetType::kDesktop);
 #endif
 

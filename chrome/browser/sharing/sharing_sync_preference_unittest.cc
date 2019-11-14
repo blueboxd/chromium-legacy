@@ -12,6 +12,7 @@
 #include "base/value_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/sharing/features.h"
+#include "chrome/browser/sharing/sharing_target_info.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync_device_info/fake_device_info_sync_service.h"
 #include "components/sync_device_info/fake_device_info_tracker.h"
@@ -27,11 +28,25 @@ const std::vector<uint8_t> kVapidKey =
 
 const char kDeviceGuid[] = "test_device";
 const char kDeviceName[] = "test_name";
-const char kDeviceFcmToken[] = "test_fcm_token";
+const char kDeviceVapidFcmToken[] = "test_vapid_fcm_token";
+const char kDeviceSharingFcmToken[] = "test_sharing_fcm_token";
 const char kDeviceAuthToken[] = "test_auth_token";
 const char kDeviceP256dh[] = "test_p256dh";
 
 const char kAuthorizedEntity[] = "authorized_entity";
+
+void ExpectSharingInfoEquals(
+    const base::Optional<syncer::DeviceInfo::SharingInfo>& sharing_info,
+    const base::Optional<SharingTargetInfo>& target_info,
+    const std::set<sync_pb::SharingSpecificFields::EnabledFeatures>&
+        enabled_features) {
+  ASSERT_TRUE(sharing_info);
+  ASSERT_TRUE(target_info);
+  EXPECT_EQ(sharing_info->vapid_fcm_token, target_info->fcm_token);
+  EXPECT_EQ(sharing_info->p256dh, target_info->p256dh);
+  EXPECT_EQ(sharing_info->auth_secret, target_info->auth_secret);
+  EXPECT_EQ(sharing_info->enabled_features, enabled_features);
+}
 
 }  // namespace
 
@@ -44,7 +59,8 @@ class SharingSyncPreferenceTest : public testing::Test {
 
   syncer::DeviceInfo::SharingInfo GetDefaultSharingInfo() {
     return syncer::DeviceInfo::SharingInfo(
-        kDeviceFcmToken, kDeviceP256dh, kDeviceAuthToken,
+        kDeviceVapidFcmToken, kDeviceSharingFcmToken, kDeviceP256dh,
+        kDeviceAuthToken,
         std::set<sync_pb::SharingSpecificFields::EnabledFeatures>{
             sync_pb::SharingSpecificFields::CLICK_TO_CALL});
   }
@@ -69,15 +85,19 @@ TEST_F(SharingSyncPreferenceTest, SyncAndRemoveLocalDevice) {
   fake_device_info_sync_service_.GetDeviceInfoTracker()->Add(local_device_info);
   EXPECT_FALSE(sharing_sync_preference_.GetLocalSharingInfo());
   EXPECT_FALSE(
-      sharing_sync_preference_.GetSharingInfo(local_device_info->guid()));
+      sharing_sync_preference_.GetTargetInfo(local_device_info->guid()));
+  EXPECT_TRUE(
+      sharing_sync_preference_.GetEnabledFeatures(local_device_info).empty());
 
   // Setting SharingInfo should trigger RefreshLocalDeviceInfoCount.
   auto sharing_info = GetDefaultSharingInfo();
   sharing_sync_preference_.SetLocalSharingInfo(sharing_info);
 
   EXPECT_EQ(sharing_info, sharing_sync_preference_.GetLocalSharingInfo());
-  EXPECT_EQ(sharing_info,
-            sharing_sync_preference_.GetSharingInfo(local_device_info->guid()));
+  ExpectSharingInfoEquals(
+      sharing_info,
+      sharing_sync_preference_.GetTargetInfo(local_device_info->guid()),
+      sharing_sync_preference_.GetEnabledFeatures(local_device_info));
   EXPECT_EQ(1, fake_device_info_sync_service_.RefreshLocalDeviceInfoCount());
 
   // Assume LocalDeviceInfoProvider is updated now.
@@ -90,8 +110,10 @@ TEST_F(SharingSyncPreferenceTest, SyncAndRemoveLocalDevice) {
   sharing_sync_preference_.SetLocalSharingInfo(sharing_info);
 
   EXPECT_EQ(sharing_info, sharing_sync_preference_.GetLocalSharingInfo());
-  EXPECT_EQ(sharing_info,
-            sharing_sync_preference_.GetSharingInfo(local_device_info->guid()));
+  ExpectSharingInfoEquals(
+      sharing_info,
+      sharing_sync_preference_.GetTargetInfo(local_device_info->guid()),
+      sharing_sync_preference_.GetEnabledFeatures(local_device_info));
   EXPECT_EQ(1, fake_device_info_sync_service_.RefreshLocalDeviceInfoCount());
 
   // Clearing SharingInfo should trigger RefreshLocalDeviceInfoCount.
@@ -104,7 +126,9 @@ TEST_F(SharingSyncPreferenceTest, SyncAndRemoveLocalDevice) {
 
   EXPECT_FALSE(sharing_sync_preference_.GetLocalSharingInfo());
   EXPECT_FALSE(
-      sharing_sync_preference_.GetSharingInfo(local_device_info->guid()));
+      sharing_sync_preference_.GetTargetInfo(local_device_info->guid()));
+  EXPECT_TRUE(
+      sharing_sync_preference_.GetEnabledFeatures(local_device_info).empty());
   EXPECT_EQ(2, fake_device_info_sync_service_.RefreshLocalDeviceInfoCount());
 }
 
@@ -147,8 +171,8 @@ TEST_F(SharingSyncPreferenceTest, GetLocalSharingInfoFromProvider) {
   EXPECT_EQ(sharing_info, sharing_sync_preference_.GetLocalSharingInfo());
 }
 
-TEST_F(SharingSyncPreferenceTest, GetSharingInfoFromProvider) {
-  std::unique_ptr<syncer::DeviceInfo> fake_device_info_ =
+TEST_F(SharingSyncPreferenceTest, GetTargetInfoFromProvider) {
+  std::unique_ptr<syncer::DeviceInfo> fake_device_info =
       std::make_unique<syncer::DeviceInfo>(
           kDeviceGuid, kDeviceName, "chrome_version", "user_agent",
           sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id",
@@ -157,13 +181,15 @@ TEST_F(SharingSyncPreferenceTest, GetSharingInfoFromProvider) {
           /*send_tab_to_self_receiving_enabled=*/false,
           /*sharing_info=*/base::nullopt);
   fake_device_info_sync_service_.GetDeviceInfoTracker()->Add(
-      fake_device_info_.get());
-  EXPECT_FALSE(sharing_sync_preference_.GetSharingInfo(kDeviceGuid));
+      fake_device_info.get());
+  EXPECT_FALSE(sharing_sync_preference_.GetTargetInfo(kDeviceGuid));
 
   auto sharing_info = GetDefaultSharingInfo();
-  fake_device_info_->set_sharing_info(sharing_info);
+  fake_device_info->set_sharing_info(sharing_info);
 
-  EXPECT_EQ(sharing_info, sharing_sync_preference_.GetSharingInfo(kDeviceGuid));
+  ExpectSharingInfoEquals(
+      sharing_info, sharing_sync_preference_.GetTargetInfo(kDeviceGuid),
+      sharing_sync_preference_.GetEnabledFeatures(fake_device_info.get()));
 }
 
 TEST_F(SharingSyncPreferenceTest, FCMRegistrationGetSet) {

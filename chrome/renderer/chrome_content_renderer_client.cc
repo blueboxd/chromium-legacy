@@ -354,7 +354,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 #endif
 
   browser_interface_broker_ =
-      blink::Platform::Current()->GetBrowserInterfaceBrokerProxy();
+      blink::Platform::Current()->GetBrowserInterfaceBroker();
 
   chrome_observer_.reset(new ChromeRenderThreadObserver());
   web_cache_impl_.reset(new web_cache::WebCacheImpl());

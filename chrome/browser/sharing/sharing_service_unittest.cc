@@ -16,11 +16,12 @@
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_device_registration.h"
 #include "chrome/browser/sharing/sharing_device_registration_result.h"
+#include "chrome/browser/sharing/sharing_device_source_sync.h"
 #include "chrome/browser/sharing/sharing_fcm_handler.h"
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
+#include "chrome/browser/sharing/sharing_handler_registry.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
-#include "chrome/test/base/testing_profile.h"
 #include "components/gcm_driver/crypto/gcm_encryption_provider.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
 #include "components/sync/driver/test_sync_service.h"
@@ -58,30 +59,12 @@ class MockSharingFCMHandler : public SharingFCMHandler {
   using SharingMessage = chrome_browser_sharing::SharingMessage;
 
  public:
-  MockSharingFCMHandler() : SharingFCMHandler(nullptr, nullptr, nullptr) {}
+  MockSharingFCMHandler()
+      : SharingFCMHandler(nullptr, nullptr, nullptr, nullptr) {}
   ~MockSharingFCMHandler() = default;
 
   MOCK_METHOD0(StartListening, void());
   MOCK_METHOD0(StopListening, void());
-
-  void AddSharingHandler(const SharingMessage::PayloadCase& payload_case,
-                         SharingMessageHandler* handler) override {
-    sharing_handlers_[payload_case] = handler;
-  }
-
-  void RemoveSharingHandler(
-      const SharingMessage::PayloadCase& payload_case) override {
-    sharing_handlers_.erase(payload_case);
-  }
-
-  SharingMessageHandler* GetSharingHandler(
-      const SharingMessage::PayloadCase& payload_case) {
-    return sharing_handlers_[payload_case];
-  }
-
- private:
-  std::map<SharingMessage::PayloadCase, SharingMessageHandler*>
-      sharing_handlers_;
 };
 
 class MockSharingMessageSender : public SharingMessageSender {
@@ -134,21 +117,12 @@ class FakeSharingDeviceRegistration : public SharingDeviceRegistration {
   int registration_attempts() { return registration_attempts_; }
   int unregistration_attempts() { return unregistration_attempts_; }
 
-  bool IsSharedClipboardSupported() const override {
-    return shared_clipboard_supported_;
-  }
-
-  void SetIsSharedClipboardSupported(bool supported) {
-    shared_clipboard_supported_ = supported;
-  }
-
  private:
   VapidKeyManager* vapid_key_manager_;
   SharingDeviceRegistrationResult result_ =
       SharingDeviceRegistrationResult::kSuccess;
   int registration_attempts_ = 0;
   int unregistration_attempts_ = 0;
-  bool shared_clipboard_supported_ = false;
 };
 
 class SharingServiceTest : public testing::Test {
@@ -164,6 +138,12 @@ class SharingServiceTest : public testing::Test {
     fcm_handler_ = new testing::NiceMock<MockSharingFCMHandler>();
     sharing_message_sender_ = new testing::NiceMock<MockSharingMessageSender>();
     SharingSyncPreference::RegisterProfilePrefs(prefs_.registry());
+  }
+
+  ~SharingServiceTest() override {
+    // Make sure we're creating a SharingService so it can take ownership of the
+    // local objects.
+    GetSharingService();
   }
 
   void OnMessageSent(
@@ -207,16 +187,16 @@ class SharingServiceTest : public testing::Test {
   // Lazily initialized so we can test the constructor.
   SharingService* GetSharingService() {
     if (!sharing_service_) {
-      sharing_service_ = std::make_unique<SharingService>(
-          &profile_, base::WrapUnique(sync_prefs_),
-          base::WrapUnique(vapid_key_manager_),
-          base::WrapUnique(sharing_device_registration_), nullptr,
-          base::WrapUnique(fcm_handler_),
-          base::WrapUnique(sharing_message_sender_), nullptr,
-          fake_device_info_sync_service.GetDeviceInfoTracker(),
-          fake_device_info_sync_service.GetLocalDeviceInfoProvider(),
+      device_source_ = new SharingDeviceSourceSync(
           &test_sync_service_,
-          /* sms_fetcher= */ nullptr);
+          fake_device_info_sync_service.GetLocalDeviceInfoProvider(),
+          fake_device_info_sync_service.GetDeviceInfoTracker());
+      sharing_service_ = std::make_unique<SharingService>(
+          base::WrapUnique(sync_prefs_), base::WrapUnique(vapid_key_manager_),
+          base::WrapUnique(sharing_device_registration_),
+          base::WrapUnique(sharing_message_sender_),
+          base::WrapUnique(device_source_), base::WrapUnique(fcm_handler_),
+          &test_sync_service_);
     }
     task_environment_.RunUntilIdle();
     return sharing_service_.get();
@@ -225,7 +205,6 @@ class SharingServiceTest : public testing::Test {
   base::test::ScopedFeatureList scoped_feature_list_;
   content::BrowserTaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
-  TestingProfile profile_;
 
   syncer::FakeDeviceInfoSyncService fake_device_info_sync_service;
   syncer::TestSyncService test_sync_service_;
@@ -237,6 +216,7 @@ class SharingServiceTest : public testing::Test {
   SharingSyncPreference* sync_prefs_;
   VapidKeyManager* vapid_key_manager_;
   FakeSharingDeviceRegistration* sharing_device_registration_;
+  SharingDeviceSourceSync* device_source_ = nullptr;
   testing::NiceMock<MockSharingMessageSender>* sharing_message_sender_;
   bool device_candidates_initialized_ = false;
 
@@ -255,24 +235,6 @@ bool ProtoEquals(const google::protobuf::MessageLite& expected,
   return expected_serialized == actual_serialized;
 }
 }  // namespace
-
-TEST_F(SharingServiceTest, SharedClipboard_IsAdded) {
-  sharing_device_registration_->SetIsSharedClipboardSupported(true);
-  GetSharingService();
-  SharingMessageHandler* shared_clipboard_handler =
-      fcm_handler_->GetSharingHandler(
-          chrome_browser_sharing::SharingMessage::kSharedClipboardMessage);
-  EXPECT_TRUE(shared_clipboard_handler);
-}
-
-TEST_F(SharingServiceTest, SharedClipboard_NotAdded) {
-  sharing_device_registration_->SetIsSharedClipboardSupported(false);
-  GetSharingService();
-  SharingMessageHandler* shared_clipboard_handler =
-      fcm_handler_->GetSharingHandler(
-          chrome_browser_sharing::SharingMessage::kSharedClipboardMessage);
-  EXPECT_FALSE(shared_clipboard_handler);
-}
 
 TEST_F(SharingServiceTest, GetDeviceCandidates_Empty) {
   std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
@@ -716,7 +678,7 @@ TEST_F(SharingServiceTest, DeviceCandidatesAlreadyReady) {
   fake_device_info_sync_service.GetDeviceInfoTracker()->Add(device_info.get());
   fake_device_info_sync_service.GetLocalDeviceInfoProvider()->SetReady(true);
 
-  GetSharingService()->AddDeviceCandidatesInitializedObserver(
+  GetSharingService()->GetDeviceSource()->AddReadyCallback(
       base::BindOnce(&SharingServiceTest::OnDeviceCandidatesInitialized,
                      base::Unretained(this)));
 
@@ -726,7 +688,7 @@ TEST_F(SharingServiceTest, DeviceCandidatesAlreadyReady) {
 TEST_F(SharingServiceTest, DeviceCandidatesReadyAfterAddObserver) {
   fake_device_info_sync_service.GetLocalDeviceInfoProvider()->SetReady(false);
 
-  GetSharingService()->AddDeviceCandidatesInitializedObserver(
+  GetSharingService()->GetDeviceSource()->AddReadyCallback(
       base::BindOnce(&SharingServiceTest::OnDeviceCandidatesInitialized,
                      base::Unretained(this)));
 

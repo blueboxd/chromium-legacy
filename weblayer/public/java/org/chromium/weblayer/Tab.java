@@ -16,6 +16,7 @@ import org.json.JSONObject;
 
 import org.chromium.weblayer_private.interfaces.APICallException;
 import org.chromium.weblayer_private.interfaces.IDownloadCallbackClient;
+import org.chromium.weblayer_private.interfaces.IErrorPageCallbackClient;
 import org.chromium.weblayer_private.interfaces.IFullscreenCallbackClient;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.ITab;
@@ -44,6 +45,7 @@ public final class Tab {
     private final ObserverList<TabCallback> mCallbacks;
     private Browser mBrowser;
     private DownloadCallbackClientImpl mDownloadCallbackClient;
+    private ErrorPageCallbackClientImpl mErrorPageCallbackClient;
     private NewTabCallback mNewTabCallback;
     // Id from the remote side.
     private final int mId;
@@ -108,6 +110,21 @@ public final class Tab {
             } else {
                 mDownloadCallbackClient = null;
                 mImpl.setDownloadCallbackClient(null);
+            }
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    public void setErrorPageCallback(@Nullable ErrorPageCallback callback) {
+        ThreadCheck.ensureOnUiThread();
+        try {
+            if (callback != null) {
+                mErrorPageCallbackClient = new ErrorPageCallbackClientImpl(callback);
+                mImpl.setErrorPageCallbackClient(mErrorPageCallbackClient);
+            } else {
+                mErrorPageCallbackClient = null;
+                mImpl.setErrorPageCallbackClient(null);
             }
         } catch (RemoteException e) {
             throw new APICallException(e);
@@ -257,6 +274,23 @@ public final class Tab {
                 String mimetype, long contentLength) {
             mCallback.onDownloadRequested(
                     url, userAgent, contentDisposition, mimetype, contentLength);
+        }
+    }
+
+    private static final class ErrorPageCallbackClientImpl extends IErrorPageCallbackClient.Stub {
+        private final ErrorPageCallback mCallback;
+
+        ErrorPageCallbackClientImpl(ErrorPageCallback callback) {
+            mCallback = callback;
+        }
+
+        public ErrorPageCallback getCallback() {
+            return mCallback;
+        }
+
+        @Override
+        public boolean onBackToSafety() {
+            return mCallback.onBackToSafety();
         }
     }
 

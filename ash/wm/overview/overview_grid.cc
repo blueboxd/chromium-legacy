@@ -1141,17 +1141,22 @@ void OverviewGrid::CalculateWindowListAnimationStates(
       }
     }
 
-    SkIRect src_bounds = gfx::RectToSkIRect(src_bounds_temp);
-    SkIRect dst_bounds = gfx::RectToSkIRect(gfx::ToEnclosedRect(
+    // The bounds of of the destination may be partially or fully offscreen.
+    // Partially offscreen rects should be clipped so the onscreen portion is
+    // treated normally. Fully offscreen rects (intersection with the screen
+    // bounds is empty) should never be animated.
+    gfx::Rect dst_bounds_temp = gfx::ToEnclosedRect(
         transition == OverviewTransition::kEnter ? target_bounds[i]
-                                                 : items[i]->target_bounds()));
-
-    if (!screen_bounds.Contains(gfx::SkIRectToRect(dst_bounds))) {
+                                                 : items[i]->target_bounds());
+    dst_bounds_temp.Intersect(screen_bounds);
+    if (dst_bounds_temp.IsEmpty()) {
       items[i]->set_should_animate_when_entering(false);
       items[i]->set_should_animate_when_exiting(false);
       continue;
     }
 
+    SkIRect src_bounds = gfx::RectToSkIRect(src_bounds_temp);
+    SkIRect dst_bounds = gfx::RectToSkIRect(dst_bounds_temp);
     if (!occluded_region.isEmpty()) {
       src_occluded |=
           (!src_bounds.isEmpty() && occluded_region.contains(src_bounds));

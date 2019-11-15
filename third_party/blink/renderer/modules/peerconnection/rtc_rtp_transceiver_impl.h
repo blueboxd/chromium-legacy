@@ -88,6 +88,7 @@ class MODULES_EXPORT RtpTransceiverState {
   const base::Optional<blink::RtpReceiverState>& receiver_state() const;
   blink::RtpReceiverState MoveReceiverState();
   base::Optional<std::string> mid() const;
+  void set_mid(base::Optional<std::string>);
   bool stopped() const;
   webrtc::RtpTransceiverDirection direction() const;
   void set_direction(webrtc::RtpTransceiverDirection);
@@ -169,6 +170,7 @@ class MODULES_EXPORT RTCRtpTransceiverImpl
       const override;
   uintptr_t Id() const override;
   blink::WebString Mid() const override;
+  void SetMid(base::Optional<blink::WebString>) override;
   std::unique_ptr<blink::WebRTCRtpSender> Sender() const override;
   std::unique_ptr<blink::WebRTCRtpReceiver> Receiver() const override;
   bool Stopped() const override;

@@ -245,7 +245,7 @@ void PseudoTcpAdapter::Core::OnTcpReadable(PseudoTcp* tcp) {
 
   AdjustClock();
 
-  read_buffer_ = NULL;
+  read_buffer_.reset();
   std::move(read_callback_).Run(result);
 }
 
@@ -276,7 +276,7 @@ void PseudoTcpAdapter::Core::OnTcpWriteable(PseudoTcp* tcp) {
     return;
   }
 
-  write_buffer_ = NULL;
+  write_buffer_.reset();
   std::move(write_callback_).Run(result);
 }
 
@@ -319,9 +319,9 @@ void PseudoTcpAdapter::Core::SetWriteWaitsForSend(bool write_waits_for_send) {
 void PseudoTcpAdapter::Core::DeleteSocket() {
   // Don't dispatch outstanding callbacks when the socket is deleted.
   read_callback_.Reset();
-  read_buffer_ = NULL;
+  read_buffer_.reset();
   write_callback_.Reset();
-  write_buffer_ = NULL;
+  write_buffer_.reset();
   connect_callback_.Reset();
 
   socket_.reset();
@@ -436,7 +436,7 @@ void PseudoTcpAdapter::Core::CheckWriteComplete() {
     if (pseudo_tcp_.GetBytesBufferedNotSent() == 0) {
       waiting_write_position_ = false;
 
-      write_buffer_ = NULL;
+      write_buffer_.reset();
       std::move(write_callback_).Run(last_write_result_);
     }
   }

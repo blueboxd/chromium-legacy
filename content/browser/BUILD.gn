@@ -207,8 +207,7 @@ jumbo_source_set("browser") {
     "//third_party/libyuv",
     "//third_party/re2",
     "//third_party/sqlite",
-    "//third_party/webrtc/modules/desktop_capture:primitives",
-    "//third_party/webrtc/rtc_base:rtc_base",
+    "//third_party/webrtc_overrides:webrtc_component",
     "//third_party/zlib",
     "//third_party/zlib/google:zip",
     "//ui/accessibility",
@@ -2081,8 +2080,7 @@ jumbo_source_set("browser") {
       "media/capture/web_contents_video_capture_device.cc",
       "media/capture/web_contents_video_capture_device.h",
     ]
-    public_deps += [ "//third_party/webrtc_overrides:init_webrtc" ]
-    deps += [ "//third_party/webrtc/modules/desktop_capture" ]
+    deps += [ "//third_party/webrtc_overrides:webrtc_component" ]
     if (use_aura) {
       sources += [
         "media/capture/aura_window_video_capture_device.cc",

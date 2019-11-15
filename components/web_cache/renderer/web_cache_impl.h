@@ -44,7 +44,7 @@ class WebCacheImpl : public mojom::WebCache {
   // Records status regarding the sequence of navigation event and
   // ClearCache(true) call, to ensure delayed 'clear cache' command always
   // get executed on navigation.
-  State clear_cache_state_;
+  State clear_cache_state_ = kInit;
 
   mojo::ReceiverSet<mojom::WebCache> receivers_;
 

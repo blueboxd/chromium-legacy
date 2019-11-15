@@ -14,8 +14,10 @@
 #include "build/build_config.h"
 #include "chromecast/browser/application_media_info_manager.h"
 #include "chromecast/browser/cast_browser_main_parts.h"
+#include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/media/media_caps_impl.h"
 #include "chromecast/chromecast_buildflags.h"
+#include "chromecast/media/cdm/cast_cdm_factory.h"
 #include "components/network_hints/browser/simple_network_hints_handler_impl.h"
 #include "content/public/browser/render_process_host.h"
 #include "media/mojo/buildflags.h"
@@ -36,15 +38,9 @@
 #include "chromecast/common/mojom/js_channel.mojom.h"
 #endif
 
-#if BUILDFLAG(USE_CHROMECAST_CDMS)
-#include "chromecast/media/cdm/cast_cdm_factory.h"
-#endif  // BUILDFLAG(USE_CHROMECAST_CDMS)
-
 #if defined(OS_ANDROID)
-#if !BUILDFLAG(USE_CHROMECAST_CDMS)
 #include "components/cdm/browser/media_drm_storage_impl.h"
 #include "url/origin.h"
-#endif  // !BUILDFLAG(USE_CHROMECAST_CDMS)
 #else
 #include "chromecast/browser/memory_pressure_controller_impl.h"
 #endif  // defined(OS_ANDROID)
@@ -54,7 +50,7 @@ namespace shell {
 
 namespace {
 
-#if defined(OS_ANDROID) && !BUILDFLAG(USE_CHROMECAST_CDMS)
+#if defined(OS_ANDROID)
 void CreateOriginId(cdm::MediaDrmStorageImpl::OriginIdObtainedCB callback) {
   // TODO(crbug.com/917527): Update this to actually get a pre-provisioned
   // origin ID.
@@ -82,7 +78,7 @@ void CreateMediaDrmStorage(content::RenderFrameHost* render_frame_host,
       render_frame_host, pref_service, base::BindRepeating(&CreateOriginId),
       base::BindRepeating(&AllowEmptyOriginIdCB), std::move(request));
 }
-#endif  // defined(OS_ANDROID) && !BUILDFLAG(USE_CHROMECAST_CDMS)
+#endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_EXTERNAL_MOJO_SERVICES)
 void StartExternalMojoBrokerService(
@@ -118,10 +114,10 @@ void CastContentBrowserClient::ExposeInterfacesToRenderer(
 void CastContentBrowserClient::ExposeInterfacesToMediaService(
     service_manager::BinderRegistry* registry,
     content::RenderFrameHost* render_frame_host) {
-#if defined(OS_ANDROID) && !BUILDFLAG(USE_CHROMECAST_CDMS)
+#if defined(OS_ANDROID)
   registry->AddInterface(
       base::BindRepeating(&CreateMediaDrmStorage, render_frame_host));
-#endif  // defined(OS_ANDROID) && !BUILDFLAG(USE_CHROMECAST_CDMS)
+#endif  // defined(OS_ANDROID)
 
   std::string application_session_id;
   bool mixer_audio_enabled;

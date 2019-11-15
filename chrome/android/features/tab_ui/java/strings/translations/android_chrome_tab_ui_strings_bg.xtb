@@ -6,6 +6,7 @@
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> раздел}other{<ph name="TABS_COUNT_MANY" /> раздела}}</translation>
 <translation id="257674075312929031">Група</translation>
 <translation id="2613747923081026172">Създаване на група</translation>
+<translation id="2671423594960767771">Споделяне на групата</translation>
 <translation id="2977480621796371840">Премахване от групата</translation>
 <translation id="4212246570487010370">Продължаване на сърфирането</translation>
 <translation id="4648718555153979859">Разделите ви са групирани заедно тук</translation>
@@ -14,6 +15,7 @@
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> раздела са групирани</translation>
 <translation id="5792534911093536736">Още раздели</translation>
 <translation id="58326064309361797">Преместете с плъзгане разделите, за да ги групирате</translation>
+<translation id="6040143037577758943">Затваряне</translation>
 <translation id="6193448654517602979">Избиране на раздели</translation>
 <translation id="6615455863669487791">Покажете ми</translation>
 <translation id="6840760312327750441">За да групирате раздели, докоснете и задръжте някой от тях. След това го преместете с плъзгане върху друг.</translation>

@@ -228,12 +228,12 @@ ForwardingAudioStreamFactory::~ForwardingAudioStreamFactory() {
 
 void ForwardingAudioStreamFactory::LoopbackStreamStarted() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  web_contents()->IncrementCapturerCount(gfx::Size());
+  web_contents()->IncrementCapturerCount(gfx::Size(), /* stay_hidden */ false);
 }
 
 void ForwardingAudioStreamFactory::LoopbackStreamStopped() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  web_contents()->DecrementCapturerCount();
+  web_contents()->DecrementCapturerCount(/* stay_hidden */ false);
 }
 
 void ForwardingAudioStreamFactory::SetMuted(bool muted) {

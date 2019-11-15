@@ -417,6 +417,10 @@ void OverviewController::ToggleOverview(
 
     overview_session_->set_is_shutting_down(true);
 
+    if (!start_animations_.empty())
+      OnStartingAnimationComplete(/*canceled=*/true);
+    start_animations_.clear();
+
     if (type == OverviewSession::EnterExitOverviewType::kSlideOutExit ||
         type == OverviewSession::EnterExitOverviewType::kFadeOutExit ||
         type == OverviewSession::EnterExitOverviewType::kSwipeFromShelf) {
@@ -436,10 +440,6 @@ void OverviewController::ToggleOverview(
       window_util::HideAndMaybeMinimizeWithoutAnimation(
           windows_to_hide_minimize, true);
     }
-
-    if (!start_animations_.empty())
-      OnStartingAnimationComplete(/*canceled=*/true);
-    start_animations_.clear();
 
     // Do not show mask and show during overview shutdown.
     overview_session_->UpdateRoundedCornersAndShadow();

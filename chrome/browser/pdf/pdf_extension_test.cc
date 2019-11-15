@@ -469,6 +469,18 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
   auto* guest_web_contents = GetGuestViewManager()->WaitForSingleGuestCreated();
   ASSERT_TRUE(guest_web_contents);
   EXPECT_NE(embedder_web_contents, guest_web_contents);
+
+  // Make sure the load has started, before waiting for it to stop.
+  // This is a little hacky, but will unjank the test for now.
+  // TODO(wjmaclean): Make this less hacky.
+  while (!guest_web_contents->IsLoading() &&
+         !guest_web_contents->GetController().GetLastCommittedEntry()) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+  }
+
   EXPECT_TRUE(content::WaitForLoadStop(guest_web_contents));
 
   // Make sure the text area still has focus.

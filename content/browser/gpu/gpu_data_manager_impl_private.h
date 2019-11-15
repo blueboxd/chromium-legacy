@@ -20,6 +20,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list_threadsafe.h"
+#include "base/timer/timer.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
@@ -186,6 +187,8 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   void RequestDxDiagNodeData();
   void RequestGpuSupportedRuntimeVersion(bool delayed);
 
+  void RecordCompositingMode();
+
   GpuDataManagerImpl* const owner_;
 
   gpu::GpuFeatureInfo gpu_feature_info_;
@@ -207,6 +210,9 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   gpu::GpuExtraInfo gpu_extra_info_;
 
   const scoped_refptr<GpuDataManagerObserverList> observer_list_;
+
+  // Periodically calls RecordCompositingMode() for compositing mode UMA.
+  base::RepeatingTimer compositing_mode_timer_;
 
   // Contains the 1000 most recent log messages.
   std::vector<LogMessage> log_messages_;

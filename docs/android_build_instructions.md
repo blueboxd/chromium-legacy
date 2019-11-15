@@ -177,11 +177,11 @@ out/Default` from the command line. To compile one, pass the GN label to Ninja
 with no preceding "//" (so, for `//chrome/test:unit_tests` use `autoninja -C
 out/Default chrome/test:unit_tests`).
 
-### Multiple Chrome APK Targets
+### Multiple Chrome Targets
 
-The Google Play Store allows apps to send customized `.apk` files depending on
-the version of Android running on a device. Chrome uses this feature to target
-4 different versions using 4 different ninja targets:
+The Google Play Store allows apps to send customized `.apk` or `.aab` files
+depending on the version of Android running on a device. Chrome uses this
+feature to target 4 different versions using 4 different ninja targets:
 
 1. `chrome_public_apk` (ChromePublic.apk)
    * `minSdkVersion=19` (KitKat).
@@ -201,7 +201,7 @@ the version of Android running on a device. Chrome uses this feature to target
    * Stores libmonochrome.so uncompressed within the APK.
    * Does not use Crazy Linker (WebView requires system linker).
      * But system linker supports crazy linker features now anyways.
-4. `trichrome_chrome_apk` and `trichrome_library_apk` (TrichromeChrome.apk and TrichromeLibrary.apk)
+4. `trichrome_chrome_bundle` and `trichrome_library_apk` (TrichromeChrome.aab and TrichromeLibrary.apk)
    * `minSdkVersion=Q` (Q).
    * TrichromeChrome contains only the Chrome code that is not shared with WebView.
    * TrichromeLibrary contains the shared code and is a "static shared library APK", which must be installed prior to TrichromeChrome.

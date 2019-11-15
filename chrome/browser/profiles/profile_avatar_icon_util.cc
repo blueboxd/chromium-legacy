@@ -399,12 +399,15 @@ gfx::Image GetAvatarIconForNSMenu(const base::FilePath& profile_path) {
   gfx::Image icon;
   AvatarMenu::GetImageForMenuButton(profile_path, &icon);
 
-  // Shape the avatar icon into a circle for consistency with other avatar
-  // UI elements.
+  // The image might be too large and need to be resized, e.g. if this is a
+  // signed-in user using the GAIA profile photo.
   constexpr int kMenuAvatarIconSize = 38;
-  return profiles::GetSizedAvatarIcon(icon, /*is_rectangle=*/true,
-                                      kMenuAvatarIconSize, kMenuAvatarIconSize,
-                                      profiles::SHAPE_CIRCLE);
+  if (icon.Width() > kMenuAvatarIconSize ||
+      icon.Height() > kMenuAvatarIconSize) {
+    icon = profiles::GetSizedAvatarIcon(
+        icon, /*is_rectangle=*/true, kMenuAvatarIconSize, kMenuAvatarIconSize);
+  }
+  return icon;
 }
 #endif
 

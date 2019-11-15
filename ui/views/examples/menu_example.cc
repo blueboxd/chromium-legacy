@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button.h"
-#include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
@@ -57,16 +57,14 @@ class ExampleMenuModel : public ui::SimpleMenuModel,
   DISALLOW_COPY_AND_ASSIGN(ExampleMenuModel);
 };
 
-class ExampleMenuButton : public MenuButton, public MenuButtonListener {
+class ExampleMenuButton : public MenuButton, public ButtonListener {
  public:
   explicit ExampleMenuButton(const base::string16& test);
   ~ExampleMenuButton() override;
 
  private:
-  // MenuButtonListener:
-  void OnMenuButtonClicked(Button* source,
-                           const gfx::Point& point,
-                           const ui::Event* event) override;
+  // ButtonListener:
+  void ButtonPressed(Button* source, const ui::Event& event) override;
 
   ui::SimpleMenuModel* GetMenuModel();
 
@@ -174,14 +172,13 @@ ExampleMenuButton::ExampleMenuButton(const base::string16& test)
 
 ExampleMenuButton::~ExampleMenuButton() = default;
 
-void ExampleMenuButton::OnMenuButtonClicked(Button* source,
-                                            const gfx::Point& point,
-                                            const ui::Event* event) {
+void ExampleMenuButton::ButtonPressed(Button* source, const ui::Event& event) {
   menu_runner_ =
       std::make_unique<MenuRunner>(GetMenuModel(), MenuRunner::HAS_MNEMONICS);
 
   menu_runner_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(),
-                          button_controller(), gfx::Rect(point, gfx::Size()),
+                          button_controller(),
+                          gfx::Rect(source->GetMenuPosition(), gfx::Size()),
                           MenuAnchorPosition::kTopRight, ui::MENU_SOURCE_NONE);
 }
 

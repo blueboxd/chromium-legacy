@@ -104,6 +104,20 @@ class ASH_EXPORT NightLightControllerImpl
   // linear |temperature| value.
   static float GetNonLinearTemperature(float temperature);
 
+  // When reading ambient color temperature via powerd, it needs to be mapped
+  // to another temperature before it can be used to determine the RGB scale
+  // factors (i.e: CTM diagonal).  The mapping was computed according to
+  // internal user studies.
+  // The returned adjusted temperature is in Kelvin as well.
+  static float RemapAmbientColorTemperature(float temperature_in_kelvin);
+
+  // Given an overall temperature in Kelvin, returns the scale factors for R, G
+  // and B channel.
+  // |temperature_in_kelvin| is expected to be a remapped color temperature
+  // from the sensor using |RemapAmbientColorTemperature|.
+  static gfx::Vector3dF ColorScalesFromRemappedTemperatureInKevin(
+      float temperature_in_kelvin);
+
   AnimationDuration animation_duration() const { return animation_duration_; }
   AnimationDuration last_animation_duration() const {
     return last_animation_duration_;

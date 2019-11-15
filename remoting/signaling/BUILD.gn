@@ -55,7 +55,7 @@ static_library("signaling") {
     "//remoting/proto/ftl/v1:ftl_grpc_library",
     "//remoting/proto/remoting/v1:telemetry_grpc_library",
     "//third_party/libjingle_xmpp",
-    "//third_party/webrtc_overrides",
+    "//third_party/webrtc_overrides:webrtc_component",
   ]
 
   deps = [

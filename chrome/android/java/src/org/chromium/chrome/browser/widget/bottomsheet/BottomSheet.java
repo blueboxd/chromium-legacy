@@ -29,12 +29,9 @@ import org.chromium.base.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.TabLoadStatus;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegate;
 import org.chromium.chrome.browser.native_page.NativePageHost;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabBrowserControlsState;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent.HeightMode;
@@ -43,7 +40,6 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.Stat
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 
 /**
@@ -138,9 +134,6 @@ public class BottomSheet
     /** Used for getting the current tab. */
     protected Supplier<Tab> mTabSupplier;
 
-    /** The fullscreen manager for information about toolbar offsets. */
-    private ChromeFullscreenManager mFullscreenManager;
-
     /** A handle to the content being shown by the sheet. */
     @Nullable
     protected BottomSheetContent mSheetContent;
@@ -175,8 +168,8 @@ public class BottomSheet
     /** Whether {@link #destroy()} has been called. **/
     private boolean mIsDestroyed;
 
-    /** The token used to enable browser controls persistence. */
-    private int mPersistentControlsToken;
+    /** The ratio in the range [0, 1] that the browser controls are hidden. */
+    private float mBrowserControlsHiddenRatio;
 
     @Override
     public boolean shouldGestureMoveSheet(MotionEvent initialEvent, MotionEvent currentEvent) {
@@ -264,20 +257,9 @@ public class BottomSheet
         // anything with them.
         if (!mIsTouchEnabled) return true;
 
-        if (isToolbarAndroidViewHidden()) return false;
-
         mGestureDetector.onTouchEvent(e);
 
         return true;
-    }
-
-    /**
-     * @return Whether or not the toolbar Android View is hidden due to being scrolled off-screen.
-     */
-    @VisibleForTesting
-    boolean isToolbarAndroidViewHidden() {
-        return mFullscreenManager == null || mFullscreenManager.getBottomControlOffset() > 0
-                || mToolbarHolder.getVisibility() != VISIBLE;
     }
 
     @Override
@@ -295,16 +277,12 @@ public class BottomSheet
      * calculations in this class.
      * @param root The container of the bottom sheet.
      * @param tabProvider A means of accessing the active tab.
-     * @param fullscreenManager A fullscreen manager for persisting browser controls and
-     *                          determining their offset.
      * @param window Android window for getting insets.
      * @param keyboardDelegate Delegate for hiding the keyboard.
      */
-    public void init(View root, ActivityTabProvider tabProvider,
-            ChromeFullscreenManager fullscreenManager, Window window,
+    public void init(View root, ActivityTabProvider tabProvider, Window window,
             KeyboardVisibilityDelegate keyboardDelegate) {
         mTabSupplier = tabProvider;
-        mFullscreenManager = fullscreenManager;
 
         mToolbarHolder =
                 (TouchRestrictingFrameLayout) findViewById(R.id.bottom_sheet_toolbar_container);
@@ -405,47 +383,25 @@ public class BottomSheet
                     return;
                 }
 
-                if (!mGestureDetector.isScrolling()) {
+                if (!mGestureDetector.isScrolling() && isRunningSettleAnimation()) return;
 
-                    // This onLayoutChange() will be called after the user enters fullscreen video
-                    // mode. Ensure the sheet state is reset to peek so that the sheet does not
-                    // open over the fullscreen video. See crbug.com/740499.
-                    if (mFullscreenManager != null
-                            && mFullscreenManager.getPersistentFullscreenMode() && isSheetOpen()) {
-                        setSheetState(getMinSwipableSheetState(), false);
-                    } else {
-                        if (isRunningSettleAnimation()) return;
-                        setSheetState(mCurrentState, false);
-                    }
-                }
+                setSheetState(mCurrentState, false);
             }
-        });
-
-        mFullscreenManager.addListener(new FullscreenListener() {
-            @Override
-            public void onToggleOverlayVideoMode(boolean enabled) {
-                if (isSheetOpen()) setSheetState(SheetState.PEEK, false);
-            }
-
-            @Override
-            public void onControlsOffsetChanged(
-                    int topOffset, int bottomOffset, boolean needsAnimate) {
-                if (getSheetState() == SheetState.HIDDEN) return;
-                if (getCurrentOffsetPx() > getSheetHeightForState(SheetState.PEEK)) return;
-
-                // Updating the offset will automatically account for the browser controls.
-                setSheetOffsetFromBottom(getCurrentOffsetPx(), StateChangeReason.SWIPE);
-            }
-
-            @Override
-            public void onContentOffsetChanged(int offset) {}
-
-            @Override
-            public void onBottomControlsHeightChanged(int bottomControlsHeight) {}
         });
 
         mSheetContainer = (ViewGroup) this.getParent();
         mSheetContainer.removeView(this);
+    }
+
+    /** @param ratio The current browser controls hidden ratio. */
+    void setBrowserControlsHiddenRatio(float ratio) {
+        mBrowserControlsHiddenRatio = ratio;
+
+        if (getSheetState() == SheetState.HIDDEN) return;
+        if (getCurrentOffsetPx() > getSheetHeightForState(SheetState.PEEK)) return;
+
+        // Updating the offset will automatically account for the browser controls.
+        setSheetOffsetFromBottom(getCurrentOffsetPx(), StateChangeReason.SWIPE);
     }
 
     @Override
@@ -607,15 +563,6 @@ public class BottomSheet
 
         mIsSheetOpen = true;
 
-        // Make sure the toolbar is visible before expanding the sheet.
-        if (isToolbarAndroidViewHidden()) {
-            TabBrowserControlsState.update(getActiveTab(), BrowserControlsState.SHOWN, false);
-        }
-
-        // Browser controls should stay visible until the sheet is closed.
-        mPersistentControlsToken =
-                mFullscreenManager.getBrowserVisibilityDelegate().showControlsPersistent();
-
         dismissSelectedText();
         for (BottomSheetObserver o : mObservers) o.onSheetOpened(reason);
     }
@@ -628,10 +575,6 @@ public class BottomSheet
     private void onSheetClosed(@StateChangeReason int reason) {
         if (!mIsSheetOpen) return;
         mIsSheetOpen = false;
-
-        // Update the browser controls since they are permanently shown while the sheet is open.
-        mFullscreenManager.getBrowserVisibilityDelegate().releasePersistentShowingToken(
-                mPersistentControlsToken);
 
         for (BottomSheetObserver o : mObservers) o.onSheetClosed(reason);
         // If the sheet contents are cleared out before #onSheetClosed is called, do not try to
@@ -700,8 +643,7 @@ public class BottomSheet
             return 0;
         }
 
-        float peekHeight = getPeekRatio() * mContainerHeight;
-        return peekHeight * mFullscreenManager.getBrowserControlHiddenRatio();
+        return getPeekRatio() * mContainerHeight * mBrowserControlsHiddenRatio;
     }
 
     /**
@@ -1210,8 +1152,7 @@ public class BottomSheet
         boolean isFindInPageVisible =
                 mFindInPageView != null && mFindInPageView.getVisibility() == View.VISIBLE;
 
-        return !isToolbarAndroidViewHidden() && !isFindInPageVisible
-                && mTargetState != SheetState.HIDDEN;
+        return !isFindInPageVisible && mTargetState != SheetState.HIDDEN;
     }
 
     /**

@@ -73,6 +73,7 @@ class MODULES_EXPORT WakeLock final : public ScriptWrappable,
   // record per responsible document [...] internal slots.
   Member<WakeLockManager> managers_[kWakeLockTypeCount];
 
+  FRIEND_TEST_ALL_PREFIXES(WakeLockSentinelTest, ContextDestruction);
   FRIEND_TEST_ALL_PREFIXES(WakeLockTest, RequestWakeLockGranted);
   FRIEND_TEST_ALL_PREFIXES(WakeLockTest, RequestWakeLockDenied);
   FRIEND_TEST_ALL_PREFIXES(WakeLockTest, LossOfDocumentActivity);

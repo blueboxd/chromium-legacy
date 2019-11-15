@@ -62,20 +62,30 @@ class BackgroundSyncProxy::Core {
 
     auto* scheduler = BackgroundSyncScheduler::GetFor(browser_context());
     DCHECK(scheduler);
-    if (delay == base::TimeDelta::Max()) {
-      scheduler->CancelDelayedProcessing(
-          service_worker_context_->storage_partition(), sync_type);
-    } else {
-      scheduler->ScheduleDelayedProcessing(
-          service_worker_context_->storage_partition(), sync_type, delay,
-          base::BindOnce(
-              [](base::OnceClosure delayed_task) {
-                RunOrPostTaskOnThread(FROM_HERE,
-                                      ServiceWorkerContext::GetCoreThreadId(),
-                                      std::move(delayed_task));
-              },
-              std::move(delayed_task)));
-    }
+    DCHECK(delay != base::TimeDelta::Max());
+
+    scheduler->ScheduleDelayedProcessing(
+        service_worker_context_->storage_partition(), sync_type, delay,
+        base::BindOnce(
+            [](base::OnceClosure delayed_task) {
+              RunOrPostTaskOnThread(FROM_HERE,
+                                    ServiceWorkerContext::GetCoreThreadId(),
+                                    std::move(delayed_task));
+            },
+            std::move(delayed_task)));
+  }
+
+  void CancelDelayedProcessing(blink::mojom::BackgroundSyncType sync_type) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+    if (!browser_context())
+      return;
+
+    auto* scheduler = BackgroundSyncScheduler::GetFor(browser_context());
+    DCHECK(scheduler);
+
+    scheduler->CancelDelayedProcessing(
+        service_worker_context_->storage_partition(), sync_type);
   }
 
   void SendSuspendedPeriodicSyncOrigins(
@@ -121,6 +131,15 @@ void BackgroundSyncProxy::ScheduleDelayedProcessing(
       FROM_HERE, BrowserThread::UI,
       base::BindOnce(&Core::ScheduleDelayedProcessing, ui_core_weak_ptr_,
                      sync_type, delay, std::move(delayed_task)));
+}
+
+void BackgroundSyncProxy::CancelDelayedProcessing(
+    blink::mojom::BackgroundSyncType sync_type) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+
+  RunOrPostTaskOnThread(FROM_HERE, BrowserThread::UI,
+                        base::BindOnce(&Core::CancelDelayedProcessing,
+                                       ui_core_weak_ptr_, sync_type));
 }
 
 void BackgroundSyncProxy::SendSuspendedPeriodicSyncOrigins(

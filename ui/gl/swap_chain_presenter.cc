@@ -872,10 +872,13 @@ bool SwapChainPresenter::PresentToSwapChain(
     DCHECK(SUCCEEDED(hr));
     event.Wait();
   }
-
+  const bool use_swap_chain_tearing =
+      DirectCompositionSurfaceWin::AllowTearing();
+  UINT flags = use_swap_chain_tearing ? DXGI_PRESENT_ALLOW_TEARING : 0;
+  UINT interval = use_swap_chain_tearing ? 0 : 1;
   // Ignore DXGI_STATUS_OCCLUDED since that's not an error but only indicates
   // that the window is occluded and we can stop rendering.
-  HRESULT hr = swap_chain_->Present(1, 0);
+  HRESULT hr = swap_chain_->Present(interval, flags);
   if (FAILED(hr) && hr != DXGI_STATUS_OCCLUDED) {
     DLOG(ERROR) << "Present failed with error 0x" << std::hex << hr;
     return false;
@@ -1159,6 +1162,8 @@ bool SwapChainPresenter::ReallocateSwapChain(
   desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
   desc.Flags =
       DXGI_SWAP_CHAIN_FLAG_YUV_VIDEO | DXGI_SWAP_CHAIN_FLAG_FULLSCREEN_VIDEO;
+  if (DirectCompositionSurfaceWin::AllowTearing())
+    desc.Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
   if (IsProtectedVideo(protected_video_type))
     desc.Flags |= DXGI_SWAP_CHAIN_FLAG_DISPLAY_ONLY;
   if (protected_video_type == gfx::ProtectedVideoType::kHardwareProtected)
@@ -1205,6 +1210,8 @@ bool SwapChainPresenter::ReallocateSwapChain(
       desc.Flags |= DXGI_SWAP_CHAIN_FLAG_DISPLAY_ONLY;
     if (protected_video_type == gfx::ProtectedVideoType::kHardwareProtected)
       desc.Flags |= DXGI_SWAP_CHAIN_FLAG_HW_PROTECTED;
+    if (DirectCompositionSurfaceWin::AllowTearing())
+      desc.Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
     HRESULT hr = media_factory->CreateSwapChainForCompositionSurfaceHandle(
         d3d11_device_.Get(), swap_chain_handle_.Get(), &desc, nullptr,

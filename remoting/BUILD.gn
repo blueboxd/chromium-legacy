@@ -175,7 +175,7 @@ test("remoting_unittests") {
     ]
   }
 
-  deps += [ "//third_party/webrtc_overrides:init_webrtc" ]
+  deps += [ "//third_party/webrtc_overrides:webrtc_component" ]
 
   if (is_android) {
     deps += [ "//net/android:net_java" ]
@@ -218,11 +218,8 @@ if (enable_remoting_host) {
       "//net:test_support",
       "//remoting/base",
       "//testing/gtest",
-      "//third_party/webrtc/modules/desktop_capture",
-      "//third_party/webrtc_overrides",
+      "//third_party/webrtc_overrides:webrtc_component",
     ]
-
-    deps += [ "//third_party/webrtc_overrides:init_webrtc" ]
 
     if (is_win) {
       defines += [ "_ALT_NO_EXCEPTIONS" ]

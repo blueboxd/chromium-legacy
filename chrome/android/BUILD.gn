@@ -610,23 +610,6 @@ java_cpp_template("resource_id_javagen") {
   ]
 }
 
-# TODO(twellington): Remove after downstream patch to remove as dependency cycles through.
-android_library("chrome_junit_test_support") {
-  # Skip platform checks since Robolectric depends on requires_android targets.
-  bypass_platform_checks = true
-  testonly = true
-  java_files = [
-    "junit/src/org/chromium/chrome/test/support/DisableHistogramsRule.java",
-  ]
-
-  deps = [
-    "//base:base_java",
-    "//third_party/junit",
-    "//third_party/mockito:mockito_java",
-    "//third_party/robolectric:robolectric_all_java",
-  ]
-}
-
 junit_binary("chrome_junit_tests") {
   # From java_sources.gni.
   java_files = chrome_junit_test_java_sources
@@ -1431,10 +1414,6 @@ if (current_toolchain == default_toolchain) {
     is_monochrome = true
     is_bundle_module = true
   }
-  resource_packaging("trichrome_chrome_apk_pak_assets") {
-    is_monochrome = false
-    is_trichrome = true
-  }
   resource_packaging("trichrome_chrome_bundle_module_pak_assets") {
     is_monochrome = false
     is_trichrome = true
@@ -1812,7 +1791,7 @@ if (public_android_sdk) {
           is_resource_ids_provider = true
         },
         {
-          name = ":trichrome_chrome_apk"
+          name = ":trichrome_chrome_bundle"
           is_resource_ids_provider = false
         },
       ]
@@ -1840,29 +1819,6 @@ if (public_android_sdk) {
       ]
     }
   }
-
-  # This target should be removed once Trichrome only supports Chrome bundle
-  # builds.
-  trichrome_library_apk_tmpl("trichrome_library_for_bundle_apk") {
-    apk_name = "TrichromeLibraryForBundle"
-    android_manifest = trichrome_library_android_manifest
-    android_manifest_dep = ":trichrome_library_android_manifest"
-
-    if (trichrome_synchronized_proguard) {
-      shared_resources_whitelist_target = "//android_webview:system_webview_apk"
-      shared_resources_whitelist_locales = locales
-      static_library_dependent_targets = [
-        {
-          name = "//android_webview:trichrome_webview_for_bundle_apk"
-          is_resource_ids_provider = true
-        },
-        {
-          name = ":trichrome_chrome_bundle"
-          is_resource_ids_provider = false
-        },
-      ]
-    }
-  }
 }
 
 # TODO(estevenson): Remove this once we switch to using bundle targets to
@@ -1870,18 +1826,6 @@ if (public_android_sdk) {
 android_resources("trichrome_dummy_resources") {
   custom_package = "org.chromium.trichromelibrary"
   resource_dirs = [ "trichrome/res_dummy" ]
-}
-
-monochrome_public_apk_or_module_tmpl("trichrome_chrome_apk") {
-  version_code = trichrome_version_code
-  version_name = chrome_version_name
-  apk_name = "TrichromeChrome"
-  target_type = "android_apk"
-  use_trichrome_library = true
-  if (trichrome_synchronized_proguard) {
-    static_library_provider = ":trichrome_library_apk"
-    resource_ids_provider_dep = "//android_webview:trichrome_webview_apk"
-  }
 }
 
 chrome_public_test_apk_manifest =
@@ -2342,8 +2286,7 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
   if (_is_trichrome) {
     _bundle_name = "TrichromeChrome${invoker.bundle_suffix}"
 
-    # TODO(torne): make minsdk=Q once we no longer build hacky P version
-    _min_sdk_version = android_sdk_version
+    _min_sdk_version = 29
     _module_descs = trichrome_module_descs
     if (defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser) {
       if (build_apk_secondary_abi && invoker.include_32_bit_webview) {
@@ -2389,8 +2332,7 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
     }
 
     if (_is_trichrome && trichrome_synchronized_proguard) {
-      resource_ids_provider_dep =
-          "//android_webview:trichrome_webview_for_bundle_apk"
+      resource_ids_provider_dep = "//android_webview:trichrome_webview_apk"
     }
   }
 
@@ -2423,7 +2365,7 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
     }
 
     if (trichrome_synchronized_proguard && _is_trichrome) {
-      static_library_provider = ":trichrome_library_for_bundle_apk"
+      static_library_provider = ":trichrome_library_apk"
     }
   }
 }
@@ -2463,7 +2405,7 @@ if (public_android_sdk) {
   monochrome_or_trichrome_public_bundle_tmpl("trichrome_chrome_bundle") {
     bundle_suffix = ""
     use_trichrome_library = true
-    static_library_provider = ":trichrome_library_for_bundle_apk"
+    static_library_provider = ":trichrome_library_apk"
     if (!is_java_debug) {
       static_library_proguard_disabled = !trichrome_synchronized_proguard
     }
@@ -2621,6 +2563,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/history/HistoryDeletionBridge.java",
     "java/src/org/chromium/chrome/browser/history/HistoryDeletionInfo.java",
     "java/src/org/chromium/chrome/browser/historyreport/HistoryReportJniBridge.java",
+    "java/src/org/chromium/chrome/browser/incognito/IncognitoUtils.java",
     "java/src/org/chromium/chrome/browser/infobar/AdsBlockedInfoBar.java",
     "java/src/org/chromium/chrome/browser/infobar/AutofillCreditCardFillingInfoBar.java",
     "java/src/org/chromium/chrome/browser/infobar/AutofillSaveCardInfoBar.java",

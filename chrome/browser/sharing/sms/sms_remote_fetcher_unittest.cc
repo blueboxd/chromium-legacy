@@ -13,6 +13,7 @@
 #include "chrome/browser/sharing/sms/sms_flags.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/sync/protocol/sharing_message.pb.h"
+#include "components/sync_device_info/device_info.h"
 #include "content/public/browser/sms_fetcher.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"

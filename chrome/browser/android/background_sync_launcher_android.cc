@@ -110,10 +110,9 @@ void BackgroundSyncLauncherAndroid::ScheduleBrowserWakeUpWithDelayImpl(
   JNIEnv* env = base::android::AttachCurrentThread();
   int64_t min_delay_ms = soonest_wakeup_delta.InMilliseconds();
 
-  Java_BackgroundSyncBackgroundTaskScheduler_launchBrowserIfStopped(
+  Java_BackgroundSyncBackgroundTaskScheduler_scheduleOneOffTask(
       env, java_background_sync_background_task_scheduler_launcher_,
-      GetBackgroundTaskType(sync_type), !soonest_wakeup_delta.is_max(),
-      min_delay_ms);
+      GetBackgroundTaskType(sync_type), min_delay_ms);
 }
 
 void BackgroundSyncLauncherAndroid::CancelBrowserWakeupImpl(
@@ -122,11 +121,9 @@ void BackgroundSyncLauncherAndroid::CancelBrowserWakeupImpl(
 
   JNIEnv* env = base::android::AttachCurrentThread();
 
-  // TODO(crbug.com/996166): Add a new method to cancel browser launch.
-  Java_BackgroundSyncBackgroundTaskScheduler_launchBrowserIfStopped(
+  Java_BackgroundSyncBackgroundTaskScheduler_cancelOneOffTask(
       env, java_background_sync_background_task_scheduler_launcher_,
-      GetBackgroundTaskType(sync_type), /* shouldLaunch= */ false,
-      /* minDelayMs= */ 0);
+      GetBackgroundTaskType(sync_type));
 }
 
 void BackgroundSyncLauncherAndroid::FireBackgroundSyncEvents(

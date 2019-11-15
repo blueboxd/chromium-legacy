@@ -55,6 +55,11 @@ class FullscreenModel : public ChromeBroadcastObserverInterface {
     return content_height_ > scroll_view_height_ + toolbar_height_delta();
   }
 
+  // Whether the view is scrolled all the way to the top.
+  bool is_scrolled_to_top() const {
+    return y_content_offset_ <= -expanded_toolbar_height_;
+  }
+
   // Whether the view is scrolled all the way to the bottom.
   bool is_scrolled_to_bottom() const {
     return y_content_offset_ + scroll_view_height_ >= content_height_;

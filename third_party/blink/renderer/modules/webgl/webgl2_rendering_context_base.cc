@@ -2506,9 +2506,8 @@ void WebGL2RenderingContextBase::uniform1fv(
     const FlexibleFloat32ArrayView& v,
     GLuint src_offset,
     GLuint src_length) {
-  if (isContextLost() ||
-      !ValidateUniformParameters<Float32Array>("uniform1fv", location, v, 1,
-                                               src_offset, src_length))
+  if (isContextLost() || !ValidateUniformParameters("uniform1fv", location, v,
+                                                    1, src_offset, src_length))
     return;
 
   ContextGL()->Uniform1fv(location->Location(),
@@ -2536,9 +2535,8 @@ void WebGL2RenderingContextBase::uniform2fv(
     const FlexibleFloat32ArrayView& v,
     GLuint src_offset,
     GLuint src_length) {
-  if (isContextLost() ||
-      !ValidateUniformParameters<Float32Array>("uniform2fv", location, v, 2,
-                                               src_offset, src_length))
+  if (isContextLost() || !ValidateUniformParameters("uniform2fv", location, v,
+                                                    2, src_offset, src_length))
     return;
 
   ContextGL()->Uniform2fv(
@@ -2568,9 +2566,8 @@ void WebGL2RenderingContextBase::uniform3fv(
     const FlexibleFloat32ArrayView& v,
     GLuint src_offset,
     GLuint src_length) {
-  if (isContextLost() ||
-      !ValidateUniformParameters<Float32Array>("uniform3fv", location, v, 3,
-                                               src_offset, src_length))
+  if (isContextLost() || !ValidateUniformParameters("uniform3fv", location, v,
+                                                    3, src_offset, src_length))
     return;
 
   ContextGL()->Uniform3fv(
@@ -2600,9 +2597,8 @@ void WebGL2RenderingContextBase::uniform4fv(
     const FlexibleFloat32ArrayView& v,
     GLuint src_offset,
     GLuint src_length) {
-  if (isContextLost() ||
-      !ValidateUniformParameters<Float32Array>("uniform4fv", location, v, 4,
-                                               src_offset, src_length))
+  if (isContextLost() || !ValidateUniformParameters("uniform4fv", location, v,
+                                                    4, src_offset, src_length))
     return;
 
   ContextGL()->Uniform4fv(
@@ -2632,9 +2628,8 @@ void WebGL2RenderingContextBase::uniform1iv(
     const FlexibleInt32ArrayView& v,
     GLuint src_offset,
     GLuint src_length) {
-  if (isContextLost() ||
-      !ValidateUniformParameters<Int32Array>("uniform1iv", location, v, 1,
-                                             src_offset, src_length))
+  if (isContextLost() || !ValidateUniformParameters("uniform1iv", location, v,
+                                                    1, src_offset, src_length))
     return;
 
   ContextGL()->Uniform1iv(location->Location(),
@@ -2662,9 +2657,8 @@ void WebGL2RenderingContextBase::uniform2iv(
     const FlexibleInt32ArrayView& v,
     GLuint src_offset,
     GLuint src_length) {
-  if (isContextLost() ||
-      !ValidateUniformParameters<Int32Array>("uniform2iv", location, v, 2,
-                                             src_offset, src_length))
+  if (isContextLost() || !ValidateUniformParameters("uniform2iv", location, v,
+                                                    2, src_offset, src_length))
     return;
 
   ContextGL()->Uniform2iv(
@@ -2694,9 +2688,8 @@ void WebGL2RenderingContextBase::uniform3iv(
     const FlexibleInt32ArrayView& v,
     GLuint src_offset,
     GLuint src_length) {
-  if (isContextLost() ||
-      !ValidateUniformParameters<Int32Array>("uniform3iv", location, v, 3,
-                                             src_offset, src_length))
+  if (isContextLost() || !ValidateUniformParameters("uniform3iv", location, v,
+                                                    3, src_offset, src_length))
     return;
 
   ContextGL()->Uniform3iv(
@@ -2726,9 +2719,8 @@ void WebGL2RenderingContextBase::uniform4iv(
     const FlexibleInt32ArrayView& v,
     GLuint src_offset,
     GLuint src_length) {
-  if (isContextLost() ||
-      !ValidateUniformParameters<Int32Array>("uniform4iv", location, v, 4,
-                                             src_offset, src_length))
+  if (isContextLost() || !ValidateUniformParameters("uniform4iv", location, v,
+                                                    4, src_offset, src_length))
     return;
 
   ContextGL()->Uniform4iv(
@@ -2758,9 +2750,8 @@ void WebGL2RenderingContextBase::uniform1uiv(
     const FlexibleUint32ArrayView& v,
     GLuint src_offset,
     GLuint src_length) {
-  if (isContextLost() ||
-      !ValidateUniformParameters<Uint32Array>("uniform1uiv", location, v, 1,
-                                              src_offset, src_length))
+  if (isContextLost() || !ValidateUniformParameters("uniform1uiv", location, v,
+                                                    1, src_offset, src_length))
     return;
 
   ContextGL()->Uniform1uiv(location->Location(),
@@ -2789,9 +2780,8 @@ void WebGL2RenderingContextBase::uniform2uiv(
     const FlexibleUint32ArrayView& v,
     GLuint src_offset,
     GLuint src_length) {
-  if (isContextLost() ||
-      !ValidateUniformParameters<Uint32Array>("uniform2uiv", location, v, 2,
-                                              src_offset, src_length))
+  if (isContextLost() || !ValidateUniformParameters("uniform2uiv", location, v,
+                                                    2, src_offset, src_length))
     return;
 
   ContextGL()->Uniform2uiv(
@@ -2821,9 +2811,8 @@ void WebGL2RenderingContextBase::uniform3uiv(
     const FlexibleUint32ArrayView& v,
     GLuint src_offset,
     GLuint src_length) {
-  if (isContextLost() ||
-      !ValidateUniformParameters<Uint32Array>("uniform3uiv", location, v, 3,
-                                              src_offset, src_length))
+  if (isContextLost() || !ValidateUniformParameters("uniform3uiv", location, v,
+                                                    3, src_offset, src_length))
     return;
 
   ContextGL()->Uniform3uiv(
@@ -2853,9 +2842,8 @@ void WebGL2RenderingContextBase::uniform4uiv(
     const FlexibleUint32ArrayView& v,
     GLuint src_offset,
     GLuint src_length) {
-  if (isContextLost() ||
-      !ValidateUniformParameters<Uint32Array>("uniform4uiv", location, v, 4,
-                                              src_offset, src_length))
+  if (isContextLost() || !ValidateUniformParameters("uniform4uiv", location, v,
+                                                    4, src_offset, src_length))
     return;
 
   ContextGL()->Uniform4uiv(

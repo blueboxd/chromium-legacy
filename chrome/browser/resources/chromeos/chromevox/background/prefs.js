@@ -61,7 +61,6 @@ cvox.ChromeVoxPrefs = function() {
  * @type {Object<Object>}
  */
 cvox.ChromeVoxPrefs.DEFAULT_PREFS = {
-  'active': true,
   'announceDownloadNotifications': true,
   'announceRichTextAttributes': true,
   'audioStrategy': 'audioNormal',
@@ -198,7 +197,6 @@ cvox.ChromeVoxPrefs.prototype.switchToKeyMap = function(selectedKeyMap) {
   cvox.ChromeVoxKbHandler.handlerKeyMap = this.keyMap_;
   this.keyMap_.toLocalStorage();
   this.keyMap_.resetModifier();
-  this.sendPrefsToAllTabs(false, true);
 };
 
 
@@ -247,56 +245,17 @@ cvox.ChromeVoxPrefs.prototype.getKeyMap = function() {
 cvox.ChromeVoxPrefs.prototype.resetKeys = function() {
   this.keyMap_ = cvox.KeyMap.fromDefaults();
   this.keyMap_.toLocalStorage();
-  this.sendPrefsToAllTabs(false, true);
 };
 
 
 /**
- * Send all of the settings to all tabs.
- * @param {boolean} sendPrefs Whether to send the prefs.
- * @param {boolean} sendKeyBindings Whether to send the key bindings.
- */
-cvox.ChromeVoxPrefs.prototype.sendPrefsToAllTabs = function(
-    sendPrefs, sendKeyBindings) {
-  var context = this;
-  var message = {};
-  if (sendPrefs) {
-    message['prefs'] = context.getPrefs();
-  }
-  if (sendKeyBindings) {
-    // Note that cvox.KeyMap stringifies to a minimal object when message gets
-    // passed to the content script.
-    message['keyBindings'] = this.keyMap_.toJSON();
-  }
-  chrome.windows.getAll({populate: true}, function(windows) {
-    for (var i = 0; i < windows.length; i++) {
-      var tabs = windows[i].tabs;
-      for (var j = 0; j < tabs.length; j++) {
-        chrome.tabs.sendMessage(tabs[j].id, message);
-      }
-    }
-  });
-};
-
-/**
- * Send all of the settings over the specified port.
- * @param {Port} port The port representing the connection to a content script.
- */
-cvox.ChromeVoxPrefs.prototype.sendPrefsToPort = function(port) {
-  port.postMessage(
-      {'keyBindings': this.keyMap_.toJSON(), 'prefs': this.getPrefs()});
-};
-
-
-/**
- * Set the value of a pref and update all active tabs if it's changed.
+ * Set the value of a pref.
  * @param {string} key The pref key.
  * @param {Object|string|boolean} value The new value of the pref.
  */
 cvox.ChromeVoxPrefs.prototype.setPref = function(key, value) {
   if (localStorage[key] != value) {
     localStorage[key] = value;
-    this.sendPrefsToAllTabs(true, false);
   }
 };
 
@@ -331,7 +290,6 @@ cvox.ChromeVoxPrefs.prototype.setLoggingPrefs = function(key, value) {
 cvox.ChromeVoxPrefs.prototype.setKey = function(command, newKey) {
   if (this.keyMap_.rebind(command, newKey)) {
     this.keyMap_.toLocalStorage();
-    this.sendPrefsToAllTabs(false, true);
     return true;
   }
   return false;

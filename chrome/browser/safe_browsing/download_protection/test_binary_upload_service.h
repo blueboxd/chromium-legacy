@@ -21,9 +21,13 @@ class TestBinaryUploadService : public BinaryUploadService {
   void MaybeUploadForDeepScanning(std::unique_ptr<Request> request) override;
   void SetResponse(Result result, DeepScanningClientResponse response);
 
+  bool was_called() { return was_called_; }
+  void ClearWasCalled();
+
  private:
   Result saved_result_ = Result::UNKNOWN;
   DeepScanningClientResponse saved_response_ = DeepScanningClientResponse();
+  bool was_called_ = false;
 };
 
 }  // namespace safe_browsing

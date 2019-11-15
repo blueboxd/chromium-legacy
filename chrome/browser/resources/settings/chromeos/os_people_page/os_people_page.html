@@ -91,8 +91,11 @@
                   on-click="onAccountManagerTap_"
                   actionable$="[[isAccountManagerEnabled_]]">
                 <div class="flex text-elide settings-box-text">
-                  <span id="profile-name">[[profileName_]]</span>
-                  <div id="profile-label" class="secondary">
+                  <span id="profile-name" aria-hidden="true">
+                    [[profileName_]]
+                  </span>
+                  <div id="profile-label" class="secondary"
+                      aria-hidden="true">
                     [[profileLabel_]]
                   </div>
                 </div>
@@ -100,7 +103,8 @@
                     hidden="[[!isAccountManagerEnabled_]]"
                     id="account-manager-subpage-trigger"
                     aria-label="$i18n{accountManagerSubMenuLabel}"
-                    aria-describedby="profile-name"></cr-icon-button>
+                    aria-describedby="profile-name profile-label">
+                </cr-icon-button>
               </div>
             </template>
           </div>

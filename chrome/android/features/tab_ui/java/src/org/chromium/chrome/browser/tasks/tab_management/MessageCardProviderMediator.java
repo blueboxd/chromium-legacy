@@ -50,9 +50,12 @@ public class MessageCardProviderMediator implements MessageService.MessageObserv
 
     // MessageObserver implementations.
     @Override
-    public void messageReady(@MessageService.MessageType int type) {
+    public void messageReady(
+            @MessageService.MessageType int type, MessageService.MessageData data) {
         assert !mShownMessageItems.containsKey(type);
 
+        // TODO(crbug.com/1004570): Use {@code data} when ready to integrate with MessageService
+        // component.
         PropertyModel model = new TabSuggestionMessageCardViewModel();
         model.set(MessageCardViewProperties.UI_DISMISS_ACTION_PROVIDER, mUiDismissActionProvider);
         mMessageItems.put(type, new Message(type, model));

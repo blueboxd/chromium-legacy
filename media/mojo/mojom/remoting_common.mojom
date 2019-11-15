@@ -18,7 +18,7 @@ enum RemotingStopReason {
 enum RemotingStartFailReason {
   CANNOT_START_MULTIPLE,  // Remoting was already active.
   ROUTE_TERMINATED,  // User-initated disconnect while starting remoting.
-  SERVICE_NOT_CONNECTED,  // Mirror service was not connected.
+  INVALID_ANSWER_MESSAGE,  // Invalid ANSWER message.
 };
 
 enum RemotingSinkFeature {

@@ -231,6 +231,18 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
   //    lazy layout system in View::InvalidateLayout
   std::unique_ptr<View> DisownExtraView();
 
+  // Externally or accept the dialog. These methods:
+  // 1) Invoke the DialogDelegate's Cancel or Accept methods
+  // 2) Depending on their return value, close the dialog's widget.
+  // Neither of these methods can be called before the dialog has been
+  // initialized.
+  void CancelDialog();
+  void AcceptDialog();
+
+  // Reset the dialog's shown timestamp, for tests that are subject to the
+  // "unintended interaction" detection mechanism.
+  void ResetViewShownTimeStampForTesting();
+
  protected:
   ~DialogDelegate() override;
 

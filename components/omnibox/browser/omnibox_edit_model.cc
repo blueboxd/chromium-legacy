@@ -1524,8 +1524,10 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
       found_match_for_text = true;
     }
     if (found_match_for_text && alternate_nav_url &&
-        (!popup_model() || !popup_model()->has_selected_match()))
-      *alternate_nav_url = result().alternate_nav_url();
+        (!popup_model() || !popup_model()->has_selected_match())) {
+      *alternate_nav_url =
+          AutocompleteResult::ComputeAlternateNavUrl(input_, *match);
+    }
   }
 
   if (!found_match_for_text) {

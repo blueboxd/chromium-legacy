@@ -81,6 +81,8 @@ MEDIA_EXPORT bool operator==(const PipelineDecoderInfo& first,
                              const PipelineDecoderInfo& second);
 MEDIA_EXPORT bool operator!=(const PipelineDecoderInfo& first,
                              const PipelineDecoderInfo& second);
+MEDIA_EXPORT std::ostream& operator<<(std::ostream& out,
+                                      const PipelineDecoderInfo& info);
 
 struct MEDIA_EXPORT PipelineStatistics {
   PipelineStatistics();

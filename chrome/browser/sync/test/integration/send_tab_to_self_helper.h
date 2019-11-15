@@ -162,6 +162,26 @@ class SendTabToSelfMultiDeviceActiveChecker
   DISALLOW_COPY_AND_ASSIGN(SendTabToSelfMultiDeviceActiveChecker);
 };
 
+// Class that allows waiting until device has send_tab_to_self disabled.
+class SendTabToSelfDeviceDisabledChecker
+    : public StatusChangeChecker,
+      public syncer::DeviceInfoTracker::Observer {
+ public:
+  SendTabToSelfDeviceDisabledChecker(syncer::DeviceInfoTracker* tracker,
+                                     const std::string& device_guid);
+  ~SendTabToSelfDeviceDisabledChecker() override;
+
+  // StatusChangeChecker implementation.
+  bool IsExitConditionSatisfied(std::ostream* os) override;
+
+  // DeviceInfoTracker::Observer implementation.
+  void OnDeviceInfoChange() override;
+
+ private:
+  syncer::DeviceInfoTracker* const tracker_;
+  std::string device_guid_;
+};
+
 class SendTabToSelfUrlDeletedChecker
     : public StatusChangeChecker,
       public send_tab_to_self::SendTabToSelfModelObserver {

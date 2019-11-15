@@ -642,7 +642,7 @@ void SourceBufferStream::ResetSeekState() {
   config_change_pending_ = false;
   highest_output_buffer_timestamp_ = kNoTimestamp;
   just_exhausted_track_buffer_ = false;
-  pending_buffer_ = NULL;
+  pending_buffer_.reset();
   pending_buffers_complete_ = false;
 }
 

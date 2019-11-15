@@ -54,7 +54,6 @@
 <translation id="2674318244760992338">pied de page</translation>
 <translation id="2709516037105925701">Saisie automatique</translation>
 <translation id="2723001399770238859">audio</translation>
-<translation id="2725963129578236554">commentaires</translation>
 <translation id="2746543609216772311">La date ou l'heure doit être égale ou postérieure à "<ph name="MINIMUM_DATE_OR_TIME" />".</translation>
 <translation id="2759744352195237655">bouton pop-up</translation>
 <translation id="2761667185364618470">Veuillez cocher cette case si vous souhaitez continuer.</translation>
@@ -164,7 +163,6 @@
 <translation id="6404546809543547843">curseur durée audio</translation>
 <translation id="6443871981718447451">afficher le menu des sous-titres</translation>
 <translation id="6453774872122745852">remerciements</translation>
-<translation id="6475115390776617481">actuellement présent</translation>
 <translation id="648732519525291180">outil de sélection de l'heure</translation>
 <translation id="6550675742724504774">Options</translation>
 <translation id="6572309429103589720">Grammaire non valide</translation>
@@ -250,7 +248,6 @@
 <translation id="8711688047404765493">sortie</translation>
 <translation id="8750798805984357768">Veuillez sélectionner l'une de ces options.</translation>
 <translation id="8808573423886751634">chapitre</translation>
-<translation id="8822203815165896261">informations de création</translation>
 <translation id="8845239796550121995">En cours de diffusion sur votre téléviseur</translation>
 <translation id="8851136666856101339">principal</translation>
 <translation id="8875657656876809964">Erreur lors de la lecture de la vidéo</translation>

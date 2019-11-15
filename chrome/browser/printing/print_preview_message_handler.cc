@@ -138,6 +138,36 @@ void PrintPreviewMessageHandler::OnDidStartPreview(
   print_preview_ui->OnDidStartPreview(params, ids.request_id);
 }
 
+void PrintPreviewMessageHandler::OnDidPrepareForDocumentToPdf(
+    int document_cookie,
+    const PrintHostMsg_PreviewIds& ids) {
+  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
+  if (!print_preview_ui)
+    return;
+
+  // Determine if document composition from individual pages is desired
+  // configuration. Issue a preparation call to client if that hasn't
+  // been done yet.
+  if (!print_preview_ui->ShouldCompositeDocumentUsingIndividualPages())
+    return;
+
+  // For case of print preview, page metafile is used to composite into
+  // the document PDF at same time.  Need to indicate that this scenario
+  // is at play for the compositor.
+  auto* client = PrintCompositeClient::FromWebContents(web_contents());
+  DCHECK(client);
+  if (client->GetIsDocumentConcurrentlyComposited(document_cookie))
+    return;
+
+  client->DoPrepareForDocumentToPdf(
+      document_cookie,
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+          base::BindOnce(
+              &PrintPreviewMessageHandler::OnPrepareForDocumentToPdfDone,
+              weak_ptr_factory_.GetWeakPtr(), ids),
+          mojom::PdfCompositor::Status::kCompositingFailure));
+}
+
 void PrintPreviewMessageHandler::OnDidPreviewPage(
     content::RenderFrameHost* render_frame_host,
     const PrintHostMsg_DidPreviewPage_Params& params,
@@ -188,18 +218,24 @@ void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
   // Always try to stop the worker.
   StopWorker(params.document_cookie);
 
+  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
+  if (!print_preview_ui)
+    return;
+
   const PrintHostMsg_DidPrintContent_Params& content = params.content;
-  if (!content.metafile_data_region.IsValid())
+  const bool composite_document_using_individual_pages =
+      print_preview_ui->ShouldCompositeDocumentUsingIndividualPages();
+  // Concern about valid |metafile_data_region| is only relevant if full
+  // document is provided on this call.  When document is compiled together
+  // from prior individual pages then there is no content required here.
+  if (!composite_document_using_individual_pages &&
+      !content.metafile_data_region.IsValid())
     return;
 
   if (params.expected_pages_count <= 0) {
     NOTREACHED();
     return;
   }
-
-  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
-  if (!print_preview_ui)
-    return;
 
   if (ShouldUseCompositor(print_preview_ui)) {
     // Don't bother compositing if this request has been cancelled already.
@@ -208,16 +244,29 @@ void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
 
     auto* client = PrintCompositeClient::FromWebContents(web_contents());
     DCHECK(client);
-
-    client->DoCompositeDocumentToPdf(
-        params.document_cookie, render_frame_host, content,
-        mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-            base::BindOnce(
-                &PrintPreviewMessageHandler::OnCompositePdfDocumentDone,
-                weak_ptr_factory_.GetWeakPtr(), params.expected_pages_count,
-                params.document_cookie, ids),
-            mojom::PdfCompositor::Status::kCompositingFailure,
-            base::ReadOnlySharedMemoryRegion()));
+    auto callback = base::BindOnce(
+        &PrintPreviewMessageHandler::OnCompositeOrCompleteDocumentToPdfDone,
+        weak_ptr_factory_.GetWeakPtr(),
+        composite_document_using_individual_pages, params.expected_pages_count,
+        params.document_cookie, ids);
+    if (composite_document_using_individual_pages) {
+      // Page metafile is used to composite into the document at same time.
+      // Need to provide particulars of how many pages are required before
+      // document will be completed.
+      client->DoCompleteDocumentToPdf(
+          params.document_cookie, params.expected_pages_count,
+          mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+              std::move(callback),
+              mojom::PdfCompositor::Status::kCompositingFailure,
+              base::ReadOnlySharedMemoryRegion()));
+    } else {
+      client->DoCompositeDocumentToPdf(
+          params.document_cookie, render_frame_host, content,
+          mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+              std::move(callback),
+              mojom::PdfCompositor::Status::kCompositingFailure,
+              base::ReadOnlySharedMemoryRegion()));
+    }
   } else {
     NotifyUIPreviewDocumentReady(
         print_preview_ui, params.expected_pages_count, ids,
@@ -394,7 +443,8 @@ void PrintPreviewMessageHandler::OnNupPdfConvertDone(
       base::RefCountedSharedMemoryMapping::CreateFromWholeRegion(region));
 }
 
-void PrintPreviewMessageHandler::OnCompositePdfDocumentDone(
+void PrintPreviewMessageHandler::OnCompositeOrCompleteDocumentToPdfDone(
+    bool composite_document_using_individual_pages,
     int page_count,
     int document_cookie,
     const PrintHostMsg_PreviewIds& ids,
@@ -403,12 +453,14 @@ void PrintPreviewMessageHandler::OnCompositePdfDocumentDone(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
   if (status != mojom::PdfCompositor::Status::kSuccess) {
-    DLOG(ERROR) << "Compositing pdf failed with error " << status;
+    DLOG(ERROR) << (composite_document_using_individual_pages
+                        ? "Completion of document to"
+                        : "Compositing")
+                << " pdf failed with error " << status;
     if (print_preview_ui)
       print_preview_ui->OnPrintPreviewFailed(ids.request_id);
     return;
   }
-
   if (!print_preview_ui)
     return;
 
@@ -436,6 +488,17 @@ void PrintPreviewMessageHandler::OnCompositePdfDocumentDone(
                 (page_count + pages_per_sheet - 1) / pages_per_sheet, ids),
             mojom::PdfNupConverter::Status::CONVERSION_FAILURE,
             base::ReadOnlySharedMemoryRegion()));
+  }
+}
+
+void PrintPreviewMessageHandler::OnPrepareForDocumentToPdfDone(
+    const PrintHostMsg_PreviewIds& ids,
+    mojom::PdfCompositor::Status status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (status != mojom::PdfCompositor::Status::kSuccess) {
+    PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
+    if (print_preview_ui)
+      print_preview_ui->OnPrintPreviewFailed(ids.request_id);
   }
 }
 
@@ -480,6 +543,8 @@ bool PrintPreviewMessageHandler::OnMessageReceived(
   handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintPreviewMessageHandler, message)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidStartPreview, OnDidStartPreview)
+    IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrepareDocumentForPreview,
+                        OnDidPrepareForDocumentToPdf)
     IPC_MESSAGE_HANDLER(PrintHostMsg_PrintPreviewFailed,
                         OnPrintPreviewFailed)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidGetDefaultPageLayout,

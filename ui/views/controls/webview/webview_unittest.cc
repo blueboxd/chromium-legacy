@@ -339,7 +339,7 @@ TEST_F(WebViewUnitTest, EmbeddedFullscreenDuringScreenCapture_Layout) {
   // mode.  This time, the holder should be centered within WebView and
   // sized to match the capture size.
   const gfx::Size capture_size(64, 48);
-  web_contents->IncrementCapturerCount(capture_size);
+  web_contents->IncrementCapturerCount(capture_size, /* stay_hidden */ false);
   delegate.set_is_fullscreened(true);
   static_cast<content::WebContentsObserver*>(web_view())->
       DidToggleFullscreenModeForTab(true, false);
@@ -396,7 +396,7 @@ TEST_F(WebViewUnitTest, EmbeddedFullscreenDuringScreenCapture_Switching) {
   // The native view should not have changed, but the layout of its holder will
   // have (indicates WebView has responded).
   const gfx::Size capture_size(64, 48);
-  web_contents1->IncrementCapturerCount(capture_size);
+  web_contents1->IncrementCapturerCount(capture_size, /* stay_hidden */ false);
   delegate1.set_is_fullscreened(true);
   static_cast<content::WebContentsObserver*>(web_view())->
       DidToggleFullscreenModeForTab(true, false);
@@ -449,7 +449,7 @@ TEST_F(WebViewUnitTest, EmbeddedFullscreenDuringScreenCapture_ClickToFocus) {
   // The holder should be centered within WebView and sized to match the capture
   // size.
   const gfx::Size capture_size(64, 48);
-  web_contents->IncrementCapturerCount(capture_size);
+  web_contents->IncrementCapturerCount(capture_size, /* stay_hidden */ false);
   delegate.set_is_fullscreened(true);
   static_cast<content::WebContentsObserver*>(web_view())->
       DidToggleFullscreenModeForTab(true, false);

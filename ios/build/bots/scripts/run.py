@@ -25,6 +25,7 @@ import sys
 import traceback
 
 import test_runner
+import wpr_runner
 import xcodebuild_runner
 
 
@@ -61,8 +62,9 @@ def main():
           env_vars=args.env_var
       )
     elif args.replay_path != 'NO_PATH':
-      tr = test_runner.WprProxySimulatorTestRunner(
+      tr = wpr_runner.WprProxySimulatorTestRunner(
           args.app,
+          args.host_app,
           args.iossim,
           args.replay_path,
           args.platform,
@@ -93,7 +95,6 @@ def main():
           shards=args.shards,
           test_args=test_args,
           test_cases=args.test_cases,
-          use_trusted_cert=args.use_trusted_cert,
           wpr_tools_path=args.wpr_tools_path,
           xcode_path=args.xcode_path,
           xctest=args.xctest,

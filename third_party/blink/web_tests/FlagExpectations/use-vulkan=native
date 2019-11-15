@@ -40,3 +40,12 @@ crbug.com/1002547 fast/canvas/imagebitmap/transferFromImageBitmap.html [ Skip ]
 
 # Crashing third_party/blink/tools/blinkpy/common/message_pool.py
 crbug.com/1018884 compositing/overflow/scrollbar-layer-placement.html [ Skip ]
+
+# OOPIF tests fail due to input event coordinates.
+crbug.com/935970 http/tests/misc/scroll-cross-origin-iframes-scrollbar.html [ Skip ]
+crbug.com/935970 http/tests/security/referrer-policy-redirect-link.html [ Skip ]
+crbug.com/935970 http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change-async.html [ Skip ]
+crbug.com/935970 http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change.html [ Skip ]
+
+# Viewport image is the wrong size.
+crbug.com/1009718 images/huge-image-viewport-scale.html [ Skip ]

@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/sharing/sharing_device_registration_result.h"
+#include "chrome/browser/sharing/sharing_device_source_sync.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/sharing_target_info.h"
@@ -82,7 +83,8 @@ void SharingBrowserTest::RegisterDevice(
     sync_pb::SharingSpecificFields_EnabledFeatures feature) {
   SharingService* service =
       SharingServiceFactory::GetForBrowserContext(GetProfile(profile_index));
-  service->SetDeviceInfoTrackerForTesting(&fake_device_info_tracker_);
+  static_cast<SharingDeviceSourceSync*>(service->GetDeviceSource())
+      ->SetDeviceInfoTrackerForTesting(&fake_device_info_tracker_);
 
   base::RunLoop run_loop;
   service->RegisterDeviceInTesting(

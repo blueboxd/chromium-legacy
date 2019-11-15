@@ -79,7 +79,7 @@ static_library("test_support") {
     "//remoting/protocol",
     "//remoting/signaling",
     "//services/network:test_support",
-    "//third_party/webrtc/modules/desktop_capture",
+    "//third_party/webrtc_overrides:webrtc_component",
     "//ui/gfx",
   ]
 
@@ -92,8 +92,7 @@ static_library("test_support") {
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/webrtc/api:packet_socket_factory",
-    "//third_party/webrtc_overrides",
+    "//third_party/webrtc_overrides:webrtc_component",
   ]
 }
 
@@ -161,7 +160,7 @@ if (enable_remoting_host && !is_android && !is_chromeos) {
     deps = [
       ":fake_connection_event_logger",
       "//base/test:test_support",
-      "//third_party/webrtc/modules/desktop_capture",
+      "//third_party/webrtc_overrides:webrtc_component",
     ]
 
     public_deps = [
@@ -263,6 +262,6 @@ source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/libyuv",
-    "//third_party/webrtc/modules/desktop_capture",
+    "//third_party/webrtc_overrides:webrtc_component",
   ]
 }

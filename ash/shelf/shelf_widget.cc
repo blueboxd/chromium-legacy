@@ -137,6 +137,9 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   void OnHotseatTransitionAnimationEnded(HotseatState from_state,
                                          HotseatState to_state) override;
 
+  // Hide or show the the |animating_background_| layer.
+  void ShowAnimatingBackground(bool show);
+
   SkColor GetShelfBackgroundColor() const;
 
   ui::Layer* opaque_background() { return &opaque_background_; }
@@ -182,11 +185,9 @@ ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf_widget)
   set_allow_deactivate_on_esc(true);
 
   // |animating_background_| will be made visible during hotseat animations.
-  animating_background_.SetVisible(false);
-  if (features::IsBackgroundBlurEnabled()) {
-    animating_background_.SetBackgroundBlur(30);
+  ShowAnimatingBackground(false);
+  if (features::IsBackgroundBlurEnabled())
     animating_background_.SetBackdropFilterQuality(0.33f);
-  }
 
   std::unique_ptr<views::View> drag_handle_ptr =
       std::make_unique<views::View>();
@@ -377,7 +378,7 @@ void ShelfWidget::DelegateView::UpdateShelfBackground(SkColor color) {
 void ShelfWidget::DelegateView::OnHotseatTransitionAnimationStarted(
     HotseatState from_state,
     HotseatState to_state) {
-  animating_background_.SetVisible(true);
+  ShowAnimatingBackground(true);
   // If animating from a kShown hotseat, the animating background will
   // animate from the hotseat background into the in-app shelf, so hide the
   // real shelf background until the animation is complete.
@@ -388,9 +389,18 @@ void ShelfWidget::DelegateView::OnHotseatTransitionAnimationStarted(
 void ShelfWidget::DelegateView::OnHotseatTransitionAnimationEnded(
     HotseatState from_state,
     HotseatState to_state) {
-  animating_background_.SetVisible(false);
+  ShowAnimatingBackground(false);
   if (from_state == HotseatState::kShown)
     ShowOpaqueBackground();
+}
+
+void ShelfWidget::DelegateView::ShowAnimatingBackground(bool show) {
+  animating_background_.SetVisible(show);
+
+  // To ensure smooth scrollable shelf animations, we disable blur when the
+  // |animating_background_| is not visible.
+  if (features::IsBackgroundBlurEnabled())
+    animating_background_.SetBackgroundBlur(show ? 30 : 0);
 }
 
 SkColor ShelfWidget::DelegateView::GetShelfBackgroundColor() const {

@@ -26,6 +26,7 @@
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1275285675049378717">Powering <ph name="POWER_SOURCE" /></translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1287638800910363800"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, Signal Strength <ph name="SIGNAL_STRENGTH" />, Managed by your Administrator</translation>
 <translation id="1289185460362160437">Come back <ph name="COME_BACK_DAY_OF_WEEK" /> at <ph name="COME_BACK_TIME" />.</translation>
 <translation id="1290331692326790741">Weak signal</translation>
 <translation id="1293264513303784526">USB-C device (left port)</translation>
@@ -33,6 +34,7 @@
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">Show Bluetooth settings. <ph name="STATE_TEXT" /></translation>
 <translation id="1316069254387866896">Always show shelf</translation>
+<translation id="1331336659607007576"><ph name="PHONE_NAME" />, Signal Strength <ph name="SIGNAL_STRENGTH" />, Phone Battery <ph name="BATTERY_STATUS" /></translation>
 <translation id="1341651618736211726">Overflow</translation>
 <translation id="1346748346194534595">Right</translation>
 <translation id="1351937230027495976">Collapse menu</translation>
@@ -55,6 +57,7 @@
 <translation id="1608626060424371292">Remove this user</translation>
 <translation id="1654477262762802994">Start a voice query</translation>
 <translation id="1658406695958299976">Sorry, your password still couldn't be verified. Note: If you changed your password recently, your new password will be applied once you sign out. Please use the old password here.</translation>
+<translation id="1661469207525701666"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Managed by your Administrator</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> left</translation>
 <translation id="1698760176351776263">IPv6 address: <ph name="ADDRESS" /></translation>
 <translation id="1743570585616704562">Not recognised</translation>
@@ -85,6 +88,7 @@
 <translation id="2012624427112548395">Ctrl+Search+H</translation>
 <translation id="2016340657076538683">Type a message</translation>
 <translation id="2050339315714019657">Portrait</translation>
+<translation id="2053685863250070766"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Signal Strength <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="2067602449040652523">Keyboard brightness</translation>
 <translation id="209965399369889474">Not connected to network</translation>
 <translation id="2126242104232412123">New desk</translation>
@@ -94,6 +98,7 @@
 <translation id="2148902151539191989">BACK</translation>
 <translation id="2208323208084708176">Unified desktop mode</translation>
 <translation id="2220572644011485463">PIN or password</translation>
+<translation id="2222338659135520253">Sign-in required</translation>
 <translation id="225680501294068881">Scanning for devices...</translation>
 <translation id="2268130516524549846">Bluetooth disabled</translation>
 <translation id="2268813581635650749">Sign out all</translation>
@@ -123,6 +128,7 @@
 <translation id="2575685495496069081">Multiple sign-in has been disabled</translation>
 <translation id="2582112259361606227">Restart to update</translation>
 <translation id="2617342710774726426">SIM card is locked</translation>
+<translation id="2621713457727696555">Secured</translation>
 <translation id="2653659639078652383">Submit</translation>
 <translation id="2658778018866295321">Click and drag</translation>
 <translation id="2700493154570097719">Set your keyboard</translation>
@@ -167,6 +173,7 @@
 <translation id="3249513730522716925">Window <ph name="WINDOW_TITLE" /> moved from Desk <ph name="ACTIVE_DESK" /> to Desk <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">What can you do?</translation>
 <translation id="3277674767125718685">Volume is on.</translation>
+<translation id="3290356915286466215">Unsecured</translation>
 <translation id="3294437725009624529">Guest</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> can still sign in later.</translation>
 <translation id="3321628682574733415">Incorrect parent code</translation>
@@ -187,6 +194,7 @@
 <translation id="3513798432020909783">Account managed by <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Change back to "<ph name="FROM_LOCALE" />" (requires restart)</translation>
 <translation id="3576141592585647168">Change timezone</translation>
+<translation id="3593646759913489391"><ph name="NETWORK_NAME" />, Managed by your Administrator</translation>
 <translation id="3595596368722241419">Battery full</translation>
 <translation id="3604801046548457007">Desk <ph name="DESK_TITILE" /> created</translation>
 <translation id="3606978283550408104">Braille display connected.</translation>
@@ -249,6 +257,7 @@
 <translation id="4430019312045809116">volume</translation>
 <translation id="4450893287417543264">Don't show again</translation>
 <translation id="4477350412780666475">Next track</translation>
+<translation id="4477892968187500306">This device may contain apps that haven't been verified by Google.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Unpaired devices</translation>
 <translation id="4505050298327493054">Active desk.</translation>
@@ -284,12 +293,14 @@
 <translation id="4917385247580444890">Strong</translation>
 <translation id="4918086044614829423">Accept</translation>
 <translation id="4924411785043111640">Restart and reset</translation>
+<translation id="4943005740606146647"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, Signal Strength <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="495046168593986294">Scroll up</translation>
 <translation id="4961318399572185831">Cast screen</translation>
 <translation id="5030687792513154421">Time is up</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> connected to a new phone</translation>
 <translation id="5083553833479578423">Unlock more Assistant features.</translation>
 <translation id="5136175204352732067">Different keyboard connected</translation>
+<translation id="5164328133545158294"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Signal Strength <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="5168181903108465623">Cast devices available</translation>
 <translation id="5207949376430453814">Highlight text caret</translation>
 <translation id="5222676887888702881">Sign out</translation>
@@ -300,6 +311,7 @@
 <translation id="5313326810920013265">Bluetooth settings</translation>
 <translation id="5331975486040154427">USB-C device (left side back port)</translation>
 <translation id="5379115545237091094">Too many attempts</translation>
+<translation id="5388865552779376172"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5397578532367286026">Usage and history of this user can be reviewed by the manager (<ph name="MANAGER_EMAIL" />) on chrome.com.</translation>
 <translation id="5430931332414098647">Instant Tethering</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
@@ -353,6 +365,7 @@
 <translation id="6062360702481658777">You will automatically be signed out in <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064337552080329342">Sorry, your password couldn't be verified. Please try again.</translation>
 <translation id="607652042414456612">Your computer is discoverable to nearby Bluetooth devices and will appear as "<ph name="NAME" />" with address <ph name="ADDRESS" /></translation>
+<translation id="6120841317807235082"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Signal Strength <ph name="SIGNAL_STRENGTH" />, Managed by your Administrator</translation>
 <translation id="612734058257491180">The Google Assistant is not available in a guest session.</translation>
 <translation id="615957422585914272">Show on-screen keyboard</translation>
 <translation id="6164005077879661055">All files and local data associated with the supervised user will be permanently deleted once this supervised user is removed. Visited websites and settings for this supervised user may still be visible by the manager at <ph name="MANAGEMENT_URL" />.</translation>
@@ -390,6 +403,7 @@
 <translation id="6657585470893396449">Password</translation>
 <translation id="6665545700722362599">Grant websites, apps and extensions permission to use location services, the device’s microphone, camera or other features</translation>
 <translation id="6670153871843998651">Desk 3</translation>
+<translation id="6676604402165549692"><ph name="NETWORK_NAME" />, Signal Strength <ph name="SIGNAL_STRENGTH" />, Managed by your Administrator</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6696025732084565524">Your detachable keyboard needs a critical update</translation>
 <translation id="6700713906295497288">IME menu button</translation>
@@ -400,6 +414,7 @@
 <translation id="6751826523481687655">Performance tracing is turned on</translation>
 <translation id="6752912906630585008">Desk <ph name="REMOVED_DESK" /> removed and merged with Desk <ph name="RECEIVE_DESK" /></translation>
 <translation id="6777216307882431711">Powering connected USB-C devices</translation>
+<translation id="6780359977073194850"><ph name="NETWORK_NAME" />, Signal Strength <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="6790428901817661496">Play</translation>
 <translation id="6803622936009808957">Could not mirror displays since no supported resolutions found. Entered extended desktop instead.</translation>
 <translation id="6820676911989879663">Take a break!</translation>
@@ -445,6 +460,7 @@
 <translation id="7526573455193969409">Network may be monitored</translation>
 <translation id="7536035074519304529">IP address: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Time for bed</translation>
+<translation id="75510698954995432"><ph name="PHONE_NAME" />, <ph name="CONNECTION_STATUS" />, Signal Strength <ph name="SIGNAL_STRENGTH" />, Phone Battery <ph name="BATTERY_STATUS" /></translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> doesn't support <ph name="SPECIFIED_RESOLUTION" />. The resolution was changed to <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Emoji palette</translation>
 <translation id="7564874036684306347">Moving windows to another desktop may result in unexpected behaviour. Subsequent notifications, windows and dialogues may be split between desktops.</translation>
@@ -497,6 +513,7 @@
 <translation id="8192202700944119416">Notifications are hidden.</translation>
 <translation id="8203795194971602413">Right click</translation>
 <translation id="8236042855478648955">Time for a break</translation>
+<translation id="826107067893790409">Press Enter to unlock for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8261506727792406068">Delete</translation>
 <translation id="8297006494302853456">Weak</translation>
 <translation id="8308637677604853869">Previous menu</translation>
@@ -562,6 +579,7 @@
 <translation id="9084606467167974638">Toggle menu position</translation>
 <translation id="9089416786594320554">Input methods</translation>
 <translation id="9091626656156419976">Removed display <ph name="DISPLAY_NAME" /></translation>
+<translation id="9092415813919137737"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Signal Strength <ph name="SIGNAL_STRENGTH" />, Managed by your Administrator</translation>
 <translation id="9151726767154816831">Restart and powerwash to update</translation>
 <translation id="9179259655489829027">This feature allows you to quickly access any signed-in user without requiring a password. Only use this feature with accounts that you trust.</translation>
 <translation id="9183456764293710005">Full-screen Magnifier</translation>

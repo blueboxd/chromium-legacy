@@ -327,7 +327,7 @@ void URLRequestChromeJob::DataAvailable(base::RefCountedMemory* bytes) {
     if (pending_buf_.get()) {
       CHECK(pending_buf_->data());
       int rv = CompleteRead(pending_buf_.get(), pending_buf_size_);
-      pending_buf_ = NULL;
+      pending_buf_.reset();
       ReadRawDataComplete(rv);
     }
   } else {

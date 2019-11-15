@@ -40,36 +40,46 @@ std::string_view DirName(std::string_view path, char sep, char othersep) {
 }
 }  // namespace
 
-TreeBuilder::TreeBuilder(
-    BaseSizeInfo* size_info,
-    bool group_by_component,
-    std::vector<std::function<bool(const Symbol&)>> filters)
-    : size_info_(size_info),
-      group_by_component_(group_by_component),
-      sep_(group_by_component ? kComponentSep : kPathSep),
-      filters_(filters) {}
+TreeBuilder::TreeBuilder(SizeInfo* size_info) {
+  symbols_.reserve(size_info->raw_symbols.size());
+  for (const Symbol& sym : size_info->raw_symbols) {
+    symbols_.push_back(&sym);
+  }
+}
+
+TreeBuilder::TreeBuilder(DeltaSizeInfo* size_info) {
+  symbols_.reserve(size_info->delta_symbols.size());
+  for (const DeltaSymbol& sym : size_info->delta_symbols) {
+    symbols_.push_back(&sym);
+  }
+}
 
 TreeBuilder::~TreeBuilder() = default;
 
-void TreeBuilder::Build() {
+void TreeBuilder::Build(
+    bool group_by_component,
+    std::vector<std::function<bool(const BaseSymbol&)>> filters) {
+  group_by_component_ = group_by_component;
+  filters_ = filters;
+
   // Initialize tree root.
   root_.container_type = ContainerType::kDirectory;
   owned_strings_.emplace_back(1, sep_);
   root_.id_path = owned_strings_.back();
   _parents[""] = &root_;
 
-  // Group symbols by source path.
-  std::unordered_map<std::string_view, std::vector<const Symbol*>> symbols;
-  for (auto& sym : size_info_->raw_symbols) {
-    if (ShouldIncludeSymbol(sym)) {
-      std::string_view key = sym.source_path;
+  std::unordered_map<std::string_view, std::vector<const BaseSymbol*>>
+      symbols_by_source_path;
+  for (const BaseSymbol* sym : symbols_) {
+    if (ShouldIncludeSymbol(*sym)) {
+      std::string_view key = sym->SourcePath();
       if (key == nullptr) {
-        key = sym.object_path;
+        key = sym->ObjectPath();
       }
-      symbols[key].push_back(&sym);
+      symbols_by_source_path[key].push_back(sym);
     }
   }
-  for (const auto& pair : symbols) {
+  for (const auto& pair : symbols_by_source_path) {
     AddFileEntry(pair.first, pair.second);
   }
 }
@@ -91,7 +101,7 @@ Json::Value TreeBuilder::Open(const char* path) {
 }
 
 void TreeBuilder::AddFileEntry(const std::string_view source_path,
-                               const std::vector<const Symbol*>& symbols) {
+                               const std::vector<const BaseSymbol*>& symbols) {
   // Creates a single file node with a child for each symbol in that file.
   TreeNode* file_node = new TreeNode();
   file_node->container_type = ContainerType::kFile;
@@ -103,8 +113,8 @@ void TreeBuilder::AddFileEntry(const std::string_view source_path,
   }
   if (group_by_component_) {
     std::string component;
-    if (symbols[0]->component && *symbols[0]->component) {
-      component = symbols[0]->component;
+    if (symbols[0]->Component() && *symbols[0]->Component()) {
+      component = symbols[0]->Component();
     } else {
       component = kNoComponent;
     }
@@ -119,12 +129,12 @@ void TreeBuilder::AddFileEntry(const std::string_view source_path,
   // TODO: Initialize file type, source path, component
 
   // Create symbol nodes.
-  for (const Symbol* sym : symbols) {
+  for (const BaseSymbol* sym : symbols) {
     TreeNode* symbol_node = new TreeNode();
     symbol_node->container_type = ContainerType::kSymbol;
-    symbol_node->id_path = sym->full_name;
-    symbol_node->size = sym->pss;
-    symbol_node->node_stats = NodeStats(sym->sectionId, 1, symbol_node->size);
+    symbol_node->id_path = sym->FullName();
+    symbol_node->size = sym->Pss();
+    symbol_node->node_stats = NodeStats(sym->Section(), 1, symbol_node->size);
     symbol_node->symbol = sym;
     AttachToParent(symbol_node, file_node);
   }
@@ -194,7 +204,7 @@ ContainerType TreeBuilder::ContainerTypeFromChild(
   }
 }
 
-bool TreeBuilder::ShouldIncludeSymbol(const Symbol& symbol) const {
+bool TreeBuilder::ShouldIncludeSymbol(const BaseSymbol& symbol) const {
   for (const auto& filter : filters_) {
     if (!filter(symbol)) {
       return false;

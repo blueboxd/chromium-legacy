@@ -322,8 +322,8 @@ public class WebappLauncherActivity extends Activity {
 
         IntentHandler.addTimestampToIntent(launchIntent, createTimestamp);
         // Pass through WebAPK shell launch timestamp to the new intent.
-        long shellLaunchTimestamp = IntentHandler.getWebApkShellLaunchTimestampFromIntent(intent);
-        IntentHandler.addShellLaunchTimestampToIntent(launchIntent, shellLaunchTimestamp);
+        WebApkIntentDataProvider.copyWebApkShellLaunchTime(intent, launchIntent);
+        WebApkIntentDataProvider.copyNewStyleWebApkSplashShownTime(intent, launchIntent);
 
         // Setting FLAG_ACTIVITY_CLEAR_TOP handles 2 edge cases:
         // - If a legacy PWA is launching from a notification, we want to ensure that the URL being

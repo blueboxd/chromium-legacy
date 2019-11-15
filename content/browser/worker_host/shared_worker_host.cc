@@ -291,13 +291,13 @@ SharedWorkerHost::CreateNetworkFactoryForSubresources(
   // TODO(yhirano): Support COEP.
   if (GetCreateNetworkFactoryCallbackForSharedWorker().is_null()) {
     worker_process_host->CreateURLLoaderFactory(
-        origin, network::mojom::CrossOriginEmbedderPolicy::kNone,
+        origin, origin, network::mojom::CrossOriginEmbedderPolicy::kNone,
         nullptr /* preferences */, net::NetworkIsolationKey(origin, origin),
         std::move(default_header_client), std::move(default_factory_receiver));
   } else {
     mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory;
     worker_process_host->CreateURLLoaderFactory(
-        origin, network::mojom::CrossOriginEmbedderPolicy::kNone,
+        origin, origin, network::mojom::CrossOriginEmbedderPolicy::kNone,
         nullptr /* preferences */, net::NetworkIsolationKey(origin, origin),
         std::move(default_header_client),
         original_factory.InitWithNewPipeAndPassReceiver());

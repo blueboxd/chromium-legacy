@@ -8,10 +8,13 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/sharing/mock_sharing_service.h"
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
 #include "chrome/browser/sharing/shared_clipboard/shared_clipboard_utils.h"
+#include "chrome/browser/sharing/sharing_device_source.h"
 #include "chrome/browser/sharing/sharing_fcm_handler.h"
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
+#include "chrome/browser/sharing/sharing_handler_registry.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
@@ -65,24 +68,7 @@ class SharedClipboardUtilsTest : public testing::Test {
  protected:
   std::unique_ptr<KeyedService> CreateService(
       content::BrowserContext* context) {
-    if (!create_service_)
-      return nullptr;
-
-    return std::make_unique<SharingService>(
-        &profile_,
-        /* sync_prefs= */ nullptr,
-        /* vapid_key_manager= */ nullptr,
-        std::make_unique<MockSharingDeviceRegistration>(),
-        /* fcm_sender= */ nullptr,
-        std::make_unique<SharingFCMHandler>(
-            /*gcm_driver=*/nullptr, /*sharing_fcm_sender=*/nullptr,
-            /*sync_preference=nullptr*/ nullptr),
-        /*message_sender_=*/nullptr,
-        /* gcm_driver= */ nullptr,
-        /* device_info_tracker= */ nullptr,
-        /* local_device_info_provider= */ nullptr,
-        /* sync_service */ nullptr,
-        /* sms_fetcher= */ nullptr);
+    return create_service_ ? std::make_unique<MockSharingService>() : nullptr;
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;

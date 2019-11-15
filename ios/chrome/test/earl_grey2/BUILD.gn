@@ -36,6 +36,7 @@ chrome_ios_eg2_test("ios_chrome_integration_eg2tests_module") {
 
   deps = [
     "//ios/chrome/browser/autofill:eg2_tests",
+    "//ios/chrome/browser/context_menu:eg2_tests",
     "//ios/chrome/browser/device_sharing:eg2_tests",
     "//ios/chrome/browser/net:eg2_tests",
     "//ios/chrome/browser/ntp_tiles:eg2_tests",
@@ -62,7 +63,6 @@ chrome_ios_eg2_test("ios_chrome_settings_eg2tests_module") {
   deps = [
     "//ios/chrome/browser/ui/settings:eg2_tests",
     "//ios/chrome/browser/ui/settings/autofill:eg2_tests",
-    "//ios/chrome/browser/ui/settings/password:eg2_tests",
   ]
 }
 

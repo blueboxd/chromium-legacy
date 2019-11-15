@@ -1113,6 +1113,9 @@ The `[ReflectEmpty]` extended attribute specifies the value that an IDL getter f
 
 `[ReflectEmpty]` should be used if the specification for the content attribute has an empty attribute value mapped to some attribute state. For HTML, this applies to [enumerated attributes](http://www.whatwg.org/specs/web-apps/current-work/#enumerated-attribute) only.
 
+Non-empty string value specified by `[ReflectEmpty]` must be added to
+`core/html/keywords.json5`.
+
 ### [ReflectInvalid] _(a)_
 
 Specification: [Limited value attributes](http://www.whatwg.org/specs/web-apps/current-work/#limited-to-only-known-values) - _defined in spec prose, not as an IDL extended attribute._
@@ -1131,6 +1134,9 @@ The `[ReflectInvalid]` extended attribute specifies the value that an IDL getter
 
 `[ReflectInvalid]` should be used if the specification for the content attribute has an _invalid value state_ defined. For HTML, this applies to [enumerated attributes](http://www.whatwg.org/specs/web-apps/current-work/#enumerated-attribute) only.
 
+Non-empty string value specified by `[ReflectInvalid]` must be added to
+`core/html/keywords.json5`.
+
 ### [ReflectMissing] _(a)_
 
 Specification: [Limited value attributes](http://www.whatwg.org/specs/web-apps/current-work/#limited-to-only-known-values) - _defined in spec prose, not as an IDL extended attribute._
@@ -1148,6 +1154,9 @@ interface HTMLMyElement {
 The `[ReflectMissing]` extended attribute specifies the value that an IDL getter for the `direction` attribute should return when the content attribute is missing (e.g., return `"auto"` when accessing the `preload` IDL attribute on `<my-element>`.) Its (string) literal value must be one of the possible values that the `[ReflectOnly]` extended attribute lists.
 
 `[ReflectMissing]` should be used if the specification for the content attribute has a _missing value state_ defined. For HTML, this applies to [enumerated attributes](http://www.whatwg.org/specs/web-apps/current-work/#enumerated-attribute) only.
+
+Non-empty string value specified by `[ReflectMissing]` must be added to
+`core/html/keywords.json5`.
 
 ### [ReflectOnly] _(a)_
 
@@ -1169,6 +1178,9 @@ The ReflectOnly attribute limits the range of values that the attribute getter c
 If there is no match, the empty string will be returned. As required by the specification, no such checking is performed when the reflected IDL attribute is set.
 
 `[ReflectOnly]` should be used if the specification for a reflected IDL attribute says it is _"limited to only known values"_.
+
+Non-empty string values specified by `[ReflectOnly]` must be added to
+`core/html/keywords.json5`.
 
 ### [RuntimeEnabled] _(i, m, a, c)_
 

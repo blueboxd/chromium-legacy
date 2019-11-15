@@ -17,13 +17,13 @@
 #include "components/send_tab_to_self/target_device_info.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/device_info_sync_service.h"
+#include "components/sync_device_info/local_device_info_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
 
 class TwoClientSendTabToSelfSyncTest : public SyncTest {
  public:
-  TwoClientSendTabToSelfSyncTest() : SyncTest(TWO_CLIENT) {
-  }
+  TwoClientSendTabToSelfSyncTest() : SyncTest(TWO_CLIENT) {}
 
   ~TwoClientSendTabToSelfSyncTest() override {}
 
@@ -155,22 +155,22 @@ IN_PROC_BROWSER_TEST_F(TwoClientSendTabToSelfSyncTest,
   EXPECT_TRUE(device_infos[1]->send_tab_to_self_receiving_enabled());
 }
 
-// Flaky. https://crbug.com/1023950
 IN_PROC_BROWSER_TEST_F(TwoClientSendTabToSelfSyncTest,
-                       DISABLED_SendTabToSelfReceivingDisabled) {
+                       SendTabToSelfReceivingDisabled) {
   ASSERT_TRUE(SetupSync());
   GetClient(0)->DisableSyncForType(syncer::UserSelectableType::kTabs);
 
-  DeviceInfoSyncServiceFactory::GetForProfile(GetProfile(1))
-      ->GetDeviceInfoTracker()
-      ->ForcePulseForTest();
   DeviceInfoSyncServiceFactory::GetForProfile(GetProfile(0))
       ->GetDeviceInfoTracker()
       ->ForcePulseForTest();
 
-  ASSERT_TRUE(send_tab_to_self_helper::SendTabToSelfMultiDeviceActiveChecker(
+  ASSERT_TRUE(send_tab_to_self_helper::SendTabToSelfDeviceDisabledChecker(
                   DeviceInfoSyncServiceFactory::GetForProfile(GetProfile(1))
-                      ->GetDeviceInfoTracker())
+                      ->GetDeviceInfoTracker(),
+                  DeviceInfoSyncServiceFactory::GetForProfile(GetProfile(0))
+                      ->GetLocalDeviceInfoProvider()
+                      ->GetLocalDeviceInfo()
+                      ->guid())
                   .Wait());
 
   std::vector<std::unique_ptr<syncer::DeviceInfo>> device_infos =

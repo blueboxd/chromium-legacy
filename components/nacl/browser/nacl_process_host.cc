@@ -652,7 +652,7 @@ void NaClProcessHost::SendMessageToRenderer(
 
   NaClHostMsg_LaunchNaCl::WriteReplyParams(reply_msg_, result, error_message);
   nacl_host_message_filter_->Send(reply_msg_);
-  nacl_host_message_filter_ = NULL;
+  nacl_host_message_filter_.reset();
   reply_msg_ = NULL;
 }
 

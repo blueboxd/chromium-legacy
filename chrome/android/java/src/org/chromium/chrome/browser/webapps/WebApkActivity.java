@@ -12,7 +12,6 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.metrics.WebApkSplashscreenMetrics;
 import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -179,10 +178,11 @@ public class WebApkActivity extends WebappActivity {
             // If there is a saved instance state, then the intent (and its stored timestamp) might
             // be stale (Android replays intents if there is a recents entry for the activity).
             if (getSavedInstanceState() == null) {
-                long shellLaunchTimestampMs =
-                        IntentHandler.getWebApkShellLaunchTimestampFromIntent(getIntent());
+                Intent intent = getIntent();
                 // Splash observers are removed once the splash screen is hidden.
-                addSplashscreenObserver(new WebApkSplashscreenMetrics(shellLaunchTimestampMs));
+                addSplashscreenObserver(new WebApkSplashscreenMetrics(
+                        WebApkIntentDataProvider.getWebApkShellLaunchTime(intent),
+                        WebApkIntentDataProvider.getNewStyleWebApkSplashShownTime(intent)));
             }
         }
     }

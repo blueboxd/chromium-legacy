@@ -424,6 +424,10 @@ ErrorScreen* WizardController::GetErrorScreen() {
   return GetOobeUI()->GetErrorScreen();
 }
 
+bool WizardController::HasScreen(OobeScreenId screen) {
+  return screen_manager_->HasScreen(screen);
+}
+
 BaseScreen* WizardController::GetScreen(OobeScreenId screen) {
   if (screen == ErrorScreenView::kScreenId)
     return GetErrorScreen();
@@ -524,10 +528,14 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
       oobe_ui->GetView<WrongHWIDScreenHandler>(),
       base::BindRepeating(&WizardController::OnWrongHWIDScreenExit,
                           weak_factory_.GetWeakPtr())));
-  append(std::make_unique<chromeos::HIDDetectionScreen>(
-      oobe_ui->GetView<HIDDetectionScreenHandler>(),
-      base::BindRepeating(&WizardController::OnHidDetectionScreenExit,
-                          weak_factory_.GetWeakPtr())));
+
+  if (CanShowHIDDetectionScreen()) {
+    append(std::make_unique<chromeos::HIDDetectionScreen>(
+        oobe_ui->GetView<HIDDetectionScreenHandler>(),
+        base::BindRepeating(&WizardController::OnHidDetectionScreenExit,
+                            weak_factory_.GetWeakPtr())));
+  }
+
   append(std::make_unique<AutoEnrollmentCheckScreen>(
       oobe_ui->GetView<AutoEnrollmentCheckScreenHandler>(),
       oobe_ui->GetErrorScreen(),

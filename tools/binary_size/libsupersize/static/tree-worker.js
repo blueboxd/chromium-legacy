@@ -224,7 +224,8 @@ class TreeBuilder {
     const isFileNode = node.type[0] === _CONTAINER_TYPES.FILE;
     const hasDex = node.childStats[_DEX_SYMBOL_TYPE] ||
         node.childStats[_DEX_METHOD_SYMBOL_TYPE];
-    if (!isFileNode || !hasDex || !node.children) return node;
+    const isNoPath = node.idPath === "";
+    if (!isFileNode || !hasDex || isNoPath || !node.children) return node;
 
     /** @type {Map<string, TreeNode>} */
     const javaClassContainers = new Map();

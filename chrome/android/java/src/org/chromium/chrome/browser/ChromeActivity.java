@@ -101,6 +101,7 @@ import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.chrome.browser.init.StartupTabPreloader;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingComponent;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingComponentFactory;
+import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.media.PictureInPictureController;
 import org.chromium.chrome.browser.metrics.ActivityTabStartupMetricsTracker;
@@ -1428,7 +1429,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             ViewGroup coordinator = findViewById(R.id.coordinator);
             getLayoutInflater().inflate(R.layout.bottom_sheet, coordinator);
             BottomSheet sheet = coordinator.findViewById(R.id.bottom_sheet);
-            sheet.init(coordinator, getActivityTabProvider(), getFullscreenManager(), getWindow(),
+            sheet.init(coordinator, getActivityTabProvider(), getWindow(),
                     getWindowAndroid().getKeyboardDelegate());
 
             mBottomSheetSnackbarManager = new SnackbarManager(
@@ -1439,11 +1440,38 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         Supplier<OverlayPanelManager> panelManagerSupplier =
                 () -> getCompositorViewHolder().getLayoutManager().getOverlayPanelManager();
-        mBottomSheetController = new BottomSheetController(getLifecycleDispatcher(),
-                mActivityTabProvider, mScrimView, sheetSupplier, panelManagerSupplier);
+        mBottomSheetController =
+                new BottomSheetController(getLifecycleDispatcher(), mActivityTabProvider,
+                        mScrimView, sheetSupplier, panelManagerSupplier, getFullscreenManager());
 
         ((BottomContainer) findViewById(R.id.bottom_container))
                 .setBottomSheetController(mBottomSheetController);
+
+        ChromeFullscreenManager.FullscreenListener fullscreenListener =
+                new ChromeFullscreenManager.FullscreenListener() {
+                    @Override
+                    public void onContentOffsetChanged(int offset) {}
+
+                    @Override
+                    public void onControlsOffsetChanged(
+                            int topOffset, int bottomOffset, boolean needsAnimate) {}
+
+                    @Override
+                    public void onToggleOverlayVideoMode(boolean enabled) {
+                        if (mBottomSheetController.isSheetOpen()) {
+                            mBottomSheetController.peekSheet(false);
+                        }
+                    }
+
+                    @Override
+                    public void onBottomControlsHeightChanged(int bottomControlsHeight) {}
+                };
+        getFullscreenManager().addListener(fullscreenListener);
+
+        getLifecycleDispatcher().register((Destroyable) () -> {
+            if (mFullscreenManager == null) return;
+            mFullscreenManager.removeListener(fullscreenListener);
+        });
 
         mBottomSheetController.addObserver(new EmptyBottomSheetObserver() {
             /** A token for suppressing app modal dialogs. */

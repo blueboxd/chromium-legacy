@@ -1088,6 +1088,7 @@ bool RTCPeerConnectionHandler::Initialize(
       blink::Platform::Current()->IsWebRtcSrtpAesGcmEnabled();
   configuration_.crypto_options->srtp.enable_encrypted_rtp_header_extensions =
       blink::Platform::Current()->IsWebRtcSrtpEncryptedHeadersEnabled();
+  configuration_.enable_implicit_rollback = true;
 
   // Copy all the relevant constraints into |config|.
   CopyConstraintsIntoRtcConfiguration(options, &configuration_);
@@ -2142,6 +2143,17 @@ void RTCPeerConnectionHandler::OnSignalingChange(
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnSignalingChange");
 
+  if (previous_signaling_state_ ==
+          webrtc::PeerConnectionInterface::kHaveLocalOffer &&
+      new_state == webrtc::PeerConnectionInterface::kHaveRemoteOffer) {
+    // Inject missing kStable in case of implicit rollback.
+    auto stable_state = webrtc::PeerConnectionInterface::kStable;
+    if (peer_connection_tracker_)
+      peer_connection_tracker_->TrackSignalingStateChange(this, stable_state);
+    if (!is_closed_)
+      client_->DidChangeSignalingState(stable_state);
+  }
+  previous_signaling_state_ = new_state;
   if (peer_connection_tracker_)
     peer_connection_tracker_->TrackSignalingStateChange(this, new_state);
   if (!is_closed_)
@@ -2327,12 +2339,14 @@ void RTCPeerConnectionHandler::OnModifyTransceivers(
                                    kSetLocalDescription
                              : PeerConnectionTracker::TransceiverUpdatedReason::
                                    kSetRemoteDescription;
+  blink::WebVector<uintptr_t> ids(transceiver_states.size());
   for (size_t i = 0; i < transceiver_states.size(); ++i) {
     // Figure out if this transceiver is new or if setting the state modified
     // the transceiver such that it should be logged by the
     // |peer_connection_tracker_|.
     uintptr_t transceiver_id = blink::RTCRtpTransceiverImpl::GetId(
         transceiver_states[i].webrtc_transceiver().get());
+    ids[i] = transceiver_id;
     auto it = FindTransceiver(transceiver_id);
     bool transceiver_is_new = (it == rtp_transceivers_.end());
     bool transceiver_was_modified = false;
@@ -2365,9 +2379,18 @@ void RTCPeerConnectionHandler::OnModifyTransceivers(
       }
     }
   }
+  // Search for removed transceivers by comparing to previous state.
+  blink::WebVector<uintptr_t> removed_transceivers;
+  for (auto transceiver_id : previous_transceiver_ids_) {
+    if (std::find(ids.begin(), ids.end(), transceiver_id) == ids.end()) {
+      removed_transceivers.emplace_back(transceiver_id);
+      rtp_transceivers_.erase(FindTransceiver(transceiver_id));
+    }
+  }
+  previous_transceiver_ids_ = ids;
   if (!is_closed_) {
     client_->DidModifyTransceivers(std::move(web_transceivers),
-                                   is_remote_description);
+                                   removed_transceivers, is_remote_description);
   }
 }
 

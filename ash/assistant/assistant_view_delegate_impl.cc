@@ -112,6 +112,11 @@ void AssistantViewDelegateImpl::GetNavigableContentsFactoryForView(
   assistant_controller_->GetNavigableContentsFactory(std::move(receiver));
 }
 
+aura::Window* AssistantViewDelegateImpl::GetRootWindowForDisplayId(
+    int64_t display_id) {
+  return Shell::Get()->GetRootWindowForDisplayId(display_id);
+}
+
 aura::Window* AssistantViewDelegateImpl::GetRootWindowForNewWindows() {
   return Shell::Get()->GetRootWindowForNewWindows();
 }

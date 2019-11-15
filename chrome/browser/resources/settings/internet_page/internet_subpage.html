@@ -87,7 +87,8 @@
 
     <template is="dom-if" if="[[enableToggleIsVisible_(deviceState)]]">
       <div class="settings-box first">
-        <div id="onOff" class="start" on$="[[deviceIsEnabled_(deviceState)]]">
+        <div id="onOff" class="start" on$="[[deviceIsEnabled_(deviceState)]]"
+            aria-hidden="true">
           [[getOffOnString_(deviceState,
             '$i18nPolymer{deviceOn}', '$i18nPolymer{deviceOff}')]]
         </div>

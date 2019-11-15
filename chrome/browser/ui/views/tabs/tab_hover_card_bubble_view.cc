@@ -67,7 +67,7 @@ base::TimeDelta GetMinimumTriggerDelay() {
     case 2:
       return base::TimeDelta::FromMilliseconds(150);
     case 1:
-      return base::TimeDelta::FromMilliseconds(200);
+      return base::TimeDelta::FromMilliseconds(300);
     case 0:
     default:
       return base::TimeDelta::FromMilliseconds(0);
@@ -82,7 +82,7 @@ base::TimeDelta GetMaximumTriggerDelay() {
     case 2:
       return base::TimeDelta::FromMilliseconds(500);
     case 1:
-      return base::TimeDelta::FromMilliseconds(700);
+      return base::TimeDelta::FromMilliseconds(800);
     case 0:
     default:
       return base::TimeDelta::FromMilliseconds(0);
@@ -507,7 +507,7 @@ void TabHoverCardBubbleView::UpdateAndShow(Tab* tab) {
   // card was last visible then it is shown immediately. This is to account for
   // if hover unintentionally leaves the tab strip.
   constexpr base::TimeDelta kShowWithoutDelayTimeBuffer =
-      base::TimeDelta::FromMilliseconds(500);
+      base::TimeDelta::FromMilliseconds(300);
   base::TimeDelta elapsed_time =
       base::TimeTicks::Now() - last_mouse_exit_timestamp_;
 

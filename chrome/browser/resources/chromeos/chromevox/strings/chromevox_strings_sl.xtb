@@ -127,7 +127,6 @@
 <translation id="1845944666972354496">Za aktiviranje se dvakrat dotaknite.</translation>
 <translation id="1846771122725914429">Zaslon braille Bluetooth</translation>
 <translation id="1865601187525349519">Konec besedila</translation>
-<translation id="1875375785454778375">Prisotnost v živo</translation>
 <translation id="1876229593313240038">dok</translation>
 <translation id="188130072164734898">Izgovori trenutna čas in datum.</translation>
 <translation id="1902396333223336119">Celica</translation>
@@ -148,7 +147,6 @@
 <translation id="2009187674653301682">Ni nadpisano</translation>
 <translation id="2010555995361223825">ChromeVoxovi meniji</translation>
 <translation id="2045490512405922022">ni potrjeno</translation>
-<translation id="2049107626739254612">Podatki o avtorstvu</translation>
 <translation id="20601713649439366">Ni prejšnjega matematičnega izraza.</translation>
 <translation id="2063539687800151747">Epigraf</translation>
 <translation id="207477615537953741">Semantični način je izklopljen</translation>
@@ -269,7 +267,6 @@
 <translation id="2911433807131383493">Odpiranje vadnice za ChromeVox</translation>
 <translation id="2912405967290226587">S tremi prsti povlecite v desno</translation>
 <translation id="2932083475399492303">Preklapljanje med strukturno vrstico in vrstico postavitve</translation>
-<translation id="293796669683825859">Komentarji</translation>
 <translation id="2942710183375260152">Temno skrilasto modra</translation>
 <translation id="2943596527105977722">Temno zlatorumena</translation>
 <translation id="2944762337049891859">Samodejno branje strani po dokončanju nalaganja.</translation>
@@ -1148,6 +1145,7 @@
 <translation id="8548973727659841685">Znakovna</translation>
 <translation id="8561322612995434619">ima pojavno okno</translation>
 <translation id="8571096049907249734">večizb</translation>
+<translation id="858006550102277544">Komentar</translation>
 <translation id="8584721346566392021">n5</translation>
 <translation id="8587549812518406253">Naslednji element seznama</translation>
 <translation id="860150890330522909">Potrditveno polje <ph name="NAME" /> je označeno</translation>

@@ -111,4 +111,9 @@ public interface StartSurface {
      * @return TabListDelegate implementation that can be used to access the Tab List.
      */
     TabSwitcher.TabListDelegate getTabListDelegate();
+
+    /**
+     * @return TabDialogDelegation implementation that can be used to access the Tab Dialog.
+     */
+    TabSwitcher.TabDialogDelegation getTabDialogDelegate();
 }

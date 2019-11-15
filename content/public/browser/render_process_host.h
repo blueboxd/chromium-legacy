@@ -434,6 +434,16 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // Create an URLLoaderFactory that can be used by |origin| being hosted in
   // |this| process.
   //
+  // |main_world_origin| specifies the origin of the main world that will use
+  // the URLLoaderFactory.  In most cases |main_world_origin| and |origin|
+  // should be the same, but they may differ if |origin| specifies an origin of
+  // an isolated world (e.g. a content script of a Chrome Extension - see also
+  // the doc comment for extensions::URLLoaderFactoryManager::CreateFactory).
+  // TODO(lukasza): Remove |main_world_origin| once there is no need for
+  // a separate URLLoaderFactory for allowlisted extensions (in all other cases
+  // |main_world_origin| should be the same as |origin|).  At the same time,
+  // consider renaming |origin| to |request_initiator|.
+  //
   // When NetworkService is enabled, |receiver| will be bound with a new
   // URLLoaderFactory created from the storage partition's Network Context. Note
   // that the URLLoaderFactory returned by this method does NOT support
@@ -454,6 +464,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // keys do not share network resources like the http cache.
   virtual void CreateURLLoaderFactory(
       const url::Origin& origin,
+      const url::Origin& main_world_origin,
       network::mojom::CrossOriginEmbedderPolicy embedder_policy,
       const WebPreferences* preferences,
       const net::NetworkIsolationKey& network_isolation_key,

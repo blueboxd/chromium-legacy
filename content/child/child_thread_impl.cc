@@ -43,7 +43,7 @@
 #include "build/build_config.h"
 #include "components/tracing/child/background_tracing_agent_impl.h"
 #include "components/tracing/child/background_tracing_agent_provider_impl.h"
-#include "content/child/child_histogram_fetcher_impl.h"
+#include "content/child/browser_exposed_child_interfaces.h"
 #include "content/child/child_process.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/child_process.mojom.h"
@@ -456,8 +456,7 @@ ChildThread* ChildThread::Get() {
   return ChildThreadImpl::current();
 }
 
-ChildThreadImpl::Options::Options()
-    : auto_start_service_manager_connection(true), connect_to_browser(false) {}
+ChildThreadImpl::Options::Options() : connect_to_browser(false) {}
 
 ChildThreadImpl::Options::Options(const Options& other) = default;
 
@@ -473,13 +472,6 @@ ChildThreadImpl::Options::Builder::InBrowserProcess(
   options_.browser_process_io_runner = params.io_runner();
   options_.in_process_service_request_token = params.service_request_token();
   options_.mojo_invitation = params.mojo_invitation();
-  return *this;
-}
-
-ChildThreadImpl::Options::Builder&
-ChildThreadImpl::Options::Builder::AutoStartServiceManagerConnection(
-    bool auto_start) {
-  options_.auto_start_service_manager_connection = auto_start;
   return *this;
 }
 
@@ -655,12 +647,9 @@ void ChildThreadImpl::Init(const Options& options) {
 
   auto registry = std::make_unique<service_manager::BinderRegistry>();
   registry->AddInterface(
-      base::BindRepeating(&ChildHistogramFetcherFactoryImpl::Create),
-      GetIOTaskRunner());
-  registry->AddInterface(
       base::BindRepeating(&IOThreadState::BindChildProcessReceiver,
                           io_thread_state_),
-      GetIOTaskRunner());
+      ChildThreadImpl::GetIOTaskRunner());
   GetServiceManagerConnection()->AddConnectionFilter(
       std::make_unique<SimpleConnectionFilter>(std::move(registry)));
 
@@ -710,10 +699,8 @@ void ChildThreadImpl::Init(const Options& options) {
 
   // This must always be done after ConnectChannel, because ConnectChannel() may
   // add a ConnectionFilter to the connection.
-  if (options.auto_start_service_manager_connection &&
-      service_manager_connection_) {
+  if (service_manager_connection_)
     StartServiceManagerConnection();
-  }
 
   int connection_timeout = kConnectionTimeoutS;
   std::string connection_override =
@@ -762,7 +749,7 @@ ChildThreadImpl::~ChildThreadImpl() {
 
 void ChildThreadImpl::Shutdown() {
   // Ensure that our IOThreadState's last ref goes away on the IO thread.
-  GetIOTaskRunner()->PostTask(
+  ChildThreadImpl::GetIOTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce([](scoped_refptr<IOThreadState>) {},
                                 std::move(io_thread_state_)));
 }
@@ -891,7 +878,12 @@ void ChildThreadImpl::StartServiceManagerConnection() {
 }
 
 void ChildThreadImpl::ExposeInterfacesToBrowser(mojo::BinderMap binders) {
-  GetIOTaskRunner()->PostTask(
+  // NOTE: Do not add new binders directly within this method. Instead, modify
+  // the definition of |ExposeChildInterfacesToBrowser()|, ensuring security
+  // review coverage.
+  ExposeChildInterfacesToBrowser(GetIOTaskRunner(), &binders);
+
+  ChildThreadImpl::GetIOTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&IOThreadState::ExposeInterfacesToBrowser,
                                 io_thread_state_, std::move(binders)));
 }

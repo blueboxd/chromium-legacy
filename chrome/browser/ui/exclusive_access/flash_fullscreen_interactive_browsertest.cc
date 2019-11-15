@@ -72,7 +72,8 @@ class FlashFullscreenInteractiveBrowserTest : public OutOfProcessPPAPITest {
   // screen captured.  During tab capture, Flash fullscreen remains embedded
   // within the tab content area of a non-fullscreened browser window.
   void StartFakingTabCapture() {
-    GetActiveWebContents()->IncrementCapturerCount(gfx::Size(360, 240));
+    GetActiveWebContents()->IncrementCapturerCount(gfx::Size(360, 240),
+                                                   /* stay_hidden */ false);
   }
 
   bool LaunchFlashFullscreen() {

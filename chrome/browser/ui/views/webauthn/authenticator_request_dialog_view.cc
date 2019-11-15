@@ -24,7 +24,6 @@
 #include "ui/views/border.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/vector_icons.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace {
 
@@ -184,14 +183,14 @@ views::View* AuthenticatorRequestDialogView::GetInitiallyFocusedView() {
 
   if (sheet()->model()->IsAcceptButtonVisible() &&
       sheet()->model()->IsAcceptButtonEnabled()) {
-    return GetDialogClientView()->ok_button();
+    return GetOkButton();
   }
 
   if (ShouldOtherTransportsButtonBeVisible())
     return other_transports_button_;
 
   if (sheet()->model()->IsCancelButtonVisible())
-    return GetDialogClientView()->cancel_button();
+    return GetCancelButton();
 
   return nullptr;
 }
@@ -336,8 +335,8 @@ void AuthenticatorRequestDialogView::UpdateUIForCurrentSheet() {
 
   // Force re-layout of the entire dialog client view, which includes the sheet
   // content as well as the button row on the bottom.
-  DCHECK(GetDialogClientView());
-  GetDialogClientView()->Layout();
+  // TODO(ellyjones): Why is this necessary?
+  GetWidget()->GetRootView()->Layout();
 
   // The accessibility title is also sourced from the |sheet_|'s step title.
   GetWidget()->UpdateWindowTitle();

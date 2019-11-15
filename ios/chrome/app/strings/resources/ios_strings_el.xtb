@@ -9,6 +9,7 @@
 <translation id="1066060668811609597">Διαχείριση συγχρονισμού</translation>
 <translation id="1076421457278169141">Ο κώδικας σαρώθηκε</translation>
 <translation id="1084365883616172403">Η ανάρτηση στο Facebook ολοκληρώθηκε.</translation>
+<translation id="1103523840287552314">Να μεταφράζονται πάντα τα <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">Αποδοχή και συνέχεια</translation>
 <translation id="1112015203684611006">Η εκτύπωση απέτυχε.</translation>
 <translation id="1125564390852150847">Δημιουργία νέας καρτέλας.</translation>
@@ -27,6 +28,7 @@
 <translation id="1265739287306757398">Μάθετε με ποιον τρόπο</translation>
 <translation id="1272079795634619415">Διακοπή</translation>
 <translation id="1283524564873030414">Τελευταίες 24 ώρες</translation>
+<translation id="1285320974508926690">Να μην γίνεται ποτέ μετάφραση αυτού του ιστότοπου</translation>
 <translation id="1323735185997015385">Διαγραφή</translation>
 <translation id="132683371494960526">Πατήστε δύο φορές για να αλλάξετε τον γονικό φάκελο.</translation>
 <translation id="1340643665687018190">Κλείσιμο μενού</translation>
@@ -67,6 +69,7 @@
 <translation id="1746815479209538200">Για να περιηγηθείτε στον ιστό, προσθέστε μια νέα καρτέλα.</translation>
 <translation id="1752547299766512813">Απ. κωδ. πρόσβ.</translation>
 <translation id="1753905327828125965">Πιο Δημοφιλή</translation>
+<translation id="1803264062614276815">Όνομα κατόχου κάρτας</translation>
 <translation id="1809939268435598390">Διαγραφή φακέλου</translation>
 <translation id="1813414402673211292">Διαγραφή δεδ. περιήγ.</translation>
 <translation id="1820259098641718022">Προστέθηκε στη λίστα ανάγνωσης</translation>
@@ -155,6 +158,7 @@
 <translation id="2989805286512600854">Άνοιγμα σε Νέα Καρτέλα</translation>
 <translation id="3037605927509011580">Όπα! Κάτι πήγε στραβά!</translation>
 <translation id="3112556859945124369">Επισήμανση…</translation>
+<translation id="3153862085237805241">Αποθήκευση κάρτας</translation>
 <translation id="3157684681743766797">Επισήμανση όλων…</translation>
 <translation id="3175081911749765310">Υπηρ.ιστού</translation>
 <translation id="3178650076442119961">Ενεργή σήμερα</translation>
@@ -327,6 +331,7 @@
 <translation id="5728700505257787410">Παρουσιάστηκε πρόβλημα με τη σύνδεση στον λογαριασμό σας.</translation>
 <translation id="5737974891429562743">Τα στοιχεία σύνδεσης λογαριασμού δεν είναι ενημερωμένα. Ενημερώστε τα για να ξεκινήσει ο συγχρονισμός.</translation>
 <translation id="5738887413654608789">Αυτό σας επιτρέπει να ανακαλύψετε σχετικές ιστοσελίδες βάσει του περιβάλλοντός σας.</translation>
+<translation id="5782227691023083829">Μετάφραση...</translation>
 <translation id="5803566855766646066">Είστε βέβαιοι ότι θέλετε να απορρίψετε αυτήν τη νέα κάρτα;</translation>
 <translation id="5816228676161003208">Σας επιτρέπει να πραγματοποιείτε ταχύτερη αναζήτηση με φωνητικές εντολές.</translation>
 <translation id="5846482154967366008">Μηχανή αναζήτησης</translation>
@@ -407,6 +412,7 @@
 <translation id="6691331417640343772">Διαχείριση συγχρονισμένων δεδομένων στον Πίνακα ελέγχου Google</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Δεν είναι δυνατή η εξαγωγή κωδικών πρόσβασης</translation>
+<translation id="6748108480210050150">Από</translation>
 <translation id="6780034285637185932">Ταχυδρομικός κώδικας</translation>
 <translation id="6785453220513215166">Αποστολή αναφοράς σφάλματος…</translation>
 <translation id="679325081238418596">Μεταφέρετε όλους τους σελιδοδείκτες, το ιστορικό, τους κωδικούς πρόσβασης και άλλες ρυθμίσεις σας σε όλες τις συσκευές σας</translation>
@@ -428,6 +434,7 @@
 <translation id="6973630695168034713">Φάκελοι</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6988572888918530647">Διαχείριση Λογαριασμού Google</translation>
+<translation id="6998989275928107238">Προς</translation>
 <translation id="7004499039102548441">Πρόσφατες καρτέλες</translation>
 <translation id="7006788746334555276">Ρυθμίσεις περιεχομένου</translation>
 <translation id="7015203776128479407">Η αρχική ρύθμιση του συγχρονισμού δεν τελείωσε. Ο συγχρονισμός είναι απενεργοποιημένος.</translation>
@@ -467,6 +474,7 @@
 <translation id="7537586195939242955">Δεν είναι δυνατή η εγκατάσταση του πάσου σας στο Passbook.</translation>
 <translation id="7554791636758816595">Νέα καρτέλα</translation>
 <translation id="7561196759112975576">Πάντα</translation>
+<translation id="7600965453749440009">Να μην γίνεται ποτέ μετάφραση από <ph name="LANGUAGE" /></translation>
 <translation id="7603852183842204213">Αποκλεισμ. αναδ. (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7638584964844754484">Εσφαλμένη φράση πρόσβασης</translation>
 <translation id="7658239707568436148">Ακύρωση</translation>
@@ -501,6 +509,7 @@
 <translation id="8076014560081431679">Οι αποθηκευμένες ρυθμίσεις ιστότοπου δεν θα διαγραφούν και ενδέχεται να υποδεικνύουν τις συνήθειες περιήγησής σας. <ph name="BEGIN_LINK" />Μάθετε περισσότερα<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Η λήψη του αρχείου είναι διαθέσιμη. Οι διαθέσιμες επιλογές βρίσκονται κοντά στο κάτω μέρος της οθόνης.</translation>
 <translation id="8131740175452115882">Επιβεβαίωση</translation>
+<translation id="8197543752516192074">Μετάφραση σελίδας</translation>
 <translation id="8205564605687841303">Ακύρωση</translation>
 <translation id="8225985093977202398">Εικόνες και αρχεία στην κρυφή μνήμη</translation>
 <translation id="8261506727792406068">Διαγραφή</translation>
@@ -546,6 +555,7 @@
 <translation id="8981454092730389528">Στοιχεία ελέγχου δραστηριότητας Google</translation>
 <translation id="8985320356172329008">Έχετε συνδεθεί στο Google ως</translation>
 <translation id="9034759925968272072">Δεν θα αποσυνδεθείτε από το Λογαριασμό σας Google. Ο Λογαριασμός σας Google ενδέχεται να διαθέτει άλλες μορφές ιστορικού περιήγησης στη διεύθυνση <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
+<translation id="9037965129289936994">Εμφάνιση πρωτοτύπου</translation>
 <translation id="9039373489628511875">Εύρος ζώνης</translation>
 <translation id="9055772144595778347">Σύνδεση αδύνατη</translation>
 <translation id="9065203028668620118">Επεξεργασία</translation>

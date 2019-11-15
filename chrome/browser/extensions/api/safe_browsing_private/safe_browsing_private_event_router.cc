@@ -524,6 +524,23 @@ void SafeBrowsingPrivateEventRouter::OnDangerousDownloadWarningBypassed(
           threat_type, mime_type, content_size));
 }
 
+bool SafeBrowsingPrivateEventRouter::ShouldInitRealtimeReportingClient() {
+  // This method is not compiled on Chrome OS because
+  // ChromeBrowserCloudManagementController does not exist. Once this is
+  // fixed the #if !defined can be removed.
+#if !defined(OS_CHROMEOS)
+  if (!base::FeatureList::IsEnabled(kRealtimeReportingFeature))
+    return false;
+
+  if (!policy::ChromeBrowserCloudManagementController::IsEnabled())
+    return false;
+
+  return true;
+#else
+  return false;
+#endif
+}
+
 void SafeBrowsingPrivateEventRouter::SetCloudPolicyClientForTesting(
     std::unique_ptr<policy::CloudPolicyClient> client) {
   DCHECK_EQ(nullptr, client_.get());
@@ -531,19 +548,11 @@ void SafeBrowsingPrivateEventRouter::SetCloudPolicyClientForTesting(
 }
 
 void SafeBrowsingPrivateEventRouter::InitRealtimeReportingClient() {
-#if !defined(OS_CHROMEOS)
   // If already initialized, do nothing.
   if (client_)
     return;
 
-  // This method is not compiled on Chrome OS because
-  // ChromeBrowserCloudManagementController does not exist. Also,
-  // policy::BrowserDMTokenStorage::Get()->RetrieveDMToken() doesn't return a
-  // valid token either. Once these are fixed the #if !defined can be removed.
-  if (!policy::ChromeBrowserCloudManagementController::IsEnabled())
-    return;
-
-  if (!base::FeatureList::IsEnabled(kRealtimeReportingFeature))
+  if (!ShouldInitRealtimeReportingClient())
     return;
 
   // |identity_manager_| may be null in tests.  If there is no identity
@@ -571,7 +580,6 @@ void SafeBrowsingPrivateEventRouter::InitRealtimeReportingClient() {
         &SafeBrowsingPrivateEventRouter::InitRealtimeReportingClientCallback,
         weakptr_factory_.GetWeakPtr(), device_management_service));
   }
-#endif
 }
 
 void SafeBrowsingPrivateEventRouter::InitRealtimeReportingClientCallback(

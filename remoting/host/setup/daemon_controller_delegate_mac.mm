@@ -244,9 +244,11 @@ DaemonControllerDelegateMac::GetConfig() {
 }
 
 void DaemonControllerDelegateMac::CheckPermission(
+    bool it2me,
     DaemonController::BoolCallback callback) {
   auto checker = std::make_unique<mac::PermissionChecker>(
-      mac::HostMode::ME2ME, base::ThreadTaskRunnerHandle::Get());
+      it2me ? mac::HostMode::IT2ME : mac::HostMode::ME2ME,
+      base::ThreadTaskRunnerHandle::Get());
   permission_wizard_ =
       std::make_unique<mac::PermissionWizard>(std::move(checker));
   permission_wizard_->SetCompletionCallback(std::move(callback));

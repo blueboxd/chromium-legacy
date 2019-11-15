@@ -17,14 +17,10 @@
     "accessibilityPrivate",
     "audio",
     "bluetoothPrivate",
-    "bookmarks",
     "brailleDisplayPrivate",
     "clipboardRead",
-    "commands.accessibility",
     "commandLinePrivate",
     "downloads",
-    "experimental",
-    "history",
     "loginState",
     "metricsPrivate",
     "notifications",
@@ -34,19 +30,14 @@
     "tts",
     "virtualKeyboardPrivate",
     "chrome://resources/",
-    "<all_urls>"
+    "https://docs.google.com/*",
+    "https://docs.sandbox.google.com/*"
   ],
   "content_scripts": [
     {
-      "matches": [ "<all_urls>", "chrome://resources/.*" ],
-      "exclude_globs": [
-{% if is_webstore is not defined %}
-          "chrome-extension://*",
-          "chrome://*",
-          "https://accounts.google.com/embedded/setup/chromeos*",
-          "https://talkgadget.google.com/hangouts*",
-          "*.pdf"
-{% endif %}
+      "matches": [
+        "https://docs.google.com/*",
+        "https://docs.sandbox.google.com/*"
       ],
       "all_frames": true,
       "js": [
@@ -66,38 +57,6 @@
   ],
   "automation": {
     "desktop": true
-  },
-  "commands": {
-    "nextObject": {
-      "description": "__MSG_CHROMEVOX_NEXT_OBJECT__",
-      "suggested_key": {
-        "default": "Alt+Shift+Right"
-      }
-    },
-    "previousObject": {
-      "description": "__MSG_CHROMEVOX_PREVIOUS_OBJECT__",
-      "suggested_key": {
-        "default": "Alt+Shift+Left"
-      }
-    },
-    "performDefaultAction": {
-      "description": "__MSG_CHROMEVOX_PERFORM_DEFAULT_ACTION__",
-      "suggested_key": {
-        "default": "Alt+Shift+Space"
-      }
-    },
-    "toggleChromeVoxVersion": {
-      "description": "__MSG_CHROMEVOX_TOGGLE_CHROMEVOX__",
-      "suggested_key": {
-        "default": "Alt+Shift+Q"
-      }
-    },
-    "readFromHere": {
-      "description": "__MSG_CHROMEVOX_READ_FROM_HERE__",
-      "suggested_key": {
-        "default": "Alt+Shift+R"
-      }
-    }
   },
   "options_page": "background/options/options.html",
   "default_locale": "en",

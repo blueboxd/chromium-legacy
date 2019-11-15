@@ -15,6 +15,8 @@ import org.chromium.chrome.browser.ActivityTabProvider.HintlessActivityTabObserv
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
+import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -89,6 +91,9 @@ public class BottomSheetController implements Destroyable {
     /** A {@link VrModeObserver} that observers events of entering and exiting VR mode. */
     private final VrModeObserver mVrModeObserver;
 
+    /** A listener for browser controls offset changes. */
+    private final ChromeFullscreenManager.FullscreenListener mFullscreenListener;
+
     /** The height of the shadow that sits above the toolbar. */
     private final int mToolbarShadowHeight;
 
@@ -113,6 +118,12 @@ public class BottomSheetController implements Destroyable {
     /** A means for getting the activity's current tab and observing change events. */
     private ActivityTabProvider mTabProvider;
 
+    /** Observer for watching the current tab. */
+    private ActivityTabProvider.ActivityTabTabObserver mTabObserver;
+
+    /** A fullscreen manager for polling browser controls offsets. */
+    private ChromeFullscreenManager mFullscreenManager;
+
     /** The last known activity tab, if available. */
     private Tab mLastActivityTab;
 
@@ -133,16 +144,42 @@ public class BottomSheetController implements Destroyable {
      * @param bottomSheetSupplier A mechanism for creating a {@link BottomSheet}.
      * @param overlayManager A supplier of the manager for overlay panels to attach listeners to.
      *                       This is a supplier to get around wating for native to be initialized.
+     * @param fullscreenManager A fullscreen manager for access to browser controls offsets.
      */
     public BottomSheetController(final ActivityLifecycleDispatcher lifecycleDispatcher,
             final ActivityTabProvider activityTabProvider, final ScrimView scrim,
-            Supplier<BottomSheet> bottomSheetSupplier,
-            Supplier<OverlayPanelManager> overlayManager) {
+            Supplier<BottomSheet> bottomSheetSupplier, Supplier<OverlayPanelManager> overlayManager,
+            ChromeFullscreenManager fullscreenManager) {
         mTabProvider = activityTabProvider;
         mOverlayPanelManager = overlayManager;
+        mFullscreenManager = fullscreenManager;
         mPendingSheetObservers = new ArrayList<>();
         mToolbarShadowHeight =
                 scrim.getResources().getDimensionPixelOffset(BottomSheet.getTopShadowResourceId());
+
+        mPendingSheetObservers.add(new EmptyBottomSheetObserver() {
+            /** The token used to enable browser controls persistence. */
+            private int mPersistentControlsToken;
+
+            @Override
+            public void onSheetOpened(int reason) {
+                if (mFullscreenManager.getBrowserVisibilityDelegate() == null) return;
+
+                // Browser controls should stay visible until the sheet is closed.
+                mPersistentControlsToken =
+                        mFullscreenManager.getBrowserVisibilityDelegate().showControlsPersistent();
+            }
+
+            @Override
+            public void onSheetClosed(int reason) {
+                if (mFullscreenManager.getBrowserVisibilityDelegate() == null) return;
+
+                // Update the browser controls since they are permanently shown while the sheet is
+                // open.
+                mFullscreenManager.getBrowserVisibilityDelegate().releasePersistentShowingToken(
+                        mPersistentControlsToken);
+            }
+        });
 
         mVrModeObserver = new VrModeObserver() {
             @Override
@@ -156,7 +193,30 @@ public class BottomSheetController implements Destroyable {
             }
         };
 
-        mSheetInitializer = () -> initializeSheet(lifecycleDispatcher, scrim, bottomSheetSupplier);
+        mFullscreenListener = new ChromeFullscreenManager.FullscreenListener() {
+            @Override
+            public void onContentOffsetChanged(int offset) {}
+
+            @Override
+            public void onControlsOffsetChanged(
+                    int topOffset, int bottomOffset, boolean needsAnimate) {
+                if (mBottomSheet != null) {
+                    mBottomSheet.setBrowserControlsHiddenRatio(
+                            mFullscreenManager.getBrowserControlHiddenRatio());
+                }
+            }
+
+            @Override
+            public void onToggleOverlayVideoMode(boolean enabled) {}
+
+            @Override
+            public void onBottomControlsHeightChanged(int bottomControlsHeight) {}
+        };
+        mFullscreenManager.addListener(mFullscreenListener);
+
+        mSheetInitializer = () -> {
+            initializeSheet(lifecycleDispatcher, scrim, bottomSheetSupplier);
+        };
     }
 
     /**
@@ -222,6 +282,18 @@ public class BottomSheetController implements Destroyable {
                 clearRequestsAndHide();
             }
         });
+
+        mTabObserver = new ActivityTabProvider.ActivityTabTabObserver(mTabProvider) {
+            @Override
+            public void onEnterFullscreenMode(Tab tab, FullscreenOptions options) {
+                suppressSheet(StateChangeReason.COMPOSITED_UI);
+            }
+
+            @Override
+            public void onExitFullscreenMode(Tab tab) {
+                unsuppressSheet();
+            }
+        };
 
         ScrimObserver scrimObserver = new ScrimObserver() {
             @Override
@@ -292,7 +364,9 @@ public class BottomSheetController implements Destroyable {
     @Override
     public void destroy() {
         VrModuleProvider.unregisterVrModeObserver(mVrModeObserver);
+        mFullscreenManager.removeListener(mFullscreenListener);
         if (mBottomSheet != null) mBottomSheet.destroy();
+        if (mTabObserver != null) mTabObserver.destroy();
     }
 
     /**

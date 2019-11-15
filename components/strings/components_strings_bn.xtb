@@ -1091,11 +1091,11 @@
 <translation id="6266934640124581640">হালকা টিল</translation>
 <translation id="6276112860590028508">পড়ার তালিকার পৃষ্ঠাগুলি এখানে দেখা যাবে</translation>
 <translation id="627746635834430766">পরের বার আরও দ্রুত পেমেন্ট করা জন্য আপনার এই কার্ড এবং বিলিং ঠিকানাটি Google অ্যাকাউন্টে সেভ করে রাখুন।</translation>
-<translation id="6279516281132775660">নিচে দেওয়া তথ্য Chrome <ph name="BEGIN_EMPHASIS" />সেভ করে না<ph name="END_EMPHASIS" />:
+<translation id="6279516281132775660">এক্ষেত্রে নিচে দেওয়া তথ্য Chrome <ph name="BEGIN_EMPHASIS" />সেভ করবে না<ph name="END_EMPHASIS" />:
         <ph name="BEGIN_LIST" />
-          <ph name="LIST_ITEM" />আপনার ব্রাউজিংয়ের ইতিহাস
+          <ph name="LIST_ITEM" />আপনার ব্রাউজিং ইতিহাস
           <ph name="LIST_ITEM" />কুকি এবং সাইট ডেটা
-          <ph name="LIST_ITEM" />ফর্মে তথ্য লেখা হয়েছে
+          <ph name="LIST_ITEM" />ফর্মে লেখা তথ্য
         <ph name="END_LIST" /></translation>
 <translation id="6280223929691119688">এই ঠিকানায় ডেলিভারি করা যাবে না। অন্য ঠিকানা বেছে নিন।</translation>
 <translation id="6282194474023008486">পোস্টাল কোড</translation>
@@ -1496,7 +1496,7 @@
 <translation id="8261506727792406068">মুছুন</translation>
 <translation id="8262952874573525464">নিচে ধারের দিকে সেলাই</translation>
 <translation id="8267698848189296333"><ph name="USERNAME" /> হিসেবে প্রবেশ করুন করছেন</translation>
-<translation id="8269981117540303696">এখন আপনি গোপনভাবে ব্রাউজ করতে পারবেন, এবং অন্য যেসব ব্যক্তি এই ডিভাইস ব্যবহার করেন তারা আপনার অ্যাক্টিভিটি দেখতে পাবেন না। তবে, আপনার ডাউনলোড এবং বুকমার্কগুলি সেভ করা হবে।</translation>
+<translation id="8269981117540303696">এখন আপনি গোপনভাবে ব্রাউজ করতে পারবেন এবং অন্য যেসব ব্যক্তি এই ডিভাইস ব্যবহার করেন তারা আপনার অ্যাক্টিভিটি দেখতে পাবেন না। তবে, আপনার ডাউনলোড এবং বুকমার্কগুলি সেভ করা হবে।</translation>
 <translation id="8277900682056760511">পেমেন্ট হ্যান্ডলার শিট খোলা আছে</translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">সাইন-ইন করুন</translation>
@@ -1550,7 +1550,7 @@
 <translation id="8571890674111243710">পৃষ্ঠাটি<ph name="LANGUAGE" />তে অনুবাদ করুন...</translation>
 <translation id="858637041960032120">ফোননম্বর জুড়ুন</translation>
 <translation id="860043288473659153">কার্ডধারকের নাম</translation>
-<translation id="8616822740383114808">"<ph name="SETTINGS_PAGE" />"-এ এই সেটিংটি "<ph name="ENFORCING_SETTING" />" প্রয়োগ করেছে</translation>
+<translation id="8616822740383114808">"<ph name="SETTINGS_PAGE" />"-এ এই সেটিং "<ph name="ENFORCING_SETTING" />" প্রয়োগ করেছে</translation>
 <translation id="861775596732816396">সাইজ ৪</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">এই ডিভাইসে এই কার্ডটি সেভ করুন</translation>
@@ -1607,7 +1607,6 @@
 <translation id="8943282376843390568">লাইম</translation>
 <translation id="8957210676456822347">ক্যাপটিভ পোর্টাল অনুমোদন</translation>
 <translation id="8962950042226115166">সন্দেহজনক সাইট</translation>
-<translation id="8966619695390250636">আপনি কি এটি বলতে চাইছেন?</translation>
 <translation id="8968766641738584599">কার্ড সেভ করুন</translation>
 <translation id="8971063699422889582">সার্ভারের সার্টিফিকেটের মেয়াদ ফুরিয়েছে৷</translation>
 <translation id="8975012916872825179">ফোন নম্বর, ইমেল আইডি এবং শিপিং ঠিকানার মতো তথ্য এতে আছে</translation>

@@ -708,6 +708,28 @@ TEST_P(MediaCodecVideoDecoderVp8Test, UnregisterPlayerBeforeSyncDestruction) {
   destruction_observer_->ExpectDestruction();
 }
 
+TEST_P(MediaCodecVideoDecoderVp8Test, ResetDoesNotDrainVp8WithAsyncApi) {
+  EXPECT_CALL(*device_info_, IsAsyncApiSupported())
+      .WillRepeatedly(Return(true));
+
+  auto* codec =
+      InitializeFully_OneDecodePending(TestVideoConfig::Large(codec_));
+  // Accept the first decode to transition out of the flushed state.
+  codec->AcceptOneInput();
+  PumpCodec();
+
+  // The reset should complete immediately because the codec is not VP8 so
+  // it doesn't need draining.  We don't expect a call to Flush on the codec
+  // since it will be deferred until the first decode after the reset.
+  base::MockCallback<base::Closure> reset_cb;
+  EXPECT_CALL(reset_cb, Run());
+  mcvd_->Reset(reset_cb.Get());
+  // The reset should complete before destroying the codec, since TearDown will
+  // complete the drain for VP8.  It still might not call reset since a drain
+  // for destroy probably doesn't, but either way we expect it before the drain.
+  testing::Mock::VerifyAndClearExpectations(&reset_cb);
+}
+
 TEST_P(MediaCodecVideoDecoderH264Test, ResetDoesNotDrainNonVp8Codecs) {
   auto* codec =
       InitializeFully_OneDecodePending(TestVideoConfig::Large(codec_));

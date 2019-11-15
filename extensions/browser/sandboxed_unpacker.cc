@@ -938,7 +938,7 @@ void SandboxedUnpacker::ReportSuccess(
   client_->OnUnpackSuccess(temp_dir_.Take(), extension_root_,
                            std::move(original_manifest), extension_.get(),
                            install_icon_, dnr_ruleset_checksum);
-  extension_ = NULL;
+  extension_.reset();
 
   Cleanup();
 }

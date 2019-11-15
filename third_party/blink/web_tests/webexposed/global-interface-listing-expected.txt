@@ -6144,6 +6144,7 @@ interface PushSubscriptionOptions
     method constructor
 interface QuicTransport
     attribute @@toStringTag
+    method close
     method constructor
 interface RTCCertificate
     attribute @@toStringTag

@@ -1248,17 +1248,11 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
 
   // Verify the Referrer and Sec-Fetch-* header values.
   subresource_request.WaitForRequest();
-  const char* expected_sec_fetch_site = "same-origin";
-  if (IsExtensionAllowlisted()) {
-    // TODO(lukasza): https://crbug.com/998247: Even allowlisted extensions
-    // should correctly indicate `Sec-Fetch-Site: same-origin`.
-    expected_sec_fetch_site = "cross-site";
-  }
-  EXPECT_THAT(subresource_request.http_request()->headers,
-              testing::IsSupersetOf(
-                  {testing::Pair("Referer", page_url.spec().c_str()),
-                   testing::Pair("Sec-Fetch-Mode", "no-cors"),
-                   testing::Pair("Sec-Fetch-Site", expected_sec_fetch_site)}));
+  EXPECT_THAT(
+      subresource_request.http_request()->headers,
+      testing::IsSupersetOf({testing::Pair("Referer", page_url.spec().c_str()),
+                             testing::Pair("Sec-Fetch-Mode", "no-cors"),
+                             testing::Pair("Sec-Fetch-Site", "same-origin")}));
 }
 
 IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
@@ -1297,17 +1291,11 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
 
   // Verify the Referrer and Sec-Fetch-* header values.
   subresource_request.WaitForRequest();
-  const char* expected_sec_fetch_site = "same-origin";
-  if (IsExtensionAllowlisted()) {
-    // TODO(lukasza): https://crbug.com/998247: Even allowlisted extensions
-    // should correctly indicate `Sec-Fetch-Site: same-origin`.
-    expected_sec_fetch_site = "cross-site";
-  }
-  EXPECT_THAT(subresource_request.http_request()->headers,
-              testing::IsSupersetOf(
-                  {testing::Pair("Referer", page_url.spec().c_str()),
-                   testing::Pair("Sec-Fetch-Mode", "cors"),
-                   testing::Pair("Sec-Fetch-Site", expected_sec_fetch_site)}));
+  EXPECT_THAT(
+      subresource_request.http_request()->headers,
+      testing::IsSupersetOf({testing::Pair("Referer", page_url.spec().c_str()),
+                             testing::Pair("Sec-Fetch-Mode", "cors"),
+                             testing::Pair("Sec-Fetch-Site", "same-origin")}));
 }
 
 IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,

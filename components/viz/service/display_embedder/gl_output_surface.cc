@@ -235,7 +235,7 @@ gfx::OverlayTransform GLOutputSurface::GetDisplayTransform() {
 
 gfx::Rect GLOutputSurface::ApplyDisplayInverse(const gfx::Rect& input) {
   gfx::Transform display_inverse = gfx::OverlayTransformToTransform(
-      gfx::InvertOverlayTransform(GetDisplayTransform()), size_);
+      gfx::InvertOverlayTransform(GetDisplayTransform()), gfx::SizeF(size_));
   return cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
       display_inverse, input);
 }

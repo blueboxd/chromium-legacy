@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_layout_delegate.h"
 #include "chrome/browser/ui/views/tab_icon_view_model.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/window/caption_button_types.h"
 #include "ui/views/window/non_client_view.h"
@@ -40,7 +39,6 @@ class Label;
 
 class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
                                public views::ButtonListener,
-                               public views::MenuButtonListener,
                                public TabIconViewModel,
                                public OpaqueBrowserFrameViewLayoutDelegate {
  public:
@@ -82,11 +80,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
-  // views::MenuButtonListener:
-  void OnMenuButtonClicked(views::Button* source,
-                           const gfx::Point& point,
-                           const ui::Event* event) override;
 
   // TabIconViewModel:
   bool ShouldTabIconViewAnimate() const override;

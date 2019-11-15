@@ -85,23 +85,6 @@ ChromeVoxE2ETest.prototype = {
   },
 
   /**
-   * Increment the selected index of a select control.
-   * @param {number} tabId Of the page.
-   * @param {string} elementQueryString
-   */
-  incrementSelectedIndex: function(tabId, elementQueryString) {
-    var code = TestUtils.extractHtmlFromCommentEncodedString(
-        function() { /*!
-      var target = document.body.querySelector('$0');
-      target.focus();
-      target.selectedIndex++;
-    */ },
-        [elementQueryString]);
-
-    chrome.tabs.executeScript(tabId, {code: code});
-  },
-
-  /**
    * Creates a callback that optionally calls {@code opt_callback} when
    * called.  If this method is called one or more times, then
    * {@code testDone()} will be called when all callbacks have been called.

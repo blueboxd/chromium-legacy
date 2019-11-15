@@ -93,11 +93,6 @@ LiveRegions.prototype = {
     }
 
     var currentRange = this.chromeVoxState_.currentRange;
-
-    if (!cvox.ChromeVox.isActive) {
-      return;
-    }
-
     if (!currentRange) {
       return;
     }

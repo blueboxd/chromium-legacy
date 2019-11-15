@@ -382,7 +382,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       std::unique_ptr<DatagramClientSocket> socket,
       QuicStreamFactory* stream_factory,
       QuicCryptoClientStreamFactory* crypto_client_stream_factory,
-      quic::QuicClock* clock,
+      const quic::QuicClock* clock,
       TransportSecurityState* transport_security_state,
       SSLConfigService* ssl_config_service,
       std::unique_ptr<QuicServerInfo> server_info,
@@ -789,7 +789,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // path degrading per default network.
   int max_migrations_to_non_default_network_on_path_degrading_;
   int current_migrations_to_non_default_network_on_path_degrading_;
-  quic::QuicClock* clock_;  // Unowned.
+  const quic::QuicClock* clock_;  // Unowned.
   int yield_after_packets_;
   quic::QuicTime::Delta yield_after_duration_;
   bool go_away_on_path_degrading_;

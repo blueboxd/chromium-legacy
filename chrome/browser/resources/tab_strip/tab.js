@@ -268,7 +268,18 @@ export class TabElement extends CustomElement {
    * @return {!Promise}
    */
   slideOut() {
+    if (!this.embedderApi_.isVisible()) {
+      // There is no point in animating if the tab strip is hidden.
+      this.remove();
+      return Promise.resolve();
+    }
+
     return new Promise(resolve => {
+      const finishCallback = () => {
+        this.remove();
+        resolve();
+      };
+
       const animation = this.animate(
           [
             {maxWidth: 'var(--tabstrip-tab-width)', opacity: 1},
@@ -278,9 +289,24 @@ export class TabElement extends CustomElement {
             duration: DEFAULT_ANIMATION_DURATION,
             fill: 'forwards',
           });
+
+      const visibilityChangeListener = () => {
+        if (!this.embedderApi_.isVisible()) {
+          // If a tab strip becomes hidden during the animation, the onfinish
+          // event will not get fired until the tab strip becomes visible again.
+          // Therefore, when the tab strip becomes hidden, immediately call the
+          // finish callback.
+          animation.cancel();
+          finishCallback();
+        }
+      };
+
+      document.addEventListener(
+          'visibilitychange', visibilityChangeListener, {once: true});
       animation.onfinish = () => {
-        this.remove();
-        resolve();
+        document.removeEventListener(
+            'visibilitychange', visibilityChangeListener);
+        finishCallback();
       };
     });
   }

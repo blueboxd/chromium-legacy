@@ -146,6 +146,10 @@ base::Optional<std::string> RtpTransceiverState::mid() const {
   return mid_;
 }
 
+void RtpTransceiverState::set_mid(base::Optional<std::string> mid) {
+  mid_ = mid;
+}
+
 bool RtpTransceiverState::stopped() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   return stopped_;
@@ -222,6 +226,8 @@ class RTCRtpTransceiverImpl::RTCRtpTransceiverInternal
     sender_->set_state(std::move(sender_state));
     receiver_->set_state(state_.MoveReceiverState());
   }
+
+  void set_mid(base::Optional<std::string> mid) { state_.set_mid(mid); }
 
   blink::RTCRtpSenderImpl* content_sender() {
     DCHECK(main_task_runner_->BelongsToCurrentThread());
@@ -343,6 +349,11 @@ blink::WebString RTCRtpTransceiverImpl::Mid() const {
   const auto& mid = internal_->state().mid();
   return mid ? blink::WebString::FromUTF8(*mid)
              : blink::WebString();  // IsNull()
+}
+
+void RTCRtpTransceiverImpl::SetMid(base::Optional<blink::WebString> mid) {
+  internal_->set_mid(mid ? base::Optional<std::string>(mid->Utf8())
+                         : base::nullopt);
 }
 
 std::unique_ptr<blink::WebRTCRtpSender> RTCRtpTransceiverImpl::Sender() const {

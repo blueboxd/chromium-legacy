@@ -38,6 +38,8 @@ target(link_target_type, "child") {
     "assert_matching_enums.cc",
     "blink_platform_impl.cc",
     "blink_platform_impl.h",
+    "browser_exposed_child_interfaces.cc",
+    "browser_exposed_child_interfaces.h",
     "browser_font_resource_trusted.cc",
     "browser_font_resource_trusted.h",
     "child_histogram_fetcher_impl.cc",

@@ -18,7 +18,6 @@
 #include "base/time/time.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -77,7 +76,7 @@ void WebCacheManager::Add(int renderer_id) {
       content::RenderProcessHost::FromID(renderer_id);
   if (host) {
     mojo::Remote<mojom::WebCache> service;
-    BindInterface(host, service.BindNewPipeAndPassReceiver());
+    host->BindReceiver(service.BindNewPipeAndPassReceiver());
     web_cache_services_[renderer_id] = std::move(service);
   }
 

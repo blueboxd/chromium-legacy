@@ -177,7 +177,7 @@
 <translation id="1734878702283171397">システム管理者にお問い合わせください。</translation>
 <translation id="1739107442478692187">ご利用のサイトまたはアプリでデータ侵害がありました。保存したパスワードを確認し、<ph name="ORIGIN" /> のパスワードを今すぐ変更することをおすすめします。</translation>
 <translation id="1740951997222943430">有効期限（月）を正しい形式で入力してください</translation>
-<translation id="1741613555002899862">DnsOverHttpsMode が <ph name="SECURE_DNS_MODE_SECURE" /> の場合は、有効な文字列を指定する必要があります。</translation>
+<translation id="1741613555002899862">DnsOverHttpsMode が「<ph name="SECURE_DNS_MODE_SECURE" />」の場合は、有効な文字列を指定する必要があります。</translation>
 <translation id="1743520634839655729">カード、お名前、請求先住所を Google アカウントとこのデバイスに保存すると、次回のお支払いが簡単になります。</translation>
 <translation id="1743570585616704562">認識されませんでした</translation>
 <translation id="1745880797583122200">ご使用のブラウザは管理されています</translation>
@@ -963,7 +963,7 @@
 <translation id="5685654322157854305">配送先住所を追加</translation>
 <translation id="5689199277474810259">JSON にエクスポート</translation>
 <translation id="5689516760719285838">位置情報</translation>
-<translation id="569000877158168851">DnsOverHttpsTemplates の値は関連するものでないため、使用されません。ただし、DnsOverHttpsMode ポリシーが <ph name="SECURE_DNS_MODE_AUTOMATIC" /> または <ph name="SECURE_DNS_MODE_SECURE" /> に設定されている場合は除きます。</translation>
+<translation id="569000877158168851">DnsOverHttpsTemplates の値は関連するものでないため、使用されません。ただし、DnsOverHttpsMode ポリシーが「<ph name="SECURE_DNS_MODE_AUTOMATIC" />」または「<ph name="SECURE_DNS_MODE_SECURE" />」に設定されている場合は除きます。</translation>
 <translation id="570530837424789914">管理...</translation>
 <translation id="57094364128775171">安全なパスワードを自動生成…</translation>
 <translation id="5710435578057952990">このウェブサイトの ID は確認されていません。</translation>
@@ -1592,7 +1592,6 @@
 <translation id="8943282376843390568">ライム</translation>
 <translation id="8957210676456822347">キャプティブ ポータル認証</translation>
 <translation id="8962950042226115166">不審なサイト</translation>
-<translation id="8966619695390250636">もしかして:</translation>
 <translation id="8968766641738584599">カードを保存</translation>
 <translation id="8971063699422889582">サーバーの証明書の有効期限が切れています。</translation>
 <translation id="8975012916872825179">電話番号、メールアドレス、配送先住所などの情報が含まれます</translation>

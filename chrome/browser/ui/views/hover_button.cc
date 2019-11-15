@@ -94,12 +94,9 @@ void SingleLineStyledLabelWrapper::OnBoundsChanged(
 
 HoverButton::HoverButton(views::ButtonListener* button_listener,
                          const base::string16& text)
-    : views::LabelButton(/*button_listener*/ nullptr,
-                         text,
-                         views::style::CONTEXT_BUTTON),
-      listener_(button_listener) {
+    : views::LabelButton(button_listener, text, views::style::CONTEXT_BUTTON) {
   SetButtonController(std::make_unique<HoverButtonController>(
-      this, listener_,
+      this, button_listener,
       std::make_unique<views::Button::DefaultButtonControllerDelegate>(this)));
 
   views::InstallRectHighlightPathGenerator(this);
@@ -388,9 +385,3 @@ void HoverButton::SetSubtitleColor(SkColor color) {
     subtitle_->SetEnabledColor(color);
 }
 
-void HoverButton::OnMenuButtonClicked(Button* source,
-                                      const gfx::Point& point,
-                                      const ui::Event* event) {
-  if (listener_)
-    listener_->ButtonPressed(source, *event);
-}

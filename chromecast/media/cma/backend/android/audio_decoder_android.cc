@@ -53,6 +53,13 @@ const int64_t kInvalidTimestamp = std::numeric_limits<int64_t>::min();
 
 const int64_t kNoPendingOutput = -1;
 
+bool IsValidChannelNumber(int channel_number) {
+  // Currently, we only support following channel numbers.
+  return (channel_number == 1) || (channel_number == 2) ||
+         (channel_number == 4) || (channel_number == 6) ||
+         (channel_number == 8);
+}
+
 }  // namespace
 
 AudioDecoderAndroid::RateShifterInfo::RateShifterInfo(float playback_rate)
@@ -119,6 +126,7 @@ bool AudioDecoderAndroid::Start(int64_t start_pts) {
   TRACE_FUNCTION_ENTRY0();
   current_pts_ = start_pts;
   DCHECK(IsValidConfig(config_));
+  DCHECK(IsValidChannelNumber(config_.channel_number));
   sink_.Reset(this, config_.channel_number, config_.samples_per_second,
               backend_->Primary(), backend_->DeviceId(),
               backend_->ContentType());
@@ -253,7 +261,7 @@ bool AudioDecoderAndroid::SetConfig(const AudioConfig& config) {
 
   TRACE_FUNCTION_ENTRY0();
   DCHECK(task_runner_->BelongsToCurrentThread());
-  if (!IsValidConfig(config)) {
+  if (!IsValidConfig(config) || !IsValidChannelNumber(config.channel_number)) {
     LOG(ERROR) << "Invalid audio config passed to SetConfig";
     return false;
   }
@@ -296,6 +304,7 @@ void AudioDecoderAndroid::CreateDecoder() {
 
   DCHECK(!decoder_);
   DCHECK(IsValidConfig(config_));
+  DCHECK(IsValidChannelNumber(config_.channel_number));
 
   // No need to create a decoder if the samples are already decoded.
   if (BypassDecoder()) {
@@ -398,6 +407,11 @@ void AudioDecoderAndroid::OnBufferDecoded(
     return;
   }
   if (sink_error_) {
+    delegate_->OnPushBufferComplete(MediaPipelineBackendAndroid::kBufferFailed);
+    return;
+  }
+  if (!IsValidChannelNumber(config.channel_number)) {
+    LOG(ERROR) << "Channel number changes to be invalid.";
     delegate_->OnPushBufferComplete(MediaPipelineBackendAndroid::kBufferFailed);
     return;
   }

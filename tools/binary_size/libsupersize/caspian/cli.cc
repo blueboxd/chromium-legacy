@@ -11,6 +11,7 @@
 #include <fstream>
 #include <iostream>
 
+#include "tools/binary_size/libsupersize/caspian/diff.h"
 #include "tools/binary_size/libsupersize/caspian/file_format.h"
 #include "tools/binary_size/libsupersize/caspian/model.h"
 
@@ -32,7 +33,7 @@ void Diff(const char* before_filename, const char* after_filename) {
   caspian::SizeInfo after;
   ParseSizeInfoFromFile(after_filename, &after);
 
-  caspian::DiffSizeInfo diff(&before, &after);
+  caspian::DeltaSizeInfo diff = Diff(&before, &after);
 }
 
 void Validate(const char* filename) {
@@ -41,11 +42,11 @@ void Validate(const char* filename) {
 
   size_t max_aliases = 0;
   for (auto& s : info.raw_symbols) {
-    if (s.aliases) {
-      max_aliases = std::max(max_aliases, s.aliases->size());
+    if (s.aliases_) {
+      max_aliases = std::max(max_aliases, s.aliases_->size());
       // What a wonderful O(n^2) loop
-      for (auto* ss : *s.aliases) {
-        if (ss->aliases != s.aliases) {
+      for (auto* ss : *s.aliases_) {
+        if (ss->aliases_ != s.aliases_) {
           std::cerr << "Not all symbols in alias group had same alias count"
                     << std::endl;
           exit(1);

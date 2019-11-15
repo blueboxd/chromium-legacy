@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/timer/timer.h"
-#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_f.h"
 
 namespace ash {
 
@@ -42,10 +42,10 @@ class ASH_EXPORT SwipeHomeToOverviewController {
   ~SwipeHomeToOverviewController();
 
   // Called during swiping up on the shelf.
-  void Drag(const gfx::Point& location_in_screen,
+  void Drag(const gfx::PointF& location_in_screen,
             float scroll_x,
             float scroll_y);
-  void EndDrag(const gfx::Point& location_in_screen,
+  void EndDrag(const gfx::PointF& location_in_screen,
                base::Optional<float> velocity_y);
   void CancelDrag();
 
@@ -69,7 +69,7 @@ class ASH_EXPORT SwipeHomeToOverviewController {
   State state_ = State::kInitial;
 
   // The last detected drag location.
-  gfx::Point last_location_in_screen_;
+  gfx::PointF last_location_in_screen_;
 
   // The y in-screen coordinate at which drag, when stopped, will cause
   // transition to overview. Overview session will be started iff the drag stops

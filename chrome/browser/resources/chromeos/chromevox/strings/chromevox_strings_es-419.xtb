@@ -127,7 +127,6 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="1845944666972354496">Presiona dos veces para activar</translation>
 <translation id="1846771122725914429">Pantalla braille mediante Bluetooth</translation>
 <translation id="1865601187525349519">Fin del texto</translation>
-<translation id="1875375785454778375">Presencia en vivo</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">Di la fecha y la hora actuales.</translation>
 <translation id="1902396333223336119">Celda</translation>
@@ -148,7 +147,6 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="2009187674653301682">Sin superíndice</translation>
 <translation id="2010555995361223825">Menús de ChromeVox</translation>
 <translation id="2045490512405922022">sin marcar</translation>
-<translation id="2049107626739254612">Información de creación</translation>
 <translation id="20601713649439366">No hay expresiones matemáticas anteriores.</translation>
 <translation id="2063539687800151747">Epígrafe</translation>
 <translation id="207477615537953741">Semántica desactivada</translation>
@@ -269,7 +267,6 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="2911433807131383493">Abrir tutorial de ChromeVox</translation>
 <translation id="2912405967290226587">Deslizar tres dedos hacia la derecha</translation>
 <translation id="2932083475399492303">Alternar entre líneas estructurales y líneas de diseño</translation>
-<translation id="293796669683825859">Comentarios</translation>
 <translation id="2942710183375260152">Azul pizarra oscuro</translation>
 <translation id="2943596527105977722">Oro oscuro</translation>
 <translation id="2944762337049891859">Leer la página automáticamente después de que termina de cargarse</translation>
@@ -1148,6 +1145,7 @@ Para abrir el menú del navegador Chrome, presiona Alt + F.</translation>
 <translation id="8548973727659841685">Carácter</translation>
 <translation id="8561322612995434619">con componente emergente</translation>
 <translation id="8571096049907249734">mult sel</translation>
+<translation id="858006550102277544">Comentario</translation>
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">Siguiente elemento de la lista</translation>
 <translation id="860150890330522909">casilla de verificación <ph name="NAME" /> seleccionada</translation>

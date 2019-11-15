@@ -110,6 +110,8 @@ void TopControlsContainerView::SetWebContents(
 void TopControlsContainerView::DidToggleFullscreenModeForTab(
     bool entered_fullscreen,
     bool will_cause_resize) {
+  TRACE_EVENT0("weblayer",
+               "Java_TopControlsContainerView_didToggleFullscreenModeForTab");
   Java_TopControlsContainerView_didToggleFullscreenModeForTab(
       AttachCurrentThread(), java_top_controls_container_view_,
       entered_fullscreen);

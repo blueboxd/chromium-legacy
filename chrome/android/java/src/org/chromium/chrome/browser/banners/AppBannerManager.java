@@ -135,18 +135,6 @@ public class AppBannerManager {
         return R.string.menu_add_to_homescreen;
     }
 
-    /** Returns the language option to use for app banners. */
-    // TODO(https://crbug.com/959086): Remove this as it's no longer used.
-    public static int getAppBannerLanguageOption() {
-        int languageOption = AppBannerManagerJni.get().getHomescreenLanguageOption();
-        if (languageOption == LanguageOption.ADD) {
-            return R.string.app_banner_add;
-        } else if (languageOption == LanguageOption.INSTALL) {
-            return R.string.app_banner_install;
-        }
-        return R.string.menu_add_to_homescreen;
-    }
-
     /** Overrides whether the system supports add to home screen. Used in testing. */
     @VisibleForTesting
     public static void setIsSupported(boolean state) {

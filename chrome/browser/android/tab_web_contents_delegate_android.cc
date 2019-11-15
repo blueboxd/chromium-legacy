@@ -182,15 +182,6 @@ TabWebContentsDelegateAndroid::ShowBluetoothScanningPrompt(
   return std::make_unique<BluetoothScanningPromptAndroid>(frame, event_handler);
 }
 
-void TabWebContentsDelegateAndroid::CloseContents(
-    WebContents* web_contents) {
-  FindTabHelper* find_tab_helper = FindTabHelper::FromWebContents(web_contents);
-  if (find_result_observer_.IsObserving(find_tab_helper))
-    find_result_observer_.Remove(find_tab_helper);
-
-  WebContentsDelegateAndroid::CloseContents(web_contents);
-}
-
 bool TabWebContentsDelegateAndroid::ShouldFocusLocationBarByDefault(
     WebContents* source) {
   content::NavigationEntry* entry = source->GetController().GetActiveEntry();
@@ -507,6 +498,11 @@ void TabWebContentsDelegateAndroid::OnFindResultAvailable(
 
   Java_TabWebContentsDelegateAndroid_onFindResultAvailable(env, obj,
                                                            details_object);
+}
+
+void TabWebContentsDelegateAndroid::OnFindTabHelperDestroyed(
+    FindTabHelper* helper) {
+  find_result_observer_.Remove(helper);
 }
 
 bool TabWebContentsDelegateAndroid::ShouldEnableEmbeddedMediaExperience()

@@ -6,6 +6,7 @@
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> картица}one{<ph name="TABS_COUNT_MANY" /> картица}few{<ph name="TABS_COUNT_MANY" /> картице}other{<ph name="TABS_COUNT_MANY" /> картица}}</translation>
 <translation id="257674075312929031">Група</translation>
 <translation id="2613747923081026172">Направи групу</translation>
+<translation id="2671423594960767771">Дели групу</translation>
 <translation id="2977480621796371840">Уклони из групе</translation>
 <translation id="4212246570487010370">Наставите са прегледањем</translation>
 <translation id="4648718555153979859">Картице су груписане заједно овде</translation>
@@ -14,6 +15,7 @@
 <translation id="5580090775658607195">Картице су груписане (<ph name="TAB_COUNT" />)</translation>
 <translation id="5792534911093536736">Још картица</translation>
 <translation id="58326064309361797">Превуците картице да бисте их груписали</translation>
+<translation id="6040143037577758943">Затвори</translation>
 <translation id="6193448654517602979">Изаберите картице</translation>
 <translation id="6615455863669487791">Покажи ми</translation>
 <translation id="6840760312327750441">Да бисте груписали картице, додирните картицу и задржите је. Затим је превуците на другу картицу.</translation>

@@ -48,3 +48,22 @@ source_set("updater_tests") {
     "//testing/gtest",
   ]
 }
+
+bundle_data("info_plist") {
+  sources = [
+    "Info.plist",
+  ]
+  outputs = [
+    "{{bundle_contents_dir}}/Info.plist",
+  ]
+}
+
+create_bundle("GoogleUpdate.bundle") {
+  deps = [
+    ":info_plist",
+  ]
+  bundle_root_dir = "${root_build_dir}/GoogleUpdate.bundle"
+  bundle_contents_dir = "${bundle_root_dir}/Contents"
+  bundle_resources_dir = "${bundle_contents_dir}/Resources"
+  bundle_executable_dir = "${bundle_contents_dir}/MacOS"
+}

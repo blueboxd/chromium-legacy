@@ -85,6 +85,7 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
                          int64_t timestamp) override;
   void OnConnectionError() override;
 
+  void CreateBufferPool(int frame_count);
   void OnInactivityTimeout();
   void RestartPlaybackAt(int64_t timestamp, int64_t pts);
   void SetMediaPlaybackRate(double rate);
@@ -118,7 +119,7 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   void WritePcm(scoped_refptr<net::IOBuffer> data);
-  RenderingDelay QueueData(scoped_refptr<net::IOBuffer> data)
+  int64_t QueueData(scoped_refptr<net::IOBuffer> data)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   void PostPcmCompletion();
@@ -135,6 +136,7 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
 
   const bool ignore_for_stream_count_;
   const int fill_size_;
+  const int algorithm_fill_size_;
   const int num_channels_;
   const int input_samples_per_second_;
   const mixer_service::SampleFormat sample_format_;
@@ -144,7 +146,7 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
   const int playout_channel_;
 
   const scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
-  const int max_queued_frames_;
+  int max_queued_frames_;
   // Minimum number of frames buffered before starting to fill data.
   int start_threshold_frames_;
 
@@ -154,6 +156,7 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
   bool audio_ready_for_playback_fired_ = false;
   base::OneShotTimer inactivity_timer_;
   bool connection_error_ = false;
+  int buffer_pool_frames_ = 0;
 
   base::Lock lock_;
   State state_ GUARDED_BY(lock_) = State::kUninitialized;
@@ -163,7 +166,8 @@ class MixerInputConnection : public mixer_service::MixerSocket::Delegate,
   base::circular_deque<scoped_refptr<net::IOBuffer>> queue_ GUARDED_BY(lock_);
   int queued_frames_ GUARDED_BY(lock_) = 0;
   RenderingDelay mixer_rendering_delay_ GUARDED_BY(lock_);
-  RenderingDelay last_buffer_delay_ GUARDED_BY(lock_);
+  int64_t next_playback_timestamp_ GUARDED_BY(lock_) = INT64_MIN;
+  int mixer_read_size_ GUARDED_BY(lock_) = 0;
   int extra_delay_frames_ GUARDED_BY(lock_) = 0;
   int current_buffer_offset_ GUARDED_BY(lock_) = 0;
   AudioFader fader_ GUARDED_BY(lock_);

@@ -239,6 +239,10 @@ are declared in tools/grit/grit_rule.gni.
         <part file="supervised_user_error_page_strings.grdp" />
       </if>
 
+      <if expr="chromeos">
+        <part file="web_time_limit_error_page_strings.grdp" />
+      </if>
+
       <!-- TODO add all of your "string table" messages here.  Remember to
       change nontranslateable parts of the messages into placeholders (using the
       <ph> element).  You can also use the 'grit add' tool to help you identify
@@ -1595,6 +1599,10 @@ are declared in tools/grit/grit_rule.gni.
         desc="Message shown in the download shelf when a download is finished being scanned, and issues were found">
         Download contains malware.
       </message>
+      <message name="IDS_PROMPT_APP_DEEP_SCANNING"
+        desc="Message shown in the download shelf when Chrome recommends uploading the file for additional scanning">
+        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> is unknown. Scan file to minimize risk.
+      </message>
       <message name="IDS_BLOCK_REASON_UNCOMMON_DOWNLOAD"
          desc="Message shown to the user on chrome://downloads page to explain that this download is blocked because it is uncommon.">
         This file is not commonly downloaded and may be dangerous.
@@ -1689,6 +1697,10 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_OPEN_DOWNLOAD_NOW"
                desc="Text shown to open a download now.">
         Open now
+      </message>
+      <message name="IDS_SCAN_DOWNLOAD"
+               desc="Text shown to upload a file for deep scanning.">
+        Scan
       </message>
 
       <!-- Download Tab Items -->
@@ -10244,6 +10256,41 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_DEEP_SCANNING_DIALOG_OPEN_NOW_ACCEPT_BUTTON" desc="The text on the accept button in tab modal dialog when the user attempts to open a download while deep scanning is in progress">
       Open now
     </message>
+
+    <!-- Deep scanning more info dialog strings -->
+    <message name="IDS_DEEP_SCANNING_INFO_DIALOG_TITLE" desc="Title shown in tab modal dialog when the user opens a download that recommends deep scanning">
+      Scan before opening?
+    </message>
+    <message name="IDS_DEEP_SCANNING_INFO_DIALOG_MESSAGE" desc="Message shown in tab modal dialog when the user opens a download that recommends deep scanning">
+      The selected file is unknown and may be dangerous. Consider scanning before opening this file.
+    </message>
+    <message name="IDS_DEEP_SCANNING_INFO_DIALOG_ACCEPT_BUTTON" desc="The text on the accept button in tab modal dialog when the user opens a download that recommends deep scanning">
+      Scan
+    </message>
+    <message name="IDS_DEEP_SCANNING_INFO_DIALOG_CANCEL_BUTTON" desc="The text on the cancel button in tab modal dialog when the user opens a download that recommends deep scanning">
+      Cancel
+    </message>
+    <message name="IDS_DEEP_SCANNING_INFO_DIALOG_OPEN_NOW_BUTTON" desc="The text on the open now button in tab modal dialog when the user opens a download that recommends deep scanning">
+      Open now
+    </message>
+
+    <!-- Deep scanning timed out dialog -->
+    <message name="IDS_DEEP_SCANNING_TIMED_OUT_DIALOG_TITLE" desc="Title shown in tab modal dialog when deep scaning times out.">
+      Timed out
+    </message>
+    <message name="IDS_DEEP_SCANNING_TIMED_OUT_DIALOG_MESSAGE" desc="Message shown in tab modal dialog when the deep scanning times out.">
+      Something went wrong. The scanned file has timed out.
+    </message>
+    <message name="IDS_DEEP_SCANNING_TIMED_OUT_DIALOG_ACCEPT_BUTTON" desc="The text on the accept button in tab modal dialog when deep scanning times out.">
+      Scan
+    </message>
+    <message name="IDS_DEEP_SCANNING_TIMED_OUT_DIALOG_CANCEL_BUTTON" desc="The text on the cancel button in tab modal dialog when deep scanning times out.">
+      Cancel
+    </message>
+    <message name="IDS_DEEP_SCANNING_TIMED_OUT_DIALOG_OPEN_NOW_BUTTON" desc="The text on the open now button in tab modal dialog when deep scanning times out.">
+      Open now
+    </message>
+
 
     <!-- SMS strings -->
     <message name="IDS_SMS_INFOBAR_TITLE" desc="Title shown when Chrome is waiting for an SMS on the user's behalf">

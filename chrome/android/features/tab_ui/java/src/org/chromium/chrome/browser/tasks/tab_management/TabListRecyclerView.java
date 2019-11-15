@@ -448,18 +448,6 @@ class TabListRecyclerView extends RecyclerView {
         return getRectOfComponent(root.fastFindViewById(R.id.tab_thumbnail));
     }
 
-    /**
-     * @param currentTabIndex The the current tab's index in the model.
-     * @return The {@link Rect} of the tab grid card of the current tab, relative to the
-     *         {@link TabListRecyclerView} coordinates.
-     */
-    @Nullable
-    Rect getRectOfCurrentTabGridCard(int currentTabIndex) {
-        ViewHolder holder = findViewHolderForAdapterPosition(currentTabIndex);
-        if (holder == null) return null;
-        return getRectOfComponent(holder.itemView);
-    }
-
     private Rect getRectOfComponent(View v) {
         Rect recyclerViewRect = new Rect();
         Rect componentRect = new Rect();

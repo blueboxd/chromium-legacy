@@ -145,7 +145,7 @@ class FakeVideoDecoderTest
   }
 
   void ReadOneFrame() {
-    last_decoded_frame_ = NULL;
+    last_decoded_frame_.reset();
     do {
       Decode();
     } while (!last_decoded_frame_.get() && pending_decode_requests_ == 0);

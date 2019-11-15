@@ -102,11 +102,15 @@ void ConfigureTabGroupForNavigation(NavigateParams* nav_params) {
   }
 
   TabStripModel* model = nav_params->browser->tab_strip_model();
+  DCHECK(model);
+
   const int source_index =
       model->GetIndexOfWebContents(nav_params->source_contents);
 
-  // If the source tab is pinned, don't create a group.
-  if (model->IsTabPinned(source_index))
+  // If the source tab is not in the current tab strip (e.g. if the current
+  // navigation is in a new window), don't set the group. Groups cannot be
+  // shared across multiple windows.
+  if (source_index == TabStripModel::kNoTab)
     return;
 
   if (nav_params->disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB ||

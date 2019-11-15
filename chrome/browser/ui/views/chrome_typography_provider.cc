@@ -90,10 +90,6 @@ SkColor GetHarmonyTextColorForNonStandardNativeTheme(
     case views::style::CONTEXT_TEXTFIELD:
       color_id = ui::NativeTheme::kColorId_TextfieldDefaultColor;
       break;
-    case views::style::CONTEXT_MENU:
-    case views::style::CONTEXT_TOUCH_MENU:
-      color_id = ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor;
-      break;
   }
 
   switch (style) {

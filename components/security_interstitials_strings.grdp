@@ -64,6 +64,26 @@
     Applications that can cause this error include antivirus, firewall, and web-filtering or proxy software.
   </message>
 
+  <message name="IDS_BLOCKED_INTERCEPTION_HEADING" desc="Large heading of the known interception interstitial.">
+    Your activity on <ph name="HOSTNAME">$1<ex>example.com</ex></ph> is being monitored
+  </message>
+
+  <message name="IDS_BLOCKED_INTERCEPTION_PRIMARY_PARAGRAPH" desc="Main paragraph of the known interception interstitial. A user visits a website, a known interception certificate intercepts their connection, and they are shown this error. Page title and additional description of the error are shown above.">
+    Anything you type, any pages you view, or any other activity on the web is being watched, and content on sites may be changed without your knowledge.
+    <ph name="BEGIN_LEARN_MORE_LINK">&lt;a href="#" id="learn-more-link"&gt;</ph>Learn more<ph name="END_LEARN_MORE_LINK">&lt;/a&gt;</ph>
+  </message>
+
+  <if expr="_google_chrome">
+  <message name="IDS_BLOCKED_INTERCEPTION_EXPLANATION" desc="Part of an extended description hidden behind an 'Advanced' button on an error page. A user visits a website, a known interception certificate intercepts their connection, and they are shown this error. Page title and additional description of the error are shown above.">
+    The certificate for this connection is not trusted by Google Chrome, because it is known to be used for network interception and monitoring.
+  </message>
+  </if>
+  <if expr="not _google_chrome">
+  <message name="IDS_BLOCKED_INTERCEPTION_EXPLANATION" desc="Part of an extended description hidden behind an 'Advanced' button on an error page. A user visits a website, a known interception certificate intercepts their connection, and they are shown this error. Page title and additional description of the error are shown above.">
+    The certificate for this connection is not trusted by Chromium, because it is known to be used for network interception and monitoring.
+  </message>
+  </if>
+
   <!-- Lookalike URL warning -->
   <message name="IDS_LOOKALIKE_URL_TITLE" desc="Tab title. Context: the requested URL might be trying to trick the user since it looks like a more popular URL. This interstitial points the user to the safe site instead.">
     Did you mean <ph name="DOMAIN">$1<ex>example.com</ex></ph>?

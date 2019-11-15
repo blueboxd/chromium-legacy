@@ -477,10 +477,8 @@ const base::Process& ServiceUtilityProcessHost::GetProcess() {
 void ServiceUtilityProcessHost::BindInterface(
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
-  service_manager_connection_->GetConnector()->BindInterface(
-      service_manager::ServiceFilter::ForExactIdentity(
-          utility_service_instance_identity_),
-      interface_name, std::move(interface_pipe));
+  child_process_host_->BindReceiver(
+      mojo::GenericPendingReceiver(interface_name, std::move(interface_pipe)));
 }
 
 void ServiceUtilityProcessHost::OnMetafileSpooled(bool success) {

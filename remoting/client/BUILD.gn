@@ -45,7 +45,7 @@ static_library("client") {
     "//remoting/codec:decoder",
     "//remoting/protocol",
     "//third_party/libyuv",
-    "//third_party/webrtc/modules/desktop_capture:primitives",
+    "//third_party/webrtc_overrides:webrtc_component",
     "//ui/events:dom_keycode_converter",
   ]
 
@@ -109,6 +109,6 @@ source_set("unit_tests") {
     "//remoting/proto",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/webrtc/rtc_base:rtc_base_approved",
+    "//third_party/webrtc_overrides:webrtc_component",
   ]
 }

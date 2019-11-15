@@ -1643,8 +1643,8 @@ CompositorFrame SurfaceAggregator::Aggregate(
 
   const gfx::Size viewport_bounds =
       root_surface_frame.render_pass_list.back()->output_rect.size();
-  root_surface_transform_ =
-      gfx::OverlayTransformToTransform(display_transform, viewport_bounds);
+  root_surface_transform_ = gfx::OverlayTransformToTransform(
+      display_transform, gfx::SizeF(viewport_bounds));
 
   valid_surfaces_.clear();
   has_cached_render_passes_ = false;

@@ -219,6 +219,28 @@ void SendTabToSelfMultiDeviceActiveChecker::OnDeviceInfoChange() {
   CheckExitCondition();
 }
 
+SendTabToSelfDeviceDisabledChecker::SendTabToSelfDeviceDisabledChecker(
+    syncer::DeviceInfoTracker* tracker,
+    const std::string& device_guid)
+    : tracker_(tracker), device_guid_(device_guid) {
+  tracker_->AddObserver(this);
+}
+
+SendTabToSelfDeviceDisabledChecker::~SendTabToSelfDeviceDisabledChecker() {
+  tracker_->RemoveObserver(this);
+}
+
+bool SendTabToSelfDeviceDisabledChecker::IsExitConditionSatisfied(
+    std::ostream* os) {
+  *os << "Waiting for device to have send_tab_to_self disabled";
+  auto device_info = tracker_->GetDeviceInfo(device_guid_);
+  return device_info && !device_info->send_tab_to_self_receiving_enabled();
+}
+
+void SendTabToSelfDeviceDisabledChecker::OnDeviceInfoChange() {
+  CheckExitCondition();
+}
+
 SendTabToSelfUrlDeletedChecker::SendTabToSelfUrlDeletedChecker(
     send_tab_to_self::SendTabToSelfSyncService* service,
     const GURL& url)

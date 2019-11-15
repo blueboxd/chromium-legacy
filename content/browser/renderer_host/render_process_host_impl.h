@@ -245,6 +245,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   mojom::Renderer* GetRendererInterface() override;
   void CreateURLLoaderFactory(
       const url::Origin& origin,
+      const url::Origin& main_world_origin,
       network::mojom::CrossOriginEmbedderPolicy embedder_policy,
       const WebPreferences* preferences,
       const net::NetworkIsolationKey& network_isolation_key,
@@ -292,6 +293,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // creates a trusted URLLoaderFactory with no default NetworkIsolationKey.
   void CreateTrustedURLLoaderFactory(
       const url::Origin& origin,
+      const url::Origin& main_world_origin,
       network::mojom::CrossOriginEmbedderPolicy embedder_policy,
       const WebPreferences* preferences,
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
@@ -846,13 +848,15 @@ class CONTENT_EXPORT RenderProcessHostImpl
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver);
 
   // Creates a URLLoaderFactory whose NetworkIsolationKey is set if
-  // |network_isoation_key| has a value, and whose trust is given by
+  // |network_isolation_key| has a value, and whose trust is given by
   // |is_trusted|. Only called by CreateURLLoaderFactory,
   // CreateTrustedURLLoaderFactory and CreateURLLoaderFactoryForRendererProcess.
   void CreateURLLoaderFactoryInternal(
-      // TODO(kinuko, lukasza): https://crbug.com/891872: Make |origin|
-      // non-optional, once CreateURLLoaderFactoryForRendererProcess is removed.
-      const base::Optional<url::Origin>& origin,
+      const url::Origin& origin,
+      // TODO(kinuko, lukasza): https://crbug.com/891872: Make
+      // |main_world_origin| non-optional, once
+      // CreateURLLoaderFactoryForRendererProcess is removed.
+      const base::Optional<url::Origin>& main_world_origin,
       network::mojom::CrossOriginEmbedderPolicy embedder_policy,
       const WebPreferences* preferences,
       const base::Optional<net::NetworkIsolationKey>& network_isolation_key,

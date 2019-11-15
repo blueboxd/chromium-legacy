@@ -59,7 +59,7 @@
                 android:layout_marginTop="-16dp"
                 android:layout_marginBottom="-16dp"
                 android:scaleType="center"
-                android:src="@drawable/ic_arrow_right"
+                app:srcCompat="@drawable/ic_arrow_right"
                 android:tint="@color/default_icon_color"
                 android:tintMode="src_in"
                 android:paddingTop="16dp"

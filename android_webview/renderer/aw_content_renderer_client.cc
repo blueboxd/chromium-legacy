@@ -20,6 +20,7 @@
 #include "android_webview/renderer/aw_safe_browsing_error_page_controller_delegate_impl.h"
 #include "android_webview/renderer/aw_url_loader_throttle_provider.h"
 #include "android_webview/renderer/aw_websocket_handshake_throttle_provider.h"
+#include "android_webview/renderer/browser_exposed_renderer_interfaces.h"
 #include "android_webview/renderer/js_java_interaction/js_java_configurator.h"
 #include "android_webview/renderer/print_render_frame_observer.h"
 #include "base/command_line.h"
@@ -31,17 +32,14 @@
 #include "components/printing/renderer/print_render_frame_helper.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "content/public/child/child_thread.h"
-#include "content/public/common/service_manager_connection.h"
-#include "content/public/common/service_names.mojom.h"
-#include "content/public/common/simple_connection_filter.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
+#include "mojo/public/cpp/bindings/binder_map.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -84,18 +82,18 @@ void AwContentRendererClient::RenderThreadStarted() {
   browser_interface_broker_ =
       blink::Platform::Current()->GetBrowserInterfaceBroker();
 
-  auto registry = std::make_unique<service_manager::BinderRegistry>();
-  registry->AddInterface(visited_link_slave_->GetBindCallback(),
-                         base::ThreadTaskRunnerHandle::Get());
-  content::ChildThread::Get()
-      ->GetServiceManagerConnection()
-      ->AddConnectionFilter(std::make_unique<content::SimpleConnectionFilter>(
-          std::move(registry)));
-
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   if (!spellcheck_)
-    spellcheck_ = std::make_unique<SpellCheck>(nullptr, this);
+    spellcheck_ = std::make_unique<SpellCheck>(this);
 #endif
+}
+
+void AwContentRendererClient::ExposeInterfacesToBrowser(
+    mojo::BinderMap* binders) {
+  // NOTE: Do not add binders directly within this method. Instead, modify the
+  // definition of |ExposeRendererInterfacesToBrowser()| to ensure security
+  // review coverage.
+  ExposeRendererInterfacesToBrowser(this, binders);
 }
 
 bool AwContentRendererClient::HandleNavigation(

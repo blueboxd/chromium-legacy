@@ -478,7 +478,7 @@
 
       要详细了解 Internet Explorer 的 <ph name="IEEM_SITELIST_POLICY" /> 政策，请访问 https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="1839278886947586809">
-      此政策已在 M80 中移除，因为 WebDriver 现已与所有现有政策兼容，因而不再需要此政策。
+      此政策已从 M80 中移除，因为 WebDriver 现已与所有现有政策兼容，因而不再需要此政策。
 
       此政策允许 WebDriver 功能的用户覆盖那些可能会干扰该功能运行的政策。
 
@@ -951,7 +951,7 @@
 
       如果此政策未设置，则系统只会将网址作为命令行参数进行传递。
 
-      如果此政策设为一系列字符串，则系统会将每个字符串作为单独的命令行参数传递给备用浏览器。在 Windows 上，这些参数会被使用空格连接起来。在 Mac OS X 和 Linux 上，参数可以包含空格，但仍会被视为单个参数。
+      如果此政策设为一系列字符串，则系统会将每个字符串作为单独的命令行参数传递给备用浏览器。在 Windows 上，这些参数会以空格连接。在 Mac OS X 和 Linux 上，参数可以包含空格，但仍会被视为单个参数。
 
       如果有元素包含 <ph name="URL_PLACEHOLDER" />，系统会将其替换为要打开的网页对应的网址。
 
@@ -978,7 +978,7 @@
 <translation id="2517466659416174529">允许系统冻结后台标签页</translation>
 <translation id="2518231489509538392">允许播放视频</translation>
 <translation id="2521581787935130926">在书签栏中显示应用快捷方式</translation>
-<translation id="2526082146909867346">可让您指定一系列网址格式，从而指定 <ph name="PRODUCT_NAME" /> 应为哪些网站自动选择客户端证书（如果相应网站要求提供证书）。
+<translation id="2526082146909867346">让您能够指定一系列网址格式，从而指定 <ph name="PRODUCT_NAME" /> 应为哪些网站自动选择客户端证书（如果相应网站要求提供证书）。
 
           此值必须是一个字符串化的 JSON 字典数组。每个字典都必须采用 <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> 格式，其中 <ph name="URL_PATTERN_PLACEHOLDER" /> 是内容设置格式，<ph name="FILTER_PLACEHOLDER" /> 会限制浏览器可自动从哪些客户端证书中进行选择。无论是否设置了过滤器，系统都只会选择与服务器的证书请求相匹配的证书。例如，如果 <ph name="FILTER_PLACEHOLDER" /> 采用 <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" /> 格式，系统便只会选择由 CommonName 为 <ph name="ISSUER_CN_PLACEHOLDER" /> 的证书颁发机构颁发的客户端证书。如果 <ph name="FILTER_PLACEHOLDER" /> 既包含 <ph name="ISSUER_STRING_VALUE" /> 部分也包含 <ph name="SUBJECT_STRING_VALUE" /> 部分，则只有同时满足了这两项条件的客户端证书才会被选中。如果 <ph name="FILTER_PLACEHOLDER" /> 指定了组织（“O”），则只有包含至少 1 个与指定值匹配的组织的证书才会被选中。如果 <ph name="FILTER_PLACEHOLDER" /> 指定了组织单元（“OU”），则只有包含至少 1 个与指定值匹配的组织单元的证书才会被选中。如果 <ph name="FILTER_PLACEHOLDER" /> 是空字典 <ph name="EMPTY_DICTIONARY" />，那么系统在选择客户端证书时便不会受到额外限制。
 
@@ -1469,7 +1469,7 @@
 
       此政策用于在以下情况下实现严格的插件黑名单设置：“DisabledPlugins”列表包含带通配符的条目，例如停用所有插件 (*) 或停用所有 Java 插件 (*Java*)，但管理员又想启用某个特定版本，例如“IcedTea Java 2.3”。这个特定版本可在此政策中指定。
 
-      请注意，相应插件的名称和组名称都必须被排除。在“about:plugins”页面中，每个插件组都会显示在一个单独的部分内；每个部分可包含一个或多个插件。例如，“Shockwave Flash”插件属于“Adobe Flash Player”组；如果要从黑名单中排除该插件，例外情况列表就必须含有与这两个名称分别对应的匹配项。
+      请注意，必须排除相应插件的名称和组名称。在“about:plugins”页面中，每个插件组都会显示在一个单独的部分内；每个部分可包含一个或多个插件。例如，“Shockwave Flash”插件属于“Adobe Flash Player”组；如果要从黑名单中排除该插件，例外情况列表就必须含有与这两个名称分别对应的匹配项。
 
       如果未设置此政策，那么与“DisabledPlugins”中的格式匹配的所有插件都会被锁定为停用状态，而且用户将无法启用这些插件。</translation>
 <translation id="3381968327636295719">默认情况下托管主机浏览器</translation>
@@ -2958,6 +2958,13 @@
           如果未设置此政策，系统会执行默认操作，即暂停。
 
           如果需要执行的操作是暂停，您还可单独配置 <ph name="PRODUCT_OS_NAME" />在暂停前是否锁定屏幕。</translation>
+<translation id="5755002458331714762"> Web Components v0 API（Shadow DOM v0、Custom Elements v0 和 HTML Imports）已于 2018 年被弃用，并且从 M80 起就已默认处于停用状态。此政策允许有选择地重新启用这些功能直至 M84。
+
+      如果此政策设为 True，系统会为所有网站启用 Web Components v0 功能。
+
+      如果此政策设为 False 或未设置，那么从 M80 起，系统会默认停用 Web Components v0 功能。
+
+      在 Chrome 84 之后，此政策将被移除。</translation>
 <translation id="5765780083710877561">说明：</translation>
 <translation id="5770738360657678870">开发者版（可能不稳定）</translation>
 <translation id="5774856474228476867">默认搜索服务提供商的搜索网址</translation>
@@ -2996,7 +3003,7 @@
 
       如果此政策未设置，则 Internet Explorer 只会将网址作为命令行参数传递给 Chrome。
 
-      如果此政策设为一系列字符串，则这些字符串会被使用空格连接起来，并会被作为命令行参数传递给 Chrome。
+      如果此政策设为一系列字符串，则这些字符串会以空格连接，并会被作为命令行参数传递给 Chrome。
 
       如果有元素包含 <ph name="URL_PLACEHOLDER" />，系统会将其替换为要打开的网页对应的网址。
 
@@ -3344,7 +3351,7 @@
 
       请注意，此政策可被 EnabledPlugins 和 DisabledPluginsExceptions 覆盖。
 
-      如果未设置此政策，则用户可以使用系统中安装的任何插件（经过硬编码且不兼容、已过期或危险的插件除外）。</translation>
+      如果未设置此政策，则用户可以使用系统中安装的任何插件，经过硬编码且不兼容、已过期或危险的插件除外。</translation>
 <translation id="6573305661369899995">设置网址限制条件的外部来源</translation>
 <translation id="6583851521569686409">配置打印机列表。
 
@@ -3427,7 +3434,7 @@
       此设置旨在控制是否允许系统显示具有下列功用的欢迎页面：帮助用户登录 <ph name="PRODUCT_NAME" />、将它选为用户的默认浏览器，或以其方式将产品功能告知用户。</translation>
 <translation id="6766216162565713893">允许网站请求用户授予对附近蓝牙设备的访问权限</translation>
 <translation id="6770454900105963262">报告自助服务终端的相关信息</translation>
-<translation id="6780908086869332493">可让您指定一系列网址格式，从而指定要在 SAML 流程托管框架的登录屏幕上自动为哪些网站选择客户端证书（如果相应网站要求提供证书）。例如，配置一个要向 SAML IdP 出示的设备级证书。
+<translation id="6780908086869332493">让您能够指定一系列网址格式，从而指定要在 SAML 流程托管框架的登录屏幕上自动为哪些网站选择客户端证书（如果相应网站要求提供证书）。例如，配置一个要向 SAML IdP 出示的设备级证书。
 
       此值必须是一个字符串化的 JSON 字典数组。每个字典都必须采用 <ph name="DEVICE_LOGIN_SCREEN_AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" /> 格式，其中 <ph name="URL_PATTERN_PLACEHOLDER" /> 是内容设置格式，<ph name="FILTER_PLACEHOLDER" /> 会限制浏览器可自动从哪些客户端证书中进行选择。无论是否设置了过滤器，系统都只会选择与服务器的证书请求相匹配的证书。如果 <ph name="FILTER_PLACEHOLDER" /> 采用 <ph name="JSON_DICTIONARY_EXAMPLE" /> 格式，系统便只会选择由 CommonName 为 <ph name="ISSUER_CN_PLACEHOLDER" /> 的证书颁发机构颁发的客户端证书。如果 <ph name="FILTER_PLACEHOLDER" /> 是空字典 {}，那么系统在选择客户端证书时便不会受到额外限制。
 
@@ -3640,7 +3647,7 @@
 <translation id="7127892035367404455">回滚到目标版本</translation>
 <translation id="712963038874313213">提供应在默认 Crostini 容器中执行的 Ansible Playbook。
 
-      此政策允许提供 Ansible Playbook 以应用到默认 Crostini 容器，如果该容器在给定设备上可用且相关政策允许的话。
+      此政策允许提供 Ansible Playbook 以应用到默认 Crostini 容器，前提是该容器在给定设备上可用且相关政策允许。
 
       数据大小不得超过 1MB（1000000 个字节），且必须用 YAML 编码。相应的加密哈希值用于验证下载内容是否完整。
 
@@ -4103,6 +4110,9 @@
       如果您停用了此设置，则过期插件将无法使用，并且系统不会要求用户提供运行过期插件的权限。
 
       如果此设置未配置，则系统会要求用户提供运行过期插件的权限。</translation>
+<translation id="7862137072381331997">如果启用了此政策，安全浏览功能会实时检查所访问的所有网址。
+
+      如果停用了或未设置此政策，系统会采用用户的安全浏览检查设置。用户的安全浏览检查设置可能仍包含实时查找，具体取决于是否开启了“改善搜索和浏览体验”偏好设置。要强制停用实时查找，请参阅 <ph name="URL_KEYED_ANONYMIZED_DATA_COLLECTION_ENABLED_POLICY" /> 政策。</translation>
 <translation id="7863947545897944083">在登录屏幕上启用高对比度模式无障碍功能。
 
           如果此政策设为 true，高对比度模式在登录屏幕上将始终处于启用状态。
@@ -4553,6 +4563,7 @@
 <translation id="8672321184841719703">目标自动更新版本</translation>
 <translation id="867410340948518937">U2F（通用第二重因素）</translation>
 <translation id="8685024486845674965">重复使用密码可触发密码保护服务警告功能</translation>
+<translation id="8687958770985542440">重新启用 Web Components v0 API 直至 M84。</translation>
 <translation id="8693243869659262736">使用内置 DNS 客户端</translation>
 <translation id="8698286761337647563">用于指定提前多少天通知密码快要到期的 SAML 用户</translation>
 <translation id="8703488928438047864">报告主板状态</translation>

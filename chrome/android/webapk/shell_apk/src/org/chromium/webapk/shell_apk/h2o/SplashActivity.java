@@ -13,6 +13,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Pair;
 import android.view.View;
 import android.view.ViewTreeObserver;
@@ -60,6 +61,7 @@ public class SplashActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         showSplashScreen();
+        final long splashAddedToLayoutTimeMs = SystemClock.elapsedRealtime();
 
         // On Android O+, if:
         // - Chrome is translucent
@@ -74,7 +76,7 @@ public class SplashActivity extends Activity {
         }
 
         mPendingLaunch = true;
-        selectHostBrowser();
+        selectHostBrowser(splashAddedToLayoutTimeMs);
     }
 
     @Override
@@ -97,7 +99,7 @@ public class SplashActivity extends Activity {
 
         mPendingLaunch = true;
 
-        selectHostBrowser();
+        selectHostBrowser(-1 /* splashShownTimeMs */);
     }
 
     @Override
@@ -129,7 +131,7 @@ public class SplashActivity extends Activity {
         super.onDestroy();
     }
 
-    private void selectHostBrowser() {
+    private void selectHostBrowser(final long splashShownTimeMs) {
         new LaunchHostBrowserSelector(this).selectHostBrowser(
                 new LaunchHostBrowserSelector.Callback() {
                     @Override
@@ -142,7 +144,7 @@ public class SplashActivity extends Activity {
                         HostBrowserLauncherParams params =
                                 HostBrowserLauncherParams.createForIntent(SplashActivity.this,
                                         getIntent(), hostBrowserPackageName, dialogShown,
-                                        -1 /* launchTimeMs */);
+                                        -1 /* launchTimeMs */, splashShownTimeMs);
                         onHostBrowserSelected(params);
                     }
                 });

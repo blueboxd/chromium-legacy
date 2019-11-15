@@ -51,6 +51,7 @@ class CompositorViewImpl : public CompositorView,
                       jint format,
                       jint width,
                       jint height,
+                      bool can_be_used_with_surface_control,
                       const base::android::JavaParamRef<jobject>& surface);
 
   // CompositorView implementation.

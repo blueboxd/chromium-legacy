@@ -32,6 +32,7 @@
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_with_source.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
+#include "net/quic/quic_context.h"
 #include "net/socket/connect_job_test_util.h"
 #include "net/socket/connection_attempts.h"
 #include "net/socket/next_proto.h"
@@ -151,6 +152,7 @@ class SSLConnectJobTest : public WithTaskEnvironment, public testing::Test {
     session_context.http_auth_handler_factory =
         http_auth_handler_factory_.get();
     session_context.http_server_properties = &http_server_properties_;
+    session_context.quic_context = &quic_context_;
     return new HttpNetworkSession(HttpNetworkSession::Params(),
                                   session_context);
   }
@@ -166,6 +168,7 @@ class SSLConnectJobTest : public WithTaskEnvironment, public testing::Test {
   const std::unique_ptr<SSLConfigService> ssl_config_service_;
   const std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;
   HttpServerProperties http_server_properties_;
+  QuicContext quic_context_;
   const std::unique_ptr<HttpNetworkSession> session_;
 
   scoped_refptr<TransportSocketParams> direct_transport_socket_params_;

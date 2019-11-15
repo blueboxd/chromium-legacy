@@ -352,6 +352,13 @@ namespace autotestPrivate {
     Immersive
   };
 
+  dictionary OverviewInfo {
+    // Bounds in screen of an OverviewItem.
+    Bounds bounds;
+    // Whether an OverviewItem is being dragged in overview.
+    boolean isDragged;
+  };
+
   dictionary AppWindowInfo {
     // The identifier of the window. This shouldn't change across the time.
     long id;
@@ -390,7 +397,7 @@ namespace autotestPrivate {
     // false.
     boolean targetVisibility;
 
-    // WM Releated stats
+    // WM Releated states
     boolean isActive;
     boolean hasFocus;
     boolean onActiveDesk;
@@ -407,6 +414,8 @@ namespace autotestPrivate {
     long captionButtonVisibleStatus;
 
     DOMString? arcPackageName;
+
+    OverviewInfo? overviewInfo;
   };
 
   dictionary Accelerator {

@@ -71,17 +71,17 @@ public class TabGridDialogMediator {
     }
 
     /**
-     * Defines an interface for a {@link TabGridDialogMediator} to get the {@link
-     * TabGridDialogParent.AnimationParams} in order to prepare show/hide animation.
+     * Defines an interface for a {@link TabGridDialogMediator} to get the source {@link View}
+     * in order to prepare show/hide animation.
      */
-    interface AnimationParamsProvider {
+    interface AnimationSourceViewProvider {
         /**
-         * Provide a {@link TabGridDialogParent.AnimationParams} to setup the animation.
+         * Provide {@link View} of the source item to setup the animation.
          *
          * @param tabId The id of the tab whose position is requested.
-         * @return A {@link TabGridDialogParent.AnimationParams} used to setup the animation.
+         * @return The source {@link View} used to setup the animation.
          */
-        TabGridDialogParent.AnimationParams getAnimationParamsForTab(int tabId);
+        View getAnimationSourceViewForTab(int tabId);
     }
 
     private final Context mContext;
@@ -92,7 +92,7 @@ public class TabGridDialogMediator {
     private final TabCreatorManager mTabCreatorManager;
     private final DialogController mDialogController;
     private final TabSwitcherMediator.ResetHandler mTabSwitcherResetHandler;
-    private final AnimationParamsProvider mAnimationParamsProvider;
+    private final AnimationSourceViewProvider mAnimationSourceViewProvider;
     private final TabGroupTitleEditor mTabGroupTitleEditor;
     private final DialogHandler mTabGridDialogHandler;
     private final TabSelectionEditorCoordinator
@@ -107,7 +107,7 @@ public class TabGridDialogMediator {
     TabGridDialogMediator(Context context, DialogController dialogController, PropertyModel model,
             TabModelSelector tabModelSelector, TabCreatorManager tabCreatorManager,
             TabSwitcherMediator.ResetHandler tabSwitcherResetHandler,
-            AnimationParamsProvider animationParamsProvider,
+            AnimationSourceViewProvider animationSourceViewProvider,
             @Nullable TabSelectionEditorCoordinator
                     .TabSelectionEditorController tabSelectionEditorController,
             TabGroupTitleEditor tabGroupTitleEditor, String componentName) {
@@ -117,7 +117,7 @@ public class TabGridDialogMediator {
         mTabCreatorManager = tabCreatorManager;
         mDialogController = dialogController;
         mTabSwitcherResetHandler = tabSwitcherResetHandler;
-        mAnimationParamsProvider = animationParamsProvider;
+        mAnimationSourceViewProvider = animationSourceViewProvider;
         mTabGroupTitleEditor = tabGroupTitleEditor;
         mTabGridDialogHandler = new DialogHandler();
         mTabSelectionEditorController = tabSelectionEditorController;
@@ -225,11 +225,11 @@ public class TabGridDialogMediator {
 
     void hideDialog(boolean showAnimation) {
         if (!showAnimation) {
-            mModel.set(TabGridPanelProperties.ANIMATION_PARAMS, null);
+            mModel.set(TabGridPanelProperties.ANIMATION_SOURCE_VIEW, null);
         } else {
-            if (mAnimationParamsProvider != null && mCurrentTabId != Tab.INVALID_TAB_ID) {
-                mModel.set(TabGridPanelProperties.ANIMATION_PARAMS,
-                        mAnimationParamsProvider.getAnimationParamsForTab(mCurrentTabId));
+            if (mAnimationSourceViewProvider != null && mCurrentTabId != Tab.INVALID_TAB_ID) {
+                mModel.set(TabGridPanelProperties.ANIMATION_SOURCE_VIEW,
+                        mAnimationSourceViewProvider.getAnimationSourceViewForTab(mCurrentTabId));
             }
         }
         if (mTabSelectionEditorController != null) {
@@ -249,10 +249,9 @@ public class TabGridDialogMediator {
         }
 
         if (mCurrentTabId != Tab.INVALID_TAB_ID) {
-            if (mAnimationParamsProvider != null) {
-                TabGridDialogParent.AnimationParams params =
-                        mAnimationParamsProvider.getAnimationParamsForTab(mCurrentTabId);
-                mModel.set(TabGridPanelProperties.ANIMATION_PARAMS, params);
+            if (mAnimationSourceViewProvider != null) {
+                mModel.set(TabGridPanelProperties.ANIMATION_SOURCE_VIEW,
+                        mAnimationSourceViewProvider.getAnimationSourceViewForTab(mCurrentTabId));
             }
             updateDialog();
             updateDialogScrollPosition();

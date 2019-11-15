@@ -652,6 +652,7 @@ var defaultTests = [
             kLeftSnappedMask | kRightSnappedMask);
         chrome.test.assertEq('Normal', window.frameMode);
         chrome.test.assertTrue(window.isFrameVisible);
+        chrome.test.assertFalse(window.hasOwnProperty('overviewInfo'));
 
         var change = new Object();
         change.eventType = 'WMEventFullscreen';
@@ -900,12 +901,67 @@ var arcPerformanceTracingTests = [
   },
 ];
 
+var overviewTests = [
+  function getOverviewInfo() {
+    chrome.autotestPrivate.getAppWindowList(
+        chrome.test.callbackPass(function(list) {
+          chrome.test.assertEq(2, list.length);
+          list.forEach(window => {
+            chrome.test.assertTrue(window.hasOwnProperty('overviewInfo'));
+
+            var info = window.overviewInfo;
+            chrome.test.assertTrue(info.hasOwnProperty('bounds'));
+            chrome.test.assertEq(typeof info.bounds, 'object');
+            chrome.test.assertTrue(info.bounds.hasOwnProperty('left'));
+            chrome.test.assertTrue(info.bounds.hasOwnProperty('top'));
+            chrome.test.assertTrue(info.bounds.hasOwnProperty('width'));
+            chrome.test.assertTrue(info.bounds.hasOwnProperty('height'));
+
+            chrome.test.assertTrue(info.hasOwnProperty('isDragged'));
+            chrome.test.assertEq(false, info.isDragged);
+          });
+        }));
+  }
+];
+
+var overviewDragTests = [
+  function getOverviewItemInfos() {
+    chrome.autotestPrivate.getAppWindowList(
+        chrome.test.callbackPass(function(list) {
+          var draggedItemCount = 0;
+          list.forEach(window => {
+            var info = window.overviewInfo;
+            chrome.test.assertTrue(info.hasOwnProperty('isDragged'));
+            if (info.isDragged)
+              ++draggedItemCount;
+          });
+          chrome.test.assertEq(1, draggedItemCount);
+        }));
+  }
+];
+
+var splitviewLeftSnappedTests = [
+  function getSplitViewControllerStateLeftSnapped() {
+    chrome.autotestPrivate.getAppWindowList(
+        chrome.test.callbackPass(function(list) {
+          var found = false;
+          list.forEach(window => {
+            if (window.stateType == 'LeftSnapped')
+              found = true;
+          });
+          chrome.test.assertTrue(found);
+        }));
+  }
+];
 
 var test_suites = {
   'default': defaultTests,
   'arcEnabled': arcEnabledTests,
   'enterprisePolicies': policyTests,
-  'arcPerformanceTracing': arcPerformanceTracingTests
+  'arcPerformanceTracing': arcPerformanceTracingTests,
+  'overviewDefault': overviewTests,
+  'overviewDrag': overviewDragTests,
+  'splitviewLeftSnapped': splitviewLeftSnappedTests
 };
 
 chrome.test.getConfig(function(config) {

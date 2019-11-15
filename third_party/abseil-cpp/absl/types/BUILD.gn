@@ -13,7 +13,11 @@ import("//third_party/abseil-cpp/abseil_clients.gni")
 # https://docs.google.com/document/d/1DgS1-A3rzboTLjpf4m1sqkJgWjnY_Ru2dokk1X1vBDU
 if (build_with_chromium) {
   visibility = absl_visibility
-  visibility += [ "//third_party/openscreen/*" ]
+  visibility += [
+    "//third_party/blink/renderer/platform:platform",
+    "//third_party/blink/renderer/modules/peerconnection:peerconnection",
+    "//third_party/openscreen/*",
+  ]
 } else {
   visibility = [ "*" ]
 }

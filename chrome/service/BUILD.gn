@@ -72,7 +72,7 @@ static_library("service") {
     "//printing",
     "//services/network/public/cpp",
     "//skia",
-    "//third_party/webrtc_overrides",
+    "//third_party/webrtc_overrides:webrtc_component",
   ]
 
   public_deps = [

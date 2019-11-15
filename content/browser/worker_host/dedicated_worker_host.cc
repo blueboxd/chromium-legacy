@@ -348,7 +348,8 @@ DedicatedWorkerHost::CreateNetworkFactoryForSubresources(
   // here.
 
   worker_process_host->CreateURLLoaderFactory(
-      origin_, ancestor_render_frame_host->cross_origin_embedder_policy(),
+      origin_, origin_,
+      ancestor_render_frame_host->cross_origin_embedder_policy(),
       /*preferences=*/nullptr, network_isolation_key_,
       std::move(default_header_client), std::move(default_factory_receiver));
 

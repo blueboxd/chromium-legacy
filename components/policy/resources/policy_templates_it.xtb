@@ -2990,6 +2990,13 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
           Quando la norma non è impostata, viene eseguita l'azione predefinita, ossia la sospensione.
 
           Se l'azione è la sospensione, è possibile configurare separatamente il blocco o meno dello schermo prima della sospensione di <ph name="PRODUCT_OS_NAME" />.</translation>
+<translation id="5755002458331714762"> Le API Web Components v0 (Shadow DOM v0, Custom Elements v0 e HTML Imports) sono state ritirate nel 2018 e sono state disattivate per impostazione predefinita a partire dalla versione M80. Questo criterio consente di riattivare selettivamente queste funzionalità fino alla versione M84.
+
+      Se questo criterio viene impostato su True, le funzionalità Web Components v0 verranno attivate per tutti i siti.
+
+      Se questo criterio viene impostato su False o non viene impostato, le funzionalità Web Components v0 verranno disattivate per impostazione predefinita a partire dalla versione M80.
+
+      Questo criterio verrà rimosso nelle versioni successive alla versione 84 di Chrome.</translation>
 <translation id="5765780083710877561">Descrizione:</translation>
 <translation id="5770738360657678870">Canale Dev (potrebbe essere instabile)</translation>
 <translation id="5774856474228476867">URL di ricerca del provider di ricerca predefinito</translation>
@@ -4148,6 +4155,9 @@ Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il v
       Se disattivi questa impostazione, i plug-in obsoleti non vengono utilizzati e agli utenti non è richiesta l'autorizzazione per eseguirli.
 
       Se questa impostazione non è configurata, agli utenti verrà chiesta l'autorizzazione di eseguire i plug-in obsoleti.</translation>
+<translation id="7862137072381331997">Se questo criterio viene attivato, tutti gli URL visitati verranno controllati in tempo reale con Navigazione sicura.
+
+      Se questo criterio viene disattivato o non viene impostato, verranno applicati i controlli predefiniti di Navigazione sicura. I controlli predefiniti di Navigazione sicura possono comunque includere ricerche in tempo reale, a seconda della preferenza "Migliora le ricerche e le attività di navigazione". Per forzare la disattivazione delle ricerche in tempo reale, vedi il criterio <ph name="URL_KEYED_ANONYMIZED_DATA_COLLECTION_ENABLED_POLICY" />.</translation>
 <translation id="7863947545897944083">Consente di attivare la funzione di accessibilità ad alto contrasto nella schermata di accesso.
 
           Se questo criterio è impostato su true, l'alto contrasto sarà sempre attivato nella schermata di accesso.
@@ -4598,6 +4608,7 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
 <translation id="8672321184841719703">Scegli versione target dell'aggiornamento automatico</translation>
 <translation id="867410340948518937">U2F (Universal Second Factor)</translation>
 <translation id="8685024486845674965">L'avviso di protezione tramite password viene attivato se vengono riutilizzate password</translation>
+<translation id="8687958770985542440">Riattiva l'API Web Components v0 fino alla versione M84</translation>
 <translation id="8693243869659262736">Utilizza client DNS integrato</translation>
 <translation id="8698286761337647563">Numero di giorni di anticipo con cui avvisare gli utenti SAML quando la loro password sta per scadere</translation>
 <translation id="8703488928438047864">Segnala lo stato della scheda</translation>

@@ -117,12 +117,11 @@ HttpNetworkSession::Context::Context()
       net_log(nullptr),
       socket_performance_watcher_factory(nullptr),
       network_quality_estimator(nullptr),
+      quic_context(nullptr),
 #if BUILDFLAG(ENABLE_REPORTING)
       reporting_service(nullptr),
       network_error_logging_service(nullptr),
 #endif
-      quic_clock(nullptr),
-      quic_random(nullptr),
       quic_crypto_client_stream_factory(
           QuicCryptoClientStreamFactory::GetDefaultFactory()) {
 }
@@ -155,25 +154,21 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
                           context.ct_policy_enforcer,
                           &ssl_client_session_cache_),
       push_delegate_(nullptr),
-      quic_stream_factory_(
-          context.net_log,
-          context.host_resolver,
-          context.ssl_config_service,
-          context.client_socket_factory
-              ? context.client_socket_factory
-              : ClientSocketFactory::GetDefaultFactory(),
-          context.http_server_properties,
-          context.cert_verifier,
-          context.ct_policy_enforcer,
-          context.transport_security_state,
-          context.cert_transparency_verifier,
-          context.socket_performance_watcher_factory,
-          context.quic_crypto_client_stream_factory,
-          context.quic_random ? context.quic_random
-                              : quic::QuicRandom::GetInstance(),
-          context.quic_clock ? context.quic_clock
-                             : quic::QuicChromiumClock::GetInstance(),
-          params.quic_params),
+      quic_stream_factory_(context.net_log,
+                           context.host_resolver,
+                           context.ssl_config_service,
+                           context.client_socket_factory
+                               ? context.client_socket_factory
+                               : ClientSocketFactory::GetDefaultFactory(),
+                           context.http_server_properties,
+                           context.cert_verifier,
+                           context.ct_policy_enforcer,
+                           context.transport_security_state,
+                           context.cert_transparency_verifier,
+                           context.socket_performance_watcher_factory,
+                           context.quic_crypto_client_stream_factory,
+                           context.quic_context,
+                           params.quic_params),
       spdy_session_pool_(context.host_resolver,
                          &ssl_client_context_,
                          context.http_server_properties,

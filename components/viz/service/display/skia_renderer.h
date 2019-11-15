@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "cc/cc_export.h"
 #include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/display/sync_query_collection.h"
@@ -84,7 +85,9 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   void EnsureScissorTestDisabled() override;
   void CopyDrawnRenderPass(const copy_output::RenderPassGeometry& geometry,
                            std::unique_ptr<CopyOutputRequest> request) override;
+#if defined(OS_WIN)
   void SetEnableDCLayers(bool enable) override;
+#endif
   void DidChangeVisibility() override;
   void FinishDrawingQuadList() override;
   void GenerateMipmap() override;
@@ -208,8 +211,10 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
                            const DrawRPDQParams* rpdq_params,
                            DrawQuadParams* params);
 
+#if defined(OS_WIN)
   // Schedule overlay candidates for presentation at next SwapBuffers().
   void ScheduleDCLayers();
+#endif
 
   // skia_renderer can draw most single-quad passes directly, regardless of
   // blend mode or image filtering.

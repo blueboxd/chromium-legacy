@@ -355,6 +355,9 @@ Polymer({
    * @private
    */
   getOnOffString_: function(enabled, onstr, offstr) {
+    // If these strings are changed to convey more information other than "On"
+    // and "Off" in the future, revisit the a11y implementation to ensure no
+    // meaningful information is skipped.
     return enabled ? onstr : offstr;
   },
 

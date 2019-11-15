@@ -39,6 +39,7 @@ void DownloadCallbackProxy::DownloadRequested(
       ConvertUTF8ToJavaString(env, content_disposition));
   ScopedJavaLocalRef<jstring> jstring_mime_type(
       ConvertUTF8ToJavaString(env, mime_type));
+  TRACE_EVENT0("weblayer", "Java_DownloadCallbackProxy_downloadRequested");
   Java_DownloadCallbackProxy_downloadRequested(
       env, java_delegate_, jstring_url, jstring_user_agent,
       jstring_content_disposition, jstring_mime_type, content_length);

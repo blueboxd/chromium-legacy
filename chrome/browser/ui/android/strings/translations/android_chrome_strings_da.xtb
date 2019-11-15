@@ -435,7 +435,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4307992518367153382">Grundlæggende valgmuligheder</translation>
 <translation id="4314815835985389558">Administrer synkronisering</translation>
 <translation id="4351244548802238354">Luk dialogboksen</translation>
-<translation id="4353114845960720315">Mens du er i VR, kan dette website muligvis få oplysninger om:</translation>
+<translation id="4353114845960720315">Mens du bruger VR-tilstand, kan dette website muligvis få oplysninger om:</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="4384468725000734951">Søgning via Sogou</translation>
 <translation id="4404568932422911380">Der er ingen bogmærker</translation>
@@ -645,7 +645,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5809361687334836369">{HOURS,plural, =1{For 1 time siden}one{For # time siden}other{For # timer siden}}</translation>
 <translation id="5810288467834065221">Copyright <ph name="YEAR" /> Google LLC. Alle rettigheder forbeholdes.</translation>
 <translation id="5817918615728894473">Start parring</translation>
-<translation id="5819762621475381970">– en oversigt over dit rum</translation>
+<translation id="5819762621475381970">– layoutet af dit rum</translation>
 <translation id="583281660410589416">Ukendt</translation>
 <translation id="5833984609253377421">Del link</translation>
 <translation id="5836192821815272682">Downloader Chrome-opdateringen…</translation>

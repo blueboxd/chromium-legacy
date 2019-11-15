@@ -141,6 +141,7 @@ class UpgradeDetector {
   // RelaunchNotificationPeriod policy setting, or a zero delta if unset or out
   // of range.
   static base::TimeDelta GetRelaunchNotificationPeriod();
+  static bool IsRelaunchNotificationPolicyEnabled();
 
   const base::Clock* clock() { return clock_; }
 

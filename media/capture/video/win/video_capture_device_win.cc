@@ -415,7 +415,7 @@ VideoCaptureDeviceWin::~VideoCaptureDeviceWin() {
   if (graph_builder_.Get()) {
     if (sink_filter_.get()) {
       graph_builder_->RemoveFilter(sink_filter_.get());
-      sink_filter_ = NULL;
+      sink_filter_.reset();
     }
 
     if (capture_filter_.Get())

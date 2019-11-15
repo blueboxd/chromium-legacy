@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tabmodel;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.tab.Tab;
@@ -50,7 +51,7 @@ public abstract class TabModelFilter extends EmptyTabModelObserver implements Ta
     }
 
     public boolean isCurrentlySelectedFilter() {
-        return mTabModel.isCurrentModel();
+        return getTabModel().isCurrentModel();
     }
 
     /**
@@ -64,7 +65,8 @@ public abstract class TabModelFilter extends EmptyTabModelObserver implements Ta
     /**
      * @return The {@link TabModel} that the filter is acting on.
      */
-    protected TabModel getTabModel() {
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
+    public TabModel getTabModel() {
         return mTabModel;
     }
 
@@ -91,8 +93,9 @@ public abstract class TabModelFilter extends EmptyTabModelObserver implements Ta
     @NonNull
     public final List<Tab> getTabsWithNoOtherRelatedTabs() {
         List<Tab> tabs = new ArrayList<>();
-        for (int i = 0; i < mTabModel.getCount(); i++) {
-            Tab tab = mTabModel.getTabAt(i);
+        TabModel tabModel = getTabModel();
+        for (int i = 0; i < tabModel.getCount(); i++) {
+            Tab tab = tabModel.getTabAt(i);
             if (!hasOtherRelatedTabs(tab)) {
                 tabs.add(tab);
             }

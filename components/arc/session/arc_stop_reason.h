@@ -10,21 +10,26 @@
 namespace arc {
 
 // Describes the reason the ARC instance is stopped.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// Should be synced with ArcStopReason in tools/metrics/histograms/enums.xml.
 enum class ArcStopReason {
   // ARC instance has been gracefully shut down.
-  SHUTDOWN,
+  SHUTDOWN = 0,
 
   // Errors occurred during the ARC instance boot. This includes any failures
   // before the instance is actually attempted to be started (e.g.
   // session_manager failed to fork/exec the instance), and also a "clean"
   // (non crashy) but unexpected container shutdown.
-  GENERIC_BOOT_FAILURE,
+  GENERIC_BOOT_FAILURE = 1,
 
   // The device is critically low on disk space.
-  LOW_DISK_SPACE,
+  LOW_DISK_SPACE = 2,
 
   // ARC instance has crashed.
-  CRASH,
+  CRASH = 3,
+
+  kMaxValue = CRASH,
 };
 
 // Defines "<<" operator for LOGging purpose.

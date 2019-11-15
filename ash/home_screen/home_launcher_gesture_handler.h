@@ -20,7 +20,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
-#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/transform.h"
 
 namespace ash {
@@ -56,11 +56,11 @@ class ASH_EXPORT HomeLauncherGestureHandler
   // Called by owner of this object when a gesture event is received. |location|
   // should be in screen coordinates. Returns false if the the gesture event
   // was not processed.
-  bool OnPressEvent(Mode mode, const gfx::Point& location);
-  bool OnScrollEvent(const gfx::Point& location,
+  bool OnPressEvent(Mode mode, const gfx::PointF& location);
+  bool OnScrollEvent(const gfx::PointF& location,
                      float scroll_x,
                      float scroll_y);
-  bool OnReleaseEvent(const gfx::Point& location,
+  bool OnReleaseEvent(const gfx::PointF& location,
                       base::Optional<float> velocity_y);
 
   // Cancel a current drag and animates the items to their final state based on
@@ -148,17 +148,15 @@ class ASH_EXPORT HomeLauncherGestureHandler
   // not null for kSlideDownToHide mode, it will be set as the window to run
   // slide down animation. |window| is not used for kSlideUpToShow mode. Returns
   // true if windows are successfully set up.
-  bool SetUpWindows(Mode mode,
-                    aura::Window* window,
-                    base::Optional<gfx::Point> location_in_screen);
+  bool SetUpWindows(Mode mode, aura::Window* window);
 
   // Called by OnPress/Scroll/ReleaseEvent() when the drag from the shelf or
   // from the top starts/continues/ends. |location| is in screen coordinate.
-  void OnDragStarted(const gfx::Point& location);
-  void OnDragContinued(const gfx::Point& location,
+  void OnDragStarted(const gfx::PointF& location);
+  void OnDragContinued(const gfx::PointF& location,
                        float scroll_x,
                        float scroll_y);
-  bool OnDragEnded(const gfx::Point& location,
+  bool OnDragEnded(const gfx::PointF& location,
                    base::Optional<float> velocity_y);
   void OnDragCancelled();
 
@@ -186,7 +184,7 @@ class ASH_EXPORT HomeLauncherGestureHandler
 
   // Tracks the location of the last received event in screen coordinates. Empty
   // if there is currently no window being processed.
-  base::Optional<gfx::Point> last_event_location_;
+  base::Optional<gfx::PointF> last_event_location_;
 
   // Tracks the last y scroll amount. On gesture end, animates to end state if
   // |last_scroll_y_| is greater than a certain threshold, even if

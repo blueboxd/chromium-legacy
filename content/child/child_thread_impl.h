@@ -291,7 +291,6 @@ struct ChildThreadImpl::Options {
 
   class Builder;
 
-  bool auto_start_service_manager_connection;
   bool connect_to_browser;
   scoped_refptr<base::SingleThreadTaskRunner> browser_process_io_runner;
   std::vector<IPC::MessageFilter*> startup_filters;
@@ -318,7 +317,6 @@ class ChildThreadImpl::Options::Builder {
   Builder();
 
   Builder& InBrowserProcess(const InProcessChildThreadParams& params);
-  Builder& AutoStartServiceManagerConnection(bool auto_start);
   Builder& ConnectToBrowser(bool connect_to_browser);
   Builder& AddStartupFilter(IPC::MessageFilter* filter);
   Builder& IPCTaskRunner(

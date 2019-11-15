@@ -1221,6 +1221,7 @@ interface PushSubscriptionOptions
     method constructor
 interface QuicTransport
     attribute @@toStringTag
+    method close
     method constructor
 interface ReadableStream
     attribute @@toStringTag

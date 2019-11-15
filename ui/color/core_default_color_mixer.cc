@@ -67,12 +67,12 @@ ColorMixer& AddMixerForLightMode(ColorProvider* provider) {
 void AddCoreDefaultColorMixers(ColorProvider* provider, bool dark_window) {
   ColorMixer& mixer = dark_window ? AddMixerForDarkMode(provider)
                                   : AddMixerForLightMode(provider);
-  mixer[kColorSecondaryBackground].AddTransform(BlendForMinContrastWithSelf(
-      FromResultColor(kColorPrimaryBackground), 1.67f));
-  mixer[kColorSecondaryForeground].AddTransform(
+  mixer[kColorSecondaryBackground] = BlendForMinContrastWithSelf(
+      FromResultColor(kColorPrimaryBackground), 1.67f);
+  mixer[kColorSecondaryForeground] =
       BlendForMinContrast(FromResultColor(kColorDisabledForeground),
                           FromResultColor(kColorPrimaryBackground),
-                          FromResultColor(kColorPrimaryForeground)));
+                          FromResultColor(kColorPrimaryForeground));
   // TODO(pkasting): High contrast?
 }
 

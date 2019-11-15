@@ -166,8 +166,8 @@ void RequestSystemMediaCapturePermission(NSString* media_type,
 }
 
 // Heuristic to check screen capture permission on macOS 10.15.
-// Screen Capture is considered allowed if the name of at least one normal,
-// dock or status window running on another process is visible.
+// Screen Capture is considered allowed if the name of at least one normal
+// or dock window running on another process is visible.
 // See https://crbug.com/993692.
 bool IsScreenCaptureAllowed() {
   if (@available(macOS 10.15, *)) {
@@ -176,8 +176,8 @@ bool IsScreenCaptureAllowed() {
       return true;
     }
 
-    base::ScopedCFTypeRef<CFArrayRef> window_list(CGWindowListCopyWindowInfo(
-        kCGWindowListOptionOnScreenOnly, kCGNullWindowID));
+    base::ScopedCFTypeRef<CFArrayRef> window_list(
+        CGWindowListCopyWindowInfo(kCGWindowListOptionAll, kCGNullWindowID));
     int current_pid = [[NSProcessInfo processInfo] processIdentifier];
     for (NSDictionary* window in base::mac::CFToNSCast(window_list.get())) {
       NSNumber* window_pid =
@@ -197,8 +197,7 @@ bool IsScreenCaptureAllowed() {
 
       NSInteger layer_integer = [layer integerValue];
       if (layer_integer == CGWindowLevelForKey(kCGNormalWindowLevelKey) ||
-          layer_integer == CGWindowLevelForKey(kCGDockWindowLevelKey) ||
-          layer_integer == CGWindowLevelForKey(kCGStatusWindowLevelKey)) {
+          layer_integer == CGWindowLevelForKey(kCGDockWindowLevelKey)) {
         return true;
       }
     }

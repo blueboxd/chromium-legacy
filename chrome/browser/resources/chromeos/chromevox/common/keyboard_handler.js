@@ -104,12 +104,6 @@ cvox.ChromeVoxKbHandler.basicKeyDownActionsListener = function(evt) {
     return !cvox.KeyUtil.sequencing;
   }
 
-  // If ChromeVox isn't active, ignore every command except the one
-  // to toggle ChromeVox active again.
-  if (!cvox.ChromeVox.isActive && functionName != 'toggleChromeVox') {
-    return true;
-  }
-
   // This is the key event handler return value - true if the event should
   // propagate and the default action should be performed, false if we eat
   // the key.

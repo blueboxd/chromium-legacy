@@ -473,7 +473,7 @@ void RTCRtpSenderImpl::SetParameters(
     blink::RTCVoidRequest* request) {
   internal_->SetParameters(
       std::move(encodings), degradation_preference,
-      base::BindOnce(&OnSetParametersCompleted, std::move(request)));
+      WTF::Bind(&OnSetParametersCompleted, WrapPersistent(request)));
 }
 
 void RTCRtpSenderImpl::GetStats(

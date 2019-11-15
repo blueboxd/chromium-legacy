@@ -267,7 +267,7 @@ BluetoothLowEnergyEventRouter::~BluetoothLowEnergyEventRouter() {
   }
 
   adapter_->RemoveObserver(this);
-  adapter_ = NULL;
+  adapter_.reset();
 }
 
 bool BluetoothLowEnergyEventRouter::IsBluetoothSupported() const {

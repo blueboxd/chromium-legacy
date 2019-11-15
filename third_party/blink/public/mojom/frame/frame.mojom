@@ -84,6 +84,18 @@ interface LocalFrameHost {
 
   // Sent by the renderer when the associated frame becomes focused.
   DidFocusFrame();
+
+  // Sent when the frame starts enforcing an insecure request policy. Sending
+  // this information in DidCommitProvisionalLoad isn't sufficient; this
+  // message is needed because, for example, a document can dynamically insert
+  // a <meta> tag that causes strict mixed content checking to be enforced.
+  //
+  // Argument |policy_bitmap| represents blink::WebInsecureRequestPolicy uint8
+  // bitfield.
+  EnforceInsecureRequestPolicy(uint8 policy_bitmap);
+
+  // Elements of |set| are hashes of hosts to upgrade.
+  EnforceInsecureNavigationsSet(array<uint32> set);
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will

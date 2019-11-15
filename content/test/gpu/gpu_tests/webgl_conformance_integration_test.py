@@ -187,8 +187,10 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         'WEBGL_compressed_texture_s3tc_srgb',
         'WEBGL_debug_renderer_info',
         'WEBGL_debug_shaders',
+        'WEBGL_draw_instanced_base_vertex_base_instance',
         'WEBGL_lose_context',
         'WEBGL_multi_draw',
+        'WEBGL_multi_draw_instanced_base_vertex_base_instance',
         'WEBGL_video_texture',
       ]
 

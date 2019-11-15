@@ -54,8 +54,6 @@
 #include "net/base/network_change_notifier.h"
 #include "net/nqe/effective_connection_type.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/viz/public/mojom/compositing/compositing_mode_watcher.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
@@ -86,6 +84,10 @@ class GpuChannelHost;
 
 namespace media {
 class GpuVideoAcceleratorFactories;
+}
+
+namespace mojo {
+class BinderMap;
 }
 
 namespace viz {
@@ -193,9 +195,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   // ChildThread implementation via ChildThreadImpl:
   scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() override;
-
-  // ChildThreadImpl implementation:
-  void OnBindReceiver(mojo::GenericPendingReceiver receiver) override;
 
   // CompositorDependencies implementation.
   bool IsGpuRasterizationForced() override;
@@ -414,7 +413,6 @@ class CONTENT_EXPORT RenderThreadImpl
   }
 
   void RegisterPendingFrameCreate(
-      const service_manager::BindSourceInfo& source_info,
       int routing_id,
       mojo::PendingReceiver<mojom::Frame> frame);
 
@@ -468,7 +466,7 @@ class CONTENT_EXPORT RenderThreadImpl
 
   void Init();
   void InitializeCompositorThread();
-  void InitializeWebKit(service_manager::BinderRegistry* registry);
+  void InitializeWebKit(mojo::BinderMap* binders);
 
   void OnTransferBitmap(const SkBitmap& bitmap, int resource_id);
   void OnGetAccessibilityTree();
@@ -642,13 +640,9 @@ class CONTENT_EXPORT RenderThreadImpl
 
   class PendingFrameCreate : public base::RefCounted<PendingFrameCreate> {
    public:
-    PendingFrameCreate(const service_manager::BindSourceInfo& source_info,
-                       int routing_id,
+    PendingFrameCreate(int routing_id,
                        mojo::PendingReceiver<mojom::Frame> frame_receiver);
 
-    const service_manager::BindSourceInfo& browser_info() const {
-      return browser_info_;
-    }
     mojo::PendingReceiver<mojom::Frame> TakeFrameReceiver() {
       return std::move(frame_receiver_);
     }
@@ -661,7 +655,6 @@ class CONTENT_EXPORT RenderThreadImpl
     // Mojo error handler.
     void OnConnectionError();
 
-    service_manager::BindSourceInfo browser_info_;
     int routing_id_;
     mojo::PendingReceiver<mojom::Frame> frame_receiver_;
   };

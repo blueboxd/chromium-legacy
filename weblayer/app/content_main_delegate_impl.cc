@@ -196,13 +196,13 @@ void ContentMainDelegateImpl::InitializeResourceBundle() {
       command_line.GetSwitchValueASCII(switches::kProcessType).empty();
   if (is_browser_process) {
     ui::SetLocalePaksStoredInApk(true);
+    // Passing an empty |pref_locale| yields the system default locale.
     std::string locale = ui::ResourceBundle::InitSharedInstanceWithLocale(
-        base::android::GetDefaultLocaleString(), nullptr,
-        ui::ResourceBundle::LOAD_COMMON_RESOURCES);
+        {} /*pref_locale*/, nullptr, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
+
     if (locale.empty()) {
       LOG(WARNING) << "Failed to load locale .pak from apk.";
     }
-    base::i18n::SetICUDefaultLocale(locale);
 
     // Try to directly mmap the resources.pak from the apk. Fall back to load
     // from file, using PATH_SERVICE, otherwise.

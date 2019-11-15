@@ -42,59 +42,122 @@ enum class SectionId : char {
   kPakTranslations = 'p',
 };
 
-struct BaseSizeInfo;
+class Symbol;
 
-struct Symbol {
-  Symbol();
-  Symbol(const Symbol& other);
-  Symbol& operator=(const Symbol& other);
-  static Symbol DiffSymbolFrom(const Symbol* before, const Symbol* after);
+class BaseSymbol {
+ public:
+  virtual ~BaseSymbol();
 
-  bool IsOverhead() const { return full_name.substr(0, 10) == "Overhead: "; }
+  virtual int32_t Address() const = 0;
+  virtual int32_t Size() const = 0;
+  virtual int32_t Flags() const = 0;
+  virtual int32_t Padding() const = 0;
 
-  bool IsBss() const { return sectionId == SectionId::kBss; }
+  virtual std::string_view FullName() const = 0;
+  // Derived from |full_name|. Generated lazily and cached.
+  virtual std::string_view TemplateName() const = 0;
+  virtual std::string_view Name() const = 0;
+  virtual const std::vector<Symbol*>* Aliases() const = 0;
+  virtual SectionId Section() const = 0;
 
-  bool IsDex() const {
-    return sectionId == SectionId::kDex || sectionId == SectionId::kDexMethod;
+  virtual const char* ObjectPath() const = 0;
+  virtual const char* SourcePath() const = 0;
+  virtual const char* SectionName() const = 0;
+  virtual const char* Component() const = 0;
+
+  virtual float Pss() const = 0;
+  virtual float PssWithoutPadding() const = 0;
+  virtual float PaddingPss() const = 0;
+
+  int32_t SizeWithoutPadding() const { return Size() - Padding(); }
+
+  int32_t EndAddress() const { return Address() + SizeWithoutPadding(); }
+
+  int32_t NumAliases() const {
+    const std::vector<Symbol*>* aliases = Aliases();
+    return aliases ? aliases->size() : 1;
   }
 
-  bool IsOther() const { return sectionId == SectionId::kOther; }
+  bool IsOverhead() const { return FullName().substr(0, 10) == "Overhead: "; }
+
+  bool IsBss() const { return Section() == SectionId::kBss; }
+
+  bool IsDex() const {
+    SectionId section_id = Section();
+    return section_id == SectionId::kDex || section_id == SectionId::kDexMethod;
+  }
+
+  bool IsOther() const { return Section() == SectionId::kOther; }
 
   bool IsPak() const {
-    return sectionId == SectionId::kPakNontranslated ||
-           sectionId == SectionId::kPakTranslations;
+    SectionId section_id = Section();
+    return section_id == SectionId::kPakNontranslated ||
+           section_id == SectionId::kPakTranslations;
   }
 
   bool IsNative() const {
-    return (sectionId == SectionId::kBss || sectionId == SectionId::kData ||
-            sectionId == SectionId::kDataRelRo ||
-            sectionId == SectionId::kText || sectionId == SectionId::kRoData);
+    SectionId section_id = Section();
+    return (section_id == SectionId::kBss || section_id == SectionId::kData ||
+            section_id == SectionId::kDataRelRo ||
+            section_id == SectionId::kText || section_id == SectionId::kRoData);
   }
 
-  bool IsStringLiteral() const { return full_name.substr(0, 1) == "\""; }
+  bool IsStringLiteral() const { return FullName().substr(0, 1) == "\""; }
 
-  int32_t SizeWithoutPadding() const { return size - padding; }
+  bool IsNameUnique() const {
+    return IsStringLiteral() || IsOverhead() ||
+           FullName().substr(0, 1) == "*" ||
+           (IsNative() && FullName().find('.') != std::string::npos);
+  }
+};
 
-  int32_t EndAddress() const { return address + SizeWithoutPadding(); }
+struct BaseSizeInfo;
+class Symbol;
 
+class Symbol : public BaseSymbol {
+ public:
+  Symbol();
+  ~Symbol() override;
+  Symbol(const Symbol& other);
+
+  int32_t Address() const override;
+  int32_t Size() const override;
+  int32_t Flags() const override;
+  int32_t Padding() const override;
+
+  std::string_view FullName() const override;
   // Derived from |full_name|. Generated lazily and cached.
-  void DeriveNames() const;
-  std::string_view TemplateName() const;
-  std::string_view Name() const;
+  std::string_view TemplateName() const override;
+  std::string_view Name() const override;
+  const std::vector<Symbol*>* Aliases() const override;
+  SectionId Section() const override;
 
-  int32_t address = 0;
-  int32_t size = 0;
-  int32_t flags = 0;
-  int32_t padding = 0;
-  float pss = 0.0f;
-  SectionId sectionId = SectionId::kNone;
-  std::string_view full_name;
+  const char* ObjectPath() const override;
+  const char* SourcePath() const override;
+  const char* SectionName() const override;
+  const char* Component() const override;
+
+  float Pss() const override;
+
+  float PssWithoutPadding() const override;
+
+  float PaddingPss() const override;
+
+  int32_t address_ = 0;
+  int32_t size_ = 0;
+  int32_t flags_ = 0;
+  int32_t padding_ = 0;
+  SectionId section_id_ = SectionId::kNone;
+  std::string_view full_name_;
+  // Derived lazily
+  mutable std::string_view template_name_;
+  mutable std::string_view name_;
   // Pointers into SizeInfo->raw_decompressed;
-  const char* section_name = nullptr;
-  const char* object_path = nullptr;
-  const char* source_path = nullptr;
-  const char* component = nullptr;
-  std::vector<Symbol*>* aliases = nullptr;
+  const char* section_name_ = nullptr;
+  const char* object_path_ = nullptr;
+  const char* source_path_ = nullptr;
+  const char* component_ = nullptr;
+  std::vector<Symbol*>* aliases_ = nullptr;
 
   // The SizeInfo the symbol was constructed from. Primarily used for
   // allocating commonly-reused strings in a context where they won't outlive
@@ -102,26 +165,55 @@ struct Symbol {
   BaseSizeInfo* size_info = nullptr;
 
  private:
-  mutable std::string_view template_name;
-  mutable std::string_view name;
+  void DeriveNames() const;
+};
+
+class DeltaSymbol : public BaseSymbol {
+ public:
+  DeltaSymbol(const Symbol* before, const Symbol* after);
+  ~DeltaSymbol() override;
+  int32_t Address() const override;
+  int32_t Size() const override;
+  int32_t Flags() const override;
+  int32_t Padding() const override;
+
+  std::string_view FullName() const override;
+  // Derived from |full_name|. Generated lazily and cached.
+  std::string_view TemplateName() const override;
+  std::string_view Name() const override;
+  const std::vector<Symbol*>* Aliases() const override;
+  SectionId Section() const override;
+
+  const char* ObjectPath() const override;
+  const char* SourcePath() const override;
+  const char* SectionName() const override;
+  const char* Component() const override;
+
+  float Pss() const override;
+  float PssWithoutPadding() const override;
+  float PaddingPss() const override;
+
+ private:
+  const Symbol* before_ = nullptr;
+  const Symbol* after_ = nullptr;
 };
 
 std::ostream& operator<<(std::ostream& os, const Symbol& sym);
 
 struct BaseSizeInfo {
   BaseSizeInfo();
-  ~BaseSizeInfo();
-  std::vector<caspian::Symbol> raw_symbols;
+  BaseSizeInfo(const BaseSizeInfo&);
+  virtual ~BaseSizeInfo();
   Json::Value metadata;
   std::deque<std::string> owned_strings;
+  SectionId ShortSectionName(const char* section_name);
 };
 
 struct SizeInfo : BaseSizeInfo {
   SizeInfo();
-  ~SizeInfo();
+  ~SizeInfo() override;
   SizeInfo(const SizeInfo& other) = delete;
   SizeInfo& operator=(const SizeInfo& other) = delete;
-  SectionId ShortSectionName(const char* section_name);
 
   // Entries in |raw_symbols| hold pointers to this data.
   std::vector<const char*> object_paths;
@@ -130,18 +222,21 @@ struct SizeInfo : BaseSizeInfo {
   std::vector<const char*> section_names;
   std::vector<char> raw_decompressed;
 
+  std::vector<Symbol> raw_symbols;
+
   // A container for each symbol group.
   std::deque<std::vector<Symbol*>> alias_groups;
 };
 
-struct DiffSizeInfo : BaseSizeInfo {
-  DiffSizeInfo(SizeInfo* before, SizeInfo* after);
-  ~DiffSizeInfo();
-  DiffSizeInfo(const DiffSizeInfo&) = delete;
-  DiffSizeInfo& operator=(const DiffSizeInfo&) = delete;
+struct DeltaSizeInfo : BaseSizeInfo {
+  DeltaSizeInfo(const SizeInfo* before, const SizeInfo* after);
+  ~DeltaSizeInfo() override;
+  DeltaSizeInfo(const DeltaSizeInfo&);
+  DeltaSizeInfo& operator=(const DeltaSizeInfo&);
 
-  SizeInfo* before = nullptr;
-  SizeInfo* after = nullptr;
+  const SizeInfo* before = nullptr;
+  const SizeInfo* after = nullptr;
+  std::vector<DeltaSymbol> delta_symbols;
 };
 
 struct Stat {
@@ -182,7 +277,7 @@ struct TreeNode {
 
   std::vector<TreeNode*> children;
   TreeNode* parent = nullptr;
-  const Symbol* symbol = nullptr;
+  const BaseSymbol* symbol = nullptr;
 };
 
 }  // namespace caspian

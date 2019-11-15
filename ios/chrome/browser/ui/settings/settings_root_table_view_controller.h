@@ -12,6 +12,8 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
+extern NSString* const kSettingsToolbarDeleteButtonId;
+
 // SettingsRootTableViewController is a base class for integrating UITableViews
 // into the Settings UI.  It handles the configuration and display of the MDC
 // AppBar.

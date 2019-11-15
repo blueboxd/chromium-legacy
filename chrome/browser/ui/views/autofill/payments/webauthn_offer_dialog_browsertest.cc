@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/autofill/payments/webauthn_offer_dialog_view_impl.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace autofill {
 
@@ -79,7 +78,7 @@ IN_PROC_BROWSER_TEST_F(WebauthnOfferDialogBrowserTest,
 IN_PROC_BROWSER_TEST_F(WebauthnOfferDialogBrowserTest, ClickCancelButton) {
   ShowUi(std::string());
   VerifyUi();
-  GetWebauthnOfferDialog()->GetDialogClientView()->CancelWindow();
+  GetWebauthnOfferDialog()->CancelDialog();
   base::RunLoop().RunUntilIdle();
 }
 

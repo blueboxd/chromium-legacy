@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "content/common/content_export.h"
+#include "content/public/common/page_visibility_state.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 
@@ -36,6 +37,8 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
   virtual void DidUpdateMainFrameLayout() {}
 
   virtual void OnZoomLevelChanged() {}
+
+  virtual void OnPageVisibilityChanged(PageVisibilityState visibility_state) {}
 
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;

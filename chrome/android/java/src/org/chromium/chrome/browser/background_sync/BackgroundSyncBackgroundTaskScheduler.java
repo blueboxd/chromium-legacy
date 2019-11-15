@@ -135,6 +135,7 @@ public class BackgroundSyncBackgroundTaskScheduler {
      * @param taskType The Background Sync task to cancel.
      */
     @VisibleForTesting
+    @CalledByNative
     protected void cancelOneOffTask(@BackgroundSyncTask int taskType) {
         BackgroundTaskSchedulerFactory.getScheduler().cancel(
                 ContextUtils.getApplicationContext(), getAppropriateTaskId(taskType));
@@ -146,13 +147,15 @@ public class BackgroundSyncBackgroundTaskScheduler {
 
     /**
      * Schedules a one-off background task to wake the browser up on network
-     * connectivity and call into native code to fire ready periodic Background Sync
+     * connectivity and call into native code to fire ready (periodic) Background Sync
      * events.
      *
      * @param minDelayMs The minimum time to wait before waking the browser.
      * @param taskType   The Background Sync task to schedule.
      */
-    protected boolean scheduleOneOffTask(long minDelayMs, @BackgroundSyncTask int taskType) {
+    @VisibleForTesting
+    @CalledByNative
+    protected boolean scheduleOneOffTask(@BackgroundSyncTask int taskType, long minDelayMs) {
         // Pack SOONEST_EXPECTED_WAKETIME in extras.
         Bundle taskExtras = new Bundle();
         taskExtras.putLong(SOONEST_EXPECTED_WAKETIME, System.currentTimeMillis() + minDelayMs);
@@ -183,26 +186,6 @@ public class BackgroundSyncBackgroundTaskScheduler {
     }
 
     /**
-     * Based on shouldLaunch, either creates or cancels a one-off background
-     * task to wake up Chrome upon network connectivity.
-     *
-     * @param taskType The one-off background task to create.
-     * @param shouldLaunch Whether to launch the browser in the background.
-     * @param minDelayMs   The minimum time to wait before waking the browser.
-     */
-    @VisibleForTesting
-    @CalledByNative
-    protected void launchBrowserIfStopped(
-            @BackgroundSyncTask int taskType, boolean shouldLaunch, long minDelayMs) {
-        if (!shouldLaunch) {
-            cancelOneOffTask(taskType);
-            return;
-        }
-
-        scheduleOneOffTask(minDelayMs, taskType);
-    }
-
-    /**
      * Method for rescheduling a background task to wake up Chrome for processing
      * Background Sync events in the event of an OS upgrade or Google Play Services
      * upgrade.
@@ -210,7 +193,7 @@ public class BackgroundSyncBackgroundTaskScheduler {
      * @param taskType The Background Sync task to reschedule.
      */
     public void reschedule(@BackgroundSyncTask int taskType) {
-        scheduleOneOffTask(MIN_SYNC_RECOVERY_TIME, taskType);
+        scheduleOneOffTask(taskType, MIN_SYNC_RECOVERY_TIME);
     }
 
     @NativeMethods

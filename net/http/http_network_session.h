@@ -44,10 +44,6 @@ class ProcessMemoryDump;
 }
 }
 
-namespace quic {
-class QuicClock;
-}  // namespace quic
-
 namespace net {
 
 class CTPolicyEnforcer;
@@ -174,15 +170,12 @@ class NET_EXPORT HttpNetworkSession {
     NetLog* net_log;
     SocketPerformanceWatcherFactory* socket_performance_watcher_factory;
     NetworkQualityEstimator* network_quality_estimator;
+    QuicContext* quic_context;
 #if BUILDFLAG(ENABLE_REPORTING)
     ReportingService* reporting_service;
     NetworkErrorLoggingService* network_error_logging_service;
 #endif
 
-    // Source of time for QUIC connections.
-    quic::QuicClock* quic_clock;
-    // Source of entropy for QUIC connections.
-    quic::QuicRandom* quic_random;
     // Optional factory to use for creating QuicCryptoClientStreams.
     QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory;
   };

@@ -67,7 +67,9 @@ void ImageFetcherImpl::FetchImageAndData(
       if (!request->image_data.empty()) {
         base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE,
-            base::BindOnce(std::move(image_data_callback), request->image_data,
+            base::BindOnce(&ImageFetcherImpl::RunImageDataCallback,
+                           weak_ptr_factory_.GetWeakPtr(),
+                           std::move(image_data_callback), request->image_data,
                            request->request_metadata));
       } else {
         request->image_data_callbacks.push_back(std::move(image_data_callback));
@@ -122,6 +124,14 @@ void ImageFetcherImpl::OnImageDecoded(const GURL& image_url,
   // Erase the completed ImageRequest.
   DCHECK(request->image_data_callbacks.empty());
   pending_net_requests_.erase(image_iter);
+}
+
+void ImageFetcherImpl::RunImageDataCallback(
+    ImageDataFetcherCallback image_data_callback,
+    std::string image_data,
+    RequestMetadata request_metadata) {
+  std::move(image_data_callback)
+      .Run(std::move(image_data), std::move(request_metadata));
 }
 
 ImageDecoder* ImageFetcherImpl::GetImageDecoder() {

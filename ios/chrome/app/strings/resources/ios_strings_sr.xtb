@@ -9,6 +9,7 @@
 <translation id="1066060668811609597">Управљајте синхронизацијом</translation>
 <translation id="1076421457278169141">Скенирали сте кôд</translation>
 <translation id="1084365883616172403">Facebook пост је довршен.</translation>
+<translation id="1103523840287552314">Увек преводи <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">Прихвати и настави</translation>
 <translation id="1112015203684611006">Штампање није успело.</translation>
 <translation id="1125564390852150847">Направи нову картицу.</translation>
@@ -27,6 +28,7 @@
 <translation id="1265739287306757398">Сазнајте како</translation>
 <translation id="1272079795634619415">Заустави</translation>
 <translation id="1283524564873030414">Последња 24 сата</translation>
+<translation id="1285320974508926690">Никад не преводи овај сајт</translation>
 <translation id="1323735185997015385">Избриши</translation>
 <translation id="132683371494960526">Додирните двапут да бисте променили надређени директоријум.</translation>
 <translation id="1340643665687018190">Затвори мени</translation>
@@ -67,6 +69,7 @@
 <translation id="1746815479209538200">Да бисте прегледали веб, додајте нову картицу.</translation>
 <translation id="1752547299766512813">Сачуване лозинке</translation>
 <translation id="1753905327828125965">Најпосећеније</translation>
+<translation id="1803264062614276815">Име власника картице</translation>
 <translation id="1809939268435598390">Избриши директоријум</translation>
 <translation id="1813414402673211292">Брисање података прегледања</translation>
 <translation id="1820259098641718022">Додато је на листу за читање</translation>
@@ -155,6 +158,7 @@
 <translation id="2989805286512600854">Отвори на новој картици</translation>
 <translation id="3037605927509011580">О, не!</translation>
 <translation id="3112556859945124369">Означи…</translation>
+<translation id="3153862085237805241">Сачувај картицу</translation>
 <translation id="3157684681743766797">Означи све…</translation>
 <translation id="3175081911749765310">Веб-услуге</translation>
 <translation id="3178650076442119961">Последња активност: данас</translation>
@@ -327,6 +331,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="5728700505257787410">Жао нам је, дошло је до проблема при пријављивању на налог.</translation>
 <translation id="5737974891429562743">Подаци за пријављивање на налог су застарели. Ажурирајте их да бисте започели синхронизацију.</translation>
 <translation id="5738887413654608789">Ово вам омогућава да откријете релевантне веб-странице на основу окружења.</translation>
+<translation id="5782227691023083829">Превођење је у току...</translation>
 <translation id="5803566855766646066">Желите ли стварно да одбаците ову нову картицу?</translation>
 <translation id="5816228676161003208">Ово вам омогућава да брже претражујте помоћу гласа.</translation>
 <translation id="5846482154967366008">Претраживач</translation>
@@ -406,6 +411,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="6691331417640343772">Управљајте синхронизованим подацима на Google контролној табли</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">Извоз лозинки није успео</translation>
+<translation id="6748108480210050150">Од</translation>
 <translation id="6780034285637185932">Поштански број</translation>
 <translation id="6785453220513215166">Слање извештаја о отказивању...</translation>
 <translation id="679325081238418596">Имаћете обележиваче, историју, лозинке и друга подешавања на свим уређајима</translation>
@@ -427,6 +433,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="6973630695168034713">Директоријуми</translation>
 <translation id="6979158407327259162">Google диск</translation>
 <translation id="6988572888918530647">Управљајте Google налогом</translation>
+<translation id="6998989275928107238">До</translation>
 <translation id="7004499039102548441">Недавне картице</translation>
 <translation id="7006788746334555276">Подешавања садржаја</translation>
 <translation id="7015203776128479407">Почетно подешавање синхронизације није завршено. Синхронизација је искључена.</translation>
@@ -466,6 +473,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="7537586195939242955">Жао нам је, приступна реч сада не може да се инсталира у Passbook.</translation>
 <translation id="7554791636758816595">Нова картица</translation>
 <translation id="7561196759112975576">Увек</translation>
+<translation id="7600965453749440009">Никад не преводи <ph name="LANGUAGE" /></translation>
 <translation id="7603852183842204213">Блокирани искачући прозори (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7638584964844754484">Неисправна приступна фраза</translation>
 <translation id="7658239707568436148">Откажи</translation>
@@ -500,6 +508,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="8076014560081431679">Нећемо избрисати сачувана подешавања сајтова и она могу да одражавају ваше навике при прегледању. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">Преузимање датотеке није доступно. Опције су наведене у дну екрана.</translation>
 <translation id="8131740175452115882">Потврди</translation>
+<translation id="8197543752516192074">Преведи страницу</translation>
 <translation id="8205564605687841303">Откажи</translation>
 <translation id="8225985093977202398">Кеширане слике и датотеке</translation>
 <translation id="8261506727792406068">Избриши</translation>
@@ -545,6 +554,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="8981454092730389528">Google контроле активности</translation>
 <translation id="8985320356172329008">Пријављени сте на Google као</translation>
 <translation id="9034759925968272072">Нећемо вас одјавити са Google налога. Google налог можда има друге облике историје прегледања на <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
+<translation id="9037965129289936994">Прикажи оригинал</translation>
 <translation id="9039373489628511875">Пропусни опсег</translation>
 <translation id="9055772144595778347">Пријављивање није успело</translation>
 <translation id="9065203028668620118">Измени</translation>

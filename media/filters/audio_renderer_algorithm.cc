@@ -162,7 +162,6 @@ void AudioRendererAlgorithm::SetChannelMask(std::vector<bool> channel_mask) {
 void AudioRendererAlgorithm::OnResamplerRead(int frame_delay,
                                              AudioBus* audio_bus) {
   const int requested_frames = audio_bus->frames();
-
   int read_frames = audio_buffer_.ReadFrames(requested_frames, 0, audio_bus);
 
   if (read_frames < requested_frames) {
@@ -195,9 +194,9 @@ int AudioRendererAlgorithm::ResampleAndFill(AudioBus* dest,
   // we find the max number of reads it could request, and make sure we have
   // enough data to satisfy all of those reads.
   const int min_frames_required =
-      static_cast<int>(
-          std::ceil(input_frames_required / resampler_->ChunkSize())) *
-      resampler_->ChunkSize();
+      static_cast<int>(std::ceil(input_frames_required /
+                                 SincResampler::kDefaultRequestSize)) *
+      SincResampler::kDefaultRequestSize;
 
   if (!reached_end_of_stream_ && audio_buffer_.frames() < min_frames_required) {
     // Exit early, forgoing at most a total of |audio_buffer_.frames()| +

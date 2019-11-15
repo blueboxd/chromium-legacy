@@ -15,7 +15,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.ui.widget.dragreorder.DragReorderableListAdapter;
@@ -207,8 +207,9 @@ public class BookmarkActionBar extends SelectableListToolbar<BookmarkId>
             // Editing a bookmark action on multiple selected items doesn't make sense. So disable.
             getMenu().findItem(R.id.selection_mode_edit_menu_id).setVisible(
                     selectedBookmarks.size() == 1);
-            getMenu().findItem(R.id.selection_open_in_incognito_tab_id)
-                    .setVisible(PrefServiceBridge.getInstance().isIncognitoModeEnabled());
+            getMenu()
+                    .findItem(R.id.selection_open_in_incognito_tab_id)
+                    .setVisible(IncognitoUtils.isIncognitoModeEnabled());
             // It does not make sense to open a folder in new tab.
             for (BookmarkId bookmark : selectedBookmarks) {
                 BookmarkItem item = mDelegate.getModel().getBookmarkById(bookmark);

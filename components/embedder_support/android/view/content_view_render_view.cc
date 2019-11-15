@@ -98,7 +98,8 @@ void ContentViewRenderView::SurfaceChanged(
     const JavaParamRef<jobject>& surface) {
   if (current_surface_format_ != format) {
     current_surface_format_ = format;
-    compositor_->SetSurface(surface, false /* backed_by_surface_texture */);
+    compositor_->SetSurface(surface,
+                            true /* can_be_used_with_surface_control */);
   }
   compositor_->SetWindowBounds(gfx::Size(width, height));
 }

@@ -112,14 +112,14 @@ void TransportChannelSocketAdapter::Close(int error_code) {
   if (!read_callback_.is_null()) {
     net::CompletionRepeatingCallback callback = read_callback_;
     read_callback_.Reset();
-    read_buffer_ = NULL;
+    read_buffer_.reset();
     callback.Run(error_code);
   }
 
   if (!write_callback_.is_null()) {
     net::CompletionRepeatingCallback callback = write_callback_;
     write_callback_.Reset();
-    write_buffer_ = NULL;
+    write_buffer_.reset();
     callback.Run(error_code);
   }
 }
@@ -146,7 +146,7 @@ void TransportChannelSocketAdapter::OnNewPacket(
 
     net::CompletionRepeatingCallback callback = read_callback_;
     read_callback_.Reset();
-    read_buffer_ = NULL;
+    read_buffer_.reset();
     callback.Run(data_size);
   } else {
     LOG(WARNING)
@@ -169,7 +169,7 @@ void TransportChannelSocketAdapter::OnWritableState(
     if (result != net::ERR_IO_PENDING) {
       net::CompletionRepeatingCallback callback = write_callback_;
       write_callback_.Reset();
-      write_buffer_ = NULL;
+      write_buffer_.reset();
       callback.Run(result);
     }
   }

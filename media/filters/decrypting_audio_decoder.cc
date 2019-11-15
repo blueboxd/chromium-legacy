@@ -155,7 +155,7 @@ void DecryptingAudioDecoder::Reset(base::OnceClosure closure) {
 
   if (state_ == kWaitingForKey) {
     DCHECK(decode_cb_);
-    pending_buffer_to_decode_ = NULL;
+    pending_buffer_to_decode_.reset();
     std::move(decode_cb_).Run(DecodeStatus::ABORTED);
   }
 
@@ -174,7 +174,7 @@ DecryptingAudioDecoder::~DecryptingAudioDecoder() {
     decryptor_->DeinitializeDecoder(Decryptor::kAudio);
     decryptor_ = NULL;
   }
-  pending_buffer_to_decode_ = NULL;
+  pending_buffer_to_decode_.reset();
   if (init_cb_)
     std::move(init_cb_).Run(false);
   if (decode_cb_)

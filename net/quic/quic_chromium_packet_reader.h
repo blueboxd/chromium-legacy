@@ -47,7 +47,7 @@ class NET_EXPORT_PRIVATE QuicChromiumPacketReader {
   };
 
   QuicChromiumPacketReader(DatagramClientSocket* socket,
-                           quic::QuicClock* clock,
+                           const quic::QuicClock* clock,
                            Visitor* visitor,
                            int yield_after_packets,
                            quic::QuicTime::Delta yield_after_duration,
@@ -97,7 +97,7 @@ class NET_EXPORT_PRIVATE QuicChromiumPacketReader {
   Visitor* visitor_;
   bool read_pending_;
   int num_packets_read_;
-  quic::QuicClock* clock_;  // Owned by QuicStreamFactory
+  const quic::QuicClock* clock_;  // Not owned.
   int yield_after_packets_;
   quic::QuicTime::Delta yield_after_duration_;
   quic::QuicTime yield_after_;

@@ -7,7 +7,11 @@
 #include "ash/shell.h"
 #include "ash/wm/overview/overview_animation_state_waiter.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_grid.h"
+#include "ash/wm/overview/overview_item.h"
+#include "ash/wm/overview/overview_session.h"
 #include "base/callback.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -41,6 +45,26 @@ void OverviewTestApi::SetOverviewMode(
 
   if (!animation_started)
     waiter->Cancel();
+}
+
+base::Optional<OverviewInfo> OverviewTestApi::GetOverviewInfo() const {
+  auto* overview_controller = Shell::Get()->overview_controller();
+  if (!overview_controller->InOverviewSession())
+    return base::nullopt;
+
+  OverviewInfo info;
+  for (const auto& grid :
+       overview_controller->overview_session()->grid_list()) {
+    for (const auto& overview_item : grid->window_list()) {
+      aura::Window* const app_window = overview_item->GetWindow();
+      info[app_window] = {
+          app_window,
+          overview_item->item_widget()->GetWindowBoundsInScreen(),
+          overview_item->IsDragItem(),
+      };
+    }
+  }
+  return info;
 }
 
 }  // namespace ash

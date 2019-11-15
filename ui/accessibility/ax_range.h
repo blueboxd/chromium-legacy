@@ -252,10 +252,12 @@ class AXRange {
   base::string16 GetText(AXTextConcatenationBehavior concatenation_behavior =
                              AXTextConcatenationBehavior::kAsTextContent,
                          int max_count = -1,
-                         bool include_ignored = false) const {
+                         bool include_ignored = false,
+                         size_t* appended_newlines_count = nullptr) const {
     base::string16 range_text;
     bool should_append_newline = false;
     bool found_trailing_newline = false;
+    size_t computed_newlines_count = 0;
     for (const AXRange& leaf_text_range : *this) {
       AXPositionType* start = leaf_text_range.anchor();
       AXPositionType* end = leaf_text_range.focus();
@@ -263,8 +265,10 @@ class AXRange {
       DCHECK_GE(start->text_offset(), 0);
       DCHECK_LE(start->text_offset(), end->text_offset());
 
-      if (should_append_newline)
+      if (should_append_newline) {
         range_text += base::ASCIIToUTF16("\n");
+        computed_newlines_count++;
+      }
 
       base::string16 current_anchor_text = start->GetText();
       int current_leaf_text_length = end->text_offset() - start->text_offset();
@@ -297,6 +301,8 @@ class AXRange {
         should_append_newline =
             !found_trailing_newline && end->AtEndOfParagraph();
     }
+    if (appended_newlines_count)
+      *appended_newlines_count = computed_newlines_count;
     return range_text;
   }
 

@@ -1278,14 +1278,17 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
       session_description_init->sdp().IsNull()) {
     return setLocalDescription(script_state);
   }
-  MaybeWarnAboutUnsafeSdp(session_description_init);
-  ReportSetSdpUsage(SetSdpOperationType::kSetLocalDescription,
-                    session_description_init);
   String sdp;
-  DOMException* exception = checkSdpForStateErrors(
-      ExecutionContext::From(script_state), session_description_init, &sdp);
-  if (exception) {
-    return ScriptPromise::RejectWithDOMException(script_state, exception);
+  if (session_description_init->type() != "rollback") {
+    MaybeWarnAboutUnsafeSdp(session_description_init);
+    ReportSetSdpUsage(SetSdpOperationType::kSetLocalDescription,
+                      session_description_init);
+
+    DOMException* exception = checkSdpForStateErrors(
+        ExecutionContext::From(script_state), session_description_init, &sdp);
+    if (exception) {
+      return ScriptPromise::RejectWithDOMException(script_state, exception);
+    }
   }
   NoteCallSetupStateEventPending(SetSdpOperationType::kSetLocalDescription,
                                  *session_description_init);
@@ -1378,9 +1381,11 @@ RTCSessionDescription* RTCPeerConnection::pendingLocalDescription() {
 ScriptPromise RTCPeerConnection::setRemoteDescription(
     ScriptState* script_state,
     const RTCSessionDescriptionInit* session_description_init) {
-  MaybeWarnAboutUnsafeSdp(session_description_init);
-  ReportSetSdpUsage(SetSdpOperationType::kSetRemoteDescription,
-                    session_description_init);
+  if (session_description_init->type() != "rollback") {
+    MaybeWarnAboutUnsafeSdp(session_description_init);
+    ReportSetSdpUsage(SetSdpOperationType::kSetRemoteDescription,
+                      session_description_init);
+  }
   if (signaling_state_ ==
       webrtc::PeerConnectionInterface::SignalingState::kClosed) {
     return ScriptPromise::RejectWithDOMException(
@@ -2655,7 +2660,7 @@ void RTCPeerConnection::OnStreamRemoveTrack(MediaStream* stream,
                                    ExceptionState::kExecutionContext, nullptr,
                                    nullptr);
     removeTrack(sender, exception_state);
-    // If removeTracl() failed most likely the connection is closed. The
+    // If removeTrack() failed most likely the connection is closed. The
     // exception can be suppressed, there is nothing to do.
     exception_state.ClearException();
   }
@@ -2848,7 +2853,24 @@ void RTCPeerConnection::DidModifySctpTransport(
 
 void RTCPeerConnection::DidModifyTransceivers(
     WebVector<std::unique_ptr<WebRTCRtpTransceiver>> web_transceivers,
+    WebVector<uintptr_t> removed_transceiver_ids,
     bool is_remote_description) {
+  for (auto id : removed_transceiver_ids) {
+    for (auto* it = transceivers_.begin(); it != transceivers_.end(); ++it) {
+      if ((*it)->web_transceiver()->Id() == id) {
+        auto* track = (*it)->receiver()->track();
+        for (const auto& stream : (*it)->receiver()->streams()) {
+          if (stream->getTracks().Contains(track)) {
+            stream->RemoveTrackAndFireEvents(track);
+          }
+        }
+        (*it)->receiver()->set_streams(MediaStreamVector());
+        (*it)->web_transceiver()->SetMid(base::nullopt);
+        transceivers_.erase(it);
+        break;
+      }
+    }
+  }
   HeapVector<Member<MediaStreamTrack>> mute_tracks;
   HeapVector<std::pair<Member<MediaStream>, Member<MediaStreamTrack>>>
       remove_list;

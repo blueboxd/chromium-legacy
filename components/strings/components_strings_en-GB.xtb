@@ -899,6 +899,7 @@
 <translation id="5329858041417644019">Your browser is not managed</translation>
 <translation id="5332219387342487447">Delivery Method</translation>
 <translation id="5334013548165032829">Detailed system logs</translation>
+<translation id="534295439873310000">NFC devices</translation>
 <translation id="5344579389779391559">This page may try to charge you money</translation>
 <translation id="5355557959165512791">You cannot visit <ph name="SITE" /> right now because its certificate has been revoked. Network errors and attacks are usually temporary, so this page will probably work later.</translation>
 <translation id="536296301121032821">Failed to store policy settings</translation>
@@ -1520,6 +1521,7 @@ Additional details:
 <translation id="8466379296835108687">{COUNT,plural, =1{1 credit card}other{# credit cards}}</translation>
 <translation id="8473863474539038330">Addresses and more</translation>
 <translation id="8479754468255770962">Staple bottom left</translation>
+<translation id="8481133456511676116">Did you mean <ph name="DOMAIN" />?</translation>
 <translation id="8483780878231876732">To use cards from your Google Account, sign in to Chrome</translation>
 <translation id="8488350697529856933">Applies to</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> took too long to respond.</translation>
@@ -1593,7 +1595,6 @@ Additional details:
 <translation id="8943282376843390568">Lime</translation>
 <translation id="8957210676456822347">Captive Portal Authorisation</translation>
 <translation id="8962950042226115166">Suspicious site</translation>
-<translation id="8966619695390250636">Did you mean?</translation>
 <translation id="8968766641738584599">Save card</translation>
 <translation id="8971063699422889582">Server's certificate has expired.</translation>
 <translation id="8975012916872825179">Includes information such as phone numbers, email addresses and delivery addresses</translation>

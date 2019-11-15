@@ -57,8 +57,7 @@ if (is_android || is_chromeos) {
   } else {
     import("//build/config/android/sdk.gni")
     declare_args() {
-      # Android SDK release. Currently, only "o_mr1" and "p" are publicly
-      # supported.
+      # Which Android SDK to use.
       android_sdk_release = default_android_sdk_release
     }
   }
@@ -72,19 +71,7 @@ if (is_android || is_chromeos) {
     assert(defined(default_android_ndk_major_version))
   }
 
-  if (android_sdk_release == "o_mr1") {
-    default_android_sdk_root = "//third_party/android_sdk/public"
-    default_android_sdk_version = 27
-    default_android_sdk_build_tools_version = "29.0.2"
-    default_android_sdk_tools_version_suffix = "-26.0.0-dev"
-    public_android_sdk = true
-  } else if (android_sdk_release == "p") {
-    default_android_sdk_root = "//third_party/android_sdk/public"
-    default_android_sdk_version = 28
-    default_android_sdk_build_tools_version = "29.0.2"
-    default_android_sdk_tools_version_suffix = "-26.0.0-dev"
-    public_android_sdk = true
-  } else if (android_sdk_release == "q") {
+  if (android_sdk_release == "q") {
     default_android_sdk_root = "//third_party/android_sdk/public"
     default_android_sdk_version = 29
     default_android_sdk_build_tools_version = "29.0.2"
@@ -214,10 +201,6 @@ if (is_android || is_chromeos) {
 
     # Enable the chrome build for devices without touchscreens.
     notouch_build = false
-
-    # Move Trichrome assets to the shared library APK. This will be removed
-    # once P builds are no longer supported. https://crbug.com/943637
-    trichrome_shared_assets = android_sdk_release == "q"
   }
 
   if (notouch_build && defined(extra_keymappings)) {

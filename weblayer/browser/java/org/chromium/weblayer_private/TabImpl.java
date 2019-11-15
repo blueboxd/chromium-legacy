@@ -18,6 +18,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.weblayer_private.interfaces.IDownloadCallbackClient;
+import org.chromium.weblayer_private.interfaces.IErrorPageCallbackClient;
 import org.chromium.weblayer_private.interfaces.IFullscreenCallbackClient;
 import org.chromium.weblayer_private.interfaces.INavigationControllerClient;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
@@ -38,6 +39,7 @@ public final class TabImpl extends ITab.Stub {
     private TabCallbackProxy mTabCallbackProxy;
     private NavigationControllerImpl mNavigationController;
     private DownloadCallbackProxy mDownloadCallbackProxy;
+    private ErrorPageCallbackProxy mErrorPageCallbackProxy;
     private FullscreenCallbackProxy mFullscreenCallbackProxy;
     private ViewAndroidDelegate mViewAndroidDelegate;
     // BrowserImpl this TabImpl is in. This is only null during creation.
@@ -192,6 +194,20 @@ public final class TabImpl extends ITab.Stub {
     }
 
     @Override
+    public void setErrorPageCallbackClient(IErrorPageCallbackClient client) {
+        if (client != null) {
+            if (mErrorPageCallbackProxy == null) {
+                mErrorPageCallbackProxy = new ErrorPageCallbackProxy(mNativeTab, client);
+            } else {
+                mErrorPageCallbackProxy.setClient(client);
+            }
+        } else if (mErrorPageCallbackProxy != null) {
+            mErrorPageCallbackProxy.destroy();
+            mErrorPageCallbackProxy = null;
+        }
+    }
+
+    @Override
     public void setFullscreenCallbackClient(IFullscreenCallbackClient client) {
         if (client != null) {
             if (mFullscreenCallbackProxy == null) {
@@ -228,6 +244,10 @@ public final class TabImpl extends ITab.Stub {
         if (mDownloadCallbackProxy != null) {
             mDownloadCallbackProxy.destroy();
             mDownloadCallbackProxy = null;
+        }
+        if (mErrorPageCallbackProxy != null) {
+            mErrorPageCallbackProxy.destroy();
+            mErrorPageCallbackProxy = null;
         }
         if (mFullscreenCallbackProxy != null) {
             mFullscreenCallbackProxy.destroy();

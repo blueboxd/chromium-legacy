@@ -1222,8 +1222,6 @@ void BrowserAccessibilityManager::OnNodeWillBeDeleted(ui::AXTree* tree,
   if (BrowserAccessibility* wrapper = GetFromAXNode(node)) {
     if (wrapper == GetLastFocusedNode())
       SetLastFocusedNode(nullptr);
-    id_wrapper_map_.erase(node->id());
-    wrapper->Destroy();
   }
 }
 
@@ -1236,6 +1234,15 @@ void BrowserAccessibilityManager::OnNodeCreated(ui::AXTree* tree,
   BrowserAccessibility* wrapper = factory_->Create();
   id_wrapper_map_[node->id()] = wrapper;
   wrapper->Init(this, node);
+}
+
+void BrowserAccessibilityManager::OnNodeDeleted(ui::AXTree* tree,
+                                                int32_t node_id) {
+  DCHECK_NE(node_id, ui::AXNode::kInvalidAXID);
+  if (BrowserAccessibility* wrapper = GetFromID(node_id)) {
+    id_wrapper_map_.erase(node_id);
+    wrapper->Destroy();
+  }
 }
 
 void BrowserAccessibilityManager::OnNodeReparented(ui::AXTree* tree,

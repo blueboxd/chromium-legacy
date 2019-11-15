@@ -153,7 +153,8 @@ IN_PROC_BROWSER_TEST_F(LoginTest, PRE_GaiaAuthOffline) {
   offline_gaia_test_mixin_.PrepareOfflineGaiaLogin();
 }
 
-IN_PROC_BROWSER_TEST_F(LoginTest, GaiaAuthOffline) {
+// Flaking: https://crbug.com/1023591
+IN_PROC_BROWSER_TEST_F(LoginTest, DISABLED_GaiaAuthOffline) {
   offline_gaia_test_mixin_.GoOffline();
   offline_gaia_test_mixin_.SignIn(test_user_.account_id, kPassword);
   TestSystemTrayIsVisible(false);

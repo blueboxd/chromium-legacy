@@ -2346,9 +2346,13 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   // added a fake strategy, so checking for Attempt calls checks if there was
   // any attempt to overlay, which there shouldn't be. We can't use the quad
   // list because the render pass is cleaned up by DrawFrame.
+#if defined(USE_OZONE) || defined(OS_ANDROID)
   EXPECT_CALL(processor->strategy(), Attempt(_, _, _, _, _, _, _)).Times(0);
+#elif defined(OS_MACOSX)
   EXPECT_CALL(*validator, AllowCALayerOverlays()).Times(0);
+#elif defined(OS_WIN)
   EXPECT_CALL(*validator, AllowDCLayerOverlays()).Times(0);
+#endif
   DrawFrame(&renderer, viewport_size);
   Mock::VerifyAndClearExpectations(&processor->strategy());
   Mock::VerifyAndClearExpectations(
@@ -2367,13 +2371,17 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
       premultiplied_alpha, gfx::PointF(0, 0), gfx::PointF(1, 1),
       SK_ColorTRANSPARENT, vertex_opacity, flipped, nearest_neighbor,
       /*secure_output_only=*/false, gfx::ProtectedVideoType::kClear);
+#if defined(USE_OZONE) || defined(OS_ANDROID)
+  EXPECT_CALL(processor->strategy(), Attempt(_, _, _, _, _, _, _)).Times(1);
+#elif defined(OS_MACOSX)
   EXPECT_CALL(*validator, AllowCALayerOverlays())
       .Times(1)
       .WillOnce(::testing::Return(false));
+#elif defined(OS_WIN)
   EXPECT_CALL(*validator, AllowDCLayerOverlays())
       .Times(1)
       .WillOnce(::testing::Return(false));
-  EXPECT_CALL(processor->strategy(), Attempt(_, _, _, _, _, _, _)).Times(1);
+#endif
   DrawFrame(&renderer, viewport_size);
 
   // If the CALayerOverlay path is taken, then the ordinary overlay path should
@@ -2390,10 +2398,17 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
       premultiplied_alpha, gfx::PointF(0, 0), gfx::PointF(1, 1),
       SK_ColorTRANSPARENT, vertex_opacity, flipped, nearest_neighbor,
       /*secure_output_only=*/false, gfx::ProtectedVideoType::kClear);
+#if defined(OS_MACOSX)
   EXPECT_CALL(*validator, AllowCALayerOverlays())
       .Times(1)
       .WillOnce(::testing::Return(true));
-  EXPECT_CALL(processor->strategy(), Attempt(_, _, _, _, _, _, _)).Times(0);
+#elif defined(USE_OZONE) || defined(OS_ANDROID)
+  EXPECT_CALL(processor->strategy(), Attempt(_, _, _, _, _, _, _)).Times(1);
+#elif defined(OS_WIN)
+  EXPECT_CALL(*validator, AllowDCLayerOverlays())
+      .Times(1)
+      .WillOnce(::testing::Return(true));
+#endif
   DrawFrame(&renderer, viewport_size);
 
   // Transfer resources back from the parent to the child. Set no resources as
@@ -2451,6 +2466,7 @@ class WaitSyncTokenCountingGLES2Interface : public TestGLES2Interface {
   MOCK_METHOD1(WaitSyncTokenCHROMIUM, void(const GLbyte* sync_token));
 };
 
+#if defined(USE_OZONE) || defined(OS_ANDROID)
 class MockOverlayScheduler {
  public:
   MOCK_METHOD7(Schedule,
@@ -2581,6 +2597,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
   child_resource_provider->RemoveImportedResource(resource_id);
   child_resource_provider->ShutdownAndReleaseAllResources();
 }
+#endif  // defined(USE_OZONE) || defined(OS_ANDROID)
 
 class OutputColorMatrixMockGLES2Interface : public TestGLES2Interface {
  public:
@@ -2835,6 +2852,7 @@ TEST_F(GLRendererPartialSwapTest, NoPartialSwap) {
   RunTest(false, false);
 }
 
+#if defined(OS_WIN)
 TEST_F(GLRendererPartialSwapTest, SetDrawRectangle_PartialSwap) {
   RunTest(true, true);
 }
@@ -2972,6 +2990,7 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
   child_resource_provider->RemoveImportedResource(resource_id);
   child_resource_provider->ShutdownAndReleaseAllResources();
 }
+#endif
 
 class GLRendererWithMockContextTest : public ::testing::Test {
  protected:
@@ -3018,6 +3037,7 @@ TEST_F(GLRendererWithMockContextTest,
   Mock::VerifyAndClearExpectations(context_support_ptr_);
 }
 
+#if defined(USE_OZONE) || defined(OS_ANDROID)
 class ContentBoundsOverlayProcessor : public OverlayProcessor {
  public:
   class Strategy : public OverlayProcessor::Strategy {
@@ -3052,7 +3072,8 @@ class ContentBoundsOverlayProcessor : public OverlayProcessor {
           std::make_unique<Strategy>(std::move(content_bounds_)));
     }
 
-    // Returns true if draw quads can be represented as CALayers (Mac only).
+    // Empty mock methods since this test set up uses strategies, which are only
+    // for ozone and android.
     MOCK_CONST_METHOD0(AllowCALayerOverlays, bool());
     MOCK_CONST_METHOD0(AllowDCLayerOverlays, bool());
     MOCK_CONST_METHOD0(NeedsSurfaceOccludingDamageRect, bool());
@@ -3144,7 +3165,9 @@ TEST_F(GLRendererSwapWithBoundsTest, NonEmpty) {
   content_bounds.push_back(gfx::Rect(20, 20, 30, 30));
   RunTest(content_bounds);
 }
+#endif  // defined(USE_OZONE) || defined(OS_ANDROID)
 
+#if defined(OS_MACOSX)
 class CALayerValidator : public OverlayCandidateValidator {
  public:
   bool AllowCALayerOverlays() const override { return true; }
@@ -4059,6 +4082,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysCachedTexturesAreFreed) {
   Mock::VerifyAndClearExpectations(&gl());
   renderer().SwapBuffers(std::vector<ui::LatencyInfo>());
 }
+#endif
 
 class FramebufferWatchingGLRenderer : public FakeRendererGL {
  public:
@@ -4190,6 +4214,7 @@ TEST_F(GLRendererTest, UndamagedRenderPassStillDrawnWhenNoPartialSwap) {
   }
 }
 
+#if defined(USE_OZONE) || defined(OS_ANDROID)
 class GLRendererWithGpuFenceTest : public GLRendererTest {
  protected:
   GLRendererWithGpuFenceTest() {
@@ -4313,6 +4338,7 @@ TEST_F(GLRendererWithGpuFenceTest,
       .Times(1);
   DrawFrame(renderer_.get(), viewport_size);
 }
+#endif  // defined(USE_OZONE) || defined(OS_ANDROID)
 
 }  // namespace
 }  // namespace viz

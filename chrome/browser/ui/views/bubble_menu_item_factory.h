@@ -11,10 +11,13 @@
 #include "base/strings/string16.h"
 
 namespace views {
+class Button;
 class ButtonListener;
 class ImageButton;
 class LabelButton;
 }  // namespace views
+
+void ConfigureBubbleMenuItem(views::Button* button, int button_id);
 
 // Convience method for creating a menu item used inside a bubble that can then
 // be futher configured to hold an image and text.

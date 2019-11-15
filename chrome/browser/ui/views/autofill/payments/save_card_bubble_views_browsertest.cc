@@ -80,7 +80,6 @@
 #include "ui/views/layout/animating_layout_manager.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/non_client_view.h"
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "chrome/browser/ui/views/sync/dice_bubble_sync_promo_view.h"
@@ -639,7 +638,6 @@ class SaveCardBubbleViewsFullFormBrowserTest
 
   void ClickOnDialogView(views::View* view) {
     GetSaveCardBubbleViews()
-        ->GetDialogClientView()
         ->ResetViewShownTimeStampForTesting();
     views::BubbleFrameView* bubble_frame_view =
         static_cast<views::BubbleFrameView*>(GetSaveCardBubbleViews()
@@ -676,10 +674,10 @@ class SaveCardBubbleViewsFullFormBrowserTest
 
     if (!specified_view) {
       // Many of the save card bubble's inner Views are not child views but
-      // rather contained by its DialogClientView. If we didn't find what we
-      // were looking for, check there as well.
+      // rather contained by the dialog. If we didn't find what we were looking
+      // for, check there as well.
       specified_view =
-          save_card_bubble_views->GetDialogClientView()->GetViewByID(
+          save_card_bubble_views->GetWidget()->GetRootView()->GetViewByID(
               static_cast<int>(view_id));
     }
     if (!specified_view) {

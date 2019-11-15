@@ -10,22 +10,23 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view.h"
 
 namespace {
 constexpr gfx::Insets kDefaultBorderInsets = gfx::Insets(12);
+}  // namespace
 
 void ConfigureBubbleMenuItem(views::Button* button, int button_id) {
   // Items within a menu should not show focus rings.
   button->SetInstallFocusRingOnFocus(false);
   button->SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
+  views::InstallRectHighlightPathGenerator(button);
   button->set_ink_drop_base_color(HoverButton::GetInkDropColor(button));
   button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   button->SetID(button_id);
 }
-
-}  // namespace
 
 std::unique_ptr<views::LabelButton> CreateBubbleMenuItem(
     int button_id,

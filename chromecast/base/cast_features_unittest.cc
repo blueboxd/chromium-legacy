@@ -5,7 +5,6 @@
 #include "chromecast/base/cast_features.h"
 
 #include "base/macros.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/values.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -25,7 +24,7 @@ const char kTestParamsFeatureName[] = "test_params_feature";
 
 class CastFeaturesTest : public testing::Test {
  public:
-  CastFeaturesTest() : field_trial_list_(nullptr) {}
+  CastFeaturesTest() {}
   ~CastFeaturesTest() override {}
 
   // testing::Test implementation:
@@ -40,10 +39,6 @@ class CastFeaturesTest : public testing::Test {
   }
 
  private:
-  // A field trial list must be created before attempting to create FieldTrials.
-  // In production, this instance lives in CastBrowserMainParts.
-  base::FieldTrialList field_trial_list_;
-
   std::unique_ptr<base::FeatureList> original_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(CastFeaturesTest);

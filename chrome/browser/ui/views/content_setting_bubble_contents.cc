@@ -49,7 +49,6 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/native_cursor.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace {
 
@@ -682,7 +681,6 @@ void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,
 
     // Toggling the check state may change the dialog button text.
     DialogModelChanged();
-    GetDialogClientView()->Layout();
   } else if (sender == learn_more_button_) {
     GetWidget()->Close();
     content_setting_bubble_model_->OnLearnMoreClicked();

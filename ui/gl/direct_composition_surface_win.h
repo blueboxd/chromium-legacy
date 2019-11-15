@@ -81,6 +81,8 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
   // Returns true if swap chain tearing is supported.
   static bool IsSwapChainTearingSupported();
 
+  static bool AllowTearing();
+
   static void SetScaledOverlaysSupportedForTesting(bool value);
 
   static void SetOverlayFormatUsedForTesting(DXGI_FORMAT format);

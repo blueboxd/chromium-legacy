@@ -10,17 +10,16 @@
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
-#include "chrome/browser/chromeos/child_accounts/child_account_test_utils.h"
 #include "chrome/browser/chromeos/child_accounts/parent_access_code/config_source.h"
 #include "chrome/browser/chromeos/child_accounts/parent_access_code/parent_access_service.h"
 #include "chrome/browser/chromeos/child_accounts/parent_access_code/parent_access_test_utils.h"
-#include "chrome/browser/chromeos/policy/login_policy_test_base.h"
 #include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/supervised_user/logged_in_user_mixin.h"
+#include "chrome/test/base/mixin_based_in_process_browser_test.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "components/account_id/account_id.h"
-#include "components/policy/core/browser/browser_policy_connector.h"
-#include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -82,66 +81,57 @@ class TestParentAccessServiceObserver : public ParentAccessService::Observer {
   DISALLOW_COPY_AND_ASSIGN(TestParentAccessServiceObserver);
 };
 
-class ParentAccessServiceTest : public policy::LoginPolicyTestBase {
+class ParentAccessServiceTest : public MixinBasedInProcessBrowserTest {
  public:
   ParentAccessServiceTest()
-      : test_observer_(
-            std::make_unique<TestParentAccessServiceObserver>(child_)) {}
+      : test_observer_(std::make_unique<TestParentAccessServiceObserver>(
+            logged_in_user_mixin_.GetAccountId())) {}
   ~ParentAccessServiceTest() override = default;
 
-  void SetUp() override {
-    // Recognize example.com (used by LoginPolicyTestBase) as non-enterprise
-    // account.
-    policy::BrowserPolicyConnector::SetNonEnterpriseDomainForTesting(
-        "example.com");
-
-    policy::LoginPolicyTestBase::SetUp();
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kOobeSkipPostLogin);
   }
 
   void SetUpOnMainThread() override {
     ASSERT_NO_FATAL_FAILURE(GetTestAccessCodeValues(&test_values_));
     ParentAccessService::Get().AddObserver(test_observer_.get());
-    policy::LoginPolicyTestBase::SetUpOnMainThread();
+    MixinBasedInProcessBrowserTest::SetUpOnMainThread();
+    logged_in_user_mixin_.SetUpOnMainThreadHelper(host_resolver(), this);
   }
 
   void TearDownOnMainThread() override {
     ParentAccessService::Get().RemoveObserver(test_observer_.get());
-    policy::LoginPolicyTestBase::TearDownOnMainThread();
-  }
-
-  std::string GetIdToken() const override {
-    return test::GetChildAccountOAuthIdToken();
+    MixinBasedInProcessBrowserTest::TearDownOnMainThread();
   }
 
  protected:
-  void LogInChild() {
-    SkipToLoginScreen();
-    LogIn(kAccountId, kAccountPassword, test::kChildAccountServiceFlags);
-  }
-
   // Updates the policy containing the Parent Access Code config.
   void UpdatePolicy(const base::DictionaryValue& dict) {
+    std::string config_string;
+    base::JSONWriter::Write(dict, &config_string);
+
+    logged_in_user_mixin_.GetUserPolicyMixin()
+        ->RequestPolicyUpdate()
+        ->policy_payload()
+        ->mutable_parentaccesscodeconfig()
+        ->set_value(config_string);
+
     const user_manager::UserManager* const user_manager =
         user_manager::UserManager::Get();
     EXPECT_TRUE(user_manager->GetActiveUser()->IsChild());
     Profile* child_profile =
         ProfileHelper::Get()->GetProfileByUser(user_manager->GetActiveUser());
 
-    std::string config_string;
-    base::JSONWriter::Write(dict, &config_string);
-
-    base::DictionaryValue policy;
-    policy.SetKey(policy::key::kParentAccessCodeConfig,
-                  base::Value(config_string));
-    user_policy_helper()->SetPolicyAndWait(
-        std::move(policy), base::DictionaryValue(), child_profile);
+    logged_in_user_mixin_.GetUserPolicyTestHelper()->RefreshPolicyAndWait(
+        child_profile);
   }
 
   // Performs |code| validation on ParentAccessService singleton using the
   // |validation time| and returns the result.
   bool ValidateAccessCode(const std::string& code, base::Time validation_time) {
-    return ParentAccessService::Get().ValidateParentAccessCode(child_, code,
-                                                               validation_time);
+    return ParentAccessService::Get().ValidateParentAccessCode(
+        logged_in_user_mixin_.GetAccountId(), code, validation_time);
   }
 
   // Checks if ParentAccessServiceObserver and ValidateParentAccessCodeCallback
@@ -152,8 +142,11 @@ class ParentAccessServiceTest : public policy::LoginPolicyTestBase {
     EXPECT_EQ(failure_count, test_observer_->validation_results_.failure_count);
   }
 
-  const AccountId child_ = AccountId::FromUserEmail(kAccountId);
   AccessCodeValues test_values_;
+  chromeos::LoggedInUserMixin logged_in_user_mixin_{
+      &mixin_host_,           LoggedInUserMixin::LogInType::kChild,
+      embedded_test_server(), true /*should_launch_browser*/,
+      base::nullopt,          false /*include_initial_user*/};
   std::unique_ptr<TestParentAccessServiceObserver> test_observer_;
 
  private:
@@ -161,8 +154,6 @@ class ParentAccessServiceTest : public policy::LoginPolicyTestBase {
 };
 
 IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, NoConfigAvailable) {
-  LogInChild();
-
   auto test_value = test_values_.begin();
   EXPECT_FALSE(ValidateAccessCode(test_value->second, test_value->first));
 
@@ -170,8 +161,6 @@ IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, NoConfigAvailable) {
 }
 
 IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, NoValidConfigAvailable) {
-  LogInChild();
-
   std::vector<AccessCodeConfig> old_configs;
   old_configs.emplace_back(GetInvalidTestConfig());
   UpdatePolicy(PolicyFromConfigs(GetInvalidTestConfig(), GetInvalidTestConfig(),
@@ -184,8 +173,6 @@ IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, NoValidConfigAvailable) {
 }
 
 IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, ValidationWithFutureConfig) {
-  LogInChild();
-
   std::vector<AccessCodeConfig> old_configs;
   old_configs.emplace_back(GetInvalidTestConfig());
   UpdatePolicy(PolicyFromConfigs(GetDefaultTestConfig(), GetInvalidTestConfig(),
@@ -198,8 +185,6 @@ IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, ValidationWithFutureConfig) {
 }
 
 IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, ValidationWithCurrentConfig) {
-  LogInChild();
-
   std::vector<AccessCodeConfig> old_configs;
   old_configs.emplace_back(GetInvalidTestConfig());
   UpdatePolicy(PolicyFromConfigs(GetInvalidTestConfig(), GetDefaultTestConfig(),
@@ -212,8 +197,6 @@ IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, ValidationWithCurrentConfig) {
 }
 
 IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, ValidationWithOldConfig) {
-  LogInChild();
-
   std::vector<AccessCodeConfig> old_configs;
   old_configs.emplace_back(GetInvalidTestConfig());
   old_configs.emplace_back(GetDefaultTestConfig());
@@ -227,8 +210,6 @@ IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, ValidationWithOldConfig) {
 }
 
 IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, MultipleValidationAttempts) {
-  LogInChild();
-
   AccessCodeValues::iterator test_value = test_values_.begin();
 
   // No config - validation should fail.
@@ -251,8 +232,6 @@ IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, MultipleValidationAttempts) {
 }
 
 IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, NoObserver) {
-  LogInChild();
-
   ParentAccessService::Get().RemoveObserver(test_observer_.get());
 
   UpdatePolicy(
@@ -265,8 +244,6 @@ IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, NoObserver) {
 }
 
 IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, NoAccountId) {
-  LogInChild();
-
   ParentAccessService::Get().RemoveObserver(test_observer_.get());
 
   UpdatePolicy(
@@ -279,8 +256,6 @@ IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, NoAccountId) {
 }
 
 IN_PROC_BROWSER_TEST_F(ParentAccessServiceTest, InvalidAccountId) {
-  LogInChild();
-
   ParentAccessService::Get().RemoveObserver(test_observer_.get());
 
   UpdatePolicy(

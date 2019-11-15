@@ -67,6 +67,10 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/caption_button_layout_constants.h"
 
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+#include "chrome/browser/ui/views/frame/webui_tab_strip_container_view.h"
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+
 namespace {
 
 // Color for the window title text.
@@ -657,7 +661,7 @@ bool BrowserNonClientFrameViewAsh::ShouldPaint() const {
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
   // Normal windows that have a WebUI-based tab strip do not need a browser
   // frame as no tab strip is drawn on top of the browser frame.
-  if (base::FeatureList::IsEnabled(features::kWebUITabStrip) &&
+  if (WebUITabStripContainerView::UseTouchableTabStrip() &&
       browser_view()->IsBrowserTypeNormal()) {
     return false;
   }

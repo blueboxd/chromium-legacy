@@ -6,6 +6,7 @@
 
 #include "cc/base/math_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace gfx {
 namespace {
@@ -31,18 +32,18 @@ TEST(OverlayTransformUtilTest, All) {
     SCOPED_TRACE(test_case.overlay_transform);
 
     auto transform = OverlayTransformToTransform(test_case.overlay_transform,
-                                                 viewport_bounds);
+                                                 gfx::SizeF(viewport_bounds));
     EXPECT_EQ(test_case.transformed,
               cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
                   transform, original));
 
-    auto transformed_viewport_bounds =
+    auto transformed_viewport_size =
         cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
             transform, gfx::Rect(viewport_bounds))
             .size();
     auto inverse_transform = OverlayTransformToTransform(
         InvertOverlayTransform(test_case.overlay_transform),
-        transformed_viewport_bounds);
+        gfx::SizeF(transformed_viewport_size));
     EXPECT_EQ(original, cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
                             inverse_transform, test_case.transformed));
   }

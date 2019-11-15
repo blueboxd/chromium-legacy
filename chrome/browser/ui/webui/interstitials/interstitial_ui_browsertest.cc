@@ -186,6 +186,12 @@ IN_PROC_BROWSER_TEST_F(InterstitialUITest, OriginPolicyErrorInterstitial) {
                    base::ASCIIToUTF16("has requested that an origin policy"));
 }
 
+IN_PROC_BROWSER_TEST_F(InterstitialUITest, BlockedInterceptionInterstitial) {
+  TestInterstitial(GURL("chrome://interstitials/blocked-interception"),
+                   "Your activity on example.com is being monitored",
+                   base::ASCIIToUTF16("Anything you type"));
+}
+
 // Tests that back button works after opening an interstitial from
 // chrome://interstitials.
 IN_PROC_BROWSER_TEST_F(InterstitialUITest, InterstitialBackButton) {

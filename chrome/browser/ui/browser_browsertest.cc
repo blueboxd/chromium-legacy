@@ -2867,7 +2867,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DialogsAllowedInFullscreenWithinTabMode) {
       static_cast<web_modal::WebContentsModalDialogManagerDelegate*>(browser());
 
   // Simulate a screen-captured tab requesting fullscreen.
-  tab->IncrementCapturerCount(gfx::Size(1280, 720));
+  tab->IncrementCapturerCount(gfx::Size(1280, 720), /* stay_hidden */ false);
   browser_as_wc_delegate->EnterFullscreenModeForTab(
       tab, GURL(), blink::mojom::FullscreenOptions());
   EXPECT_TRUE(browser_as_wc_delegate->IsFullscreenForTabOrPending(tab));
@@ -2879,7 +2879,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DialogsAllowedInFullscreenWithinTabMode) {
   EXPECT_TRUE(browser_as_wc_delegate->IsFullscreenForTabOrPending(tab));
 
   browser_as_dialog_delegate->SetWebContentsBlocked(tab, false);
-  tab->DecrementCapturerCount();
+  tab->DecrementCapturerCount(/* stay_hidden */ false);
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserTest, CountIncognitoWindows) {

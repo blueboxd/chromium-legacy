@@ -805,8 +805,10 @@ void SkiaRenderer::FinishDrawingFrame() {
         current_frame()->output_surface_plane.value());
   }
 
+#if defined(OS_WIN)
   // Schedule overlay planes to be presented before SwapBuffers().
   ScheduleDCLayers();
+#endif
 }
 
 void SkiaRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info) {
@@ -2040,12 +2042,13 @@ void SkiaRenderer::DrawUnsupportedQuad(const DrawQuad* quad,
 #endif
 }
 
+#if defined(OS_WIN)
 void SkiaRenderer::ScheduleDCLayers() {
-  if (current_frame()->dc_layer_overlay_list.empty())
+  if (current_frame()->overlay_list.empty())
     return;
 
   std::vector<gpu::SyncToken> sync_tokens;
-  for (auto& dc_layer_overlay : current_frame()->dc_layer_overlay_list) {
+  for (auto& dc_layer_overlay : current_frame()->overlay_list) {
     for (size_t i = 0; i < DCLayerOverlay::kNumResources; ++i) {
       ResourceId resource_id = dc_layer_overlay.resources[i];
       if (resource_id == kInvalidResourceId)
@@ -2067,9 +2070,9 @@ void SkiaRenderer::ScheduleDCLayers() {
 
   has_locked_overlay_resources_ = true;
   skia_output_surface_->ScheduleDCLayers(
-      std::move(current_frame()->dc_layer_overlay_list),
-      std::move(sync_tokens));
+      std::move(current_frame()->overlay_list), std::move(sync_tokens));
 }
+#endif
 
 sk_sp<SkColorFilter> SkiaRenderer::GetColorFilter(const gfx::ColorSpace& src,
                                                   const gfx::ColorSpace& dst,
@@ -2352,9 +2355,11 @@ void SkiaRenderer::CopyDrawnRenderPass(
   }
 }
 
+#if defined(OS_WIN)
 void SkiaRenderer::SetEnableDCLayers(bool enable) {
   skia_output_surface_->SetEnableDCLayers(enable);
 }
+#endif
 
 void SkiaRenderer::DidChangeVisibility() {
   if (visible_)

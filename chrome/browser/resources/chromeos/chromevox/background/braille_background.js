@@ -123,17 +123,6 @@ cvox.BrailleBackground.prototype.getTranslatorManager = function() {
 
 
 /**
- * Called when a Braille message is received from a page content script.
- * @param {Object} msg The Braille message.
- */
-cvox.BrailleBackground.prototype.onBrailleMessage = function(msg) {
-  if (msg['action'] == 'write') {
-    this.setContent_(cvox.NavBraille.fromJson(msg['params']), msg['contentId']);
-  }
-};
-
-
-/**
  * @param {!cvox.NavBraille} newContent
  * @param {?string} newContentId
  * @private
@@ -171,20 +160,4 @@ cvox.BrailleBackground.prototype.onBrailleKeyEvent_ = function(
       ChromeVoxState.instance.onBrailleKeyEvent(brailleEvt, content)) {
     return;
   }
-  this.sendCommand_(brailleEvt, content);
-};
-
-
-/**
- * Dispatches braille input commands to the content script.
- * @param {!cvox.BrailleKeyEvent} brailleEvt The event.
- * @param {cvox.NavBraille} content Content of display when event fired.
- * @private
- */
-cvox.BrailleBackground.prototype.sendCommand_ = function(brailleEvt, content) {
-  var msg = {'message': 'BRAILLE', 'args': brailleEvt};
-  if (content === this.lastContent_) {
-    msg.contentId = this.lastContentId_;
-  }
-  cvox.ExtensionBridge.send(msg);
 };

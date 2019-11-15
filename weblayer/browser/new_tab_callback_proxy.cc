@@ -4,13 +4,11 @@
 
 #include "weblayer/browser/new_tab_callback_proxy.h"
 
-#include "base/android/jni_string.h"
 #include "url/gurl.h"
 #include "weblayer/browser/java/jni/NewTabCallbackProxy_jni.h"
 #include "weblayer/browser/tab_impl.h"
 
 using base::android::AttachCurrentThread;
-using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaLocalRef;
 
 namespace weblayer {
@@ -28,6 +26,7 @@ NewTabCallbackProxy::~NewTabCallbackProxy() {
 void NewTabCallbackProxy::OnNewTab(std::unique_ptr<Tab> tab, NewTabType type) {
   JNIEnv* env = AttachCurrentThread();
   // The Java side takes ownership of Tab.
+  TRACE_EVENT0("weblayer", "Java_NewTabCallbackProxy_onNewTab");
   Java_NewTabCallbackProxy_onNewTab(env, java_impl_,
                                     reinterpret_cast<jlong>(tab.release()),
                                     static_cast<int>(type));

@@ -732,12 +732,10 @@ SkColor NativeThemeWin::GetPlatformHighContrastColor(ColorId color_id) const {
       return system_colors_[SystemThemeColor::kButtonFace];
 
     // Button Text Foreground
-    case kColorId_TouchableMenuItemLabelColor:
     case kColorId_EnabledMenuItemForegroundColor:
     case kColorId_MenuItemMinorTextColor:
     case kColorId_MenuBorderColor:
     case kColorId_MenuSeparatorColor:
-    case kColorId_ActionableSubmenuVerticalSeparatorColor:
     case kColorId_SeparatorColor:
     case kColorId_TextfieldDefaultColor:
     case kColorId_ButtonEnabledColor:

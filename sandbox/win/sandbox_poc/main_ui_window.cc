@@ -519,7 +519,7 @@ bool MainUIWindow::SpawnTarget() {
       broker_->SpawnTarget(spawn_target_.c_str(), arguments, policy,
                            &warning_result, &last_error, &target_);
 
-  policy = NULL;
+  policy.reset();
 
   bool return_value = false;
   if (sandbox::SBOX_ALL_OK != result) {

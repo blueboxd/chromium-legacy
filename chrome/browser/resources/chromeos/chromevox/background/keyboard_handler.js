@@ -40,7 +40,7 @@ BackgroundKeyboardHandler.prototype = {
    */
   onKeyDown: function(evt) {
     EventSourceState.set(EventSourceType.STANDARD_KEYBOARD);
-    evt.stickyMode = cvox.ChromeVox.isStickyModeOn() && cvox.ChromeVox.isActive;
+    evt.stickyMode = cvox.ChromeVox.isStickyModeOn();
     if (cvox.ChromeVox.passThroughMode) {
       return false;
     }

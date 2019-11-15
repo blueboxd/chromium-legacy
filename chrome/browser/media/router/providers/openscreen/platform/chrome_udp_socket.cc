@@ -9,13 +9,13 @@
 
 #include "base/bind.h"
 #include "base/containers/span.h"
-#include "chrome/browser/media/router/providers/openscreen/platform/chrome_platform_client.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/address_family.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "services/network/public/mojom/network_context.mojom.h"
-#include "third_party/openscreen/src/platform/api/udp_packet.h"
+#include "third_party/openscreen/src/platform/base/udp_packet.h"
 
 // Open Screen expects us to provide linked implementations of some of its
 // static create methods, which have to be in their namespace.
@@ -27,8 +27,9 @@ ErrorOr<UdpSocketUniquePtr> UdpSocket::Create(
     TaskRunner* task_runner,
     Client* client,
     const IPEndpoint& local_endpoint) {
+  auto* const manager = SystemNetworkContextManager::GetInstance();
   network::mojom::NetworkContext* const network_context =
-      media_router::ChromePlatformClient::GetInstance()->network_context();
+      manager ? manager->GetContext() : nullptr;
   if (!network_context) {
     return Error::Code::kInitializationFailure;
   }

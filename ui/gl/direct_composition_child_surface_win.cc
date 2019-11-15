@@ -41,12 +41,6 @@ namespace {
 // is made current, then this surface will be suspended.
 IDCompositionSurface* g_current_surface = nullptr;
 
-bool AllowTearing() {
-  // Swap chain tearing is used only if vsync is disabled explicitly.
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kDisableGpuVsync) &&
-         DirectCompositionSurfaceWin::IsSwapChainTearingSupported();
-}
 }  // namespace
 
 DirectCompositionChildSurfaceWin::DirectCompositionChildSurfaceWin() = default;
@@ -117,8 +111,11 @@ bool DirectCompositionChildSurfaceWin::ReleaseDrawTexture(bool will_discard) {
       dcomp_surface_serial_++;
     } else if (!will_discard) {
       TRACE_EVENT0("gpu", "DirectCompositionChildSurfaceWin::PresentSwapChain");
-      UINT interval = first_swap_ || !vsync_enabled_ || AllowTearing() ? 0 : 1;
-      UINT flags = AllowTearing() ? DXGI_PRESENT_ALLOW_TEARING : 0;
+      const bool use_swap_chain_tearing =
+          DirectCompositionSurfaceWin::AllowTearing();
+      UINT interval =
+          first_swap_ || !vsync_enabled_ || use_swap_chain_tearing ? 0 : 1;
+      UINT flags = use_swap_chain_tearing ? DXGI_PRESENT_ALLOW_TEARING : 0;
       DXGI_PRESENT_PARAMETERS params = {};
       RECT dirty_rect = swap_rect_.ToRECT();
       params.DirtyRectsCount = 1;
@@ -307,7 +304,9 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
     desc.AlphaMode = (has_alpha_ || enable_dc_layers_)
                          ? DXGI_ALPHA_MODE_PREMULTIPLIED
                          : DXGI_ALPHA_MODE_IGNORE;
-    desc.Flags = AllowTearing() ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
+    desc.Flags = DirectCompositionSurfaceWin::AllowTearing()
+                     ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING
+                     : 0;
     HRESULT hr = dxgi_factory->CreateSwapChainForComposition(
         d3d11_device_.Get(), &desc, nullptr, &swap_chain_);
     first_swap_ = true;
@@ -405,7 +404,9 @@ bool DirectCompositionChildSurfaceWin::Resize(const gfx::Size& size,
   // ResizeBuffers can't change alpha blending mode.
   if (swap_chain_ && resize_only) {
     DXGI_FORMAT format = ColorSpaceUtils::GetDXGIFormat(color_space_);
-    UINT flags = AllowTearing() ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
+    UINT flags = DirectCompositionSurfaceWin::AllowTearing()
+                     ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING
+                     : 0;
     HRESULT hr = swap_chain_->ResizeBuffers(2 /* BufferCount */, size.width(),
                                             size.height(), format, flags);
     UMA_HISTOGRAM_BOOLEAN("GPU.DirectComposition.SwapChainResizeResult",

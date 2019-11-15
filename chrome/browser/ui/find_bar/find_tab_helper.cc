@@ -38,7 +38,10 @@ FindTabHelper::FindTabHelper(WebContents* web_contents)
       last_search_result_() {
 }
 
-FindTabHelper::~FindTabHelper() = default;
+FindTabHelper::~FindTabHelper() {
+  for (auto& observer : observers_)
+    observer.OnFindTabHelperDestroyed(this);
+}
 
 void FindTabHelper::AddObserver(FindResultObserver* observer) {
   observers_.AddObserver(observer);

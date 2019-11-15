@@ -9,6 +9,7 @@
 <translation id="1066060668811609597">ஒத்திசைவை நிர்வகித்தல்</translation>
 <translation id="1076421457278169141">குறியீடு ஸ்கேன் செய்யப்பட்டது</translation>
 <translation id="1084365883616172403">Facebook இடுகை நிறைவுபெற்றது.</translation>
+<translation id="1103523840287552314">எப்போதும் இந்த மொழியை மொழிபெயர் <ph name="LANGUAGE" /></translation>
 <translation id="1104948393051856124">ஏற்று தொடரவும்</translation>
 <translation id="1112015203684611006">அச்சிட முடியவில்லை.</translation>
 <translation id="1125564390852150847">புதிய தாவலை உருவாக்கு</translation>
@@ -27,6 +28,7 @@
 <translation id="1265739287306757398">எப்படி என அறிக</translation>
 <translation id="1272079795634619415">நிறுத்து</translation>
 <translation id="1283524564873030414">கடந்த 24 மணிநேரம்</translation>
+<translation id="1285320974508926690">இந்த தளத்தை எப்போதும் மொழிபெயர்க்க வேண்டாம்</translation>
 <translation id="1323735185997015385">நீக்கு</translation>
 <translation id="132683371494960526">மூலக் கோப்புறையை மாற்ற, இருமுறை தட்டவும்.</translation>
 <translation id="1340643665687018190">மூடு மெனு</translation>
@@ -67,6 +69,7 @@
 <translation id="1746815479209538200">புதிய தாவலைச் சேர்த்து, இணையத்தை உலாவலாம்.</translation>
 <translation id="1752547299766512813">கடவுச்சொற்களைச் சேமி</translation>
 <translation id="1753905327828125965">அதிகமாகப் பார்க்கப்பட்டவை</translation>
+<translation id="1803264062614276815">கார்டு உரிமையாளரின் பெயர்</translation>
 <translation id="1809939268435598390">கோப்புறையை நீக்கு</translation>
 <translation id="1813414402673211292">உலாவிய தரவை சுத்தமாக்கு</translation>
 <translation id="1820259098641718022">வாசிப்புப் பட்டியலில் சேர்க்கப்பட்டது</translation>
@@ -155,6 +158,7 @@
 <translation id="2989805286512600854">புதிய தாவலில் திற</translation>
 <translation id="3037605927509011580">அச்சச்சோ!</translation>
 <translation id="3112556859945124369">குறி…</translation>
+<translation id="3153862085237805241">கார்டைச் சேமிக்கும்</translation>
 <translation id="3157684681743766797">அனைத்தையும் குறி…</translation>
 <translation id="3175081911749765310">இணைய சேவைகள்</translation>
 <translation id="3178650076442119961">இன்று பயன்படுத்தியுள்ளார்</translation>
@@ -327,6 +331,7 @@
 <translation id="5728700505257787410">மன்னிக்கவும், உங்கள் கணக்கில் உள்நுழைவதில் பிழை.</translation>
 <translation id="5737974891429562743">கணக்கு உள்நுழைவு விவரங்கள் காலாவதியாகிவிட்டன. ஒத்திசைவைத் தொடங்க, புதுப்பிக்கவும்.</translation>
 <translation id="5738887413654608789">இதன் மூலம், உங்களைச் சுற்றியுள்ளவற்றின் அடிப்படையில் தொடர்புடைய இணையப் பக்கங்களைக் கண்டறியலாம்.</translation>
+<translation id="5782227691023083829">மொழிபெயர்க்கிறது...</translation>
 <translation id="5803566855766646066">இந்தப் புதிய கார்டை நிராகரிக்க வேண்டுமா?</translation>
 <translation id="5816228676161003208">இதன் மூலம் உங்கள் குரலைப் பயன்படுத்தி வேகமாகத் தேடலாம்.</translation>
 <translation id="5846482154967366008">தேடல் இன்ஜின்</translation>
@@ -406,6 +411,7 @@
 <translation id="6691331417640343772">ஒத்திசைத்த தரவை Google டாஷ்போர்டில் நிர்வகி</translation>
 <translation id="6713747756340119864">Google Apps</translation>
 <translation id="6730682669179532099">கடவுச்சொற்களை ஏற்ற முடியவில்லை</translation>
+<translation id="6748108480210050150">அனுப்புநர்</translation>
 <translation id="6780034285637185932">அஞ்சல் குறியீடு</translation>
 <translation id="6785453220513215166">சிதைவு அறிக்கையை அனுப்புகிறது...</translation>
 <translation id="679325081238418596">உங்கள் புக்மார்க்குகள், வரலாறு, கடவுச்சொற்கள் மற்றும் பிற அமைப்புகளை, உங்கள் எல்லா சாதனங்களிலும் பெறவும்</translation>
@@ -427,6 +433,7 @@
 <translation id="6973630695168034713">கோப்புறைகள்</translation>
 <translation id="6979158407327259162">Google இயக்ககம்</translation>
 <translation id="6988572888918530647">உங்கள் Google கணக்கை நிர்வகியுங்கள்</translation>
+<translation id="6998989275928107238">பெறுநர்:</translation>
 <translation id="7004499039102548441">சமீபத்திய தாவல்கள்</translation>
 <translation id="7006788746334555276">உள்ளடக்க அமைப்புகள்</translation>
 <translation id="7015203776128479407">ஒத்திசைப்பதற்கான துவக்க அமைவு முடியவில்லை. ஒத்திசைவு முடக்கப்பட்டுள்ளது.</translation>
@@ -466,6 +473,7 @@
 <translation id="7537586195939242955">வருந்துகிறோம், இந்த நேரத்தில் உங்கள் பாஸை பாஸ்புக்கில் நிறுவ முடியாது.</translation>
 <translation id="7554791636758816595">புதிய தாவல்</translation>
 <translation id="7561196759112975576">எப்போதும்</translation>
+<translation id="7600965453749440009"><ph name="LANGUAGE" /> ஐ எப்போதும் மொழிபெயர்க்க வேண்டாம்</translation>
 <translation id="7603852183842204213">பாப்-அப்கள் தடுக்கப்பட்டன (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7638584964844754484">தவறான கடவுத்தொடர்</translation>
 <translation id="7658239707568436148">ரத்து செய்</translation>
@@ -500,6 +508,7 @@
 <translation id="8076014560081431679">சேமித்த தள அமைப்புகள் நீக்கப்படாது, அவை உங்கள் உலாவல் தகவல்களைப் பிரதிபலிக்கக்கூடும். <ph name="BEGIN_LINK" />மேலும் அறிக<ph name="END_LINK" /></translation>
 <translation id="8114753159095730575">கோப்பைப் பதிவிறக்கிக்கொள்ளலாம். திரையின் அடிப்பகுதிக்கு அருகில், விருப்பங்கள் உள்ளன.</translation>
 <translation id="8131740175452115882">உறுதிப்படுத்து</translation>
+<translation id="8197543752516192074">பக்கத்தை மொழிபெயர்</translation>
 <translation id="8205564605687841303">ரத்துசெய்</translation>
 <translation id="8225985093977202398">தற்காலிகமாகச் சேமிக்கப்பட்ட படங்களும் கோப்புகளும்</translation>
 <translation id="8261506727792406068">நீக்கு</translation>
@@ -545,6 +554,7 @@
 <translation id="8981454092730389528">Google செயல்பாட்டுக் கட்டுப்பாடுகள்</translation>
 <translation id="8985320356172329008">Google இல் உள்நுழைந்திருக்கும் கணக்கு</translation>
 <translation id="9034759925968272072">உங்கள் Google கணக்கிலிருந்து வெளியேறமாட்டீர்கள். உங்கள் Google கணக்கு <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> எனும் தளத்தில் உலாவல் வரலாறு தொடர்பான பிற தகவல்களைக் கொண்டிருக்கலாம்.</translation>
+<translation id="9037965129289936994">அசல் மொழியில் காட்டு</translation>
 <translation id="9039373489628511875">இணைய வேகம்</translation>
 <translation id="9055772144595778347">உள்நுழைய முடியவில்லை</translation>
 <translation id="9065203028668620118">திருத்து</translation>

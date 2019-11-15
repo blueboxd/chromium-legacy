@@ -124,15 +124,6 @@ void OptimizationGuideWebContentsObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // If the navigation committed, this will cover if the race with the
-  // navigation was able to cover the navigation or not.
-  if (navigation_handle->HasCommitted() &&
-      navigation_handle->GetURL().SchemeIsHTTPOrHTTPS()) {
-    UMA_HISTOGRAM_BOOLEAN(
-        "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
-        "AtCommit",
-        WasHostCoveredByFetch(navigation_handle));
-  }
 
   // Delete Optimization Guide information later, so that other
   // DidFinishNavigation methods can reliably use
@@ -148,6 +139,14 @@ void OptimizationGuideWebContentsObserver::DidFinishNavigation(
                      weak_factory_.GetWeakPtr(),
                      navigation_handle->GetNavigationId(),
                      navigation_handle->HasCommitted()));
+
+  if (!optimization_guide_keyed_service_)
+    return;
+
+  OptimizationGuideNavigationData* nav_data =
+      GetOrCreateOptimizationGuideNavigationData(navigation_handle);
+  nav_data->set_was_host_covered_by_fetch_at_commit(
+      WasHostCoveredByFetch(navigation_handle));
 }
 
 void OptimizationGuideWebContentsObserver::

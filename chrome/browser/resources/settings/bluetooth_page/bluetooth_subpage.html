@@ -41,7 +41,7 @@
 
     <div class="settings-box first" actionable on-click="onEnableTap_">
       <div id="onOff" class="start settings-box-text"
-          on$="[[bluetoothToggleState]]">
+          on$="[[bluetoothToggleState]]" aria-hidden="true">
         [[getOnOffString_(bluetoothToggleState,
           '$i18nPolymer{deviceOn}', '$i18nPolymer{deviceOff}')]]
       </div>

@@ -84,10 +84,23 @@ base::TimeDelta UpgradeDetector::GetRelaunchNotificationPeriod() {
       local_state->FindPreference(prefs::kRelaunchNotificationPeriod);
   const int value = preference->GetValue()->GetInt();
   // Enforce the preference's documented minimum value.
-  static constexpr base::TimeDelta kMinValue = base::TimeDelta::FromHours(1);
+  constexpr base::TimeDelta kMinValue = base::TimeDelta::FromHours(1);
   if (preference->IsDefaultValue() || value < kMinValue.InMilliseconds())
     return base::TimeDelta();
   return base::TimeDelta::FromMilliseconds(value);
+}
+
+// static
+bool UpgradeDetector::IsRelaunchNotificationPolicyEnabled() {
+  // Not all tests provide a PrefService for local_state().
+  auto* local_state = g_browser_process->local_state();
+  if (!local_state)
+    return false;
+
+  // "Chrome menu only" means that the policy is disabled.
+  constexpr int kChromeMenuOnly = 0;
+  return local_state->GetInteger(prefs::kRelaunchNotification) !=
+         kChromeMenuOnly;
 }
 
 void UpgradeDetector::NotifyUpgrade() {

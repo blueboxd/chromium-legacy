@@ -444,6 +444,14 @@ bool DirectCompositionSurfaceWin::IsSwapChainTearingSupported() {
   return supported;
 }
 
+// static
+bool DirectCompositionSurfaceWin::AllowTearing() {
+  // Swap chain tearing is used only if vsync is disabled explicitly.
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kDisableGpuVsync) &&
+         DirectCompositionSurfaceWin::IsSwapChainTearingSupported();
+}
+
 bool DirectCompositionSurfaceWin::Initialize(GLSurfaceFormat format) {
   d3d11_device_ = QueryD3D11DeviceObjectFromANGLE();
   if (!d3d11_device_) {

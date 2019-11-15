@@ -142,6 +142,9 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
       mojo::PendingReceiver<content::mojom::NavigableContentsFactory>
           receiver) = 0;
 
+  // Returns the root window for the specified |display_id|.
+  virtual aura::Window* GetRootWindowForDisplayId(int64_t display_id) = 0;
+
   // Returns the root window that newly created windows should be added to.
   virtual aura::Window* GetRootWindowForNewWindows() = 0;
 

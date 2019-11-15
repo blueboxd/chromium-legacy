@@ -41,7 +41,7 @@
 <translation id="1938451708255335766">Genstart appen for at justere visningstætheden i vinduet.</translation>
 <translation id="2006524834898217237">Sørg for, at denne enhed har forbindelse til internettet.</translation>
 <translation id="208586643495776849">Prøv igen</translation>
-<translation id="2090963878406559571">Hvis du vil sende et nummer fra <ph name="ORIGIN" /> til din Android-telefon, skal du <ph name="TROUBLESHOOT_LINK" /> for begge enheder i indstillingerne.</translation>
+<translation id="2090963878406559571"><ph name="TROUBLESHOOT_LINK" /> for begge enheder i indstillingerne, hvis du vil sende et nummer fra <ph name="ORIGIN" /> til din Android-telefon.</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 d}one{# d}other{# d}}</translation>
 <translation id="2148716181193084225">I dag</translation>
 <translation id="2161656808144014275">Tekst</translation>

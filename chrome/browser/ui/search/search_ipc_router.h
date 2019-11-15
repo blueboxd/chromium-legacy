@@ -20,6 +20,7 @@
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 
 #if defined(OS_ANDROID)
 #error "Instant is only used on desktop";
@@ -163,6 +164,14 @@ class SearchIPCRouter : public content::WebContentsObserver,
 
     virtual void BlocklistPromo(const std::string& promo_id) = 0;
 
+    virtual void OpenAutocompleteMatch(uint8_t line,
+                                       const GURL& url,
+                                       double button,
+                                       bool alt_key,
+                                       bool ctrl_key,
+                                       bool meta_key,
+                                       bool shift_key) = 0;
+
     virtual void DeleteAutocompleteMatch(uint8_t line) = 0;
   };
 
@@ -206,6 +215,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
     virtual bool ShouldProcessQueryAutocomplete(bool is_active_tab) = 0;
     virtual bool ShouldProcessStopAutocomplete() = 0;
     virtual bool ShouldProcessBlocklistPromo() = 0;
+    virtual bool ShouldProcessOpenAutocompleteMatch(bool is_active_tab) = 0;
     virtual bool ShouldProcessDeleteAutocompleteMatch() = 0;
   };
 
@@ -319,6 +329,13 @@ class SearchIPCRouter : public content::WebContentsObserver,
                          bool prevent_inline_autocomplete) override;
   void StopAutocomplete(bool clear_result) override;
   void BlocklistPromo(const std::string& promo_id) override;
+  void OpenAutocompleteMatch(uint8_t line,
+                             const GURL& url,
+                             double button,
+                             bool alt_key,
+                             bool ctrl_key,
+                             bool meta_key,
+                             bool shift_key) override;
   void DeleteAutocompleteMatch(uint8_t line) override;
   void set_embedded_search_client_factory_for_testing(
       std::unique_ptr<EmbeddedSearchClientFactory> factory) {
@@ -356,10 +373,10 @@ class SearchIPCRouter : public content::WebContentsObserver,
   // Set to true, when the tab corresponding to |this| instance is active.
   bool is_active_tab_;
 
-  // Binding for the connected main frame. We only allow one frame to connect at
-  // the moment, but this could be extended to a map of connected frames, if
+  // Receiver for the connected main frame. We only allow one frame to connect
+  // at the moment, but this could be extended to a map of connected frames, if
   // desired.
-  mojo::AssociatedBinding<chrome::mojom::EmbeddedSearch> binding_;
+  mojo::AssociatedReceiver<chrome::mojom::EmbeddedSearch> receiver_{this};
 
   std::unique_ptr<EmbeddedSearchClientFactory> embedded_search_client_factory_;
 

@@ -284,6 +284,11 @@ void TestLoadTimingNotReusedWithPac(const LoadTimingInfo& load_timing_info,
 // result to return.
 class CapturingProxyResolver : public ProxyResolver {
  public:
+  struct LookupInfo {
+    GURL url;
+    NetworkIsolationKey network_isolation_key;
+  };
+
   CapturingProxyResolver()
       : proxy_server_(ProxyServer::SCHEME_HTTP, HostPortPair("myproxy", 80)) {}
   ~CapturingProxyResolver() override = default;
@@ -295,7 +300,7 @@ class CapturingProxyResolver : public ProxyResolver {
                      std::unique_ptr<Request>* request,
                      const NetLogWithSource& net_log) override {
     results->UseProxyServer(proxy_server_);
-    resolved_.push_back(url);
+    lookup_info_.push_back(LookupInfo{url, network_isolation_key});
     return OK;
   }
 
@@ -305,10 +310,10 @@ class CapturingProxyResolver : public ProxyResolver {
     proxy_server_ = proxy_server;
   }
 
-  const std::vector<GURL>& resolved() const { return resolved_; }
+  const std::vector<LookupInfo>& lookup_info() const { return lookup_info_; }
 
  private:
-  std::vector<GURL> resolved_;
+  std::vector<LookupInfo> lookup_info_;
 
   ProxyServer proxy_server_;
 
@@ -5999,6 +6004,46 @@ TEST_F(HttpNetworkTransactionTest, HttpProxyLoadTimingWithPacTwoRequests) {
 
   trans2.reset();
   session->CloseAllConnections();
+}
+
+// Make sure that NetworkIsolationKeys are passed down to the proxy layer.
+TEST_F(HttpNetworkTransactionTest, ProxyResolvedWithNetworkIsolationKey) {
+  const url::Origin kOrigin = url::Origin::Create(GURL("https://foo.test/"));
+  const net::NetworkIsolationKey kNetworkIsolationKey(kOrigin, kOrigin);
+
+  ProxyConfig proxy_config;
+  proxy_config.set_auto_detect(true);
+  proxy_config.set_pac_url(GURL("http://fooproxyurl"));
+
+  CapturingProxyResolver capturing_proxy_resolver;
+  capturing_proxy_resolver.set_proxy_server(ProxyServer::Direct());
+  session_deps_.proxy_resolution_service =
+      std::make_unique<ProxyResolutionService>(
+          std::make_unique<ProxyConfigServiceFixed>(ProxyConfigWithAnnotation(
+              proxy_config, TRAFFIC_ANNOTATION_FOR_TESTS)),
+          std::make_unique<CapturingProxyResolverFactory>(
+              &capturing_proxy_resolver),
+          nullptr);
+
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  // No need to continue with the network request - proxy resolution occurs
+  // before establishing a data.
+  StaticSocketDataProvider data{base::span<MockRead>(),
+                                base::span<MockWrite>()};
+  data.set_connect_data(MockConnect(SYNCHRONOUS, ERR_FAILED));
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  // Run first request until an auth challenge is observed.
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://foo.test/");
+  request.traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  HttpNetworkTransaction trans(LOWEST, session.get());
+  TestCompletionCallback callback;
+  int rv = trans.Start(&request, callback.callback(), NetLogWithSource());
+  EXPECT_THAT(callback.GetResult(rv), IsError(ERR_FAILED));
 }
 
 // Test a simple get through an HTTPS Proxy.
@@ -14140,7 +14185,7 @@ TEST_F(HttpNetworkTransactionTest, UseOriginNotAlternativeForProxy) {
   EXPECT_EQ("hello!", response_data);
 
   // Origin host bypasses proxy, no resolution should have happened.
-  ASSERT_TRUE(capturing_proxy_resolver.resolved().empty());
+  ASSERT_TRUE(capturing_proxy_resolver.lookup_info().empty());
 }
 
 TEST_F(HttpNetworkTransactionTest, UseAlternativeServiceForTunneledNpnSpdy) {
@@ -14250,11 +14295,11 @@ TEST_F(HttpNetworkTransactionTest, UseAlternativeServiceForTunneledNpnSpdy) {
 
   ASSERT_THAT(ReadTransaction(trans.get(), &response_data), IsOk());
   EXPECT_EQ("hello!", response_data);
-  ASSERT_EQ(2u, capturing_proxy_resolver.resolved().size());
+  ASSERT_EQ(2u, capturing_proxy_resolver.lookup_info().size());
   EXPECT_EQ("https://www.example.org/",
-            capturing_proxy_resolver.resolved()[0].spec());
+            capturing_proxy_resolver.lookup_info()[0].url.spec());
   EXPECT_EQ("https://www.example.org/",
-            capturing_proxy_resolver.resolved()[1].spec());
+            capturing_proxy_resolver.lookup_info()[1].url.spec());
 
   LoadTimingInfo load_timing_info;
   EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info));

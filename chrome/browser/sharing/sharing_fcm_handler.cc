@@ -7,6 +7,8 @@
 #include "base/no_destructor.h"
 #include "base/strings/strcat.h"
 #include "chrome/browser/sharing/sharing_constants.h"
+#include "chrome/browser/sharing/sharing_fcm_sender.h"
+#include "chrome/browser/sharing/sharing_handler_registry.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
@@ -45,12 +47,15 @@ std::string GetStrippedMessageId(const std::string& message_id) {
 
 }  // namespace
 
-SharingFCMHandler::SharingFCMHandler(gcm::GCMDriver* gcm_driver,
-                                     SharingFCMSender* sharing_fcm_sender,
-                                     SharingSyncPreference* sync_preference)
+SharingFCMHandler::SharingFCMHandler(
+    gcm::GCMDriver* gcm_driver,
+    SharingFCMSender* sharing_fcm_sender,
+    SharingSyncPreference* sync_preference,
+    std::unique_ptr<SharingHandlerRegistry> handler_registry)
     : gcm_driver_(gcm_driver),
       sharing_fcm_sender_(sharing_fcm_sender),
-      sync_preference_(sync_preference) {}
+      sync_preference_(sync_preference),
+      handler_registry_(std::move(handler_registry)) {}
 
 SharingFCMHandler::~SharingFCMHandler() {
   StopListening();
@@ -70,22 +75,6 @@ void SharingFCMHandler::StopListening() {
   }
 }
 
-void SharingFCMHandler::AddSharingHandler(
-    const SharingMessage::PayloadCase& payload_case,
-    SharingMessageHandler* handler) {
-  DCHECK(handler) << "Received request to add null handler";
-  DCHECK(payload_case != SharingMessage::PAYLOAD_NOT_SET)
-      << "Incorrect payload type specified for handler";
-  DCHECK(!sharing_handlers_.count(payload_case)) << "Handler already exists";
-
-  sharing_handlers_[payload_case] = handler;
-}
-
-void SharingFCMHandler::RemoveSharingHandler(
-    const SharingMessage::PayloadCase& payload_case) {
-  sharing_handlers_.erase(payload_case);
-}
-
 void SharingFCMHandler::OnMessagesDeleted(const std::string& app_id) {
   // TODO: Handle message deleted from the server.
 }
@@ -97,12 +86,13 @@ void SharingFCMHandler::ShutdownHandler() {
 void SharingFCMHandler::OnMessage(const std::string& app_id,
                                   const gcm::IncomingMessage& message) {
   std::string message_id = GetStrippedMessageId(message.message_id);
-  SharingMessage sharing_message;
+  chrome_browser_sharing::SharingMessage sharing_message;
   if (!sharing_message.ParseFromString(message.raw_data)) {
     LOG(ERROR) << "Failed to parse incoming message with id : " << message_id;
     return;
   }
-  DCHECK(sharing_message.payload_case() != SharingMessage::PAYLOAD_NOT_SET)
+  DCHECK(sharing_message.payload_case() !=
+         chrome_browser_sharing::SharingMessage::PAYLOAD_NOT_SET)
       << "No payload set in SharingMessage received";
 
   chrome_browser_sharing::MessageType message_type =
@@ -117,19 +107,21 @@ void SharingFCMHandler::OnMessage(const std::string& app_id,
   }
   LogSharingMessageReceived(message_type, sharing_message.payload_case());
 
-  auto it = sharing_handlers_.find(sharing_message.payload_case());
-  if (it == sharing_handlers_.end()) {
+  SharingMessageHandler* handler =
+      handler_registry_->GetSharingHandler(sharing_message.payload_case());
+  if (!handler) {
     LOG(ERROR) << "No handler found for payload : "
                << sharing_message.payload_case();
   } else {
     SharingMessageHandler::DoneCallback done_callback = base::DoNothing();
-    if (sharing_message.payload_case() != SharingMessage::kAckMessage) {
+    if (sharing_message.payload_case() !=
+        chrome_browser_sharing::SharingMessage::kAckMessage) {
       done_callback = base::BindOnce(
           &SharingFCMHandler::SendAckMessage, weak_ptr_factory_.GetWeakPtr(),
           std::move(message_id), message_type, GetTargetInfo(sharing_message));
     }
 
-    it->second->OnMessage(std::move(sharing_message), std::move(done_callback));
+    handler->OnMessage(std::move(sharing_message), std::move(done_callback));
   }
 }
 
@@ -149,7 +141,7 @@ void SharingFCMHandler::OnStoreReset() {
 }
 
 base::Optional<SharingTargetInfo> SharingFCMHandler::GetTargetInfo(
-    const SharingMessage& original_message) {
+    const chrome_browser_sharing::SharingMessage& original_message) {
   if (original_message.has_sender_info()) {
     auto& sender_info = original_message.sender_info();
     return SharingTargetInfo{sender_info.fcm_token(), sender_info.p256dh(),
@@ -171,7 +163,7 @@ void SharingFCMHandler::SendAckMessage(
     return;
   }
 
-  SharingMessage sharing_message;
+  chrome_browser_sharing::SharingMessage sharing_message;
   chrome_browser_sharing::AckMessage* ack_message =
       sharing_message.mutable_ack_message();
   ack_message->set_original_message_id(original_message_id);

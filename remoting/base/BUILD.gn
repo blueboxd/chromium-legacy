@@ -69,7 +69,7 @@ source_set("base") {
     "//remoting/base/grpc_support",
     "//third_party/libvpx",
     "//third_party/libyuv",
-    "//third_party/webrtc/modules/desktop_capture:primitives",
+    "//third_party/webrtc_overrides:webrtc_component",
     "//url",
   ]
   if (is_nacl) {
@@ -198,7 +198,7 @@ source_set("unit_tests") {
     "//mojo/core/embedder",
     "//net:test_support",
     "//third_party/libyuv",
-    "//third_party/webrtc/modules/desktop_capture:primitives",
+    "//third_party/webrtc_overrides:webrtc_component",
   ]
 
   if (is_win || is_mac || is_chromeos) {

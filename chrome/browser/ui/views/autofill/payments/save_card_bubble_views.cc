@@ -32,7 +32,6 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/style/typography.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace autofill {
 
@@ -65,7 +64,7 @@ SaveCardBubbleViews::SaveCardBubbleViews(views::View* anchor_view,
 
 void SaveCardBubbleViews::Show(DisplayReason reason) {
   ShowForReason(reason);
-  AssignIdsToDialogClientView();
+  AssignIdsToDialogButtons();
 }
 
 void SaveCardBubbleViews::Hide() {
@@ -209,11 +208,11 @@ void SaveCardBubbleViews::InitFootnoteView(views::View* footnote_view) {
   footnote_view_->SetID(DialogViewId::FOOTNOTE_VIEW);
 }
 
-void SaveCardBubbleViews::AssignIdsToDialogClientView() {
-  auto* ok_button = GetDialogClientView()->ok_button();
+void SaveCardBubbleViews::AssignIdsToDialogButtons() {
+  auto* ok_button = GetOkButton();
   if (ok_button)
     ok_button->SetID(DialogViewId::OK_BUTTON);
-  auto* cancel_button = GetDialogClientView()->cancel_button();
+  auto* cancel_button = GetCancelButton();
   if (cancel_button)
     cancel_button->SetID(DialogViewId::CANCEL_BUTTON);
 }

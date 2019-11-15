@@ -96,6 +96,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, CustomizeMenuTests) {
   EXPECT_TRUE(success);
 }
 
+#if !(defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER))
 IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, RealboxTests) {
   content::WebContents* active_tab = local_ntp_test_utils::OpenNewTab(
       browser(), GURL(chrome::kChromeUINewTabURL));
@@ -106,6 +107,7 @@ IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, RealboxTests) {
       active_tab, "!!runSimpleTests('realbox')", &success));
   EXPECT_TRUE(success);
 }
+#endif
 
 // A test class that sets up most_visited_browsertest.html as the NTP URL. It's
 // mostly a copy of the real most_visited_single.html, but it adds some testing

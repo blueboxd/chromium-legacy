@@ -25,7 +25,6 @@
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
-#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
@@ -214,11 +213,10 @@ SearchBox::SearchBox(content::RenderFrame* render_frame)
   receiver_.Bind(embedded_search_client.InitWithNewEndpointAndPassReceiver(),
                  render_frame->GetTaskRunner(
                      blink::TaskType::kInternalNavigationAssociated));
-  connector->Connect(
-      mojo::MakeRequest(&embedded_search_service_,
-                        render_frame->GetTaskRunner(
-                            blink::TaskType::kInternalNavigationAssociated)),
-      std::move(embedded_search_client));
+  connector->Connect(embedded_search_service_.BindNewEndpointAndPassReceiver(
+                         render_frame->GetTaskRunner(
+                             blink::TaskType::kInternalNavigationAssociated)),
+                     std::move(embedded_search_client));
 }
 
 SearchBox::~SearchBox() = default;
@@ -455,6 +453,17 @@ void SearchBox::StopAutocomplete(bool clear_result) {
 
 void SearchBox::BlocklistPromo(const std::string& promo_id) {
   embedded_search_service_->BlocklistPromo(promo_id);
+}
+
+void SearchBox::OpenAutocompleteMatch(uint8_t line,
+                                      const GURL& url,
+                                      double button,
+                                      bool alt_key,
+                                      bool ctrl_key,
+                                      bool meta_key,
+                                      bool shift_key) {
+  embedded_search_service_->OpenAutocompleteMatch(
+      line, url, button, alt_key, ctrl_key, meta_key, shift_key);
 }
 
 void SearchBox::SetPageSequenceNumber(int page_seq_no) {

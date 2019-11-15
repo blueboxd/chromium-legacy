@@ -845,6 +845,7 @@ class ProxyResolutionService::RequestImpl
   RequestImpl(ProxyResolutionService* service,
               const GURL& url,
               const std::string& method,
+              const NetworkIsolationKey& network_isolation_key,
               ProxyInfo* results,
               const CompletionOnceCallback user_callback,
               const NetLogWithSource& net_log);
@@ -891,8 +892,9 @@ class ProxyResolutionService::RequestImpl
   ProxyResolutionService* service_;
   CompletionOnceCallback user_callback_;
   ProxyInfo* results_;
-  GURL url_;
-  std::string method_;
+  const GURL url_;
+  const std::string method_;
+  const NetworkIsolationKey network_isolation_key_;
   std::unique_ptr<ProxyResolver::Request> resolve_job_;
   MutableNetworkTrafficAnnotationTag traffic_annotation_;
   NetLogWithSource net_log_;
@@ -907,6 +909,7 @@ ProxyResolutionService::RequestImpl::RequestImpl(
     ProxyResolutionService* service,
     const GURL& url,
     const std::string& method,
+    const NetworkIsolationKey& network_isolation_key,
     ProxyInfo* results,
     CompletionOnceCallback user_callback,
     const NetLogWithSource& net_log)
@@ -915,6 +918,7 @@ ProxyResolutionService::RequestImpl::RequestImpl(
       results_(results),
       url_(url),
       method_(method),
+      network_isolation_key_(network_isolation_key),
       resolve_job_(nullptr),
       net_log_(net_log),
       creation_time_(base::TimeTicks::Now()) {
@@ -947,9 +951,8 @@ int ProxyResolutionService::RequestImpl::Start() {
   if (service_->ApplyPacBypassRules(url_, results_))
     return OK;
 
-  // TODO(mmenke): Pass in a NetworkIsolationKey.
   return resolver()->GetProxyForURL(
-      url_, NetworkIsolationKey(), results_,
+      url_, network_isolation_key_, results_,
       base::BindOnce(&ProxyResolutionService::RequestImpl::QueryComplete,
                      base::Unretained(this)),
       &resolve_job_, net_log_);
@@ -1139,12 +1142,14 @@ ProxyResolutionService::CreateFixedFromAutoDetectedPacResult(
       std::make_unique<ProxyResolverFactoryForPacResult>(pac_string), nullptr);
 }
 
-int ProxyResolutionService::ResolveProxy(const GURL& raw_url,
-                                         const std::string& method,
-                                         ProxyInfo* result,
-                                         CompletionOnceCallback callback,
-                                         std::unique_ptr<Request>* out_request,
-                                         const NetLogWithSource& net_log) {
+int ProxyResolutionService::ResolveProxy(
+    const GURL& raw_url,
+    const std::string& method,
+    const NetworkIsolationKey& network_isolation_key,
+    ProxyInfo* result,
+    CompletionOnceCallback callback,
+    std::unique_ptr<Request>* out_request,
+    const NetLogWithSource& net_log) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!callback.is_null());
   DCHECK(out_request);
@@ -1174,8 +1179,9 @@ int ProxyResolutionService::ResolveProxy(const GURL& raw_url,
     return rv;
   }
 
-  std::unique_ptr<RequestImpl> req = std::make_unique<RequestImpl>(
-      this, url, method, result, std::move(callback), net_log);
+  std::unique_ptr<RequestImpl> req =
+      std::make_unique<RequestImpl>(this, url, method, network_isolation_key,
+                                    result, std::move(callback), net_log);
 
   if (current_state_ == STATE_READY) {
     // Start the resolve request.

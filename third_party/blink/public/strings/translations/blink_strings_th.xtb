@@ -54,7 +54,6 @@
 <translation id="2674318244760992338">ส่วนท้าย</translation>
 <translation id="2709516037105925701">ป้อนอัตโนมัติ</translation>
 <translation id="2723001399770238859">เสียง</translation>
-<translation id="2725963129578236554">ความคิดเห็น</translation>
 <translation id="2746543609216772311">ค่าต้องเป็น <ph name="MINIMUM_DATE_OR_TIME" /> หรือหลังจากนั้น</translation>
 <translation id="2759744352195237655">ปุ่มป๊อปอัป</translation>
 <translation id="2761667185364618470">โปรดเลือกช่องนี้หากคุณต้องการดำเนินการต่อ</translation>
@@ -164,7 +163,6 @@
 <translation id="6404546809543547843">ตัวควบคุมเวลาของเสียง</translation>
 <translation id="6443871981718447451">แสดงเมนูคำอธิบายภาพ</translation>
 <translation id="6453774872122745852">กิตติกรรมประกาศ</translation>
-<translation id="6475115390776617481">ผู้ทำงานร่วมกันที่ดูเนื้อหานี้อยู่</translation>
 <translation id="648732519525291180">เครื่องมือเลือกเวลา</translation>
 <translation id="6550675742724504774">ตัวเลือก</translation>
 <translation id="6572309429103589720">ไวยากรณ์ไม่ถูกต้อง</translation>
@@ -250,7 +248,6 @@
 <translation id="8711688047404765493">เอาต์พุต</translation>
 <translation id="8750798805984357768">โปรดเลือกตัวเลือกอย่างหนึ่งอย่างใดเหล่านี้</translation>
 <translation id="8808573423886751634">บท</translation>
-<translation id="8822203815165896261">ข้อมูลการเขียนโปรแกรม</translation>
 <translation id="8845239796550121995">ตอนนี้กำลังแคสต์ไปยัง TV</translation>
 <translation id="8851136666856101339">หลัก</translation>
 <translation id="8875657656876809964">ข้อผิดพลาดในการเล่นวิดีโอ</translation>

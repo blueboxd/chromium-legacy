@@ -41,10 +41,12 @@ enum WebGLExtensionName {
   kWebGLDebugShadersName,
   kWebGLDepthTextureName,
   kWebGLDrawBuffersName,
+  kWebGLDrawInstancedBaseVertexBaseInstanceName,
   kWebGLGetBufferSubDataAsyncName,
   kWebGLLoseContextName,
   kWebGLMultiDrawName,
   kWebGLMultiDrawInstancedName,
+  kWebGLMultiDrawInstancedBaseVertexBaseInstanceName,
   kWebGLMultiviewName,
   kWebGLVideoTextureName,
   kWebGLExtensionNameCount,  // Must be the last entry

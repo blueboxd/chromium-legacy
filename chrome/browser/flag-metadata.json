@@ -512,12 +512,12 @@
   {
     "name": "contextual-search-definitions",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 82
   },
   {
     "name": "contextual-search-longpress-resolve",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 83
   },
   {
     "name": "contextual-search-ml-tap-suppression",
@@ -537,7 +537,7 @@
   {
     "name": "contextual-search-simplified-server",
     "owners": [ "//chrome/android/java/src/org/chromium/chrome/browser/contextualsearch/OWNERS" ],
-    "expiry_milestone": 81
+    "expiry_milestone": 79
   },
   {
     "name": "contextual-search-translation-model",
@@ -577,12 +577,12 @@
   {
     "name": "crostini-gpu-support",
     "owners": [ "nverne", "benwells" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 85
   },
   {
     "name": "crostini-usb-allow-unsupported",
     "owners": [ "nverne", "benwells" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 85
   },
   {
     "name": "crostini-usb-support",
@@ -1277,12 +1277,12 @@
   {
     "name": "enable-ephemeral-tab",
     "owners": [ "donnd", "jinsukkim" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 82
   },
   {
     "name": "enable-ephemeral-tab-bottom-sheet",
     "owners": [ "donnd", "jinsukkim" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 82
   },
   {
     "name": "enable-experimental-accessibility-autoclick",
@@ -1684,7 +1684,7 @@
   {
     "name": "enable-query-in-omnibox",
     "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 85
   },
   {
     "name": "enable-quic",
@@ -1868,12 +1868,12 @@
   {
     "name": "enable-sxg-prefetch-cache-for-navigations",
     "owners": [ "horo", "//content/browser/web_package/OWNERS" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 85
   },
   {
     "name": "enable-sxg-subresource-prefetching",
     "owners": [ "horo", "//content/browser/web_package/OWNERS" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 85
   },
   {
     "name": "enable-sync-device-info-in-transport-mode",
@@ -2154,7 +2154,7 @@
   {
     "name": "enable-winrt-sensor-implementation",
     "owners": [ "wensh@microsoft.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 84
   },
  {
     "name": "enable-zero-copy",
@@ -2355,7 +2355,7 @@
   {
     "name": "handwriting-gesture",
     "owners": [ "essential-inputs-team@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 83
   },
   {
     "name": "happiness-tracking-surveys-for-desktop",
@@ -2769,7 +2769,7 @@
   {
     "name": "omnibox-drive-suggestions",
     "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 85
   },
   {
     "name": "omnibox-experimental-keyword-mode",
@@ -2789,7 +2789,7 @@
   {
     "name": "omnibox-local-entity-suggestions",
     "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 85
   },
   {
     "name": "omnibox-loose-max-limit-on-dedicated-rows",
@@ -2799,7 +2799,7 @@
   {
     "name": "omnibox-material-design-weather-icons",
     "owners": [ "manukh", "ender", "chromium-omnibox-team" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 85
   },
   {
     "name": "omnibox-max-url-matches",
@@ -2809,7 +2809,7 @@
   {
     "name": "omnibox-on-device-head-suggestions",
     "owners": [ "cechen", "suggest-2g@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 85
   },
   {
     "name": "omnibox-on-focus-suggestions",
@@ -2819,7 +2819,7 @@
   {
     "name": "omnibox-pedal-suggestions",
     "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 85
   },
   {
     "name": "omnibox-preserve-default-match-against-async-update",
@@ -2839,7 +2839,7 @@
   {
     "name": "omnibox-rich-entity-suggestions",
     "owners": [ "jdonnelly", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 85
   },
   {
     "name": "omnibox-search-engine-logo",
@@ -2859,7 +2859,7 @@
   {
     "name": "omnibox-suggestion-transparency-options",
     "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 85
   },
   {
     "name": "omnibox-tab-switch-suggestions",
@@ -2894,7 +2894,7 @@
   {
     "name": "omnibox-ui-max-autocomplete-matches",
     "owners": [ "jdonnelly", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 85
   },
   {
     "name": "omnibox-ui-one-click-unelide",
@@ -2949,7 +2949,7 @@
   {
     "name": "overlay-new-layout",
     "owners": [ "donnd", "jinsukkim", "contextual-search-eng" ],
-    "expiry_milestone": 79
+    "expiry_milestone": 81
   },
   {
     "name": "overlay-scrollbars",
@@ -3303,8 +3303,13 @@
   },
   {
     "name": "split-settings",
-    "owners": [ "maybelle" ],
+    "owners": [ "jamescook", "cros-system-services@google.com" ],
     "expiry_milestone": 80
+  },
+  {
+    "name": "split-settings-sync",
+    "owners": [ "jamescook", "cros-system-services@google.com" ],
+    "expiry_milestone": 82
   },
   {
     "name": "stop-in-background",
@@ -3349,7 +3354,7 @@
   {
     "name": "sync-wifi-configurations",
     "owners": ["jonmann", "cros-system-services@google.com"],
-    "expiry_milestone": 80
+    "expiry_milestone": 85
   },
   {
     "name": "system-keyboard-lock",
@@ -3382,14 +3387,14 @@
     "expiry_milestone": 81
   },
   {
-    "name": "temporary-unexpire-flags-m76",
-    "owners": [ "ellyjones", "flags-dev" ],
-    "expiry_milestone": 80
-  },
-  {
     "name": "temporary-unexpire-flags-m78",
     "owners": [ "ellyjones", "flags-dev" ],
     "expiry_milestone": 81
+  },
+  {
+    "name": "temporary-unexpire-flags-m80",
+    "owners": [ "ellyjones", "flags-dev" ],
+    "expiry_milestone": 82
   },
   {
     "name": "terminal-system-app",
@@ -3578,8 +3583,8 @@
   },
   {
     "name": "use-search-click-for-right-click",
-    "owners": [ "zentaro" ],
-    "expiry_milestone": 80
+    "owners": [ "khorimoto", "zentaro" ],
+    "expiry_milestone": 85
   },
   {
     "name": "use-sync-sandbox",
@@ -3592,11 +3597,6 @@
     "name": "use-winrt-midi-api",
     "owners": [ "toyoshim" ],
     "expiry_milestone": 83
-  },
-  {
-    "name": "user-activation-v2",
-    "owners": [ "mustaq", "input-dev" ],
-    "expiry_milestone": 76
   },
   {
     "name": "username-first-flow",

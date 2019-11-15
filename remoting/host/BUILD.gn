@@ -335,7 +335,7 @@ static_library("common") {
     "//remoting/protocol",
     "//remoting/resources",
     "//services/network:network_service",
-    "//third_party/webrtc/modules/desktop_capture",
+    "//third_party/webrtc_overrides:webrtc_component",
 
     # //remoting uses the power_save_blocker directly. See crbug.com/689423
     "//services/device/wake_lock/power_save_blocker",
@@ -470,8 +470,7 @@ static_library("test_support") {
     "//remoting/host/file_transfer:test_support",
     "//third_party/libjingle_xmpp",
     "//third_party/protobuf:protobuf_lite",
-    "//third_party/webrtc/modules/desktop_capture",
-    "//third_party/webrtc_overrides:init_webrtc",
+    "//third_party/webrtc_overrides:webrtc_component",
   ]
 }
 
@@ -609,7 +608,7 @@ if (enable_remoting_host) {
 
     deps = [
       "//third_party/libjingle_xmpp",
-      "//third_party/webrtc_overrides:init_webrtc",
+      "//third_party/webrtc_overrides:webrtc_component",
     ]
 
     configs += [ "//build/config/compiler:wexit_time_destructors" ]
@@ -743,9 +742,7 @@ if (enable_me2me_host) {
       "//remoting/host",
       "//remoting/proto",
       "//third_party/libjingle_xmpp",
-      "//third_party/webrtc/api:scoped_refptr",
-      "//third_party/webrtc/modules/desktop_capture",
-      "//third_party/webrtc_overrides:init_webrtc",
+      "//third_party/webrtc_overrides:webrtc_component",
     ]
 
     if (is_posix) {

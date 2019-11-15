@@ -127,7 +127,6 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="1845944666972354496">Dobbelttrykk for å aktivere</translation>
 <translation id="1846771122725914429">Bluetooth-leselist</translation>
 <translation id="1865601187525349519">Slutt på teksten</translation>
-<translation id="1875375785454778375">Direkte tilstedeværelse</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">Snakk inn nåværende dato og klokkeslett.</translation>
 <translation id="1902396333223336119">Rutenettcelle</translation>
@@ -148,7 +147,6 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="2009187674653301682">Ikke hevet skrift</translation>
 <translation id="2010555995361223825">ChromeVox-menyer</translation>
 <translation id="2045490512405922022">ikke avmerket</translation>
-<translation id="2049107626739254612">Forfatterinfo</translation>
 <translation id="20601713649439366">Det finnes ingen tidligere matteuttrykk.</translation>
 <translation id="2063539687800151747">Epigraf</translation>
 <translation id="207477615537953741">Semantikk av</translation>
@@ -269,7 +267,6 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="2911433807131383493">Åpne ChromeVox-veiledningen</translation>
 <translation id="2912405967290226587">Sveip tre fingre til høyre</translation>
 <translation id="2932083475399492303">Veksle linjetypen mellom strukturell og utforming</translation>
-<translation id="293796669683825859">Kommentarer</translation>
 <translation id="2942710183375260152">Mørk skiferblå</translation>
 <translation id="2943596527105977722">Mørk gullris</translation>
 <translation id="2944762337049891859">Les siden automatisk når den er lastet inn.</translation>
@@ -1148,6 +1145,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="8548973727659841685">Tegn</translation>
 <translation id="8561322612995434619">har forgrunnsvindu</translation>
 <translation id="8571096049907249734">flervalg</translation>
+<translation id="858006550102277544">Kommentar</translation>
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">Neste listepunkt</translation>
 <translation id="860150890330522909"><ph name="NAME" />-ruten er avmerket</translation>

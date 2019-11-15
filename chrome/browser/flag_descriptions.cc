@@ -2179,13 +2179,13 @@ const char kTurnOffStreamingMediaCachingDescription[] =
     "Reduces disk activity during media playback, which can result in "
     "power savings.";
 
-const char kUnexpireFlagsM76Name[] = "Temporarily unexpire M76 flags.";
-const char kUnexpireFlagsM76Description[] =
-    "Temporarily unexpire flags that are expired as of M76. These flags will "
-    "be removed soon.";
 const char kUnexpireFlagsM78Name[] = "Temporarily unexpire M78 flags.";
 const char kUnexpireFlagsM78Description[] =
     "Temporarily unexpire flags that are expired as of M78. These flags will "
+    "be removed soon.";
+const char kUnexpireFlagsM80Name[] = "Temporarily unexpire M80 flags.";
+const char kUnexpireFlagsM80Description[] =
+    "Temporarily unexpire flags that are expired as of M80. These flags will "
     "be removed soon.";
 
 const char kUnsafeWebGPUName[] = "Unsafe WebGPU";
@@ -3742,6 +3742,12 @@ const char kSmartTextSelectionDescription[] =
 const char kSplitSettingsName[] = "Split OS and browser settings";
 const char kSplitSettingsDescription[] =
     "Show separate settings for the OS and browser";
+
+const char kSplitSettingsSyncName[] = "Split OS and browser sync";
+const char kSplitSettingsSyncDescription[] =
+    "Allows OS sync to be configured separately from browser sync. Changes the "
+    "OS settings UI to provide controls for OS data types. Requires "
+    "#split-settings to be enabled.";
 
 const char kStreamlinedUsbPrinterSetupName[] =
     "Streamlined USB Printer Setup Flow";

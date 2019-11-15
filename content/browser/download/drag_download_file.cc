@@ -228,13 +228,11 @@ void DragDownloadFile::Start(ui::DownloadFileObserver* observer) {
 
 bool DragDownloadFile::Wait() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // Store the weakptr in a local variable as |this| may be deleted while
-  // waiting for the nested RunLoop.
-  auto ref = weak_ptr_factory_.GetWeakPtr();
+  auto weak_ptr = weak_ptr_factory_.GetWeakPtr();
   if (state_ == STARTED)
     nested_loop_.Run();
-  // If the weakptr is destroyed, the download should be successful.
-  return !ref.get() || state_ == SUCCESS;
+  DCHECK(weak_ptr);
+  return state_ == SUCCESS;
 }
 
 void DragDownloadFile::Stop() {
@@ -257,14 +255,10 @@ void DragDownloadFile::DownloadCompleted(bool is_successful) {
   if (nested_loop_.running())
     nested_loop_.Quit();
 
-  // Calling file_observer->OnDownloadCompleted() could delete this
-  // object.
   if (is_successful)
     file_observer->OnDownloadCompleted(file_path_);
   else
     file_observer->OnDownloadAborted();
-
-  // Nothing should be called here as the object might get deleted.
 }
 
 }  // namespace content

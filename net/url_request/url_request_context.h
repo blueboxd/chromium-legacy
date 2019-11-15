@@ -54,6 +54,7 @@ class NetworkDelegate;
 class NetworkQualityEstimator;
 class ProxyDelegate;
 class ProxyResolutionService;
+class QuicContext;
 class SSLConfigService;
 class URLRequest;
 class URLRequestJobFactory;
@@ -228,6 +229,11 @@ class NET_EXPORT URLRequestContext
     throttler_manager_ = throttler_manager;
   }
 
+  QuicContext* quic_context() const { return quic_context_; }
+  void set_quic_context(QuicContext* quic_context) {
+    quic_context_ = quic_context;
+  }
+
   // Gets the URLRequest objects that hold a reference to this
   // URLRequestContext.
   std::set<const URLRequest*>* url_requests() const {
@@ -349,6 +355,7 @@ class NET_EXPORT URLRequestContext
   HttpTransactionFactory* http_transaction_factory_;
   const URLRequestJobFactory* job_factory_;
   URLRequestThrottlerManager* throttler_manager_;
+  QuicContext* quic_context_;
   NetworkQualityEstimator* network_quality_estimator_;
 #if BUILDFLAG(ENABLE_REPORTING)
   ReportingService* reporting_service_;

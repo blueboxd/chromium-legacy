@@ -110,10 +110,10 @@ def _DiffSymbolGroups(before, after):
   # Create a DeltaSymbol to represent the zero'd out padding of matched symbols.
   for section_name, padding in padding_by_section_name.iteritems():
     if padding != 0:
-      after_sym = models.Symbol(
-          section_name,
-          padding,
-          name="Overhead: aggregate padding of diff'ed symbols")
+      after_sym = models.Symbol(section_name, padding)
+      # This is after _NormalizeNames() is called, so set |full_name|,
+      # |template_name|, and |name|.
+      after_sym.SetName("Overhead: aggregate padding of diff'ed symbols")
       after_sym.padding = padding
       all_deltas.append(models.DeltaSymbol(None, after_sym))
 

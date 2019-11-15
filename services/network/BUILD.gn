@@ -237,11 +237,7 @@ jumbo_component("network_service") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
     "//services/service_manager/sandbox:sandbox",
-    "//third_party/webrtc/media:rtc_media_base",
-    "//third_party/webrtc/rtc_base",
-    "//third_party/webrtc/rtc_base:timeutils",
-    "//third_party/webrtc_overrides",
-    "//third_party/webrtc_overrides:init_webrtc",
+    "//third_party/webrtc_overrides:webrtc_component",
     "//url",
   ]
 

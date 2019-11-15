@@ -75,7 +75,8 @@ class WPTTestAdapter(common.BaseIsolatedScriptArgsAdapter):
             # (crbug.com/1023835) The flags below are temporary to aid debugging
             "--log-mach=-",
             "--log-mach-verbose",
-            "--exclude=webdriver"
+            "--test-type=testharness",
+            "--test-type=reftest"
         ])
         return rest_args
 

@@ -10,7 +10,6 @@ source_set("cells") {
 
   deps = [
     "//ios/chrome/browser/ui/table_view/cells",
-    "//ios/chrome/browser/ui/table_view/cells:cells_constants",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

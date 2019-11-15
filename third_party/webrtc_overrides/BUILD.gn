@@ -4,19 +4,91 @@
 
 import("//build/config/chromecast_build.gni")
 
-group("webrtc_overrides") {
-  public_deps = [
-    ":webrtc",
-  ]
-}
-
 component("webrtc_component") {
   public_deps = [
+    ":init_webrtc",
+    ":task_queue_factory",
+    ":webrtc",
+    "//third_party/webrtc/api:callfactory_api",
+    "//third_party/webrtc/api:ice_transport_factory",
+    "//third_party/webrtc/api:libjingle_logging_api",
     "//third_party/webrtc/api:libjingle_peerconnection_api",
+    "//third_party/webrtc/api:media_stream_interface",
+    "//third_party/webrtc/api:packet_socket_factory",
+    "//third_party/webrtc/api:rtc_error",
+    "//third_party/webrtc/api:rtc_stats_api",
+    "//third_party/webrtc/api:rtp_parameters",
+    "//third_party/webrtc/api:scoped_refptr",
+    "//third_party/webrtc/api/audio:aec3_config",
+    "//third_party/webrtc/api/audio:aec3_config_json",
+    "//third_party/webrtc/api/audio:aec3_factory",
+    "//third_party/webrtc/api/audio_codecs:audio_codecs_api",
+    "//third_party/webrtc/api/audio_codecs/L16:audio_decoder_L16",
+    "//third_party/webrtc/api/audio_codecs/L16:audio_encoder_L16",
+    "//third_party/webrtc/api/audio_codecs/g711:audio_decoder_g711",
+    "//third_party/webrtc/api/audio_codecs/g711:audio_encoder_g711",
+    "//third_party/webrtc/api/audio_codecs/g722:audio_decoder_g722",
+    "//third_party/webrtc/api/audio_codecs/g722:audio_encoder_g722",
+    "//third_party/webrtc/api/audio_codecs/isac:audio_decoder_isac",
+    "//third_party/webrtc/api/audio_codecs/isac:audio_encoder_isac",
+    "//third_party/webrtc/api/audio_codecs/opus:audio_decoder_multiopus",
+    "//third_party/webrtc/api/audio_codecs/opus:audio_decoder_opus",
+    "//third_party/webrtc/api/audio_codecs/opus:audio_encoder_multiopus",
+    "//third_party/webrtc/api/audio_codecs/opus:audio_encoder_opus",
+    "//third_party/webrtc/api/rtc_event_log:rtc_event_log_factory",
+    "//third_party/webrtc/api/video:video_bitrate_allocation",
+    "//third_party/webrtc/api/video:video_frame",
+    "//third_party/webrtc/api/video:video_frame_i420",
+    "//third_party/webrtc/api/video:video_rtp_headers",
+    "//third_party/webrtc/api/video_codecs:builtin_video_decoder_factory",
+    "//third_party/webrtc/api/video_codecs:rtc_software_fallback_wrappers",
+    "//third_party/webrtc/api/video_codecs:video_codecs_api",
+    "//third_party/webrtc/common_video",
+    "//third_party/webrtc/common_video:common_video",
+    "//third_party/webrtc/media:rtc_audio_video",
+    "//third_party/webrtc/media:rtc_internal_video_codecs",
+    "//third_party/webrtc/media:rtc_media",
+    "//third_party/webrtc/media:rtc_media_base",
+    "//third_party/webrtc/media:rtc_simulcast_encoder_adapter",
+    "//third_party/webrtc/media:rtc_vp9_profile",
+    "//third_party/webrtc/modules/audio_device",
+    "//third_party/webrtc/modules/audio_device:audio_device_api",
+    "//third_party/webrtc/modules/audio_processing",
+    "//third_party/webrtc/modules/audio_processing:api",
+    "//third_party/webrtc/modules/audio_processing:audio_processing_statistics",
+    "//third_party/webrtc/modules/audio_processing/aec_dump",
+    "//third_party/webrtc/modules/audio_processing/aec_dump:aec_dump",
+    "//third_party/webrtc/modules/desktop_capture",
+    "//third_party/webrtc/modules/desktop_capture:primitives",
+    "//third_party/webrtc/modules/video_coding:video_codec_interface",
+    "//third_party/webrtc/modules/video_coding:webrtc_h264",
+    "//third_party/webrtc/p2p:libstunprober",
+    "//third_party/webrtc/p2p:rtc_p2p",
+    "//third_party/webrtc/pc:libjingle_peerconnection",
+    "//third_party/webrtc/pc:peerconnection",
+    "//third_party/webrtc/pc:rtc_pc",
+    "//third_party/webrtc/pc:rtc_pc_base",
+    "//third_party/webrtc/rtc_base",
+    "//third_party/webrtc/rtc_base:async_resolver_interface",
+    "//third_party/webrtc/rtc_base:ip_address",
+    "//third_party/webrtc/rtc_base:rtc_base",
+    "//third_party/webrtc/rtc_base:rtc_base_approved",
+    "//third_party/webrtc/rtc_base:rtc_task_queue",
+    "//third_party/webrtc/rtc_base:socket_address",
+    "//third_party/webrtc/rtc_base:threading",
+    "//third_party/webrtc/rtc_base:timeutils",
+    "//third_party/webrtc/rtc_base/third_party/base64",
+    "//third_party/webrtc/rtc_base/third_party/sigslot",
+    "//third_party/webrtc/rtc_base/third_party/sigslot:sigslot",
+    "//third_party/webrtc/stats",
+    "//third_party/webrtc/stats:rtc_stats",
+    "//third_party/webrtc/stats:rtc_stats_test_utils",
+    "//third_party/webrtc/system_wrappers",
   ]
 }
 
 source_set("webrtc") {
+  visibility = [ ":*" ]
   public_deps = [
     # TODO(kjellander): Start cleaning up this target as soon as
     # https://codereview.chromium.org/2022833002/ is landed. The target should
@@ -47,11 +119,15 @@ source_set("webrtc") {
 }
 
 source_set("init_webrtc") {
+  visibility = [ ":*" ]
   sources = [
     "init_webrtc.cc",
     "init_webrtc.h",
   ]
-  configs += [ "//third_party/webrtc:common_config" ]
+  configs += [
+    "//third_party/webrtc:common_config",
+    "//third_party/webrtc:library_impl_config",
+  ]
   public_configs = [
     "//third_party/webrtc:common_inherited_config",
 
@@ -69,11 +145,14 @@ source_set("init_webrtc") {
     ":metrics",
     "//base",
     "//third_party/webrtc/rtc_base",
+    "//third_party/webrtc/rtc_base/system:rtc_export",
     "//third_party/webrtc/system_wrappers",
   ]
 }
 
 source_set("metrics") {
+  # TODO(mbonadei): Migrate WebRTC deps to webrtc_component and uncomment.
+  # visibility = [ ":*" ]
   sources = [
     "metrics.cc",
   ]
@@ -83,6 +162,8 @@ source_set("metrics") {
 }
 
 source_set("field_trial") {
+  # TODO(mbonadei): Migrate WebRTC deps to webrtc_component and uncomment.
+  # visibility = [ ":*" ]
   sources = [
     "field_trial.cc",
   ]
@@ -92,6 +173,7 @@ source_set("field_trial") {
 }
 
 source_set("libjingle_webrtc_common") {
+  visibility = [ ":*" ]
   configs += [ "//third_party/webrtc:common_config" ]
   public_configs = [ "//third_party/webrtc:common_inherited_config" ]
 
@@ -106,12 +188,15 @@ source_set("libjingle_webrtc_common") {
 }
 
 source_set("task_queue_factory") {
+  visibility = [ ":*" ]
   sources = [
     "task_queue_factory.cc",
     "task_queue_factory.h",
   ]
+  configs += [ "//third_party/webrtc:library_impl_config" ]
   deps = [
     "//base",
     "//third_party/webrtc/api/task_queue",
+    "//third_party/webrtc/rtc_base/system:rtc_export",
   ]
 }

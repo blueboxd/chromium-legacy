@@ -101,7 +101,8 @@ SkColor TypographyProvider::GetColor(const views::View& view,
     color_id = style == style::STYLE_DISABLED
                    ? ui::NativeTheme::kColorId_TextfieldReadOnlyColor
                    : ui::NativeTheme::kColorId_TextfieldDefaultColor;
-  } else if (context == style::CONTEXT_MENU) {
+  } else if ((context == style::CONTEXT_MENU) ||
+             (context == style::CONTEXT_TOUCH_MENU)) {
     switch (style) {
       case views::style::STYLE_PRIMARY:
         color_id = ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor;
@@ -119,11 +120,6 @@ SkColor TypographyProvider::GetColor(const views::View& view,
         color_id = ui::NativeTheme::kColorId_HighlightedMenuItemForegroundColor;
         break;
     }
-  } else if (context == style::CONTEXT_TOUCH_MENU) {
-    color_id =
-        style == views::style::STYLE_HIGHLIGHTED
-            ? ui::NativeTheme::kColorId_HighlightedMenuItemForegroundColor
-            : ui::NativeTheme::kColorId_TouchableMenuItemLabelColor;
   } else if (style == style::STYLE_DISABLED) {
     color_id = ui::NativeTheme::kColorId_LabelDisabledColor;
   }

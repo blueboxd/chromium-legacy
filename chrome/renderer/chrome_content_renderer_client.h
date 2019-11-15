@@ -18,6 +18,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "chrome/common/media/webrtc_logging.mojom.h"
 #include "chrome/common/plugin.mojom.h"
 #include "chrome/renderer/media/chrome_key_systems_provider.h"
 #include "components/nacl/common/buildflags.h"
@@ -33,7 +34,6 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/local_interface_provider.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "v8/include/v8.h"
@@ -92,6 +92,7 @@ class ChromeContentRendererClient
   ~ChromeContentRendererClient() override;
 
   void RenderThreadStarted() override;
+  void ExposeInterfacesToBrowser(mojo::BinderMap* binders) override;
   void RenderFrameCreated(content::RenderFrame* render_frame) override;
   void RenderViewCreated(content::RenderView* render_view) override;
   SkBitmap* GetSadPluginBitmap() override;
@@ -206,7 +207,6 @@ class ChromeContentRendererClient
   bool IsSafeRedirectTarget(const GURL& url) override;
   void DidSetUserAgent(const std::string& user_agent) override;
   bool RequiresHtmlImports(const GURL& url) override;
-  void BindReceiverOnMainThread(mojo::GenericPendingReceiver receiver) override;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   static mojo::AssociatedRemote<chrome::mojom::PluginInfoHost>&
@@ -233,6 +233,12 @@ class ChromeContentRendererClient
   }
 
   ChromeRenderThreadObserver* GetChromeObserver() const;
+  web_cache::WebCacheImpl* GetWebCache();
+  chrome::WebRtcLoggingAgentImpl* GetWebRtcLoggingAgent();
+
+#if BUILDFLAG(ENABLE_SPELLCHECK)
+  SpellCheck* GetSpellCheck();
+#endif
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeContentRendererClientTest, NaClRestriction);
@@ -245,6 +251,9 @@ class ChromeContentRendererClient
   // service_manager::LocalInterfaceProvider:
   void GetInterface(const std::string& name,
                     mojo::ScopedMessagePipeHandle request_handle) override;
+
+  void BindWebRTCLoggingAgent(
+      mojo::PendingReceiver<chrome::mojom::WebRtcLoggingAgent> receiver);
 
   // Time at which this object was created. This is very close to the time at
   // which the RendererMain function was entered.
@@ -292,7 +301,6 @@ class ChromeContentRendererClient
   std::set<std::string> allowed_camera_device_origins_;
 #endif
 
-  service_manager::BinderRegistry registry_;
   scoped_refptr<blink::ThreadSafeBrowserInterfaceBrokerProxy>
       browser_interface_broker_;
 

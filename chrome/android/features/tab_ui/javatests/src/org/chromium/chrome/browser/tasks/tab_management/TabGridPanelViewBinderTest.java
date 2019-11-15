@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.areAnimatorsEnabled;
 
 import android.content.res.ColorStateList;
-import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.SystemClock;
@@ -244,29 +243,27 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
     @Test
     @SmallTest
     @UiThreadTest
-    public void testSetAnimationParams() {
+    public void testSetAnimationSourceView() {
         // Initially, the show animation set is empty.
         Assert.assertEquals(0,
                 mTabGridDialogParent.getShowDialogAnimationForTesting()
                         .getChildAnimations()
                         .size());
 
-        // When set with null as animation params, the show animation is set to be basic fade-in
+        // When set animation source view as null, the show animation is set to be basic fade-in
         // which contains only one animation in animation set.
-        mModel.set(TabGridPanelProperties.ANIMATION_PARAMS, null);
+        mModel.set(TabGridPanelProperties.ANIMATION_SOURCE_VIEW, null);
         Assert.assertEquals(1,
                 mTabGridDialogParent.getShowDialogAnimationForTesting()
                         .getChildAnimations()
                         .size());
 
-        // Create a dummy animation param to setup the dialog animation.
-        Rect rect = new Rect();
-        View view = new View(getActivity());
-        TabGridDialogParent.AnimationParams dummyParams =
-                new TabGridDialogParent.AnimationParams(rect, view);
+        // Create a dummy source view to setup the dialog animation.
+        View sourceView = new View(getActivity());
 
-        // When set with a specific animation param, the show animation contains 6 child animations.
-        mModel.set(TabGridPanelProperties.ANIMATION_PARAMS, dummyParams);
+        // When set with a specific animation source view, the show animation contains 6 child
+        // animations.
+        mModel.set(TabGridPanelProperties.ANIMATION_SOURCE_VIEW, sourceView);
         Assert.assertEquals(6,
                 mTabGridDialogParent.getShowDialogAnimationForTesting()
                         .getChildAnimations()

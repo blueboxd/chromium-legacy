@@ -51,6 +51,11 @@ void FakeLocalFrameHost::DidChangeThemeColor(
 
 void FakeLocalFrameHost::DidFocusFrame() {}
 
+void FakeLocalFrameHost::EnforceInsecureRequestPolicy(uint8_t policy_bitmap) {}
+
+void FakeLocalFrameHost::EnforceInsecureNavigationsSet(
+    const WTF::Vector<uint32_t>& set) {}
+
 void FakeLocalFrameHost::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   receiver_.Bind(mojo::PendingAssociatedReceiver<mojom::blink::LocalFrameHost>(

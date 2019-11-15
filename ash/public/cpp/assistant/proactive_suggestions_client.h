@@ -29,7 +29,7 @@ class ASH_PUBLIC_EXPORT ProactiveSuggestionsClient {
     // changed. Note that |proactive_suggestions| may be |nullptr| if none
     // exist.
     virtual void OnProactiveSuggestionsChanged(
-        scoped_refptr<ProactiveSuggestions> proactive_suggestions) {}
+        scoped_refptr<const ProactiveSuggestions> proactive_suggestions) {}
 
    protected:
     Delegate() = default;

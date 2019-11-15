@@ -57,10 +57,27 @@ interface PdfCompositor {
 
   // Requests to composite the entire document and convert it into a PDF file.
   // All the arguments carry the same meaning as CompositePageToPdf() above,
-  // except this call doesn't have |page_num|.
+  // except this call doesn't have |page_num|.  Cannot be used in conjunction
+  // with PrepareForDocumentToPdf()/CompleteDocumentToPdf().
   CompositeDocumentToPdf(uint64 frame_guid,
                          mojo_base.mojom.ReadOnlySharedMemoryRegion sk_region,
                          map<uint32, uint64> subframe_content_info)
+      => (Status status,
+          mojo_base.mojom.ReadOnlySharedMemoryRegion? pdf_region);
+
+  // Notifies that composition is to collect individual pages from
+  // CompositePageToPdf() concurrently into a document.  Must be issued once
+  // prior to any CompositePageToPdf() calls in order for concurrent collection
+  // to be performed.
+  PrepareForDocumentToPdf()
+      => (Status status);
+
+  // Signals that all pages for a composite document have been sent via
+  // CompositePageToPdf(), allowing for document composition to be wrapped up.
+  // Is to be used in conjunction with PrepareForDocumentToPdf(), which must be
+  // made prior to this and any CompositePageToPdf() calls.  This must be called
+  // exactly once to wrap up the document.
+  CompleteDocumentToPdf(uint32 pages_count)
       => (Status status,
           mojo_base.mojom.ReadOnlySharedMemoryRegion? pdf_region);
 

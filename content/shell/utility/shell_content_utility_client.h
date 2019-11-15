@@ -18,7 +18,7 @@ class ShellContentUtilityClient : public ContentUtilityClient {
   ~ShellContentUtilityClient() override;
 
   // ContentUtilityClient:
-  void UtilityThreadStarted() override;
+  void ExposeInterfacesToBrowser(mojo::BinderMap* binders) override;
   bool HandleServiceRequest(
       const std::string& service_name,
       service_manager::mojom::ServiceRequest request) override;

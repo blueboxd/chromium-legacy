@@ -289,6 +289,32 @@ void Button::SetButtonController(
   button_controller_ = std::move(button_controller);
 }
 
+gfx::Point Button::GetMenuPosition() const {
+  gfx::Rect lb = GetLocalBounds();
+
+  // Offset of the associated menu position.
+  constexpr gfx::Vector2d kMenuOffset{-2, -4};
+
+  // The position of the menu depends on whether or not the locale is
+  // right-to-left.
+  gfx::Point menu_position(lb.right(), lb.bottom());
+  if (base::i18n::IsRTL())
+    menu_position.set_x(lb.x());
+
+  View::ConvertPointToScreen(this, &menu_position);
+  if (base::i18n::IsRTL())
+    menu_position.Offset(-kMenuOffset.x(), kMenuOffset.y());
+  else
+    menu_position += kMenuOffset;
+
+  DCHECK(GetWidget());
+  const int max_x_coordinate =
+      GetWidget()->GetWorkAreaBoundsInScreen().right() - 1;
+  if (max_x_coordinate && max_x_coordinate <= menu_position.x())
+    menu_position.set_x(max_x_coordinate - 1);
+  return menu_position;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Button, View overrides:
 

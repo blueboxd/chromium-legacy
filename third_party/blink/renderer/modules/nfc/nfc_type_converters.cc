@@ -58,15 +58,10 @@ TypeConverter<NDEFPushOptionsPtr, const blink::NDEFPushOptions*>::Convert(
     const blink::NDEFPushOptions* pushOptions) {
   // https://w3c.github.io/web-nfc/#the-ndefpushoptions-dictionary
   // Default values for NDEFPushOptions dictionary are:
-  // target = 'any', timeout = Infinity, ignoreRead = true
+  // target = 'any', ignoreRead = true
   NDEFPushOptionsPtr pushOptionsPtr = NDEFPushOptions::New();
   pushOptionsPtr->target = blink::StringToNDEFPushTarget(pushOptions->target());
   pushOptionsPtr->ignore_read = pushOptions->ignoreRead();
-
-  if (pushOptions->hasTimeout())
-    pushOptionsPtr->timeout = pushOptions->timeout();
-  else
-    pushOptionsPtr->timeout = std::numeric_limits<double>::infinity();
 
   return pushOptionsPtr;
 }

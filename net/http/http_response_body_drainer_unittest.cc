@@ -29,6 +29,7 @@
 #include "net/http/http_stream.h"
 #include "net/http/transport_security_state.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
+#include "net/quic/quic_context.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/test/test_with_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -249,6 +250,7 @@ class HttpResponseBodyDrainerTest : public TestWithTaskEnvironment {
     context.transport_security_state = &transport_security_state_;
     context.cert_transparency_verifier = &ct_verifier_;
     context.ct_policy_enforcer = &ct_policy_enforcer_;
+    context.quic_context = &quic_context_;
     return new HttpNetworkSession(HttpNetworkSession::Params(), context);
   }
 
@@ -259,6 +261,7 @@ class HttpResponseBodyDrainerTest : public TestWithTaskEnvironment {
   TransportSecurityState transport_security_state_;
   MultiLogCTVerifier ct_verifier_;
   DefaultCTPolicyEnforcer ct_policy_enforcer_;
+  QuicContext quic_context_;
   const std::unique_ptr<HttpNetworkSession> session_;
   CloseResultWaiter result_waiter_;
   MockHttpStream* const mock_stream_;  // Owned by |drainer_|.

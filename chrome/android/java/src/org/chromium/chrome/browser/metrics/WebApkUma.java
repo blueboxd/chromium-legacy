@@ -119,6 +119,8 @@ public class WebApkUma {
 
     private static final String HISTOGRAM_LAUNCH_TO_SPLASHSCREEN_VISIBLE =
             "WebApk.Startup.Cold.ShellLaunchToSplashscreenVisible";
+    private static final String HISTOGRAM_NEW_STYLE_LAUNCH_TO_SPLASHSCREEN_VISIBLE =
+            "WebApk.Startup.Cold.NewStyle.ShellLaunchToSplashscreenVisible";
     private static final String HISTOGRAM_LAUNCH_TO_SPLASHSCREEN_HIDDEN =
             "WebApk.Startup.Cold.ShellLaunchToSplashscreenHidden";
 
@@ -190,19 +192,28 @@ public class WebApkUma {
     }
 
     /**
-     * Records duration between starting of the WebAPK shell until the splashscreen is shown.
+     * Records duration between starting the WebAPK shell until the splashscreen is shown.
      * @param durationMs duration in milliseconds
      */
-    public static void recordShellApkLaunchToSplashscreenVisible(long durationMs) {
+    public static void recordShellApkLaunchToSplashVisible(long durationMs) {
         RecordHistogram.recordMediumTimesHistogram(
                 HISTOGRAM_LAUNCH_TO_SPLASHSCREEN_VISIBLE, durationMs);
+    }
+
+    /**
+     * Records duration between starting the WebAPK shell until the shell displays the
+     * splashscreen for new-style WebAPKs.
+     */
+    public static void recordNewStyleShellApkLaunchToSplashVisible(long durationMs) {
+        RecordHistogram.recordMediumTimesHistogram(
+                HISTOGRAM_NEW_STYLE_LAUNCH_TO_SPLASHSCREEN_VISIBLE, durationMs);
     }
 
     /**
      * Records duration between starting of the WebAPK shell until the splashscreen is hidden.
      * @param durationMs duration in milliseconds
      */
-    public static void recordShellApkLaunchToSplashscreenHidden(long durationMs) {
+    public static void recordShellApkLaunchToSplashHidden(long durationMs) {
         RecordHistogram.recordMediumTimesHistogram(
                 HISTOGRAM_LAUNCH_TO_SPLASHSCREEN_HIDDEN, durationMs);
     }

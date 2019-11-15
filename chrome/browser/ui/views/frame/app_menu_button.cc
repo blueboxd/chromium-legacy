@@ -14,11 +14,11 @@
 #include "ui/views/controls/button/menu_button_controller.h"
 #include "ui/views/view_class_properties.h"
 
-AppMenuButton::AppMenuButton(views::MenuButtonListener* menu_button_listener)
+AppMenuButton::AppMenuButton(views::ButtonListener* button_listener)
     : ToolbarButton(nullptr) {
   std::unique_ptr<views::MenuButtonController> menu_button_controller =
       std::make_unique<views::MenuButtonController>(
-          this, menu_button_listener,
+          this, button_listener,
           std::make_unique<views::Button::DefaultButtonControllerDelegate>(
               this));
   menu_button_controller_ = menu_button_controller.get();

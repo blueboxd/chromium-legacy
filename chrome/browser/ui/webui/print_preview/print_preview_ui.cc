@@ -45,6 +45,7 @@
 #include "chrome/grit/print_preview_resources.h"
 #include "chrome/grit/print_preview_resources_map.h"
 #include "components/prefs/pref_service.h"
+#include "components/printing/browser/print_manager_utils.h"
 #include "components/printing/common/print_messages.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_manager/user_manager.h"
@@ -523,6 +524,10 @@ void PrintPreviewUI::ClearAllPreviewData() {
 void PrintPreviewUI::SetInitiatorTitle(
     const base::string16& job_title) {
   initiator_title_ = job_title;
+}
+
+bool PrintPreviewUI::ShouldCompositeDocumentUsingIndividualPages() const {
+  return printing::IsOopifEnabled() && source_is_modifiable_;
 }
 
 bool PrintPreviewUI::LastPageComposited(int page_number) const {

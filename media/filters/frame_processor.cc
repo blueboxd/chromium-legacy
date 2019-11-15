@@ -477,7 +477,7 @@ void FrameProcessor::SetGroupStartTimestampIfInSequenceMode(
     group_start_timestamp_ = timestamp_offset;
 
   // Changes to timestampOffset should invalidate the preroll buffer.
-  audio_preroll_buffer_ = NULL;
+  audio_preroll_buffer_.reset();
 }
 
 bool FrameProcessor::AddTrack(StreamParser::TrackId id,
@@ -557,7 +557,7 @@ void FrameProcessor::OnPossibleAudioConfigUpdate(
   DCHECK(config.IsValidConfig());
 
   // Always clear the preroll buffer when a config update is received.
-  audio_preroll_buffer_ = NULL;
+  audio_preroll_buffer_.reset();
 
   if (config.Matches(current_audio_config_))
     return;
@@ -653,7 +653,7 @@ bool FrameProcessor::HandlePartialAppendWindowTrimming(
           << "us that ends too far (" << delta
           << "us) from next buffer with PTS "
           << buffer->timestamp().InMicroseconds() << "us";
-      audio_preroll_buffer_ = NULL;
+      audio_preroll_buffer_.reset();
     }
   }
 

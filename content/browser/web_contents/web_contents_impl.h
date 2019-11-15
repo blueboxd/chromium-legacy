@@ -351,8 +351,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   const std::string& GetEncoding() override;
   bool WasDiscarded() override;
   void SetWasDiscarded(bool was_discarded) override;
-  void IncrementCapturerCount(const gfx::Size& capture_size) override;
-  void DecrementCapturerCount() override;
+  void IncrementCapturerCount(const gfx::Size& capture_size,
+                              bool stay_hidden) override;
+  void DecrementCapturerCount(bool stay_hidden) override;
   bool IsBeingCaptured() override;
   bool IsAudioMuted() override;
   void SetAudioMuted(bool mute) override;
@@ -1667,10 +1668,13 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Data for misc internal state ----------------------------------------------
 
-  // When > 0, the WebContents is currently being captured (e.g., for
-  // screenshots or mirroring); and the underlying RenderWidgetHost should not
-  // be told it is hidden.
-  int capturer_count_;
+  // When either > 0, the WebContents is currently being captured (e.g.,
+  // for screenshots or mirroring); and the underlying RenderWidgetHost
+  // should not be told it is hidden. If |visible_capturer_count_| > 0,
+  // the underlying Page is set to fully visible. Otherwise, it is set
+  // to be hidden but still paint.
+  int visible_capturer_count_;
+  int hidden_capturer_count_;
 
   // The visibility of the WebContents. Initialized from
   // |CreateParams::initially_hidden|. Updated from

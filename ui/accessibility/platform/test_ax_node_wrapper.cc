@@ -21,7 +21,7 @@ namespace ui {
 namespace {
 
 // A global map from AXNodes to TestAXNodeWrappers.
-std::unordered_map<AXNode*, TestAXNodeWrapper*> g_node_to_wrapper_map;
+std::unordered_map<AXNode::AXID, TestAXNodeWrapper*> g_node_id_to_wrapper_map;
 
 // A global coordinate offset.
 gfx::Vector2d g_offset;
@@ -47,12 +47,12 @@ AXNode* g_node_from_last_default_action;
 // deleted so we can delete their wrappers.
 class TestAXTreeObserver : public AXTreeObserver {
  private:
-  void OnNodeWillBeDeleted(AXTree* tree, AXNode* node) override {
-    auto iter = g_node_to_wrapper_map.find(node);
-    if (iter != g_node_to_wrapper_map.end()) {
+  void OnNodeDeleted(AXTree* tree, int32_t node_id) override {
+    const auto iter = g_node_id_to_wrapper_map.find(node_id);
+    if (iter != g_node_id_to_wrapper_map.end()) {
       TestAXNodeWrapper* wrapper = iter->second;
       delete wrapper;
-      g_node_to_wrapper_map.erase(iter->first);
+      g_node_id_to_wrapper_map.erase(node_id);
     }
   }
 };
@@ -68,11 +68,11 @@ TestAXNodeWrapper* TestAXNodeWrapper::GetOrCreate(AXTree* tree, AXNode* node) {
 
   if (!tree->HasObserver(&g_ax_tree_observer))
     tree->AddObserver(&g_ax_tree_observer);
-  auto iter = g_node_to_wrapper_map.find(node);
-  if (iter != g_node_to_wrapper_map.end())
+  auto iter = g_node_id_to_wrapper_map.find(node->id());
+  if (iter != g_node_id_to_wrapper_map.end())
     return iter->second;
   TestAXNodeWrapper* wrapper = new TestAXNodeWrapper(tree, node);
-  g_node_to_wrapper_map[node] = wrapper;
+  g_node_id_to_wrapper_map[node->id()] = wrapper;
   return wrapper;
 }
 
@@ -290,14 +290,10 @@ AXPlatformNode* TestAXNodeWrapper::GetFromNodeID(int32_t id) {
   // Force creating all of the wrappers for this tree.
   BuildAllWrappers(tree_, node_);
 
-  for (auto it = g_node_to_wrapper_map.begin();
-       it != g_node_to_wrapper_map.end(); ++it) {
-    AXNode* node = it->first;
-    if (node->id() == id) {
-      TestAXNodeWrapper* wrapper = it->second;
-      return wrapper->ax_platform_node();
-    }
-  }
+  const auto iter = g_node_id_to_wrapper_map.find(id);
+  if (iter != g_node_id_to_wrapper_map.end())
+    return iter->second->ax_platform_node();
+
   return nullptr;
 }
 

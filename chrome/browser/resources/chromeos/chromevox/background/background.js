@@ -102,15 +102,6 @@ Background = function() {
     });
   }
 
-  Object.defineProperty(cvox.ChromeVox, 'isActive', {
-    get: function() {
-      return localStorage['active'] !== 'false';
-    },
-    set: function(value) {
-      localStorage['active'] = value;
-    }
-  });
-
   Object.defineProperty(cvox.ChromeVox, 'typingEcho', {
     get: function() {
       var typingEcho = parseInt(localStorage['typingEcho'], 10) || 0;

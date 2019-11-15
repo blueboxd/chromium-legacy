@@ -615,6 +615,18 @@ void RecordSiteIsolationPrintMetrics(blink::WebFrame* printed_frame) {
       cross_site_visible_frame_count);
 }
 
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+bool CaptureMetafileContentInfo(const MetafileSkia& metafile,
+                                PrintHostMsg_DidPrintContent_Params* params) {
+  uint32_t buf_size = metafile.GetDataSize();
+  if (buf_size == 0)
+    return false;
+
+  params->subframe_content_info = metafile.GetSubframeContentInfo();
+  return true;
+}
+#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
+
 bool CopyMetafileDataToReadOnlySharedMem(
     const MetafileSkia& metafile,
     PrintHostMsg_DidPrintContent_Params* params) {
@@ -1457,8 +1469,17 @@ PrintRenderFrameHelper::CreatePreviewDocument() {
     print_renderer_->CreatePreviewDocument(
         print_renderer_job_settings_.Clone(),
         base::BindOnce(&PrintRenderFrameHelper::OnPreviewDocumentCreated,
-                       weak_ptr_factory_.GetWeakPtr(), begin_time));
+                       weak_ptr_factory_.GetWeakPtr(),
+                       print_params.document_cookie, begin_time));
     return CREATE_IN_PROGRESS;
+  }
+
+  if (print_pages_params_->params.printed_doc_type == SkiaDocumentType::MSKP) {
+    // Want modifiable content of MSKP type to be collected into a document
+    // during individual page preview generation (to avoid separate document
+    // version for composition), notify to prepare to do this collection.
+    Send(new PrintHostMsg_DidPrepareDocumentForPreview(
+        routing_id(), print_pages_params_->params.document_cookie, ids));
   }
 
   while (!print_preview_context_.IsFinalPageRendered()) {
@@ -1527,11 +1548,22 @@ bool PrintRenderFrameHelper::FinalizePrintReadyDocument() {
   MetafileSkia* metafile = print_preview_context_.metafile();
   PrintHostMsg_DidPreviewDocument_Params preview_params;
 
-  if (!CopyMetafileDataToReadOnlySharedMem(*metafile,
-                                           &preview_params.content)) {
-    LOG(ERROR) << "CopyMetafileDataToReadOnlySharedMem failed";
-    print_preview_context_.set_error(PREVIEW_ERROR_METAFILE_COPY_FAILED);
-    return false;
+  // Modifiable content of MSKP type is collected into a document during
+  // individual page preview generation, so no need to share a separate document
+  // version for composition.
+  if (print_pages_params_->params.printed_doc_type == SkiaDocumentType::MSKP) {
+    if (!CaptureMetafileContentInfo(*metafile, &preview_params.content)) {
+      DLOG(ERROR) << "CaptureMetafileContentInfo failed";
+      print_preview_context_.set_error(PREVIEW_ERROR_METAFILE_CAPTURE_FAILED);
+      return false;
+    }
+  } else {
+    if (!CopyMetafileDataToReadOnlySharedMem(*metafile,
+                                             &preview_params.content)) {
+      LOG(ERROR) << "CopyMetafileDataToReadOnlySharedMem failed";
+      print_preview_context_.set_error(PREVIEW_ERROR_METAFILE_COPY_FAILED);
+      return false;
+    }
   }
 
   preview_params.document_cookie = print_pages_params_->params.document_cookie;
@@ -1549,8 +1581,17 @@ bool PrintRenderFrameHelper::FinalizePrintReadyDocument() {
 }
 
 void PrintRenderFrameHelper::OnPreviewDocumentCreated(
+    int document_cookie,
     base::TimeTicks begin_time,
     base::ReadOnlySharedMemoryRegion preview_document_region) {
+  // Since the PrintRenderer renders preview documents asynchronously, multiple
+  // preview document requests may be sent before a preview document is
+  // returned. If the received preview document's cookie does not match the
+  // latest document cookie, ignore it and wait for the final preview document.
+  if (document_cookie != print_pages_params_->params.document_cookie) {
+    return;
+  }
+
   bool success =
       ProcessPreviewDocument(begin_time, std::move(preview_document_region));
   DidFinishPrinting(success ? OK : FAIL_PREVIEW);

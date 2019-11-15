@@ -727,6 +727,18 @@ bool CanDuplicateKeyboardFocusedTab(const Browser* browser) {
   return CanDuplicateTabAt(browser, *GetKeyboardFocusedTabIndex(browser));
 }
 
+bool CanCloseTabsToRight(const Browser* browser) {
+  return browser->tab_strip_model()->IsContextMenuCommandEnabled(
+      browser->tab_strip_model()->active_index(),
+      TabStripModel::CommandCloseTabsToRight);
+}
+
+bool CanCloseOtherTabs(const Browser* browser) {
+  return browser->tab_strip_model()->IsContextMenuCommandEnabled(
+      browser->tab_strip_model()->active_index(),
+      TabStripModel::CommandCloseOtherTabs);
+}
+
 WebContents* DuplicateTabAt(Browser* browser, int index) {
   WebContents* contents = browser->tab_strip_model()->GetWebContentsAt(index);
   CHECK(contents);
@@ -835,6 +847,18 @@ void ConvertPopupToTabbedBrowser(Browser* browser) {
   Browser* b = new Browser(Browser::CreateParams(browser->profile(), true));
   b->tab_strip_model()->AppendWebContents(std::move(contents), true);
   b->window()->Show();
+}
+
+void CloseTabsToRight(Browser* browser) {
+  browser->tab_strip_model()->ExecuteContextMenuCommand(
+      browser->tab_strip_model()->active_index(),
+      TabStripModel::CommandCloseTabsToRight);
+}
+
+void CloseOtherTabs(Browser* browser) {
+  browser->tab_strip_model()->ExecuteContextMenuCommand(
+      browser->tab_strip_model()->active_index(),
+      TabStripModel::CommandCloseOtherTabs);
 }
 
 void Exit() {

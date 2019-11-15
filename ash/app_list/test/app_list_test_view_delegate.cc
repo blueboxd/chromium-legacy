@@ -126,8 +126,7 @@ void AppListTestViewDelegate::ShowWallpaperContextMenu(
 }
 
 bool AppListTestViewDelegate::ProcessHomeLauncherGesture(
-    ui::GestureEvent* event,
-    const gfx::Point& screen_location) {
+    ui::GestureEvent* event) {
   return false;
 }
 

@@ -28,11 +28,13 @@ FullscreenCallbackProxy::~FullscreenCallbackProxy() {
 
 void FullscreenCallbackProxy::EnterFullscreen(base::OnceClosure exit_closure) {
   exit_fullscreen_closure_ = std::move(exit_closure);
+  TRACE_EVENT0("weblayer", "Java_FullscreenCallbackProxy_enterFullscreen");
   Java_FullscreenCallbackProxy_enterFullscreen(AttachCurrentThread(),
                                                java_delegate_);
 }
 
 void FullscreenCallbackProxy::ExitFullscreen() {
+  TRACE_EVENT0("weblayer", "Java_FullscreenCallbackProxy_exitFullscreen");
   Java_FullscreenCallbackProxy_exitFullscreen(AttachCurrentThread(),
                                               java_delegate_);
 }

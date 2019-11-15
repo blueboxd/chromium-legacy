@@ -440,6 +440,7 @@ DaemonControllerDelegateWin::GetUsageStatsConsent() {
 }
 
 void DaemonControllerDelegateWin::CheckPermission(
+    bool it2me,
     DaemonController::BoolCallback callback) {
   std::move(callback).Run(true);
 }

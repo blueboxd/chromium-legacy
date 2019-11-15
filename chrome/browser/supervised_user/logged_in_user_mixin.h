@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/user_policy_mixin.h"
+#include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
 
 class AccountId;
 
@@ -76,10 +77,11 @@ class LoggedInUserMixin {
   // Call this function in your test class's SetUpOnMainThread() after calling
   // MixinBasedInProcessBrowserTest::SetUpOnMainThread().
   // This functions does the following:
-  // * Reroute all requests to localhost.
-  // * Log in as regular or child account depending on the |type| argument
+  // * Reroutes all requests to localhost.
+  // * Sets up user policy.
+  // * Logs in as regular or child account depending on the |type| argument
   // passed to the constructor.
-  // * Call InProcessBrowserTest::SelectFirstBrowser() so that browser()
+  // * Calls InProcessBrowserTest::SelectFirstBrowser() so that browser()
   // returns a non-null browser instance. Note: This call will only be effective
   // if should_launch_browser was set to true in the constructor.
   void SetUpOnMainThreadHelper(net::RuleBasedHostResolverProc* host_resolver,
@@ -99,10 +101,14 @@ class LoggedInUserMixin {
   LoginManagerMixin* GetLoginManagerMixin() { return &login_manager_; }
 
   LocalPolicyTestServerMixin* GetLocalPolicyTestServerMixin() {
-    return &policy_server_;
+    return &local_policy_server_;
   }
 
   UserPolicyMixin* GetUserPolicyMixin() { return &user_policy_; }
+
+  policy::UserPolicyTestHelper* GetUserPolicyTestHelper() {
+    return &user_policy_helper_;
+  }
 
   const AccountId& GetAccountId() { return user_.account_id; }
 
@@ -110,8 +116,9 @@ class LoggedInUserMixin {
   LoginManagerMixin::TestUserInfo user_;
   LoginManagerMixin login_manager_;
 
-  LocalPolicyTestServerMixin policy_server_;
+  LocalPolicyTestServerMixin local_policy_server_;
   UserPolicyMixin user_policy_;
+  policy::UserPolicyTestHelper user_policy_helper_;
 
   EmbeddedTestServerSetupMixin embedded_test_server_setup_;
   FakeGaiaMixin fake_gaia_;

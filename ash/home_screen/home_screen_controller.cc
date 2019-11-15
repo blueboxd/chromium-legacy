@@ -24,6 +24,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
+#include "ash/wm/window_util.h"
 #include "base/barrier_closure.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -39,17 +40,19 @@ namespace {
 // Returns true if any windows are minimized.
 bool MinimizeAllWindows(const aura::Window::Windows& windows,
                         const aura::Window::Windows& windows_to_ignore) {
-  bool handled = false;
   aura::Window* container = Shell::Get()->GetPrimaryRootWindow()->GetChildById(
       kShellWindowId_HomeScreenContainer);
+  aura::Window::Windows windows_to_minimize;
   for (auto it = windows.rbegin(); it != windows.rend(); it++) {
     if (!container->Contains(*it) && !base::Contains(windows_to_ignore, *it) &&
         !WindowState::Get(*it)->IsMinimized()) {
-      WindowState::Get(*it)->Minimize();
-      handled = true;
+      windows_to_minimize.push_back(*it);
     }
   }
-  return handled;
+
+  window_util::HideAndMaybeMinimizeWithoutAnimation(windows_to_minimize,
+                                                    /*minimize=*/true);
+  return !windows_to_minimize.empty();
 }
 
 }  // namespace

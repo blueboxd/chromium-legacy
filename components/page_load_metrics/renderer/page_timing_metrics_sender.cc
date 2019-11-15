@@ -52,13 +52,11 @@ PageTimingMetricsSender::PageTimingMetricsSender(
   }
 }
 
-// On destruction, we want to send any data we have if we have a timer
-// currently running (and thus are talking to a browser process)
 PageTimingMetricsSender::~PageTimingMetricsSender() {
-  if (timer_->IsRunning()) {
-    timer_->Stop();
-    SendNow();
-  }
+  // Make sure we don't have any unsent data. If this assertion fails, then it
+  // means metrics are somehow coming in between MetricsRenderFrameObserver's
+  // ReadyToCommitNavigation and DidCommitProvisionalLoad.
+  DCHECK(!timer_->IsRunning());
 }
 
 void PageTimingMetricsSender::DidObserveLoadingBehavior(
@@ -227,7 +225,7 @@ void PageTimingMetricsSender::UpdateResourceMetadata(
   it->second->SetIsMainFrameResource(is_main_frame_resource);
 }
 
-void PageTimingMetricsSender::Send(mojom::PageLoadTimingPtr timing) {
+void PageTimingMetricsSender::SendSoon(mojom::PageLoadTimingPtr timing) {
   if (last_timing_->Equals(*timing)) {
     return;
   }
@@ -244,21 +242,30 @@ void PageTimingMetricsSender::Send(mojom::PageLoadTimingPtr timing) {
   EnsureSendTimer();
 }
 
+void PageTimingMetricsSender::SendLatest() {
+  if (!timer_->IsRunning())
+    return;
+
+  timer_->Stop();
+  SendNow();
+}
+
 void PageTimingMetricsSender::UpdateCpuTiming(base::TimeDelta task_time) {
   last_cpu_timing_->task_time += task_time;
   EnsureSendTimer();
 }
 
 void PageTimingMetricsSender::EnsureSendTimer() {
-  if (!timer_->IsRunning()) {
-    // Send the first IPC eagerly to make sure the receiving side knows we're
-    // sending metrics as soon as possible.
-    int delay_ms =
-        have_sent_ipc_ ? buffer_timer_delay_ms_ : kInitialTimerDelayMillis;
-    timer_->Start(
-        FROM_HERE, base::TimeDelta::FromMilliseconds(delay_ms),
-        base::Bind(&PageTimingMetricsSender::SendNow, base::Unretained(this)));
-  }
+  if (timer_->IsRunning())
+    return;
+
+  // Send the first IPC eagerly to make sure the receiving side knows we're
+  // sending metrics as soon as possible.
+  int delay_ms =
+      have_sent_ipc_ ? buffer_timer_delay_ms_ : kInitialTimerDelayMillis;
+  timer_->Start(
+      FROM_HERE, base::TimeDelta::FromMilliseconds(delay_ms),
+      base::Bind(&PageTimingMetricsSender::SendNow, base::Unretained(this)));
 }
 
 void PageTimingMetricsSender::SendNow() {

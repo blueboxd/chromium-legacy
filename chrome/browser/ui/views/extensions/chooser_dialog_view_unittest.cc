@@ -15,7 +15,6 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_client_view.h"
 
 class ChooserDialogViewTest : public ChromeViewsTestBase {
  public:
@@ -135,7 +134,7 @@ TEST_F(ChooserDialogViewTest, CancelButtonFocusedWhenReScanIsPressed) {
   re_scan_button()->OnMouseReleased(event);
 
   EXPECT_FALSE(re_scan_button()->GetVisible());
-  EXPECT_EQ(dialog_->GetDialogClientView()->cancel_button(),
+  EXPECT_EQ(dialog_->GetCancelButton(),
             dialog_->GetFocusManager()->GetFocusedView());
 }
 

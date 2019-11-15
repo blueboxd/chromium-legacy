@@ -87,7 +87,7 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
     : tab_controller_(tab_controller),
       group_(group),
       title_field_controller_(this),
-      menu_button_listener_(tab_controller, anchor_view, group) {
+      button_listener_(tab_controller, anchor_view, group) {
   SetAnchorView(anchor_view);
   set_margins(gfx::Insets());
 
@@ -143,7 +143,7 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
   std::unique_ptr<views::LabelButton> new_tab_menu_item = CreateBubbleMenuItem(
       TAB_GROUP_HEADER_CXMENU_NEW_TAB_IN_GROUP,
       l10n_util::GetStringUTF16(IDS_TAB_GROUP_HEADER_CXMENU_NEW_TAB_IN_GROUP),
-      &menu_button_listener_);
+      &button_listener_);
   new_tab_menu_item->SetBorder(
       views::CreateEmptyBorder(menu_item_border_inset));
   menu_items_container->AddChildView(std::move(new_tab_menu_item));
@@ -151,7 +151,7 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
   std::unique_ptr<views::LabelButton> ungroup_menu_item = CreateBubbleMenuItem(
       TAB_GROUP_HEADER_CXMENU_UNGROUP,
       l10n_util::GetStringUTF16(IDS_TAB_GROUP_HEADER_CXMENU_UNGROUP),
-      &menu_button_listener_);
+      &button_listener_);
   ungroup_menu_item->SetBorder(
       views::CreateEmptyBorder(menu_item_border_inset));
   menu_items_container->AddChildView(std::move(ungroup_menu_item));
@@ -159,7 +159,7 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
   std::unique_ptr<views::LabelButton> close_menu_item = CreateBubbleMenuItem(
       TAB_GROUP_HEADER_CXMENU_CLOSE_GROUP,
       l10n_util::GetStringUTF16(IDS_TAB_GROUP_HEADER_CXMENU_CLOSE_GROUP),
-      &menu_button_listener_);
+      &button_listener_);
   close_menu_item->SetBorder(views::CreateEmptyBorder(menu_item_border_inset));
   menu_items_container->AddChildView(std::move(close_menu_item));
 
@@ -168,7 +168,7 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
   std::unique_ptr<views::LabelButton> feedback_menu_item = CreateBubbleMenuItem(
       TAB_GROUP_HEADER_CXMENU_FEEDBACK,
       l10n_util::GetStringUTF16(IDS_TAB_GROUP_HEADER_CXMENU_SEND_FEEDBACK),
-      &menu_button_listener_);
+      &button_listener_);
   feedback_menu_item->SetBorder(
       views::CreateEmptyBorder(menu_item_border_inset));
   menu_items_container->AddChildView(std::move(feedback_menu_item));

@@ -6,6 +6,7 @@
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" />টি ট্যাব}one{<ph name="TABS_COUNT_MANY" />টি ট্যাব}other{<ph name="TABS_COUNT_MANY" />টি ট্যাব}}</translation>
 <translation id="257674075312929031">গ্রুপ</translation>
 <translation id="2613747923081026172">গ্রুপ তৈরি করুন</translation>
+<translation id="2671423594960767771">গ্রুপ শেয়ার করুন</translation>
 <translation id="2977480621796371840">গ্রুপ থেকে সরান</translation>
 <translation id="4212246570487010370">ব্রাউজ করা চালিয়ে যান</translation>
 <translation id="4648718555153979859">আপনার ট্যাবগুলিকে এখানে একসাথে গ্রুপ করা আছে</translation>
@@ -14,6 +15,7 @@
 <translation id="5580090775658607195"><ph name="TAB_COUNT" />টি ট্যাব গ্রুপ করা হয়েছে</translation>
 <translation id="5792534911093536736">আরও ট্যাব</translation>
 <translation id="58326064309361797">ট্যাবগুলি গ্রুপ করতে ড্র্যাগ করুন</translation>
+<translation id="6040143037577758943">বন্ধ</translation>
 <translation id="6193448654517602979">ট্যাব বেছে নিন</translation>
 <translation id="6615455863669487791">আমাকে দেখান</translation>
 <translation id="6840760312327750441">ট্যাব গ্রুপ করতে সেটি টাচ করে ধরে থাকুন। তারপর, সেটি টেনে অন্য ট্যাবে নিয়ে আসুন।</translation>

@@ -575,7 +575,7 @@ Cada item da lista da política é uma string que contém um código de extensã
         A compatibilidade com outros tipos de aplicativo será adicionada no futuro. Por enquanto, eles podem ser especificados na política, mas as restrições não terão efeito.
         Existem dois tipos de restrições disponíveis: |BLOCK| e |TIME_LIMIT|.
         |BLOCK| deixa o app indisponível para o usuário. Se você especificar |daily_limit_mins| com a restrição |BLOCK|, |daily_limit_mins| será ignorado.
-        |TIME_LIMITS| aplica o limite de uso diário e torna o app indisponível após o limite ser atingido no dia especificado. O limite de uso é especificado em |daily_limit_mins|. O limite de uso é redefinido diariamente no horário UTC transmitindo |reset_at|.
+        |TIME_LIMITS| aplica o limite de uso diário e torna o app indisponível após o limite ser atingido no dia especificado. O limite de uso é especificado em |daily_limit_mins|. O limite de uso é redefinido diariamente no horário UTC transmitido em |reset_at|.
         Esta política é usada apenas para crianças.
         Esta política complementa a "UsageTimeLimit". Restrições especificadas em "UsageTimeLimit", como tempo de uso e hora de dormir, serão aplicadas independentemente de "PerAppTimeLimits".</translation>
 <translation id="1914840757300882918">Se esta política for definida, o host usará um certificado do cliente com o dado CN do emissor para autenticar em RemoteAccessHostTokenValidationUrl. Configure como "*" para usar qualquer certificado do cliente disponível.
@@ -1330,7 +1330,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 
           Esta política está disponível apenas em instâncias do Windows associadas a um domínio do <ph name="MS_AD_NAME" /> ou instâncias do Windows 10 Pro ou Enterprise inscritas no gerenciamento de dispositivos.</translation>
 <translation id="3016255526521614822">Colocar na lista de permissões os apps de anotação permitidos na tela de bloqueio do <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="3020064401262077616">Controla as políticas de Supervisão dos pais, que são aplicadas apenas às contas de crianças.</translation>
+<translation id="3020064401262077616">Controla as políticas de supervisão dos pais, que são aplicadas apenas às contas de crianças.</translation>
 <translation id="3021562480854470924">Número de marcos em que a reversão é permitida</translation>
 <translation id="3023572080620427845">URL de um arquivo XML que contém URLs que serão carregados em um navegador alternativo.</translation>
 <translation id="3026740867910702435">Ativar o recurso de acessibilidade de cursor grande na tela de login.
@@ -1607,7 +1607,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 <translation id="3524204464536655762">Não permite que nenhum site solicite acesso a dispositivos USB por meio da API WebUSB</translation>
 <translation id="3526752951628474302">Apenas impressão monocromática</translation>
 <translation id="3528000905991875314">Ativar páginas de erro alternativas</translation>
-<translation id="3531084733660068324">Configurações de Supervisão dos pais</translation>
+<translation id="3531084733660068324">Configurações de supervisão dos pais</translation>
 <translation id="3534882636155369445">Não bloquear arquivos grandes</translation>
 <translation id="3540935459049973317">Limites de tempo por app</translation>
 <translation id="3545457887306538845">Permite controlar onde as Ferramentas para Desenvolvedores podem ser usadas.
@@ -2998,6 +2998,13 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
           Quando esta política não for definida, a ação padrão de suspender o dispositivo será tomada.
 
           Se a ação for de suspender, o <ph name="PRODUCT_OS_NAME" /> poderá ser configurado separadamente para bloquear ou não a tela antes da suspensão.</translation>
+<translation id="5755002458331714762"> As APIs Web Components v0 (Shadow DOM v0, Custom Elements v0 e HTML Imports) se tornaram obsoletas em 2018 e estão desativadas por padrão desde o M80. Esta política permite que esses recursos sejam seletivamente reativados até o M84.
+
+      Se esta política for definida como verdadeira, os recursos da Web Components v0 serão ativados para todos os sites.
+
+      Se esta política for definida como falsa ou não for definida, os recursos da Web Components v0 ficarão desativados por padrão, a partir do M80.
+
+      Esta política será removida após o Chrome 84.</translation>
 <translation id="5765780083710877561">Descrição:</translation>
 <translation id="5770738360657678870">Canal de desenvolvedores (pode ser instável)</translation>
 <translation id="5774856474228476867">URL de pesquisa do provedor de pesquisa padrão</translation>
@@ -3168,9 +3175,9 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 <translation id="6141402445226505817">Sempre usar detecção de fuso horário aproximada</translation>
 <translation id="6145799962557135888">Permite que você defina uma lista de padrões de URL que especificam sites com permissão para executar o JavaScript. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultJavaScriptSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="614616930188030377">Os padrões desta lista serão comparados com a origem de segurança do URL solicitante.
-      Se uma correspondência for encontrada ou se a opção chrome://flags/#enable-webrtc-hide-local-ips-with-mdns estiver desativada, os endereços IP locais serão mostrados nos candidatos ICE do WebRTC.
-      Caso contrário, os endereços IP locais serão ocultados com os nomes de host de mDNS.
-      Observe que esta política enfraquece a proteção dos IPs locais, se exigida pelos administradores.</translation>
+      Se uma correspondência for encontrada ou a opção chrome://flags/#enable-webrtc-hide-local-ips-with-mdns estiver desativada, os endereços IP locais serão mostrados nos candidatos ICE do WebRTC.
+      Caso contrário, os endereços IP locais serão ocultos com os nomes de host de mDNS.
+      Observe que, se exigida pelos administradores, esta política enfraquece a proteção dos IPs locais.</translation>
 <translation id="614662973812186053">Esta política também controla a coleta de dados de uso e diagnóstico do Android.</translation>
 <translation id="6153048425064249648">Esta política controla a geração de relatórios em nuvem do <ph name="PRODUCT_NAME" />, que faz upload de informações sobre a operação do navegador no Google Admin Console.
 
@@ -4159,6 +4166,9 @@ Se esta política não for definida, o renderizador padrão será usado para tod
       Se você desativar esta configuração, plug-ins desatualizados não serão utilizados, e não será solicitada a permissão dos usuários para executá-los.
 
       Se esta configuração não for definida, a permissão dos usuários para executar plug-ins desatualizados será solicitada.</translation>
+<translation id="7862137072381331997">Quando esta política estiver ativada, todos os URLs visitados serão verificados em tempo real com o "Navegação segura".
+
+      Quando esta política estiver desativada ou não for definida, as verificações do "Navegação segura" padrão serão aplicadas. As verificações do "Navegação Segura" padrão ainda podem incluir pesquisas em tempo real na preferência "Melhorar as pesquisas e a navegação". Para desativar à força as pesquisas em tempo real, veja a política <ph name="URL_KEYED_ANONYMIZED_DATA_COLLECTION_ENABLED_POLICY" />.</translation>
 <translation id="7863947545897944083">Ativar o recurso de acessibilidade de alto contraste na tela de login.
 
           Se esta política for definida como verdadeira, o alto contraste sempre ficará ativado na tela de login.
@@ -4623,6 +4633,7 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="8672321184841719703">Versão de atualização automática de destino</translation>
 <translation id="867410340948518937">Segundo fator universal (U2F, na sigla em inglês)</translation>
 <translation id="8685024486845674965">O aviso de proteção de senha é acionado pela reutilização da senha</translation>
+<translation id="8687958770985542440">Reativar API Web Components v0 até o M84.</translation>
 <translation id="8693243869659262736">Usar cliente DNS integrado</translation>
 <translation id="8698286761337647563">Com quantos dias de antecedência os usuários do SAML precisam ser notificados quando as senhas estiverem prestes a expirar</translation>
 <translation id="8703488928438047864">Informa o status da placa</translation>
@@ -4979,11 +4990,11 @@ A configuração padrão é permitir que o navegador do host faça a renderizaç
 <translation id="991560005425213776">Enviar nome de usuário e de arquivo para impressoras nativas</translation>
 <translation id="99232017131102456">Esta política configura um único cache global por perfil com credenciais de autenticação do servidor HTTP.
 
-      Se esta política não for definida ou for desativada, o navegador usará o comportamento padrão da autenticação entre sites, o que, a partir da versão 80, será criar o escopo das credenciais de autenticação do servidor HTTP por site de nível superior. Portanto, se dois sites usarem recursos do mesmo domínio de autenticação, as credenciais precisarão ser fornecidas de forma independente no contexto desses sites. As credenciais de proxy armazenadas em cache serão reutilizadas nos sites.
+      Se esta política não for definida ou for desativada, o navegador usará o comportamento padrão da autenticação entre sites, que, a partir da versão 80, será criar o escopo das credenciais de autenticação do servidor HTTP por site de nível superior. Portanto, se dois sites usarem recursos do mesmo domínio de autenticação, as credenciais precisarão ser fornecidas de forma independente no contexto desses sites. As credenciais de proxy armazenadas em cache serão reutilizadas nos sites.
 
       Se a política estiver ativada, as credenciais de autenticação de HTTP inseridas no contexto de um site serão automaticamente usadas no contexto de outro.
 
-      A ativação desta política cria vulnerabilidades para alguns tipos de ataque entre sites e permite que os usuários sejam rastreados nos sites, mesmo sem cookies pela adição de entradas ao cache de autenticação de HTTP usando credenciais incorporadas em URLs.
+      A ativação desta política cria vulnerabilidades para alguns tipos de ataque entre sites e permite que os usuários sejam rastreados nos sites mesmo sem cookies, pela adição de entradas ao cache de autenticação de HTTP usando credenciais incorporadas em URLs.
 
       O objetivo desta política é dar às empresas, dependendo do comportamento legado, a chance de atualizar os próprios procedimentos de login. Ela será removida no futuro.</translation>
 </translationbundle>

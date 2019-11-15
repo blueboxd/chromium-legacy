@@ -324,7 +324,8 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
         // The setting can fail if the preference is managed.  However, the
         // caller is responsible to not call this function in such case.  DCHECK
         // is here to prevent possible mistake.
-        SetArcPlayStoreEnabledForProfile(profile, true);
+        if (!SetArcPlayStoreEnabledForProfile(profile, true))
+          return false;
         DCHECK(IsArcPlayStoreEnabledForProfile(profile));
 
         // PlayStore item has special handling for shelf controllers. In order

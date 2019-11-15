@@ -97,8 +97,6 @@ public class TabGridDialogMediatorUnitTest {
     @Mock
     Resources mResources;
     @Mock
-    TabGridDialogParent.AnimationParams mAnimationParams;
-    @Mock
     Rect mRect;
     @Mock
     View mView;
@@ -113,7 +111,7 @@ public class TabGridDialogMediatorUnitTest {
     @Mock
     TabSwitcherMediator.ResetHandler mTabSwitcherResetHandler;
     @Mock
-    TabGridDialogMediator.AnimationParamsProvider mAnimationParamsProvider;
+    TabGridDialogMediator.AnimationSourceViewProvider mAnimationSourceViewProvider;
     @Mock
     TabModelFilterProvider mTabModelFilterProvider;
     @Mock
@@ -181,9 +179,7 @@ public class TabGridDialogMediatorUnitTest {
         doReturn(DIALOG_TITLE2)
                 .when(mResources)
                 .getQuantityString(R.plurals.bottom_tab_grid_title_placeholder, 2, 2);
-        doReturn(mAnimationParams)
-                .when(mAnimationParamsProvider)
-                .getAnimationParamsForTab(anyInt());
+        doReturn(mView).when(mAnimationSourceViewProvider).getAnimationSourceViewForTab(anyInt());
         doReturn(mTabCreator).when(mTabCreatorManager).getTabCreator(anyBoolean());
         doReturn(REMOVE_BUTTON_STRING)
                 .when(mContext)
@@ -195,9 +191,10 @@ public class TabGridDialogMediatorUnitTest {
             mTabSelectionEditorController = null;
         }
         mModel = new PropertyModel(TabGridPanelProperties.ALL_KEYS);
-        mMediator = new TabGridDialogMediator(mContext, mDialogController, mModel,
-                mTabModelSelector, mTabCreatorManager, mTabSwitcherResetHandler,
-                mAnimationParamsProvider, mTabSelectionEditorController, mTabGroupTitleEditor, "");
+        mMediator =
+                new TabGridDialogMediator(mContext, mDialogController, mModel, mTabModelSelector,
+                        mTabCreatorManager, mTabSwitcherResetHandler, mAnimationSourceViewProvider,
+                        mTabSelectionEditorController, mTabGroupTitleEditor, "");
     }
 
     @After
@@ -254,14 +251,14 @@ public class TabGridDialogMediatorUnitTest {
 
     @Test
     public void onClickAdd_HasCurrentTab() {
-        // Mock that the animation source Rect is not null.
-        mModel.set(TabGridPanelProperties.ANIMATION_PARAMS, mAnimationParams);
+        // Mock that the animation source view is not null.
+        mModel.set(TabGridPanelProperties.ANIMATION_SOURCE_VIEW, mView);
         mMediator.setCurrentTabIdForTest(TAB1_ID);
 
         View.OnClickListener listener = mModel.get(TabGridPanelProperties.ADD_CLICK_LISTENER);
         listener.onClick(mView);
 
-        assertThat(mModel.get(TabGridPanelProperties.ANIMATION_PARAMS), equalTo(null));
+        assertThat(mModel.get(TabGridPanelProperties.ANIMATION_SOURCE_VIEW), equalTo(null));
         verify(mDialogController).resetWithListOfTabs(null);
         verify(mTabCreator)
                 .createNewTab(
@@ -431,12 +428,12 @@ public class TabGridDialogMediatorUnitTest {
     @Test
     public void tabAddition() {
         Tab newTab = prepareTab(TAB3_ID, TAB3_TITLE);
-        // Mock that the animation params is not null.
-        mModel.set(TabGridPanelProperties.ANIMATION_PARAMS, mAnimationParams);
+        // Mock that the animation source view is not null.
+        mModel.set(TabGridPanelProperties.ANIMATION_SOURCE_VIEW, mView);
 
         mTabModelObserverCaptor.getValue().didAddTab(newTab, TabLaunchType.FROM_CHROME_UI);
 
-        assertThat(mModel.get(TabGridPanelProperties.ANIMATION_PARAMS), equalTo(null));
+        assertThat(mModel.get(TabGridPanelProperties.ANIMATION_SOURCE_VIEW), equalTo(null));
         verify(mDialogController).resetWithListOfTabs(null);
     }
 
@@ -486,13 +483,13 @@ public class TabGridDialogMediatorUnitTest {
         doReturn(new ArrayList<>()).when(mTabGroupModelFilter).getRelatedTabList(TAB1_ID);
         // As last tab in the group, tab1 is definitely the current tab for the dialog.
         mMediator.setCurrentTabIdForTest(TAB1_ID);
-        // Mock the dialog is showing and the source animation params is not null.
-        mModel.set(TabGridPanelProperties.ANIMATION_PARAMS, mAnimationParams);
+        // Mock the dialog is showing and the animation source view is not null.
+        mModel.set(TabGridPanelProperties.ANIMATION_SOURCE_VIEW, mView);
         mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, true);
 
         mTabModelObserverCaptor.getValue().willCloseTab(mTab1, false);
 
-        assertThat(mModel.get(TabGridPanelProperties.ANIMATION_PARAMS), equalTo(null));
+        assertThat(mModel.get(TabGridPanelProperties.ANIMATION_SOURCE_VIEW), equalTo(null));
         verify(mDialogController).resetWithListOfTabs(null);
         verify(mTabSwitcherResetHandler, never())
                 .resetWithTabList(mTabGroupModelFilter, false, false);
@@ -652,37 +649,37 @@ public class TabGridDialogMediatorUnitTest {
 
     @Test
     public void tabSelection() {
-        mModel.set(TabGridPanelProperties.ANIMATION_PARAMS, mAnimationParams);
+        mModel.set(TabGridPanelProperties.ANIMATION_SOURCE_VIEW, mView);
 
         mTabModelObserverCaptor.getValue().didSelectTab(
                 mTab1, TabSelectionType.FROM_USER, Tab.INVALID_TAB_ID);
 
-        assertThat(mModel.get(TabGridPanelProperties.ANIMATION_PARAMS), equalTo(null));
+        assertThat(mModel.get(TabGridPanelProperties.ANIMATION_SOURCE_VIEW), equalTo(null));
         verify(mDialogController).resetWithListOfTabs(null);
     }
 
     @Test
     public void hideDialog_FadeOutAnimation() {
-        // Mock that the animation source Rect is null.
-        mModel.set(TabGridPanelProperties.ANIMATION_PARAMS, null);
+        // Mock that the animation source view is null.
+        mModel.set(TabGridPanelProperties.ANIMATION_SOURCE_VIEW, null);
 
         mMediator.hideDialog(false);
 
-        // Animation params should not be specified.
-        assertThat(mModel.get(TabGridPanelProperties.ANIMATION_PARAMS), equalTo(null));
+        // Animation source view should not be specified.
+        assertThat(mModel.get(TabGridPanelProperties.ANIMATION_SOURCE_VIEW), equalTo(null));
         verify(mDialogController).resetWithListOfTabs(eq(null));
     }
 
     @Test
     public void hideDialog_ZoomOutAnimation() {
-        // Mock that the animation source Rect is null.
-        mModel.set(TabGridPanelProperties.ANIMATION_PARAMS, null);
+        // Mock that the animation source view is null.
+        mModel.set(TabGridPanelProperties.ANIMATION_SOURCE_VIEW, null);
 
         mMediator.setCurrentTabIdForTest(TAB1_ID);
         mMediator.hideDialog(true);
 
-        // Animation params should be specified.
-        assertThat(mModel.get(TabGridPanelProperties.ANIMATION_PARAMS), equalTo(mAnimationParams));
+        // Animation source view should be specified.
+        assertThat(mModel.get(TabGridPanelProperties.ANIMATION_SOURCE_VIEW), equalTo(mView));
         verify(mDialogController).resetWithListOfTabs(eq(null));
     }
 
@@ -827,9 +824,9 @@ public class TabGridDialogMediatorUnitTest {
 
     @Test
     public void showDialog_FromGTS() {
-        // Mock that the dialog is hidden and animation source Rect and header title are all null.
+        // Mock that the dialog is hidden and animation source view and header title are all null.
         mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, false);
-        mModel.set(TabGridPanelProperties.ANIMATION_PARAMS, null);
+        mModel.set(TabGridPanelProperties.ANIMATION_SOURCE_VIEW, null);
         mModel.set(TabGridPanelProperties.HEADER_TITLE, null);
         // Mock that tab1 and tab2 are in a group.
         List<Tab> tabgroup = new ArrayList<>(Arrays.asList(mTab1, mTab2));
@@ -838,17 +835,17 @@ public class TabGridDialogMediatorUnitTest {
         mMediator.onReset(tabgroup);
 
         assertThat(mModel.get(TabGridPanelProperties.IS_DIALOG_VISIBLE), equalTo(true));
-        // Animation source Rect should be updated with specific Rect.
-        assertThat(mModel.get(TabGridPanelProperties.ANIMATION_PARAMS), equalTo(mAnimationParams));
+        // Animation source view should be updated with specific view.
+        assertThat(mModel.get(TabGridPanelProperties.ANIMATION_SOURCE_VIEW), equalTo(mView));
         // Dialog title should be updated.
         assertThat(mModel.get(TabGridPanelProperties.HEADER_TITLE), equalTo(DIALOG_TITLE2));
     }
 
     @Test
     public void showDialog_FromGTS_WithStoredTitle() {
-        // Mock that the dialog is hidden and animation source Rect and header title are all null.
+        // Mock that the dialog is hidden and animation source view and header title are all null.
         mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, false);
-        mModel.set(TabGridPanelProperties.ANIMATION_PARAMS, null);
+        mModel.set(TabGridPanelProperties.ANIMATION_SOURCE_VIEW, null);
         mModel.set(TabGridPanelProperties.HEADER_TITLE, null);
         // Mock that tab1 and tab2 are in a group.
         List<Tab> tabgroup = new ArrayList<>(Arrays.asList(mTab1, mTab2));
@@ -860,8 +857,8 @@ public class TabGridDialogMediatorUnitTest {
         mMediator.onReset(tabgroup);
 
         assertThat(mModel.get(TabGridPanelProperties.IS_DIALOG_VISIBLE), equalTo(true));
-        // Animation source Rect should be updated with specific Rect.
-        assertThat(mModel.get(TabGridPanelProperties.ANIMATION_PARAMS), equalTo(mAnimationParams));
+        // Animation source view should be updated with specific view.
+        assertThat(mModel.get(TabGridPanelProperties.ANIMATION_SOURCE_VIEW), equalTo(mView));
         // Dialog title should be updated with stored title.
         assertThat(
                 mModel.get(TabGridPanelProperties.HEADER_TITLE), equalTo(CUSTOMIZED_DIALOG_TITLE));
@@ -875,9 +872,9 @@ public class TabGridDialogMediatorUnitTest {
                 mTabModelSelector, mTabCreatorManager, mTabSwitcherResetHandler, null,
                 mTabSelectionEditorController, mTabGroupTitleEditor, "");
 
-        // Mock that the dialog is hidden and animation source Rect and header title are all null.
+        // Mock that the dialog is hidden and animation source view and header title are all null.
         mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, false);
-        mModel.set(TabGridPanelProperties.ANIMATION_PARAMS, null);
+        mModel.set(TabGridPanelProperties.ANIMATION_SOURCE_VIEW, null);
         mModel.set(TabGridPanelProperties.HEADER_TITLE, null);
         // Mock that tab1 and tab2 are in a group.
         List<Tab> tabgroup = new ArrayList<>(Arrays.asList(mTab1, mTab2));
@@ -886,8 +883,8 @@ public class TabGridDialogMediatorUnitTest {
         mMediator.onReset(tabgroup);
 
         assertThat(mModel.get(TabGridPanelProperties.IS_DIALOG_VISIBLE), equalTo(true));
-        // Animation params should not be specified.
-        assertThat(mModel.get(TabGridPanelProperties.ANIMATION_PARAMS), equalTo(null));
+        // Animation source view should not be specified.
+        assertThat(mModel.get(TabGridPanelProperties.ANIMATION_SOURCE_VIEW), equalTo(null));
         // Dialog title should be updated.
         assertThat(mModel.get(TabGridPanelProperties.HEADER_TITLE), equalTo(DIALOG_TITLE2));
     }
@@ -899,9 +896,9 @@ public class TabGridDialogMediatorUnitTest {
         mMediator = new TabGridDialogMediator(mContext, mDialogController, mModel,
                 mTabModelSelector, mTabCreatorManager, mTabSwitcherResetHandler, null,
                 mTabSelectionEditorController, mTabGroupTitleEditor, "");
-        // Mock that the dialog is hidden and animation source Rect and header title are all null.
+        // Mock that the dialog is hidden and animation source view and header title are all null.
         mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, false);
-        mModel.set(TabGridPanelProperties.ANIMATION_PARAMS, null);
+        mModel.set(TabGridPanelProperties.ANIMATION_SOURCE_VIEW, null);
         mModel.set(TabGridPanelProperties.HEADER_TITLE, null);
         // Mock that tab1 and tab2 are in a group.
         List<Tab> tabgroup = new ArrayList<>(Arrays.asList(mTab1, mTab2));
@@ -913,8 +910,8 @@ public class TabGridDialogMediatorUnitTest {
         mMediator.onReset(tabgroup);
 
         assertThat(mModel.get(TabGridPanelProperties.IS_DIALOG_VISIBLE), equalTo(true));
-        // Animation params should not be specified.
-        assertThat(mModel.get(TabGridPanelProperties.ANIMATION_PARAMS), equalTo(null));
+        // Animation source view should not be specified.
+        assertThat(mModel.get(TabGridPanelProperties.ANIMATION_SOURCE_VIEW), equalTo(null));
         // Dialog title should be updated with stored title.
         assertThat(
                 mModel.get(TabGridPanelProperties.HEADER_TITLE), equalTo(CUSTOMIZED_DIALOG_TITLE));

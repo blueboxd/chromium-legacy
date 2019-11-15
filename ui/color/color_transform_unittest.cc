@@ -13,11 +13,22 @@
 namespace ui {
 namespace {
 
+// Tests initialization with an SkColor value.
+TEST(ColorRecipeTest, TestColorRecipeInitialization) {
+  const auto verify_initialization = [&](SkColor color) {
+    ColorTransform transform = color;
+    EXPECT_EQ(color, transform.Run(SK_ColorBLACK, ColorMixer()));
+  };
+  verify_initialization(SK_ColorBLUE);
+  verify_initialization(SK_ColorRED);
+  verify_initialization(SK_ColorGREEN);
+}
+
 // Tests that AlphaBlend() produces a transform that blends its inputs.
 TEST(ColorTransformTest, AlphaBlend) {
   const auto blend = [](SkAlpha alpha) {
     const ColorTransform transform =
-        AlphaBlend(FromColor(SK_ColorWHITE), FromColor(SK_ColorBLACK), alpha);
+        AlphaBlend(SK_ColorWHITE, SK_ColorBLACK, alpha);
     return transform.Run(gfx::kPlaceholderColor, ColorMixer());
   };
   EXPECT_EQ(SK_ColorBLACK, blend(SK_AlphaTRANSPARENT));
@@ -131,11 +142,11 @@ TEST(ColorTransformTest, DeriveDefaultIconColor) {
   verify_derive(SK_ColorRED);
 }
 
-// Tests that FromColor() produces a transform that ignores the input color and
-// always outputs a specified SkColor.
+// Tests that initializing a transform from a color produces a transform that
+// ignores the input color and always outputs a specified SkColor.
 TEST(ColorTransformTest, FromColor) {
   constexpr SkColor kOutput = SK_ColorGREEN;
-  const ColorTransform transform = FromColor(kOutput);
+  const ColorTransform transform = kOutput;
   const auto verify_color = [&](SkColor input) {
     EXPECT_EQ(kOutput, transform.Run(input, ColorMixer()));
   };
@@ -185,7 +196,7 @@ TEST(ColorTransformTest, FromResultColor) {
   ColorMixer mixer;
   mixer.AddSet({kColorSetTest0,
                 {{kColorTest0, SK_ColorGREEN}, {kColorTest1, kTest1Color}}});
-  mixer[kColorTest0].AddTransform(FromInputColor(kColorTest1));
+  mixer[kColorTest0] = FromInputColor(kColorTest1);
   const auto verify_color = [&](SkColor input) {
     EXPECT_EQ(kTest1Color, transform.Run(input, mixer));
   };
@@ -238,8 +249,8 @@ TEST(ColorTransformTest, GetResultingPaintColor) {
 TEST(ColorTransformTest, SelectBasedOnDarkInput) {
   constexpr SkColor kDarkOutput = SK_ColorGREEN;
   constexpr SkColor kLightOutput = SK_ColorRED;
-  const ColorTransform transform = SelectBasedOnDarkInput(
-      FromTransformInput(), FromColor(kDarkOutput), FromColor(kLightOutput));
+  const ColorTransform transform =
+      SelectBasedOnDarkInput(FromTransformInput(), kDarkOutput, kLightOutput);
   EXPECT_EQ(kDarkOutput, transform.Run(SK_ColorBLACK, ColorMixer()));
   EXPECT_EQ(kLightOutput, transform.Run(SK_ColorWHITE, ColorMixer()));
   EXPECT_EQ(kDarkOutput, transform.Run(SK_ColorBLUE, ColorMixer()));

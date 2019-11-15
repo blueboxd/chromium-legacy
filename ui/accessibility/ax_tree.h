@@ -217,8 +217,14 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
       const AXTreeUpdateState* update_state);
 
   // Notify the delegate that |node| and all of its descendants will be
+  // destroyed. This function is called during AXTree teardown.
+  void RecursivelyNotifyNodeDeletedForTreeTeardown(AXNode* node);
+
+  // Notify the delegate that the node marked by |node_id| has been deleted.
+  // We are passing the node id instead of ax node is because by the time this
+  // function is called, the ax node in the tree will already have been
   // destroyed.
-  void RecursivelyNotifyNodeWillBeDeleted(AXNode* node);
+  void NotifyNodeHasBeenDeleted(AXNode::AXID node_id);
 
   // Notify the delegate that |node| has been created or reparented.
   void NotifyNodeHasBeenReparentedOrCreated(

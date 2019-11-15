@@ -1512,6 +1512,9 @@
                   'ios/chrome/browser/reading_list|'\
                   'ios/chrome/browser/ui/reading_list',
     },
+    'relaunch_notification': {
+      'filepath': 'chrome/browser/ui/views/relaunch_notification'
+    },
     'remoteplayback': {
       'filepath': 'chrome/android/features/media_router/java/src/org/chromium/chrome/browser/media/router/FlingingController' \
                   '|chrome/android/java/src/org/chromium/chrome/browser/media/remote/' \
@@ -2561,6 +2564,7 @@
     'print_preview': ['print-reviews+preview@chromium.org'],
     'push_messaging': ['peter@chromium.org'],
     'reading_list': ['stkhapugin@chromium.org'],
+    'relaunch_notification': ['grt+watch@chromium.org'],
     'remoteplayback': ['mfoltz+watch@chromium.org'],
     'remoting': ['chromoting-reviews@chromium.org'],
     'rlz_id': ['gab+watch@chromium.org',

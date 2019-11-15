@@ -69,8 +69,9 @@ void FakeAudioOutputStream::CallOnMoreData(base::TimeTicks ideal_time,
   DCHECK(audio_manager_->GetWorkerTaskRunner()->BelongsToCurrentThread());
   // Real streams provide small tweaks to their delay values, alongside the
   // current system time; and so the same is done here.
-  callback_->OnMoreData(fixed_data_delay_ + (ideal_time - now), now, 0,
-                        audio_bus_.get());
+  const auto delay =
+      fixed_data_delay_ + std::max(base::TimeDelta(), ideal_time - now);
+  callback_->OnMoreData(delay, now, 0, audio_bus_.get());
 }
 
 void FakeAudioOutputStream::SetMute(bool muted) {}

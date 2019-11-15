@@ -71,7 +71,7 @@ public class ContactDetails implements Comparable<ContactDetails> {
      */
     public ContactDetails(String id, String displayName, List<String> emails,
             List<String> phoneNumbers, List<PaymentAddress> addresses) {
-        mDisplayName = displayName;
+        mDisplayName = displayName != null ? displayName : "";
         mEmails = emails != null ? emails : new ArrayList<String>();
         mPhoneNumbers = phoneNumbers != null ? phoneNumbers : new ArrayList<String>();
         mAddresses = addresses != null ? addresses : new ArrayList<PaymentAddress>();

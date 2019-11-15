@@ -9,6 +9,7 @@
 
 namespace syncer {
 class DeviceInfo;
+class SyncService;
 }  // namespace syncer
 
 struct SharingDeviceNames {
@@ -18,5 +19,11 @@ struct SharingDeviceNames {
 
 // Returns full and short names for |device|.
 SharingDeviceNames GetSharingDeviceNames(const syncer::DeviceInfo* device);
+
+// Returns true if required sync feature is enabled.
+bool IsSyncEnabledForSharing(syncer::SyncService* sync_service);
+
+// Returns true if required sync feature is disabled.
+bool IsSyncDisabledForSharing(syncer::SyncService* sync_service);
 
 #endif  // CHROME_BROWSER_SHARING_SHARING_UTILS_H_

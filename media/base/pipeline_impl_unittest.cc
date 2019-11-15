@@ -292,8 +292,8 @@ class PipelineImplTest : public ::testing::Test {
     ResetRenderer();
   }
 
-  void CreateRenderer(RendererCreatedCB renderer_created_cb) {
-    std::move(renderer_created_cb).Run(std::move(scoped_renderer_));
+  std::unique_ptr<Renderer> CreateRenderer() {
+    return std::move(scoped_renderer_);
   }
 
   void ResetRenderer() {
@@ -667,6 +667,45 @@ TEST_F(PipelineImplTest, BufferedTimeRangesCanChangeAfterStop) {
 
   pipeline_->Stop();
   RunBufferedTimeRangesTest(base::TimeDelta::FromSeconds(5));
+}
+
+TEST_F(PipelineImplTest, OnStatisticsUpdate) {
+  CreateAudioAndVideoStream();
+  SetDemuxerExpectations();
+  StartPipelineAndExpect(PIPELINE_OK);
+
+  PipelineStatistics stats;
+  stats.audio_decoder_info.decoder_name = "TestAudioDecoderName";
+  stats.audio_decoder_info.is_platform_decoder = false;
+  EXPECT_CALL(callbacks_, OnAudioDecoderChange(_));
+  renderer_client_->OnStatisticsUpdate(stats);
+  base::RunLoop().RunUntilIdle();
+
+  // VideoDecoderInfo changed and we expect OnVideoDecoderChange() to be called.
+  stats.video_decoder_info.decoder_name = "TestVideoDecoderName";
+  stats.video_decoder_info.is_platform_decoder = true;
+  EXPECT_CALL(callbacks_, OnVideoDecoderChange(_));
+  renderer_client_->OnStatisticsUpdate(stats);
+  base::RunLoop().RunUntilIdle();
+
+  // OnStatisticsUpdate() with the same |stats| should not cause new
+  // PipelineClient calls.
+  renderer_client_->OnStatisticsUpdate(stats);
+  base::RunLoop().RunUntilIdle();
+
+  // AudioDecoderInfo changed and we expect OnAudioDecoderChange() to be called.
+  stats.audio_decoder_info.is_platform_decoder = true;
+  EXPECT_CALL(callbacks_, OnAudioDecoderChange(_));
+  renderer_client_->OnStatisticsUpdate(stats);
+  base::RunLoop().RunUntilIdle();
+
+  // Both info changed.
+  stats.audio_decoder_info.decoder_name = "NewTestAudioDecoderName";
+  stats.video_decoder_info.is_decrypting_demuxer_stream = true;
+  EXPECT_CALL(callbacks_, OnAudioDecoderChange(_));
+  EXPECT_CALL(callbacks_, OnVideoDecoderChange(_));
+  renderer_client_->OnStatisticsUpdate(stats);
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(PipelineImplTest, EndedCallback) {

@@ -119,9 +119,19 @@ class OptimizationGuideNavigationData {
         was_host_covered_by_fetch_at_navigation_start;
   }
 
+  // Whether the host was covered by a hints fetch at commit.
+  base::Optional<bool> was_host_covered_by_fetch_at_commit() const {
+    return was_host_covered_by_fetch_at_commit_;
+  }
+  void set_was_host_covered_by_fetch_at_commit(
+      bool was_host_covered_by_fetch_at_commit) {
+    was_host_covered_by_fetch_at_commit_ = was_host_covered_by_fetch_at_commit;
+  }
+
  private:
-  // Records hint cache histograms based on data currently held in |this|.
-  void RecordHintCacheMatch(bool has_committed) const;
+  // Records the hint cache and fetch coverage based on data currently held in
+  // |this|.
+  void RecordHintCoverage(bool has_committed) const;
 
   // Records histograms for the decisions made for each optimization target and
   // type that was queried for the navigation based on data currently held in
@@ -173,6 +183,9 @@ class OptimizationGuideNavigationData {
   // Whether the host was covered by a hints fetch at the start of
   // navigation.
   base::Optional<bool> was_host_covered_by_fetch_at_navigation_start_;
+
+  // Whether the host was covered by a hints fetch at commit.
+  base::Optional<bool> was_host_covered_by_fetch_at_commit_;
 
   DISALLOW_ASSIGN(OptimizationGuideNavigationData);
 };

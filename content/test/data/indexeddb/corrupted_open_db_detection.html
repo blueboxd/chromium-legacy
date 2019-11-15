@@ -162,11 +162,10 @@ var tests = {
     });
   },
   failGetBlobJournal: function() {
-    // Get() #1 is the put (GetNewVersionNumber)
-    // Get() #2 is the blob key generator (GetBlobKeyGeneratorCurrentNumber)
-    // Get() #3 is the journal (GetPrimaryBlobJournal)
+    // Get() #1 is the blob key generator (GetBlobKeyGeneratorCurrentNumber)
+    // Get() #2 is the journal (GetPrimaryBlobJournal)
     testXhr(
-        "/corrupt/test/fail?class=LevelDBDirectTransaction&method=Get&instNum=1",
+        "/corrupt/test/fail?class=LevelDBDirectTransaction&method=Get&instNum=2",
         function() {
       tests.testCommon('readwrite');
       request = objectStore.put({blob: new Blob(['abc'])}, 'key-0');

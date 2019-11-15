@@ -89,18 +89,6 @@ CommandHandler.onCommand = function(command) {
     case 'showOptionsPage':
       chrome.runtime.openOptionsPage();
       break;
-    case 'toggleChromeVox':
-      if (cvox.ChromeVox.isChromeOS) {
-        return false;
-      }
-
-      cvox.ChromeVox.isActive = !cvox.ChromeVox.isActive;
-      if (!cvox.ChromeVox.isActive) {
-        var msg = Msgs.getMsg('chromevox_inactive');
-        cvox.ChromeVox.tts.speak(msg, cvox.QueueMode.FLUSH);
-        return false;
-      }
-      break;
     case 'toggleStickyMode':
       cvox.ChromeVoxBackground.setPref(
           'sticky', !cvox.ChromeVox.isStickyPrefOn, true);

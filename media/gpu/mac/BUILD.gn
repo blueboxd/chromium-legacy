@@ -24,7 +24,7 @@ source_set("mac") {
     "vt_video_encode_accelerator_mac.h",
   ]
   public_deps = [
-    "//third_party/webrtc/common_video",
+    "//third_party/webrtc_overrides:webrtc_component",
   ]
   libs = [
     "CoreFoundation.framework",

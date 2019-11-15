@@ -46,8 +46,10 @@ LoggedInUserMixin::LoggedInUserMixin(
                                                FakeGaiaMixin::kFakeUserGaiaId)),
             ConvertUserType(type)),
       login_manager_(mixin_host, GetInitialUsers(user_, include_initial_user)),
-      policy_server_(mixin_host),
-      user_policy_(mixin_host, user_.account_id, &policy_server_),
+      local_policy_server_(mixin_host),
+      user_policy_(mixin_host, user_.account_id, &local_policy_server_),
+      user_policy_helper_(user_.account_id.GetUserEmail(),
+                          &local_policy_server_),
       embedded_test_server_setup_(mixin_host, embedded_test_server),
       fake_gaia_(mixin_host, embedded_test_server) {
   // By default, LoginManagerMixin will set up user session manager not to
@@ -67,6 +69,10 @@ void LoggedInUserMixin::SetUpOnMainThreadHelper(
   // account.google.com requests would never reach fake GAIA server without
   // this.
   host_resolver->AddRule("*", "127.0.0.1");
+  // Call RequestPolicyUpdate() to set up policy, which prevents the call to
+  // LogInUser() below from hanging indefinitely when there's no initial user
+  // and wait_for_active_session is true.
+  GetUserPolicyMixin()->RequestPolicyUpdate();
   LogInUser(issue_any_scope_token, wait_for_active_session);
   // Set the private |browser_| member in InProcessBrowserTest.
   // Otherwise calls to InProcessBrowserTest::browser() returns null and leads

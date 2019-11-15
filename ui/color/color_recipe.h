@@ -22,15 +22,16 @@ class ColorMixer;
 class COMPONENT_EXPORT(COLOR) ColorRecipe {
  public:
   ColorRecipe();
-  // ColorRecipe is movable since it holds the full list of transforms, which
-  // might be expensive to copy.
+  // This constructor acts as a shorthand initialization of a recipe with a
+  // transform which is by far the most common means of recipe initialization.
+  ColorRecipe(const ColorTransform& transform);
+  ColorRecipe(const ColorRecipe&);
+  ColorRecipe& operator=(const ColorRecipe&);
   ColorRecipe(ColorRecipe&&) noexcept;
   ColorRecipe& operator=(ColorRecipe&&) noexcept;
   ~ColorRecipe();
 
-  // Adds a transform to the end of the current recipe.  Returns a non-const ref
-  // to allow chaining calls.
-  ColorRecipe& AddTransform(ColorTransform transform);
+  ColorRecipe& operator+=(const ColorTransform& transform);
 
   // Generates the output color for |input| by applying all transforms.  |mixer|
   // is passed to each transform, since it might need to request other colors.
@@ -39,6 +40,9 @@ class COMPONENT_EXPORT(COLOR) ColorRecipe {
  private:
   std::list<ColorTransform> transforms_;
 };
+
+COMPONENT_EXPORT(COLOR)
+ColorRecipe operator+(ColorRecipe recipe, const ColorTransform& transform);
 
 }  // namespace ui
 

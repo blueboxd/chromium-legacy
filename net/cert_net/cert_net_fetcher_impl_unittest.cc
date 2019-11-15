@@ -19,6 +19,7 @@
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_server_properties.h"
+#include "net/quic/quic_context.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_with_task_environment.h"
@@ -61,6 +62,7 @@ class RequestContext : public URLRequestContext {
         std::make_unique<SSLConfigServiceDefaults>());
     storage_.set_http_server_properties(
         std::make_unique<HttpServerProperties>());
+    storage_.set_quic_context(std::make_unique<QuicContext>());
 
     HttpNetworkSession::Context session_context;
     session_context.host_resolver = host_resolver();
@@ -71,6 +73,7 @@ class RequestContext : public URLRequestContext {
     session_context.proxy_resolution_service = proxy_resolution_service();
     session_context.ssl_config_service = ssl_config_service();
     session_context.http_server_properties = http_server_properties();
+    session_context.quic_context = quic_context();
     storage_.set_http_network_session(std::make_unique<HttpNetworkSession>(
         HttpNetworkSession::Params(), session_context));
     storage_.set_http_transaction_factory(std::make_unique<HttpCache>(

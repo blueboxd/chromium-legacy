@@ -45,6 +45,11 @@ crbug.com/808744 [ android ] WebglExtension_EXT_disjoint_timer_query_webgl2 [ Sk
 crbug.com/849576 [ no-passthrough ] WebglExtension_KHR_parallel_shader_compile [ Skip ]
 crbug.com/945970 [ android ] WebglExtension_EXT_float_blend [ Skip ]
 
+# TODO(crbug.com/891861): Remove when either workaround is implemented in cmd decoder,
+# or when angle is used everywhere.
+crbug.com/891861 [ mac no-passthrough ] WebglExtension_WEBGL_draw_instanced_base_vertex_base_instance [ Skip ]
+crbug.com/891861 [ mac no-passthrough ] WebglExtension_WEBGL_multi_draw_instanced_base_vertex_base_instance [ Skip ]
+
 # ========================
 # Conformance expectations
 # ========================
@@ -86,7 +91,6 @@ crbug.com/979444 [ android no-angle ] conformance/textures/misc/texture-corner-c
 crbug.com/798117 [ vulkan win nvidia ] conformance/glsl/bugs/assign-to-swizzled-twice-in-function.html [ Failure ]
 crbug.com/798117 [ linux nvidia ] conformance/glsl/bugs/assign-to-swizzled-twice-in-function.html [ Failure ]
 crbug.com/792210 [ nvidia ] conformance/glsl/bugs/in-parameter-passed-as-inout-argument-and-global.html [ Failure ]
-
 
 ####################
 # Win failures     #

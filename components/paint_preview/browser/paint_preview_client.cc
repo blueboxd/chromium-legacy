@@ -276,6 +276,7 @@ mojom::PaintPreviewStatus PaintPreviewClient::RecordFrame(
     frame_proto->set_is_main_frame(true);
   } else {
     frame_proto = proto_ptr->add_subframes();
+    frame_proto->set_is_main_frame(false);
   }
   // Safe since always <#>.skp.
   frame_proto->set_file_path(filename.AsUTF8Unsafe());

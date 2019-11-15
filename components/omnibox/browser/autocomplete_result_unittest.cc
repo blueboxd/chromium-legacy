@@ -266,14 +266,38 @@ TEST_F(AutocompleteResultTest, Swap) {
   r1.AppendMatches(input, matches);
   r1.SortAndCull(input, template_url_service_.get());
   EXPECT_EQ(r1.begin(), r1.default_match());
-  EXPECT_EQ("http://a/", r1.alternate_nav_url().spec());
+
   r1.Swap(&r2);
   EXPECT_TRUE(r1.empty());
   EXPECT_EQ(r1.end(), r1.default_match());
-  EXPECT_TRUE(r1.alternate_nav_url().is_empty());
   ASSERT_FALSE(r2.empty());
   EXPECT_EQ(r2.begin(), r2.default_match());
-  EXPECT_EQ("http://a/", r2.alternate_nav_url().spec());
+}
+
+TEST_F(AutocompleteResultTest, AlternateNavUrl) {
+  AutocompleteInput input(base::ASCIIToUTF16("a"),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+
+  // Against search matches, we should generate an alternate nav URL.
+  {
+    AutocompleteMatch match;
+    match.type = AutocompleteMatchType::SEARCH_SUGGEST;
+    match.destination_url = GURL("http://www.foo.com/s?q=foo");
+    GURL alternate_nav_url =
+        AutocompleteResult::ComputeAlternateNavUrl(input, match);
+    EXPECT_EQ("http://a/", alternate_nav_url.spec());
+  }
+
+  // Against matching URL matches, we should NOT generate an alternate nav URL.
+  {
+    AutocompleteMatch match;
+    match.type = AutocompleteMatchType::SEARCH_SUGGEST;
+    match.destination_url = GURL("http://a/");
+    GURL alternate_nav_url =
+        AutocompleteResult::ComputeAlternateNavUrl(input, match);
+    EXPECT_FALSE(alternate_nav_url.is_valid());
+  }
 }
 
 // Tests that if the new results have a lower max relevance score than last,

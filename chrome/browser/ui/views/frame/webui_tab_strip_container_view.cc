@@ -15,11 +15,13 @@
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/task_manager/web_contents_tags.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
@@ -133,6 +135,7 @@ WebUITabStripContainerView::WebUITabStripContainerView(
                      base::Unretained(this)),
           base::Bind(&WebUITabStripContainerView::CloseContainer,
                      base::Unretained(this)))) {
+  DCHECK(UseTouchableTabStrip());
   animation_.SetTweenType(gfx::Tween::Type::FAST_OUT_SLOW_IN);
 
   SetVisible(false);
@@ -170,7 +173,17 @@ WebUITabStripContainerView::WebUITabStripContainerView(
   auto_closer_->DisableCheckTargets();
 }
 
-WebUITabStripContainerView::~WebUITabStripContainerView() = default;
+WebUITabStripContainerView::~WebUITabStripContainerView() {
+  // The NewTabButton and TabCounter button both use |this| as a listener. We
+  // need to make sure we outlive them.
+  delete new_tab_button_;
+  delete tab_counter_;
+}
+
+bool WebUITabStripContainerView::UseTouchableTabStrip() {
+  return base::FeatureList::IsEnabled(features::kWebUITabStrip) &&
+         ui::MaterialDesignController::touch_ui();
+}
 
 views::NativeViewHost* WebUITabStripContainerView::GetNativeViewHost() {
   return web_view_->holder();
@@ -228,6 +241,17 @@ std::unique_ptr<views::View> WebUITabStripContainerView::CreateTabCounter() {
   return tab_counter;
 }
 
+void WebUITabStripContainerView::UpdateButtons() {
+  const SkColor normal_color =
+      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+  if (new_tab_button_) {
+    new_tab_button_->SetImage(views::Button::STATE_NORMAL,
+                              gfx::CreateVectorIcon(kAddIcon, normal_color));
+  }
+  if (tab_counter_)
+    tab_counter_->SetEnabledTextColors(normal_color);
+}
+
 void WebUITabStripContainerView::CloseContainer() {
   SetContainerTargetVisibility(false);
 }
@@ -256,8 +280,9 @@ bool WebUITabStripContainerView::EventShouldPropagate(const ui::Event& event) {
     return true;
 
   // If the event is in the container or control buttons, let it be handled.
-  for (views::View* view :
-       {static_cast<views::View*>(this), new_tab_button_, tab_counter_}) {
+  for (views::View* view : {static_cast<views::View*>(this),
+                            static_cast<views::View*>(new_tab_button_),
+                            static_cast<views::View*>(tab_counter_)}) {
     if (!view)
       continue;
 

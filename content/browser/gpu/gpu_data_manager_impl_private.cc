@@ -283,6 +283,17 @@ bool SwiftShaderAllowed() {
 #endif
 }
 
+// These values are logged to UMA. Entries should not be renumbered and numeric
+// values should never be reused. Please keep in sync with "CompositingMode" in
+// src/tools/metrics/histograms/enums.xml.
+enum class CompositingMode {
+  kSoftware = 0,
+  kGL = 1,
+  kVulkan = 2,
+  kMetal = 3,
+  kMaxValue = kMetal
+};
+
 }  // anonymous namespace
 
 GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(GpuDataManagerImpl* owner)
@@ -308,6 +319,13 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(GpuDataManagerImpl* owner)
   // For testing only.
   if (command_line->HasSwitch(switches::kDisableDomainBlockingFor3DAPIs))
     domain_blocking_enabled_ = false;
+
+  // Do not change kTimerInterval without also changing the UMA histogram name,
+  // as histogram data from before/after the change will not be comparable.
+  constexpr base::TimeDelta kTimerInterval = base::TimeDelta::FromMinutes(5);
+  compositing_mode_timer_.Start(
+      FROM_HERE, kTimerInterval, this,
+      &GpuDataManagerImplPrivate::RecordCompositingMode);
 }
 
 GpuDataManagerImplPrivate::~GpuDataManagerImplPrivate() {
@@ -1030,6 +1048,18 @@ void GpuDataManagerImplPrivate::FallBackToNextGpuMode() {
       NOTREACHED();
   }
 #endif
+}
+
+void GpuDataManagerImplPrivate::RecordCompositingMode() {
+  CompositingMode compositing_mode;
+  if (IsGpuCompositingDisabled()) {
+    compositing_mode = CompositingMode::kSoftware;
+  } else {
+    // TODO(penghuang): Record kVulkan here if we're using Vulkan.
+    compositing_mode = CompositingMode::kGL;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("GPU.CompositingMode", compositing_mode);
 }
 
 }  // namespace content

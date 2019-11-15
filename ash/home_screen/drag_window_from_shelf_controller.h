@@ -50,6 +50,17 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
   // different for standard or dense shelf.
   static float GetReturnToMaximizedThreshold();
 
+  enum class ShelfWindowDragResult {
+    // Go to home screen after drag ends.
+    kGoToHomeScreen,
+
+    // Dragged window restored to its original bounds.
+    kRestoreToOriginalBounds,
+
+    // Enter overview mode after drag ends.
+    kGoToOverviewMode
+  };
+
   DragWindowFromShelfController(aura::Window* window,
                                 const gfx::Point& location_in_screen,
                                 HotseatState hotseat_state);
@@ -59,8 +70,9 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
   void Drag(const gfx::Point& location_in_screen,
             float scroll_x,
             float scroll_y);
-  void EndDrag(const gfx::Point& location_in_screen,
-               base::Optional<float> velocity_y);
+  base::Optional<ShelfWindowDragResult> EndDrag(
+      const gfx::Point& location_in_screen,
+      base::Optional<float> velocity_y);
   void CancelDrag();
 
   bool IsDraggedWindowAnimating() const;

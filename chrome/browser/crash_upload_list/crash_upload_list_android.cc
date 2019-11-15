@@ -58,10 +58,14 @@ bool CrashUploadListAndroid::DidBrowserCrashRecently() {
 }
 
 std::vector<UploadList::UploadInfo> CrashUploadListAndroid::LoadUploadList() {
-  // First load the list of successfully uploaded logs.
-  std::vector<UploadInfo> uploads = TextLogUploadList::LoadUploadList();
-  // Then load the unsuccessful uploads.
+  std::vector<UploadInfo> uploads;
   LoadUnsuccessfulUploadList(&uploads);
+
+  std::vector<UploadInfo> complete_uploads =
+      TextLogUploadList::LoadUploadList();
+  for (auto info : complete_uploads) {
+    uploads.push_back(info);
+  }
   return uploads;
 }
 

@@ -72,6 +72,7 @@ function setupEvents() {
   var billing = interstitialType == 'SAFEBROWSING' &&
                     loadTimeData.getBoolean('billing');
   var originPolicy = interstitialType == "ORIGIN_POLICY";
+  var blockedInterception = interstitialType == "BLOCKED_INTERCEPTION";
   var hidePrimaryButton = loadTimeData.getBoolean('hide_primary_button');
   var showRecurrentErrorParagraph = loadTimeData.getBoolean(
     'show_recurrent_error_paragraph');
@@ -81,7 +82,7 @@ function setupEvents() {
     $('body').classList.add('dark-mode-available');
   }
 
-  if (ssl || originPolicy) {
+  if (ssl || originPolicy || blockedInterception) {
     $('body').classList.add(badClock ? 'bad-clock' : 'ssl');
     $('error-code').textContent = loadTimeData.getString('errorCode');
     $('error-code').classList.remove(HIDDEN_CLASS);

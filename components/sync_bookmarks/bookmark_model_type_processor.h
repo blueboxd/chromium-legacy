@@ -101,6 +101,11 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor,
   // Performs the required clean up when bookmark model is being deleted.
   void OnBookmarkModelBeingDeleted();
 
+  // Process specifically calls to OnUpdateReceived() that correspond to the
+  // initial merge of bookmarks (e.g. was just enabled).
+  void OnInitialUpdateReceived(const sync_pb::ModelTypeState& type_state,
+                               syncer::UpdateResponseDataList updates);
+
   // Instantiates the required objects to track metadata and starts observing
   // changes from the bookmark model.
   void StartTrackingMetadata(

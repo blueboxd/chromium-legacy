@@ -309,7 +309,7 @@ TEST_F(OriginAccessListTest, CreateCorsOriginAccessPatternsList) {
   bool found_origin1 = false;
   bool found_origin2 = false;
   for (const auto& pattern : patterns) {
-    if (pattern->source_origin == kOrigin1.Serialize()) {
+    if (pattern->source_origin == kOrigin1) {
       EXPECT_FALSE(found_origin1);
       found_origin1 = true;
 
@@ -323,7 +323,7 @@ TEST_F(OriginAccessListTest, CreateCorsOriginAccessPatternsList) {
       EXPECT_EQ(kAllowAnyPort, pattern->allow_patterns[0]->port_match_mode);
       EXPECT_EQ(mojom::CorsOriginAccessMatchPriority::kMediumPriority,
                 pattern->allow_patterns[0]->priority);
-    } else if (pattern->source_origin == kOrigin2.Serialize()) {
+    } else if (pattern->source_origin == kOrigin2) {
       EXPECT_FALSE(found_origin2);
       found_origin2 = true;
 

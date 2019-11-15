@@ -17,23 +17,15 @@
 #include "base/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
-#include "content/public/common/service_manager_connection.h"
-#include "content/public/common/simple_connection_filter.h"
 #include "content/public/utility/content_utility_client.h"
+#include "content/utility/browser_exposed_utility_interfaces.h"
 #include "content/utility/services.h"
 #include "content/utility/utility_blink_platform_with_sandbox_support_impl.h"
 #include "content/utility/utility_service_factory.h"
 #include "ipc/ipc_sync_channel.h"
+#include "mojo/public/cpp/bindings/binder_map.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/sandbox/switches.h"
-
-#if !defined(OS_ANDROID)
-#include "content/public/common/resource_usage_reporter.mojom.h"
-#include "net/proxy_resolution/proxy_resolver_v8.h"
-#endif
 
 namespace content {
 
@@ -123,39 +115,11 @@ ChildThreadImpl::Options::ServiceBinder GetServiceBinder() {
 
 }  // namespace
 
-#if !defined(OS_ANDROID)
-class ResourceUsageReporterImpl : public mojom::ResourceUsageReporter {
- public:
-  ResourceUsageReporterImpl() {}
-  ~ResourceUsageReporterImpl() override {}
-
- private:
-  void GetUsageData(GetUsageDataCallback callback) override {
-    mojom::ResourceUsageDataPtr data = mojom::ResourceUsageData::New();
-    size_t total_heap_size = net::ProxyResolverV8::GetTotalHeapSize();
-    if (total_heap_size) {
-      data->reports_v8_stats = true;
-      data->v8_bytes_allocated = total_heap_size;
-      data->v8_bytes_used = net::ProxyResolverV8::GetUsedHeapSize();
-    }
-    std::move(callback).Run(std::move(data));
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(ResourceUsageReporterImpl);
-};
-
-void CreateResourceUsageReporter(
-    mojo::PendingReceiver<mojom::ResourceUsageReporter> receiver) {
-  mojo::MakeSelfOwnedReceiver(std::make_unique<ResourceUsageReporterImpl>(),
-                              std::move(receiver));
-}
-#endif  // !defined(OS_ANDROID)
-
 UtilityThreadImpl::UtilityThreadImpl(base::RepeatingClosure quit_closure)
     : ChildThreadImpl(std::move(quit_closure),
                       ChildThreadImpl::Options::Builder()
-                          .AutoStartServiceManagerConnection(false)
                           .ServiceBinder(GetServiceBinder())
+                          .ExposesInterfacesToBrowser()
                           .Build()) {
   Init();
 }
@@ -163,9 +127,9 @@ UtilityThreadImpl::UtilityThreadImpl(base::RepeatingClosure quit_closure)
 UtilityThreadImpl::UtilityThreadImpl(const InProcessChildThreadParams& params)
     : ChildThreadImpl(base::DoNothing(),
                       ChildThreadImpl::Options::Builder()
-                          .AutoStartServiceManagerConnection(false)
                           .InBrowserProcess(params)
                           .ServiceBinder(GetServiceBinder())
+                          .ExposesInterfacesToBrowser()
                           .Build()) {
   Init();
 }
@@ -220,31 +184,16 @@ void UtilityThreadImpl::EnsureBlinkInitializedInternal(bool sandbox_support) {
 void UtilityThreadImpl::Init() {
   ChildProcess::current()->AddRefProcess();
 
-  auto registry = std::make_unique<service_manager::BinderRegistry>();
-#if !defined(OS_ANDROID)
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          service_manager::switches::kNoneSandboxAndElevatedPrivileges)) {
-    registry->AddInterface(base::BindRepeating(CreateResourceUsageReporter),
-                           base::ThreadTaskRunnerHandle::Get());
-  }
-#endif  // !defined(OS_ANDROID)
-
-  content::ServiceManagerConnection* connection = GetServiceManagerConnection();
-  if (connection) {
-    connection->AddConnectionFilter(
-        std::make_unique<SimpleConnectionFilter>(std::move(registry)));
-  }
-
   GetContentClient()->utility()->UtilityThreadStarted();
 
-  service_factory_.reset(new UtilityServiceFactory);
+  // NOTE: Do not add new interfaces directly within this method. Instead,
+  // modify the definition of |ExposeUtilityInterfacesToBrowser()| to ensure
+  // security review coverage.
+  mojo::BinderMap binders;
+  content::ExposeUtilityInterfacesToBrowser(&binders);
+  ExposeInterfacesToBrowser(std::move(binders));
 
-  if (connection) {
-    // NOTE: You must register any ConnectionFilter instances on |connection|
-    // *before* this call to |Start()|, otherwise incoming interface requests
-    // may race with the registration.
-    connection->Start();
-  }
+  service_factory_.reset(new UtilityServiceFactory);
 }
 
 bool UtilityThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {

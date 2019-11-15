@@ -293,3 +293,24 @@ TEST_F(FullscreenModelTest, IgnoreContentHeightChangesWhileScrolling) {
   model().SetScrollViewIsDragging(true);
   EXPECT_FALSE(model().enabled());
 }
+
+// Tests that the model detects when the page is scrolled to the top and bottom.
+TEST_F(FullscreenModelTest, ScrolledToTopAndBottom) {
+  // Scroll to the top of the page and verify that only is_scrolled_to_top()
+  // returns true.
+  model().SetYContentOffset(-kToolbarHeight);
+  EXPECT_TRUE(model().is_scrolled_to_top());
+  EXPECT_FALSE(model().is_scrolled_to_bottom());
+
+  // Scroll to the middle of the page and verify that neither
+  // is_scrolled_to_top() nor is_scrolled_to_bottom() returns true.
+  model().SetYContentOffset(kContentHeight / 2.0);
+  EXPECT_FALSE(model().is_scrolled_to_top());
+  EXPECT_FALSE(model().is_scrolled_to_bottom());
+
+  // Scroll to the bottom of the page and verify that only
+  // is_scrolled_to_bottom() returns true.
+  model().SetYContentOffset(kContentHeight - kScrollViewHeight);
+  EXPECT_FALSE(model().is_scrolled_to_top());
+  EXPECT_TRUE(model().is_scrolled_to_bottom());
+}

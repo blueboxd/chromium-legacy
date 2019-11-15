@@ -28,7 +28,6 @@
 #include "chrome/browser/android/preferences/prefs.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/prediction_options.h"
-#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -117,21 +116,6 @@ static jboolean JNI_PrefServiceBridge_GetNetworkPredictionEnabled(JNIEnv* env) {
 static jboolean JNI_PrefServiceBridge_GetNetworkPredictionManaged(JNIEnv* env) {
   return GetPrefService()->IsManagedPreference(
       prefs::kNetworkPredictionOptions);
-}
-
-static jboolean JNI_PrefServiceBridge_GetIncognitoModeEnabled(JNIEnv* env) {
-  PrefService* prefs = GetPrefService();
-  IncognitoModePrefs::Availability incognito_pref =
-      IncognitoModePrefs::GetAvailability(prefs);
-  DCHECK(incognito_pref == IncognitoModePrefs::ENABLED ||
-         incognito_pref == IncognitoModePrefs::DISABLED) <<
-             "Unsupported incognito mode preference: " << incognito_pref;
-  return incognito_pref != IncognitoModePrefs::DISABLED;
-}
-
-static jboolean JNI_PrefServiceBridge_GetIncognitoModeManaged(JNIEnv* env) {
-  return GetPrefService()->IsManagedPreference(
-      prefs::kIncognitoModeAvailability);
 }
 
 static jboolean JNI_PrefServiceBridge_IsMetricsReportingEnabled(JNIEnv* env) {

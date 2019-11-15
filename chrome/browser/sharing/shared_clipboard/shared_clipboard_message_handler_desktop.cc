@@ -17,9 +17,9 @@
 #include "url/gurl.h"
 
 SharedClipboardMessageHandlerDesktop::SharedClipboardMessageHandlerDesktop(
-    SharingService* sharing_service,
+    SharingDeviceSource* device_source,
     Profile* profile)
-    : SharedClipboardMessageHandler(sharing_service), profile_(profile) {}
+    : SharedClipboardMessageHandler(device_source), profile_(profile) {}
 
 SharedClipboardMessageHandlerDesktop::~SharedClipboardMessageHandlerDesktop() =
     default;

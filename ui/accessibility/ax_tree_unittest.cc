@@ -95,7 +95,10 @@ class TestAXTreeObserver : public AXTreeObserver {
 
   base::Optional<AXNode::AXID> unignored_parent_id_before_node_deleted;
   void OnNodeWillBeDeleted(AXTree* tree, AXNode* node) override {
-    deleted_ids_.push_back(node->id());
+    // When this observer function is called in an update, the actual node
+    // deletion has not happened yet. Verify that node still exists in the tree.
+    ASSERT_NE(nullptr, tree->GetFromId(node->id()));
+
     if (unignored_parent_id_before_node_deleted) {
       ASSERT_NE(nullptr, node->GetUnignoredParent());
       ASSERT_EQ(*unignored_parent_id_before_node_deleted,
@@ -117,6 +120,13 @@ class TestAXTreeObserver : public AXTreeObserver {
 
   void OnNodeCreated(AXTree* tree, AXNode* node) override {
     created_ids_.push_back(node->id());
+  }
+
+  void OnNodeDeleted(AXTree* tree, int32_t node_id) override {
+    // When this observer function is called in an update, node has already been
+    // deleted from the tree. Verify that the node is absent from the tree.
+    ASSERT_EQ(nullptr, tree->GetFromId(node_id));
+    deleted_ids_.push_back(node_id);
   }
 
   void OnNodeReparented(AXTree* tree, AXNode* node) override {
@@ -3565,6 +3575,53 @@ TEST(AXTreeTest, OnNodeWillBeDeletedHasValidUnignoredParent) {
   TestAXTreeObserver test_observer(&tree);
   test_observer.unignored_parent_id_before_node_deleted = 2;
   ASSERT_TRUE(tree.Unserialize(tree_update));
+}
+
+TEST(AXTreeTest, OnNodeHasBeenDeleted) {
+  AXTreeUpdate initial_state;
+
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(6);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].role = ax::mojom::Role::kRootWebArea;
+  initial_state.nodes[0].child_ids = {2};
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[1].role = ax::mojom::Role::kButton;
+  initial_state.nodes[1].child_ids = {3, 4};
+  initial_state.nodes[2].id = 3;
+  initial_state.nodes[2].role = ax::mojom::Role::kCheckBox;
+  initial_state.nodes[3].id = 4;
+  initial_state.nodes[3].role = ax::mojom::Role::kStaticText;
+  initial_state.nodes[3].child_ids = {5, 6};
+  initial_state.nodes[4].id = 5;
+  initial_state.nodes[4].role = ax::mojom::Role::kInlineTextBox;
+  initial_state.nodes[5].id = 6;
+  initial_state.nodes[5].role = ax::mojom::Role::kInlineTextBox;
+
+  AXTree tree(initial_state);
+
+  AXTreeUpdate update;
+  update.nodes.resize(2);
+  update.nodes[0] = initial_state.nodes[1];
+  update.nodes[0].child_ids = {4};
+  update.nodes[1] = initial_state.nodes[3];
+  update.nodes[1].child_ids = {};
+
+  TestAXTreeObserver test_observer(&tree);
+  ASSERT_TRUE(tree.Unserialize(update));
+
+  EXPECT_EQ(3U, test_observer.deleted_ids().size());
+  EXPECT_EQ(3, test_observer.deleted_ids()[0]);
+  EXPECT_EQ(5, test_observer.deleted_ids()[1]);
+  EXPECT_EQ(6, test_observer.deleted_ids()[2]);
+
+  // Verify that the nodes we intend to delete in the update are actually
+  // absent from the tree.
+  for (auto id : test_observer.deleted_ids()) {
+    SCOPED_TRACE(testing::Message()
+                 << "Node with id=" << id << ", should not exist in the tree");
+    EXPECT_EQ(nullptr, tree.GetFromId(id));
+  }
 }
 
 // Tests a fringe scenario that may happen if multiple AXTreeUpdates are merged.

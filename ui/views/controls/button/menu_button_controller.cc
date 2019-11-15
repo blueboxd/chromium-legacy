@@ -9,9 +9,9 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/events/event_constants.h"
 #include "ui/views/animation/ink_drop.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/button_controller_delegate.h"
 #include "ui/views/controls/button/menu_button.h"
-#include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/mouse_constants.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/widget/root_view.h"
@@ -78,7 +78,7 @@ MenuButtonController::PressedLock::~PressedLock() {
 
 MenuButtonController::MenuButtonController(
     Button* button,
-    MenuButtonListener* listener,
+    ButtonListener* listener,
     std::unique_ptr<ButtonControllerDelegate> delegate)
     : ButtonController(button, std::move(delegate)), listener_(listener) {
   // Triggers on button press by default, unless drag-and-drop is enabled, see
@@ -216,27 +216,6 @@ void MenuButtonController::OnGestureEvent(ui::GestureEvent* event) {
 
 bool MenuButtonController::Activate(const ui::Event* event) {
   if (listener_) {
-    gfx::Rect lb = button()->GetLocalBounds();
-
-    // Offset of the associated menu position.
-    constexpr gfx::Vector2d kMenuOffset{-2, -4};
-
-    // The position of the menu depends on whether or not the locale is
-    // right-to-left.
-    gfx::Point menu_position(lb.right(), lb.bottom());
-    if (base::i18n::IsRTL())
-      menu_position.set_x(lb.x());
-
-    View::ConvertPointToScreen(button(), &menu_position);
-    if (base::i18n::IsRTL())
-      menu_position.Offset(-kMenuOffset.x(), kMenuOffset.y());
-    else
-      menu_position += kMenuOffset;
-
-    int max_x_coordinate = GetMaximumScreenXCoordinate();
-    if (max_x_coordinate && max_x_coordinate <= menu_position.x())
-      menu_position.set_x(max_x_coordinate - 1);
-
     // We're about to show the menu from a mouse press. By showing from the
     // mouse press event we block RootView in mouse dispatching. This also
     // appears to cause RootView to get a mouse pressed BEFORE the mouse
@@ -253,12 +232,18 @@ bool MenuButtonController::Activate(const ui::Event* event) {
     bool increment_pressed_lock_called = false;
     increment_pressed_lock_called_ = &increment_pressed_lock_called;
 
-    // Allow for OnMenuButtonClicked() to delete this.
+    // Allow for ButtonPressed() to delete this.
     auto ref = weak_factory_.GetWeakPtr();
 
+    // TODO(pbos): Make sure we always propagate an event. This requires changes
+    // to ShowAppMenu which now provides none.
+    ui::KeyEvent fake_event(ui::ET_KEY_PRESSED, ui::VKEY_SPACE,
+                            ui::EF_IS_SYNTHESIZED);
+    if (!event)
+      event = &fake_event;
     // We don't set our state here. It's handled in the MenuController code or
     // by our click listener.
-    listener_->OnMenuButtonClicked(button(), menu_position, event);
+    listener_->ButtonPressed(button(), *event);
 
     if (!ref) {
       // The menu was deleted while showing. Don't attempt any processing.

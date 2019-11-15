@@ -10,8 +10,10 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_utils.h"
 #include "chrome/browser/sharing/click_to_call/feature.h"
+#include "chrome/browser/sharing/mock_sharing_service.h"
 #include "chrome/browser/sharing/sharing_fcm_handler.h"
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
+#include "chrome/browser/sharing/sharing_handler_registry.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
@@ -40,22 +42,6 @@ const char kNonTelUrl[] = "https://google.com";
 
 const char kSelectionTextWithNumber[] = "9876543210";
 
-class MockSharingDeviceRegistration : public SharingDeviceRegistration {
- public:
-  MockSharingDeviceRegistration()
-      : SharingDeviceRegistration(/* pref_service_= */ nullptr,
-                                  /* sharing_sync_preference_= */ nullptr,
-                                  /* instance_id_driver_= */ nullptr,
-                                  /* vapid_key_manager_= */ nullptr) {}
-
-  ~MockSharingDeviceRegistration() override = default;
-
-  MOCK_CONST_METHOD0(IsSharedClipboardSupported, bool());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockSharingDeviceRegistration);
-};
-
 class ClickToCallUtilsTest : public testing::Test {
  public:
   ClickToCallUtilsTest() = default;
@@ -83,24 +69,7 @@ class ClickToCallUtilsTest : public testing::Test {
  protected:
   std::unique_ptr<KeyedService> CreateService(
       content::BrowserContext* context) {
-    if (!create_service_)
-      return nullptr;
-
-    return std::make_unique<SharingService>(
-        &profile_,
-        /* sync_prefs= */ nullptr,
-        /* vapid_key_manager= */ nullptr,
-        std::make_unique<MockSharingDeviceRegistration>(),
-        /* fcm_sender= */ nullptr,
-        std::make_unique<SharingFCMHandler>(
-            /*gcm_driver=*/nullptr, /*sharing_fcm_sender=*/nullptr,
-            /*sync_preference=nullptr*/ nullptr),
-        /*message_sender_=*/nullptr,
-        /* gcm_driver= */ nullptr,
-        /* device_info_tracker= */ nullptr,
-        /* local_device_info_provider= */ nullptr,
-        /* sync_service */ nullptr,
-        /* sms_fetcher= */ nullptr);
+    return create_service_ ? std::make_unique<MockSharingService>() : nullptr;
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;

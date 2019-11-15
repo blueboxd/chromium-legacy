@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/view.h"
 
 class Browser;
@@ -26,8 +25,7 @@ class ImageButton;
 // a button to pin the extension to the toolbar and a button for accessing the
 // associated context menu.
 class ExtensionsMenuItemView : public views::View,
-                               public views::ButtonListener,
-                               public views::MenuButtonListener {
+                               public views::ButtonListener {
  public:
   static constexpr int kSecondaryIconSizeDp = 16;
 
@@ -38,11 +36,6 @@ class ExtensionsMenuItemView : public views::View,
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
-  // views::MenuButtonListener:
-  void OnMenuButtonClicked(views::Button* source,
-                           const gfx::Point& point,
-                           const ui::Event* event) override;
 
   void UpdatePinButton();
 

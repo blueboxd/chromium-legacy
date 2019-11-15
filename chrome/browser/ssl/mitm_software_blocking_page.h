@@ -11,15 +11,12 @@
 #include "base/macros.h"
 #include "chrome/browser/ssl/ssl_blocking_page_base.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
+#include "components/security_interstitials/core/mitm_software_ui.h"
 #include "components/ssl_errors/error_classification.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "net/ssl/ssl_info.h"
 
 class GURL;
-
-namespace security_interstitials {
-class MITMSoftwareUI;
-}
 
 // This class is responsible for showing/hiding the interstitial page that
 // occurs when an SSL error is caused by any sort of MITM software. MITM

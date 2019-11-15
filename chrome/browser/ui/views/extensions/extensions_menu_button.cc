@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/extensions/extensions_menu_button.h"
 
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
+#include "chrome/browser/ui/views/bubble_menu_item_factory.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_item_view.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_view.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
@@ -26,11 +27,7 @@ ExtensionsMenuButton::ExtensionsMenuButton(
       browser_(browser),
       parent_(parent),
       controller_(controller) {
-  SetInkDropMode(InkDropMode::ON);
-
-  // Items within a menu should not show focus rings.
-  SetInstallFocusRingOnFocus(false);
-  SetFocusBehavior(FocusBehavior::ALWAYS);
+  ConfigureBubbleMenuItem(this, 0);
   SetButtonController(std::make_unique<HoverButtonController>(
       this, this,
       std::make_unique<views::Button::DefaultButtonControllerDelegate>(this)));

@@ -13,6 +13,7 @@ import android.util.Pair;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.TabState;
@@ -120,5 +121,25 @@ public class IncognitoUtils {
             }
         }
         return deletionSuccessful;
+    }
+
+    /**
+     * @return true if incognito mode is enabled.
+     */
+    public static boolean isIncognitoModeEnabled() {
+        return IncognitoUtilsJni.get().getIncognitoModeEnabled();
+    }
+
+    /**
+     * @return true if incognito mode is managed by policy.
+     */
+    public static boolean isIncognitoModeManaged() {
+        return IncognitoUtilsJni.get().getIncognitoModeManaged();
+    }
+
+    @NativeMethods
+    interface Natives {
+        boolean getIncognitoModeEnabled();
+        boolean getIncognitoModeManaged();
     }
 }

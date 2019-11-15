@@ -1403,7 +1403,7 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactory(
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>
         default_factory_receiver) {
   return CreateNetworkServiceDefaultFactoryInternal(
-      last_committed_origin_, network_isolation_key_,
+      last_committed_origin_, last_committed_origin_, network_isolation_key_,
       std::move(default_factory_receiver));
 }
 
@@ -1433,7 +1433,8 @@ void RenderFrameHostImpl::MarkIsolatedWorldsAsRequiringSeparateURLLoaderFactory(
         subresource_loader_factories =
             std::make_unique<blink::URLLoaderFactoryBundleInfo>();
     subresource_loader_factories->pending_isolated_world_factories() =
-        CreateURLLoaderFactoriesForIsolatedWorlds(isolated_world_origins);
+        CreateURLLoaderFactoriesForIsolatedWorlds(last_committed_origin_,
+                                                  isolated_world_origins);
     GetNavigationControl()->UpdateSubresourceLoaderFactories(
         std::move(subresource_loader_factories));
   }
@@ -1451,14 +1452,15 @@ bool RenderFrameHostImpl::IsSandboxed(blink::WebSandboxFlags flags) {
 
 blink::URLLoaderFactoryBundleInfo::OriginMap
 RenderFrameHostImpl::CreateURLLoaderFactoriesForIsolatedWorlds(
+    const url::Origin& main_world_origin,
     const base::flat_set<url::Origin>& isolated_world_origins) {
   blink::URLLoaderFactoryBundleInfo::OriginMap result;
-  for (const url::Origin& initiator : isolated_world_origins) {
+  for (const url::Origin& isolated_world_origin : isolated_world_origins) {
     mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote;
     CreateNetworkServiceDefaultFactoryAndObserve(
-        initiator, network_isolation_key_,
+        isolated_world_origin, main_world_origin, network_isolation_key_,
         factory_remote.InitWithNewPipeAndPassReceiver());
-    result[initiator] = std::move(factory_remote);
+    result[isolated_world_origin] = std::move(factory_remote);
   }
   return result;
 }
@@ -1916,8 +1918,8 @@ void RenderFrameHostImpl::RenderProcessGone(
 
 void RenderFrameHostImpl::ReportContentSecurityPolicyViolation(
     const CSPViolationParams& violation_params) {
-  Send(new FrameMsg_ReportContentSecurityPolicyViolation(routing_id_,
-                                                         violation_params));
+  GetNavigationControl()->ReportContentSecurityPolicyViolation(
+      violation_params);
 }
 
 void RenderFrameHostImpl::SanitizeDataForUseInCspViolation(
@@ -3311,7 +3313,7 @@ void RenderFrameHostImpl::UpdateSubresourceLoaderFactories() {
   bool bypass_redirect_checks = false;
   if (recreate_default_url_loader_factory_after_network_service_crash_) {
     bypass_redirect_checks = CreateNetworkServiceDefaultFactoryAndObserve(
-        last_committed_origin_, network_isolation_key_,
+        last_committed_origin_, last_committed_origin_, network_isolation_key_,
         default_factory_remote.InitWithNewPipeAndPassReceiver());
   }
 
@@ -3321,6 +3323,7 @@ void RenderFrameHostImpl::UpdateSubresourceLoaderFactories() {
               std::move(default_factory_remote),
               blink::URLLoaderFactoryBundleInfo::SchemeMap(),
               CreateURLLoaderFactoriesForIsolatedWorlds(
+                  last_committed_origin_,
                   isolated_worlds_requiring_separate_url_loader_factory_),
               bypass_redirect_checks);
   GetNavigationControl()->UpdateSubresourceLoaderFactories(
@@ -4267,13 +4270,15 @@ RenderFrameHostImpl::CreateCrossOriginPrefetchLoaderFactoryBundle() {
   // cross-origin prefetch factory because the factory must use the
   // NetworkIsolationKey provided by requests going through it.
   bypass_redirect_checks = CreateNetworkServiceDefaultFactoryAndObserve(
-      last_committed_origin_, base::nullopt /* network_isolation_key */,
+      last_committed_origin_, last_committed_origin_,
+      base::nullopt /* network_isolation_key */,
       pending_default_factory.InitWithNewPipeAndPassReceiver());
 
   return std::make_unique<blink::URLLoaderFactoryBundleInfo>(
       std::move(pending_default_factory),
       blink::URLLoaderFactoryBundleInfo::SchemeMap(),
       CreateURLLoaderFactoriesForIsolatedWorlds(
+          last_committed_origin_,
           isolated_worlds_requiring_separate_url_loader_factory_),
       bypass_redirect_checks);
 }
@@ -5317,7 +5322,7 @@ void RenderFrameHostImpl::CommitNavigation(
   }
   DCHECK(network_isolation_key_.IsFullyPopulated());
 
-  url::Origin origin_for_url_loader_factory =
+  url::Origin main_world_origin_for_url_loader_factory =
       GetOriginForURLLoaderFactory(navigation_request);
   std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
       subresource_loader_factories;
@@ -5326,6 +5331,7 @@ void RenderFrameHostImpl::CommitNavigation(
     subresource_loader_factories =
         std::make_unique<blink::URLLoaderFactoryBundleInfo>();
     BrowserContext* browser_context = GetSiteInstance()->GetBrowserContext();
+
     // NOTE: On Network Service navigations, we want to ensure that a frame is
     // given everything it will need to load any accessible subresources. We
     // however only do this for cross-document navigations, because the
@@ -5344,8 +5350,8 @@ void RenderFrameHostImpl::CommitNavigation(
           GetContentClient()->browser()->WillCreateURLLoaderFactory(
               browser_context, this, GetProcess()->GetID(),
               ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
-              origin_for_url_loader_factory, &appcache_proxied_receiver,
-              nullptr /* header_client */,
+              main_world_origin_for_url_loader_factory,
+              &appcache_proxied_receiver, nullptr /* header_client */,
               nullptr /* bypass_redirect_checks */);
       if (use_proxy) {
         appcache_remote->Clone(std::move(appcache_proxied_receiver));
@@ -5385,7 +5391,7 @@ void RenderFrameHostImpl::CommitNavigation(
       GetContentClient()->browser()->WillCreateURLLoaderFactory(
           browser_context, this, GetProcess()->GetID(),
           ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
-          origin_for_url_loader_factory, &factory_receiver,
+          main_world_origin_for_url_loader_factory, &factory_receiver,
           nullptr /* header_client */, nullptr /* bypass_redirect_checks */);
       CreateWebUIURLLoaderBinding(this, scheme, std::move(factory_receiver));
       // If the renderer has webui bindings, then don't give it access to
@@ -5415,7 +5421,8 @@ void RenderFrameHostImpl::CommitNavigation(
       recreate_default_url_loader_factory_after_network_service_crash_ = true;
       bool bypass_redirect_checks =
           CreateNetworkServiceDefaultFactoryAndObserve(
-              origin_for_url_loader_factory, network_isolation_key_,
+              main_world_origin_for_url_loader_factory,
+              main_world_origin_for_url_loader_factory, network_isolation_key_,
               pending_default_factory.InitWithNewPipeAndPassReceiver());
       subresource_loader_factories->set_bypass_redirect_checks(
           bypass_redirect_checks);
@@ -5504,7 +5511,7 @@ void RenderFrameHostImpl::CommitNavigation(
       GetContentClient()->browser()->WillCreateURLLoaderFactory(
           browser_context, this, GetProcess()->GetID(),
           ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
-          origin_for_url_loader_factory, &factory_receiver,
+          main_world_origin_for_url_loader_factory, &factory_receiver,
           nullptr /* header_client */, nullptr /* bypass_redirect_checks */);
       // Keep DevTools proxy last, i.e. closest to the network.
       devtools_instrumentation::WillCreateURLLoaderFactory(
@@ -5517,6 +5524,7 @@ void RenderFrameHostImpl::CommitNavigation(
 
     subresource_loader_factories->pending_isolated_world_factories() =
         CreateURLLoaderFactoriesForIsolatedWorlds(
+            main_world_origin_for_url_loader_factory,
             isolated_worlds_requiring_separate_url_loader_factory_);
   }
 
@@ -5699,7 +5707,7 @@ void RenderFrameHostImpl::FailedNavigation(
       subresource_loader_factories;
   mojo::PendingRemote<network::mojom::URLLoaderFactory> default_factory_remote;
   bool bypass_redirect_checks = CreateNetworkServiceDefaultFactoryAndObserve(
-      origin, network_isolation_key_,
+      origin, origin, network_isolation_key_,
       default_factory_remote.InitWithNewPipeAndPassReceiver());
   subresource_loader_factories =
       std::make_unique<blink::URLLoaderFactoryBundleInfo>(
@@ -5774,7 +5782,7 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
       base::Unretained(this)));
   RegisterMojoInterfaces();
   mojo::PendingRemote<mojom::FrameFactory> frame_factory;
-  BindInterface(GetProcess(), &frame_factory);
+  GetProcess()->BindReceiver(frame_factory.InitWithNewPipeAndPassReceiver());
   mojo::Remote<mojom::FrameFactory>(std::move(frame_factory))
       ->CreateFrame(routing_id_, frame_.BindNewPipeAndPassReceiver());
 
@@ -6148,11 +6156,13 @@ void RenderFrameHostImpl::NavigationRequestCancelled(
 
 bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
     const url::Origin& origin,
+    const url::Origin& main_world_origin,
     base::Optional<net::NetworkIsolationKey> network_isolation_key,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>
         default_factory_receiver) {
   bool bypass_redirect_checks = CreateNetworkServiceDefaultFactoryInternal(
-      origin, network_isolation_key, std::move(default_factory_receiver));
+      origin, main_world_origin, network_isolation_key,
+      std::move(default_factory_receiver));
 
   // Add a disconnect handler when Network Service is running
   // out-of-process.
@@ -6177,6 +6187,7 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
 
 bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
     const url::Origin& origin,
+    const url::Origin& main_world_origin,
     base::Optional<net::NetworkIsolationKey> network_isolation_key,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>
         default_factory_receiver) {
@@ -6211,14 +6222,15 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
   // consume trusted requests using their NetworkIsolationKey.
   if (network_isolation_key) {
     GetProcess()->CreateURLLoaderFactory(
-        origin, cross_origin_embedder_policy_, &preferences,
+        origin, main_world_origin, cross_origin_embedder_policy_, &preferences,
         network_isolation_key.value(), std::move(header_client),
         std::move(factory_receiver));
   } else {
     // The ability to create a trusted URLLoaderFactory is not exposed on
     // RenderProcessHost's public API.
     static_cast<RenderProcessHostImpl*>(GetProcess())
-        ->CreateTrustedURLLoaderFactory(origin, cross_origin_embedder_policy_,
+        ->CreateTrustedURLLoaderFactory(origin, main_world_origin,
+                                        cross_origin_embedder_policy_,
                                         &preferences, std::move(header_client),
                                         std::move(factory_receiver));
   }

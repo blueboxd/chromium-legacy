@@ -967,46 +967,52 @@ TEST_F(AXRangeTest, GetTextAddingNewlineBetweenParagraphs) {
 
   auto TestGetTextForRange = [](TestPositionInstance range_start,
                                 TestPositionInstance range_end,
-                                const base::string16& expected_text) {
+                                const base::string16& expected_text,
+                                const size_t expected_appended_newlines_count) {
     TestPositionRange forward_test_range(range_start->Clone(),
                                          range_end->Clone());
     TestPositionRange backward_test_range(std::move(range_end),
                                           std::move(range_start));
+    size_t appended_newlines_count = 0;
     EXPECT_EQ(expected_text, forward_test_range.GetText(
-                                 AXTextConcatenationBehavior::kAsInnerText));
+                                 AXTextConcatenationBehavior::kAsInnerText, -1,
+                                 false, &appended_newlines_count));
+    EXPECT_EQ(expected_appended_newlines_count, appended_newlines_count);
     EXPECT_EQ(expected_text, backward_test_range.GetText(
-                                 AXTextConcatenationBehavior::kAsInnerText));
+                                 AXTextConcatenationBehavior::kAsInnerText, -1,
+                                 false, &appended_newlines_count));
+    EXPECT_EQ(expected_appended_newlines_count, appended_newlines_count);
   };
 
   base::string16 button_start_to_line1_end =
       BUTTON.substr().append(NEWLINE).append(LINE_1);
   TestGetTextForRange(button_start->Clone(), line1_end->Clone(),
-                      button_start_to_line1_end);
+                      button_start_to_line1_end, 1);
   base::string16 button_start_to_line1_start = BUTTON.substr().append(NEWLINE);
   TestGetTextForRange(button_start->Clone(), line1_start->Clone(),
-                      button_start_to_line1_start);
+                      button_start_to_line1_start, 1);
   base::string16 button_end_to_line1_end = NEWLINE.substr().append(LINE_1);
   TestGetTextForRange(button_end->Clone(), line1_end->Clone(),
-                      button_end_to_line1_end);
+                      button_end_to_line1_end, 1);
   base::string16 button_end_to_line1_start = NEWLINE;
   TestGetTextForRange(button_end->Clone(), line1_start->Clone(),
-                      button_end_to_line1_start);
+                      button_end_to_line1_start, 1);
 
   base::string16 line2_start_to_after_line_end =
       LINE_2.substr().append(NEWLINE).append(AFTER_LINE);
   TestGetTextForRange(line2_start->Clone(), after_line_end->Clone(),
-                      line2_start_to_after_line_end);
+                      line2_start_to_after_line_end, 0);
   base::string16 line2_start_to_after_line_start =
       LINE_2.substr().append(NEWLINE);
   TestGetTextForRange(line2_start->Clone(), after_line_start->Clone(),
-                      line2_start_to_after_line_start);
+                      line2_start_to_after_line_start, 0);
   base::string16 line2_end_to_after_line_end =
       NEWLINE.substr().append(AFTER_LINE);
   TestGetTextForRange(line2_end->Clone(), after_line_end->Clone(),
-                      line2_end_to_after_line_end);
+                      line2_end_to_after_line_end, 0);
   base::string16 line2_end_to_after_line_start = NEWLINE;
   TestGetTextForRange(line2_end->Clone(), after_line_start->Clone(),
-                      line2_end_to_after_line_start);
+                      line2_end_to_after_line_start, 0);
 
   base::string16 all_text =
       BUTTON.substr().append(NEWLINE).append(TEXT_FIELD).append(AFTER_LINE);
@@ -1016,7 +1022,7 @@ TEST_F(AXRangeTest, GetTextAddingNewlineBetweenParagraphs) {
   TestPositionInstance end = AXNodePosition::CreateTextPosition(
       tree_->data().tree_id, root_.id, ALL_TEXT.length() /* text_offset */,
       ax::mojom::TextAffinity::kDownstream);
-  TestGetTextForRange(std::move(start), std::move(end), all_text);
+  TestGetTextForRange(std::move(start), std::move(end), all_text, 1);
 }
 
 TEST_F(AXRangeTest, GetTextWithMaxCount) {

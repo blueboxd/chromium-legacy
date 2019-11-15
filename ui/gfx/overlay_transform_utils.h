@@ -5,8 +5,7 @@
 #ifndef UI_GFX_OVERLAY_TRANSFORM_UTILS_H_
 #define UI_GFX_OVERLAY_TRANSFORM_UTILS_H_
 
-#include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/gfx/transform.h"
@@ -15,7 +14,7 @@ namespace gfx {
 
 GFX_EXPORT gfx::Transform OverlayTransformToTransform(
     gfx::OverlayTransform overlay_transform,
-    const gfx::Size& viewport_bounds);
+    const gfx::SizeF& viewport_bounds);
 
 GFX_EXPORT gfx::OverlayTransform InvertOverlayTransform(
     gfx::OverlayTransform transform);

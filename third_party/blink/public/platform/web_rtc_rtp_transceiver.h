@@ -48,6 +48,7 @@ class BLINK_PLATFORM_EXPORT WebRTCRtpTransceiver {
   // exist for the same webrtc-layer transceiver.
   virtual uintptr_t Id() const = 0;
   virtual WebString Mid() const = 0;
+  virtual void SetMid(base::Optional<WebString>) {}
   virtual std::unique_ptr<WebRTCRtpSender> Sender() const = 0;
   virtual std::unique_ptr<WebRTCRtpReceiver> Receiver() const = 0;
   virtual bool Stopped() const = 0;

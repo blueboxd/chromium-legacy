@@ -146,7 +146,7 @@ PipelineIntegrationTestBase::PipelineIntegrationTestBase()
   pipeline_ = std::make_unique<PipelineImpl>(
       task_environment_.GetMainThreadTaskRunner(),
       task_environment_.GetMainThreadTaskRunner(),
-      base::BindRepeating(&PipelineIntegrationTestBase::CreateRendererAsync,
+      base::BindRepeating(&PipelineIntegrationTestBase::CreateRenderer,
                           base::Unretained(this)),
       &media_log_);
 
@@ -533,11 +533,6 @@ std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer() {
     renderer_impl->EnableClocklessVideoPlaybackForTesting();
 
   return std::move(renderer_impl);
-}
-
-void PipelineIntegrationTestBase::CreateRendererAsync(
-    RendererCreatedCB renderer_created_cb) {
-  std::move(renderer_created_cb).Run(CreateRenderer());
 }
 
 void PipelineIntegrationTestBase::OnVideoFramePaint(

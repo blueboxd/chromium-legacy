@@ -39,10 +39,10 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
             TabContentManager tabContentManager, TabCreatorManager tabCreatorManager,
             ViewGroup containerView, TabSwitcherMediator.ResetHandler resetHandler,
             TabListMediator.GridCardOnClickListenerProvider gridCardOnClickListenerProvider,
-            TabGridDialogMediator.AnimationParamsProvider animationParamsProvider,
+            TabGridDialogMediator.AnimationSourceViewProvider animationSourceViewProvider,
             TabGroupTitleEditor tabGroupTitleEditor) {
-        mComponentName = animationParamsProvider == null ? "TabGridDialogFromStrip"
-                                                         : "TabGridDialogInSwitcher";
+        mComponentName = animationSourceViewProvider == null ? "TabGridDialogFromStrip"
+                                                             : "TabGridDialogInSwitcher";
 
         mToolbarPropertyModel = new PropertyModel(TabGridPanelProperties.ALL_KEYS);
 
@@ -59,7 +59,7 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
         }
 
         mMediator = new TabGridDialogMediator(context, this, mToolbarPropertyModel,
-                tabModelSelector, tabCreatorManager, resetHandler, animationParamsProvider,
+                tabModelSelector, tabCreatorManager, resetHandler, animationSourceViewProvider,
                 controller, tabGroupTitleEditor, mComponentName);
 
         mTabListCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.GRID, context,

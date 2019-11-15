@@ -32,6 +32,7 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//third_party/widevine/cdm/widevine.gni")
 import("//ui/base/ui_features.gni")
+import("//ui/gl/features.gni")
 import("//ui/views/features.gni")
 import("//v8/gni/v8.gni")
 
@@ -735,7 +736,7 @@ if (!is_android) {
       "//third_party/cacheinvalidation",
       "//third_party/icu",
       "//third_party/leveldatabase",
-      "//third_party/webrtc_overrides",
+      "//third_party/webrtc_overrides:webrtc_component",
       "//third_party/widevine/cdm:buildflags",
       "//third_party/widevine/cdm:headers",
       "//ui/accessibility:test_support",
@@ -1299,6 +1300,7 @@ if (!is_android) {
       "../browser/ui/views/hats/hats_browsertest.cc",
       "../browser/ui/views/intent_picker_bubble_view_browsertest.cc",
       "../browser/ui/views/try_chrome_dialog_win/try_chrome_dialog_browsertest.cc",
+      "../browser/ui/views/web_apps/web_app_frame_toolbar_browsertest.cc",
       "../browser/ui/views/web_apps/web_app_minimal_ui_test.cc",
       "../browser/ui/views/webauthn/authenticator_dialog_view_browsertest.cc",
       "../browser/ui/views/webauthn/authenticator_qr_code_test.cc",
@@ -1448,6 +1450,7 @@ if (!is_android) {
         "//chromeos/dbus:test_support",
         "//chromeos/dbus/services:test_support",
         "//chromeos/dbus/session_manager",
+        "//chromeos/services/machine_learning/public/cpp:test_support",
         "//components/arc:arc_test_support",
         "//components/exo:test_support",
         "//components/prefs",
@@ -2829,7 +2832,7 @@ group("dawn_perf_tests") {
   data_deps = [
     "//testing:run_perf_test",
   ]
-  if (is_win || is_linux || is_mac) {
+  if (use_dawn) {
     data_deps += [ "//third_party/dawn:dawn_perf_tests_temp_group" ]
   }
 }
@@ -3240,8 +3243,11 @@ test("unit_tests") {
     "../browser/sharing/mock_sharing_service.cc",
     "../browser/sharing/mock_sharing_service.h",
     "../browser/sharing/sharing_device_registration_unittest.cc",
+    "../browser/sharing/sharing_device_source_sync_unittest.cc",
+    "../browser/sharing/sharing_device_source_unittest.cc",
     "../browser/sharing/sharing_fcm_handler_unittest.cc",
     "../browser/sharing/sharing_fcm_sender_unittest.cc",
+    "../browser/sharing/sharing_handler_registry_impl_unittest.cc",
     "../browser/sharing/sharing_message_sender_unittest.cc",
     "../browser/sharing/sharing_service_unittest.cc",
     "../browser/sharing/sharing_sync_preference_unittest.cc",
@@ -3557,8 +3563,7 @@ test("unit_tests") {
     "//third_party/libaddressinput",
     "//third_party/libphonenumber",
     "//third_party/metrics_proto",
-    "//third_party/webrtc/modules/desktop_capture",
-    "//third_party/webrtc_overrides",
+    "//third_party/webrtc_overrides:webrtc_component",
     "//third_party/zlib/google:compression_utils",
     "//ui/base:test_support",
     "//ui/display:test_support",
@@ -5719,7 +5724,7 @@ if (!is_android) {
         "//chrome/install_static:install_static_util",
         "//chrome/installer/util:strings",
         "//third_party/isimpledom",
-        "//third_party/webrtc/modules/desktop_capture",
+        "//third_party/webrtc_overrides:webrtc_component",
         "//third_party/wtl",
         "//ui/resources",
       ]
@@ -6333,7 +6338,7 @@ if (!is_android && !is_fuchsia) {
       deps += [
         "//chrome:other_version",
         "//chrome/installer/util:strings",
-        "//third_party/webrtc/modules/desktop_capture",
+        "//third_party/webrtc_overrides:webrtc_component",
         "//third_party/wtl",
         "//ui/resources",
       ]

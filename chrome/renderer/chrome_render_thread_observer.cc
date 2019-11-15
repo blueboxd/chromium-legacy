@@ -39,9 +39,6 @@
 #include "content/public/child/child_thread.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/resource_usage_reporter_type_converters.h"
-#include "content/public/common/service_manager_connection.h"
-#include "content/public/common/service_names.mojom.h"
-#include "content/public/common/simple_connection_filter.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
@@ -51,7 +48,6 @@
 #include "media/base/localized_strings.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_module.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_frame.h"
@@ -211,16 +207,6 @@ ChromeRenderThreadObserver::ChromeRenderThreadObserver()
   WebSecurityPolicy::RegisterURLSchemeAsDisplayIsolated(native_scheme);
   WebSecurityPolicy::RegisterURLSchemeAsNotAllowingJavascriptURLs(
       native_scheme);
-
-  auto registry = std::make_unique<service_manager::BinderRegistry>();
-  registry->AddInterface(visited_link_slave_->GetBindCallback(),
-                         base::ThreadTaskRunnerHandle::Get());
-  if (content::ChildThread::Get()) {
-    content::ChildThread::Get()
-        ->GetServiceManagerConnection()
-        ->AddConnectionFilter(std::make_unique<content::SimpleConnectionFilter>(
-            std::move(registry)));
-  }
 }
 
 ChromeRenderThreadObserver::~ChromeRenderThreadObserver() {}

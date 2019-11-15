@@ -127,7 +127,6 @@
 <translation id="1845944666972354496">Нажмите дважды, чтобы активировать.</translation>
 <translation id="1846771122725914429">Дисплей Брайля с технологией Bluetooth</translation>
 <translation id="1865601187525349519">Конец текста.</translation>
-<translation id="1875375785454778375">Информация о соавторах, которые сейчас работают над этим документом</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">Озвучить текущее время и дату</translation>
 <translation id="1902396333223336119">Ячейка</translation>
@@ -148,7 +147,6 @@
 <translation id="2009187674653301682">Не надстрочный</translation>
 <translation id="2010555995361223825">Меню ChromeVox</translation>
 <translation id="2045490512405922022">не установлен</translation>
-<translation id="2049107626739254612">Информация об авторах</translation>
 <translation id="20601713649439366">Предыдущего математического выражения нет.</translation>
 <translation id="2063539687800151747">Эпиграф</translation>
 <translation id="207477615537953741">Семантический метод отключен.</translation>
@@ -269,7 +267,6 @@
 <translation id="2911433807131383493">Открыть руководство ChromeVox</translation>
 <translation id="2912405967290226587">Проведите тремя пальцами вправо</translation>
 <translation id="2932083475399492303">Переключиться между структурной и контурной линией</translation>
-<translation id="293796669683825859">Комментарии</translation>
 <translation id="2942710183375260152">Темный аспидно-синий</translation>
 <translation id="2943596527105977722">Темный золотарник</translation>
 <translation id="2944762337049891859">Автоматически читать страницу после загрузки</translation>
@@ -793,7 +790,7 @@
 <translation id="6459511626086141404">Обычная раскладка</translation>
 <translation id="6468049171101508116">Перейти к следующей кнопке</translation>
 <translation id="646954774886932461">Указатель</translation>
-<translation id="6479792383819319132">Следующего параграфа нет.</translation>
+<translation id="6479792383819319132">Следующего абзаца нет.</translation>
 <translation id="6493991254603208962">Уменьшить яркость</translation>
 <translation id="6501595918865591267">Бирюзовый</translation>
 <translation id="6508059270146105198">Разместить дисплей Брайля внизу страницы</translation>
@@ -816,7 +813,7 @@
 <translation id="6637586476836377253">log</translation>
 <translation id="6657128831881431364">Строка состояния</translation>
 <translation id="6659594942844771486">Вкладка</translation>
-<translation id="6675661017770918201">Предыдущего параграфа нет.</translation>
+<translation id="6675661017770918201">Предыдущего абзаца нет.</translation>
 <translation id="667999046851023355">Документ</translation>
 <translation id="6688209025607531203">Немодальное оповещение</translation>
 <translation id="6689672606256159458">Темно-лососевый</translation>
@@ -1148,6 +1145,7 @@
 <translation id="8548973727659841685">Символ.</translation>
 <translation id="8561322612995434619">вызывает всплывающее окно.</translation>
 <translation id="8571096049907249734">multsel</translation>
+<translation id="858006550102277544">Комментарий</translation>
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">Перейти к следующему пункту списка</translation>
 <translation id="860150890330522909">Флажок "<ph name="NAME" />", установлен</translation>

@@ -64,7 +64,7 @@ void Socket::WriteData() {
 }
 
 void Socket::OnWriteComplete(int result) {
-  io_buffer_write_ = NULL;
+  io_buffer_write_.reset();
 
   WriteRequest& request = write_queue_.front();
 

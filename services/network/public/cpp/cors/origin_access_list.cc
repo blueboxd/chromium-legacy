@@ -135,7 +135,8 @@ OriginAccessList::CreateCorsOriginAccessPatternsList() const {
         block_patterns.push_back(pattern.CreateCorsOriginPattern());
     }
     access_patterns.push_back(mojom::CorsOriginAccessPatterns::New(
-        it.first, std::move(allow_patterns), std::move(block_patterns)));
+        url::Origin::Create(GURL(it.first)), std::move(allow_patterns),
+        std::move(block_patterns)));
   }
   return access_patterns;
 }

@@ -21,12 +21,17 @@ void TestBinaryUploadService::MaybeUploadForDeepScanning(
   base::PostTask(FROM_HERE, {content::BrowserThread::UI},
                  base::BindOnce(&Request::FinishRequest, std::move(request),
                                 saved_result_, saved_response_));
+  was_called_ = true;
 }
 
 void TestBinaryUploadService::SetResponse(Result result,
                                           DeepScanningClientResponse response) {
   saved_result_ = result;
   saved_response_ = response;
+}
+
+void TestBinaryUploadService::ClearWasCalled() {
+  was_called_ = false;
 }
 
 }  // namespace safe_browsing

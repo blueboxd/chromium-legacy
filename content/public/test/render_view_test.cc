@@ -360,7 +360,7 @@ void RenderViewTest::SetUp() {
   // Blink needs to be initialized before calling CreateContentRendererClient()
   // because it uses blink internally.
   blink_platform_impl_.Initialize();
-  blink::Initialize(blink_platform_impl_.Get(), &binder_registry_,
+  blink::Initialize(blink_platform_impl_.Get(), &binders_,
                     blink_platform_impl_.GetMainThreadScheduler());
 
   content_client_.reset(CreateContentClient());
@@ -460,7 +460,9 @@ void RenderViewTest::TearDown() {
   base::RunLoop().RunUntilIdle();
 
   mojo::Remote<blink::mojom::LeakDetector> leak_detector;
-  BindInterface(&binder_registry_, leak_detector.BindNewPipeAndPassReceiver());
+  mojo::GenericPendingReceiver receiver(
+      leak_detector.BindNewPipeAndPassReceiver());
+  ignore_result(binders_.Bind(&receiver));
 
   // Close the main |view_| as well as any other windows that might have been
   // opened by the test.

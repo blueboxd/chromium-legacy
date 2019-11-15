@@ -58,7 +58,6 @@ void CheckConfig(std::string* config) {
 }  // namespace
 
 TEST_F(BackgroundTracingTest, SetupBackgroundTracingFieldTrial) {
-  base::FieldTrialList field_trial_list(nullptr);
   const std::string kTrialName = "BackgroundTracing";
   const std::string kExperimentName = "SlowStart";
   base::AssociateFieldTrialParams(kTrialName, kExperimentName,

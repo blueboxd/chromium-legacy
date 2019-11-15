@@ -2908,14 +2908,18 @@ Status IndexedDBBackingStore::Transaction::HandleBlobPreTransaction(
   if (blob_change_map_.empty())
     return Status::OK();
 
+  std::unique_ptr<LevelDBDirectTransaction> direct_txn =
+      transactional_leveldb_factory_->CreateLevelDBDirectTransaction(
+          backing_store_->db_.get());
+
+  int64_t next_blob_key = -1;
+  bool result = indexed_db::GetBlobKeyGeneratorCurrentNumber(
+      direct_txn.get(), database_id_, &next_blob_key);
+  if (!result || next_blob_key < 0)
+    return InternalInconsistencyStatus();
   for (auto& iter : blob_change_map_) {
     std::vector<IndexedDBBlobInfo*> new_blob_keys;
     for (auto& entry : iter.second->mutable_blob_info()) {
-      int64_t next_blob_key = -1;
-      bool result = indexed_db::GetBlobKeyGeneratorCurrentNumber(
-          transaction_.get(), database_id_, &next_blob_key);
-      if (!result || next_blob_key < 0)
-        return InternalInconsistencyStatus();
       blobs_to_write_.push_back({database_id_, next_blob_key});
       if (entry.is_file() && !entry.file_path().empty()) {
         new_files_to_write->push_back(
@@ -2928,8 +2932,9 @@ Status IndexedDBBackingStore::Transaction::HandleBlobPreTransaction(
       }
       entry.set_key(next_blob_key);
       new_blob_keys.push_back(&entry);
+      ++next_blob_key;
       result = indexed_db::UpdateBlobKeyGeneratorCurrentNumber(
-          transaction_.get(), database_id_, next_blob_key + 1);
+          direct_txn.get(), database_id_, next_blob_key);
       if (!result)
         return InternalInconsistencyStatus();
     }
@@ -2943,9 +2948,9 @@ Status IndexedDBBackingStore::Transaction::HandleBlobPreTransaction(
         {blob_entry_key, EncodeBlobData(new_blob_keys)});
   }
 
-  AppendBlobsToPrimaryBlobJournal(transaction_.get(), blobs_to_write_);
+  AppendBlobsToPrimaryBlobJournal(direct_txn.get(), blobs_to_write_);
 
-  return Status::OK();
+  return direct_txn->Commit();
 }
 
 bool IndexedDBBackingStore::Transaction::CollectBlobFilesToRemove() {

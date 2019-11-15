@@ -68,7 +68,7 @@ class DefaultFavicon {
 }  // namespace
 
 TabIconView::TabIconView(TabIconViewModel* model,
-                         views::MenuButtonListener* listener)
+                         views::ButtonListener* listener)
     : views::MenuButton(base::string16(), listener),
       model_(model),
       is_light_(false) {

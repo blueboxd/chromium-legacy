@@ -42,6 +42,8 @@
 #include "chrome/common/buildflags.h"
 #include "components/infobars/core/infobar_container.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/material_design/material_design_controller.h"
+#include "ui/base/material_design/material_design_controller_observer.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/button/button.h"
@@ -104,6 +106,7 @@ class BrowserView : public BrowserWindow,
                     public ExclusiveAccessBubbleViewsContext,
                     public extensions::ExtensionKeybindingRegistry::Delegate,
                     public ImmersiveModeController::Observer,
+                    public ui::MaterialDesignControllerObserver,
                     public banners::AppBannerManager::Observer {
  public:
   // The browser view's class name.
@@ -528,6 +531,9 @@ class BrowserView : public BrowserWindow,
   void OnImmersiveFullscreenExited() override;
   void OnImmersiveModeControllerDestroyed() override;
 
+  // ui::MaterialDesignControllerObserver:
+  void OnTouchUiChanged() override;
+
   // banners::AppBannerManager::Observer:
   void OnAppBannerManagerChanged(
       banners::AppBannerManager* new_manager) override;
@@ -569,6 +575,9 @@ class BrowserView : public BrowserWindow,
 
   // Constructs and initializes the child views.
   void InitViews();
+
+  // Make sure the WebUI tab strip exists if it should.
+  void MaybeInitializeWebUITabStrip();
 
   // Callback for the loading animation(s) associated with this view.
   void LoadingAnimationCallback();
@@ -825,6 +834,10 @@ class BrowserView : public BrowserWindow,
   std::unique_ptr<TopControlsSlideController> top_controls_slide_controller_;
 
   std::unique_ptr<ImmersiveModeController> immersive_mode_controller_;
+
+  ScopedObserver<ui::MaterialDesignController,
+                 ui::MaterialDesignControllerObserver>
+      md_observer_{this};
 
   std::unique_ptr<WebContentsCloseHandler> web_contents_close_handler_;
 

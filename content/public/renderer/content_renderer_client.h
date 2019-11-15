@@ -58,6 +58,10 @@ namespace media {
 class KeySystemProperties;
 }
 
+namespace mojo {
+class BinderMap;
+}
+
 namespace content {
 class BrowserPluginDelegate;
 class RenderFrame;
@@ -71,6 +75,11 @@ class CONTENT_EXPORT ContentRendererClient {
 
   // Notifies us that the RenderThread has been created.
   virtual void RenderThreadStarted() {}
+
+  // Allows the embedder to make Mojo interfaces available to the browser
+  // process. Binders can be added to |*binders| to service incoming interface
+  // binding requests from RenderProcessHost::BindReceiver().
+  virtual void ExposeInterfacesToBrowser(mojo::BinderMap* binders) {}
 
   // Notifies that a new RenderFrame has been created.
   virtual void RenderFrameCreated(RenderFrame* render_frame) {}

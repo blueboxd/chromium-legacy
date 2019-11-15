@@ -6,6 +6,7 @@
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> onglet}one{<ph name="TABS_COUNT_MANY" /> onglet}other{<ph name="TABS_COUNT_MANY" /> onglets}}</translation>
 <translation id="257674075312929031">Groupe</translation>
 <translation id="2613747923081026172">Créer un groupe</translation>
+<translation id="2671423594960767771">Partager le groupe</translation>
 <translation id="2977480621796371840">Retirer du groupe</translation>
 <translation id="4212246570487010370">Poursuivre la navigation</translation>
 <translation id="4648718555153979859">Vos onglets sont regroupés ici</translation>
@@ -14,6 +15,7 @@
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> onglets regroupés</translation>
 <translation id="5792534911093536736">Plus d'onglets</translation>
 <translation id="58326064309361797">Faire glisser les onglets pour les regrouper</translation>
+<translation id="6040143037577758943">Fermer</translation>
 <translation id="6193448654517602979">Sélectionner des onglets</translation>
 <translation id="6615455863669487791">Démonstration</translation>
 <translation id="6840760312327750441">Pour regrouper des onglets, appuyez de manière prolongée sur un onglet, puis faites-le glisser vers un autre.</translation>

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SHARING_SHARING_MESSAGE_SENDER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/callback.h"
@@ -35,7 +36,7 @@ class SharingMessageSender {
       std::unique_ptr<chrome_browser_sharing::ResponseMessage>)>;
 
   SharingMessageSender(
-      SharingFCMSender* sharing_fcm_sender,
+      std::unique_ptr<SharingFCMSender> sharing_fcm_sender,
       SharingSyncPreference* sync_prefs,
       syncer::LocalDeviceInfoProvider* local_device_info_provider);
   virtual ~SharingMessageSender();
@@ -64,7 +65,7 @@ class SharingMessageSender {
       SharingSendMessageResult result,
       std::unique_ptr<chrome_browser_sharing::ResponseMessage> response);
 
-  SharingFCMSender* fcm_sender_;
+  std::unique_ptr<SharingFCMSender> fcm_sender_;
   SharingSyncPreference* sync_prefs_;
   syncer::LocalDeviceInfoProvider* local_device_info_provider_;
 

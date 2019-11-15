@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
@@ -24,6 +25,11 @@ namespace chromeos {
 class HIDDetectionScreenTest : public InProcessBrowserTest {
  public:
   HIDDetectionScreenTest() {
+    // HID detection screen only appears for Chromebases, Chromebits, and
+    // Chromeboxes.
+    base::SysInfo::SetChromeOSVersionInfoForTest("DEVICETYPE=CHROMEBOX",
+                                                 base::Time::Now());
+
     fake_input_service_manager_ =
         std::make_unique<device::FakeInputServiceLinux>();
 
@@ -92,6 +98,18 @@ class HIDDetectionScreenTest : public InProcessBrowserTest {
 
   DISALLOW_COPY_AND_ASSIGN(HIDDetectionScreenTest);
 };
+
+IN_PROC_BROWSER_TEST_F(HIDDetectionScreenTest, HIDDetectionScreenNotAllowed) {
+  // Set device type to one that should not invoke HIDDetectionScreen logic.
+  base::SysInfo::SetChromeOSVersionInfoForTest("DEVICETYPE=CHROMEBOOK",
+                                               base::Time::Now());
+
+  ShowLoginWizard(WelcomeView::kScreenId);
+  ASSERT_TRUE(WizardController::default_controller());
+
+  EXPECT_FALSE(WizardController::default_controller()->HasScreen(
+      HIDDetectionView::kScreenId));
+}
 
 IN_PROC_BROWSER_TEST_F(HIDDetectionScreenTest, MouseKeyboardStates) {
   // NOTE: State strings match those in hid_detection_screen.cc.

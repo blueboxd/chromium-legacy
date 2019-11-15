@@ -85,4 +85,11 @@ bool operator!=(const PipelineDecoderInfo& first,
   return !(first == second);
 }
 
+std::ostream& operator<<(std::ostream& out, const PipelineDecoderInfo& info) {
+  return out << "{decoder_name:" << info.decoder_name << ","
+             << "is_platform_decoder:" << info.is_platform_decoder << ","
+             << "is_decrypting_demuxer_stream:"
+             << info.is_decrypting_demuxer_stream << "}";
+}
+
 }  // namespace media

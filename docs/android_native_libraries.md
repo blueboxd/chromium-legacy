@@ -11,7 +11,7 @@ This doc outlines some tricks / gotchas / features of how we ship native code in
    * It is loaded directly from the apk (without extracting) by `mmap()`'ing it.
  * Android N, O & P (MonochromePublic.apk):
    * `libmonochrome.so` is stored uncompressed (AndroidManifest.xml attribute disables extraction) and loaded directly from the apk (functionality now supported by the system linker).
- * Android Q (TrichromeChrome.apk+TrichromeLibrary.apk):
+ * Android Q (TrichromeChrome.aab+TrichromeLibrary.apk):
    * `libmonochrome.so` is stored in the shared library apk (TrichromeLibrary.apk) instead of in the Chrome apk, so that it can be shared with TrichromeWebView. It's stored uncompressed and loaded directly from the apk the same way as on N-P. Trichrome uses the same native library as Monochrome, so it's still called `libmonochrome.so`.
 
 ## Crashpad Packaging
@@ -74,7 +74,7 @@ This doc outlines some tricks / gotchas / features of how we ship native code in
    * `JNI_OnLoad()` is the only exported symbol (enforced by a linker script).
    * Native methods registered explicitly during start-up by generated code.
      * Explicit generation is required because the Android runtime uses the system's `dlsym()`, which doesn't know about Crazy-Linker-opened libraries.
- * For MonochromePublic.apk and TrichromeChrome.apk:
+ * For MonochromePublic.apk and TrichromeChrome.aab:
    * `JNI_OnLoad()` and `Java_*` symbols are exported by linker script.
    * No manual JNI registration is done. Symbols are resolved lazily by the runtime.
 

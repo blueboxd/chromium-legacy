@@ -117,7 +117,6 @@ jumbo_component("views") {
     "controls/button/md_text_button.h",
     "controls/button/menu_button.h",
     "controls/button/menu_button_controller.h",
-    "controls/button/menu_button_listener.h",
     "controls/button/radio_button.h",
     "controls/button/toggle_button.h",
     "controls/combobox/combobox.h",

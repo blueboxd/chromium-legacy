@@ -323,9 +323,7 @@ AwContentsIoThreadClient::AwContentsIoThreadClient(bool pending_association,
                                                    const JavaRef<jobject>& obj)
     : pending_association_(pending_association), java_object_(obj) {}
 
-AwContentsIoThreadClient::~AwContentsIoThreadClient() {
-  // explict, out-of-line destructor.
-}
+AwContentsIoThreadClient::~AwContentsIoThreadClient() = default;
 
 bool AwContentsIoThreadClient::PendingAssociation() const {
   return pending_association_;

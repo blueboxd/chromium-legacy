@@ -10,8 +10,8 @@
 
 namespace flags {
 
-extern const base::Feature kUnexpireFlagsM76;
 extern const base::Feature kUnexpireFlagsM78;
+extern const base::Feature kUnexpireFlagsM80;
 
 bool IsFlagExpired(const char* internal_name);
 

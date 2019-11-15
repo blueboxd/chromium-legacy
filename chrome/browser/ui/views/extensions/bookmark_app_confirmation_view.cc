@@ -29,7 +29,6 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace {
 
@@ -161,7 +160,7 @@ void ShowBookmarkAppDialog(content::WebContents* web_contents,
   constrained_window::ShowWebModalDialogViews(dialog, web_contents);
 
   if (g_auto_accept_bookmark_app_for_testing) {
-    dialog->GetDialogClientView()->AcceptWindow();
+    dialog->AcceptDialog();
   }
 }
 

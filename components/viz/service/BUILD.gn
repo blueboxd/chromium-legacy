@@ -18,14 +18,10 @@ viz_component("service") {
     "display/bsp_tree.h",
     "display/bsp_walk_action.cc",
     "display/bsp_walk_action.h",
-    "display/ca_layer_overlay.cc",
-    "display/ca_layer_overlay.h",
     "display/color_lut_cache.cc",
     "display/color_lut_cache.h",
     "display/damage_frame_annotator.cc",
     "display/damage_frame_annotator.h",
-    "display/dc_layer_overlay.cc",
-    "display/dc_layer_overlay.h",
     "display/direct_renderer.cc",
     "display/direct_renderer.h",
     "display/display.cc",
@@ -246,6 +242,8 @@ viz_component("service") {
 
   if (is_mac) {
     sources += [
+      "display/ca_layer_overlay.cc",
+      "display/ca_layer_overlay.h",
       "display_embedder/overlay_candidate_validator_mac.cc",
       "display_embedder/overlay_candidate_validator_mac.h",
       "display_embedder/software_output_device_mac.cc",
@@ -290,6 +288,8 @@ viz_component("service") {
 
   if (is_win) {
     sources += [
+      "display/dc_layer_overlay.cc",
+      "display/dc_layer_overlay.h",
       "display_embedder/output_device_backing.cc",
       "display_embedder/output_device_backing.h",
       "display_embedder/overlay_candidate_validator_win.cc",
@@ -425,7 +425,6 @@ viz_source_set("unit_tests") {
     "display/gl_renderer_copier_unittest.cc",
     "display/gl_renderer_unittest.cc",
     "display/layer_quad_unittest.cc",
-    "display/overlay_unittest.cc",
     "display/renderer_pixeltest.cc",
     "display/shader_unittest.cc",
     "display/software_renderer_unittest.cc",
@@ -489,7 +488,10 @@ viz_source_set("unit_tests") {
   ]
 
   if (use_ozone) {
-    sources += [ "display_embedder/software_output_device_ozone_unittest.cc" ]
+    sources += [
+      "display/overlay_unittest.cc",
+      "display_embedder/software_output_device_ozone_unittest.cc",
+    ]
     deps += [
       "//ui/compositor:test_support",
       "//ui/ozone",
@@ -497,16 +499,23 @@ viz_source_set("unit_tests") {
   }
 
   if (is_mac) {
-    sources += [ "display_embedder/software_output_device_mac_unittest.mm" ]
+    sources += [
+      "display/overlay_ca_unittest.cc",
+      "display_embedder/software_output_device_mac_unittest.mm",
+    ]
     libs = [ "IOSurface.framework" ]
   }
 
   if (is_win) {
-    sources += [ "display_embedder/output_device_backing_unittest.cc" ]
+    sources += [
+      "display/overlay_dc_unittest.cc",
+      "display_embedder/output_device_backing_unittest.cc",
+    ]
   }
 
   if (is_android) {
     sources += [
+      "display/overlay_unittest.cc",
       "display_embedder/overlay_candidate_validator_surface_control_unittest.cc",
       "frame_sinks/external_begin_frame_source_android_unittest.cc",
     ]

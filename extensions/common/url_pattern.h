@@ -27,8 +27,8 @@ class GURL;
 //
 // * Host is not used when the scheme is 'file'.
 // * The path can have embedded '*' characters which act as glob wildcards.
-// * '<all_urls>' is a special pattern that matches any URL that contains a
-//   valid scheme (as specified by valid_schemes_).
+// * '<all_urls>' is a special pattern that matches any valid URL that contains
+//   a valid scheme (as specified by valid_schemes_).
 // * The '*' scheme pattern excludes file URLs.
 //
 // Examples of valid patterns:
@@ -136,7 +136,7 @@ class URLPattern {
   const std::string& path() const { return path_; }
   void SetPath(base::StringPiece path);
 
-  // Returns true if this pattern matches all urls.
+  // Returns true if this pattern matches all (valid) urls.
   bool match_all_urls() const { return match_all_urls_; }
   void SetMatchAllURLs(bool val);
 
@@ -152,7 +152,8 @@ class URLPattern {
   // false otherwise. Uses valid_schemes_ to determine validity.
   bool IsValidScheme(base::StringPiece scheme) const;
 
-  // Returns true if this instance matches the specified URL.
+  // Returns true if this instance matches the specified URL. Always returns
+  // false for invalid URLs.
   bool MatchesURL(const GURL& test) const;
 
   // Returns true if this instance matches the specified security origin.

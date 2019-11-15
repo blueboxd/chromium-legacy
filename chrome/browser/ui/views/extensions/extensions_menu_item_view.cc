@@ -87,18 +87,14 @@ void ExtensionsMenuItemView::ButtonPressed(views::Button* sender,
   if (sender->GetID() == EXTENSION_PINNING) {
     model_->SetActionVisibility(controller_->GetId(), !IsPinned());
     return;
+  } else if (sender->GetID() == EXTENSION_CONTEXT_MENU) {
+    // TODO(crbug.com/998298): Cleanup the menu source type.
+    context_menu_controller_->ShowContextMenuForViewImpl(
+        sender, sender->GetMenuPosition(),
+        ui::MenuSourceType::MENU_SOURCE_MOUSE);
+    return;
   }
   NOTREACHED();
-}
-
-void ExtensionsMenuItemView::OnMenuButtonClicked(views::Button* source,
-                                                 const gfx::Point& point,
-                                                 const ui::Event* event) {
-  DCHECK_EQ(source->GetID(), EXTENSION_CONTEXT_MENU);
-
-  // TODO(crbug.com/998298): Cleanup the menu source type.
-  context_menu_controller_->ShowContextMenuForViewImpl(
-      source, point, ui::MenuSourceType::MENU_SOURCE_MOUSE);
 }
 
 void ExtensionsMenuItemView::UpdatePinButton() {

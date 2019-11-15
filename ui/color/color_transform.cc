@@ -9,6 +9,26 @@
 
 namespace ui {
 
+ColorTransform::ColorTransform(Callback callback)
+    : callback_(std::move(callback)) {}
+
+ColorTransform::ColorTransform(SkColor color) {
+  const auto generator = [](SkColor color, SkColor input_color,
+                            const ColorMixer& mixer) { return color; };
+  callback_ = base::Bind(generator, color);
+}
+
+ColorTransform::ColorTransform(const ColorTransform&) = default;
+
+ColorTransform& ColorTransform::operator=(const ColorTransform&) = default;
+
+ColorTransform::~ColorTransform() = default;
+
+SkColor ColorTransform::Run(SkColor input_color,
+                            const ColorMixer& mixer) const {
+  return callback_.Run(input_color, mixer);
+}
+
 ColorTransform AlphaBlend(ColorTransform foreground_transform,
                           ColorTransform background_transform,
                           SkAlpha alpha) {
@@ -93,12 +113,6 @@ ColorTransform DeriveDefaultIconColor(ColorTransform transform) {
         transform.Run(input_color, mixer));
   };
   return base::Bind(generator, std::move(transform));
-}
-
-ColorTransform FromColor(SkColor color) {
-  const auto generator = [](SkColor color, SkColor input_color,
-                            const ColorMixer& mixer) { return color; };
-  return base::Bind(generator, color);
 }
 
 ColorTransform FromOriginalColorFromSet(ColorId id, ColorSetId set_id) {

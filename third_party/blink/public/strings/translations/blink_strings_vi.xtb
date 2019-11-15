@@ -54,7 +54,6 @@
 <translation id="2674318244760992338">chân trang</translation>
 <translation id="2709516037105925701">Tự động điền</translation>
 <translation id="2723001399770238859">âm thanh</translation>
-<translation id="2725963129578236554">nhận xét</translation>
 <translation id="2746543609216772311">Giá trị phải là <ph name="MINIMUM_DATE_OR_TIME" /> hoặc muộn hơn.</translation>
 <translation id="2759744352195237655">nút cửa sổ bật lên</translation>
 <translation id="2761667185364618470">Vui lòng chọn hộp kiểm này nếu bạn muốn tiếp tục.</translation>
@@ -164,7 +163,6 @@
 <translation id="6404546809543547843">trình kiểm soát thời gian âm thanh</translation>
 <translation id="6443871981718447451">hiển thị menu phụ đề chi tiết</translation>
 <translation id="6453774872122745852">lời cảm ơn</translation>
-<translation id="6475115390776617481">cộng tác viên đang hiện diện</translation>
 <translation id="648732519525291180">bộ chọn giờ</translation>
 <translation id="6550675742724504774">Tùy chọn</translation>
 <translation id="6572309429103589720">Ngữ pháp không hợp lệ</translation>
@@ -250,7 +248,6 @@
 <translation id="8711688047404765493">thiết bị ra</translation>
 <translation id="8750798805984357768">Vui lòng chọn một trong các tùy chọn sau.</translation>
 <translation id="8808573423886751634">chương</translation>
-<translation id="8822203815165896261">thông tin về tác giả</translation>
 <translation id="8845239796550121995">Hiện đang truyền tới TV của bạn</translation>
 <translation id="8851136666856101339">chính</translation>
 <translation id="8875657656876809964">Lỗi phát lại video</translation>

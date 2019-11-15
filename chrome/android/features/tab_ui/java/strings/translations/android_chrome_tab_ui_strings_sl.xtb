@@ -6,6 +6,7 @@
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> zavihek}one{<ph name="TABS_COUNT_MANY" /> zavihek}two{<ph name="TABS_COUNT_MANY" /> zavihka}few{<ph name="TABS_COUNT_MANY" /> zavihki}other{<ph name="TABS_COUNT_MANY" /> zavihkov}}</translation>
 <translation id="257674075312929031">Skupina</translation>
 <translation id="2613747923081026172">Ustvarjanje skupine</translation>
+<translation id="2671423594960767771">Deljenje skupine</translation>
 <translation id="2977480621796371840">Odstrani iz skupine</translation>
 <translation id="4212246570487010370">Nadaljevanje brskanja</translation>
 <translation id="4648718555153979859">Zavihki so združeni tukaj</translation>
@@ -14,6 +15,7 @@
 <translation id="5580090775658607195">Št. združenih zavihkov: <ph name="TAB_COUNT" /></translation>
 <translation id="5792534911093536736">Več zavihkov</translation>
 <translation id="58326064309361797">Povlecite zavihke, če jih želite združiti v skupino</translation>
+<translation id="6040143037577758943">Zapri</translation>
 <translation id="6193448654517602979">Izberite zavihke</translation>
 <translation id="6615455863669487791">Pokaži mi</translation>
 <translation id="6840760312327750441">Če želite združiti zavihke v skupino, pridržite zavihek. Nato ga povlecite na drug zavihek.</translation>

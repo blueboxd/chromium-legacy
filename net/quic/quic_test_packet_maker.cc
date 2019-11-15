@@ -120,7 +120,7 @@ void QuicTestPacketMaker::EncoderStreamSenderDelegate::WriteStreamData(
 QuicTestPacketMaker::QuicTestPacketMaker(
     quic::ParsedQuicVersion version,
     quic::QuicConnectionId connection_id,
-    quic::MockClock* clock,
+    const quic::QuicClock* clock,
     const std::string& host,
     quic::Perspective perspective,
     bool client_headers_include_h2_stream_dependency)
@@ -289,7 +289,10 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeRstPacket(
 
   quic::QuicRstStreamFrame rst(1, stream_id, error_code,
                                stream_offsets_[stream_id]);
-  frames.push_back(quic::QuicFrame(&rst));
+  if (version_.transport_version != quic::QUIC_VERSION_99 ||
+      quic::QuicUtils::IsBidirectionalStreamId(stream_id)) {
+    frames.push_back(quic::QuicFrame(&rst));
+  }
   DVLOG(1) << "Adding frame: " << frames.back();
 
   // The STOP_SENDING frame must be outside of the if (version==99) so that it
@@ -432,8 +435,11 @@ QuicTestPacketMaker::MakeAckAndRstPacket(
 
   quic::QuicRstStreamFrame rst(1, stream_id, error_code,
                                stream_offsets_[stream_id]);
-  frames.push_back(quic::QuicFrame(&rst));
-  DVLOG(1) << "Adding frame: " << frames.back();
+  if (version_.transport_version != quic::QUIC_VERSION_99 ||
+      quic::QuicUtils::IsBidirectionalStreamId(stream_id)) {
+    frames.push_back(quic::QuicFrame(&rst));
+    DVLOG(1) << "Adding frame: " << frames.back();
+  }
 
   // The STOP_SENDING frame must be outside of the if (version==99) so that it
   // stays in scope until the packet is built.

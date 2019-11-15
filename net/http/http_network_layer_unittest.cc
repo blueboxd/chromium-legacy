@@ -17,6 +17,7 @@
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log_with_source.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
+#include "net/quic/quic_context.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_session_pool.h"
 #include "net/ssl/ssl_config_service_defaults.h"
@@ -58,6 +59,7 @@ class HttpNetworkLayerTest : public PlatformTest, public WithTaskEnvironment {
     session_context.proxy_resolution_service = proxy_resolution_service_.get();
     session_context.ssl_config_service = ssl_config_service_.get();
     session_context.http_server_properties = &http_server_properties_;
+    session_context.quic_context = &quic_context_;
     network_session_.reset(
         new HttpNetworkSession(HttpNetworkSession::Params(), session_context));
     factory_.reset(new HttpNetworkLayer(network_session_.get()));
@@ -270,6 +272,7 @@ class HttpNetworkLayerTest : public PlatformTest, public WithTaskEnvironment {
   DefaultCTPolicyEnforcer ct_policy_enforcer_;
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
   std::unique_ptr<SSLConfigService> ssl_config_service_;
+  QuicContext quic_context_;
   std::unique_ptr<HttpNetworkSession> network_session_;
   std::unique_ptr<HttpNetworkLayer> factory_;
 

@@ -193,7 +193,7 @@ void WebContentsAudioInputStream::Impl::IncrementCapturerCount() {
 
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (WebContents* contents = tracker_->web_contents())
-    contents->IncrementCapturerCount(gfx::Size());
+    contents->IncrementCapturerCount(gfx::Size(), /* stay_hidden */ false);
 }
 
 void WebContentsAudioInputStream::Impl::Start(AudioInputCallback* callback) {
@@ -261,7 +261,7 @@ void WebContentsAudioInputStream::Impl::DecrementCapturerCount() {
 
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (WebContents* contents = tracker_->web_contents())
-    contents->DecrementCapturerCount();
+    contents->DecrementCapturerCount(/* stay_hidden */ false);
 }
 
 void WebContentsAudioInputStream::Impl::ReportError() {

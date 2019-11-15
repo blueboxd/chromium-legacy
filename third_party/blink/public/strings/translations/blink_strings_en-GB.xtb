@@ -54,7 +54,6 @@
 <translation id="2674318244760992338">footer</translation>
 <translation id="2709516037105925701">Auto-fill</translation>
 <translation id="2723001399770238859">audio</translation>
-<translation id="2725963129578236554">comments</translation>
 <translation id="2746543609216772311">Value must be <ph name="MINIMUM_DATE_OR_TIME" /> or later.</translation>
 <translation id="2759744352195237655">pop-up button</translation>
 <translation id="2761667185364618470">Please tick this box if you want to proceed.</translation>
@@ -164,7 +163,6 @@
 <translation id="6404546809543547843">audio time scrubber</translation>
 <translation id="6443871981718447451">show closed captions menu</translation>
 <translation id="6453774872122745852">acknowledgements</translation>
-<translation id="6475115390776617481">live presence</translation>
 <translation id="648732519525291180">time picker</translation>
 <translation id="6550675742724504774">Options</translation>
 <translation id="6572309429103589720">Invalid grammar</translation>
@@ -250,7 +248,6 @@
 <translation id="8711688047404765493">output</translation>
 <translation id="8750798805984357768">Please select one of these options.</translation>
 <translation id="8808573423886751634">chapter</translation>
-<translation id="8822203815165896261">authoring info</translation>
 <translation id="8845239796550121995">Now casting to your TV</translation>
 <translation id="8851136666856101339">main</translation>
 <translation id="8875657656876809964">Video playback error</translation>

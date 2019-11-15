@@ -16,8 +16,8 @@
 #include "base/android/jni_string.h"
 #include "base/hash/hash.h"
 #include "base/i18n/rtl.h"
-#include "base/lazy_instance.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/no_destructor.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "components/metrics/android_metrics_provider.h"
@@ -41,8 +41,6 @@
 #include "content/public/browser/notification_types.h"
 
 namespace android_webview {
-
-base::LazyInstance<AwMetricsServiceClient>::Leaky g_lazy_instance_;
 
 namespace {
 
@@ -151,13 +149,13 @@ void PopulateSystemInstallDateIfNecessary(PrefService* prefs) {
 
 // static
 AwMetricsServiceClient* AwMetricsServiceClient::GetInstance() {
-  AwMetricsServiceClient* client = g_lazy_instance_.Pointer();
-  DCHECK_CALLED_ON_VALID_SEQUENCE(client->sequence_checker_);
-  return client;
+  static base::NoDestructor<AwMetricsServiceClient> client;
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client.get()->sequence_checker_);
+  return client.get();
 }
 
-AwMetricsServiceClient::AwMetricsServiceClient() {}
-AwMetricsServiceClient::~AwMetricsServiceClient() {}
+AwMetricsServiceClient::AwMetricsServiceClient() = default;
+AwMetricsServiceClient::~AwMetricsServiceClient() = default;
 
 void AwMetricsServiceClient::Initialize(PrefService* pref_service) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

@@ -127,7 +127,6 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="1845944666972354496">Etkinleştirmek için iki kez dokunun</translation>
 <translation id="1846771122725914429">Bluetooth Braille Ekran</translation>
 <translation id="1865601187525349519">Metnin sonu</translation>
-<translation id="1875375785454778375">Canlı varlık</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">Geçerli saati ve tarihi söyle.</translation>
 <translation id="1902396333223336119">Hücre</translation>
@@ -148,7 +147,6 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="2009187674653301682">Üst simge değil</translation>
 <translation id="2010555995361223825">ChromeVox Menüleri</translation>
 <translation id="2045490512405922022">seçili değil</translation>
-<translation id="2049107626739254612">Yazma bilgileri</translation>
 <translation id="20601713649439366">Önceki matematik ifadesi yok.</translation>
 <translation id="2063539687800151747">Yazıt</translation>
 <translation id="207477615537953741">Anlamsal yorum kapalı</translation>
@@ -268,7 +266,6 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="2911433807131383493">ChromeVox eğiticiyi aç</translation>
 <translation id="2912405967290226587">Üç parmağınızı sağa kaydırın</translation>
 <translation id="2932083475399492303">Yapısal veya düzen satır türü arasında geçiş yap</translation>
-<translation id="293796669683825859">Yorumlar</translation>
 <translation id="2942710183375260152">Koyu Kurşun Mavisi</translation>
 <translation id="2943596527105977722">Koyu Altın Başak</translation>
 <translation id="2944762337049891859">Yüklenmesi bittikten sonra sayfayı otomatik olarak oku.</translation>
@@ -815,7 +812,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="6637586476836377253">log</translation>
 <translation id="6657128831881431364">İlerleme çubuğu</translation>
 <translation id="6659594942844771486">Sekme</translation>
-<translation id="6675661017770918201">Önceki paragraf yok.</translation>
+<translation id="6675661017770918201">Bundan önce başka paragraf yok.</translation>
 <translation id="667999046851023355">Doküman</translation>
 <translation id="6688209025607531203">Modal olmayan uyarı</translation>
 <translation id="6689672606256159458">Koyu Somon</translation>
@@ -1147,6 +1144,7 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="8548973727659841685">Karakter</translation>
 <translation id="8561322612995434619">pop-up'ı var</translation>
 <translation id="8571096049907249734">çoklsçm</translation>
+<translation id="858006550102277544">Yorum</translation>
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">Sonraki liste öğesi</translation>
 <translation id="860150890330522909"><ph name="NAME" /> onay kutusu işaretli</translation>

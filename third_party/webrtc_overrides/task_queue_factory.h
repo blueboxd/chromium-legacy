@@ -10,13 +10,15 @@
 #include "base/task/task_traits.h"
 #include "third_party/webrtc/api/task_queue/task_queue_base.h"
 #include "third_party/webrtc/api/task_queue/task_queue_factory.h"
+#include "third_party/webrtc/rtc_base/system/rtc_export.h"
 
 // Creates factory for webrtc::TaskQueueBase backed by base::SequencedTaskRunner
 // Tested by
 // /third_party/blink/renderer/platform/peerconnection/task_queue_factory_test.cc
-std::unique_ptr<webrtc::TaskQueueFactory> CreateWebRtcTaskQueueFactory();
+RTC_EXPORT std::unique_ptr<webrtc::TaskQueueFactory>
+CreateWebRtcTaskQueueFactory();
 
-std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter>
+RTC_EXPORT std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter>
 CreateWebRtcTaskQueue(webrtc::TaskQueueFactory::Priority priority);
 
 #endif  // THIRD_PARTY_WEBRTC_OVERRIDES_TASK_QUEUE_FACTORY_H_

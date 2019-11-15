@@ -53,15 +53,18 @@ class ThumbnailTabHelper::ScopedCapture {
  public:
   explicit ScopedCapture(ThumbnailTabHelper* helper) : helper_(helper) {
     if (helper->web_contents()) {
-      helper->web_contents()->IncrementCapturerCount(gfx::ScaleToFlooredSize(
-          GetMinimumThumbnailSize(), kMinThumbnailScaleFactor));
+      helper->web_contents()->IncrementCapturerCount(
+          gfx::ScaleToFlooredSize(GetMinimumThumbnailSize(),
+                                  kMinThumbnailScaleFactor),
+          /* stay_hidden */ true);
       captured_ = true;
     }
   }
 
   ~ScopedCapture() {
     if (captured_ && helper_->web_contents())
-      helper_->web_contents()->DecrementCapturerCount();
+      helper_->web_contents()->DecrementCapturerCount(
+          /* stay_hidden */ true);
   }
 
  private:

@@ -102,6 +102,8 @@
 #define IDC_SEND_TAB_TO_SELF_SINGLE_TARGET  35018
 #define IDC_CONTENT_LINK_SEND_TAB_TO_SELF_SINGLE_TARGET  35019
 #define IDC_QRCODE_GENERATOR            35020
+#define IDC_WINDOW_CLOSE_TABS_TO_RIGHT  35021
+#define IDC_WINDOW_CLOSE_OTHER_TABS     35022
 
 // Page-manipulation commands that target a specified tab, which may not be the
 // active one.

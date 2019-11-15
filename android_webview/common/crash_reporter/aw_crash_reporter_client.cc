@@ -18,8 +18,8 @@
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
 #include "build/build_config.h"
@@ -39,7 +39,7 @@ namespace {
 
 class AwCrashReporterClient : public crash_reporter::CrashReporterClient {
  public:
-  AwCrashReporterClient() {}
+  AwCrashReporterClient() = default;
 
   // crash_reporter::CrashReporterClient implementation.
   bool IsRunningUnattended() override { return false; }
@@ -116,12 +116,14 @@ class AwCrashReporterClient : public crash_reporter::CrashReporterClient {
         AttachCurrentThread(), java_exception);
   }
 
+  static AwCrashReporterClient* Get() {
+    static base::NoDestructor<AwCrashReporterClient> crash_reporter_client;
+    return crash_reporter_client.get();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(AwCrashReporterClient);
 };
-
-base::LazyInstance<AwCrashReporterClient>::Leaky g_crash_reporter_client =
-    LAZY_INSTANCE_INITIALIZER;
 
 #if defined(ARCH_CPU_X86_FAMILY)
 bool SafeToUseSignalHandler() {
@@ -197,7 +199,7 @@ void EnableCrashReporter(const std::string& process_type) {
   }
 #endif
 
-  AwCrashReporterClient* client = g_crash_reporter_client.Pointer();
+  AwCrashReporterClient* client = AwCrashReporterClient::Get();
   crash_reporter::SetCrashReporterClient(client);
   crash_reporter::InitializeCrashpad(process_type.empty(), process_type);
   if (process_type.empty()) {

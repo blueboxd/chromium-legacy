@@ -20,14 +20,10 @@
 #include "content/public/common/page_state.h"
 #include "content/public/test/mock_render_thread.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
+#include "mojo/public/cpp/bindings/binder_map.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/web_frame.h"
-
-namespace base {
-class FieldTrialList;
-}
 
 namespace blink {
 namespace scheduler {
@@ -221,12 +217,11 @@ class RenderViewTest : public testing::Test {
   std::unique_ptr<RendererMainPlatformDelegate> platform_;
   std::unique_ptr<MainFunctionParams> params_;
   std::unique_ptr<base::CommandLine> command_line_;
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
 
   // For Mojo.
   std::unique_ptr<base::TestIOThread> test_io_thread_;
   std::unique_ptr<mojo::core::ScopedIPCSupport> ipc_support_;
-  service_manager::BinderRegistry binder_registry_;
+  mojo::BinderMap binders_;
 
 #if defined(OS_MACOSX)
   std::unique_ptr<base::mac::ScopedNSAutoreleasePool> autorelease_pool_;

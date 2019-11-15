@@ -54,7 +54,9 @@ OptimizationGuideNavigationData::OptimizationGuideNavigationData(
       has_hint_before_commit_(other.has_hint_before_commit_),
       has_hint_after_commit_(other.has_hint_after_commit_),
       was_host_covered_by_fetch_at_navigation_start_(
-          other.was_host_covered_by_fetch_at_navigation_start_) {
+          other.was_host_covered_by_fetch_at_navigation_start_),
+      was_host_covered_by_fetch_at_commit_(
+          other.was_host_covered_by_fetch_at_commit_) {
   if (other.has_page_hint_value()) {
     page_hint_ = std::make_unique<optimization_guide::proto::PageHint>(
         *other.page_hint());
@@ -76,12 +78,12 @@ OptimizationGuideNavigationData::GetFromNavigationHandle(
 }
 
 void OptimizationGuideNavigationData::RecordMetrics(bool has_committed) const {
-  RecordHintCacheMatch(has_committed);
+  RecordHintCoverage(has_committed);
   RecordOptimizationTypeAndTargetDecisions();
   RecordOptimizationGuideUKM();
 }
 
-void OptimizationGuideNavigationData::RecordHintCacheMatch(
+void OptimizationGuideNavigationData::RecordHintCoverage(
     bool has_committed) const {
   bool has_hint_before_commit = false;
   if (has_hint_before_commit_.has_value()) {
@@ -98,8 +100,18 @@ void OptimizationGuideNavigationData::RecordHintCacheMatch(
   if (!has_committed || !has_hint_after_commit_.has_value())
     return;
 
+  UMA_HISTOGRAM_BOOLEAN(
+      "OptimizationGuide.Hints.NavigationHostCoverage.AtCommit",
+      has_hint_after_commit_.value_or(false) ||
+          was_host_covered_by_fetch_at_commit_.value_or(false));
+
+  UMA_HISTOGRAM_BOOLEAN(
+      "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch.AtCommit",
+      was_host_covered_by_fetch_at_commit_.value_or(false));
+
   UMA_HISTOGRAM_BOOLEAN("OptimizationGuide.HintCache.HasHint.AtCommit",
                         has_hint_after_commit_.value());
+
   // The remaining metrics rely on having a hint, so do not record them if we
   // did not have a hint for the navigation.
   if (!has_hint_after_commit_.value())

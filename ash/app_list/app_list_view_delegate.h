@@ -138,9 +138,7 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
 
   // Forwards events to the home launcher gesture handler and returns true if
   // they have been processed.
-  virtual bool ProcessHomeLauncherGesture(
-      ui::GestureEvent* event,
-      const gfx::Point& screen_location) = 0;
+  virtual bool ProcessHomeLauncherGesture(ui::GestureEvent* event) = 0;
 
   // Returns True if the last event passing through app list was a key event.
   // This is stored in the controller and managed by the presenter.

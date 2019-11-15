@@ -45,13 +45,17 @@
     <div class="user-list" scrollable>
       <template is="dom-repeat" items="[[users_]]">
         <div class="user layout horizontal center two-line">
-          <img class="user-icon" src="[[getProfilePictureUrl_(item)]]">
+          <img class="user-icon" src="[[getProfilePictureUrl_(item)]]"
+              aria-hidden="true">
           <div class="flex layout vertical user-info no-min-width">
-            <div class="text-elide" title="[[getTooltip_(item)]]">
+            <div class="text-elide" title="[[getTooltip_(item)]]"
+                aria-describedby="user-email">
               [[getUserName_(item)]]
             </div>
-            <div class="secondary text-elide" title="[[item.displayEmail]]"
-                hidden$="[[!shouldShowEmail_(item)]]">
+            <div class="secondary text-elide" id="user-email"
+                title="[[item.displayEmail]]"
+                hidden$="[[!shouldShowEmail_(item)]]"
+                aria-hidden="true">
               [[item.displayEmail]]
             </div>
           </div>

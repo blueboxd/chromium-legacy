@@ -51,6 +51,7 @@ class AssistantViewDelegateImpl : public AssistantViewDelegate {
   void GetNavigableContentsFactoryForView(
       mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver)
       override;
+  aura::Window* GetRootWindowForDisplayId(int64_t display_id) override;
   aura::Window* GetRootWindowForNewWindows() override;
   bool IsTabletMode() const override;
   void OnDialogPlateButtonPressed(AssistantButtonId id) override;

@@ -232,6 +232,22 @@ std::unique_ptr<blink::WebInputEvent> TransformScreenToWidgetCoordinates(
 
   blink::WebRect view_rect = render_widget->ViewRect();
   gfx::Vector2d delta(-view_rect.x, -view_rect.y);
+
+  // The coordinates are given in terms of the root widget, so adjust for the
+  // position of the main frame.
+  // TODO(sgilhuly): This doesn't work for events sent to OOPIFs because the
+  // main frame is remote, and doesn't have a corresponding RenderWidget.
+  // Currently none of those tests are run out of headless mode.
+  blink::WebFrame* frame =
+      web_widget_test_proxy->GetWebViewTestProxy()->webview()->MainFrame();
+  if (frame->IsWebLocalFrame()) {
+    test_runner::WebWidgetTestProxy* root_widget =
+        GetWebWidgetTestProxy(frame->ToWebLocalFrame());
+    blink::WebRect root_rect = root_widget->ViewRect();
+    gfx::Vector2d root_delta(root_rect.x, root_rect.y);
+    delta.Add(root_delta);
+  }
+
   return ui::TranslateAndScaleWebInputEvent(event, delta, scale);
 }
 

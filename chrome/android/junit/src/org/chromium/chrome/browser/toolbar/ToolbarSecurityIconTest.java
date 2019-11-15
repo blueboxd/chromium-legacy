@@ -4,31 +4,22 @@
 package org.chromium.chrome.browser.toolbar;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 import android.content.Context;
 import android.content.res.Resources;
 
-import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.Resetter;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
-import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 
@@ -36,7 +27,7 @@ import org.chromium.components.security_state.ConnectionSecurityLevel;
  * Unit tests for {@link LocationBarLayout} class.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, shadows = {ToolbarSecurityIconTest.ShadowSecurityStateModel.class})
+@Config(manifest = Config.NONE)
 public final class ToolbarSecurityIconTest {
     private static final boolean IS_SMALL_DEVICE = true;
     private static final boolean IS_OFFLINE_PAGE = true;
@@ -44,10 +35,6 @@ public final class ToolbarSecurityIconTest {
     private static final int[] SECURITY_LEVELS = new int[] {ConnectionSecurityLevel.NONE,
             ConnectionSecurityLevel.WARNING, ConnectionSecurityLevel.DANGEROUS,
             ConnectionSecurityLevel.SECURE, ConnectionSecurityLevel.EV_SECURE};
-    private static final long NATIVE_PTR = 1;
-
-    @Rule
-    public JniMocker mocker = new JniMocker();
 
     @Mock
     private Tab mTab;
@@ -55,55 +42,14 @@ public final class ToolbarSecurityIconTest {
     private Context mContext;
     @Mock
     private Resources mResources;
-    @Mock
-    LocationBarModel.Natives mNativeMocks;
 
     private LocationBarModel mLocationBarModel;
-
-    @Implements(SecurityStateModel.class)
-    static class ShadowSecurityStateModel {
-        private static boolean sSchemeIsCryptographic;
-        private static boolean sOriginIsSecure;
-
-        @Resetter
-        public static void reset() {
-            sSchemeIsCryptographic = false;
-            sOriginIsSecure = false;
-        }
-
-        @Implementation
-        public static boolean isSchemeCryptographic(String url) {
-            return sSchemeIsCryptographic;
-        }
-
-        @Implementation
-        public static boolean isOriginSecure(String url) {
-            return sOriginIsSecure;
-        }
-
-        public static void setSchemeIsCryptographic(boolean schemeIsCryptographicValue) {
-            sSchemeIsCryptographic = schemeIsCryptographicValue;
-        }
-
-        public static void setOriginIsSecure(boolean originIsSecureValue) {
-            sOriginIsSecure = originIsSecureValue;
-        }
-    }
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        mocker.mock(LocationBarModelJni.TEST_HOOKS, mNativeMocks);
         doReturn(mResources).when(mContext).getResources();
-        when(mNativeMocks.init(any())).thenReturn(NATIVE_PTR);
         mLocationBarModel = new LocationBarModel(mContext);
-        mLocationBarModel.initializeWithNative();
-    }
-
-    @After
-    public void tearDown() {
-        ShadowSecurityStateModel.reset();
-        FeatureUtilities.setMarkHttpAsDangerWarningEnabledForTesting(null);
     }
 
     @Test
@@ -163,15 +109,6 @@ public final class ToolbarSecurityIconTest {
                 mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.NONE,
                         !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
 
-        // Tests passive mixed content.
-        ShadowSecurityStateModel.setSchemeIsCryptographic(true);
-        assertEquals(R.drawable.omnibox_info,
-                mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.NONE,
-                        IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
-        assertEquals(R.drawable.omnibox_info,
-                mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.NONE,
-                        !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
-
         assertEquals(R.drawable.omnibox_info,
                 mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.WARNING,
                         IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
@@ -207,45 +144,6 @@ public final class ToolbarSecurityIconTest {
                         IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
         assertEquals(R.drawable.omnibox_https_valid,
                 mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.EV_SECURE,
-                        !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
-    }
-
-    @Test
-    public void testGetSecurityIconResourceForMarkHttpAsDangerWarning() {
-        FeatureUtilities.setMarkHttpAsDangerWarningEnabledForTesting(true);
-
-        assertEquals(0,
-                mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.NONE,
-                        IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
-        assertEquals(R.drawable.omnibox_info,
-                mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.NONE,
-                        !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
-
-        // Tests passive mixed content.
-        ShadowSecurityStateModel.setSchemeIsCryptographic(true);
-        assertEquals(R.drawable.omnibox_not_secure_warning,
-                mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.NONE,
-                        IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
-        assertEquals(R.drawable.omnibox_not_secure_warning,
-                mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.NONE,
-                        !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
-
-        // Tests non-secure connection (e.g. HTTP).
-        ShadowSecurityStateModel.setSchemeIsCryptographic(false);
-        assertEquals(R.drawable.omnibox_not_secure_warning,
-                mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.WARNING,
-                        IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
-        assertEquals(R.drawable.omnibox_not_secure_warning,
-                mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.WARNING,
-                        !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
-
-        // Tests non-cryptographic secure origins.
-        ShadowSecurityStateModel.setOriginIsSecure(true);
-        assertEquals(R.drawable.omnibox_info,
-                mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.WARNING,
-                        IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
-        assertEquals(R.drawable.omnibox_info,
-                mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.WARNING,
                         !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
     }
 }

@@ -420,6 +420,10 @@ base::scoped_nsobject<NSMenuItem> BuildTabMenu(
                   .command_id(IDC_PIN_TARGET_TAB)
                   .is_alternate()
                   .key_equivalent(@"", NSAlternateKeyMask),
+              Item(IDS_TAB_CXMENU_CLOSEOTHERTABS)
+                  .command_id(IDC_WINDOW_CLOSE_OTHER_TABS),
+              Item(IDS_TAB_CXMENU_CLOSETABSTORIGHT)
+                  .command_id(IDC_WINDOW_CLOSE_TABS_TO_RIGHT),
               Item().is_separator(),
           })
           .Build();

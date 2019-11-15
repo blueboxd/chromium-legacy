@@ -12,6 +12,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/service_process_host.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -112,6 +113,12 @@ video_capture::mojom::VideoCaptureService& GetVideoCaptureService() {
               // On Mac, the service requires a CFRunLoop which is provided by a
               // UI message loop. See https://crbug.com/834581.
               .WithExtraCommandLineSwitches({switches::kMessageLoopTypeUi})
+              // On Mac, the service also needs to have a different set of
+              // entitlements, the reason being that some virtual cameras
+              // are not signed or are signed by a different Team ID. Hence,
+              // library validation has to be disabled (see
+              // http://crbug.com/990381#c21).
+              .WithChildFlags(ChildProcessHost::CHILD_PLUGIN)
 #endif
               .Pass());
 

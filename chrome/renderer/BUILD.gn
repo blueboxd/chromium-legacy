@@ -45,9 +45,10 @@ jumbo_static_library("renderer") {
   sources = [
     "benchmarking_extension.cc",
     "benchmarking_extension.h",
+    "browser_exposed_renderer_interfaces.cc",
+    "browser_exposed_renderer_interfaces.h",
     "chrome_content_renderer_client.cc",
     "chrome_content_renderer_client.h",
-    "chrome_content_renderer_client_receiver_bindings.cc",
     "chrome_render_frame_observer.cc",
     "chrome_render_frame_observer.h",
     "chrome_render_thread_observer.cc",

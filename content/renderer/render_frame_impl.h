@@ -73,7 +73,6 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
@@ -625,6 +624,8 @@ class CONTENT_EXPORT RenderFrameImpl
       mojo::PendingAssociatedReceiver<blink::mojom::PortalClient> portal_client,
       blink::TransferableMessage data,
       OnPortalActivatedCallback callback) override;
+  void ReportContentSecurityPolicyViolation(
+      const content::CSPViolationParams& violation_params) override;
 
   // mojom::FullscreenVideoElementHandler implementation:
   void RequestFullscreenVideoElement() override;
@@ -679,10 +680,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidChangeOpener(blink::WebFrame* frame) override;
   void FrameDetached(DetachType type) override;
   void DidChangeName(const blink::WebString& name) override;
-  void DidEnforceInsecureRequestPolicy(
-      blink::WebInsecureRequestPolicy policy) override;
-  void DidEnforceInsecureNavigationsSet(
-      const blink::WebVector<uint32_t>& set) override;
   void DidChangeFramePolicy(blink::WebFrame* child_frame,
                             const blink::FramePolicy& frame_policy) override;
   void DidSetFramePolicyHeaders(
@@ -843,8 +840,7 @@ class CONTENT_EXPORT RenderFrameImpl
           receiver);
 
   // Binds to the FrameHost in the browser.
-  void BindFrame(const service_manager::BindSourceInfo& browser_info,
-                 mojo::PendingReceiver<mojom::Frame> receiver);
+  void BindFrame(mojo::PendingReceiver<mojom::Frame> receiver);
 
   // Virtual so that a TestRenderFrame can mock out the interface.
   virtual mojom::FrameHost* GetFrameHost();
@@ -1106,8 +1102,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnSetFocusedFrame();
   void OnTextTrackSettingsChanged(
       const FrameMsg_TextTrackSettings_Params& params);
-  void OnReportContentSecurityPolicyViolation(
-      const content::CSPViolationParams& violation_params);
   void OnGetSavableResourceLinks();
   void OnGetSerializedHtmlWithLocalLinks(
       const std::map<GURL, base::FilePath>& url_to_local_path,
@@ -1283,12 +1277,11 @@ class CONTENT_EXPORT RenderFrameImpl
   // This could result either in the creation of a new entry or a modification
   // of the current entry or nothing. If a new entry was created,
   // returns true, false otherwise.
-  bool UpdateNavigationHistory(const blink::WebHistoryItem& item,
+  void UpdateNavigationHistory(const blink::WebHistoryItem& item,
                                blink::WebHistoryCommitType commit_type);
 
   // Notify render_view_ observers that a commit happened.
-  void NotifyObserversOfNavigationCommit(bool is_new_navigation,
-                                         bool is_same_document,
+  void NotifyObserversOfNavigationCommit(bool is_same_document,
                                          ui::PageTransition transition);
 
   // Updates the internal state following a navigation commit. This should be
@@ -1535,9 +1528,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   blink::BrowserInterfaceBrokerProxy browser_interface_broker_proxy_;
 
-  service_manager::BindSourceInfo local_info_;
-  service_manager::BindSourceInfo remote_info_;
-
   // The current accessibility mode.
   ui::AXMode accessibility_mode_;
 
@@ -1616,8 +1606,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // This boolean indicates whether JS bindings for Mojo should be enabled at
   // the time the next script context is created.
   bool enable_mojo_js_bindings_ = false;
-
-  service_manager::BindSourceInfo browser_info_;
 
   mojo::AssociatedRemote<mojom::FrameHost> frame_host_remote_;
   mojo::BindingSet<service_manager::mojom::InterfaceProvider>

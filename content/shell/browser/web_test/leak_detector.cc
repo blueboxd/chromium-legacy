@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/common/bind_interface_helpers.h"
 
 namespace content {
 
@@ -64,7 +63,7 @@ void LeakDetector::TryLeakDetection(RenderProcessHost* process,
                                     ReportCallback callback) {
   callback_ = std::move(callback);
 
-  BindInterface(process, leak_detector_.BindNewPipeAndPassReceiver());
+  process->BindReceiver(leak_detector_.BindNewPipeAndPassReceiver());
   leak_detector_.set_disconnect_handler(base::BindOnce(
       &LeakDetector::OnLeakDetectorIsGone, base::Unretained(this)));
   leak_detector_->PerformLeakDetection(base::BindOnce(

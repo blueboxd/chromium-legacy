@@ -19,6 +19,7 @@
 #include "chrome/browser/safe_browsing/test_safe_browsing_blocking_page_quiet.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/ssl/bad_clock_blocking_page.h"
+#include "chrome/browser/ssl/blocked_interception_blocking_page.h"
 #include "chrome/browser/ssl/mitm_software_blocking_page.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/common/buildflags.h"
@@ -206,6 +207,17 @@ MITMSoftwareBlockingPage* CreateMITMSoftwareBlockingPage(
   return new MITMSoftwareBlockingPage(web_contents, cert_error, request_url,
                                       nullptr, ssl_info, mitm_software_name,
                                       is_enterprise_managed);
+}
+
+BlockedInterceptionBlockingPage* CreateBlockedInterceptionBlockingPage(
+    content::WebContents* web_contents) {
+  const int cert_error = net::ERR_CERT_AUTHORITY_INVALID;
+  const GURL request_url("https://example.com");
+
+  net::SSLInfo ssl_info;
+  ssl_info.cert = ssl_info.unverified_cert = CreateFakeCert();
+  return new BlockedInterceptionBlockingPage(web_contents, cert_error,
+                                             request_url, nullptr, ssl_info);
 }
 
 BadClockBlockingPage* CreateBadClockBlockingPage(
@@ -489,6 +501,9 @@ void InterstitialHTMLSource::StartDataRequest(
     interstitial_delegate.reset(CreateSSLBlockingPage(web_contents));
   } else if (path_without_query == "/mitm-software-ssl") {
     interstitial_delegate.reset(CreateMITMSoftwareBlockingPage(web_contents));
+  } else if (path_without_query == "/blocked-interception") {
+    interstitial_delegate.reset(
+        CreateBlockedInterceptionBlockingPage(web_contents));
   } else if (path_without_query == "/safebrowsing") {
     interstitial_delegate.reset(CreateSafeBrowsingBlockingPage(web_contents));
   } else if (path_without_query == "/clock") {

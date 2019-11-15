@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller_views.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -74,12 +75,13 @@ BrowserNonClientFrameViewMac::BrowserNonClientFrameViewMac(
               frame, browser_view,
               GetCaptionColor(BrowserFrameActiveState::kActive),
               GetCaptionColor(BrowserFrameActiveState::kInactive),
-              kHostedAppMenuMargin)));
+              kHostedAppMenuMargin, kHostedAppMenuMargin)));
     }
 
     DCHECK(browser_view->ShouldShowWindowTitle());
     window_title_ = AddChildView(
         std::make_unique<views::Label>(browser_view->GetWindowTitle()));
+    window_title_->SetID(VIEW_ID_WINDOW_TITLE);
   }
 }
 
@@ -325,8 +327,11 @@ void BrowserNonClientFrameViewMac::Layout() {
   int trailing_x = width();
 
   if (web_app_frame_toolbar()) {
-    trailing_x = web_app_frame_toolbar()->LayoutInContainer(
-        leading_x, trailing_x, 0, available_height);
+    std::pair<int, int> remaining_bounds =
+        web_app_frame_toolbar()->LayoutInContainer(leading_x, trailing_x, 0,
+                                                   available_height);
+    leading_x = remaining_bounds.first;
+    trailing_x = remaining_bounds.second;
 
     const int title_padding = base::checked_cast<int>(
         std::round(width() * kTitlePaddingWidthFraction));

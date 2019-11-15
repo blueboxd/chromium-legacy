@@ -232,6 +232,9 @@ TEST(FilenameUtilTest, FileURLConversion) {
 
   // Test that various file: URLs get decoded into the correct file type
   FileCase url_cases[] = {
+    {nullptr, "http://foo/bar.txt"},
+    {nullptr, "http://localhost/foo/bar.txt"},
+    {nullptr, "https://localhost/foo/bar.txt"},
 #if defined(OS_WIN)
     {L"C:\\foo\\bar.txt", "file:c|/foo\\bar.txt"},
     {L"C:\\foo\\bar.txt", "file:/c:/foo/bar.txt"},
@@ -240,7 +243,6 @@ TEST(FilenameUtilTest, FileURLConversion) {
     {L"\\\\foo\\bar.txt", "file:////foo\\bar.txt"},
     {L"\\\\foo\\bar.txt", "file:/foo/bar.txt"},
     {L"\\\\foo\\bar.txt", "file://foo\\bar.txt"},
-    {L"\\\\foo\\bar.txt", "http://foo/bar.txt"},
     {L"C:\\foo\\bar.txt", "file:\\\\\\c:/foo/bar.txt"},
     // %2F ('/') should fail, because it might otherwise be interpreted as a
     // path separator on Windows.
@@ -256,13 +258,15 @@ TEST(FilenameUtilTest, FileURLConversion) {
     {L"C:\\foo\\a=$b.txt", "file:///c:/foo/a%3D%24b.txt"},  // Reserved.
     // Make sure that '+' isn't converted into ' '.
     {L"C:\\foo\\romeo+juliet.txt", "file:/c:/foo/romeo+juliet.txt"},
+    // SAMBA share case.
+    {L"\\\\computername\\ShareName\\Path\\Foo.txt",
+     "file://computername/ShareName/Path/Foo.txt"},
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
     {L"/c:/foo/bar.txt", "file:/c:/foo/bar.txt"},
     {L"/c:/foo/bar.txt", "file:///c:/foo/bar.txt"},
     {L"/foo/bar.txt", "file:/foo/bar.txt"},
     {L"/c:/foo/bar.txt", "file:\\\\\\c:/foo/bar.txt"},
     {L"/foo/bar.txt", "file:foo/bar.txt"},
-    {L"/bar.txt", "file://foo/bar.txt"},
     {L"/foo/bar.txt", "file:///foo/bar.txt"},
     {L"/foo/bar.txt", "file:////foo/bar.txt"},
     {L"/foo/bar.txt", "file:////foo//bar.txt"},
@@ -282,9 +286,19 @@ TEST(FilenameUtilTest, FileURLConversion) {
     // Make sure that '+' isn't converted into ' '.
     {L"/foo/romeo+juliet.txt", "file:///foo/romeo+juliet.txt"},
     // Backslashes in a file URL are normalized as forward slashes.
-    {L"/bar.txt", "file://foo\\bar.txt"},
+    {L"/bar.txt", "file://\\bar.txt"},
     {L"/c|/foo/bar.txt", "file:c|/foo\\bar.txt"},
     {L"/foo/bar.txt", "file:////foo\\bar.txt"},
+    // Accept obviously-local file URLs.
+    {L"/foo/bar.txt", "file:///foo/bar.txt"},
+    {L"/foo/bar.txt", "file://localhost/foo/bar.txt"},
+    {L"/foo/bar.txt", "file://127.0.0.1/foo/bar.txt"},
+    {L"/foo/bar.txt", "file://[::1]/foo/bar.txt"},
+    // Reject non-local file URLs.
+    {nullptr, "file://foo/bar.txt"},
+    {nullptr, "file://example.com/bar.txt"},
+    {nullptr, "file://192.168.1.1/foo/bar.txt"},
+    {nullptr, "file://[2001:0db8:85a3:0000:0000:8a2e:0370:7334]/foo/bar.txt"},
 #endif
   };
   for (const auto& test_case : url_cases) {

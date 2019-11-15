@@ -525,6 +525,20 @@ void AppListControllerImpl::OnAppListStateChanged(ash::AppListState new_state,
 
   UpdateLauncherContainer();
 
+  // Band-aid for https://b/144056527 to update visibility after AppListState
+  // change. Otherwise, previously calculated visibility in OnVisibilityChanged
+  // and OnVisibilityWillChange is not correct and makes focus change handler
+  // code in AppListPresenterImpl::OnWindowFocused close the app list window
+  // when focus moves into Assistant web contents.
+  aura::Window* app_list_window = GetWindow();
+  if (app_list_window) {
+    const bool app_list_visible = app_list_window->TargetVisibility();
+    if (app_list_visible != IsVisible()) {
+      OnVisibilityWillChange(app_list_visible, last_visible_display_id_);
+      OnVisibilityChanged(app_list_visible, last_visible_display_id_);
+    }
+  }
+
   if (new_state == ash::AppListState::kStateEmbeddedAssistant) {
     // ShowUi will be no-op if the AssistantUiModel is already visible.
     Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
@@ -626,7 +640,8 @@ void AppListControllerImpl::OnOverviewModeStartingAnimationComplete(
     bool canceled) {
   if (!IsTabletMode())
     return;
-  OnHomeLauncherAnimationComplete(false /* shown */, last_visible_display_id_);
+  OnHomeLauncherAnimationComplete(canceled && !HasVisibleWindows() /* shown */,
+                                  last_visible_display_id_);
 }
 
 void AppListControllerImpl::OnOverviewModeEnding(OverviewSession* session) {
@@ -1161,22 +1176,23 @@ void AppListControllerImpl::ShowWallpaperContextMenu(
 }
 
 bool AppListControllerImpl::ProcessHomeLauncherGesture(
-    ui::GestureEvent* event,
-    const gfx::Point& screen_location) {
+    ui::GestureEvent* event) {
   HomeLauncherGestureHandler* home_launcher_gesture_handler =
       Shell::Get()->home_screen_controller()->home_launcher_gesture_handler();
+  const gfx::PointF event_location =
+      event->details().bounding_box_f().CenterPoint();
   switch (event->type()) {
     case ui::ET_SCROLL_FLING_START:
     case ui::ET_GESTURE_SCROLL_BEGIN:
       return home_launcher_gesture_handler->OnPressEvent(
-          HomeLauncherGestureHandler::Mode::kSlideDownToHide, screen_location);
+          HomeLauncherGestureHandler::Mode::kSlideDownToHide, event_location);
     case ui::ET_GESTURE_SCROLL_UPDATE:
       return home_launcher_gesture_handler->OnScrollEvent(
-          screen_location, event->details().scroll_x(),
+          event_location, event->details().scroll_x(),
           event->details().scroll_y());
     case ui::ET_GESTURE_END:
       return home_launcher_gesture_handler->OnReleaseEvent(
-          screen_location,
+          event_location,
           /*velocity_y=*/base::nullopt);
     default:
       break;
@@ -1345,7 +1361,7 @@ void AppListControllerImpl::OnVisibilityChanged(bool visible,
   // HomeLauncher is only visible when no other app windows are visible,
   // unless we are in the process of animating to (or dragging) the home
   // launcher.
-  if (IsTabletMode())
+  if (IsTabletMode() && ShouldLauncherShowBehindApps())
     real_visibility &= !HasVisibleWindows();
 
   DCHECK_EQ(last_target_visible_, real_visibility)
@@ -1384,8 +1400,9 @@ void AppListControllerImpl::OnVisibilityWillChange(bool visible,
   // HomeLauncher is only visible when no other app windows are visible,
   // unless we are in the process of animating to (or dragging) the home
   // launcher.
-  if (IsTabletMode() && home_launcher_transition_state_ ==
-                            HomeLauncherTransitionState::kFinished) {
+  if (IsTabletMode() && ShouldLauncherShowBehindApps() &&
+      home_launcher_transition_state_ ==
+          HomeLauncherTransitionState::kFinished) {
     real_target_visibility &= !HasVisibleWindows();
   }
 

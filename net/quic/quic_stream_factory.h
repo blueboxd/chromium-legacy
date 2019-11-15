@@ -73,6 +73,7 @@ class QuicChromiumConnectionHelper;
 class QuicCryptoClientStreamFactory;
 class QuicServerInfo;
 class QuicStreamFactory;
+class QuicContext;
 class SocketPerformanceWatcherFactory;
 class SocketTag;
 class TransportSecurityState;
@@ -374,8 +375,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       CTVerifier* cert_transparency_verifier,
       SocketPerformanceWatcherFactory* socket_performance_watcher_factory,
       QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory,
-      quic::QuicRandom* random_generator,
-      quic::QuicClock* clock,
+      QuicContext* context,
       const QuicParams& params);
   ~QuicStreamFactory() override;
 
@@ -643,7 +643,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   CTVerifier* const cert_transparency_verifier_;
   QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory_;
   quic::QuicRandom* random_generator_;  // Unowned.
-  quic::QuicClock* clock_;              // Unowned.
+  const quic::QuicClock* clock_;        // Unowned.
   QuicParams params_;
   QuicClockSkewDetector clock_skew_detector_;
 

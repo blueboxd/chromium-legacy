@@ -443,7 +443,7 @@ TEST_F(WindowTest, MoveCursorToWithTransformRootWindow) {
   gfx::Transform transform;
   transform.Translate(100.0, 100.0);
   transform = transform * OverlayTransformToTransform(
-                              gfx::OVERLAY_TRANSFORM_ROTATE_90, gfx::Size());
+                              gfx::OVERLAY_TRANSFORM_ROTATE_90, gfx::SizeF());
   transform.Scale(2.0, 5.0);
   host()->SetRootTransform(transform);
   host()->MoveCursorToLocationInDIP(gfx::Point(10, 10));
@@ -476,7 +476,7 @@ TEST_F(WindowTest, MoveCursorToWithTransformWindow) {
 
   gfx::Transform transform3;
   transform3 = transform3 * OverlayTransformToTransform(
-                                gfx::OVERLAY_TRANSFORM_ROTATE_90, gfx::Size());
+                                gfx::OVERLAY_TRANSFORM_ROTATE_90, gfx::SizeF());
   w1->SetTransform(transform3);
   w1->MoveCursorTo(gfx::Point(5, 5));
   EXPECT_EQ("5,15",
@@ -485,7 +485,7 @@ TEST_F(WindowTest, MoveCursorToWithTransformWindow) {
   gfx::Transform transform4;
   transform4.Translate(100.0, 100.0);
   transform4 = transform4 * OverlayTransformToTransform(
-                                gfx::OVERLAY_TRANSFORM_ROTATE_90, gfx::Size());
+                                gfx::OVERLAY_TRANSFORM_ROTATE_90, gfx::SizeF());
   transform4.Scale(2.0, 5.0);
   w1->SetTransform(transform4);
   w1->MoveCursorTo(gfx::Point(10, 10));
@@ -511,7 +511,7 @@ TEST_F(WindowTest, MoveCursorToWithComplexTransform) {
   root_transform.Translate(60.0, 70.0);
   root_transform =
       root_transform * OverlayTransformToTransform(
-                           gfx::OVERLAY_TRANSFORM_ROTATE_270, gfx::Size());
+                           gfx::OVERLAY_TRANSFORM_ROTATE_270, gfx::SizeF());
   root_transform.Translate(-50.0, -50.0);
   root_transform.Scale(2.0, 3.0);
 
@@ -1660,8 +1660,8 @@ TEST_F(WindowTest, Transform) {
                                  .bounds());
 
   // Rotate it clock-wise 90 degrees.
-  host()->SetRootTransform(
-      OverlayTransformToTransform(gfx::OVERLAY_TRANSFORM_ROTATE_90, size));
+  host()->SetRootTransform(OverlayTransformToTransform(
+      gfx::OVERLAY_TRANSFORM_ROTATE_90, gfx::SizeF(size)));
 
   // The size should be the transformed size.
   gfx::Size transformed_size(size.height(), size.width());
@@ -1686,8 +1686,8 @@ TEST_F(WindowTest, TransformGesture) {
       delegate.get(), -1234, gfx::Rect(0, 0, 20, 20), root_window()));
 
   // Rotate the root-window clock-wise 90 degrees.
-  host()->SetRootTransform(
-      OverlayTransformToTransform(gfx::OVERLAY_TRANSFORM_ROTATE_90, size));
+  host()->SetRootTransform(OverlayTransformToTransform(
+      gfx::OVERLAY_TRANSFORM_ROTATE_90, gfx::SizeF(size)));
 
   ui::TouchEvent press(
       ui::ET_TOUCH_PRESSED, gfx::Point(size.height() - 10, 10), getTime(),

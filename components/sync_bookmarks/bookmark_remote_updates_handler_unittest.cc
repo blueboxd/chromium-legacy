@@ -168,10 +168,8 @@ class BookmarkRemoteUpdatesHandlerWithInitialMergeTest : public testing::Test {
         tracker_(std::vector<NodeMetadataPair>(),
                  std::make_unique<sync_pb::ModelTypeState>()),
         updates_handler_(bookmark_model_.get(), &favicon_service_, &tracker_) {
-    const syncer::UpdateResponseDataList permanent_folder_updates =
-        CreatePermanentFoldersUpdateData();
-    BookmarkModelMerger(&permanent_folder_updates, bookmark_model_.get(),
-                        &favicon_service_, &tracker_)
+    BookmarkModelMerger(CreatePermanentFoldersUpdateData(),
+                        bookmark_model_.get(), &favicon_service_, &tracker_)
         .Merge();
   }
 
@@ -875,10 +873,8 @@ TEST(BookmarkRemoteUpdatesHandlerTest,
   SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
                                 std::move(model_type_state));
 
-  const syncer::UpdateResponseDataList permanent_folder_updates =
-      CreatePermanentFoldersUpdateData();
   testing::NiceMock<favicon::MockFaviconService> favicon_service;
-  BookmarkModelMerger(&permanent_folder_updates, bookmark_model.get(),
+  BookmarkModelMerger(CreatePermanentFoldersUpdateData(), bookmark_model.get(),
                       &favicon_service, &tracker)
       .Merge();
 
@@ -929,10 +925,8 @@ TEST(BookmarkRemoteUpdatesHandlerReorderUpdatesTest,
   SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
                                 std::move(model_type_state));
 
-  const syncer::UpdateResponseDataList permanent_folder_updates =
-      CreatePermanentFoldersUpdateData();
   testing::NiceMock<favicon::MockFaviconService> favicon_service;
-  BookmarkModelMerger(&permanent_folder_updates, bookmark_model.get(),
+  BookmarkModelMerger(CreatePermanentFoldersUpdateData(), bookmark_model.get(),
                       &favicon_service, &tracker)
       .Merge();
   // Create the bookmark with same encryption key name.

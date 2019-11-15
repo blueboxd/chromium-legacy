@@ -9,7 +9,7 @@
 #include "build/build_config.h"
 #include "media/base/media.h"
 #include "media/blink/blink_platform_with_task_environment.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
+#include "mojo/public/cpp/bindings/binder_map.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/web/blink.h"
 
@@ -61,7 +61,9 @@ class MediaBlinkTestSuite : public base::TestSuite {
 #endif
 
     platform_ = std::make_unique<BlinkPlatformWithTaskEnvironment>();
-    blink::Initialize(platform_.get(), &empty_registry_,
+
+    mojo::BinderMap binders;
+    blink::Initialize(platform_.get(), &binders,
                       platform_->GetMainThreadScheduler());
   }
 
@@ -71,7 +73,6 @@ class MediaBlinkTestSuite : public base::TestSuite {
   }
 
   std::unique_ptr<BlinkPlatformWithTaskEnvironment> platform_;
-  service_manager::BinderRegistry empty_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaBlinkTestSuite);
 };

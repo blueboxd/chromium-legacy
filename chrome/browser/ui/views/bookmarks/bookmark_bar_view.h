@@ -24,7 +24,6 @@
 #include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/menu/menu_types.h"
 #include "ui/views/drag_controller.h"
 
@@ -64,14 +63,36 @@ class LabelButton;
 // creating the BookmarkModel.
 class BookmarkBarView : public views::AccessiblePaneView,
                         public bookmarks::BookmarkModelObserver,
-                        public views::MenuButtonListener,
-                        public views::ButtonListener,
                         public views::ContextMenuController,
                         public views::DragController,
                         public views::AnimationDelegateViews,
                         public BookmarkMenuControllerObserver,
                         public bookmarks::BookmarkBubbleObserver {
  public:
+  // TODO(pbos): Get rid of these proxy classes by unifying a single
+  // ButtonPressed to handle all buttons. This class only exists to forward
+  // events into ::OnButtonPressed.
+  class ButtonListener : public views::ButtonListener {
+   public:
+    explicit ButtonListener(BookmarkBarView* parent);
+    void ButtonPressed(views::Button* source, const ui::Event& event) override;
+
+   private:
+    BookmarkBarView* const parent_;
+  };
+
+  // TODO(pbos): Get rid of these proxy classes by unifying a single
+  // ButtonPressed to handle all buttons. This class only exists to forward
+  // events into ::OnMenuButtonPressed.
+  class MenuButtonListener : public views::ButtonListener {
+   public:
+    explicit MenuButtonListener(BookmarkBarView* parent);
+    void ButtonPressed(views::Button* source, const ui::Event& event) override;
+
+   private:
+    BookmarkBarView* const parent_;
+  };
+
   // The internal view class name.
   static const char kViewClassName[];
 
@@ -222,14 +243,6 @@ class BookmarkBarView : public views::AccessiblePaneView,
                            const gfx::Point& press_pt,
                            const gfx::Point& p) override;
 
-  // views::MenuButtonListener:
-  void OnMenuButtonClicked(views::Button* source,
-                           const gfx::Point& point,
-                           const ui::Event* event) override;
-
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
   // views::ContextMenuController:
   void ShowContextMenuForViewImpl(views::View* source,
                                   const gfx::Point& point,
@@ -249,6 +262,9 @@ class BookmarkBarView : public views::AccessiblePaneView,
   // Creates recent bookmark button and when visible button as well as
   // calculating the preferred height.
   void Init();
+
+  void OnButtonPressed(views::Button* sender, const ui::Event& event);
+  void OnMenuButtonPressed(views::Button* sender, const ui::Event& event);
 
   // NOTE: unless otherwise stated all methods that take an index are in terms
   // of the bookmark bar view. Typically the view index and model index are the
@@ -362,6 +378,10 @@ class BookmarkBarView : public views::AccessiblePaneView,
   // Returns the model index for the bookmark associated with |button|,
   // or size_t{-1} if |button| is not a bookmark button from this bar.
   size_t GetIndexForButton(views::View* button);
+
+  // These forward button callbacks into ::On{Menu}ButtonPressed.
+  ButtonListener button_listener_;
+  MenuButtonListener menu_button_listener_;
 
   // Needed to react to kShowAppsShortcutInBookmarkBar changes.
   PrefChangeRegistrar profile_pref_registrar_;

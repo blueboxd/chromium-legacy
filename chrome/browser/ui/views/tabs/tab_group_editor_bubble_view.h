@@ -76,7 +76,7 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
     const TabGroupId group_;
   };
 
-  ButtonListener menu_button_listener_;
+  ButtonListener button_listener_;
 
   views::Textfield* title_field_;
 

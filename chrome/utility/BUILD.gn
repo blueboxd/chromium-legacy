@@ -13,6 +13,8 @@ import("//printing/buildflags/buildflags.gni")
 
 static_library("utility") {
   sources = [
+    "browser_exposed_utility_interfaces.cc",
+    "browser_exposed_utility_interfaces.h",
     "chrome_content_utility_client.cc",
     "chrome_content_utility_client.h",
     "services.cc",

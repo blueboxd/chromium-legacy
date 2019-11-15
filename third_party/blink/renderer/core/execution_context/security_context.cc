@@ -70,12 +70,12 @@ inline const char* GetImagePolicyHistogramName(
 }  // namespace
 
 // static
-WebVector<unsigned> SecurityContext::SerializeInsecureNavigationSet(
+WTF::Vector<unsigned> SecurityContext::SerializeInsecureNavigationSet(
     const InsecureNavigationsSet& set) {
   // The set is serialized as a sorted array. Sorting it makes it easy to know
   // if two serialized sets are equal.
-  WebVector<unsigned> serialized;
-  serialized.reserve(set.size());
+  WTF::Vector<unsigned> serialized;
+  serialized.ReserveCapacity(set.size());
   for (unsigned host : set)
     serialized.emplace_back(host);
   std::sort(serialized.begin(), serialized.end());

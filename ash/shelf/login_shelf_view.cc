@@ -50,9 +50,9 @@
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/menu_button.h"
-#include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/menu/menu_types.h"
@@ -250,7 +250,7 @@ bool DialogStateGuestAllowed(OobeDialogState state) {
 }  // namespace
 
 class KioskAppsButton : public views::MenuButton,
-                        public views::MenuButtonListener,
+                        public views::ButtonListener,
                         public ui::SimpleMenuModel,
                         public ui::SimpleMenuModel::Delegate {
  public:
@@ -351,18 +351,16 @@ class KioskAppsButton : public views::MenuButton,
              CreateVectorIcon(kShelfAppsButtonIcon, kButtonIconColor));
   }
 
-  // views::MenuButtonListener:
-  void OnMenuButtonClicked(Button* source,
-                           const gfx::Point& point,
-                           const ui::Event* event) override {
+  // views::ButtonListener:
+  void ButtonPressed(Button* source, const ui::Event& event) override {
     if (!is_launch_enabled_)
       return;
     menu_runner_.reset(
         new views::MenuRunner(this, views::MenuRunner::HAS_MNEMONICS));
 
-    gfx::Point origin(point);
-    origin.set_x(point.x() - source->width());
-    origin.set_y(point.y() - source->height());
+    const gfx::Point point = source->GetMenuPosition();
+    const gfx::Point origin(point.x() - source->width(),
+                            point.y() - source->height());
     menu_runner_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(),
                             button_controller(), gfx::Rect(origin, gfx::Size()),
                             views::MenuAnchorPosition::kTopLeft,

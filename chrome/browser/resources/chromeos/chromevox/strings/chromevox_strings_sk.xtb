@@ -127,7 +127,6 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="1845944666972354496">Aktivujte dvojitým klepnutím</translation>
 <translation id="1846771122725914429">Braillov displej s rozhraním Bluetooth</translation>
 <translation id="1865601187525349519">Koniec textu</translation>
-<translation id="1875375785454778375">aktuálny spolupracujúci</translation>
 <translation id="1876229593313240038">dokument</translation>
 <translation id="188130072164734898">Prečítať nahlas aktuálny čas a dátum</translation>
 <translation id="1902396333223336119">Bunka</translation>
@@ -148,7 +147,6 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="2009187674653301682">Text nie je horný index</translation>
 <translation id="2010555995361223825">Ponuky ChromeVox</translation>
 <translation id="2045490512405922022">nezačiarknuté</translation>
-<translation id="2049107626739254612">Informácie o autorovi</translation>
 <translation id="20601713649439366">Žiadny predchádzajúci matematický výraz</translation>
 <translation id="2063539687800151747">Epigraf</translation>
 <translation id="207477615537953741">Sémantika je vypnutá</translation>
@@ -268,7 +266,6 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="2911433807131383493">Otvoriť príručku rozšírenia ChromeVox</translation>
 <translation id="2912405967290226587">Potiahnite troma prstami doprava</translation>
 <translation id="2932083475399492303">Prepnúť typ riadku medzi riadkom štruktúry a rozloženia</translation>
-<translation id="293796669683825859">Komentáre</translation>
 <translation id="2942710183375260152">Tmavobridlicovomodrá</translation>
 <translation id="2943596527105977722">Tmavobéžová</translation>
 <translation id="2944762337049891859">Po načítaní stránku automaticky prečítať.</translation>
@@ -1147,6 +1144,7 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="8548973727659841685">Znak</translation>
 <translation id="8561322612995434619">má kontextové okno</translation>
 <translation id="8571096049907249734">viac volieb</translation>
+<translation id="858006550102277544">Komentár</translation>
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">Ďalšia položka zoznamu</translation>
 <translation id="860150890330522909">začiarkavacie políčko <ph name="NAME" /> je začiarknuté</translation>

@@ -2470,6 +2470,7 @@ enum WebFeature {
   kFetchBodyStreamInServiceWorker = 3086,
   kFetchBodyStreamOutsideServiceWorker = 3087,
   kGetComputedStyleOutsideFlatTree = 3088,
+  kARIADescriptionAttribute = 3089,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

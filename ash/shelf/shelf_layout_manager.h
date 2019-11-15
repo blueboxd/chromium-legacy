@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/home_screen/drag_window_from_shelf_controller.h"
 #include "ash/public/cpp/app_list/app_list_controller_observer.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/wallpaper_controller.h"
@@ -495,6 +496,7 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   void CompleteDrag(const ui::LocatedEvent& event_in_screen);
   void CompleteAppListDrag(const ui::LocatedEvent& event_in_screen);
   void CancelDrag();
+  void CompleteDragWithChangedVisibility();
 
   float GetAppListBackgroundOpacityOnShelfOpacity();
 
@@ -522,7 +524,8 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   void MaybeUpdateWindowDrag(const ui::LocatedEvent& event_in_screen,
                              float scroll_x,
                              float scroll_y);
-  void MaybeEndWindowDrag(const ui::LocatedEvent& event_in_screen);
+  base::Optional<DragWindowFromShelfController::ShelfWindowDragResult>
+  MaybeEndWindowDrag(const ui::LocatedEvent& event_in_screen);
   void MaybeCancelWindowDrag();
   bool IsWindowDragInProgress();
 

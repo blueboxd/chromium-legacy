@@ -3962,7 +3962,7 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderFindText) {
   AXNode* root_node = GetRootNode();
   ComPtr<ITextRangeProvider> range;
 
-  // Test Leaf kStaticText search
+  // Test Leaf kStaticText search.
   GetTextRangeProviderFromTextNode(range, root_node->children()[0]);
   EXPECT_UIA_FIND_TEXT(range, L"some text", false);
   EXPECT_UIA_FIND_TEXT(range, L"SoMe TeXt", true);
@@ -3970,17 +3970,34 @@ TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderFindText) {
   EXPECT_UIA_FIND_TEXT(range, L"more", false);
   EXPECT_UIA_FIND_TEXT(range, L"MoRe", true);
 
-  // Test searching for leaf content from ancestor
+  // Test searching for leaf content from ancestor.
   GetTextRangeProviderFromTextNode(range, root_node);
   EXPECT_UIA_FIND_TEXT(range, L"some text", false);
   EXPECT_UIA_FIND_TEXT(range, L"SoMe TeXt", true);
   EXPECT_UIA_FIND_TEXT(range, L"more text", false);
   EXPECT_UIA_FIND_TEXT(range, L"MoRe TeXt", true);
   EXPECT_UIA_FIND_TEXT(range, L"more", false);
-  // Test finding text that crosses a node boundary
+  // Test finding text that crosses a node boundary.
   EXPECT_UIA_FIND_TEXT(range, L"textmore", false);
-  // Test no match
+  // Test no match.
   EXPECT_UIA_FIND_TEXT_NO_MATCH(range, L"no match", false);
+
+  // Test if range returned is in expected anchor node.
+  GetTextRangeProviderFromTextNode(range, root_node->children()[1]);
+  base::win::ScopedBstr find_string(L"more text");
+  Microsoft::WRL::ComPtr<ITextRangeProvider> text_range_provider_found;
+  EXPECT_HRESULT_SUCCEEDED(
+      range->FindText(find_string, false, false, &text_range_provider_found));
+  Microsoft::WRL::ComPtr<AXPlatformNodeTextRangeProviderWin>
+      text_range_provider_win;
+  text_range_provider_found->QueryInterface(
+      IID_PPV_ARGS(&text_range_provider_win));
+  ASSERT_TRUE(GetStart(text_range_provider_win.Get())->IsTextPosition());
+  ASSERT_EQ(3, GetStart(text_range_provider_win.Get())->anchor_id());
+  ASSERT_EQ(0, GetStart(text_range_provider_win.Get())->text_offset());
+  ASSERT_TRUE(GetEnd(text_range_provider_win.Get())->IsTextPosition());
+  ASSERT_EQ(3, GetEnd(text_range_provider_win.Get())->anchor_id());
+  ASSERT_EQ(9, GetEnd(text_range_provider_win.Get())->text_offset());
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,

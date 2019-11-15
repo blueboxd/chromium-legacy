@@ -46,6 +46,7 @@ URLRequestContext::URLRequestContext(bool allow_copy)
       http_transaction_factory_(nullptr),
       job_factory_(nullptr),
       throttler_manager_(nullptr),
+      quic_context_(nullptr),
       network_quality_estimator_(nullptr),
 #if BUILDFLAG(ENABLE_REPORTING)
       reporting_service_(nullptr),
@@ -174,6 +175,7 @@ void URLRequestContext::CopyFrom(const URLRequestContext* other) {
   set_http_transaction_factory(other->http_transaction_factory_);
   set_job_factory(other->job_factory_);
   set_throttler_manager(other->throttler_manager_);
+  set_quic_context(other->quic_context_);
   set_http_user_agent_settings(other->http_user_agent_settings_);
   set_network_quality_estimator(other->network_quality_estimator_);
 #if BUILDFLAG(ENABLE_REPORTING)

@@ -529,6 +529,14 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   [self waitForPageToFinishLoading];
 }
 
+- (BOOL)webStateWebViewUsesContentInset {
+  return [ChromeEarlGreyAppInterface webStateWebViewUsesContentInset];
+}
+
+- (CGSize)webStateWebViewSize {
+  return [ChromeEarlGreyAppInterface webStateWebViewSize];
+}
+
 #pragma mark - Settings Utilities (EG2)
 
 - (void)setContentSettings:(ContentSetting)setting {

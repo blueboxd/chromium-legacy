@@ -37,7 +37,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
@@ -922,28 +921,6 @@ public class NFCTest {
     }
 
     /**
-     * Test that push operation completes with TIMER_EXPIRED error when operation times-out.
-     */
-    @Test
-    @Feature({"NFCTest"})
-    public void testPushTimeout() {
-        TestNfcImpl nfc = new TestNfcImpl(mContext, mDelegate);
-        mDelegate.invokeCallback();
-        PushResponse mockCallback = mock(PushResponse.class);
-
-        // Set 1 millisecond timeout.
-        nfc.push(createMojoNdefMessage(), createNdefPushOptions(1), mockCallback);
-
-        // Wait for timeout.
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
-
-        // Test that correct error is returned.
-        verify(mockCallback).call(mErrorCaptor.capture());
-        assertNotNull(mErrorCaptor.getValue());
-        assertEquals(NdefErrorType.TIMER_EXPIRED, mErrorCaptor.getValue().errorType);
-    }
-
-    /**
      * Test that multiple Nfc.push() invocations do not disable reader mode.
      */
     @Test
@@ -968,32 +945,31 @@ public class NFCTest {
     }
 
     /**
-     * Test that reader mode is disabled after push operation timeout is expired.
+     * Test that reader mode is disabled and push operation is cancelled with correct error code.
      */
     @Test
     @Feature({"NFCTest"})
-    public void testReaderModeIsDisabledAfterTimeout() {
+    public void testPushInvocationWithCancel() {
         TestNfcImpl nfc = new TestNfcImpl(mContext, mDelegate);
         mDelegate.invokeCallback();
         PushResponse mockCallback = mock(PushResponse.class);
 
-        // Set 1 millisecond timeout.
-        nfc.push(createMojoNdefMessage(), createNdefPushOptions(1), mockCallback);
+        nfc.push(createMojoNdefMessage(), createNdefPushOptions(), mockCallback);
 
         verify(mNfcAdapter, times(1))
                 .enableReaderMode(any(Activity.class), any(ReaderCallback.class), anyInt(),
                         (Bundle) isNull());
 
-        // Wait for timeout.
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        CancelPushResponse mockCancelPushCallback = mock(CancelPushResponse.class);
+        nfc.cancelPush(NdefPushTarget.ANY, mockCancelPushCallback);
 
-        // Reader mode is disabled
+        // Reader mode is disabled.
         verify(mNfcAdapter, times(1)).disableReaderMode(mActivity);
 
         // Test that correct error is returned.
         verify(mockCallback).call(mErrorCaptor.capture());
         assertNotNull(mErrorCaptor.getValue());
-        assertEquals(NdefErrorType.TIMER_EXPIRED, mErrorCaptor.getValue().errorType);
+        assertEquals(NdefErrorType.OPERATION_CANCELLED, mErrorCaptor.getValue().errorType);
     }
 
     /**
@@ -1007,33 +983,24 @@ public class NFCTest {
         mDelegate.invokeCallback();
 
         PushResponse mockCallback1 = mock(PushResponse.class);
-
-        // First push without timeout, must be completed with OPERATION_CANCELLED.
-        nfc.push(createMojoNdefMessage(), createNdefPushOptions(), mockCallback1);
-
         PushResponse mockCallback2 = mock(PushResponse.class);
-
-        // Second push with 1 millisecond timeout, should be cancelled before timer expires,
-        // thus, operation must be completed with OPERATION_CANCELLED.
-        nfc.push(createMojoNdefMessage(), createNdefPushOptions(1), mockCallback2);
+        nfc.push(createMojoNdefMessage(), createNdefPushOptions(), mockCallback1);
+        nfc.push(createMojoNdefMessage(), createNdefPushOptions(), mockCallback2);
 
         verify(mNfcAdapter, times(1))
                 .enableReaderMode(any(Activity.class), any(ReaderCallback.class), anyInt(),
                         (Bundle) isNull());
+
+        // The second push should cancel the first push.
         verify(mockCallback1).call(mErrorCaptor.capture());
         assertNotNull(mErrorCaptor.getValue());
         assertEquals(NdefErrorType.OPERATION_CANCELLED, mErrorCaptor.getValue().errorType);
 
+        // Cancel the second push.
         CancelPushResponse mockCancelPushCallback = mock(CancelPushResponse.class);
         nfc.cancelPush(NdefPushTarget.ANY, mockCancelPushCallback);
 
         // Reader mode is disabled after cancelPush is invoked.
-        verify(mNfcAdapter, times(1)).disableReaderMode(mActivity);
-
-        // Wait for delayed tasks to complete.
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
-
-        // The disableReaderMode is not called after delayed tasks are processed.
         verify(mNfcAdapter, times(1)).disableReaderMode(mActivity);
 
         // Test that correct error is returned.
@@ -1043,75 +1010,31 @@ public class NFCTest {
     }
 
     /**
-     * Test that reader mode is disabled and two push operations with timeout are cancelled
-     * with correct error codes.
-     */
-    @Test
-    @Feature({"NFCTest"})
-    public void testTwoPushInvocationsWithTimeout() {
-        TestNfcImpl nfc = new TestNfcImpl(mContext, mDelegate);
-        mDelegate.invokeCallback();
-
-        PushResponse mockCallback1 = mock(PushResponse.class);
-
-        // First push without timeout, must be completed with OPERATION_CANCELLED.
-        nfc.push(createMojoNdefMessage(), createNdefPushOptions(1), mockCallback1);
-
-        PushResponse mockCallback2 = mock(PushResponse.class);
-
-        // Second push with 1 millisecond timeout, should be cancelled with TIMER_EXPIRED.
-        nfc.push(createMojoNdefMessage(), createNdefPushOptions(1), mockCallback2);
-
-        verify(mNfcAdapter, times(1))
-                .enableReaderMode(any(Activity.class), any(ReaderCallback.class), anyInt(),
-                        (Bundle) isNull());
-
-        // Reader mode enabled for the duration of timeout.
-        verify(mNfcAdapter, times(0)).disableReaderMode(mActivity);
-
-        verify(mockCallback1).call(mErrorCaptor.capture());
-        assertNotNull(mErrorCaptor.getValue());
-        assertEquals(NdefErrorType.OPERATION_CANCELLED, mErrorCaptor.getValue().errorType);
-
-        // Wait for delayed tasks to complete.
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
-
-        // Reader mode is disabled
-        verify(mNfcAdapter, times(1)).disableReaderMode(mActivity);
-
-        // Test that correct error is returned for second push.
-        verify(mockCallback2).call(mErrorCaptor.capture());
-        assertNotNull(mErrorCaptor.getValue());
-        assertEquals(NdefErrorType.TIMER_EXPIRED, mErrorCaptor.getValue().errorType);
-    }
-
-    /**
      * Test that reader mode is not disabled when there is an active watch operation and push
-     * operation timer is expired.
+     * operation operation is cancelled.
      */
     @Test
     @Feature({"NFCTest"})
-    public void testTimeoutDontDisableReaderMode() {
+    public void testCancelledPushDontDisableReaderMode() {
         TestNfcImpl nfc = new TestNfcImpl(mContext, mDelegate);
         mDelegate.invokeCallback();
         WatchResponse mockWatchCallback = mock(WatchResponse.class);
         nfc.watch(createNdefScanOptions(), mNextWatchId, mockWatchCallback);
 
         PushResponse mockPushCallback = mock(PushResponse.class);
-        // Should be cancelled with TIMER_EXPIRED.
-        nfc.push(createMojoNdefMessage(), createNdefPushOptions(1), mockPushCallback);
+        nfc.push(createMojoNdefMessage(), createNdefPushOptions(), mockPushCallback);
 
         verify(mNfcAdapter, times(1))
                 .enableReaderMode(any(Activity.class), any(ReaderCallback.class), anyInt(),
                         (Bundle) isNull());
 
-        // Wait for delayed tasks to complete.
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        CancelPushResponse mockCancelPushCallback = mock(CancelPushResponse.class);
+        nfc.cancelPush(NdefPushTarget.ANY, mockCancelPushCallback);
 
-        // Push was cancelled with TIMER_EXPIRED.
+        // Push was cancelled with OPERATION_CANCELLED.
         verify(mockPushCallback).call(mErrorCaptor.capture());
         assertNotNull(mErrorCaptor.getValue());
-        assertEquals(NdefErrorType.TIMER_EXPIRED, mErrorCaptor.getValue().errorType);
+        assertEquals(NdefErrorType.OPERATION_CANCELLED, mErrorCaptor.getValue().errorType);
 
         verify(mNfcAdapter, times(0)).disableReaderMode(mActivity);
 
@@ -1127,27 +1050,21 @@ public class NFCTest {
     }
 
     /**
-     * Test timeout overflow and negative timeout
+     * Test invalid NdefPushTarget.
      */
     @Test
     @Feature({"NFCTest"})
     public void testInvalidPushOptions() {
         TestNfcImpl nfc = new TestNfcImpl(mContext, mDelegate);
         mDelegate.invokeCallback();
-        PushResponse mockCallback = mock(PushResponse.class);
 
-        // Long overflow
-        nfc.push(createMojoNdefMessage(), createNdefPushOptions(Long.MAX_VALUE + 1), mockCallback);
+        PushResponse mockCallback = mock(PushResponse.class);
+        // NdefPushTarget.PEER is not supported at present.
+        NdefPushOptions pushOptions = createNdefPushOptions();
+        pushOptions.target = NdefPushTarget.PEER;
+        nfc.push(createMojoNdefMessage(), pushOptions, mockCallback);
 
         verify(mockCallback).call(mErrorCaptor.capture());
-        assertNotNull(mErrorCaptor.getValue());
-        assertEquals(NdefErrorType.NOT_SUPPORTED, mErrorCaptor.getValue().errorType);
-
-        // Test negative timeout
-        PushResponse mockCallback2 = mock(PushResponse.class);
-        nfc.push(createMojoNdefMessage(), createNdefPushOptions(-1), mockCallback2);
-
-        verify(mockCallback2).call(mErrorCaptor.capture());
         assertNotNull(mErrorCaptor.getValue());
         assertEquals(NdefErrorType.NOT_SUPPORTED, mErrorCaptor.getValue().errorType);
     }
@@ -1317,16 +1234,8 @@ public class NFCTest {
      * Creates NdefPushOptions with default values.
      */
     private NdefPushOptions createNdefPushOptions() {
-        return createNdefPushOptions(/*timeout=*/Double.POSITIVE_INFINITY);
-    }
-
-    /**
-     * Creates NdefPushOptions with specified timeout.
-     */
-    private NdefPushOptions createNdefPushOptions(double timeout) {
         NdefPushOptions pushOptions = new NdefPushOptions();
         pushOptions.target = NdefPushTarget.ANY;
-        pushOptions.timeout = timeout;
         pushOptions.ignoreRead = false;
         return pushOptions;
     }

@@ -452,10 +452,8 @@ blink::mojom::WebDatabase& WebDatabaseHostImpl::GetWebDatabase() {
             [](int process_id,
                mojo::PendingReceiver<blink::mojom::WebDatabase> receiver) {
               RenderProcessHost* host = RenderProcessHost::FromID(process_id);
-              if (host) {
-                host->BindInterface(blink::mojom::WebDatabase::Name_,
-                                    receiver.PassPipe());
-              }
+              if (host)
+                host->BindReceiver(std::move(receiver));
             },
             process_id_, database_provider_.BindNewPipeAndPassReceiver()));
   }

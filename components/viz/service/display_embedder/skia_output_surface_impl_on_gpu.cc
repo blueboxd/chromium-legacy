@@ -1266,6 +1266,7 @@ void SkiaOutputSurfaceImplOnGpu::ReleaseImageContexts(
   // |image_contexts| goes out of scope here.
 }
 
+#if defined(OS_WIN)
 void SkiaOutputSurfaceImplOnGpu::SetEnableDCLayers(bool enable) {
   if (!MakeCurrent(false /* need_fbo0 */))
     return;
@@ -1276,6 +1277,7 @@ void SkiaOutputSurfaceImplOnGpu::ScheduleDCLayers(
     std::vector<DCLayerOverlay> dc_layers) {
   output_device_->ScheduleDCLayers(std::move(dc_layers));
 }
+#endif
 
 void SkiaOutputSurfaceImplOnGpu::SetGpuVSyncEnabled(bool enabled) {
   output_device_->SetGpuVSyncEnabled(enabled);

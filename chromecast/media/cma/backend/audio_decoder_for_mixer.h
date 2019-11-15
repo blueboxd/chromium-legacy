@@ -77,6 +77,7 @@ class AudioDecoderForMixer
   void OnEosPlayed() override;
   void OnMixerError() override;
 
+  void CreateBufferPool(const AudioConfig& config, int frame_count);
   void CreateMixerInput(const AudioConfig& config, bool start_playback_asap);
   void CleanUpPcm();
   void ResetMixerInputForNewConfig(const AudioConfig& config);
@@ -99,6 +100,7 @@ class AudioDecoderForMixer
 
   Statistics stats_;
 
+  int buffer_pool_frames_ = 0;
   bool pending_buffer_complete_ = false;
   bool mixer_error_ = false;
   bool paused_ = false;

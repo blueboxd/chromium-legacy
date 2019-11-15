@@ -81,7 +81,7 @@ foreach(locale, remoting_locales_with_underscores) {
 bundle_data("remoting_host_resources") {
   sources = [
     "$root_gen_dir/remoting/CREDITS.txt",
-    "remoting_me2me_host.icns",
+    "remoting_host.icns",
   ]
 
   outputs = [
@@ -167,7 +167,7 @@ foreach(locale, remoting_locales_with_underscores) {
 
 bundle_data("remoting_native_messaging_host_resources") {
   sources = [
-    "//remoting/host/mac/remoting_me2me_host.icns",
+    "remoting_host.icns",
 
     # This image is used to badge the lock icon in the authentication dialogs,
     # used for elevating privileges to set up the host. The exact filename is

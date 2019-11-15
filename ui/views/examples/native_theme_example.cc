@@ -87,10 +87,6 @@ std::unique_ptr<View> CreateAllColorsView() {
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_TextOnProminentButtonColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_ButtonBorderColor));
   InsertColorRow(layout,
-                 COLOR_LABEL_ARGS(kColorId_TouchableMenuItemLabelColor));
-  InsertColorRow(layout, COLOR_LABEL_ARGS(
-                             kColorId_ActionableSubmenuVerticalSeparatorColor));
-  InsertColorRow(layout,
                  COLOR_LABEL_ARGS(kColorId_EnabledMenuItemForegroundColor));
   InsertColorRow(layout,
                  COLOR_LABEL_ARGS(kColorId_DisabledMenuItemForegroundColor));

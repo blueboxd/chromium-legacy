@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/core/html_tokenizer_names.h"
 #include "third_party/blink/renderer/core/input_mode_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/core/keywords.h"
 #include "third_party/blink/renderer/core/mathml_names.h"
 #include "third_party/blink/renderer/core/media_type_names.h"
 #include "third_party/blink/renderer/core/performance_entry_names.h"
@@ -103,8 +104,9 @@ void CoreInitializer::Initialize() {
       event_type_names::kNamesCount + fetch_initiator_type_names::kNamesCount +
       font_family_names::kNamesCount + html_tokenizer_names::kNamesCount +
       http_names::kNamesCount + input_mode_names::kNamesCount +
-      input_type_names::kNamesCount + media_feature_names::kNamesCount +
-      media_type_names::kNamesCount + performance_entry_names::kNamesCount;
+      input_type_names::kNamesCount + keywords::kNamesCount +
+      media_feature_names::kNamesCount + media_type_names::kNamesCount +
+      performance_entry_names::kNamesCount;
 
   StringImpl::ReserveStaticStringsCapacityForSize(
       kCoreStaticStringsCount + StringImpl::AllStaticStrings().size());
@@ -129,6 +131,7 @@ void CoreInitializer::Initialize() {
   http_names::Init();
   input_mode_names::Init();
   input_type_names::Init();
+  keywords::Init();
   media_feature_names::Init();
   media_type_names::Init();
   performance_entry_names::Init();

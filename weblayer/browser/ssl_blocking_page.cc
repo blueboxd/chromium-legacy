@@ -19,6 +19,8 @@
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_errors.h"
+#include "weblayer/browser/tab_impl.h"
+#include "weblayer/public/error_page_delegate.h"
 
 namespace weblayer {
 
@@ -41,7 +43,7 @@ class SSLErrorControllerClient
             std::move(metrics_helper),
             nullptr /*prefs*/,
             "en_US",
-            GURL("chrome://newtab")),
+            GURL("about:blank") /*default_safe_page*/),
         cert_error_(cert_error),
         ssl_info_(ssl_info),
         request_url_(request_url) {}
@@ -49,6 +51,11 @@ class SSLErrorControllerClient
   ~SSLErrorControllerClient() override = default;
 
   void GoBack() override {
+    ErrorPageDelegate* delegate =
+        TabImpl::FromWebContents(web_contents_)->error_page_delegate();
+    if (delegate && delegate->OnBackToSafety())
+      return;
+
     SecurityInterstitialControllerClient::GoBackAfterNavigationCommitted();
   }
 

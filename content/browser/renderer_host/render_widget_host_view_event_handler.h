@@ -248,7 +248,7 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
   bool IsKeyLocked(const ui::KeyEvent& event);
 
   // Whether return characters should be passed on to the RenderWidgetHostImpl.
-  bool accept_return_character_;
+  bool accept_return_character_ = false;
 
   // Deactivates keyboard lock when destroyed.
   std::unique_ptr<aura::ScopedKeyboardHook> scoped_keyboard_hook_;
@@ -258,7 +258,7 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
   // mouse position just as mouse lock was entered; the movement they report
   // indicates what the change in position of the mouse would be had it not been
   // locked.
-  bool mouse_locked_;
+  bool mouse_locked_ = false;
 
   // Use to track whether pointer lock is in the unadjusted movement mode and
   // mousemoves are using unadjusted movement value (without mouse
@@ -269,11 +269,11 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
 
   // Whether pinch-to-zoom should be enabled and pinch events forwarded to the
   // renderer.
-  bool pinch_zoom_enabled_;
+  const bool pinch_zoom_enabled_;
 
   // This flag when set ensures that we send over a notification to blink that
-  // the current view has focus. Defaults to false.
-  bool set_focus_on_mouse_down_or_key_event_;
+  // the current view has focus.
+  bool set_focus_on_mouse_down_or_key_event_ = false;
 
   // Used to track the state of the window we're created from. Only used when
   // created fullscreen.
@@ -305,10 +305,10 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
   // Should create |this| and own it.
   RenderWidgetHostViewBase* const host_view_;
   // Optional, used to redirect events to a popup and associated handler.
-  RenderWidgetHostViewBase* popup_child_host_view_;
-  ui::EventHandler* popup_child_event_handler_;
+  RenderWidgetHostViewBase* popup_child_host_view_ = nullptr;
+  ui::EventHandler* popup_child_event_handler_ = nullptr;
   Delegate* const delegate_;
-  aura::Window* window_;
+  aura::Window* window_ = nullptr;
   MouseWheelPhaseHandler mouse_wheel_phase_handler_;
 
   std::unique_ptr<HitTestDebugKeyEventObserver> debug_observer_;

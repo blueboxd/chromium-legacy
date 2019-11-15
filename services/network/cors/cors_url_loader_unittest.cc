@@ -333,10 +333,13 @@ class CorsURLLoaderTest : public testing::Test {
     auto factory_params = network::mojom::URLLoaderFactoryParams::New();
     if (initiator) {
       factory_params->request_initiator_site_lock = *initiator;
-      std::vector<network::mojom::CorsOriginPatternPtr> cloned_patterns;
-      for (const auto& item : factory_bound_allow_patterns_)
-        cloned_patterns.push_back(item.Clone());
-      factory_params->factory_bound_allow_patterns = std::move(cloned_patterns);
+      factory_params->factory_bound_access_patterns =
+          network::mojom::CorsOriginAccessPatterns::New();
+      factory_params->factory_bound_access_patterns->source_origin = *initiator;
+      for (const auto& item : factory_bound_allow_patterns_) {
+        factory_params->factory_bound_access_patterns->allow_patterns.push_back(
+            item.Clone());
+      }
     }
     factory_params->is_trusted = is_trusted;
     factory_params->process_id = process_id;

@@ -9,8 +9,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/common/bind_interface_helpers.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/blink/public/mojom/crash/crash_memory_metrics_reporter.mojom.h"
 
 // Keys used to attach handler to the RenderProcessHost
 const void* const CrashMemoryMetricsCollector::kCrashMemoryMetricsCollectorKey =
@@ -25,17 +25,16 @@ CrashMemoryMetricsCollector::GetFromRenderProcessHost(
 
 CrashMemoryMetricsCollector::CrashMemoryMetricsCollector(
     content::RenderProcessHost* rph) {
-  // Initialize bindings with CrashMemoryMetricsReporter.
-  content::BindInterface(rph, &crash_memory_metrics_reporter_);
-  // Create shared memory and pass it to crash_memory_metrics_reporter.
+  // Create shared memory and pass it to the CrashMemoryMetricsReporter.
   base::UnsafeSharedMemoryRegion shared_metrics_buffer =
       base::UnsafeSharedMemoryRegion::Create(
           sizeof(blink::OomInterventionMetrics));
   metrics_mapping_ = shared_metrics_buffer.Map();
   memset(metrics_mapping_.memory(), 0, sizeof(blink::OomInterventionMetrics));
-  mojo::Remote<blink::mojom::CrashMemoryMetricsReporter>(
-      std::move(crash_memory_metrics_reporter_))
-      ->SetSharedMemory(shared_metrics_buffer.Duplicate());
+
+  mojo::Remote<blink::mojom::CrashMemoryMetricsReporter> reporter;
+  rph->BindReceiver(reporter.BindNewPipeAndPassReceiver());
+  reporter->SetSharedMemory(shared_metrics_buffer.Duplicate());
 }
 
 CrashMemoryMetricsCollector::~CrashMemoryMetricsCollector() = default;

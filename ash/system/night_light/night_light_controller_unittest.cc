@@ -32,6 +32,7 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/test/action_logger_util.h"
 #include "ui/display/manager/test/test_native_display_delegate.h"
+#include "ui/gfx/geometry/vector3d_f.h"
 
 namespace ash {
 
@@ -1269,6 +1270,60 @@ TEST_F(NightLightCrtcTest, TestNoDoubleNightLightEffect) {
   logger_actions = GetLoggerActionsAndClear();
   EXPECT_TRUE(VerifyCrtcMatrix(kId1, temperature, true, logger_actions));
   EXPECT_TRUE(VerifyCrtcMatrix(kId2, temperature, true, logger_actions));
+}
+
+// The following tests are for ambient color temperature conversions
+// needed to go from a powerd ambient temperature reading in Kelvin to three
+// RGB factors that can be used for a CTM to match the ambient color
+// temperature.
+// The table for the mapping was created with internal user studies, refer to
+// kTable in
+// NightLightControllerImpl::RemapAmbientColorTemperature to
+// verify the assertion in the following tests.
+TEST(AmbientTemperature, RemapAmbientColorTemperature) {
+  // Neutral temperature
+  float temperature =
+      NightLightControllerImpl::RemapAmbientColorTemperature(6500);
+  EXPECT_GT(temperature, 6000);
+  EXPECT_LT(temperature, 7000);
+
+  // Warm color temperature
+  temperature = NightLightControllerImpl::RemapAmbientColorTemperature(3000);
+  EXPECT_GT(temperature, 5700);
+  EXPECT_LT(temperature, 6000);
+
+  // Daylight color temperature
+  temperature = NightLightControllerImpl::RemapAmbientColorTemperature(7500);
+  EXPECT_GT(temperature, 6850);
+  EXPECT_LT(temperature, 7450);
+
+  // Extremely high color temperature
+  temperature = NightLightControllerImpl::RemapAmbientColorTemperature(20000);
+  EXPECT_GT(temperature, 7000);
+  EXPECT_LT(temperature, 8000);
+}
+
+// The following tests Kelvin temperatures to RGB scale factors.
+// The values are from the calculation of white point based on Planckian locus.
+// For each RGB vector we compute the distance from the expected value
+// and check it's within a threshold of 0.01f;
+TEST(AmbientTemperature, AmbientTemperatureToRGBScaleFactors) {
+  constexpr float allowed_difference = 0.01f;
+  // Netural temperature
+  gfx::Vector3dF vec =
+      NightLightControllerImpl::ColorScalesFromRemappedTemperatureInKevin(6500);
+  EXPECT_LT((vec - gfx::Vector3dF(1.0f, 1.0f, 1.0f)).Length(),
+            allowed_difference);
+  // Warm
+  vec =
+      NightLightControllerImpl::ColorScalesFromRemappedTemperatureInKevin(5800);
+  EXPECT_LT((vec - gfx::Vector3dF(1.0f, 0.968f, 0.924f)).Length(),
+            allowed_difference);
+  // Daylight
+  vec =
+      NightLightControllerImpl::ColorScalesFromRemappedTemperatureInKevin(7000);
+  EXPECT_LT((vec - gfx::Vector3dF(0.949f, 0.971f, 1.0f)).Length(),
+            allowed_difference);
 }
 
 }  // namespace

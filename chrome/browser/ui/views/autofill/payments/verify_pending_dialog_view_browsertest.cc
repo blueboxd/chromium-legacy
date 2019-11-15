@@ -8,7 +8,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/autofill/payments/verify_pending_dialog_view_impl.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace autofill {
 
@@ -83,7 +82,7 @@ IN_PROC_BROWSER_TEST_F(VerifyPendingDialogViewBrowserTest,
 IN_PROC_BROWSER_TEST_F(VerifyPendingDialogViewBrowserTest, ClickCancelButton) {
   ShowUi(std::string());
   VerifyUi();
-  GetVerifyPendingDialog()->GetDialogClientView()->CancelWindow();
+  GetVerifyPendingDialog()->CancelDialog();
   base::RunLoop().RunUntilIdle();
 }
 

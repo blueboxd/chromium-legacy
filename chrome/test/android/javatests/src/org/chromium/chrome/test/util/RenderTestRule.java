@@ -76,8 +76,7 @@ public class RenderTestRule extends TestWatcher {
      * This is a list of model-SDK version identifiers for devices we maintain golden images for.
      * If render tests are being run on a device of a model-sdk on this list, goldens should exist.
      */
-    // TODO(peconn): Add "Nexus_5X-23" once it's run on CQ - https://crbug.com/731759.
-    private static final String[] RENDER_TEST_MODEL_SDK_PAIRS = {"Nexus_5-19"};
+    private static final String[] RENDER_TEST_MODEL_SDK_PAIRS = {"Nexus_5-19", "Nexus_5X-23"};
 
     private enum ComparisonResult { MATCH, MISMATCH, GOLDEN_NOT_FOUND }
 

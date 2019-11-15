@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "mojo/public/cpp/bindings/binder_map.h"
 #include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
@@ -311,13 +312,12 @@ void ModulesInitializer::DidChangeManifest(LocalFrame& frame) {
     manifest_manager->DidChangeManifest();
 }
 
-void ModulesInitializer::RegisterInterfaces(
-    service_manager::BinderRegistry& registry) {
+void ModulesInitializer::RegisterInterfaces(mojo::BinderMap& binders) {
   DCHECK(Platform::Current());
-  registry.AddInterface(
+  binders.Add(
       ConvertToBaseCallback(CrossThreadBindRepeating(&WebDatabaseImpl::Create)),
       Platform::Current()->GetIOTaskRunner());
-  registry.AddInterface(
+  binders.Add(
       ConvertToBaseCallback(CrossThreadBindRepeating(
           &PeerConnectionTracker::Bind,
           WTF::CrossThreadUnretained(PeerConnectionTracker::GetInstance()))),

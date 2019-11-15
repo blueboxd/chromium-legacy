@@ -676,17 +676,20 @@ void GlassBrowserFrameView::LayoutTitleBar() {
   }
 
   if (web_app_frame_toolbar()) {
-    next_trailing_x = web_app_frame_toolbar()->LayoutInContainer(
-        next_leading_x, next_trailing_x, window_top, titlebar_visual_height);
+    std::pair<int, int> remaining_bounds =
+        web_app_frame_toolbar()->LayoutInContainer(next_leading_x,
+                                                   next_trailing_x, window_top,
+                                                   titlebar_visual_height);
+    next_leading_x = remaining_bounds.first;
+    next_trailing_x = remaining_bounds.second;
   }
 
   if (ShowCustomTitle()) {
-    if (!ShowCustomIcon()) {
-      // This matches native Windows 10 UWP apps that don't have window icons.
-      constexpr int kMinimumTitleLeftBorderMargin = 11;
-      DCHECK_LE(next_leading_x, kMinimumTitleLeftBorderMargin);
-      next_leading_x = kMinimumTitleLeftBorderMargin;
-    }
+    // If nothing has been added to the left, match native Windows 10 UWP apps
+    // that don't have window icons.
+    constexpr int kMinimumTitleLeftBorderMargin = 11;
+    next_leading_x = std::max(next_leading_x, kMinimumTitleLeftBorderMargin);
+
     window_title_->SetText(browser_view()->GetWindowTitle());
     const int max_text_width = std::max(0, next_trailing_x - next_leading_x);
     window_title_->SetBounds(next_leading_x, window_icon_bounds.y(),

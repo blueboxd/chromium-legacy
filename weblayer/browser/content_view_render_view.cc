@@ -115,6 +115,7 @@ void ContentViewRenderView::UpdateLayerTreeHost() {
 
 void ContentViewRenderView::DidSwapFrame(int pending_frames) {
   JNIEnv* env = base::android::AttachCurrentThread();
+  TRACE_EVENT0("weblayer", "Java_ContentViewRenderView_didSwapFrame");
   if (Java_ContentViewRenderView_didSwapFrame(env, java_obj_)) {
     compositor_->SetNeedsRedraw();
   }

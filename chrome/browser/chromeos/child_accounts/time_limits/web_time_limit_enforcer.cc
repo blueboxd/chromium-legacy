@@ -32,6 +32,8 @@ bool IsSchemeFiltered(const GURL& url) {
 
 }  // namespace
 
+namespace chromeos {
+
 // static
 bool WebTimeLimitEnforcer::IsEnabled() {
   return base::FeatureList::IsEnabled(features::kWebTimeLimits);
@@ -90,3 +92,5 @@ void WebTimeLimitEnforcer::ReloadAllWebContents() {
     }
   }
 }
+
+}  // namespace chromeos

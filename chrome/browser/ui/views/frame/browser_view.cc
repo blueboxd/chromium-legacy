@@ -425,6 +425,7 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
     : views::ClientView(nullptr, nullptr), browser_(std::move(browser)) {
   browser_->tab_strip_model()->AddObserver(this);
   immersive_mode_controller_ = chrome::CreateImmersiveModeController();
+  md_observer_.Add(ui::MaterialDesignController::GetInstance());
 }
 
 BrowserView::~BrowserView() {
@@ -547,7 +548,7 @@ bool BrowserView::IsTabStripVisible() const {
     return false;
 
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
-  if (base::FeatureList::IsEnabled(features::kWebUITabStrip))
+  if (WebUITabStripContainerView::UseTouchableTabStrip())
     return false;
 #endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
@@ -2010,7 +2011,7 @@ BrowserView::GetNativeViewHostsForTopControlsSlide() const {
   results.push_back(contents_web_view_->holder());
 
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
-  if (base::FeatureList::IsEnabled(features::kWebUITabStrip))
+  if (webui_tab_strip_)
     results.push_back(webui_tab_strip_->GetNativeViewHost());
 #endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
@@ -2591,22 +2592,6 @@ void BrowserView::InitViews() {
   contents_container_->SetLayoutManager(std::make_unique<ContentsLayoutManager>(
       devtools_web_view_, contents_web_view_));
 
-  views::View* webui_tab_strip_view = nullptr;
-#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
-  if (base::FeatureList::IsEnabled(features::kWebUITabStrip)) {
-    // We use |contents_container_| here so that enabling or disabling
-    // devtools won't affect the tab sizes. We still use only
-    // |contents_web_view_| for screenshotting and will adjust the
-    // screenshot accordingly. Ideally, the thumbnails should be sized
-    // based on a typical tab size, ignoring devtools or e.g. the
-    // downloads bar.
-    webui_tab_strip_ = top_container_->AddChildView(
-        std::make_unique<WebUITabStripContainerView>(browser_.get(),
-                                                     contents_container_));
-    webui_tab_strip_view = webui_tab_strip_;
-  }
-#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
-
   toolbar_ = top_container_->AddChildView(
       std::make_unique<ToolbarView>(browser_.get(), this));
   toolbar_->Init();
@@ -2650,8 +2635,8 @@ void BrowserView::InitViews() {
   auto browser_view_layout = std::make_unique<BrowserViewLayout>(
       std::make_unique<BrowserViewLayoutDelegateImpl>(this),
       GetWidget()->GetNativeView(), this, top_container_,
-      tab_strip_region_view_, tabstrip_, webui_tab_strip_view, toolbar_,
-      infobar_container_, contents_container_, immersive_mode_controller_.get(),
+      tab_strip_region_view_, tabstrip_, toolbar_, infobar_container_,
+      contents_container_, immersive_mode_controller_.get(),
       web_footer_experiment, contents_separator_);
   SetLayoutManager(std::move(browser_view_layout));
 
@@ -2668,6 +2653,33 @@ void BrowserView::InitViews() {
   frame_->OnBrowserViewInitViewsComplete();
   frame_->GetFrameView()->UpdateMinimumSize();
   using_native_frame_ = frame_->ShouldUseNativeFrame();
+
+  MaybeInitializeWebUITabStrip();
+}
+
+void BrowserView::MaybeInitializeWebUITabStrip() {
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+  if (WebUITabStripContainerView::UseTouchableTabStrip()) {
+    if (!webui_tab_strip_) {
+      // We use |contents_container_| here so that enabling or disabling
+      // devtools won't affect the tab sizes. We still use only
+      // |contents_web_view_| for screenshotting and will adjust the
+      // screenshot accordingly. Ideally, the thumbnails should be sized
+      // based on a typical tab size, ignoring devtools or e.g. the
+      // downloads bar.
+      webui_tab_strip_ = top_container_->AddChildView(
+          std::make_unique<WebUITabStripContainerView>(browser_.get(),
+                                                       contents_container_));
+    }
+  } else if (webui_tab_strip_) {
+    top_container_->RemoveChildView(webui_tab_strip_);
+    delete webui_tab_strip_;
+    webui_tab_strip_ = nullptr;
+  }
+  GetBrowserViewLayout()->set_webui_tab_strip(webui_tab_strip_);
+  if (toolbar_)
+    toolbar_->UpdateForWebUITabStrip();
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 }
 
 void BrowserView::LoadingAnimationCallback() {
@@ -3244,6 +3256,12 @@ void BrowserView::OnImmersiveFullscreenExited() {
 
 void BrowserView::OnImmersiveModeControllerDestroyed() {
   ReparentTopContainerForEndOfImmersive();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// BrowserView, ui::MaterialDesignControllerObserver implementation:
+void BrowserView::OnTouchUiChanged() {
+  MaybeInitializeWebUITabStrip();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -30,16 +30,6 @@
 
 namespace device {
 
-GamepadProvider::ClosureAndThread::ClosureAndThread(
-    const base::Closure& c,
-    const scoped_refptr<base::SingleThreadTaskRunner>& m)
-    : closure(c), task_runner(m) {}
-
-GamepadProvider::ClosureAndThread::ClosureAndThread(
-    const ClosureAndThread& other) = default;
-
-GamepadProvider::ClosureAndThread::~ClosureAndThread() = default;
-
 GamepadProvider::GamepadProvider(
     GamepadConnectionChangeClient* connection_change_client,
     std::unique_ptr<service_manager::Connector> service_manager_connector)
@@ -146,10 +136,10 @@ void GamepadProvider::Resume() {
       base::BindOnce(&GamepadProvider::ScheduleDoPoll, Unretained(this)));
 }
 
-void GamepadProvider::RegisterForUserGesture(const base::Closure& closure) {
+void GamepadProvider::RegisterForUserGesture(base::OnceClosure closure) {
   base::AutoLock lock(user_gesture_lock_);
-  user_gesture_observers_.push_back(
-      ClosureAndThread(closure, base::ThreadTaskRunnerHandle::Get()));
+  user_gesture_observers_.emplace_back(std::move(closure),
+                                       base::ThreadTaskRunnerHandle::Get());
 }
 
 void GamepadProvider::OnDevicesChanged(base::SystemMonitor::DeviceType type) {
@@ -428,9 +418,9 @@ bool GamepadProvider::CheckForUserGesture() {
   const Gamepads* pads = gamepad_shared_buffer_->buffer();
   if (GamepadsHaveUserGesture(*pads)) {
     ever_had_user_gesture_ = true;
-    for (size_t i = 0; i < user_gesture_observers_.size(); i++) {
-      user_gesture_observers_[i].task_runner->PostTask(
-          FROM_HERE, user_gesture_observers_[i].closure);
+    for (auto& closure_and_thread : user_gesture_observers_) {
+      closure_and_thread.second->PostTask(FROM_HERE,
+                                          std::move(closure_and_thread.first));
     }
     user_gesture_observers_.clear();
     return true;

@@ -13,8 +13,10 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_controls_state.h"
+#include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "ui/base/window_open_disposition.h"
 #include "weblayer/browser/file_select_helper.h"
+#include "weblayer/browser/i18n_util.h"
 #include "weblayer/browser/isolated_world_ids.h"
 #include "weblayer/browser/navigation_controller_impl.h"
 #include "weblayer/browser/profile_impl.h"
@@ -31,6 +33,7 @@
 #include "base/android/callback_android.h"
 #include "base/android/jni_string.h"
 #include "base/json/json_writer.h"
+#include "base/trace_event/trace_event.h"
 #include "components/embedder_support/android/delegate/color_chooser_android.h"
 #include "weblayer/browser/java/jni/TabImpl_jni.h"
 #include "weblayer/browser/top_controls_container_view.h"
@@ -106,6 +109,12 @@ TabImpl::TabImpl(ProfileImpl* profile,
         profile_->GetBrowserContext());
     web_contents_ = content::WebContents::Create(create_params);
   }
+
+  // TODO(estade): set more preferences, and set them dynamically rather than
+  // just at startup.
+  web_contents_->GetMutableRendererPrefs()->accept_languages =
+      i18n::GetAcceptLangs();
+
   std::unique_ptr<UserData> user_data = std::make_unique<UserData>();
   user_data->controller = this;
   web_contents_->SetUserData(&kWebContentsUserDataKey, std::move(user_data));
@@ -133,6 +142,10 @@ TabImpl* TabImpl::FromWebContents(content::WebContents* web_contents) {
 
 void TabImpl::SetDownloadDelegate(DownloadDelegate* delegate) {
   download_delegate_ = delegate;
+}
+
+void TabImpl::SetErrorPageDelegate(ErrorPageDelegate* delegate) {
+  error_page_delegate_ = delegate;
 }
 
 void TabImpl::SetFullscreenDelegate(FullscreenDelegate* delegate) {
@@ -291,6 +304,7 @@ int TabImpl::GetTopControlsHeight() {
 bool TabImpl::DoBrowserControlsShrinkRendererSize(
     const content::WebContents* web_contents) {
 #if defined(OS_ANDROID)
+  TRACE_EVENT0("weblayer", "Java_TabImpl_doBrowserControlsShrinkRendererSize");
   return Java_TabImpl_doBrowserControlsShrinkRendererSize(
       base::android::AttachCurrentThread(), java_impl_);
 #else

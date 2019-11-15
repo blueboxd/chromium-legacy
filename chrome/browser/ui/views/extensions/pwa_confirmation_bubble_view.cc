@@ -25,7 +25,6 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace {
 
@@ -182,7 +181,7 @@ void ShowPWAInstallBubble(content::WebContents* web_contents,
   views::BubbleDialogDelegateView::CreateBubble(g_bubble_)->Show();
 
   if (g_auto_accept_pwa_for_testing)
-    g_bubble_->GetDialogClientView()->AcceptWindow();
+    g_bubble_->AcceptDialog();
 
   icon->Update();
   DCHECK(icon->GetVisible());

@@ -26,6 +26,14 @@ public class MessageService {
     }
 
     /**
+     * This is a data wrapper. Implement this interface to send notification with data to all the
+     * observers.
+     *
+     * @see #sendAvailabilityNotification(MessageData).
+     */
+    public interface MessageData {}
+
+    /**
      * An interface to be notified about changes to a Message.
      * TODO(meiliang): Need to define this interface in more detail.
      */
@@ -34,8 +42,9 @@ public class MessageService {
          * Called when a message is available.
          * TODO(meiliang): message data is needed.
          * @param type The type of the message.
+         * @param data {@link MessageData} associated with the message.
          */
-        void messageReady(@MessageType int type);
+        void messageReady(@MessageType int type, MessageData data);
 
         /**
          * Called when a message is invalidated.
@@ -70,10 +79,11 @@ public class MessageService {
 
     /**
      * Notifies all {@link MessageObserver} that a message is available.
+     * @param data {@link MessageData} to send to all the observers.
      */
-    public void sendAvailabilityNotification() {
+    public void sendAvailabilityNotification(MessageData data) {
         for (MessageObserver observer : mObservers) {
-            observer.messageReady(mMessageType);
+            observer.messageReady(mMessageType, data);
         }
     }
 

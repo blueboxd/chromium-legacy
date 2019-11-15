@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
@@ -347,7 +348,12 @@ bool CrostiniHandler::CheckEligibilityToChangeArcAdbSideloading() const {
   }
 
   if (user_manager::UserManager::Get()->IsLoggedInAsChildUser()) {
-    DVLOG(1) << "Child account is currently unsupported";
+    DVLOG(1) << "adb sideloading is currently unsupported for child account";
+    return false;
+  }
+
+  if (profile_->GetProfilePolicyConnector()->IsManaged()) {
+    DVLOG(1) << "adb sideloading is currently unsupported for managed user";
     return false;
   }
 

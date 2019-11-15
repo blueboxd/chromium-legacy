@@ -8,9 +8,9 @@
 #include <memory>
 #include <string>
 
-#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
+#include "base/no_destructor.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "components/metrics/enabled_state_provider.h"
@@ -95,7 +95,7 @@ enum class BackfillInstallDate {
 class AwMetricsServiceClient : public metrics::MetricsServiceClient,
                                public metrics::EnabledStateProvider,
                                public content::NotificationObserver {
-  friend struct base::LazyInstanceTraitsBase<AwMetricsServiceClient>;
+  friend class base::NoDestructor<AwMetricsServiceClient>;
 
  public:
   static AwMetricsServiceClient* GetInstance();

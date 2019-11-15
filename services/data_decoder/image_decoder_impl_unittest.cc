@@ -11,8 +11,8 @@
 #include "base/test/task_environment.h"
 #include "gin/array_buffer.h"
 #include "gin/public/isolate_holder.h"
+#include "mojo/public/cpp/bindings/binder_map.h"
 #include "services/data_decoder/image_decoder_impl.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -83,8 +83,8 @@ class BlinkInitializer : public blink::Platform {
     gin::V8Initializer::LoadV8Snapshot(kSnapshotType);
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 
-    service_manager::BinderRegistry empty_registry;
-    blink::CreateMainThreadAndInitialize(this, &empty_registry);
+    mojo::BinderMap binders;
+    blink::CreateMainThreadAndInitialize(this, &binders);
   }
 
   ~BlinkInitializer() override {}

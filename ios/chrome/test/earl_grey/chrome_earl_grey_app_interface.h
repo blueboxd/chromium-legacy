@@ -194,6 +194,13 @@
 // restoring session state.
 + (BOOL)isRestoreSessionInProgress;
 
+// Returns YES if the current WebState's web view uses the content inset to
+// correctly align the top of the content with the bottom of the top bar.
++ (BOOL)webStateWebViewUsesContentInset;
+
+// Returns the size of the current WebState's web view.
++ (CGSize)webStateWebViewSize;
+
 #pragma mark - Sync Utilities (EG2)
 
 // Clears the autofill profile for the given |GUID|.

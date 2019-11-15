@@ -13,6 +13,7 @@
 #include "ios/chrome/browser/infobars/infobar_controller_delegate.h"
 #import "ios/chrome/browser/ui/autofill/save_card_infobar_view.h"
 #import "ios/chrome/browser/ui/autofill/save_card_infobar_view_delegate.h"
+#import "ios/chrome/browser/ui/autofill/save_card_message_with_links.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
@@ -93,7 +94,7 @@ base::string16 GetTitleForButton(ConfirmInfoBarDelegate* delegate,
   // Message, if any.
   base::string16 messageText = self.infoBarDelegate->GetMessageText();
   if (!messageText.empty()) {
-    MessageWithLinks* message = [[MessageWithLinks alloc] init];
+    SaveCardMessageWithLinks* message = [[SaveCardMessageWithLinks alloc] init];
     const base::string16 linkText = self.infoBarDelegate->GetLinkText();
     GURL linkURL = self.infoBarDelegate->GetLinkURL();
 
@@ -132,7 +133,8 @@ base::string16 GetTitleForButton(ConfirmInfoBarDelegate* delegate,
   if (!self.infoBarDelegate->legal_message_lines().empty()) {
     NSMutableArray* legalMessages = [[NSMutableArray alloc] init];
     for (const auto& line : self.infoBarDelegate->legal_message_lines()) {
-      MessageWithLinks* message = [[MessageWithLinks alloc] init];
+      SaveCardMessageWithLinks* message =
+          [[SaveCardMessageWithLinks alloc] init];
       message.messageText = base::SysUTF16ToNSString(line.text());
       NSMutableArray* linkRanges = [[NSMutableArray alloc] init];
       std::vector<GURL> linkURLs;

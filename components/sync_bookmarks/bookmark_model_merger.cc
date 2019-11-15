@@ -160,9 +160,9 @@ BuildUpdatesTreeWithoutTombstonesWithSortedChildren(
   }
 
   // Sort all child updates.
-  for (std::pair<const UpdateResponseData* const,
-                 std::vector<const UpdateResponseData*>>& pair : updates_tree) {
-    std::sort(pair.second.begin(), pair.second.end(), UniquePositionLessThan);
+  for (auto& parent_update_and_chilren : updates_tree) {
+    std::sort(parent_update_and_chilren.second.begin(),
+              parent_update_and_chilren.second.end(), UniquePositionLessThan);
   }
   return updates_tree;
 }
@@ -231,17 +231,18 @@ BuildGUIDToLocalNodeMap(
 }  // namespace
 
 BookmarkModelMerger::BookmarkModelMerger(
-    const UpdateResponseDataList* updates,
+    UpdateResponseDataList updates,
     bookmarks::BookmarkModel* bookmark_model,
     favicon::FaviconService* favicon_service,
     SyncedBookmarkTracker* bookmark_tracker)
-    : updates_(updates),
+    : original_updates_(std::move(updates)),
       bookmark_model_(bookmark_model),
       favicon_service_(favicon_service),
       bookmark_tracker_(bookmark_tracker),
-      updates_tree_(
-          BuildUpdatesTreeWithoutTombstonesWithSortedChildren(updates_)),
-      guid_to_remote_update_map_(BuildGUIDToRemoteUpdateMap(updates_)),
+      updates_tree_(BuildUpdatesTreeWithoutTombstonesWithSortedChildren(
+          &original_updates_)),
+      guid_to_remote_update_map_(
+          BuildGUIDToRemoteUpdateMap(&original_updates_)),
       guid_to_local_node_map_(
           BuildGUIDToLocalNodeMap(bookmark_model_,
                                   guid_to_remote_update_map_)) {
@@ -271,7 +272,7 @@ void BookmarkModelMerger::Merge() {
   // to perform the primary match. If there are multiple match candidates it
   // selects the first one.
   // Associate permanent folders.
-  for (const std::unique_ptr<UpdateResponseData>& update : *updates_) {
+  for (const std::unique_ptr<UpdateResponseData>& update : original_updates_) {
     DCHECK(update);
     const EntityData& update_entity = *update->entity;
     const bookmarks::BookmarkNode* permanent_folder =

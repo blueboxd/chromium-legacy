@@ -24,6 +24,7 @@
 #include "net/http/http_server_properties.h"
 #include "net/http/transport_security_state.h"
 #include "net/proxy_resolution/proxy_retry_info.h"
+#include "net/quic/quic_context.h"
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory_impl.h"
@@ -113,6 +114,9 @@ void TestURLRequestContext::Init() {
     context_storage_.set_http_server_properties(
         std::make_unique<HttpServerProperties>());
   }
+  if (!quic_context()) {
+    context_storage_.set_quic_context(std::make_unique<QuicContext>());
+  }
   // In-memory cookie store.
   if (!cookie_store()) {
     context_storage_.set_cookie_store(std::make_unique<CookieMonster>(
@@ -147,6 +151,7 @@ void TestURLRequestContext::Init() {
     session_context.ssl_config_service = ssl_config_service();
     session_context.http_auth_handler_factory = http_auth_handler_factory();
     session_context.http_server_properties = http_server_properties();
+    session_context.quic_context = quic_context();
     session_context.net_log = net_log();
 #if BUILDFLAG(ENABLE_REPORTING)
     session_context.network_error_logging_service =

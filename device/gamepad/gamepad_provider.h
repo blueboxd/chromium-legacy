@@ -83,7 +83,7 @@ class DEVICE_GAMEPAD_EXPORT GamepadProvider
 
   // Registers the given closure for calling when the user has interacted with
   // the device. This callback will only be issued once.
-  void RegisterForUserGesture(const base::Closure& closure);
+  void RegisterForUserGesture(base::OnceClosure closure);
 
   // base::SystemMonitor::DevicesChangedObserver implementation.
   void OnDevicesChanged(base::SystemMonitor::DeviceType type) override;
@@ -157,15 +157,8 @@ class DEVICE_GAMEPAD_EXPORT GamepadProvider
   // thread, the message loop proxies will normally just be the I/O thread.
   // However, this will be the main thread for unit testing.
   base::Lock user_gesture_lock_;
-  struct ClosureAndThread {
-    ClosureAndThread(const base::Closure& c,
-                     const scoped_refptr<base::SingleThreadTaskRunner>& m);
-    ClosureAndThread(const ClosureAndThread& other);
-    ~ClosureAndThread();
-
-    base::Closure closure;
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner;
-  };
+  using ClosureAndThread =
+      std::pair<base::OnceClosure, scoped_refptr<base::SingleThreadTaskRunner>>;
   using UserGestureObserverVector = std::vector<ClosureAndThread>;
   UserGestureObserverVector user_gesture_observers_;
 

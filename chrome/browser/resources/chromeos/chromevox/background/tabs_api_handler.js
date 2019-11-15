@@ -60,9 +60,6 @@ cvox.TabsApiHandler.prototype = {
    * @param {Object} tab
    */
   onCreated: function(tab) {
-    if (!cvox.ChromeVox.isActive) {
-      return;
-    }
     if (cvox.TabsApiHandler.shouldOutputSpeechAndBraille) {
       cvox.ChromeVox.tts.speak(
           this.msg_('chrome_tab_created'), cvox.QueueMode.FLUSH,
@@ -78,9 +75,6 @@ cvox.TabsApiHandler.prototype = {
    * @param {Object} tab
    */
   onRemoved: function(tab) {
-    if (!cvox.ChromeVox.isActive) {
-      return;
-    }
     cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.OBJECT_CLOSE);
 
     chrome.tabs.query({active: true}, function(tabs) {
@@ -96,9 +90,6 @@ cvox.TabsApiHandler.prototype = {
    * @param {Object} activeInfo
    */
   onActivated: function(activeInfo) {
-    if (!cvox.ChromeVox.isActive) {
-      return;
-    }
     this.updateLoadingSoundsWhenTabFocusChanges_(activeInfo.tabId);
     chrome.tabs.get(activeInfo.tabId, function(tab) {
       if (tab.status == 'loading') {
@@ -141,9 +132,6 @@ cvox.TabsApiHandler.prototype = {
    * @param {Object} selectInfo
    */
   onUpdated: function(tabId, selectInfo) {
-    if (!cvox.ChromeVox.isActive) {
-      return;
-    }
     chrome.tabs.get(tabId, function(tab) {
       if (!tab.active) {
         return;

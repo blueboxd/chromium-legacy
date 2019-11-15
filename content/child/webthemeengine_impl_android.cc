@@ -43,6 +43,7 @@ static void GetNativeThemeExtraParams(
       native_theme_extra_params->button.checked = extra_params->button.checked;
       native_theme_extra_params->button.indeterminate =
           extra_params->button.indeterminate;
+      native_theme_extra_params->button.zoom = extra_params->button.zoom;
       break;
     case WebThemeEngine::kPartRadio:
       native_theme_extra_params->button.checked = extra_params->button.checked;
@@ -80,6 +81,10 @@ static void GetNativeThemeExtraParams(
           extra_params->menu_list.background_color;
       break;
     case WebThemeEngine::kPartSliderTrack:
+      native_theme_extra_params->slider.thumb_x = extra_params->slider.thumb_x;
+      native_theme_extra_params->slider.thumb_y = extra_params->slider.thumb_y;
+      native_theme_extra_params->slider.zoom = extra_params->slider.zoom;
+      FALLTHROUGH;
     case WebThemeEngine::kPartSliderThumb:
       native_theme_extra_params->slider.vertical =
           extra_params->slider.vertical;

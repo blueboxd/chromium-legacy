@@ -17,16 +17,16 @@
 namespace caspian {
 class TreeBuilder {
  public:
-  TreeBuilder(BaseSizeInfo* size_info,
-              bool group_by_component,
-              std::vector<std::function<bool(const Symbol&)>> filters);
+  TreeBuilder(SizeInfo* size_info);
+  TreeBuilder(DeltaSizeInfo* size_info);
   ~TreeBuilder();
-  void Build();
+  void Build(bool group_by_component,
+             std::vector<std::function<bool(const BaseSymbol&)>> filters);
   Json::Value Open(const char* path);
 
  private:
   void AddFileEntry(const std::string_view source_path,
-                    const std::vector<const Symbol*>& symbols);
+                    const std::vector<const BaseSymbol*>& symbols);
 
   TreeNode* GetOrMakeParentNode(TreeNode* child_node);
 
@@ -34,7 +34,7 @@ class TreeBuilder {
 
   ContainerType ContainerTypeFromChild(std::string_view child_id_path) const;
 
-  bool ShouldIncludeSymbol(const Symbol& symbol) const;
+  bool ShouldIncludeSymbol(const BaseSymbol& symbol) const;
 
   // Merges dex method symbols into containers based on the class of the dex
   // method.
@@ -45,7 +45,6 @@ class TreeBuilder {
   // node.
   std::unordered_map<std::string_view, TreeNode*> _parents;
 
-  BaseSizeInfo* size_info_ = nullptr;
   // Contained TreeNode hold lightweight string_views to fields in SizeInfo.
   // If grouping by component, this isn't possible: TreeNode id_paths are not
   // substrings of SizeInfo-owned strings. In that case, the strings are stored
@@ -57,7 +56,8 @@ class TreeBuilder {
   // Note that we split paths on '/' no matter the value of separator, since
   // when grouping by component, paths look like Component>path/to/file.
   char sep_;
-  std::vector<std::function<bool(const Symbol&)>> filters_;
+  std::vector<std::function<bool(const BaseSymbol&)>> filters_;
+  std::vector<const BaseSymbol*> symbols_;
 };  // TreeBuilder
 }  // namespace caspian
 #endif  // TOOLS_BINARY_SIZE_LIBSUPERSIZE_CASPIAN_TREE_BUILDER_H_

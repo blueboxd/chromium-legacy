@@ -33,4 +33,14 @@ IN_PROC_BROWSER_TEST_F(ErrorPageBrowserTest, NameNotResolved) {
 #endif
 }
 
+// Verifies that navigating to a URL that returns a 404 with an empty body
+// results in the navigation failing.
+IN_PROC_BROWSER_TEST_F(ErrorPageBrowserTest, 404WithEmptyBody) {
+  EXPECT_TRUE(embedded_test_server()->Start());
+
+  GURL error_page_url = embedded_test_server()->GetURL("/empty404.html");
+
+  NavigateAndWaitForFailure(error_page_url, shell());
+}
+
 }  // namespace weblayer

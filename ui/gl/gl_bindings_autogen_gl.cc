@@ -355,6 +355,8 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
       gfx::HasExtension(extensions, "GL_CHROMIUM_glgetstringi_hack");
   ext.b_GL_CHROMIUM_path_rendering =
       gfx::HasExtension(extensions, "GL_CHROMIUM_path_rendering");
+  ext.b_GL_EXT_base_instance =
+      gfx::HasExtension(extensions, "GL_EXT_base_instance");
   ext.b_GL_EXT_blend_func_extended =
       gfx::HasExtension(extensions, "GL_EXT_blend_func_extended");
   ext.b_GL_EXT_clear_texture =
@@ -938,7 +940,15 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glDrawArraysInstancedANGLE"));
   }
 
-  if (ext.b_GL_ANGLE_base_vertex_base_instance) {
+  if (ver->IsAtLeastGL(4u, 2u)) {
+    fn.glDrawArraysInstancedBaseInstanceANGLEFn =
+        reinterpret_cast<glDrawArraysInstancedBaseInstanceANGLEProc>(
+            GetGLProcAddress("glDrawArraysInstancedBaseInstance"));
+  } else if (ext.b_GL_EXT_base_instance) {
+    fn.glDrawArraysInstancedBaseInstanceANGLEFn =
+        reinterpret_cast<glDrawArraysInstancedBaseInstanceANGLEProc>(
+            GetGLProcAddress("glDrawArraysInstancedBaseInstanceEXT"));
+  } else if (ext.b_GL_ANGLE_base_vertex_base_instance) {
     fn.glDrawArraysInstancedBaseInstanceANGLEFn =
         reinterpret_cast<glDrawArraysInstancedBaseInstanceANGLEProc>(
             GetGLProcAddress("glDrawArraysInstancedBaseInstanceANGLE"));
@@ -979,7 +989,15 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glDrawElementsInstancedANGLE"));
   }
 
-  if (ext.b_GL_ANGLE_base_vertex_base_instance) {
+  if (ver->IsAtLeastGL(4u, 2u)) {
+    fn.glDrawElementsInstancedBaseVertexBaseInstanceANGLEFn = reinterpret_cast<
+        glDrawElementsInstancedBaseVertexBaseInstanceANGLEProc>(
+        GetGLProcAddress("glDrawElementsInstancedBaseVertexBaseInstance"));
+  } else if (ext.b_GL_EXT_base_instance) {
+    fn.glDrawElementsInstancedBaseVertexBaseInstanceANGLEFn = reinterpret_cast<
+        glDrawElementsInstancedBaseVertexBaseInstanceANGLEProc>(
+        GetGLProcAddress("glDrawElementsInstancedBaseVertexBaseInstanceEXT"));
+  } else if (ext.b_GL_ANGLE_base_vertex_base_instance) {
     fn.glDrawElementsInstancedBaseVertexBaseInstanceANGLEFn = reinterpret_cast<
         glDrawElementsInstancedBaseVertexBaseInstanceANGLEProc>(
         GetGLProcAddress("glDrawElementsInstancedBaseVertexBaseInstanceANGLE"));

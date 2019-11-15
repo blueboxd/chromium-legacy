@@ -8,9 +8,9 @@
 #include "base/callback.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view_delegate_views.h"
 #include "ui/views/context_menu_controller.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_controller.h"
-#include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/drag_controller.h"
 #include "ui/views/view.h"
@@ -23,7 +23,7 @@ class ExtensionContextMenuController;
 // action in the BrowserActionsContainer.
 class ToolbarActionView : public views::MenuButton,
                           public ToolbarActionViewDelegateViews,
-                          public views::MenuButtonListener {
+                          public views::ButtonListener {
  public:
   // Need DragController here because ToolbarActionView could be
   // dragged/dropped.
@@ -76,10 +76,8 @@ class ToolbarActionView : public views::MenuButton,
   content::WebContents* GetCurrentWebContents() const override;
   void UpdateState() override;
 
-  // views::MenuButtonListener:
-  void OnMenuButtonClicked(views::Button* source,
-                           const gfx::Point& point,
-                           const ui::Event* event) override;
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* source, const ui::Event& event) override;
 
   ToolbarActionViewController* view_controller() {
     return view_controller_;

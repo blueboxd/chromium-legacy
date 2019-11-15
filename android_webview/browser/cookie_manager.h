@@ -10,7 +10,7 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/containers/circular_deque.h"
-#include "base/lazy_instance.h"
+#include "base/no_destructor.h"
 #include "base/thread_annotations.h"
 #include "base/threading/thread.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -154,7 +154,7 @@ class CookieManager {
   base::FilePath GetCookieStorePath();
 
  private:
-  friend struct base::LazyInstanceTraitsBase<CookieManager>;
+  friend class base::NoDestructor<CookieManager>;
 
   CookieManager();
   ~CookieManager();

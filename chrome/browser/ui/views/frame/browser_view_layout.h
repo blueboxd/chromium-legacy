@@ -54,7 +54,6 @@ class BrowserViewLayout : public views::LayoutManager {
                     views::View* top_container,
                     views::View* tab_strip_region_view,
                     TabStrip* tab_strip,
-                    views::View* webui_tab_strip,
                     views::View* toolbar,
                     InfoBarContainerView* infobar_container,
                     views::View* contents_container,
@@ -65,6 +64,9 @@ class BrowserViewLayout : public views::LayoutManager {
 
   // Sets or updates views that are not available when |this| is initialized.
   void set_tab_strip(TabStrip* tab_strip) { tab_strip_ = tab_strip; }
+  void set_webui_tab_strip(views::View* webui_tab_strip) {
+    webui_tab_strip_ = webui_tab_strip;
+  }
   void set_bookmark_bar(BookmarkBarView* bookmark_bar) {
     bookmark_bar_ = bookmark_bar;
   }
@@ -144,7 +146,6 @@ class BrowserViewLayout : public views::LayoutManager {
   // testing much easier.
   views::View* const top_container_;
   views::View* const tab_strip_region_view_;
-  views::View* const webui_tab_strip_;
   views::View* const toolbar_;
   InfoBarContainerView* const infobar_container_;
   views::View* const contents_container_;
@@ -152,6 +153,7 @@ class BrowserViewLayout : public views::LayoutManager {
   views::View* const web_footer_experiment_;
   views::View* const contents_separator_;
 
+  views::View* webui_tab_strip_ = nullptr;
   TabStrip* tab_strip_ = nullptr;
   BookmarkBarView* bookmark_bar_ = nullptr;
   views::View* download_shelf_ = nullptr;

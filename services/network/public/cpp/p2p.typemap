@@ -10,7 +10,7 @@ traits_headers = [ "//services/network/public/cpp/p2p_param_traits.h" ]
 
 public_deps = [
   "//services/network/public/mojom:mutable_network_traffic_annotation_interface",
-  "//third_party/webrtc/rtc_base",
+  "//third_party/webrtc_overrides:webrtc_component",
 ]
 
 type_mappings = [

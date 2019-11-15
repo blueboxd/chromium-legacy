@@ -102,7 +102,7 @@ bool GamepadService::ConsumerBecameActive(GamepadConsumer* consumer) {
   } else if (!gesture_callback_pending_) {
     gesture_callback_pending_ = true;
     provider_->RegisterForUserGesture(
-        base::Bind(&GamepadService::OnUserGesture, base::Unretained(this)));
+        base::BindOnce(&GamepadService::OnUserGesture, base::Unretained(this)));
   }
 
   if (num_active_consumers_++ == 0)
@@ -150,10 +150,10 @@ bool GamepadService::RemoveConsumer(GamepadConsumer* consumer) {
   return true;
 }
 
-void GamepadService::RegisterForUserGesture(const base::Closure& closure) {
+void GamepadService::RegisterForUserGesture(base::OnceClosure closure) {
   DCHECK(consumers_.size() > 0);
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
-  provider_->RegisterForUserGesture(closure);
+  provider_->RegisterForUserGesture(std::move(closure));
 }
 
 void GamepadService::Terminate() {

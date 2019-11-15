@@ -13,6 +13,8 @@ assert(is_linux || is_wasm)
 
 source_set("caspian-lib") {
   sources = [
+    "diff.cc",
+    "diff.h",
     "file_format.cc",
     "file_format.h",
     "function_signature.cc",

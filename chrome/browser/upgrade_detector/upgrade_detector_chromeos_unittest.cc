@@ -69,6 +69,9 @@ class UpgradeDetectorChromeosTest : public ::testing::Test {
       : utc_(icu::TimeZone::createTimeZone("Etc/GMT")),
         task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         scoped_local_state_(TestingBrowserProcess::GetGlobal()) {
+    // By default, test with the relaunch policy enabled.
+    SetIsRelaunchNotificationPolicyEnabled(true /* enabled */);
+
     // Disable the detector's check to see if autoupdates are inabled.
     // Without this, tests put the detector into an invalid state by detecting
     // upgrades before the detection task completes.
@@ -100,6 +103,18 @@ class UpgradeDetectorChromeosTest : public ::testing::Test {
     status.set_current_operation(update_engine::Operation::UPDATED_NEED_REBOOT);
     fake_update_engine_client_->set_default_status(status);
     fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  }
+
+  // Sets the browser.relaunch_notification preference in Local State to
+  // |value|.
+  void SetIsRelaunchNotificationPolicyEnabled(bool enabled) {
+    constexpr int kChromeMenuOnly = 0;     // Disabled.
+    constexpr int kRecommendedBubble = 1;  // Enabled.
+
+    scoped_local_state_.Get()->SetManagedPref(
+        prefs::kRelaunchNotification,
+        std::make_unique<base::Value>(enabled ? kRecommendedBubble
+                                              : kChromeMenuOnly));
   }
 
   // Sets the browser.relaunch_notification_period preference in Local State to
@@ -144,6 +159,21 @@ class UpgradeDetectorChromeosTest : public ::testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(UpgradeDetectorChromeosTest);
 };
+
+TEST_F(UpgradeDetectorChromeosTest, PolicyNotEnabled) {
+  // Disable the relaunch notification policy as a whole.
+  SetIsRelaunchNotificationPolicyEnabled(false /* enabled */);
+
+  TestUpgradeDetectorChromeos upgrade_detector(GetMockClock(),
+                                               GetMockTickClock());
+  upgrade_detector.Init();
+
+  // The observer is expected to be notified that an upgrade is recommended.
+  ::testing::StrictMock<MockUpgradeObserver> mock_observer(&upgrade_detector);
+  EXPECT_CALL(mock_observer, OnUpgradeRecommended());
+
+  NotifyUpdateReadyToInstall();
+}
 
 TEST_F(UpgradeDetectorChromeosTest, TestHighAnnoyanceDeadline) {
   TestUpgradeDetectorChromeos upgrade_detector(GetMockClock(),

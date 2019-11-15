@@ -58,6 +58,8 @@ constexpr LocalizedString kLocalizedStringsWithoutPlaceholders[] = {
      IDS_MULTIDEVICE_SETUP_SETUP_SUCCEEDED_PAGE_MESSAGE},
     {"startSetupPageHeader", IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_HEADER},
     {"tryAgain", IDS_MULTIDEVICE_SETUP_TRY_AGAIN_LABEL},
+    {"dialogAccessibilityTitle",
+     IDS_MULTIDEVICE_SETUP_DIALOG_ACCESSIBILITY_TITLE},
 };
 
 struct LocalizedStringWithName {

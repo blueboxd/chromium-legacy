@@ -27,6 +27,8 @@ QualifiedName GetCorrespondingARIAAttribute(AOMStringProperty property) {
       return html_names::kAriaCheckedAttr;
     case AOMStringProperty::kCurrent:
       return html_names::kAriaCurrentAttr;
+    case AOMStringProperty::kDescription:
+      return html_names::kAriaDescriptionAttr;
     case AOMStringProperty::kHasPopUp:
       return html_names::kAriaHaspopupAttr;
     case AOMStringProperty::kInvalid:
@@ -644,6 +646,15 @@ void AccessibleNode::setDescribedBy(AccessibleNodeList* described_by) {
   NotifyAttributeChanged(html_names::kAriaDescribedbyAttr);
 }
 
+AtomicString AccessibleNode::description() const {
+  return GetProperty(AOMStringProperty::kDescription);
+}
+
+void AccessibleNode::setDescription(const AtomicString& description) {
+  SetStringProperty(AOMStringProperty::kDescription, description);
+  NotifyAttributeChanged(html_names::kAriaDescriptionAttr);
+}
+
 AccessibleNode* AccessibleNode::details() const {
   return GetProperty(element_, AOMRelationProperty::kDetails);
 }
@@ -1042,6 +1053,7 @@ bool AccessibleNode::IsStringTokenProperty(AOMStringProperty property) {
     case AOMStringProperty::kRelevant:
     case AOMStringProperty::kSort:
       return true;
+    case AOMStringProperty::kDescription:
     case AOMStringProperty::kKeyShortcuts:
     case AOMStringProperty::kLabel:
     case AOMStringProperty::kPlaceholder:

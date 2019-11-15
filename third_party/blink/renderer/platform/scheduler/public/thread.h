@@ -66,7 +66,11 @@ struct PLATFORM_EXPORT ThreadCreationParams {
   ThreadType thread_type;
   const char* name;
   FrameOrWorkerScheduler* frame_or_worker_scheduler;  // NOT OWNED
+
+  // Do NOT set the thread priority for non-WebAudio usages. Please consult
+  // scheduler-dev@ first in order to use an elevated thread priority.
   base::ThreadPriority thread_priority = base::ThreadPriority::NORMAL;
+
   bool supports_gc = false;
 };
 
@@ -90,10 +94,6 @@ class PLATFORM_EXPORT Thread {
   // Creates a new thread. This may be called from a non-main thread (e.g.
   // nested Web workers).
   static std::unique_ptr<Thread> CreateThread(const ThreadCreationParams&);
-
-  // Creates a WebAudio-specific thread with the elevated priority. Do NOT use
-  // for any other purpose.
-  static std::unique_ptr<Thread> CreateWebAudioThread();
 
   // Create and save (as a global variable) the compositor thread. The thread
   // will be accessible through CompositorThread().

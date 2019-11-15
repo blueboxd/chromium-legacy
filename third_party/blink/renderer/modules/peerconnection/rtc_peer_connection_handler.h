@@ -344,6 +344,11 @@ class MODULES_EXPORT RTCPeerConnectionHandler
   // forward callbacks to blink.
   bool is_closed_;
 
+  // Transition from kHaveLocalOffer to kHaveRemoteOffer indicates implicit
+  // rollback in which case we need to also make visiting of kStable observable.
+  webrtc::PeerConnectionInterface::SignalingState previous_signaling_state_ =
+      webrtc::PeerConnectionInterface::kStable;
+
   // |dependency_factory_| is a raw pointer, and is valid for the lifetime of
   // RenderThreadImpl.
   blink::PeerConnectionDependencyFactory* const dependency_factory_;
@@ -368,6 +373,9 @@ class MODULES_EXPORT RTCPeerConnectionHandler
   std::vector<std::unique_ptr<blink::RTCRtpReceiverImpl>> rtp_receivers_;
   // Blink layer correspondents of |webrtc::RtpTransceiverInterface|.
   std::vector<std::unique_ptr<blink::RTCRtpTransceiverImpl>> rtp_transceivers_;
+  // A snapshot of transceiver ids taken before the last transition, used to
+  // detect any removals during rollback.
+  blink::WebVector<uintptr_t> previous_transceiver_ids_;
 
   base::WeakPtr<PeerConnectionTracker> peer_connection_tracker_;
 

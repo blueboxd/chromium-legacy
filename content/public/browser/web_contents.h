@@ -493,9 +493,11 @@ class WebContents : public PageNavigator,
   // of decrement calls.  |capture_size| specifies the capturer's video
   // resolution, but can be empty to mean "unspecified."  The first screen
   // capturer that provides a non-empty |capture_size| will override the value
-  // returned by GetPreferredSize() until all captures have ended.
-  virtual void IncrementCapturerCount(const gfx::Size& capture_size) = 0;
-  virtual void DecrementCapturerCount() = 0;
+  // returned by GetPreferredSize() until all captures have ended. |stay_hidden|
+  // determines whether to treat the underlying page as user-visible or not.
+  virtual void IncrementCapturerCount(const gfx::Size& capture_size,
+                                      bool stay_hidden) = 0;
+  virtual void DecrementCapturerCount(bool stay_hidden) = 0;
   virtual bool IsBeingCaptured() = 0;
 
   // Indicates/Sets whether all audio output from this WebContents is muted.

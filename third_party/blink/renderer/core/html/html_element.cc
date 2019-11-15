@@ -582,6 +582,8 @@ AttributeTriggers* HTMLElement::TriggersForAttributeName(
        kNoEvent, nullptr},
       {html_names::kAriaDescribedbyAttr, WebFeature::kARIADescribedByAttribute,
        kNoEvent, nullptr},
+      {html_names::kAriaDescriptionAttr, WebFeature::kARIADescriptionAttribute,
+       kNoEvent, nullptr},
       {html_names::kAriaDetailsAttr, WebFeature::kARIADetailsAttribute,
        kNoEvent, nullptr},
       {html_names::kAriaDisabledAttr, WebFeature::kARIADisabledAttribute,

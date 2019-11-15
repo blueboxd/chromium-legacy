@@ -2506,6 +2506,7 @@ void RenderProcessHostImpl::CreateURLLoaderFactoryForRendererProcess(
   // We may not be able to allow powerful APIs such as memory measurement APIs
   // (see https://crbug.com/887967) without removing this call.
   CreateURLLoaderFactoryInternal(
+      request_initiator_site_lock.value_or(url::Origin()),
       request_initiator_site_lock,
       network::mojom::CrossOriginEmbedderPolicy::kNone,
       nullptr /* preferences */, net::NetworkIsolationKey(),
@@ -2515,31 +2516,35 @@ void RenderProcessHostImpl::CreateURLLoaderFactoryForRendererProcess(
 
 void RenderProcessHostImpl::CreateURLLoaderFactory(
     const url::Origin& origin,
+    const url::Origin& main_world_origin,
     network::mojom::CrossOriginEmbedderPolicy embedder_policy,
     const WebPreferences* preferences,
     const net::NetworkIsolationKey& network_isolation_key,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
         header_client,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
-  CreateURLLoaderFactoryInternal(
-      origin, embedder_policy, preferences, network_isolation_key,
-      std::move(header_client), std::move(receiver), false /* is_trusted */);
+  CreateURLLoaderFactoryInternal(origin, main_world_origin, embedder_policy,
+                                 preferences, network_isolation_key,
+                                 std::move(header_client), std::move(receiver),
+                                 false /* is_trusted */);
 }
 
 void RenderProcessHostImpl::CreateTrustedURLLoaderFactory(
     const url::Origin& origin,
+    const url::Origin& main_world_origin,
     network::mojom::CrossOriginEmbedderPolicy embedder_policy,
     const WebPreferences* preferences,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
         header_client,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver) {
-  CreateURLLoaderFactoryInternal(origin, embedder_policy, preferences,
-                                 base::nullopt, std::move(header_client),
-                                 std::move(receiver), true /* is_trusted */);
+  CreateURLLoaderFactoryInternal(
+      origin, main_world_origin, embedder_policy, preferences, base::nullopt,
+      std::move(header_client), std::move(receiver), true /* is_trusted */);
 }
 
 void RenderProcessHostImpl::CreateURLLoaderFactoryInternal(
-    const base::Optional<url::Origin>& origin,
+    const url::Origin& origin,
+    const base::Optional<url::Origin>& main_world_origin,
     network::mojom::CrossOriginEmbedderPolicy embedder_policy,
     const WebPreferences* preferences,
     const base::Optional<net::NetworkIsolationKey>& network_isolation_key,
@@ -2549,20 +2554,20 @@ void RenderProcessHostImpl::CreateURLLoaderFactoryInternal(
     bool is_trusted) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // "chrome-guest://..." is never used as a |request_initiator|.  Therefore
-  // it doesn't make sense to associate a URLLoaderFactory with a
-  // chrome-guest-based |origin|.
-  DCHECK(!origin.has_value() || origin.value().scheme() != kGuestScheme);
+  // "chrome-guest://..." is never used as a main or isolated world origin.
+  DCHECK(origin.scheme() != kGuestScheme);
+  DCHECK(!main_world_origin.has_value() ||
+         main_world_origin->scheme() != kGuestScheme);
 
   network::mojom::NetworkContext* network_context =
       storage_partition_impl_->GetNetworkContext();
   mojo::PendingRemote<network::mojom::URLLoaderFactory>
       embedder_provided_factory;
-  if (origin.has_value()) {
+  if (main_world_origin.has_value()) {
     embedder_provided_factory =
         GetContentClient()->browser()->CreateURLLoaderFactoryForNetworkRequests(
-            this, network_context, &header_client, origin.value(),
-            network_isolation_key);
+            this, network_context, &header_client, origin,
+            main_world_origin.value(), network_isolation_key);
   }
   if (embedder_provided_factory) {
     mojo::FusePipes(std::move(receiver), std::move(embedder_provided_factory));
@@ -2570,7 +2575,7 @@ void RenderProcessHostImpl::CreateURLLoaderFactoryInternal(
     network::mojom::URLLoaderFactoryParamsPtr params =
         network::mojom::URLLoaderFactoryParams::New();
     params->process_id = GetID();
-    params->request_initiator_site_lock = origin;
+    params->request_initiator_site_lock = main_world_origin;
     params->disable_web_security =
         base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisableWebSecurity);
@@ -2589,7 +2594,8 @@ void RenderProcessHostImpl::CreateURLLoaderFactoryInternal(
       params->is_corb_enabled = false;
     } else if (preferences &&
                preferences->allow_universal_access_from_file_urls &&
-               origin.has_value() && origin->scheme() == url::kFileScheme) {
+               main_world_origin.has_value() &&
+               main_world_origin->scheme() == url::kFileScheme) {
       // allow_universal_access_from_file_urls disables CORB (via
       // |is_corb_enabled|) and CORS (via |disable_web_security|) for requests
       // made from a file: |origin|.

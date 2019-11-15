@@ -88,6 +88,7 @@
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_utils.h"
 #include "chrome/browser/ui/webui/chromeos/bluetooth_dialog_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
@@ -138,10 +139,14 @@ base::string16 GetHelpUrlWithBoard(const std::string& original_url) {
                             "&b=" + base::SysInfo::GetLsbReleaseBoard());
 }
 
-bool IsEnterpriseManaged() {
+bool IsDeviceManaged() {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   return connector->IsEnterpriseManaged();
+}
+
+bool IsProfileManaged(Profile* profile) {
+  return profile->GetProfilePolicyConnector()->IsManaged();
 }
 #endif
 
@@ -618,7 +623,8 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source,
                               chromeos::features::kArcAdbSideloadingFeature));
   html_source->AddBoolean("isOwnerProfile",
                           chromeos::ProfileHelper::IsOwnerProfile(profile));
-  html_source->AddBoolean("isEnterpriseManaged", IsEnterpriseManaged());
+  html_source->AddBoolean("isEnterpriseManaged",
+                          IsDeviceManaged() || IsProfileManaged(profile));
 }
 
 void AddPluginVmStrings(content::WebUIDataSource* html_source,
@@ -1711,7 +1717,7 @@ void AddChromeOSUserStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean("isActiveDirectoryUser",
                           user && user->IsActiveDirectoryUser());
 
-  if (!IsEnterpriseManaged() && !user_manager->IsCurrentUserOwner()) {
+  if (!IsDeviceManaged() && !user_manager->IsCurrentUserOwner()) {
     html_source->AddString("ownerEmail",
                            user_manager->GetOwnerAccountId().GetUserEmail());
   }

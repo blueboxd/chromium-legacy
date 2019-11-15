@@ -802,6 +802,7 @@ class FunctionDefinitionNode(CodeNode):
                  name,
                  arg_decls,
                  return_type,
+                 member_initializer_list=None,
                  local_vars=None,
                  body=None,
                  comment=None):
@@ -811,6 +812,7 @@ class FunctionDefinitionNode(CodeNode):
                 (i.e. 'namespace_name::' and/or 'type_name::').
             arg_decls: List of argument declaration nodes.
             return_type: Return type node.
+            member_initializer_list: List of initializer nodes.
             local_vars: List of SymbolNodes that can be used in the function
                 body.
             body: Function body node (of type SymbolScopeNode).
@@ -820,6 +822,12 @@ class FunctionDefinitionNode(CodeNode):
         assert isinstance(arg_decls, (list, tuple))
         assert all(isinstance(arg_decl, CodeNode) for arg_decl in arg_decls)
         assert isinstance(return_type, CodeNode)
+        if member_initializer_list is None:
+            member_initializer_list = []
+        assert isinstance(member_initializer_list, (list, tuple))
+        assert all(
+            isinstance(initializer, CodeNode)
+            for initializer in member_initializer_list)
         if local_vars is None:
             local_vars = []
         assert isinstance(local_vars, (list, tuple))
@@ -836,23 +844,36 @@ class FunctionDefinitionNode(CodeNode):
             "name": CodeNode.gensym(),
             "arg_decls": CodeNode.gensym(),
             "return_type": CodeNode.gensym(),
+            "member_initializer_list": CodeNode.gensym(),
             "body": CodeNode.gensym(),
             "comment": CodeNode.gensym(),
         }
 
+        maybe_colon = " : " if member_initializer_list else ""
+
         template_text = CodeNode.format_template(
             """\
 ${{{comment}}}
-${{{return_type}}} ${{{name}}}(${{{arg_decls}}}) {{
+${{{return_type}}} ${{{name}}}(${{{arg_decls}}})\
+{maybe_colon}${{{member_initializer_list}}} {{
   ${{{body}}}
 }}\\
-""", **gensyms)
+""",
+            maybe_colon=maybe_colon,
+            **gensyms)
         template_vars = {
-            gensyms["name"]: name,
-            gensyms["arg_decls"]: SequenceNode(arg_decls, separator=", "),
-            gensyms["return_type"]: return_type,
-            gensyms["body"]: body,
-            gensyms["comment"]: comment,
+            gensyms["name"]:
+            name,
+            gensyms["arg_decls"]:
+            SequenceNode(arg_decls, separator=", "),
+            gensyms["return_type"]:
+            return_type,
+            gensyms["member_initializer_list"]:
+            SequenceNode(member_initializer_list, separator=", "),
+            gensyms["body"]:
+            body,
+            gensyms["comment"]:
+            comment,
         }
 
         CodeNode.__init__(

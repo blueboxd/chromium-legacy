@@ -31,6 +31,7 @@ namespace content {
 class TransactionalLevelDBDatabase;
 class TransactionalLevelDBIterator;
 class TransactionalLevelDBTransaction;
+class LevelDBDirectTransaction;
 
 namespace indexed_db {
 
@@ -194,12 +195,12 @@ WARN_UNUSED_RESULT bool FindGreatestKeyLessThanOrEqual(
     leveldb::Status* s);
 
 WARN_UNUSED_RESULT bool GetBlobKeyGeneratorCurrentNumber(
-    TransactionalLevelDBTransaction* leveldb_transaction,
+    LevelDBDirectTransaction* leveldb_transaction,
     int64_t database_id,
     int64_t* blob_key_generator_current_number);
 
 WARN_UNUSED_RESULT bool UpdateBlobKeyGeneratorCurrentNumber(
-    TransactionalLevelDBTransaction* leveldb_transaction,
+    LevelDBDirectTransaction* leveldb_transaction,
     int64_t database_id,
     int64_t blob_key_generator_current_number);
 

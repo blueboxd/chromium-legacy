@@ -67,11 +67,13 @@ class PageTimingMetricsSender {
                                       int64_t encoded_body_length,
                                       const std::string& mime_type);
 
-  // TODO(ericrobinson): There should probably be a name change here:
-  // * Send: Sends immediately, functions as SendNow.
-  // * QueueSend: Queues the send by starting the timer, functions as Send.
-  void Send(mojom::PageLoadTimingPtr timing);
-  // Updates the PageLoadMetrics::CpuTiming data and starts the Send timer.
+  // Queues the send by starting the send timer.
+  void SendSoon(mojom::PageLoadTimingPtr timing);
+
+  // Sends any queued timing data immediately and stops the send timer.
+  void SendLatest();
+
+  // Updates the PageLoadMetrics::CpuTiming data and starts the send timer.
   void UpdateCpuTiming(base::TimeDelta task_time);
 
   void UpdateResourceMetadata(int resource_id,

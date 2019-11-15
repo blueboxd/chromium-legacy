@@ -58,6 +58,39 @@ public class WebApkIntentDataProvider extends BrowserServicesIntentDataProvider 
     private WebappExtras mWebappExtras;
     private WebApkExtras mWebApkExtras;
 
+    /**
+     * Returns the WebAPK's shell launch timestamp associated with the passed-in intent, or -1.
+     */
+    public static long getWebApkShellLaunchTime(Intent intent) {
+        return intent.getLongExtra(WebApkConstants.EXTRA_WEBAPK_LAUNCH_TIME, -1);
+    }
+
+    /**
+     * Copies the WebAPKs's shell launch timestamp, if set, from {@link fromIntent} to
+     * {@link toIntent}.
+     */
+    public static void copyWebApkShellLaunchTime(Intent fromIntent, Intent toIntent) {
+        toIntent.putExtra(
+                WebApkConstants.EXTRA_WEBAPK_LAUNCH_TIME, getWebApkShellLaunchTime(fromIntent));
+    }
+
+    /**
+     * Returns the timestamp when the WebAPK shell showed the splash screen. Returns -1 if the
+     * WebAPK shell did not show the splash screen.
+     */
+    public static long getNewStyleWebApkSplashShownTime(Intent intent) {
+        return intent.getLongExtra(WebApkConstants.EXTRA_NEW_STYLE_SPLASH_SHOWN_TIME, -1);
+    }
+
+    /**
+     * Copies the timestamp, if set, that the WebAPK shell showed the splash screen from
+     * {@link fromIntent} to {@link toIntent}.
+     */
+    public static void copyNewStyleWebApkSplashShownTime(Intent fromIntent, Intent toIntent) {
+        toIntent.putExtra(WebApkConstants.EXTRA_NEW_STYLE_SPLASH_SHOWN_TIME,
+                getNewStyleWebApkSplashShownTime(fromIntent));
+    }
+
     public static WebApkIntentDataProvider createEmpty() {
         return new WebApkIntentDataProvider(WebappIntentDataProvider.getDefaultToolbarColor(),
                 WebappExtras.createEmpty(), WebApkExtras.createEmpty());
@@ -103,7 +136,7 @@ public class WebApkIntentDataProvider extends BrowserServicesIntentDataProvider 
         }
 
         String url = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_URL);
-        int source = sourceFromIntent(intent, shareData);
+        int source = computeSource(intent, shareData);
 
         boolean canUseSplashFromContentProvider = IntentUtils.safeGetBooleanExtra(
                 intent, WebApkConstants.EXTRA_SPLASH_PROVIDED_BY_WEBAPK, false);
@@ -377,7 +410,7 @@ public class WebApkIntentDataProvider extends BrowserServicesIntentDataProvider 
         mWebApkExtras = webApkExtras;
     }
 
-    private static int sourceFromIntent(Intent intent, ShareData shareData) {
+    private static int computeSource(Intent intent, ShareData shareData) {
         int source = IntentUtils.safeGetIntExtra(
                 intent, ShortcutHelper.EXTRA_SOURCE, ShortcutSource.UNKNOWN);
         if (source >= ShortcutSource.COUNT) {

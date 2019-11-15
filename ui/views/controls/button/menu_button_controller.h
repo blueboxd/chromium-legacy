@@ -15,7 +15,7 @@
 namespace views {
 class ButtonControllerDelegate;
 class MenuButton;
-class MenuButtonListener;
+class ButtonListener;
 
 // A controller that contains the logic for showing a menu when the left mouse
 // is pushed.
@@ -41,7 +41,7 @@ class VIEWS_EXPORT MenuButtonController : public ButtonController {
   };
 
   MenuButtonController(Button* button,
-                       MenuButtonListener* listener,
+                       ButtonListener* listener,
                        std::unique_ptr<ButtonControllerDelegate> delegate);
   ~MenuButtonController() override;
 
@@ -97,7 +97,7 @@ class VIEWS_EXPORT MenuButtonController : public ButtonController {
   int GetMaximumScreenXCoordinate();
 
   // Our listener. Not owned.
-  MenuButtonListener* const listener_;
+  ButtonListener* const listener_;
 
   // We use a time object in order to keep track of when the menu was closed.
   // The time is used for simulating menu behavior for the menu button; that

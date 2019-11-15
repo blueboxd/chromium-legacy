@@ -14,6 +14,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_string.h"
+#include "base/trace_event/trace_event.h"
 #include "weblayer/browser/java/jni/NavigationControllerImpl_jni.h"
 #endif
 
@@ -121,8 +122,13 @@ void NavigationControllerImpl::DidStartNavigation(
 #if defined(OS_ANDROID)
   if (java_controller_) {
     JNIEnv* env = AttachCurrentThread();
-    Java_NavigationControllerImpl_createNavigation(
-        env, java_controller_, reinterpret_cast<jlong>(navigation));
+    {
+      TRACE_EVENT0("weblayer",
+                   "Java_NavigationControllerImpl_createNavigation");
+      Java_NavigationControllerImpl_createNavigation(
+          env, java_controller_, reinterpret_cast<jlong>(navigation));
+    }
+    TRACE_EVENT0("weblayer", "Java_NavigationControllerImpl_navigationStarted");
     Java_NavigationControllerImpl_navigationStarted(
         env, java_controller_, navigation->java_navigation());
   }
@@ -140,6 +146,8 @@ void NavigationControllerImpl::DidRedirectNavigation(
   auto* navigation = navigation_map_[navigation_handle].get();
 #if defined(OS_ANDROID)
   if (java_controller_) {
+    TRACE_EVENT0("weblayer",
+                 "Java_NavigationControllerImpl_navigationRedirected");
     Java_NavigationControllerImpl_navigationRedirected(
         AttachCurrentThread(), java_controller_, navigation->java_navigation());
   }
@@ -157,6 +165,8 @@ void NavigationControllerImpl::ReadyToCommitNavigation(
   auto* navigation = navigation_map_[navigation_handle].get();
 #if defined(OS_ANDROID)
   if (java_controller_) {
+    TRACE_EVENT0("weblayer",
+                 "Java_NavigationControllerImpl_readyToCommitNavigation");
     Java_NavigationControllerImpl_readyToCommitNavigation(
         AttachCurrentThread(), java_controller_, navigation->java_navigation());
   }
@@ -176,6 +186,8 @@ void NavigationControllerImpl::DidFinishNavigation(
       !navigation_handle->IsErrorPage()) {
 #if defined(OS_ANDROID)
     if (java_controller_) {
+      TRACE_EVENT0("weblayer",
+                   "Java_NavigationControllerImpl_navigationCompleted");
       Java_NavigationControllerImpl_navigationCompleted(
           AttachCurrentThread(), java_controller_,
           navigation->java_navigation());
@@ -186,6 +198,8 @@ void NavigationControllerImpl::DidFinishNavigation(
   } else {
 #if defined(OS_ANDROID)
     if (java_controller_) {
+      TRACE_EVENT0("weblayer",
+                   "Java_NavigationControllerImpl_navigationFailed");
       Java_NavigationControllerImpl_navigationFailed(
           AttachCurrentThread(), java_controller_,
           navigation->java_navigation());
@@ -209,6 +223,8 @@ void NavigationControllerImpl::DidStopLoading() {
 void NavigationControllerImpl::LoadProgressChanged(double progress) {
 #if defined(OS_ANDROID)
   if (java_controller_) {
+    TRACE_EVENT0("weblayer",
+                 "Java_NavigationControllerImpl_loadProgressChanged");
     Java_NavigationControllerImpl_loadProgressChanged(
         AttachCurrentThread(), java_controller_, progress);
   }
@@ -219,6 +235,8 @@ void NavigationControllerImpl::LoadProgressChanged(double progress) {
 
 void NavigationControllerImpl::DidFirstVisuallyNonEmptyPaint() {
 #if defined(OS_ANDROID)
+  TRACE_EVENT0("weblayer",
+               "Java_NavigationControllerImpl_onFirstContentfulPaint");
   Java_NavigationControllerImpl_onFirstContentfulPaint(AttachCurrentThread(),
                                                        java_controller_);
 #endif
@@ -230,6 +248,7 @@ void NavigationControllerImpl::DidFirstVisuallyNonEmptyPaint() {
 void NavigationControllerImpl::NotifyLoadStateChanged() {
 #if defined(OS_ANDROID)
   if (java_controller_) {
+    TRACE_EVENT0("weblayer", "Java_NavigationControllerImpl_loadStateChanged");
     Java_NavigationControllerImpl_loadStateChanged(
         AttachCurrentThread(), java_controller_, web_contents()->IsLoading(),
         web_contents()->IsLoadingToDifferentDocument());

@@ -521,6 +521,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsDescriptionChangeNoRelation) {
+  RunEventTest(FILE_PATH_LITERAL("description-change-no-relation.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsDisabledStateChanged) {
   RunEventTest(FILE_PATH_LITERAL("disabled-state-changed.html"));
 }
@@ -787,6 +792,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsButtonClick) {
   RunEventTest(FILE_PATH_LITERAL("button-click.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsButtonRemoveChildren) {
+  RunEventTest(FILE_PATH_LITERAL("button-remove-children.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,

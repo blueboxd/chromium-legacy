@@ -34,7 +34,9 @@ public class MessageCardProviderMediatorUnitTest {
     }
 
     private void enqueueMessageItem(int type) {
-        mMediator.messageReady(type);
+        // TODO(crbug.com/1004570): Use MessageData instead of null when ready to integrate with
+        //  MessageService component.
+        mMediator.messageReady(type, null);
     }
 
     @Test

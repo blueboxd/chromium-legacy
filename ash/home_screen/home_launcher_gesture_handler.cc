@@ -123,16 +123,15 @@ gfx::RectF GetOffscreenWindowBounds(aura::Window* window,
 
 // Given a |location_in_screen|, find out where it lies as a ratio in the
 // work area, where the top of the work area is 0.f and the bottom is 1.f.
-double GetHeightInWorkAreaAsRatio(const gfx::Point& location_in_screen,
+double GetHeightInWorkAreaAsRatio(const gfx::PointF& location_in_screen,
                                   const gfx::Rect& work_area) {
-  int clamped_y = base::ClampToRange(location_in_screen.y(), work_area.y(),
-                                     work_area.bottom());
-  double ratio =
-      static_cast<double>(clamped_y) / static_cast<double>(work_area.height());
+  float clamped_y = base::ClampToRange(
+      location_in_screen.y(), float{work_area.y()}, float{work_area.bottom()});
+  double ratio = clamped_y / double{work_area.height()};
   return 1.0 - ratio;
 }
 
-bool IsLastEventInTopHalf(const gfx::Point& location_in_screen,
+bool IsLastEventInTopHalf(const gfx::PointF& location_in_screen,
                           const gfx::Rect& work_area) {
   return GetHeightInWorkAreaAsRatio(location_in_screen, work_area) > 0.5;
 }
@@ -282,16 +281,17 @@ HomeLauncherGestureHandler::~HomeLauncherGestureHandler() {
 }
 
 bool HomeLauncherGestureHandler::OnPressEvent(Mode mode,
-                                              const gfx::Point& location) {
+                                              const gfx::PointF& location) {
   // Do not start a new session if a window is currently being processed.
   if (!IsIdle())
     return false;
 
-  display_ = display::Screen::GetScreen()->GetDisplayNearestPoint(location);
+  display_ = display::Screen::GetScreen()->GetDisplayNearestPoint(
+      gfx::ToRoundedPoint(location));
   if (!display_.is_valid())
     return false;
 
-  if (!SetUpWindows(mode, /*window=*/nullptr, location))
+  if (!SetUpWindows(mode, /*window=*/nullptr))
     return false;
 
   mode_ = mode;
@@ -302,7 +302,7 @@ bool HomeLauncherGestureHandler::OnPressEvent(Mode mode,
   return true;
 }
 
-bool HomeLauncherGestureHandler::OnScrollEvent(const gfx::Point& location,
+bool HomeLauncherGestureHandler::OnScrollEvent(const gfx::PointF& location,
                                                float scroll_x,
                                                float scroll_y) {
   if (IsAnimating())
@@ -323,7 +323,7 @@ bool HomeLauncherGestureHandler::OnScrollEvent(const gfx::Point& location,
 }
 
 bool HomeLauncherGestureHandler::OnReleaseEvent(
-    const gfx::Point& location,
+    const gfx::PointF& location,
     base::Optional<float> velocity_y) {
   if (mode_ != Mode::kSwipeHomeToOverview && IsAnimating())
     return false;
@@ -346,10 +346,8 @@ bool HomeLauncherGestureHandler::ShowHomeLauncher(
   if (!display.is_valid())
     return false;
 
-  if (!SetUpWindows(Mode::kSlideUpToShow, /*window=*/nullptr,
-                    /*location_in_screen=*/base::nullopt)) {
+  if (!SetUpWindows(Mode::kSlideUpToShow, /*window=*/nullptr))
     return false;
-  }
 
   display_ = display;
   mode_ = Mode::kSlideUpToShow;
@@ -370,10 +368,8 @@ bool HomeLauncherGestureHandler::HideHomeLauncherForWindow(
   if (!display.is_valid())
     return false;
 
-  if (!SetUpWindows(Mode::kSlideDownToHide, window,
-                    /*location_in_screen=*/base::nullopt)) {
+  if (!SetUpWindows(Mode::kSlideDownToHide, window))
     return false;
-  }
 
   display_ = display;
   mode_ = Mode::kSlideDownToHide;
@@ -600,9 +596,9 @@ void HomeLauncherGestureHandler::UpdateWindowsForSlideUpOrDown(
   DCHECK(home_screen_delegate);
 
   // Before updating position and opacity for home launcher, make sure its
-  // window is visible. This handles the case that HomeScreenController::Show()
-  // put launcher window hidden when it is called within an overview session.
-  // See https://crbug.com/996384
+  // window is visible. This handles the case that
+  // HomeScreenController::Show() put launcher window hidden when it is called
+  // within an overview session. See https://crbug.com/996384
   aura::Window* home_screen_window =
       home_screen_delegate->GetHomeScreenWindow();
   DCHECK(home_screen_window);
@@ -755,10 +751,7 @@ bool HomeLauncherGestureHandler::IsFinalStateShow() {
              : mode_ == Mode::kSlideUpToShow;
 }
 
-bool HomeLauncherGestureHandler::SetUpWindows(
-    Mode mode,
-    aura::Window* window,
-    base::Optional<gfx::Point> location_in_screen) {
+bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
   if (mode == Mode::kSwipeHomeToOverview) {
     active_window_.reset();
     return Shell::Get()->home_screen_controller()->IsHomeScreenVisible();
@@ -881,9 +874,9 @@ bool HomeLauncherGestureHandler::SetUpWindows(
     // actually covers the area behind the shelf as well, so initially
     // transform it to be sized to the work area. Without the transform
     // tweak, there is an extra shelf sized black area under |active_window_|.
-    // Go to 0.01 opacity instead of 0 opacity otherwise animation end code will
-    // attempt to update the backdrop which will try to show a 0 opacity window
-    // which causes a crash.
+    // Go to 0.01 opacity instead of 0 opacity otherwise animation end code
+    // will attempt to update the backdrop which will try to show a 0 opacity
+    // window which causes a crash.
     backdrop_values_ = base::make_optional(WindowValues());
     backdrop_values_->initial_opacity = 1.f;
     backdrop_values_->initial_transform = gfx::Transform(
@@ -911,7 +904,7 @@ bool HomeLauncherGestureHandler::SetUpWindows(
   return true;
 }
 
-void HomeLauncherGestureHandler::OnDragStarted(const gfx::Point& location) {
+void HomeLauncherGestureHandler::OnDragStarted(const gfx::PointF& location) {
   if (mode_ == Mode::kSwipeHomeToOverview) {
     swipe_home_to_overview_controller_ =
         std::make_unique<SwipeHomeToOverviewController>(display_.id());
@@ -929,7 +922,7 @@ void HomeLauncherGestureHandler::OnDragStarted(const gfx::Point& location) {
   }
 }
 
-void HomeLauncherGestureHandler::OnDragContinued(const gfx::Point& location,
+void HomeLauncherGestureHandler::OnDragContinued(const gfx::PointF& location,
                                                  float scroll_x,
                                                  float scroll_y) {
   if (mode_ == Mode::kSwipeHomeToOverview) {
@@ -945,7 +938,7 @@ void HomeLauncherGestureHandler::OnDragContinued(const gfx::Point& location,
   }
 }
 
-bool HomeLauncherGestureHandler::OnDragEnded(const gfx::Point& location,
+bool HomeLauncherGestureHandler::OnDragEnded(const gfx::PointF& location,
                                              base::Optional<float> velocity_y) {
   if (mode_ == Mode::kSwipeHomeToOverview) {
     swipe_home_to_overview_controller_->EndDrag(location, velocity_y);

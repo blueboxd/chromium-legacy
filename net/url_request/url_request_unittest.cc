@@ -9202,6 +9202,7 @@ TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
       default_context_.http_auth_handler_factory();
   session_context.http_server_properties =
       default_context_.http_server_properties();
+  session_context.quic_context = default_context_.quic_context();
 
   HttpNetworkSession network_session(HttpNetworkSession::Params(),
                                      session_context);

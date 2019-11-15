@@ -74,6 +74,8 @@ TEST(OptimizationGuideNavigationDataTest,
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.Hints.NavigationHostCoverage.BeforeCommit", 0);
   histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.Hints.NavigationHostCoverage.AtCommit", 0);
+  histogram_tester.ExpectTotalCount(
       "OptimizationGuide.HintCache.HasHint.AtCommit", 0);
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.HintCache.HostMatch.AtCommit", 0);
@@ -94,6 +96,8 @@ TEST(OptimizationGuideNavigationDataTest,
       "OptimizationGuide.HintCache.HasHint.BeforeCommit", false, 1);
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.Hints.NavigationHostCoverage.BeforeCommit", true, 1);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.Hints.NavigationHostCoverage.AtCommit", 0);
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.HintCache.HasHint.AtCommit", 0);
   histogram_tester.ExpectTotalCount(
@@ -116,7 +120,34 @@ TEST(OptimizationGuideNavigationDataTest,
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.Hints.NavigationHostCoverage.BeforeCommit", false, 1);
   histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.Hints.NavigationHostCoverage.AtCommit", 0);
+  histogram_tester.ExpectTotalCount(
       "OptimizationGuide.HintCache.HasHint.AtCommit", 0);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintCache.HostMatch.AtCommit", 0);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintCache.PageMatch.AtCommit", 0);
+}
+
+TEST(OptimizationGuideNavigationDataTest,
+     RecordMetricsHintCacheNoHintButCoveredByFetchAtCommit) {
+  base::HistogramTester histogram_tester;
+
+  OptimizationGuideNavigationData data(/*navigation_id=*/3);
+  data.set_has_hint_before_commit(false);
+  data.set_has_hint_after_commit(false);
+  data.set_was_host_covered_by_fetch_at_navigation_start(false);
+  data.set_was_host_covered_by_fetch_at_commit(true);
+  data.RecordMetrics(/*has_committed=*/true);
+
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintCache.HasHint.BeforeCommit", false, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.Hints.NavigationHostCoverage.BeforeCommit", false, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.Hints.NavigationHostCoverage.AtCommit", true, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.HintCache.HasHint.AtCommit", false, 1);
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.HintCache.HostMatch.AtCommit", 0);
   histogram_tester.ExpectTotalCount(
@@ -137,6 +168,8 @@ TEST(OptimizationGuideNavigationDataTest,
       "OptimizationGuide.HintCache.HasHint.BeforeCommit", 0);
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.Hints.NavigationHostCoverage.BeforeCommit", 0);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.Hints.NavigationHostCoverage.AtCommit", false, 1);
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.HintCache.HasHint.AtCommit", false, 1);
   histogram_tester.ExpectTotalCount(
@@ -159,6 +192,8 @@ TEST(OptimizationGuideNavigationDataTest,
       "OptimizationGuide.HintCache.HasHint.BeforeCommit", 0);
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.Hints.NavigationHostCoverage.BeforeCommit", 0);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.Hints.NavigationHostCoverage.AtCommit", true, 1);
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.HintCache.HasHint.AtCommit", true, 1);
   histogram_tester.ExpectUniqueSample(
@@ -184,6 +219,8 @@ TEST(OptimizationGuideNavigationDataTest,
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.Hints.NavigationHostCoverage.BeforeCommit", true, 1);
   histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.Hints.NavigationHostCoverage.AtCommit", true, 1);
+  histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.HintCache.HasHint.AtCommit", true, 1);
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.HintCache.HostMatch.AtCommit", true, 1);
@@ -205,6 +242,8 @@ TEST(OptimizationGuideNavigationDataTest,
       "OptimizationGuide.HintCache.HasHint.BeforeCommit", true, 1);
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.Hints.NavigationHostCoverage.BeforeCommit", true, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.Hints.NavigationHostCoverage.AtCommit", true, 1);
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.HintCache.HasHint.AtCommit", true, 1);
   histogram_tester.ExpectUniqueSample(
@@ -228,6 +267,8 @@ TEST(OptimizationGuideNavigationDataTest,
       "OptimizationGuide.HintCache.HasHint.BeforeCommit", true, 1);
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.Hints.NavigationHostCoverage.BeforeCommit", true, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.Hints.NavigationHostCoverage.AtCommit", true, 1);
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.HintCache.HasHint.AtCommit", true, 1);
   histogram_tester.ExpectUniqueSample(

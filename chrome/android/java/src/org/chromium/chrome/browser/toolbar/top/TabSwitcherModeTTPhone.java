@@ -21,7 +21,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.tab.TabFeatureUtilities;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -107,7 +107,7 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
         }
 
         if ((usingHorizontalTabSwitcher() || FeatureUtilities.isGridTabSwitcherEnabled())
-                && PrefServiceBridge.getInstance().isIncognitoModeEnabled()) {
+                && IncognitoUtils.isIncognitoModeEnabled()) {
             updateTabSwitchingElements(true);
         }
     }
@@ -280,7 +280,7 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
         if (mNewTabImageButton != null) mNewTabImageButton.onAccessibilityStatusChanged();
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)
-                && PrefServiceBridge.getInstance().isIncognitoModeEnabled()) {
+                && IncognitoUtils.isIncognitoModeEnabled()) {
             updateTabSwitchingElements(!enabled);
         }
 

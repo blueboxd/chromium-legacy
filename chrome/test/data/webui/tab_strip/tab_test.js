@@ -53,23 +53,48 @@ suite('Tab', function() {
 
   test('slideIn animates in the element', async () => {
     const animationPromise = tabElement.slideIn();
-    // Before animation completes
+    // Before animation completes.
     assertEquals('0', window.getComputedStyle(tabElement).opacity);
     assertEquals('0px', window.getComputedStyle(tabElement).maxWidth);
     await animationPromise;
-    // After animation completes
+    // After animation completes.
     assertEquals('1', window.getComputedStyle(tabElement).opacity);
     assertEquals('none', window.getComputedStyle(tabElement).maxWidth);
   });
 
   test('slideOut animates out the element', async () => {
+    testTabStripEmbedderProxy.setVisible(true);
     const animationPromise = tabElement.slideOut();
-    // Before animation completes
+    // Before animation completes.
     assertEquals('1', window.getComputedStyle(tabElement).opacity);
     assertEquals('none', window.getComputedStyle(tabElement).maxWidth);
+    assertTrue(tabElement.isConnected);
     await animationPromise;
-    // After animation completes
-    assertFalse(document.body.contains(tabElement));
+    // After animation completes.
+    assertFalse(tabElement.isConnected);
+  });
+
+  test('slideOut does not animate when tab strip is hidden', () => {
+    testTabStripEmbedderProxy.setVisible(false);
+    assertTrue(tabElement.isConnected);
+    tabElement.slideOut();
+
+    // The tab should immediately be disconnected without waiting for the
+    // animation to finish.
+    assertFalse(tabElement.isConnected);
+  });
+
+  test('slideOut resolves immediately when tab strip becomes hidden', () => {
+    testTabStripEmbedderProxy.setVisible(true);
+    assertTrue(tabElement.isConnected);
+    const animationPromise = tabElement.slideOut();
+
+    testTabStripEmbedderProxy.setVisible(false);
+    document.dispatchEvent(new Event('visibilitychange'));
+
+    // The tab should immediately be disconnected without waiting for the
+    // animation to finish.
+    assertFalse(tabElement.isConnected);
   });
 
   test('toggles an [active] attribute when active', () => {

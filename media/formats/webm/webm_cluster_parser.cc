@@ -753,7 +753,7 @@ void WebMClusterParser::Track::ClearReadyBuffers() {
 void WebMClusterParser::Track::Reset() {
   ClearReadyBuffers();
   buffers_.clear();
-  last_added_buffer_missing_duration_ = NULL;
+  last_added_buffer_missing_duration_.reset();
 }
 
 bool WebMClusterParser::Track::QueueBuffer(

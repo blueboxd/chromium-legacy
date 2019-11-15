@@ -88,7 +88,8 @@ void OverlayCandidateValidatorSurfaceControl::CheckOverlaySupport(
     // The display rect above includes the |display_transform_| while the rects
     // sent to the platform API need to be in the logical screen space.
     const gfx::Transform display_inverse = gfx::OverlayTransformToTransform(
-        gfx::InvertOverlayTransform(display_transform_), viewport_size_);
+        gfx::InvertOverlayTransform(display_transform_),
+        gfx::SizeF(viewport_size_));
     display_inverse.TransformRect(&orig_display_rect);
     display_inverse.TransformRect(&display_rect);
 
@@ -113,7 +114,8 @@ void OverlayCandidateValidatorSurfaceControl::AdjustOutputSurfaceOverlay(
 
   output_surface_plane->transform = display_transform_;
   const gfx::Transform display_inverse = gfx::OverlayTransformToTransform(
-      gfx::InvertOverlayTransform(display_transform_), viewport_size_);
+      gfx::InvertOverlayTransform(display_transform_),
+      gfx::SizeF(viewport_size_));
   display_inverse.TransformRect(&output_surface_plane->display_rect);
   output_surface_plane->display_rect =
       gfx::RectF(gfx::ToEnclosingRect(output_surface_plane->display_rect));
@@ -144,7 +146,7 @@ OverlayCandidateValidatorSurfaceControl::GetOverlayDamageRectForOutputSurface(
   gfx::Size viewport_size_pre_display_transform(viewport_size_.height(),
                                                 viewport_size_.width());
   auto transform = gfx::OverlayTransformToTransform(
-      display_transform_, viewport_size_pre_display_transform);
+      display_transform_, gfx::SizeF(viewport_size_pre_display_transform));
   gfx::RectF transformed_rect(candidate.display_rect);
   transform.TransformRect(&transformed_rect);
   return gfx::ToEnclosedRect(transformed_rect);

@@ -32,7 +32,7 @@ source_set("input_monitor") {
 
   deps = [
     "//remoting/proto",
-    "//third_party/webrtc/modules/desktop_capture",
+    "//third_party/webrtc_overrides:webrtc_component",
   ]
 
   if (use_ozone) {

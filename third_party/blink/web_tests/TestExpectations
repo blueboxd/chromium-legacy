@@ -227,8 +227,6 @@ crbug.com/736052 compositing/overflow/composited-scroll-with-fractional-translat
 crbug.com/736052 virtual/prefer_compositing_to_lcd_text/compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
 
 # New OffscreenCanvas Tests that are breaking LayoutTest
-crbug.com/680635 external/wpt/offscreen-canvas/text/2d.text.font.parse.invalid.html [ Skip ]
-crbug.com/680635 external/wpt/offscreen-canvas/text/2d.text.font.parse.invalid.worker.html [ Skip ]
 
 # With removing fling handling logic from renderer Layouttests that are using event sender to send fling events are failing.
 crbug.com/857490 fast/events/touch/gesture/pad-gesture-cancel.html [ Skip ]
@@ -258,11 +256,6 @@ crbug.com/1004650 http/tests/security/contentSecurityPolicy/frame-src-cross-orig
 # Display locking failures
 
 crbug.com/849459 fragmentation/repeating-thead-under-repeating-thead.html [ Failure ]
-
-# These tests are no longer applicable in BlinkGenPropertyTree mode.
-# TODO(wangxianzhu): Remove them when we remove non-BlinkGenPropertyTree code.
-Bug(none) http/tests/devtools/layers/layer-sticky-position-constraint-get.js [ Skip ]
-Bug(none) inspector-protocol/layers/get-layers.js [ Skip ]
 
 # These fail when device_scale_factor is changed, but only for anti-aliasing:
 crbug.com/968791 virtual/scalefactor200/css3/filters/effect-blur-hw.html [ Failure ]
@@ -1140,7 +1133,6 @@ crbug.com/954171 virtual/layout_ng_block_frag/fast/multicol/float-with-margin-mo
 crbug.com/954171 virtual/layout_ng_block_frag/fast/multicol/float-with-margin-moved-by-child-line-and-unbreakable.html [ Failure Crash ]
 crbug.com/954171 virtual/layout_ng_block_frag/fast/multicol/float-with-margin-moved-by-child-line.html [ Failure Crash ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/float-with-margin-moved-unbreakable.html [ Failure ]
-crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/focus-outline.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/forced-break-after-block-with-spanner.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/forced-break-after-empty-block-after-spanner.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/forced-break-after-last-block-before-spanner.html [ Failure ]
@@ -1688,6 +1680,9 @@ crbug.com/995106 external/wpt/css/css-lists/inline-list-marker.html [ Failure ]
 crbug.com/995106 external/wpt/css/css-lists/inline-list-with-table-child.html [ Failure ]
 crbug.com/1012289 external/wpt/css/css-lists/list-style-type-string-005b.html [ Failure ]
 
+crbug.com/995106 external/wpt/css/css-pseudo/first-letter-exclude-inline-marker.html [ Failure ]
+crbug.com/995106 external/wpt/css/css-pseudo/first-letter-exclude-inline-child-marker.html [ Failure ]
+
 # ====== Style team owned tests to here ======
 
 # ====== OOPIF-mode failures from here ======
@@ -2118,10 +2113,6 @@ crbug.com/467635 fast/dom/HTMLImageElement/image-sizes-meta-viewport.html [ Skip
 crbug.com/636239 [ Win7 ] media/video-zoom-controls.html [ Failure ]
 crbug.com/636239 [ Win7 ] virtual/audio-service/media/video-zoom-controls.html [ Failure ]
 
-# Printing Layout broken in these tests.
-crbug.com/377696 printing/setPrinting.html [ Skip ]
-crbug.com/377696 printing/width-overflow.html [ Skip ]
-
 crbug.com/658305 css3/filters/buffer-offset.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-all-on-background-hw.html [ Failure Pass Timeout ]
 crbug.com/658305 css3/filters/effect-reference-after.html [ Failure Pass ]
@@ -2403,10 +2394,6 @@ crbug.com/483653 accessibility/scroll-containers.html [ Skip ]
 
 crbug.com/491764 http/tests/devtools/service-workers/user-agent-override.js [ Pass Timeout ]
 
-# Fails with leak detector.
-crbug.com/769885 [ Linux ] virtual/android/fullscreen/full-screen-frameset.html [ Skip ]
-crbug.com/769885 [ Linux ] virtual/android/fullscreen/video-scrolled-iframe.html [ Skip ]
-
 # Temporarily disabled after chromium change
 crbug.com/492511 [ Mac ] virtual/text-antialias/atsui-negative-spacing-features.html [ Failure ]
 crbug.com/492511 [ Mac ] virtual/text-antialias/international/arabic-justify.html [ Failure ]
@@ -2437,21 +2424,21 @@ crbug.com/591500 [ Win10 ] virtual/threaded/printing/standards-percentage-height
 # TODO(chrishtr) uncomment ones marked crbug.com/591500 after fixing crbug.com/665259.
 crbug.com/591500 [ Win10 ] printing/fixed-positioned-headers-and-footers-absolute-covering-some-pages.html [ Failure ]
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/fixed-positioned-headers-and-footers-absolute-covering-some-pages.html [ Failure ]
-crbug.com/591500 [ Win10 ] printing/fixed-positioned-but-static-headers-and-footers.html [ Skip ]
-crbug.com/591500 [ Win10 ] printing/fixed-positioned-headers-and-footers-inside-transform.html [ Skip ]
-crbug.com/591500 [ Win10 ] printing/fixed-positioned-headers-and-footers-larger-than-page.html [ Skip ]
-crbug.com/591500 [ Win10 ] printing/fixed-positioned-headers-and-footers.html [ Skip ]
-crbug.com/591500 [ Win10 ] virtual/threaded/printing/fixed-positioned-but-static-headers-and-footers.html [ Skip ]
-crbug.com/591500 [ Win10 ] virtual/threaded/printing/fixed-positioned-headers-and-footers-clipped.html [ Skip ]
-crbug.com/591500 [ Win10 ] virtual/threaded/printing/fixed-positioned-headers-and-footers-inside-transform.html [ Skip ]
-crbug.com/591500 [ Win10 ] virtual/threaded/printing/fixed-positioned-headers-and-footers-larger-than-page.html [ Skip ]
-crbug.com/591500 [ Win10 ] virtual/threaded/printing/fixed-positioned-headers-and-footers.html [ Skip ]
+crbug.com/591500 [ Win10 ] printing/fixed-positioned-but-static-headers-and-footers.html [ Pass Failure ]
+crbug.com/591500 [ Win10 ] printing/fixed-positioned-headers-and-footers-inside-transform.html [ Pass Failure ]
+crbug.com/591500 [ Win10 ] printing/fixed-positioned-headers-and-footers-larger-than-page.html [ Pass Failure ]
+crbug.com/591500 [ Win10 ] printing/fixed-positioned-headers-and-footers.html [ Pass Failure ]
+crbug.com/591500 [ Win10 ] virtual/threaded/printing/fixed-positioned-but-static-headers-and-footers.html [ Pass Failure ]
+crbug.com/591500 [ Win10 ] virtual/threaded/printing/fixed-positioned-headers-and-footers-clipped.html [ Pass Failure ]
+crbug.com/591500 [ Win10 ] virtual/threaded/printing/fixed-positioned-headers-and-footers-inside-transform.html [ Pass Failure ]
+crbug.com/591500 [ Win10 ] virtual/threaded/printing/fixed-positioned-headers-and-footers-larger-than-page.html [ Pass Failure ]
+crbug.com/591500 [ Win10 ] virtual/threaded/printing/fixed-positioned-headers-and-footers.html [ Pass Failure ]
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/list-item-with-empty-first-line.html [ Failure ]
 
-crbug.com/591500 [ Win10 ] printing/fixed-positioned-headers-and-footers-clipped.html [ Skip ]
-crbug.com/591500 [ Win10 ] virtual/threaded/printing/ellipsis-printing-style.html [ Skip ]
-crbug.com/591500 [ Win10 ] printing/ellipsis-printing-style.html [ Skip ]
-crbug.com/591500 [ Win10 ] virtual/layout_ng_block_frag/printing/ellipsis-printing-style.html [ Skip ]
+crbug.com/591500 [ Win10 ] printing/fixed-positioned-headers-and-footers-clipped.html [ Pass Failure ]
+crbug.com/591500 [ Win10 ] virtual/threaded/printing/ellipsis-printing-style.html [ Pass Failure ]
+crbug.com/591500 [ Win10 ] printing/ellipsis-printing-style.html [ Pass Failure ]
+crbug.com/591500 [ Win10 ] virtual/layout_ng_block_frag/printing/ellipsis-printing-style.html [ Pass Failure ]
 
 crbug.com/353746 virtual/android/fullscreen/video-specified-size.html [ Failure Pass ]
 
@@ -2766,14 +2753,8 @@ crbug.com/1022141 virtual/speech-with-unified-autoplay/external/wpt/speech-api/S
 crbug.com/626703 [ Linux ] external/wpt/css/css-align/baseline-rules/synthesized-baseline-table-cell-001.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-align/baseline-rules/synthesized-baseline-table-cell-001.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-align/baseline-rules/synthesized-baseline-table-cell-001.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-pseudo/first-letter-exclude-inline-marker.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-pseudo/first-letter-exclude-inline-marker.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-pseudo/first-letter-exclude-inline-marker.html [ Failure ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/input-events/input-events-typing.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/mathml/relations/html5-tree/css-inline-style-dynamic.tentative.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-pseudo/first-letter-exclude-inline-child-marker.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-pseudo/first-letter-exclude-inline-child-marker.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-pseudo/first-letter-exclude-inline-child-marker.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/input-events/input-events-typing.html [ Timeout ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/input-events/input-events-typing.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/input-events/input-events-typing.html [ Timeout ]
@@ -4291,8 +4272,8 @@ crbug.com/724027 http/tests/security/contentSecurityPolicy/source-list-parsing-0
 crbug.com/722212 fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Timeout Pass ]
 crbug.com/722212 virtual/mouseevent_fractional/fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Timeout Pass ]
 # Crashes on win
-crbug.com/722943 media/audio-repaint.html [ Skip ]
-crbug.com/722943 virtual/audio-service/media/audio-repaint.html [ Skip ]
+crbug.com/722943 [ Win ] media/audio-repaint.html [ Crash ]
+crbug.com/722943 [ Win ] virtual/audio-service/media/audio-repaint.html [ Crash ]
 
 # Sheriff failures 2018-08-13
 crbug.com/873454 css3/filters/effect-reference-image-hw.html [ Failure Pass ]
@@ -5128,75 +5109,46 @@ crbug.com/921151 [ Linux ] http/tests/security/mixedContent/insecure-iframe-with
 # cases it seems like a problem around test expectation timing rather than real bugs affecting
 # production code. Because such timing bugs are relatively common in tests and it would thus be very
 # difficult to land the dispatch change without some temporary breakage, these tests are disabled
-# while they can be investigated.
-crbug.com/921719 scrollbars/mock-scrollbars.html [ Skip ]
-crbug.com/921719 virtual/prefer_compositing_to_lcd_text/scrollbars/mock-scrollbars.html [ Skip ]
-crbug.com/922951 compositing/overflow/overflow-scroll-with-local-background.html [ Skip ]
-crbug.com/922951 external/wpt/longtask-timing/longtask-in-sibling-iframe-crossorigin.html [ Skip ]
-crbug.com/922951 external/wpt/pointerevents/pointerevent_capture_mouse.html [ Skip ]
-crbug.com/922951 external/wpt/pointerevents/pointerevent_releasepointercapture_invalid_pointerid.html [ Skip ]
-crbug.com/922951 external/wpt/pointerevents/pointerevent_setpointercapture_disconnected.html [ Skip ]
-crbug.com/922951 external/wpt/pointerevents/pointerevent_setpointercapture_invalid_pointerid.html [ Skip ]
-crbug.com/922951 fast/canvas/OffscreenCanvas-placeholder-createImageBitmap.html [ Skip ]
-crbug.com/922951 fast/css/pseudo-hover-active-display-none.html [ Skip ]
-crbug.com/922951 fast/dom/shadow/move-marquee-crossing-treescope-crash.html [ Skip ]
-crbug.com/922951 fast/forms/number/number-input-event-composed.html [ Skip ]
-crbug.com/922951 fast/loader/detach-while-printing.html [ Skip ]
-crbug.com/922951 fast/loader/document-open-iframe-then-detach.html [ Skip ]
-crbug.com/922951 virtual/text-antialias/international/inline-plaintext-relayout-with-leading-neutrals.html [ Skip ]
-crbug.com/922951 http/tests/cache/subresource-fragment-identifier.html [ Skip ]
-crbug.com/922951 http/tests/devtools/tracing/timeline-network-received-data.js [ Skip ]
-crbug.com/922951 http/tests/history/back-to-post.html [ Skip ]
-crbug.com/922951 http/tests/images/feature-policy-unoptimized-images-cached-image.html [ Skip ]
-crbug.com/922951 http/tests/security/offscreencanvas-placeholder-read-blocked-no-crossorigin.html [ Skip ]
-crbug.com/922951 http/tests/security/cookies/basic.html [ Skip ]
-crbug.com/922951 http/tests/webaudio/autoplay-crossorigin.html [ Skip ]
-crbug.com/922951 media/controls/overflow-menu-hide-on-click-outside-stoppropagation.html [ Skip ]
-crbug.com/922951 media/controls/overflow-menu-hide-on-click-outside.html [ Skip ]
-crbug.com/922951 media/controls/overflow-menu-toggle-class-for-animation.html [ Skip ]
-crbug.com/922951 virtual/audio-service/media/controls/overflow-menu-hide-on-click-outside-stoppropagation.html [ Skip ]
-crbug.com/922951 virtual/audio-service/media/controls/overflow-menu-hide-on-click-outside.html [ Skip ]
-crbug.com/922951 virtual/audio-service/media/controls/overflow-menu-toggle-class-for-animation.html [ Skip ]
-crbug.com/922951 scrollbars/resize-scales-with-dpi-150.html [ Skip ]
-crbug.com/922951 svg/as-object/embedded-svg-immediate-offsetWidth-query.html [ Skip ]
-crbug.com/922951 svg/as-object/sizing/svg-in-object-placeholder-auto-auto-intrinsic-ratio.html [ Skip ]
-crbug.com/922951 svg/as-object/sizing/svg-in-object-placeholder-auto-auto-no-intrinsic-ratio.html [ Skip ]
-crbug.com/922951 svg/as-object/sizing/svg-in-object-placeholder-auto-fixed-intrinsic-ratio.html [ Skip ]
-crbug.com/922951 svg/as-object/sizing/svg-in-object-placeholder-auto-fixed-no-intrinsic-ratio.html [ Skip ]
-crbug.com/922951 svg/as-object/sizing/svg-in-object-placeholder-auto-percentage-intrinsic-ratio.html [ Skip ]
-crbug.com/922951 svg/as-object/sizing/svg-in-object-placeholder-auto-percentage-no-intrinsic-ratio.html [ Skip ]
-crbug.com/922951 svg/as-object/sizing/svg-in-object-placeholder-fixed-auto-intrinsic-ratio.html [ Skip ]
-crbug.com/922951 svg/as-object/sizing/svg-in-object-placeholder-fixed-auto-no-intrinsic-ratio.html [ Skip ]
-crbug.com/922951 svg/as-object/sizing/svg-in-object-placeholder-fixed-fixed-intrinsic-ratio.html [ Skip ]
-crbug.com/922951 svg/as-object/sizing/svg-in-object-placeholder-fixed-fixed-no-intrinsic-ratio.html [ Skip ]
-crbug.com/922951 svg/as-object/sizing/svg-in-object-placeholder-fixed-percentage-intrinsic-ratio.html [ Skip ]
-crbug.com/922951 svg/as-object/sizing/svg-in-object-placeholder-fixed-percentage-no-intrinsic-ratio.html [ Skip ]
-crbug.com/922951 svg/as-object/sizing/svg-in-object-placeholder-percentage-auto-intrinsic-ratio.html [ Skip ]
-crbug.com/922951 svg/as-object/sizing/svg-in-object-placeholder-percentage-auto-no-intrinsic-ratio.html [ Skip ]
-crbug.com/922951 svg/as-object/sizing/svg-in-object-placeholder-percentage-fixed-intrinsic-ratio.html [ Skip ]
-crbug.com/922951 svg/as-object/sizing/svg-in-object-placeholder-percentage-fixed-no-intrinsic-ratio.html [ Skip ]
-crbug.com/922951 svg/as-object/sizing/svg-in-object-placeholder-percentage-percentage-intrinsic-ratio.html [ Skip ]
-crbug.com/922951 svg/as-object/sizing/svg-in-object-placeholder-percentage-percentage-no-intrinsic-ratio.html [ Skip ]
-crbug.com/922951 svg/custom/object-sizing-zero-intrinsic-width-height.html [ Skip ]
-crbug.com/922951 virtual/gpu/fast/canvas/OffscreenCanvas-MessageChannel-transfer.html [ Skip ]
-crbug.com/922951 virtual/gpu/fast/canvas/OffscreenCanvas-placeholder-createImageBitmap.html [ Skip ]
-crbug.com/922951 virtual/gpu/fast/canvas/color-space/canvas-drawImage-offscreenCanvas.html [ Skip ]
-crbug.com/922951 virtual/mouseevent_fractional/fast/events/synthetic-events/tap-on-scaled-screen.html [ Skip ]
-crbug.com/922951 virtual/prefer_compositing_to_lcd_text/scrollbars/resize-scales-with-dpi-150.html [ Skip ]
-crbug.com/922951 virtual/scalefactor150/fast/events/synthetic-events/tap-on-scaled-screen.html [ Skip ]
-crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/frame-model-instrumentation.js [ Skip ]
-crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/timeline-layout/timeline-layout-reason.js [ Skip ]
-crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.js [ Skip ]
-crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-record-reload.js [ Skip ]
-crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-image.js [ Skip ]
+crbug.com/922951 external/wpt/pointerevents/pointerevent_capture_mouse.html [ Failure Pass Timeout Crash ]
+crbug.com/922951 external/wpt/pointerevents/pointerevent_releasepointercapture_invalid_pointerid.html [ Failure Pass Timeout Crash ]
+crbug.com/922951 external/wpt/pointerevents/pointerevent_setpointercapture_disconnected.html [ Failure Pass Timeout Crash ]
+crbug.com/922951 external/wpt/pointerevents/pointerevent_setpointercapture_invalid_pointerid.html [ Failure Pass Timeout Crash ]
+crbug.com/922951 fast/canvas/OffscreenCanvas-placeholder-createImageBitmap.html [ Failure Pass Timeout Crash ]
+crbug.com/922951 fast/css/pseudo-hover-active-display-none.html [ Failure Pass Timeout Crash ]
+crbug.com/922951 fast/dom/shadow/move-marquee-crossing-treescope-crash.html [ Failure Pass Timeout Crash ]
+crbug.com/922951 fast/forms/number/number-input-event-composed.html [ Failure Pass Timeout Crash ]
+crbug.com/922951 fast/loader/detach-while-printing.html [ Failure Pass Timeout Crash ]
+crbug.com/922951 fast/loader/document-open-iframe-then-detach.html [ Failure Pass Timeout Crash ]
+crbug.com/922951 virtual/text-antialias/international/inline-plaintext-relayout-with-leading-neutrals.html [ Failure Pass Timeout Crash ]
+crbug.com/922951 http/tests/cache/subresource-fragment-identifier.html [ Failure Pass Timeout Crash ]
+crbug.com/922951 http/tests/devtools/tracing/timeline-network-received-data.js [ Failure Pass Timeout Crash ]
+crbug.com/922951 http/tests/history/back-to-post.html [ Failure Pass Timeout Crash ]
+crbug.com/922951 http/tests/images/feature-policy-unoptimized-images-cached-image.html [ Failure Pass Timeout Crash ]
+crbug.com/922951 http/tests/security/offscreencanvas-placeholder-read-blocked-no-crossorigin.html [ Failure Pass Timeout Crash ]
+crbug.com/922951 http/tests/security/cookies/basic.html [ Failure Pass Timeout Crash ]
+crbug.com/922951 http/tests/webaudio/autoplay-crossorigin.html [ Failure Pass Timeout Crash ]
+crbug.com/922951 media/controls/overflow-menu-hide-on-click-outside-stoppropagation.html [ Failure Pass Timeout Crash ]
+crbug.com/922951 media/controls/overflow-menu-hide-on-click-outside.html [ Failure Pass Timeout Crash ]
+crbug.com/922951 media/controls/overflow-menu-toggle-class-for-animation.html [ Failure Pass Timeout Crash ]
+crbug.com/922951 virtual/audio-service/media/controls/overflow-menu-hide-on-click-outside-stoppropagation.html [ Failure Pass Timeout Crash ]
+crbug.com/922951 virtual/audio-service/media/controls/overflow-menu-hide-on-click-outside.html [ Failure Pass Timeout Crash ]
+crbug.com/922951 virtual/audio-service/media/controls/overflow-menu-toggle-class-for-animation.html [ Failure Pass Timeout Crash ]
+crbug.com/922951 virtual/gpu/fast/canvas/OffscreenCanvas-MessageChannel-transfer.html [ Failure Pass Timeout Crash ]
+crbug.com/922951 virtual/gpu/fast/canvas/OffscreenCanvas-placeholder-createImageBitmap.html [ Failure Pass Timeout Crash ]
+crbug.com/922951 virtual/gpu/fast/canvas/color-space/canvas-drawImage-offscreenCanvas.html [ Failure Pass Timeout Crash ]
+crbug.com/922951 virtual/mouseevent_fractional/fast/events/synthetic-events/tap-on-scaled-screen.html [ Failure Pass Timeout Crash ]
+crbug.com/922951 virtual/prefer_compositing_to_lcd_text/scrollbars/resize-scales-with-dpi-150.html [ Failure Pass Timeout Crash ]
+crbug.com/922951 virtual/scalefactor150/fast/events/synthetic-events/tap-on-scaled-screen.html [ Failure Pass Timeout Crash ]
+crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/frame-model-instrumentation.js [ Failure Pass Timeout Crash ]
+crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/timeline-layout/timeline-layout-reason.js [ Failure Pass Timeout Crash ]
+crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.js [ Failure Pass Timeout Crash ]
+crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-record-reload.js [ Failure Pass Timeout Crash ]
+crbug.com/922951 virtual/threaded/http/tests/devtools/tracing/timeline-paint/timeline-paint-image.js [ Failure Pass Timeout Crash ]
 
 # Flaky devtools test for recalculating styles.
 crbug.com/1018177 http/tests/devtools/tracing/timeline-style/timeline-recalculate-styles.js [ Failure Pass ]
 crbug.com/1018177 virtual/threaded/http/tests/devtools/tracing/timeline-style/timeline-recalculate-styles.js [ Pass Failure ]
 
-# These were marked as skipped in 922951. Flakiness no longer produces localy.
-# Marking them as Failure/Pass to collect data on bots. Once confirmed they are
-# no longer flaky we can re-enable.
 crbug.com/986018 fast/scroll-snap/snaps-for-different-key-granularity.html [ Failure Pass ]
 
 # Race: The RTCIceConnectionState can become "connected" before getStats()
@@ -5656,7 +5608,7 @@ crbug.com/1003943 virtual/scalefactor200withoutzoom/external/wpt/element-timing/
 crbug.com/979298 [ Mac ] media/controls/captions-menu-always-visible.html [ Pass Failure ]
 crbug.com/979298 [ Mac ] media/controls/overflow-menu-always-visible.html [ Pass Failure ]
 crbug.com/979298 [ Mac ] media/controls/volumechange-muted-attribute.html [ Pass Failure ]
-crbug.com/979298 [ Mac ] media/video-persistence.html [ Pass Failure ]
+crbug.com/988248 [ Mac Linux ] media/video-persistence.html [ Pass Failure ]
 crbug.com/979298 [ Mac ] media/video-zoom.html [ Pass Failure ]
 crbug.com/979298 [ Mac ] virtual/audio-service/media/controls/captions-menu-always-visible.html [ Pass Failure ]
 crbug.com/979298 [ Mac ] virtual/audio-service/media/controls/overflow-menu-always-visible.html [ Pass Failure ]
@@ -5888,7 +5840,7 @@ crbug.com/1021407 [ Mac10.11 ] virtual/audio-service/media/controls/video-overla
 crbug.com/1021407 [ Mac10.11 ] media/controls/video-overlay-cast-dark-rendering.html [ Pass Failure ]
 
 # Sheriff 2019-11-13
-crbug.com/1024398 [ Debug ] http/tests/appcache/remove-cache.html [ Pass Failure ]
+crbug.com/1024398 http/tests/appcache/remove-cache.html [ Pass Failure ]
 
 # Temporarily disabled to land scope changes in DevTools
 crbug.com/963183 http/tests/devtools/sources/debugger-pause/set-return-value.js [ Pass Failure ]

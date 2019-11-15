@@ -564,7 +564,7 @@
 <translation id="7589661784326793847">Подождите…</translation>
 <translation id="7603724359189955920">Сетка</translation>
 <translation id="7627790789328695202">Файл "<ph name="FILE_NAME" />" уже существует. Задайте другое название и повторите попытку.</translation>
-<translation id="7628656427739290098">Выполнено на <ph name="PERCENT" /> %</translation>
+<translation id="7628656427739290098">Выполнено на <ph name="PERCENT" /> %.</translation>
 <translation id="7649070708921625228">Справка</translation>
 <translation id="7654209398114106148">Перемещение объектов (<ph name="NUMBER_OF_ITEMS" />)…</translation>
 <translation id="7658239707568436148">Отмена</translation>

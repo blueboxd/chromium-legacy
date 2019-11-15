@@ -104,7 +104,7 @@ TestRunner::TestRunner(JobLevel job_level,
       disable_csrss_(true),
       target_process_id_(0) {
   broker_ = NULL;
-  policy_ = NULL;
+  policy_.reset();
   timeout_ = kDefaultTimeout;
   state_ = AFTER_REVERT;
   is_async_= false;

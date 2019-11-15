@@ -20,12 +20,12 @@
 #include "base/bind_helpers.h"
 #include "base/containers/circular_deque.h"
 #include "base/files/file_util.h"
-#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
@@ -165,13 +165,10 @@ const bool kDefaultFileSchemeAllowed = false;
 
 }  // namespace
 
-namespace {
-base::LazyInstance<CookieManager>::Leaky g_lazy_instance;
-}
-
 // static
 CookieManager* CookieManager::GetInstance() {
-  return g_lazy_instance.Pointer();
+  static base::NoDestructor<CookieManager> instance;
+  return instance.get();
 }
 
 namespace {
@@ -201,7 +198,7 @@ CookieManager::CookieManager()
   MigrateCookieStorePath();
 }
 
-CookieManager::~CookieManager() {}
+CookieManager::~CookieManager() = default;
 
 void CookieManager::MigrateCookieStorePath() {
   base::FilePath old_cookie_store_path = GetPathInAppDirectory("Cookies");

@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/network_delegate_impl.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/log/net_log_event_type.h"
@@ -144,8 +145,8 @@ TEST_F(ProxyServiceMojoTest, Basic) {
   std::unique_ptr<net::ProxyResolutionService::Request> request;
   EXPECT_EQ(net::ERR_IO_PENDING,
             proxy_resolution_service_->ResolveProxy(
-                GURL("http://foo"), std::string(), &info, callback.callback(),
-                &request, net::NetLogWithSource()));
+                GURL("http://foo"), std::string(), net::NetworkIsolationKey(),
+                &info, callback.callback(), &request, net::NetLogWithSource()));
 
   // PAC file fetcher should have a fetch triggered by the first
   // |ResolveProxy()| request.
@@ -165,8 +166,8 @@ TEST_F(ProxyServiceMojoTest, DnsResolution) {
   std::unique_ptr<net::ProxyResolutionService::Request> request;
   EXPECT_EQ(net::ERR_IO_PENDING,
             proxy_resolution_service_->ResolveProxy(
-                GURL("http://foo"), std::string(), &info, callback.callback(),
-                &request, net::NetLogWithSource()));
+                GURL("http://foo"), std::string(), net::NetworkIsolationKey(),
+                &info, callback.callback(), &request, net::NetLogWithSource()));
 
   // PAC file fetcher should have a fetch triggered by the first
   // |ResolveProxy()| request.
@@ -188,8 +189,8 @@ TEST_F(ProxyServiceMojoTest, Error) {
   std::unique_ptr<net::ProxyResolutionService::Request> request;
   EXPECT_EQ(net::ERR_IO_PENDING,
             proxy_resolution_service_->ResolveProxy(
-                GURL("http://foo"), std::string(), &info, callback.callback(),
-                &request, test_net_log.bound()));
+                GURL("http://foo"), std::string(), net::NetworkIsolationKey(),
+                &info, callback.callback(), &request, test_net_log.bound()));
 
   // PAC file fetcher should have a fetch triggered by the first
   // |ResolveProxy()| request.
@@ -214,8 +215,8 @@ TEST_F(ProxyServiceMojoTest, ErrorOnInitialization) {
   std::unique_ptr<net::ProxyResolutionService::Request> request;
   EXPECT_EQ(net::ERR_IO_PENDING,
             proxy_resolution_service_->ResolveProxy(
-                GURL("http://foo"), std::string(), &info, callback.callback(),
-                &request, net::NetLogWithSource()));
+                GURL("http://foo"), std::string(), net::NetworkIsolationKey(),
+                &info, callback.callback(), &request, net::NetLogWithSource()));
 
   // PAC file fetcher should have a fetch triggered by the first
   // |ResolveProxy()| request.

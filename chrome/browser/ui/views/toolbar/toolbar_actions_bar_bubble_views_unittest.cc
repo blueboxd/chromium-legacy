@@ -25,7 +25,6 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/test/test_widget_observer.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace {
 const int kIconSize = 16;
@@ -77,7 +76,7 @@ class ToolbarActionsBarBubbleViewsTest : public ChromeViewsTestBase {
   }
 
   void ClickButton(views::Button* button) {
-    bubble()->GetDialogClientView()->ResetViewShownTimeStampForTesting();
+    bubble()->ResetViewShownTimeStampForTesting();
 
     ASSERT_TRUE(button);
     const gfx::Point point(10, 10);
@@ -113,10 +112,9 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestBubbleLayoutActionButton) {
                                                ActionString());
   ShowBubble(&delegate);
 
-  EXPECT_TRUE(bubble()->GetDialogClientView()->ok_button());
-  EXPECT_EQ(ActionString(),
-            bubble()->GetDialogClientView()->ok_button()->GetText());
-  EXPECT_FALSE(bubble()->GetDialogClientView()->cancel_button());
+  EXPECT_TRUE(bubble()->GetOkButton());
+  EXPECT_EQ(ActionString(), bubble()->GetOkButton()->GetText());
+  EXPECT_FALSE(bubble()->GetCancelButton());
 
   CloseBubble();
 }
@@ -133,8 +131,8 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestBubbleLayoutNoButtons) {
   ShowBubble(&delegate);
 
   EXPECT_EQ(nullptr, bubble()->GetExtraView());
-  EXPECT_FALSE(bubble()->GetDialogClientView()->ok_button());
-  EXPECT_FALSE(bubble()->GetDialogClientView()->cancel_button());
+  EXPECT_FALSE(bubble()->GetOkButton());
+  EXPECT_FALSE(bubble()->GetCancelButton());
   EXPECT_FALSE(bubble()->learn_more_button());
 
   CloseBubble();
@@ -147,12 +145,10 @@ TEST_F(ToolbarActionsBarBubbleViewsTest,
   delegate.set_dismiss_button_text(DismissString());
   ShowBubble(&delegate);
 
-  EXPECT_TRUE(bubble()->GetDialogClientView()->ok_button());
-  EXPECT_EQ(ActionString(),
-            bubble()->GetDialogClientView()->ok_button()->GetText());
-  EXPECT_TRUE(bubble()->GetDialogClientView()->cancel_button());
-  EXPECT_EQ(DismissString(),
-            bubble()->GetDialogClientView()->cancel_button()->GetText());
+  EXPECT_TRUE(bubble()->GetOkButton());
+  EXPECT_EQ(ActionString(), bubble()->GetOkButton()->GetText());
+  EXPECT_TRUE(bubble()->GetCancelButton());
+  EXPECT_EQ(DismissString(), bubble()->GetCancelButton()->GetText());
 
   EXPECT_FALSE(bubble()->learn_more_button());
   EXPECT_FALSE(bubble()->item_list());
@@ -174,12 +170,10 @@ TEST_F(ToolbarActionsBarBubbleViewsTest,
 
   ShowBubble(&delegate);
 
-  EXPECT_TRUE(bubble()->GetDialogClientView()->ok_button());
-  EXPECT_EQ(ActionString(),
-            bubble()->GetDialogClientView()->ok_button()->GetText());
-  EXPECT_TRUE(bubble()->GetDialogClientView()->cancel_button());
-  EXPECT_EQ(DismissString(),
-            bubble()->GetDialogClientView()->cancel_button()->GetText());
+  EXPECT_TRUE(bubble()->GetOkButton());
+  EXPECT_EQ(ActionString(), bubble()->GetOkButton()->GetText());
+  EXPECT_TRUE(bubble()->GetCancelButton());
+  EXPECT_EQ(DismissString(), bubble()->GetCancelButton()->GetText());
   EXPECT_TRUE(bubble()->learn_more_button());
   EXPECT_EQ(LearnMoreString(),
             bubble()->learn_more_button()->GetTooltipText(gfx::Point(0, 0)));
@@ -194,10 +188,9 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestBubbleLayoutListView) {
   delegate.set_item_list_text(ItemListString());
   ShowBubble(&delegate);
 
-  EXPECT_TRUE(bubble()->GetDialogClientView()->ok_button());
-  EXPECT_EQ(ActionString(),
-            bubble()->GetDialogClientView()->ok_button()->GetText());
-  EXPECT_FALSE(bubble()->GetDialogClientView()->cancel_button());
+  EXPECT_TRUE(bubble()->GetOkButton());
+  EXPECT_EQ(ActionString(), bubble()->GetOkButton()->GetText());
+  EXPECT_FALSE(bubble()->GetCancelButton());
   EXPECT_FALSE(bubble()->learn_more_button());
   EXPECT_TRUE(bubble()->item_list());
   EXPECT_EQ(ItemListString(), bubble()->item_list()->GetText());
@@ -210,10 +203,9 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestBubbleLayoutNoBodyText) {
       HeadingString(), base::string16(), ActionString());
   ShowBubble(&delegate);
 
-  EXPECT_TRUE(bubble()->GetDialogClientView()->ok_button());
-  EXPECT_EQ(ActionString(),
-            bubble()->GetDialogClientView()->ok_button()->GetText());
-  EXPECT_FALSE(bubble()->GetDialogClientView()->cancel_button());
+  EXPECT_TRUE(bubble()->GetOkButton());
+  EXPECT_EQ(ActionString(), bubble()->GetOkButton()->GetText());
+  EXPECT_FALSE(bubble()->GetCancelButton());
   EXPECT_FALSE(bubble()->learn_more_button());
   EXPECT_FALSE(bubble()->body_text());
   EXPECT_FALSE(bubble()->item_list());
@@ -228,12 +220,11 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestBubbleDefaultDialogButtons) {
   delegate.set_default_dialog_button(ui::DIALOG_BUTTON_OK);
   ShowBubble(&delegate);
 
-  ASSERT_TRUE(bubble()->GetDialogClientView()->ok_button());
-  EXPECT_TRUE(bubble()->GetDialogClientView()->ok_button()->GetIsDefault());
+  ASSERT_TRUE(bubble()->GetOkButton());
+  EXPECT_TRUE(bubble()->GetOkButton()->GetIsDefault());
 
-  ASSERT_TRUE(bubble()->GetDialogClientView()->cancel_button());
-  EXPECT_FALSE(
-      bubble()->GetDialogClientView()->cancel_button()->GetIsDefault());
+  ASSERT_TRUE(bubble()->GetCancelButton());
+  EXPECT_FALSE(bubble()->GetCancelButton()->GetIsDefault());
 
   CloseBubble();
 }
@@ -255,7 +246,7 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestShowAndCloseBubble) {
   EXPECT_TRUE(delegate.shown());
   EXPECT_FALSE(delegate.close_action());
 
-  bubble->GetDialogClientView()->CancelWindow();
+  bubble->CancelDialog();
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(delegate.close_action());
   EXPECT_EQ(ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_USER_ACTION,
@@ -273,7 +264,7 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestClickActionButton) {
 
   EXPECT_FALSE(delegate.close_action());
 
-  ClickButton(bubble()->GetDialogClientView()->ok_button());
+  ClickButton(bubble()->GetOkButton());
   ASSERT_TRUE(delegate.close_action());
   EXPECT_EQ(ToolbarActionsBarBubbleDelegate::CLOSE_EXECUTE,
             *delegate.close_action());
@@ -290,7 +281,7 @@ TEST_F(ToolbarActionsBarBubbleViewsTest, TestClickDismissButton) {
 
   EXPECT_FALSE(delegate.close_action());
 
-  ClickButton(bubble()->GetDialogClientView()->cancel_button());
+  ClickButton(bubble()->GetCancelButton());
   ASSERT_TRUE(delegate.close_action());
   EXPECT_EQ(ToolbarActionsBarBubbleDelegate::CLOSE_DISMISS_USER_ACTION,
             *delegate.close_action());

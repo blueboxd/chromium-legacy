@@ -8,7 +8,6 @@ enum NDEFPushTarget { "tag", "peer", "any" };
 
 dictionary NDEFPushOptions {
     NDEFPushTarget target = "any";
-    unrestricted double timeout; // in ms
     boolean ignoreRead = true;
     AbortSignal? signal;
 };

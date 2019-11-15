@@ -83,21 +83,6 @@ std::unique_ptr<Thread> Thread::CreateThread(
   return std::move(thread);
 }
 
-std::unique_ptr<Thread> Thread::CreateWebAudioThread() {
-  ThreadCreationParams params(ThreadType::kAudioWorkletThread);
-  params.supports_gc = true;
-
-  // WebAudio uses a thread with |DISPLAY| priority to avoid glitch when the
-  // system is under the high pressure. Note that the main browser thread also
-  // runs with same priority. (see: crbug.com/734539)
-  params.thread_priority =
-      base::FeatureList::IsEnabled(features::kAudioWorkletRealtimeThread)
-          ? base::ThreadPriority::REALTIME_AUDIO
-          : base::ThreadPriority::DISPLAY;
-
-  return CreateThread(params);
-}
-
 void Thread::CreateAndSetCompositorThread() {
   DCHECK(!GetCompositorThread());
 

@@ -9,8 +9,12 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
+#include "build/branding_buildflags.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/safe_browsing_private.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -629,5 +633,114 @@ TEST_F(SafeBrowsingPrivateEventRouterTest,
   Mock::VerifyAndClearExpectations(client_);
   EXPECT_EQ(base::Value::Type::NONE, report.type());
 }
+
+// Tests to make sure the feature flag and policy control real-time reporting
+// as expected.  The parameter for these tests is a tuple of bools:
+//
+//   bool: whether the feature flag is enabled.
+//   bool: whether the browser is manageable.
+//   bool: whether the policy is enabled.
+//   bool: whether the server has authorized this browser instance.
+class SafeBrowsingIsRealtimeReportingEnabledTest
+    : public SafeBrowsingPrivateEventRouterTest,
+      public testing::WithParamInterface<
+          testing::tuple<bool, bool, bool, bool>> {
+ public:
+  SafeBrowsingIsRealtimeReportingEnabledTest()
+      : is_feature_flag_enabled_(testing::get<0>(GetParam())),
+        is_manageable_(testing::get<1>(GetParam())),
+        is_policy_enabled_(testing::get<2>(GetParam())),
+        is_authorized_(testing::get<3>(GetParam())) {
+    if (is_feature_flag_enabled_) {
+      scoped_feature_list_.InitAndEnableFeature(
+          SafeBrowsingPrivateEventRouter::kRealtimeReportingFeature);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          SafeBrowsingPrivateEventRouter::kRealtimeReportingFeature);
+    }
+
+    // In chrome branded desktop builds, the browser is always manageable.
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING) && !defined(OS_CHROMEOS)
+    if (is_manageable_) {
+      base::CommandLine::ForCurrentProcess()->AppendSwitch(
+          switches::kEnableChromeBrowserCloudManagement);
+    }
+#endif
+
+    TestingBrowserProcess::GetGlobal()->local_state()->SetBoolean(
+        prefs::kUnsafeEventsReportingEnabled, is_policy_enabled_);
+  }
+
+  bool should_init() {
+#if defined(OS_CHROMEOS)
+    return false;
+#elif BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    return is_feature_flag_enabled_;
+#else
+    return is_feature_flag_enabled_ && is_manageable_;
+#endif
+  }
+
+ protected:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  const bool is_feature_flag_enabled_;
+  const bool is_manageable_;
+  const bool is_policy_enabled_;
+  const bool is_authorized_;
+};
+
+TEST_P(SafeBrowsingIsRealtimeReportingEnabledTest,
+       ShouldInitRealtimeReportingClient) {
+  EXPECT_EQ(
+      should_init(),
+      SafeBrowsingPrivateEventRouter::ShouldInitRealtimeReportingClient());
+}
+
+TEST_P(SafeBrowsingIsRealtimeReportingEnabledTest, CheckRealtimeReport) {
+  // In production, the router won't actually be authorized unless it was
+  // initialized.  The second argument to SetUpRouters() takes this into
+  // account.
+  SetUpRouters(is_policy_enabled_, should_init() && is_authorized_);
+  SafeBrowsingEventObserver event_observer(
+      api::safe_browsing_private::OnPolicySpecifiedPasswordChanged::kEventName);
+  event_router_->AddEventObserver(&event_observer);
+
+#if defined(OS_CHROMEOS)
+  bool should_report = false;
+#elif BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  bool should_report =
+      is_feature_flag_enabled_ && is_policy_enabled_ && is_authorized_;
+#else
+  bool should_report = is_feature_flag_enabled_ && is_manageable_ &&
+                       is_policy_enabled_ && is_authorized_;
+#endif
+
+  if (should_report) {
+    EXPECT_CALL(*client_, UploadRealtimeReport(_, _)).Times(1);
+  } else if (client_) {
+    // Because the test will crate a |client_| object when the policy is
+    // set, even if the feature flag or other conditions indicate that
+    // reports should not be sent, it is possible that the pointer is not
+    // null. In this case, make sure UploadRealtimeReport() is not called.
+    EXPECT_CALL(*client_, UploadRealtimeReport(_, _)).Times(0);
+  }
+
+  TriggerOnPolicySpecifiedPasswordChangedEvent();
+  base::RunLoop().RunUntilIdle();
+
+  // Asser the triggered actually did fire.
+  EXPECT_EQ(1u, event_observer.PassEventArgs().GetList().size());
+
+  // Make sure UploadRealtimeReport was called the expected number of times.
+  if (client_)
+    Mock::VerifyAndClearExpectations(client_);
+}
+
+INSTANTIATE_TEST_SUITE_P(,
+                         SafeBrowsingIsRealtimeReportingEnabledTest,
+                         testing::Combine(testing::Bool(),
+                                          testing::Bool(),
+                                          testing::Bool(),
+                                          testing::Bool()));
 
 }  // namespace extensions

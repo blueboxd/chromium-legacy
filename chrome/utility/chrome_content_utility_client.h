@@ -26,7 +26,7 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
   ~ChromeContentUtilityClient() override;
 
   // content::ContentUtilityClient:
-  void UtilityThreadStarted() override;
+  void ExposeInterfacesToBrowser(mojo::BinderMap* binders) override;
   bool OnMessageReceived(const IPC::Message& message) override;
   void RegisterNetworkBinders(
       service_manager::BinderRegistry* registry) override;

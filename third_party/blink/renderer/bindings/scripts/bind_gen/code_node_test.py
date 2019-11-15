@@ -254,6 +254,10 @@ void blink::bindings::func() {
                 arg_decls=[LiteralNode("int arg1"),
                            LiteralNode("int arg2")],
                 return_type=LiteralNode("void"),
+                member_initializer_list=[
+                    LiteralNode("member1(0)"),
+                    LiteralNode("member2(\"str\")")
+                ],
                 local_vars=local_vars,
                 body=func_body,
                 comment=LiteralNode("// comment1\n// comment2")))
@@ -262,7 +266,7 @@ void blink::bindings::func() {
             root, """\
 // comment1
 // comment2
-void blink::bindings::func(int arg1, int arg2) {
+void blink::bindings::func(int arg1, int arg2) : member1(0), member2("str") {
   int var1 = 1;
   if (var1) {
     return var1;

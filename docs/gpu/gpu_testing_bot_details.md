@@ -25,11 +25,11 @@ waterfalls, and various tryservers, as described in [Using the GPU Bots].
 [Using the GPU Bots]: gpu_testing.md#Using-the-GPU-Bots
 
 All of the physical hardware for the bots lives in the Swarming pool, and most
-of it in the Chrome-GPU Swarming pool. The waterfall bots are simply virtual
-machines which spawn Swarming tasks with the appropriate tags to get them to run
-on the desired GPU and operating system type. So, for example, the [Win10 x64
-Release (NVIDIA)] bot is actually a virtual machine which spawns all of its jobs
-with the Swarming parameters:
+of it in the chromium.tests.gpu Swarming pool. The waterfall bots are simply
+virtual machines which spawn Swarming tasks with the appropriate tags to get
+them to run on the desired GPU and operating system type. So, for example, the
+[Win10 x64 Release (NVIDIA)] bot is actually a virtual machine which spawns all
+of its jobs with the Swarming parameters:
 
 [Win10 x64 Release (NVIDIA)]: https://ci.chromium.org/p/chromium/builders/ci/Win10%20x64%20Release%20%28NVIDIA%29
 
@@ -37,7 +37,7 @@ with the Swarming parameters:
 {
     "gpu": "10de:1cb3-23.21.13.8816",
     "os": "Windows-10",
-    "pool": "Chrome-GPU"
+    "pool": "chromium.tests.gpu"
 }
 ```
 
@@ -220,7 +220,7 @@ In the [chromium/src] workspace:
 In the [infradata/config] workspace (Google internal only, sorry):
 
 *   [gpu.star]
-    *   Defines a `Chrome-GPU` Swarming pool which contains most of the
+    *   Defines a `chromium.tests.gpu` Swarming pool which contains most of the
         specialized hardware: as of this writing, the Windows and Linux NVIDIA
         bots, the Windows AMD bots, and the MacBook Pros with NVIDIA and AMD
         GPUs. New GPU hardware should be added to this pool.
@@ -325,10 +325,10 @@ Builder].
     to determine the PCI IDs of the GPUs in the bots. (These instructions will
     need to be updated for Android bots which don't have PCI buses.)
 
-    1.  Make sure to add these new machines to the Chrome-GPU Swarming pool by
-        creating a CL against [gpu.star] in the [infradata/config] (Google
-        internal) workspace. Git configure your user.email to @google.com if
-        necessary. Here is one [example
+    1.  Make sure to add these new machines to the chromium.tests.gpu Swarming
+        pool by creating a CL against [gpu.star] in the [infradata/config]
+        (Google internal) workspace. Git configure your user.email to
+        @google.com if necessary. Here is one [example
         CL](https://chrome-internal-review.googlesource.com/913528) and a
         [second
         example](https://chrome-internal-review.googlesource.com/1111456).
@@ -346,8 +346,8 @@ Builder].
         1.  The swarming dimensions are crucial. These must match the GPU and
             OS type of the physical hardware in the Swarming pool. This is what
             causes the VMs to spawn their tests on the correct hardware. Make
-            sure to use the Chrome-GPU pool, and that the new machines were
-            specifically added to that pool.
+            sure to use the chromium.tests.gpu pool, and that the new machines
+            were specifically added to that pool.
         1.  Make triply sure that there are no collisions between the new
             hardware you're adding and hardware already in the Swarming pool.
             For example, it used to be the case that all of the Windows NVIDIA

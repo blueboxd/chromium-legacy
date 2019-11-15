@@ -29,7 +29,6 @@
 #include "base/cpu.h"
 #include "base/i18n/icu_util.h"
 #include "base/i18n/rtl.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/posix/global_descriptors.h"
 #include "base/strings/string_number_conversions.h"
@@ -71,9 +70,9 @@
 
 namespace android_webview {
 
-AwMainDelegate::AwMainDelegate() {}
+AwMainDelegate::AwMainDelegate() = default;
 
-AwMainDelegate::~AwMainDelegate() {}
+AwMainDelegate::~AwMainDelegate() = default;
 
 bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   content::SetContentClient(&content_client_);

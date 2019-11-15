@@ -47,7 +47,10 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
     private static final class NavigationWaiter {
         private String mUrl;
         private Tab mTab;
-        private boolean mNavigationComplete;
+        private boolean mNavigationObserved;
+        /* True indicates that the expected navigation event is a failure. False indicates that the
+         * expected event is completion. */
+        private boolean mExpectFailure;
         private boolean mDoneLoading;
         private boolean mContentfulPaint;
         private CallbackHelper mCallbackHelper = new CallbackHelper();
@@ -55,8 +58,16 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
         private NavigationCallback mNavigationCallback = new NavigationCallback() {
             @Override
             public void onNavigationCompleted(Navigation navigation) {
-                if (navigation.getUri().toString().equals(mUrl)) {
-                    mNavigationComplete = true;
+                if (navigation.getUri().toString().equals(mUrl) && !mExpectFailure) {
+                    mNavigationObserved = true;
+                    checkComplete();
+                }
+            }
+
+            @Override
+            public void onNavigationFailed(Navigation navigation) {
+                if (navigation.getUri().toString().equals(mUrl) && mExpectFailure) {
+                    mNavigationObserved = true;
                     checkComplete();
                 }
             }
@@ -76,10 +87,12 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
 
         // |waitForPaint| should generally be set to true, unless there is a specific reason for
         // onFirstContentfulPaint to not fire.
-        public NavigationWaiter(String url, Tab controller, boolean waitForPaint) {
+        public NavigationWaiter(
+                String url, Tab controller, boolean expectFailure, boolean waitForPaint) {
             mUrl = url;
             mTab = controller;
             if (!waitForPaint) mContentfulPaint = true;
+            mExpectFailure = expectFailure;
         }
 
         public void navigateAndWait() {
@@ -99,7 +112,7 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
         }
 
         private void checkComplete() {
-            if (mNavigationComplete && mDoneLoading && mContentfulPaint) {
+            if (mNavigationObserved && mDoneLoading && mContentfulPaint) {
                 mCallbackHelper.notifyCalled();
             }
         }
@@ -179,8 +192,17 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
     }
 
     public void navigateAndWait(Tab controller, String url, boolean waitForPaint) {
-        NavigationWaiter waiter = new NavigationWaiter(url, controller, waitForPaint);
-        waiter.navigateAndWait();
+        (new NavigationWaiter(url, controller, false /* expectFailure */, waitForPaint))
+                .navigateAndWait();
+    }
+
+    /**
+     * Loads the given URL in the shell, expecting failure.
+     */
+    public void navigateAndWaitForFailure(String url) {
+        (new NavigationWaiter(
+                 url, getActivity().getTab(), true /* expectFailure */, true /* waitForPaint */))
+                .navigateAndWait();
     }
 
     /**

@@ -29,10 +29,7 @@ component("webrtc") {
   deps = [
     "//base",
     "//media:shared_memory_support",
-    "//third_party/webrtc/modules/audio_processing",
-    "//third_party/webrtc/modules/audio_processing:api",
-    "//third_party/webrtc/modules/audio_processing:audio_processing_statistics",
-    "//third_party/webrtc_overrides:init_webrtc",
+    "//third_party/webrtc_overrides:webrtc_component",
   ]
 
   if (audio_processing_in_audio_service_supported) {
@@ -43,15 +40,7 @@ component("webrtc") {
       "audio_processor_controls.h",
     ]
 
-    deps += [
-      "//media",
-      "//third_party/webrtc/api:libjingle_peerconnection_api",
-      "//third_party/webrtc/api:media_stream_interface",
-      "//third_party/webrtc/api/audio:aec3_factory",
-      "//third_party/webrtc/modules/audio_processing/aec_dump:aec_dump",
-      "//third_party/webrtc/rtc_base:rtc_task_queue",
-      "//third_party/webrtc_overrides:task_queue_factory",
-    ]
+    deps += [ "//media" ]
 
     public_configs = [ ":audio_processing_build_flag" ]
   }
@@ -67,8 +56,7 @@ source_set("unit_tests") {
       "//media/webrtc",
       "//testing/gmock",
       "//testing/gtest",
-      "//third_party/webrtc/modules/audio_processing",
-      "//third_party/webrtc_overrides:init_webrtc",
+      "//third_party/webrtc_overrides:webrtc_component",
     ]
     sources = [
       "audio_processor_unittest.cc",

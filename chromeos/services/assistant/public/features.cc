@@ -77,9 +77,6 @@ const base::Feature kEnableMediaSessionIntegration{
 const base::Feature kDisableVoiceMatch{"DisableVoiceMatch",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kEnableAssistantWebContainer{
-    "EnableAssistantWebContainer", base::FEATURE_DISABLED_BY_DEFAULT};
-
 int GetProactiveSuggestionsMaxWidth() {
   return kAssistantProactiveSuggestionsMaxWidth.Get();
 }
@@ -157,8 +154,7 @@ bool IsVoiceMatchDisabled() {
 }
 
 bool IsAssistantWebContainerEnabled() {
-  return app_list_features::IsAssistantLauncherUIEnabled() &&
-         base::FeatureList::IsEnabled(kEnableAssistantWebContainer);
+  return app_list_features::IsAssistantLauncherUIEnabled();
 }
 
 }  // namespace features

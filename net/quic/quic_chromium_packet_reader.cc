@@ -20,7 +20,7 @@ namespace net {
 
 QuicChromiumPacketReader::QuicChromiumPacketReader(
     DatagramClientSocket* socket,
-    quic::QuicClock* clock,
+    const quic::QuicClock* clock,
     Visitor* visitor,
     int yield_after_packets,
     quic::QuicTime::Delta yield_after_duration,

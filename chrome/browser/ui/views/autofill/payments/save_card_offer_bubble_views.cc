@@ -42,13 +42,22 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/style/typography.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace autofill {
 
 namespace {
 const int kTooltipBubbleWidth = 320;
 const int kTooltipIconSize = 12;
+
+std::unique_ptr<LegalMessageView> CreateLegalMessageView(
+    const LegalMessageLines& message_lines,
+    views::StyledLabelListener* listener) {
+  if (message_lines.empty())
+    return nullptr;
+
+  return std::make_unique<LegalMessageView>(message_lines, listener);
+}
+
 }  // namespace
 
 SaveCardOfferBubbleViews::SaveCardOfferBubbleViews(
@@ -57,23 +66,15 @@ SaveCardOfferBubbleViews::SaveCardOfferBubbleViews(
     SaveCardBubbleController* controller)
     : SaveCardBubbleViews(anchor_view, web_contents, controller) {
   DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL);
+  legal_message_view_ = DialogDelegate::SetFootnoteView(
+      CreateLegalMessageView(controller->GetLegalMessageLines(), this));
+  if (legal_message_view_)
+    InitFootnoteView(legal_message_view_);
 }
 
 void SaveCardOfferBubbleViews::Init() {
   SaveCardBubbleViews::Init();
   DialogDelegate::SetExtraView(CreateUploadExplanationView());
-}
-
-std::unique_ptr<views::View> SaveCardOfferBubbleViews::CreateFootnoteView() {
-  if (controller()->GetLegalMessageLines().empty())
-    return nullptr;
-
-  auto legal_message_view = std::make_unique<LegalMessageView>(
-      controller()->GetLegalMessageLines(), this);
-
-  legal_message_view_ = legal_message_view.get();
-  InitFootnoteView(legal_message_view_);
-  return legal_message_view;
 }
 
 bool SaveCardOfferBubbleViews::Accept() {

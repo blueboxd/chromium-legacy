@@ -12,14 +12,22 @@ namespace ui {
 
 ColorRecipe::ColorRecipe() = default;
 
+ColorRecipe::ColorRecipe(const ColorTransform& transform) {
+  *this += transform;
+}
+
+ColorRecipe::ColorRecipe(const ColorRecipe&) = default;
+
+ColorRecipe& ColorRecipe::operator=(const ColorRecipe&) = default;
+
 ColorRecipe::ColorRecipe(ColorRecipe&&) noexcept = default;
 
 ColorRecipe& ColorRecipe::operator=(ColorRecipe&&) noexcept = default;
 
 ColorRecipe::~ColorRecipe() = default;
 
-ColorRecipe& ColorRecipe::AddTransform(ColorTransform transform) {
-  transforms_.push_back(std::move(transform));
+ColorRecipe& ColorRecipe::operator+=(const ColorTransform& transform) {
+  transforms_.push_back(transform);
   return *this;
 }
 
@@ -28,6 +36,11 @@ SkColor ColorRecipe::GenerateResult(SkColor input,
   for (const auto& transform : transforms_)
     input = transform.Run(input, mixer);
   return input;
+}
+
+ColorRecipe operator+(ColorRecipe recipe, const ColorTransform& transform) {
+  recipe += transform;
+  return recipe;
 }
 
 }  // namespace ui

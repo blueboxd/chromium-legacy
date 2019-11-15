@@ -803,9 +803,7 @@ if (public_android_sdk) {
     android_manifest = trichrome_webview_android_manifest
     android_manifest_dep =
         "//android_webview/nonembedded:trichrome_webview_manifest"
-
-    # TODO(torne): make minsdk=Q once we no longer build hacky P version
-    min_sdk_version = android_sdk_version
+    min_sdk_version = 29
 
     deps = upstream_only_webview_deps
     apk_name = "TrichromeWebView"
@@ -821,9 +819,7 @@ if (public_android_sdk) {
     android_manifest_dep =
         "//android_webview/nonembedded:trichrome_webview_64_32_manifest"
     is_64_bit_browser = true
-
-    # TODO(torne): make minsdk=Q once we no longer build hacky P version
-    min_sdk_version = android_sdk_version
+    min_sdk_version = 29
 
     deps = upstream_only_webview_deps
     apk_name = "TrichromeWebView6432"
@@ -831,26 +827,6 @@ if (public_android_sdk) {
     uncompress_dex = use_uncompressed_dex
     if (trichrome_synchronized_proguard) {
       static_library_provider = "//chrome/android:trichrome_library_apk"
-    }
-  }
-
-  # This target should be removed once Trichrome only supports Chrome bundle
-  # builds.
-  system_webview_apk_tmpl("trichrome_webview_for_bundle_apk") {
-    android_manifest = trichrome_webview_android_manifest
-    android_manifest_dep =
-        "//android_webview/nonembedded:trichrome_webview_manifest"
-
-    # TODO(torne): make minsdk=Q once we no longer build hacky P version
-    min_sdk_version = android_sdk_version
-
-    deps = upstream_only_webview_deps
-    apk_name = "TrichromeWebViewForBundle"
-    use_trichrome_library = true
-    uncompress_dex = use_uncompressed_dex
-    if (trichrome_synchronized_proguard) {
-      static_library_provider =
-          "//chrome/android:trichrome_library_for_bundle_apk"
     }
   }
 }

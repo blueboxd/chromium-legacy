@@ -495,7 +495,8 @@ void NGBoxFragmentPainter::PaintBlockChildren(const PaintInfo& paint_info) {
   PaintInfo paint_info_for_descendants = paint_info.ForDescendants();
   for (const NGLink& child : box_fragment_.Children()) {
     const NGPhysicalFragment& child_fragment = *child;
-    if (child_fragment.HasSelfPaintingLayer() || child_fragment.IsFloating())
+    if (child_fragment.HasSelfPaintingLayer() || child_fragment.IsFloating() ||
+        child_fragment.IsColumnBox())
       continue;
 
     if (child_fragment.Type() == NGPhysicalFragment::kFragmentBox) {
@@ -537,7 +538,7 @@ void NGBoxFragmentPainter::PaintFloatingChildren(
     const PaintInfo& float_paint_info) {
   for (const NGLink& child : container.Children()) {
     const NGPhysicalFragment& child_fragment = *child;
-    if (child_fragment.HasSelfPaintingLayer())
+    if (child_fragment.HasSelfPaintingLayer() || child_fragment.IsColumnBox())
       continue;
 
     // Atomic-inlines paint atomically, and shouldn't be traversed.

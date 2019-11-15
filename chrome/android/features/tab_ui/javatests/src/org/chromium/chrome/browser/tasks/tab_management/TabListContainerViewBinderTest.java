@@ -25,7 +25,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.tab_ui.R;
@@ -113,10 +113,12 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
 
     @Test
     @MediumTest
+    // clang-format off
     @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
-    @DisabledTest
-    // Failed multiple times on Android CFI https://crbug.com/954145
+    @DisableIf.Build(hardware_is = "bullhead", message = "Flaky on CFI bot. " +
+            "https://crbug.com/954145")
     public void testShowWithAnimation() {
+        // clang-format on
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mContainerModel.set(
                     TabListContainerProperties.VISIBILITY_LISTENER, mMockVisibilityListener);
@@ -124,7 +126,6 @@ public class TabListContainerViewBinderTest extends DummyUiActivityTestCase {
             mContainerModel.set(TabListContainerProperties.ANIMATE_VISIBILITY_CHANGES, true);
             mContainerModel.set(TabListContainerProperties.IS_VISIBLE, true);
         });
-
         assertThat(mStartedShowingCallback.getCallCount(), equalTo(1));
         assertThat(mRecyclerView.getVisibility(), equalTo(View.VISIBLE));
         if (areAnimatorsEnabled()) {

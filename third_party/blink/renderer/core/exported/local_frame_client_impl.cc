@@ -880,20 +880,6 @@ void LocalFrameClientImpl::DidChangeName(const String& name) {
   web_frame_->Client()->DidChangeName(name);
 }
 
-void LocalFrameClientImpl::DidEnforceInsecureRequestPolicy(
-    WebInsecureRequestPolicy policy) {
-  if (!web_frame_->Client())
-    return;
-  web_frame_->Client()->DidEnforceInsecureRequestPolicy(policy);
-}
-
-void LocalFrameClientImpl::DidEnforceInsecureNavigationsSet(
-    const WebVector<unsigned>& set) {
-  if (!web_frame_->Client())
-    return;
-  web_frame_->Client()->DidEnforceInsecureNavigationsSet(set);
-}
-
 void LocalFrameClientImpl::DidChangeFramePolicy(
     Frame* child_frame,
     const FramePolicy& frame_policy) {

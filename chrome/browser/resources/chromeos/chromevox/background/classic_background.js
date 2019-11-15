@@ -20,7 +20,6 @@ goog.require('cvox.BrailleCaptionsBackground');
 goog.require('cvox.ChromeVox');
 goog.require('cvox.ChromeVoxEditableTextBase');
 goog.require('cvox.ChromeVoxPrefs');
-goog.require('cvox.ClassicEarcons');
 goog.require('cvox.CompositeTts');
 goog.require('cvox.ExtensionBridge');
 goog.require('cvox.InjectedScriptLoader');
@@ -45,15 +44,7 @@ cvox.ChromeVoxBackground = function() {};
  * @param {boolean} announce
  */
 cvox.ChromeVoxBackground.setPref = function(pref, value, announce) {
-  if (pref == 'active' && value != cvox.ChromeVox.isActive) {
-    if (cvox.ChromeVox.isActive) {
-      cvox.ChromeVox.tts.speak(
-          Msgs.getMsg('chromevox_inactive'), cvox.QueueMode.FLUSH);
-      chrome.accessibilityPrivate.setNativeAccessibilityEnabled(true);
-    } else {
-      chrome.accessibilityPrivate.setNativeAccessibilityEnabled(false);
-    }
-  } else if (pref == 'earcons') {
+  if (pref == 'earcons') {
     cvox.AbstractEarcons.enabled = !!value;
   } else if (pref == 'sticky' && announce) {
     if (value) {
@@ -107,8 +98,6 @@ cvox.ChromeVoxBackground.readPrefs = function() {
   var prefs = window['prefs'].getPrefs();
   cvox.ChromeVoxEditableTextBase.useIBeamCursor =
       (prefs['useIBeamCursor'] == 'true');
-  cvox.ChromeVox.isActive =
-      (prefs['active'] == 'true' || cvox.ChromeVox.isChromeOS);
   cvox.ChromeVox.isStickyPrefOn = (prefs['sticky'] == 'true');
 };
 
@@ -117,15 +106,6 @@ cvox.ChromeVoxBackground.readPrefs = function() {
  * Initialize the background page: set up TTS and bridge listeners.
  */
 cvox.ChromeVoxBackground.prototype.init = function() {
-  // In the case of ChromeOS, only continue initialization if this instance of
-  // ChromeVox is as we expect. This prevents ChromeVox from the webstore from
-  // running.
-  if (cvox.ChromeVox.isChromeOS &&
-      chrome.i18n.getMessage('@@extension_id') !=
-          'mndnfokpggljbaajbnioimlmbfngpief') {
-    return;
-  }
-
   this.prefs = new cvox.ChromeVoxPrefs();
   cvox.ChromeVoxBackground.readPrefs();
 
@@ -161,14 +141,8 @@ cvox.ChromeVoxBackground.prototype.init = function() {
   cvox.ChromeVox.tts = this.tts;
   cvox.ChromeVox.braille = this.backgroundBraille_;
 
-  if (!cvox.ChromeVox.earcons) {
-    cvox.ChromeVox.earcons = new cvox.ClassicEarcons();
-  }
-
-  if (cvox.ChromeVox.isChromeOS) {
-    chrome.accessibilityPrivate.onIntroduceChromeVox.addListener(
-        this.onIntroduceChromeVox);
-  }
+  chrome.accessibilityPrivate.onIntroduceChromeVox.addListener(
+      this.onIntroduceChromeVox);
 
   // Set up a message passing system for goog.provide() calls from
   // within the content scripts.
@@ -182,25 +156,26 @@ cvox.ChromeVoxBackground.prototype.init = function() {
     return true;
   });
 
-  var self = this;
+  // Build a regexp to match all allowed urls.
+  var matches = [];
+  try {
+    matches = chrome.runtime.getManifest()['content_scripts'][0]['matches'];
+  } catch (e) {
+    throw new Error('Unable to find content script matches entry in manifest.');
+  }
 
-  // Inject the content script into all running tabs.
-  chrome.windows.getAll({'populate': true}, function(windows) {
+  // Build one large regexp.
+  var matchesRe = new RegExp(matches.join('|'));
+
+  // Inject the content script into all running tabs allowed by the
+  // manifest. This block is still necessary because the extension system
+  // doesn't re-inject content scripts into already running tabs.
+  chrome.windows.getAll({'populate': true}, (windows) => {
     for (var i = 0; i < windows.length; i++) {
-      var tabs = windows[i].tabs;
-      self.injectChromeVoxIntoTabs(tabs);
+      var tabs = windows[i].tabs.filter((tab) => matchesRe.test(tab.url));
+      this.injectChromeVoxIntoTabs(tabs);
     }
   });
-
-  if (localStorage['active'] == 'false') {
-    // Warn the user when the browser first starts if ChromeVox is inactive.
-    this.tts.speak(Msgs.getMsg('chromevox_inactive'), cvox.QueueMode.QUEUE);
-  } else if (!cvox.ChromeVox.isChromeOS) {
-    // Introductory message.
-    this.tts.speak(Msgs.getMsg('chromevox_intro'), cvox.QueueMode.QUEUE);
-    cvox.ChromeVox.braille.write(
-        cvox.NavBraille.fromText(Msgs.getMsg('intro_brl')));
-  }
 };
 
 
@@ -328,17 +303,6 @@ cvox.ChromeVoxBackground.prototype.onTtsMessage = function(msg) {
 
 
 /**
- * Called when an earcon message is received from a page content script.
- * @param {Object} msg The earcon message.
- */
-cvox.ChromeVoxBackground.prototype.onEarconMessage = function(msg) {
-  if (msg.action == 'play') {
-    cvox.ChromeVox.earcons.playEarcon(msg['earcon']);
-  }
-};
-
-
-/**
  * Listen for connections from our content script bridges, and dispatch the
  * messages to the proper destination.
  */
@@ -348,46 +312,6 @@ cvox.ChromeVoxBackground.prototype.addBridgeListener = function() {
     var action = msg['action'];
 
     switch (target) {
-      case 'OpenTab':
-        var destination = {url: msg['url']};
-        chrome.tabs.create(destination);
-        break;
-      case 'KbExplorer':
-        var explorerPage = {url: 'chromevox/background/kbexplorer.html'};
-        chrome.tabs.create(explorerPage);
-        break;
-      case 'HelpDocs':
-        var helpPage = {url: 'http://chromevox.com/tutorial/index.html'};
-        chrome.tabs.create(helpPage);
-        break;
-      case 'Options':
-        if (action == 'open') {
-          var optionsPage = {url: 'chromevox/background/options.html'};
-          chrome.tabs.create(optionsPage);
-        }
-        break;
-      case 'Data':
-        if (action == 'getHistory') {
-          var results = {};
-          chrome.history.search({text: '', maxResults: 25}, function(items) {
-            items.forEach(function(item) {
-              if (item.url) {
-                results[item.url] = true;
-              }
-            });
-            port.postMessage({'history': results});
-          });
-        }
-        break;
-      case 'Prefs':
-        if (action == 'getPrefs') {
-          this.prefs.sendPrefsToPort(port);
-        } else if (action == 'setPref') {
-          var pref = /** @type {string} */ (msg['pref']);
-          var announce = !!msg['announce'];
-          cvox.ChromeVoxBackground.setPref(pref, msg['value'], announce);
-        }
-        break;
       case 'TTS':
         if (msg['startCallbackId'] != undefined) {
           msg['properties']['startCallback'] = function(opt_cleanupOnly) {
@@ -413,36 +337,10 @@ cvox.ChromeVoxBackground.prototype.addBridgeListener = function() {
           console.log(err);
         }
         break;
-      case 'EARCON':
-        this.onEarconMessage(msg);
-        break;
-      case 'BRAILLE':
-        try {
-          this.backgroundBraille_.onBrailleMessage(msg);
-        } catch (err) {
-          console.log(err);
-        }
-        break;
     }
   }, this));
 };
 
-
-/**
- * Checks if we are currently in an incognito window.
- * @return {boolean} True if incognito or not within a tab context, false
- * otherwise.
- * @private
- */
-cvox.ChromeVoxBackground.prototype.isIncognito_ = function() {
-  var incognito = false;
-  chrome.tabs.getCurrent(function(tab) {
-    // Tab is null if not called from a tab context. In that case, also consider
-    // it incognito.
-    incognito = tab ? tab.incognito : true;
-  });
-  return incognito;
-};
 
 
 /**
@@ -483,8 +381,4 @@ window['braille_translator_manager'] =
     background.backgroundBraille_.getTranslatorManager();
 
 window['getCurrentVoice'] = background.getCurrentVoice.bind(background);
-
-// Export injection for ChromeVox Next.
-cvox.ChromeVox.injectChromeVoxIntoTabs =
-    background.injectChromeVoxIntoTabs.bind(background);
 })();

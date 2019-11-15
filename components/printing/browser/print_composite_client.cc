@@ -191,12 +191,45 @@ void PrintCompositeClient::DoCompositePageToPdf(
                      std::move(callback)));
 }
 
+void PrintCompositeClient::DoPrepareForDocumentToPdf(
+    int document_cookie,
+    mojom::PdfCompositor::PrepareForDocumentToPdfCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(!GetIsDocumentConcurrentlyComposited(document_cookie));
+
+  is_doc_concurrently_composited_set_.insert(document_cookie);
+  auto* compositor = GetCompositeRequest(document_cookie);
+  compositor->PrepareForDocumentToPdf(
+      base::BindOnce(&PrintCompositeClient::OnDidPrepareForDocumentToPdf,
+                     std::move(callback)));
+}
+
+void PrintCompositeClient::DoCompleteDocumentToPdf(
+    int document_cookie,
+    uint32_t pages_count,
+    mojom::PdfCompositor::CompleteDocumentToPdfCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(GetIsDocumentConcurrentlyComposited(document_cookie));
+
+  auto* compositor = GetCompositeRequest(document_cookie);
+
+  // Since this class owns compositor, compositor will be gone when this class
+  // is destructed. Mojo won't call its callback in that case so it is safe to
+  // use unretained |this| pointer here.
+  compositor->CompleteDocumentToPdf(
+      pages_count,
+      base::BindOnce(&PrintCompositeClient::OnDidCompleteDocumentToPdf,
+                     base::Unretained(this), document_cookie,
+                     std::move(callback)));
+}
+
 void PrintCompositeClient::DoCompositeDocumentToPdf(
     int document_cookie,
     content::RenderFrameHost* render_frame_host,
     const PrintHostMsg_DidPrintContent_Params& content,
     mojom::PdfCompositor::CompositeDocumentToPdfCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(!GetIsDocumentConcurrentlyComposited(document_cookie));
 
   auto* compositor = GetCompositeRequest(document_cookie);
   auto region = content.metafile_data_region.Duplicate();
@@ -230,6 +263,31 @@ void PrintCompositeClient::OnDidCompositeDocumentToPdf(
   printed_subframes_.erase(document_cookie);
 
   std::move(callback).Run(status, std::move(region));
+}
+
+// static
+void PrintCompositeClient::OnDidPrepareForDocumentToPdf(
+    mojom::PdfCompositor::PrepareForDocumentToPdfCallback callback,
+    mojom::PdfCompositor::Status status) {
+  std::move(callback).Run(status);
+}
+
+void PrintCompositeClient::OnDidCompleteDocumentToPdf(
+    int document_cookie,
+    mojom::PdfCompositor::CompleteDocumentToPdfCallback callback,
+    mojom::PdfCompositor::Status status,
+    base::ReadOnlySharedMemoryRegion region) {
+  RemoveCompositeRequest(document_cookie);
+  // Clear all stored printed subframes.
+  printed_subframes_.erase(document_cookie);
+  // No longer concurrently compositing this document.
+  is_doc_concurrently_composited_set_.erase(document_cookie);
+  std::move(callback).Run(status, std::move(region));
+}
+
+bool PrintCompositeClient::GetIsDocumentConcurrentlyComposited(
+    int cookie) const {
+  return base::Contains(is_doc_concurrently_composited_set_, cookie);
 }
 
 mojom::PdfCompositor* PrintCompositeClient::GetCompositeRequest(int cookie) {

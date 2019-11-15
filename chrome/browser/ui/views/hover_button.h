@@ -8,8 +8,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button.h"
-#include "ui/views/controls/button/menu_button_listener.h"
 
 namespace gfx {
 enum ElideBehavior;
@@ -53,9 +53,7 @@ class SingleLineStyledLabelWrapper : public views::View {
 
 // A button taking the full width of its parent that shows a background color
 // when hovered over.
-// TODO (cyan): HoverButton should extend ButtonListener.
-class HoverButton : public views::LabelButton,
-                    public views::MenuButtonListener {
+class HoverButton : public views::LabelButton {
  public:
   enum Style { STYLE_PROMINENT, STYLE_ERROR };
 
@@ -119,11 +117,6 @@ class HoverButton : public views::LabelButton,
   }
 
  protected:
-  // views::MenuButtonListener:
-  void OnMenuButtonClicked(Button* source,
-                           const gfx::Point& point,
-                           const ui::Event* event) override;
-
   // views::MenuButton:
   KeyClickAction GetKeyClickActionForEvent(const ui::KeyEvent& event) override;
   void StateChanged(ButtonState old_state) override;

@@ -94,7 +94,7 @@ class FakeSocket : public P2PDatagramSocket {
       memcpy(read_buffer_->data(), &data[0], data.size());
       net::CompletionRepeatingCallback cb = read_callback_;
       read_callback_.Reset();
-      read_buffer_ = NULL;
+      read_buffer_.reset();
       cb.Run(size);
     } else {
       incoming_packets_.push_back(data);

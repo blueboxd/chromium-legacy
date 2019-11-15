@@ -55,7 +55,7 @@ std::unique_ptr<KeyedService> CreateTemplateURLService(
 
 class AnswerCardSearchProviderTest : public AppListTestBase {
  public:
-  AnswerCardSearchProviderTest() : field_trial_list_(nullptr) {}
+  AnswerCardSearchProviderTest() = default;
 
   FakeAppListModelUpdater* GetModelUpdater() const {
     return model_updater_.get();
@@ -98,7 +98,6 @@ class AnswerCardSearchProviderTest : public AppListTestBase {
   std::unique_ptr<FakeAppListModelUpdater> model_updater_;
   std::unique_ptr<AnswerCardSearchProvider> provider_;
   std::unique_ptr<::test::TestAppListControllerDelegate> controller_;
-  base::FieldTrialList field_trial_list_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(AnswerCardSearchProviderTest);

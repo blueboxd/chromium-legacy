@@ -6,7 +6,9 @@
 
 #include <memory>
 
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread.h"
@@ -52,8 +54,17 @@ WorkerBackingThread& AudioWorkletThread::GetWorkerBackingThread() {
 
 void AudioWorkletThread::EnsureSharedBackingThread() {
   DCHECK(IsMainThread());
-  WorkletThreadHolder<AudioWorkletThread>::EnsureInstance(
-      ThreadCreationParams(ThreadType::kAudioWorkletThread));
+
+  ThreadCreationParams params =
+      ThreadCreationParams(ThreadType::kAudioWorkletThread);
+
+  // TODO(crbug.com/1022888): The worklet thread priority is always NORMAL on
+  // linux.
+  params.thread_priority =
+        base::FeatureList::IsEnabled(features::kAudioWorkletRealtimeThread)
+            ? base::ThreadPriority::REALTIME_AUDIO
+            : base::ThreadPriority::DISPLAY;
+  WorkletThreadHolder<AudioWorkletThread>::EnsureInstance(params);
 }
 
 void AudioWorkletThread::ClearSharedBackingThread() {

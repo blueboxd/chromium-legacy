@@ -145,7 +145,7 @@ TEST(RulesRegistryTest, FillOptionalIdentifiers) {
             registry->GetNumberOfUsedRuleIdentifiersForTesting());
 
   // Make sure that deletion traits of registry are executed.
-  registry = NULL;
+  registry.reset();
   base::RunLoop().RunUntilIdle();
 }
 
@@ -182,7 +182,7 @@ TEST(RulesRegistryTest, FillOptionalPriority) {
             std::max(*get_rules[0]->priority, *get_rules[1]->priority));
 
   // Make sure that deletion traits of registry are executed.
-  registry = NULL;
+  registry.reset();
   base::RunLoop().RunUntilIdle();
 }
 

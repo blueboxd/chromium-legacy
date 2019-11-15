@@ -104,7 +104,7 @@ is called `MonochromePublic.apk`.
 
 Trichrome is only compatible with Android Q and later.
 
-Trichrome is composed of three APKs:
+Trichrome is composed of three APK/AABs:
 
 1. TrichromeWebView contains WebView-specific code and data, and provides
 Android apps with the WebView implementation.
@@ -119,9 +119,9 @@ The three Trichrome APKs together are roughly the same size as Monochrome,
 providing the same benefits, but many of the downsides and complexities of
 Monochrome don't apply to Trichrome.
 
-The build targets are called `trichrome_webview_apk`, `trichrome_chrome_apk`,
+The build targets are called `trichrome_webview_apk`, `trichrome_chrome_bundle`,
 and `trichrome_library_apk` respectively, and the resulting output files are
-called `TrichromeWebView.apk`, `TrichromeChrome.apk`, and
+called `TrichromeWebView.apk`, `TrichromeChrome.aab`, and
 `TrichromeLibrary.apk`.
 
 ### Choosing a WebView version

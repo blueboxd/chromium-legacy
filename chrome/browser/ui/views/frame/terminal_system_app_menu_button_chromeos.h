@@ -14,13 +14,11 @@ class TerminalSystemAppMenuButton : public WebAppMenuButton {
   explicit TerminalSystemAppMenuButton(BrowserView* browser_view);
   ~TerminalSystemAppMenuButton() override;
 
-  // views::MenuButtonListener:
-  void OnMenuButtonClicked(views::Button* source,
-                           const gfx::Point& point,
-                           const ui::Event* event) override;
+  // WebAppMenuButton:
+  void ButtonPressed(views::Button* source, const ui::Event& event) override;
 
  private:
-  // views::View:
+  // WebAppMenuButton:
   const char* GetClassName() const override;
 
   DISALLOW_COPY_AND_ASSIGN(TerminalSystemAppMenuButton);

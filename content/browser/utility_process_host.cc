@@ -261,13 +261,6 @@ bool UtilityProcessHost::Start() {
   return StartProcess();
 }
 
-void UtilityProcessHost::BindInterface(
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe) {
-  process_->child_connection()->BindInterface(interface_name,
-                                              std::move(interface_pipe));
-}
-
 void UtilityProcessHost::RunService(
     const std::string& service_name,
     mojo::PendingReceiver<service_manager::mojom::Service> receiver,

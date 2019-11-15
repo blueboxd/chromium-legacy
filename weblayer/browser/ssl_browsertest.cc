@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "weblayer/shell/browser/shell.h"
 #include "weblayer/test/interstitial_utils.h"
@@ -74,10 +75,14 @@ class SSLBrowserTest : public WebLayerBrowserTest {
     // ssl_browsertest.cc's CheckAuthenticationBrokenState() function.
   }
 
-  void InteractWithBlockingPage(bool proceed) {
+  void InteractWithBlockingPage(
+      bool proceed,
+      base::Optional<GURL> previous_url = base::nullopt) {
+    GURL expected_url =
+        proceed ? bad_ssl_url() : previous_url.value_or(ok_url());
     TestNavigationObserver navigation_observer(
-        proceed ? bad_ssl_url() : ok_url(),
-        TestNavigationObserver::NavigationEvent::Completion, shell());
+        expected_url, TestNavigationObserver::NavigationEvent::Completion,
+        shell());
     ExecuteScript(shell(),
                   "window.certificateErrorPageController." +
                       std::string(proceed ? "proceed" : "dontProceed") + "();",
@@ -119,6 +124,15 @@ IN_PROC_BROWSER_TEST_F(SSLBrowserTest, TakeMeBack) {
   // Navigate to the bad SSL page again, an interstitial shows again (in
   // contrast to what would happen had the user chosen to proceed).
   NavigateToPageWithSslErrorExpectBlocked();
+}
+
+// Tests clicking "take me back" on the interstitial page when there's no
+// navigation history. The user should be taken to a safe page (about:blank).
+IN_PROC_BROWSER_TEST_F(SSLBrowserTest, TakeMeBackEmptyNavigationHistory) {
+  NavigateToPageWithSslErrorExpectBlocked();
+
+  // Click "Take me back".
+  InteractWithBlockingPage(false /*proceed*/, GURL("about:blank"));
 }
 
 // Tests clicking proceed link on the interstitial page. This is a PRE_ test

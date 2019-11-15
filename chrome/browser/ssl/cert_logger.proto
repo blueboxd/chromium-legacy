@@ -39,6 +39,9 @@ message CertLoggerInterstitialInfo {
     INTERSTITIAL_SUPERFISH = 4 [deprecated = true];
     // An interstitial telling the user to fix misconfigured MITM software.
     INTERSTITIAL_MITM_SOFTWARE = 5;
+    // An interstitial telling the user that their connection is being
+    // intercepted by a known certificate.
+    INTERSTITIAL_BLOCKED_INTERCEPTION = 6;
   }
 
   // The type of interstitial that was shown

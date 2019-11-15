@@ -161,6 +161,11 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
       const std::string& mime_type,
       const int64_t content_size);
 
+  // Returns true if enterprise real-time reporting should be initialized,
+  // checking both the feature flag and whether the browser is managed.  This
+  // function is public so that it can called in tests.
+  static bool ShouldInitRealtimeReportingClient();
+
   void SetCloudPolicyClientForTesting(
       std::unique_ptr<policy::CloudPolicyClient> client);
 

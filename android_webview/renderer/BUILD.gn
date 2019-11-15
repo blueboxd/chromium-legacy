@@ -24,6 +24,8 @@ source_set("renderer") {
     "aw_url_loader_throttle_provider.h",
     "aw_websocket_handshake_throttle_provider.cc",
     "aw_websocket_handshake_throttle_provider.h",
+    "browser_exposed_renderer_interfaces.cc",
+    "browser_exposed_renderer_interfaces.h",
     "js_java_interaction/js_binding.cc",
     "js_java_interaction/js_binding.h",
     "js_java_interaction/js_java_configurator.cc",

@@ -7,6 +7,8 @@
 
 #include "base/observer_list_types.h"
 
+class FindTabHelper;
+
 namespace content {
 class WebContents;
 }
@@ -14,6 +16,8 @@ class WebContents;
 class FindResultObserver : public base::CheckedObserver {
  public:
   virtual void OnFindResultAvailable(content::WebContents* web_contents) = 0;
+
+  virtual void OnFindTabHelperDestroyed(FindTabHelper* helper) {}
 };
 
 #endif  // CHROME_BROWSER_UI_FIND_BAR_FIND_RESULT_OBSERVER_H_

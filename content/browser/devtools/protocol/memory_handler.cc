@@ -12,7 +12,6 @@
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/common/bind_interface_helpers.h"
 #include "content/public/common/child_process_host.h"
 
 namespace content {
@@ -111,7 +110,7 @@ void MemoryHandler::PrepareForLeakDetection(
   }
 
   leak_detection_callback_ = std::move(callback);
-  BindInterface(process, leak_detector_.BindNewPipeAndPassReceiver());
+  process->BindReceiver(leak_detector_.BindNewPipeAndPassReceiver());
   leak_detector_.set_disconnect_handler(base::BindOnce(
       &MemoryHandler::OnLeakDetectorIsGone, base::Unretained(this)));
   leak_detector_->PerformLeakDetection(base::BindOnce(

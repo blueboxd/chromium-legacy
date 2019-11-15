@@ -179,14 +179,13 @@ void ToolbarActionView::UpdateState() {
   SchedulePaint();
 }
 
-void ToolbarActionView::OnMenuButtonClicked(views::Button* sender,
-                                            const gfx::Point& point,
-                                            const ui::Event* event) {
+void ToolbarActionView::ButtonPressed(views::Button* sender,
+                                      const ui::Event& event) {
   if (!view_controller_->IsEnabled(GetCurrentWebContents())) {
     // We should only get a button pressed event with a non-enabled action if
     // the left-click behavior should open the menu.
     DCHECK(view_controller_->DisabledClickOpensMenu());
-    context_menu_controller()->ShowContextMenuForView(this, point,
+    context_menu_controller()->ShowContextMenuForView(this, GetMenuPosition(),
                                                       ui::MENU_SOURCE_NONE);
   } else {
     view_controller_->ExecuteAction(true);

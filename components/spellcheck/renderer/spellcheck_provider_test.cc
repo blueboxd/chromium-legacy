@@ -33,7 +33,7 @@ void FakeTextCheckingCompletion::DidCancelCheckingText() {
 TestingSpellCheckProvider::TestingSpellCheckProvider(
     service_manager::LocalInterfaceProvider* embedder_provider)
     : SpellCheckProvider(nullptr,
-                         new SpellCheck(nullptr, embedder_provider),
+                         new SpellCheck(embedder_provider),
                          embedder_provider) {}
 
 TestingSpellCheckProvider::TestingSpellCheckProvider(

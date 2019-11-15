@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/sharing/sharing_constants.h"
+#include "chrome/browser/sharing/sharing_device_source.h"
 #include "chrome/browser/sharing/sharing_send_message_result.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
@@ -84,7 +85,7 @@ void SharingServiceProxyAndroid::GetDeviceCandidates(
 void SharingServiceProxyAndroid::AddDeviceCandidatesInitializedObserver(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_runnable) {
-  sharing_service_->AddDeviceCandidatesInitializedObserver(
+  sharing_service_->GetDeviceSource()->AddReadyCallback(
       base::BindOnce(base::android::RunRunnableAndroid,
                      base::android::ScopedJavaGlobalRef<jobject>(j_runnable)));
 }

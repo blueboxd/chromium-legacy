@@ -399,15 +399,45 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::FindText(
   if (search_string.length() <= 0)
     return E_INVALIDARG;
 
-  base::string16 text_range = GetString(-1);
+  size_t appended_newlines_count = 0;
+  base::string16 text_range = GetString(-1, &appended_newlines_count);
   size_t find_start;
   size_t find_length;
   if (base::i18n::StringSearch(search_string, text_range, &find_start,
-                               &find_length, !ignore_case, !backwards)) {
-    const AXPlatformNodeDelegate* delegate = owner()->GetDelegate();
-    *result = CreateTextRangeProvider(
-        owner_.Get(), delegate->CreateTextPositionAt(find_start),
-        delegate->CreateTextPositionAt(find_start + find_length));
+                               &find_length, !ignore_case, !backwards) &&
+      find_length > appended_newlines_count) {
+    // TODO(https://crbug.com/1023599): There is a known issue here related to
+    // text searches of a |string| starting and ending with a "\n", e.g.
+    // "\nsometext" or "sometext\n" if the newline is computed from a line
+    // breaking object. FindText() is rarely called, and when it is, it's not to
+    // look for a string starting or ending with a newline. This may change
+    // someday, and if so, we'll have to address this issue.
+    const AXNode* common_anchor = start_->LowestCommonAnchor(*end_);
+    AXPositionInstance start_ancestor_position =
+        start_->CreateAncestorPosition(common_anchor);
+    DCHECK(!start_ancestor_position->IsNullPosition());
+    AXPositionInstance end_ancestor_position =
+        end_->CreateAncestorPosition(common_anchor);
+    DCHECK(!end_ancestor_position->IsNullPosition());
+    AXTreeID tree_id = start_ancestor_position->tree_id();
+    AXNode::AXID anchor_id = start_ancestor_position->anchor_id();
+    const int start_offset =
+        start_ancestor_position->text_offset() + find_start;
+    const int end_offset = start_offset + find_length - appended_newlines_count;
+    const int max_end_offset = end_ancestor_position->text_offset();
+    DCHECK(start_offset <= end_offset && end_offset <= max_end_offset);
+
+    AXPositionInstance start = ui::AXNodePosition::CreateTextPosition(
+                                   tree_id, anchor_id, start_offset,
+                                   ax::mojom::TextAffinity::kDownstream)
+                                   ->AsLeafTextPosition();
+    AXPositionInstance end = ui::AXNodePosition::CreateTextPosition(
+                                 tree_id, anchor_id, end_offset,
+                                 ax::mojom::TextAffinity::kDownstream)
+                                 ->AsLeafTextPosition();
+
+    *result =
+        CreateTextRangeProvider(owner_.Get(), start->Clone(), end->Clone());
   }
   return S_OK;
 }
@@ -895,9 +925,12 @@ bool AXPlatformNodeTextRangeProviderWin::AtEndOfLinePredicate(
          (position->AtEndOfLine() || position->AtStartOfInlineBlock());
 }
 
-base::string16 AXPlatformNodeTextRangeProviderWin::GetString(int max_count) {
+base::string16 AXPlatformNodeTextRangeProviderWin::GetString(
+    int max_count,
+    size_t* appended_newlines_count) {
   AXNodeRange range(start_->Clone(), end_->Clone());
-  return range.GetText(AXTextConcatenationBehavior::kAsInnerText, max_count);
+  return range.GetText(AXTextConcatenationBehavior::kAsInnerText, max_count,
+                       false, appended_newlines_count);
 }
 
 AXPlatformNodeWin* AXPlatformNodeTextRangeProviderWin::owner() const {

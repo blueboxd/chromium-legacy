@@ -749,6 +749,12 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_WINDOW_PIN_TAB:
       PinTab(browser_);
       break;
+    case IDC_WINDOW_CLOSE_TABS_TO_RIGHT:
+      CloseTabsToRight(browser_);
+      break;
+    case IDC_WINDOW_CLOSE_OTHER_TABS:
+      CloseOtherTabs(browser_);
+      break;
     case IDC_SHOW_MANAGEMENT_PAGE: {
       ShowSingletonTab(browser_, GURL(kChromeUIManagementURL));
       break;
@@ -1043,6 +1049,10 @@ void BrowserCommandController::InitCommandState() {
 
   command_updater_.UpdateCommandEnabled(IDC_WINDOW_MUTE_SITE, normal_window);
   command_updater_.UpdateCommandEnabled(IDC_WINDOW_PIN_TAB, normal_window);
+  command_updater_.UpdateCommandEnabled(IDC_WINDOW_CLOSE_TABS_TO_RIGHT,
+                                        normal_window);
+  command_updater_.UpdateCommandEnabled(IDC_WINDOW_CLOSE_OTHER_TABS,
+                                        normal_window);
 
   // Initialize other commands whose state changes based on various conditions.
   UpdateCommandsForFullscreenMode();
@@ -1126,6 +1136,10 @@ void BrowserCommandController::UpdateCommandsForTabState() {
                                         !browser_->deprecated_is_app());
   command_updater_.UpdateCommandEnabled(IDC_WINDOW_PIN_TAB,
                                         !browser_->deprecated_is_app());
+  command_updater_.UpdateCommandEnabled(IDC_WINDOW_CLOSE_TABS_TO_RIGHT,
+                                        CanCloseTabsToRight(browser_));
+  command_updater_.UpdateCommandEnabled(IDC_WINDOW_CLOSE_OTHER_TABS,
+                                        CanCloseOtherTabs(browser_));
 
   // Page-related commands
   window()->SetStarredState(

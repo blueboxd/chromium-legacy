@@ -89,6 +89,8 @@ void AutocompleteClassifier::Classify(
   }
 
   *match = *result.begin();
-  if (alternate_nav_url)
-    *alternate_nav_url = result.alternate_nav_url();
+  if (alternate_nav_url) {
+    *alternate_nav_url =
+        AutocompleteResult::ComputeAlternateNavUrl(input, *match);
+  }
 }

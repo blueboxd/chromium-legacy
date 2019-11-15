@@ -62,12 +62,13 @@ class SharingMessageSenderTest : public testing::Test {
   sync_preferences::TestingPrefServiceSyncable prefs_;
   syncer::FakeDeviceInfoSyncService fake_device_info_sync_service_;
 
-  testing::NiceMock<MockSharingFCMSender> mock_sharing_fcm_sender_;
+  testing::NiceMock<MockSharingFCMSender>* mock_sharing_fcm_sender_ =
+      new testing::NiceMock<MockSharingFCMSender>();
   SharingSyncPreference sharing_sync_preference_{
       &prefs_, &fake_device_info_sync_service_};
 
   SharingMessageSender sharing_message_sender_{
-      &mock_sharing_fcm_sender_, &sharing_sync_preference_,
+      base::WrapUnique(mock_sharing_fcm_sender_), &sharing_sync_preference_,
       fake_device_info_sync_service_.GetLocalDeviceInfoProvider()};
 
   DISALLOW_COPY_AND_ASSIGN(SharingMessageSenderTest);
@@ -139,7 +140,7 @@ TEST_F(SharingMessageSenderTest, MessageSent_AckTimedout) {
         kSenderMessageID, /*response=*/nullptr);
   };
 
-  ON_CALL(mock_sharing_fcm_sender_,
+  ON_CALL(*mock_sharing_fcm_sender_,
           SendMessageToDevice(testing::_, testing::_, testing::_, testing::_))
       .WillByDefault(testing::Invoke(simulate_timeout));
 
@@ -179,7 +180,7 @@ TEST_F(SharingMessageSenderTest, SendMessageToDevice_InternalError) {
             kSenderMessageID, /*response=*/nullptr);
       };
 
-  ON_CALL(mock_sharing_fcm_sender_,
+  ON_CALL(*mock_sharing_fcm_sender_,
           SendMessageToDevice(testing::_, testing::_, testing::_, testing::_))
       .WillByDefault(testing::Invoke(simulate_internal_error));
 
@@ -239,7 +240,7 @@ TEST_F(SharingMessageSenderTest, MessageSent_AckReceived) {
             kSenderMessageID, std::move(response_message));
       };
 
-  ON_CALL(mock_sharing_fcm_sender_,
+  ON_CALL(*mock_sharing_fcm_sender_,
           SendMessageToDevice(testing::_, testing::_, testing::_, testing::_))
       .WillByDefault(testing::Invoke(simulate_expected_ack_message_received));
 

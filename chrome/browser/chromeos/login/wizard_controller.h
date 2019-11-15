@@ -134,6 +134,9 @@ class WizardController {
   // Returns true if the current wizard instance has reached the login screen.
   bool login_screen_started() const { return login_screen_started_; }
 
+  // Returns true if a given screen exists.
+  bool HasScreen(OobeScreenId screen);
+
   // Returns a given screen. Creates it lazily.
   BaseScreen* GetScreen(OobeScreenId screen);
 

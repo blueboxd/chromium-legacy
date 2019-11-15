@@ -812,11 +812,6 @@ IPC_MESSAGE_ROUTED2(FrameMsg_SelectPopupMenuItems,
 #endif
 #endif
 
-// Tells the renderer that a navigation was blocked because a content security
-// policy was violated.
-IPC_MESSAGE_ROUTED1(FrameMsg_ReportContentSecurityPolicyViolation,
-                    content::CSPViolationParams /* violation_params */)
-
 // Request to enumerate and return links to all savable resources in the frame
 // Note: this covers only the immediate frame / doesn't cover subframes.
 IPC_MESSAGE_ROUTED0(FrameMsg_GetSavableResourceLinks)

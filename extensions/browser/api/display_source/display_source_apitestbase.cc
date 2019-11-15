@@ -519,7 +519,7 @@ void MockDisplaySourceConnectionDelegate::OnMediaPacketReceived(
     int net_result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(recvfrom_buffer_.get());
-  recvfrom_buffer_ = NULL;
+  recvfrom_buffer_.reset();
 
   if (net_result > 0) {
     // We received at least one media packet.

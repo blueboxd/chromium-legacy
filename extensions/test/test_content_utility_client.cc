@@ -15,12 +15,4 @@ TestContentUtilityClient::TestContentUtilityClient() = default;
 
 TestContentUtilityClient::~TestContentUtilityClient() = default;
 
-void TestContentUtilityClient::UtilityThreadStarted() {
-  auto registry = std::make_unique<service_manager::BinderRegistry>();
-  content::ChildThread::Get()
-      ->GetServiceManagerConnection()
-      ->AddConnectionFilter(std::make_unique<content::SimpleConnectionFilter>(
-          std::move(registry)));
-}
-
 }  // namespace extensions

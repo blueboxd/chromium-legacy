@@ -69,8 +69,8 @@ void RawInputDataFetcher::StartMonitor() {
 
   if (!window_) {
     window_.reset(new base::win::MessageWindow());
-    if (!window_->Create(base::Bind(&RawInputDataFetcher::HandleMessage,
-                                    base::Unretained(this)))) {
+    if (!window_->Create(base::BindRepeating(
+            &RawInputDataFetcher::HandleMessage, base::Unretained(this)))) {
       PLOG(ERROR) << "Failed to create the raw input window";
       window_.reset();
       return;

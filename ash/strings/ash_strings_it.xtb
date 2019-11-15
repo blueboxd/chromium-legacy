@@ -99,7 +99,7 @@
 <translation id="2268813581635650749">Disconnetti tutti</translation>
 <translation id="2277103315734023688">Vai avanti</translation>
 <translation id="2292698582925480719">Scala di visualizzazione</translation>
-<translation id="2298170939937364391">Lente d'ingrandimento a schermo intero attivata. Premi di nuovo CTRL + tasto per la ricerca + M per disattivarla.</translation>
+<translation id="2298170939937364391">Ingrandimento a schermo intero attivato. Premi di nuovo CTRL + tasto per la ricerca + M per disattivarlo.</translation>
 <translation id="2302092602801625023">Questo account è gestito da Family Link</translation>
 <translation id="2303600792989757991">Attiva/disattiva panoramica finestra</translation>
 <translation id="2339073806695260576">Tocca il pulsante dello stilo nella shelf per creare note, acquisire screenshot, usare il puntatore laser o la lente d'ingrandimento.</translation>
@@ -565,7 +565,7 @@
 <translation id="9091626656156419976">Schermo <ph name="DISPLAY_NAME" /> rimosso</translation>
 <translation id="9151726767154816831">Riavvia ed esegui Powerwash per aggiornare</translation>
 <translation id="9179259655489829027">Questa funzione consente di accedere rapidamente a qualsiasi utente che abbia effettuato l'accesso, senza bisogno di una password. Utilizza questa funzione solo con gli account che consideri attendibili.</translation>
-<translation id="9183456764293710005">Lente d'ingrandimento a schermo intero</translation>
+<translation id="9183456764293710005">Ingrandimento a schermo intero</translation>
 <translation id="9193626018745640770">Trasmissione a un ricevitore sconosciuto</translation>
 <translation id="9194617393863864469">Accedi con un altro account utente...</translation>
 <translation id="9210037371811586452">Uscita dalla modalità Desktop unificato</translation>

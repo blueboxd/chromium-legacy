@@ -31,7 +31,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/shared_worker_instance.h"
-#include "content/public/common/bind_interface_helpers.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -385,7 +384,7 @@ void SharedWorkerServiceImpl::StartWorker(
   // Get the factory used to instantiate the new shared worker instance in
   // the target process.
   mojo::PendingRemote<blink::mojom::SharedWorkerFactory> factory;
-  BindInterface(worker_process_host, &factory);
+  worker_process_host->BindReceiver(factory.InitWithNewPipeAndPassReceiver());
 
   host->Start(std::move(factory), std::move(main_script_load_params),
               std::move(subresource_loader_factories), std::move(controller),

@@ -1522,8 +1522,7 @@ void BackgroundSyncManager::ScheduleOrCancelDelayedProcessing(
 
   if (delayed_processing_scheduled(sync_type) && !can_fire_with_connectivity &&
       !GetNumFiringRegistrations(sync_type)) {
-    // TODO(crbug.com/996166): Split out a path to cancel delayed processing.
-    ScheduleDelayedProcessingOfRegistrations(sync_type);
+    CancelDelayedProcessingOfRegistrations(sync_type);
     delayed_processing_scheduled(sync_type) = false;
   } else if (can_fire_with_connectivity ||
              GetNumFiringRegistrations(sync_type)) {
@@ -1849,6 +1848,13 @@ void BackgroundSyncManager::ScheduleDelayedProcessingOfRegistrations(
       GetSoonestWakeupDelta(sync_type,
                             /* last_browser_wakeup_time= */ base::Time()),
       std::move(fire_events_callback));
+}
+
+void BackgroundSyncManager::CancelDelayedProcessingOfRegistrations(
+    blink::mojom::BackgroundSyncType sync_type) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+
+  proxy_->CancelDelayedProcessing(sync_type);
 }
 
 void BackgroundSyncManager::FireReadyEvents(

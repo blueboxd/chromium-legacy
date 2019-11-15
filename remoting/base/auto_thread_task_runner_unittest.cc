@@ -33,7 +33,7 @@ TEST(AutoThreadTaskRunnerTest, StartAndStop) {
   task_environment.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&SetFlagTask, &success));
 
-  task_runner = NULL;
+  task_runner.reset();
   run_loop.Run();
   EXPECT_TRUE(success);
 }

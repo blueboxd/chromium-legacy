@@ -23,7 +23,6 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/window/dialog_client_view.h"
 
 ChooserDialogView::ChooserDialogView(
     std::unique_ptr<ChooserController> chooser_controller) {
@@ -79,8 +78,7 @@ bool ChooserDialogView::IsDialogButtonEnabled(ui::DialogButton button) const {
 }
 
 views::View* ChooserDialogView::GetInitiallyFocusedView() {
-  const views::DialogClientView* dcv = GetDialogClientView();
-  return dcv ? dcv->cancel_button() : nullptr;
+  return GetCancelButton();
 }
 
 bool ChooserDialogView::Accept() {

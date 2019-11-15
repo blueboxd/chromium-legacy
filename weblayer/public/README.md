@@ -1,7 +1,8 @@
 # WebLayer public API
 
 This directory contains the public API for WebLayer. WebLayer provides both a
-C++ and Java API.
+C++ and Java API. Note that while WebLayer's implementation builds on top of
+//content, its public API does *not* expose the Content API.
 
 ## Java API
 

@@ -18,6 +18,7 @@
 #include "net/http/http_server_properties.h"
 #include "net/http/transport_security_state.h"
 #include "net/quic/mock_crypto_client_stream_factory.h"
+#include "net/quic/quic_context.h"
 #include "net/quic/quic_http_stream.h"
 #include "net/quic/test_task_runner.h"
 #include "net/socket/fuzzed_datagram_client_socket.h"
@@ -78,6 +79,7 @@ struct Env {
   quic::QuicTagVector client_connection_options;
   std::unique_ptr<CTVerifier> cert_transparency_verifier;
   DefaultCTPolicyEnforcer ct_policy_enforcer;
+  QuicContext quic_context;
 };
 
 static struct Env* env = new Env();
@@ -139,11 +141,10 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
           &http_server_properties, env->cert_verifier.get(),
           &env->ct_policy_enforcer, &env->transport_security_state,
           env->cert_transparency_verifier.get(), nullptr,
-          &env->crypto_client_stream_factory, &env->random_generator,
-          &env->clock, params);
+          &env->crypto_client_stream_factory, &env->quic_context, params);
 
   SetQuicReloadableFlag(quic_supports_tls_handshake, true);
-  SetQuicReloadableFlag(quic_coalesce_stream_frames, true);
+  SetQuicRestartFlag(quic_coalesce_stream_frames_2, true);
   QuicStreamRequest request(factory.get());
   TestCompletionCallback callback;
   NetErrorDetails net_error_details;

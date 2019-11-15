@@ -51,6 +51,7 @@
 #include "chromecast/common/global_descriptors.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
 #include "chromecast/media/base/media_resource_tracker.h"
+#include "chromecast/media/cdm/cast_cdm_factory.h"
 #include "chromecast/media/cma/backend/cma_backend_factory_impl.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
 #include "chromecast/media/service/cast_renderer.h"
@@ -97,17 +98,9 @@
 #if defined(OS_ANDROID)
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/crash/content/app/crashpad.h"
-#if !BUILDFLAG(USE_CHROMECAST_CDMS)
-#include "components/cdm/browser/media_drm_storage_impl.h"
-#include "url/origin.h"
-#endif  // !BUILDFLAG(USE_CHROMECAST_CDMS)
 #else
 #include "chromecast/browser/memory_pressure_controller_impl.h"
 #endif  // defined(OS_ANDROID)
-
-#if BUILDFLAG(USE_CHROMECAST_CDMS)
-#include "chromecast/media/cdm/cast_cdm_factory.h"
-#endif  // BUILDFLAG(USE_CHROMECAST_CDMS)
 
 #if defined(USE_ALSA)
 #include "chromecast/media/audio/cast_audio_manager_alsa.h"  // nogncheck
@@ -285,13 +278,11 @@ bool CastContentBrowserClient::OverridesAudioManager() {
   return true;
 }
 
-#if BUILDFLAG(USE_CHROMECAST_CDMS)
 std::unique_ptr<::media::CdmFactory> CastContentBrowserClient::CreateCdmFactory(
     service_manager::mojom::InterfaceProvider* host_interfaces) {
   return std::make_unique<media::CastCdmFactory>(GetMediaTaskRunner(),
                                                  media_resource_tracker());
 }
-#endif  // BUILDFLAG(USE_CHROMECAST_CDMS)
 
 media::MediaCapsImpl* CastContentBrowserClient::media_caps() {
   DCHECK(cast_browser_main_parts_);

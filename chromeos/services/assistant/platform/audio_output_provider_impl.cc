@@ -157,8 +157,8 @@ AudioOutputProviderImpl::AudioOutputProviderImpl(
       device_id_(device_id),
       media_session_(media_session) {
   client_->RequestAudioDecoderFactory(
-      mojo::MakeRequest(&audio_decoder_factory_ptr_));
-  audio_decoder_factory_ = audio_decoder_factory_ptr_.get();
+      audio_decoder_factory_remote_.BindNewPipeAndPassReceiver());
+  audio_decoder_factory_ = audio_decoder_factory_remote_.get();
 }
 
 AudioOutputProviderImpl::~AudioOutputProviderImpl() = default;

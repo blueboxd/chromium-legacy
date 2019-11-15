@@ -28,7 +28,6 @@
 #include "net/dns/mock_host_resolver.h"
 #include "ui/views/layout/animating_layout_manager.h"
 #include "ui/views/test/widget_test.h"
-#include "ui/views/window/dialog_client_view.h"
 
 // Helper to wait until the hover card widget is visible.
 class AnimatingLayoutWaiter : public views::AnimatingLayoutManager::Observer {
@@ -268,13 +267,10 @@ IN_PROC_BROWSER_TEST_P(ActivateWithReloadExtensionsMenuBrowserTest,
                                   ->action_bubble_public_for_testing();
   ASSERT_TRUE(action_bubble);
 
-  views::DialogClientView* const dialog_client_view =
-      action_bubble->GetDialogClientView();
-
   const bool accept_reload_dialog = GetParam();
   if (accept_reload_dialog) {
     content::TestNavigationObserver observer(web_contents);
-    dialog_client_view->AcceptWindow();
+    action_bubble->AcceptDialog();
     EXPECT_TRUE(web_contents->IsLoading());
     // Wait for reload to finish.
     observer.WaitForNavigationFinished();
@@ -282,7 +278,7 @@ IN_PROC_BROWSER_TEST_P(ActivateWithReloadExtensionsMenuBrowserTest,
     // After reload the extension should be allowed to run.
     EXPECT_FALSE(action_runner->WantsToRun(extension.get()));
   } else {
-    dialog_client_view->CancelWindow();
+    action_bubble->CancelDialog();
     EXPECT_FALSE(web_contents->IsLoading());
     EXPECT_TRUE(action_runner->WantsToRun(extension.get()));
   }

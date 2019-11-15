@@ -928,6 +928,8 @@ component("net") {
       "quic/quic_connection_logger.h",
       "quic/quic_connectivity_probing_manager.cc",
       "quic/quic_connectivity_probing_manager.h",
+      "quic/quic_context.cc",
+      "quic/quic_context.h",
       "quic/quic_crypto_client_config_handle.cc",
       "quic/quic_crypto_client_config_handle.h",
       "quic/quic_crypto_client_stream_factory.cc",
@@ -1422,6 +1424,7 @@ component("net") {
       "third_party/quiche/src/quic/core/quic_buffer_allocator.h",
       "third_party/quiche/src/quic/core/quic_buffered_packet_store.cc",
       "third_party/quiche/src/quic/core/quic_buffered_packet_store.h",
+      "third_party/quiche/src/quic/core/quic_circular_deque.h",
       "third_party/quiche/src/quic/core/quic_coalesced_packet.cc",
       "third_party/quiche/src/quic/core/quic_coalesced_packet.h",
       "third_party/quiche/src/quic/core/quic_config.cc",
@@ -3433,6 +3436,8 @@ source_set("quic_test_tools") {
     "third_party/quiche/src/quic/test_tools/simple_data_producer.h",
     "third_party/quiche/src/quic/test_tools/simple_quic_framer.cc",
     "third_party/quiche/src/quic/test_tools/simple_quic_framer.h",
+    "third_party/quiche/src/quic/test_tools/simple_session_cache.cc",
+    "third_party/quiche/src/quic/test_tools/simple_session_cache.h",
     "third_party/quiche/src/quic/test_tools/simple_session_notifier.cc",
     "third_party/quiche/src/quic/test_tools/simple_session_notifier.h",
     "third_party/quiche/src/quic/test_tools/simulator/actor.cc",
@@ -5266,6 +5271,8 @@ test("net_unittests") {
     "quic/bidirectional_stream_quic_impl_unittest.cc",
     "quic/crypto/proof_test_chromium.cc",
     "quic/crypto/proof_verifier_chromium_test.cc",
+    "quic/mock_quic_context.cc",
+    "quic/mock_quic_context.h",
     "quic/mock_quic_data.cc",
     "quic/mock_quic_data.h",
     "quic/network_connection_unittest.cc",
@@ -5514,6 +5521,7 @@ test("net_unittests") {
     "third_party/quiche/src/quic/core/quic_arena_scoped_ptr_test.cc",
     "third_party/quiche/src/quic/core/quic_bandwidth_test.cc",
     "third_party/quiche/src/quic/core/quic_buffered_packet_store_test.cc",
+    "third_party/quiche/src/quic/core/quic_circular_deque_test.cc",
     "third_party/quiche/src/quic/core/quic_coalesced_packet_test.cc",
     "third_party/quiche/src/quic/core/quic_config_test.cc",
     "third_party/quiche/src/quic/core/quic_connection_id_test.cc",
@@ -6663,6 +6671,30 @@ fuzzer_test("net_http_chunked_decoder_fuzzer") {
     "//net",
   ]
   dict = "data/fuzzer_dictionaries/http_chunked_decoder_fuzzer.dict"
+}
+
+fuzzer_test("net_http_auth_handler_basic_fuzzer") {
+  sources = [
+    "http/http_auth_handler_basic_fuzzer.cc",
+  ]
+  dict = "data/fuzzer_dictionaries/net_http_auth_handler_basic_fuzzer.dict"
+  deps = [
+    ":net_fuzzer_test_support",
+    "//net",
+    "//net/dns:test_support",
+  ]
+}
+
+fuzzer_test("net_http_auth_handler_digest_fuzzer") {
+  sources = [
+    "http/http_auth_handler_digest_fuzzer.cc",
+  ]
+  dict = "data/fuzzer_dictionaries/net_http_auth_handler_digest_fuzzer.dict"
+  deps = [
+    ":net_fuzzer_test_support",
+    "//net",
+    "//net/dns:test_support",
+  ]
 }
 
 fuzzer_test("net_http_content_disposition_fuzzer") {

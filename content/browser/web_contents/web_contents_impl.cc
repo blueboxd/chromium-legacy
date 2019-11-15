@@ -576,7 +576,8 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       is_resume_pending_(false),
       interstitial_page_(nullptr),
       has_accessed_initial_document_(false),
-      capturer_count_(0),
+      visible_capturer_count_(0),
+      hidden_capturer_count_(0),
       is_being_destroyed_(false),
       is_notifying_observers_(false),
       notify_disconnection_(false),
@@ -1448,12 +1449,13 @@ void WebContentsImpl::SetWasDiscarded(bool was_discarded) {
   GetFrameTree()->root()->set_was_discarded();
 }
 
-void WebContentsImpl::IncrementCapturerCount(const gfx::Size& capture_size) {
+void WebContentsImpl::IncrementCapturerCount(const gfx::Size& capture_size,
+                                             bool stay_hidden) {
   DCHECK(!is_being_destroyed_);
-  const bool was_captured = IsBeingCaptured();
-  ++capturer_count_;
-  DVLOG(1) << "There are now " << capturer_count_
-           << " capturing(s) of WebContentsImpl@" << this;
+  if (stay_hidden)
+    ++hidden_capturer_count_;
+  else
+    ++visible_capturer_count_;
 
   // Note: This provides a hint to upstream code to size the views optimally
   // for quality (e.g., to avoid scaling).
@@ -1462,15 +1464,16 @@ void WebContentsImpl::IncrementCapturerCount(const gfx::Size& capture_size) {
     OnPreferredSizeChanged(preferred_size_);
   }
 
-  if (!was_captured)
-    UpdateVisibilityAndNotifyPageAndView(GetVisibility());
+  UpdateVisibilityAndNotifyPageAndView(GetVisibility());
 }
 
-void WebContentsImpl::DecrementCapturerCount() {
-  --capturer_count_;
-  DVLOG(1) << "There are now " << capturer_count_
-           << " capturing(s) of WebContentsImpl@" << this;
-  DCHECK_LE(0, capturer_count_);
+void WebContentsImpl::DecrementCapturerCount(bool stay_hidden) {
+  if (stay_hidden)
+    --hidden_capturer_count_;
+  else
+    --visible_capturer_count_;
+  DCHECK_GE(hidden_capturer_count_, 0);
+  DCHECK_GE(visible_capturer_count_, 0);
 
   if (is_being_destroyed_)
     return;
@@ -1479,12 +1482,13 @@ void WebContentsImpl::DecrementCapturerCount() {
     const gfx::Size old_size = preferred_size_for_capture_;
     preferred_size_for_capture_ = gfx::Size();
     OnPreferredSizeChanged(old_size);
-    UpdateVisibilityAndNotifyPageAndView(GetVisibility());
   }
+
+  UpdateVisibilityAndNotifyPageAndView(GetVisibility());
 }
 
 bool WebContentsImpl::IsBeingCaptured() {
-  return capturer_count_ > 0;
+  return visible_capturer_count_ + hidden_capturer_count_ > 0;
 }
 
 bool WebContentsImpl::IsAudioMuted() {
@@ -2564,14 +2568,22 @@ void WebContentsImpl::FullscreenFrameSetUpdated() {
 void WebContentsImpl::UpdateVisibilityAndNotifyPageAndView(
     Visibility new_visibility) {
   // Only hide the page if there are no entities capturing screenshots
-  // or video (e.g. mirroring).
-  const bool page_is_visible =
-      new_visibility == Visibility::VISIBLE || IsBeingCaptured();
+  // or video (e.g. mirroring). If there are, apply the correct state of
+  // kHidden or kHiddenButPainting.
+  PageVisibilityState page_visibility;
+  if (new_visibility == Visibility::VISIBLE || visible_capturer_count_ > 0)
+    page_visibility = PageVisibilityState::kVisible;
+  else if (hidden_capturer_count_ > 0)
+    page_visibility = PageVisibilityState::kHiddenButPainting;
+  else
+    page_visibility = PageVisibilityState::kHidden;
   // If there are entities in Picture-in-Picture mode, don't activate
   // the "disable rendering" optimization.
-  const bool view_is_visible = page_is_visible || HasPictureInPictureVideo();
+  const bool view_is_visible =
+      page_visibility != PageVisibilityState::kHidden ||
+      HasPictureInPictureVideo();
 
-  if (page_is_visible) {
+  if (page_visibility != PageVisibilityState::kHidden) {
     // We cannot show a page or capture video unless there is a valid renderer
     // associated with this web contents. The navigation controller for this
     // page must be set to active (allowing navigation to complete, a renderer
@@ -2581,7 +2593,7 @@ void WebContentsImpl::UpdateVisibilityAndNotifyPageAndView(
     // Previously, it was possible for browser-side code to try to capture video
     // from a restored tab (for a variety of reasons, including the browser
     // creating preview thumbnails) and the tab would never actually load. By
-    // keying this behavior off of |page_is_visible| instead of just
+    // keying this behavior off of |page_visibility| instead of just
     // |new_visibility| we avoid this case. See crbug.com/1020782 for more
     // context.
     controller_.SetActive(true);
@@ -2591,8 +2603,8 @@ void WebContentsImpl::UpdateVisibilityAndNotifyPageAndView(
     // as soon as they are shown. But the Page and other classes do not expect
     // to be producing frames when the Page is hidden. So we make sure the Page
     // is shown first.
-    SendPageMessage(new PageMsg_VisibilityChanged(
-        MSG_ROUTING_NONE, PageVisibilityState::kVisible));
+    SendPageMessage(
+        new PageMsg_VisibilityChanged(MSG_ROUTING_NONE, page_visibility));
   }
 
   // |GetRenderWidgetHostView()| can be null if the user middle clicks a link to
@@ -2624,7 +2636,7 @@ void WebContentsImpl::UpdateVisibilityAndNotifyPageAndView(
     SetVisibilityAndNotifyObservers(new_visibility);
   }
 
-  if (!page_is_visible) {
+  if (page_visibility == PageVisibilityState::kHidden) {
     // Similar to when showing the page, we only hide the page after
     // hiding the individual RenderWidgets.
     SendPageMessage(new PageMsg_VisibilityChanged(

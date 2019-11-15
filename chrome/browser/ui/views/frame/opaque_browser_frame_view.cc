@@ -348,20 +348,18 @@ void OpaqueBrowserFrameView::ButtonPressed(views::Button* sender,
     frame()->Restore();
   } else if (sender == close_button_) {
     frame()->CloseWithReason(views::Widget::ClosedReason::kCloseButtonClicked);
-  }
-}
-
-void OpaqueBrowserFrameView::OnMenuButtonClicked(views::Button* source,
-                                                 const gfx::Point& point,
-                                                 const ui::Event* event) {
+  } else if (sender == window_icon_) {
 #if defined(OS_LINUX)
-  views::MenuRunner menu_runner(frame()->GetSystemMenuModel(),
-                                views::MenuRunner::HAS_MNEMONICS);
-  menu_runner.RunMenuAt(
-      browser_view()->GetWidget(), window_icon_->button_controller(),
-      window_icon_->GetBoundsInScreen(), views::MenuAnchorPosition::kTopLeft,
-      ui::MENU_SOURCE_MOUSE);
+    // TODO(pbos): Figure out / document why this is Linux only. This needs a
+    // comment.
+    views::MenuRunner menu_runner(frame()->GetSystemMenuModel(),
+                                  views::MenuRunner::HAS_MNEMONICS);
+    menu_runner.RunMenuAt(
+        browser_view()->GetWidget(), window_icon_->button_controller(),
+        window_icon_->GetBoundsInScreen(), views::MenuAnchorPosition::kTopLeft,
+        ui::MENU_SOURCE_MOUSE);
 #endif
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

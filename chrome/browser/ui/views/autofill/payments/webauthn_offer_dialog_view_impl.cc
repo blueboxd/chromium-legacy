@@ -15,7 +15,6 @@
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace autofill {
 

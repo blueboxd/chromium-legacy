@@ -3094,6 +3094,13 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
           Bu politika ayarlanmadan bırakılırsa, varsayılan işlem olarak askıya alma uygulanır.
 
           Uygulanacak işlem askıya alma ise, <ph name="PRODUCT_OS_NAME" />, askıya almadan önce ekranı kilitleyecek veya kilitlemeyecek şekilde ayrı olarak yapılandırılabilir.</translation>
+<translation id="5755002458331714762"> Web Bileşenleri v0 API'leri (Gölge DOM v0, Özel Öğeler v0 ve HTML İçe Aktarmaları) 2018'de kullanımdan kaldırılmıştır ve M80 düzeyinden itibaren varsayılan olarak devre dışıdır. Bu politika, bu özelliklerin M84'e kadar seçilerek yeniden etkinleştirilmesine olanak tanır.
+
+      Bu politika True (Doğru) değerine ayarlanırsa Web Bileşenleri v0 özellikleri tüm siteler için etkinleştirilir.
+
+      Bu politika False (Yanlış) değerine ayarlanır veya hiç ayarlanmazsa Web Bileşenleri v0 özellikleri, M80 düzeyinden itibaren varsayılan olarak devre dışı bırakılır.
+
+      Bu politika Chrome 84'ten sonra kaldırılacaktır.</translation>
 <translation id="5765780083710877561">Açıklama:</translation>
 <translation id="5770738360657678870">Yeni geliştirilenler kanalı (kararsız olabilir)</translation>
 <translation id="5774856474228476867">Varsayılan arama sağlayıcı arama URL'si</translation>
@@ -4271,6 +4278,9 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
       Bu ayarı devre dışı bırakırsanız eski eklentiler kullanılmaz ve kullanıcılardan bu eklentilerin çalıştırılması için izin istenmez.
 
       Bu ayar belirtilmezse kullanıcılardan eski eklentilerin çalıştırılması için izin istenir.</translation>
+<translation id="7862137072381331997">Bu politika etkin olarak ayarlanırsa ziyaret edilen tüm URL'ler Güvenli Tarama ile gerçek zamanlı olarak kontrol edilir.
+
+      Bu politika devre dışı olarak ayarlanırsa veya ayarlanmazsa tüketici Güvenli Tarama kontrolleri uygulanmaz. Tüketici Güvenli Tarama kontrolleri, "Aramaları ve göz atmayı daha iyi yap" tercihine bağlı olarak gerçek zamanlı aramaları içermeye devam edebilir. Gerçek zamanlı aramaları devre dışı bırakmaya zorlamak için <ph name="URL_KEYED_ANONYMIZED_DATA_COLLECTION_ENABLED_POLICY" /> politikasını görün.</translation>
 <translation id="7863947545897944083">Giriş ekranında yüksek kontrast erişilebilirlik özelliğini etkinleştirin.
 
           Bu politika true (doğru) değerine ayarlanırsa giriş ekranında yüksek kontrast her zaman etkinleştirilir.
@@ -4730,6 +4740,7 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
 <translation id="8672321184841719703">Hedef Otomatik Güncelleme Sürümü</translation>
 <translation id="867410340948518937">U2F (Evrensel İkinci Faktör)</translation>
 <translation id="8685024486845674965">Şifre koruma uyarısı, şifre yeniden kullanımıyla tetiklendi</translation>
+<translation id="8687958770985542440">Web Bileşenleri v0 API'sini M84'e kadar yeniden etkinleştirin.</translation>
 <translation id="8693243869659262736">Dahili DNS istemcisini kullan</translation>
 <translation id="8698286761337647563">SAML kullanıcılarına şifrelerinin son kullanma tarihinin önceden bildirileceği gün sayısı</translation>
 <translation id="8703488928438047864">Kart durumunu bildir</translation>

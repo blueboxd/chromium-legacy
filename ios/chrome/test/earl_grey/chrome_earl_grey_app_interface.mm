@@ -39,6 +39,7 @@
 #include "ios/web/public/test/url_test_util.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
+#import "ios/web/public/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state.h"
 #import "services/metrics/public/cpp/ukm_recorder.h"
@@ -340,6 +341,16 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
 + (BOOL)isRestoreSessionInProgress {
   web::WebState* web_state = chrome_test_util::GetCurrentWebState();
   return web_state->GetNavigationManager()->IsRestoreSessionInProgress();
+}
+
++ (BOOL)webStateWebViewUsesContentInset {
+  web::WebState* web_state = chrome_test_util::GetCurrentWebState();
+  return web_state->GetWebViewProxy().shouldUseViewContentInset;
+}
+
++ (CGSize)webStateWebViewSize {
+  web::WebState* web_state = chrome_test_util::GetCurrentWebState();
+  return [web_state->GetWebViewProxy() bounds].size;
 }
 
 #pragma mark - Sync Utilities (EG2)

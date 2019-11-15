@@ -30,6 +30,10 @@ class Widget;
 //   +------------------------------+
 //   | [Extra View]   [OK] [Cancel] |
 //   +------------------------------+
+//
+// You should not need to directly depend on or use DialogClientView; it is
+// being made internal to //ui/views. Access it through the public interfaces on
+// DialogDelegate.
 class VIEWS_EXPORT DialogClientView : public ClientView,
                                       public ButtonListener,
                                       public DialogObserver {

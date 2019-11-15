@@ -34,9 +34,9 @@ class FlagPredicateSingleton {
 
 }  // namespace
 
-const base::Feature kUnexpireFlagsM76{"TemporaryUnexpireFlagsM76",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kUnexpireFlagsM78{"TemporaryUnexpireFlagsM78",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kUnexpireFlagsM80{"TemporaryUnexpireFlagsM80",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool ExpiryEnabledForMstone(int mstone) {
@@ -56,12 +56,12 @@ bool ExpiryEnabledForMstone(int mstone) {
   // In M80 and later, this will expire any flags whose expiration is <= the
   // current mstone, and this block comment will go away along with these
   // special cases.
-  if (mstone < 76)
+  if (mstone <= 76)
     return true;
-  if (mstone == 76)
-    return !base::FeatureList::IsEnabled(kUnexpireFlagsM76);
   if (mstone == 77 || mstone == 78)
     return !base::FeatureList::IsEnabled(kUnexpireFlagsM78);
+  if (mstone == 79 || mstone == 80)
+    return !base::FeatureList::IsEnabled(kUnexpireFlagsM80);
   return false;
 }
 

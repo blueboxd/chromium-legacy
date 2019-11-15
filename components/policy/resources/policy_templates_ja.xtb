@@ -3011,6 +3011,11 @@
           このポリシーが未設定の場合は、デフォルトの操作（停止）が行われます。
 
           停止操作の場合、<ph name="PRODUCT_OS_NAME" /> で停止前に画面をロックするかどうかを個別に設定できます。</translation>
+<translation id="5755002458331714762"> Web Components v0 API（Shadow DOM v0、Custom Elements v0、HTML Imports）は 2018 年にサポートが終了し、M80 以降ではデフォルトで無効となっています。このポリシーでは、M84 までこれらの機能を選択的に再度有効にできるようにします。
+
+      このポリシーを True に設定した場合、Web Components v0 の機能はすべてのサイトで有効になります。このポリシーを False に設定するか未設定のままにした場合、Web Components v0 の機能は M80 以降においてデフォルトで無効になります。
+
+      このポリシーは、Chrome 84 以降で削除されます。</translation>
 <translation id="5765780083710877561">説明:</translation>
 <translation id="5770738360657678870">Dev チャンネル（不安定な場合があります）</translation>
 <translation id="5774856474228476867">デフォルトの検索プロバイダの検索 URL</translation>
@@ -4161,6 +4166,9 @@
       この設定を無効にした場合、古いプラグインは使用されず、ユーザーに実行の許可を求めるメッセージも表示されません。
 
       未設定の場合、ユーザーに古いプラグインの実行の許可を求めるメッセージが表示されます。</translation>
+<translation id="7862137072381331997">このポリシーを有効に設定した場合、アクセス先の URL はすべてリアルタイムでセーフ ブラウジングのチェックが行われます。
+
+      このポリシーを無効に設定するか未設定のままにした場合は、デフォルトのセーフ ブラウジングのチェックが行われます。デフォルトのセーフ ブラウジングのチェックでも、[検索とブラウジングを改善する] の設定に基づいて、リアルタイムの照合が行われる可能性があります。リアルタイムの照合を強制的に無効にする場合は、<ph name="URL_KEYED_ANONYMIZED_DATA_COLLECTION_ENABLED_POLICY" /> ポリシーを使用します。</translation>
 <translation id="7863947545897944083">ログイン画面でハイ コントラスト ユーザー補助機能を有効にします。
 
           このポリシーを true に設定した場合、ハイ コントラストはログイン画面で常に有効になります。
@@ -4628,6 +4636,7 @@
 <translation id="8672321184841719703">自動更新の対象バージョンを指定</translation>
 <translation id="867410340948518937">U2F（Universal Second Factor）</translation>
 <translation id="8685024486845674965">パスワードが再使用されたときに、パスワード保護について警告する</translation>
+<translation id="8687958770985542440">M84 まで Web Components v0 API を再度有効にします。</translation>
 <translation id="8693243869659262736">組み込みの DNS クライアントを使用する</translation>
 <translation id="8698286761337647563">パスワードの期限切れを SAML ユーザーに通知する際の事前通知日数</translation>
 <translation id="8703488928438047864">ボードの状態を報告する</translation>

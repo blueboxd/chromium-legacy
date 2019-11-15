@@ -44,7 +44,7 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantSuggestionsModel {
 
   // Sets the cache of proactive suggestions.
   void SetProactiveSuggestions(
-      scoped_refptr<ProactiveSuggestions> proactive_suggestions);
+      scoped_refptr<const ProactiveSuggestions> proactive_suggestions);
 
   // Returns the cache of proactive suggestions.
   scoped_refptr<const ProactiveSuggestions> GetProactiveSuggestions() const;
@@ -52,10 +52,11 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantSuggestionsModel {
  private:
   void NotifyConversationStartersChanged();
   void NotifyProactiveSuggestionsChanged(
-      const scoped_refptr<ProactiveSuggestions>& old_proactive_suggestions);
+      const scoped_refptr<const ProactiveSuggestions>&
+          old_proactive_suggestions);
 
   std::vector<AssistantSuggestionPtr> conversation_starters_;
-  scoped_refptr<ProactiveSuggestions> proactive_suggestions_;
+  scoped_refptr<const ProactiveSuggestions> proactive_suggestions_;
 
   base::ObserverList<AssistantSuggestionsModelObserver> observers_;
 

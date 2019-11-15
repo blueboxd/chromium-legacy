@@ -316,7 +316,7 @@ class GLRenderer::ScopedUseGrContext {
   ~ScopedUseGrContext() {
     // Pass context control back to GLrenderer.
     scoped_gpu_raster_ = nullptr;
-    renderer_->RestoreGLState();
+    renderer_->RestoreGLStateAfterSkia();
   }
 
   GrContext* context() const {
@@ -2305,6 +2305,8 @@ void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
 
   gfx::ColorSpace dst_color_space =
       current_frame()->current_render_pass->color_space;
+
+#if defined(OS_WIN)
   // Force sRGB output on Windows for overlay candidate video quads to match
   // DirectComposition behavior in case these switch between overlays and
   // compositing. See https://crbug.com/811118 for details.
@@ -2313,6 +2315,7 @@ void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
     DCHECK(resource_provider_->IsOverlayCandidate(quad->u_plane_resource_id()));
     dst_color_space = gfx::ColorSpace::CreateSRGB();
   }
+#endif
 
   // TODO(jbauman): Use base::Optional when available.
   std::unique_ptr<DisplayResourceProvider::ScopedSamplerGL> v_plane_lock;
@@ -2740,9 +2743,13 @@ void GLRenderer::FinishDrawingFrame() {
   // semantics during overlay refactoring.
   ScheduleOutputSurfaceAsOverlay();
 
-  ScheduleCALayers();
-  ScheduleDCLayers();
+#if defined(OS_ANDROID) || defined(USE_OZONE)
   ScheduleOverlays();
+#elif defined(OS_MACOSX)
+  ScheduleCALayers();
+#elif defined(OS_WIN)
+  ScheduleDCLayers();
+#endif
 
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("viz.triangles"), "Triangles Drawn",
                  num_triangles_drawn_);
@@ -2757,9 +2764,11 @@ void GLRenderer::GenerateMipmap() {
   current_framebuffer_texture_->set_generate_mipmap();
 }
 
+#if defined(OS_WIN)
 void GLRenderer::SetEnableDCLayers(bool enable) {
   gl_->SetEnableDCLayersCHROMIUM(enable);
 }
+#endif
 
 bool GLRenderer::FlippedFramebuffer() const {
   if (force_drawing_frame_framebuffer_unflipped_)
@@ -3343,6 +3352,17 @@ void GLRenderer::ReinitializeGLState() {
   RestoreGLState();
 }
 
+void GLRenderer::RestoreGLStateAfterSkia() {
+  // After using Skia we need to disable vertex attributes we don't use
+  int attribs_count = output_surface_->context_provider()
+                          ->ContextCapabilities()
+                          .max_vertex_attribs;
+  for (int i = 0; i < attribs_count; i++)
+    gl_->DisableVertexAttribArray(i);
+
+  RestoreGLState();
+}
+
 void GLRenderer::RestoreGLState() {
   // This restores the current GLRenderer state to the GL context.
   bound_geometry_ = NO_BINDING;
@@ -3380,6 +3400,7 @@ bool GLRenderer::IsContextLost() {
   return gl_->GetGraphicsResetStatusKHR() != GL_NO_ERROR;
 }
 
+#if defined(OS_MACOSX)
 void GLRenderer::ScheduleCALayers() {
   // The use of OverlayTextures for RenderPasses is only supported on the code
   // paths for |release_overlay_resources_after_gpu_query| at the moment. See
@@ -3392,8 +3413,7 @@ void GLRenderer::ScheduleCALayers() {
   scoped_refptr<CALayerOverlaySharedState> shared_state;
   size_t copied_render_pass_count = 0;
 
-  for (const CALayerOverlay& ca_layer_overlay :
-       current_frame()->ca_layer_overlay_list) {
+  for (const CALayerOverlay& ca_layer_overlay : current_frame()->overlay_list) {
     if (ca_layer_overlay.rpdq) {
       std::unique_ptr<OverlayTexture> overlay_texture =
           ScheduleRenderPassDrawQuad(&ca_layer_overlay);
@@ -3453,10 +3473,11 @@ void GLRenderer::ScheduleCALayers() {
 
   ReduceAvailableOverlayTextures();
 }
+#endif  // defined(OS_MACOSX)
 
+#if defined(OS_WIN)
 void GLRenderer::ScheduleDCLayers() {
-  for (DCLayerOverlay& dc_layer_overlay :
-       current_frame()->dc_layer_overlay_list) {
+  for (DCLayerOverlay& dc_layer_overlay : current_frame()->overlay_list) {
     DCHECK_EQ(DCLayerOverlay::kNumResources, 2u);
     GLuint texture_ids[DCLayerOverlay::kNumResources] = {};
     for (size_t i = 0; i < DCLayerOverlay::kNumResources; i++) {
@@ -3494,7 +3515,9 @@ void GLRenderer::ScheduleDCLayers() {
         clip_rect.height(), protected_video_type);
   }
 }
+#endif  // defined (OS_WIN)
 
+#if defined(OS_ANDROID) || defined(USE_OZONE)
 void GLRenderer::ScheduleOverlays() {
   if (current_frame()->overlay_list.empty())
     return;
@@ -3513,6 +3536,7 @@ void GLRenderer::ScheduleOverlays() {
         overlay_candidate.gpu_fence_id);
   }
 }
+#endif  // defined(OS_ANDROID) || defined(USE_OZONE)
 
 void GLRenderer::ScheduleOutputSurfaceAsOverlay() {
   if (!current_frame()->output_surface_plane)
@@ -3533,6 +3557,7 @@ void GLRenderer::ScheduleOutputSurfaceAsOverlay() {
       overlay_candidate.enable_blending, overlay_candidate.gpu_fence_id);
 }
 
+#if defined(OS_MACOSX)
 // This function draws the RenderPassDrawQuad into a temporary
 // texture/framebuffer, and then copies the result into an IOSurface. The
 // inefficient (but simple) way to do this would be to:
@@ -3806,6 +3831,7 @@ GLRenderer::ScheduleRenderPassDrawQuad(const CALayerOverlay* ca_layer_overlay) {
                                filter);
   return overlay_texture;
 }
+#endif  // defined(OS_MACOSX)
 
 void GLRenderer::SetupOverdrawFeedback() {
   gl_->StencilFunc(GL_ALWAYS, 1, 0xffffffff);

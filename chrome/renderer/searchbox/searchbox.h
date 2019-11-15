@@ -21,6 +21,7 @@
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "url/gurl.h"
 
 // The renderer-side implementation of the embeddedSearch API (see
@@ -206,6 +207,16 @@ class SearchBox : public content::RenderFrameObserver,
   // Called when a user dismisses a promo.
   void BlocklistPromo(const std::string& promo_id);
 
+  // Handles navigation to privileged (i.e. chrome://) URLs by calling the
+  // browser to do the navigation.
+  void OpenAutocompleteMatch(uint8_t line,
+                             const GURL& url,
+                             double button,
+                             bool alt_key,
+                             bool ctrl_key,
+                             bool meta_key,
+                             bool shift_key);
+
   bool is_focused() const { return is_focused_; }
   bool is_input_in_progress() const { return is_input_in_progress_; }
   bool is_key_capture_enabled() const { return is_key_capture_enabled_; }
@@ -236,7 +247,8 @@ class SearchBox : public content::RenderFrameObserver,
   GURL GetURLForMostVisitedItem(InstantRestrictedID item_id) const;
 
   // The connection to the EmbeddedSearch service in the browser process.
-  chrome::mojom::EmbeddedSearchAssociatedPtr embedded_search_service_;
+  mojo::AssociatedRemote<chrome::mojom::EmbeddedSearch>
+      embedded_search_service_;
   mojo::AssociatedReceiver<chrome::mojom::EmbeddedSearchClient> receiver_{this};
 
   // Whether it's legal to execute JavaScript in |render_frame()|.

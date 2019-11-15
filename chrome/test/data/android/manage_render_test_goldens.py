@@ -39,6 +39,7 @@ GOLDEN_DIRECTORIES = [
 ALLOWED_DEVICE_SDK_COMBINATIONS = [
   # From RenderTestRule.java
   'Nexus_5-19',
+  'Nexus_5X-23',
   # For VR tests.
   'Pixel_XL-25',
   'Pixel_XL-26',

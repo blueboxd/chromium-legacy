@@ -46,7 +46,9 @@
               class="settings-box two-line"
               expanded="{{addConnectionExpanded_}}"
               id="expandAddConnections">
-            $i18n{internetAddConnection}
+            <span aria-hidden="true">
+              $i18n{internetAddConnection}
+            </span>
           </cr-expand-button>
           <template is="dom-if" if="[[addConnectionExpanded_]]">
             <div class="list-frame vertical-list">

@@ -587,7 +587,7 @@ function unownedFormElementsAndFieldSetsToFormData_(
   for (var index = 0; index < controlElements.length; index++) {
     if (controlElements[index].hasAttribute('autocomplete') &&
         controlElements[index].getAttribute('autocomplete') !== 'off') {
-      controlElementsWithAutocomplete += controlElements[index];
+      controlElementsWithAutocomplete.push(controlElements[index]);
     }
   }
 

@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/modules/event_target_modules_names.h"
+#include "third_party/blink/renderer/modules/wake_lock/wake_lock.h"
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock_manager.h"
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock_test_utils.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -85,10 +86,24 @@ TEST(WakeLockSentinelTest, ContextDestruction) {
   MockWakeLockService wake_lock_service;
   WakeLockTestingContext context(&wake_lock_service);
 
-  auto* sentinel = MakeGarbageCollected<WakeLockSentinel>(
-      context.GetScriptState(), WakeLockType::kScreen,
-      MakeGarbageCollected<WakeLockManager>(context.GetDocument(),
-                                            WakeLockType::kScreen));
+  context.GetPermissionService().SetPermissionResponse(
+      WakeLockType::kScreen, mojom::blink::PermissionStatus::GRANTED);
+
+  auto* screen_resolver =
+      MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
+  ScriptPromise screen_promise = screen_resolver->Promise();
+
+  auto* wake_lock = MakeGarbageCollected<WakeLock>(*context.GetDocument());
+  wake_lock->DoRequest(WakeLockType::kScreen, screen_resolver);
+
+  WakeLockManager* manager =
+      wake_lock->managers_[static_cast<size_t>(WakeLockType::kScreen)];
+  ASSERT_TRUE(manager);
+
+  context.WaitForPromiseFulfillment(screen_promise);
+  auto* sentinel = ScriptPromiseUtils::GetPromiseResolutionAsWakeLockSentinel(
+      screen_promise);
+  ASSERT_TRUE(sentinel);
 
   auto* event_listener =
       MakeGarbageCollected<SyncEventListener>(WTF::Bind([]() {

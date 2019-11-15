@@ -34,6 +34,7 @@
 #include "ui/display/types/display_snapshot.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/linear_animation.h"
+#include "ui/gfx/geometry/vector3d_f.h"
 
 namespace ash {
 
@@ -59,6 +60,12 @@ constexpr base::TimeDelta kAutomaticAnimationDuration =
 
 // The color temperature animation frames per second.
 constexpr int kNightLightAnimationFrameRate = 30;
+
+// The following are color temperatues in Kelvin.
+// The min/max are a reasonable range we can clamp the values to.
+constexpr float kMinColorTemperatureInKelvin = 5700;
+constexpr float kNeutralColorTemperatureInKelvin = 6500;
+constexpr float kMaxColorTemperatureInKelvin = 7500;
 
 class NightLightControllerDelegateImpl
     : public NightLightControllerImpl::Delegate {
@@ -363,6 +370,77 @@ float NightLightControllerImpl::GreenColorScaleFromTemperature(
 float NightLightControllerImpl::GetNonLinearTemperature(float temperature) {
   constexpr float kGammaFactor = 1.0f / 2.2f;
   return std::pow(temperature, kGammaFactor);
+}
+
+// static
+float NightLightControllerImpl::RemapAmbientColorTemperature(
+    float temperature_in_kelvin) {
+  // This function maps sensor input temperatures to other values since we want
+  // to avoid extreme color temperatures (e.g: temperatures below 5700 and
+  // above 7450 are too extreme.)
+  // The following table was created with internal user studies.
+  constexpr struct {
+    int32_t input_temperature;
+    int32_t output_temperature;
+  } kTable[] = {{2700, 5700}, {3100, 6000}, {3700, 6050},
+                {4200, 6300}, {4800, 6300}, {5300, 6300},
+                {6000, 6400}, {7000, 6850}, {8000, 7450}};
+
+  constexpr size_t kTableSize = base::size(kTable);
+  // We clamp to a range defined by the minimum possible input value and the
+  // maximum. Given that the interval kTable[i].input_temperature,
+  // kTable[i+1].input_temperature exclude the upper bound, we clamp it to the
+  // last input_temperature element of the table minus 1.
+  const float temperature = base::ClampToRange<float>(
+      temperature_in_kelvin, kTable[0].input_temperature,
+      kTable[kTableSize - 1].input_temperature - 1);
+  for (size_t i = 0; i < kTableSize - 1; i++) {
+    if (temperature >= kTable[i].input_temperature &&
+        temperature < kTable[i + 1].input_temperature) {
+      // Lerp between the output_temperature values of i and i + 1;
+      const float t =
+          (static_cast<float>(temperature) - kTable[i].input_temperature) /
+          (kTable[i + 1].input_temperature - kTable[i].input_temperature);
+      return static_cast<float>(kTable[i].output_temperature) +
+             t * (kTable[i + 1].output_temperature -
+                  kTable[i].output_temperature);
+    }
+  }
+  NOTREACHED();
+  return 0;
+}
+
+// static
+gfx::Vector3dF
+NightLightControllerImpl::ColorScalesFromRemappedTemperatureInKevin(
+    float temperature_in_kelvin) {
+  DCHECK_LT(temperature_in_kelvin, kMaxColorTemperatureInKelvin);
+  DCHECK_GE(temperature_in_kelvin, kMinColorTemperatureInKelvin);
+  // This function computes the scale factors for R, G and B channel that can be
+  // used to compute a CTM matrix. For warmer temperatures we expect green and
+  // blue to be scaled down, while red will not change. For cooler temperatures
+  // we expect blue not to change while green and blue will be scaled down.
+  float red = 1.0f;
+  float green = 1.0f;
+  float blue = 1.0f;
+
+  // The following formulas are computed with a linear regression to model
+  // scalar response from temperature to RGB scale factors. The values were
+  // obtained with experiments from internal user studies.
+  if (temperature_in_kelvin > kNeutralColorTemperatureInKelvin) {
+    float temperature_increment =
+        (temperature_in_kelvin - kNeutralColorTemperatureInKelvin) /
+        (kMaxColorTemperatureInKelvin - kNeutralColorTemperatureInKelvin);
+    red = 1.f - temperature_increment * 0.0929f;
+    green = 1.f - temperature_increment * 0.0530f;
+  } else {
+    float temperature_decrement =
+        (kNeutralColorTemperatureInKelvin - temperature_in_kelvin) /
+        (kNeutralColorTemperatureInKelvin - kMinColorTemperatureInKelvin);
+    green = 1.f - temperature_decrement * 0.0368f;
+    blue = 1.f - temperature_decrement * 0.0882f;
+  }
+  return {red, green, blue};
 }
 
 bool NightLightControllerImpl::GetEnabled() const {

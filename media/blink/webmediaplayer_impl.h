@@ -377,7 +377,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
       const ProvideOverlayInfoCB& provide_overlay_info_cb);
 
   // Creates a Renderer via the |renderer_factory_selector_|.
-  void CreateRenderer(RendererCreatedCB renderer_created_cb);
+  std::unique_ptr<Renderer> CreateRenderer();
 
   // Finishes starting the pipeline due to a call to load().
   void StartPipeline();

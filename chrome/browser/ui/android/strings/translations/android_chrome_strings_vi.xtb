@@ -23,6 +23,7 @@
 <translation id="1171770572613082465">Xem các trang web phổ biến bằng cách nhấn vào nút "Trang web hàng đầu"</translation>
 <translation id="1173894706177603556">Đổi tên</translation>
 <translation id="1178581264944972037">Tạm dừng</translation>
+<translation id="118069123878619799">– đặc điểm hình thể của bạn, chẳng hạn như chiều cao</translation>
 <translation id="1181037720776840403">Xóa</translation>
 <translation id="1188239144602654184">Chuyển sang thực tế tăng cường</translation>
 <translation id="1197267115302279827">Di chuyển dấu trang</translation>
@@ -434,6 +435,7 @@
 <translation id="4307992518367153382">Cơ bản</translation>
 <translation id="4314815835985389558">Quản lý dữ liệu đồng bộ hóa</translation>
 <translation id="4351244548802238354">Đóng hộp thoại</translation>
+<translation id="4353114845960720315">Khi bạn ở chế độ thực tế ảo, trang web này có thể biết được:</translation>
 <translation id="4378154925671717803">Điện thoại</translation>
 <translation id="4384468725000734951">Sử dụng Sogou để tìm kiếm</translation>
 <translation id="4404568932422911380">Không có dấu trang nào</translation>
@@ -497,6 +499,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 
 Để thay đổi tùy chọn cài đặt này, hãy <ph name="BEGIN_LINK" />đặt lại tính năng đồng bộ hóa<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Tên trên thẻ</translation>
+<translation id="4808319664292298116">Chuyển sang chế độ thực tế ảo trên <ph name="DOMAIN" />?</translation>
 <translation id="4824958205181053313">Bạn muốn hủy đồng bộ hóa?</translation>
 <translation id="4837753911714442426">Mở tùy chọn để in trang</translation>
 <translation id="4842092870884894799">Hiển thị cửa sổ bật lên tạo mật khẩu</translation>
@@ -642,6 +645,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5809361687334836369">{HOURS,plural, =1{# giờ trước}other{# giờ trước}}</translation>
 <translation id="5810288467834065221">Bản quyền <ph name="YEAR" /> Google LLC. Mọi quyền được bảo lưu.</translation>
 <translation id="5817918615728894473">Ghép nối</translation>
+<translation id="5819762621475381970">– cách bài trí phòng của bạn</translation>
 <translation id="583281660410589416">Không xác định</translation>
 <translation id="5833984609253377421">Chia sẻ liên kết</translation>
 <translation id="5836192821815272682">Đang tải Bản cập nhật Chrome…</translation>

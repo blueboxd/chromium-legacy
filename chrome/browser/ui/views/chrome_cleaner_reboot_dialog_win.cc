@@ -21,7 +21,6 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace chrome {
 
@@ -91,8 +90,7 @@ base::string16 ChromeCleanerRebootDialog::GetWindowTitle() const {
 views::View* ChromeCleanerRebootDialog::GetInitiallyFocusedView() {
   // Set focus away from the Restart/OK button to prevent accidental prompt
   // acceptance if the user is typing as the dialog appears.
-  const views::DialogClientView* dcv = GetDialogClientView();
-  return dcv ? dcv->cancel_button() : nullptr;
+  return GetCancelButton();
 }
 
 // DialogDelegate overrides.

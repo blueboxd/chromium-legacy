@@ -37,6 +37,7 @@ ProxyResolvingClientSocketFactory::ProxyResolvingClientSocketFactory(
       request_context->http_auth_handler_factory();
   session_context.http_server_properties =
       request_context->http_server_properties();
+  session_context.quic_context = request_context->quic_context();
   session_context.net_log = request_context->net_log();
 
   const net::HttpNetworkSession::Params* reference_params =

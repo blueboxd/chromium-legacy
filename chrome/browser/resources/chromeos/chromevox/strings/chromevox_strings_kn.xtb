@@ -127,7 +127,6 @@
 <translation id="1845944666972354496">ಸಕ್ರಿಯಗೊಳಿಸಲು ಡಬಲ್ ಟ್ಯಾಪ್ ಮಾಡಿ</translation>
 <translation id="1846771122725914429">ಬ್ಲೂಟೂತ್ ಬ್ರೈಲ್ ಡಿಸ್‌ಪ್ಲೇ</translation>
 <translation id="1865601187525349519">ಪಠ್ಯದ ಕೊನೆ</translation>
-<translation id="1875375785454778375">ಪ್ರಸ್ತುತವಾಗಿ ಈ ವಿಷಯವನ್ನು ಪರಿಶೀಲಿಸುತ್ತಿರುವವರು ಅಥವಾ ಎಡಿಟ್ ಮಾಡುತ್ತಿರುವವರು</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">ಪ್ರಸ್ತುತ ಸಮಯ ಮತ್ತು ದಿನಾಂಕವನ್ನು ಮಾತನಾಡಿ.</translation>
 <translation id="1902396333223336119">ಸೆಲ್</translation>
@@ -148,7 +147,6 @@
 <translation id="2009187674653301682">ಸೂಪರ್‌ಸ್ಕ್ರಿಪ್ಟ್ ಅಲ್ಲ</translation>
 <translation id="2010555995361223825">ChromeVox ಮೆನುಗಳು</translation>
 <translation id="2045490512405922022">ಗುರುತಿಸಲಾಗಿಲ್ಲ</translation>
-<translation id="2049107626739254612">ಲೇಖಕರ ಮಾಹಿತಿ</translation>
 <translation id="20601713649439366">ಯಾವುದೇ ಹಿಂದಿನ ಗಣಿತ ಅಭಿವ್ಯಕ್ತಿ ಇಲ್ಲ.</translation>
 <translation id="2063539687800151747">ಶಿಲಾಶಾಸನ</translation>
 <translation id="207477615537953741">ಶಬ್ದಾರ್ಥಗಳು ಆಫ್ ಆಗಿದೆ</translation>
@@ -269,7 +267,6 @@
 <translation id="2911433807131383493">ChromeVox ಟುಟೋರಿಯಲ್ ತೆರೆಯಿರಿ</translation>
 <translation id="2912405967290226587">ಮೂರು ಬೆರಳುಗಳಿಂದ ಬಲಕ್ಕೆ ಸ್ವೈಪ್ ಮಾಡಿ</translation>
 <translation id="2932083475399492303">ವ್ಯವಸ್ಥಿತ ಅಥವಾ ಲೇಔಟ್ ನಡುವೆ ಸಾಲು ಪ್ರಕಾರವನ್ನು ಟಾಗಲ್ ಮಾಡಿ</translation>
-<translation id="293796669683825859">ಕಾಮೆಂಟ್‌ಗಳು</translation>
 <translation id="2942710183375260152">ಗಾಢ ಸ್ಲೇಟ್ ನೀಲಿ</translation>
 <translation id="2943596527105977722">ಗಾಢ ಗೋಲ್ಡನ್ ರಾಡ್</translation>
 <translation id="2944762337049891859">ಇದು ಲೋಡ್ ಮಾಡುವಿಕೆಯನ್ನು ಪೂರ್ಣಗೊಳಿಸಿದ ನಂತರ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಪುಟವನ್ನು ಓದಿ.</translation>
@@ -1148,6 +1145,7 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="8548973727659841685">ಅಕ್ಷರ</translation>
 <translation id="8561322612995434619">ಪಾಪ್ ಅಪ್ ಹೊಂದಿದೆ</translation>
 <translation id="8571096049907249734">multsel</translation>
+<translation id="858006550102277544">ಕಾಮೆಂಟ್</translation>
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">ಮುಂದಿನ ಪಟ್ಟಿಯ ಐಟಂ</translation>
 <translation id="860150890330522909"><ph name="NAME" /> ಚೆಕ್‌ಬಾಕ್ಸ್ ಗುರುತಿಸಲಾಗಿದೆ</translation>

@@ -113,8 +113,6 @@
                  type="chrome_html" />
       <structure name="IDR_EXTENSIONS_EXTENSIONS_HTML"
                  file="extensions.html"
-                 flattenhtml="true"
-                 allowexternalscript="true"
                  type="chrome_html" />
       <structure name="IDR_EXTENSIONS_DRAG_AND_DROP_HANDLER_JS"
                  file="drag_and_drop_handler.js"

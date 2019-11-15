@@ -143,7 +143,7 @@ void DecryptingVideoDecoder::Reset(base::OnceClosure closure) {
   if (state_ == kWaitingForKey) {
     CompleteWaitingForDecryptionKey();
     DCHECK(decode_cb_);
-    pending_buffer_to_decode_ = NULL;
+    pending_buffer_to_decode_.reset();
     std::move(decode_cb_).Run(DecodeStatus::ABORTED);
   }
 
@@ -166,7 +166,7 @@ DecryptingVideoDecoder::~DecryptingVideoDecoder() {
     decryptor_->DeinitializeDecoder(Decryptor::kVideo);
     decryptor_ = NULL;
   }
-  pending_buffer_to_decode_ = NULL;
+  pending_buffer_to_decode_.reset();
   if (init_cb_)
     std::move(init_cb_).Run(false);
   if (decode_cb_)

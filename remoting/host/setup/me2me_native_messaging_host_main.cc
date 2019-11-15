@@ -112,6 +112,7 @@ int Me2MeNativeMessagingHostMain(int argc, char** argv) {
   if (command_line->HasSwitch(kCheckPermissionSwitchName)) {
     int exit_code;
     daemon_controller->CheckPermission(
+        /* it2me */ false,
         // base::BindOnce cannot bind a capturing lambda, so the "captured"
         // parameters are bound manually. This is safe because the run-loop is
         // run to completion within this scope.

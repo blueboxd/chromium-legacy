@@ -273,10 +273,6 @@ Node* NGPhysicalFragment::GetNode() const {
   return !IsLineBox() ? layout_object_.GetNode() : nullptr;
 }
 
-bool NGPhysicalFragment::HasLayer() const {
-  return !IsLineBox() && layout_object_.HasLayer();
-}
-
 PaintLayer* NGPhysicalFragment::Layer() const {
   if (!HasLayer())
     return nullptr;

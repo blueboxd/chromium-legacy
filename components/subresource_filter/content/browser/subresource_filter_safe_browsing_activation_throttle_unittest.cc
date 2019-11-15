@@ -13,7 +13,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -141,8 +140,8 @@ class SubresourceFilterSafeBrowsingActivationThrottleTest
     : public content::RenderViewHostTestHarness,
       public content::WebContentsObserver {
  public:
-  SubresourceFilterSafeBrowsingActivationThrottleTest()
-      : field_trial_list_(nullptr) {}
+  SubresourceFilterSafeBrowsingActivationThrottleTest() {}
+
   ~SubresourceFilterSafeBrowsingActivationThrottleTest() override {}
 
   void SetUp() override {
@@ -330,7 +329,6 @@ class SubresourceFilterSafeBrowsingActivationThrottleTest
   }
 
  private:
-  base::FieldTrialList field_trial_list_;
   testing::ScopedSubresourceFilterConfigurator scoped_configuration_;
   scoped_refptr<base::TestMockTimeTaskRunner> test_io_task_runner_;
 

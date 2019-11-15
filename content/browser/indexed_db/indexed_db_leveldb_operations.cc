@@ -494,7 +494,7 @@ bool FindGreatestKeyLessThanOrEqual(
 }
 
 bool GetBlobKeyGeneratorCurrentNumber(
-    TransactionalLevelDBTransaction* leveldb_transaction,
+    LevelDBDirectTransaction* leveldb_transaction,
     int64_t database_id,
     int64_t* blob_key_generator_current_number) {
   const std::string key_gen_key = DatabaseMetaDataKey::Encode(
@@ -523,7 +523,7 @@ bool GetBlobKeyGeneratorCurrentNumber(
 }
 
 bool UpdateBlobKeyGeneratorCurrentNumber(
-    TransactionalLevelDBTransaction* leveldb_transaction,
+    LevelDBDirectTransaction* leveldb_transaction,
     int64_t database_id,
     int64_t blob_key_generator_current_number) {
 #if DCHECK_IS_ON()

@@ -30,6 +30,7 @@ class NetLog;
 class NetworkDelegate;
 class ProxyDelegate;
 class ProxyResolutionService;
+class QuicContext;
 class SSLConfigService;
 class TransportSecurityState;
 class URLRequestContext;
@@ -82,6 +83,7 @@ class NET_EXPORT URLRequestContextStorage {
   void set_job_factory(std::unique_ptr<URLRequestJobFactory> job_factory);
   void set_throttler_manager(
       std::unique_ptr<URLRequestThrottlerManager> throttler_manager);
+  void set_quic_context(std::unique_ptr<QuicContext> quic_context);
   void set_http_user_agent_settings(
       std::unique_ptr<HttpUserAgentSettings> http_user_agent_settings);
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
@@ -124,6 +126,7 @@ class NET_EXPORT URLRequestContextStorage {
   std::unique_ptr<TransportSecurityState> transport_security_state_;
   std::unique_ptr<CTVerifier> cert_transparency_verifier_;
   std::unique_ptr<CTPolicyEnforcer> ct_policy_enforcer_;
+  std::unique_ptr<QuicContext> quic_context_;
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
   std::unique_ptr<FtpAuthCache> ftp_auth_cache_;
 #endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)

@@ -119,9 +119,6 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
             "GtkMenu#menu GtkSeparator#separator.horizontal");
       }
       return GetFgColor("GtkMenu#menu GtkMenuItem#menuitem.separator");
-    case ui::NativeTheme::kColorId_TouchableMenuItemLabelColor:
-    case ui::NativeTheme::kColorId_ActionableSubmenuVerticalSeparatorColor:
-      return gfx::kPlaceholderColor;
     // Fallback to the same colors as Aura.
     case ui::NativeTheme::kColorId_HighlightedMenuItemBackgroundColor:
     case ui::NativeTheme::kColorId_HighlightedMenuItemForegroundColor:

@@ -246,6 +246,7 @@ class AudioSinkAudioTrackImpl {
                     return AudioFormat.CHANNEL_OUT_7POINT1;
                 }
             default:
+                Log.e(TAG, "Unsupported channel count: " + channelCount);
                 return AudioFormat.CHANNEL_OUT_DEFAULT;
         }
     }

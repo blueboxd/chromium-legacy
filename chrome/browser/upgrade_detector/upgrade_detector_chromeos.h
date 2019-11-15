@@ -68,9 +68,10 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
   // Calculates |elevated_deadline_| and |high_deadline_|.
   void CalculateDeadlines();
 
-  // Handles a change to the browser.relaunch_heads_up_period Local State
-  // preference. Calls NotifyUpgrade if an upgrade is available.
-  void OnRelaunchHeadsUpPeriodPrefChanged();
+  // Handles a change to the browser.relaunch_heads_up_period or
+  // browser.relaunch_notification Local State preferences. Calls
+  // NotifyUpgrade() if an upgrade is available.
+  void OnRelaunchPrefChanged();
 
   // UpgradeDetector:
   void OnRelaunchNotificationPeriodPrefChanged() override;

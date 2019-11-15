@@ -294,6 +294,18 @@ std::unique_ptr<View> DialogDelegate::DisownExtraView() {
   return std::move(extra_view_);
 }
 
+void DialogDelegate::CancelDialog() {
+  GetDialogClientView()->CancelWindow();
+}
+
+void DialogDelegate::AcceptDialog() {
+  GetDialogClientView()->AcceptWindow();
+}
+
+void DialogDelegate::ResetViewShownTimeStampForTesting() {
+  GetDialogClientView()->ResetViewShownTimeStampForTesting();
+}
+
 DialogDelegate::~DialogDelegate() {
   UMA_HISTOGRAM_LONG_TIMES("Dialog.DialogDelegate.Duration",
                            base::TimeTicks::Now() - creation_time_);

@@ -767,6 +767,10 @@ std::string TestLauncher::TestInfo::GetPrefixStrippedName() const {
 
 TestLauncherDelegate::~TestLauncherDelegate() = default;
 
+bool TestLauncherDelegate::ShouldRunTest(const TestIdentifier& test) {
+  return true;
+}
+
 TestLauncher::LaunchOptions::LaunchOptions() = default;
 TestLauncher::LaunchOptions::LaunchOptions(const LaunchOptions& other) =
     default;
@@ -1426,7 +1430,10 @@ bool TestLauncher::InitTests() {
   }
   for (const TestIdentifier& test_id : tests) {
     TestInfo test_info(test_id);
-    tests_.push_back(test_info);
+    // TODO(isamsonov): crbug.com/1004417 remove when windows builders
+    // stop flaking on MANAUAL_ tests.
+    if (launcher_delegate_->ShouldRunTest(test_id))
+      tests_.push_back(test_info);
   }
   return true;
 }

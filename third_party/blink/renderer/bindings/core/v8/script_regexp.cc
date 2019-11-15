@@ -36,6 +36,10 @@
 
 namespace blink {
 
+namespace {
+const uint32_t kBacktrackLimit = 1'000'000;
+}  // namespace
+
 ScriptRegexp::ScriptRegexp(const String& pattern,
                            TextCaseSensitivity case_sensitivity,
                            MultilineMode multiline_mode,
@@ -56,8 +60,9 @@ ScriptRegexp::ScriptRegexp(const String& pattern,
     flags |= v8::RegExp::kUnicode;
 
   v8::Local<v8::RegExp> regex;
-  if (v8::RegExp::New(context, V8String(isolate, pattern),
-                      static_cast<v8::RegExp::Flags>(flags))
+  if (v8::RegExp::NewWithBacktrackLimit(context, V8String(isolate, pattern),
+                                        static_cast<v8::RegExp::Flags>(flags),
+                                        kBacktrackLimit)
           .ToLocal(&regex))
     regex_.Set(isolate, regex);
   if (try_catch.HasCaught() && !try_catch.Message().IsEmpty())

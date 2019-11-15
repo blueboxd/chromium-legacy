@@ -836,7 +836,9 @@ class HistoryService : public KeyedService {
   void NotifyFaviconsChanged(const std::set<GURL>& page_urls,
                              const GURL& icon_url);
 
-  base::ThreadChecker thread_checker_;
+  // TODO(crbug.com/1009795): Replace with THREAD_CHECKER() once crasher is
+  // addressed.
+  base::ThreadCheckerImpl thread_checker_;
 
   // The thread used by the history service to run HistoryBackend operations.
   // Intentionally not a BrowserThread because the sync integration unit tests

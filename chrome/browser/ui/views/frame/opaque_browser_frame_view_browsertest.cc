@@ -140,9 +140,9 @@ IN_PROC_BROWSER_TEST_F(WebAppOpaqueBrowserFrameViewTest, StaticTitleBarHeight) {
   const int title_bar_height = GetRestoredTitleBarHeight();
   EXPECT_GT(title_bar_height, 0);
 
-  // Add taller children to the web app frame toolbar.
+  // Add taller children to the web app frame toolbar RHS.
   const int container_height = web_app_frame_toolbar_->height();
-  web_app_frame_toolbar_->AddChildView(
+  web_app_frame_toolbar_->GetRightContainerForTesting()->AddChildView(
       new views::StaticSizedView(gfx::Size(1, title_bar_height * 2)));
   opaque_browser_frame_view_->Layout();
 

@@ -25,7 +25,6 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/signatures_util.h"
-#include "components/variations/entropy_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -131,19 +130,22 @@ class FormStructureTest : public testing::Test {
     return form_structure.ShouldBeUploaded();
   }
 
-  void DisableAutofillMetadataFieldTrial() { field_trial_list_.reset(); }
+  void DisableAutofillMetadataFieldTrial() {
+    field_trial_ = nullptr;
+    scoped_feature_list_.Reset();
+    scoped_feature_list_.Init();
+  }
 
  private:
   void EnableAutofillMetadataFieldTrial() {
-    field_trial_list_.reset();
-    field_trial_list_.reset(new base::FieldTrialList(
-        std::make_unique<variations::SHA1EntropyProvider>("foo")));
+    scoped_feature_list_.Reset();
+    scoped_feature_list_.Init();
     field_trial_ = base::FieldTrialList::CreateFieldTrial(
         "AutofillFieldMetadata", "Enabled");
     field_trial_->group();
   }
 
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
+  base::test::ScopedFeatureList scoped_feature_list_;
   scoped_refptr<base::FieldTrial> field_trial_;
 };
 

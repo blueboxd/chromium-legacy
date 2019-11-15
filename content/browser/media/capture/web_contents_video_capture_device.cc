@@ -94,7 +94,7 @@ class WebContentsVideoCaptureDevice::FrameTracker
     VLOG(1) << "Computed preferred WebContents size as "
             << preferred_size.ToString() << " from a capture size of "
             << capture_size.ToString();
-    contents->IncrementCapturerCount(preferred_size);
+    contents->IncrementCapturerCount(preferred_size, /* stay_hidden */ false);
     is_capturing_ = true;
   }
 
@@ -103,7 +103,7 @@ class WebContentsVideoCaptureDevice::FrameTracker
 
     if (auto* contents = web_contents()) {
       DCHECK(is_capturing_);
-      contents->DecrementCapturerCount();
+      contents->DecrementCapturerCount(/* stay_hidden */ false);
       is_capturing_ = false;
     }
     DCHECK(!is_capturing_);

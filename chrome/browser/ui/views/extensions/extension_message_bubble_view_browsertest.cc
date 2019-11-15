@@ -14,7 +14,6 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/window/dialog_client_view.h"
 
 namespace {
 
@@ -131,13 +130,13 @@ void ExtensionMessageBubbleViewBrowserTest::ClickLearnMoreButton(
 void ExtensionMessageBubbleViewBrowserTest::ClickActionButton(
     Browser* browser) {
   ToolbarActionsBarBubbleViews* bubble = GetViewsBubbleForBrowser(browser);
-  bubble->GetDialogClientView()->AcceptWindow();
+  bubble->AcceptDialog();
 }
 
 void ExtensionMessageBubbleViewBrowserTest::ClickDismissButton(
     Browser* browser) {
   ToolbarActionsBarBubbleViews* bubble = GetViewsBubbleForBrowser(browser);
-  bubble->GetDialogClientView()->CancelWindow();
+  bubble->CancelDialog();
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,

@@ -769,6 +769,11 @@ make_names("make_core_generated_input_mode_names") {
   output_dir = blink_core_output_dir
 }
 
+make_names("make_core_generated_keywords") {
+  in_files = [ "html/keywords.json5" ]
+  output_dir = blink_core_output_dir
+}
+
 make_names("make_core_generated_performance_entry_names") {
   in_files = [ "timing/performance_entry_names.json5" ]
   output_dir = blink_core_output_dir
@@ -993,6 +998,7 @@ targets_generating_sources = [
   ":make_core_generated_html_tokenizer_names",
   ":make_core_generated_input_mode_names",
   ":make_core_generated_input_type_names",
+  ":make_core_generated_keywords",
   ":make_core_generated_mathml_names",
   ":make_core_generated_mathml_element_type_helpers",
   ":make_core_generated_media_feature_names",

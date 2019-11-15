@@ -5,8 +5,8 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_AW_COOKIE_ACCESS_POLICY_H_
 #define ANDROID_WEBVIEW_BROWSER_AW_COOKIE_ACCESS_POLICY_H_
 
-#include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/synchronization/lock.h"
 
 class GURL;
@@ -45,7 +45,7 @@ class AwCookieAccessPolicy {
                     int render_frame_id);
 
  private:
-  friend struct base::LazyInstanceTraitsBase<AwCookieAccessPolicy>;
+  friend class base::NoDestructor<AwCookieAccessPolicy>;
   friend class AwCookieAccessPolicyTest;
 
   AwCookieAccessPolicy();

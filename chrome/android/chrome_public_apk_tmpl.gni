@@ -22,7 +22,7 @@ declare_args() {
   multidex_in_release = false
 
   # Experimental only. Causes .dex files to be store in the APK uncompressed.
-  # Only affects monochrome_public_apk and trichrome_chrome_apk.
+  # Only affects monochrome_public_apk.
   use_uncompressed_dex = false
 }
 
@@ -136,8 +136,7 @@ template("chrome_public_common_apk_or_module_tmpl") {
     forward_variables_from(invoker, "*")
 
     if (_is_trichrome) {
-      # TODO(torne): make minsdk=Q once we no longer build hacky P version
-      min_sdk_version = android_sdk_version
+      min_sdk_version = 29
     } else if (_is_monochrome) {
       min_sdk_version = 24
     } else if (_is_modern) {
@@ -374,7 +373,8 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       loadable_modules += [ "$root_out_dir/libcrashpad_handler_trampoline.so" ]
 
       if (webview_devui_show_icon) {
-        _deps += [ "//android_webview/apk:devui_launcher_icon_resources" ]
+        _deps +=
+            [ "//android_webview/nonembedded:devui_launcher_icon_resources" ]
       }
 
       if (android_64bit_target_cpu && build_apk_secondary_abi &&
@@ -391,10 +391,6 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       _pak_prefix = "monochrome"
     }
     if (is_trichrome) {
-      if (!trichrome_shared_assets) {
-        _deps += [ "//android_webview:monochrome_webview_assets" ]
-      }
-
       # Include placeholder libraries to make Chrome multiarch in the same way
       # as Monochrome, even though Chrome only runs with one of the two
       # bitnesses. This allows the "32-bit" and "64-bit" versions of Chrome to

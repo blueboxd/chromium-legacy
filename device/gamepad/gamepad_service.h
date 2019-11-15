@@ -8,6 +8,7 @@
 #include <memory>
 #include <set>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -87,7 +88,7 @@ class DEVICE_GAMEPAD_EXPORT GamepadService
   // Registers the given closure for calling when the user has interacted with
   // the device. This callback will only be issued once. Should only be called
   // while a consumer is active.
-  void RegisterForUserGesture(const base::Closure& closure);
+  void RegisterForUserGesture(base::OnceClosure closure);
 
   // Returns a duplicate of the shared memory region of the gamepad data.
   base::ReadOnlySharedMemoryRegion DuplicateSharedMemoryRegion();

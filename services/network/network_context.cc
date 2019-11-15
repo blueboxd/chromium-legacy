@@ -2268,10 +2268,9 @@ NetworkContext::CreateCertVerifyProcWithoutUserSlots(
 
 void NetworkContext::InitializeCorsParams() {
   for (const auto& pattern : params_->cors_origin_access_list) {
-    url::Origin origin = url::Origin::Create(GURL(pattern->source_origin));
-    cors_origin_access_list_.SetAllowListForOrigin(origin,
+    cors_origin_access_list_.SetAllowListForOrigin(pattern->source_origin,
                                                    pattern->allow_patterns);
-    cors_origin_access_list_.SetBlockListForOrigin(origin,
+    cors_origin_access_list_.SetBlockListForOrigin(pattern->source_origin,
                                                    pattern->block_patterns);
   }
   for (const auto& key : params_->cors_exempt_header_list)

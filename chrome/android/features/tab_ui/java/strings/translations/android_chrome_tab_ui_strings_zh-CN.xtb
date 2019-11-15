@@ -6,6 +6,7 @@
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> 个标签页}other{<ph name="TABS_COUNT_MANY" /> 个标签页}}</translation>
 <translation id="257674075312929031">群组</translation>
 <translation id="2613747923081026172">创建群组</translation>
+<translation id="2671423594960767771">分享群组</translation>
 <translation id="2977480621796371840">从组中移除</translation>
 <translation id="4212246570487010370">继续浏览</translation>
 <translation id="4648718555153979859">您的标签页会列在此处以构成一组</translation>
@@ -14,6 +15,7 @@
 <translation id="5580090775658607195">已将 <ph name="TAB_COUNT" /> 个标签页合为一组</translation>
 <translation id="5792534911093536736">更多标签页</translation>
 <translation id="58326064309361797">拖动标签可进行分组</translation>
+<translation id="6040143037577758943">关闭</translation>
 <translation id="6193448654517602979">选择标签页</translation>
 <translation id="6615455863669487791">显示图标</translation>
 <translation id="6840760312327750441">要将标签页分组，请轻触并按住某个标签页，然后拖动到另一个标签页上。</translation>

@@ -127,7 +127,7 @@ void ConnectResourceReporterOnIOThread(
   if (!host)
     return;
 
-  BindInterface(host->GetHost(), std::move(resource_reporter));
+  host->GetHost()->BindReceiver(std::move(resource_reporter));
 }
 
 // Creates the Mojo service wrapper that will be used to sample the V8 memory

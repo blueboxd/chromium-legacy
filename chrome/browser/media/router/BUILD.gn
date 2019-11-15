@@ -154,8 +154,6 @@ static_library("router") {
         "providers/openscreen/network_service_async_packet_sender.h",
         "providers/openscreen/network_service_quic_packet_writer.cc",
         "providers/openscreen/network_service_quic_packet_writer.h",
-        "providers/openscreen/platform/chrome_platform_client.cc",
-        "providers/openscreen/platform/chrome_platform_client.h",
         "providers/openscreen/platform/chrome_task_runner.cc",
         "providers/openscreen/platform/chrome_task_runner.h",
         "providers/openscreen/platform/chrome_udp_socket.cc",

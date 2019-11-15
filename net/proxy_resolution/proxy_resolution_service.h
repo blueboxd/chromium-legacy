@@ -140,6 +140,7 @@ class NET_EXPORT ProxyResolutionService
   // Profiling information for the request is saved to |net_log| if non-NULL.
   int ResolveProxy(const GURL& url,
                    const std::string& method,
+                   const NetworkIsolationKey& network_isolation_key,
                    ProxyInfo* results,
                    CompletionOnceCallback callback,
                    std::unique_ptr<Request>* request,

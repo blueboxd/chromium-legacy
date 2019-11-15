@@ -19,7 +19,6 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
-#include "ui/views/window/dialog_client_view.h"
 
 class OneClickSigninDialogViewTest : public ChromeViewsTestBase,
                                      public views::WidgetObserver {
@@ -134,14 +133,14 @@ TEST_F(OneClickSigninDialogViewTest, HideDialog) {
 
 TEST_F(OneClickSigninDialogViewTest, OkButton) {
   OneClickSigninDialogView* view = ShowOneClickSigninDialog();
-  view->GetDialogClientView()->ResetViewShownTimeStampForTesting();
+  view->ResetViewShownTimeStampForTesting();
 
   gfx::Point center(10, 10);
   const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, center, center,
                              ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
                              ui::EF_LEFT_MOUSE_BUTTON);
-  view->GetDialogClientView()->ok_button()->OnMousePressed(event);
-  view->GetDialogClientView()->ok_button()->OnMouseReleased(event);
+  view->GetOkButton()->OnMousePressed(event);
+  view->GetOkButton()->OnMouseReleased(event);
 
   WaitForClose();
   EXPECT_FALSE(OneClickSigninDialogView::IsShowing());
@@ -151,14 +150,14 @@ TEST_F(OneClickSigninDialogViewTest, OkButton) {
 
 TEST_F(OneClickSigninDialogViewTest, UndoButton) {
   OneClickSigninDialogView* view = ShowOneClickSigninDialog();
-  view->GetDialogClientView()->ResetViewShownTimeStampForTesting();
+  view->ResetViewShownTimeStampForTesting();
 
   gfx::Point center(10, 10);
   const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, center, center,
                              ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
                              ui::EF_LEFT_MOUSE_BUTTON);
-  view->GetDialogClientView()->cancel_button()->OnMousePressed(event);
-  view->GetDialogClientView()->cancel_button()->OnMouseReleased(event);
+  view->GetCancelButton()->OnMousePressed(event);
+  view->GetCancelButton()->OnMouseReleased(event);
 
   WaitForClose();
   EXPECT_FALSE(OneClickSigninDialogView::IsShowing());

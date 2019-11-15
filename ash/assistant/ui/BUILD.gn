@@ -104,6 +104,7 @@ component("ui") {
     "//ash/assistant/model",
     "//ash/assistant/ui:constants",
     "//ash/assistant/util",
+    "//ash/keyboard/ui",
     "//ash/public/cpp",
     "//ash/public/cpp/vector_icons",
     "//ash/resources/vector_icons",

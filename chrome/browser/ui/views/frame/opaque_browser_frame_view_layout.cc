@@ -329,9 +329,12 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBar() {
     minimum_size_for_buttons_ += size + kIconLeftSpacing;
 
     if (web_app_frame_toolbar_) {
-      available_space_trailing_x_ = web_app_frame_toolbar_->LayoutInContainer(
-          available_space_leading_x_, available_space_trailing_x_, 0,
-          available_height);
+      std::pair<int, int> remaining_bounds =
+          web_app_frame_toolbar_->LayoutInContainer(available_space_leading_x_,
+                                                    available_space_trailing_x_,
+                                                    0, available_height);
+      available_space_leading_x_ = remaining_bounds.first;
+      available_space_trailing_x_ = remaining_bounds.second;
     }
   }
 

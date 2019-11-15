@@ -23,6 +23,7 @@ import("//remoting/remoting_enable.gni")
 import("//third_party/openh264/openh264_args.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 import("//ui/base/ui_features.gni")
+import("//ui/gl/features.gni")
 import("//ui/ozone/ozone.gni")
 import("//ui/webui/webui_features.gni")
 import("//v8/gni/snapshot_toolchain.gni")
@@ -141,8 +142,6 @@ group("gn_all") {
       "//third_party/SPIRV-Tools/src:SPIRV-Tools",
       "//third_party/SPIRV-Tools/src/test/fuzzers",
       "//third_party/cacheinvalidation:cacheinvalidation_unittests",
-      "//third_party/dawn:dawn_end2end_tests_temp_group",
-      "//third_party/dawn:dawn_unittests_temp_group",
       "//third_party/pdfium/samples:pdfium_test",
       "//tools/perf/clear_system_cache",
       "//tools/polymer:polymer_tools_python_unittests",
@@ -799,6 +798,13 @@ group("gn_all") {
     deps += [
       "//tools/accessibility/inspect:ax_dump_events",
       "//tools/accessibility/inspect:ax_dump_tree",
+    ]
+  }
+
+  if (use_dawn) {
+    deps += [
+      "//third_party/dawn:dawn_end2end_tests_temp_group",
+      "//third_party/dawn:dawn_unittests_temp_group",
     ]
   }
 

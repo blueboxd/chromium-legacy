@@ -191,7 +191,6 @@ void AutocompleteResult::AppendMatches(const AutocompleteInput& input,
     }
   }
   default_match_ = end();
-  alternate_nav_url_ = GURL();
 }
 
 void AutocompleteResult::SortAndCull(
@@ -201,21 +200,16 @@ void AutocompleteResult::SortAndCull(
   for (auto i(matches_.begin()); i != matches_.end(); ++i)
     i->ComputeStrippedDestinationURL(input, template_url_service);
 
+  DemoteOnDeviceSearchSuggestions();
+
   CompareWithDemoteByType<AutocompleteMatch> comparing_object(
       input.current_page_classification());
+
 #if !(defined(OS_ANDROID) || defined(OS_IOS))
-  // Do not cull the tail suggestions for zero prefix query suggetions of
-  // chromeOS launcher or NTP, since there won't be any default match in this
-  // scenario.
-  if (!(input.text().empty() &&
-        (input.current_page_classification() ==
-             metrics::OmniboxEventProto::CHROMEOS_APP_LIST ||
-         BaseSearchProvider::IsNTPPage(input.current_page_classification())))) {
-    // Wipe tail suggestions if not exclusive (minus default match).
-    MaybeCullTailSuggestions(&matches_, comparing_object);
-  }
+  // Because tail suggestions are a "last resort", we cull the tail suggestions
+  // if there any non-default non-tail suggestions.
+  MaybeCullTailSuggestions(&matches_, comparing_object);
 #endif
-  DemoteOnDeviceSearchSuggestions();
 
   DeduplicateMatches(input.current_page_classification(), &matches_);
 
@@ -277,26 +271,16 @@ void AutocompleteResult::SortAndCull(
   //  1. There are no matches.
   //  2. The first match doesn't have |allowed_to_be_default_match| as true.
   //     This implies that NONE of the matches were allowed to be the default.
-  //  3. Hardcoded for ChromeOS Launcher empty-textfield on-focus suggestions.
-  //     TODO(tommycli): We should remove the ChromeOS launcher special case.
-  //     Instead, ensure none of the launcher matches are allowed to be default.
-  if (matches_.empty() || !matches_.begin()->allowed_to_be_default_match ||
-      (input.text().empty() &&
-       (input.current_page_classification() ==
-        metrics::OmniboxEventProto::CHROMEOS_APP_LIST))) {
+  if (matches_.empty() || !matches_.begin()->allowed_to_be_default_match) {
     default_match_ = end();
-    alternate_nav_url_ = GURL();
     return;
   }
 
   // Since we didn't early exit, the first match must be the default match.
-  // TODO(tommycli): Once we eliminate the ChromeOS Launcher hardcoding above,
-  // we can delete |default_match_|, since if matches.begin() has a true
-  // |allowed_to_be_default_match|, it will always be the default match.
+  // TODO(tommycli): We can delete |default_match_|, since if matches.begin()
+  // has a true |allowed_to_be_default_match|, it will always be the default
+  // match.
   default_match_ = matches_.begin();
-
-  // TODO(tommycli): Simplify our state by not pre-computing this.
-  alternate_nav_url_ = ComputeAlternateNavUrl(input, *default_match_);
 
   // Almost all matches are "navigable": they have a valid |destination_url|.
   // One example exception is the user tabbing into keyword search mode,
@@ -620,7 +604,6 @@ void AutocompleteResult::Swap(AutocompleteResult* other) {
   matches_.swap(other->matches_);
   default_match_ = begin() + other_default_match_offset;
   other->default_match_ = other->begin() + default_match_offset;
-  alternate_nav_url_.Swap(&(other->alternate_nav_url_));
 }
 
 void AutocompleteResult::CopyFrom(const AutocompleteResult& rhs) {
@@ -633,8 +616,6 @@ void AutocompleteResult::CopyFrom(const AutocompleteResult& rhs) {
   default_match_ = (rhs.default_match_ == rhs.end())
                        ? end()
                        : (begin() + (rhs.default_match_ - rhs.begin()));
-
-  alternate_nav_url_ = rhs.alternate_nav_url_;
 }
 
 #if DCHECK_IS_ON()
@@ -738,12 +719,7 @@ void AutocompleteResult::InlineTailPrefixes() {
 }
 
 size_t AutocompleteResult::EstimateMemoryUsage() const {
-  size_t res = 0;
-
-  res += base::trace_event::EstimateMemoryUsage(matches_);
-  res += base::trace_event::EstimateMemoryUsage(alternate_nav_url_);
-
-  return res;
+  return base::trace_event::EstimateMemoryUsage(matches_);
 }
 
 std::vector<AutocompleteResult::MatchDedupComparator>

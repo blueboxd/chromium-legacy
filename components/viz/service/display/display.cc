@@ -529,7 +529,7 @@ bool Display::DrawAndSwap() {
   const gfx::OverlayTransform current_display_transform =
       output_surface_->GetDisplayTransform();
   const gfx::Transform display_transform = gfx::OverlayTransformToTransform(
-      current_display_transform, current_surface_size_);
+      current_display_transform, gfx::SizeF(current_surface_size_));
   const gfx::Size current_surface_size =
       cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
           display_transform, gfx::Rect(current_surface_size_))

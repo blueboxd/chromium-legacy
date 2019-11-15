@@ -422,6 +422,12 @@ class Symbol(BaseSymbol):
         self.padding, self.full_name, self.object_path, self.source_path,
         self.FlagsString(), self.num_aliases, self.component)
 
+  def SetName(self, full_name, template_name=None, name=None):
+    # Note that _NormalizeNames() will clobber these values.
+    self.full_name = full_name
+    self.template_name = full_name if template_name is None else template_name
+    self.name = full_name if name is None else name
+
   @property
   def pss(self):
     return float(self.size) / self.num_aliases

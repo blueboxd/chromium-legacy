@@ -29,7 +29,8 @@ public class TransparentLauncherActivity extends Activity {
                         HostBrowserLauncherParams params =
                                 HostBrowserLauncherParams.createForIntent(
                                         TransparentLauncherActivity.this, getIntent(),
-                                        hostBrowserPackageName, dialogShown, activityStartTimeMs);
+                                        hostBrowserPackageName, dialogShown, activityStartTimeMs,
+                                        -1 /* splashShownTimeMs */);
 
                         onHostBrowserSelected(params);
                         finish();

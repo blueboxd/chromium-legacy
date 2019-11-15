@@ -28,10 +28,12 @@ void TabCallbackProxy::DisplayedUrlChanged(const GURL& url) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jstring_url(
       ConvertUTF8ToJavaString(env, url.spec()));
+  TRACE_EVENT0("weblayer", "Java_TabCallbackProxy_visibleUrlChanged");
   Java_TabCallbackProxy_visibleUrlChanged(env, java_observer_, jstring_url);
 }
 
 void TabCallbackProxy::OnRenderProcessGone() {
+  TRACE_EVENT0("weblayer", "Java_TabCallbackProxy_onRenderProcessGone");
   Java_TabCallbackProxy_onRenderProcessGone(AttachCurrentThread(),
                                             java_observer_);
 }

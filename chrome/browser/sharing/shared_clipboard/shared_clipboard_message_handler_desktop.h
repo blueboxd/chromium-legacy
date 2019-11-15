@@ -9,13 +9,13 @@
 #include "chrome/browser/sharing/shared_clipboard/shared_clipboard_message_handler.h"
 
 class Profile;
-class SharingService;
+class SharingDeviceSource;
 
 // Handles incoming messages for the shared clipboard feature.
 class SharedClipboardMessageHandlerDesktop
     : public SharedClipboardMessageHandler {
  public:
-  SharedClipboardMessageHandlerDesktop(SharingService* sharing_service,
+  SharedClipboardMessageHandlerDesktop(SharingDeviceSource* device_source,
                                        Profile* profile);
   ~SharedClipboardMessageHandlerDesktop() override;
 

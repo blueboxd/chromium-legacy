@@ -3116,6 +3116,9 @@ AutotestPrivateGetAppWindowListFunction::Run() {
   // Use negative number to avoid potential collision with normal use if any.
   static int id_count = -10000;
 
+  base::Optional<ash::OverviewInfo> overview_info =
+      ash::OverviewTestApi().GetOverviewInfo();
+
   auto window_list = ash::GetAppWindowList();
   std::vector<api::autotest_private::AppWindowInfo> result_list;
 
@@ -3205,6 +3208,18 @@ AutotestPrivateGetAppWindowListFunction::Run() {
       window_info.frame_mode =
           api::autotest_private::FrameMode::FRAME_MODE_NONE;
       window_info.is_frame_visible = false;
+    }
+
+    // Overview info.
+    if (overview_info.has_value()) {
+      auto it = overview_info->find(window);
+      if (it != overview_info->end()) {
+        window_info.overview_info =
+            std::make_unique<api::autotest_private::OverviewInfo>();
+        window_info.overview_info->bounds =
+            ToBoundsDictionary(it->second.bounds_in_screen);
+        window_info.overview_info->is_dragged = it->second.is_dragged;
+      }
     }
 
     result_list.emplace_back(std::move(window_info));

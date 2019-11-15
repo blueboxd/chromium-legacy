@@ -797,6 +797,19 @@ class AXPosition {
     return CreateAncestorPosition(LowestCommonAnchor(second));
   }
 
+  AXPositionInstance CreateAncestorPosition(
+      const AXNodeType* ancestor_anchor) const {
+    if (!ancestor_anchor)
+      return CreateNullPosition();
+
+    AXPositionInstance ancestor_position = Clone();
+    while (!ancestor_position->IsNullPosition() &&
+           ancestor_position->GetAnchor() != ancestor_anchor) {
+      ancestor_position = ancestor_position->CreateParentPosition();
+    }
+    return ancestor_position;
+  }
+
   AXPositionInstance AsTreePosition() const {
     if (IsNullPosition() || IsTreePosition())
       return Clone();
@@ -2841,19 +2854,6 @@ class AXPosition {
       iterator = iterator->CreateParentPosition();
     }
     return iterator;
-  }
-
-  AXPositionInstance CreateAncestorPosition(
-      const AXNodeType* ancestor_anchor) const {
-    if (!ancestor_anchor)
-      return CreateNullPosition();
-
-    AXPositionInstance ancestor_position = Clone();
-    while (!ancestor_position->IsNullPosition() &&
-           ancestor_position->GetAnchor() != ancestor_anchor) {
-      ancestor_position = ancestor_position->CreateParentPosition();
-    }
-    return ancestor_position;
   }
 
   // Creates a text position that is in the same anchor as the current position,

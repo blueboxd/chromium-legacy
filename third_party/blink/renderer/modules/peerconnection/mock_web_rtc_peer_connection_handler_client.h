@@ -56,6 +56,7 @@ class MockWebRTCPeerConnectionHandlerClient
   void DidModifyTransceivers(
       blink::WebVector<std::unique_ptr<blink::WebRTCRtpTransceiver>>
           web_transceivers,
+      WebVector<uintptr_t> removed_transceivers,
       bool is_remote_description) override {
     DidModifyTransceiversForMock(&web_transceivers, is_remote_description);
   }

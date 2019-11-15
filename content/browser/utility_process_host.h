@@ -92,10 +92,6 @@ class CONTENT_EXPORT UtilityProcessHost
   // Starts the utility process.
   bool Start();
 
-  // Binds an interface exposed by the utility process.
-  void BindInterface(const std::string& interface_name,
-                     mojo::ScopedMessagePipeHandle interface_pipe);
-
   // Instructs the utility process to run an instance of the named service,
   // bound to |receiver|.
   void RunService(

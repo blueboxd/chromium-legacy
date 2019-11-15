@@ -15,7 +15,6 @@ enum NDEFErrorType {
   NOT_FOUND,
   INVALID_MESSAGE,
   OPERATION_CANCELLED,
-  TIMER_EXPIRED,
   CANNOT_CANCEL,
   // Transfer data error.
   IO_ERROR
@@ -79,9 +78,6 @@ struct NDEFPushOptions {
   // The target of the push operation.
   NDEFPushTarget target;
 
-  // The timeout for the push operation, in milliseconds.
-  double timeout;
-
   // If the property is true, the push operation will suspend active watchers
   // until its completion.
   bool ignore_read;
@@ -104,9 +100,7 @@ interface NFC {
   SetClient(pending_remote<NFCClient> client);
 
   // Pushes data to NFC device.
-  // NDEFPushOptions specify timeout and type of device where data should be
-  // pushed. If timeout is defined and data is not pushed before timeout is
-  // expired, callback with corresponding error is called.
+  // NDEFPushOptions specify type of device where data should be pushed.
   Push(NDEFMessage message, NDEFPushOptions? options) => (NDEFError? error);
 
   // Cancels pending push request.

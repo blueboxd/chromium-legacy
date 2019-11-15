@@ -242,48 +242,11 @@ void BookmarkModelTypeProcessor::OnUpdateReceived(
   DCHECK(model_type_state.initial_sync_done());
 
   if (!bookmark_tracker_) {
-    StartTrackingMetadata(
-        std::vector<NodeMetadataPair>(),
-        std::make_unique<sync_pb::ModelTypeState>(model_type_state));
-    {
-      ScopedRemoteUpdateBookmarks update_bookmarks(
-          bookmark_model_, bookmark_undo_service_,
-          bookmark_model_observer_.get());
-
-      BookmarkModelMerger(&updates, bookmark_model_, favicon_service_,
-                          bookmark_tracker_.get())
-          .Merge();
-    }
-
-    // If any of the permanent nodes is missing, we treat it as failure.
-    // TODO(mamir): Revisit if this is too aggressive since it may influence
-    // the USS migrator case on desktop (which wouldn't usually have mobile
-    // bookmarks).
-    if (!bookmark_tracker_->GetEntityForBookmarkNode(
-            bookmark_model_->bookmark_bar_node()) ||
-        !bookmark_tracker_->GetEntityForBookmarkNode(
-            bookmark_model_->other_node()) ||
-        !bookmark_tracker_->GetEntityForBookmarkNode(
-            bookmark_model_->mobile_node())) {
-      LogMissingPermanentNodes(bookmark_tracker_->GetEntityForBookmarkNode(
-                                   bookmark_model_->bookmark_bar_node()),
-                               bookmark_tracker_->GetEntityForBookmarkNode(
-                                   bookmark_model_->other_node()),
-                               bookmark_tracker_->GetEntityForBookmarkNode(
-                                   bookmark_model_->mobile_node()));
-      StopTrackingMetadata();
-      bookmark_tracker_.reset();
-      error_handler_.Run(
-          syncer::ModelError(FROM_HERE, "Permanent bookmark entities missing"));
-      return;
-    }
-
-    bookmark_tracker_->CheckAllNodesTracked(bookmark_model_);
-
-    schedule_save_closure_.Run();
-    NudgeForCommitIfNeeded();
+    OnInitialUpdateReceived(model_type_state, std::move(updates));
     return;
   }
+
+  // Incremental updates.
   ScopedRemoteUpdateBookmarks update_bookmarks(
       bookmark_model_, bookmark_undo_service_, bookmark_model_observer_.get());
   BookmarkRemoteUpdatesHandler updates_handler(
@@ -508,6 +471,51 @@ void BookmarkModelTypeProcessor::OnBookmarkModelBeingDeleted() {
   DCHECK(bookmark_model_);
   DCHECK(bookmark_model_observer_);
   StopTrackingMetadata();
+}
+
+void BookmarkModelTypeProcessor::OnInitialUpdateReceived(
+    const sync_pb::ModelTypeState& model_type_state,
+    syncer::UpdateResponseDataList updates) {
+  DCHECK(!bookmark_tracker_);
+
+  StartTrackingMetadata(
+      std::vector<NodeMetadataPair>(),
+      std::make_unique<sync_pb::ModelTypeState>(model_type_state));
+
+  {
+    ScopedRemoteUpdateBookmarks update_bookmarks(
+        bookmark_model_, bookmark_undo_service_,
+        bookmark_model_observer_.get());
+
+    BookmarkModelMerger(std::move(updates), bookmark_model_, favicon_service_,
+                        bookmark_tracker_.get())
+        .Merge();
+  }
+
+  // If any of the permanent nodes is missing, we treat it as failure.
+  if (!bookmark_tracker_->GetEntityForBookmarkNode(
+          bookmark_model_->bookmark_bar_node()) ||
+      !bookmark_tracker_->GetEntityForBookmarkNode(
+          bookmark_model_->other_node()) ||
+      !bookmark_tracker_->GetEntityForBookmarkNode(
+          bookmark_model_->mobile_node())) {
+    LogMissingPermanentNodes(bookmark_tracker_->GetEntityForBookmarkNode(
+                                 bookmark_model_->bookmark_bar_node()),
+                             bookmark_tracker_->GetEntityForBookmarkNode(
+                                 bookmark_model_->other_node()),
+                             bookmark_tracker_->GetEntityForBookmarkNode(
+                                 bookmark_model_->mobile_node()));
+    StopTrackingMetadata();
+    bookmark_tracker_.reset();
+    error_handler_.Run(
+        syncer::ModelError(FROM_HERE, "Permanent bookmark entities missing"));
+    return;
+  }
+
+  bookmark_tracker_->CheckAllNodesTracked(bookmark_model_);
+
+  schedule_save_closure_.Run();
+  NudgeForCommitIfNeeded();
 }
 
 void BookmarkModelTypeProcessor::StartTrackingMetadata(

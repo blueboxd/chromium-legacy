@@ -84,89 +84,12 @@ luci.console_view(
             category = 'fuchsia',
         ),
         luci.console_view_entry(
-            builder = 'ci/Linux Builder Goma Canary',
-            category = 'goma|linux',
-        ),
-        luci.console_view_entry(
-            builder = 'ci/linux-archive-rel-goma-canary',
-            category = 'goma|linux',
-            short_name = 'clb',
-        ),
-        luci.console_view_entry(
-            builder = 'ci/linux-archive-rel-goma-canary-localoutputcache',
-            category = 'goma|linux',
-            short_name = 'loc',
-        ),
-        luci.console_view_entry(
-            builder = 'ci/Mac Builder (dbg) Goma Canary',
-            category = 'goma|mac|debug',
-        ),
-        luci.console_view_entry(
-            builder = 'ci/Mac Builder (dbg) Goma Canary (clobber)',
-            category = 'goma|mac|debug',
-            short_name = 'clb',
-        ),
-        luci.console_view_entry(
-            builder = 'ci/Mac Builder Goma Canary',
-            category = 'goma|mac',
-        ),
-        luci.console_view_entry(
-            builder = 'ci/mac-archive-rel-goma-canary',
-            category = 'goma|mac',
-            short_name = 'clb',
-        ),
-        luci.console_view_entry(
-            builder = 'ci/mac-archive-rel-goma-canary-localoutputcache',
-            category = 'goma|mac',
-            short_name = 'loc',
-        ),
-        luci.console_view_entry(
-            builder = 'ci/Win Builder (dbg) Goma Canary',
-            category = 'goma|win|debug',
-        ),
-        luci.console_view_entry(
-            builder = 'ci/Win7 Builder (dbg) Goma Canary',
-            category = 'goma|win|debug',
-            short_name = '7',
-        ),
-        luci.console_view_entry(
-            builder = 'ci/Win Builder Goma Canary',
-            category = 'goma|win',
-        ),
-        luci.console_view_entry(
-            builder = 'ci/win32-archive-rel-goma-canary-localoutputcache',
-            category = 'goma|win',
-            short_name = 'loc',
-        ),
-        luci.console_view_entry(
-            builder = 'ci/Win7 Builder Goma Canary',
-            category = 'goma|win',
-            short_name = '7',
-        ),
-        luci.console_view_entry(
-            builder = 'ci/Win cl.exe Goma Canary LocalOutputCache',
-            category = 'goma|win|cl.exe',
-            short_name = 'loc',
-        ),
-        luci.console_view_entry(
-            builder = 'ci/WinMSVC64 Goma Canary',
-            category = 'goma|win|cl.exe',
-        ),
-        luci.console_view_entry(
-            builder = 'ci/chromeos-amd64-generic-rel-goma-canary',
-            category = 'goma|chromeos',
-        ),
-        luci.console_view_entry(
             builder = 'ci/chromeos-amd64-generic-rel-vm-tests',
             category = 'chromeos',
         ),
         luci.console_view_entry(
             builder = 'ci/chromeos-kevin-rel-hw-tests',
             category = 'chromos',
-        ),
-        luci.console_view_entry(
-            builder = 'ci/ios-device-goma-canary-clobber',
-            category = 'goma|ios',
         ),
         luci.console_view_entry(
             builder = 'ci/ios-simulator-cr-recipe',

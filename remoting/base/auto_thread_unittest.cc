@@ -61,7 +61,7 @@ class AutoThreadTest : public testing::Test {
     // Release |main_task_runner_|, then run |task_environment_| until
     // other references created in tests are gone.  We also post a delayed quit
     // task to |message_loop_| so the test will not hang on failure.
-    main_task_runner_ = NULL;
+    main_task_runner_.reset();
     base::RunLoop run_loop;
     quit_closure_ = run_loop.QuitClosure();
     task_environment_.GetMainThreadTaskRunner()->PostDelayedTask(
@@ -95,7 +95,7 @@ TEST_F(AutoThreadTest, StartAndStop) {
       AutoThread::Create(kThreadName, main_task_runner_);
   EXPECT_TRUE(task_runner);
 
-  task_runner = NULL;
+  task_runner.reset();
   RunMessageLoop();
 }
 
@@ -109,7 +109,7 @@ TEST_F(AutoThreadTest, ProcessTask) {
   bool success = false;
   task_runner->PostTask(FROM_HERE, base::BindOnce(&SetFlagTask, &success));
 
-  task_runner = NULL;
+  task_runner.reset();
   RunMessageLoop();
 
   EXPECT_TRUE(success);
@@ -129,8 +129,8 @@ TEST_F(AutoThreadTest, ThreadDependency) {
   task_runner1->PostTask(
       FROM_HERE, base::BindOnce(&PostSetFlagTask, task_runner2, &success));
 
-  task_runner1 = NULL;
-  task_runner2 = NULL;
+  task_runner1.reset();
+  task_runner2.reset();
   RunMessageLoop();
 
   EXPECT_TRUE(success);
@@ -150,7 +150,7 @@ TEST_F(AutoThreadTest, ThreadWithComMta) {
   task_runner->PostTask(
       FROM_HERE, base::BindOnce(&CheckComAptTypeTask, &apt_type, &hresult));
 
-  task_runner = NULL;
+  task_runner.reset();
   RunMessageLoop();
 
   EXPECT_EQ(S_OK, hresult);
@@ -170,7 +170,7 @@ TEST_F(AutoThreadTest, ThreadWithComSta) {
   task_runner->PostTask(
       FROM_HERE, base::BindOnce(&CheckComAptTypeTask, &apt_type, &hresult));
 
-  task_runner = NULL;
+  task_runner.reset();
   RunMessageLoop();
 
   EXPECT_EQ(S_OK, hresult);

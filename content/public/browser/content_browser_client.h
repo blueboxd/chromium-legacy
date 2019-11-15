@@ -347,26 +347,28 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Called to create a URLLoaderFactory for network requests in the following
   // cases:
   // - The default factory to be used by a frame.  In this case
-  //   |request_initiator| is the origin being committed in the frame (or the
-  //   last origin committed in the frame).
+  //   both |origin| and |main_world_origin| are the origin being
+  //   committed in the frame (or the last origin committed in the frame).
   // - An isolated-world-specific factory to be used by a frame.  This happens
   //   for origins covered via
   //   RenderFrameHost::MarkIsolatedWorldAsRequiringSeparateURLLoaderFactory.
-  //   In this case |request_initiator| is the origin of the isolated world.
+  //   In this case |origin| is the origin of the isolated world and the
+  //   |main_world_origin| is the origin committed in the frame.
   //
   // This method allows the //content embedder to provide a URLLoaderFactory
-  // with |request_initiator|-specific properties (e.g. with relaxed
+  // with |origin|-specific properties (e.g. with relaxed
   // Cross-Origin Read Blocking enforcement as needed by some extensions).
   //
   // If the embedder doesn't want to override the URLLoaderFactory for the given
-  // |request_initiator|, then it should return an mojo::NullRemote().
+  // |origin|, then it should return a mojo::NullRemote().
   virtual mojo::PendingRemote<network::mojom::URLLoaderFactory>
   CreateURLLoaderFactoryForNetworkRequests(
       RenderProcessHost* process,
       network::mojom::NetworkContext* network_context,
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
           header_client,
-      const url::Origin& request_initiator,
+      const url::Origin& origin,
+      const url::Origin& main_world_origin,
       const base::Optional<net::NetworkIsolationKey>& network_isolation_key);
 
   // Returns a list additional WebUI schemes, if any.  These additional schemes

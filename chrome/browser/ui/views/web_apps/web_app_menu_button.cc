@@ -75,14 +75,12 @@ void WebAppMenuButton::StartHighlightAnimation() {
                              this, &WebAppMenuButton::FadeHighlightOff);
 }
 
-void WebAppMenuButton::OnMenuButtonClicked(views::Button* source,
-                                           const gfx::Point& point,
-                                           const ui::Event* event) {
+void WebAppMenuButton::ButtonPressed(views::Button* source,
+                                     const ui::Event& event) {
   Browser* browser = browser_view_->browser();
   RunMenu(std::make_unique<WebAppMenuModel>(browser_view_, browser), browser,
-          event && event->IsKeyEvent()
-              ? views::MenuRunner::SHOULD_SHOW_MNEMONICS
-              : views::MenuRunner::NO_FLAGS,
+          event.IsKeyEvent() ? views::MenuRunner::SHOULD_SHOW_MNEMONICS
+                             : views::MenuRunner::NO_FLAGS,
           false);
 
   // Add UMA for how many times the web app menu button are clicked.

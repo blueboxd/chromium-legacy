@@ -13,13 +13,13 @@
 namespace views {
 
 MenuButton::MenuButton(const base::string16& text,
-                       MenuButtonListener* menu_button_listener,
+                       ButtonListener* button_listener,
                        int button_context)
     : LabelButton(nullptr, text, button_context) {
   SetHorizontalAlignment(gfx::ALIGN_LEFT);
   std::unique_ptr<MenuButtonController> menu_button_controller =
       std::make_unique<MenuButtonController>(
-          this, menu_button_listener,
+          this, button_listener,
           std::make_unique<Button::DefaultButtonControllerDelegate>(this));
   menu_button_controller_ = menu_button_controller.get();
   SetButtonController(std::move(menu_button_controller));
@@ -31,7 +31,7 @@ bool MenuButton::Activate(const ui::Event* event) {
 }
 
 void MenuButton::NotifyClick(const ui::Event& event) {
-  // Notify MenuButtonListener via MenuButtonController, instead of
+  // Notify ButtonListener via MenuButtonController, instead of
   // ButtonListener::ButtonPressed.
   button_controller()->Activate(&event);
 }

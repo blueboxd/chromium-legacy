@@ -331,12 +331,17 @@ class CONTENT_EXPORT BackgroundSyncManager
 
   // Determines if the browser needs to be able to run in the background (e.g.,
   // to run a pending registration or verify that a firing registration
-  // completed). If background processing is required it calls out to the
-  // BackgroundSyncController to enable it.
+  // completed). If background processing is required it calls out to
+  // BackgroundSyncProxy to enable it.
   // Assumes that all registrations in the pending state are not currently ready
   // to fire. Therefore this should not be called directly and should only be
   // called by FireReadyEvents.
   void ScheduleDelayedProcessingOfRegistrations(
+      blink::mojom::BackgroundSyncType sync_type);
+
+  // Cancels waking up of the browser to process (Periodic) BackgroundSync
+  // registrations.
+  void CancelDelayedProcessingOfRegistrations(
       blink::mojom::BackgroundSyncType sync_type);
 
   // Fires ready events for |sync_type|.

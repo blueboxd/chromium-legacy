@@ -115,6 +115,7 @@ source_set("autofill_ui") {
     "save_card_infobar_view_delegate.h",
   ]
   deps = [
+    ":autofill_message",
     "//base",
     "//base:i18n",
     "//components/autofill/core/browser",
@@ -134,9 +135,19 @@ source_set("autofill_ui") {
     "//ios/third_party/material_components_ios",
     "//ios/third_party/material_roboto_font_loader_ios",
     "//ui/base",
-    "//url:url",
   ]
   libs = [ "UIKit.framework" ]
+}
+
+source_set("autofill_message") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "save_card_message_with_links.h",
+    "save_card_message_with_links.mm",
+  ]
+  deps = [
+    "//url:url",
+  ]
 }
 
 source_set("eg_tests") {

@@ -60,7 +60,7 @@ class SpellCheckTest : public testing::Test {
   }
 
   void UninitializeSpellCheck() {
-    spell_check_ = std::make_unique<SpellCheck>(nullptr, &embedder_provider_);
+    spell_check_ = std::make_unique<SpellCheck>(&embedder_provider_);
   }
 
   bool InitializeIfNeeded() {

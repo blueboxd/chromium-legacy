@@ -58,18 +58,7 @@ ScriptPromise NDEFWriter::push(ScriptState* script_state,
                                            "The NFC operation was cancelled."));
   }
 
-  // 9. If timeout value is NaN or negative, reject promise with "TypeError"
-  // and abort these steps.
-  if (options->hasTimeout() &&
-      (std::isnan(options->timeout()) || options->timeout() < 0)) {
-    return ScriptPromise::Reject(
-        script_state,
-        V8ThrowException::CreateTypeError(
-            script_state->GetIsolate(),
-            "Invalid NDEFPushOptions.timeout value was provided."));
-  }
-
-  // Step 10.8: Run "create Web NFC message", if this throws an exception,
+  // Step 10.10.1: Run "create NDEF message", if this throws an exception,
   // reject p with that exception and abort these steps.
   NDEFMessage* ndef_message =
       NDEFMessage::Create(execution_context, push_message, exception_state);

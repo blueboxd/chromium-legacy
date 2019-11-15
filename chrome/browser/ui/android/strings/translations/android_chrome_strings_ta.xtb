@@ -23,6 +23,7 @@
 <translation id="1171770572613082465">"பிரபலமானவை" பட்டனைத் தட்டி பிரபல இணையதளங்களைப் பாருங்கள்</translation>
 <translation id="1173894706177603556">மறுபெயரிடு</translation>
 <translation id="1178581264944972037">இடைநிறுத்து</translation>
+<translation id="118069123878619799">- உங்களின் உயரம் போன்ற உடல் அமைப்பு விவரங்கள்</translation>
 <translation id="1181037720776840403">அகற்று</translation>
 <translation id="1188239144602654184">ARரில் நுழைக</translation>
 <translation id="1197267115302279827">புத்தகக்குறிகளை நகர்த்து</translation>
@@ -434,6 +435,7 @@
 <translation id="4307992518367153382">அடிப்படைகள்</translation>
 <translation id="4314815835985389558">ஒத்திசைவை நிர்வகிக்கும் பக்கம்</translation>
 <translation id="4351244548802238354">அறிவிப்பை மூடு</translation>
+<translation id="4353114845960720315">VRரில் இருக்கும்போது இந்தத் தளம் இவற்றைப் பற்றி அறியக்கூடும்:</translation>
 <translation id="4378154925671717803">மொபைல்</translation>
 <translation id="4384468725000734951">தேடலுக்கு Sogouஐப் பயன்படுத்துகிறீர்கள்</translation>
 <translation id="4404568932422911380">புக்மார்க்குகள் இல்லை</translation>
@@ -497,6 +499,7 @@
 
 இந்த அமைப்பை மாற்ற, <ph name="BEGIN_LINK" />ஒத்திசைவை மீட்டமைக்கவும்<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">அட்டையிலுள்ள பெயர் </translation>
+<translation id="4808319664292298116"><ph name="DOMAIN" /> வழங்கும் VRரைப் பார்க்க விரும்புகிறீர்களா?</translation>
 <translation id="4824958205181053313">ஒத்திசைவை ரத்துசெய்யவா?</translation>
 <translation id="4837753911714442426">பக்கத்தை அச்சிடுவதற்கான விருப்பங்களைத் திறக்கும்</translation>
 <translation id="4842092870884894799">கடவுச்சொல் உருவாக்க பாப்-அப்பைக் காட்டுகிறது</translation>
@@ -642,6 +645,7 @@
 <translation id="5809361687334836369">{HOURS,plural, =1{# மணிநேரம் முன்பு}other{# மணிநேரம் முன்பு}}</translation>
 <translation id="5810288467834065221">பதிப்புரிமை <ph name="YEAR" /> Google LLC. அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டுள்ளன.</translation>
 <translation id="5817918615728894473">இணை</translation>
+<translation id="5819762621475381970">- உங்கள் அறையின் தளவமைப்பு</translation>
 <translation id="583281660410589416">தெரியாதது</translation>
 <translation id="5833984609253377421">இணைப்பைப் பகிர்</translation>
 <translation id="5836192821815272682">Chrome புதுப்பிப்பைப் பதிவிறக்குகிறது…</translation>

@@ -53,6 +53,7 @@ class CTPolicyEnforcer;
 class HashValue;
 class HostPortPair;
 class HostResolver;
+class QuicContext;
 class HttpUserAgentSettings;
 class NetLogWithSource;
 class SpdySessionKey;
@@ -217,6 +218,7 @@ struct SpdySessionDependencies {
   std::unique_ptr<MockClientSocketFactory> socket_factory;
   std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory;
   std::unique_ptr<HttpServerProperties> http_server_properties;
+  std::unique_ptr<QuicContext> quic_context;
 #if BUILDFLAG(ENABLE_REPORTING)
   std::unique_ptr<ReportingService> reporting_service;
   std::unique_ptr<NetworkErrorLoggingService> network_error_logging_service;

@@ -2296,6 +2296,7 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkObjectExpandRebuildsPlatformNode) {
   g_object_ref(original_atk_object);
 
   root_data = AXNodeData();
+  root_data.id = 1;
   root_data.role = ax::mojom::Role::kListBox;
   GetRootNode()->SetData(root_data);
 

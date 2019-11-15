@@ -23,7 +23,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsProvider;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -85,8 +85,7 @@ public class PartnerDisableIncognitoModeIntegrationTest {
                 // UI thread have also triggered.
                 boolean retVal = parentalControlsEnabled
                         == PartnerBrowserCustomizations.isIncognitoDisabled();
-                retVal &= parentalControlsEnabled
-                        != PrefServiceBridge.getInstance().isIncognitoModeEnabled();
+                retVal &= parentalControlsEnabled != IncognitoUtils.isIncognitoModeEnabled();
                 return retVal;
             }
         });

@@ -25,6 +25,14 @@ class ChildUserService : public KeyedService {
   ChildUserService& operator=(const ChildUserService&) = delete;
   ~ChildUserService() override;
 
+  const AppTimeController* app_time_controller() const {
+    return app_time_controller_.get();
+  }
+
+  AppTimeController* app_time_controller() {
+    return app_time_controller_.get();
+  }
+
  private:
   // KeyedService:
   void Shutdown() override;

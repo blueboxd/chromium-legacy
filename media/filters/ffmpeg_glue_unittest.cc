@@ -103,7 +103,7 @@ class FFmpegGlueDestructionTest : public ::testing::Test {
 
     // |protocol_| should be destroyed before |data_|.
     protocol_.reset();
-    data_ = NULL;
+    data_.reset();
   }
 
  protected:

@@ -82,6 +82,11 @@ public class HostBrowserLauncher {
             intent.putExtra(WebApkConstants.EXTRA_WEBAPK_LAUNCH_TIME, params.getLaunchTimeMs());
         }
 
+        if (params.getSplashShownTimeMs() >= 0) {
+            intent.putExtra(WebApkConstants.EXTRA_NEW_STYLE_SPLASH_SHOWN_TIME,
+                    params.getSplashShownTimeMs());
+        }
+
         try {
             if (expectResult) {
                 // requestCode is arbitrary.

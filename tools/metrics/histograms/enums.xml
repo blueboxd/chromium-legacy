@@ -2860,6 +2860,14 @@ Unknown properties are collapsed to zero. -->
   <int value="6" label="BAD_RESPONSE_FROM_DOCUMENTS_UI"/>
 </enum>
 
+<enum name="ArcStopReason">
+  <summary>Describes the reason the ARC instance is stopped</summary>
+  <int value="0" label="SHUTDOWN"/>
+  <int value="1" label="GENERIC_BOOT_FAILURE"/>
+  <int value="2" label="LOW_DISK_SPACE"/>
+  <int value="3" label="CRASH"/>
+</enum>
+
 <enum name="ArcSupervisionTransitionResult">
   <summary>
     Defines Arc supervision transition success and failure reasons
@@ -9712,6 +9720,13 @@ Called by update_net_error_codes.py.-->
   <int value="0" label="Is scrollable area"/>
   <int value="1" label="Needs to be stacking container"/>
   <int value="2" label="Will use composited scrolling"/>
+</enum>
+
+<enum name="CompositingMode">
+  <int value="0" label="Software"/>
+  <int value="1" label="GL"/>
+  <int value="2" label="Vulkan"/>
+  <int value="3" label="Metal"/>
 </enum>
 
 <enum name="CompositorAnimationsFailureReason">
@@ -25457,6 +25472,7 @@ Called by update_net_error_codes.py.-->
   <int value="3086" label="FetchBodyStreamInServiceWorker"/>
   <int value="3087" label="FetchBodyStreamOutsideServiceWorker"/>
   <int value="3088" label="GetComputedStyleOutsideFlatTree"/>
+  <int value="3089" label="ARIADescriptionAttribute"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -30957,6 +30973,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="Ext4 Dir Encryption"/>
 </enum>
 
+<enum name="HotseatInAppGesture">
+  <int value="0" label="Swipe up the hotseat"/>
+  <int value="1" label="Swipe down the hotseat"/>
+  <int value="2" label="Fling up the hotseat"/>
+</enum>
+
 <enum name="HotwordAvailability">
   <int value="0" label="Unavailable -- reason may be unknown"/>
   <int value="1" label="Available"/>
@@ -35558,6 +35580,16 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="ONLY_WHITELISTED_ALLOWED">Whitelisted users only</int>
 </enum>
 
+<!--
+Values in LoginCustomFlags are:  value=(uint32_t)MD5(label).
+
+See "Flag Histograms" in README.md for information about how to update this
+section.
+
+Don't remove entries when removing a flag; they are still used to decode data
+from previous Chrome versions.
+-->
+
 <enum name="LoginCustomFlags">
   <int value="-2146979021" label="OmniboxMaxURLMatches:enabled"/>
   <int value="-2146832142" label="SyncPseudoUSSSearchEngines:enabled"/>
@@ -36456,17 +36488,6 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1096595907" label="disable-new-virtual-keyboard-behavior"/>
   <int value="-1095947169" label="ModalPermissionDialogView:disabled"/>
   <int value="-1093104008" label="PeriodicBackgroundSync:disabled"/>
-  <summary>Chrome flags that lead to Chrome restart on Chrome OS.</summary>
-<!--
-Values in LoginCustomFlags are:  value=(uint32_t)MD5(label).
-
-See "Flag Histograms" in README.md for information about how to update this
-section.
-
-Don't remove entries when removing a flag; they are still used to decode data
-from previous Chrome versions.
--->
-
   <int value="-1086728979" label="kids-management-url-classification:enabled"/>
   <int value="-1085492638" label="FetchKeepaliveTimeoutSetting:enabled"/>
   <int value="-1084055006" label="disable-web-notification-custom-layouts"/>
@@ -36534,6 +36555,7 @@ from previous Chrome versions.
   <int value="-1010588306" label="SlideTopChromeWithPageScrolls:disabled"/>
   <int value="-1008511612" label="EnableCustomMacPaperSizes:disabled"/>
   <int value="-1001837588" label="EnableAppReinstallZeroState:enabled"/>
+  <int value="-1000671573" label="TemporaryUnexpireFlagsM80:enabled"/>
   <int value="-998731974" label="WinUseBrowserSpellChecker:enabled"/>
   <int value="-998255750" label="ExperimentalKeyboardLockUI:enabled"/>
   <int value="-996673716" label="enable-web-app-frame"/>
@@ -37184,6 +37206,7 @@ from previous Chrome versions.
   <int value="-146552997" label="enable-affiliation-based-matching"/>
   <int value="-144134779" label="AndroidPayIntegrationV2:disabled"/>
   <int value="-143819280" label="google-password-manager:disabled"/>
+  <int value="-143394485" label="SplitSettingsSync:enabled"/>
   <int value="-143382681" label="InstantTethering:enabled"/>
   <int value="-141516902" label="UseModernMediaControls:enabled"/>
   <int value="-140168253" label="ProfileMenuRevamp:enabled"/>
@@ -38498,6 +38521,7 @@ from previous Chrome versions.
   <int value="1575978252" label="PasswordLeakDetection:enabled"/>
   <int value="1577205328"
       label="DataReductionProxyEnabledWithNetworkService:enabled"/>
+  <int value="1579084737" label="TemporaryUnexpireFlagsM80:disabled"/>
   <int value="1579461102" label="MemoryCoordinator:disabled"/>
   <int value="1581002467" label="enable-explicit-dma-fences"/>
   <int value="1585660881"
@@ -38722,6 +38746,7 @@ from previous Chrome versions.
   <int value="1854226565" label="AutofillNoLocalSaveOnUnmaskSuccess:enabled"/>
   <int value="1855524566" label="allow-insecure-websocket-from-https-origin"/>
   <int value="1858385315" label="ChromeHomeBottomNavLabels:enabled"/>
+  <int value="1858919054" label="SplitSettingsSync:disabled"/>
   <int value="1860597983" label="AndroidSpellChecker:disabled"/>
   <int value="1861251313"
       label="enable-message-center-always-scroll-up-upon-notification-removal"/>
@@ -50859,6 +50884,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PrintPreviewFailureType">
+<!-- This must be kept current with PrintPreviewErrorBuckets in
+     components/printing/renderer/print_render_frame_helper.h. -->
+
   <int value="0" label="No error"/>
   <int value="1" label="Bad settings from print preview tab"/>
   <int value="2" label="Copy metadata failed"/>
@@ -50867,6 +50895,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="Mac draft metafile init failed (Deprecated)"/>
   <int value="6" label="PreviewPageRendered with no metafile (Deprecated)"/>
   <int value="7" label="Received bad printer settings"/>
+  <int value="8" label="Capture metadata failed"/>
 </enum>
 
 <enum name="PrintPreviewFontTypeType">

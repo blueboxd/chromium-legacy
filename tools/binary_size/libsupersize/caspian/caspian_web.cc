@@ -15,6 +15,7 @@
 
 #include "third_party/jsoncpp/source/include/json/json.h"
 #include "third_party/re2/src/re2/re2.h"
+#include "tools/binary_size/libsupersize/caspian/diff.h"
 #include "tools/binary_size/libsupersize/caspian/file_format.h"
 #include "tools/binary_size/libsupersize/caspian/model.h"
 #include "tools/binary_size/libsupersize/caspian/tree_builder.h"
@@ -23,7 +24,7 @@ namespace caspian {
 namespace {
 std::unique_ptr<SizeInfo> info;
 std::unique_ptr<SizeInfo> before_info;
-std::unique_ptr<DiffSizeInfo> diff_info;
+std::unique_ptr<DeltaSizeInfo> diff_info;
 std::unique_ptr<TreeBuilder> builder;
 
 std::unique_ptr<Json::StreamWriter> writer;
@@ -57,18 +58,18 @@ void BuildTree(bool group_by_component,
                const char* include_sections,
                int minimum_size_bytes,
                int match_flag) {
-  std::vector<std::function<bool(const Symbol&)>> filters;
+  std::vector<std::function<bool(const BaseSymbol&)>> filters;
 
   const bool diff_mode = info && before_info;
 
   if (minimum_size_bytes > 0) {
     if (!diff_mode) {
-      filters.push_back([minimum_size_bytes](const Symbol& sym) -> bool {
-        return sym.pss >= minimum_size_bytes;
+      filters.push_back([minimum_size_bytes](const BaseSymbol& sym) -> bool {
+        return sym.Pss() >= minimum_size_bytes;
       });
     } else {
-      filters.push_back([minimum_size_bytes](const Symbol& sym) -> bool {
-        return abs(sym.pss) >= minimum_size_bytes;
+      filters.push_back([minimum_size_bytes](const BaseSymbol& sym) -> bool {
+        return abs(sym.Pss()) >= minimum_size_bytes;
       });
     }
   }
@@ -77,8 +78,8 @@ void BuildTree(bool group_by_component,
   // |match_flag| can be assumed to be a power of two.
   if (match_flag) {
     std::cout << "Filtering on flag matching " << match_flag << std::endl;
-    filters.push_back([match_flag](const Symbol& sym) -> bool {
-      return match_flag & sym.flags;
+    filters.push_back([match_flag](const BaseSymbol& sym) -> bool {
+      return match_flag & sym.Flags();
     });
   }
 
@@ -88,8 +89,8 @@ void BuildTree(bool group_by_component,
     for (const char* c = include_sections; *c; c++) {
       include_sections_map[static_cast<uint8_t>(*c)] = true;
     }
-    filters.push_back([&include_sections_map](const Symbol& sym) -> bool {
-      return include_sections_map[static_cast<uint8_t>(sym.sectionId)];
+    filters.push_back([&include_sections_map](const BaseSymbol& sym) -> bool {
+      return include_sections_map[static_cast<uint8_t>(sym.Section())];
     });
   }
 
@@ -97,8 +98,8 @@ void BuildTree(bool group_by_component,
   if (include_regex_str && *include_regex_str) {
     include_regex.reset(new RE2(include_regex_str));
     if (include_regex->error_code() == RE2::NoError) {
-      filters.push_back([&include_regex](const Symbol& sym) -> bool {
-        re2::StringPiece piece(sym.full_name.data(), sym.full_name.size());
+      filters.push_back([&include_regex](const BaseSymbol& sym) -> bool {
+        re2::StringPiece piece(sym.FullName().data(), sym.FullName().size());
         return RE2::PartialMatch(piece, *include_regex);
       });
     }
@@ -108,26 +109,26 @@ void BuildTree(bool group_by_component,
   if (exclude_regex_str && *exclude_regex_str) {
     exclude_regex.reset(new RE2(exclude_regex_str));
     if (exclude_regex->error_code() == RE2::NoError) {
-      filters.push_back([&exclude_regex](const Symbol& sym) -> bool {
-        re2::StringPiece piece(sym.full_name.data(), sym.full_name.size());
+      filters.push_back([&exclude_regex](const BaseSymbol& sym) -> bool {
+        re2::StringPiece piece(sym.FullName().data(), sym.FullName().size());
         return !RE2::PartialMatch(piece, *exclude_regex);
       });
     }
   }
 
   // BuildTree() is called every time a new filter is applied in the HTML
-  // viewer, but if we already have a DiffSizeInfo we can skip regenerating it
+  // viewer, but if we already have a DeltaSizeInfo we can skip regenerating it
   // and let the TreeBuilder filter the symbols we care about.
   if (diff_mode && !diff_info) {
-    diff_info.reset(new DiffSizeInfo(before_info.get(), info.get()));
+    diff_info.reset(new DeltaSizeInfo(Diff(before_info.get(), info.get())));
   }
 
-  BaseSizeInfo* rendered_info = info.get();
   if (diff_mode) {
-    rendered_info = diff_info.get();
+    builder.reset(new TreeBuilder(diff_info.get()));
+  } else {
+    builder.reset(new TreeBuilder(info.get()));
   }
-  builder.reset(new TreeBuilder(rendered_info, group_by_component, filters));
-  builder->Build();
+  builder->Build(group_by_component, filters);
 }
 
 const char* Open(const char* path) {

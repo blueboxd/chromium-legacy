@@ -113,6 +113,10 @@ class AX_EXPORT AXTreeObserver : public base::CheckedObserver {
   // be valid, since the tree is in a stable state after updating.
   virtual void OnNodeCreated(AXTree* tree, AXNode* node) {}
 
+  // Called after all tree mutations have occurred or during tree teardown,
+  // notifying that a single node has been deleted from the tree.
+  virtual void OnNodeDeleted(AXTree* tree, int32_t node_id) {}
+
   // Same as |OnNodeCreated|, but called for nodes that have been reparented.
   virtual void OnNodeReparented(AXTree* tree, AXNode* node) {}
 

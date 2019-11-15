@@ -8,22 +8,21 @@
 #include <memory>
 
 #include "ash/assistant/assistant_controller_observer.h"
+#include "ash/assistant/assistant_proactive_suggestions_controller.h"
 #include "ash/assistant/model/assistant_suggestions_model.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
-#include "ash/public/cpp/assistant/proactive_suggestions_client.h"
 #include "base/macros.h"
 
 namespace ash {
 
 class AssistantController;
 class AssistantSuggestionsModelObserver;
+class ProactiveSuggestions;
 
-class AssistantSuggestionsController
-    : public AssistantControllerObserver,
-      public AssistantUiModelObserver,
-      public AssistantStateObserver,
-      public ProactiveSuggestionsClient::Delegate {
+class AssistantSuggestionsController : public AssistantControllerObserver,
+                                       public AssistantUiModelObserver,
+                                       public AssistantStateObserver {
  public:
   explicit AssistantSuggestionsController(
       AssistantController* assistant_controller);
@@ -39,7 +38,6 @@ class AssistantSuggestionsController
   // AssistantControllerObserver:
   void OnAssistantControllerConstructed() override;
   void OnAssistantControllerDestroying() override;
-  void OnAssistantReady() override;
 
   // AssistantUiModelObserver:
   void OnUiVisibilityChanged(
@@ -48,10 +46,11 @@ class AssistantSuggestionsController
       base::Optional<AssistantEntryPoint> entry_point,
       base::Optional<AssistantExitPoint> exit_point) override;
 
-  // ProactiveSuggestionsClient::Delegate:
-  void OnProactiveSuggestionsClientDestroying() override;
+  // Invoked when the active set of |proactive_suggestions| has changed. Note
+  // that this method should only be called by the sub-controller for the
+  // proactive suggestions feature to update model state.
   void OnProactiveSuggestionsChanged(
-      scoped_refptr<ProactiveSuggestions> proactive_suggestions) override;
+      scoped_refptr<const ProactiveSuggestions> proactive_suggestions);
 
  private:
   // AssistantStateObserver:
@@ -60,6 +59,11 @@ class AssistantSuggestionsController
   void UpdateConversationStarters();
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
+
+  // A sub-controller for the proactive suggestions feature. Note that this will
+  // only exist if the proactive suggestions feature is enabled.
+  std::unique_ptr<AssistantProactiveSuggestionsController>
+      proactive_suggestions_controller_;
 
   AssistantSuggestionsModel model_;
 

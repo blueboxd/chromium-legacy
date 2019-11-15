@@ -70,6 +70,8 @@ namespace {
 // that span browser restarts.
 const char kPreTestPrefix[] = "PRE_";
 
+const char kManualTestPrefix[] = "MANUAL_";
+
 TestLauncherDelegate* g_launcher_delegate = nullptr;
 #if !defined(OS_ANDROID)
 // ContentMain is not run on Android in the test process, and is run via
@@ -123,7 +125,10 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
  public:
   explicit WrapperTestLauncherDelegate(
       content::TestLauncherDelegate* launcher_delegate)
-      : launcher_delegate_(launcher_delegate) {}
+      : launcher_delegate_(launcher_delegate) {
+    run_manual_tests_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kRunManualTestsFlag);
+  }
 
   // base::TestLauncherDelegate:
   bool GetTests(std::vector<base::TestIdentifier>* output) override;
@@ -140,6 +145,8 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
 
   base::TimeDelta GetTimeout() override;
 
+  bool ShouldRunTest(const base::TestIdentifier& test) override;
+
  private:
   // Relays timeout notification from the TestLauncher (by way of a
   // ProcessLifetimeObserver) to the caller's content::TestLauncherDelegate.
@@ -151,7 +158,7 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
 
   content::TestLauncherDelegate* launcher_delegate_;
 
-
+  bool run_manual_tests_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WrapperTestLauncherDelegate);
 };
@@ -239,6 +246,14 @@ void WrapperTestLauncherDelegate::ProcessTestResults(
   test_results.front().elapsed_time = elapsed_time;
 
   launcher_delegate_->PostRunTest(&test_results.front());
+}
+// TODO(isamsonov): crbug.com/1004417 remove when windows builders
+// stop flaking on MANAUAL_ tests.
+bool WrapperTestLauncherDelegate::ShouldRunTest(
+    const base::TestIdentifier& test) {
+  return run_manual_tests_ ||
+         !base::StartsWith(test.test_name, kManualTestPrefix,
+                           base::CompareCase::SENSITIVE);
 }
 
 }  // namespace

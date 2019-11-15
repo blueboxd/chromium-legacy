@@ -11,10 +11,13 @@ import org.chromium.chrome.browser.webapps.SplashscreenObserver;
  * shell.
  */
 public class WebApkSplashscreenMetrics implements SplashscreenObserver {
-    private final long mShellApkLaunchTimeMs;
+    private final long mShellApkLaunchTimestamp;
+    private final long mNewStyleSplashShownTimestamp;
 
-    public WebApkSplashscreenMetrics(long shellApkLaunchTimeMs) {
-        mShellApkLaunchTimeMs = shellApkLaunchTimeMs;
+    public WebApkSplashscreenMetrics(
+            long shellApkLaunchTimestamp, long newStyleSplashShownTimestamp) {
+        mShellApkLaunchTimestamp = shellApkLaunchTimestamp;
+        mNewStyleSplashShownTimestamp = newStyleSplashShownTimestamp;
     }
 
     @Override
@@ -22,15 +25,19 @@ public class WebApkSplashscreenMetrics implements SplashscreenObserver {
 
     @Override
     public void onSplashscreenHidden(long startTimestamp, long endTimestamp) {
-        if (mShellApkLaunchTimeMs == -1) return;
+        if (!UmaUtils.hasComeToForeground() || UmaUtils.hasComeToBackground()
+                || mShellApkLaunchTimestamp == -1) {
+            return;
+        }
 
-        if (UmaUtils.hasComeToForeground() && !UmaUtils.hasComeToBackground()) {
-            // commit both shown/hidden histograms here because native may not be loaded when the
-            // splashscreen is shown.
-            WebApkUma.recordShellApkLaunchToSplashscreenVisible(
-                    startTimestamp - mShellApkLaunchTimeMs);
-            WebApkUma.recordShellApkLaunchToSplashscreenHidden(
-                    endTimestamp - mShellApkLaunchTimeMs);
+        // commit both shown/hidden histograms here because native may not be loaded when the
+        // splashscreen is shown.
+        WebApkUma.recordShellApkLaunchToSplashVisible(startTimestamp - mShellApkLaunchTimestamp);
+        WebApkUma.recordShellApkLaunchToSplashHidden(endTimestamp - mShellApkLaunchTimestamp);
+
+        if (mNewStyleSplashShownTimestamp != -1) {
+            WebApkUma.recordNewStyleShellApkLaunchToSplashVisible(
+                    mNewStyleSplashShownTimestamp - mShellApkLaunchTimestamp);
         }
     }
 }

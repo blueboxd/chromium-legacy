@@ -14,6 +14,8 @@ public interface TabSuggestionsObserver {
      * Notify when we have new Tab Suggestions
      * @param tabSuggestions tab suggestions acquired
      */
+    // TODO(crbug.com/1023699): Pass back callbacks for dismissed, accepted, and modified
+    // suggestion.
     void onNewSuggestion(List<TabSuggestion> tabSuggestions);
 
     /**

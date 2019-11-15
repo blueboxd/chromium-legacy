@@ -328,6 +328,7 @@ _CONFIG = [
             'inspector_async_task::.+',
             'inspector_set_layer_tree_id::.+',
             'inspector_tracing_started_in_frame::.+',
+            'keywords::.+',
             'layered_api::.+',
             'layout_invalidation_reason::.+',
             'media_constraints_impl::.+',
@@ -389,9 +390,7 @@ _CONFIG = [
             'mojo::(?!WrapCallback).+',
             'mojo_base::BigBuffer.*',
             '(?:.+::)?mojom::.+',
-            "service_manager::BinderRegistry",
             'service_manager::InterfaceProvider',
-            'service_manager::ServiceFilter',
 
             # STL containers such as std::string and std::vector are discouraged
             # but still needed for interop with WebKit/common. Note that other
@@ -938,7 +937,11 @@ _CONFIG = [
     {
         'paths': ['third_party/blink/renderer/core/frame/local_frame_view.cc'],
         'allowed': ['cc::frame_viewer_instrumentation::IsTracingLayerTreeSnapshots'],
-    }
+    },
+    {
+        'paths': ['third_party/blink/renderer/modules/webaudio/audio_worklet_thread.cc'],
+        'allowed': ['base::ThreadPriority'],
+    },
 ]
 
 

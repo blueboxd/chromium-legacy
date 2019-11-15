@@ -13,20 +13,17 @@
 #include "base/strings/string_number_conversions.h"
 #include "components/cdm/renderer/external_clear_key_key_system_properties.h"
 #include "components/web_cache/renderer/web_cache_impl.h"
-#include "content/public/child/child_thread.h"
-#include "content/public/common/service_manager_connection.h"
-#include "content/public/common/simple_connection_filter.h"
 #include "content/public/test/test_service.mojom.h"
 #include "content/shell/common/power_monitor_test.mojom.h"
 #include "content/shell/common/power_monitor_test_impl.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/shell_render_view_observer.h"
+#include "mojo/public/cpp/bindings/binder_map.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "net/base/net_errors.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/web/web_testing_support.h"
 #include "third_party/blink/public/web/web_view.h"
@@ -113,19 +110,19 @@ ShellContentRendererClient::~ShellContentRendererClient() {
 }
 
 void ShellContentRendererClient::RenderThreadStarted() {
-  web_cache_impl_.reset(new web_cache::WebCacheImpl());
+  web_cache_impl_ = std::make_unique<web_cache::WebCacheImpl>();
+}
 
-  auto registry = std::make_unique<service_manager::BinderRegistry>();
-  registry->AddInterface<mojom::TestService>(
-      base::BindRepeating(&CreateRendererTestService),
-      base::ThreadTaskRunnerHandle::Get());
-  registry->AddInterface<mojom::PowerMonitorTest>(
+void ShellContentRendererClient::ExposeInterfacesToBrowser(
+    mojo::BinderMap* binders) {
+  binders->Add(base::BindRepeating(&CreateRendererTestService),
+               base::ThreadTaskRunnerHandle::Get());
+  binders->Add(
       base::BindRepeating(&PowerMonitorTestImpl::MakeSelfOwnedReceiver),
       base::ThreadTaskRunnerHandle::Get());
-  content::ChildThread::Get()
-      ->GetServiceManagerConnection()
-      ->AddConnectionFilter(
-          std::make_unique<SimpleConnectionFilter>(std::move(registry)));
+  binders->Add(base::BindRepeating(&web_cache::WebCacheImpl::BindReceiver,
+                                   base::Unretained(web_cache_impl_.get())),
+               base::ThreadTaskRunnerHandle::Get());
 }
 
 void ShellContentRendererClient::RenderViewCreated(RenderView* render_view) {

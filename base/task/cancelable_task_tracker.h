@@ -156,7 +156,10 @@ class BASE_EXPORT CancelableTaskTracker {
       task_flags_;
 
   TaskId next_id_ = 1;
-  SequenceChecker sequence_checker_;
+
+  // TODO(https://crbug.com/1009795): Replace with SEQUENCE_CHECKER() once
+  // crasher is resolved.
+  SequenceCheckerImpl sequence_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(CancelableTaskTracker);
 };

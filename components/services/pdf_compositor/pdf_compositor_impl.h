@@ -23,6 +23,9 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/core/SkStream.h"
+
+class SkDocument;
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -67,6 +70,11 @@ class PdfCompositorImpl : public mojom::PdfCompositor {
       base::ReadOnlySharedMemoryRegion serialized_content,
       const ContentToFrameMap& subframe_content_map,
       mojom::PdfCompositor::CompositeDocumentToPdfCallback callback) override;
+  void PrepareForDocumentToPdf(
+      mojom::PdfCompositor::PrepareForDocumentToPdfCallback callback) override;
+  void CompleteDocumentToPdf(
+      uint32_t page_count,
+      mojom::PdfCompositor::CompleteDocumentToPdfCallback callback) override;
   void SetWebContentsURL(const GURL& url) override;
   void SetUserAgent(const std::string& user_agent) override;
 
@@ -78,16 +86,31 @@ class PdfCompositorImpl : public mojom::PdfCompositor {
       base::OnceCallback<void(PdfCompositor::Status,
                               base::ReadOnlySharedMemoryRegion)>;
 
+  using PrepareForDocumentToPdfCallback =
+      base::OnceCallback<void(PdfCompositor::Status)>;
+  using CompleteDocumentToPdfCallback =
+      base::OnceCallback<void(PdfCompositor::Status,
+                              base::ReadOnlySharedMemoryRegion)>;
+
+  // The core function for content composition and conversion to a pdf file.
   // Make this function virtual so tests can override it.
+  virtual mojom::PdfCompositor::Status CompositeToPdf(
+      base::ReadOnlySharedMemoryMapping shared_mem,
+      const ContentToFrameMap& subframe_content_map,
+      base::ReadOnlySharedMemoryRegion* region);
+
+  // Make these functions virtual so tests can override them.
   virtual void FulfillRequest(
       base::ReadOnlySharedMemoryMapping serialized_content,
       const ContentToFrameMap& subframe_content_map,
       CompositeToPdfCallback callback);
+  virtual void CompleteDocumentRequest(CompleteDocumentToPdfCallback callback);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PdfCompositorImplTest, IsReadyToComposite);
   FRIEND_TEST_ALL_PREFIXES(PdfCompositorImplTest, MultiLayerDependency);
   FRIEND_TEST_ALL_PREFIXES(PdfCompositorImplTest, DependencyLoop);
+  friend class MockCompletionPdfCompositorImpl;
 
   // The map needed during content deserialization. It stores the mapping
   // between content id and its actual content.
@@ -139,6 +162,22 @@ class PdfCompositorImpl : public mojom::PdfCompositor {
     base::flat_set<uint64_t> pending_subframes;
 
     CompositeToPdfCallback callback;
+    bool is_concurrent_doc_composition = false;
+  };
+
+  // Stores the concurrent document composition information.
+  struct DocumentInfo {
+    // Create the DocumentInfo object, which also creates a corresponding Skia
+    // document object.
+    explicit DocumentInfo(const std::string& creator);
+    ~DocumentInfo();
+
+    SkDynamicMemoryWStream compositor_stream;
+    sk_sp<SkDocument> doc;
+    uint32_t pages_provided = 0;
+    uint32_t pages_written = 0;
+    uint32_t page_count = 0;
+    CompleteDocumentToPdfCallback callback;
   };
 
   // Check whether any request is waiting for the specific subframe, if so,
@@ -167,11 +206,14 @@ class PdfCompositorImpl : public mojom::PdfCompositor {
       base::ReadOnlySharedMemoryRegion serialized_content,
       const ContentToFrameMap& subframe_content_ids,
       CompositeToPdfCallback callback);
+  void HandleDocumentCompletionRequest();
 
-  // The core function for content composition and conversion to a pdf file.
-  mojom::PdfCompositor::Status CompositeToPdf(
-      base::ReadOnlySharedMemoryMapping shared_mem,
-      const ContentToFrameMap& subframe_content_map,
+  // Document content composition support functions when document is compiled
+  // using individual pages' content.  These are not used when document is
+  // composited with a separate metafile object.
+  mojom::PdfCompositor::Status PrepareForDocumentToPdf();
+  mojom::PdfCompositor::Status UpdateDocumentMetadata(uint32_t page_count);
+  mojom::PdfCompositor::Status CompleteDocumentToPdf(
       base::ReadOnlySharedMemoryRegion* region);
 
   // Composite the content of a subframe.
@@ -195,6 +237,7 @@ class PdfCompositorImpl : public mojom::PdfCompositor {
   FrameMap frame_info_map_;
 
   std::vector<std::unique_ptr<RequestInfo>> requests_;
+  std::unique_ptr<DocumentInfo> docinfo_;
 
   DISALLOW_COPY_AND_ASSIGN(PdfCompositorImpl);
 };

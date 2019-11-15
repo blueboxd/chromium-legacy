@@ -25,7 +25,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link_listener.h"
@@ -49,8 +48,7 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
                             public views::LinkListener,
                             public ui::SimpleMenuModel::Delegate,
                             public views::StyledLabelListener,
-                            public views::TabbedPaneListener,
-                            public views::MenuButtonListener {
+                            public views::TabbedPaneListener {
  public:
   // Item IDs for the option button's menu.
   enum OptionsMenuItem {
@@ -87,39 +85,35 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
 
   TranslateBubbleModel* model() { return model_.get(); }
 
-  // views::BubbleDialogDelegateView methods.
+  // LocationBarBubbleDelegateView:
   base::string16 GetWindowTitle() const override;
   void Init() override;
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
-  // views::WidgetDelegate methods.
   View* GetInitiallyFocusedView() override;
   bool ShouldShowCloseButton() const override;
   bool ShouldShowWindowTitle() const override;
   void WindowClosing() override;
-
-  // views::View methods.
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   gfx::Size CalculatePreferredSize() const override;
+  void OnWidgetClosing(views::Widget* widget) override;
 
-  // views::ComboboxListener methods.
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* source, const ui::Event& event) override;
+
+  // views::ComboboxListener:
   void OnPerformAction(views::Combobox* combobox) override;
 
-  // views::LinkListener method.
+  // views::LinkListener:
   void LinkClicked(views::Link* source, int event_flags) override;
 
-  // ui::SimpleMenuModel::Delegate methods.
+  // ui::SimpleMenuModel::Delegate:
   bool IsCommandIdChecked(int command_id) const override;
   bool IsCommandIdEnabled(int command_id) const override;
   void ExecuteCommand(int command_id, int event_flags) override;
 
-  // views::StyledLabelListener method.
+  // views::StyledLabelListener:
   void StyledLabelLinkClicked(views::StyledLabel* label,
                               const gfx::Range& range,
                               int event_flags) override;
-
-  // Overridden from views::WidgetObserver:
-  void OnWidgetClosing(views::Widget* widget) override;
 
   // Returns the current view state.
   TranslateBubbleModel::ViewState GetViewState() const;
@@ -215,11 +209,6 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
 
   // views::TabbedPaneListener:
   void TabSelectedAt(int index) override;
-
-  // views::MenuButtonListener:
-  void OnMenuButtonClicked(views::Button* source,
-                           const gfx::Point& point,
-                           const ui::Event* event) override;
 
   // Returns the current child view.
   views::View* GetCurrentView() const;

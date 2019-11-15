@@ -23,7 +23,6 @@ import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.util.IntentUtils;
 
 /**
@@ -88,9 +87,9 @@ public class IncognitoTabLauncher extends Activity {
      */
     public static void updateComponentEnabledState() {
         // TODO(peconn): Update state in a few more places (eg CustomTabsConnection#warmup).
-        boolean enable = ChromeFeatureList.isEnabled(
-                        ChromeFeatureList.ALLOW_NEW_INCOGNITO_TAB_INTENTS)
-                && PrefServiceBridge.getInstance().isIncognitoModeEnabled();
+        boolean enable =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.ALLOW_NEW_INCOGNITO_TAB_INTENTS)
+                && IncognitoUtils.isIncognitoModeEnabled();
 
         PostTask.postTask(TaskTraits.USER_VISIBLE, () -> setComponentEnabled(enable));
     }

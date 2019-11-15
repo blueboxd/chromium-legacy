@@ -12,13 +12,13 @@
 #include "ash/assistant/util/assistant_util.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
-#include "ash/public/cpp/assistant/proactive_suggestions_client.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/rand_util.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
+#include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -67,16 +67,18 @@ constexpr int kMaxNumOfConversationStarters = 3;
 AssistantSuggestionsController::AssistantSuggestionsController(
     AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller) {
+  if (chromeos::assistant::features::IsProactiveSuggestionsEnabled()) {
+    proactive_suggestions_controller_ =
+        std::make_unique<AssistantProactiveSuggestionsController>(
+            assistant_controller_);
+  }
+
   UpdateConversationStarters();
   assistant_controller_->AddObserver(this);
   AssistantState::Get()->AddObserver(this);
 }
 
 AssistantSuggestionsController::~AssistantSuggestionsController() {
-  auto* client = ProactiveSuggestionsClient::Get();
-  if (client)
-    client->SetDelegate(nullptr);
-
   assistant_controller_->RemoveObserver(this);
   AssistantState::Get()->RemoveObserver(this);
 }
@@ -99,14 +101,6 @@ void AssistantSuggestionsController::OnAssistantControllerDestroying() {
   assistant_controller_->ui_controller()->RemoveModelObserver(this);
 }
 
-void AssistantSuggestionsController::OnAssistantReady() {
-  // The proactive suggestions client initializes late so we need to wait for
-  // the ready signal before binding as its delegate.
-  auto* client = ProactiveSuggestionsClient::Get();
-  if (client)
-    client->SetDelegate(this);
-}
-
 void AssistantSuggestionsController::OnUiVisibilityChanged(
     AssistantVisibility new_visibility,
     AssistantVisibility old_visibility,
@@ -118,19 +112,13 @@ void AssistantSuggestionsController::OnUiVisibilityChanged(
     UpdateConversationStarters();
 }
 
+void AssistantSuggestionsController::OnProactiveSuggestionsChanged(
+    scoped_refptr<const ProactiveSuggestions> proactive_suggestions) {
+  model_.SetProactiveSuggestions(std::move(proactive_suggestions));
+}
+
 void AssistantSuggestionsController::OnAssistantContextEnabled(bool enabled) {
   UpdateConversationStarters();
-}
-
-void AssistantSuggestionsController::OnProactiveSuggestionsClientDestroying() {
-  auto* client = ProactiveSuggestionsClient::Get();
-  if (client)
-    client->SetDelegate(nullptr);
-}
-
-void AssistantSuggestionsController::OnProactiveSuggestionsChanged(
-    scoped_refptr<ProactiveSuggestions> proactive_suggestions) {
-  model_.SetProactiveSuggestions(std::move(proactive_suggestions));
 }
 
 // TODO(dmblack): The conversation starter cache should receive its contents

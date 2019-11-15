@@ -10,8 +10,8 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 
 SharedClipboardMessageHandlerAndroid::SharedClipboardMessageHandlerAndroid(
-    SharingService* sharing_service)
-    : SharedClipboardMessageHandler(sharing_service) {}
+    SharingDeviceSource* device_source)
+    : SharedClipboardMessageHandler(device_source) {}
 
 SharedClipboardMessageHandlerAndroid::~SharedClipboardMessageHandlerAndroid() =
     default;

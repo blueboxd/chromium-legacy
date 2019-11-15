@@ -143,6 +143,13 @@ class SearchTabHelper : public content::WebContentsObserver,
   void DeleteAutocompleteMatch(uint8_t line) override;
   void StopAutocomplete(bool clear_result) override;
   void BlocklistPromo(const std::string& promo_id) override;
+  void OpenAutocompleteMatch(uint8_t line,
+                             const GURL& url,
+                             double button,
+                             bool alt_key,
+                             bool ctrl_key,
+                             bool meta_key,
+                             bool shift_key) override;
 
   // Overridden from InstantServiceObserver:
   void NtpThemeChanged(const NtpTheme& theme) override;

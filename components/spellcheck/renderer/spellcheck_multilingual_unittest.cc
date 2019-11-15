@@ -52,7 +52,7 @@ class MultilingualSpellCheckTest : public testing::Test {
   MultilingualSpellCheckTest() {}
 
   void ReinitializeSpellCheck(const std::string& unsplit_languages) {
-    spellcheck_ = new SpellCheck(nullptr, &embedder_provider_);
+    spellcheck_ = new SpellCheck(&embedder_provider_);
     provider_.reset(
         new TestingSpellCheckProvider(spellcheck_, &embedder_provider_));
     InitializeSpellCheck(unsplit_languages);

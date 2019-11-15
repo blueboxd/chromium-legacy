@@ -27,9 +27,9 @@ class UserGestureListener {
  public:
   UserGestureListener() : has_user_gesture_(false) {}
 
-  base::Closure GetClosure() {
-    return base::Bind(&UserGestureListener::GotUserGesture,
-                      weak_factory_.GetWeakPtr());
+  base::OnceClosure GetClosure() {
+    return base::BindOnce(&UserGestureListener::GotUserGesture,
+                          weak_factory_.GetWeakPtr());
   }
 
   bool has_user_gesture() const { return has_user_gesture_; }

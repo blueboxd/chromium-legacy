@@ -138,6 +138,11 @@ public class StartSurfaceCoordinator implements StartSurface {
         return mTabSwitcher.getTabListDelegate();
     }
 
+    @Override
+    public TabSwitcher.TabDialogDelegation getTabDialogDelegate() {
+        return mTabSwitcher.getTabGridDialogDelegation();
+    }
+
     private @SurfaceMode int computeSurfaceMode() {
         // Check the cached flag before getting the parameter to be consistent with the other
         // places. Note that the cached flag may have been set before native initialization.

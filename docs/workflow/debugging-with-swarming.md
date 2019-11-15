@@ -94,7 +94,7 @@ Here's how to run `chrome_public_test_apk` on a bot with a Nexus 5 running KitKa
 ```sh
 $ tools/mb/mb.py run \
     -s --no-default-dimensions \
-    -d pool Chrome \
+    -d pool chromium.tests \
     -d device_os_type userdebug -d device_os KTU84P -d device_type hammerhead \
     out/Android-arm-dbg chrome_public_test_apk
 ```
@@ -194,8 +194,8 @@ $ tools/swarming_client/swarming.py trigger \
 ```
 
 There are two more things you need to fill in here. The first is the pool name;
-you should pick "Chrome" unless you know otherwise. The pool is the collection
-of hosts from which swarming will try to pick bots to run your tasks.
+you should pick "chromium.tests" unless you know otherwise. The pool is the
+collection of hosts from which swarming will try to pick bots to run your tasks.
 
 The second is the criteria, which is how you specify which bot(s) you want your
 task scheduled on. These are specified via "dimensions", which are specified
@@ -220,7 +220,7 @@ URL for the task it created, and a command you can run to collect the results of
 that task. For example:
 
 ```
-Triggered task: ellyjones@chromium.org/os=Linux_pool=Chrome/e625130b712096e3908266252c8cd779d7f442f1
+Triggered task: ellyjones@chromium.org/os=Linux_pool=chromium.tests/e625130b712096e3908266252c8cd779d7f442f1
 To collect results, use:
   tools/swarming_client/swarming.py collect -S https://chromium-swarm.appspot.com 46fc393777163310
 Or visit:

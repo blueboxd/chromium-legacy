@@ -5,6 +5,7 @@
 package org.chromium.weblayer_private.interfaces;
 
 import org.chromium.weblayer_private.interfaces.IDownloadCallbackClient;
+import org.chromium.weblayer_private.interfaces.IErrorPageCallbackClient;
 import org.chromium.weblayer_private.interfaces.IFullscreenCallbackClient;
 import org.chromium.weblayer_private.interfaces.INavigationController;
 import org.chromium.weblayer_private.interfaces.INavigationControllerClient;
@@ -18,14 +19,16 @@ interface ITab {
 
   void setDownloadCallbackClient(IDownloadCallbackClient client) = 2;
 
-  void setFullscreenCallbackClient(in IFullscreenCallbackClient client) = 3;
+  void setErrorPageCallbackClient(IErrorPageCallbackClient client) = 3;
 
-  void executeScript(in String script, boolean useSeparateIsolate, in IObjectWrapper callback) = 4;
+  void setFullscreenCallbackClient(in IFullscreenCallbackClient client) = 4;
 
-  void setNewTabsEnabled(in boolean enabled) = 5;
+  void executeScript(in String script, boolean useSeparateIsolate, in IObjectWrapper callback) = 5;
+
+  void setNewTabsEnabled(in boolean enabled) = 6;
 
   // Returns a unique identifier for this Tab. The id is *not* unique across
   // restores. The id is intended for the client library to avoid creating duplicate client objects
   // for the same ITab.
-  int getId() = 6;
+  int getId() = 7;
 }

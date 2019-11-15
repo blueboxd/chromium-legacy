@@ -48,22 +48,21 @@ class AppListControllerObserver;
 // Ash's AppListController owns the AppListModel and implements interface
 // functions that allow Chrome to modify and observe the Shelf and AppListModel
 // state.
-class ASH_EXPORT AppListControllerImpl
-    : public AppListController,
-      public SessionObserver,
-      public AppListModelObserver,
-      public AppListViewDelegate,
-      public ash::ShellObserver,
-      public OverviewObserver,
-      public TabletModeObserver,
-      public KeyboardControllerObserver,
-      public WallpaperControllerObserver,
-      public AssistantStateObserver,
-      public WindowTreeHostManager::Observer,
-      public ash::MruWindowTracker::Observer,
-      public AssistantControllerObserver,
-      public AssistantUiModelObserver,
-      public HomeScreenDelegate {
+class ASH_EXPORT AppListControllerImpl : public AppListController,
+                                         public SessionObserver,
+                                         public AppListModelObserver,
+                                         public AppListViewDelegate,
+                                         public ash::ShellObserver,
+                                         public OverviewObserver,
+                                         public TabletModeObserver,
+                                         public KeyboardControllerObserver,
+                                         public WallpaperControllerObserver,
+                                         public AssistantStateObserver,
+                                         public WindowTreeHostManager::Observer,
+                                         public ash::MruWindowTracker::Observer,
+                                         public AssistantControllerObserver,
+                                         public AssistantUiModelObserver,
+                                         public HomeScreenDelegate {
  public:
   AppListControllerImpl();
   ~AppListControllerImpl() override;
@@ -193,8 +192,7 @@ class ASH_EXPORT AppListControllerImpl
       ash::AppListViewState target_state) override;
   void ShowWallpaperContextMenu(const gfx::Point& onscreen_location,
                                 ui::MenuSourceType source_type) override;
-  bool ProcessHomeLauncherGesture(ui::GestureEvent* event,
-                                  const gfx::Point& screen_location) override;
+  bool ProcessHomeLauncherGesture(ui::GestureEvent* event) override;
   bool KeyboardTraversalEngaged() override;
   bool CanProcessEventsOnApplistViews() override;
   bool ShouldDismissImmediately() override;
@@ -268,7 +266,6 @@ class ASH_EXPORT AppListControllerImpl
       AssistantVisibility old_visibility,
       base::Optional<AssistantEntryPoint> entry_point,
       base::Optional<AssistantExitPoint> exit_point) override;
-
 
   // HomeScreenDelegate:
   void ShowHomeScreenView() override;

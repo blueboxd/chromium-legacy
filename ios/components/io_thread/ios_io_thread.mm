@@ -57,6 +57,7 @@
 #include "net/proxy_resolution/pac_file_fetcher_impl.h"
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
+#include "net/quic/quic_context.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/spdy/spdy_session.h"
 #include "net/ssl/ssl_config_service_defaults.h"
@@ -265,6 +266,8 @@ void IOSIOThread::Init() {
   params_.ignore_certificate_errors = false;
   params_.enable_user_alternate_protocol_ports = false;
 
+  globals_->quic_context = std::make_unique<net::QuicContext>();
+
   std::string quic_user_agent_id = GetChannelString();
   if (!quic_user_agent_id.empty())
     quic_user_agent_id.push_back(' ');
@@ -368,6 +371,7 @@ net::URLRequestContext* IOSIOThread::ConstructSystemRequestContext(
       globals->http_user_agent_settings.get());
 
   context->set_http_server_properties(globals->http_server_properties.get());
+  context->set_quic_context(globals->quic_context.get());
 
   net::HttpNetworkSession::Context system_context;
   net::URLRequestContextBuilder::SetHttpNetworkSessionComponents(

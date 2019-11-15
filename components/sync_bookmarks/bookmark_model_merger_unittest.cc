@@ -128,12 +128,13 @@ bool PositionsInTrackerMatchModel(const bookmarks::BookmarkNode* node,
                      });
 }
 
-void Merge(syncer::UpdateResponseDataList* updates,
+void Merge(syncer::UpdateResponseDataList updates,
            bookmarks::BookmarkModel* bookmark_model) {
   SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
                                 std::make_unique<sync_pb::ModelTypeState>());
   testing::NiceMock<favicon::MockFaviconService> favicon_service;
-  BookmarkModelMerger(updates, bookmark_model, &favicon_service, &tracker)
+  BookmarkModelMerger(std::move(updates), bookmark_model, &favicon_service,
+                      &tracker)
       .Merge();
 }
 
@@ -271,8 +272,8 @@ TEST(BookmarkModelMergerTest, ShouldMergeLocalAndRemoteModels) {
   SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
                                 std::make_unique<sync_pb::ModelTypeState>());
   testing::NiceMock<favicon::MockFaviconService> favicon_service;
-  BookmarkModelMerger(&updates, bookmark_model.get(), &favicon_service,
-                      &tracker)
+  BookmarkModelMerger(std::move(updates), bookmark_model.get(),
+                      &favicon_service, &tracker)
       .Merge();
   ASSERT_THAT(bookmark_bar_node->children().size(), Eq(3u));
 
@@ -419,8 +420,8 @@ TEST(BookmarkModelMergerTest, ShouldMergeRemoteReorderToLocalModel) {
   SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
                                 std::make_unique<sync_pb::ModelTypeState>());
   testing::NiceMock<favicon::MockFaviconService> favicon_service;
-  BookmarkModelMerger(&updates, bookmark_model.get(), &favicon_service,
-                      &tracker)
+  BookmarkModelMerger(std::move(updates), bookmark_model.get(),
+                      &favicon_service, &tracker)
       .Merge();
   ASSERT_THAT(bookmark_bar_node->children().size(), Eq(3u));
 
@@ -492,8 +493,8 @@ TEST(BookmarkModelMergerTest, ShouldMergeFaviconsForRemoteNodesOnly) {
               AddPageNoVisitForBookmark(kUrl2, base::UTF8ToUTF16(kTitle2)));
   EXPECT_CALL(favicon_service, MergeFavicon(kUrl2, _, _, _, _));
 
-  BookmarkModelMerger(&updates, bookmark_model.get(), &favicon_service,
-                      &tracker)
+  BookmarkModelMerger(std::move(updates), bookmark_model.get(),
+                      &favicon_service, &tracker)
       .Merge();
 }
 
@@ -530,8 +531,8 @@ TEST(BookmarkModelMergerTest,
   SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
                                 std::make_unique<sync_pb::ModelTypeState>());
   testing::NiceMock<favicon::MockFaviconService> favicon_service;
-  BookmarkModelMerger(&updates, bookmark_model.get(), &favicon_service,
-                      &tracker)
+  BookmarkModelMerger(std::move(updates), bookmark_model.get(),
+                      &favicon_service, &tracker)
       .Merge();
 
   // Both titles should have matched against each other and only node is in the
@@ -582,8 +583,8 @@ TEST(BookmarkModelMergerTest,
   SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
                                 std::make_unique<sync_pb::ModelTypeState>());
   testing::NiceMock<favicon::MockFaviconService> favicon_service;
-  BookmarkModelMerger(&updates, bookmark_model.get(), &favicon_service,
-                      &tracker)
+  BookmarkModelMerger(std::move(updates), bookmark_model.get(),
+                      &favicon_service, &tracker)
       .Merge();
 
   // Both titles should have matched against each other and only node is in the
@@ -609,7 +610,7 @@ TEST(BookmarkModelMergerTest, ShouldMergeRemoteCreationWithoutGUID) {
       /*is_folder=*/true, /*unique_position=*/MakeRandomPosition(),
       /*guid=*/""));
 
-  Merge(&updates, bookmark_model.get());
+  Merge(std::move(updates), bookmark_model.get());
 
   // Node should have been created and new GUID should have been set.
   ASSERT_EQ(bookmark_model->bookmark_bar_node()->children().size(), 1u);
@@ -641,7 +642,7 @@ TEST(BookmarkModelMergerTest, ShouldMergeAndUseRemoteGUID) {
       /*is_folder=*/true, /*unique_position=*/MakeRandomPosition(),
       /*guid=*/kRemoteGuid));
 
-  Merge(&updates, bookmark_model.get());
+  Merge(std::move(updates), bookmark_model.get());
 
   // Node should have been replaced and GUID should be set to that stored in the
   // specifics.
@@ -675,7 +676,7 @@ TEST(BookmarkModelMergerTest,
       /*unique_position=*/MakeRandomPosition(),
       /*guid=*/""));
 
-  Merge(&updates, bookmark_model.get());
+  Merge(std::move(updates), bookmark_model.get());
 
   // Node should not have been replaced and GUID should not have been set to
   // that stored in the specifics, as it was invalid.
@@ -721,7 +722,7 @@ TEST(BookmarkModelMergerTest, ShouldMergeBookmarkByGUID) {
       /*unique_position=*/MakeRandomPosition(),
       /*guid=*/kGuid));
 
-  Merge(&updates, bookmark_model.get());
+  Merge(std::move(updates), bookmark_model.get());
 
   // -------- The merged model --------
   // bookmark_bar
@@ -776,7 +777,7 @@ TEST(BookmarkModelMergerTest, ShouldMergeBookmarkByGUIDAndReparent) {
       /*unique_position=*/MakeRandomPosition(),
       /*guid=*/kGuid));
 
-  Merge(&updates, bookmark_model.get());
+  Merge(std::move(updates), bookmark_model.get());
 
   // -------- The merged model --------
   // bookmark_bar
@@ -839,7 +840,7 @@ TEST(BookmarkModelMergerTest, ShouldMergeFolderByGUIDAndNotSemantics) {
       /*unique_position=*/MakeRandomPosition(),
       /*guid=*/kGuid2));
 
-  Merge(&updates, bookmark_model.get());
+  Merge(std::move(updates), bookmark_model.get());
 
   // -------- The merged model --------
   // bookmark_bar
@@ -921,7 +922,7 @@ TEST(
       /*unique_position=*/pos2,
       /*guid=*/kGuid1));
 
-  Merge(&updates, bookmark_model.get());
+  Merge(std::move(updates), bookmark_model.get());
 
   // -------- The merged model --------
   // bookmark_bar
@@ -1005,7 +1006,7 @@ TEST(BookmarkModelMergerTest,
       /*unique_position=*/pos2,
       /*guid=*/kGuid2));
 
-  Merge(&updates, bookmark_model.get());
+  Merge(std::move(updates), bookmark_model.get());
 
   // -------- The merged model --------
   // bookmark_bar
@@ -1062,7 +1063,7 @@ TEST(BookmarkModelMergerTest, ShouldReplaceBookmarkGUIDWithConflictingURLs) {
       /*unique_position=*/MakeRandomPosition(),
       /*guid=*/kGuid));
 
-  Merge(&updates, bookmark_model.get());
+  Merge(std::move(updates), bookmark_model.get());
 
   // -------- The merged model --------
   // bookmark_bar
@@ -1114,7 +1115,7 @@ TEST(BookmarkModelMergerTest, ShouldReplaceBookmarkGUIDWithConflictingTypes) {
       /*unique_position=*/MakeRandomPosition(),
       /*guid=*/kGuid));
 
-  Merge(&updates, bookmark_model.get());
+  Merge(std::move(updates), bookmark_model.get());
 
   // -------- The merged model --------
   // bookmark_bar

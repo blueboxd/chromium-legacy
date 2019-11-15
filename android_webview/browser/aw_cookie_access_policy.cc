@@ -8,6 +8,7 @@
 
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/websocket_handshake_request_info.h"
@@ -21,19 +22,15 @@ using content::WebSocketHandshakeRequestInfo;
 
 namespace android_webview {
 
-namespace {
-base::LazyInstance<AwCookieAccessPolicy>::Leaky g_lazy_instance;
-}  // namespace
-
-AwCookieAccessPolicy::~AwCookieAccessPolicy() {
-}
+AwCookieAccessPolicy::~AwCookieAccessPolicy() = default;
 
 AwCookieAccessPolicy::AwCookieAccessPolicy()
     : accept_cookies_(true) {
 }
 
 AwCookieAccessPolicy* AwCookieAccessPolicy::GetInstance() {
-  return g_lazy_instance.Pointer();
+  static base::NoDestructor<AwCookieAccessPolicy> instance;
+  return instance.get();
 }
 
 bool AwCookieAccessPolicy::GetShouldAcceptCookies() {

@@ -6,6 +6,7 @@
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> தாவல்}other{<ph name="TABS_COUNT_MANY" /> தாவல்கள்}}</translation>
 <translation id="257674075312929031">குழு</translation>
 <translation id="2613747923081026172">குழுவை உருவாக்கு</translation>
+<translation id="2671423594960767771">குழுவைப் பகிரும்</translation>
 <translation id="2977480621796371840">குழுவிலிருந்து அகற்று</translation>
 <translation id="4212246570487010370">உலாவலைத் தொடர்க</translation>
 <translation id="4648718555153979859">உங்கள் தாவல்கள் இங்கு குழுவாக்கப்பட்டுள்ளன</translation>
@@ -14,6 +15,7 @@
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> தாவல்கள் குழுவாக்கப்பட்டுள்ளன</translation>
 <translation id="5792534911093536736">கூடுதல் தாவல்கள்</translation>
 <translation id="58326064309361797">தாவல்களை இழுப்பதன் மூலம் அவற்றைக் குழுவாக்கலாம்</translation>
+<translation id="6040143037577758943">மூடு</translation>
 <translation id="6193448654517602979">தாவல்களைத் தேர்ந்தெடுக்கவும்</translation>
 <translation id="6615455863669487791">எனக்கு காண்பி</translation>
 <translation id="6840760312327750441">தாவல்களைக் குழுவாக்க தாவலைத் தொட்டுப் பிடித்திருக்கவும். பிறகு அதை மற்றொரு தாவலுக்கு இழுத்துச்சென்று விடவும்.</translation>

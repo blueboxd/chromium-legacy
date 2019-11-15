@@ -801,11 +801,8 @@ TEST(CleanerSandboxInterface, DISABLED_DeleteService_Running) {
   EXPECT_FALSE(chrome_cleaner::DoesServiceExist(service_handle.service_name()));
 }
 
-// Temporarily enable for debugging flakiness.
-// Trooper can ignore this test. Further info refer to
-// https://crbug.com/956016
-// Updated by svenzheng@chromium.org, 2019-11-13.
-TEST(CleanerSandboxInterface, DeleteService_HandleHeld) {
+// Disabled: https://crbug.com/956016
+TEST(CleanerSandboxInterface, DISABLED_DeleteService_HandleHeld) {
   ASSERT_TRUE(chrome_cleaner::EnsureNoTestServicesRunning());
 
   chrome_cleaner::TestScopedServiceHandle service_handle;

@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include <tuple>
 #include <utility>
 
 #include "base/bind.h"
@@ -28,6 +29,7 @@
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
+#include "content/common/page_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/content_browser_client.h"
@@ -2597,34 +2599,35 @@ TEST_F(WebContentsImplTest, CapturerOverridesPreferredSize) {
 
   // Increment capturer count, but without specifying a capture size.  Expect
   // a "not set" preferred size.
-  contents()->IncrementCapturerCount(gfx::Size());
+  contents()->IncrementCapturerCount(gfx::Size(), /* stay_hidden */ false);
   EXPECT_TRUE(contents()->IsBeingCaptured());
   EXPECT_EQ(gfx::Size(), contents()->GetPreferredSize());
 
   // Increment capturer count again, but with an overriding capture size.
   // Expect preferred size to now be overridden to the capture size.
   const gfx::Size capture_size(1280, 720);
-  contents()->IncrementCapturerCount(capture_size);
+  contents()->IncrementCapturerCount(capture_size, /* stay_hidden */ false);
   EXPECT_TRUE(contents()->IsBeingCaptured());
   EXPECT_EQ(capture_size, contents()->GetPreferredSize());
 
   // Increment capturer count a third time, but the expect that the preferred
   // size is still the first capture size.
   const gfx::Size another_capture_size(720, 480);
-  contents()->IncrementCapturerCount(another_capture_size);
+  contents()->IncrementCapturerCount(another_capture_size,
+                                     /* stay_hidden */ false);
   EXPECT_TRUE(contents()->IsBeingCaptured());
   EXPECT_EQ(capture_size, contents()->GetPreferredSize());
 
   // Decrement capturer count twice, but expect the preferred size to still be
   // overridden.
-  contents()->DecrementCapturerCount();
-  contents()->DecrementCapturerCount();
+  contents()->DecrementCapturerCount(/* stay_hidden */ false);
+  contents()->DecrementCapturerCount(/* stay_hidden */ false);
   EXPECT_TRUE(contents()->IsBeingCaptured());
   EXPECT_EQ(capture_size, contents()->GetPreferredSize());
 
   // Decrement capturer count, and since the count has dropped to zero, the
   // original preferred size should be restored.
-  contents()->DecrementCapturerCount();
+  contents()->DecrementCapturerCount(/* stay_hidden */ false);
   EXPECT_FALSE(contents()->IsBeingCaptured());
   EXPECT_EQ(original_preferred_size, contents()->GetPreferredSize());
 }
@@ -2699,7 +2702,7 @@ void HideOrOccludeWithCapturerTest(WebContentsImpl* contents,
 
   // Add a capturer when the contents is visible and then hide the contents.
   // |view| should remain visible.
-  contents->IncrementCapturerCount(gfx::Size());
+  contents->IncrementCapturerCount(gfx::Size(), /* stay_hidden */ false);
   contents->UpdateWebContentsVisibility(hidden_or_occluded);
   EXPECT_TRUE(view->is_showing());
   EXPECT_FALSE(view->is_occluded());
@@ -2707,7 +2710,7 @@ void HideOrOccludeWithCapturerTest(WebContentsImpl* contents,
 
   // Remove the capturer when the contents is hidden/occluded. |view| should be
   // hidden/occluded.
-  contents->DecrementCapturerCount();
+  contents->DecrementCapturerCount(/* stay_hidden */ false);
   if (hidden_or_occluded == Visibility::HIDDEN) {
     EXPECT_FALSE(view->is_showing());
   } else {
@@ -2716,7 +2719,7 @@ void HideOrOccludeWithCapturerTest(WebContentsImpl* contents,
   }
 
   // Add a capturer when the contents is hidden. |view| should be unoccluded.
-  contents->IncrementCapturerCount(gfx::Size());
+  contents->IncrementCapturerCount(gfx::Size(), /* stay_hidden */ false);
   EXPECT_FALSE(view->is_occluded());
 
   // Show the contents. The view should be visible.
@@ -2727,7 +2730,7 @@ void HideOrOccludeWithCapturerTest(WebContentsImpl* contents,
 
   // Remove the capturer when the contents is visible. The view should remain
   // visible.
-  contents->DecrementCapturerCount();
+  contents->DecrementCapturerCount(/* stay_hidden */ false);
   EXPECT_TRUE(view->is_showing());
   EXPECT_FALSE(view->is_occluded());
 }
@@ -2742,6 +2745,60 @@ TEST_F(WebContentsImplTest, OccludeWithCapturer) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kWebContentsOcclusion);
   HideOrOccludeWithCapturerTest(contents(), Visibility::OCCLUDED);
+}
+
+namespace {
+
+void CheckVisibilityMessage(const IPC::Message* message,
+                            PageVisibilityState expected_state) {
+  ASSERT_TRUE(message);
+  std::tuple<content::PageVisibilityState> params;
+  ASSERT_TRUE(PageMsg_VisibilityChanged::Read(message, &params));
+  EXPECT_EQ(expected_state, std::get<0>(params));
+}
+
+}  // namespace
+
+TEST_F(WebContentsImplTest, HiddenCapture) {
+  TestRenderViewHost* const rvh =
+      static_cast<TestRenderViewHost*>(contents()->GetRenderViewHost());
+  TestRenderWidgetHostView* rwhv = static_cast<TestRenderWidgetHostView*>(
+      contents()->GetRenderWidgetHostView());
+  MockRenderProcessHost* const rph = rvh->GetProcess();
+  IPC::TestSink* const sink = &rph->sink();
+
+  contents()->UpdateWebContentsVisibility(Visibility::VISIBLE);
+  contents()->UpdateWebContentsVisibility(Visibility::HIDDEN);
+  EXPECT_EQ(Visibility::HIDDEN, contents()->GetVisibility());
+
+  sink->ClearMessages();
+  contents()->IncrementCapturerCount(gfx::Size(), /* stay_hidden */ true);
+  const IPC::Message* visibility_message =
+      sink->GetUniqueMessageMatching(PageMsg_VisibilityChanged::ID);
+  CheckVisibilityMessage(visibility_message,
+                         PageVisibilityState::kHiddenButPainting);
+  EXPECT_TRUE(rwhv->is_showing());
+
+  sink->ClearMessages();
+  contents()->IncrementCapturerCount(gfx::Size(), /* stay_hidden */ false);
+  visibility_message =
+      sink->GetUniqueMessageMatching(PageMsg_VisibilityChanged::ID);
+  CheckVisibilityMessage(visibility_message, PageVisibilityState::kVisible);
+  EXPECT_TRUE(rwhv->is_showing());
+
+  sink->ClearMessages();
+  contents()->DecrementCapturerCount(/* stay_hidden */ true);
+  visibility_message =
+      sink->GetUniqueMessageMatching(PageMsg_VisibilityChanged::ID);
+  CheckVisibilityMessage(visibility_message, PageVisibilityState::kVisible);
+  EXPECT_TRUE(rwhv->is_showing());
+
+  sink->ClearMessages();
+  contents()->DecrementCapturerCount(/* stay_hidden */ false);
+  visibility_message =
+      sink->GetUniqueMessageMatching(PageMsg_VisibilityChanged::ID);
+  CheckVisibilityMessage(visibility_message, PageVisibilityState::kHidden);
+  EXPECT_FALSE(rwhv->is_showing());
 }
 
 // Tests that GetLastActiveTime starts with a real, non-zero time and updates

@@ -111,3 +111,6 @@ struct CSPSourceList;
 
 [Native]
 struct CSPSource;
+
+[Native]
+struct CSPViolationParams;

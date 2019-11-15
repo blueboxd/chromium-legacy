@@ -36,6 +36,7 @@
 #include "net/log/net_log.h"
 #include "net/net_buildflags.h"
 #include "net/nqe/network_quality_estimator.h"
+#include "net/quic/quic_context.h"
 #include "net/quic/quic_stream_factory.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/url_request/static_http_user_agent_settings.h"
@@ -202,6 +203,7 @@ void URLRequestContextBuilder::SetHttpNetworkSessionComponents(
       request_context->http_auth_handler_factory();
   session_context->http_server_properties =
       request_context->http_server_properties();
+  session_context->quic_context = request_context->quic_context();
   session_context->net_log = request_context->net_log();
   session_context->network_quality_estimator =
       request_context->network_quality_estimator();
@@ -488,6 +490,8 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
     storage->set_ct_policy_enforcer(
         std::make_unique<DefaultCTPolicyEnforcer>());
   }
+
+  storage->set_quic_context(std::make_unique<QuicContext>());
 
   if (throttling_enabled_) {
     storage->set_throttler_manager(

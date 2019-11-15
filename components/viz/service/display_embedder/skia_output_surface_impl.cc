@@ -614,6 +614,7 @@ void SkiaOutputSurfaceImpl::CopyOutput(
   ScheduleGpuTask(std::move(callback), std::move(resource_sync_tokens_));
 }
 
+#if defined(OS_WIN)
 void SkiaOutputSurfaceImpl::SetEnableDCLayers(bool enable) {
   auto task = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::SetEnableDCLayers,
                              base::Unretained(impl_on_gpu_.get()), enable);
@@ -628,6 +629,7 @@ void SkiaOutputSurfaceImpl::ScheduleDCLayers(
                      base::Unretained(impl_on_gpu_.get()), std::move(overlays));
   ScheduleGpuTask(std::move(task), std::move(sync_tokens));
 }
+#endif
 
 void SkiaOutputSurfaceImpl::SetCapabilitiesForTesting(
     bool flipped_output_surface) {

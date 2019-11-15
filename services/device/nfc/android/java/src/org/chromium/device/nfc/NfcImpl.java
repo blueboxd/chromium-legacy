@@ -16,7 +16,6 @@ import android.nfc.NfcManager;
 import android.nfc.Tag;
 import android.nfc.TagLostException;
 import android.os.Build;
-import android.os.Handler;
 import android.os.Process;
 import android.os.Vibrator;
 import android.util.SparseArray;
@@ -112,16 +111,6 @@ public class NfcImpl implements Nfc {
     private final SparseArray<NdefScanOptions> mWatchers = new SparseArray<>();
 
     /**
-     * Handler that runs delayed push timeout task.
-     */
-    private final Handler mPushTimeoutHandler = new Handler();
-
-    /**
-     * Runnable responsible for cancelling push operation after specified timeout.
-     */
-    private Runnable mPushTimeoutRunnable;
-
-    /**
      * Vibrator. @see android.os.Vibrator
      */
     private Vibrator mVibrator;
@@ -187,7 +176,7 @@ public class NfcImpl implements Nfc {
      * passive NFC devices are supported (NdefPushTarget.TAG).
      *
      * @param message that should be pushed to NFC device.
-     * @param options that contain information about timeout and target device type.
+     * @param options that contain information about target device type.
      * @param callback that is used to notify when push operation is completed.
      */
     @Override
@@ -200,8 +189,7 @@ public class NfcImpl implements Nfc {
         }
 
         // Check NdefPushOptions that are not supported by Android platform.
-        if (options.target == NdefPushTarget.PEER || options.timeout < 0
-                || (options.timeout > Long.MAX_VALUE && !Double.isInfinite(options.timeout))) {
+        if (options.target == NdefPushTarget.PEER) {
             callback.call(createError(NdefErrorType.NOT_SUPPORTED));
             return;
         }
@@ -209,13 +197,10 @@ public class NfcImpl implements Nfc {
         // If previous pending push operation is not completed, cancel it.
         if (mPendingPushOperation != null) {
             mPendingPushOperation.complete(createError(NdefErrorType.OPERATION_CANCELLED));
-            cancelPushTimeoutTask();
         }
 
         mPendingPushOperation = new PendingPushOperation(message, options, callback);
 
-        // Schedule push timeout task for new #mPendingPushOperation.
-        schedulePushTimeoutTask(options);
         enableReaderModeIfNeeded();
         processPendingPushOperation();
     }
@@ -481,8 +466,8 @@ public class NfcImpl implements Nfc {
     }
 
     /**
-     * Handles completion of pending push operation, cancels timeout task and completes push
-     * operation. On error, invalidates #mTagHandler.
+     * Handles completion of pending push operation, completes push operation.
+     * On error, invalidates #mTagHandler.
      */
     private void pendingPushOperationCompleted(NdefError error) {
         completePendingPushOperation(error);
@@ -495,7 +480,6 @@ public class NfcImpl implements Nfc {
     private void completePendingPushOperation(NdefError error) {
         if (mPendingPushOperation == null) return;
 
-        cancelPushTimeoutTask();
         mPendingPushOperation.complete(error);
         mPendingPushOperation = null;
         disableReaderModeIfNeeded();
@@ -682,34 +666,5 @@ public class NfcImpl implements Nfc {
                 Log.w(TAG, "Cannot close NFC tag connection.");
             }
         }
-    }
-
-    /**
-     * Schedules task that is executed after timeout and cancels pending push operation.
-     */
-    private void schedulePushTimeoutTask(NdefPushOptions options) {
-        assert mPushTimeoutRunnable == null;
-        // Default timeout value.
-        if (Double.isInfinite(options.timeout)) return;
-
-        // Create and schedule timeout.
-        mPushTimeoutRunnable = new Runnable() {
-            @Override
-            public void run() {
-                completePendingPushOperation(createError(NdefErrorType.TIMER_EXPIRED));
-            }
-        };
-
-        mPushTimeoutHandler.postDelayed(mPushTimeoutRunnable, (long) options.timeout);
-    }
-
-    /**
-     * Cancels push timeout task.
-     */
-    void cancelPushTimeoutTask() {
-        if (mPushTimeoutRunnable == null) return;
-
-        mPushTimeoutHandler.removeCallbacks(mPushTimeoutRunnable);
-        mPushTimeoutRunnable = null;
     }
 }

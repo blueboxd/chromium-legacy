@@ -303,6 +303,7 @@ class MODULES_EXPORT RTCPeerConnection final
   void DidRemoveReceiverPlanB(std::unique_ptr<WebRTCRtpReceiver>) override;
   void DidModifySctpTransport(WebRTCSctpTransportSnapshot) override;
   void DidModifyTransceivers(WebVector<std::unique_ptr<WebRTCRtpTransceiver>>,
+                             WebVector<uintptr_t>,
                              bool is_remote_description) override;
   void DidAddRemoteDataChannel(
       scoped_refptr<webrtc::DataChannelInterface> channel) override;

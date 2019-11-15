@@ -41,6 +41,8 @@ source_set("eg_test_support") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/ui/fullscreen",
     "//ios/chrome/test/app:test_support",
+    "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/ui",
   ]
 }
 
@@ -56,6 +58,8 @@ source_set("eg_app_support+eg2") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/ui/fullscreen",
     "//ios/chrome/test/app:test_support",
+    "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/ui",
   ]
 }
 

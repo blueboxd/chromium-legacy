@@ -32,6 +32,7 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 #include "weblayer/browser/browser_main_parts_impl.h"
+#include "weblayer/browser/i18n_util.h"
 #include "weblayer/browser/ssl_error_handler.h"
 #include "weblayer/browser/tab_impl.h"
 #include "weblayer/browser/weblayer_content_browser_overlay_manifest.h"
@@ -96,9 +97,13 @@ ContentBrowserClientImpl::CreateBrowserMainParts(
   return browser_main_parts;
 }
 
+std::string ContentBrowserClientImpl::GetApplicationLocale() {
+  return i18n::GetApplicationLocale();
+}
+
 std::string ContentBrowserClientImpl::GetAcceptLangs(
     content::BrowserContext* context) {
-  return "en-us,en";
+  return i18n::GetAcceptLangs();
 }
 
 content::WebContentsViewDelegate*
@@ -172,7 +177,7 @@ ContentBrowserClientImpl::CreateNetworkContext(
   network::mojom::NetworkContextParamsPtr context_params =
       network::mojom::NetworkContextParams::New();
   context_params->user_agent = GetUserAgent();
-  context_params->accept_language = "en-us,en";
+  context_params->accept_language = GetAcceptLangs(context);
   if (!context->IsOffTheRecord()) {
     base::FilePath cookie_path = context->GetPath();
     cookie_path = cookie_path.Append(FILE_PATH_LITERAL("Cookies"));

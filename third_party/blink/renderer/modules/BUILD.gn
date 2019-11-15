@@ -165,14 +165,7 @@ jumbo_component("modules") {
     "//third_party/blink/renderer/bindings/modules/v8:bindings_modules_origin_trial_features",
     "//third_party/blink/renderer/core",
     "//third_party/icu",
-    "//third_party/webrtc/api/audio:aec3_config_json",
-    "//third_party/webrtc/api/rtc_event_log:rtc_event_log_factory",
-    "//third_party/webrtc/media:rtc_internal_video_codecs",
-    "//third_party/webrtc/modules/video_coding:webrtc_h264",
-    "//third_party/webrtc/pc:libjingle_peerconnection",
-    "//third_party/webrtc/rtc_base:rtc_base",
-    "//third_party/webrtc_overrides:init_webrtc",
-    "//third_party/webrtc_overrides:task_queue_factory",
+    "//third_party/webrtc_overrides:webrtc_component",
     "//third_party/zlib",
   ]
 
@@ -469,9 +462,7 @@ jumbo_source_set("unit_tests") {
     "//third_party/blink/renderer/platform",
     "//third_party/blink/renderer/platform/wtf",
     "//third_party/opus",
-    "//third_party/webrtc/api:rtc_error",
-    "//third_party/webrtc/rtc_base:rtc_base",
-    "//third_party/webrtc/stats:rtc_stats_test_utils",
+    "//third_party/webrtc_overrides:webrtc_component",
     "//v8",
   ]
 

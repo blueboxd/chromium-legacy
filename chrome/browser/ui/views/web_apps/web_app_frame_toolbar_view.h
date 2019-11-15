@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_WEB_APPS_WEB_APP_FRAME_TOOLBAR_VIEW_H_
 
 #include <memory>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
@@ -20,10 +21,10 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/material_design/material_design_controller_observer.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button.h"
-#include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -71,6 +72,7 @@ class WebAppFrameToolbarView : public views::AccessiblePaneView,
                          BrowserView* browser_view,
                          SkColor active_color,
                          SkColor inactive_color,
+                         base::Optional<int> left_margin = base::nullopt,
                          base::Optional<int> right_margin = base::nullopt);
   ~WebAppFrameToolbarView() override;
 
@@ -81,12 +83,12 @@ class WebAppFrameToolbarView : public views::AccessiblePaneView,
   // Sets the container to paints its buttons the active/inactive color.
   void SetPaintAsActive(bool active);
 
-  // Sets own bounds to be right aligned and vertically centered in the given
-  // space, returns a new trailing_x value.
-  int LayoutInContainer(int leading_x,
-                        int trailing_x,
-                        int y,
-                        int available_height);
+  // Sets own bounds equal to the available space and returns the bounds of the
+  // remaining inner space as a pair of (leading x, trailing x).
+  std::pair<int, int> LayoutInContainer(int leading_x,
+                                        int trailing_x,
+                                        int y,
+                                        int available_height);
 
   SkColor active_color_for_testing() const { return active_color_; }
 
@@ -145,11 +147,11 @@ class WebAppFrameToolbarView : public views::AccessiblePaneView,
   void OnTouchUiChanged() override;
 
   static void DisableAnimationForTesting();
+  views::View* GetRightContainerForTesting();
   views::View* GetPageActionIconContainerForTesting();
 
  protected:
   // views::AccessiblePaneView:
-  gfx::Size CalculatePreferredSize() const override;
   void ChildPreferredSizeChanged(views::View* child) override;
 
  private:
@@ -201,7 +203,19 @@ class WebAppFrameToolbarView : public views::AccessiblePaneView,
   SkColor active_color_;
   SkColor inactive_color_;
 
-  // Owned by the views hierarchy.
+  class ToolbarButtonContainer;
+
+  // All remaining members are owned by the views hierarchy.
+
+  // These three fields are only created when the display mode is minimal-ui.
+  ToolbarButtonContainer* left_container_ = nullptr;
+  ToolbarButton* back_ = nullptr;
+  ReloadButton* reload_ = nullptr;
+
+  // Empty container used by the parent frame to layout additional elements.
+  views::View* center_container_ = nullptr;
+
+  ToolbarButtonContainer* right_container_ = nullptr;
   WebAppOriginText* web_app_origin_text_ = nullptr;
   ContentSettingsContainer* content_settings_container_ = nullptr;
   PageActionIconContainerView* page_action_icon_container_view_ = nullptr;
@@ -209,9 +223,6 @@ class WebAppFrameToolbarView : public views::AccessiblePaneView,
   ExtensionsToolbarContainer* extensions_container_ = nullptr;
   WebAppMenuButton* web_app_menu_button_ = nullptr;
 
-  // The following buttons are only created when the display mode is minimal-ui.
-  ToolbarButton* back_ = nullptr;
-  ReloadButton* reload_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WebAppFrameToolbarView);
 };

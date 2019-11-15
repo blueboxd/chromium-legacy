@@ -154,6 +154,8 @@ void PdfCompositorImpl::CompositePageToPdf(
     base::ReadOnlySharedMemoryRegion serialized_content,
     const ContentToFrameMap& subframe_content_map,
     mojom::PdfCompositor::CompositePageToPdfCallback callback) {
+  if (docinfo_)
+    docinfo_->pages_provided++;
   HandleCompositionRequest(frame_guid, std::move(serialized_content),
                            subframe_content_map, std::move(callback));
 }
@@ -163,8 +165,26 @@ void PdfCompositorImpl::CompositeDocumentToPdf(
     base::ReadOnlySharedMemoryRegion serialized_content,
     const ContentToFrameMap& subframe_content_map,
     mojom::PdfCompositor::CompositeDocumentToPdfCallback callback) {
+  DCHECK(!docinfo_);
   HandleCompositionRequest(frame_guid, std::move(serialized_content),
                            subframe_content_map, std::move(callback));
+}
+
+void PdfCompositorImpl::PrepareForDocumentToPdf(
+    mojom::PdfCompositor::PrepareForDocumentToPdfCallback callback) {
+  DCHECK(!docinfo_);
+  docinfo_ = std::make_unique<DocumentInfo>(creator_);
+  std::move(callback).Run(mojom::PdfCompositor::Status::kSuccess);
+}
+
+void PdfCompositorImpl::CompleteDocumentToPdf(
+    uint32_t page_count,
+    mojom::PdfCompositor::CompleteDocumentToPdfCallback callback) {
+  DCHECK(docinfo_);
+  DCHECK_GT(page_count, 0U);
+  docinfo_->page_count = page_count;
+  docinfo_->callback = std::move(callback);
+  HandleDocumentCompletionRequest();
 }
 
 void PdfCompositorImpl::SetWebContentsURL(const GURL& url) {
@@ -197,6 +217,15 @@ void PdfCompositorImpl::UpdateRequestsWithSubframeInfo(
         FulfillRequest(std::move(request->serialized_content),
                        request->subframe_content_map,
                        std::move(request->callback));
+
+        // Check for a collected print preview document that was waiting on
+        // this page to finish.
+        if (docinfo_) {
+          if (docinfo_->page_count &&
+              (docinfo_->pages_written == docinfo_->page_count)) {
+            CompleteDocumentRequest(std::move(docinfo_->callback));
+          }
+        }
         it = requests_.erase(it);
         continue;
       }
@@ -269,6 +298,16 @@ void PdfCompositorImpl::HandleCompositionRequest(
       std::move(callback)));
 }
 
+void PdfCompositorImpl::HandleDocumentCompletionRequest() {
+  if (docinfo_->pages_written == docinfo_->page_count) {
+    CompleteDocumentRequest(std::move(docinfo_->callback));
+    return;
+  }
+  // Just need to wait on pages to percolate through processing, callback will
+  // be handled from UpdateRequestsWithSubframeInfo() once the pending requests
+  // have finished.
+}
+
 mojom::PdfCompositor::Status PdfCompositorImpl::CompositeToPdf(
     base::ReadOnlySharedMemoryMapping shared_mem,
     const ContentToFrameMap& subframe_content_map,
@@ -303,6 +342,14 @@ mojom::PdfCompositor::Status PdfCompositorImpl::CompositeToPdf(
     SkCanvas* canvas = doc->beginPage(page.fSize.width(), page.fSize.height());
     canvas->drawPicture(page.fPicture);
     doc->endPage();
+    if (docinfo_) {
+      // Also collect this page into document PDF.
+      SkCanvas* canvas_doc =
+          docinfo_->doc->beginPage(page.fSize.width(), page.fSize.height());
+      canvas_doc->drawPicture(page.fPicture);
+      docinfo_->doc->endPage();
+      docinfo_->pages_written++;
+    }
   }
   doc->close();
 
@@ -314,6 +361,24 @@ mojom::PdfCompositor::Status PdfCompositorImpl::CompositeToPdf(
   }
 
   wstream.copyToAndReset(region_mapping.mapping.memory());
+  *region = std::move(region_mapping.region);
+  return mojom::PdfCompositor::Status::kSuccess;
+}
+
+mojom::PdfCompositor::Status PdfCompositorImpl::CompleteDocumentToPdf(
+    base::ReadOnlySharedMemoryRegion* region) {
+  docinfo_->doc->close();
+
+  base::MappedReadOnlyRegion region_mapping =
+      mojo::CreateReadOnlySharedMemoryRegion(
+          docinfo_->compositor_stream.bytesWritten());
+  if (!region_mapping.IsValid()) {
+    DLOG(ERROR)
+        << "CompleteDocumentToPdf: Cannot create new shared memory region.";
+    return mojom::PdfCompositor::Status::kHandleMapError;
+  }
+
+  docinfo_->compositor_stream.copyToAndReset(region_mapping.mapping.memory());
   *region = std::move(region_mapping.region);
   return mojom::PdfCompositor::Status::kSuccess;
 }
@@ -361,18 +426,30 @@ void PdfCompositorImpl::FulfillRequest(
   std::move(callback).Run(status, std::move(region));
 }
 
+void PdfCompositorImpl::CompleteDocumentRequest(
+    CompleteDocumentToPdfCallback callback) {
+  base::ReadOnlySharedMemoryRegion region;
+  auto status = CompleteDocumentToPdf(&region);
+  std::move(callback).Run(status, std::move(region));
+}
+
 PdfCompositorImpl::FrameContentInfo::FrameContentInfo(
     base::ReadOnlySharedMemoryMapping content,
     const ContentToFrameMap& map)
     : serialized_content(std::move(content)), subframe_content_map(map) {}
 
-PdfCompositorImpl::FrameContentInfo::FrameContentInfo() {}
+PdfCompositorImpl::FrameContentInfo::FrameContentInfo() = default;
 
-PdfCompositorImpl::FrameContentInfo::~FrameContentInfo() {}
+PdfCompositorImpl::FrameContentInfo::~FrameContentInfo() = default;
 
-PdfCompositorImpl::FrameInfo::FrameInfo() {}
+PdfCompositorImpl::FrameInfo::FrameInfo() = default;
 
-PdfCompositorImpl::FrameInfo::~FrameInfo() {}
+PdfCompositorImpl::FrameInfo::~FrameInfo() = default;
+
+PdfCompositorImpl::DocumentInfo::DocumentInfo(const std::string& creator)
+    : doc(MakePdfDocument(creator, &compositor_stream)) {}
+
+PdfCompositorImpl::DocumentInfo::~DocumentInfo() = default;
 
 PdfCompositorImpl::RequestInfo::RequestInfo(
     base::ReadOnlySharedMemoryMapping content,
@@ -383,6 +460,6 @@ PdfCompositorImpl::RequestInfo::RequestInfo(
       pending_subframes(pending_subframes),
       callback(std::move(callback)) {}
 
-PdfCompositorImpl::RequestInfo::~RequestInfo() {}
+PdfCompositorImpl::RequestInfo::~RequestInfo() = default;
 
 }  // namespace printing

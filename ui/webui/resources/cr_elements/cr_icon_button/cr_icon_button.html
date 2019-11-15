@@ -16,8 +16,6 @@
         /* TODO(aee): Delete --cr-icon-button-focus-color and replace all usages
          *     with --cr-icon-button-fill-color-focus. */
         --cr-icon-button-focus-color: white;
-        --cr-icon-button-stroke-color-focus: none;
-        --cr-icon-button-stroke-color: none;
         --cr-icon-button-icon-start-offset: 0;
         --cr-icon-button-icon-size: 20px;
         --cr-icon-button-size: 36px;
@@ -27,7 +25,8 @@
         /* Copied from paper-fab.html. Prevents square touch highlight. */
         -webkit-tap-highlight-color: transparent;
         border-radius: 4px;
-        color: var(--cr-icon-button-color);
+        color: var(--cr-icon-button-stroke-color,
+            var(--cr-icon-button-fill-color));
         cursor: pointer;
         display: inline-flex;
         flex-shrink: 0;
@@ -86,7 +85,7 @@
 
       iron-icon {
         --iron-icon-fill-color: var(--cr-icon-button-fill-color);
-        --iron-icon-stroke-color: var(--cr-icon-button-stroke-color);
+        --iron-icon-stroke-color: var(--cr-icon-button-stroke-color, none);
         --iron-icon-height: var(--cr-icon-button-icon-size);
         --iron-icon-width: var(--cr-icon-button-icon-size);
         transition: fill var(--cr-icon-button-transition),
@@ -96,7 +95,8 @@
 
       :host-context([a11y-enhanced]):host([ripple-showing_]) iron-icon {
         --iron-icon-fill-color: var(--cr-icon-button-fill-color-focus);
-        --iron-icon-stroke-color: var(--cr-icon-button-stroke-color-focus);
+        --iron-icon-stroke-color: var(--cr-icon-button-stroke-color-focus,
+            none);
       }
 
       paper-ripple {

@@ -15,8 +15,6 @@
       <include name="IDR_EXTENSIONS_VULCANIZED_HTML"
                file="${root_gen_dir}\chrome\browser\resources\extensions\vulcanized.html"
                use_base_dir="false"
-               flattenhtml="true"
-               allowexternalscript="true"
                type="BINDATA"
                compress="gzip" />
       <include name="IDR_EXTENSIONS_CRISPER_JS"

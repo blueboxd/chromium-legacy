@@ -16,115 +16,222 @@
 #include "tools/binary_size/libsupersize/caspian/file_format.h"
 #include "tools/binary_size/libsupersize/caspian/function_signature.h"
 
-namespace {
-struct SymbolMatchIndex {
-  SymbolMatchIndex() {}
-  SymbolMatchIndex(caspian::SectionId id,
-                   std::string_view name,
-                   std::string_view path,
-                   int size_without_padding)
-      : nonempty(true),
-        id(id),
-        name(name),
-        path(path),
-        size_without_padding(size_without_padding) {
-    this->name = name;
-  }
-
-  operator bool() const { return nonempty; }
-
-  bool operator==(const SymbolMatchIndex& other) const {
-    return id == other.id && name == other.name && path == other.path &&
-           size_without_padding == other.size_without_padding;
-  }
-
-  bool nonempty = false;
-  caspian::SectionId id;
-  std::string_view name;
-  std::string_view path;
-  int size_without_padding;
-};
-}  // namespace
-
-namespace std {
-template <>
-struct hash<SymbolMatchIndex> {
-  static constexpr size_t kPrime1 = 105929;
-  static constexpr size_t kPrime2 = 8543;
-  size_t operator()(const SymbolMatchIndex& k) const {
-    return ((kPrime1 * static_cast<size_t>(k.id)) ^
-            hash<string_view>()(k.name) ^ hash<string_view>()(k.path) ^
-            (kPrime2 * k.size_without_padding));
-  }
-};
-}  // namespace std
-
 namespace caspian {
 
+BaseSymbol::~BaseSymbol() = default;
+
 Symbol::Symbol() = default;
+Symbol::~Symbol() = default;
 Symbol::Symbol(const Symbol& other) = default;
-Symbol& Symbol::operator=(const Symbol& other) = default;
-
-Symbol Symbol::DiffSymbolFrom(const Symbol* before_sym,
-                              const Symbol* after_sym) {
-  Symbol ret;
-  if (after_sym) {
-    ret = *after_sym;
-  } else if (before_sym) {
-    ret = *before_sym;
-  }
-
-  if (before_sym && after_sym) {
-    ret.size = after_sym->size - before_sym->size;
-    ret.pss = after_sym->pss - before_sym->pss;
-  } else if (before_sym) {
-    ret.size = -before_sym->size;
-    ret.pss = -before_sym->pss;
-  }
-
-  return ret;
-}
 
 void Symbol::DeriveNames() const {
-  if (name.data() != nullptr) {
+  if (name_.data() != nullptr) {
     return;
   }
   if (IsPak()) {
     // full_name: "about_ui_resources.grdp: IDR_ABOUT_UI_CREDITS_HTML".
-    size_t space_idx = full_name.rfind(' ');
-    template_name = full_name.substr(space_idx + 1);
-    name = template_name;
-  } else if ((!full_name.empty() && full_name[0] == '*') || IsOverhead() ||
+    size_t space_idx = full_name_.rfind(' ');
+    template_name_ = full_name_.substr(space_idx + 1);
+    name_ = template_name_;
+  } else if ((!full_name_.empty() && full_name_[0] == '*') || IsOverhead() ||
              IsOther()) {
-    template_name = full_name;
-    name = full_name;
+    template_name_ = full_name_;
+    name_ = full_name_;
   } else if (IsDex()) {
     std::tuple<std::string_view, std::string_view, std::string_view>
-        parsed_names = ParseJava(full_name, &size_info->owned_strings);
-    template_name = std::get<1>(parsed_names);
-    name = std::get<2>(parsed_names);
+        parsed_names = ParseJava(full_name_, &size_info->owned_strings);
+    template_name_ = std::get<1>(parsed_names);
+    name_ = std::get<2>(parsed_names);
   } else if (IsStringLiteral()) {
-    template_name = full_name;
-    name = full_name;
+    template_name_ = full_name_;
+    name_ = full_name_;
   } else if (IsNative()) {
     std::tuple<std::string_view, std::string_view, std::string_view>
-        parsed_names = ParseCpp(full_name, &size_info->owned_strings);
-    template_name = std::get<1>(parsed_names);
-    name = std::get<2>(parsed_names);
+        parsed_names = ParseCpp(full_name_, &size_info->owned_strings);
+    template_name_ = std::get<1>(parsed_names);
+    name_ = std::get<2>(parsed_names);
   } else {
-    template_name = full_name;
-    name = full_name;
+    template_name_ = full_name_;
+    name_ = full_name_;
   }
 }
 
-std::string_view Symbol::TemplateName() const {
-  DeriveNames();
-  return template_name;
+int32_t Symbol::Address() const {
+  return address_;
+}
+int32_t Symbol::Size() const {
+  return size_;
+}
+int32_t Symbol::Flags() const {
+  return flags_;
+}
+int32_t Symbol::Padding() const {
+  return padding_;
 }
 
+std::string_view Symbol::FullName() const {
+  return full_name_;
+}
+// Derived from |full_name|. Generated lazily and cached.
+std::string_view Symbol::TemplateName() const {
+  DeriveNames();
+  return template_name_;
+}
 std::string_view Symbol::Name() const {
   DeriveNames();
-  return name;
+  return name_;
+}
+const std::vector<Symbol*>* Symbol::Aliases() const {
+  return aliases_;
+}
+SectionId Symbol::Section() const {
+  return section_id_;
+}
+
+const char* Symbol::ObjectPath() const {
+  return object_path_;
+}
+const char* Symbol::SourcePath() const {
+  return source_path_;
+}
+const char* Symbol::SectionName() const {
+  return section_name_;
+}
+const char* Symbol::Component() const {
+  return component_;
+}
+
+float Symbol::Pss() const {
+  return static_cast<float>(Size()) / NumAliases();
+}
+
+float Symbol::PssWithoutPadding() const {
+  return Pss() - PaddingPss();
+}
+
+float Symbol::PaddingPss() const {
+  return static_cast<float>(Padding()) / NumAliases();
+}
+
+// delta symbol
+
+DeltaSymbol::DeltaSymbol(const Symbol* before, const Symbol* after)
+    : before_(before), after_(after) {
+  if (!before_ && !after_) {
+    exit(1);
+  }
+}
+
+DeltaSymbol::~DeltaSymbol() = default;
+
+int32_t DeltaSymbol::Address() const {
+  if (after_) {
+    return after_->Address();
+  }
+  return 0;
+}
+
+int32_t DeltaSymbol::Size() const {
+  if (!after_) {
+    return -before_->Size();
+  }
+  if (!before_) {
+    return after_->Size();
+  }
+  // Padding tracked in aggregate, except for padding-only symbols.
+  if (before_->SizeWithoutPadding() == 0) {
+    return after_->Padding() - before_->Padding();
+  }
+  return after_->SizeWithoutPadding() - before_->SizeWithoutPadding();
+}
+
+int32_t DeltaSymbol::Flags() const {
+  int32_t before_flags = before_ ? before_->Flags() : 0;
+  int32_t after_flags = after_ ? after_->Flags() : 0;
+  return before_flags ^ after_flags;
+}
+
+int32_t DeltaSymbol::Padding() const {
+  if (!after_) {
+    return -before_->Padding();
+  }
+  if (!before_) {
+    return after_->Padding();
+  }
+  // Padding tracked in aggregate, except for padding-only symbols.
+  if (before_->SizeWithoutPadding() == 0) {
+    return after_->Padding() - before_->Padding();
+  }
+  return 0;
+}
+
+std::string_view DeltaSymbol::FullName() const {
+  return (after_ ? after_ : before_)->FullName();
+}
+
+// Derived from |full_name|. Generated lazily and cached.
+std::string_view DeltaSymbol::TemplateName() const {
+  return (after_ ? after_ : before_)->TemplateName();
+}
+
+std::string_view DeltaSymbol::Name() const {
+  return (after_ ? after_ : before_)->Name();
+}
+
+const std::vector<Symbol*>* DeltaSymbol::Aliases() const {
+  return nullptr;
+}
+
+SectionId DeltaSymbol::Section() const {
+  return (after_ ? after_ : before_)->Section();
+}
+
+const char* DeltaSymbol::ObjectPath() const {
+  return (after_ ? after_ : before_)->ObjectPath();
+}
+
+const char* DeltaSymbol::SourcePath() const {
+  return (after_ ? after_ : before_)->SourcePath();
+}
+
+const char* DeltaSymbol::SectionName() const {
+  return (after_ ? after_ : before_)->SectionName();
+}
+
+const char* DeltaSymbol::Component() const {
+  return (after_ ? after_ : before_)->Component();
+}
+
+float DeltaSymbol::Pss() const {
+  if (!after_) {
+    return -before_->Pss();
+  }
+  if (!before_) {
+    return after_->Pss();
+  }
+  // Padding tracked in aggregate, except for padding-only symbols.
+  if (before_->SizeWithoutPadding() == 0) {
+    return after_->Pss() - before_->Pss();
+  }
+  return after_->PssWithoutPadding() - before_->PssWithoutPadding();
+}
+
+float DeltaSymbol::PssWithoutPadding() const {
+  return Pss() - PaddingPss();
+}
+
+float DeltaSymbol::PaddingPss() const {
+  if (!after_) {
+    return -before_->PaddingPss();
+  }
+  if (!before_) {
+    return after_->PaddingPss();
+  }
+  // Padding tracked in aggregate, except for padding-only symbols.
+  if (before_->SizeWithoutPadding() == 0) {
+    return after_->PaddingPss() - before_->PaddingPss();
+  }
+  return 0;
 }
 
 TreeNode::TreeNode() = default;
@@ -136,19 +243,18 @@ TreeNode::~TreeNode() {
 }
 
 std::ostream& operator<<(std::ostream& os, const Symbol& sym) {
-  return os << "Symbol(full_name=" << sym.full_name
-            << ", section=" << static_cast<char>(sym.sectionId)
-            << ", address=" << sym.address << ", size=" << sym.size
-            << ", flags=" << sym.flags << ", padding=" << sym.padding << ")";
+  return os << "Symbol(full_name=" << sym.FullName()
+            << ", section=" << static_cast<char>(sym.section_id_)
+            << ", section=" << sym.section_name_ << ", address=" << sym.address_
+            << ", size=" << sym.size_ << ", flags=" << sym.flags_
+            << ", padding=" << sym.padding_ << ")";
 }
 
 BaseSizeInfo::BaseSizeInfo() = default;
+BaseSizeInfo::BaseSizeInfo(const BaseSizeInfo&) = default;
 BaseSizeInfo::~BaseSizeInfo() = default;
 
-SizeInfo::SizeInfo() = default;
-SizeInfo::~SizeInfo() = default;
-
-SectionId SizeInfo::ShortSectionName(const char* section_name) {
+SectionId BaseSizeInfo::ShortSectionName(const char* section_name) {
   static std::map<const char*, SectionId> short_section_name_cache;
   SectionId& ret = short_section_name_cache[section_name];
   if (ret == SectionId::kNone) {
@@ -183,104 +289,19 @@ SectionId SizeInfo::ShortSectionName(const char* section_name) {
   return ret;
 }
 
-namespace {
-// Copied from /base/stl_util.h
-template <class T, class Allocator, class Value>
-void Erase(std::vector<T, Allocator>& container, const Value& value) {
-  container.erase(std::remove(container.begin(), container.end(), value),
-                  container.end());
-}
+SizeInfo::SizeInfo() = default;
+SizeInfo::~SizeInfo() = default;
 
-std::string_view GetIdPath(const Symbol& sym) {
-  return (sym.source_path && *sym.source_path) ? sym.source_path
-                                               : sym.object_path;
-}
+DeltaSizeInfo::DeltaSizeInfo(const SizeInfo* before, const SizeInfo* after)
+    : before(before), after(after) {}
 
-SymbolMatchIndex PerfectMatch(const Symbol& sym) {
-  return SymbolMatchIndex(sym.sectionId, sym.full_name, GetIdPath(sym),
-                          sym.pss);
-}
-
-SymbolMatchIndex PerfectMatchExceptSize(const Symbol& sym) {
-  return SymbolMatchIndex(sym.sectionId, sym.full_name, GetIdPath(sym), 0.0f);
-}
-
-void MatchSymbols(std::function<SymbolMatchIndex(const Symbol&)> key_func,
-                  std::vector<caspian::Symbol>* delta_symbols,
-                  std::vector<const caspian::Symbol*>* unmatched_before,
-                  std::vector<const caspian::Symbol*>* unmatched_after) {
-  // TODO(jaspercb): Accumulate added/dropped padding by section name.
-  std::unordered_map<SymbolMatchIndex,
-                     std::list<std::reference_wrapper<const caspian::Symbol*>>>
-      before_symbols_by_key;
-  for (const caspian::Symbol*& before_sym : *unmatched_before) {
-    SymbolMatchIndex key = key_func(*before_sym);
-    if (key) {
-      before_symbols_by_key[key].emplace_back(before_sym);
-    }
-  }
-
-  for (const caspian::Symbol*& after_sym : *unmatched_after) {
-    SymbolMatchIndex key = key_func(*after_sym);
-    if (key) {
-      const auto& found = before_symbols_by_key.find(key);
-      if (found != before_symbols_by_key.end() && found->second.size()) {
-        const caspian::Symbol*& before_sym = found->second.front().get();
-        found->second.pop_front();
-        delta_symbols->push_back(Symbol::DiffSymbolFrom(before_sym, after_sym));
-        before_sym = nullptr;
-        after_sym = nullptr;
-      }
-    }
-  }
-
-  Erase(*unmatched_before, nullptr);
-  Erase(*unmatched_after, nullptr);
-}
-}  // namespace
-
-DiffSizeInfo::DiffSizeInfo(SizeInfo* before, SizeInfo* after)
-    : before(before), after(after) {
-  // TODO(jaspercb): It's okay to do a first pass where we match on the raw
-  // name (from the .size file), but anything left over after that first step
-  // (hopefully <2k objects) needs to consider the derived full_name. Should
-  // do this lazily for efficiency - name derivation is costly.
-
-  std::vector<const Symbol*> unmatched_before;
-  for (const Symbol& sym : before->raw_symbols) {
-    unmatched_before.push_back(&sym);
-  }
-
-  std::vector<const Symbol*> unmatched_after;
-  for (const Symbol& sym : after->raw_symbols) {
-    unmatched_after.push_back(&sym);
-  }
-
-  // Attempt several rounds to use increasingly loose matching on unmatched
-  // symbols.  Any symbols still unmatched are tried in the next round.
-  for (const auto& key_function : {PerfectMatch, PerfectMatchExceptSize}) {
-    MatchSymbols(key_function, &raw_symbols, &unmatched_before,
-                 &unmatched_after);
-  }
-
-  // Add removals or deletions for any unmatched symbols.
-  for (const Symbol* after_sym : unmatched_after) {
-    raw_symbols.push_back(Symbol::DiffSymbolFrom(nullptr, after_sym));
-  }
-  for (const Symbol* before_sym : unmatched_before) {
-    raw_symbols.push_back(Symbol::DiffSymbolFrom(before_sym, nullptr));
-  }
-
-  for (Symbol& sym : raw_symbols) {
-    sym.size_info = this;
-  }
-}
-
-DiffSizeInfo::~DiffSizeInfo() {}
+DeltaSizeInfo::~DeltaSizeInfo() = default;
+DeltaSizeInfo::DeltaSizeInfo(const DeltaSizeInfo&) = default;
+DeltaSizeInfo& DeltaSizeInfo::operator=(const DeltaSizeInfo&) = default;
 
 void TreeNode::WriteIntoJson(Json::Value* out, int depth) {
   if (symbol) {
-    (*out)["idPath"] = std::string(symbol->IsDex() ? symbol->full_name
+    (*out)["idPath"] = std::string(symbol->IsDex() ? symbol->FullName()
                                                    : symbol->TemplateName());
   } else {
     (*out)["idPath"] = std::string(this->id_path);

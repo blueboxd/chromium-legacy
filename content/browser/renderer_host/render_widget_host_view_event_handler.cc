@@ -104,10 +104,7 @@ bool NeedsInputGrab(content::RenderWidgetHostViewBase* view) {
 
 namespace content {
 
-RenderWidgetHostViewEventHandler::Delegate::Delegate()
-    : selection_controller_client_(nullptr),
-      selection_controller_(nullptr),
-      overscroll_controller_(nullptr) {}
+RenderWidgetHostViewEventHandler::Delegate::Delegate() = default;
 
 RenderWidgetHostViewEventHandler::Delegate::~Delegate() {}
 
@@ -115,18 +112,12 @@ RenderWidgetHostViewEventHandler::RenderWidgetHostViewEventHandler(
     RenderWidgetHostImpl* host,
     RenderWidgetHostViewBase* host_view,
     Delegate* delegate)
-    : accept_return_character_(false),
-      mouse_locked_(false),
-      pinch_zoom_enabled_(content::IsPinchToZoomEnabled()),
-      set_focus_on_mouse_down_or_key_event_(false),
+    : pinch_zoom_enabled_(content::IsPinchToZoomEnabled()),
       enable_consolidated_movement_(
           base::FeatureList::IsEnabled(features::kConsolidatedMovementXY)),
       host_(host),
       host_view_(host_view),
-      popup_child_host_view_(nullptr),
-      popup_child_event_handler_(nullptr),
       delegate_(delegate),
-      window_(nullptr),
       mouse_wheel_phase_handler_(host_view),
       debug_observer_(features::IsVizHitTestingDebugEnabled()
                           ? std::make_unique<HitTestDebugKeyEventObserver>(host)

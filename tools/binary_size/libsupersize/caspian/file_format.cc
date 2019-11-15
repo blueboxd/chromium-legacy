@@ -163,27 +163,27 @@ void CalculatePadding(std::vector<Symbol>* raw_symbols) {
     Symbol& symbol = (*raw_symbols)[i];
 
     if (symbol.IsOverhead()) {
-      symbol.padding = symbol.size;
+      symbol.padding_ = symbol.size_;
     }
-    if (prev_symbol.section_name != symbol.section_name) {
-      if (seen_sections.count(symbol.section_name)) {
+    if (prev_symbol.SectionName() != symbol.SectionName()) {
+      if (seen_sections.count(symbol.section_name_)) {
         std::cerr << "Input symbols must be sorted by section, then address: "
                   << prev_symbol << ", " << symbol << std::endl;
         exit(1);
       }
-      seen_sections.insert(symbol.section_name);
+      seen_sections.insert(symbol.SectionName());
       continue;
     }
 
-    if (symbol.address <= 0 || prev_symbol.address <= 0 || !symbol.IsNative() ||
-        !prev_symbol.IsNative()) {
+    if (symbol.Address() <= 0 || prev_symbol.Address() <= 0 ||
+        !symbol.IsNative() || !prev_symbol.IsNative()) {
       continue;
     }
 
-    if (symbol.address == prev_symbol.address) {
-      if (symbol.aliases && symbol.aliases == prev_symbol.aliases) {
-        symbol.padding = prev_symbol.padding;
-        symbol.size = prev_symbol.size;
+    if (symbol.Address() == prev_symbol.Address()) {
+      if (symbol.aliases_ && symbol.aliases_ == prev_symbol.aliases_) {
+        symbol.padding_ = prev_symbol.padding_;
+        symbol.size_ = prev_symbol.size_;
         continue;
       }
       if (prev_symbol.SizeWithoutPadding() != 0) {
@@ -194,10 +194,10 @@ void CalculatePadding(std::vector<Symbol>* raw_symbols) {
       }
     }
 
-    int32_t padding = symbol.address - prev_symbol.EndAddress();
-    symbol.padding = padding;
-    symbol.size += padding;
-    if (symbol.size < 0) {
+    int32_t padding = symbol.Address() - prev_symbol.EndAddress();
+    symbol.padding_ = padding;
+    symbol.size_ += padding;
+    if (symbol.size_ < 0) {
       std::cerr << "Symbol has negative size (likely not sorted properly):"
                 << symbol << std::endl;
       std::cerr << "prev symbol: " << prev_symbol << std::endl;
@@ -326,7 +326,7 @@ void ParseSizeInfo(const char* gzipped,
       int32_t num_aliases = 0;
       char* line = strsep(&rest, "\n");
       if (*line) {
-        new_sym.full_name = strsep(&line, "\t");
+        new_sym.full_name_ = strsep(&line, "\t");
         char* first = nullptr;
         char* second = nullptr;
         if (line) {
@@ -348,16 +348,16 @@ void ParseSizeInfo(const char* gzipped,
           }
         }
       }
-      new_sym.sectionId = cur_section_id;
-      new_sym.address = cur_addresses[i];
-      new_sym.size = cur_sizes[i];
-      new_sym.section_name = cur_section_name;
-      new_sym.object_path = info->object_paths[cur_path_indices[i]];
-      new_sym.source_path = info->source_paths[cur_path_indices[i]];
+      new_sym.section_id_ = cur_section_id;
+      new_sym.address_ = cur_addresses[i];
+      new_sym.size_ = cur_sizes[i];
+      new_sym.section_name_ = cur_section_name;
+      new_sym.object_path_ = info->object_paths[cur_path_indices[i]];
+      new_sym.source_path_ = info->source_paths[cur_path_indices[i]];
       if (has_components) {
-        new_sym.component = info->components[cur_component_indices[i]];
+        new_sym.component_ = info->components[cur_component_indices[i]];
       }
-      new_sym.flags = flags;
+      new_sym.flags_ = flags;
 
       // When we encounter a symbol with an alias count, the next N symbols we
       // encounter should be placed in the same symbol group.
@@ -367,19 +367,14 @@ void ParseSizeInfo(const char* gzipped,
         alias_counter = num_aliases;
       }
       if (alias_counter > 0) {
-        new_sym.aliases = &info->alias_groups.back();
-        new_sym.aliases->push_back(&new_sym);
+        new_sym.aliases_ = &info->alias_groups.back();
+        new_sym.aliases_->push_back(&new_sym);
         alias_counter--;
       }
     }
   }
 
   CalculatePadding(&info->raw_symbols);
-
-  for (caspian::Symbol& sym : info->raw_symbols) {
-    size_t alias_count = sym.aliases ? sym.aliases->size() : 1;
-    sym.pss = static_cast<float>(sym.size) / alias_count;
-  }
 
   // If there are unparsed non-empty lines, something's gone wrong.
   CheckNoNonEmptyLinesRemain(rest);

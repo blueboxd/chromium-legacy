@@ -159,11 +159,6 @@ class MockFrameHost : public mojom::FrameHost {
   void DidChangeName(const std::string& name,
                      const std::string& unique_name) override {}
 
-  void EnforceInsecureRequestPolicy(
-      blink::WebInsecureRequestPolicy policy) override {}
-  void EnforceInsecureNavigationsSet(
-      const std::vector<uint32_t>& set) override {}
-
   void DidSetFramePolicyHeaders(
       blink::WebSandboxFlags sandbox_flags,
       const blink::ParsedFeaturePolicy& parsed_header) override {}

@@ -66,10 +66,6 @@ cvox.ChromeVox.tts;
  */
 cvox.ChromeVox.braille;
 /**
- * @type {boolean}
- */
-cvox.ChromeVox.isActive = true;
-/**
  * @type {?string}
  */
 cvox.ChromeVox.version = null;
@@ -226,11 +222,6 @@ cvox.ChromeVox.isStickyModeOn = function() {
 function $(id) {
   return document.getElementById(id);
 }
-
-/**
- * @param {Array} tabs
- */
-cvox.ChromeVox.injectChromeVoxIntoTabs = function(tabs) {};
 
 /**
  * Returns whether the document has focus, taking into account whether

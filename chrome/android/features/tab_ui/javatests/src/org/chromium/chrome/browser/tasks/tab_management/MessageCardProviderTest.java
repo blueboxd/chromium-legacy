@@ -127,7 +127,9 @@ public class MessageCardProviderTest extends DummyUiActivityTestCase {
     @Test
     @SmallTest
     public void testShowingMessage() {
-        mSuggestionService.sendAvailabilityNotification();
+        // TODO(crbug.com/1004570): Use MessageData instead of null when ready to integrate with
+        // MessageService component.
+        mSuggestionService.sendAvailabilityNotification(null);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> { mRecyclerView.startShowing(false); });
 

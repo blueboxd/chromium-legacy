@@ -15,7 +15,6 @@
 #include "android_webview/common/aw_features.h"
 #include "android_webview/public/browser/draw_gl.h"
 #include "base/bind.h"
-#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"

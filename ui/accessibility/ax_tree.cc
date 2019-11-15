@@ -249,9 +249,14 @@ struct AXTreeUpdateState {
     return base::Contains(removed_node_ids, node->id());
   }
 
+  // Returns whether this update creates a node marked by |node_id|.
+  bool IsCreatedNode(AXNode::AXID node_id) const {
+    return base::Contains(new_node_ids, node_id);
+  }
+
   // Returns whether this update creates |node|.
   bool IsCreatedNode(const AXNode* node) const {
-    return base::Contains(new_node_ids, node->id());
+    return IsCreatedNode(node->id());
   }
 
   // If this node is removed, it should be considered reparented.
@@ -556,7 +561,7 @@ AXTree::AXTree(const AXTreeUpdate& initial_state) {
 
 AXTree::~AXTree() {
   if (root_) {
-    RecursivelyNotifyNodeWillBeDeleted(root_);
+    RecursivelyNotifyNodeDeletedForTreeTeardown(root_);
     base::AutoReset<bool> update_state_resetter(&tree_update_in_progress_,
                                                 true);
     DestroyNodeAndSubtree(root_, nullptr);
@@ -1018,10 +1023,16 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
   }
 
   // Now that the unignored cached values are up to date, update observers to
-  // new nodes in the tree.
-  for (AXNode::AXID node_id : update_state.new_node_ids) {
-    NotifyNodeHasBeenReparentedOrCreated(GetFromId(node_id), &update_state);
+  // the nodes that were deleted from the tree but not reparented.
+  for (AXNode::AXID node_id : update_state.removed_node_ids) {
+    if (!update_state.IsCreatedNode(node_id))
+      NotifyNodeHasBeenDeleted(node_id);
   }
+
+  // Now that the unignored cached values are up to date, update observers to
+  // new nodes in the tree.
+  for (AXNode::AXID node_id : update_state.new_node_ids)
+    NotifyNodeHasBeenReparentedOrCreated(GetFromId(node_id), &update_state);
 
   // Now that the unignored cached values are up to date, update observers to
   // node changes.
@@ -1046,9 +1057,8 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
       observer.OnNodeChanged(this, node);
   }
 
-  for (AXTreeObserver& observer : observers_) {
+  for (AXTreeObserver& observer : observers_)
     observer.OnAtomicUpdateFinished(this, root_->id() != old_root_id, changes);
-  }
 
   return true;
 }
@@ -1405,15 +1415,25 @@ void AXTree::NotifyNodeWillBeReparentedOrDeleted(
   }
 }
 
-void AXTree::RecursivelyNotifyNodeWillBeDeleted(AXNode* node) {
+void AXTree::RecursivelyNotifyNodeDeletedForTreeTeardown(AXNode* node) {
   DCHECK(!GetTreeUpdateInProgressState());
   if (node->id() == AXNode::kInvalidAXID)
     return;
 
   for (AXTreeObserver& observer : observers_)
-    observer.OnNodeWillBeDeleted(this, node);
+    observer.OnNodeDeleted(this, node->id());
   for (auto* child : node->children())
-    RecursivelyNotifyNodeWillBeDeleted(child);
+    RecursivelyNotifyNodeDeletedForTreeTeardown(child);
+}
+
+void AXTree::NotifyNodeHasBeenDeleted(AXNode::AXID node_id) {
+  DCHECK(!GetTreeUpdateInProgressState());
+
+  if (node_id == AXNode::kInvalidAXID)
+    return;
+
+  for (AXTreeObserver& observer : observers_)
+    observer.OnNodeDeleted(this, node_id);
 }
 
 void AXTree::NotifyNodeHasBeenReparentedOrCreated(

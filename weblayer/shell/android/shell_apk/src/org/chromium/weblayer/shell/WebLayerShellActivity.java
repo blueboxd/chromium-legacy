@@ -29,6 +29,7 @@ import android.widget.TextView.OnEditorActionListener;
 
 import org.chromium.weblayer.Browser;
 import org.chromium.weblayer.DownloadCallback;
+import org.chromium.weblayer.ErrorPageCallback;
 import org.chromium.weblayer.FullscreenCallback;
 import org.chromium.weblayer.NavigationCallback;
 import org.chromium.weblayer.NavigationController;
@@ -168,7 +169,7 @@ public class WebLayerShellActivity extends FragmentActivity {
         mTab = mBrowser.getActiveTab();
         String startupUrl = getUrlFromIntent(getIntent());
         if (TextUtils.isEmpty(startupUrl)) {
-            startupUrl = "http://google.com";
+            startupUrl = "https://google.com";
         }
         loadUrl(startupUrl);
         mTab.registerTabCallback(new TabCallback() {
@@ -197,6 +198,13 @@ public class WebLayerShellActivity extends FragmentActivity {
                 request.setNotificationVisibility(
                         DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
                 getSystemService(DownloadManager.class).enqueue(request);
+            }
+        });
+        mTab.setErrorPageCallback(new ErrorPageCallback() {
+            @Override
+            public boolean onBackToSafety() {
+                fragment.getActivity().onBackPressed();
+                return true;
             }
         });
     }

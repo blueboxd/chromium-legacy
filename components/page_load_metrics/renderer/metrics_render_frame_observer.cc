@@ -67,7 +67,10 @@ MetricsRenderFrameObserver::MetricsRenderFrameObserver(
     : content::RenderFrameObserver(render_frame),
       scoped_ad_resource_observer_(this) {}
 
-MetricsRenderFrameObserver::~MetricsRenderFrameObserver() {}
+MetricsRenderFrameObserver::~MetricsRenderFrameObserver() {
+  if (page_timing_metrics_sender_)
+    page_timing_metrics_sender_->SendLatest();
+}
 
 void MetricsRenderFrameObserver::DidChangePerformanceTiming() {
   SendMetrics();
@@ -196,7 +199,10 @@ void MetricsRenderFrameObserver::DidLoadResourceFromMemoryCache(
 }
 
 void MetricsRenderFrameObserver::FrameDetached() {
-  page_timing_metrics_sender_.reset();
+  if (page_timing_metrics_sender_) {
+    page_timing_metrics_sender_->SendLatest();
+    page_timing_metrics_sender_.reset();
+  }
 }
 
 void MetricsRenderFrameObserver::ReadyToCommitNavigation(
@@ -205,6 +211,11 @@ void MetricsRenderFrameObserver::ReadyToCommitNavigation(
   provisional_frame_resource_data_use_ =
       std::make_unique<PageResourceDataUse>();
   provisional_frame_resource_id_ = 0;
+
+  // Send current metrics before the next page load commits. Don't reset here
+  // as it may be a same document load.
+  if (page_timing_metrics_sender_)
+    page_timing_metrics_sender_->SendLatest();
 }
 
 void MetricsRenderFrameObserver::DidFailProvisionalLoad() {
@@ -312,7 +323,7 @@ void MetricsRenderFrameObserver::SendMetrics() {
     return;
   if (HasNoRenderFrame())
     return;
-  page_timing_metrics_sender_->Send(GetTiming());
+  page_timing_metrics_sender_->SendSoon(GetTiming());
 }
 
 mojom::PageLoadTimingPtr MetricsRenderFrameObserver::GetTiming() const {

@@ -7,9 +7,11 @@
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/home_screen/home_screen_delegate.h"
 #include "ash/public/cpp/shelf_config.h"
+#include "ash/shelf/shelf_metrics.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_session.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
 #include "base/optional.h"
 #include "base/time/default_tick_clock.h"
@@ -29,8 +31,8 @@ constexpr float kTargetHomeScale = 0.92f;
 // The home UI will be scaled down towards center of the screen as drag location
 // approaches the threshold for the transition to overview. The target threshold
 // for scaling is extended above the actual threshold to make the UI change more
-// noticable to the user as drag approaches the threshold - this is the ratio
-// by which the projecrted threshold is extended.
+// noticeable to the user as drag approaches the threshold - this is the ratio
+// by which the projected threshold is extended.
 constexpr float kExtendedVerticalThresholdForOverviewTransitionRatio = 0.5f;
 
 // The amount of time the drag has to remain still before the transition to the
@@ -66,7 +68,7 @@ SwipeHomeToOverviewController::~SwipeHomeToOverviewController() {
   CancelDrag();
 }
 
-void SwipeHomeToOverviewController::Drag(const gfx::Point& location_in_screen,
+void SwipeHomeToOverviewController::Drag(const gfx::PointF& location_in_screen,
                                          float scroll_x,
                                          float scroll_y) {
   if (state_ == State::kFinished)
@@ -124,11 +126,11 @@ void SwipeHomeToOverviewController::Drag(const gfx::Point& location_in_screen,
   const float distance = location_in_screen.y() - extended_threshold;
   const float target_distance =
       kVerticalThresholdForOverviewTransition *
-      (1 + kExtendedVerticalThresholdForOverviewTransitionRatio);
+      (1.f + kExtendedVerticalThresholdForOverviewTransitionRatio);
 
   const float progress = gfx::Tween::CalculateValue(
       gfx::Tween::FAST_OUT_SLOW_IN,
-      base::ClampToRange(1 - distance / target_distance, 0.0f, 1.0f));
+      base::ClampToRange(1.f - distance / target_distance, 0.0f, 1.0f));
 
   float scale = gfx::Tween::FloatValueBetween(progress, 1.0f, kTargetHomeScale);
   Shell::Get()
@@ -140,7 +142,7 @@ void SwipeHomeToOverviewController::Drag(const gfx::Point& location_in_screen,
 }
 
 void SwipeHomeToOverviewController::EndDrag(
-    const gfx::Point& location_in_screen,
+    const gfx::PointF& location_in_screen,
     base::Optional<float> velocity_y) {
   // Overview is triggered by |overview_transition_timer_|. If EndDrag()
   // is called before the timer fires, the gesture is canceled.
@@ -154,10 +156,12 @@ void SwipeHomeToOverviewController::CancelDrag() {
   }
 
   overview_transition_timer_.Stop();
-  last_location_in_screen_ = gfx::Point();
+  last_location_in_screen_ = gfx::PointF();
   overview_transition_threshold_y_ = 0;
   state_ = State::kFinished;
 
+  UMA_HISTOGRAM_ENUMERATION(kEnterOverviewHistogramName,
+                            EnterOverviewFromHomeLauncher::kCanceled);
   Shell::Get()
       ->home_screen_controller()
       ->delegate()
@@ -175,10 +179,12 @@ void SwipeHomeToOverviewController::ScheduleFinalizeDragAndShowOverview() {
 }
 
 void SwipeHomeToOverviewController::FinalizeDragAndShowOverview() {
-  last_location_in_screen_ = gfx::Point();
+  last_location_in_screen_ = gfx::PointF();
   state_ = State::kFinished;
   overview_transition_threshold_y_ = 0;
 
+  UMA_HISTOGRAM_ENUMERATION(kEnterOverviewHistogramName,
+                            EnterOverviewFromHomeLauncher::kSuccess);
   Shell::Get()->overview_controller()->StartOverview();
 }
 

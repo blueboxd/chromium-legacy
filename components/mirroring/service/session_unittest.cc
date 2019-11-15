@@ -272,7 +272,7 @@ class SessionTest : public mojom::ResourceProvider,
       EXPECT_CALL(*this, OnOutboundMessage("OFFER")).Times(1);
       // The start of remoting is expected to fail.
       EXPECT_CALL(remoting_source_,
-                  OnStartFailed(RemotingStartFailReason::SERVICE_NOT_CONNECTED))
+                  OnStartFailed(RemotingStartFailReason::INVALID_ANSWER_MESSAGE))
           .Times(1);
       EXPECT_CALL(remoting_source_, OnSinkGone()).Times(AtLeast(1));
     }

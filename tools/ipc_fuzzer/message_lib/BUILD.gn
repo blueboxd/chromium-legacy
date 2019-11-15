@@ -28,7 +28,7 @@ static_library("ipc_message_lib") {
     "//skia",
     "//third_party/blink/public:blink",
     "//third_party/blink/public:blink_headers",
-    "//third_party/webrtc_overrides",
+    "//third_party/webrtc_overrides:webrtc_component",
     "//ui/accessibility:ax_enums_mojo",
   ]
   if (is_win) {

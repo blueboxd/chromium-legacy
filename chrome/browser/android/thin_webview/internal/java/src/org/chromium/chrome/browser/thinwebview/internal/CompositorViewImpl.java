@@ -81,7 +81,8 @@ public class CompositorViewImpl implements CompositorView {
                     SurfaceHolder surfaceHolder, int format, int width, int height) {
                 if (mNativeCompositorViewImpl == 0) return;
                 CompositorViewImplJni.get().surfaceChanged(mNativeCompositorViewImpl,
-                        CompositorViewImpl.this, format, width, height, surfaceHolder.getSurface());
+                        CompositorViewImpl.this, format, width, height, true,
+                        surfaceHolder.getSurface());
             }
 
             @Override
@@ -106,7 +107,7 @@ public class CompositorViewImpl implements CompositorView {
                     SurfaceTexture surfaceTexture, int width, int height) {
                 if (mNativeCompositorViewImpl == 0) return;
                 CompositorViewImplJni.get().surfaceChanged(mNativeCompositorViewImpl,
-                        CompositorViewImpl.this, PixelFormat.OPAQUE, width, height,
+                        CompositorViewImpl.this, PixelFormat.OPAQUE, width, height, false,
                         new Surface(surfaceTexture));
             }
 
@@ -125,7 +126,7 @@ public class CompositorViewImpl implements CompositorView {
                 CompositorViewImplJni.get().surfaceCreated(
                         mNativeCompositorViewImpl, CompositorViewImpl.this);
                 CompositorViewImplJni.get().surfaceChanged(mNativeCompositorViewImpl,
-                        CompositorViewImpl.this, PixelFormat.OPAQUE, width, height,
+                        CompositorViewImpl.this, PixelFormat.OPAQUE, width, height, false,
                         new Surface(surfaceTexture));
             }
         });
@@ -157,7 +158,7 @@ public class CompositorViewImpl implements CompositorView {
         void surfaceCreated(long nativeCompositorViewImpl, CompositorViewImpl caller);
         void surfaceDestroyed(long nativeCompositorViewImpl, CompositorViewImpl caller);
         void surfaceChanged(long nativeCompositorViewImpl, CompositorViewImpl caller, int format,
-                int width, int height, Surface surface);
+                int width, int height, boolean canBeUsedWithSurfaceControl, Surface surface);
         void setNeedsComposite(long nativeCompositorViewImpl, CompositorViewImpl caller);
     }
 }

@@ -43,11 +43,15 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
                              views::View* tab_contents_container);
   ~WebUITabStripContainerView() override;
 
+  static bool UseTouchableTabStrip();
+
   views::NativeViewHost* GetNativeViewHost();
 
   // Control buttons. Each must only be called once.
   std::unique_ptr<ToolbarButton> CreateNewTabButton();
   std::unique_ptr<views::View> CreateTabCounter();
+
+  void UpdateButtons();
 
  private:
   class AutoCloser;
@@ -85,8 +89,8 @@ class WebUITabStripContainerView : public TabStripUI::Embedder,
   Browser* const browser_;
   views::WebView* const web_view_;
   views::View* const tab_contents_container_;
-  views::View* new_tab_button_ = nullptr;
-  views::View* tab_counter_ = nullptr;
+  ToolbarButton* new_tab_button_ = nullptr;
+  views::LabelButton* tab_counter_ = nullptr;
 
   int desired_height_ = 0;
 

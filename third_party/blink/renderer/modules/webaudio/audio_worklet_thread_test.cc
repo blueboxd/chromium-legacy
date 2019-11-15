@@ -5,8 +5,12 @@
 #include "third_party/blink/renderer/modules/webaudio/audio_worklet_thread.h"
 
 #include <memory>
+#include "base/feature_list.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/module_record.h"
@@ -25,6 +29,7 @@
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
+#include "third_party/blink/renderer/platform/wtf/threading.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
@@ -37,10 +42,13 @@ namespace blink {
 class AudioWorkletThreadTest : public PageTestBase {
  public:
   void SetUp() override {
-    AudioWorkletThread::EnsureSharedBackingThread();
     PageTestBase::SetUp(IntSize());
     NavigateTo(KURL("https://example.com/"));
     reporting_proxy_ = std::make_unique<WorkerReportingProxy>();
+  }
+
+  void TearDown() override {
+    AudioWorkletThread::ClearSharedBackingThread();
   }
 
   std::unique_ptr<AudioWorkletThread> CreateAudioWorkletThread() {
@@ -77,6 +85,20 @@ class AudioWorkletThreadTest : public PageTestBase {
     wait_event.Wait();
   }
 
+  void CheckWorkletThreadPriority(WorkerThread* thread,
+                                  base::ThreadPriority expected_priority) {
+    base::WaitableEvent wait_event;
+    PostCrossThreadTask(
+        *thread->GetWorkerBackingThread().BackingThread().GetTaskRunner(),
+        FROM_HERE,
+        CrossThreadBindOnce(&AudioWorkletThreadTest::CheckThreadPriority,
+                            CrossThreadUnretained(this),
+                            CrossThreadUnretained(thread),
+                            expected_priority,
+                            CrossThreadUnretained(&wait_event)));
+    wait_event.Wait();
+  }
+
  private:
   void ExecuteScriptInWorklet(WorkerThread* thread,
                               base::WaitableEvent* wait_event) {
@@ -96,6 +118,22 @@ class AudioWorkletThreadTest : public PageTestBase {
     ScriptValue value = ModuleRecord::Evaluate(script_state, module, js_url);
 
     EXPECT_TRUE(value.IsEmpty());
+    wait_event->Signal();
+  }
+
+  void CheckThreadPriority(WorkerThread* thread,
+                           base::ThreadPriority expected_priority,
+                           base::WaitableEvent* wait_event) {
+    ASSERT_TRUE(thread->IsCurrentThread());
+// TODO(crbug.com/1022888): The worklet thread priority is always NORMAL on
+// linux.
+#if defined(OS_LINUX)
+    EXPECT_EQ(base::PlatformThread::GetCurrentThreadPriority(),
+              base::ThreadPriority::NORMAL);
+#else
+    EXPECT_EQ(base::PlatformThread::GetCurrentThreadPriority(),
+              expected_priority);
+#endif
     wait_event->Signal();
   }
 
@@ -193,6 +231,41 @@ TEST_F(AudioWorkletThreadTest, CreatingSecondDuringTerminationOfFirst) {
   CheckWorkletCanExecuteScript(second_worklet.get());
   second_worklet->Terminate();
   second_worklet->WaitForShutdownForTesting();
+}
+
+class AudioWorkletThreadDisplayPriorityTest : public AudioWorkletThreadTest {
+ public:
+  AudioWorkletThreadDisplayPriorityTest() {
+    feature_list_.InitAndDisableFeature(features::kAudioWorkletRealtimeThread);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_F(AudioWorkletThreadDisplayPriorityTest, DisplayPriority) {
+  std::unique_ptr<AudioWorkletThread> worklet = CreateAudioWorkletThread();
+  CheckWorkletThreadPriority(worklet.get(), base::ThreadPriority::DISPLAY);
+  worklet->Terminate();
+  worklet->WaitForShutdownForTesting();
+}
+
+class AudioWorkletThreadRealtimePriorityTest : public AudioWorkletThreadTest {
+ public:
+  AudioWorkletThreadRealtimePriorityTest() {
+    feature_list_.InitAndEnableFeature(features::kAudioWorkletRealtimeThread);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_F(AudioWorkletThreadRealtimePriorityTest, RealtimePriority) {
+  std::unique_ptr<AudioWorkletThread> worklet = CreateAudioWorkletThread();
+  CheckWorkletThreadPriority(worklet.get(),
+                             base::ThreadPriority::REALTIME_AUDIO);
+  worklet->Terminate();
+  worklet->WaitForShutdownForTesting();
 }
 
 }  // namespace blink

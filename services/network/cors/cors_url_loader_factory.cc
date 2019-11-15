@@ -49,11 +49,13 @@ CorsURLLoaderFactory::CorsURLLoaderFactory(
   DCHECK(origin_access_list_);
   DCHECK_NE(mojom::kInvalidProcessId, process_id_);
   factory_bound_origin_access_list_ = std::make_unique<OriginAccessList>();
-  if (params->factory_bound_allow_patterns.size()) {
-    DCHECK(params->request_initiator_site_lock);
+  if (params->factory_bound_access_patterns) {
     factory_bound_origin_access_list_->SetAllowListForOrigin(
-        *params->request_initiator_site_lock,
-        params->factory_bound_allow_patterns);
+        params->factory_bound_access_patterns->source_origin,
+        params->factory_bound_access_patterns->allow_patterns);
+    factory_bound_origin_access_list_->SetBlockListForOrigin(
+        params->factory_bound_access_patterns->source_origin,
+        params->factory_bound_access_patterns->block_patterns);
   }
   network_loader_factory_ =
       network_loader_factory_for_testing
@@ -216,25 +218,20 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
       // specify the request_initiator_site_lock in URLLoaderFactories given to
       // a renderer process.  Once https://crbug.com/891872 is fixed, the case
       // below should return |false| (i.e. = bad message).
-      DCHECK_NE(process_id_, mojom::kBrowserProcessId);
       break;
 
     case InitiatorLockCompatibility::kNoInitiator:
       // Requests from the renderer need to always specify an initiator.
-      DCHECK_NE(process_id_, mojom::kBrowserProcessId);
+      NOTREACHED();
       mojo::ReportBadMessage(
           "CorsURLLoaderFactory: no initiator in a renderer request");
       return false;
 
     case InitiatorLockCompatibility::kIncorrectLock:
       // Requests from the renderer need to always specify a correct initiator.
-      DCHECK_NE(process_id_, mojom::kBrowserProcessId);
-      // TODO(lukasza): Report this as a bad message (or use the lock instead
-      // of the renderer-reported value).  Before we can do this, we need to
-      // ensure via UMA that this rarely happens or has low impact.  One known
-      // case are probably non-universal-access plugins (like PNaCl) which
-      // wouldn't be covered by the kExcludedUniversalAccessPlugin exception
-      // above.
+      NOTREACHED();
+      // TODO(lukasza): https://crbug.com/920634: Report bad message and return
+      // false below.
       break;
   }
 

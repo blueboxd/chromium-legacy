@@ -16,12 +16,28 @@ namespace ui {
 
 class ColorMixer;
 
-// ColorTransform is a function which transforms an |input| color, optionally
-// using a |mixer| (to obtain other colors).  ColorTransforms can be chained
-// together in ColorRecipes, where each will be applied to the preceding
-// transform's output.
-using ColorTransform =
+// Callback is a function which transforms an |input| color, optionally using a
+// |mixer| (to obtain other colors).
+using Callback =
     base::RepeatingCallback<SkColor(SkColor input, const ColorMixer& mixer)>;
+
+// ColorTransform wraps Callback and can be chained together in ColorRecipes,
+// where each will be applied to the preceding transform's output.
+class COMPONENT_EXPORT(COLOR) ColorTransform {
+ public:
+  // Allows simple conversion from a Callback to a ColorTransform.
+  ColorTransform(Callback callback);
+  // Creates a transform that returns the supplied |color|.
+  ColorTransform(SkColor color);
+  ColorTransform(const ColorTransform&);
+  ColorTransform& operator=(const ColorTransform&);
+  ~ColorTransform();
+
+  SkColor Run(SkColor input_color, const ColorMixer& mixer) const;
+
+ private:
+  Callback callback_;
+};
 
 // Functions to create common transforms:
 
@@ -65,9 +81,6 @@ COMPONENT_EXPORT(COLOR) ColorTransform ContrastInvert(ColorTransform transform);
 // |transform|.
 COMPONENT_EXPORT(COLOR)
 ColorTransform DeriveDefaultIconColor(ColorTransform transform);
-
-// A transform which outputs |color|.
-COMPONENT_EXPORT(COLOR) ColorTransform FromColor(SkColor color);
 
 // A transform which returns the color |id| from set |set_id|.
 COMPONENT_EXPORT(COLOR)

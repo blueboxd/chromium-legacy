@@ -8,7 +8,6 @@
 #include <string>
 
 #include "ash/public/cpp/ash_public_export.h"
-#include "base/hash/hash.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 
@@ -38,6 +37,7 @@ class ASH_PUBLIC_EXPORT ProactiveSuggestions
   // Returns a fast hash representation of the given |proactive_suggestions|.
   static size_t ToHash(const ProactiveSuggestions* proactive_suggestions);
 
+  size_t hash() const { return hash_; }
   int category() const { return category_; }
   const std::string& description() const { return description_; }
   const std::string& search_query() const { return search_query_; }
@@ -48,6 +48,7 @@ class ASH_PUBLIC_EXPORT ProactiveSuggestions
   friend class base::RefCounted<ProactiveSuggestions>;
   ~ProactiveSuggestions();
 
+  const size_t hash_;
   const int category_;
   const std::string description_;
   const std::string search_query_;
@@ -67,13 +68,7 @@ template <>
 struct hash<::ash::ProactiveSuggestions> {
   size_t operator()(
       const ::ash::ProactiveSuggestions& proactive_suggestions) const {
-    size_t description = base::FastHash(proactive_suggestions.description());
-    size_t search_query = base::FastHash(proactive_suggestions.search_query());
-    size_t html = base::FastHash(proactive_suggestions.html());
-
-    size_t hash = base::HashInts(proactive_suggestions.category(), description);
-    hash = base::HashInts(hash, search_query);
-    return base::HashInts(hash, html);
+    return proactive_suggestions.hash();
   }
 };
 

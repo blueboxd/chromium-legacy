@@ -105,6 +105,8 @@ void SelectLastTab(
 void DuplicateTab(Browser* browser);
 bool CanDuplicateTab(const Browser* browser);
 bool CanDuplicateKeyboardFocusedTab(const Browser* browser);
+bool CanCloseTabsToRight(const Browser* browser);
+bool CanCloseOtherTabs(const Browser* browser);
 content::WebContents* DuplicateTabAt(Browser* browser, int index);
 bool CanDuplicateTabAt(const Browser* browser, int index);
 void MuteSite(Browser* browser);
@@ -114,6 +116,8 @@ bool HasKeyboardFocusedTab(const Browser* browser);
 void PinKeyboardFocusedTab(Browser* browser);
 void DuplicateKeyboardFocusedTab(Browser* browser);
 void ConvertPopupToTabbedBrowser(Browser* browser);
+void CloseTabsToRight(Browser* browser);
+void CloseOtherTabs(Browser* browser);
 void Exit();
 void BookmarkCurrentTabIgnoringExtensionOverrides(Browser* browser);
 void BookmarkCurrentTabAllowingExtensionOverrides(Browser* browser);

@@ -12,6 +12,7 @@ import android.content.ComponentCallbacks;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
@@ -35,6 +36,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
 import org.chromium.chrome.browser.widget.ScrimView;
@@ -52,6 +54,7 @@ public class TabGridDialogParent
     private static final int DIALOG_ANIMATION_DURATION = 300;
     private static final int DIALOG_ALPHA_ANIMATION_DURATION = 150;
     private static final int CARD_FADE_ANIMATION_DURATION = 50;
+    private static Callback<RectF> sSourceRectCallbackForTesting;
     @IntDef({UngroupBarStatus.SHOW, UngroupBarStatus.HIDE, UngroupBarStatus.HOVERED})
     @Retention(RetentionPolicy.SOURCE)
     public @interface UngroupBarStatus {
@@ -274,11 +277,11 @@ public class TabGridDialogParent
         });
     }
 
-    void setupDialogAnimation(AnimationParams animationParams) {
+    void setupDialogAnimation(View sourceView) {
         // In case where user jumps to a new page from dialog, clean existing animations in
         // mHideDialogAnimation and play basic fade out instead of zooming back to corresponding tab
         // grid card.
-        if (animationParams == null) {
+        if (sourceView == null) {
             mShowDialogAnimation = new AnimatorSet();
             mShowDialogAnimation.play(mBasicFadeInAnimation);
             mShowDialogAnimation.removeAllListeners();
@@ -291,8 +294,13 @@ public class TabGridDialogParent
             return;
         }
 
-        Rect rect = animationParams.sourceRect;
-        mItemView = animationParams.sourceView;
+        mItemView = sourceView;
+        Rect rect = new Rect();
+        mItemView.getGlobalVisibleRect(rect);
+        // Offset by CompositeViewHolder top offset.
+        Rect parentRect = new Rect();
+        mParent.getGlobalVisibleRect(parentRect);
+        rect.offset(0, -parentRect.top);
         // Setup a dummy animation card that looks the same as the original tab grid card for
         // animation.
         updateAnimationCardView(mItemView);
@@ -304,9 +312,13 @@ public class TabGridDialogParent
 
         // Calculate position and size info about the original tab grid card.
         float sourceLeft = rect.left + mTabGridCardPadding;
-        float sourceTop = rect.top + mToolbarHeight + mTabGridCardPadding;
+        float sourceTop = rect.top + mTabGridCardPadding;
         float sourceHeight = rect.height() - 2 * mTabGridCardPadding;
         float sourceWidth = rect.width() - 2 * mTabGridCardPadding;
+        if (sSourceRectCallbackForTesting != null) {
+            sSourceRectCallbackForTesting.onResult(new RectF(
+                    sourceLeft, sourceTop, sourceLeft + sourceWidth, sourceTop + sourceHeight));
+        }
 
         // Setup animation position info and scale ratio of the background frame.
         float frameInitYPosition = -(dialogHeight / 2 + mTopMargin - sourceHeight / 2 - sourceTop);
@@ -819,5 +831,10 @@ public class TabGridDialogParent
     @VisibleForTesting
     int getUngroupBarTextAppearanceForTesting() {
         return mUngroupBarTextAppearance;
+    }
+
+    @VisibleForTesting
+    static void setSourceRectCallbackForTesting(Callback<RectF> callback) {
+        sSourceRectCallbackForTesting = callback;
     }
 }

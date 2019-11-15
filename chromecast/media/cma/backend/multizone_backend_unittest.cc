@@ -368,10 +368,7 @@ void MultizoneBackendTest::OnEndOfStream() {
             kMaxRenderingDelayErrorUs);
 }
 
-// TODO(b/143135800): The new mixer backend didn't calculate the rendering delay
-// correctly when playback rate changes. Temporary disable the test to unblock
-// PoG.
-TEST_P(MultizoneBackendTest, DISABLED_RenderingDelay) {
+TEST_P(MultizoneBackendTest, RenderingDelay) {
   const TestParams& params = GetParam();
   int sample_rate = testing::get<0>(params);
   float playback_rate = testing::get<1>(params);
@@ -383,7 +380,7 @@ TEST_P(MultizoneBackendTest, DISABLED_RenderingDelay) {
   Start(playback_rate);
 }
 
-TEST_F(MultizoneBackendTest, DISABLED_RenderingDelayWithMultipleRateChanges) {
+TEST_F(MultizoneBackendTest, RenderingDelayWithMultipleRateChanges) {
   Initialize(48000 /* sample_rate */, 10 /* playback_rate_change_count */);
   AddEffectsStreams();
   Start(1.0f /* playback_rate */);

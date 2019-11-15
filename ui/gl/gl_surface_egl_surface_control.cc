@@ -499,7 +499,8 @@ void GLSurfaceEGLSurfaceControl::SetDisplayTransform(
 gfx::Rect GLSurfaceEGLSurfaceControl::ApplyDisplayInverse(
     const gfx::Rect& input) const {
   gfx::Transform display_inverse = gfx::OverlayTransformToTransform(
-      gfx::InvertOverlayTransform(display_transform_), window_rect_.size());
+      gfx::InvertOverlayTransform(display_transform_),
+      gfx::SizeF(window_rect_.size()));
   return cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
       display_inverse, input);
 }

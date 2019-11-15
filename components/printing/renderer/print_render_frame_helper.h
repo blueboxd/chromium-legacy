@@ -170,7 +170,8 @@ class PrintRenderFrameHelper
   };
 
   // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
+  // numeric values should never be reused.  Updates need to be reflected in
+  // enum PrintPreviewFailureType in tools/metrics/histograms/enums.xml.
   enum PrintPreviewErrorBuckets {
     PREVIEW_ERROR_NONE = 0,  // Always first.
     PREVIEW_ERROR_BAD_SETTING = 1,
@@ -180,6 +181,7 @@ class PrintRenderFrameHelper
     PREVIEW_ERROR_MAC_DRAFT_METAFILE_INIT_FAILED_DEPRECATED = 5,
     PREVIEW_ERROR_PAGE_RENDERED_WITHOUT_METAFILE_DEPRECATED = 6,
     PREVIEW_ERROR_INVALID_PRINTER_SETTINGS = 7,
+    PREVIEW_ERROR_METAFILE_CAPTURE_FAILED = 8,
     PREVIEW_ERROR_LAST_ENUM  // Always last.
   };
 
@@ -267,6 +269,7 @@ class PrintRenderFrameHelper
 
   // Called after a preview document has been created by a PrintRenderer.
   void OnPreviewDocumentCreated(
+      int document_cookie,
       base::TimeTicks begin_time,
       base::ReadOnlySharedMemoryRegion preview_document_region);
 

@@ -132,7 +132,7 @@ DesktopAutomationHandler.prototype = {
 
   /** @override */
   willHandleEvent_: function(evt) {
-    return !cvox.ChromeVox.isActive;
+    return false;
   },
 
   /**

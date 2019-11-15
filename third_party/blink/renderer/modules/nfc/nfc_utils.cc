@@ -71,9 +71,6 @@ DOMException* NDEFErrorTypeToDOMException(
     case device::mojom::blink::NDEFErrorType::OPERATION_CANCELLED:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kAbortError, "The NFC operation was cancelled.");
-    case device::mojom::blink::NDEFErrorType::TIMER_EXPIRED:
-      return MakeGarbageCollected<DOMException>(DOMExceptionCode::kTimeoutError,
-                                                "NFC operation has timed out.");
     case device::mojom::blink::NDEFErrorType::CANNOT_CANCEL:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kNoModificationAllowedError,

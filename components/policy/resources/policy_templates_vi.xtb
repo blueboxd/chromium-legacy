@@ -582,15 +582,15 @@
       Nếu bạn bật tùy chọn cài đặt này, thì dịch vụ bảo vệ mật khẩu sẽ ghi lại vân tay số của mật khẩu trên các URL này cho mục đích phát hiện trường hợp sử dụng lại mật khẩu.
       Nếu bạn tắt hoặc không đặt tùy chọn cài đặt này, thì dịch vụ bảo vệ mật khẩu sẽ ghi lại vân tay số của mật khẩu trên trang web https://accounts.google.com.
       Chính sách này chỉ có trên các phiên bản Windows liên kết với miền <ph name="MS_AD_NAME" /> hoặc phiên bản Windows 10 Pro hay Enterprise đã đăng ký quản lý thiết bị.</translation>
-<translation id="1910704279188129272">Cho phép đặt giới hạn về mức sử dụng của mỗi ứng dụng.
-        Bạn có thể áp dụng giới hạn về mức sử dụng cho các ứng dụng đã cài đặt trên <ph name="PRODUCT_OS_NAME" /> đối với người dùng cụ thể.
+<translation id="1910704279188129272">Cho phép đặt giới hạn sử dụng cho mỗi ứng dụng.
+        Bạn có thể áp dụng giới hạn sử dụng cho các ứng dụng đã cài đặt trên <ph name="PRODUCT_OS_NAME" /> đối với người dùng cụ thể.
         Các giới hạn phải được chỉ định trong danh sách |app_limits|. Chỉ được phép áp dụng một giới hạn cho mỗi ứng dụng. Các ứng dụng không có trong danh sách này sẽ không bị giới hạn.
-        Bạn không thể chặn các ứng dụng thiết yếu với hệ điều hành. Hệ thống sẽ bỏ qua các giới hạn áp dụng cho những ứng dụng đó.
-        Mỗi |app_id| chỉ xác định một ứng dụng. Vì mỗi loại ứng dụng có thể dùng định dạng mã nhận dạng khác nhau, nên bạn cần chỉ định |app_type| ngay cạnh |app_id|.
-        Giới hạn thời gian của mỗi ứng dụng hiện chỉ hỗ trợ các ứng dụng |ARC|. Tên gói Android được dùng làm |app_id|.
-        Chúng tôi sẽ hỗ trợ thêm các loại ứng dụng khác trong tương lai. Còn bây giờ, bạn vẫn có thể chỉ định các ứng dụng này trong chính sách, nhưng các giới hạn sẽ không có hiệu lực.
+        Bạn không thể chặn các ứng dụng thiết yếu với hệ điều hành. Các giới hạn áp dụng cho những ứng dụng đó sẽ bị bỏ qua.
+        Ứng dụng được xác định duy nhất bằng |app_id|. Vì mỗi loại ứng dụng có thể dùng định dạng mã nhận dạng khác nhau, nên bạn cần chỉ định |app_type| ngay cạnh |app_id|.
+        Giới hạn thời gian cho mỗi ứng dụng hiện chỉ hỗ trợ các ứng dụng |ARC|. Tên gói Android được dùng làm |app_id|.
+        Các loại ứng dụng khác sẽ được hỗ trợ trong tương lai. Còn bây giờ, bạn vẫn có thể chỉ định các ứng dụng này trong chính sách, nhưng các giới hạn sẽ không có hiệu lực.
         Hiện có 2 loại giới hạn: |BLOCK| và |TIME_LIMIT|.
-        |BLOCK| khiến người dùng không thể sử dụng ứng dụng. Nếu bạn chỉ định |daily_limit_mins| cùng với giới hạn |BLOCK| thì hệ thống sẽ bỏ qua |daily_limit_mins|.
+        |BLOCK| khiến người dùng không thể sử dụng ứng dụng. Nếu bạn chỉ định |daily_limit_mins| cùng với giới hạn |BLOCK| thì |daily_limit_mins| sẽ bị bỏ qua.
         |TIME_LIMITS| áp dụng giới hạn mức sử dụng hằng ngày và khiến người dùng không thể sử dụng ứng dụng sau khi đạt đến giới hạn đó vào ngày cụ thể. Giới hạn mức sử dụng được chỉ định theo |daily_limit_mins|. Hằng ngày, hệ thống sẽ đặt lại giới hạn mức sử dụng vào thời gian (theo giờ UTC) đã chỉ định trong |reset_at|.
         Chính sách này chỉ dùng cho người dùng là trẻ em.
         Chính sách này sẽ bổ sung cho 'UsageTimeLimit'. Các giới hạn đã chỉ định trong 'UsageTimeLimit' như thời gian sử dụng thiết bị và giờ đi ngủ sẽ được thực thi bất kể 'PerAppTimeLimits' là như thế nào.</translation>
@@ -758,9 +758,9 @@
 <translation id="2149330464730004005">Bật chế độ in màu</translation>
 <translation id="2156132677421487971">Định cấu hình các chính sách cho <ph name="PRODUCT_NAME" />, một tính năng cho phép người dùng gửi nội dung của các tab, trang web hoặc màn hình từ trình duyệt đến màn hình và hệ thống âm thanh từ xa.</translation>
 <translation id="2156755242840687300">Máy chủ máy in bên ngoài được bật</translation>
-<translation id="2160336427036785721">Định cấu hình dung lượng bộ nhớ mà một phiên bản <ph name="PRODUCT_NAME" /> có thể sử dụng trước khi các tab bắt đầu bị hủy (nghĩa là dung lượng bộ nhớ mà tab sử dụng sẽ được giải phóng và tab sẽ phải tải lại khi chuyển đổi) để tiết kiệm bộ nhớ.
+<translation id="2160336427036785721">Định cấu hình dung lượng bộ nhớ mà một phiên bản <ph name="PRODUCT_NAME" /> có thể sử dụng trước khi các tab bắt đầu bị đóng (nghĩa là dung lượng bộ nhớ mà tab sử dụng sẽ được giải phóng và tab sẽ phải tải lại khi chuyển đổi) để tiết kiệm bộ nhớ.
 
-      Nếu bạn đặt chính sách này, thì trình duyệt sẽ bắt đầu hủy các tab để tiết kiệm bộ nhớ sau khi vượt quá giới hạn. Tuy nhiên, không thể đảm bảo rằng trình duyệt sẽ luôn chạy trong mức giới hạn. Mọi giá trị xấp xỉ 1024 sẽ được làm tròn thành 1024.
+      Nếu bạn đặt chính sách này, thì trình duyệt sẽ bắt đầu đóng các tab để tiết kiệm bộ nhớ sau khi vượt quá giới hạn. Tuy nhiên, không thể đảm bảo rằng trình duyệt sẽ luôn chạy trong mức giới hạn. Mọi giá trị xấp xỉ 1024 sẽ được làm tròn thành 1024.
 
       Nếu bạn không đặt chính sách này, thì trình duyệt sẽ chỉ bắt đầu tìm cách tiết kiệm bộ nhớ sau khi phát hiện thấy rằng dung lượng bộ nhớ thực trên máy ở mức thấp.</translation>
 <translation id="2166472654199325139">Không lọc các trang web có nội dung người lớn</translation>
@@ -877,7 +877,7 @@
 
       Nếu mẫu URI chứa biến <ph name="HTTP_VARIABLE_DNS" />, thì các yêu cầu tới trình phân giải sẽ dùng <ph name="HTTP_METHOD_GET" />; nếu không, các yêu cầu sẽ dùng <ph name="HTTP_METHOD_POST" />.
 
-      Hệ thống sẽ bỏ qua các mẫu không đúng định dạng.</translation>
+      Các mẫu không đúng định dạng sẽ bị bỏ qua.</translation>
 <translation id="2345547870894930157">Bật chế độ DNS qua HTTPS không có phương án dự phòng cho truy vấn không an toàn</translation>
 <translation id="237494535617297575">Cho phép bạn thiết lập danh sách các mẫu url chỉ định những trang web được phép hiển thị thông báo.
 
@@ -1369,7 +1369,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Chính sách này chỉ có trên các phiên bản Windows liên kết với miền <ph name="MS_AD_NAME" /> hoặc phiên bản Windows 10 Pro hay Enterprise đã đăng ký tính năng quản lý thiết bị.</translation>
 <translation id="3016255526521614822">Đưa các ứng dụng ghi chú được phép trên màn hình khóa của <ph name="PRODUCT_OS_NAME" /> vào danh sách cho phép</translation>
-<translation id="3020064401262077616">Kiểm soát các chính sách giám sát của cha mẹ (chỉ áp dụng cho tài khoản người dùng là trẻ em).</translation>
+<translation id="3020064401262077616">Kiểm soát các chính sách về sự giám sát của cha mẹ (chỉ áp dụng cho tài khoản người dùng là trẻ em).</translation>
 <translation id="3021562480854470924">Số mốc cho phép khôi phục</translation>
 <translation id="3023572080620427845">URL của một tệp XML chứa các URL sẽ tải trên một trình duyệt thay thế.</translation>
 <translation id="3026740867910702435">Bật tính năng hỗ trợ tiếp cận về con trỏ lớn trên màn hình đăng nhập.
@@ -1656,9 +1656,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3524204464536655762">Không cho phép bất kỳ trang web nào yêu cầu quyền truy cập vào thiết bị USB qua API WebUSB</translation>
 <translation id="3526752951628474302">Chỉ in đen trắng</translation>
 <translation id="3528000905991875314">Bật các trang lỗi thay thế</translation>
-<translation id="3531084733660068324">Cài đặt chính sách giám sát của cha mẹ</translation>
+<translation id="3531084733660068324">Cài đặt tính năng giám sát của cha mẹ</translation>
 <translation id="3534882636155369445">Không chặn tệp có kích thước lớn</translation>
-<translation id="3540935459049973317">Giới hạn thời gian của mỗi ứng dụng</translation>
+<translation id="3540935459049973317">Giới hạn thời gian cho mỗi ứng dụng</translation>
 <translation id="3545457887306538845">Cho phép bạn kiểm soát vị trí có thể sử dụng Công cụ dành cho nhà phát triển.
 
       Nếu đặt chính sách này thành 'DeveloperToolsDisallowedForForceInstalledExtensions' (giá trị 0, là giá trị mặc định) thì nói chung, bạn có thể truy cập vào Công cụ dành cho nhà phát triển và Bảng điều khiển JavaScript. Tuy nhiên, trong ngữ cảnh đã cài đặt các tiện ích theo chính sách doanh nghiệp, thì bạn không thể truy cập vào những mục này.
@@ -2618,7 +2618,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu bạn đặt chính sách này, thì chính sách sẽ kiểm soát loại kính lúp được bật khi màn hình đăng nhập hiển thị. Kính lúp sẽ tắt khi bạn đặt chính sách thành ''None''.
 
-          Nếu bạn đặt chính sách này, thì người dùng có thể tạm thời ghi đè chính sách bằng cách bật hoặc tắt kính lúp. Tuy nhiên, sự lựa chọn của người dùng là không cố định và chế độ mặc định sẽ được khôi phục mỗi khi màn hình đăng nhập hiển thị lại hoặc người dùng không sử dụng màn hình đăng nhập trong 1 phút.
+          Nếu bạn đặt chính sách này, thì người dùng có thể tạm thời ghi đè chính sách bằng cách bật hoặc tắt kính lúp. Tuy nhiên, sự lựa chọn của người dùng là không cố định và chế độ mặc định sẽ được khôi phục mỗi khi màn hình đăng nhập xuất hiện lại hoặc người dùng không sử dụng màn hình đăng nhập trong 1 phút.
 
           Nếu bạn không đặt chính sách này, thì kính lúp sẽ tắt khi màn hình đăng nhập hiển thị lần đầu tiên. Người dùng có thể bật hoặc tắt kính lúp bất cứ lúc nào. Ngoài ra, trạng thái của kính lúp trên màn hình đăng nhập sẽ không thay đổi giữa những người dùng.
 
@@ -3105,6 +3105,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Khi bạn không đặt chính sách này, hành động mặc định là tạm ngưng sẽ được thực hiện.
 
           Nếu hành động là tạm ngưng, bạn có thể định cấu hình <ph name="PRODUCT_OS_NAME" /> một cách riêng biệt thành khóa hoặc không khóa màn hình trước khi tạm ngưng.</translation>
+<translation id="5755002458331714762"> Các API Thành phần web phiên bản 0 (Shadow DOM v0, Custom Elements v0 và HTML Imports) đã ngừng hoạt động vào năm 2018 và bị tắt theo mặc định kể từ M80. Theo chính sách này, bạn có thể lựa chọn (các) tính năng nào trong số này sẽ bật lại cho đến M84.
+
+      Nếu bạn đặt chính sách này thành True, thì các tính năng của Thành phần web phiên bản 0 sẽ bật cho tất cả trang web.
+
+      Nếu bạn đặt chính sách này thành False hoặc không đặt, thì các tính năng của Thành phần web phiên bản 0 sẽ tắt theo mặc định kể từ M80.
+
+      Chính sách này sẽ bị xóa sau Chrome 84.</translation>
 <translation id="5765780083710877561">Mô tả:</translation>
 <translation id="5770738360657678870">Kênh nhà phát triển (có thể không ổn định)</translation>
 <translation id="5774856474228476867">URL tìm kiếm nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
@@ -3276,10 +3283,10 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="6145799962557135888">Cho phép bạn thiết lập danh sách các mẫu url chỉ định những trang web được phép chạy JavaScript.
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultImagesSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>
-<translation id="614616930188030377">Các mẫu trong danh sách này sẽ được so khớp dựa trên nguồn gốc bảo mật của URL yêu cầu.
-      Nếu tìm thấy mẫu phù hợp hoặc nếu chrome://flags/#enable-webrtc-hide-local-ips-with-mdns đang Tắt, thì địa chỉ IP cục bộ sẽ hiển thị trong các đề xuất WebRTC ICE.
+<translation id="614616930188030377">Các mẫu trong danh sách này sẽ được so khớp với nguồn bảo mật của URL yêu cầu.
+      Nếu tìm thấy mẫu phù hợp hoặc nếu chrome://flags/#enable-webrtc-hide-local-ips-with-mdns đang Tắt, thì địa chỉ IP cục bộ sẽ hiển thị trong ứng viên WebRTC ICE.
       Nếu không, địa chỉ IP cục bộ sẽ được che giấu bằng tên máy chủ mDNS.
-      Xin lưu ý rằng chính sách này sẽ làm yếu đi chức năng bảo vệ của IP cục bộ nếu quản trị viên thấy cần.</translation>
+      Xin lưu ý rằng chính sách này sẽ làm yếu đi chức năng bảo vệ của IP cục bộ nếu quản trị viên cần.</translation>
 <translation id="614662973812186053">Chính sách này cũng kiểm soát việc thu thập dữ liệu chẩn đoán và sử dụng Android.</translation>
 <translation id="6153048425064249648">Chính sách này kiểm soát tính năng báo cáo đám mây của <ph name="PRODUCT_NAME" />. Tính năng này tải thông tin về hoạt động của trình duyệt lên Bảng điều khiển dành cho quản trị viên của Google.
 
@@ -4283,12 +4290,15 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
           Nếu bạn không đặt chính sách này, thì chế độ tương phản cao sẽ tắt khi màn hình đăng nhập hiển thị lần đầu tiên. Người dùng có thể bật hoặc tắt chế độ tương phản cao bất cứ lúc nào. Ngoài ra, trạng thái của chế độ này trên màn hình đăng nhập sẽ không thay đổi giữa những người dùng.
 
           Lưu ý: <ph name="DEVICE_LOGIN_SCREEN_HIGH_CONTRAST_ENABLED_POLICY_NAME" /> (nếu đã được chỉ định) sẽ ghi đè chính sách này.</translation>
-<translation id="7846952520291088817">URL có IP cục bộ hiển thị trong các đề xuất WebRTC ICE</translation>
+<translation id="7846952520291088817">URL cho các IP cục bộ hiển thị trong các ứng viên WebRTC ICE</translation>
 <translation id="7858404742201086014">Nếu bạn bật tùy chọn cài đặt này, các plugin lỗi thời sẽ được sử dụng như những plugin bình thường.
 
       Nếu bạn tắt tùy chọn cài đặt này, các plugin lỗi thời sẽ không được sử dụng và người dùng sẽ không được yêu cầu cấp quyền để chạy các plugin đó.
 
       Nếu bạn không đặt tùy chọn cài đặt này, người dùng sẽ được yêu cầu cấp quyền để chạy các plugin lỗi thời.</translation>
+<translation id="7862137072381331997">Khi bạn đặt chính sách này thành bật, tất cả các URL mà người dùng truy cập sẽ được kiểm tra theo thời gian thực bằng tính năng Duyệt web an toàn.
+
+      Khi bạn không đặt hoặc đặt chính sách này thành tắt, cơ chế kiểm tra thông qua tính năng Duyệt web an toàn mặc định sẽ được áp dụng. Các lượt kiểm tra bằng tính năng Duyệt web an toàn mặc định vẫn có thể bao gồm cả hoạt động tra cứu trong thời gian thực, tùy thuộc vào tùy chọn "Cải thiện tính năng tìm kiếm và duyệt web". Để buộc tắt hoạt động tra cứu theo thời gian thực, hãy xem chính sách <ph name="URL_KEYED_ANONYMIZED_DATA_COLLECTION_ENABLED_POLICY" />.</translation>
 <translation id="7863947545897944083">Bật tính năng hỗ trợ tiếp cận về độ tương phản cao trên màn hình đăng nhập.
 
           Nếu bạn đặt chính sách này thành true, thì chế độ tương phản cao sẽ luôn bật trên màn hình đăng nhập.
@@ -4760,6 +4770,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="8672321184841719703">Phiên bản cập nhật tự động đích</translation>
 <translation id="867410340948518937">U2F (Hai yếu tố chung)</translation>
 <translation id="8685024486845674965">Cảnh báo bảo vệ mật khẩu được kích hoạt bằng cách sử dụng lại mật khẩu</translation>
+<translation id="8687958770985542440">Bật lại API Thành phần web phiên bản 0 cho đến M84.</translation>
 <translation id="8693243869659262736">Sử dụng máy khách DNS tích hợp</translation>
 <translation id="8698286761337647563">Số ngày thông báo trước cho người dùng SAML khi mật khẩu của họ sắp hết hạn</translation>
 <translation id="8703488928438047864">Báo cáo trạng thái bảng</translation>
@@ -5131,11 +5142,11 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="991560005425213776">Gửi tên người dùng và tên tệp tới máy in gốc</translation>
 <translation id="99232017131102456">Chính sách này sẽ định cấu hình một bộ nhớ đệm chung trên mỗi hồ sơ bằng các thông tin xác thực máy chủ HTTP.
 
-      Nếu bạn không đặt hoặc tắt chính sách này, thì trình duyệt sẽ sử dụng chế độ xác thực mặc định trên nhiều trang web, mà kể từ phiên bản 80, sẽ là xác định phạm vi của thông tin xác thực máy chủ HTTP theo trang web cấp cao nhất. Vì vậy, nếu 2 trang web sử dụng tài nguyên của cùng một miền xác thực, thì bạn phải cung cấp riêng thông tin xác thực theo ngữ cảnh của cả hai trang web. Thông tin xác thực proxy đã lưu vào bộ nhớ đệm sẽ được dùng lại trên các trang web.
+      Nếu bạn không đặt hoặc tắt chính sách này, thì trình duyệt sẽ sử dụng chế độ xác thực mặc định trên nhiều trang web, mà kể từ phiên bản 80, sẽ là đánh giá thông tin xác thực máy chủ HTTP theo trang web cấp cao nhất. Vì vậy, nếu 2 trang web sử dụng tài nguyên của cùng một miền xác thực, thì bạn phải cung cấp riêng thông tin xác thực theo ngữ cảnh của cả hai trang web. Thông tin xác thực proxy đã lưu vào bộ nhớ đệm sẽ được dùng lại trên các trang web.
 
       Nếu bạn bật chính sách này, thì thông tin xác thực HTTP đã nhập theo ngữ cảnh của một trang web sẽ tự động được dùng theo ngữ cảnh của trang web kia.
 
-      Khi bạn bật chính sách này, các trang web có nguy cơ trở thành mục tiêu tấn công trên nhiều trang web, đồng thời hệ thống sẽ theo dõi người dùng trên các trang web ngay cả khi không có cookie bằng cách thêm các mục vào bộ nhớ đệm xác thực HTTP sử dụng thông tin xác thực được nhúng trong URL.
+      Khi bạn bật chính sách này, các trang web có nguy cơ trở thành mục tiêu tấn công trên nhiều trang web, đồng thời khiến người dùng bị theo dõi trên các trang web ngay cả khi không có cookie bằng cách thêm các mục vào bộ nhớ đệm xác thực HTTP sử dụng thông tin xác thực được nhúng trong URL.
 
-      Chính sách này nhằm mang lại cho các doanh nghiệp cơ hội cập nhật quy trình đăng nhập (tùy theo chế độ cũ) và sẽ bị xóa bỏ trong tương lai.</translation>
+      Chính sách này nhằm cho phép các doanh nghiệp cập nhật quy trình đăng nhập (tùy theo chế độ cũ) và sẽ bị xóa bỏ trong tương lai.</translation>
 </translationbundle>

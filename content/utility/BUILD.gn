@@ -15,6 +15,8 @@ jumbo_source_set("utility") {
   ]
 
   sources = [
+    "browser_exposed_utility_interfaces.cc",
+    "browser_exposed_utility_interfaces.h",
     "in_process_utility_thread.cc",
     "in_process_utility_thread.h",
     "services.cc",

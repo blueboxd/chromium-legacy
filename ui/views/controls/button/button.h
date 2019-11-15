@@ -227,6 +227,8 @@ class VIEWS_EXPORT Button : public InkDropHostView,
 
   void SetButtonController(std::unique_ptr<ButtonController> button_controller);
 
+  gfx::Point GetMenuPosition() const;
+
  protected:
   // Construct the Button with a Listener. The listener can be null. This can be
   // true of buttons that don't have a listener - e.g. menubuttons where there's

@@ -13,6 +13,8 @@
 
 class GURL;
 
+namespace chromeos {
+
 class WebTimeLimitEnforcer {
  public:
   static bool IsEnabled();
@@ -50,5 +52,7 @@ class WebTimeLimitEnforcer {
 
   std::set<GURL> whitelisted_urls_;
 };
+
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_TIME_LIMITS_WEB_TIME_LIMIT_ENFORCER_H_

@@ -533,7 +533,11 @@ GL_FUNCTIONS = [
             'glDrawArraysInstanced'],
   'arguments': 'GLenum mode, GLint first, GLsizei count, GLsizei primcount', },
 { 'return_type': 'void',
-  'versions' : [{'name': 'glDrawArraysInstancedBaseInstanceANGLE',
+  'known_as': 'glDrawArraysInstancedBaseInstanceANGLE',
+  #TODO(shrekshao): workaround when native support not available for cmd decoder
+  'versions' : [{ 'name': 'glDrawArraysInstancedBaseInstance' },
+                { 'name': 'glDrawArraysInstancedBaseInstanceEXT' },
+                { 'name': 'glDrawArraysInstancedBaseInstanceANGLE',
                  'extensions': ['GL_ANGLE_base_vertex_base_instance'] }],
   'arguments': 'GLenum mode, GLint first, GLsizei count, GLsizei primcount, '
   'GLuint baseinstance', },
@@ -558,7 +562,11 @@ GL_FUNCTIONS = [
       'GLenum mode, GLsizei count, GLenum type, const void* indices, '
       'GLsizei primcount', },
 { 'return_type': 'void',
-  'versions' : [{'name': 'glDrawElementsInstancedBaseVertexBaseInstanceANGLE',
+  'known_as': 'glDrawElementsInstancedBaseVertexBaseInstanceANGLE',
+  #TODO(shrekshao): workaround when native support not available for cmd decoder
+  'versions' : [{ 'name': 'glDrawElementsInstancedBaseVertexBaseInstance' },
+                { 'name': 'glDrawElementsInstancedBaseVertexBaseInstanceEXT' },
+                { 'name': 'glDrawElementsInstancedBaseVertexBaseInstanceANGLE',
                  'extensions': ['GL_ANGLE_base_vertex_base_instance'] }],
   'arguments':
       'GLenum mode, GLsizei count, GLenum type, const void* indices, '

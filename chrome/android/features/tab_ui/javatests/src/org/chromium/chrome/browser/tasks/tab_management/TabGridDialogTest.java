@@ -27,10 +27,14 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.c
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.enterTabSwitcher;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabSwitcherCardCount;
 
+import android.graphics.Rect;
 import android.support.test.espresso.Espresso;
 import android.support.test.espresso.NoMatchingRootException;
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.filters.MediumTest;
+import android.support.v7.widget.RecyclerView;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 
 import org.junit.Assert;
@@ -57,6 +61,7 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.OverviewModeBehaviorWatcher;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.ArrayList;
@@ -70,6 +75,9 @@ import java.util.List;
 @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID})
 public class TabGridDialogTest {
     // clang-format on
+
+    private boolean mHasReceivedSourceRect;
+
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
@@ -158,6 +166,56 @@ public class TabGridDialogTest {
 
         // Verify TabGroupsContinuation related functionality is exposed.
         verifyTabGroupsContinuation(cta, true);
+    }
+
+    @Test
+    @MediumTest
+    public void testTabGridDialogAnimation() throws InterruptedException {
+        final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        createTabs(cta, false, 2);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 2);
+
+        // Create a tab group.
+        mergeAllTabsToAGroup(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+
+        // Add 400px top margin to the recyclerView.
+        RecyclerView recyclerView = cta.findViewById(R.id.tab_list_view);
+        float tabGridCardPadding = cta.getResources().getDimension(R.dimen.tab_list_card_padding);
+        int deltaTopMargin = 400;
+        ViewGroup.MarginLayoutParams params =
+                (ViewGroup.MarginLayoutParams) recyclerView.getLayoutParams();
+        params.topMargin += deltaTopMargin;
+        TestThreadUtils.runOnUiThreadBlocking(() -> { recyclerView.setLayoutParams(params); });
+        CriteriaHelper.pollUiThread(() -> !recyclerView.isComputingLayout());
+
+        // Calculate expected values of animation source rect.
+        mHasReceivedSourceRect = false;
+        View parentView = cta.getCompositorViewHolder();
+        Rect parentRect = new Rect();
+        parentView.getGlobalVisibleRect(parentRect);
+        Rect sourceRect = new Rect();
+        recyclerView.getChildAt(0).getGlobalVisibleRect(sourceRect);
+        // TODO(yuezhanggg): Figure out why the sourceRect.left is wrong after setting the margin.
+        float expectedTop = sourceRect.top - parentRect.top + tabGridCardPadding;
+        float expectedWidth = sourceRect.width() - 2 * tabGridCardPadding;
+        float expectedHeight = sourceRect.height() - 2 * tabGridCardPadding;
+
+        // Setup the callback to verify the animation source Rect.
+        StartSurfaceLayout layout = (StartSurfaceLayout) cta.getLayoutManager().getOverviewLayout();
+        TabSwitcher.TabDialogDelegation delegation =
+                layout.getStartSurfaceForTesting().getTabDialogDelegate();
+        delegation.setSourceRectCallbackForTesting((result -> {
+            mHasReceivedSourceRect = true;
+            assertTrue(expectedTop == result.top);
+            assertTrue(expectedHeight == result.height());
+            assertTrue(expectedWidth == result.width());
+        }));
+
+        TabUiTestHelper.clickFirstCardFromTabSwitcher(cta);
+        CriteriaHelper.pollUiThread(() -> mHasReceivedSourceRect);
+        CriteriaHelper.pollInstrumentationThread(() -> isDialogShowing(cta));
     }
 
     private void mergeAllTabsToAGroup(ChromeTabbedActivity cta) {

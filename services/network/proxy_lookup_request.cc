@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/optional.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/log/net_log_with_source.h"
@@ -39,10 +40,13 @@ void ProxyLookupRequest::Start(const GURL& url) {
   proxy_lookup_client_.set_disconnect_handler(
       base::BindOnce(&ProxyLookupRequest::DestroySelf, base::Unretained(this)));
   // TODO(mmenke): The NetLogWithSource() means nothing is logged. Fix that.
+  //
+  // TODO(https://crbug.com/1023435): Pass along a NetworkIsolationKey.
   int result =
       network_context_->url_request_context()
           ->proxy_resolution_service()
-          ->ResolveProxy(url, std::string(), &proxy_info_,
+          ->ResolveProxy(url, std::string(), net::NetworkIsolationKey::Todo(),
+                         &proxy_info_,
                          base::BindOnce(&ProxyLookupRequest::OnResolveComplete,
                                         base::Unretained(this)),
                          &request_, net::NetLogWithSource());

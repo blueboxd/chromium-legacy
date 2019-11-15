@@ -14,10 +14,10 @@
 #include "content/public/browser/browser_task_traits.h"
 
 SharingMessageSender::SharingMessageSender(
-    SharingFCMSender* sharing_fcm_sender,
+    std::unique_ptr<SharingFCMSender> sharing_fcm_sender,
     SharingSyncPreference* sync_prefs,
     syncer::LocalDeviceInfoProvider* local_device_info_provider)
-    : fcm_sender_(sharing_fcm_sender),
+    : fcm_sender_(std::move(sharing_fcm_sender)),
       sync_prefs_(sync_prefs),
       local_device_info_provider_(local_device_info_provider) {}
 

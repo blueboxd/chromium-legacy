@@ -91,10 +91,8 @@ void MediaRemoter::OnMirroringResumed() {
 void MediaRemoter::OnRemotingFailed() {
   DCHECK(state_ == STARTING_REMOTING || state_ == REMOTING_STARTED);
   if (state_ == STARTING_REMOTING) {
-    // TODO(crbug.com/1015473): Rename SERVICE_NOT_CONNECTED to
-    // INVALID_ANSWER_MESSAGE.
     remoting_source_->OnStartFailed(
-        media::mojom::RemotingStartFailReason::SERVICE_NOT_CONNECTED);
+        media::mojom::RemotingStartFailReason::INVALID_ANSWER_MESSAGE);
   }
   state_ = REMOTING_DISABLED;
   remoting_source_->OnSinkGone();

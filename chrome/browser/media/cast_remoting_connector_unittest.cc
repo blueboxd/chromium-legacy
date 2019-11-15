@@ -358,7 +358,7 @@ TEST_F(CastRemotingConnectorTest, NoConnectedMediaRemoter) {
   mojo::Remote<media::mojom::Remoter> remoter(CreateRemoter(&source));
 
   EXPECT_CALL(source,
-              OnStartFailed(RemotingStartFailReason::SERVICE_NOT_CONNECTED))
+              OnStartFailed(RemotingStartFailReason::INVALID_ANSWER_MESSAGE))
       .Times(1);
   remoter->Start();
   RunUntilIdle();

@@ -177,7 +177,7 @@
 <translation id="1734878702283171397">Προσπαθήστε να επικοινωνήσετε με το διαχειριστή συστήματος.</translation>
 <translation id="1739107442478692187">Προέκυψε μια παραβίαση δεδομένων σε έναν ιστότοπο ή μια εφαρμογή που χρησιμοποιείτε. Το Chrome συνιστά να ελέγξετε τους αποθηκευμένους κωδικούς πρόσβασής σας και να αλλάξετε άμεσα τον κωδικό πρόσβασης που χρησιμοποιείτε στο <ph name="ORIGIN" />.</translation>
 <translation id="1740951997222943430">Εισαγάγετε έναν έγκυρο μήνα λήξης</translation>
-<translation id="1741613555002899862">Θα πρέπει να καθοριστεί μια έγκυρη συμβολοσειρά όταν η παράμετρος DnsOverHttpsMode είναι <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
+<translation id="1741613555002899862">Θα πρέπει να καθοριστεί μια έγκυρη συμβολοσειρά όταν η πολιτική DnsOverHttpsMode είναι <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="1743520634839655729">Για πιο γρήγορες πληρωμές στο μέλλον, αποθηκεύστε τα στοιχεία της κάρτας σας, το όνομα και τη διεύθυνση χρέωσης στον Λογαριασμό σας Google και σε αυτήν τη συσκευή.</translation>
 <translation id="1743570585616704562">Δεν αναγνωρίστηκε</translation>
 <translation id="1745880797583122200">Το πρόγραμμα περιήγησής σας είναι διαχειριζόμενο</translation>
@@ -980,7 +980,7 @@
 <translation id="5685654322157854305">Προσθήκη διεύθυνσης αποστολής</translation>
 <translation id="5689199277474810259">Εξαγωγή σε JSON</translation>
 <translation id="5689516760719285838">Τοποθεσία</translation>
-<translation id="569000877158168851">Η τιμή DnsOverHttpsTemplates δεν είναι σχετική και δεν θα χρησιμοποιηθεί, εκτός αν η πολιτική the DnsOverHttpsMode οριστεί είτε σε <ph name="SECURE_DNS_MODE_AUTOMATIC" /> είτε σε <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
+<translation id="569000877158168851">Η τιμή DnsOverHttpsTemplates δεν είναι σχετική και δεν θα χρησιμοποιηθεί, εκτός αν η πολιτική DnsOverHttpsMode οριστεί είτε σε <ph name="SECURE_DNS_MODE_AUTOMATIC" /> είτε σε <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="570530837424789914">Διαχείριση…</translation>
 <translation id="57094364128775171">Πρόταση για ισχυρό κωδικό πρόσβασης…</translation>
 <translation id="5710435578057952990">Η ταυτότητα αυτού του ιστότοπου δεν έχει επαληθευτεί.</translation>
@@ -1609,7 +1609,6 @@
 <translation id="8943282376843390568">Λάιμ</translation>
 <translation id="8957210676456822347">Εξουσιοδότηση πύλης υποδοχής</translation>
 <translation id="8962950042226115166">Ύποπτος ιστότοπος</translation>
-<translation id="8966619695390250636">Μήπως εννοείτε;</translation>
 <translation id="8968766641738584599">Αποθήκευση κάρτας</translation>
 <translation id="8971063699422889582">Το πιστοποιητικό του διακομιστή έχει λήξει.</translation>
 <translation id="8975012916872825179">Περιλαμβάνει πληροφορίες, όπως αριθμούς τηλεφώνου, διευθύνσεις ηλεκτρονικού ταχυδρομείου και διευθύνσεις αποστολής</translation>

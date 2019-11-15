@@ -512,11 +512,23 @@ static void GL_BINDING_CALL Mock_glDrawArraysInstancedARB(GLenum mode,
                                                           GLsizei count,
                                                           GLsizei primcount);
 static void GL_BINDING_CALL
+Mock_glDrawArraysInstancedBaseInstance(GLenum mode,
+                                       GLint first,
+                                       GLsizei count,
+                                       GLsizei primcount,
+                                       GLuint baseinstance);
+static void GL_BINDING_CALL
 Mock_glDrawArraysInstancedBaseInstanceANGLE(GLenum mode,
                                             GLint first,
                                             GLsizei count,
                                             GLsizei primcount,
                                             GLuint baseinstance);
+static void GL_BINDING_CALL
+Mock_glDrawArraysInstancedBaseInstanceEXT(GLenum mode,
+                                          GLint first,
+                                          GLsizei count,
+                                          GLsizei primcount,
+                                          GLuint baseinstance);
 static void GL_BINDING_CALL Mock_glDrawBuffer(GLenum mode);
 static void GL_BINDING_CALL Mock_glDrawBuffers(GLsizei n, const GLenum* bufs);
 static void GL_BINDING_CALL Mock_glDrawBuffersARB(GLsizei n,
@@ -547,6 +559,14 @@ static void GL_BINDING_CALL Mock_glDrawElementsInstancedARB(GLenum mode,
                                                             const void* indices,
                                                             GLsizei primcount);
 static void GL_BINDING_CALL
+Mock_glDrawElementsInstancedBaseVertexBaseInstance(GLenum mode,
+                                                   GLsizei count,
+                                                   GLenum type,
+                                                   const void* indices,
+                                                   GLsizei primcount,
+                                                   GLint baseVertex,
+                                                   GLuint baseInstance);
+static void GL_BINDING_CALL
 Mock_glDrawElementsInstancedBaseVertexBaseInstanceANGLE(GLenum mode,
                                                         GLsizei count,
                                                         GLenum type,
@@ -554,6 +574,14 @@ Mock_glDrawElementsInstancedBaseVertexBaseInstanceANGLE(GLenum mode,
                                                         GLsizei primcount,
                                                         GLint baseVertex,
                                                         GLuint baseInstance);
+static void GL_BINDING_CALL
+Mock_glDrawElementsInstancedBaseVertexBaseInstanceEXT(GLenum mode,
+                                                      GLsizei count,
+                                                      GLenum type,
+                                                      const void* indices,
+                                                      GLsizei primcount,
+                                                      GLint baseVertex,
+                                                      GLuint baseInstance);
 static void GL_BINDING_CALL Mock_glDrawRangeElements(GLenum mode,
                                                      GLuint start,
                                                      GLuint end,

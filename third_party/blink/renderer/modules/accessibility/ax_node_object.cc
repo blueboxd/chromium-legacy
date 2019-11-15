@@ -3623,6 +3623,24 @@ String AXNodeObject::Description(ax::mojom::NameFrom name_from,
     }
   }
 
+  // aria-description overrides any HTML-based accessible description,
+  // but not aria-describedby.
+  if (RuntimeEnabledFeatures::AccessibilityExposeARIAAnnotationsEnabled(
+          GetDocument())) {
+    const AtomicString& aria_desc =
+        GetAOMPropertyOrARIAAttribute(AOMStringProperty::kDescription);
+    if (!aria_desc.IsNull()) {
+      description_from = ax::mojom::DescriptionFrom::kAttribute;
+      description = aria_desc;
+      if (description_sources) {
+        found_description = true;
+        description_sources->back().text = description;
+      } else {
+        return description;
+      }
+    }
+  }
+
   const HTMLInputElement* input_element = ToHTMLInputElementOrNull(GetNode());
 
   // value, 5.2.2 from: http://rawgit.com/w3c/aria/master/html-aam/html-aam.html

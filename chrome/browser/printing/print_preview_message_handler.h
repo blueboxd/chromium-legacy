@@ -72,6 +72,8 @@ class PrintPreviewMessageHandler
                                  const PrintHostMsg_PreviewIds& ids);
   void OnDidStartPreview(const PrintHostMsg_DidStartPreview_Params& params,
                          const PrintHostMsg_PreviewIds& ids);
+  void OnDidPrepareForDocumentToPdf(int document_cookie,
+                                    const PrintHostMsg_PreviewIds& ids);
   void OnDidPreviewPage(content::RenderFrameHost* render_frame_host,
                         const PrintHostMsg_DidPreviewPage_Params& params,
                         const PrintHostMsg_PreviewIds& ids);
@@ -106,11 +108,15 @@ class PrintPreviewMessageHandler
                               const PrintHostMsg_PreviewIds& ids,
                               mojom::PdfCompositor::Status status,
                               base::ReadOnlySharedMemoryRegion region);
-  void OnCompositePdfDocumentDone(int page_count,
-                                  int document_cookie,
-                                  const PrintHostMsg_PreviewIds& ids,
-                                  mojom::PdfCompositor::Status status,
-                                  base::ReadOnlySharedMemoryRegion region);
+  void OnCompositeOrCompleteDocumentToPdfDone(
+      bool composite_document_using_individual_pages,
+      int page_count,
+      int document_cookie,
+      const PrintHostMsg_PreviewIds& ids,
+      mojom::PdfCompositor::Status status,
+      base::ReadOnlySharedMemoryRegion region);
+  void OnPrepareForDocumentToPdfDone(const PrintHostMsg_PreviewIds& ids,
+                                     mojom::PdfCompositor::Status status);
 
   void OnNupPdfConvertDone(int page_number,
                            const PrintHostMsg_PreviewIds& ids,

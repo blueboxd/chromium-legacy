@@ -309,7 +309,7 @@ TEST(VideoFrame, WrapVideoFrame) {
 
   // Verify that |wrapped_frame| outlives |frame|.
   EXPECT_FALSE(done_callback_was_run);
-  frame = NULL;
+  frame.reset();
   EXPECT_TRUE(done_callback_was_run);
 }
 

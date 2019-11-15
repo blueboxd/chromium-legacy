@@ -154,19 +154,12 @@ class SpellCheck::SpellcheckRequest {
 // values.
 // TODO(groby): Simplify this.
 SpellCheck::SpellCheck(
-    service_manager::BinderRegistry* registry,
     service_manager::LocalInterfaceProvider* embedder_provider)
     : embedder_provider_(embedder_provider), spellcheck_enabled_(true) {
   DCHECK(embedder_provider);
-  if (!registry)
-    return;  // Can be NULL in tests.
-  registry->AddInterface(base::BindRepeating(&SpellCheck::SpellCheckerReceiver,
-                                             weak_factory_.GetWeakPtr()),
-                         base::ThreadTaskRunnerHandle::Get());
 }
 
-SpellCheck::~SpellCheck() {
-}
+SpellCheck::~SpellCheck() = default;
 
 void SpellCheck::FillSuggestions(
     const std::vector<std::vector<base::string16>>& suggestions_list,
@@ -197,7 +190,7 @@ void SpellCheck::FillSuggestions(
   }
 }
 
-void SpellCheck::SpellCheckerReceiver(
+void SpellCheck::BindReceiver(
     mojo::PendingReceiver<spellcheck::mojom::SpellChecker> receiver) {
   receivers_.Add(this, std::move(receiver));
 }

@@ -24,8 +24,9 @@ namespace media {
 class MediaLog;
 
 // Callbacks used for Renderer creation.
+using CreateRendererCB = base::RepeatingCallback<std::unique_ptr<Renderer>()>;
 using RendererCreatedCB = base::OnceCallback<void(std::unique_ptr<Renderer>)>;
-using CreateRendererCB = base::RepeatingCallback<void(RendererCreatedCB)>;
+using AsyncCreateRendererCB = base::RepeatingCallback<void(RendererCreatedCB)>;
 
 // Pipeline runs the media pipeline.  Filters are created and called on the
 // task runner injected into this object. Pipeline works like a state
@@ -73,8 +74,7 @@ using CreateRendererCB = base::RepeatingCallback<void(RendererCreatedCB)>;
 // Some annoying differences between the two paths need to be removed first.
 class MEDIA_EXPORT PipelineImpl : public Pipeline {
  public:
-  // Constructs a media pipeline that will execute media tasks on
-  // |media_task_runner|.
+  // Constructs a pipeline that will execute media tasks on |media_task_runner|.
   // |create_renderer_cb|: to create renderers when starting and resuming.
   PipelineImpl(scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
                scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
@@ -135,6 +135,10 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
   };
   static const char* GetStateString(State state);
 
+  // Create a Renderer asynchronously. Must be called on the main task runner
+  // and the callback will be called on the main task runner as well.
+  void AsyncCreateRenderer(RendererCreatedCB renderer_created_cb);
+
   // Notifications from RendererWrapper.
   void OnError(PipelineStatus error);
   void OnEnded();
@@ -158,6 +162,7 @@ class MEDIA_EXPORT PipelineImpl : public Pipeline {
 
   // Parameters passed in the constructor.
   const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
+  CreateRendererCB create_renderer_cb_;
   MediaLog* const media_log_;
 
   // Pipeline client. Valid only while the pipeline is running.

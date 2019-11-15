@@ -2992,6 +2992,13 @@
           如果不設定這項政策，則系統會採取預設動作，也就是暫停作業。
 
           如果將動作設為暫停作業，你可以另行設定 <ph name="PRODUCT_OS_NAME" />在暫停作業前鎖定或不鎖定螢幕。</translation>
+<translation id="5755002458331714762"> Web Components v0 API (Shadow DOM v0、Custom Elements v0 和 HTML Imports) 已在 2018 年淘汰，並從 M80 版開始預設為停用。這項政策可讓你選擇性地重新啟用這些功能，直到 M84 版為止。
+
+      如果將這項政策設為 True，系統會在所有網站上啟用 Web Components v0 功能。
+
+      如果不設定這項政策或設為 False，那麼從 M80 版開始，系統在預設狀態下會停用 Web Components v0 功能。
+
+      這項政策將在 Chrome 第 84 版後移除。</translation>
 <translation id="5765780083710877561">說明：</translation>
 <translation id="5770738360657678870">開發頻道 (可能不穩定)</translation>
 <translation id="5774856474228476867">預設搜尋引擎搜尋網址</translation>
@@ -4130,6 +4137,9 @@
       如果停用這項設定，則系統不會使用舊版外掛程式，也不會徵求使用者許可來執行這些外掛程式。
 
       如果不設定這項政策，系統會徵求使用者許可來執行舊版外掛程式。</translation>
+<translation id="7862137072381331997">如果啟用這項政策，安全瀏覽功能會即時檢查使用者造訪的所有網址。
+
+      如果不設定這項政策或將它設為停用，系統會套用一般使用者的安全瀏覽檢查。一般使用者的安全瀏覽檢查仍可能包含即時查詢，實際情況取決於「改善搜尋和瀏覽體驗」的偏好設定。如果要強制停用即時查詢，請參閱 <ph name="URL_KEYED_ANONYMIZED_DATA_COLLECTION_ENABLED_POLICY" /> 政策。</translation>
 <translation id="7863947545897944083">在登入畫面上啟用高對比模式無障礙功能。
 
           如果將這項政策設為 True，系統將一律在登入畫面上啟用高對比模式。
@@ -4589,6 +4599,7 @@
 <translation id="8672321184841719703">指定目標的自動更新版本</translation>
 <translation id="867410340948518937">U2F (通用雙重驗證)</translation>
 <translation id="8685024486845674965">密碼遭到重複使用時，會觸發密碼保護警告</translation>
+<translation id="8687958770985542440">重新啟用 Web Components v0 API，直到 M84 版為止。</translation>
 <translation id="8693243869659262736">使用內建的 DNS 用戶端</translation>
 <translation id="8698286761337647563">當 SAML 使用者的密碼即將到期，系統要提前幾天通知</translation>
 <translation id="8703488928438047864">回報主機板狀態</translation>

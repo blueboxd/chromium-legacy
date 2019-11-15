@@ -12,13 +12,10 @@ source_set("webrtc_glue") {
     "glue/utils.cc",
     "glue/utils.h",
   ]
-  public_deps = [
-    "//third_party/webrtc/rtc_base",
-  ]
   deps = [
     "//base",
     "//net",
-    "//third_party/webrtc/api:libjingle_peerconnection_api",
+    "//third_party/webrtc_overrides:webrtc_component",
   ]
 }
 
@@ -117,7 +114,7 @@ static_library("notifier") {
 
   public_deps = [
     "//third_party/libjingle_xmpp",
-    "//third_party/webrtc_overrides",
+    "//third_party/webrtc_overrides:webrtc_component",
   ]
   deps = [
     ":jingle_glue",
@@ -215,7 +212,6 @@ test("jingle_unittests") {
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/libjingle_xmpp:rtc_task_runner",
-    "//third_party/webrtc_overrides",
-    "//third_party/webrtc_overrides:init_webrtc",
+    "//third_party/webrtc_overrides:webrtc_component",
   ]
 }

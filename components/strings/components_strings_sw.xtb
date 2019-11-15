@@ -251,7 +251,7 @@
 <translation id="2119867082804433120">Toboa chini kulia</translation>
 <translation id="2124528555835617522">Tukio la ufichuzi haramu wa data limefanyika kwenye tovuti au programu unayotumia. Chrome inapendekeza ukague manenosiri uliyohifadhi sasa.</translation>
 <translation id="2129079103035905234">Vitambuzi vya Mwendo</translation>
-<translation id="2130448033692577677">Huenda violezo ulivyobainisha visitumike kwa sababu ya kukosa kuweka sera ya DnsOverHttpsMode.</translation>
+<translation id="2130448033692577677">Huenda violezo ulivyobainisha visitumike kwa sababu sera ya DnsOverHttpsMode haijawekwa.</translation>
 <translation id="213826338245044447">Alamisho kwenye Simu</translation>
 <translation id="214556005048008348">Ghairi malipo</translation>
 <translation id="2147827593068025794">Usawazishaji wa Chini Chini</translation>
@@ -710,7 +710,7 @@
 <translation id="4346197816712207223">Kadi za Mikopo Zinazokubaliwa</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
 <translation id="4356973930735388585">Huenda wavamizi walio kwenye tovuti hii wakajaribu kusakinisha programu hatari inayoiba au kufuta maelezo yako yaliyo kwenye kompyuta yako (kwa mfano, picha, manenosiri, ujumbe, na kadi za mikopo).</translation>
-<translation id="4358059973562876591">Huenda violezo ulivyobainisha visitumike kwa sababu ya hitilafu na sera ya DnsOverHttpsMode.</translation>
+<translation id="4358059973562876591">Huenda violezo ulivyobainisha visitumike kwa sababu ya hitilafu katika sera ya DnsOverHttpsMode.</translation>
 <translation id="4358461427845829800">Dhibiti njia za kulipa...</translation>
 <translation id="4367563149485757821">Number-12 (Bahasha)</translation>
 <translation id="437058704415269440">Salio la Akaunti</translation>
@@ -973,7 +973,7 @@
 <translation id="5685654322157854305">Ongeza mahali zitakapopelekwa</translation>
 <translation id="5689199277474810259">Tuma katika mfumo wa JSON</translation>
 <translation id="5689516760719285838">Mahali</translation>
-<translation id="569000877158168851">Thamani ya DnsOverHttpsTemplates haifai na haitatumika, isipokuwa sera ya DnsOverHttpsMode iwekwe kuwa <ph name="SECURE_DNS_MODE_AUTOMATIC" /> au<ph name="SECURE_DNS_MODE_SECURE" />.</translation>
+<translation id="569000877158168851">Thamani ya DnsOverHttpsTemplates haifai na haitatumika, isipokuwa sera ya DnsOverHttpsMode iwekwe kuwa <ph name="SECURE_DNS_MODE_AUTOMATIC" /> au <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="570530837424789914">Dhibiti...</translation>
 <translation id="57094364128775171">Pendekeza nenosiri thabiti…</translation>
 <translation id="5710435578057952990">Utambulisho wa tovuti hii haujathibitishwa.</translation>
@@ -1598,7 +1598,6 @@
 <translation id="8943282376843390568">Chokaa</translation>
 <translation id="8957210676456822347">Uidhinishaji wa Ukurasa wa Wavuti</translation>
 <translation id="8962950042226115166">Tovuti inayotiliwa shaka</translation>
-<translation id="8966619695390250636">Ulimaanisha?</translation>
 <translation id="8968766641738584599">Hifadhi kadi</translation>
 <translation id="8971063699422889582">Cheti cha seva kimechina.</translation>
 <translation id="8975012916872825179">Hujumuisha maelezo kama nambari za simu, anwani za barua pepe na anwani za mahali bidhaa zitakapopelekwa</translation>

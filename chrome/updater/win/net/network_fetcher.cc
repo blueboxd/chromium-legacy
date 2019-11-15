@@ -4,6 +4,8 @@
 
 #include "chrome/updater/win/net/network_fetcher.h"
 
+#include <versionhelpers.h>
+
 #include <memory>
 #include <utility>
 
@@ -81,9 +83,21 @@ scoped_hinternet NetworkFetcherFactory::CreateSessionHandle() {
   const uint32_t access_type = os_info->version() >= base::win::Version::WIN8_1
                                    ? WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY
                                    : WINHTTP_ACCESS_TYPE_NO_PROXY;
-  return scoped_hinternet(
+  scoped_hinternet session_handle(
       ::WinHttpOpen(L"Chrome Updater", access_type, WINHTTP_NO_PROXY_NAME,
                     WINHTTP_NO_PROXY_BYPASS, WINHTTP_FLAG_ASYNC));
+
+  // Allow TLS1.2 on Windows 7 and Windows 8. See KB3140245. TLS 1.2 is enabled
+  // by default on Windows 8.1 and Windows 10.
+  if (session_handle.is_valid() && ::IsWindows7OrGreater() &&
+      !::IsWindows8Point1OrGreater()) {
+    DWORD protocols = WINHTTP_FLAG_SECURE_PROTOCOL_TLS1 |
+                      WINHTTP_FLAG_SECURE_PROTOCOL_TLS1_1 |
+                      WINHTTP_FLAG_SECURE_PROTOCOL_TLS1_2;
+    ::WinHttpSetOption(session_handle.get(), WINHTTP_OPTION_SECURE_PROTOCOLS,
+                       &protocols, sizeof(protocols));
+  }
+  return session_handle;
 }
 
 std::unique_ptr<update_client::NetworkFetcher> NetworkFetcherFactory::Create()

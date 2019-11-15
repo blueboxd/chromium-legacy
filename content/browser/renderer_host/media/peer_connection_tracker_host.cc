@@ -20,10 +20,7 @@ PeerConnectionTrackerHost::PeerConnectionTrackerHost(RenderProcessHost* rph)
     : render_process_id_(rph->GetID()), peer_pid_(rph->GetProcess().Pid()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::PowerMonitor::AddObserver(this);
-
-  mojo::PendingRemote<blink::mojom::PeerConnectionManager> pending_tracker;
-  BindInterface(rph, &pending_tracker);
-  tracker_.Bind(std::move(pending_tracker));
+  rph->BindReceiver(tracker_.BindNewPipeAndPassReceiver());
 }
 
 PeerConnectionTrackerHost::~PeerConnectionTrackerHost() {

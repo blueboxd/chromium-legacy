@@ -202,11 +202,11 @@ void DragWindowFromShelfController::Drag(const gfx::Point& location_in_screen,
   previous_location_in_screen_ = location_in_screen;
 }
 
-void DragWindowFromShelfController::EndDrag(
-    const gfx::Point& location_in_screen,
-    base::Optional<float> velocity_y) {
+base::Optional<DragWindowFromShelfController::ShelfWindowDragResult>
+DragWindowFromShelfController::EndDrag(const gfx::Point& location_in_screen,
+                                       base::Optional<float> velocity_y) {
   if (!drag_started_)
-    return;
+    return base::nullopt;
 
   drag_started_ = false;
   OverviewController* overview_controller = Shell::Get()->overview_controller();
@@ -214,6 +214,7 @@ void DragWindowFromShelfController::EndDrag(
       SplitViewController::Get(Shell::GetPrimaryRootWindow());
   const bool in_overview = overview_controller->InOverviewSession();
   const bool in_splitview = split_view_controller->InSplitViewMode();
+  base::Optional<ShelfWindowDragResult> window_drag_result;
 
   if (ShouldGoToHomeScreen(location_in_screen, velocity_y)) {
     DCHECK(!in_splitview);
@@ -222,17 +223,25 @@ void DragWindowFromShelfController::EndDrag(
           OverviewSession::EnterExitOverviewType::kImmediateExit);
     }
     ScaleDownWindowAfterDrag();
+    window_drag_result = ShelfWindowDragResult::kGoToHomeScreen;
   } else if (ShouldRestoreToOriginalBounds(location_in_screen)) {
     ScaleUpToRestoreWindowAfterDrag();
+    window_drag_result = ShelfWindowDragResult::kRestoreToOriginalBounds;
   } else if (!in_overview) {
     // if overview is not active during the entire drag process, scale down the
     // dragged window to go to home screen.
     ScaleDownWindowAfterDrag();
+    window_drag_result = ShelfWindowDragResult::kGoToHomeScreen;
+
+  } else {
+    window_drag_result = ShelfWindowDragResult::kGoToOverviewMode;
   }
 
   OnDragEnded(location_in_screen,
               ShouldDropWindowInOverview(location_in_screen, velocity_y),
               GetSnapPositionOnDragEnd(location_in_screen, velocity_y));
+
+  return window_drag_result;
 }
 
 void DragWindowFromShelfController::CancelDrag() {

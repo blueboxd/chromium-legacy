@@ -46,13 +46,10 @@ namespace media {
 
 namespace {
 
-// Make fill size big enough that most buffers will fit into it. This is more
-// efficient in general since we don't need to allocate more buffers from the
-// heap (can use the buffer pool instead).
-const int kFillSizeFrames = 1536;
+const int kInitialFillSizeFrames = 512;
 const double kPlaybackRateEpsilon = 0.001;
 
-const int64_t kDefaultInputQueueMs = 90;
+const int64_t kDefaultInputQueueMs = 200;
 constexpr base::TimeDelta kFadeTime = base::TimeDelta::FromMilliseconds(5);
 const int kDefaultStartThresholdMs = 70;
 
@@ -108,6 +105,7 @@ AudioDecoderForMixer::AudioDecoderForMixer(
     MediaPipelineBackendForMixer* backend)
     : backend_(backend),
       task_runner_(backend->GetTaskRunner()),
+      buffer_pool_frames_(kInitialFillSizeFrames),
       pending_output_frames_(kNoPendingOutput),
       pool_(new ::media::AudioBufferMemoryPool()),
       weak_factory_(this) {
@@ -161,13 +159,21 @@ bool AudioDecoderForMixer::Start(int64_t playback_start_pts,
   return true;
 }
 
-void AudioDecoderForMixer::CreateMixerInput(const AudioConfig& config,
-                                            bool start_playback_asap) {
+void AudioDecoderForMixer::CreateBufferPool(const AudioConfig& config,
+                                            int frame_count) {
+  DCHECK_GT(frame_count, 0);
+  buffer_pool_frames_ = frame_count;
   buffer_pool_ = base::MakeRefCounted<IOBufferPool>(
-      kFillSizeFrames * sizeof(float) * config.channel_number +
+      frame_count * sizeof(float) * config.channel_number +
           kAudioMessageHeaderSize,
       std::numeric_limits<size_t>::max(), true /* threadsafe */);
   buffer_pool_->Preallocate(1);
+}
+
+void AudioDecoderForMixer::CreateMixerInput(const AudioConfig& config,
+                                            bool start_playback_asap) {
+  CreateBufferPool(config, buffer_pool_frames_);
+  DCHECK_GT(buffer_pool_frames_, 0);
 
   audio_resampler_ = std::make_unique<AudioResampler>(config.channel_number);
   audio_resampler_->SetMediaClockRate(av_sync_clock_rate_);
@@ -184,7 +190,7 @@ void AudioDecoderForMixer::CreateMixerInput(const AudioConfig& config,
   params.set_sample_rate(config.samples_per_second);
   params.set_num_channels(config.channel_number);
   params.set_channel_selection(ToPlayoutChannel(backend_->AudioChannel()));
-  params.set_fill_size_frames(kFillSizeFrames);
+  params.set_fill_size_frames(buffer_pool_frames_);
   params.set_start_threshold_frames(StartThreshold(config.samples_per_second));
   params.set_max_buffered_frames(MaxQueuedFrames(config.samples_per_second));
   params.set_use_fader(true);
@@ -542,14 +548,11 @@ void AudioDecoderForMixer::WritePcm(scoped_refptr<DecoderBufferBase> buffer) {
   // subtracts at most 1 frame.
   DCHECK_GT(frame_count, 0);
 
-  scoped_refptr<::net::IOBuffer> io_buffer;
-  if (resampled->data_size() >
-      buffer_pool_->buffer_size() - kAudioMessageHeaderSize) {
-    io_buffer = base::MakeRefCounted<::net::IOBuffer>(resampled->data_size() +
-                                                      kAudioMessageHeaderSize);
-  } else {
-    io_buffer = buffer_pool_->GetBuffer();
+  if (frame_count > buffer_pool_frames_) {
+    CreateBufferPool(config_, frame_count * 2);
   }
+
+  auto io_buffer = buffer_pool_->GetBuffer();
   memcpy(io_buffer->data() + kAudioMessageHeaderSize, resampled->data(),
          resampled->data_size());
 

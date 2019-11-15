@@ -84,7 +84,6 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/layout/animating_layout_manager.h"
 #include "ui/views/test/widget_test.h"
-#include "ui/views/window/dialog_client_view.h"
 
 using base::Bucket;
 using testing::ElementsAre;
@@ -426,8 +425,7 @@ class LocalCardMigrationBrowserTest
     CHECK(local_card_migration_view);
     views::test::WidgetDestroyedWaiter destroyed_waiter(
         local_card_migration_view->GetWidget());
-    local_card_migration_view->GetDialogClientView()
-        ->ResetViewShownTimeStampForTesting();
+    local_card_migration_view->ResetViewShownTimeStampForTesting();
     views::BubbleFrameView* bubble_frame_view =
         static_cast<views::BubbleFrameView*>(
             local_card_migration_view->GetWidget()
@@ -448,7 +446,7 @@ class LocalCardMigrationBrowserTest
 
     if (!specified_view) {
       specified_view =
-          local_card_migration_view->GetDialogClientView()->GetViewByID(
+          local_card_migration_view->GetWidget()->GetRootView()->GetViewByID(
               static_cast<int>(view_id));
     }
 
@@ -456,16 +454,14 @@ class LocalCardMigrationBrowserTest
   }
 
   void ClickOnOkButton(views::DialogDelegateView* local_card_migration_view) {
-    views::View* ok_button =
-        local_card_migration_view->GetDialogClientView()->ok_button();
+    views::View* ok_button = local_card_migration_view->GetOkButton();
 
     ClickOnDialogViewAndWait(ok_button, local_card_migration_view);
   }
 
   void ClickOnCancelButton(
       views::DialogDelegateView* local_card_migration_view) {
-    views::View* cancel_button =
-        local_card_migration_view->GetDialogClientView()->cancel_button();
+    views::View* cancel_button = local_card_migration_view->GetCancelButton();
     ClickOnDialogViewAndWait(cancel_button, local_card_migration_view);
   }
 

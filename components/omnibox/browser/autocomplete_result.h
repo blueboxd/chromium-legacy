@@ -121,8 +121,6 @@ class AutocompleteResult {
       const ACMatches& matches,
       const CompareWithDemoteByType<AutocompleteMatch>& comparing_object);
 
-  const GURL& alternate_nav_url() const { return alternate_nav_url_; }
-
   // Clears the matches for this result set.
   void Reset();
 
@@ -136,9 +134,8 @@ class AutocompleteResult {
   void Validate() const;
 #endif  // DCHECK_IS_ON()
 
-  // Compute the "alternate navigation URL" for a given match. This is obtained
-  // by interpreting the user input directly as a URL. See comments on
-  // |alternate_nav_url_|.
+  // Returns a URL to offer the user as an alternative navigation when they
+  // open |match| after typing in |input|.
   static GURL ComputeAlternateNavUrl(const AutocompleteInput& input,
                                      const AutocompleteMatch& match);
 
@@ -244,15 +241,6 @@ class AutocompleteResult {
   ACMatches matches_;
 
   const_iterator default_match_;
-
-  // The "alternate navigation URL", if any, for this result set.  This is a URL
-  // to try offering as a navigational option in case the user navigated to the
-  // URL of the default match but intended something else.  For example, if the
-  // user's local intranet contains site "foo", and the user types "foo", we
-  // default to searching for "foo" when the user may have meant to navigate
-  // there.  In cases like this, the default match will point to the "search for
-  // 'foo'" result, and this will contain "http://foo/".
-  GURL alternate_nav_url_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteResult);
 };

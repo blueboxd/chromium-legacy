@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
 #include "base/win/scoped_hglobal.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
@@ -860,6 +861,43 @@ TEST_F(OSExchangeDataWinTest, ProvideURLForPlainTextURL) {
   EXPECT_TRUE(data2.GetURLAndTitle(
       OSExchangeData::CONVERT_FILENAMES, &read_url, &title));
   EXPECT_EQ(GURL("http://google.com"), read_url);
+}
+
+class MockDownloadFileProvider : public ui::DownloadFileProvider {
+ public:
+  MockDownloadFileProvider() = default;
+  ~MockDownloadFileProvider() override = default;
+  base::WeakPtr<MockDownloadFileProvider> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
+  MOCK_METHOD1(Start, void(DownloadFileObserver* observer));
+  MOCK_METHOD0(Wait, bool());
+  MOCK_METHOD0(Stop, void());
+
+ private:
+  base::WeakPtrFactory<MockDownloadFileProvider> weak_ptr_factory_{this};
+};
+
+// Verifies that DataObjectImpl::OnDownloadCompleted() doesn't delete
+// the DownloadFileProvider instance.
+TEST_F(OSExchangeDataWinTest, OnDownloadCompleted) {
+  OSExchangeData data;
+  Microsoft::WRL::ComPtr<IDataObject> com_data(
+      OSExchangeDataProviderWin::GetIDataObject(data));
+
+  OSExchangeDataProviderWin provider(com_data.Get());
+
+  auto download_file_provider = std::make_unique<MockDownloadFileProvider>();
+  auto weak_ptr = download_file_provider->GetWeakPtr();
+  OSExchangeData::DownloadFileInfo file_info(
+      base::FilePath(FILE_PATH_LITERAL("file_with_no_contents.txt")),
+      std::move(download_file_provider));
+  provider.SetDownloadFileInfo(&file_info);
+
+  OSExchangeDataProviderWin::GetDataObjectImpl(data)->OnDownloadCompleted(
+      base::FilePath());
+  EXPECT_TRUE(weak_ptr);
 }
 
 }  // namespace ui

@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.customtabs.content;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
@@ -16,7 +15,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
@@ -24,8 +22,8 @@ import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
-import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.DOMUtils;
@@ -63,7 +61,6 @@ public class TabObserverRegistrarTest {
      * switched.
      */
     @Test
-    @DisabledTest(message = "https://crbug.com/1023437")
     @MediumTest
     public void testObserveActiveTab() throws Throwable {
         EmbeddedTestServer testServer = mCustomTabActivityTestRule.getTestServer();
@@ -91,8 +88,10 @@ public class TabObserverRegistrarTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             tabSelector.getModel(false).addObserver(new EmptyTabModelObserver() {
                 @Override
-                public void didAddTab(Tab tab, @TabLaunchType int type) {
-                    openTabHelper.notifyCalled();
+                public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
+                    if (tab != initialActiveTab) {
+                        openTabHelper.notifyCalled();
+                    }
                 }
             });
         });
@@ -101,10 +100,8 @@ public class TabObserverRegistrarTest {
 
         assertEquals(2, tabSelector.getModel(false).getCount());
         final Tab activeTab = tabSelector.getCurrentTab();
-        assertNotEquals(activeTab, initialActiveTab);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            android.util.Log.e("ABCD", "loadUrl0");
             initialActiveTab.loadUrl(new LoadUrlParams(url1));
             activeTab.loadUrl(new LoadUrlParams(url2));
         });

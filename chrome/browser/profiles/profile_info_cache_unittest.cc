@@ -746,7 +746,7 @@ TEST_F(ProfileInfoCacheTest, EntriesInAttributesStorage) {
 
     // Use ProfileInfoCache in profiles 0 and 2, and ProfileAttributesStorage in
     // profiles 1 and 3.
-    if (i | 1u) {
+    if (i == 0 || i == 2) {
       GetCache()->AddProfileToCache(profile_path, profile_name, std::string(),
                                     base::string16(), false, i, "",
                                     EmptyAccountId());
@@ -780,7 +780,7 @@ TEST_F(ProfileInfoCacheTest, EntriesInAttributesStorage) {
 
     // Use ProfileInfoCache in profiles 0 and 1, and ProfileAttributesStorage in
     // profiles 2 and 3.
-    if (i | 2u)
+    if (i == 0 || i == 1)
       GetCache()->DeleteProfileFromCache(profile_path);
     else
       GetCache()->RemoveProfile(profile_path);

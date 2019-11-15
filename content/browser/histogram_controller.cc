@@ -15,7 +15,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/common/bind_interface_helpers.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/process_type.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
@@ -101,20 +100,13 @@ template <class T>
 void HistogramController::SetHistogramMemory(
     T* host,
     base::WritableSharedMemoryRegion shared_region) {
-  mojo::PendingRemote<content::mojom::ChildHistogramFetcherFactory>
-      pending_child_histogram_fetcher_factory;
-  content::BindInterface(host, &pending_child_histogram_fetcher_factory);
+  mojo::Remote<content::mojom::ChildHistogramFetcherFactory> factory;
+  host->BindReceiver(factory.BindNewPipeAndPassReceiver());
 
-  mojo::Remote<content::mojom::ChildHistogramFetcherFactory>
-      child_histogram_fetcher_factory(
-          std::move(pending_child_histogram_fetcher_factory));
-  mojo::Remote<content::mojom::ChildHistogramFetcher> child_histogram_fetcher;
-
-  child_histogram_fetcher_factory->CreateFetcher(
-      std::move(shared_region),
-      child_histogram_fetcher.BindNewPipeAndPassReceiver());
-  InsertChildHistogramFetcherInterface(host,
-                                       std::move(child_histogram_fetcher));
+  mojo::Remote<content::mojom::ChildHistogramFetcher> fetcher;
+  factory->CreateFetcher(std::move(shared_region),
+                         fetcher.BindNewPipeAndPassReceiver());
+  InsertChildHistogramFetcherInterface(host, std::move(fetcher));
 }
 
 template <class T>

@@ -44,13 +44,19 @@
 #include "ui/events/event.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/flex_layout.h"
+#include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/layout/layout_types.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/window/custom_frame_view.h"
 #include "ui/views/window/hit_test_utils.h"
 
@@ -96,6 +102,54 @@ int HorizontalPaddingBetweenItems() {
 }
 
 }  // namespace
+
+// Holds controls in the far left or far right of the toolbar.
+// Forces a layout of the toolbar (and hence the window text) whenever a control
+// changes visibility.
+class WebAppFrameToolbarView::ToolbarButtonContainer : public views::View {
+ public:
+  explicit ToolbarButtonContainer(const gfx::Insets& inside_border_insets) {
+    views::BoxLayout& layout =
+        *SetLayoutManager(std::make_unique<views::BoxLayout>(
+            views::BoxLayout::Orientation::kHorizontal, inside_border_insets,
+            HorizontalPaddingBetweenItems()));
+    // Right align to clip the leftmost items first when not enough space.
+    layout.set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kEnd);
+    layout.set_cross_axis_alignment(
+        views::BoxLayout::CrossAxisAlignment::kCenter);
+  }
+  ~ToolbarButtonContainer() override = default;
+
+  void SetChildControllingHeight(views::View* child) {
+    child_controlling_height_ = child;
+  }
+
+ private:
+  // views::View:
+  gfx::Size CalculatePreferredSize() const override {
+    if (!child_controlling_height_)
+      return views::View::CalculatePreferredSize();
+
+    // Prefer height consistency over accommodating edge case icons that may
+    // bump up the container height (e.g. extension action icons with badges).
+    // TODO(https://crbug.com/889745): Fix the inconsistent icon sizes found in
+    // the right-hand container and turn this into a DCHECK that the container
+    // height is the same as the app menu button height.
+    return gfx::Size(views::View::CalculatePreferredSize().width(),
+                     child_controlling_height_->GetPreferredSize().height());
+  }
+
+  void ChildPreferredSizeChanged(views::View* child) override {
+    PreferredSizeChanged();
+  }
+
+  void ChildVisibilityChanged(views::View* child) override {
+    // Changes to layout need to be taken into account by the toolbar view.
+    PreferredSizeChanged();
+  }
+
+  views::View* child_controlling_height_ = nullptr;
+};
 
 const char WebAppFrameToolbarView::kViewClassName[] = "WebAppFrameToolbarView";
 
@@ -195,6 +249,7 @@ WebAppFrameToolbarView::WebAppFrameToolbarView(views::Widget* widget,
                                                BrowserView* browser_view,
                                                SkColor active_color,
                                                SkColor inactive_color,
+                                               base::Optional<int> left_margin,
                                                base::Optional<int> right_margin)
     : browser_view_(browser_view),
       active_color_(active_color),
@@ -205,25 +260,31 @@ WebAppFrameToolbarView::WebAppFrameToolbarView(views::Widget* widget,
 
   SetID(VIEW_ID_WEB_APP_FRAME_TOOLBAR);
 
-  views::BoxLayout& layout =
-      *SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kHorizontal,
-          gfx::Insets(0,
-                      right_margin.value_or(HorizontalPaddingBetweenItems())),
-          HorizontalPaddingBetweenItems()));
-  // Right align to clip the leftmost items first when not enough space.
-  layout.set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kEnd);
-  layout.set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::kCenter);
+  {
+    views::FlexLayout* layout =
+        SetLayoutManager(std::make_unique<views::FlexLayout>());
+    layout->SetOrientation(views::LayoutOrientation::kHorizontal);
+    layout->SetMainAxisAlignment(views::LayoutAlignment::kEnd);
+    layout->SetCrossAxisAlignment(views::LayoutAlignment::kStretch);
+  }
 
   const auto* app_controller = browser_view_->browser()->app_controller();
 
   if (base::FeatureList::IsEnabled(features::kDesktopMinimalUI) &&
       app_controller->HasMinimalUiButtons()) {
-    // TODO(crbug.com/1007151): Place buttons at far left of title bar.
-    // TODO(crbug.com/1007151): Make the icons have correct sizes.
-    back_ = AddChildView(CreateBackButton(this, browser_view->browser()));
-    reload_ = AddChildView(CreateReloadButton(browser_view->browser()));
+    left_container_ = AddChildView(std::make_unique<ToolbarButtonContainer>(
+        gfx::Insets(0, left_margin.value_or(HorizontalPaddingBetweenItems()))));
+    left_container_->SetProperty(
+        views::kFlexBehaviorKey,
+        views::FlexSpecification::ForSizeRule(
+            views::MinimumFlexSizeRule::kScaleToMinimumSnapToZero,
+            views::MaximumFlexSizeRule::kPreferred)
+            .WithOrder(2));
+
+    back_ = left_container_->AddChildView(
+        CreateBackButton(this, browser_view->browser()));
+    reload_ = left_container_->AddChildView(
+        CreateReloadButton(browser_view->browser()));
 
     views::SetHitTestComponent(back_, static_cast<int>(HTCLIENT));
     views::SetHitTestComponent(reload_, static_cast<int>(HTCLIENT));
@@ -233,14 +294,29 @@ WebAppFrameToolbarView::WebAppFrameToolbarView(views::Widget* widget,
     md_observer_.Add(ui::MaterialDesignController::GetInstance());
   }
 
+  center_container_ = AddChildView(std::make_unique<views::View>());
+  center_container_->SetProperty(views::kFlexBehaviorKey,
+                                 views::FlexSpecification::ForSizeRule(
+                                     views::MinimumFlexSizeRule::kScaleToZero,
+                                     views::MaximumFlexSizeRule::kUnbounded)
+                                     .WithOrder(3));
+
+  right_container_ = AddChildView(std::make_unique<ToolbarButtonContainer>(
+      gfx::Insets(0, right_margin.value_or(HorizontalPaddingBetweenItems()))));
+  right_container_->SetProperty(views::kFlexBehaviorKey,
+                                views::FlexSpecification::ForSizeRule(
+                                    views::MinimumFlexSizeRule::kScaleToZero,
+                                    views::MaximumFlexSizeRule::kPreferred)
+                                    .WithOrder(1));
+
   if (app_controller->HasTitlebarAppOriginText()) {
-    web_app_origin_text_ = AddChildView(
+    web_app_origin_text_ = right_container_->AddChildView(
         std::make_unique<WebAppOriginText>(browser_view->browser()));
   }
 
   if (app_controller->HasTitlebarContentSettings()) {
-    content_settings_container_ =
-        AddChildView(std::make_unique<ContentSettingsContainer>(this));
+    content_settings_container_ = right_container_->AddChildView(
+        std::make_unique<ContentSettingsContainer>(this));
     views::SetHitTestComponent(content_settings_container_,
                                static_cast<int>(HTCLIENT));
   }
@@ -261,19 +337,19 @@ WebAppFrameToolbarView::WebAppFrameToolbarView(views::Widget* widget,
   params.browser = browser_view_->browser();
   params.command_updater = browser_view_->browser()->command_controller();
   params.page_action_icon_delegate = this;
-  page_action_icon_container_view_ =
-      AddChildView(std::make_unique<PageActionIconContainerView>(params));
+  page_action_icon_container_view_ = right_container_->AddChildView(
+      std::make_unique<PageActionIconContainerView>(params));
   views::SetHitTestComponent(page_action_icon_container_view_,
                              static_cast<int>(HTCLIENT));
 
   if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
-    extensions_container_ = AddChildView(
+    extensions_container_ = right_container_->AddChildView(
         std::make_unique<ExtensionsToolbarContainer>(browser_view_->browser()));
     views::SetHitTestComponent(extensions_container_,
                                static_cast<int>(HTCLIENT));
   } else {
-    browser_actions_container_ =
-        AddChildView(std::make_unique<BrowserActionsContainer>(
+    browser_actions_container_ = right_container_->AddChildView(
+        std::make_unique<BrowserActionsContainer>(
             browser_view->browser(), nullptr, this, false /* interactive */));
     views::SetHitTestComponent(browser_actions_container_,
                                static_cast<int>(HTCLIENT));
@@ -282,16 +358,17 @@ WebAppFrameToolbarView::WebAppFrameToolbarView(views::Widget* widget,
 // TODO(crbug.com/998900): Create AppControllerUi class to contain this logic.
 #if defined(OS_CHROMEOS)
   if (app_controller->UseTitlebarTerminalSystemAppMenu()) {
-    web_app_menu_button_ = AddChildView(
+    web_app_menu_button_ = right_container_->AddChildView(
         std::make_unique<TerminalSystemAppMenuButton>(browser_view));
   } else {
-    web_app_menu_button_ =
-        AddChildView(std::make_unique<WebAppMenuButton>(browser_view));
+    web_app_menu_button_ = right_container_->AddChildView(
+        std::make_unique<WebAppMenuButton>(browser_view));
   }
 #else
-  web_app_menu_button_ =
-      AddChildView(std::make_unique<WebAppMenuButton>(browser_view));
+  web_app_menu_button_ = right_container_->AddChildView(
+      std::make_unique<WebAppMenuButton>(browser_view));
 #endif
+  right_container_->SetChildControllingHeight(web_app_menu_button_);
 
   UpdateChildrenColor();
   UpdateStatusIconsVisibility();
@@ -344,24 +421,30 @@ void WebAppFrameToolbarView::SetPaintAsActive(bool active) {
   GenerateMinimalUIButtonImages();
 }
 
-int WebAppFrameToolbarView::LayoutInContainer(int leading_x,
-                                              int trailing_x,
-                                              int y,
-                                              int available_height) {
+std::pair<int, int> WebAppFrameToolbarView::LayoutInContainer(
+    int leading_x,
+    int trailing_x,
+    int y,
+    int available_height) {
   if (available_height == 0) {
     SetSize(gfx::Size());
-    return trailing_x;
+    return std::pair<int, int>(0, 0);
   }
 
   gfx::Size preferred_size = GetPreferredSize();
-  const int width =
-      base::ClampToRange(trailing_x - leading_x, 0, preferred_size.width());
+  const int width = std::max(trailing_x - leading_x, 0);
   const int height = preferred_size.height();
   DCHECK_LE(height, available_height);
-  SetBounds(trailing_x - width, y + (available_height - height) / 2, width,
-            height);
+  SetBounds(leading_x, y + (available_height - height) / 2, width, height);
   Layout();
-  return bounds().x();
+
+  if (!center_container_->GetVisible())
+    return std::pair<int, int>(0, 0);
+
+  gfx::RectF center_bounds = gfx::RectF(center_container_->bounds());
+  DCHECK(center_bounds.x() == 0 || back_ || reload_);
+  View::ConvertRectToTarget(this, parent(), &center_bounds);
+  return std::pair<int, int>(center_bounds.x(), center_bounds.right());
 }
 
 const char* WebAppFrameToolbarView::GetClassName() const {
@@ -545,18 +628,12 @@ void WebAppFrameToolbarView::DisableAnimationForTesting() {
   g_animation_disabled_for_testing = true;
 }
 
-views::View* WebAppFrameToolbarView::GetPageActionIconContainerForTesting() {
-  return page_action_icon_container_view_;
+views::View* WebAppFrameToolbarView::GetRightContainerForTesting() {
+  return right_container_;
 }
 
-gfx::Size WebAppFrameToolbarView::CalculatePreferredSize() const {
-  // Prefer height consistency over accommodating edge case icons that may bump
-  // up the container height (e.g. extension action icons with badges).
-  // TODO(https://crbug.com/889745): Fix the inconsistent icon sizes found in
-  // this container and turn this into a DCHECK that the conatiner height is the
-  // same as the app menu button height.
-  return gfx::Size(views::View::CalculatePreferredSize().width(),
-                   web_app_menu_button_->GetPreferredSize().height());
+views::View* WebAppFrameToolbarView::GetPageActionIconContainerForTesting() {
+  return page_action_icon_container_view_;
 }
 
 void WebAppFrameToolbarView::ChildPreferredSizeChanged(views::View* child) {

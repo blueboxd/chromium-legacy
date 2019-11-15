@@ -1210,7 +1210,8 @@ void DevToolsWindow::WebContentsCreated(WebContents* source_contents,
     // is resized when the frame is rendered. Force rendering of the toolbox at
     // all times, to make sure that a frame can be rendered even when the
     // inspected WebContents fully covers the toolbox. https://crbug.com/828307
-    toolbox_web_contents_->IncrementCapturerCount(gfx::Size());
+    toolbox_web_contents_->IncrementCapturerCount(gfx::Size(),
+                                                  /* stay_hidden */ false);
   }
 }
 

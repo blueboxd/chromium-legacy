@@ -28,3 +28,8 @@ per-file render_frame_metadata*=jonross@chromium.org
 
 # Dependency for storage APIs.
 per-file storage_util*=file://storage/OWNERS
+
+# For security review.
+per-file browser_exposed_renderer_interfaces.cc=set noparent
+per-file browser_exposed_renderer_interfaces.cc=file://ipc/SECURITY_OWNERS
+

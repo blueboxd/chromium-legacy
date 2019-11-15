@@ -41,6 +41,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.history.HistoryTestUtils.TestObserver;
+import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -578,8 +579,8 @@ public class HistoryActivityTest {
             PrefServiceBridge.getInstance().setString(Pref.SUPERVISED_USER_ID, "ChildAccountSUID");
             return Profile.getLastUsedProfile().isChild()
                     && !PrefServiceBridge.getInstance().getBoolean(
-                               Pref.ALLOW_DELETING_BROWSER_HISTORY)
-                    && !PrefServiceBridge.getInstance().isIncognitoModeEnabled();
+                            Pref.ALLOW_DELETING_BROWSER_HISTORY)
+                    && !IncognitoUtils.isIncognitoModeEnabled();
         }));
 
         // Wait for preference change callbacks. One for ALLOW_DELETING_BROWSER_HISTORY and one for

@@ -34,11 +34,6 @@ XCODE_IOS_11_CACHE = swarming.cache(
 )
 
 
-# There are a lot of goma builders, some mixed in to other buckets, separate
-# them out so that the goma team has an easy grouping
-exec('./ci/goma.star')
-
-
 # Builders appear after the function used to define them, with all builders
 # defined using the same function ordered lexicographically by name
 # Builder functions are defined in lexicographic order by name ignoring the
@@ -1323,10 +1318,6 @@ def fyi_ios_builder(
       os = os.MAC_ANY,
       **kwargs
   )
-
-fyi_ios_builder(
-    name = 'ios-device-goma-canary-clobber',
-)
 
 fyi_ios_builder(
     name = 'ios-simulator-cr-recipe',

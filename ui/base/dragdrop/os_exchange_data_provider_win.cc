@@ -891,12 +891,16 @@ void DataObjectImpl::RemoveData(const FORMATETC& format) {
 void DataObjectImpl::OnDownloadCompleted(const base::FilePath& file_path) {
   for (std::unique_ptr<StoredDataInfo>& content : contents_) {
     if (content->format_etc.cfFormat == CF_HDROP) {
+      // Retrieve the downloader first so it won't get destroyed.
+      auto downloader = std::move(content->downloader);
+      if (downloader)
+        downloader->Stop();
       // Replace stored data.
       STGMEDIUM* storage =
           GetStorageForFileNames({FileInfo(file_path, base::FilePath())});
       content = std::make_unique<StoredDataInfo>(
           ClipboardFormatType::GetCFHDropType().ToFormatEtc(), storage);
-
+      content->downloader = std::move(downloader);
       break;
     }
   }

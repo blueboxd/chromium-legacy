@@ -290,7 +290,7 @@ bool DoContentScriptsDependOnRelaxedCorb(const Extension& extension) {
 
 bool DoExtensionPermissionsCoverCorsOrCorbRelatedOrigins(
     const Extension& extension) {
-  // TODO(lukasza): https://crbug.com/846346: Return false if the |extension|
+  // TODO(lukasza): https://crbug.com/1016904: Return false if the |extension|
   // doesn't need a special URLLoaderFactory based on |extension| permissions.
   // For now we conservatively assume that all extensions need relaxed CORS/CORB
   // treatment.
@@ -314,6 +314,7 @@ mojo::PendingRemote<network::mojom::URLLoaderFactory> CreateURLLoaderFactory(
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
         header_client,
     const Extension& extension,
+    const url::Origin& main_world_origin,
     const base::Optional<net::NetworkIsolationKey>& network_isolation_key) {
   // Compute relaxed CORB config to be used by |extension|.
   network::mojom::URLLoaderFactoryParamsPtr params =
@@ -323,17 +324,22 @@ mojo::PendingRemote<network::mojom::URLLoaderFactory> CreateURLLoaderFactory(
 
   // Setup factory bound allow list that overwrites per-profile common list
   // to allow tab specific permissions only for this newly created factory.
-  params->factory_bound_allow_patterns = CreateCorsOriginAccessAllowList(
-      extension,
-      PermissionsData::EffectiveHostPermissionsMode::kIncludeTabSpecific);
+  params->factory_bound_access_patterns =
+      network::mojom::CorsOriginAccessPatterns::New();
+  params->factory_bound_access_patterns->source_origin =
+      url::Origin::Create(extension.url());
+  params->factory_bound_access_patterns->allow_patterns =
+      CreateCorsOriginAccessAllowList(
+          extension,
+          PermissionsData::EffectiveHostPermissionsMode::kIncludeTabSpecific);
 
   if (header_client)
     params->header_client = std::move(*header_client);
   params->process_id = process->GetID();
-  // TODO(lukasza): https://crbug.com/846346: Use more granular CORB enforcement
-  // based on the specific |extension|'s permissions.
+  // TODO(lukasza): https://crbug.com/1016904: Use more granular CORB
+  // enforcement based on the specific |extension|'s permissions.
   params->is_corb_enabled = false;
-  params->request_initiator_site_lock = url::Origin::Create(extension.url());
+  params->request_initiator_site_lock = main_world_origin;
 
   // Create the URLLoaderFactory.
   mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote;
@@ -523,7 +529,8 @@ URLLoaderFactoryManager::CreateFactory(
     network::mojom::NetworkContext* network_context,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
         header_client,
-    const url::Origin& initiator_origin,
+    const url::Origin& origin,
+    const url::Origin& main_world_origin,
     const base::Optional<net::NetworkIsolationKey>& network_isolation_key) {
   content::BrowserContext* browser_context = process->GetBrowserContext();
   const ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context);
@@ -533,7 +540,7 @@ URLLoaderFactoryManager::CreateFactory(
   // precursor origins, but here opaque origins (e.g. think data: URIs) created
   // by an extension should inherit CORS/CORB treatment of the extension.
   url::SchemeHostPort precursor_origin =
-      initiator_origin.GetTupleOrPrecursorTupleIfOpaque();
+      origin.GetTupleOrPrecursorTupleIfOpaque();
 
   // Don't create a factory for something that is not an extension.
   if (precursor_origin.scheme() != kExtensionScheme)
@@ -561,7 +568,8 @@ URLLoaderFactoryManager::CreateFactory(
   if (!IsSpecialURLLoaderFactoryRequired(*extension, factory_user))
     return mojo::NullRemote();
   return CreateURLLoaderFactory(process, network_context, header_client,
-                                *extension, network_isolation_key);
+                                *extension, main_world_origin,
+                                network_isolation_key);
 }
 
 // static

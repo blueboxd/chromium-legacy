@@ -32,10 +32,13 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CORE_INITIALIZER_H_
 
 #include "base/macros.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+
+namespace mojo {
+class BinderMap;
+}
 
 namespace blink {
 
@@ -76,7 +79,7 @@ class CORE_EXPORT CoreInitializer {
 
   // Called on startup to register Mojo interfaces that for control messages,
   // e.g. messages that are not routed to a specific frame.
-  virtual void RegisterInterfaces(service_manager::BinderRegistry&) = 0;
+  virtual void RegisterInterfaces(mojo::BinderMap&) = 0;
   // Methods defined in CoreInitializer and implemented by ModulesInitializer to
   // bypass the inverted dependency from core/ to modules/.
   // Mojo Interfaces registered with LocalFrame

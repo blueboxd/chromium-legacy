@@ -272,14 +272,6 @@ void ToolbarView::Init() {
   if (avatar)
     avatar_ = AddChildView(std::move(avatar));
 
-#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
-  if (browser_view_->webui_tab_strip()) {
-    webui_new_tab_button_ =
-        AddChildView(browser_view_->webui_tab_strip()->CreateNewTabButton());
-    AddChildView(browser_view_->webui_tab_strip()->CreateTabCounter());
-  }
-#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
-
   app_menu_button_ = AddChildView(std::move(app_menu_button));
 
   LoadImages();
@@ -364,6 +356,19 @@ void ToolbarView::UpdateCustomTabBarVisibility(bool visible, bool animate) {
   }
 }
 
+void ToolbarView::UpdateForWebUITabStrip() {
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+  if (browser_view_->webui_tab_strip() && app_menu_button_) {
+    const int insertion_index = GetIndexOf(app_menu_button_);
+    AddChildViewAt(browser_view_->webui_tab_strip()->CreateTabCounter(),
+                   insertion_index);
+    AddChildViewAt(browser_view_->webui_tab_strip()->CreateNewTabButton(),
+                   insertion_index);
+    LoadImages();
+  }
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+}
+
 void ToolbarView::ResetTabState(WebContents* tab) {
   if (location_bar_)
     location_bar_->ResetTabState(tab);
@@ -418,19 +423,6 @@ void ToolbarView::ShowBookmarkBubble(
 
 ExtensionsToolbarButton* ToolbarView::GetExtensionsButton() const {
   return extensions_container_->extensions_button();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ToolbarView, views::MenuButtonListener implementation:
-
-void ToolbarView::OnMenuButtonClicked(views::Button* source,
-                                      const gfx::Point& point,
-                                      const ui::Event* event) {
-  TRACE_EVENT0("views", "ToolbarView::OnMenuButtonClicked");
-  DCHECK_EQ(VIEW_ID_APP_MENU, source->GetID());
-  app_menu_button_->ShowMenu((event && event->IsKeyEvent())
-                                 ? views::MenuRunner::SHOULD_SHOW_MNEMONICS
-                                 : views::MenuRunner::NO_FLAGS);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -509,6 +501,14 @@ void ToolbarView::EnabledStateChangedForCommand(int id, bool enabled) {
 
 void ToolbarView::ButtonPressed(views::Button* sender,
                                 const ui::Event& event) {
+  TRACE_EVENT0("views", "ToolbarView::ButtonPressed");
+  if (sender->GetID() == VIEW_ID_APP_MENU) {
+    DCHECK_EQ(VIEW_ID_APP_MENU, sender->GetID());
+    app_menu_button_->ShowMenu(event.IsKeyEvent()
+                                   ? views::MenuRunner::SHOULD_SHOW_MNEMONICS
+                                   : views::MenuRunner::NO_FLAGS);
+  }
+
   chrome::ExecuteCommandWithDisposition(
       browser_, sender->tag(), ui::DispositionFromEventFlags(event.flags()));
 }
@@ -890,11 +890,10 @@ void ToolbarView::LoadImages() {
   if (media_button_)
     media_button_->UpdateIcon();
 
-  if (webui_new_tab_button_) {
-    webui_new_tab_button_->SetImage(
-        views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(kAddIcon, normal_color));
-  }
+#if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
+  if (browser_view_->webui_tab_strip())
+    browser_view_->webui_tab_strip()->UpdateButtons();
+#endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
   if (avatar_)
     avatar_->UpdateIcon();

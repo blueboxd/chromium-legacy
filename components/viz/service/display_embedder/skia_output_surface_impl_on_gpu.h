@@ -162,8 +162,10 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
   void ReleaseImageContexts(
       std::vector<std::unique_ptr<ExternalUseClient::ImageContext>>
           image_contexts);
+#if defined(OS_WIN)
   void SetEnableDCLayers(bool enable);
   void ScheduleDCLayers(std::vector<DCLayerOverlay> dc_layers);
+#endif
   void SetGpuVSyncEnabled(bool enabled);
 
   bool was_context_lost() { return context_state_->context_lost(); }

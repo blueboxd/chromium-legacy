@@ -26,6 +26,7 @@
 #include "net/http/http_network_transaction.h"
 #include "net/http/http_proxy_connect_job.h"
 #include "net/log/net_log_with_source.h"
+#include "net/quic/quic_context.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/socket_tag.h"
@@ -331,6 +332,7 @@ SpdySessionDependencies::SpdySessionDependencies(
       socket_factory(std::make_unique<MockClientSocketFactory>()),
       http_auth_handler_factory(HttpAuthHandlerFactory::CreateDefault()),
       http_server_properties(std::make_unique<HttpServerProperties>()),
+      quic_context(std::make_unique<QuicContext>()),
       enable_ip_pooling(true),
       enable_ping(false),
       enable_user_alternate_protocol_ports(false),
@@ -422,6 +424,7 @@ HttpNetworkSession::Context SpdySessionDependencies::CreateSessionContext(
   context.http_auth_handler_factory =
       session_deps->http_auth_handler_factory.get();
   context.http_server_properties = session_deps->http_server_properties.get();
+  context.quic_context = session_deps->quic_context.get();
   context.net_log = session_deps->net_log;
 #if BUILDFLAG(ENABLE_REPORTING)
   context.reporting_service = session_deps->reporting_service.get();
@@ -444,6 +447,7 @@ SpdyURLRequestContext::SpdyURLRequestContext() : storage_(this) {
   storage_.set_http_auth_handler_factory(
       HttpAuthHandlerFactory::CreateDefault());
   storage_.set_http_server_properties(std::make_unique<HttpServerProperties>());
+  storage_.set_quic_context(std::make_unique<QuicContext>());
   storage_.set_job_factory(std::make_unique<URLRequestJobFactoryImpl>());
   HttpNetworkSession::Params session_params;
   session_params.enable_spdy_ping_based_connection_checking = false;
@@ -459,6 +463,7 @@ SpdyURLRequestContext::SpdyURLRequestContext() : storage_(this) {
   session_context.ssl_config_service = ssl_config_service();
   session_context.http_auth_handler_factory = http_auth_handler_factory();
   session_context.http_server_properties = http_server_properties();
+  session_context.quic_context = quic_context();
   storage_.set_http_network_session(
       std::make_unique<HttpNetworkSession>(session_params, session_context));
   SpdySessionPoolPeer pool_peer(

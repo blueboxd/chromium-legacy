@@ -49,7 +49,7 @@ If this occurs then delete the preinstalled WebView shell as so:
 *** note
 **Note:** If using the emulator ensure it is being started with the
 `-writable-system` option as per the
-[Writable system partition](docs/android_emulator.md#writable-system-partition)
+[Writable system partition](/docs/android_emulator.md#writable-system-partition)
 instructions.
 ***
 

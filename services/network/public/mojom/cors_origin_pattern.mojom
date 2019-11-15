@@ -4,6 +4,8 @@
 
 module network.mojom;
 
+import "url/mojom/origin.mojom";
+
 // An enum to represent a mode if origin matching functions uses port.
 enum CorsPortMatchMode {
   kAllowAnyPort,
@@ -60,7 +62,7 @@ struct CorsOriginPattern {
 // Parameters for representing pairs of source origin and allow/block-lists
 // for CORS.
 struct CorsOriginAccessPatterns {
-  string source_origin;
+  url.mojom.Origin source_origin;
 
   array<CorsOriginPattern> allow_patterns;
   array<CorsOriginPattern> block_patterns;

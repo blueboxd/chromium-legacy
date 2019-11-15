@@ -12,6 +12,9 @@
 // app or test code.
 @interface FullscreenAppInterface : NSObject
 
+// Whether or not the fullscreen provider has been initialized.
++ (BOOL)isFullscreenInitialized;
+
 // Returns the current viewport insets for the visible web content view.
 + (UIEdgeInsets)currentViewportInsets;
 

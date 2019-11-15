@@ -732,6 +732,35 @@ void SearchTabHelper::BlocklistPromo(const std::string& promo_id) {
   promo_service->BlocklistPromo(promo_id);
 }
 
+void SearchTabHelper::OpenAutocompleteMatch(uint8_t line,
+                                            const GURL& url,
+                                            double button,
+                                            bool alt_key,
+                                            bool ctrl_key,
+                                            bool meta_key,
+                                            bool shift_key) {
+  DCHECK(autocomplete_controller_);
+
+  if (!search::DefaultSearchProviderIsGoogle(profile()) ||
+      !autocomplete_controller_ ||
+      line >= autocomplete_controller_->result().size()) {
+    return;
+  }
+
+  const auto& match = autocomplete_controller_->result().match_at(line);
+  if (match.destination_url != url) {
+    // TODO(https://crbug.com/1020025): this could be malice or staleness.
+    // Either way: don't navigate.
+    return;
+  }
+
+  WindowOpenDisposition disposition = ui::DispositionFromClick(
+      button == 1.0, alt_key, ctrl_key, meta_key, shift_key);
+  web_contents_->OpenURL(
+      content::OpenURLParams(match.destination_url, content::Referrer(),
+                             disposition, ui::PAGE_TRANSITION_LINK, false));
+}
+
 OmniboxView* SearchTabHelper::GetOmniboxView() {
   return const_cast<OmniboxView*>(
       const_cast<const SearchTabHelper*>(this)->GetOmniboxView());

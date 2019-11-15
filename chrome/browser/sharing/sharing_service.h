@@ -11,57 +11,36 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/sharing/ack_message_handler.h"
-#include "chrome/browser/sharing/ping_message_handler.h"
 #include "chrome/browser/sharing/sharing_device_registration.h"
 #include "chrome/browser/sharing/sharing_message_sender.h"
 #include "chrome/browser/sharing/sharing_send_message_result.h"
 #include "components/gcm_driver/web_push_common.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/sync/base/model_type.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "components/sync/protocol/device_info_specifics.pb.h"
 #include "components/sync/protocol/sharing_message.pb.h"
-#include "components/sync_device_info/device_info_tracker.h"
-#include "components/sync_device_info/local_device_info_provider.h"
 #include "net/base/backoff_entry.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/sharing/click_to_call/click_to_call_message_handler_android.h"
 #include "chrome/browser/sharing/sharing_service_proxy_android.h"
 #endif  // defined(OS_ANDROID)
-
-namespace content {
-class SmsFetcher;
-}
-
-namespace gcm {
-class GCMDriver;
-}  // namespace gcm
 
 namespace syncer {
 class DeviceInfo;
 class SyncService;
 }  // namespace syncer
 
-class Profile;
-class RemoteCopyMessageHandler;
-class SharedClipboardMessageHandler;
 class SharingFCMHandler;
-class SharingFCMSender;
 class SharingSyncPreference;
-class SmsFetchRequestHandler;
 class VapidKeyManager;
+class SharingDeviceSource;
 enum class SharingDeviceRegistrationResult;
 
 // Class to manage lifecycle of sharing feature, and provide APIs to send
 // sharing messages to other devices.
-class SharingService : public KeyedService,
-                       syncer::SyncServiceObserver,
-                       syncer::DeviceInfoTracker::Observer {
+class SharingService : public KeyedService, syncer::SyncServiceObserver {
  public:
   using SharingDeviceList = std::vector<std::unique_ptr<syncer::DeviceInfo>>;
 
@@ -77,18 +56,13 @@ class SharingService : public KeyedService,
   };
 
   SharingService(
-      Profile* profile,
       std::unique_ptr<SharingSyncPreference> sync_prefs,
       std::unique_ptr<VapidKeyManager> vapid_key_manager,
       std::unique_ptr<SharingDeviceRegistration> sharing_device_registration,
-      std::unique_ptr<SharingFCMSender> fcm_sender,
+      std::unique_ptr<SharingMessageSender> message_sender,
+      std::unique_ptr<SharingDeviceSource> device_source,
       std::unique_ptr<SharingFCMHandler> fcm_handler,
-      std::unique_ptr<SharingMessageSender> message_sender_,
-      gcm::GCMDriver* gcm_driver,
-      syncer::DeviceInfoTracker* device_info_tracker,
-      syncer::LocalDeviceInfoProvider* local_device_info_provider,
-      syncer::SyncService* sync_service,
-      content::SmsFetcher* sms_fetcher);
+      syncer::SyncService* sync_service);
   ~SharingService() override;
 
   // Returns the device matching |guid|, or nullptr if no match was found.
@@ -99,10 +73,6 @@ class SharingService : public KeyedService,
   // All returned devices have the specified |required_feature|.
   virtual SharingDeviceList GetDeviceCandidates(
       sync_pb::SharingSpecificFields::EnabledFeatures required_feature) const;
-
-  // Register |callback| so it will be invoked after all dependencies of
-  // GetDeviceCandidates are ready.
-  void AddDeviceCandidatesInitializedObserver(base::OnceClosure callback);
 
   // Sends a Sharing message to remote device.
   // |device_guid|: Sync GUID of receiver device.
@@ -122,8 +92,7 @@ class SharingService : public KeyedService,
       std::set<sync_pb::SharingSpecificFields_EnabledFeatures> enabled_features,
       SharingDeviceRegistration::RegistrationCallback callback);
 
-  // Used to fake client names in integration tests.
-  void SetDeviceInfoTrackerForTesting(syncer::DeviceInfoTracker* tracker);
+  SharingDeviceSource* GetDeviceSource() const;
 
   // Returns the current state of SharingService for testing.
   State GetStateForTesting() const;
@@ -140,25 +109,12 @@ class SharingService : public KeyedService,
   void OnStateChanged(syncer::SyncService* sync) override;
   void OnSyncCycleCompleted(syncer::SyncService* sync) override;
 
-  // syncer::DeviceInfoTracker::Observer.
-  void OnDeviceInfoChange() override;
-
   void RefreshVapidKey();
   void RegisterDevice();
   void UnregisterDevice();
 
   void OnDeviceRegistered(SharingDeviceRegistrationResult result);
   void OnDeviceUnregistered(SharingDeviceRegistrationResult result);
-
-  // Returns true if required sync feature is enabled.
-  bool IsSyncEnabled() const;
-
-  // Returns true if required sync feature is disabled. Returns false if sync is
-  // in transitioning state.
-  bool IsSyncDisabled() const;
-
-  // Returns all required sync data types to enable Sharing feature.
-  syncer::ModelTypeSet GetRequiredSyncDataTypes() const;
 
   // Returns list of devices that have |required_feature| enabled. Also
   // filters out devices which have not been online for more than
@@ -167,59 +123,21 @@ class SharingService : public KeyedService,
       SharingDeviceList devices,
       sync_pb::SharingSpecificFields::EnabledFeatures required_feature) const;
 
-  // Deduplicates devices based on client name. For devices with duplicate
-  // client names, only the most recently updated device is filtered in.
-  // Returned devices are renamed using the RenameDevice function
-  // and are sorted in (not strictly) descending order by
-  // last_updated_timestamp.
-  SharingDeviceList RenameAndDeduplicateDevices(
-      SharingDeviceList devices) const;
-
-  void InitPersonalizableLocalDeviceName(
-      std::string personalizable_local_device_name);
-
   std::unique_ptr<SharingSyncPreference> sync_prefs_;
   std::unique_ptr<VapidKeyManager> vapid_key_manager_;
   std::unique_ptr<SharingDeviceRegistration> sharing_device_registration_;
-  std::unique_ptr<SharingFCMSender> fcm_sender_;
-  std::unique_ptr<SharingFCMHandler> fcm_handler_;
   std::unique_ptr<SharingMessageSender> message_sender_;
+  std::unique_ptr<SharingDeviceSource> device_source_;
+  std::unique_ptr<SharingFCMHandler> fcm_handler_;
 
-  syncer::DeviceInfoTracker* device_info_tracker_;
-  syncer::LocalDeviceInfoProvider* local_device_info_provider_;
   syncer::SyncService* sync_service_;
 
   net::BackoffEntry backoff_entry_;
   State state_;
-  bool is_observing_device_info_tracker_;
-  std::unique_ptr<syncer::LocalDeviceInfoProvider::Subscription>
-      local_device_info_ready_subscription_;
-  // The personalized name is stored for deduplicating devices running older
-  // clients.
-  base::Optional<std::string> personalizable_local_device_name_;
-
-  // List of callbacks for AddDeviceCandidatesInitializedObserver.
-  std::vector<base::OnceClosure> device_candidates_initialized_callbacks_;
 
 #if defined(OS_ANDROID)
   SharingServiceProxyAndroid sharing_service_proxy_android_{this};
 #endif  // defined(OS_ANDROID)
-
-  PingMessageHandler ping_message_handler_;
-  std::unique_ptr<AckMessageHandler> ack_message_handler_;
-
-#if defined(OS_ANDROID)
-  ClickToCallMessageHandler click_to_call_message_handler_;
-  std::unique_ptr<SmsFetchRequestHandler> sms_fetch_request_handler_;
-#endif  // defined(OS_ANDROID)
-
-  std::unique_ptr<SharedClipboardMessageHandler>
-      shared_clipboard_message_handler_;
-
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
-    defined(OS_CHROMEOS)
-  std::unique_ptr<RemoteCopyMessageHandler> remote_copy_message_handler_;
-#endif
 
   base::WeakPtrFactory<SharingService> weak_ptr_factory_{this};
 

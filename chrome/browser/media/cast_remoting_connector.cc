@@ -310,8 +310,8 @@ void CastRemotingConnector::StartRemoting(RemotingBridge* bridge) {
   // Refuse to start if there is no remoting route available, or if remoting is
   // already active.
   if (!deprecated_remoter_ && !remoter_) {
-    DVLOG(2) << "Remoting start failed: No mirror service connected.";
-    bridge->OnStartFailed(RemotingStartFailReason::SERVICE_NOT_CONNECTED);
+    DVLOG(2) << "Remoting start failed: Invalid ANSWER message.";
+    bridge->OnStartFailed(RemotingStartFailReason::INVALID_ANSWER_MESSAGE);
     return;
   }
   if (active_bridge_) {

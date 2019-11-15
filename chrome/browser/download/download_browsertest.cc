@@ -833,8 +833,7 @@ class DownloadTest : public InProcessBrowserTest {
 
     // TODO(ahendrickson) -- |expected_title_in_progress| and
     // |expected_title_finished| need to be checked.
-    base::FilePath filename;
-    net::FileURLToFilePath(url, &filename);
+    base::FilePath filename = base::FilePath::FromUTF8Unsafe(url.path());
     base::string16 expected_title_in_progress(
         base::ASCIIToUTF16(partial_indication) + filename.LossyDisplayName());
     base::string16 expected_title_finished(
@@ -870,10 +869,8 @@ class DownloadTest : public InProcessBrowserTest {
 
     // TODO(ahendrickson): check download status text after downloading.
 
-    base::FilePath basefilename(filename.BaseName());
-    net::FileURLToFilePath(url, &filename);
     base::FilePath download_path =
-        GetDownloadDirectory(browser).Append(basefilename);
+        GetDownloadDirectory(browser).Append(filename.BaseName());
 
     bool downloaded_path_exists = base::PathExists(download_path);
     EXPECT_TRUE(downloaded_path_exists);

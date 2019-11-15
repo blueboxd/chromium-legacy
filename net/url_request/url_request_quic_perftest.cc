@@ -26,6 +26,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_status_code.h"
 #include "net/quic/crypto/proof_source_chromium.h"
+#include "net/quic/quic_context.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -126,6 +127,7 @@ class URLRequestQuicPerfTest : public ::testing::Test {
     context_->set_host_resolver(host_resolver_.get());
     context_->set_http_network_session_params(std::move(params));
     context_->set_cert_verifier(&cert_verifier_);
+    context_->set_quic_context(&quic_context_);
     context_->Init();
   }
 
@@ -191,6 +193,7 @@ class URLRequestQuicPerfTest : public ::testing::Test {
   std::unique_ptr<TestURLRequestContext> context_;
   quic::QuicMemoryCacheBackend memory_cache_backend_;
   MockCertVerifier cert_verifier_;
+  QuicContext quic_context_;
 };
 
 void CheckScalarInDump(const MemoryAllocatorDump* dump,

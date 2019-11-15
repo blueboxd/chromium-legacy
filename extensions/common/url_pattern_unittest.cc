@@ -370,6 +370,14 @@ TEST(ExtensionURLPatternTest, Match12) {
       GURL("data:text/html;charset=utf-8,<html>asdf</html>")));
 }
 
+TEST(ExtensionURLPatternTest, DoesntMatchInvalid) {
+  URLPattern pattern(kAllSchemes);
+  // Even the all_urls pattern shouldn't match an invalid URL.
+  EXPECT_EQ(URLPattern::ParseResult::kSuccess,
+            pattern.Parse(URLPattern::kAllUrlsPattern));
+  EXPECT_FALSE(pattern.MatchesURL(GURL("http:")));
+}
+
 static const struct MatchPatterns {
   const char* pattern;
   const char* matches;

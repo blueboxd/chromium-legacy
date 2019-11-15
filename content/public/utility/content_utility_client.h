@@ -17,6 +17,7 @@
 #include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace mojo {
+class BinderMap;
 class ServiceFactory;
 }
 
@@ -32,6 +33,12 @@ class CONTENT_EXPORT ContentUtilityClient {
 
   // Allows the embedder to filter messages.
   virtual bool OnMessageReceived(const IPC::Message& message);
+
+  // Allows the embedder to register interface binders to handle interface
+  // requests coming in from the browser process. These are requests that the
+  // browser issues through the ChildProcessHost's BindReceiver() API on the
+  // corresponding UtilityProcessHost.
+  virtual void ExposeInterfacesToBrowser(mojo::BinderMap* binders) {}
 
   // Allows the embedder to handle an incoming service request. If this is
   // called, this utility process was started for the sole purpose of running

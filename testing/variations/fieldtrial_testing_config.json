@@ -519,6 +519,21 @@
             ]
         }
     ],
+    "AndroidPictureInPictureAPI": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Disabled",
+                    "disable_features": [
+                        "PictureInPictureAPI"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidSpellChecker": [
         {
             "platforms": [
@@ -1748,6 +1763,7 @@
                 {
                     "name": "V2EnabledWithCopyingAndLimited",
                     "enable_features": [
+                        "D3D11PrintCodecOnCrash",
                         "D3D11VideoDecoder",
                         "D3D11VideoDecoderCopyPictures",
                         "D3D11VideoDecoderLimitTo11_0"
@@ -3850,26 +3866,6 @@
             ]
         }
     ],
-    "OffMainThreadServiceWorkerStartup": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "OffMainThreadServiceWorkerStartup"
-                    ]
-                }
-            ]
-        }
-    ],
     "OfferUploadCreditCards": [
         {
             "platforms": [
@@ -4017,21 +4013,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "OfflinePagesSharing"
-                    ]
-                }
-            ]
-        }
-    ],
-    "OfflinePreviewsFalsePositivePrevention": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "OfflinePreviewsFalsePositivePrevention"
                     ]
                 }
             ]
@@ -4987,6 +4968,51 @@
             ]
         }
     ],
+    "ProtoDBSharedMigration": [
+        {
+            "platforms": [
+                "android_webview",
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled3",
+                    "params": {
+                        "migrate_BudgetManager": "true",
+                        "migrate_CachedImageFetcherDatabase": "true",
+                        "migrate_DomDistillerStore": "true",
+                        "migrate_DownloadDB": "true",
+                        "migrate_DownloadService": "true",
+                        "migrate_FeatureEngagementTrackerAvailabilityStore": "true",
+                        "migrate_FeatureEngagementTrackerEventStore": "true",
+                        "migrate_FeedContentDatabase": "true",
+                        "migrate_FeedJournalDatabase": "true",
+                        "migrate_GCMKeyStore": "true",
+                        "migrate_NTPSnippetImages": "true",
+                        "migrate_NTPSnippets": "true",
+                        "migrate_PreviewsHintCacheStore": "true",
+                        "migrate_PrintJobDatabase": "true",
+                        "migrate_StrikeService": "true",
+                        "migrate_TestDatabase0": "true",
+                        "migrate_TestDatabase1": "true",
+                        "migrate_TestDatabase2": "true",
+                        "migrate_UsageStatsSuspension": "true",
+                        "migrate_UsageStatsTokenMapping": "true",
+                        "migrate_UsageStatsWebsiteEvent": "true",
+                        "migrate_VideoDecodeStatsDB": "true"
+                    },
+                    "enable_features": [
+                        "ProtoDBSharedMigration"
+                    ]
+                }
+            ]
+        }
+    ],
     "QUIC": [
         {
             "platforms": [
@@ -5809,7 +5835,7 @@
             ]
         }
     ],
-    "ServiceWorkerOnUI": [
+    "ServiceWorkerStartupOptimizations": [
         {
             "platforms": [
                 "android",
@@ -5821,9 +5847,11 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "Enabled_All",
                     "enable_features": [
-                        "ServiceWorkerOnUI"
+                        "OffMainThreadServiceWorkerStartup",
+                        "ServiceWorkerOnUI",
+                        "ServiceWorkerPrefersUnusedProcess"
                     ]
                 }
             ]

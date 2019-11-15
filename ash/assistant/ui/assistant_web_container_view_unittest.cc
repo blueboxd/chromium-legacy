@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
-#include "chromeos/services/assistant/public/features.h"
 #include "ui/events/test/event_generator.h"
 
 namespace ash {
@@ -25,18 +24,6 @@ class AssistantWebContainerViewTest : public AssistantAshTestBase {
   AssistantWebContainerViewTest() = default;
   ~AssistantWebContainerViewTest() override = default;
 
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        chromeos::assistant::features::kEnableAssistantWebContainer);
-
-    AssistantAshTestBase::SetUp();
-  }
-
-  void TearDown() override {
-    AssistantAshTestBase::TearDown();
-    scoped_feature_list_.Reset();
-  }
-
  protected:
   AssistantWebContainerView* view() {
     return Shell::Get()
@@ -46,8 +33,6 @@ class AssistantWebContainerViewTest : public AssistantAshTestBase {
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(AssistantWebContainerViewTest);
 };
 

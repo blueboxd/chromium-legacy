@@ -43,6 +43,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/renderer_resources.h"
 #include "chrome/renderer/benchmarking_extension.h"
+#include "chrome/renderer/browser_exposed_renderer_interfaces.h"
 #include "chrome/renderer/chrome_render_frame_observer.h"
 #include "chrome/renderer/chrome_render_thread_observer.h"
 #include "chrome/renderer/content_settings_agent_impl.h"
@@ -100,12 +101,14 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/mime_handler_view_mode.h"
+#include "content/public/common/page_visibility_state.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/plugin_instance_throttler.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_visitor.h"
 #include "content/public/renderer/render_view.h"
+#include "content/public/renderer/render_view_observer.h"
 #include "extensions/buildflags/buildflags.h"
 #include "ipc/ipc_sync_channel.h"
 #include "media/base/media_switches.h"
@@ -281,22 +284,25 @@ bool IsStandaloneContentExtensionProcess() {
 }
 
 // Defers media player loading in background pages until they're visible.
-class MediaLoadDeferrer : public content::RenderFrameObserver {
+class MediaLoadDeferrer : public content::RenderViewObserver {
  public:
-  MediaLoadDeferrer(content::RenderFrame* render_frame,
+  MediaLoadDeferrer(content::RenderView* render_view,
                     base::OnceClosure continue_loading_cb)
-      : content::RenderFrameObserver(render_frame),
+      : content::RenderViewObserver(render_view),
         continue_loading_cb_(std::move(continue_loading_cb)) {}
   ~MediaLoadDeferrer() override {}
 
- private:
   // content::RenderFrameObserver implementation:
-  void WasShown() override {
+  void OnDestruct() override { delete this; }
+  void OnPageVisibilityChanged(
+      content::PageVisibilityState visibility_state) override {
+    if (visibility_state != content::PageVisibilityState::kVisible)
+      return;
     std::move(continue_loading_cb_).Run();
     delete this;
   }
-  void OnDestruct() override { delete this; }
 
+ private:
   base::OnceClosure continue_loading_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaLoadDeferrer);
@@ -356,8 +362,8 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   browser_interface_broker_ =
       blink::Platform::Current()->GetBrowserInterfaceBroker();
 
-  chrome_observer_.reset(new ChromeRenderThreadObserver());
-  web_cache_impl_.reset(new web_cache::WebCacheImpl());
+  chrome_observer_ = std::make_unique<ChromeRenderThreadObserver>();
+  web_cache_impl_ = std::make_unique<web_cache::WebCacheImpl>();
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   ChromeExtensionsRendererClient::GetInstance()->RenderThreadStarted();
@@ -440,6 +446,14 @@ void ChromeContentRendererClient::RenderThreadStarted() {
     thread->BindHostReceiver(collector.InitWithNewPipeAndPassReceiver());
     ThreadProfiler::SetCollectorForChildProcess(std::move(collector));
   }
+}
+
+void ChromeContentRendererClient::ExposeInterfacesToBrowser(
+    mojo::BinderMap* binders) {
+  // NOTE: Do not add binders directly within this method. Instead, modify the
+  // definition of |ExposeChromeRendererInterfacesToBrowser()| to ensure
+  // security review coverage.
+  ExposeChromeRendererInterfacesToBrowser(this, binders);
 }
 
 void ChromeContentRendererClient::RenderFrameCreated(
@@ -719,7 +733,7 @@ bool ChromeContentRendererClient::DeferMediaLoad(
            blink::PageVisibilityState::kVisible &&
        !has_played_media_before) ||
       prerender::PrerenderHelper::IsPrerendering(render_frame)) {
-    new MediaLoadDeferrer(render_frame, std::move(closure));
+    new MediaLoadDeferrer(render_frame->GetRenderView(), std::move(closure));
     return true;
   }
 
@@ -1310,7 +1324,7 @@ bool ChromeContentRendererClient::IsExtensionOrSharedModuleWhitelisted(
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 void ChromeContentRendererClient::InitSpellCheck() {
-  spellcheck_ = std::make_unique<SpellCheck>(&registry_, this);
+  spellcheck_ = std::make_unique<SpellCheck>(this);
 }
 #endif
 
@@ -1318,6 +1332,25 @@ ChromeRenderThreadObserver* ChromeContentRendererClient::GetChromeObserver()
     const {
   return chrome_observer_.get();
 }
+
+web_cache::WebCacheImpl* ChromeContentRendererClient::GetWebCache() {
+  return web_cache_impl_.get();
+}
+
+chrome::WebRtcLoggingAgentImpl*
+ChromeContentRendererClient::GetWebRtcLoggingAgent() {
+  if (!webrtc_logging_agent_impl_) {
+    webrtc_logging_agent_impl_ =
+        std::make_unique<chrome::WebRtcLoggingAgentImpl>();
+  }
+  return webrtc_logging_agent_impl_.get();
+}
+
+#if BUILDFLAG(ENABLE_SPELLCHECK)
+SpellCheck* ChromeContentRendererClient::GetSpellCheck() {
+  return spellcheck_.get();
+}
+#endif  // BUILDFLAG(ENABLE_SPELLCHECK)
 
 std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
 ChromeContentRendererClient::CreateWebSocketHandshakeThrottleProvider() {

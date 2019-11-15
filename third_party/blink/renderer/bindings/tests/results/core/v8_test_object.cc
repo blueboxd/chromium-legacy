@@ -63,6 +63,7 @@
 #include "third_party/blink/renderer/core/html/html_table_rows_collection.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/core/keywords.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/core/typed_arrays/flexible_array_buffer_view.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
@@ -3559,12 +3560,13 @@ static void LimitedToOnlyOneAttributeAttributeGetter(const v8::FunctionCallbackI
 
   String cpp_value(impl->FastGetAttribute(html_names::kLimitedtoonlyoneattributeAttr));
 
+  AtomicString atomic_cpp_value(cpp_value.LowerASCII());
   if (cpp_value.IsEmpty()) {
     ;
-  } else if (EqualIgnoringASCIICase(cpp_value, "unique")) {
-    cpp_value = "unique";
+  } else if (atomic_cpp_value == keywords::kUnique) {
+    cpp_value = keywords::kUnique;
   } else {
-    cpp_value = "";
+    cpp_value = g_empty_atom;
   }
 
   V8SetReturnValueString(info, cpp_value, info.GetIsolate());
@@ -3597,16 +3599,17 @@ static void LimitedToOnlyAttributeAttributeGetter(const v8::FunctionCallbackInfo
 
   String cpp_value(impl->FastGetAttribute(html_names::kLimitedtoonlyattributeAttr));
 
+  AtomicString atomic_cpp_value(cpp_value.LowerASCII());
   if (cpp_value.IsEmpty()) {
     ;
-  } else if (EqualIgnoringASCIICase(cpp_value, "Per")) {
-    cpp_value = "Per";
-  } else if (EqualIgnoringASCIICase(cpp_value, "Paal")) {
-    cpp_value = "Paal";
-  } else if (EqualIgnoringASCIICase(cpp_value, "Espen")) {
-    cpp_value = "Espen";
+  } else if (atomic_cpp_value == keywords::kPer) {
+    cpp_value = keywords::kPer;
+  } else if (atomic_cpp_value == keywords::kPaal) {
+    cpp_value = keywords::kPaal;
+  } else if (atomic_cpp_value == keywords::kEspen) {
+    cpp_value = keywords::kEspen;
   } else {
-    cpp_value = "";
+    cpp_value = g_empty_atom;
   }
 
   V8SetReturnValueString(info, cpp_value, info.GetIsolate());
@@ -3639,14 +3642,15 @@ static void LimitedToOnlyOtherAttributeAttributeGetter(const v8::FunctionCallbac
 
   String cpp_value(impl->FastGetAttribute(html_names::kOtherAttr));
 
+  AtomicString atomic_cpp_value(cpp_value.LowerASCII());
   if (cpp_value.IsEmpty()) {
     ;
-  } else if (EqualIgnoringASCIICase(cpp_value, "Value1")) {
-    cpp_value = "Value1";
-  } else if (EqualIgnoringASCIICase(cpp_value, "Value2")) {
-    cpp_value = "Value2";
+  } else if (atomic_cpp_value == keywords::kValue1) {
+    cpp_value = keywords::kValue1;
+  } else if (atomic_cpp_value == keywords::kValue2) {
+    cpp_value = keywords::kValue2;
   } else {
-    cpp_value = "";
+    cpp_value = g_empty_atom;
   }
 
   V8SetReturnValueString(info, cpp_value, info.GetIsolate());
@@ -3679,14 +3683,15 @@ static void LimitedWithMissingDefaultAttributeAttributeGetter(const v8::Function
 
   String cpp_value(impl->FastGetAttribute(html_names::kLimitedwithmissingdefaultattributeAttr));
 
+  AtomicString atomic_cpp_value(cpp_value.LowerASCII());
   if (cpp_value.IsEmpty()) {
-    cpp_value = "rsa";
-  } else if (EqualIgnoringASCIICase(cpp_value, "rsa")) {
-    cpp_value = "rsa";
-  } else if (EqualIgnoringASCIICase(cpp_value, "dsa")) {
-    cpp_value = "dsa";
+    cpp_value = keywords::kRsa;
+  } else if (atomic_cpp_value == keywords::kRsa) {
+    cpp_value = keywords::kRsa;
+  } else if (atomic_cpp_value == keywords::kDsa) {
+    cpp_value = keywords::kDsa;
   } else {
-    cpp_value = "";
+    cpp_value = g_empty_atom;
   }
 
   V8SetReturnValueString(info, cpp_value, info.GetIsolate());
@@ -3719,16 +3724,17 @@ static void LimitedWithInvalidMissingDefaultAttributeAttributeGetter(const v8::F
 
   String cpp_value(impl->FastGetAttribute(html_names::kLimitedwithinvalidmissingdefaultattributeAttr));
 
+  AtomicString atomic_cpp_value(cpp_value.LowerASCII());
   if (cpp_value.IsEmpty()) {
-    cpp_value = "auto";
-  } else if (EqualIgnoringASCIICase(cpp_value, "ltr")) {
-    cpp_value = "ltr";
-  } else if (EqualIgnoringASCIICase(cpp_value, "rtl")) {
-    cpp_value = "rtl";
-  } else if (EqualIgnoringASCIICase(cpp_value, "auto")) {
-    cpp_value = "auto";
+    cpp_value = keywords::kAuto;
+  } else if (atomic_cpp_value == keywords::kLtr) {
+    cpp_value = keywords::kLtr;
+  } else if (atomic_cpp_value == keywords::kRtl) {
+    cpp_value = keywords::kRtl;
+  } else if (atomic_cpp_value == keywords::kAuto) {
+    cpp_value = keywords::kAuto;
   } else {
-    cpp_value = "ltr";
+    cpp_value = keywords::kLtr;
   }
 
   V8SetReturnValueString(info, cpp_value, info.GetIsolate());
@@ -3761,16 +3767,17 @@ static void CorsSettingAttributeAttributeGetter(const v8::FunctionCallbackInfo<v
 
   String cpp_value(impl->FastGetAttribute(html_names::kCorssettingattributeAttr));
 
+  AtomicString atomic_cpp_value(cpp_value.LowerASCII());
   if (cpp_value.IsNull()) {
     ;
   } else if (cpp_value.IsEmpty()) {
-    cpp_value = "anonymous";
-  } else if (EqualIgnoringASCIICase(cpp_value, "anonymous")) {
-    cpp_value = "anonymous";
-  } else if (EqualIgnoringASCIICase(cpp_value, "use-credentials")) {
-    cpp_value = "use-credentials";
+    cpp_value = keywords::kAnonymous;
+  } else if (atomic_cpp_value == keywords::kAnonymous) {
+    cpp_value = keywords::kAnonymous;
+  } else if (atomic_cpp_value == keywords::kUseCredentials) {
+    cpp_value = keywords::kUseCredentials;
   } else {
-    cpp_value = "anonymous";
+    cpp_value = keywords::kAnonymous;
   }
 
   V8SetReturnValueString(info, cpp_value, info.GetIsolate());
@@ -3783,20 +3790,21 @@ static void LimitedWithEmptyMissingInvalidAttributeAttributeGetter(const v8::Fun
 
   String cpp_value(impl->FastGetAttribute(html_names::kLimitedwithemptymissinginvalidattributeAttr));
 
+  AtomicString atomic_cpp_value(cpp_value.LowerASCII());
   if (cpp_value.IsNull()) {
-    cpp_value = "missing";
+    cpp_value = keywords::kMissing;
   } else if (cpp_value.IsEmpty()) {
-    cpp_value = "empty";
-  } else if (EqualIgnoringASCIICase(cpp_value, "empty")) {
-    cpp_value = "empty";
-  } else if (EqualIgnoringASCIICase(cpp_value, "missing")) {
-    cpp_value = "missing";
-  } else if (EqualIgnoringASCIICase(cpp_value, "invalid")) {
-    cpp_value = "invalid";
-  } else if (EqualIgnoringASCIICase(cpp_value, "a-normal")) {
-    cpp_value = "a-normal";
+    cpp_value = keywords::kEmpty;
+  } else if (atomic_cpp_value == keywords::kEmpty) {
+    cpp_value = keywords::kEmpty;
+  } else if (atomic_cpp_value == keywords::kMissing) {
+    cpp_value = keywords::kMissing;
+  } else if (atomic_cpp_value == keywords::kInvalid) {
+    cpp_value = keywords::kInvalid;
+  } else if (atomic_cpp_value == keywords::kANormal) {
+    cpp_value = keywords::kANormal;
   } else {
-    cpp_value = "invalid";
+    cpp_value = keywords::kInvalid;
   }
 
   V8SetReturnValueString(info, cpp_value, info.GetIsolate());

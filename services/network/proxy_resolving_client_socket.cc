@@ -238,8 +238,10 @@ int ProxyResolvingClientSocket::DoProxyResolve() {
   next_state_ = STATE_PROXY_RESOLVE_COMPLETE;
   // base::Unretained(this) is safe because resolution request is canceled when
   // |proxy_resolve_request_| is destroyed.
+  //
+  // TODO(https://crbug.com/1023439): Pass along a NetworkIsolationKey.
   return network_session_->proxy_resolution_service()->ResolveProxy(
-      url_, "POST", &proxy_info_,
+      url_, "POST", net::NetworkIsolationKey::Todo(), &proxy_info_,
       base::BindRepeating(&ProxyResolvingClientSocket::OnIOComplete,
                           base::Unretained(this)),
       &proxy_resolve_request_, net_log_);

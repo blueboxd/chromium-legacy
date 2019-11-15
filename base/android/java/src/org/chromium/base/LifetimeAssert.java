@@ -28,7 +28,7 @@ import java.util.Set;
  *     }
  * }
  */
-@CheckDiscard
+@CheckDiscard("Lifetime assertions aren't used when DCHECK is off.")
 public class LifetimeAssert {
     interface TestHook {
         void onCleaned(WrappedReference ref, String msg);

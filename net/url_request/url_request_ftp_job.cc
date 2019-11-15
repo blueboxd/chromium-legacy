@@ -100,8 +100,10 @@ void URLRequestFtpJob::Start() {
   } else {
     DCHECK_EQ(request_->context()->proxy_resolution_service(),
               proxy_resolution_service_);
+    // "Fine" to use an empty NetworkIsolationKey() because FTP is slated for
+    // removal.
     rv = proxy_resolution_service_->ResolveProxy(
-        request_->url(), "GET", &proxy_info_,
+        request_->url(), "GET", NetworkIsolationKey(), &proxy_info_,
         base::BindOnce(&URLRequestFtpJob::OnResolveProxyComplete,
                        base::Unretained(this)),
         &proxy_resolve_request_, request_->net_log());

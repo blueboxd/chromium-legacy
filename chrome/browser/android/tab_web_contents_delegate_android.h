@@ -56,7 +56,6 @@ class TabWebContentsDelegateAndroid
       content::RenderFrameHost* frame,
       const content::BluetoothScanningPrompt::EventHandler& event_handler)
       override;
-  void CloseContents(content::WebContents* web_contents) override;
   bool ShouldFocusLocationBarByDefault(content::WebContents* source) override;
   blink::mojom::DisplayMode GetDisplayMode(
       const content::WebContents* web_contents) override;
@@ -128,6 +127,7 @@ class TabWebContentsDelegateAndroid
 
   // FindResultObserver:
   void OnFindResultAvailable(content::WebContents* web_contents) override;
+  void OnFindTabHelperDestroyed(FindTabHelper* helper) override;
 
   bool ShouldEnableEmbeddedMediaExperience() const;
   bool IsPictureInPictureEnabled() const;

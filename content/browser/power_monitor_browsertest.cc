@@ -56,7 +56,7 @@ void StartUtilityProcessOnIOThread(
   host->SetName(base::ASCIIToUTF16("TestProcess"));
   EXPECT_TRUE(host->Start());
 
-  BindInterface(host, std::move(receiver));
+  host->GetChildProcess()->BindReceiver(std::move(receiver));
 }
 
 void BindInterfaceForGpuOnIOThread(
@@ -220,16 +220,14 @@ IN_PROC_BROWSER_TEST_F(PowerMonitorTest, TestRendererProcess) {
   run_loop.Run();
   EXPECT_EQ(1, request_count_from_renderer());
 
-  mojo::PendingRemote<mojom::PowerMonitorTest> pending_power_monitor_renderer;
+  mojo::Remote<mojom::PowerMonitorTest> power_monitor_renderer;
   RenderProcessHost* rph =
       shell()->web_contents()->GetMainFrame()->GetProcess();
-  BindInterface(rph, &pending_power_monitor_renderer);
+  rph->BindReceiver(power_monitor_renderer.BindNewPipeAndPassReceiver());
 
   // Ensure that the PowerMonitorTestImpl instance has been created and is
   // observing power state changes in the child process before simulating a
   // power state change.
-  mojo::Remote<mojom::PowerMonitorTest> power_monitor_renderer(
-      std::move(pending_power_monitor_renderer));
   power_monitor_renderer.FlushForTesting();
 
   SimulatePowerStateChange(true);

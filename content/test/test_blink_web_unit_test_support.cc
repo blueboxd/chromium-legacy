@@ -27,8 +27,8 @@
 #include "content/test/mock_clipboard_host.h"
 #include "media/base/media.h"
 #include "media/media_buildflags.h"
+#include "mojo/public/cpp/bindings/binder_map.h"
 #include "net/cookies/cookie_monster.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
@@ -167,8 +167,8 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport(
   // Initialize mojo firstly to enable Blink initialization to use it.
   InitializeMojo();
 
-  service_manager::BinderRegistry empty_registry;
-  blink::Initialize(this, &empty_registry, main_thread_scheduler_.get());
+  mojo::BinderMap binders;
+  blink::Initialize(this, &binders, main_thread_scheduler_.get());
   g_test_platform = this;
   blink::SetWebTestMode(true);
   blink::WebRuntimeFeatures::EnableDatabase(true);

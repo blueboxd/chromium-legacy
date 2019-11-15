@@ -8,13 +8,13 @@
 #include "base/macros.h"
 #include "chrome/browser/sharing/shared_clipboard/shared_clipboard_message_handler.h"
 
-class SharingService;
+class SharingDeviceSource;
 
 class SharedClipboardMessageHandlerAndroid
     : public SharedClipboardMessageHandler {
  public:
   explicit SharedClipboardMessageHandlerAndroid(
-      SharingService* sharing_service);
+      SharingDeviceSource* device_source);
   ~SharedClipboardMessageHandlerAndroid() override;
 
  private:

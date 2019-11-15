@@ -143,7 +143,6 @@ class AboutFlagsBrowserTest : public InProcessBrowserTest,
         base::BindLambdaForTesting([&](const std::string& name) -> bool {
           return expiration_enabled_ && name == kExpiredFlagName;
         }));
-    feature_list_.InitWithFeatures({flags::kUnexpireFlagsM76}, {});
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

@@ -101,6 +101,12 @@ def attribute_context(interface, attribute, interfaces, component_info):
     # [CustomElementCallbacks], [Reflect]
     is_custom_element_callbacks = 'CustomElementCallbacks' in extended_attributes
     is_reflect = 'Reflect' in extended_attributes
+    # [ReflectOnly]
+    reflect_only = extended_attribute_value_as_list(attribute, 'ReflectOnly')
+    if reflect_only:
+        reflect_only = map(
+            lambda v: cpp_content_attribute_value_name(interface, v),
+            reflect_only)
     if is_custom_element_callbacks or is_reflect:
         includes.add('core/html/custom/v0_custom_element_processing_stack.h')
     # [PerWorldBindings]
@@ -240,10 +246,13 @@ def attribute_context(interface, attribute, interfaces, component_info):
             v8_utilities.origin_trial_feature_name(attribute, runtime_features),  # [RuntimeEnabled] for origin trial
         'private_property_is_shared_between_getter_and_setter': private_property_is_shared_between_getter_and_setter,
         'property_attributes': property_attributes(interface, attribute),
-        'reflect_empty': extended_attributes.get('ReflectEmpty'),
-        'reflect_invalid': extended_attributes.get('ReflectInvalid', ''),
-        'reflect_missing': extended_attributes.get('ReflectMissing'),
-        'reflect_only': extended_attribute_value_as_list(attribute, 'ReflectOnly'),
+        'reflect_empty': cpp_content_attribute_value_name(
+            interface, extended_attributes.get('ReflectEmpty')),
+        'reflect_invalid': cpp_content_attribute_value_name(
+            interface, extended_attributes.get('ReflectInvalid', '')),
+        'reflect_missing': cpp_content_attribute_value_name(
+            interface, extended_attributes.get('ReflectMissing')),
+        'reflect_only': reflect_only,
         'runtime_enabled_feature_name':
             v8_utilities.runtime_enabled_feature_name(attribute, runtime_features),  # [RuntimeEnabled] if not in origin trial
         'secure_context_test': v8_utilities.secure_context(attribute, interface),  # [SecureContext]
@@ -625,6 +634,15 @@ def scoped_content_attribute_name(interface, attribute):
         namespace = 'html_names'
         includes.add('core/html_names.h')
     return '%s::%sAttr' % (namespace, symbol_name)
+
+
+def cpp_content_attribute_value_name(interface, value):
+    if value == '':
+        return 'g_empty_atom'
+    if not value:
+        return value
+    includes.add('core/keywords.h')
+    return 'keywords::' + NameStyleConverter(value).to_enum_value()
 
 
 ################################################################################

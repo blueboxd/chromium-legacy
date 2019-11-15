@@ -72,7 +72,7 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
   void Trace(blink::Visitor*) override;
 
   using InsecureNavigationsSet = HashSet<unsigned, WTF::AlreadyHashed>;
-  static WebVector<unsigned> SerializeInsecureNavigationSet(
+  static WTF::Vector<unsigned> SerializeInsecureNavigationSet(
       const InsecureNavigationsSet&);
 
   const SecurityOrigin* GetSecurityOrigin() const {

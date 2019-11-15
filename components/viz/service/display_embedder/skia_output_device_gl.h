@@ -65,8 +65,10 @@ class SkiaOutputDeviceGL final : public SkiaOutputDevice {
                      std::vector<ui::LatencyInfo> latency_info) override;
   void SetDrawRectangle(const gfx::Rect& draw_rectangle) override;
   void SetGpuVSyncEnabled(bool enabled) override;
+#if defined(OS_WIN)
   void SetEnableDCLayers(bool enable) override;
   void ScheduleDCLayers(std::vector<DCLayerOverlay> dc_layers) override;
+#endif
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
   SkSurface* BeginPaint() override;

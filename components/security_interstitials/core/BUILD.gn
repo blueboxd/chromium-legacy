@@ -8,6 +8,8 @@ static_library("core") {
     "bad_clock_ui.h",
     "base_safe_browsing_error_ui.cc",
     "base_safe_browsing_error_ui.h",
+    "blocked_interception_ui.cc",
+    "blocked_interception_ui.h",
     "common_string_util.cc",
     "common_string_util.h",
     "controller_client.cc",

@@ -29,11 +29,12 @@ namespace {
 
 }  // namespace
 
-// We don't initialize Chromium's logging.
-void LogInit(const char* filename) {}
-
-// We don't set Chromium's logging level.
-void SetLogLevel(LogLevel level) {}
+bool IsLoggingOn(LogLevel level, absl::string_view file) {
+  if (level == LogLevel::kVerbose) {
+    return ::logging::GetVlogLevelHelper(file.data(), file.size()) > 0;
+  }
+  return ::logging::ShouldCreateLogMessage(MapLogLevel(level));
+}
 
 void LogWithLevel(LogLevel level,
                   absl::string_view file,

@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.ADD_CLICK_LISTENER;
-import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.ANIMATION_PARAMS;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.ANIMATION_SOURCE_VIEW;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.COLLAPSE_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.CONTENT_TOP_MARGIN;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.DIALOG_BACKGROUND_RESOUCE_ID;
@@ -90,8 +90,8 @@ class TabGridPanelViewBinder {
             } else {
                 viewHolder.dialogView.hideDialog();
             }
-        } else if (ANIMATION_PARAMS == propertyKey) {
-            viewHolder.dialogView.setupDialogAnimation(model.get(ANIMATION_PARAMS));
+        } else if (ANIMATION_SOURCE_VIEW == propertyKey) {
+            viewHolder.dialogView.setupDialogAnimation(model.get(ANIMATION_SOURCE_VIEW));
         } else if (UNGROUP_BAR_STATUS == propertyKey) {
             viewHolder.dialogView.updateUngroupBar(model.get(UNGROUP_BAR_STATUS));
         } else if (DIALOG_BACKGROUND_RESOUCE_ID == propertyKey) {

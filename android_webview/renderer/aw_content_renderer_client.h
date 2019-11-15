@@ -34,6 +34,7 @@ class AwContentRendererClient : public content::ContentRendererClient,
 
   // ContentRendererClient implementation.
   void RenderThreadStarted() override;
+  void ExposeInterfacesToBrowser(mojo::BinderMap* binders) override;
   void RenderFrameCreated(content::RenderFrame* render_frame) override;
   void RenderViewCreated(content::RenderView* render_view) override;
   bool HasErrorPage(int http_status_code) override;
@@ -61,6 +62,10 @@ class AwContentRendererClient : public content::ContentRendererClient,
   std::unique_ptr<content::URLLoaderThrottleProvider>
   CreateURLLoaderThrottleProvider(
       content::URLLoaderThrottleProviderType provider_type) override;
+
+  visitedlink::VisitedLinkSlave* visited_link_slave() {
+    return visited_link_slave_.get();
+  }
 
  private:
   // service_manager::LocalInterfaceProvider:

@@ -166,9 +166,12 @@ void FakeAudioWorker::Worker::DoRead() {
     base::AutoLock scoped_lock(worker_cb_lock_);
     // Important to sample the clock after waiting to acquire the lock.
     now = base::TimeTicks::Now();
-    if (worker_cb_ && next_read_time > now) {
+
+    // Note: Even if we're late, this callback must be called. In many cases we
+    // are driving an underlying "samples consumed" based clock with these
+    // calls.
+    if (worker_cb_)
       worker_cb_.Run(read_time, now);
-    }
   }
 
   // If we're behind, find the next nearest ontime interval. Note, we could be

@@ -38,6 +38,7 @@
 #include "net/quic/address_utils.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/quic/mock_crypto_client_stream_factory.h"
+#include "net/quic/mock_quic_context.h"
 #include "net/quic/mock_quic_data.h"
 #include "net/quic/properties_based_quic_server_info.h"
 #include "net/quic/quic_chromium_alarm_factory.h"
@@ -221,23 +222,22 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
       : host_resolver_(new MockHostResolver),
         ssl_config_service_(new SSLConfigServiceDefaults),
         socket_factory_(new MockClientSocketFactory),
-        random_generator_(0),
-        runner_(new TestTaskRunner(&clock_)),
+        runner_(new TestTaskRunner(context_.mock_clock())),
         version_(version),
-        client_maker_(
-            version_,
-            quic::QuicUtils::CreateRandomConnectionId(&random_generator_),
-            &clock_,
-            kDefaultServerHostName,
-            quic::Perspective::IS_CLIENT,
-            client_headers_include_h2_stream_dependency),
-        server_maker_(
-            version_,
-            quic::QuicUtils::CreateRandomConnectionId(&random_generator_),
-            &clock_,
-            kDefaultServerHostName,
-            quic::Perspective::IS_SERVER,
-            false),
+        client_maker_(version_,
+                      quic::QuicUtils::CreateRandomConnectionId(
+                          context_.random_generator()),
+                      context_.clock(),
+                      kDefaultServerHostName,
+                      quic::Perspective::IS_CLIENT,
+                      client_headers_include_h2_stream_dependency),
+        server_maker_(version_,
+                      quic::QuicUtils::CreateRandomConnectionId(
+                          context_.random_generator()),
+                      context_.clock(),
+                      kDefaultServerHostName,
+                      quic::Perspective::IS_SERVER,
+                      false),
         http_server_properties_(std::make_unique<HttpServerProperties>()),
         cert_verifier_(std::make_unique<MockCertVerifier>()),
         cert_transparency_verifier_(std::make_unique<DoNothingCTVerifier>()),
@@ -255,7 +255,7 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
         failed_on_default_network_(false) {
     test_params_.quic_params.headers_include_h2_stream_dependency =
         client_headers_include_h2_stream_dependency;
-    clock_.AdvanceTime(quic::QuicTime::Delta::FromSeconds(1));
+    context_.AdvanceTime(quic::QuicTime::Delta::FromSeconds(1));
   }
 
   void Initialize() {
@@ -266,8 +266,7 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
         cert_verifier_.get(), &ct_policy_enforcer_, &transport_security_state_,
         cert_transparency_verifier_.get(),
         /*SocketPerformanceWatcherFactory*/ nullptr,
-        &crypto_client_stream_factory_, &random_generator_, &clock_,
-        test_params_.quic_params);
+        &crypto_client_stream_factory_, &context_, test_params_.quic_params);
   }
 
   void InitializeConnectionMigrationV2Test(
@@ -884,8 +883,7 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
   std::unique_ptr<SSLConfigService> ssl_config_service_;
   std::unique_ptr<MockClientSocketFactory> socket_factory_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
-  quic::test::MockRandom random_generator_;
-  quic::MockClock clock_;
+  MockQuicContext context_;
   scoped_refptr<TestTaskRunner> runner_;
   const quic::ParsedQuicVersion version_;
   QuicTestPacketMaker client_maker_;
@@ -1233,8 +1231,9 @@ TEST_P(QuicStreamFactoryTest, CachedInitialRttWithNetworkIsolationKey) {
     crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
     QuicTestPacketMaker packet_maker(
-        version_, quic::QuicUtils::CreateRandomConnectionId(&random_generator_),
-        &clock_, kDefaultServerHostName, quic::Perspective::IS_CLIENT,
+        version_,
+        quic::QuicUtils::CreateRandomConnectionId(context_.random_generator()),
+        context_.clock(), kDefaultServerHostName, quic::Perspective::IS_CLIENT,
         test_params_.quic_params.headers_include_h2_stream_dependency);
 
     MockQuicData socket_data(version_);
@@ -1454,8 +1453,9 @@ TEST_P(QuicStreamFactoryTest, ServerNetworkStatsWithNetworkIsolationKey) {
     crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
 
     QuicTestPacketMaker packet_maker(
-        version_, quic::QuicUtils::CreateRandomConnectionId(&random_generator_),
-        &clock_, kDefaultServerHostName, quic::Perspective::IS_CLIENT,
+        version_,
+        quic::QuicUtils::CreateRandomConnectionId(context_.random_generator()),
+        context_.clock(), kDefaultServerHostName, quic::Perspective::IS_CLIENT,
         test_params_.quic_params.headers_include_h2_stream_dependency);
 
     MockQuicData socket_data(version_);
@@ -8095,8 +8095,8 @@ TEST_P(QuicStreamFactoryTest, DefaultRetransmittableOnWireTimeoutForMigration) {
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
   QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), task_runner.get());
   QuicStreamFactoryPeer::SetAlarmFactory(
-      factory_.get(),
-      std::make_unique<QuicChromiumAlarmFactory>(task_runner.get(), &clock_));
+      factory_.get(), std::make_unique<QuicChromiumAlarmFactory>(
+                          task_runner.get(), context_.clock()));
 
   MockQuicData socket_data(version_);
   int packet_num = 1;
@@ -8203,14 +8203,14 @@ TEST_P(QuicStreamFactoryTest, DefaultRetransmittableOnWireTimeoutForMigration) {
   base::TimeDelta delay = task_runner->NextPendingTaskDelay();
   EXPECT_GT(kDefaultRetransmittableOnWireTimeout, delay);
   // Fire the ack alarm, since ack has been sent, no ack will be sent.
-  clock_.AdvanceTime(
+  context_.AdvanceTime(
       quic::QuicTime::Delta::FromMilliseconds(delay.InMilliseconds()));
   task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
 
   // Fire the ping alarm with retransmittable-on-wire timeout, send PING.
   delay = kDefaultRetransmittableOnWireTimeout - delay;
   EXPECT_EQ(delay, task_runner->NextPendingTaskDelay());
-  clock_.AdvanceTime(
+  context_.AdvanceTime(
       quic::QuicTime::Delta::FromMilliseconds(delay.InMilliseconds()));
   task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
 
@@ -8253,8 +8253,8 @@ TEST_P(QuicStreamFactoryTest, CustomRetransmittableOnWireTimeoutForMigration) {
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
   QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), task_runner.get());
   QuicStreamFactoryPeer::SetAlarmFactory(
-      factory_.get(),
-      std::make_unique<QuicChromiumAlarmFactory>(task_runner.get(), &clock_));
+      factory_.get(), std::make_unique<QuicChromiumAlarmFactory>(
+                          task_runner.get(), context_.clock()));
 
   MockQuicData socket_data(version_);
   int packet_num = 1;
@@ -8360,14 +8360,14 @@ TEST_P(QuicStreamFactoryTest, CustomRetransmittableOnWireTimeoutForMigration) {
   base::TimeDelta delay = task_runner->NextPendingTaskDelay();
   EXPECT_GT(custom_timeout_value, delay);
   // Fire the ack alarm, since ack has been sent, no ack will be sent.
-  clock_.AdvanceTime(
+  context_.AdvanceTime(
       quic::QuicTime::Delta::FromMilliseconds(delay.InMilliseconds()));
   task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
 
   // Fire the ping alarm with retransmittable-on-wire timeout, send PING.
   delay = custom_timeout_value - delay;
   EXPECT_EQ(delay, task_runner->NextPendingTaskDelay());
-  clock_.AdvanceTime(
+  context_.AdvanceTime(
       quic::QuicTime::Delta::FromMilliseconds(delay.InMilliseconds()));
   task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
 
@@ -8409,8 +8409,8 @@ TEST_P(QuicStreamFactoryTest, CustomRetransmittableOnWireTimeout) {
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
   QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), task_runner.get());
   QuicStreamFactoryPeer::SetAlarmFactory(
-      factory_.get(),
-      std::make_unique<QuicChromiumAlarmFactory>(task_runner.get(), &clock_));
+      factory_.get(), std::make_unique<QuicChromiumAlarmFactory>(
+                          task_runner.get(), context_.clock()));
 
   MockQuicData socket_data1(version_);
   int packet_num = 1;
@@ -8500,14 +8500,14 @@ TEST_P(QuicStreamFactoryTest, CustomRetransmittableOnWireTimeout) {
   base::TimeDelta delay = task_runner->NextPendingTaskDelay();
   EXPECT_GT(custom_timeout_value, delay);
   // Fire the ack alarm, since ack has been sent, no ack will be sent.
-  clock_.AdvanceTime(
+  context_.AdvanceTime(
       quic::QuicTime::Delta::FromMilliseconds(delay.InMilliseconds()));
   task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
 
   // Fire the ping alarm with retransmittable-on-wire timeout, send PING.
   delay = custom_timeout_value - delay;
   EXPECT_EQ(delay, task_runner->NextPendingTaskDelay());
-  clock_.AdvanceTime(
+  context_.AdvanceTime(
       quic::QuicTime::Delta::FromMilliseconds(delay.InMilliseconds()));
   task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
 
@@ -8551,8 +8551,8 @@ TEST_P(QuicStreamFactoryTest, NoRetransmittableOnWireTimeout) {
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
   QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), task_runner.get());
   QuicStreamFactoryPeer::SetAlarmFactory(
-      factory_.get(),
-      std::make_unique<QuicChromiumAlarmFactory>(task_runner.get(), &clock_));
+      factory_.get(), std::make_unique<QuicChromiumAlarmFactory>(
+                          task_runner.get(), context_.clock()));
 
   MockQuicData socket_data1(version_);
   int packet_num = 1;
@@ -8638,7 +8638,7 @@ TEST_P(QuicStreamFactoryTest, NoRetransmittableOnWireTimeout) {
   base::TimeDelta delay = task_runner->NextPendingTaskDelay();
   EXPECT_GT(kDefaultRetransmittableOnWireTimeout, delay);
   // Fire the ack alarm, since ack has been sent, no ack will be sent.
-  clock_.AdvanceTime(
+  context_.AdvanceTime(
       quic::QuicTime::Delta::FromMilliseconds(delay.InMilliseconds()));
   task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
 
@@ -8646,7 +8646,7 @@ TEST_P(QuicStreamFactoryTest, NoRetransmittableOnWireTimeout) {
   base::TimeDelta wrong_delay = kDefaultRetransmittableOnWireTimeout - delay;
   delay = task_runner->NextPendingTaskDelay();
   EXPECT_NE(wrong_delay, delay);
-  clock_.AdvanceTime(
+  context_.AdvanceTime(
       quic::QuicTime::Delta::FromMilliseconds(delay.InMilliseconds()));
   task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
 
@@ -8685,8 +8685,8 @@ TEST_P(QuicStreamFactoryTest,
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
   QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), task_runner.get());
   QuicStreamFactoryPeer::SetAlarmFactory(
-      factory_.get(),
-      std::make_unique<QuicChromiumAlarmFactory>(task_runner.get(), &clock_));
+      factory_.get(), std::make_unique<QuicChromiumAlarmFactory>(
+                          task_runner.get(), context_.clock()));
 
   MockQuicData socket_data1(version_);
   int packet_num = 1;
@@ -8776,14 +8776,14 @@ TEST_P(QuicStreamFactoryTest,
   base::TimeDelta delay = task_runner->NextPendingTaskDelay();
   EXPECT_GT(custom_timeout_value, delay);
   // Fire the ack alarm, since ack has been sent, no ack will be sent.
-  clock_.AdvanceTime(
+  context_.AdvanceTime(
       quic::QuicTime::Delta::FromMilliseconds(delay.InMilliseconds()));
   task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
 
   // Fire the ping alarm with retransmittable-on-wire timeout, send PING.
   delay = custom_timeout_value - delay;
   EXPECT_EQ(delay, task_runner->NextPendingTaskDelay());
-  clock_.AdvanceTime(
+  context_.AdvanceTime(
       quic::QuicTime::Delta::FromMilliseconds(delay.InMilliseconds()));
   task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
 
@@ -8829,8 +8829,8 @@ TEST_P(QuicStreamFactoryTest,
   auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
   QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), task_runner.get());
   QuicStreamFactoryPeer::SetAlarmFactory(
-      factory_.get(),
-      std::make_unique<QuicChromiumAlarmFactory>(task_runner.get(), &clock_));
+      factory_.get(), std::make_unique<QuicChromiumAlarmFactory>(
+                          task_runner.get(), context_.clock()));
 
   MockQuicData socket_data1(version_);
   int packet_num = 1;
@@ -8916,7 +8916,7 @@ TEST_P(QuicStreamFactoryTest,
   base::TimeDelta delay = task_runner->NextPendingTaskDelay();
   EXPECT_GT(kDefaultRetransmittableOnWireTimeout, delay);
   // Fire the ack alarm, since ack has been sent, no ack will be sent.
-  clock_.AdvanceTime(
+  context_.AdvanceTime(
       quic::QuicTime::Delta::FromMilliseconds(delay.InMilliseconds()));
   task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
 
@@ -8924,7 +8924,7 @@ TEST_P(QuicStreamFactoryTest,
   base::TimeDelta wrong_delay = kDefaultRetransmittableOnWireTimeout - delay;
   delay = task_runner->NextPendingTaskDelay();
   EXPECT_NE(wrong_delay, delay);
-  clock_.AdvanceTime(
+  context_.AdvanceTime(
       quic::QuicTime::Delta::FromMilliseconds(delay.InMilliseconds()));
   task_runner->FastForwardBy(task_runner->NextPendingTaskDelay());
 
@@ -12791,8 +12791,8 @@ TEST_P(QuicStreamFactoryTest, ConfigInitialRttForHandshake) {
 
   QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), task_runner.get());
   QuicStreamFactoryPeer::SetAlarmFactory(
-      factory_.get(),
-      std::make_unique<QuicChromiumAlarmFactory>(task_runner.get(), &clock_));
+      factory_.get(), std::make_unique<QuicChromiumAlarmFactory>(
+                          task_runner.get(), context_.clock()));
 
   MockQuicData socket_data(version_);
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
@@ -12828,7 +12828,7 @@ TEST_P(QuicStreamFactoryTest, ConfigInitialRttForHandshake) {
 
   // The alarm factory dependes on |clock_|, so clock is advanced to trigger
   // retransmission alarm.
-  clock_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(
+  context_.AdvanceTime(quic::QuicTime::Delta::FromMilliseconds(
       handshake_timeout.InMilliseconds()));
   task_runner->FastForwardBy(handshake_timeout);
 

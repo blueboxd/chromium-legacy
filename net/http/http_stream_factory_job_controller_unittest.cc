@@ -40,6 +40,7 @@
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/quic/mock_crypto_client_stream_factory.h"
+#include "net/quic/mock_quic_context.h"
 #include "net/quic/mock_quic_data.h"
 #include "net/quic/quic_stream_factory.h"
 #include "net/quic/quic_stream_factory_peer.h"
@@ -49,7 +50,6 @@
 #include "net/spdy/spdy_test_util_common.h"
 #include "net/test/test_with_task_environment.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -251,7 +251,7 @@ class HttpStreamFactoryJobControllerTest : public TestWithTaskEnvironment {
 
     session_context.quic_crypto_client_stream_factory =
         &crypto_client_stream_factory_;
-    session_context.quic_random = &random_generator_;
+    session_context.quic_context = &quic_context_;
     session_ = std::make_unique<HttpNetworkSession>(params, session_context);
     factory_ = static_cast<HttpStreamFactory*>(session_->http_stream_factory());
     if (create_job_controller_) {
@@ -324,6 +324,7 @@ class HttpStreamFactoryJobControllerTest : public TestWithTaskEnvironment {
   BoundTestNetLog net_log_;
   TestJobFactory job_factory_;
   MockHttpStreamRequestDelegate request_delegate_;
+  MockQuicContext quic_context_;
   SpdySessionDependencies session_deps_{ProxyResolutionService::CreateDirect()};
   std::unique_ptr<HttpNetworkSession> session_;
   HttpStreamFactory* factory_ = nullptr;
@@ -332,12 +333,11 @@ class HttpStreamFactoryJobControllerTest : public TestWithTaskEnvironment {
   std::unique_ptr<SequencedSocketData> tcp_data_;
   std::unique_ptr<MockQuicData> quic_data_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
-  quic::MockClock clock_;
-  quic::test::MockRandom random_generator_{0};
   QuicTestPacketMaker client_maker_{
       HttpNetworkSession::Params().quic_params.supported_versions[0],
-      quic::QuicUtils::CreateRandomConnectionId(&random_generator_),
-      &clock_,
+      quic::QuicUtils::CreateRandomConnectionId(
+          quic_context_.random_generator()),
+      quic_context_.clock(),
       kServerHostname,
       quic::Perspective::IS_CLIENT,
       false};

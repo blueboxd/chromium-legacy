@@ -206,9 +206,8 @@ void SetupOnUIThread(
   // Bind |receiver|, which is attached to |EmbeddedWorkerInstance::client_|, to
   // the process. If the process dies, |client_|'s connection error callback
   // will be called on the core thread.
-  if (receiver.is_valid()) {
-    BindInterface(rph, std::move(receiver));
-  }
+  if (receiver.is_valid())
+    rph->BindReceiver(std::move(receiver));
 
   // Register to DevTools and update params accordingly.
   const int routing_id = rph->GetNextRoutingID();
@@ -1076,13 +1075,13 @@ EmbeddedWorkerInstance::CreateFactoryBundleOnUI(
   // TODO(yhirano): Support COEP.
   if (GetNetworkFactoryCallbackForTest().is_null()) {
     rph->CreateURLLoaderFactory(
-        origin, network::mojom::CrossOriginEmbedderPolicy::kNone,
+        origin, origin, network::mojom::CrossOriginEmbedderPolicy::kNone,
         nullptr /* preferences */, net::NetworkIsolationKey(origin, origin),
         std::move(default_header_client), std::move(default_factory_receiver));
   } else {
     mojo::PendingRemote<network::mojom::URLLoaderFactory> original_factory;
     rph->CreateURLLoaderFactory(
-        origin, network::mojom::CrossOriginEmbedderPolicy::kNone,
+        origin, origin, network::mojom::CrossOriginEmbedderPolicy::kNone,
         nullptr /* preferences */, net::NetworkIsolationKey(origin, origin),
         std::move(default_header_client),
         original_factory.InitWithNewPipeAndPassReceiver());

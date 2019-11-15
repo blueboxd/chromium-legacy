@@ -116,7 +116,7 @@ class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
     // the host process, querying the user if necessary. Notifies the callback
     // when permission status is established, passing true iff all required
     // permissions have been granted.
-    virtual void CheckPermission(BoolCallback callback) = 0;
+    virtual void CheckPermission(bool it2me, BoolCallback callback) = 0;
 
     // Starts the daemon process. This may require that the daemon be
     // downloaded and installed. |done| is invoked on the calling thread when
@@ -163,7 +163,7 @@ class DaemonController : public base::RefCountedThreadSafe<DaemonController> {
   // show a dialog to the user requesting the permissions.
   // Notifies the callback when permission status is established, passing true
   // iff all required permissions have been granted.
-  void CheckPermission(BoolCallback callback);
+  void CheckPermission(bool it2me, BoolCallback callback);
 
   // Start the daemon process. This may require that the daemon be
   // downloaded and installed. |done| is called when the

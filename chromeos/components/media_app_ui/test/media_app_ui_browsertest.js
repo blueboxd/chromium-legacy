@@ -5,9 +5,10 @@
 /**
  * @fileoverview Test suite for chrome://media-app.
  */
+GEN('#include "chromeos/components/media_app_ui/test/media_app_ui_browsertest.h"');
 
 GEN('#include "chromeos/constants/chromeos_features.h"');
-GEN('#include "chromeos/components/media_app_ui/test/media_app_ui_browsertest.h"');
+GEN('#include "third_party/blink/public/common/features.h"');
 
 const HOST_ORIGIN = 'chrome://media-app';
 const GUEST_ORIGIN = 'chrome://media-app-guest';
@@ -61,6 +62,18 @@ var MediaAppUIBrowserTest = class extends testing.Test {
   }
 };
 
+// Give the test image an unusual size so we can distinguish it form other <img>
+// elements that may appear in the guest.
+const TEST_IMAGE_WIDTH = 123;
+const TEST_IMAGE_HEIGHT = 456;
+
+/** @return {Blob} A 123x456 transparent encoded image/png. */
+function createTestImageBlob() {
+  const canvas = new OffscreenCanvas(TEST_IMAGE_WIDTH, TEST_IMAGE_HEIGHT);
+  canvas.getContext('2d');  // convertToBlob fails without a rendering context.
+  return canvas.convertToBlob();
+}
+
 // Tests that chrome://media-app is allowed to frame chrome://media-app-guest.
 // The URL is set in the html. If that URL can't load, test this fails like JS
 // ERROR: "Refused to frame '...' because it violates the following Content
@@ -76,5 +89,14 @@ TEST_F('MediaAppUIBrowserTest', 'GuestCanLoad', async () => {
   assertEquals(guest.src, GUEST_ORIGIN + '/app.html');
   assertEquals(app, '"BACKLIGHT-APP"');
 
+  testDone();
+});
+
+TEST_F('MediaAppUIBrowserTest', 'LoadBlob', async () => {
+  loadBlob(await createTestImageBlob());
+  const result =
+      await driver.waitForElementInGuest('img[src^="blob:"]', 'naturalWidth');
+
+  assertEquals(`${TEST_IMAGE_WIDTH}`, result);
   testDone();
 });

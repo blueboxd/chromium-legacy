@@ -316,7 +316,9 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 // Tests that having multiple suggestions with corresponding opened tabs display
 // multiple buttons.
-- (void)testMultiplePageOpened {
+// TODO(crbug.com/1025199): On smaller form factors, only one of the two "Switch
+// to tab" rows fits on screen, so this test fails.
+- (void)DISABLED_testMultiplePageOpened {
   // Open the first page.
   GURL URL1 = self.testServer->GetURL(kPage1URL);
   [ChromeEarlGrey loadURL:URL1];

@@ -99,8 +99,8 @@ class GooglePasswordManagerNavigationThrottleTestWithPasswordManager
 
   std::unique_ptr<ProfileSyncServiceHarness> EnableSync(Profile* profile) {
     ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(profile)
-        ->OverrideNetworkResourcesForTest(
-            std::make_unique<fake_server::FakeServerNetworkResources>(
+        ->OverrideNetworkForTest(
+            fake_server::CreateFakeServerHttpPostProviderFactory(
                 GetFakeServer()->AsWeakPtr()));
 
     std::string username;

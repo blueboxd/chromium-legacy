@@ -140,8 +140,6 @@ class VaapiVideoDecoder : public VideoDecoderPipeline::DecoderInterface,
   // The video stream's profile.
   VideoCodecProfile profile_ = VIDEO_CODEC_PROFILE_UNKNOWN;
 
-  // Output frame properties.
-  base::Optional<VideoFrameLayout> frame_layout_;
   // Ratio of natural size to |visible_rect_| of the output frames.
   double pixel_aspect_ratio_ = 0.0;
 

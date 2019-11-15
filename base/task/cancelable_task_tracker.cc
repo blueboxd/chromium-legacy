@@ -20,7 +20,8 @@ namespace base {
 
 namespace {
 
-void RunOrPostToTaskRunner(TaskRunner* task_runner, OnceClosure closure) {
+void RunOrPostToTaskRunner(scoped_refptr<TaskRunner> task_runner,
+                           OnceClosure closure) {
   if (task_runner->RunsTasksInCurrentSequence())
     std::move(closure).Run();
   else
@@ -75,10 +76,9 @@ CancelableTaskTracker::TaskId CancelableTaskTracker::PostTaskAndReply(
   OnceClosure untrack_closure =
       BindOnce(&CancelableTaskTracker::Untrack, Unretained(this), id);
   bool success = task_runner->PostTaskAndReply(
-      from_here,
-      BindOnce(&RunIfNotCanceled, RetainedRef(flag), std::move(task)),
-      BindOnce(&RunThenUntrackIfNotCanceled, RetainedRef(flag),
-               std::move(reply), std::move(untrack_closure)));
+      from_here, BindOnce(&RunIfNotCanceled, flag, std::move(task)),
+      BindOnce(&RunThenUntrackIfNotCanceled, flag, std::move(reply),
+               std::move(untrack_closure)));
 
   if (!success)
     return kBadTaskId;
@@ -105,13 +105,11 @@ CancelableTaskTracker::TaskId CancelableTaskTracker::NewTrackedTaskId(
       BindOnce(&CancelableTaskTracker::Untrack, Unretained(this), id);
 
   // Will always run |untrack_closure| on current sequence.
-  ScopedClosureRunner untrack_runner(BindOnce(
-      &RunOrPostToTaskRunner, RetainedRef(SequencedTaskRunnerHandle::Get()),
-      BindOnce(&RunIfNotCanceled, RetainedRef(flag),
-               std::move(untrack_closure))));
+  ScopedClosureRunner untrack_runner(
+      BindOnce(&RunOrPostToTaskRunner, SequencedTaskRunnerHandle::Get(),
+               BindOnce(&RunIfNotCanceled, flag, std::move(untrack_closure))));
 
-  *is_canceled_cb =
-      BindRepeating(&IsCanceled, RetainedRef(flag), std::move(untrack_runner));
+  *is_canceled_cb = BindRepeating(&IsCanceled, flag, std::move(untrack_runner));
 
   Track(id, std::move(flag));
   return id;
@@ -158,15 +156,16 @@ bool CancelableTaskTracker::HasTrackedTasks() const {
 }
 
 // static
-void CancelableTaskTracker::RunIfNotCanceled(const TaskCancellationFlag* flag,
-                                             OnceClosure task) {
+void CancelableTaskTracker::RunIfNotCanceled(
+    const scoped_refptr<TaskCancellationFlag>& flag,
+    OnceClosure task) {
   if (!flag->data.IsSet())
     std::move(task).Run();
 }
 
 // static
 void CancelableTaskTracker::RunThenUntrackIfNotCanceled(
-    const TaskCancellationFlag* flag,
+    const scoped_refptr<TaskCancellationFlag>& flag,
     OnceClosure task,
     OnceClosure untrack) {
   RunIfNotCanceled(flag, std::move(task));
@@ -175,7 +174,7 @@ void CancelableTaskTracker::RunThenUntrackIfNotCanceled(
 
 // static
 bool CancelableTaskTracker::IsCanceled(
-    const TaskCancellationFlag* flag,
+    const scoped_refptr<TaskCancellationFlag>& flag,
     const ScopedClosureRunner& cleanup_runner) {
   return flag->data.IsSet();
 }

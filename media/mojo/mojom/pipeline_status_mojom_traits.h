@@ -57,15 +57,16 @@ struct StructTraits<media::mojom::PipelineDecoderInfoDataView,
     return input.is_platform_decoder;
   }
 
-  static bool is_decrypting_demuxer_stream(
+  static bool has_decrypting_demuxer_stream(
       const media::PipelineDecoderInfo& input) {
-    return input.is_decrypting_demuxer_stream;
+    return input.has_decrypting_demuxer_stream;
   }
 
   static bool Read(media::mojom::PipelineDecoderInfoDataView data,
                    media::PipelineDecoderInfo* output) {
     output->is_platform_decoder = data.is_platform_decoder();
-    output->is_decrypting_demuxer_stream = data.is_decrypting_demuxer_stream();
+    output->has_decrypting_demuxer_stream =
+        data.has_decrypting_demuxer_stream();
     return data.ReadDecoderName(&output->decoder_name);
   }
 };

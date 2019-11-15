@@ -20,6 +20,7 @@ namespace media {
 Fourcc::Fourcc() : value_(Fourcc::INVALID) {}
 Fourcc::Fourcc(Fourcc::Value fourcc) : value_(fourcc) {}
 Fourcc::~Fourcc() = default;
+Fourcc& Fourcc::operator=(const Fourcc& other) = default;
 
 // static
 Fourcc Fourcc::FromVideoPixelFormat(VideoPixelFormat pixel_format,

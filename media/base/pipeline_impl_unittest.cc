@@ -701,7 +701,7 @@ TEST_F(PipelineImplTest, OnStatisticsUpdate) {
 
   // Both info changed.
   stats.audio_decoder_info.decoder_name = "NewTestAudioDecoderName";
-  stats.video_decoder_info.is_decrypting_demuxer_stream = true;
+  stats.video_decoder_info.has_decrypting_demuxer_stream = true;
   EXPECT_CALL(callbacks_, OnAudioDecoderChange(_));
   EXPECT_CALL(callbacks_, OnVideoDecoderChange(_));
   renderer_client_->OnStatisticsUpdate(stats);

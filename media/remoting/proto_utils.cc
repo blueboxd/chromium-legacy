@@ -422,16 +422,16 @@ void ConvertProtoToPipelineStatistics(
     stats->audio_decoder_info.decoder_name = audio_info.decoder_name();
     stats->audio_decoder_info.is_platform_decoder =
         audio_info.is_platform_decoder();
-    stats->audio_decoder_info.is_decrypting_demuxer_stream =
-        audio_info.is_decrypting_demuxer_stream();
+    stats->audio_decoder_info.has_decrypting_demuxer_stream =
+        audio_info.has_decrypting_demuxer_stream();
   }
   if (stats_message.has_video_decoder_info()) {
     auto video_info = stats_message.video_decoder_info();
     stats->video_decoder_info.decoder_name = video_info.decoder_name();
     stats->video_decoder_info.is_platform_decoder =
         video_info.is_platform_decoder();
-    stats->video_decoder_info.is_decrypting_demuxer_stream =
-        video_info.is_decrypting_demuxer_stream();
+    stats->video_decoder_info.has_decrypting_demuxer_stream =
+        video_info.has_decrypting_demuxer_stream();
   }
   if (stats_message.has_video_frame_duration_average_usec()) {
     stats->video_frame_duration_average = base::TimeDelta::FromMicroseconds(

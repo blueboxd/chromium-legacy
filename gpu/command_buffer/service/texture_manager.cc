@@ -1353,8 +1353,8 @@ void Texture::SetLevelInfo(GLenum target,
   info.border = border;
   info.format = format;
   info.type = type;
-  info.image = 0;
-  info.stream_texture_image = 0;
+  info.image.reset();
+  info.stream_texture_image.reset();
   info.image_state = UNBOUND;
   info.internal_workaround = false;
 

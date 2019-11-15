@@ -269,8 +269,10 @@ jumbo_static_library("weblayer_lib") {
 
   if (is_android) {
     sources += [
-      "common/crash_reporter_client.cc",
-      "common/crash_reporter_client.h",
+      "common/crash_reporter/crash_keys.cc",
+      "common/crash_reporter/crash_keys.h",
+      "common/crash_reporter/crash_reporter_client.cc",
+      "common/crash_reporter/crash_reporter_client.h",
     ]
     deps += [
       "//android_webview:generate_aw_resources",

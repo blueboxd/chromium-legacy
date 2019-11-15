@@ -15,7 +15,7 @@
 #include "base/time/time.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
-#include "components/sync/engine/net/network_resources.h"
+#include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/test/fake_server/bookmark_entity_builder.h"
 #include "components/sync/test/fake_server/fake_server.h"
@@ -40,25 +40,24 @@ static jlong JNI_FakeServerHelper_Init(JNIEnv* env,
 
 jlong FakeServerHelperAndroid::CreateFakeServer(
     JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  fake_server::FakeServer* fake_server = new fake_server::FakeServer();
-  return reinterpret_cast<intptr_t>(fake_server);
-}
-
-jlong FakeServerHelperAndroid::CreateNetworkResources(
-    JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    jlong fake_server) {
-  fake_server::FakeServer* fake_server_ptr =
-      reinterpret_cast<fake_server::FakeServer*>(fake_server);
-  syncer::NetworkResources* resources =
-      new fake_server::FakeServerNetworkResources(fake_server_ptr->AsWeakPtr());
-  return reinterpret_cast<intptr_t>(resources);
+    jlong profile_sync_service) {
+  fake_server::FakeServer* fake_server = new fake_server::FakeServer();
+  syncer::ProfileSyncService* sync_service =
+      reinterpret_cast<syncer::ProfileSyncService*>(profile_sync_service);
+  sync_service->OverrideNetworkForTest(
+      fake_server::CreateFakeServerHttpPostProviderFactory(
+          fake_server->AsWeakPtr()));
+  return reinterpret_cast<intptr_t>(fake_server);
 }
 
 void FakeServerHelperAndroid::DeleteFakeServer(JNIEnv* env,
                                                const JavaParamRef<jobject>& obj,
-                                               jlong fake_server) {
+                                               jlong fake_server,
+                                               jlong profile_sync_service) {
+  syncer::ProfileSyncService* sync_service =
+      reinterpret_cast<syncer::ProfileSyncService*>(profile_sync_service);
+  sync_service->OverrideNetworkForTest(syncer::CreateHttpPostProviderFactory());
   fake_server::FakeServer* fake_server_ptr =
       reinterpret_cast<fake_server::FakeServer*>(fake_server);
   delete fake_server_ptr;

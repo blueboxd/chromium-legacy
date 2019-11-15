@@ -121,11 +121,6 @@ public class ProfileSyncService {
                 ProfileSyncServiceJni.get().init(ProfileSyncService.this);
     }
 
-    @CalledByNative
-    private static long getProfileSyncServiceAndroid() {
-        return get().mNativeProfileSyncServiceAndroid;
-    }
-
     /**
      * Checks if the sync engine is initialized.
      *
@@ -550,6 +545,12 @@ public class ProfileSyncService {
                 mNativeProfileSyncServiceAndroid, ProfileSyncService.this);
     }
 
+    @VisibleForTesting
+    public long getNativeProfileSyncServiceForTest() {
+        return ProfileSyncServiceJni.get().getProfileSyncServiceForTest(
+                mNativeProfileSyncServiceAndroid, ProfileSyncService.this);
+    }
+
     /**
      * Returns the time when the last sync cycle was completed.
      *
@@ -560,20 +561,6 @@ public class ProfileSyncService {
     public long getLastSyncedTimeForTest() {
         return ProfileSyncServiceJni.get().getLastSyncedTimeForTest(
                 mNativeProfileSyncServiceAndroid, ProfileSyncService.this);
-    }
-
-    /**
-     * Overrides the Sync engine's NetworkResources. This is used to set up the Sync FakeServer for
-     * testing.
-     *
-     * @param networkResources the pointer to the NetworkResources created by the native code. It
-     *                         is assumed that the Java caller has ownership of this pointer;
-     *                         ownership is transferred as part of this call.
-     */
-    @VisibleForTesting
-    public void overrideNetworkResourcesForTest(long networkResources) {
-        ProfileSyncServiceJni.get().overrideNetworkResourcesForTest(
-                mNativeProfileSyncServiceAndroid, ProfileSyncService.this, networkResources);
     }
 
     @VisibleForTesting
@@ -709,10 +696,10 @@ public class ProfileSyncService {
                 long nativeProfileSyncServiceAndroid, ProfileSyncService caller);
         void setPassphrasePrompted(
                 long nativeProfileSyncServiceAndroid, ProfileSyncService caller, boolean prompted);
+        long getProfileSyncServiceForTest(
+                long nativeProfileSyncServiceAndroid, ProfileSyncService caller);
         long getLastSyncedTimeForTest(
                 long nativeProfileSyncServiceAndroid, ProfileSyncService caller);
-        void overrideNetworkResourcesForTest(long nativeProfileSyncServiceAndroid,
-                ProfileSyncService caller, long networkResources);
         void getAllNodes(long nativeProfileSyncServiceAndroid, ProfileSyncService caller,
                 GetAllNodesCallback callback);
     }

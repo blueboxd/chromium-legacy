@@ -115,14 +115,6 @@ MockGpuVideoAcceleratorFactories::CreateGpuMemoryBuffer(
   return ret;
 }
 
-std::unique_ptr<base::SharedMemory>
-MockGpuVideoAcceleratorFactories::CreateSharedMemory(size_t size) {
-  std::unique_ptr<base::SharedMemory> shared_memory(new base::SharedMemory);
-  if (shared_memory->CreateAndMapAnonymous(size))
-    return shared_memory;
-  return nullptr;
-}
-
 base::UnsafeSharedMemoryRegion
 MockGpuVideoAcceleratorFactories::CreateSharedMemoryRegion(size_t size) {
   return base::UnsafeSharedMemoryRegion::Create(size);

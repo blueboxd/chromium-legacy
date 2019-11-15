@@ -369,15 +369,6 @@ GpuVideoAcceleratorFactoriesImpl::GpuMemoryBufferManager() {
   return gpu_memory_buffer_manager_;
 }
 
-std::unique_ptr<base::SharedMemory>
-GpuVideoAcceleratorFactoriesImpl::CreateSharedMemory(size_t size) {
-  std::unique_ptr<base::SharedMemory> mem(
-      ChildThreadImpl::AllocateSharedMemory(size));
-  if (mem && !mem->Map(size))
-    return nullptr;
-  return mem;
-}
-
 base::UnsafeSharedMemoryRegion
 GpuVideoAcceleratorFactoriesImpl::CreateSharedMemoryRegion(size_t size) {
   // If necessary, this call will make a synchronous request to a privileged

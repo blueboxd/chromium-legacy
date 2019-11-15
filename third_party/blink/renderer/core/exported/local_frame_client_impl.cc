@@ -692,14 +692,6 @@ void LocalFrameClientImpl::DidChangeCpuTiming(base::TimeDelta time) {
     web_frame_->Client()->DidChangeCpuTiming(time);
 }
 
-void LocalFrameClientImpl::DidChangeActiveSchedulerTrackedFeatures(
-    uint64_t features_mask) {
-  if (web_frame_->Client()) {
-    web_frame_->Client()->DidChangeActiveSchedulerTrackedFeatures(
-        features_mask);
-  }
-}
-
 void LocalFrameClientImpl::DidObserveLoadingBehavior(
     LoadingBehaviorFlag behavior) {
   if (web_frame_->Client())

@@ -144,9 +144,11 @@ void AppServiceProxy::Initialize() {
         std::make_unique<BuiltInChromeOsApps>(app_service_, profile_);
     crostini_apps_ = std::make_unique<CrostiniApps>(app_service_, profile_);
     extension_apps_ = std::make_unique<ExtensionApps>(
-        app_service_, profile_, apps::mojom::AppType::kExtension);
+        app_service_, profile_, apps::mojom::AppType::kExtension,
+        &instance_registry_);
     extension_web_apps_ = std::make_unique<ExtensionApps>(
-        app_service_, profile_, apps::mojom::AppType::kWeb);
+        app_service_, profile_, apps::mojom::AppType::kWeb,
+        &instance_registry_);
 
     // Asynchronously add app icon source, so we don't do too much work in the
     // constructor.

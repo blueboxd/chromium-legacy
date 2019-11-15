@@ -83,6 +83,11 @@ cca.views.Camera = function(
 
   const createVideoSaver = async () => resultSaver.startSaveVideo();
 
+  const playShutterEffect = () => {
+    cca.sound.play('#sound-shutter');
+    cca.util.animateOnce(this.preview_.video);
+  };
+
   /**
    * Modes for the camera.
    * @type {cca.views.camera.Modes}
@@ -91,7 +96,7 @@ cca.views.Camera = function(
   this.modes_ = new cca.views.camera.Modes(
       this.defaultMode, photoPreferrer, videoPreferrer, this.restart.bind(this),
       this.doSavePhoto_.bind(this), createVideoSaver,
-      this.doSaveVideo_.bind(this));
+      this.doSaveVideo_.bind(this), playShutterEffect);
 
   /**
    * @type {?string}
@@ -194,9 +199,6 @@ cca.views.Camera.prototype.beginTake_ = function() {
   this.take_ = (async () => {
     try {
       await cca.views.camera.timertick.start();
-      if (!cca.state.get('video-mode')) {
-        cca.util.animateOnce(this.preview_.video);
-      }
       await this.modes_.current.startCapture();
     } catch (e) {
       if (e && e.message === 'cancel') {

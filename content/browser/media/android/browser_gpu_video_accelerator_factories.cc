@@ -153,11 +153,6 @@ BrowserGpuVideoAcceleratorFactories::GpuMemoryBufferManager() {
   return nullptr;
 }
 
-std::unique_ptr<base::SharedMemory>
-BrowserGpuVideoAcceleratorFactories::CreateSharedMemory(size_t size) {
-  return nullptr;
-}
-
 base::UnsafeSharedMemoryRegion
 BrowserGpuVideoAcceleratorFactories::CreateSharedMemoryRegion(size_t size) {
   return {};

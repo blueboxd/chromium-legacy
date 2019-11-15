@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/optional.h"
 #include "base/task/post_task.h"
+#include "media/gpu/chromeos/gpu_buffer_layout.h"
 #include "media/gpu/linux/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
 
@@ -66,8 +67,8 @@ scoped_refptr<VideoFrame> PlatformVideoFramePool::GetFrame() {
     return nullptr;
   }
 
-  VideoPixelFormat format = frame_layout_->format();
-  const gfx::Size& coded_size = frame_layout_->coded_size();
+  VideoPixelFormat format = frame_layout_->fourcc().ToVideoPixelFormat();
+  const gfx::Size& coded_size = frame_layout_->size();
   if (free_frames_.empty()) {
     if (GetTotalNumFrames_Locked() >= max_num_frames_)
       return nullptr;
@@ -104,8 +105,9 @@ scoped_refptr<VideoFrame> PlatformVideoFramePool::GetFrame() {
   return wrapped_frame;
 }
 
-base::Optional<VideoFrameLayout> PlatformVideoFramePool::RequestFrames(
-    const VideoFrameLayout& layout,
+base::Optional<GpuBufferLayout> PlatformVideoFramePool::RequestFrames(
+    const Fourcc& fourcc,
+    const gfx::Size& coded_size,
     const gfx::Rect& visible_rect,
     const gfx::Size& natural_size,
     size_t max_num_frames) {
@@ -116,21 +118,28 @@ base::Optional<VideoFrameLayout> PlatformVideoFramePool::RequestFrames(
   natural_size_ = natural_size;
   max_num_frames_ = max_num_frames;
 
+  // Only support the Fourcc that could map to VideoPixelFormat.
+  VideoPixelFormat format = fourcc.ToVideoPixelFormat();
+  if (format == PIXEL_FORMAT_UNKNOWN) {
+    VLOGF(1) << "Unsupported fourcc: " << fourcc.ToString();
+    return base::nullopt;
+  }
+
   // If the frame layout changed we need to allocate new frames so we will clear
   // the pool here. If only the visible or natural size changed we don't need to
   // allocate new frames, but will just update the properties of wrapped frames
   // returned by GetFrame().
   // NOTE: It is assumed layout is determined by |format| and |coded_size|.
-  if (!IsSameLayout_Locked(layout)) {
+  if (!IsSameFormat_Locked(format, coded_size)) {
     DVLOGF(4) << "The video frame format is changed. Clearing the pool.";
     free_frames_.clear();
   }
 
   // Create a temporary frame in order to know VideoFrameLayout that VideoFrame
   // that will be allocated in GetFrame() has.
-  auto frame = create_frame_cb_.Run(gpu_memory_buffer_factory_, layout.format(),
-                                    layout.coded_size(), visible_rect_,
-                                    natural_size_, base::TimeDelta());
+  auto frame =
+      create_frame_cb_.Run(gpu_memory_buffer_factory_, format, coded_size,
+                           visible_rect_, natural_size_, base::TimeDelta());
   if (!frame) {
     VLOGF(1) << "Failed to create video frame";
     return base::nullopt;
@@ -141,7 +150,8 @@ base::Optional<VideoFrameLayout> PlatformVideoFramePool::RequestFrames(
   if (frame_available_cb_ && !IsExhausted_Locked())
     std::move(frame_available_cb_).Run();
 
-  frame_layout_ = base::make_optional<VideoFrameLayout>(frame->layout());
+  frame_layout_ = GpuBufferLayout::Create(fourcc, frame->coded_size(),
+                                          frame->layout().planes());
   return frame_layout_;
 }
 
@@ -204,7 +214,7 @@ void PlatformVideoFramePool::OnFrameReleased(
   DCHECK(it != frames_in_use_.end());
   frames_in_use_.erase(it);
 
-  if (IsSameLayout_Locked(origin_frame->layout())) {
+  if (IsSameFormat_Locked(origin_frame->format(), origin_frame->coded_size())) {
     InsertFreeFrame_Locked(std::move(origin_frame));
   }
 
@@ -229,13 +239,15 @@ size_t PlatformVideoFramePool::GetTotalNumFrames_Locked() const {
   return free_frames_.size() + frames_in_use_.size();
 }
 
-bool PlatformVideoFramePool::IsSameLayout_Locked(
-    const VideoFrameLayout& layout) const {
+bool PlatformVideoFramePool::IsSameFormat_Locked(
+    VideoPixelFormat format,
+    const gfx::Size& coded_size) const {
   DVLOGF(4);
   lock_.AssertAcquired();
 
-  return frame_layout_ && frame_layout_->format() == layout.format() &&
-         frame_layout_->coded_size() == layout.coded_size();
+  return frame_layout_ &&
+         frame_layout_->fourcc().ToVideoPixelFormat() == format &&
+         frame_layout_->size() == coded_size;
 }
 
 size_t PlatformVideoFramePool::GetPoolSizeForTesting() {

@@ -5847,3 +5847,6 @@ crbug.com/963183 http/tests/devtools/sources/debugger-pause/set-return-value.js 
 crbug.com/963183 http/tests/devtools/sources/debugger/debugger-proto-property.js [ Pass Failure ]
 
 crbug.com/892983 external/wpt/css/css-pseudo/first-line-with-before-after.html [ Failure ]
+
+# Sheriff 2019-11-15
+crbug.com/1025123 external/wpt/longtask-timing/longtask-in-sibling-iframe-crossorigin.html [ Pass Failure ]

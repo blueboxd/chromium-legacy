@@ -274,7 +274,7 @@ void RequestManager::PrepareCaptureRequest() {
   // 3. Preview + Capture (BlobOutput)
   std::set<StreamType> stream_types;
   cros::mojom::CameraMetadataPtr settings;
-  TakePhotoCallback callback = base::DoNothing();
+  TakePhotoCallback callback = base::NullCallback();
   base::Optional<uint64_t> input_buffer_id;
   cros::mojom::Effect reprocess_effect = cros::mojom::Effect::NO_EFFECT;
 
@@ -657,6 +657,10 @@ void RequestManager::Notify(cros::mojom::Camera3NotifyMsgPtr message) {
       first_frame_shutter_time_ = reference_time;
     }
     pending_result.timestamp = reference_time - first_frame_shutter_time_;
+    if (camera_app_device_ && pending_result.still_capture_callback) {
+      camera_app_device_->OnShutterDone();
+    }
+
     TrySubmitPendingBuffers(frame_number);
   }
 }

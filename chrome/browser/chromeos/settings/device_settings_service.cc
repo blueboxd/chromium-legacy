@@ -118,7 +118,7 @@ void DeviceSettingsService::UnsetSessionManager() {
   if (session_manager_client_)
     session_manager_client_->RemoveObserver(this);
   session_manager_client_ = NULL;
-  owner_key_util_ = NULL;
+  owner_key_util_.reset();
 }
 
 void DeviceSettingsService::SetDeviceMode(policy::DeviceMode device_mode) {
@@ -245,7 +245,7 @@ void DeviceSettingsService::OwnerKeySet(bool success) {
     return;
   }
 
-  public_key_ = NULL;
+  public_key_.reset();
 
   if (GetOwnershipStatus() == OWNERSHIP_TAKEN ||
       !will_establish_consumer_ownership_) {

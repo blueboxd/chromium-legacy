@@ -229,6 +229,7 @@ void PermissionUmaUtil::RecordEmbargoPromptSuppressionFromSource(
     case PermissionStatusSource::INSECURE_ORIGIN:
     case PermissionStatusSource::FEATURE_POLICY:
     case PermissionStatusSource::VIRTUAL_URL_DIFFERENT_ORIGIN:
+    case PermissionStatusSource::WEB_KIOSK_APP_MODE:
       // The permission wasn't under embargo, so don't record anything. We may
       // embargo it later.
       break;

@@ -131,6 +131,16 @@ user_manager::User* FakeChromeUserManager::AddArcKioskAppUser(
   return user;
 }
 
+user_manager::User* FakeChromeUserManager::AddWebKioskAppUser(
+    const AccountId& account_id) {
+  user_manager::User* user =
+      user_manager::User::CreateWebKioskAppUser(account_id);
+  user->set_username_hash(ProfileHelper::GetUserIdHashByUserIdForTesting(
+      account_id.GetUserEmail()));
+  users_.push_back(user);
+  return user;
+}
+
 user_manager::User* FakeChromeUserManager::AddSupervisedUser(
     const AccountId& account_id) {
   user_manager::User* user =
@@ -555,6 +565,13 @@ bool FakeChromeUserManager::IsLoggedInAsArcKioskApp() const {
   const user_manager::User* active_user = GetActiveUser();
   return active_user
              ? active_user->GetType() == user_manager::USER_TYPE_ARC_KIOSK_APP
+             : false;
+}
+
+bool FakeChromeUserManager::IsLoggedInAsWebKioskApp() const {
+  const user_manager::User* active_user = GetActiveUser();
+  return active_user
+             ? active_user->GetType() == user_manager::USER_TYPE_WEB_KIOSK_APP
              : false;
 }
 

@@ -9,7 +9,8 @@
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "media/base/video_frame.h"
-#include "media/base/video_frame_layout.h"
+#include "media/gpu/chromeos/fourcc.h"
+#include "media/gpu/chromeos/gpu_buffer_layout.h"
 #include "media/gpu/media_gpu_export.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -39,10 +40,11 @@ class MEDIA_GPU_EXPORT DmabufVideoFramePool {
       scoped_refptr<base::SequencedTaskRunner> parent_task_runner);
 
   // Sets the parameters of allocating frames and the maximum number of frames
-  // which can be allocated. Returns a valid VideoFrameLayout that VideoFrame
+  // which can be allocated. Returns a valid GpuBufferLayout if VideoFrame
   // will be created by GetFrame().
-  virtual base::Optional<VideoFrameLayout> RequestFrames(
-      const VideoFrameLayout& layout,
+  virtual base::Optional<GpuBufferLayout> RequestFrames(
+      const Fourcc& fourcc,
+      const gfx::Size& coded_size,
       const gfx::Rect& visible_rect,
       const gfx::Size& natural_size,
       size_t max_num_frames) = 0;

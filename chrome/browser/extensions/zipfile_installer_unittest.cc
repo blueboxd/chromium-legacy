@@ -118,7 +118,7 @@ class ZipFileInstallerTest : public testing::Test {
   void TearDown() override {
     // Need to destruct ZipFileInstaller before the message loop since
     // it posts a task to it.
-    zipfile_installer_ = NULL;
+    zipfile_installer_.reset();
     ExtensionRegistry* registry(ExtensionRegistry::Get(profile_.get()));
     registry->RemoveObserver(&observer_);
     profile_.reset();

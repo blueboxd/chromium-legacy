@@ -11,6 +11,6 @@ namespace favicon {
 const base::Feature kAllowPropagationOfFaviconCacheHits{
     "kAllowPropagationOfFaviconCacheHits", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableHistoryFaviconsGoogleServerQuery{
-    "EnableHistoryFaviconsGoogleServerQuery", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnableHistoryFaviconsGoogleServerQuery", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace favicon

@@ -1053,8 +1053,11 @@ TEST_F(ToolbarActionsModelUnitTest, ActionsToolbarIncognitoEnableExtension) {
 }
 
 // Test that hiding actions on the toolbar results in sending them to the
-// overflow menu when the redesign switch is enabled.
-TEST_F(ToolbarActionsModelUnitTest, ActionsToolbarActionsVisibilityWithSwitch) {
+// overflow menu.
+TEST_F(ToolbarActionsModelUnitTest, ActionsToolbarActionsVisibility) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kExtensionsToolbarMenu);
+
   Init();
 
   // We choose to use all types of extensions here, since the misnamed

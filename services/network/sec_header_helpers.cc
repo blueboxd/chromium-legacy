@@ -104,11 +104,6 @@ void SetSecFetchSiteHeader(
 void SetSecFetchModeHeader(net::URLRequest* request,
                            network::mojom::RequestMode mode) {
   std::string header_value = RequestModeToString(mode);
-  if (mode == network::mojom::RequestMode::kNavigateNestedObject) {
-    // TODO(mkwst): We might want this to be something more specific:
-    // https://github.com/w3c/webappsec-fetch-metadata/issues/37.
-    header_value = "no-cors";
-  }
 
   request->SetExtraRequestHeaderByName(kSecFetchMode, header_value, false);
 }

@@ -629,8 +629,8 @@ class ProfileMenuClickTest : public SyncTest,
   void SetUpOnMainThread() override {
     SyncTest::SetUpOnMainThread();
 
-    sync_service()->OverrideNetworkResourcesForTest(
-        std::make_unique<fake_server::FakeServerNetworkResources>(
+    sync_service()->OverrideNetworkForTest(
+        fake_server::CreateFakeServerHttpPostProviderFactory(
             GetFakeServer()->AsWeakPtr()));
     sync_harness_ = ProfileSyncServiceHarness::Create(
         browser()->profile(), "user@example.com", "password",

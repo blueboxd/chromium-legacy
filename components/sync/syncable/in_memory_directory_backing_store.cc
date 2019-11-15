@@ -14,7 +14,6 @@ InMemoryDirectoryBackingStore::InMemoryDirectoryBackingStore(
 
 DirOpenResult InMemoryDirectoryBackingStore::Load(
     Directory::MetahandlesMap* handles_map,
-    JournalIndex* delete_journals,
     MetahandleSet* metahandles_to_purge,
     Directory::KernelLoadInfo* kernel_load_info) {
   if (!IsOpen()) {
@@ -27,8 +26,6 @@ DirOpenResult InMemoryDirectoryBackingStore::Load(
     return FAILED_OPEN_DATABASE;
 
   if (!LoadEntries(handles_map, metahandles_to_purge))
-    return FAILED_DATABASE_CORRUPT;
-  if (!LoadDeleteJournals(delete_journals))
     return FAILED_DATABASE_CORRUPT;
   if (!LoadInfo(kernel_load_info))
     return FAILED_DATABASE_CORRUPT;

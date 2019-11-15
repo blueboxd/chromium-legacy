@@ -67,7 +67,8 @@ CameraAppDeviceImpl::CameraAppDeviceImpl(const std::string& device_id,
       camera_info_(std::move(camera_info)),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       capture_intent_(cros::mojom::CaptureIntent::DEFAULT),
-      next_observer_id_(0),
+      next_metadata_observer_id_(0),
+      next_camera_event_observer_id_(0),
       weak_ptr_factory_(
           std::make_unique<base::WeakPtrFactory<CameraAppDeviceImpl>>(this)) {}
 
@@ -120,12 +121,20 @@ cros::mojom::CaptureIntent CameraAppDeviceImpl::GetCaptureIntent() {
 void CameraAppDeviceImpl::OnResultMetadataAvailable(
     const cros::mojom::CameraMetadataPtr& metadata,
     cros::mojom::StreamType streamType) {
-  base::AutoLock lock(observers_lock_);
+  base::AutoLock lock(metadata_observers_lock_);
 
-  const auto& observer_ids = stream_observer_ids_[streamType];
+  const auto& observer_ids = stream_metadata_observer_ids_[streamType];
 
   for (auto& id : observer_ids) {
-    observers_[id]->OnMetadataAvailable(metadata.Clone());
+    metadata_observers_[id]->OnMetadataAvailable(metadata.Clone());
+  }
+}
+
+void CameraAppDeviceImpl::OnShutterDone() {
+  base::AutoLock lock(camera_event_observers_lock_);
+
+  for (auto& observer : camera_event_observers_) {
+    observer.second->OnShutterDone();
   }
 }
 
@@ -220,12 +229,12 @@ void CameraAppDeviceImpl::AddResultMetadataObserver(
     mojo::PendingRemote<cros::mojom::ResultMetadataObserver> observer,
     cros::mojom::StreamType stream_type,
     AddResultMetadataObserverCallback callback) {
-  base::AutoLock lock(observers_lock_);
+  base::AutoLock lock(metadata_observers_lock_);
 
-  uint32_t id = next_observer_id_++;
-  observers_[id] =
+  uint32_t id = next_metadata_observer_id_++;
+  metadata_observers_[id] =
       mojo::Remote<cros::mojom::ResultMetadataObserver>(std::move(observer));
-  stream_observer_ids_[stream_type].insert(id);
+  stream_metadata_observer_ids_[stream_type].insert(id);
 
   std::move(callback).Run(id);
 }
@@ -233,18 +242,38 @@ void CameraAppDeviceImpl::AddResultMetadataObserver(
 void CameraAppDeviceImpl::RemoveResultMetadataObserver(
     uint32_t id,
     RemoveResultMetadataObserverCallback callback) {
-  base::AutoLock lock(observers_lock_);
+  base::AutoLock lock(metadata_observers_lock_);
 
-  if (observers_.erase(id) == 0) {
+  if (metadata_observers_.erase(id) == 0) {
     std::move(callback).Run(false);
     return;
   }
 
-  for (auto& kv : stream_observer_ids_) {
+  for (auto& kv : stream_metadata_observer_ids_) {
     auto& observer_ids = kv.second;
     observer_ids.erase(id);
   }
   std::move(callback).Run(true);
+}
+
+void CameraAppDeviceImpl::AddCameraEventObserver(
+    mojo::PendingRemote<cros::mojom::CameraEventObserver> observer,
+    AddCameraEventObserverCallback callback) {
+  base::AutoLock lock(camera_event_observers_lock_);
+
+  uint32_t id = next_camera_event_observer_id_++;
+  camera_event_observers_[id] =
+      mojo::Remote<cros::mojom::CameraEventObserver>(std::move(observer));
+  std::move(callback).Run(id);
+}
+
+void CameraAppDeviceImpl::RemoveCameraEventObserver(
+    uint32_t id,
+    RemoveCameraEventObserverCallback callback) {
+  base::AutoLock lock(camera_event_observers_lock_);
+
+  bool is_success = camera_event_observers_.erase(id) == 1;
+  std::move(callback).Run(is_success);
 }
 
 }  // namespace media

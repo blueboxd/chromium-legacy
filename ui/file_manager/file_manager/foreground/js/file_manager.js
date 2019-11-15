@@ -757,6 +757,9 @@ class FileManager extends cr.EventTarget {
     metrics.recordInterval('Load.InitDocuments');
 
     metrics.startInterval('Load.InitUI');
+    if (util.isFilesNg()) {
+      this.dialogDom_.classList.add('files-ng');
+    }
     this.initEssentialUI_();
     this.initAdditionalUI_();
     await this.initSettingsPromise_;

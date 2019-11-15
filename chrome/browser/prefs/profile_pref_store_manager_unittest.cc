@@ -247,7 +247,7 @@ class ProfilePrefStoreManagerTest : public testing::Test,
       run_loop.Run();
 
       pref_store_->RemoveObserver(&registry_verifier_);
-      pref_store_ = NULL;
+      pref_store_.reset();
       // Nothing should have to happen on the background threads, but just in
       // case...
       base::RunLoop().RunUntilIdle();

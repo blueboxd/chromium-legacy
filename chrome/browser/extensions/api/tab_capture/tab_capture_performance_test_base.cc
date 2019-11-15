@@ -52,7 +52,6 @@ void TabCapturePerformanceTestBase::SetUp() {
   feature_list_.InitWithFeatures(
       {
           service_manager::features::kAudioServiceSandbox,
-          features::kAudioServiceAudioStreams,
           features::kAudioServiceLaunchOnStartup,
           features::kAudioServiceOutOfProcess,
       },

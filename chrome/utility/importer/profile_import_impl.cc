@@ -88,7 +88,7 @@ void ProfileImportImpl::ReportImportItemFinished(importer::ImportItem item) {
 
 void ProfileImportImpl::ImporterCleanup() {
   importer_->Cancel();
-  importer_ = NULL;
-  bridge_ = NULL;
+  importer_.reset();
+  bridge_.reset();
   import_thread_.reset();
 }

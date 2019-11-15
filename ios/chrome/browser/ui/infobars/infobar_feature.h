@@ -18,6 +18,12 @@ extern const base::Feature kInfobarUIReboot;
 // Use IsConfirmInfobarMessagesUIEnabled() instead of this constant directly.
 extern const base::Feature kConfirmInfobarMessagesUI;
 
+// Feature to choose whether Downloads uses the new Messages UI or the
+// legacy one. Also, in order for it to work kInfobarUIReboot needs to be
+// enabled.
+// Use IsDownloadInfobarMessagesUIEnabled() instead of this constant directly.
+extern const base::Feature kDownloadInfobarMessagesUI;
+
 // Feature to choose whether Save Card Infobar uses the new Messages UI or the
 // legacy one. Also, in order for it to work kInfobarUIReboot needs to be
 // enabled.
@@ -35,6 +41,9 @@ bool IsInfobarUIRebootEnabled();
 
 // Whether the Confirm Infobar Messages UI is enabled.
 bool IsConfirmInfobarMessagesUIEnabled();
+
+// Whether the Download Infobar Messages UI is enabled.
+bool IsDownloadInfobarMessagesUIEnabled();
 
 // Whether the SaveCard Infobar Messages UI is enabled.
 bool IsSaveCardInfobarMessagesUIEnabled();

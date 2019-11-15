@@ -1492,10 +1492,7 @@ bool WebContentsImpl::IsBeingCaptured() {
 }
 
 bool WebContentsImpl::IsAudioMuted() {
-  if (base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams)) {
-    return audio_stream_factory_ && audio_stream_factory_->IsMuted();
-  }
-  return audio_muter_.get() && audio_muter_->is_muting();
+  return audio_stream_factory_ && audio_stream_factory_->IsMuted();
 }
 
 void WebContentsImpl::SetAudioMuted(bool mute) {
@@ -1505,18 +1502,7 @@ void WebContentsImpl::SetAudioMuted(bool mute) {
   if (mute == IsAudioMuted())
     return;
 
-  if (base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams)) {
-    GetAudioStreamFactory()->SetMuted(mute);
-  } else {
-    if (mute) {
-      if (!audio_muter_)
-        audio_muter_.reset(new WebContentsAudioMuter(this));
-      audio_muter_->StartMuting();
-    } else {
-      DCHECK(audio_muter_);
-      audio_muter_->StopMuting();
-    }
-  }
+  GetAudioStreamFactory()->SetMuted(mute);
 
   for (auto& observer : observers_)
     observer.DidUpdateAudioMutingState(mute);
@@ -6830,9 +6816,6 @@ void WebContentsImpl::SetBrowserPluginGuest(
 }
 
 base::UnguessableToken WebContentsImpl::GetAudioGroupId() {
-  if (!base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams))
-    return base::UnguessableToken::Null();
-
   return GetAudioStreamFactory()->group_id();
 }
 

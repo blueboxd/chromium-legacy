@@ -232,8 +232,8 @@ class UkmBrowserTestBase : public SyncTest {
   std::unique_ptr<ProfileSyncServiceHarness> InitializeProfileForSync(
       Profile* profile) {
     ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(profile)
-        ->OverrideNetworkResourcesForTest(
-            std::make_unique<fake_server::FakeServerNetworkResources>(
+        ->OverrideNetworkForTest(
+            fake_server::CreateFakeServerHttpPostProviderFactory(
                 GetFakeServer()->AsWeakPtr()));
 
     std::string username;

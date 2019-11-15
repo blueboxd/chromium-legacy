@@ -1040,5 +1040,5 @@ void PepperFlashSettingsManager::OnError(Core* core) {
     return;
 
   core_->Detach();
-  core_ = NULL;
+  core_.reset();
 }

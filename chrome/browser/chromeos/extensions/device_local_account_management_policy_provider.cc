@@ -238,7 +238,7 @@ const char* const kSafeManifestEntries[] = {
 
     emk::kTheme,
 
-    // Might need this for accessibilty, but has content access. Manual
+    // Might need this for accessibility, but has content access. Manual
     // whitelisting might be reasonable here?
     // emk::kTtsEngine,
 

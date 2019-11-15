@@ -164,7 +164,7 @@ BluetoothNotificationController::~BluetoothNotificationController() {
   if (adapter_.get()) {
     adapter_->RemoveObserver(this);
     adapter_->RemovePairingDelegate(this);
-    adapter_ = NULL;
+    adapter_.reset();
   }
 }
 

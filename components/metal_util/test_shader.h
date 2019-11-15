@@ -29,10 +29,18 @@ using TestShaderCallback = base::OnceCallback<void(TestShaderResult result)>;
 // with the result when the shader succeeds or after |timeout| has elapsed.
 // This is used to determine of the Metal shader compiler is resposive. Note
 // that |callback| will be called either on another thread or inside the
-// TestShader function call.
+// TestShader function call. The |seed| parameter is incorporated into the
+// source of the shader (to defeat caching).
 // https://crbug.com/974219
-void METAL_UTIL_EXPORT TestShader(TestShaderCallback callback,
+void METAL_UTIL_EXPORT TestShader(float seed,
+                                  TestShaderCallback callback,
                                   const base::TimeDelta& timeout);
+
+// Values for |seed| for the three uses of the TestSahder function. The exact
+// values don't matter, only that they are distinct.
+constexpr float kTestShaderSeedBrowserTimer = 0.9f;
+constexpr float kTestShaderSeedGpuTimer = 1.1f;
+constexpr float kTestShaderSeedContextProvider = 2.1f;
 
 }  // namespace metal
 

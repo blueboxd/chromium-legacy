@@ -48,6 +48,8 @@ source_set("common") {
   sources = [
     "dmabuf_video_frame_pool.cc",
     "dmabuf_video_frame_pool.h",
+    "gpu_buffer_layout.cc",
+    "gpu_buffer_layout.h",
     "image_processor.cc",
     "image_processor.h",
     "image_processor_factory.h",

@@ -20,6 +20,7 @@ content::WebUIDataSource* MediaAppGuestUI::CreateDataSource() {
       content::WebUIDataSource::Create(kChromeUIMediaAppGuestHost);
   // Add resources from chromeos_resources.pak.
   source->AddResourcePath("app.html", IDR_MEDIA_APP_APP_HTML);
+  source->AddResourcePath("receiver.js", IDR_MEDIA_APP_RECEIVER_JS);
 
   // Add resources from chromeos_media_app_bundle.pak that are also needed for
   // mocks. If enable_cros_media_app = true, then these calls will happen a

@@ -137,7 +137,7 @@ void ReadaheadFileStreamReader::OnFinishReadFromSource(net::IOBuffer* buf,
     // Free the pending callback before running it, as the callback often
     // dispatches another read.
     scoped_refptr<net::DrainableIOBuffer> sink = pending_sink_buffer_;
-    pending_sink_buffer_ = NULL;
+    pending_sink_buffer_.reset();
     std::move(pending_read_callback_)
         .Run(FinishReadFromCacheOrStoredError(sink.get()));
   }

@@ -79,6 +79,8 @@ class CAPTURE_EXPORT CameraAppDeviceImpl : public cros::mojom::CameraAppDevice {
   void OnResultMetadataAvailable(const cros::mojom::CameraMetadataPtr& metadata,
                                  const cros::mojom::StreamType stream_type);
 
+  void OnShutterDone();
+
   void SetReprocessResult(SetReprocessOptionCallback callback,
                           const int32_t status,
                           media::mojom::BlobPtr blob);
@@ -105,6 +107,14 @@ class CAPTURE_EXPORT CameraAppDeviceImpl : public cros::mojom::CameraAppDevice {
       uint32_t id,
       RemoveResultMetadataObserverCallback callback) override;
 
+  void AddCameraEventObserver(
+      mojo::PendingRemote<cros::mojom::CameraEventObserver> observer,
+      AddCameraEventObserverCallback callback) override;
+
+  void RemoveCameraEventObserver(
+      uint32_t id,
+      RemoveCameraEventObserverCallback callback) override;
+
  private:
   std::string device_id_;
 
@@ -126,15 +136,22 @@ class CAPTURE_EXPORT CameraAppDeviceImpl : public cros::mojom::CameraAppDevice {
 
   cros::mojom::CaptureIntent capture_intent_;
 
-  base::Lock observers_lock_;
+  base::Lock metadata_observers_lock_;
 
-  uint32_t next_observer_id_;
+  base::Lock camera_event_observers_lock_;
+
+  uint32_t next_metadata_observer_id_;
+
+  uint32_t next_camera_event_observer_id_;
 
   base::flat_map<uint32_t, mojo::Remote<cros::mojom::ResultMetadataObserver>>
-      observers_;
+      metadata_observers_;
 
   base::flat_map<cros::mojom::StreamType, base::flat_set<uint32_t>>
-      stream_observer_ids_;
+      stream_metadata_observer_ids_;
+
+  base::flat_map<uint32_t, mojo::Remote<cros::mojom::CameraEventObserver>>
+      camera_event_observers_;
 
   std::unique_ptr<base::WeakPtrFactory<CameraAppDeviceImpl>> weak_ptr_factory_;
 

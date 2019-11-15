@@ -624,11 +624,9 @@ void SyncTest::InitializeProfile(int index, Profile* profile) {
           GetProfile(index));
 
   if (server_type_ == IN_PROCESS_FAKE_SERVER) {
-    // TODO(pvalenzuela): Run the fake server via EmbeddedTestServer.
-    profile_sync_service->OverrideNetworkResourcesForTest(
-        base::WrapUnique<syncer::NetworkResources>(
-            new fake_server::FakeServerNetworkResources(
-                fake_server_->AsWeakPtr())));
+    profile_sync_service->OverrideNetworkForTest(
+        fake_server::CreateFakeServerHttpPostProviderFactory(
+            GetFakeServer()->AsWeakPtr()));
   }
 
   ProfileSyncServiceHarness::SigninType singin_type =

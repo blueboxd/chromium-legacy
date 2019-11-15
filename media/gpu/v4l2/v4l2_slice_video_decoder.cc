@@ -271,7 +271,7 @@ bool V4L2SliceVideoDecoder::SetCodedSizeOnInputQueue(
   return true;
 }
 
-base::Optional<VideoFrameLayout> V4L2SliceVideoDecoder::SetupOutputFormat(
+base::Optional<GpuBufferLayout> V4L2SliceVideoDecoder::SetupOutputFormat(
     const gfx::Size& size,
     const gfx::Rect& visible_rect) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
@@ -294,17 +294,19 @@ base::Optional<VideoFrameLayout> V4L2SliceVideoDecoder::SetupOutputFormat(
                             format->fmt.pix_mp.height);
 
     // Make sure VFPool can allocate video frames with width and height.
-    auto frame_layout =
+    auto layout =
         UpdateVideoFramePoolFormat(format_fourcc, adjusted_size, visible_rect);
-    if (frame_layout) {
-      if (frame_layout->coded_size() != adjusted_size) {
-        VLOGF(1) << "The size adjusted by VFPool is different from one "
-                 << "adjusted by a video driver";
-        continue;
-      }
+    if (!layout)
+      continue;
 
-      return frame_layout;
+    if (layout->size() != adjusted_size) {
+      VLOGF(1) << "The size adjusted by VFPool is different from one "
+               << "adjusted by a video driver. fourcc: " << format_fourcc
+               << ", (video driver v.s. VFPool) " << adjusted_size.ToString()
+               << " != " << layout->size().ToString();
+      continue;
     }
+    return layout;
   }
 
   // TODO(akahuang): Use ImageProcessor in this case.
@@ -314,25 +316,15 @@ base::Optional<VideoFrameLayout> V4L2SliceVideoDecoder::SetupOutputFormat(
   return base::nullopt;
 }
 
-base::Optional<VideoFrameLayout>
+base::Optional<GpuBufferLayout>
 V4L2SliceVideoDecoder::UpdateVideoFramePoolFormat(
     uint32_t output_format_fourcc,
     const gfx::Size& size,
     const gfx::Rect& visible_rect) {
-  VideoPixelFormat output_format =
-      Fourcc::FromV4L2PixFmt(output_format_fourcc).ToVideoPixelFormat();
-  if (output_format == PIXEL_FORMAT_UNKNOWN) {
-    return base::nullopt;
-  }
-  auto layout = VideoFrameLayout::Create(output_format, size);
-  if (!layout) {
-    VLOGF(1) << "Failed to create video frame layout.";
-    return base::nullopt;
-  }
-
   gfx::Size natural_size = GetNaturalSize(visible_rect, pixel_aspect_ratio_);
-  return frame_pool_->RequestFrames(*layout, visible_rect, natural_size,
-                                    num_output_frames_);
+  return frame_pool_->RequestFrames(
+      Fourcc::FromV4L2PixFmt(output_format_fourcc), size, visible_rect,
+      natural_size, num_output_frames_);
 }
 
 void V4L2SliceVideoDecoder::Reset(base::OnceClosure closure) {
@@ -454,14 +446,14 @@ bool V4L2SliceVideoDecoder::ChangeResolution(gfx::Size pic_size,
     return false;
   }
 
-  auto frame_layout = SetupOutputFormat(pic_size, visible_rect);
-  if (!frame_layout) {
+  auto layout = SetupOutputFormat(pic_size, visible_rect);
+  if (!layout) {
     VLOGF(1) << "No format is available with thew new resolution";
     SetState(State::kError);
     return false;
   }
 
-  auto coded_size = frame_layout->coded_size();
+  auto coded_size = layout->size();
   DCHECK_EQ(coded_size.width() % 16, 0);
   DCHECK_EQ(coded_size.height() % 16, 0);
   if (!gfx::Rect(coded_size).Contains(gfx::Rect(pic_size))) {

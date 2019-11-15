@@ -51,21 +51,21 @@ cca.mojo.ImageCapture = function(videoTrack) {
 
 /**
  * Gets the photo capabilities with the available options/effects.
- * @return {!Promise<!cca.mojo.PhotoCapabilities>} Promise for the result.
- * @throws {Error} Thrown when the device operation is not supported.
+ * @return {!Promise<!PhotoCapabilities|cca.mojo.PhotoCapabilities>} Promise for
+ *     the result.
  */
 cca.mojo.ImageCapture.prototype.getPhotoCapabilities = async function() {
   const deviceOperator = await cca.mojo.DeviceOperator.getInstance();
   if (!deviceOperator) {
-    throw new Error('Device operation is not supported');
+    return this.capture_.getPhotoCapabilities();
   }
+
   const supportedEffects = [cros.mojom.Effect.NO_EFFECT];
   const isPortraitModeSupported =
       await deviceOperator.isPortraitModeSupported(this.deviceId_);
   if (isPortraitModeSupported) {
     supportedEffects.push(cros.mojom.Effect.PORTRAIT_MODE);
   }
-
   const baseCapabilities = await this.capture_.getPhotoCapabilities();
 
   let /** !cca.mojo.PhotoCapabilities */ extendedCapabilities;
@@ -77,29 +77,49 @@ cca.mojo.ImageCapture.prototype.getPhotoCapabilities = async function() {
  * Takes single or multiple photo(s) with the specified settings and effects.
  * The amount of result photo(s) depends on the specified settings and effects,
  * and the first promise in the returned array will always resolve with the
- * unreprocessed photo.
+ * unreprocessed photo. The returned array will be resolved once it received
+ * the shutter event.
  * @param {!PhotoSettings} photoSettings Photo settings for ImageCapture's
  *     takePhoto().
  * @param {!Array<cros.mojom.Effect>=} photoEffects Photo effects to be applied.
- * @return {!Array<!Promise<!Blob>>} Array of promises for the result.
+ * @return {!Promise<!Array<!Promise<!Blob>>>} A promise of the array containing
+ *     promise of each blob result.
  */
-cca.mojo.ImageCapture.prototype.takePhoto = function(
-    photoSettings, photoEffects = []) {
+cca.mojo.ImageCapture.prototype.takePhoto =
+    async function(photoSettings, photoEffects = []) {
+  /** @type {Array<!Promise<!Blob>>} */
   const takes = [];
-  if (photoEffects) {
-    for (const effect of photoEffects) {
-      const take = (async () => {
-        const deviceOperator = await cca.mojo.DeviceOperator.getInstance();
-        if (!deviceOperator) {
-          throw new Error('Device operation is not supported');
-        }
-        const {data, mimeType} =
-            await deviceOperator.setReprocessOption(this.deviceId_, effect);
-        return new Blob([new Uint8Array(data)], {type: mimeType});
-      })();
-      takes.push(take);
-    }
+  const deviceOperator = await cca.mojo.DeviceOperator.getInstance();
+  if (deviceOperator === null && photoEffects.length > 0) {
+    throw new Error('Applying effects is not supported on this device');
   }
-  takes.splice(0, 0, this.capture_.takePhoto(photoSettings));
-  return takes;
+
+  for (const effect of photoEffects) {
+    const take = (async () => {
+      const {data, mimeType} =
+          await deviceOperator.setReprocessOption(this.deviceId_, effect);
+      return new Blob([new Uint8Array(data)], {type: mimeType});
+    })();
+    takes.push(take);
+  }
+
+  if (deviceOperator !== null) {
+    let onShutterDone;
+    const isShutterDone = new Promise((resolve) => {
+      onShutterDone = resolve;
+    });
+    const observerId =
+        await deviceOperator.addShutterObserver(this.deviceId_, onShutterDone);
+    takes.unshift(this.capture_.takePhoto(photoSettings));
+    await isShutterDone;
+    const isSuccess =
+        await deviceOperator.removeShutterObserver(this.deviceId_, observerId);
+    if (!isSuccess) {
+      console.error('Failed to remove shutter observer');
+    }
+    return takes;
+  } else {
+    takes.unshift(this.capture_.takePhoto(photoSettings));
+    return takes;
+  }
 };

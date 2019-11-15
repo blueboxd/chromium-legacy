@@ -129,7 +129,7 @@ Polymer({
     /** @type {!Permission} */
     let newPermission;
 
-    let newBoolState;
+    let newBoolState = false;  // to keep the closure compiler happy.
 
     switch (app_management.util.getPermission(this.app_, this.permissionType)
                 .valueType) {

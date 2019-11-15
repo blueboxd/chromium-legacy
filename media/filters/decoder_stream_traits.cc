@@ -42,7 +42,7 @@ void DecoderStreamTraits<DemuxerStream::AUDIO>::SetIsPlatformDecoder(
 
 void DecoderStreamTraits<DemuxerStream::AUDIO>::SetIsDecryptingDemuxerStream(
     bool is_dds) {
-  stats_.audio_decoder_info.is_decrypting_demuxer_stream = is_dds;
+  stats_.audio_decoder_info.has_decrypting_demuxer_stream = is_dds;
 }
 
 DecoderStreamTraits<DemuxerStream::AUDIO>::DecoderStreamTraits(
@@ -141,7 +141,7 @@ void DecoderStreamTraits<DemuxerStream::VIDEO>::SetIsPlatformDecoder(
 
 void DecoderStreamTraits<DemuxerStream::VIDEO>::SetIsDecryptingDemuxerStream(
     bool is_dds) {
-  stats_.video_decoder_info.is_decrypting_demuxer_stream = is_dds;
+  stats_.video_decoder_info.has_decrypting_demuxer_stream = is_dds;
 }
 
 DecoderStreamTraits<DemuxerStream::VIDEO>::DecoderStreamTraits(

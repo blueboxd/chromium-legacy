@@ -190,9 +190,9 @@ class SelectFileDialogExtensionBrowserTest
     extensions::ExtensionBrowserTest::TearDown();
 
     // Delete the dialogs first since they hold a pointer to their listener.
-    dialog_ = NULL;
+    dialog_.reset();
     listener_.reset();
-    second_dialog_ = NULL;
+    second_dialog_.reset();
     second_listener_.reset();
   }
 

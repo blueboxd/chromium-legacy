@@ -160,7 +160,7 @@ void ResettableSettingsSnapshot::SetShortcutsAndReport(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   shortcuts_ = shortcuts;
   shortcuts_determined_ = true;
-  cancellation_flag_ = NULL;
+  cancellation_flag_.reset();
 
   if (!callback.is_null())
     callback.Run();

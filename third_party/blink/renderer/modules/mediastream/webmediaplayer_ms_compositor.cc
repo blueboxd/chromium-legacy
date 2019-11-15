@@ -563,8 +563,11 @@ void WebMediaPlayerMSCompositor::SetCurrentFrame(
     is_first_frame = false;
 
     if (!current_frame_->metadata()->GetRotation(
-            media::VideoFrameMetadata::ROTATION, &current_video_rotation) ||
-        current_video_rotation == *new_rotation) {
+            media::VideoFrameMetadata::ROTATION, &current_video_rotation)) {
+      // Assume VIDEO_ROTATION_0 for current frame without video rotation.
+      current_video_rotation = media::VIDEO_ROTATION_0;
+    }
+    if (current_video_rotation == *new_rotation) {
       new_rotation.reset();
     }
 

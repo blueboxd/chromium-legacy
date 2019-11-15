@@ -27,7 +27,6 @@
 
 namespace base {
 class SingleThreadTaskRunner;
-class SharedMemory;
 }  // namespace base
 
 namespace gfx {
@@ -124,10 +123,6 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
   // GpuMemoryBuffers. May return null if
   // ShouldUseGpuMemoryBuffersForVideoFrames return false.
   virtual gpu::GpuMemoryBufferManager* GpuMemoryBufferManager() = 0;
-
-  // Allocate & return a shared memory segment.
-  virtual std::unique_ptr<base::SharedMemory> CreateSharedMemory(
-      size_t size) = 0;
 
   // Allocate & return an unsafe shared memory region
   virtual base::UnsafeSharedMemoryRegion CreateSharedMemoryRegion(

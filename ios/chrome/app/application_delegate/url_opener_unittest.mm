@@ -6,6 +6,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/logging.h"
 #include "ios/chrome/app/application_delegate/app_state.h"
 #include "ios/chrome/app/application_delegate/mock_tab_opener.h"
 #include "ios/chrome/app/application_delegate/startup_information.h"
@@ -274,7 +275,10 @@ TEST_F(URLOpenerTest, VerifyLaunchOptionsWithNoSourceApplication) {
         EXPECT_EQ(p.callerApp, CALLER_APP_NOT_AVAILABLE);
         return YES;
       }]];
+#if DCHECK_IS_ON()
+  // This function is called in a DCHECK.
   [[[startupInformationMock expect] andReturn:params] startupParameters];
+#endif
 
   id appStateMock = [OCMockObject mockForClass:[AppState class]];
   [[appStateMock expect] launchFromURLHandled:YES];

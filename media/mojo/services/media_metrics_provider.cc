@@ -104,7 +104,7 @@ std::string MediaMetricsProvider::GetUMANameForAVStream(
   }
 #endif
 
-  if (player_info.video_pipeline_info.is_decrypting_demuxer_stream) {
+  if (player_info.video_pipeline_info.has_decrypting_demuxer_stream) {
     uma_name += "DDS.";
   }
 

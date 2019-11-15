@@ -146,6 +146,10 @@ const char kDisableAnimationOnLowBatteryName[] =
 const char kDisableAnimationOnLowBatteryDescription[] =
     "Disable animations when battery level goes below 20%";
 
+const char kDownloadInfobarMessagesUIName[] = "Download Infobars Messages UI";
+const char kDownloadInfobarMessagesUIDescription[] =
+    "When enabled Downloads use the new Messages UI.";
+
 const char kDragAndDropName[] = "Drag and Drop";
 const char kDragAndDropDescription[] = "Enable support for drag and drop.";
 

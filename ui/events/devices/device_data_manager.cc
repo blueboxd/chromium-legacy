@@ -4,12 +4,15 @@
 
 #include "ui/events/devices/device_data_manager.h"
 
+#include <algorithm>
+
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/events/devices/input_device_event_observer.h"
 #include "ui/events/devices/touch_device_transform.h"
+#include "ui/events/devices/touchscreen_device.h"
 #include "ui/gfx/geometry/point3_f.h"
 
 // This macro provides the implementation for the observer notification methods.
@@ -79,19 +82,16 @@ void DeviceDataManager::ConfigureTouchDevices(
 }
 
 void DeviceDataManager::ClearTouchDeviceAssociations() {
-  for (size_t i = 0; i < touch_map_.size(); ++i)
-    touch_map_[i] = TouchDeviceTransform();
+  touch_map_.clear();
   for (TouchscreenDevice& touchscreen_device : touchscreen_devices_)
     touchscreen_device.target_display_id = display::kInvalidDisplayId;
 }
 
 void DeviceDataManager::UpdateTouchInfoFromTransform(
     const ui::TouchDeviceTransform& touch_device_transform) {
-  if (!IsTouchDeviceIdValid(touch_device_transform.device_id))
-    return;
+  DCHECK_GE(touch_device_transform.device_id, 0);
 
   touch_map_[touch_device_transform.device_id] = touch_device_transform;
-
   for (TouchscreenDevice& touchscreen_device : touchscreen_devices_) {
     if (touchscreen_device.id == touch_device_transform.device_id) {
       touchscreen_device.target_display_id = touch_device_transform.display_id;
@@ -100,22 +100,41 @@ void DeviceDataManager::UpdateTouchInfoFromTransform(
   }
 }
 
-bool DeviceDataManager::IsTouchDeviceIdValid(int touch_device_id) const {
-  return (touch_device_id > 0 && touch_device_id < kMaxDeviceNum);
+void DeviceDataManager::UpdateTouchMap() {
+  // Remove all entries for devices from the |touch_map_| that are not currently
+  // connected.
+  auto last_iter = std::remove_if(
+      touch_map_.begin(), touch_map_.end(),
+      [this](const std::pair<int, TouchDeviceTransform>& map_entry) {
+        // Check if the given |map_entry| is present in the current list of
+        // connected devices.
+        auto iter = std::find_if(
+            touchscreen_devices_.begin(), touchscreen_devices_.end(),
+            [&map_entry](const TouchscreenDevice& touch_device) {
+              return touch_device.id == map_entry.second.device_id;
+            });
+
+        // Remove the device identified by |map_entry| from |touch_map_| if it
+        // is not present in the list of currently connected devices.
+        return iter != touchscreen_devices_.end();
+      });
+  touch_map_.erase(last_iter, touch_map_.end());
 }
 
 void DeviceDataManager::ApplyTouchRadiusScale(int touch_device_id,
                                               double* radius) {
-  if (IsTouchDeviceIdValid(touch_device_id))
-    *radius = (*radius) * touch_map_[touch_device_id].radius_scale;
+  auto iter = touch_map_.find(touch_device_id);
+  if (iter != touch_map_.end())
+    *radius = (*radius) * iter->second.radius_scale;
 }
 
 void DeviceDataManager::ApplyTouchTransformer(int touch_device_id,
                                               float* x,
                                               float* y) {
-  if (IsTouchDeviceIdValid(touch_device_id)) {
+  auto iter = touch_map_.find(touch_device_id);
+  if (iter != touch_map_.end()) {
     gfx::Point3F point(*x, *y, 0.0);
-    const gfx::Transform& trans = touch_map_[touch_device_id].transform;
+    const gfx::Transform& trans = iter->second.transform;
     trans.TransformPoint(&point);
     *x = point.x();
     *y = point.y();
@@ -150,8 +169,9 @@ bool DeviceDataManager::AreDeviceListsComplete() const {
 
 int64_t DeviceDataManager::GetTargetDisplayForTouchDevice(
     int touch_device_id) const {
-  if (IsTouchDeviceIdValid(touch_device_id))
-    return touch_map_[touch_device_id].display_id;
+  auto iter = touch_map_.find(touch_device_id);
+  if (iter != touch_map_.end())
+    return iter->second.display_id;
   return display::kInvalidDisplayId;
 }
 
@@ -170,6 +190,7 @@ void DeviceDataManager::OnTouchscreenDevicesUpdated(
     touchscreen_device.target_display_id =
         GetTargetDisplayForTouchDevice(touchscreen_device.id);
   }
+  UpdateTouchMap();
   NotifyObserversTouchscreenDeviceConfigurationChanged();
 }
 

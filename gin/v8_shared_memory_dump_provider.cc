@@ -13,11 +13,16 @@
 
 namespace gin {
 
-V8SharedMemoryDumpProvider::V8SharedMemoryDumpProvider() {}
+V8SharedMemoryDumpProvider::V8SharedMemoryDumpProvider() {
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      this, "V8SharedMemory", nullptr);
+}
 
 // static
-V8SharedMemoryDumpProvider* V8SharedMemoryDumpProvider::Instance() {
-  return base::Singleton<
+void V8SharedMemoryDumpProvider::Register() {
+  // The provider is registered as part of the constructor, so all this does is
+  // access the singleton causing it to be constructed on the first access.
+  base::Singleton<
       V8SharedMemoryDumpProvider,
       base::LeakySingletonTraits<V8SharedMemoryDumpProvider>>::get();
 }

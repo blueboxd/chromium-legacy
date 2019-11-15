@@ -341,8 +341,12 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       product_config_java_packages = [
         "org.chromium.chrome.browser",
         webview_product_config_java_package,
-        weblayer_product_config_java_package,
       ]
+
+      if (webview_includes_weblayer) {
+        product_config_java_packages += [ weblayer_product_config_java_package ]
+      }
+
       if (android_64bit_target_cpu) {
         # Build //android_webview:monochrome with the opposite bitness that
         # Chrome runs in.

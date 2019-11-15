@@ -74,7 +74,8 @@ cca.views.View.prototype.onKeyPressed = function(key) {
   if (this.handlingKey(key)) {
     return true;
   } else if (key === 'Ctrl-V') {
-    cca.toast.show(chrome.runtime.getManifest().version);
+    const {version, version_name: versionName} = chrome.runtime.getManifest();
+    cca.toast.show(versionName || version);
     return true;
   } else if (this.dismissByEsc_ && key === 'Escape') {
     this.leave();

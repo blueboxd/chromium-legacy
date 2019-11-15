@@ -2744,8 +2744,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   RenderFrameHostImpl* main_frame = reinterpret_cast<RenderFrameHostImpl*>(
       shell()->web_contents()->GetMainFrame());
   // Simulate getting 0b1 as a feature vector from the renderer.
-  static_cast<mojom::FrameHost*>(main_frame)
-      ->UpdateActiveSchedulerTrackedFeatures(0b1u);
+  static_cast<blink::mojom::LocalFrameHost*>(main_frame)
+      ->DidChangeActiveSchedulerTrackedFeatures(0b1u);
   DCHECK_EQ(main_frame->scheduler_tracked_features(), 0b1u);
   // Simulate the browser side reporting a feature usage.
   main_frame->OnSchedulerTrackedFeatureUsed(
@@ -2753,8 +2753,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   DCHECK_EQ(main_frame->scheduler_tracked_features(), 0b11u);
   // Simulate a feature vector being updated from the renderer with some
   // features being activated and some being deactivated.
-  static_cast<mojom::FrameHost*>(main_frame)
-      ->UpdateActiveSchedulerTrackedFeatures(0b100u);
+  static_cast<blink::mojom::LocalFrameHost*>(main_frame)
+      ->DidChangeActiveSchedulerTrackedFeatures(0b100u);
   DCHECK_EQ(main_frame->scheduler_tracked_features(), 0b110u);
 
   // Navigate away and expect that no values persist the navigation.
@@ -2764,8 +2764,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
   main_frame = reinterpret_cast<RenderFrameHostImpl*>(
       shell()->web_contents()->GetMainFrame());
-  static_cast<mojom::FrameHost*>(main_frame)
-      ->UpdateActiveSchedulerTrackedFeatures(0b0u);
+  static_cast<blink::mojom::LocalFrameHost*>(main_frame)
+      ->DidChangeActiveSchedulerTrackedFeatures(0b0u);
 }
 
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,

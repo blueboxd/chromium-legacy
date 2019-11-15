@@ -8,8 +8,20 @@
  * brought in via DEPS to ../../app/js/app_main.js. Runs in an isolated guest.
  */
 
-/** A mock app used for testing when src-internal is not available. */
-class BacklightApp extends HTMLElement {}
+/**
+ * A mock app used for testing when src-internal is not available.
+ * @implements mediaApp.ClientApi
+ */
+class BacklightApp extends HTMLElement {
+  /** @override  */
+  async loadFiles(files) {
+    const img = /** @type{HTMLImageElement} */ (document.createElement('img'));
+    // Note the mock app will just leak this Blob URL.
+    img.src = URL.createObjectURL(files.item(0).blob);
+    await img.decode();
+    this.appendChild(img);
+  }
+}
 
 window.customElements.define('backlight-app', BacklightApp);
 

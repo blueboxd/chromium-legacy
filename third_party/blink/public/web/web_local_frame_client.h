@@ -599,10 +599,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // was spent in tasks on the frame.
   virtual void DidChangeCpuTiming(base::TimeDelta time) {}
 
-  // The set of active features affecting scheduling for this frame changed.
-  virtual void DidChangeActiveSchedulerTrackedFeatures(uint64_t features_mask) {
-  }
-
   // UseCounter ----------------------------------------------------------
   // Blink exhibited a certain loading behavior that the browser process will
   // use for segregated histograms.

@@ -355,6 +355,20 @@ class DirectoryModel extends cr.EventTarget {
   }
 
   /**
+   * @public
+   * @return {string}
+   */
+  getCurrentDirName() {
+    const dirEntry = this.getCurrentDirEntry();
+    if (!dirEntry) {
+      return '';
+    }
+
+    const locationInfo = this.volumeManager_.getLocationInfo(dirEntry);
+    return util.getEntryLabel(locationInfo, dirEntry);
+  }
+
+  /**
    * @return {Array<Entry>} Array of selected entries.
    * @private
    */

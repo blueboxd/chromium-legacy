@@ -509,7 +509,7 @@ void PrinterJobHandler::StartPrinting() {
   UMA_HISTOGRAM_ENUMERATION("CloudPrint.JobHandlerEvent",
                             JOB_HANDLER_SET_START_PRINTING, JOB_HANDLER_MAX);
   // We are done with the request object for now.
-  request_ = NULL;
+  request_.reset();
   if (shutting_down_)
     return;
 
@@ -529,7 +529,7 @@ void PrinterJobHandler::StartPrinting() {
 
 void PrinterJobHandler::Reset() {
   job_details_.Clear();
-  request_ = NULL;
+  request_.reset();
   print_thread_.Stop();
 }
 

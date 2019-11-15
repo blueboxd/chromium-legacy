@@ -536,7 +536,7 @@ void SocketPosix::WriteCompleted() {
 
   bool ok = write_socket_watcher_.StopWatchingFileDescriptor();
   DCHECK(ok);
-  write_buf_ = NULL;
+  write_buf_.reset();
   write_buf_len_ = 0;
   std::move(write_callback_).Run(rv);
 }
@@ -565,7 +565,7 @@ void SocketPosix::StopWatchingAndCleanUp(bool close_socket) {
   }
 
   if (!read_callback_.is_null()) {
-    read_buf_ = NULL;
+    read_buf_.reset();
     read_buf_len_ = 0;
     read_callback_.Reset();
   }
@@ -573,7 +573,7 @@ void SocketPosix::StopWatchingAndCleanUp(bool close_socket) {
   read_if_ready_callback_.Reset();
 
   if (!write_callback_.is_null()) {
-    write_buf_ = NULL;
+    write_buf_.reset();
     write_buf_len_ = 0;
     write_callback_.Reset();
   }

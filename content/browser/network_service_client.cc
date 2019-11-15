@@ -36,6 +36,10 @@
 #include "base/android/content_uri_utils.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "base/message_loop/message_loop_current.h"
+#endif
+
 namespace content {
 namespace {
 

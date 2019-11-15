@@ -31,14 +31,15 @@ template("system_webview_apk_tmpl") {
       "//android_webview/nonembedded:nonembedded_java",
       "//android_webview/support_library:support_lib_glue_java",
       "//base:base_java",
-      "//weblayer:locale_pak_assets",
     ]
 
     target_sdk_version = android_sdk_version
-    product_config_java_packages = [
-      webview_product_config_java_package,
-      weblayer_product_config_java_package,
-    ]
+    product_config_java_packages = [ webview_product_config_java_package ]
+
+    if (webview_includes_weblayer) {
+      deps += [ "//weblayer:locale_pak_assets" ]
+      product_config_java_packages += [ weblayer_product_config_java_package ]
+    }
 
     if (!defined(alternative_android_sdk_dep)) {
       alternative_android_sdk_dep = webview_framework_dep

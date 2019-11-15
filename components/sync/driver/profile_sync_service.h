@@ -36,6 +36,7 @@
 #include "components/sync/driver/sync_user_settings_impl.h"
 #include "components/sync/engine/configure_reason.h"
 #include "components/sync/engine/events/protocol_event_observer.h"
+#include "components/sync/engine/net/http_post_provider_factory.h"
 #include "components/sync/engine/net/network_time_update_callback.h"
 #include "components/sync/engine/shutdown_reason.h"
 #include "components/sync/engine/sync_engine.h"
@@ -54,7 +55,6 @@ class SharedURLLoaderFactory;
 namespace syncer {
 
 class BackendMigrator;
-class NetworkResources;
 class SyncAuthManager;
 class TypeDebugInfoObserver;
 struct CommitCounters;
@@ -243,12 +243,12 @@ class ProfileSyncService : public SyncService,
   // Returns true if the syncer is waiting for new datatypes to be encrypted.
   bool IsEncryptionPendingForTest() const;
 
-  // Overrides the NetworkResources used for Sync connections.
+  // Overrides the callback used to create network connections.
   // TODO(crbug.com/949504): Inject this in the ctor instead. As it is, it's
-  // possible that the real NetworkResources were already used before the test
-  // had a chance to call this.
-  void OverrideNetworkResourcesForTest(
-      std::unique_ptr<NetworkResources> network_resources);
+  // possible that the real callback was already used before the test had a
+  // chance to call this.
+  void OverrideNetworkForTest(const CreateHttpPostProviderFactory&
+                                  create_http_post_provider_factory_cb);
 
   bool IsDataTypeControllerRunningForTest(ModelType type) const;
 
@@ -285,8 +285,6 @@ class ProfileSyncService : public SyncService,
 
   // Virtual for testing.
   virtual WeakHandle<JsEventHandler> GetJsEventHandler();
-
-  SyncEngine::HttpPostProviderFactoryGetter MakeHttpPostProviderFactoryGetter();
 
   WeakHandle<UnrecoverableErrorHandler> GetUnrecoverableErrorHandler();
 
@@ -487,7 +485,7 @@ class ProfileSyncService : public SyncService,
   // List of available data type controllers.
   DataTypeController::TypeMap data_type_controllers_;
 
-  std::unique_ptr<NetworkResources> network_resources_;
+  CreateHttpPostProviderFactory create_http_post_provider_factory_cb_;
 
   const StartBehavior start_behavior_;
   std::unique_ptr<StartupController> startup_controller_;

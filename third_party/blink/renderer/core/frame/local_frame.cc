@@ -1492,7 +1492,8 @@ void LocalFrame::UpdateTaskTime(base::TimeDelta time) {
 }
 
 void LocalFrame::UpdateActiveSchedulerTrackedFeatures(uint64_t features_mask) {
-  Client()->DidChangeActiveSchedulerTrackedFeatures(features_mask);
+  GetLocalFrameHostRemote().DidChangeActiveSchedulerTrackedFeatures(
+      features_mask);
 }
 
 const base::UnguessableToken& LocalFrame::GetAgentClusterId() const {

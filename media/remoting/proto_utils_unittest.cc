@@ -164,14 +164,14 @@ TEST_F(ProtoUtilsTest, PipelineStatisticsConversion) {
   pb_video_info->set_decoder_name(original.video_decoder_info.decoder_name);
   pb_video_info->set_is_platform_decoder(
       original.video_decoder_info.is_platform_decoder);
-  pb_video_info->set_is_decrypting_demuxer_stream(
-      original.video_decoder_info.is_decrypting_demuxer_stream);
+  pb_video_info->set_has_decrypting_demuxer_stream(
+      original.video_decoder_info.has_decrypting_demuxer_stream);
 
   pb_audio_info->set_decoder_name(original.audio_decoder_info.decoder_name);
   pb_audio_info->set_is_platform_decoder(
       original.audio_decoder_info.is_platform_decoder);
-  pb_audio_info->set_is_decrypting_demuxer_stream(
-      original.audio_decoder_info.is_decrypting_demuxer_stream);
+  pb_audio_info->set_has_decrypting_demuxer_stream(
+      original.audio_decoder_info.has_decrypting_demuxer_stream);
 
   PipelineStatistics converted;
 

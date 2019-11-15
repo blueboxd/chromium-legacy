@@ -13,9 +13,12 @@
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/icon_key_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/services/app_service/public/cpp/instance.h"
+#include "chrome/services/app_service/public/cpp/instance_registry.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_prefs_observer.h"
 #include "extensions/browser/extension_registry.h"
@@ -28,6 +31,7 @@
 class Profile;
 
 namespace extensions {
+class AppWindow;
 class ExtensionSet;
 }
 
@@ -42,6 +46,7 @@ class ExtensionAppsEnableFlow;
 //
 // See chrome/services/app_service/README.md.
 class ExtensionApps : public apps::mojom::Publisher,
+                      public extensions::AppWindowRegistry::Observer,
                       public extensions::ExtensionPrefsObserver,
                       public extensions::ExtensionRegistryObserver,
                       public content_settings::Observer,
@@ -53,7 +58,8 @@ class ExtensionApps : public apps::mojom::Publisher,
 
   ExtensionApps(const mojo::Remote<apps::mojom::AppService>& app_service,
                 Profile* profile,
-                apps::mojom::AppType app_type);
+                apps::mojom::AppType app_type,
+                apps::InstanceRegistry* instance_registry);
   ~ExtensionApps() override;
 
   void FlushMojoCallsForTesting();
@@ -104,6 +110,11 @@ class ExtensionApps : public apps::mojom::Publisher,
                                const ContentSettingsPattern& secondary_pattern,
                                ContentSettingsType content_type,
                                const std::string& resource_identifier) override;
+
+  // Overridden from AppWindowRegistry::Observer:
+  void OnAppWindowAdded(extensions::AppWindow* app_window) override;
+  void OnAppWindowShown(extensions::AppWindow* app_window,
+                        bool was_hidden) override;
 
   // extensions::ExtensionPrefsObserver overrides.
   void OnExtensionLastLaunchTimeChanged(
@@ -172,6 +183,8 @@ class ExtensionApps : public apps::mojom::Publisher,
 
   void SetIconEffect(const std::string& app_id);
 
+  void RegisterInstance(extensions::AppWindow* app_window, InstanceState state);
+
   mojo::Receiver<apps::mojom::Publisher> receiver_{this};
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
 
@@ -188,6 +201,11 @@ class ExtensionApps : public apps::mojom::Publisher,
   apps_util::IncrementingIconKeyFactory icon_key_factory_;
 
   apps::mojom::AppType app_type_;
+
+  apps::InstanceRegistry* instance_registry_;
+  ScopedObserver<extensions::AppWindowRegistry,
+                 extensions::AppWindowRegistry::Observer>
+      app_window_registry_{this};
 
   using EnableFlowPtr = std::unique_ptr<ExtensionAppsEnableFlow>;
   std::map<std::string, EnableFlowPtr> enable_flow_map_;

@@ -13,11 +13,12 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
 #include "media/base/video_frame.h"
-#include "media/base/video_frame_layout.h"
+#include "media/base/video_types.h"
 #include "media/gpu/chromeos/dmabuf_video_frame_pool.h"
 #include "media/gpu/media_gpu_export.h"
 
@@ -43,11 +44,11 @@ class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
   ~PlatformVideoFramePool() override;
 
   // VideoFramePoolBase Implementation.
-  base::Optional<VideoFrameLayout> RequestFrames(
-      const VideoFrameLayout& layout,
-      const gfx::Rect& visible_rect,
-      const gfx::Size& natural_size,
-      size_t max_num_frames) override;
+  base::Optional<GpuBufferLayout> RequestFrames(const Fourcc& fourcc,
+                                                const gfx::Size& coded_size,
+                                                const gfx::Rect& visible_rect,
+                                                const gfx::Size& natural_size,
+                                                size_t max_num_frames) override;
   scoped_refptr<VideoFrame> GetFrame() override;
   bool IsExhausted() override;
   void NotifyWhenFrameAvailable(base::OnceClosure cb) override;
@@ -92,7 +93,8 @@ class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
   void InsertFreeFrame_Locked(scoped_refptr<VideoFrame> frame)
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
   size_t GetTotalNumFrames_Locked() const EXCLUSIVE_LOCKS_REQUIRED(lock_);
-  bool IsSameLayout_Locked(const VideoFrameLayout& layout) const
+  bool IsSameFormat_Locked(VideoPixelFormat format,
+                           const gfx::Size& coded_size) const
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
   bool IsExhausted_Locked() EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
@@ -109,9 +111,9 @@ class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
   gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory_ = nullptr;
 
   // The arguments of current frame. We allocate new frames only if a pixel
-  // format or coded size in |frame_layout_| is changed. When GetFrame() is
+  // format or size in |frame_layout_| is changed. When GetFrame() is
   // called, we update |visible_rect_| and |natural_size_| of wrapped frames.
-  base::Optional<VideoFrameLayout> frame_layout_ GUARDED_BY(lock_);
+  base::Optional<GpuBufferLayout> frame_layout_ GUARDED_BY(lock_);
   gfx::Rect visible_rect_ GUARDED_BY(lock_);
   gfx::Size natural_size_ GUARDED_BY(lock_);
 

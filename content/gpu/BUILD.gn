@@ -111,6 +111,10 @@ target(link_target_type, "gpu_sources") {
     deps += [ "//sandbox" ]
   }
 
+  if (is_mac) {
+    deps += [ "//components/metal_util" ]
+  }
+
   if (use_x11) {
     deps += [
       "//ui/events/platform/x11",

@@ -54,7 +54,7 @@ bool CloudPrintConnector::InitPrintSystem() {
   }
   PrintSystem::PrintSystemResult result = print_system_->Init();
   if (!result.succeeded()) {
-    print_system_ = NULL;
+    print_system_.reset();
     // We could not initialize the print system. We need to notify the server.
     ReportUserMessage(kPrintSystemFailedMessageId, result.message());
     return false;
@@ -102,8 +102,8 @@ void CloudPrintConnector::Stop() {
   // Do uninitialization here.
   stats_ptr_factory_.InvalidateWeakPtrs();
   pending_tasks_.clear();
-  print_server_watcher_ = NULL;
-  request_ = NULL;
+  print_server_watcher_.reset();
+  request_.reset();
 }
 
 bool CloudPrintConnector::IsRunning() {

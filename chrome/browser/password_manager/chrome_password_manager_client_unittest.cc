@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
@@ -200,8 +199,7 @@ std::unique_ptr<KeyedService> CreateTestSyncService(
 
 class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
  public:
-  ChromePasswordManagerClientTest()
-      : field_trial_list_(nullptr), metrics_enabled_(false) {}
+  ChromePasswordManagerClientTest() : metrics_enabled_(false) {}
   void SetUp() override;
   void TearDown() override;
 
@@ -237,7 +235,6 @@ class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
   FakePasswordAutofillAgent fake_agent_;
 
   TestingPrefServiceSimple prefs_;
-  base::FieldTrialList field_trial_list_;
   bool metrics_enabled_;
 };
 

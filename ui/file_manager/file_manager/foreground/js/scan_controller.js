@@ -70,6 +70,12 @@ class ScanController {
       this.listContainer_.endBatchUpdates();
     }
 
+    if (window.IN_TEST) {
+      this.listContainer_.element.removeAttribute('scan-completed');
+      this.listContainer_.element.setAttribute(
+          'scan-started', this.directoryModel_.getCurrentDirName());
+    }
+
     this.listContainer_.startBatchUpdates();
     this.scanInProgress_ = true;
 
@@ -90,6 +96,12 @@ class ScanController {
     if (!this.scanInProgress_) {
       console.error('Scan-completed event received. But scan is not started.');
       return;
+    }
+
+    if (window.IN_TEST) {
+      this.listContainer_.element.removeAttribute('scan-started');
+      this.listContainer_.element.setAttribute(
+          'scan-completed', this.directoryModel_.getCurrentDirName());
     }
 
     this.hideSpinner_();

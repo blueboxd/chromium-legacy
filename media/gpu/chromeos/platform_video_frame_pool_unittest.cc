@@ -15,6 +15,7 @@
 #include "base/files/scoped_file.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "media/gpu/chromeos/fourcc.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -62,24 +63,24 @@ class PlatformVideoFramePoolTest
     pool_->set_parent_task_runner(base::ThreadTaskRunnerHandle::Get());
   }
 
-  void RequestFrames(VideoPixelFormat format) {
+  void RequestFrames(const Fourcc& fourcc) {
     constexpr gfx::Size kCodedSize(320, 240);
     constexpr size_t kNumFrames = 10;
 
     visible_rect_.set_size(kCodedSize);
     natural_size_ = kCodedSize;
-    layout_ = VideoFrameLayout::Create(format, kCodedSize);
-    DCHECK(layout_);
 
-    pool_->RequestFrames(*layout_, visible_rect_, natural_size_, kNumFrames);
+    layout_ = pool_->RequestFrames(fourcc, kCodedSize, visible_rect_,
+                                   natural_size_, kNumFrames);
+    EXPECT_TRUE(layout_);
   }
 
   scoped_refptr<VideoFrame> GetFrame(int timestamp_ms) {
     scoped_refptr<VideoFrame> frame = pool_->GetFrame();
     frame->set_timestamp(base::TimeDelta::FromMilliseconds(timestamp_ms));
 
-    EXPECT_EQ(layout_->format(), frame->format());
-    EXPECT_EQ(layout_->coded_size(), frame->coded_size());
+    EXPECT_EQ(layout_->fourcc(), Fourcc::FromVideoPixelFormat(frame->format()));
+    EXPECT_EQ(layout_->size(), frame->coded_size());
     EXPECT_EQ(visible_rect_, frame->visible_rect());
     EXPECT_EQ(natural_size_, frame->natural_size());
 
@@ -96,7 +97,7 @@ class PlatformVideoFramePoolTest
                   std::default_delete<DmabufVideoFramePool>>
       pool_;
 
-  base::Optional<VideoFrameLayout> layout_;
+  base::Optional<GpuBufferLayout> layout_;
   gfx::Rect visible_rect_;
   gfx::Size natural_size_;
 };
@@ -108,7 +109,7 @@ INSTANTIATE_TEST_SUITE_P(,
                                          PIXEL_FORMAT_ARGB));
 
 TEST_F(PlatformVideoFramePoolTest, SingleFrameReuse) {
-  RequestFrames(PIXEL_FORMAT_I420);
+  RequestFrames(Fourcc(Fourcc::YV12));
   scoped_refptr<VideoFrame> frame = GetFrame(10);
   DmabufId id = DmabufVideoFramePool::GetDmabufId(*frame);
 
@@ -122,7 +123,7 @@ TEST_F(PlatformVideoFramePoolTest, SingleFrameReuse) {
 }
 
 TEST_F(PlatformVideoFramePoolTest, MultipleFrameReuse) {
-  RequestFrames(PIXEL_FORMAT_I420);
+  RequestFrames(Fourcc(Fourcc::YV12));
   scoped_refptr<VideoFrame> frame1 = GetFrame(10);
   scoped_refptr<VideoFrame> frame2 = GetFrame(20);
   DmabufId id1 = DmabufVideoFramePool::GetDmabufId(*frame1);
@@ -145,7 +146,7 @@ TEST_F(PlatformVideoFramePoolTest, MultipleFrameReuse) {
 }
 
 TEST_F(PlatformVideoFramePoolTest, FormatChange) {
-  RequestFrames(PIXEL_FORMAT_I420);
+  RequestFrames(Fourcc(Fourcc::YV12));
   scoped_refptr<VideoFrame> frame_a = GetFrame(10);
   scoped_refptr<VideoFrame> frame_b = GetFrame(10);
 
@@ -159,13 +160,13 @@ TEST_F(PlatformVideoFramePoolTest, FormatChange) {
 
   // Verify that requesting a frame with a different format causes the pool
   // to get drained.
-  RequestFrames(PIXEL_FORMAT_I420A);
+  RequestFrames(Fourcc(Fourcc::NV12));
   scoped_refptr<VideoFrame> new_frame = GetFrame(10);
   CheckPoolSize(0u);
 }
 
 TEST_F(PlatformVideoFramePoolTest, UnwrapVideoFrame) {
-  RequestFrames(PIXEL_FORMAT_I420);
+  RequestFrames(Fourcc(Fourcc::YV12));
   scoped_refptr<VideoFrame> frame_1 = GetFrame(10);
   scoped_refptr<VideoFrame> frame_2 = VideoFrame::WrapVideoFrame(
       frame_1, frame_1->format(), frame_1->visible_rect(),
@@ -177,5 +178,8 @@ TEST_F(PlatformVideoFramePoolTest, UnwrapVideoFrame) {
   EXPECT_NE(pool_->UnwrapFrame(*frame_1), pool_->UnwrapFrame(*frame_3));
   EXPECT_FALSE(frame_1->IsSameDmaBufsAs(*frame_3));
 }
+
+// TODO(akahuang): Add a testcase to verify calling RequestFrames() only with
+// different |max_num_frames|.
 
 }  // namespace media

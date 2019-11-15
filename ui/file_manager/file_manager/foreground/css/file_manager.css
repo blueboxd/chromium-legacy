@@ -1026,6 +1026,7 @@ body.check-select #read-only-indicator {
   flex: auto;
   flex-direction: column;
   min-height: 0;
+  outline: none;
 }
 
 #detail-table > list,

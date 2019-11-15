@@ -66,7 +66,7 @@ class GridTrack {
   }
   void SetGrowthLimitCap(base::Optional<LayoutUnit>);
 
-  const GridTrackSize CachedTrackSize() const {
+  const GridTrackSize& CachedTrackSize() const {
     DCHECK(cached_track_size_.has_value());
     return cached_track_size_.value();
   }
@@ -325,8 +325,9 @@ class GridTrackSizingAlgorithmStrategy {
     return algorithm_.AvailableSpace();
   }
 
-  GridTrackSize GetCachedGridTrackSize(GridTrackSizingDirection direction,
-                                       size_t translated_index) const {
+  const GridTrackSize& GetCachedGridTrackSize(
+      GridTrackSizingDirection direction,
+      size_t translated_index) const {
     return algorithm_.Tracks(direction)[translated_index].CachedTrackSize();
   }
 

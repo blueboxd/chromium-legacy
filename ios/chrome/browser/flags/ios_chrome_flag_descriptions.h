@@ -119,6 +119,10 @@ extern const char kDetectMainThreadFreezeDescription[];
 extern const char kDisableAnimationOnLowBatteryName[];
 extern const char kDisableAnimationOnLowBatteryDescription[];
 
+// Title and description for the flag to enable the Messages UI for downloads.
+extern const char kDownloadInfobarMessagesUIName[];
+extern const char kDownloadInfobarMessagesUIDescription[];
+
 // Title and description for the flag to enable drag and drop.
 extern const char kDragAndDropName[];
 extern const char kDragAndDropDescription[];

@@ -44,7 +44,8 @@ void TestShaderCallback(const base::TimeTicks& start_time,
 // it ever completes).
 // https://crbug.com/974219
 void TestShaderLaunch() {
-  metal::TestShader(base::BindOnce(TestShaderCallback, base::TimeTicks::Now()),
+  metal::TestShader(metal::kTestShaderSeedBrowserTimer,
+                    base::BindOnce(TestShaderCallback, base::TimeTicks::Now()),
                     kTestShaderCompileTimeout);
 }
 

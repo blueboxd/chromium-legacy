@@ -225,7 +225,7 @@ void ServiceProcessControl::OnProcessLaunched() {
   }
 
   // We don't need the launcher anymore.
-  launcher_ = NULL;
+  launcher_.reset();
 }
 
 void ServiceProcessControl::OnUpgradeRecommended() {

@@ -135,7 +135,7 @@
   {
     "name": "app-service-shelf",
     "owners": [ "//chrome/services/app_service/OWNERS" ],
-    "expiry_milestone": 79
+    "expiry_milestone": 81
   },{
     "name": "arc-application-zoom",
     "owners": [ "sarakato" ],
@@ -250,7 +250,7 @@
   {
     "name": "auto-screen-brightness",
     "owners": [ "jiameng", "napper" ],
-    "expiry_milestone": 79
+    "expiry_milestone": 90
   },
   {
     "name": "autofill-always-return-cloud-tokenized-card",
@@ -1307,7 +1307,7 @@
   {
     "name": "enable-experimental-accessibility-language-detection",
     "owners": [ "chrishall", "//ui/accessibility/OWNERS" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 82
   },
   {
     "name": "enable-experimental-accessibility-switch-access",
@@ -1878,22 +1878,17 @@
   {
     "name": "enable-sync-device-info-in-transport-mode",
     "owners": ["//components/sync/OWNERS", "//chrome/browser/sharing/OWNERS"],
-    "expiry_milestone": 81
-  },
-  {
-    "name": "enable-sync-uss-bookmarks",
-    "owners": [ "mamir", "//components/sync/OWNERS" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 83
   },
   {
     "name": "enable-sync-uss-nigori",
     "owners": [ "mmoskvitin@google.com", "//components/sync/OWNERS" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 83
   },
   {
     "name": "enable-sync-uss-passwords",
     "owners": [ "mamir", "//components/sync/OWNERS" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 83
   },
   {
     "name": "enable-system-webapps",
@@ -2511,6 +2506,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "media-app",
+    "owners": [ "//chromeos/components/media_app_ui/OWNERS" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "media-router-cast-allow-all-ips",
     "owners": [ "mfoltz" ],
     // This flag is used by users with unusual network configurations to allow
@@ -2996,17 +2996,17 @@
   {
     "name": "password-leak-detection",
     "owners": [ "jdoerrie", "vasilii" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 81
   },
   {
     "name": "password-manager-onboarding-android",
-    "owners": ["achulkov", "ioanap"],
-    "expiry_milestone": 80
+    "owners": ["ioanap"],
+    "expiry_milestone": 82
   },
   {
     "name": "PasswordImport",
     "owners": [ "vasilii" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 88
   },
   {
     "name": "passwords-account-storage",
@@ -3082,7 +3082,7 @@
   {
     "name": "quiet-notification-prompts",
     "owners": [ "engedy", "mkwst", "andypaicu", "hkamila" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 83
   },
   {
     "name": "reader-mode-heuristics",
@@ -3347,11 +3347,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "sync-support-secondary-account",
-    "owners": [ "treib", "//components/sync/OWNERS" ],
-    "expiry_milestone": 80
-  },
-  {
     "name": "sync-wifi-configurations",
     "owners": ["jonmann", "cros-system-services@google.com"],
     "expiry_milestone": 85
@@ -3601,7 +3596,7 @@
   {
     "name": "username-first-flow",
     "owners": [ "dvadym" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 84
   },
   {
     "name": "wake-on-wifi-packet",

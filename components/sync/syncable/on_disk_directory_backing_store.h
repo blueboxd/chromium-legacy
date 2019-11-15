@@ -24,7 +24,6 @@ class OnDiskDirectoryBackingStore : public DirectoryBackingStore {
       const base::FilePath& backing_file_path);
   ~OnDiskDirectoryBackingStore() override;
   DirOpenResult Load(Directory::MetahandlesMap* handles_map,
-                     JournalIndex* delete_journals,
                      MetahandleSet* metahandles_to_purge,
                      Directory::KernelLoadInfo* kernel_load_info) override;
 
@@ -39,7 +38,6 @@ class OnDiskDirectoryBackingStore : public DirectoryBackingStore {
   // A helper function that will make one attempt to load the directory.
   // Unlike Load(), it does not attempt to recover from failure.
   DirOpenResult TryLoad(Directory::MetahandlesMap* handles_map,
-                        JournalIndex* delete_journals,
                         MetahandleSet* metahandles_to_purge,
                         Directory::KernelLoadInfo* kernel_load_info);
 

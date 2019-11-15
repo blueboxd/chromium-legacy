@@ -96,6 +96,13 @@ interface LocalFrameHost {
 
   // Elements of |set| are hashes of hosts to upgrade.
   EnforceInsecureNavigationsSet(array<uint32> set);
+
+  // Sent by the blink's FrameScheduler when a list of active features
+  // the scheduler tracks changes.
+  // See blink::scheduler::SchedulingPolicy::Feature for the meaning
+  // of the individual bits.
+  // TODO(altimin): Move into a separate scheduling interface.
+  DidChangeActiveSchedulerTrackedFeatures(uint64 features_mask);
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will

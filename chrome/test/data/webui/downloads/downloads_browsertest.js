@@ -122,3 +122,27 @@ TEST_F('DownloadsUrlTest', 'All', function() {
   });
   mocha.run();
 });
+
+/**
+ * @constructor
+ * @extends {DownloadsTest}
+ */
+function DownloadsSearchServiceTest() {}
+
+DownloadsSearchServiceTest.prototype = {
+  __proto__: DownloadsTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://downloads/manager.html',
+
+  /** @override */
+  extraLibraries: DownloadsTest.prototype.extraLibraries.concat([
+    '../test_browser_proxy.js',
+    'test_support.js',
+    'search_service_test.js',
+  ]),
+};
+
+TEST_F('DownloadsSearchServiceTest', 'All', function() {
+  mocha.run();
+});

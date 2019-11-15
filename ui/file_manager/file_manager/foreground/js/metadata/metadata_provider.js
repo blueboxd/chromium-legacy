@@ -24,7 +24,7 @@ class MetadataProvider {
   checkPropertyNames(names) {
     // Check if the property name is correct or not.
     for (let i = 0; i < names.length; i++) {
-      assert(this.validPropertyNames_[names[i]]);
+      assert(this.validPropertyNames_[names[i]], names[i]);
     }
   }
 

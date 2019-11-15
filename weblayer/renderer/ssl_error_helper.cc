@@ -63,8 +63,10 @@ void SSLErrorHelper::SendCommand(
     case security_interstitials::CMD_OPEN_HELP_CENTER:
       interface->OpenHelpCenter();
       break;
-    case security_interstitials::CMD_OPEN_DIAGNOSTIC:
     case security_interstitials::CMD_RELOAD:
+      interface->Reload();
+      break;
+    case security_interstitials::CMD_OPEN_DIAGNOSTIC:
     case security_interstitials::CMD_OPEN_DATE_SETTINGS:
     case security_interstitials::CMD_OPEN_LOGIN:
     case security_interstitials::CMD_DO_REPORT:

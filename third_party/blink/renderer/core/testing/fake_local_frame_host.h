@@ -42,6 +42,7 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
   void DidFocusFrame() override;
   void EnforceInsecureRequestPolicy(uint8_t policy_bitmap) override;
   void EnforceInsecureNavigationsSet(const WTF::Vector<uint32_t>& set) override;
+  void DidChangeActiveSchedulerTrackedFeatures(uint64_t features_mask) override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

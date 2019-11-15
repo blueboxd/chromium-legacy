@@ -152,6 +152,11 @@ void WebKioskController::OnProfilePrepared(Profile* profile,
   // Reset virtual keyboard to use IME engines in app profile early.
   ChromeKeyboardControllerClient::Get()->RebuildKeyboardIfEnabled();
 
+  // We need to change the session state so we are able to create browser
+  // windows.
+  session_manager::SessionManager::Get()->SetSessionState(
+      session_manager::SessionState::LOGGED_IN_NOT_ACTIVE);
+
   app_launcher_.reset(new WebKioskAppLauncher(profile, this));
   app_launcher_->Initialize(account_id_);
 }
@@ -187,8 +192,6 @@ void WebKioskController::OnAppPrepared() {
 }
 
 void WebKioskController::OnAppLaunched() {
-  // If timer is running, do not remove splash screen for a few
-  // more seconds to give the user ability to exit Web kiosk.
   SYSLOG(INFO) << "Kiosk launch succeeded, wait for app window.";
   session_manager::SessionManager::Get()->SessionStarted();
   CloseSplashScreen();

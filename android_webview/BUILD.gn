@@ -16,6 +16,7 @@ import("//components/spellcheck/spellcheck_build_features.gni")
 import("//tools/grit/repack.gni")
 import("//tools/resources/generate_resource_whitelist.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
+import("//weblayer/variables.gni")
 
 if (enable_resource_whitelist_generation) {
   system_webview_pak_whitelist =
@@ -125,7 +126,6 @@ repack("repack_pack") {
     "$root_gen_dir/content/content_resources.pak",
     "$root_gen_dir/net/net_resources.pak",
     "$root_gen_dir/third_party/blink/public/resources/blink_resources.pak",
-    "$root_gen_dir/weblayer/weblayer_resources.pak",
     "$target_gen_dir/aw_resources.pak",
     "$target_gen_dir/components_resources.pak",
     "$target_gen_dir/mojo_bindings_resources.pak",
@@ -139,13 +139,17 @@ repack("repack_pack") {
     "//content:resources",
     "//net:net_resources",
     "//third_party/blink/public:resources",
-    "//weblayer:resources",
   ]
   output = "$target_gen_dir/resources.pak"
 
   if (enable_resource_whitelist_generation) {
     repack_whitelist = system_webview_pak_whitelist
     deps += [ ":system_webview_pak_whitelist" ]
+  }
+
+  if (webview_includes_weblayer) {
+    sources += [ "$root_gen_dir/weblayer/weblayer_resources.pak" ]
+    deps += [ "//weblayer:resources" ]
   }
 }
 
@@ -601,15 +605,18 @@ android_library("browser_java") {
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/blink/public:blink_headers_java",
     "//ui/android:ui_java",
-
-    # These are needed for WebLayer.
-    "//components/viz/service:service_java",
-    "//weblayer/browser/java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 
   if (enable_spellcheck) {
     deps += [ "//components/spellcheck/browser/android:java" ]
+  }
+
+  if (webview_includes_weblayer) {
+    deps += [
+      "//components/viz/service:service_java",
+      "//weblayer/browser/java",
+    ]
   }
 
   srcjar_deps = [

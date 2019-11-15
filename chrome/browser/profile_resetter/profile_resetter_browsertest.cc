@@ -124,7 +124,7 @@ void RemoveCookieTester::BlockUntilNotified() {
   if (waiting_callback_) {
     runner_ = new content::MessageLoopRunner;
     runner_->Run();
-    runner_ = NULL;
+    runner_.reset();
   }
 }
 

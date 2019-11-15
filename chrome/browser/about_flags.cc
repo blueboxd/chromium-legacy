@@ -4785,7 +4785,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"split-settings-sync", flag_descriptions::kSplitSettingsSyncName,
      flag_descriptions::kSplitSettingsSyncDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kSplitSettingsSync)},
-#endif
+    {"media-app", flag_descriptions::kMediaAppName,
+     flag_descriptions::kMediaAppDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kMediaApp)},
+#endif  // defined(OS_CHROMEOS)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

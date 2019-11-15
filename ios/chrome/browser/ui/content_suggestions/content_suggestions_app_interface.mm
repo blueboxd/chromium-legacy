@@ -113,14 +113,16 @@ ContentSuggestion CreateSuggestion(Category category,
   [self provider] -> FireSuggestionsChanged([self category],
                                             std::move(suggestions));
 
-  // Set up the action when "More" is tapped.
-  [[ContentSuggestionsTestSingleton sharedInstance]
-      resetAdditionalSuggestionsHelperWithURL:newURL];
-  EXPECT_CALL(*[self provider], FetchMock(_, _, _))
-      .WillRepeatedly(WithArg<2>(
-          Invoke([[ContentSuggestionsTestSingleton sharedInstance]
-                     additionalSuggestionsHelper],
-                 &AdditionalSuggestionsHelper::SendAdditionalSuggestions)));
+  if (URL) {
+    // Set up the action when "More" is tapped.
+    [[ContentSuggestionsTestSingleton sharedInstance]
+        resetAdditionalSuggestionsHelperWithURL:newURL];
+    EXPECT_CALL(*[self provider], FetchMock(_, _, _))
+        .WillRepeatedly(WithArg<2>(
+            Invoke([[ContentSuggestionsTestSingleton sharedInstance]
+                       additionalSuggestionsHelper],
+                   &AdditionalSuggestionsHelper::SendAdditionalSuggestions)));
+  }
 }
 
 + (void)addSuggestionNumber:(NSInteger)suggestionNumber {

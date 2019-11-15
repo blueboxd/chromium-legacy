@@ -108,7 +108,6 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   // and this class will no longer be used, as it assumes a ContextProvider is
   // present otherwise.
   void DestroyContext();
-  std::unique_ptr<base::SharedMemory> CreateSharedMemory(size_t size) override;
   base::UnsafeSharedMemoryRegion CreateSharedMemoryRegion(size_t size) override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
 

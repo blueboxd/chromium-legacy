@@ -23,6 +23,10 @@ class WebKioskAppManager : public KioskAppManagerBase {
  public:
   static const char kWebKioskDictionaryName[];
 
+  // Whether the manager was already created.
+  static bool IsInitialized();
+
+  // Will return the manager instance or will crash if it not yet initiazlied.
   static WebKioskAppManager* Get();
   WebKioskAppManager();
   ~WebKioskAppManager() override;
@@ -44,6 +48,9 @@ class WebKioskAppManager : public KioskAppManagerBase {
   void UpdateAppByAccountId(const AccountId& account_id,
                             std::unique_ptr<WebApplicationInfo> app_info);
 
+  // Adds fake apps in tests.
+  void AddAppForTesting(const AccountId& account_id, const GURL& install_url);
+
  private:
   // KioskAppManagerBase:
   // Updates |apps_| based on CrosSettings.
@@ -51,7 +58,6 @@ class WebKioskAppManager : public KioskAppManagerBase {
 
   std::vector<std::unique_ptr<WebKioskAppData>> apps_;
   AccountId auto_launch_account_id_;
-
 
   DISALLOW_COPY_AND_ASSIGN(WebKioskAppManager);
 };

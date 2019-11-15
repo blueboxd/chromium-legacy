@@ -632,12 +632,19 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
   // because this is the earliest callback. Many places in Chromium gate
   // security features around kDisableWebSecurity, and it is unreasonable to
   // expect them all to properly also check for kUserDataDir.
-  if (command_line.HasSwitch(switches::kDisableWebSecurity) &&
-      !command_line.HasSwitch(switches::kUserDataDir)) {
-    LOG(ERROR) << "Web security may only be disabled if '--user-data-dir' is "
-                  "also specified.";
-    base::CommandLine::ForCurrentProcess()->RemoveSwitch(
-        switches::kDisableWebSecurity);
+  if (command_line.HasSwitch(switches::kDisableWebSecurity)) {
+    base::FilePath default_user_data_dir;
+    chrome::GetDefaultUserDataDirectory(&default_user_data_dir);
+    const base::FilePath specified_user_data_dir =
+        command_line.GetSwitchValuePath(switches::kUserDataDir)
+            .StripTrailingSeparators();
+    if (specified_user_data_dir.empty() ||
+        specified_user_data_dir == default_user_data_dir) {
+      LOG(ERROR) << "Web security may only be disabled if '--user-data-dir' is "
+                    "also specified with a non-default value.";
+      base::CommandLine::ForCurrentProcess()->RemoveSwitch(
+          switches::kDisableWebSecurity);
+    }
   }
 
 #if defined(OS_WIN)

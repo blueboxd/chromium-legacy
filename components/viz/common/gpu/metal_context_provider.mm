@@ -41,7 +41,8 @@ bool CompileTestShader() {
     *out_result = result;
     event->Signal();
   };
-  metal::TestShader(base::BindOnce(lambda, &event, &result),
+  metal::TestShader(metal::kTestShaderSeedContextProvider,
+                    base::BindOnce(lambda, &event, &result),
                     kTestShaderCompileTimeout);
   event.Wait();
   return result == metal::TestShaderResult::kSucceeded;

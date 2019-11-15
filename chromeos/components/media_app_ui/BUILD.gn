@@ -64,9 +64,23 @@ source_set("browser_test_support") {
   ]
 }
 
-js_type_check("closure_compile") {
+group("closure_compile") {
   testonly = true
-  closure_flags = default_closure_args + [ "jscomp_error=strictCheckTypes" ]
+  deps = [
+    ":closure_compile_tests",
+    "resources/js:closure_compile",
+    "resources/mock/js:closure_compile",
+  ]
+}
+
+# Note we compile with reportUnknownTypes while it works, but if dependencies
+# get more complex, we should remove it and only enable in developer builds.
+js_type_check("closure_compile_tests") {
+  testonly = true
+  closure_flags = default_closure_args + [
+                    "jscomp_error=strictCheckTypes",
+                    "jscomp_error=reportUnknownTypes",
+                  ]
   deps = [
     ":test_driver_api_js",
     ":test_driver_js",

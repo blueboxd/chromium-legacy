@@ -35,7 +35,8 @@
 #include "ui/base/resource/resource_bundle_android.h"
 #include "ui/base/ui_base_switches.h"
 #include "weblayer/browser/android_descriptors.h"
-#include "weblayer/common/crash_reporter_client.h"
+#include "weblayer/common/crash_reporter/crash_keys.h"
+#include "weblayer/common/crash_reporter/crash_reporter_client.h"
 #endif
 
 #if defined(OS_WIN)
@@ -153,6 +154,7 @@ void ContentMainDelegateImpl::PreSandboxStartup() {
   EnableCrashReporter(
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessType));
+  SetWebLayerCrashKeys();
 #endif
 }
 

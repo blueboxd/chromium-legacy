@@ -28,7 +28,6 @@ class InMemoryDirectoryBackingStore : public DirectoryBackingStore {
       const std::string& dir_name,
       const base::RepeatingCallback<std::string()>& cache_guid_generator);
   DirOpenResult Load(Directory::MetahandlesMap* handles_map,
-                     JournalIndex* delete_journals,
                      MetahandleSet* metahandles_to_purge,
                      Directory::KernelLoadInfo* kernel_load_info) override;
 

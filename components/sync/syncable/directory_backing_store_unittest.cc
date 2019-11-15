@@ -69,11 +69,10 @@ class MigrationTest : public testing::TestWithParam<int> {
 
   static bool LoadAndIgnoreReturnedData(DirectoryBackingStore *dbs) {
     Directory::MetahandlesMap tmp_handles_map;
-    JournalIndex delete_journals;
     MetahandleSet metahandles_to_purge;
     Directory::KernelLoadInfo kernel_load_info;
-    DirOpenResult result = dbs->Load(&tmp_handles_map, &delete_journals,
-                                     &metahandles_to_purge, &kernel_load_info);
+    DirOpenResult result =
+        dbs->Load(&tmp_handles_map, &metahandles_to_purge, &kernel_load_info);
     return result == OPENED_NEW || result == OPENED_EXISTING;
   }
 
@@ -3580,12 +3579,10 @@ TEST_F(DirectoryBackingStoreTest, MigrateVersion79To80) {
 
   // Ensure the bag_of_chips has been set.
   Directory::MetahandlesMap handles_map;
-  JournalIndex delete_journals;
   MetahandleSet metahandles_to_purge;
   Directory::KernelLoadInfo load_info;
 
-  ASSERT_TRUE(dbs.Load(&handles_map, &delete_journals, &metahandles_to_purge,
-                       &load_info));
+  ASSERT_TRUE(dbs.Load(&handles_map, &metahandles_to_purge, &load_info));
   // Check that the initial value is the serialization of an empty ChipBag.
   sync_pb::ChipBag chip_bag;
   std::string serialized_chip_bag;
@@ -3841,12 +3838,10 @@ TEST_F(DirectoryBackingStoreTest, DetectInvalidPosition) {
 
   // Trying to unpack this entry should signal that the DB is corrupted.
   Directory::MetahandlesMap handles_map;
-  JournalIndex delete_journals;
   MetahandleSet metahandles_to_purge;
   Directory::KernelLoadInfo kernel_load_info;
   EXPECT_EQ(FAILED_DATABASE_CORRUPT,
-            dbs.Load(&handles_map, &delete_journals, &metahandles_to_purge,
-                     &kernel_load_info));
+            dbs.Load(&handles_map, &metahandles_to_purge, &kernel_load_info));
 }
 
 TEST_F(DirectoryBackingStoreTest, DetectCorruptedRoot) {
@@ -3857,12 +3852,10 @@ TEST_F(DirectoryBackingStoreTest, DetectCorruptedRoot) {
   TestDirectoryBackingStore dbs(GetUsername(), &connection);
 
   Directory::MetahandlesMap handles_map;
-  JournalIndex delete_journals;
   MetahandleSet metahandles_to_purge;
   Directory::KernelLoadInfo kernel_load_info;
   EXPECT_EQ(FAILED_DATABASE_CORRUPT,
-            dbs.Load(&handles_map, &delete_journals, &metahandles_to_purge,
-                     &kernel_load_info));
+            dbs.Load(&handles_map, &metahandles_to_purge, &kernel_load_info));
 }
 
 TEST_P(MigrationTest, ToCurrentVersion) {
@@ -3961,14 +3954,13 @@ TEST_P(MigrationTest, ToCurrentVersion) {
 
   syncable::Directory::KernelLoadInfo dir_info;
   Directory::MetahandlesMap handles_map;
-  JournalIndex delete_journals;
   MetahandleSet metahandles_to_purge;
 
   {
     OnDiskDirectoryBackingStore dbs(GetUsername(), TestCacheGuidGenerator(),
                                     GetDatabasePath());
-    ASSERT_EQ(OPENED_EXISTING, dbs.Load(&handles_map, &delete_journals,
-                                        &metahandles_to_purge, &dir_info));
+    ASSERT_EQ(OPENED_EXISTING,
+              dbs.Load(&handles_map, &metahandles_to_purge, &dir_info));
     if (!metahandles_to_purge.empty())
       dbs.DeleteEntries(DirectoryBackingStore::METAS_TABLE,
                         metahandles_to_purge);
@@ -4349,12 +4341,10 @@ TEST_F(DirectoryBackingStoreTest, DeleteEntries) {
   SetUpCurrentDatabaseAndCheckVersion(&connection);
   TestDirectoryBackingStore dbs(GetUsername(), &connection);
   Directory::MetahandlesMap handles_map;
-  JournalIndex delete_journals;
   MetahandleSet metahandles_to_purge;
   Directory::KernelLoadInfo kernel_load_info;
 
-  dbs.Load(&handles_map, &delete_journals, &metahandles_to_purge,
-           &kernel_load_info);
+  dbs.Load(&handles_map, &metahandles_to_purge, &kernel_load_info);
   size_t initial_size = handles_map.size();
   ASSERT_LT(0U, initial_size) << "Test requires handles_map to delete.";
   int64_t first_to_die = handles_map.begin()->second->ref(META_HANDLE);
@@ -4396,12 +4386,11 @@ TEST_F(DirectoryBackingStoreTest, IncreaseDatabasePageSizeFrom4KTo32K) {
   SetUpCurrentDatabaseAndCheckVersion(&connection);
   TestDirectoryBackingStore dbs(GetUsername(), &connection);
   Directory::MetahandlesMap handles_map;
-  JournalIndex delete_journals;
   MetahandleSet metahandles_to_purge;
   Directory::KernelLoadInfo kernel_load_info;
 
-  DirOpenResult open_result = dbs.Load(
-      &handles_map, &delete_journals, &metahandles_to_purge, &kernel_load_info);
+  DirOpenResult open_result =
+      dbs.Load(&handles_map, &metahandles_to_purge, &kernel_load_info);
   EXPECT_EQ(open_result, OPENED_EXISTING);
 
   // Set up database's page size to 4096

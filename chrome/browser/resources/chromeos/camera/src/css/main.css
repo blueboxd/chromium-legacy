@@ -237,7 +237,8 @@ body.tablet-landscape .actions-group {
 }
 
 body:not(.streaming) #modes-group,
-body.taking #modes-group {
+body.taking #modes-group,
+body.taking:not(.video-mode) #shutters-group {
   opacity: 0.38;
 }
 

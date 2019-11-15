@@ -73,7 +73,7 @@ typedef base::OnceCallback<void(PipelineStatus)> PipelineStatusCallback;
 
 struct PipelineDecoderInfo {
   bool is_platform_decoder = false;
-  bool is_decrypting_demuxer_stream = false;
+  bool has_decrypting_demuxer_stream = false;
   std::string decoder_name;
 };
 

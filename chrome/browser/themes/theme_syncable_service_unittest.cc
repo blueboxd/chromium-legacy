@@ -75,7 +75,7 @@ class FakeThemeService : public ThemeService {
   void BuildFromColor(SkColor color) override {
     is_dirty_ = true;
     color_ = color;
-    theme_extension_ = NULL;
+    theme_extension_.reset();
     using_system_theme_ = false;
     using_default_theme_ = false;
   }
@@ -84,7 +84,7 @@ class FakeThemeService : public ThemeService {
     is_dirty_ = true;
     using_default_theme_ = true;
     using_system_theme_ = false;
-    theme_extension_ = NULL;
+    theme_extension_.reset();
     color_ = 0;
   }
 
@@ -92,7 +92,7 @@ class FakeThemeService : public ThemeService {
     is_dirty_ = true;
     using_system_theme_ = true;
     using_default_theme_ = false;
-    theme_extension_ = NULL;
+    theme_extension_.reset();
     color_ = 0;
   }
 

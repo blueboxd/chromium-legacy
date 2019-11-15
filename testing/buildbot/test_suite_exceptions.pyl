@@ -1880,6 +1880,14 @@
       'Win10 Tests x64 (dbg)',
     ],
     'modifications': {
+      'devtools_frontend_linux_blink_light_rel': {
+        'args': [
+          'http/tests/devtools',
+        ],
+        'swarming': {
+          'shards': 4,
+        },
+      },
       # chromium.fyi
       'fuchsia-fyi-x64-rel': {
         'args': [

@@ -274,7 +274,7 @@ message DecryptConfig {
 message PipelineDecoderInfo {
   optional string decoder_name = 1;
   optional bool is_platform_decoder = 2;
-  optional bool is_decrypting_demuxer_stream = 3;
+  optional bool has_decrypting_demuxer_stream = 3;
 };
 
 message PipelineStatistics {

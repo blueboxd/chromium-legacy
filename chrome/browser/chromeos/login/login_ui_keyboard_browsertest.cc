@@ -78,7 +78,7 @@ class FocusPODWaiter {
     runner_->Run();
     GetOobeUI()->signin_screen_handler()->SetFocusPODCallbackForTesting(
         base::Closure());
-    runner_ = NULL;
+    runner_.reset();
   }
 
  private:

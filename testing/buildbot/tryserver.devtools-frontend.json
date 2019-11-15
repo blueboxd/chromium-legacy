@@ -5,7 +5,8 @@
     "isolated_scripts": [
       {
         "args": [
-          "--num-retries=3"
+          "--num-retries=3",
+          "http/tests/devtools"
         ],
         "isolate_name": "blink_web_tests_exparchive",
         "merge": {
@@ -23,7 +24,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
-          "shards": 12
+          "shards": 4
         }
       }
     ]

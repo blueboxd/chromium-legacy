@@ -22,19 +22,15 @@ class FakeServerHelperAndroid {
   // Factory method for creating a native FakeServer object. The caller assumes
   // ownership.
   jlong CreateFakeServer(JNIEnv* env,
-                         const base::android::JavaParamRef<jobject>& obj);
-
-  // Factory method for creating a native NetworkResources object. The caller
-  // assumes ownership.
-  jlong CreateNetworkResources(JNIEnv* env,
-                               const base::android::JavaParamRef<jobject>& obj,
-                               jlong fake_server);
+                         const base::android::JavaParamRef<jobject>& obj,
+                         jlong profile_sync_service);
 
   // Deletes the given |fake_server| (a FakeServer pointer created via
   // CreateFakeServer).
   void DeleteFakeServer(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj,
-                        jlong fake_server);
+                        jlong fake_server,
+                        jlong profile_sync_service);
 
   // Returns true if and only if |fake_server| contains |count| entities that
   // match |model_type_string| and |name|.

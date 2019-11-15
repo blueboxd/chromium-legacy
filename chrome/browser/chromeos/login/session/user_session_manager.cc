@@ -572,7 +572,7 @@ scoped_refptr<Authenticator> UserSessionManager::CreateAuthenticator(
   if (ScreenLocker::default_screen_locker()) {
     if (authenticator_.get())
       authenticator_->SetConsumer(NULL);
-    authenticator_ = NULL;
+    authenticator_.reset();
   }
 
   if (authenticator_.get() == NULL) {
@@ -2371,7 +2371,7 @@ void UserSessionManager::RemoveProfileForTesting(Profile* profile) {
 void UserSessionManager::InjectAuthenticatorBuilder(
     std::unique_ptr<StubAuthenticatorBuilder> builder) {
   injected_authenticator_builder_ = std::move(builder);
-  authenticator_ = NULL;
+  authenticator_.reset();
 }
 
 void UserSessionManager::SendUserPodsMetrics() {

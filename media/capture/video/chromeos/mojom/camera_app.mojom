@@ -109,6 +109,15 @@ interface CameraAppDevice {
   // AddResultMetadataObserver.
   // If the ResultMetadataObserver is found, |is_success| returns true.
   RemoveResultMetadataObserver(uint32 id) => (bool is_success);
+
+  // Adds an observer for camera events and returns the observer |id|. The
+  // |observer| is the remote of the observer to be added.
+  AddCameraEventObserver(pending_remote<CameraEventObserver> observer)
+      => (uint32 id);
+
+  // Removes the camera events observer according to given observer |id|. Sets
+  // |is_success| to true if remove successfully, false otherwise.
+  RemoveCameraEventObserver(uint32 id) => (bool is_success);
 };
 
 // Interface for camera device to send camera metadata to Chrome Camera App.
@@ -116,4 +125,10 @@ interface ResultMetadataObserver {
   // Remotely invoked by camera device whenever a |camera_metadata| of a frame
   // is produced.
   OnMetadataAvailable(CameraMetadata camera_metadata);
+};
+
+// Interface for observing camera events such as shutter done.
+interface CameraEventObserver {
+  // Triggered when the shutter is done for a still capture image.
+  OnShutterDone();
 };

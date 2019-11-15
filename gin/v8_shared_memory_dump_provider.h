@@ -26,7 +26,7 @@ class GIN_EXPORT V8SharedMemoryDumpProvider
       const base::trace_event::MemoryDumpArgs& args,
       base::trace_event::ProcessMemoryDump* process_memory_dump) override;
 
-  static V8SharedMemoryDumpProvider* Instance();
+  static void Register();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(V8SharedMemoryDumpProvider);

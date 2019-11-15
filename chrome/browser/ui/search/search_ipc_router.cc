@@ -46,12 +46,12 @@ class EmbeddedSearchClientFactoryImpl
     DCHECK(web_contents);
     DCHECK(receiver);
     // Before we are connected to a frame we throw away all messages.
-    ignore_result(embedded_search_client_
-                      .BindNewEndpointAndPassDedicatedReceiverForTesting());
+    embedded_search_client_.reset();
   }
 
   chrome::mojom::EmbeddedSearchClient* GetEmbeddedSearchClient() override {
-    return embedded_search_client_.get();
+    return embedded_search_client_.is_bound() ? embedded_search_client_.get()
+                                              : nullptr;
   }
 
  private:
@@ -111,7 +111,8 @@ SearchIPCRouter::~SearchIPCRouter() = default;
 
 void SearchIPCRouter::AutocompleteResultChanged(
     chrome::mojom::AutocompleteResultPtr result) {
-  if (!policy_->ShouldProcessAutocompleteResultChanged(is_active_tab_)) {
+  if (!policy_->ShouldProcessAutocompleteResultChanged(is_active_tab_) ||
+      !embedded_search_client()) {
     return;
   }
 
@@ -120,19 +121,23 @@ void SearchIPCRouter::AutocompleteResultChanged(
 
 void SearchIPCRouter::OnNavigationEntryCommitted() {
   ++commit_counter_;
+  if (!embedded_search_client())
+    return;
   embedded_search_client()->SetPageSequenceNumber(commit_counter_);
 }
 
 void SearchIPCRouter::SetInputInProgress(bool input_in_progress) {
-  if (!policy_->ShouldSendSetInputInProgress(is_active_tab_))
+  if (!policy_->ShouldSendSetInputInProgress(is_active_tab_) ||
+      !embedded_search_client()) {
     return;
+  }
 
   embedded_search_client()->SetInputInProgress(input_in_progress);
 }
 
 void SearchIPCRouter::OmniboxFocusChanged(OmniboxFocusState state,
                                           OmniboxFocusChangeReason reason) {
-  if (!policy_->ShouldSendOmniboxFocusChanged())
+  if (!policy_->ShouldSendOmniboxFocusChanged() || !embedded_search_client())
     return;
 
   embedded_search_client()->FocusChanged(state, reason);
@@ -140,22 +145,24 @@ void SearchIPCRouter::OmniboxFocusChanged(OmniboxFocusState state,
 
 void SearchIPCRouter::SendMostVisitedInfo(
     const InstantMostVisitedInfo& most_visited_info) {
-  if (!policy_->ShouldSendMostVisitedInfo())
+  if (!policy_->ShouldSendMostVisitedInfo() || !embedded_search_client())
     return;
 
   embedded_search_client()->MostVisitedInfoChanged(most_visited_info);
 }
 
 void SearchIPCRouter::SendNtpTheme(const NtpTheme& theme) {
-  if (!policy_->ShouldSendNtpTheme())
+  if (!policy_->ShouldSendNtpTheme() || !embedded_search_client())
     return;
 
   embedded_search_client()->ThemeChanged(theme);
 }
 
 void SearchIPCRouter::SendLocalBackgroundSelected() {
-  if (!policy_->ShouldSendLocalBackgroundSelected())
+  if (!policy_->ShouldSendLocalBackgroundSelected() ||
+      !embedded_search_client()) {
     return;
+  }
 
   embedded_search_client()->LocalBackgroundSelected();
 }

@@ -435,7 +435,6 @@ void MediaInternals::SendGeneralAudioInformation() {
                            base::Value(feature_value ? "Enabled" : "Disabled"));
   };
 
-  set_feature_data(features::kAudioServiceAudioStreams);
   set_feature_data(features::kAudioServiceOutOfProcess);
 
   std::string feature_value_string;

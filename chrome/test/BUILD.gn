@@ -2022,6 +2022,7 @@ if (!is_android) {
 
     if (is_chromeos) {
       sources += [
+        "../browser/apps/app_service/instance_registry_browsertest.cc",
         "../browser/apps/platform_apps/app_window_interactive_uitest_base.cc",
         "../browser/apps/platform_apps/app_window_interactive_uitest_base.h",
         "../browser/chromeos/accessibility/accessibility_manager_browsertest.cc",
@@ -3656,6 +3657,7 @@ test("unit_tests") {
       "../browser/password_manager/save_password_infobar_delegate_android_unittest.cc",
       "../browser/password_manager/touch_to_fill_controller_unittest.cc",
       "../browser/password_manager/update_password_infobar_delegate_android_unittest.cc",
+      "../browser/permissions/permission_prompt_android_unittest.cc",
       "../browser/permissions/permission_request_notification_android_unittest.cc",
       "../browser/permissions/permission_request_notification_handler_unittest.cc",
       "../browser/translate/translate_manager_render_view_host_android_unittest.cc",

@@ -32,4 +32,6 @@ js_library("view") {
   deps = [
     "..:toast",
   ]
+
+  externs_list = [ "../externs/chrome.js" ]
 }

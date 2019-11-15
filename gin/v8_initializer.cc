@@ -23,12 +23,9 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/threading/platform_thread.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
 #include "gin/gin_features.h"
-#include "gin/v8_shared_memory_dump_provider.h"
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
 #if defined(OS_ANDROID)
@@ -272,10 +269,6 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode) {
 
   v8::V8::SetEntropySource(&GenerateEntropy);
   v8::V8::Initialize();
-
-  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      gin::V8SharedMemoryDumpProvider::Instance(), "V8SharedMemory",
-      base::ThreadTaskRunnerHandle::Get());
 
   v8_is_initialized = true;
 }

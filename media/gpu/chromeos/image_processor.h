@@ -89,23 +89,17 @@ class MEDIA_GPU_EXPORT ImageProcessor {
 
   // Callback to be used to return a processed image to the client.
   // FrameReadyCB is guaranteed to be executed on the "client thread".
-  // Process() is responsible for making sure this invariant is
-  // respected by using media::BindToCurrentLoop().
   using FrameReadyCB = base::OnceCallback<void(scoped_refptr<VideoFrame>)>;
   // Callback to be used to return a processed image to the client.
   // Used when calling the "legacy" Process() method with buffers that are
   // managed by the IP. The first argument is the index of the returned buffer.
   // FrameReadyCB is guaranteed to be executed on the "client thread".
-  // Process() is responsible for making sure this invariant is
-  // respected by using media::BindToCurrentLoop().
   using LegacyFrameReadyCB =
       base::OnceCallback<void(size_t, scoped_refptr<VideoFrame>)>;
 
   // Callback to be used to notify client when ImageProcess encounters error.
   // It should be assigned in subclass' factory method. ErrorCB is guaranteed to
-  // be executed on the "client thread". Implementations are responsible for
-  // making sure this invariant is respected, by using
-  // media::BindToCurrentLoop() where appropriate.
+  // be executed on the "client thread".
   using ErrorCB = base::RepeatingClosure;
 
   virtual ~ImageProcessor() = default;
@@ -163,9 +157,6 @@ class MEDIA_GPU_EXPORT ImageProcessor {
 
  private:
   // Each ImageProcessor shall implement ProcessInternal() as Process().
-  // ProcessInternal() is called inside of Process() with
-  // media::BindToCurrentLoop() on |cb| to guarantee |cb| will be executed on
-  // "client thread".
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
   virtual bool ProcessInternal(scoped_refptr<VideoFrame> frame,
                                LegacyFrameReadyCB cb);

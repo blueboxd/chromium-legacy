@@ -1,5 +1,6 @@
 include_rules = [
   "+components/tracing",
+  "+components/metal_util",
   "+components/viz",
   "+content/child",
   "+content/public/gpu",

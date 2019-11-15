@@ -126,7 +126,7 @@ class AudioDevicesPrefHandlerTest : public testing::TestWithParam<bool> {
     audio_pref_handler_ = new AudioDevicesPrefHandlerImpl(pref_service_.get());
   }
 
-  void TearDown() override { audio_pref_handler_ = NULL; }
+  void TearDown() override { audio_pref_handler_.reset(); }
 
  protected:
   void ReloadPrefHandler() {

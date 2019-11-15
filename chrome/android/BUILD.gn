@@ -29,6 +29,7 @@ import("//third_party/protobuf/proto_library.gni")
 import("//tools/resources/generate_resource_whitelist.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 import("//ui/android/features.gni")
+import("//weblayer/variables.gni")
 import("channel.gni")
 import("java_sources.gni")
 import("static_initializers.gni")
@@ -1335,14 +1336,15 @@ if (current_toolchain == default_toolchain) {
 
       additional_extra_paks = []
       if (_is_monochrome) {
-        additional_extra_paks += [
-          "$root_gen_dir/android_webview/aw_resources.pak",
-          "$root_gen_dir/weblayer/weblayer_resources.pak",
-        ]
-        deps += [
-          "//android_webview:generate_aw_resources",
-          "//weblayer:resources",
-        ]
+        additional_extra_paks +=
+            [ "$root_gen_dir/android_webview/aw_resources.pak" ]
+        deps += [ "//android_webview:generate_aw_resources" ]
+
+        if (webview_includes_weblayer) {
+          additional_extra_paks +=
+              [ "$root_gen_dir/weblayer/weblayer_resources.pak" ]
+          deps += [ "//weblayer:resources" ]
+        }
       }
       if (!dfmify_dev_ui || !_is_bundle_module) {
         additional_extra_paks += [ "$root_gen_dir/chrome/dev_ui_resources.pak" ]
@@ -1390,10 +1392,10 @@ if (current_toolchain == default_toolchain) {
         ":${_variant}_paks",
       ]
       if (_is_monochrome) {
-        deps += [
-          "//android_webview:locale_pak_assets",
-          "//weblayer:locale_pak_assets",
-        ]
+        deps += [ "//android_webview:locale_pak_assets" ]
+        if (webview_includes_weblayer) {
+          deps += [ "//weblayer:locale_pak_assets" ]
+        }
       }
     }
   }
@@ -1432,8 +1434,12 @@ template("libmonochrome_apk_or_bundle_tmpl") {
       "//android_webview/lib",
       "//components/about_ui:about_ui_android",
       "//components/crash/android:crashpad_main",
-      "//weblayer:weblayer_lib",
     ]
+
+    if (webview_includes_weblayer) {
+      defines = [ "WEBVIEW_INCLUDES_WEBLAYER" ]
+      deps += [ "//weblayer:weblayer_lib" ]
+    }
 
     if (enable_vr) {
       deps += [ "//chrome/browser/android/vr:module_factory" ]

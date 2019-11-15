@@ -16,6 +16,14 @@ class GURL;
 
 namespace chromeos {
 
+enum PrintServerQueryResult {
+  kNoErrors = 0,
+  kIncorrectUrl,
+  kConnectionError,
+  kHttpError,
+  kCannotParseIppResponse
+};
+
 // Instances of this class are used to query list of available printers from
 // given print server. The constructor posts to an internal task runner
 // a procedure responsible for building and sending the query request. When the
@@ -36,6 +44,8 @@ class ServerPrintersFetcher {
                         const std::string& server_name,
                         OnPrintersFetchedCallback cb);
   virtual ~ServerPrintersFetcher();
+
+  PrintServerQueryResult GetLastError() const;
 
  private:
   // Forward declaration of a type of an internal object.

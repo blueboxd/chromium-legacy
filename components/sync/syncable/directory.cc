@@ -183,12 +183,10 @@ DirOpenResult Directory::OpenImpl(
   // swap these later.
   Directory::MetahandlesMap tmp_handles_map;
 
-  std::unique_ptr<JournalIndex> delete_journals =
-      std::make_unique<JournalIndex>();
   MetahandleSet metahandles_to_purge;
 
-  DirOpenResult result = store_->Load(&tmp_handles_map, delete_journals.get(),
-                                      &metahandles_to_purge, &info);
+  DirOpenResult result =
+      store_->Load(&tmp_handles_map, &metahandles_to_purge, &info);
   if (OPENED_NEW != result && OPENED_EXISTING != result)
     return result;
 
@@ -196,7 +194,7 @@ DirOpenResult Directory::OpenImpl(
   kernel_ =
       std::make_unique<Kernel>(name, info, delegate, transaction_observer);
   kernel_->metahandles_to_purge.swap(metahandles_to_purge);
-  delete_journal_ = std::make_unique<DeleteJournal>(std::move(delete_journals));
+  delete_journal_ = std::make_unique<DeleteJournal>();
   InitializeIndices(&tmp_handles_map);
 
   // Save changes back in case there are any metahandles to purge.

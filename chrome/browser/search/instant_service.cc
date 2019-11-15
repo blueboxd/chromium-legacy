@@ -531,7 +531,7 @@ void InstantService::Shutdown() {
     most_visited_sites_.reset();
   }
 
-  instant_io_context_ = NULL;
+  instant_io_context_.reset();
 }
 
 void InstantService::OnNextCollectionImageAvailable() {

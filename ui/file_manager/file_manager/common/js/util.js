@@ -1160,8 +1160,14 @@ util.getRootTypeLabel = locationInfo => {
  * @return {string} The localized name.
  */
 util.getEntryLabel = (locationInfo, entry) => {
-  if (locationInfo && locationInfo.hasFixedLabel) {
-    return util.getRootTypeLabel(locationInfo);
+  if (locationInfo) {
+    if (locationInfo.hasFixedLabel) {
+      return util.getRootTypeLabel(locationInfo);
+    }
+
+    if (entry.filesystem && entry.filesystem.root === entry) {
+      return util.getRootTypeLabel(locationInfo);
+    }
   }
 
   // Special case for MyFiles/Downloads and MyFiles/PvmDefault.
@@ -1395,6 +1401,14 @@ util.timeoutPromise = (promise, ms, opt_message) => {
  */
 util.isFeedbackPanelEnabled = () => {
   return loadTimeData.getBoolean('FEEDBACK_PANEL_ENABLED');
+};
+
+/**
+ * Returns true when FilesNG is enabled.
+ * @return {boolean}
+ */
+util.isFilesNg = () => {
+  return loadTimeData.getBoolean('FILES_NG_ENABLED');
 };
 
 /**

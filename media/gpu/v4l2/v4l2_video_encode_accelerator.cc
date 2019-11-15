@@ -25,7 +25,6 @@
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
-#include "media/base/bind_to_current_loop.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/color_plane_layout.h"
 #include "media/base/scopedfd_helper.h"
@@ -321,8 +320,8 @@ bool V4L2VideoEncodeAccelerator::CreateImageProcessor(
       {ImageProcessor::OutputMode::ALLOCATE,
        ImageProcessor::OutputMode::IMPORT},
       kImageProcBufferCount,
-      BindToCurrentLoop(base::BindRepeating(
-          &V4L2VideoEncodeAccelerator::ImageProcessorError, weak_this_)));
+      base::BindRepeating(&V4L2VideoEncodeAccelerator::ImageProcessorError,
+                          weak_this_));
   if (!image_processor_) {
     VLOGF(1) << "Failed initializing image processor";
     return false;
@@ -742,16 +741,16 @@ void V4L2VideoEncodeAccelerator::InputImageProcessorTask() {
 
     if (!image_processor_->Process(
             std::move(frame), std::move(output_frame),
-            BindToCurrentLoop(base::BindOnce(
-                &V4L2VideoEncodeAccelerator::FrameProcessed, weak_this_,
-                force_keyframe, timestamp, output_buffer_index)))) {
+            base::BindOnce(&V4L2VideoEncodeAccelerator::FrameProcessed,
+                           weak_this_, force_keyframe, timestamp,
+                           output_buffer_index))) {
       NOTIFY_ERROR(kPlatformFailureError);
     }
   } else {
     if (!image_processor_->Process(
-            std::move(frame), BindToCurrentLoop(base::BindOnce(
-                                  &V4L2VideoEncodeAccelerator::FrameProcessed,
-                                  weak_this_, force_keyframe, timestamp)))) {
+            std::move(frame),
+            base::BindOnce(&V4L2VideoEncodeAccelerator::FrameProcessed,
+                           weak_this_, force_keyframe, timestamp))) {
       NOTIFY_ERROR(kPlatformFailureError);
     }
   }

@@ -32,7 +32,7 @@ SpeechMonitorUtterance SpeechMonitor::GetNextUtteranceWithLanguage() {
   if (utterance_queue_.empty()) {
     loop_runner_ = new content::MessageLoopRunner();
     loop_runner_->Run();
-    loop_runner_ = NULL;
+    loop_runner_.reset();
   }
   SpeechMonitorUtterance result = utterance_queue_.front();
   utterance_queue_.pop_front();
@@ -51,7 +51,7 @@ void SpeechMonitor::BlockUntilStop() {
   if (!did_stop_) {
     loop_runner_ = new content::MessageLoopRunner();
     loop_runner_->Run();
-    loop_runner_ = NULL;
+    loop_runner_.reset();
   }
 }
 
@@ -60,7 +60,7 @@ bool SpeechMonitor::SkipChromeVoxMessage(const std::string& message) {
     if (utterance_queue_.empty()) {
       loop_runner_ = new content::MessageLoopRunner();
       loop_runner_->Run();
-      loop_runner_ = NULL;
+      loop_runner_.reset();
     }
     SpeechMonitorUtterance result = utterance_queue_.front();
     utterance_queue_.pop_front();

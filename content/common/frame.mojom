@@ -471,13 +471,6 @@ interface FrameHost {
   // in this frame. Sent for top-level frames.
   DocumentOnLoadCompleted();
 
-  // Sent by the blink's FrameScheduler when a list of active features
-  // the scheduler tracks changes.
-  // See blink::scheduler::SchedulingPolicy::Feature for the meaning
-  // of the individual bits.
-  // TODO(altimin): Move into a separate scheduling interface.
-  UpdateActiveSchedulerTrackedFeatures(uint64 features_mask);
-
   // Blink and JavaScript error messages to log to the console or debugger UI.
   DidAddMessageToConsole(
       blink.mojom.ConsoleMessageLevel log_level,

@@ -69,8 +69,8 @@ class ChromePasswordProtectionServiceSyncBrowserTest : public SyncTest {
         ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(
             browser()->profile());
 
-    sync_service->OverrideNetworkResourcesForTest(
-        std::make_unique<fake_server::FakeServerNetworkResources>(
+    sync_service->OverrideNetworkForTest(
+        fake_server::CreateFakeServerHttpPostProviderFactory(
             GetFakeServer()->AsWeakPtr()));
 
     std::string username;

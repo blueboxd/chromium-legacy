@@ -26,8 +26,7 @@ cca.sound.play = function(selector) {
   var cancel;
   var p = new Promise((resolve, reject) => {
     var element = document.querySelector(selector);
-    var timeout =
-        setTimeout(resolve, parseInt(element.dataset.timeout || 0), 10);
+    var timeout = setTimeout(resolve, Number(element.dataset.timeout || 0));
     cancel = () => {
       clearTimeout(timeout);
       reject(new Error('cancel'));

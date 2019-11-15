@@ -203,11 +203,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   // Will be called when |CpuTiming| events are updated
   virtual void DidChangeCpuTiming(base::TimeDelta time) {}
 
-  // Will be called when the list of active features tracked by the scheduler is
-  // updated.
-  virtual void DidChangeActiveSchedulerTrackedFeatures(uint64_t features_mask) {
-  }
-
   // Will be called when a particular loading code path has been used. This
   // propogates renderer loading behavior to the browser process for histograms.
   virtual void DidObserveLoadingBehavior(LoadingBehaviorFlag) {}

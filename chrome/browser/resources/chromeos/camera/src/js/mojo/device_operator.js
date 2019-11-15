@@ -330,6 +330,42 @@ cca.mojo.DeviceOperator = class {
   }
 
   /**
+   * Adds observer to observe shutter event.
+   *
+   * The shutter event is defined as CAMERA3_MSG_SHUTTER in
+   * media/capture/video/chromeos/mojom/camera3.mojom which will be sent from
+   * underlying camera HAL after sensor finishes frame capturing.
+   *
+   * @param {string} deviceId The id for target camera device.
+   * @param {!function()} callback Callback to trigger on shutter done.
+   * @return {!Promise<number>} Id for the added observer.
+   * @throws {Error} if fails to construct device connection.
+   */
+  async addShutterObserver(deviceId, callback) {
+    const observerCallbackRouter =
+        new cros.mojom.CameraEventObserverCallbackRouter();
+    observerCallbackRouter.onShutterDone.addListener(callback);
+
+    const device = await this.getDevice_(deviceId);
+    const {id} = await device.addCameraEventObserver(
+        observerCallbackRouter.$.bindNewPipeAndPassRemote());
+    return id;
+  }
+
+  /**
+   * Removes a shutter observer from Camera App Device.
+   * @param {string} deviceId The id of target camera device.
+   * @param {!number} observerId The id of the observer to be removed.
+   * @return {!Promise<boolean>} True when the observer is successfully removed.
+   * @throws {Error} if fails to construct device connection.
+   */
+  async removeShutterObserver(deviceId, observerId) {
+    const device = await this.getDevice_(deviceId);
+    const {isSuccess} = await device.removeCameraEventObserver(observerId);
+    return isSuccess;
+  }
+
+  /**
    * Sets reprocess option which is normally an effect to the video capture
    * device before taking picture.
    * @param {string} deviceId The renderer-facing device id of the target camera

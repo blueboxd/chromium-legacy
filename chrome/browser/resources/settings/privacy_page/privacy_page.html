@@ -2,14 +2,12 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="security_keys_subpage.html">
 <link rel="import" href="../clear_browsing_data_dialog/clear_browsing_data_dialog.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
@@ -45,10 +43,6 @@
 <dom-module id="settings-privacy-page">
   <template>
     <style include="settings-shared">
-      .iron-collapse-indented {
-        margin-inline-start: var(--cr-section-indent-width);
-      }
-
 <if expr="not chromeos">
       #toast {
         left: 0;
@@ -88,90 +82,76 @@
     <settings-animated-pages id="pages" section="privacy"
         focus-config="[[focusConfig_]]">
       <div route-path="default">
-        <cr-link-row id="clearBrowsingData"
+        <cr-link-row label="$i18n{syncAndNonPersonalizedServices}"
+            sub-label="$i18n{syncAndGoogleServicesPrivacyDescription}"
+            on-click="onSyncAndGoogleServicesClick_">
+        </cr-link-row>
+<if expr="not chromeos">
+        <settings-toggle-button id="signinAllowedToggle"
+            pref="{{prefs.signin.allowed_on_next_startup}}"
+            label="$i18n{signinAllowedTitle}"
+            sub-label="$i18n{signinAllowedDescription}"
+            on-settings-boolean-control-change="onSigninAllowedChange_"
+            no-set-pref>
+        </settings-toggle-button>
+</if><!-- not chromeos -->
+        <settings-toggle-button id="doNotTrack"
+            pref="{{prefs.enable_do_not_track}}" label="$i18n{doNotTrack}"
+            on-settings-boolean-control-change="onDoNotTrackChange_"
+            no-set-pref>
+        </settings-toggle-button>
+        <settings-toggle-button id="canMakePaymentToggle"
+            aria-label="$i18n{canMakePaymentToggleLabel}"
+            label="$i18n{canMakePaymentToggleLabel}"
+            pref="{{prefs.payments.can_make_payment_enabled}}"
+            on-settings-boolean-control-change="onCanMakePaymentChange_">
+        </settings-toggle-button>
+        <settings-toggle-button hidden="[[!pageVisibility.networkPrediction]]"
+            pref="{{prefs.net.network_prediction_options}}"
+            label="$i18n{networkPredictionEnabled}"
+            sub-label="$i18n{networkPredictionEnabledDesc}"
+            numeric-unchecked-value="[[networkPredictionUncheckedValue_]]"
+            on-settings-boolean-control-change="onNetworkPredictionChange_">
+        </settings-toggle-button>
+<if expr="chromeos">
+        <settings-toggle-button
+            hidden="[[!pageVisibility.contentProtectionAttestation]]"
+            pref="{{prefs.cros.device.attestation_for_content_protection_enabled}}"
+            label="$i18n{enableContentProtectionAttestation}">
+        </settings-toggle-button>
+        <settings-toggle-button
+            hidden="[[!pageVisibility.wakeOnWifi]]"
+            pref="{{prefs.settings.internet.wake_on_wifi_darkconnect}}"
+            label="$i18n{wakeOnWifi}">
+        </settings-toggle-button>
+</if>
+<if expr="use_nss_certs or is_win or is_macosx">
+        <cr-link-row id="manageCertificates"
             class="hr"
-            label="$i18n{clearBrowsingData}"
-            sub-label="$i18n{clearBrowsingDataDescription}"
-            on-click="onClearBrowsingDataTap_"></cr-link-row>
+<if expr="not use_nss_certs">
+            external
+</if>
+            label="$i18n{manageCertificates}"
+            sub-label="$i18n{manageCertificatesDescription}"
+            on-click="onManageCertificatesTap_"></cr-link-row>
+</if>
+        <template is="dom-if" if="[[enableSecurityKeysSubpage_]]">
+          <cr-link-row id="security-keys-subpage-trigger"
+            class="hr"
+            label="$i18n{securityKeysTitle}"
+            sub-label="$i18n{securityKeysDesc}"
+            on-click="onSecurityKeysTap_"></cr-link-row>
+        </template>
         <cr-link-row id="site-settings-subpage-trigger"
             class="hr"
             label="$i18n{siteSettings}"
             sub-label="$i18n{siteSettingsDescription}"
             on-click="onSiteSettingsTap_"></cr-link-row>
-        <cr-link-row id="syncService"
+        <cr-link-row id="clearBrowsingData"
             class="hr"
-            label="$i18n{syncAndNonPersonalizedServices}"
-            sub-label="$i18n{syncAndGoogleServicesPrivacyDescription}"
-            on-click="onSyncAndGoogleServicesClick_"></cr-link-row>
-        <cr-expand-button id="moreExpansion"
-            alt="$i18n{privacyPageMore}"
-            class="settings-box"
-            expanded="{{moreOpened_}}"
-            hidden="[[!privacySettingsRedesignEnabled_]]">
-            <div>$i18n{privacyPageMore}</div>
-        </cr-expand-button>
-        <iron-collapse id="moreCollapse" opened="[[moreOpened_]]"
-            class$="[[getIronCollapseCssClass_(
-              privacySettingsRedesignEnabled_)]]">
-          <settings-toggle-button id="doNotTrack"
-              class$="[[getTopBarCssClass_(privacySettingsRedesignEnabled_)]]"
-              pref="{{prefs.enable_do_not_track}}" label="$i18n{doNotTrack}"
-              on-settings-boolean-control-change="onDoNotTrackChange_"
-              no-set-pref>
-          </settings-toggle-button>
-<if expr="not chromeos">
-          <settings-toggle-button id="signinAllowedToggle"
-              pref="{{prefs.signin.allowed_on_next_startup}}"
-              label="$i18n{signinAllowedTitle}"
-              sub-label="$i18n{signinAllowedDescription}"
-              on-settings-boolean-control-change="onSigninAllowedChange_"
-              no-set-pref>
-          </settings-toggle-button>
-</if><!-- not chromeos -->
-          <settings-toggle-button id="canMakePaymentToggle"
-              aria-label="$i18n{canMakePaymentToggleLabel}"
-              label="$i18n{canMakePaymentToggleLabel}"
-              pref="{{prefs.payments.can_make_payment_enabled}}"
-              on-settings-boolean-control-change="onCanMakePaymentChange_">
-          </settings-toggle-button>
-          <settings-toggle-button hidden="[[!pageVisibility.networkPrediction]]"
-              pref="{{prefs.net.network_prediction_options}}"
-              label="$i18n{networkPredictionEnabled}"
-              sub-label="$i18n{networkPredictionEnabledDesc}"
-              numeric-unchecked-value="[[networkPredictionUncheckedValue_]]"
-              on-settings-boolean-control-change="onNetworkPredictionChange_">
-          </settings-toggle-button>
-<if expr="chromeos">
-          <settings-toggle-button
-              hidden="[[!pageVisibility.contentProtectionAttestation]]"
-              pref=
-              "{{prefs.cros.device.attestation_for_content_protection_enabled}}"
-              label="$i18n{enableContentProtectionAttestation}">
-          </settings-toggle-button>
-          <settings-toggle-button
-              hidden="[[!pageVisibility.wakeOnWifi]]"
-              pref="{{prefs.settings.internet.wake_on_wifi_darkconnect}}"
-              label="$i18n{wakeOnWifi}">
-          </settings-toggle-button>
-</if>
-<if expr="use_nss_certs or is_win or is_macosx">
-          <cr-link-row id="manageCertificates"
-              class="hr"
-<if expr="not use_nss_certs">
-          external
-</if>
-          label="$i18n{manageCertificates}"
-          sub-label="$i18n{manageCertificatesDescription}"
-          on-click="onManageCertificatesTap_"></cr-link-row>
-</if>
-          <template is="dom-if" if="[[enableSecurityKeysSubpage_]]">
-            <cr-link-row id="security-keys-subpage-trigger"
-              class="hr"
-              label="$i18n{securityKeysTitle}"
-              sub-label="$i18n{securityKeysDesc}"
-              on-click="onSecurityKeysTap_"></cr-link-row>
-          </template>
-        </iron-collapse>
+            label="$i18n{clearBrowsingData}"
+            sub-label="$i18n{clearBrowsingDataDescription}"
+            on-click="onClearBrowsingDataTap_"></cr-link-row>
       </div>
 
 <if expr="use_nss_certs">

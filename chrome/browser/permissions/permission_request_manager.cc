@@ -140,6 +140,12 @@ void PermissionRequestManager::AddRequest(PermissionRequest* request) {
   }
   queued_requests_.push_back(request);
 
+  // If we're displaying a quiet permission request, kill it in favor of this
+  // permission request.
+  if (ShouldShowQuietPermissionPrompt()) {
+    FinalizeBubble(PermissionAction::IGNORED);
+  }
+
   if (!IsBubbleVisible())
     ScheduleShowBubble();
 }

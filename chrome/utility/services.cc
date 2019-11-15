@@ -122,7 +122,6 @@ auto RunProfileImporter(
 auto RunMirroringService(
     mojo::PendingReceiver<mirroring::mojom::MirroringService> receiver) {
   DCHECK(base::FeatureList::IsEnabled(mirroring::features::kMirroringService));
-  DCHECK(base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams));
   return std::make_unique<mirroring::MirroringService>(
       std::move(receiver), content::UtilityThread::Get()->GetIOTaskRunner());
 }

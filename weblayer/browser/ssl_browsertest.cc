@@ -10,6 +10,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "weblayer/shell/browser/shell.h"
 #include "weblayer/test/interstitial_utils.h"
+#include "weblayer/test/load_completion_observer.h"
 #include "weblayer/test/test_navigation_observer.h"
 #include "weblayer/test/weblayer_browser_test_utils.h"
 
@@ -75,11 +76,13 @@ class SSLBrowserTest : public WebLayerBrowserTest {
     // ssl_browsertest.cc's CheckAuthenticationBrokenState() function.
   }
 
-  void InteractWithBlockingPage(
+  void SendInterstitialNavigationCommandAndWait(
       bool proceed,
       base::Optional<GURL> previous_url = base::nullopt) {
     GURL expected_url =
         proceed ? bad_ssl_url() : previous_url.value_or(ok_url());
+    ASSERT_TRUE(IsShowingSSLInterstitial(shell()->tab()));
+
     TestNavigationObserver navigation_observer(
         expected_url, TestNavigationObserver::NavigationEvent::Completion,
         shell());
@@ -89,6 +92,19 @@ class SSLBrowserTest : public WebLayerBrowserTest {
                   false /*use_separate_isolate*/);
     navigation_observer.Wait();
     EXPECT_FALSE(IsShowingSSLInterstitial(shell()->tab()));
+  }
+
+  void SendInterstitialReloadCommandAndWait() {
+    ASSERT_TRUE(IsShowingSSLInterstitial(shell()->tab()));
+
+    LoadCompletionObserver load_observer(shell());
+    ExecuteScript(shell(), "window.certificateErrorPageController.reload();",
+                  false /*use_separate_isolate*/);
+    load_observer.Wait();
+
+    // Should still be showing the SSL interstitial after the reload command is
+    // processed.
+    EXPECT_TRUE(IsShowingSSLInterstitial(shell()->tab()));
   }
 
   void NavigateToOtherOkPage() {
@@ -116,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(SSLBrowserTest, TakeMeBack) {
   NavigateToPageWithSslErrorExpectBlocked();
 
   // Click "Take me back".
-  InteractWithBlockingPage(false /*proceed*/);
+  SendInterstitialNavigationCommandAndWait(false /*proceed*/);
 
   // Check that it's possible to navigate to a new page.
   NavigateToOtherOkPage();
@@ -132,7 +148,25 @@ IN_PROC_BROWSER_TEST_F(SSLBrowserTest, TakeMeBackEmptyNavigationHistory) {
   NavigateToPageWithSslErrorExpectBlocked();
 
   // Click "Take me back".
-  InteractWithBlockingPage(false /*proceed*/, GURL("about:blank"));
+  SendInterstitialNavigationCommandAndWait(false /*proceed*/,
+                                           GURL("about:blank"));
+}
+
+IN_PROC_BROWSER_TEST_F(SSLBrowserTest, Reload) {
+  NavigateToOkPage();
+  NavigateToPageWithSslErrorExpectBlocked();
+
+  SendInterstitialReloadCommandAndWait();
+
+  // TODO(blundell): Ideally we would fix the SSL error, reload, and verify
+  // that the SSL interstitial isn't showing. However, currently this doesn't
+  // work: Calling ResetSSLConfig() on |http_server_mismatched_| passing
+  // CERT_OK does not cause future reloads or navigations to bad_ssl_url() to
+  // succeed; they still fail and pop an interstitial. I verified that the
+  // LoadCompletionObserver is in fact waiting for a new load, i.e., there is
+  // actually a *new* SSL interstitial popped up. From looking at the
+  // ResetSSLConfig() impl there shouldn't be any waiting or anything needed
+  // within the client.
 }
 
 // Tests clicking proceed link on the interstitial page. This is a PRE_ test
@@ -141,7 +175,7 @@ IN_PROC_BROWSER_TEST_F(SSLBrowserTest, TakeMeBackEmptyNavigationHistory) {
 IN_PROC_BROWSER_TEST_F(SSLBrowserTest, PRE_Proceed) {
   NavigateToOkPage();
   NavigateToPageWithSslErrorExpectBlocked();
-  InteractWithBlockingPage(true /*proceed*/);
+  SendInterstitialNavigationCommandAndWait(true /*proceed*/);
 
   // Go back to an OK page, then try to navigate again. The "Proceed" decision
   // should be saved, so no interstitial is shown this time.

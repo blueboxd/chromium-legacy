@@ -30,7 +30,6 @@
 #include "components/sync/base/sync_base_switches.h"
 #include "components/sync/driver/backend_migrator.h"
 #include "components/sync/driver/configure_context.h"
-#include "components/sync/driver/directory_data_type_controller.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_auth_manager.h"
 #include "components/sync/driver/sync_driver_switches.h"
@@ -38,11 +37,12 @@
 #include "components/sync/driver/sync_util.h"
 #include "components/sync/engine/cycle/type_debug_info_observer.h"
 #include "components/sync/engine/engine_components_factory_impl.h"
-#include "components/sync/engine/net/http_bridge_network_resources.h"
-#include "components/sync/engine/net/network_resources.h"
+#include "components/sync/engine/net/http_bridge.h"
+#include "components/sync/engine/net/http_post_provider_factory.h"
 #include "components/sync/engine/polling_constants.h"
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/model/sync_error.h"
+#include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/user_share.h"
 #include "components/version_info/version_info_values.h"
 #include "crypto/ec_private_key.h"
@@ -125,6 +125,16 @@ DataTypeController::TypeMap BuildDataTypeControllerMap(
   return type_map;
 }
 
+std::unique_ptr<HttpPostProviderFactory> CreateHttpBridgeFactory(
+    const std::string& user_agent,
+    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+        url_loader_factory_info,
+    const NetworkTimeUpdateCallback& network_time_update_callback) {
+  return std::make_unique<HttpBridgeFactory>(user_agent,
+                                             std::move(url_loader_factory_info),
+                                             network_time_update_callback);
+}
+
 }  // namespace
 
 ProfileSyncService::InitParams::InitParams() = default;
@@ -166,7 +176,8 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       expect_sync_configuration_aborted_(false),
       invalidations_identity_providers_(
           init_params.invalidations_identity_providers),
-      network_resources_(std::make_unique<HttpBridgeNetworkResources>()),
+      create_http_post_provider_factory_cb_(
+          base::BindRepeating(&CreateHttpBridgeFactory)),
       start_behavior_(init_params.start_behavior),
       passphrase_prompt_triggered_by_version_(false),
       is_stopping_and_clearing_(false) {
@@ -288,15 +299,6 @@ bool ProfileSyncService::IsDataTypeControllerRunningForTest(
 
 WeakHandle<JsEventHandler> ProfileSyncService::GetJsEventHandler() {
   return MakeWeakHandle(sync_js_controller_.AsWeakPtr());
-}
-
-SyncEngine::HttpPostProviderFactoryGetter
-ProfileSyncService::MakeHttpPostProviderFactoryGetter() {
-  return base::BindOnce(&NetworkResources::GetHttpPostProviderFactory,
-                        base::Unretained(network_resources_.get()),
-                        MakeUserAgentForSync(channel_),
-                        url_loader_factory_->Clone(),
-                        network_time_update_callback_);
 }
 
 WeakHandle<UnrecoverableErrorHandler>
@@ -485,7 +487,9 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
   params.extensions_activity = sync_client_->GetExtensionsActivity();
   params.event_handler = GetJsEventHandler();
   params.service_url = sync_service_url_;
-  params.http_factory_getter = MakeHttpPostProviderFactoryGetter();
+  params.http_factory_getter = base::BindOnce(
+      create_http_post_provider_factory_cb_, MakeUserAgentForSync(channel_),
+      url_loader_factory_->Clone(), network_time_update_callback_);
   params.authenticated_account_id = GetAuthenticatedAccountInfo().account_id;
   DCHECK(!params.authenticated_account_id.empty() || IsLocalSyncEnabled());
   if (!base::FeatureList::IsEnabled(switches::kSyncE2ELatencyMeasurement)) {
@@ -1816,15 +1820,14 @@ SyncTokenStatus ProfileSyncService::GetSyncTokenStatusForDebugging() const {
   return auth_manager_->GetSyncTokenStatus();
 }
 
-void ProfileSyncService::OverrideNetworkResourcesForTest(
-    std::unique_ptr<NetworkResources> network_resources) {
+void ProfileSyncService::OverrideNetworkForTest(
+    const CreateHttpPostProviderFactory& create_http_post_provider_factory_cb) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // If the engine has already been created, then it holds a pointer to the
-  // previous |network_resources_| which will become invalid. In that case, shut
-  // down and recreate the engine, so that it gets the correct (overridden)
-  // NetworkResources.
+  // If the engine has already been created, then it has a copy of the previous
+  // HttpPostProviderFactory creation callback. In that case, shut down and
+  // recreate the engine, so that it uses the correct (overridden) callback.
   // This is a horrible hack; the proper fix would be to inject the
-  // NetworkResources in the ctor instead of adding them retroactively.
+  // callback in the ctor instead of adding it retroactively.
   bool restart = false;
   if (engine_) {
     StopImpl(KEEP_DATA);
@@ -1832,11 +1835,17 @@ void ProfileSyncService::OverrideNetworkResourcesForTest(
   }
   DCHECK(!engine_);
 
-  // If a previous request (with the wrong network resources) already failed,
-  // the next one would be backed off, which breaks tests. So reset the backoff.
+  // If a previous request (with the wrong callback) already failed, the next
+  // one would be backed off, which breaks tests. So reset the backoff.
   auth_manager_->ResetRequestAccessTokenBackoffForTest();
 
-  network_resources_ = std::move(network_resources);
+  create_http_post_provider_factory_cb_ = create_http_post_provider_factory_cb;
+
+  // For allowing tests to easily reset to the default (real) callback.
+  if (!create_http_post_provider_factory_cb_) {
+    create_http_post_provider_factory_cb_ =
+        base::BindRepeating(&CreateHttpBridgeFactory);
+  }
 
   if (restart) {
     startup_controller_->TryStart(/*force_immediate=*/true);

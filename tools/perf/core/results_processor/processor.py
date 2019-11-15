@@ -14,6 +14,7 @@ import datetime
 import json
 import logging
 import os
+import posixpath
 import random
 import re
 
@@ -35,7 +36,7 @@ from tracing.value import legacy_unit_info
 TEST_RESULTS = '_test_results.jsonl'
 DIAGNOSTICS_NAME = 'diagnostics.json'
 MEASUREMENTS_NAME = 'measurements.json'
-CONVERTED_JSON_TRACE_NAME = 'converted_from_pb.json'
+CONVERTED_JSON_SUFFIX = '_converted.json'
 
 FORMATS_WITH_METRICS = ['csv', 'histograms', 'html']
 
@@ -181,18 +182,20 @@ def ConvertProtoTraces(test_result, trace_processor_path):
   trace_processor and stores the json trace as a separate artifact.
   """
   artifacts = test_result.get('outputArtifacts', {})
-  proto_trace_files = [
-      artifact['filePath'] for name, artifact in artifacts.iteritems()
-      if _IsProtoTrace(name)]
+  proto_traces = [name for name in artifacts if _IsProtoTrace(name)]
 
-  if proto_trace_files:
-    logging.info('%s: Converting proto traces %s.',
-                 test_result['testPath'], proto_trace_files)
-    json_path = _BuildOutputPath(proto_trace_files, CONVERTED_JSON_TRACE_NAME)
+  for proto_trace_name in proto_traces:
+    proto_file_path = artifacts[proto_trace_name]['filePath']
+    logging.info('%s: Converting proto trace %s.',
+                 test_result['testPath'], proto_file_path)
+    json_file_path = (os.path.splitext(proto_file_path)[0] +
+                      CONVERTED_JSON_SUFFIX)
+    json_trace_name = (posixpath.splitext(proto_trace_name)[0] +
+                       CONVERTED_JSON_SUFFIX)
     trace_processor.ConvertProtoTracesToJson(
-        trace_processor_path, proto_trace_files, json_path)
-    artifacts['trace/' + CONVERTED_JSON_TRACE_NAME] = {
-        'filePath': json_path,
+        trace_processor_path, [proto_file_path], json_file_path)
+    artifacts[json_trace_name] = {
+        'filePath': json_file_path,
         'contentType': 'application/json',
     }
 

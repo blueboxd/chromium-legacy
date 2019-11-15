@@ -17,7 +17,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
-#include "components/variations/entropy_provider.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -34,8 +33,6 @@ class TriggeredProfileResetterTest : public testing::Test {
         override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
 
     // Activate the triggered reset field trial for these tests.
-    field_trial_list_.reset(new base::FieldTrialList(
-        std::make_unique<variations::SHA1EntropyProvider>("foo")));
     base::FieldTrial* trial = base::FieldTrialList::CreateFieldTrial(
         "TriggeredResetFieldTrial", "On");
     trial->group();
@@ -61,7 +58,6 @@ class TriggeredProfileResetterTest : public testing::Test {
 
  private:
   registry_util::RegistryOverrideManager override_manager_;
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
 };
 
 TEST_F(TriggeredProfileResetterTest, HasResetTriggerAndClear) {

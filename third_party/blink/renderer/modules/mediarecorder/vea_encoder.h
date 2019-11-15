@@ -58,6 +58,13 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
     base::WritableSharedMemoryMapping mapping;
   };
 
+  struct OutputBuffer {
+    base::UnsafeSharedMemoryRegion region;
+    base::WritableSharedMemoryMapping mapping;
+
+    bool IsValid();
+  };
+
   VEAEncoder(
       const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_callback,
       const VideoTrackRecorder::OnErrorCB& on_error_callback,
@@ -87,7 +94,7 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
   std::unique_ptr<media::VideoEncodeAccelerator> video_encoder_;
 
   // Shared memory buffers for output with the VEA.
-  Vector<std::unique_ptr<base::SharedMemory>> output_buffers_;
+  Vector<std::unique_ptr<OutputBuffer>> output_buffers_;
 
   // Shared memory buffers for output with the VEA as FIFO.
   // TODO(crbug.com/960665): Replace with a WTF equivalent.

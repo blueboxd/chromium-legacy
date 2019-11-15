@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/cups_printers_handler.h"
 
+#include <set>
 #include <utility>
 
 #include "base/bind.h"
@@ -29,6 +30,7 @@
 #include "chrome/browser/chromeos/printing/printer_event_tracker.h"
 #include "chrome/browser/chromeos/printing/printer_event_tracker_factory.h"
 #include "chrome/browser/chromeos/printing/printer_info.h"
+#include "chrome/browser/chromeos/printing/server_printers_fetcher.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/local_discovery/endpoint_resolver.h"
 #include "chrome/browser/profiles/profile.h"
@@ -55,6 +57,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "printing/backend/print_backend.h"
+#include "url/gurl.h"
 
 namespace chromeos {
 namespace settings {
@@ -255,6 +258,42 @@ Printer::PpdReference GetPpdReference(const base::Value* info) {
   // Otherwise it must be autoconf
   DCHECK(autoconf && autoconf->GetBool());
   return Printer::PpdReference{"", "", true};
+}
+
+bool ConvertToGURL(const std::string& url, GURL* gurl) {
+  *gurl = GURL(url);
+  if (!gurl->is_valid()) {
+    // URL is not valid.
+    return false;
+  }
+  if (!gurl->SchemeIsHTTPOrHTTPS() && !gurl->SchemeIs("ipp") &&
+      !gurl->SchemeIs("ipps")) {
+    // URL has unsupported scheme; we support only: http, https, ipp, ipps.
+    return false;
+  }
+  // Replaces ipp/ipps by http/https. IPP standard describes protocol built
+  // on top of HTTP, so both types of addresses have the same meaning in the
+  // context of IPP interface. Moreover, the URL must have http/https scheme
+  // to pass IsStandard() test from GURL library (see "Validation of the URL
+  // address" below).
+  bool set_ipp_port = false;
+  if (gurl->SchemeIs("ipp")) {
+    set_ipp_port = (gurl->IntPort() == url::PORT_UNSPECIFIED);
+    *gurl = GURL("http" + url.substr(url.find_first_of(':')));
+  } else if (gurl->SchemeIs("ipps")) {
+    *gurl = GURL("https" + url.substr(url.find_first_of(':')));
+  }
+  // The default port for ipp is 631. If the schema ipp is replaced by http
+  // and the port is not explicitly defined in the url, we have to overwrite
+  // the default http port with the default ipp port. For ipps we do nothing
+  // because implementers use the same port for ipps and https.
+  if (set_ipp_port) {
+    GURL::Replacements replacement;
+    replacement.SetPortStr("631");
+    *gurl = gurl->ReplaceComponents(replacement);
+  }
+  // Validation of the URL address.
+  return gurl->IsStandard();
 }
 
 }  // namespace
@@ -1192,6 +1231,70 @@ void CupsPrintersHandler::OnIpResolved(const std::string& callback_id,
   // If it's not an IPP printer, the user must choose a PPD.
   RejectJavascriptCallback(base::Value(callback_id),
                            *GetCupsPrinterInfo(printer));
+}
+
+void CupsPrintersHandler::HandleQueryPrintServer(const base::ListValue* args) {
+  std::string callback_id;
+  std::string server_url;
+  CHECK_EQ(2U, args->GetSize());
+  CHECK(args->GetString(0, &callback_id));
+  CHECK(args->GetString(1, &server_url));
+
+  GURL server_gurl;
+  if (!ConvertToGURL(server_url, &server_gurl)) {
+    RejectJavascriptCallback(
+        base::Value(callback_id),
+        base::Value(PrintServerQueryResult::kIncorrectUrl));
+    return;
+  }
+
+  server_printers_fetcher_ = std::make_unique<ServerPrintersFetcher>(
+      server_gurl, "(from user)",
+      base::BindRepeating(&CupsPrintersHandler::OnQueryPrintServerCompleted,
+                          weak_factory_.GetWeakPtr(), callback_id));
+}
+
+void CupsPrintersHandler::OnQueryPrintServerCompleted(
+    const std::string& callback_id,
+    const ServerPrintersFetcher* sender,
+    const GURL& server_url,
+    std::vector<PrinterDetector::DetectedPrinter>&& returned_printers) {
+  const PrintServerQueryResult result = sender->GetLastError();
+  if (result != PrintServerQueryResult::kNoErrors) {
+    RejectJavascriptCallback(base::Value(callback_id), base::Value(result));
+    return;
+  }
+
+  // Get all "saved" printers and organize them according to their URL.
+  const std::vector<Printer> saved_printers =
+      printers_manager_->GetPrinters(PrinterClass::kSaved);
+  std::set<GURL> known_printers;
+  for (const Printer& printer : saved_printers) {
+    GURL gurl;
+    if (ConvertToGURL(printer.uri(), &gurl))
+      known_printers.insert(gurl);
+  }
+
+  // Built final list of printers and a list of current names. If "current name"
+  // is a null value, then a corresponding printer is not saved in the profile
+  // (it can be added).
+  std::vector<Printer> printers;
+  printers.reserve(returned_printers.size());
+  for (PrinterDetector::DetectedPrinter& printer : returned_printers) {
+    printers.push_back(std::move(printer.printer));
+    GURL printer_gurl;
+    if (ConvertToGURL(printers.back().uri(), &printer_gurl)) {
+      if (known_printers.count(printer_gurl))
+        printers.pop_back();
+    }
+  }
+
+  // Delete fetcher object.
+  server_printers_fetcher_.reset();
+
+  // Create result value and finish the callback.
+  base::Value result_dict = BuildCupsPrintersList(printers);
+  ResolveJavascriptCallback(base::Value(callback_id), result_dict);
 }
 
 }  // namespace settings

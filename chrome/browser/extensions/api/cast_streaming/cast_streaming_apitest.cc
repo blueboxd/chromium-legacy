@@ -37,7 +37,6 @@
 #include "net/base/rand_callback.h"
 #include "net/log/net_log_source.h"
 #include "net/socket/udp_server_socket.h"
-#include "testing/gtest/include/gtest/gtest-param-test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using media::cast::test::GetFreeLocalPort;
@@ -332,18 +331,6 @@ class CastStreamingApiTestWithPixelOutput
     : public CastStreamingApiTest,
       public testing::WithParamInterface<bool> {
  public:
-  CastStreamingApiTestWithPixelOutput() {
-    std::vector<base::Feature> audio_service_oop_features = {
-        features::kAudioServiceAudioStreams,
-        features::kAudioServiceOutOfProcess};
-    if (GetParam()) {
-      // Force audio service out of process to enabled.
-      audio_service_features_.InitWithFeatures(audio_service_oop_features, {});
-    } else {
-      // Force audio service out of process to disabled.
-      audio_service_features_.InitWithFeatures({}, audio_service_oop_features);
-    }
-  }
 
   void SetUp() override {
     EnablePixelOutput();
@@ -370,7 +357,7 @@ class CastStreamingApiTestWithPixelOutput
 // Flaky on Mac: https://crbug.com/841387
 #define MAYBE_EndToEnd DISABLED_EndToEnd  // crbug.com/396413
 #endif
-IN_PROC_BROWSER_TEST_P(CastStreamingApiTestWithPixelOutput, MAYBE_EndToEnd) {
+IN_PROC_BROWSER_TEST_F(CastStreamingApiTestWithPixelOutput, MAYBE_EndToEnd) {
   std::unique_ptr<net::UDPServerSocket> receive_socket(
       new net::UDPServerSocket(NULL, net::NetLogSource()));
   receive_socket->AllowAddressReuse();
@@ -424,27 +411,9 @@ IN_PROC_BROWSER_TEST_P(CastStreamingApiTestWithPixelOutput, MAYBE_EndToEnd) {
 // Flaky on Mac https://crbug.com/841986
 #define MAYBE_RtpStreamError DISABLED_RtpStreamError
 #endif
-IN_PROC_BROWSER_TEST_P(CastStreamingApiTestWithPixelOutput,
+IN_PROC_BROWSER_TEST_F(CastStreamingApiTestWithPixelOutput,
                        MAYBE_RtpStreamError) {
   ASSERT_TRUE(RunExtensionSubtest("cast_streaming", "rtp_stream_error.html"));
 }
-
-// We run these tests with the audio service both in and out of the the browser
-// process to have waterfall coverage while the feature rolls out. It should be
-// removed after launch. Note: CastStreamingApiTestWithPixelOutput.EndToEnd is
-// the only integration test exercising audio service loopback streams, so it's
-// a very important test to have.
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-// Platforms where the out of process audio service is supported.
-INSTANTIATE_TEST_SUITE_P(,
-                         CastStreamingApiTestWithPixelOutput,
-                         ::testing::Values(true));
-#else
-// Platforms where the out of process audio service is not supported.
-INSTANTIATE_TEST_SUITE_P(,
-                         CastStreamingApiTestWithPixelOutput,
-                         ::testing::Values(false));
-#endif
 
 }  // namespace extensions

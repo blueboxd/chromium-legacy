@@ -53,6 +53,10 @@ scoped_refptr<VEAEncoder> VEAEncoder::Create(
   return encoder;
 }
 
+bool VEAEncoder::OutputBuffer::IsValid() {
+  return region.IsValid() && mapping.IsValid();
+}
+
 VEAEncoder::VEAEncoder(
     const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_callback,
     const VideoTrackRecorder::OnErrorCB& on_error_callback,
@@ -111,10 +115,12 @@ void VEAEncoder::RequireBitstreamBuffers(unsigned int /*input_count*/,
   base::queue<std::unique_ptr<InputBuffer>>().swap(input_buffers_);
 
   for (int i = 0; i < kVEAEncoderOutputBufferCount; ++i) {
-    std::unique_ptr<base::SharedMemory> shm =
-        gpu_factories_->CreateSharedMemory(output_buffer_size);
-    if (shm)
-      output_buffers_.push_back(base::WrapUnique(shm.release()));
+    auto output_buffer = std::make_unique<OutputBuffer>();
+    output_buffer->region =
+        gpu_factories_->CreateSharedMemoryRegion(output_buffer_size);
+    output_buffer->mapping = output_buffer->region.Map();
+    if (output_buffer->IsValid())
+      output_buffers_.push_back(std::move(output_buffer));
   }
 
   for (size_t i = 0; i < output_buffers_.size(); ++i)
@@ -134,11 +140,10 @@ void VEAEncoder::BitstreamBufferReady(
     num_frames_after_keyframe_ = 0;
   }
 
-  base::SharedMemory* output_buffer =
-      output_buffers_[bitstream_buffer_id].get();
-  std::string data;
-  data.append(static_cast<char*>(output_buffer->memory()),
-              metadata.payload_size_bytes);
+  OutputBuffer* output_buffer = output_buffers_[bitstream_buffer_id].get();
+  base::span<char> data_span =
+      output_buffer->mapping.GetMemoryAsSpan<char>(metadata.payload_size_bytes);
+  std::string data(data_span.begin(), data_span.end());
 
   const auto front_frame = frames_in_encode_.front();
   frames_in_encode_.pop();
@@ -168,9 +173,9 @@ void VEAEncoder::UseOutputBitstreamBufferId(int32_t bitstream_buffer_id) {
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
 
   video_encoder_->UseOutputBitstreamBuffer(media::BitstreamBuffer(
-      bitstream_buffer_id, output_buffers_[bitstream_buffer_id]->handle(),
-      false /* read_only */,
-      output_buffers_[bitstream_buffer_id]->mapped_size()));
+      bitstream_buffer_id,
+      output_buffers_[bitstream_buffer_id]->region.Duplicate(),
+      output_buffers_[bitstream_buffer_id]->region.GetSize()));
 }
 
 void VEAEncoder::FrameFinished(std::unique_ptr<InputBuffer> shm) {

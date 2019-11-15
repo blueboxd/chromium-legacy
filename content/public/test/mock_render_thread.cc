@@ -193,17 +193,6 @@ void MockRenderThread::RecordAction(const base::UserMetricsAction& action) {
 void MockRenderThread::RecordComputedAction(const std::string& action) {
 }
 
-std::unique_ptr<base::SharedMemory>
-MockRenderThread::HostAllocateSharedMemoryBuffer(size_t buffer_size) {
-  std::unique_ptr<base::SharedMemory> shared_buf(new base::SharedMemory);
-  if (!shared_buf->CreateAnonymous(buffer_size)) {
-    NOTREACHED() << "Cannot map shared memory buffer";
-    return std::unique_ptr<base::SharedMemory>();
-  }
-
-  return std::unique_ptr<base::SharedMemory>(shared_buf.release());
-}
-
 void MockRenderThread::RegisterExtension(
     std::unique_ptr<v8::Extension> extension) {
   blink::WebScriptController::RegisterExtension(std::move(extension));
@@ -341,16 +330,6 @@ bool MockRenderThread::OnMessageReceived(const IPC::Message& msg) {
   IPC_END_MESSAGE_MAP()
   return handled;
 }
-
-#if defined(OS_WIN)
-void MockRenderThread::OnDuplicateSection(
-    base::SharedMemoryHandle renderer_handle,
-    base::SharedMemoryHandle* browser_handle) {
-  // We don't have to duplicate the input handles since RenderViewTest does not
-  // separate a browser process from a renderer process.
-  *browser_handle = renderer_handle;
-}
-#endif  // defined(OS_WIN)
 
 // The View expects to be returned a valid route_id different from its own.
 void MockRenderThread::OnCreateWindow(

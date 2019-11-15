@@ -148,7 +148,7 @@ void ProcessProxy::Close() {
   process_launched_ = false;
   callback_set_ = false;
   callback_.Reset();
-  callback_runner_ = NULL;
+  callback_runner_.reset();
 
   process_.Terminate(0, /* wait */ false);
   base::EnsureProcessTerminated(std::move(process_));

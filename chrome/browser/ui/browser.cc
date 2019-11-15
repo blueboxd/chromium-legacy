@@ -314,8 +314,7 @@ bool IsOnKioskSplashScreen() {
   if (!user_manager::UserManager::IsInitialized())
     return false;
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  if (!user_manager->IsLoggedInAsKioskApp() &&
-      !user_manager->IsLoggedInAsArcKioskApp())
+  if (!user_manager->IsLoggedInAsAnyKioskApp())
     return false;
   if (session_manager->session_state() !=
       session_manager::SessionState::LOGIN_PRIMARY)

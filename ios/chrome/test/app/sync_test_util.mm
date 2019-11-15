@@ -18,7 +18,6 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_service.h"
-#include "components/sync/engine/net/http_bridge_network_resources.h"
 #include "components/sync/test/fake_server/entity_builder_factory.h"
 #include "components/sync/test/fake_server/fake_server.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
@@ -47,17 +46,17 @@ fake_server::FakeServer* gSyncFakeServer = nullptr;
 
 NSString* const kSyncTestErrorDomain = @"SyncTestDomain";
 
-// Overrides the network resources of the current ProfileSyncService with
-// |resources|.
-void OverrideSyncNetworkResources(
-    std::unique_ptr<syncer::NetworkResources> resources) {
+// Overrides the network callback of the current ProfileSyncService with
+// |create_http_post_provider_factory_cb|.
+void OverrideSyncNetwork(const syncer::CreateHttpPostProviderFactory&
+                             create_http_post_provider_factory_cb) {
   ios::ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   DCHECK(browser_state);
   syncer::ProfileSyncService* service =
       ProfileSyncServiceFactory::GetAsProfileSyncServiceForBrowserState(
           browser_state);
-  service->OverrideNetworkResourcesForTest(std::move(resources));
+  service->OverrideNetworkForTest(create_http_post_provider_factory_cb);
 }
 
 }  // namespace
@@ -67,17 +66,15 @@ namespace chrome_test_util {
 void SetUpFakeSyncServer() {
   DCHECK(!gSyncFakeServer);
   gSyncFakeServer = new fake_server::FakeServer();
-  OverrideSyncNetworkResources(base::WrapUnique<syncer::NetworkResources>(
-      new fake_server::FakeServerNetworkResources(
-          gSyncFakeServer->AsWeakPtr())));
+  OverrideSyncNetwork(fake_server::CreateFakeServerHttpPostProviderFactory(
+      gSyncFakeServer->AsWeakPtr()));
 }
 
 void TearDownFakeSyncServer() {
   DCHECK(gSyncFakeServer);
   delete gSyncFakeServer;
   gSyncFakeServer = nullptr;
-  OverrideSyncNetworkResources(base::WrapUnique<syncer::NetworkResources>(
-      new syncer::HttpBridgeNetworkResources()));
+  OverrideSyncNetwork(syncer::CreateHttpPostProviderFactory());
 }
 
 void StartSync() {

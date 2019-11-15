@@ -955,6 +955,7 @@
 
     'tryserver.devtools-frontend': {
       # Use pure release as CI doesn't have a debug builder.
+      'devtools_frontend_linux_blink_light_rel': 'release_bot',
       'devtools_frontend_linux_blink_rel': 'release_bot',
     },
 

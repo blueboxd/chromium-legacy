@@ -722,7 +722,7 @@ void DevToolsUIBindings::DispatchProtocolMessage(
 void DevToolsUIBindings::AgentHostClosed(
     content::DevToolsAgentHost* agent_host) {
   DCHECK(agent_host == agent_host_.get());
-  agent_host_ = NULL;
+  agent_host_.reset();
   delegate_->InspectedContentsClosing();
 }
 
@@ -1463,7 +1463,7 @@ void DevToolsUIBindings::AttachTo(
 void DevToolsUIBindings::Detach() {
   if (agent_host_.get())
     agent_host_->DetachClient(this);
-  agent_host_ = NULL;
+  agent_host_.reset();
 }
 
 bool DevToolsUIBindings::IsAttachedTo(content::DevToolsAgentHost* agent_host) {

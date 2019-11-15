@@ -154,11 +154,11 @@ TEST_F(SharingDeviceSourceSyncTest, GetAllDevices_Deduplicated) {
   // Add two devices with the same hardware info.
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
   auto device_info_3 =
-      CreateDeviceInfo("client_name_2", {"manufacturer 1", "model 1"});
+      CreateDeviceInfo("model 1", {"manufacturer 1", "model 1"});
   fake_device_info_tracker_.Add(device_info_3.get());
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
   auto device_info_4 =
-      CreateDeviceInfo("client_name_3", {"manufacturer 1", "model 1"});
+      CreateDeviceInfo("model 1", {"manufacturer 1", "model 1"});
   fake_device_info_tracker_.Add(device_info_4.get());
 
   // Add a device with the same info as the local device.
@@ -188,15 +188,18 @@ TEST_F(SharingDeviceSourceSyncTest, GetAllDevices_DeviceNaming) {
   fake_device_info_tracker_.Add(device_info_1.get());
 
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
-  auto device_info_2 = CreateDeviceInfo("name", {"manufacturer 1", "model 1"});
+  auto device_info_2 =
+      CreateDeviceInfo("model 1", {"manufacturer 1", "model 1"});
   fake_device_info_tracker_.Add(device_info_2.get());
 
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
-  auto device_info_3 = CreateDeviceInfo("name", {"manufacturer 1", "model 2"});
+  auto device_info_3 =
+      CreateDeviceInfo("model 2", {"manufacturer 1", "model 2"});
   fake_device_info_tracker_.Add(device_info_3.get());
 
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
-  auto device_info_4 = CreateDeviceInfo("name", {"manufacturer 2", "model 1"});
+  auto device_info_4 =
+      CreateDeviceInfo("model 1", {"manufacturer 2", "model 1"});
   fake_device_info_tracker_.Add(device_info_4.get());
 
   auto devices = device_source->GetAllDevices();

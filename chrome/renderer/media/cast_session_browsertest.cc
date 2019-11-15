@@ -25,6 +25,6 @@ TEST_F(CastSessionBrowserTest, CreateAndDestroy) {
       new CastSession(blink::scheduler::GetSingleThreadTaskRunnerForTesting()));
 
   // Causes CastSession to destruct.
-  session = NULL;
+  session.reset();
   base::RunLoop().RunUntilIdle();
 }

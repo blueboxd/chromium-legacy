@@ -59,7 +59,7 @@ void SSLClientCertificateSelectorTestBase::TearDownOnMainThread() {
 
   io_loop_finished_event_.Wait();
 
-  auth_requestor_ = NULL;
+  auth_requestor_.reset();
 }
 
 void SSLClientCertificateSelectorTestBase::SetUpOnIOThread() {

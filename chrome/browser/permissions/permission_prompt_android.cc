@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/infobars/core/infobar.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -24,6 +25,7 @@ PermissionPromptAndroid::PermissionPromptAndroid(
     : web_contents_(web_contents),
       delegate_(delegate),
       permission_request_notification_(nullptr),
+      permission_infobar_(nullptr),
       weak_factory_(this) {
   DCHECK(web_contents);
 
@@ -34,8 +36,9 @@ PermissionPromptAndroid::PermissionPromptAndroid(
   if (infobar_service &&
       GroupedPermissionInfoBarDelegate::ShouldShowMiniInfobar(
           profile, GetContentSettingType(0u /* position */))) {
-    GroupedPermissionInfoBarDelegate::Create(weak_factory_.GetWeakPtr(),
-                                             infobar_service);
+    permission_infobar_ = GroupedPermissionInfoBarDelegate::Create(
+        weak_factory_.GetWeakPtr(), infobar_service);
+    infobar_service->AddObserver(this);
     return;
   }
 
@@ -49,7 +52,18 @@ PermissionPromptAndroid::PermissionPromptAndroid(
   PermissionDialogDelegate::Create(web_contents_, this);
 }
 
-PermissionPromptAndroid::~PermissionPromptAndroid() {}
+PermissionPromptAndroid::~PermissionPromptAndroid() {
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents_);
+  if (!infobar_service)
+    return;
+  // RemoveObserver before RemoveInfoBar to not get notified about the removal
+  // of the `permission_infobar_` infobar.
+  infobar_service->RemoveObserver(this);
+  if (permission_infobar_) {
+    infobar_service->RemoveInfoBar(permission_infobar_);
+  }
+}
 
 void PermissionPromptAndroid::UpdateAnchorPosition() {
   NOTREACHED() << "UpdateAnchorPosition is not implemented";
@@ -132,6 +146,24 @@ base::string16 PermissionPromptAndroid::GetMessageText() const {
       url_formatter::FormatUrlForSecurityDisplay(
           requests[0]->GetOrigin(),
           url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
+}
+
+void PermissionPromptAndroid::OnInfoBarRemoved(infobars::InfoBar* infobar,
+                                               bool animate) {
+  if (infobar != permission_infobar_)
+    return;
+
+  permission_infobar_ = nullptr;
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents_);
+  if (infobar_service)
+    infobar_service->RemoveObserver(this);
+}
+
+void PermissionPromptAndroid::OnManagerShuttingDown(
+    infobars::InfoBarManager* manager) {
+  permission_infobar_ = nullptr;
+  manager->RemoveObserver(this);
 }
 
 // static

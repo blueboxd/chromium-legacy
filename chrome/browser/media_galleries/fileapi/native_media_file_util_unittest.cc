@@ -146,9 +146,7 @@ class NativeMediaFileUtilTest : public testing::Test {
     filesystem_id_ = filesystem_.id();
   }
 
-  void TearDown() override {
-    file_system_context_ = NULL;
-  }
+  void TearDown() override { file_system_context_.reset(); }
 
  protected:
   storage::FileSystemContext* file_system_context() {

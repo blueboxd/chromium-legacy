@@ -64,7 +64,6 @@ class BrowserContext;
 class BrowserMessageFilter;
 class IsolationContext;
 class RenderProcessHostObserver;
-class RendererAudioOutputStreamFactoryContext;
 class StoragePartition;
 struct WebPreferences;
 #if defined(OS_ANDROID)
@@ -179,9 +178,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
 
   // Get computed viewport intersection state from PriorityClients.
   virtual bool GetIntersectsViewport() = 0;
-
-  virtual RendererAudioOutputStreamFactoryContext*
-  GetRendererAudioOutputStreamFactoryContext() = 0;
 
   // Called when a video capture stream or an audio stream is added or removed
   // and used to determine if the process should be backgrounded or not.

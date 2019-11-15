@@ -75,9 +75,9 @@ void ServiceProviderTestHelper::SetUp(
 
 void ServiceProviderTestHelper::TearDown() {
   mock_bus_->ShutdownAndBlock();
-  mock_exported_object_ = NULL;
-  mock_object_proxy_ = NULL;
-  mock_bus_ = NULL;
+  mock_exported_object_.reset();
+  mock_object_proxy_.reset();
+  mock_bus_.reset();
 }
 
 void ServiceProviderTestHelper::SetUpReturnSignal(

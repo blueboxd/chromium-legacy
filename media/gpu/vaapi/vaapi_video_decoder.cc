@@ -410,9 +410,8 @@ void VaapiVideoDecoder::ChangeFrameResolutionTask() {
   const base::Optional<VideoPixelFormat> format =
       GfxBufferFormatToVideoPixelFormat(GetBufferFormat());
   CHECK(format);
-  frame_layout_ = VideoFrameLayout::Create(*format, pic_size);
-  DCHECK(frame_layout_);
-  frame_pool_->RequestFrames(*frame_layout_, visible_rect, natural_size,
+  frame_pool_->RequestFrames(Fourcc::FromVideoPixelFormat(*format), pic_size,
+                             visible_rect, natural_size,
                              decoder_->GetRequiredNumOfPictures());
 
   // All pending decode operations will be completed before triggering a

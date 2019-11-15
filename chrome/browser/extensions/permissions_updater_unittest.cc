@@ -73,7 +73,7 @@ class PermissionsUpdaterListener : public content::NotificationObserver {
   void Reset() {
     received_notification_ = false;
     waiting_ = false;
-    extension_ = NULL;
+    extension_.reset();
     permissions_ = NULL;
   }
 

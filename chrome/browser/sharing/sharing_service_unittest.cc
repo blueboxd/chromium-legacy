@@ -125,6 +125,17 @@ class FakeSharingDeviceRegistration : public SharingDeviceRegistration {
   int unregistration_attempts_ = 0;
 };
 
+class MockSharingDeviceSource : public SharingDeviceSource {
+ public:
+  bool IsReady() override { return true; }
+
+  MOCK_METHOD1(GetDeviceByGuid,
+               std::unique_ptr<syncer::DeviceInfo>(const std::string& guid));
+
+  MOCK_METHOD0(GetAllDevices,
+               std::vector<std::unique_ptr<syncer::DeviceInfo>>());
+};
+
 class SharingServiceTest : public testing::Test {
  public:
   SharingServiceTest() {
@@ -136,6 +147,7 @@ class SharingServiceTest : public testing::Test {
         vapid_key_manager_,
         fake_device_info_sync_service.GetLocalDeviceInfoProvider());
     fcm_handler_ = new testing::NiceMock<MockSharingFCMHandler>();
+    device_source_ = new testing::NiceMock<MockSharingDeviceSource>();
     sharing_message_sender_ = new testing::NiceMock<MockSharingMessageSender>();
     SharingSyncPreference::RegisterProfilePrefs(prefs_.registry());
   }
@@ -187,10 +199,6 @@ class SharingServiceTest : public testing::Test {
   // Lazily initialized so we can test the constructor.
   SharingService* GetSharingService() {
     if (!sharing_service_) {
-      device_source_ = new SharingDeviceSourceSync(
-          &test_sync_service_,
-          fake_device_info_sync_service.GetLocalDeviceInfoProvider(),
-          fake_device_info_sync_service.GetDeviceInfoTracker());
       sharing_service_ = std::make_unique<SharingService>(
           base::WrapUnique(sync_prefs_), base::WrapUnique(vapid_key_manager_),
           base::WrapUnique(sharing_device_registration_),
@@ -212,11 +220,11 @@ class SharingServiceTest : public testing::Test {
 
   testing::NiceMock<MockInstanceIDDriver> mock_instance_id_driver_;
   testing::NiceMock<MockSharingFCMHandler>* fcm_handler_;
+  testing::NiceMock<MockSharingDeviceSource>* device_source_;
 
   SharingSyncPreference* sync_prefs_;
   VapidKeyManager* vapid_key_manager_;
   FakeSharingDeviceRegistration* sharing_device_registration_;
-  SharingDeviceSourceSync* device_source_ = nullptr;
   testing::NiceMock<MockSharingMessageSender>* sharing_message_sender_;
   bool device_candidates_initialized_ = false;
 
@@ -237,25 +245,25 @@ bool ProtoEquals(const google::protobuf::MessageLite& expected,
 }  // namespace
 
 TEST_F(SharingServiceTest, GetDeviceCandidates_Empty) {
+  EXPECT_CALL(*device_source_, GetAllDevices())
+      .WillOnce([]() -> std::vector<std::unique_ptr<syncer::DeviceInfo>> {
+        return {};
+      });
+
   std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
       GetSharingService()->GetDeviceCandidates(
           sync_pb::SharingSpecificFields::CLICK_TO_CALL);
-  EXPECT_TRUE(candidates.empty());
-}
-
-TEST_F(SharingServiceTest, GetDeviceCandidates_NoTracked) {
-  std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
-      GetSharingService()->GetDeviceCandidates(
-          sync_pb::SharingSpecificFields::CLICK_TO_CALL);
-
   EXPECT_TRUE(candidates.empty());
 }
 
 TEST_F(SharingServiceTest, GetDeviceCandidates_Tracked) {
-  std::string id = base::GenerateGUID();
-  std::unique_ptr<syncer::DeviceInfo> device_info =
-      CreateFakeDeviceInfo(id, kDeviceName);
-  fake_device_info_sync_service.GetDeviceInfoTracker()->Add(device_info.get());
+  EXPECT_CALL(*device_source_, GetAllDevices())
+      .WillOnce([]() -> std::vector<std::unique_ptr<syncer::DeviceInfo>> {
+        std::vector<std::unique_ptr<syncer::DeviceInfo>> device_candidates;
+        device_candidates.push_back(
+            CreateFakeDeviceInfo(base::GenerateGUID(), kDeviceName));
+        return device_candidates;
+      });
 
   std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
       GetSharingService()->GetDeviceCandidates(
@@ -265,10 +273,16 @@ TEST_F(SharingServiceTest, GetDeviceCandidates_Tracked) {
 }
 
 TEST_F(SharingServiceTest, GetDeviceCandidates_Expired) {
-  std::string id = base::GenerateGUID();
-  std::unique_ptr<syncer::DeviceInfo> device_info =
-      CreateFakeDeviceInfo(id, kDeviceName);
-  fake_device_info_sync_service.GetDeviceInfoTracker()->Add(device_info.get());
+  // Create device in advance so we can forward time before calling
+  // GetDeviceCandidates.
+  auto device_info = CreateFakeDeviceInfo(base::GenerateGUID(), kDeviceName);
+  EXPECT_CALL(*device_source_, GetAllDevices())
+      .WillOnce(
+          [&device_info]() -> std::vector<std::unique_ptr<syncer::DeviceInfo>> {
+            std::vector<std::unique_ptr<syncer::DeviceInfo>> device_candidates;
+            device_candidates.push_back(std::move(device_info));
+            return device_candidates;
+          });
 
   // Forward time until device expires.
   task_environment_.FastForwardBy(kDeviceExpiration +
@@ -282,10 +296,13 @@ TEST_F(SharingServiceTest, GetDeviceCandidates_Expired) {
 }
 
 TEST_F(SharingServiceTest, GetDeviceCandidates_MissingRequirements) {
-  std::string id = base::GenerateGUID();
-  std::unique_ptr<syncer::DeviceInfo> device_info =
-      CreateFakeDeviceInfo(id, kDeviceName);
-  fake_device_info_sync_service.GetDeviceInfoTracker()->Add(device_info.get());
+  EXPECT_CALL(*device_source_, GetAllDevices())
+      .WillOnce([]() -> std::vector<std::unique_ptr<syncer::DeviceInfo>> {
+        std::vector<std::unique_ptr<syncer::DeviceInfo>> device_candidates;
+        device_candidates.push_back(
+            CreateFakeDeviceInfo(base::GenerateGUID(), kDeviceName));
+        return device_candidates;
+      });
 
   // Requires shared clipboard feature.
   std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
@@ -293,45 +310,6 @@ TEST_F(SharingServiceTest, GetDeviceCandidates_MissingRequirements) {
           sync_pb::SharingSpecificFields::SHARED_CLIPBOARD);
 
   EXPECT_TRUE(candidates.empty());
-}
-
-TEST_F(SharingServiceTest, GetDeviceCandidates_DuplicateDeviceNames) {
-  // Add first device.
-  base::SysInfo::HardwareInfo info{"Google", "Pixel C", "serialno"};
-
-  std::string id1 = base::GenerateGUID();
-  std::unique_ptr<syncer::DeviceInfo> device_info_1 = CreateFakeDeviceInfo(
-      id1, "Device1", sync_pb::SyncEnums_DeviceType_TYPE_TABLET, info);
-  fake_device_info_sync_service.GetDeviceInfoTracker()->Add(
-      device_info_1.get());
-
-  // Advance time for a bit to create a newer device.
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
-
-  // Add second device.
-  std::string id2 = base::GenerateGUID();
-  std::unique_ptr<syncer::DeviceInfo> device_info_2 = CreateFakeDeviceInfo(
-      id2, "Device2", sync_pb::SyncEnums_DeviceType_TYPE_TABLET, info);
-  fake_device_info_sync_service.GetDeviceInfoTracker()->Add(
-      device_info_2.get());
-
-  // Add third device which is same as local device except guid.
-  std::string id3 = base::GenerateGUID();
-  const syncer::DeviceInfo* local_device_info =
-      fake_device_info_sync_service.GetLocalDeviceInfoProvider()
-          ->GetLocalDeviceInfo();
-  std::unique_ptr<syncer::DeviceInfo> device_info_3 = CreateFakeDeviceInfo(
-      id3, local_device_info->client_name(), local_device_info->device_type(),
-      local_device_info->hardware_info());
-  fake_device_info_sync_service.GetDeviceInfoTracker()->Add(
-      device_info_3.get());
-
-  std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
-      GetSharingService()->GetDeviceCandidates(
-          sync_pb::SharingSpecificFields::CLICK_TO_CALL);
-
-  ASSERT_EQ(1u, candidates.size());
-  EXPECT_EQ(id2, candidates[0]->guid());
 }
 
 TEST_F(SharingServiceTest, SendMessageToDeviceSuccess) {
@@ -631,235 +609,17 @@ TEST_F(SharingServiceTest, StartListeningToFCMAtConstructor) {
   GetSharingService();
 }
 
-TEST_F(SharingServiceTest, NoDevicesWhenLocalSyncEnabled) {
-  // Enable the registration feature and transport mode required features.
-  scoped_feature_list_.InitWithFeatures(
-      /*enabled_features=*/{kSharingDeviceRegistration, kSharingUseDeviceInfo,
-                            kSharingDeriveVapidKey},
-      /*disabled_features=*/{});
-  test_sync_service_.SetTransportState(
-      syncer::SyncService::TransportState::ACTIVE);
-  test_sync_service_.SetActiveDataTypes({syncer::DEVICE_INFO});
-  test_sync_service_.SetLocalSyncEnabled(true);
-
-  std::string id = base::GenerateGUID();
-  std::unique_ptr<syncer::DeviceInfo> device_info =
-      CreateFakeDeviceInfo(id, kDeviceName);
-  fake_device_info_sync_service.GetDeviceInfoTracker()->Add(device_info.get());
-
-  std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
-      GetSharingService()->GetDeviceCandidates(
-          sync_pb::SharingSpecificFields::CLICK_TO_CALL);
-
-  ASSERT_EQ(0u, candidates.size());
-}
-
-TEST_F(SharingServiceTest, NoDevicesWhenSyncDisabled) {
-  scoped_feature_list_.InitAndEnableFeature(kSharingDeviceRegistration);
-  test_sync_service_.SetTransportState(
-      syncer::SyncService::TransportState::DISABLED);
-
-  std::string id = base::GenerateGUID();
-  std::unique_ptr<syncer::DeviceInfo> device_info =
-      CreateFakeDeviceInfo(id, kDeviceName);
-  fake_device_info_sync_service.GetDeviceInfoTracker()->Add(device_info.get());
-
-  std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
-      GetSharingService()->GetDeviceCandidates(
-          sync_pb::SharingSpecificFields::CLICK_TO_CALL);
-
-  ASSERT_EQ(0u, candidates.size());
-}
-
-TEST_F(SharingServiceTest, DeviceCandidatesAlreadyReady) {
-  std::string id = base::GenerateGUID();
-  std::unique_ptr<syncer::DeviceInfo> device_info =
-      CreateFakeDeviceInfo(id, kDeviceName);
-  fake_device_info_sync_service.GetDeviceInfoTracker()->Add(device_info.get());
-  fake_device_info_sync_service.GetLocalDeviceInfoProvider()->SetReady(true);
-
-  GetSharingService()->GetDeviceSource()->AddReadyCallback(
-      base::BindOnce(&SharingServiceTest::OnDeviceCandidatesInitialized,
-                     base::Unretained(this)));
-
-  ASSERT_TRUE(device_candidates_initialized_);
-}
-
-TEST_F(SharingServiceTest, DeviceCandidatesReadyAfterAddObserver) {
-  fake_device_info_sync_service.GetLocalDeviceInfoProvider()->SetReady(false);
-
-  GetSharingService()->GetDeviceSource()->AddReadyCallback(
-      base::BindOnce(&SharingServiceTest::OnDeviceCandidatesInitialized,
-                     base::Unretained(this)));
-
-  ASSERT_FALSE(device_candidates_initialized_);
-
-  std::string id = base::GenerateGUID();
-  std::unique_ptr<syncer::DeviceInfo> device_info =
-      CreateFakeDeviceInfo(id, kDeviceName);
-  fake_device_info_sync_service.GetDeviceInfoTracker()->Add(device_info.get());
-  fake_device_info_sync_service.GetLocalDeviceInfoProvider()->SetReady(true);
-
-  ASSERT_TRUE(device_candidates_initialized_);
-}
-
-TEST_F(SharingServiceTest, DeviceCandidatesNames_Computers) {
-  std::unique_ptr<syncer::DeviceInfo> computer1 = CreateFakeDeviceInfo(
-      base::GenerateGUID(), "Fake device 1",
-      sync_pb::SyncEnums_DeviceType_TYPE_WIN, {"Dell", "PC3999", "sno one"});
-
-  fake_device_info_sync_service.GetDeviceInfoTracker()->Add(computer1.get());
-  std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
-      GetSharingService()->GetDeviceCandidates(
-          sync_pb::SharingSpecificFields::CLICK_TO_CALL);
-
-  ASSERT_EQ(1u, candidates.size());
-  EXPECT_EQ("Dell Computer", candidates[0]->client_name());
-
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
-
-  std::unique_ptr<syncer::DeviceInfo> computer2 = CreateFakeDeviceInfo(
-      base::GenerateGUID(), "Fake device 2",
-      sync_pb::SyncEnums_DeviceType_TYPE_LINUX, {"Dell", "PC3998", "sno two"});
-
-  fake_device_info_sync_service.GetDeviceInfoTracker()->Add(computer2.get());
-  candidates = GetSharingService()->GetDeviceCandidates(
-      sync_pb::SharingSpecificFields::CLICK_TO_CALL);
-
-  ASSERT_EQ(2u, candidates.size());
-  EXPECT_EQ("Dell Computer PC3998", candidates[0]->client_name());
-  EXPECT_EQ("Dell Computer PC3999", candidates[1]->client_name());
-}
-
-TEST_F(SharingServiceTest, DeviceCandidatesNames_AppleDevices) {
-  std::unique_ptr<syncer::DeviceInfo> computer1 =
-      CreateFakeDeviceInfo(base::GenerateGUID(), "Fake device 1",
-                           sync_pb::SyncEnums_DeviceType_TYPE_TABLET,
-                           {"Apple Inc.", "iPad2,2", "sno one"});
-  fake_device_info_sync_service.GetDeviceInfoTracker()->Add(computer1.get());
-
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
-
-  std::unique_ptr<syncer::DeviceInfo> computer2 =
-      CreateFakeDeviceInfo(base::GenerateGUID(), "Fake device 2",
-                           sync_pb::SyncEnums_DeviceType_TYPE_PHONE,
-                           {"Apple Inc.", "iPhone1,1", "sno two"});
-  fake_device_info_sync_service.GetDeviceInfoTracker()->Add(computer2.get());
-
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
-
-  std::unique_ptr<syncer::DeviceInfo> computer3 =
-      CreateFakeDeviceInfo(base::GenerateGUID(), "Fake device 3",
-                           sync_pb::SyncEnums_DeviceType_TYPE_MAC,
-                           {"Apple Inc.", "MacbookPro1,1", "sno three"});
-  fake_device_info_sync_service.GetDeviceInfoTracker()->Add(computer3.get());
-
-  std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
-      GetSharingService()->GetDeviceCandidates(
-          sync_pb::SharingSpecificFields::CLICK_TO_CALL);
-
-  ASSERT_EQ(3u, candidates.size());
-  EXPECT_EQ("MacbookPro", candidates[0]->client_name());
-  EXPECT_EQ("iPhone", candidates[1]->client_name());
-  EXPECT_EQ("iPad", candidates[2]->client_name());
-}
-
-TEST_F(SharingServiceTest, DeviceCandidatesNames_AndroidDevices) {
-  std::unique_ptr<syncer::DeviceInfo> computer1 =
-      CreateFakeDeviceInfo(base::GenerateGUID(), "Fake device 1",
-                           sync_pb::SyncEnums_DeviceType_TYPE_TABLET,
-                           {"Google", "Pixel Slate", "sno one"});
-  fake_device_info_sync_service.GetDeviceInfoTracker()->Add(computer1.get());
-
-  std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
-      GetSharingService()->GetDeviceCandidates(
-          sync_pb::SharingSpecificFields::CLICK_TO_CALL);
-
-  ASSERT_EQ(1u, candidates.size());
-  EXPECT_EQ("Google Tablet", candidates[0]->client_name());
-
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
-
-  std::unique_ptr<syncer::DeviceInfo> computer2 =
-      CreateFakeDeviceInfo(base::GenerateGUID(), "Fake device 2",
-                           sync_pb::SyncEnums_DeviceType_TYPE_PHONE,
-                           {"Google", "Pixel 3", "sno two"});
-  fake_device_info_sync_service.GetDeviceInfoTracker()->Add(computer2.get());
-
-  candidates = GetSharingService()->GetDeviceCandidates(
-      sync_pb::SharingSpecificFields::CLICK_TO_CALL);
-
-  ASSERT_EQ(2u, candidates.size());
-  EXPECT_EQ("Google Phone", candidates[0]->client_name());
-  EXPECT_EQ("Google Tablet", candidates[1]->client_name());
-
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
-
-  std::unique_ptr<syncer::DeviceInfo> computer3 =
-      CreateFakeDeviceInfo(base::GenerateGUID(), "Fake device 3",
-                           sync_pb::SyncEnums_DeviceType_TYPE_PHONE,
-                           {"Google", "Pixel 2", "sno three"});
-  fake_device_info_sync_service.GetDeviceInfoTracker()->Add(computer3.get());
-
-  candidates = GetSharingService()->GetDeviceCandidates(
-      sync_pb::SharingSpecificFields::CLICK_TO_CALL);
-
-  ASSERT_EQ(3u, candidates.size());
-  EXPECT_EQ("Google Phone Pixel 2", candidates[0]->client_name());
-  EXPECT_EQ("Google Phone Pixel 3", candidates[1]->client_name());
-  EXPECT_EQ("Google Tablet", candidates[2]->client_name());
-}
-
-TEST_F(SharingServiceTest, DeviceCandidatesNames_Chromebooks) {
-  std::unique_ptr<syncer::DeviceInfo> computer1 =
-      CreateFakeDeviceInfo(base::GenerateGUID(), "Fake device 1",
-                           sync_pb::SyncEnums_DeviceType_TYPE_CROS,
-                           {"Dell", "Chromebook", "sno one"});
-  fake_device_info_sync_service.GetDeviceInfoTracker()->Add(computer1.get());
-
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
-
-  std::unique_ptr<syncer::DeviceInfo> computer2 = CreateFakeDeviceInfo(
-      base::GenerateGUID(), "Fake device 2",
-      sync_pb::SyncEnums_DeviceType_TYPE_CROS, {"HP", "Chromebook", "sno one"});
-  fake_device_info_sync_service.GetDeviceInfoTracker()->Add(computer2.get());
-
-  std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
-      GetSharingService()->GetDeviceCandidates(
-          sync_pb::SharingSpecificFields::CLICK_TO_CALL);
-
-  ASSERT_EQ(2u, candidates.size());
-  EXPECT_EQ("HP Chromebook", candidates[0]->client_name());
-  EXPECT_EQ("Dell Chromebook", candidates[1]->client_name());
-}
-
 TEST_F(SharingServiceTest, GetDeviceByGuid) {
   std::string guid = base::GenerateGUID();
-  std::unique_ptr<syncer::DeviceInfo> computer1 = CreateFakeDeviceInfo(
-      guid, "Fake device 1", sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-      {"Dell", "sno one", "serial no"});
-  fake_device_info_sync_service.GetDeviceInfoTracker()->Add(computer1.get());
+  EXPECT_CALL(*device_source_, GetDeviceByGuid(guid))
+      .WillOnce(
+          [](const std::string& guid) -> std::unique_ptr<syncer::DeviceInfo> {
+            return CreateFakeDeviceInfo(
+                guid, "Dell Computer sno one",
+                sync_pb::SyncEnums_DeviceType_TYPE_LINUX, {});
+          });
 
   std::unique_ptr<syncer::DeviceInfo> device_info =
       GetSharingService()->GetDeviceByGuid(guid);
   EXPECT_EQ("Dell Computer sno one", device_info->client_name());
-}
-
-// Tests transition from M78- to M79+ where same local device should not show up
-// by also checking for personalizable client name.
-TEST_F(SharingServiceTest,
-       DeduplicateLocalDeviceOnClientName_HardwareInfoNotAvailable) {
-  const std::string local_client_name =
-      syncer::GetPersonalizableDeviceNameBlocking();
-
-  std::string guid = base::GenerateGUID();
-  std::unique_ptr<syncer::DeviceInfo> computer = CreateFakeDeviceInfo(
-      guid, local_client_name, sync_pb::SyncEnums_DeviceType_TYPE_LINUX, {});
-  fake_device_info_sync_service.GetDeviceInfoTracker()->Add(computer.get());
-
-  std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
-      GetSharingService()->GetDeviceCandidates(
-          sync_pb::SharingSpecificFields::CLICK_TO_CALL);
-
-  EXPECT_TRUE(candidates.empty());
 }

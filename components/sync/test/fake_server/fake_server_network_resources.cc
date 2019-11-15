@@ -14,21 +14,27 @@
 
 namespace fake_server {
 
-FakeServerNetworkResources::FakeServerNetworkResources(
-    const base::WeakPtr<FakeServer>& fake_server)
-    : fake_server_(fake_server),
-      fake_server_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
-
-FakeServerNetworkResources::~FakeServerNetworkResources() {}
+namespace {
 
 std::unique_ptr<syncer::HttpPostProviderFactory>
-FakeServerNetworkResources::GetHttpPostProviderFactory(
+CreateFakeServerHttpPostProviderFactoryHelper(
+    const base::WeakPtr<FakeServer>& fake_server,
+    scoped_refptr<base::SequencedTaskRunner> fake_server_task_runner,
     const std::string& user_agent,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         url_loader_factory_info,
     const syncer::NetworkTimeUpdateCallback& network_time_update_callback) {
   return std::make_unique<FakeServerHttpPostProviderFactory>(
-      fake_server_, fake_server_task_runner_);
+      fake_server, fake_server_task_runner);
+}
+
+}  // namespace
+
+syncer::CreateHttpPostProviderFactory CreateFakeServerHttpPostProviderFactory(
+    const base::WeakPtr<FakeServer>& fake_server) {
+  // TODO(treib): Switch to SequencedTaskRunnerHandler.
+  return base::BindRepeating(&CreateFakeServerHttpPostProviderFactoryHelper,
+                             fake_server, base::ThreadTaskRunnerHandle::Get());
 }
 
 }  // namespace fake_server

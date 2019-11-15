@@ -480,9 +480,7 @@ void WebRtcTextLogHandler::OnGetNetworkInterfaceList(
     return value ? "enabled" : "disabled";
   };
   LogToCircularBuffer(base::StrCat(
-      {"AudioService: AudioStreams=",
-       enabled_or_disabled_feature_string(features::kAudioServiceAudioStreams),
-       ", OutOfProcess=",
+      {"AudioService: OutOfProcess=",
        enabled_or_disabled_feature_string(features::kAudioServiceOutOfProcess),
        ", LaunchOnStartup=",
        enabled_or_disabled_feature_string(

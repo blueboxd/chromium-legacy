@@ -18,14 +18,6 @@ Polymer({
       notify: true,
     },
 
-    /** @private */
-    privacySettingsRedesignEnabled_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('privacySettingsRedesignEnabled');
-      },
-    },
-
     /**
      * Dictionary defining page visibility.
      * @type {!PageVisibility}

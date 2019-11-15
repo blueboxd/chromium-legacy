@@ -153,12 +153,8 @@ CastContentBrowserClient::CastContentBrowserClient(
       cast_feature_list_creator_(cast_feature_list_creator) {
   cast_feature_list_creator_->SetExtraEnableFeatures({
     ::media::kInternalMediaSession, features::kNetworkServiceInProcess,
-#if defined(OS_ANDROID)
-        // TODO(awolter): Remove this once the feature is on by default.
-        features::kAudioServiceAudioStreams,
-#if BUILDFLAG(ENABLE_VIDEO_CAPTURE_SERVICE)
+#if defined(OS_ANDROID) && BUILDFLAG(ENABLE_VIDEO_CAPTURE_SERVICE)
         features::kMojoVideoCapture,
-#endif  // BUILDFLAG(ENABLE_VIDEO_CAPTURE_SERVICE)
 #endif
   });
 

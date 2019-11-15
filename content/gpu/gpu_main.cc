@@ -91,6 +91,7 @@
 
 #if defined(OS_MACOSX)
 #include "base/message_loop/message_pump_mac.h"
+#include "components/metal_util/test_shader.h"
 #include "sandbox/mac/seatbelt.h"
 #include "services/service_manager/sandbox/mac/sandbox_mac.h"
 #endif
@@ -181,6 +182,34 @@ class ContentSandboxHelper : public gpu::GpuSandboxHelper {
 
   DISALLOW_COPY_AND_ASSIGN(ContentSandboxHelper);
 };
+
+#if defined(OS_MACOSX)
+// Allow up to 1 minute for shader compilation.
+constexpr base::TimeDelta kTestShaderCompileTimeout =
+    base::TimeDelta::FromMinutes(1);
+
+void TestShaderCallback(const base::TimeTicks& start_time,
+                        metal::TestShaderResult result) {
+  base::TimeDelta delta;
+  switch (result) {
+    case metal::TestShaderResult::kNotAttempted:
+    case metal::TestShaderResult::kFailed:
+      // Don't include data if no Metal device was created (e.g, due to hardware
+      // or macOS version reasons).
+      return;
+    case metal::TestShaderResult::kTimedOut:
+      // Use a single histogram for both "how long did compile take" and "did
+      // compile complete in 1 minute" by pushing timeouts into the maximum
+      // bucket of UMA_HISTOGRAM_MEDIUM_TIMES.
+      delta = base::TimeDelta::FromMinutes(3);
+      return;
+    case metal::TestShaderResult::kSucceeded:
+      delta = base::TimeTicks::Now() - start_time;
+      break;
+  }
+  UMA_HISTOGRAM_MEDIUM_TIMES("Gpu.Metal.TestShaderCompileTime", delta);
+}
+#endif
 
 }  // namespace
 
@@ -353,6 +382,15 @@ int GpuMain(const MainFunctionParams& parameters) {
   // Setup tracing sampler profiler as early as possible.
   std::unique_ptr<tracing::TracingSamplerProfiler> tracing_sampler_profiler =
       tracing::TracingSamplerProfiler::CreateOnMainThread();
+
+#if defined(OS_MACOSX)
+  // Launch a test metal shader compile to see how long it takes to complete (if
+  // it ever completes).
+  // https://crbug.com/974219
+  metal::TestShader(metal::kTestShaderSeedGpuTimer,
+                    base::BindOnce(TestShaderCallback, base::TimeTicks::Now()),
+                    kTestShaderCompileTimeout);
+#endif
 
 #if defined(OS_ANDROID)
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(

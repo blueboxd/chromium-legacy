@@ -25,6 +25,7 @@
 #include "base/time/time.h"
 #include "media/base/video_frame_layout.h"
 #include "media/base/video_types.h"
+#include "media/gpu/chromeos/gpu_buffer_layout.h"
 #include "media/gpu/chromeos/video_decoder_pipeline.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/v4l2/v4l2_device.h"
@@ -119,12 +120,12 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder
   // in VideoFramePool. The returned VideoFrameLayout is one of VideoFrame that
   // VideoFramePool will allocate. Returns base::nullopt on failure of if there
   // is no format that satisfies the above conditions.
-  base::Optional<VideoFrameLayout> SetupOutputFormat(
+  base::Optional<GpuBufferLayout> SetupOutputFormat(
       const gfx::Size& size,
       const gfx::Rect& visible_rect);
   // Update the format of frames in |frame_pool_| with |output_format_fourcc|,
   // |size| and |visible_rect|.
-  base::Optional<VideoFrameLayout> UpdateVideoFramePoolFormat(
+  base::Optional<GpuBufferLayout> UpdateVideoFramePoolFormat(
       uint32_t output_format_fourcc,
       const gfx::Size& size,
       const gfx::Rect& visible_rect);

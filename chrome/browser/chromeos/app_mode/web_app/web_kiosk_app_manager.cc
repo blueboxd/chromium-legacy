@@ -17,10 +17,8 @@
 namespace chromeos {
 
 namespace {
-
 // This class is owned by ChromeBrowserMainPartsChromeos.
 static WebKioskAppManager* g_web_kiosk_app_manager = nullptr;
-
 }  // namespace
 
 // static
@@ -29,6 +27,11 @@ const char WebKioskAppManager::kWebKioskDictionaryName[] = "web-kiosk";
 // static
 void WebKioskAppManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kWebKioskDictionaryName);
+}
+
+// static
+bool WebKioskAppManager::IsInitialized() {
+  return g_web_kiosk_app_manager;
 }
 
 // static
@@ -82,6 +85,13 @@ void WebKioskAppManager::UpdateAppByAccountId(
     }
   }
   NOTREACHED();
+}
+
+void WebKioskAppManager::AddAppForTesting(const AccountId& account_id,
+                                          const GURL& install_url) {
+  const std::string app_id = web_app::GenerateAppIdFromURL(install_url);
+  apps_.push_back(
+      std::make_unique<WebKioskAppData>(this, app_id, account_id, install_url));
 }
 
 void WebKioskAppManager::UpdateAppsFromPolicy() {

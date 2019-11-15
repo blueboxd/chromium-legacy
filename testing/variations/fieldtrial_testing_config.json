@@ -194,24 +194,6 @@
             ]
         }
     ],
-    "AndroidGooglePasswordManager": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "min-google-play-services-version": "14700000"
-                    },
-                    "enable_features": [
-                        "google-password-manager"
-                    ]
-                }
-            ]
-        }
-    ],
     "AndroidInProductHelpContextualSearchPromotePanelOpen": [
         {
             "platforms": [

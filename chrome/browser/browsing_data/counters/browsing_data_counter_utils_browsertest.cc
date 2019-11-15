@@ -53,8 +53,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataCounterUtilsBrowserTest,
   syncer::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(profile);
 
-  sync_service->OverrideNetworkResourcesForTest(
-      std::make_unique<fake_server::FakeServerNetworkResources>(
+  sync_service->OverrideNetworkForTest(
+      fake_server::CreateFakeServerHttpPostProviderFactory(
           GetFakeServer()->AsWeakPtr()));
 
   std::string username;

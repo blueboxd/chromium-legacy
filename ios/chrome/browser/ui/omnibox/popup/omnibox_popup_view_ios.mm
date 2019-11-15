@@ -50,7 +50,13 @@ OmniboxPopupViewIOS::~OmniboxPopupViewIOS() {
 // option is highlighted.
 void OmniboxPopupViewIOS::UpdateEditViewIcon() {
   const AutocompleteResult& result = model_->result();
-  const AutocompleteMatch& match = result.match_at(model_->selected_line());
+
+  // TODO (crbug.com/1024885): Use a better fallback icon than the icon for the
+  // first match.
+  const AutocompleteMatch& match =
+      model_->selected_line() == OmniboxPopupModel::kNoMatch
+          ? *result.begin()
+          : result.match_at(model_->selected_line());
 
   base::Optional<SuggestionAnswer::AnswerType> optAnswerType = base::nullopt;
   if (match.answer && match.answer->type() > 0 &&

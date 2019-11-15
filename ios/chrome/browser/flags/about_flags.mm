@@ -568,6 +568,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"use-js-error-page", flag_descriptions::kUseJSForErrorPageName,
      flag_descriptions::kUseJSForErrorPageDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kUseJSForErrorPage)},
+    {"messages-download-infobar",
+     flag_descriptions::kDownloadInfobarMessagesUIName,
+     flag_descriptions::kDownloadInfobarMessagesUIDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kDownloadInfobarMessagesUI)},
 };
 
 // Add all switches from experimental flags to |command_line|.

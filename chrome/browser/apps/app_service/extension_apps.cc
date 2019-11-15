@@ -15,6 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -36,6 +37,8 @@
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/common/chrome_features.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/services/app_service/public/cpp/intent_filter_util.h"
@@ -45,6 +48,7 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/clear_site_data_utils.h"
+#include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_urls.h"
@@ -127,6 +131,26 @@ apps::AppLaunchParams CreateAppLaunchParamsForIntent(
 
   return params;
 }
+
+// Get the LaunchId for a given |app_window|. Set launch_id default value to an
+// empty string. If showInShelf parameter is true and the window key is not
+// empty, its value is appended to the launch_id. Otherwise, if the window key
+// is empty, the session_id is used.
+std::string GetLaunchId(extensions::AppWindow* app_window) {
+  std::string launch_id;
+  if (app_window->extension_id() == extension_misc::kChromeCameraAppId)
+    return launch_id;
+
+  if (app_window->show_in_shelf()) {
+    if (!app_window->window_key().empty()) {
+      launch_id = app_window->window_key();
+    } else {
+      launch_id = base::StringPrintf("%d", app_window->session_id().id());
+    }
+  }
+  return launch_id;
+}
+
 }  // namespace
 
 namespace apps {
@@ -197,12 +221,17 @@ void ExtensionApps::RecordUninstallCanceledAction(Profile* profile,
 ExtensionApps::ExtensionApps(
     const mojo::Remote<apps::mojom::AppService>& app_service,
     Profile* profile,
-    apps::mojom::AppType app_type)
-    : profile_(profile), app_type_(app_type) {
+    apps::mojom::AppType app_type,
+    apps::InstanceRegistry* instance_registry)
+    : profile_(profile),
+      app_type_(app_type),
+      instance_registry_(instance_registry) {
   Initialize(app_service);
 }
 
 ExtensionApps::~ExtensionApps() {
+  app_window_registry_.RemoveAll();
+
   // In unit tests, AppServiceProxy might be ReInitializeForTesting, so
   // ExtensionApps might be destroyed without calling Shutdown, so arc_prefs_
   // needs to be removed from observer in the destructor function.
@@ -248,6 +277,7 @@ void ExtensionApps::Initialize(
 
   prefs_observer_.Add(extensions::ExtensionPrefs::Get(profile_));
   registry_observer_.Add(extensions::ExtensionRegistry::Get(profile_));
+  app_window_registry_.Add(extensions::AppWindowRegistry::Get(profile_));
   content_settings_observer_.Add(
       HostContentSettingsMapFactory::GetForProfile(profile_));
 }
@@ -616,6 +646,17 @@ void ExtensionApps::OnContentSettingChanged(
       Publish(std::move(app));
     }
   }
+}
+
+void ExtensionApps::OnAppWindowAdded(extensions::AppWindow* app_window) {
+  RegisterInstance(app_window, InstanceState::kStarted);
+}
+
+void ExtensionApps::OnAppWindowShown(extensions::AppWindow* app_window,
+                                     bool was_hidden) {
+  RegisterInstance(app_window,
+                   static_cast<InstanceState>(InstanceState::kStarted |
+                                              InstanceState::kRunning));
 }
 
 void ExtensionApps::OnExtensionLastLaunchTimeChanged(
@@ -1051,6 +1092,43 @@ void ExtensionApps::SetIconEffect(const std::string& app_id) {
   app->app_id = app_id;
   app->icon_key = icon_key_factory_.MakeIconKey(GetIconEffects(extension));
   Publish(std::move(app));
+}
+
+void ExtensionApps::RegisterInstance(extensions::AppWindow* app_window,
+                                     InstanceState new_state) {
+  if (!base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry)) {
+    return;
+  }
+
+  if (!instance_registry_ || !app_window) {
+    return;
+  }
+  const extensions::Extension* extension = app_window->GetExtension();
+  if (!extension) {
+    return;
+  }
+  if (!Accepts(extension)) {
+    return;
+  }
+
+  InstanceState state = InstanceState::kUnknown;
+  instance_registry_->ForOneInstance(
+      app_window->GetNativeWindow(),
+      [&state](const apps::InstanceUpdate& update) { state = update.State(); });
+
+  // If |state| has been marked as |new_state|, we don't need to update.
+  if ((state & new_state) == new_state) {
+    return;
+  }
+
+  std::vector<std::unique_ptr<apps::Instance>> deltas;
+  auto instance = std::make_unique<apps::Instance>(
+      app_window->extension_id(), app_window->GetNativeWindow());
+  instance->SetLaunchId(GetLaunchId(app_window));
+  instance->UpdateState(static_cast<InstanceState>(state | new_state),
+                        base::Time::Now());
+  deltas.push_back(std::move(instance));
+  instance_registry_->OnInstances(deltas);
 }
 
 }  // namespace apps

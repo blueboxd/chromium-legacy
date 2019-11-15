@@ -11,6 +11,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/events/devices/device_hotplug_event_observer.h"
@@ -91,7 +92,7 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
   void ClearTouchDeviceAssociations();
   void UpdateTouchInfoFromTransform(
       const ui::TouchDeviceTransform& touch_device_transform);
-  bool IsTouchDeviceIdValid(int touch_device_id) const;
+  void UpdateTouchMap();
 
   void NotifyObserversTouchscreenDeviceConfigurationChanged();
   void NotifyObserversKeyboardDeviceConfigurationChanged();
@@ -117,10 +118,8 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
   // Set to true when ConfigureTouchDevices() is called.
   bool are_touchscreen_target_displays_valid_ = false;
 
-  // Contains touchscreen device info for each device mapped by device ID. Will
-  // have default values if the device with corresponding ID isn't a touchscreen
-  // or doesn't exist.
-  std::array<TouchDeviceTransform, kMaxDeviceNum> touch_map_;
+  // Contains touchscreen device info for each device mapped by device ID.
+  base::flat_map<int, TouchDeviceTransform> touch_map_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceDataManager);
 };

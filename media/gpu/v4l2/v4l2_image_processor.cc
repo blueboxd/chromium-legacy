@@ -9,6 +9,8 @@
 #include <sys/eventfd.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
+
+#include <limits>
 #include <tuple>
 #include <utility>
 
@@ -17,7 +19,11 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
-#include "media/base/bind_to_current_loop.h"
+#include "base/sequenced_task_runner.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/task/post_task.h"
+#include "base/task/task_traits.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "media/base/color_plane_layout.h"
 #include "media/base/scopedfd_helper.h"
 #include "media/base/video_types.h"
@@ -47,11 +53,13 @@
 
 namespace media {
 
-V4L2ImageProcessor::JobRecord::JobRecord() = default;
+V4L2ImageProcessor::JobRecord::JobRecord()
+    : output_buffer_id(std::numeric_limits<size_t>::max()) {}
 
 V4L2ImageProcessor::JobRecord::~JobRecord() = default;
 
 V4L2ImageProcessor::V4L2ImageProcessor(
+    scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     scoped_refptr<V4L2Device> device,
     const ImageProcessor::PortConfig& input_config,
     const ImageProcessor::PortConfig& output_config,
@@ -64,26 +72,97 @@ V4L2ImageProcessor::V4L2ImageProcessor(
       input_memory_type_(input_memory_type),
       output_memory_type_(output_memory_type),
       device_(device),
-      device_thread_("V4L2ImageProcessorThread"),
-      device_poll_thread_("V4L2ImageProcessorDevicePollThread"),
+      client_task_runner_(std::move(client_task_runner)),
+      device_task_runner_(
+          base::CreateSingleThreadTaskRunner({base::ThreadPool()})),
+      // We poll V4L2 device on this task runner, which blocks the task runner.
+      // Therefore we use dedicated SingleThreadTaskRunner here.
+      poll_task_runner_(base::CreateSingleThreadTaskRunner(
+          {base::ThreadPool()},
+          base::SingleThreadTaskRunnerThreadMode::DEDICATED)),
       num_buffers_(num_buffers),
-      error_cb_(error_cb),
-      weak_this_factory_(this) {
-  DETACH_FROM_THREAD(device_thread_checker_);
+      error_cb_(error_cb) {
+  DVLOGF(2);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+  DETACH_FROM_SEQUENCE(device_sequence_checker_);
+  DETACH_FROM_SEQUENCE(poll_sequence_checker_);
+
+  client_weak_this_ = client_weak_this_factory_.GetWeakPtr();
+  device_weak_this_ = device_weak_this_factory_.GetWeakPtr();
+  poll_weak_this_ = poll_weak_this_factory_.GetWeakPtr();
 }
 
 V4L2ImageProcessor::~V4L2ImageProcessor() {
+  DVLOGF(3);
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
 
-  Destroy();
+  // Don't post a client tasks any more because they are redundant.
+  client_weak_this_factory_.InvalidateWeakPtrs();
 
-  DCHECK(!device_thread_.IsRunning());
-  DCHECK(!device_poll_thread_.IsRunning());
+  // Cancel all pending tasks and then clean up on |device_task_runner_|.
+  process_task_tracker_.TryCancelAll();
+
+  // TODO(akahuang): Change to async destructor to avoid base::WaitableEvent.
+  // Clean up |device_task_runner_|.
+  base::WaitableEvent device_done;
+  device_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&V4L2ImageProcessor::DestroyOnDeviceSequence,
+                     device_weak_this_, base::Unretained(&device_done)));
+  device_done.Wait();
+
+  // After |device_task_runner_| is finished cleaning up, we don't schedule new
+  // DevicePollTask() to |poll_task_runner_|. Now clean up |poll_task_runner_|.
+  base::WaitableEvent poll_done;
+  poll_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&V4L2ImageProcessor::DestroyOnPollSequence,
+                                poll_weak_this_, base::Unretained(&poll_done)));
+  poll_done.Wait();
+}
+
+void V4L2ImageProcessor::DestroyOnDeviceSequence(base::WaitableEvent* event) {
+  VLOGF(2);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(device_sequence_checker_);
+
+  device_weak_this_factory_.InvalidateWeakPtrs();
+
+  if (input_queue_) {
+    input_queue_->Streamoff();
+    input_queue_->DeallocateBuffers();
+    input_queue_ = nullptr;
+  }
+  if (output_queue_) {
+    output_queue_->Streamoff();
+    output_queue_->DeallocateBuffers();
+    output_queue_ = nullptr;
+  }
+
+  // Reset all our accounting info.
+  input_job_queue_ = {};
+  running_jobs_ = {};
+
+  // Stop the running DevicePollTask() if it exists.
+  if (!device_->SetDevicePollInterrupt()) {
+    NotifyError();
+    return;
+  }
+
+  event->Signal();
+}
+
+void V4L2ImageProcessor::DestroyOnPollSequence(base::WaitableEvent* event) {
+  VLOGF(2);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(poll_sequence_checker_);
+
+  poll_weak_this_factory_.InvalidateWeakPtrs();
+
+  event->Signal();
 }
 
 void V4L2ImageProcessor::NotifyError() {
   VLOGF(1);
-  error_cb_.Run();
+
+  client_task_runner_->PostTask(FROM_HERE, error_cb_);
 }
 
 namespace {
@@ -238,7 +317,7 @@ std::unique_ptr<V4L2ImageProcessor> V4L2ImageProcessor::Create(
   }
 
   auto processor = base::WrapUnique(new V4L2ImageProcessor(
-      std::move(device),
+      base::SequencedTaskRunnerHandle::Get(), std::move(device),
       ImageProcessor::PortConfig(input_config.fourcc, negotiated_input_size,
                                  input_planes, input_config.visible_size,
                                  {input_storage_type}),
@@ -246,7 +325,7 @@ std::unique_ptr<V4L2ImageProcessor> V4L2ImageProcessor::Create(
                                  output_planes, output_config.visible_size,
                                  {output_storage_type}),
       input_memory_type, output_memory_type, output_mode, num_buffers,
-      media::BindToCurrentLoop(std::move(error_cb))));
+      std::move(error_cb)));
   if (!processor->Initialize()) {
     VLOGF(1) << "Failed to initialize V4L2ImageProcessor";
     return nullptr;
@@ -255,6 +334,9 @@ std::unique_ptr<V4L2ImageProcessor> V4L2ImageProcessor::Create(
 }
 
 bool V4L2ImageProcessor::Initialize() {
+  DVLOGF(2);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+
   // Capabilities check.
   struct v4l2_capability caps;
   memset(&caps, 0, sizeof(caps));
@@ -266,26 +348,24 @@ bool V4L2ImageProcessor::Initialize() {
     return false;
   }
 
-  if (!device_thread_.Start()) {
-    VLOGF(1) << "Initialize(): device thread failed to start";
-    return false;
-  }
-
   // Call to AllocateBuffers must be asynchronous.
   base::WaitableEvent done;
   bool result;
-  device_thread_.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&V4L2ImageProcessor::AllocateBuffersTask,
-                                base::Unretained(this), &result, &done));
+  device_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&V4L2ImageProcessor::AllocateBuffersTask,
+                     device_weak_this_, &result, base::Unretained(&done)));
   done.Wait();
   if (!result) {
     return false;
   }
 
-  // StartDevicePoll will NotifyError on failure.
-  device_thread_.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&V4L2ImageProcessor::StartDevicePoll,
-                                base::Unretained(this)));
+  // Enqueue a poll task with no devices to poll on - will wait only for the
+  // poll interrupt.
+  DVLOGF(3) << "starting device poll";
+  poll_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&V4L2ImageProcessor::DevicePollTask,
+                                poll_weak_this_, false));
 
   VLOGF(2) << "V4L2ImageProcessor initialized for "
            << "input: " << input_config_.ToString()
@@ -374,6 +454,7 @@ bool V4L2ImageProcessor::ProcessInternal(
     scoped_refptr<VideoFrame> frame,
     LegacyFrameReadyCB cb) {
   DVLOGF(4) << "ts=" << frame->timestamp().InMilliseconds();
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
 
   auto job_record = std::make_unique<JobRecord>();
   job_record->input_frame = frame;
@@ -383,11 +464,9 @@ bool V4L2ImageProcessor::ProcessInternal(
     NOTREACHED();
   }
 
-  // Since device_thread_ is owned by this class. base::Unretained(this) and the
-  // raw pointer of that task runner are safe.
   process_task_tracker_.PostTask(
-      device_thread_.task_runner().get(), FROM_HERE,
-      base::BindOnce(&V4L2ImageProcessor::ProcessTask, base::Unretained(this),
+      device_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&V4L2ImageProcessor::ProcessTask, device_weak_this_,
                      std::move(job_record)));
   return true;
 }
@@ -396,6 +475,7 @@ bool V4L2ImageProcessor::ProcessInternal(scoped_refptr<VideoFrame> input_frame,
                                          scoped_refptr<VideoFrame> output_frame,
                                          FrameReadyCB cb) {
   DVLOGF(4) << "ts=" << input_frame->timestamp().InMilliseconds();
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
 
   auto job_record = std::make_unique<JobRecord>();
   job_record->input_frame = std::move(input_frame);
@@ -403,21 +483,23 @@ bool V4L2ImageProcessor::ProcessInternal(scoped_refptr<VideoFrame> input_frame,
   job_record->ready_cb = std::move(cb);
 
   process_task_tracker_.PostTask(
-      device_thread_.task_runner().get(), FROM_HERE,
-      base::BindOnce(&V4L2ImageProcessor::ProcessTask, base::Unretained(this),
+      device_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&V4L2ImageProcessor::ProcessTask, device_weak_this_,
                      std::move(job_record)));
   return true;
 }
 
 void V4L2ImageProcessor::ProcessTask(std::unique_ptr<JobRecord> job_record) {
-  DCHECK_CALLED_ON_VALID_THREAD(device_thread_checker_);
+  DVLOGF(4) << "ts=" << job_record->input_frame->timestamp().InMilliseconds();
+  DCHECK_CALLED_ON_VALID_SEQUENCE(device_sequence_checker_);
 
   input_job_queue_.emplace(std::move(job_record));
   ProcessJobsTask();
 }
 
 void V4L2ImageProcessor::ProcessJobsTask() {
-  DCHECK_CALLED_ON_VALID_THREAD(device_thread_checker_);
+  DVLOGF(4);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(device_sequence_checker_);
 
   while (!input_job_queue_.empty()) {
     // We need one input and one output buffer to schedule the job
@@ -434,39 +516,37 @@ void V4L2ImageProcessor::ProcessJobsTask() {
 }
 
 bool V4L2ImageProcessor::Reset() {
-  VLOGF(2);
+  DVLOGF(3);
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
-  DCHECK(device_thread_.IsRunning());
 
   process_task_tracker_.TryCancelAll();
+  base::WaitableEvent event;
+  device_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&V4L2ImageProcessor::ResetTask,
+                                device_weak_this_, base::Unretained(&event)));
+  event.Wait();
+
+  // Then cancel pending tasks on |client_task_runner_| to avoid returning
+  // frames after reset.
+  client_weak_this_factory_.InvalidateWeakPtrs();
+  client_weak_this_ = client_weak_this_factory_.GetWeakPtr();
+
   return true;
 }
 
-void V4L2ImageProcessor::Destroy() {
-  VLOGF(2);
-  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+void V4L2ImageProcessor::ResetTask(base::WaitableEvent* event) {
+  DVLOGF(3);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(device_sequence_checker_);
 
-  // If the device thread is running, destroy using posted task.
-  if (device_thread_.IsRunning()) {
-    process_task_tracker_.TryCancelAll();
+  input_job_queue_ = {};
+  running_jobs_ = {};
 
-    device_thread_.task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(&V4L2ImageProcessor::StopDevicePoll,
-                                  base::Unretained(this)));
-    device_thread_.task_runner()->PostTask(
-        FROM_HERE, base::BindOnce(&V4L2ImageProcessor::DestroyBuffersTask,
-                                  base::Unretained(this)));
-    // Wait for tasks to finish/early-exit.
-    device_thread_.Stop();
-  } else {
-    // Otherwise DestroyTask() is not needed.
-    DCHECK(!device_poll_thread_.IsRunning());
-  }
+  event->Signal();
 }
 
 bool V4L2ImageProcessor::CreateInputBuffers() {
   VLOGF(2);
-  DCHECK_CALLED_ON_VALID_THREAD(device_thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(device_sequence_checker_);
   DCHECK_EQ(input_queue_, nullptr);
 
   struct v4l2_control control;
@@ -532,7 +612,7 @@ bool V4L2ImageProcessor::CreateInputBuffers() {
 
 bool V4L2ImageProcessor::CreateOutputBuffers() {
   VLOGF(2);
-  DCHECK_CALLED_ON_VALID_THREAD(device_thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(device_sequence_checker_);
   DCHECK_EQ(output_queue_, nullptr);
 
   struct v4l2_rect visible_rect;
@@ -576,7 +656,7 @@ bool V4L2ImageProcessor::CreateOutputBuffers() {
 
 void V4L2ImageProcessor::DevicePollTask(bool poll_device) {
   DVLOGF(4);
-  DCHECK(device_poll_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(poll_sequence_checker_);
 
   bool event_pending;
   if (!device_->Poll(poll_device, &event_pending)) {
@@ -586,22 +666,14 @@ void V4L2ImageProcessor::DevicePollTask(bool poll_device) {
 
   // All processing should happen on ServiceDeviceTask(), since we shouldn't
   // touch processor state from this thread.
-  device_thread_.task_runner()->PostTask(
+  device_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&V4L2ImageProcessor::ServiceDeviceTask,
-                                base::Unretained(this)));
+                                device_weak_this_));
 }
 
 void V4L2ImageProcessor::ServiceDeviceTask() {
   DVLOGF(4);
-  DCHECK_CALLED_ON_VALID_THREAD(device_thread_checker_);
-  // ServiceDeviceTask() should only ever be scheduled from DevicePollTask(),
-  // so either:
-  // * device_poll_thread_ is running normally
-  // * device_poll_thread_ scheduled us, but then a DestroyTask() shut it down,
-  //   in which case we should early-out.
-  if (!device_poll_thread_.task_runner())
-    return;
-
+  DCHECK_CALLED_ON_VALID_SEQUENCE(device_sequence_checker_);
   DCHECK(input_queue_);
 
   Dequeue();
@@ -615,9 +687,9 @@ void V4L2ImageProcessor::ServiceDeviceTask() {
   bool poll_device = (input_queue_->QueuedBuffersCount() > 0 ||
                       output_queue_->QueuedBuffersCount() > 0);
 
-  device_poll_thread_.task_runner()->PostTask(
+  poll_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&V4L2ImageProcessor::DevicePollTask,
-                                base::Unretained(this), poll_device));
+                                poll_weak_this_, poll_device));
 
   DVLOGF(3) << __func__ << ": buffer counts: INPUT[" << input_job_queue_.size()
             << "] => DEVICE[" << input_queue_->FreeBuffersCount() << "+"
@@ -631,7 +703,7 @@ void V4L2ImageProcessor::ServiceDeviceTask() {
 
 void V4L2ImageProcessor::EnqueueInput(const JobRecord* job_record) {
   DVLOGF(4);
-  DCHECK_CALLED_ON_VALID_THREAD(device_thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(device_sequence_checker_);
   DCHECK(input_queue_);
 
   const size_t old_inputs_queued = input_queue_->QueuedBuffersCount();
@@ -651,9 +723,9 @@ void V4L2ImageProcessor::EnqueueInput(const JobRecord* job_record) {
   }
 }
 
-void V4L2ImageProcessor::EnqueueOutput(const JobRecord* job_record) {
+void V4L2ImageProcessor::EnqueueOutput(JobRecord* job_record) {
   DVLOGF(4);
-  DCHECK_CALLED_ON_VALID_THREAD(device_thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(device_sequence_checker_);
   DCHECK(output_queue_);
 
   const int old_outputs_queued = output_queue_->QueuedBuffersCount();
@@ -673,8 +745,22 @@ void V4L2ImageProcessor::EnqueueOutput(const JobRecord* job_record) {
   }
 }
 
-void V4L2ImageProcessor::V4L2VFDestructionObserver(V4L2ReadableBufferRef buf) {
-  DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
+// static
+void V4L2ImageProcessor::V4L2VFRecycleThunk(
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    base::Optional<base::WeakPtr<V4L2ImageProcessor>> image_processor,
+    V4L2ReadableBufferRef buf) {
+  DVLOGF(4);
+  DCHECK(image_processor);
+
+  task_runner->PostTask(FROM_HERE,
+                        base::BindOnce(&V4L2ImageProcessor::V4L2VFRecycleTask,
+                                       *image_processor, std::move(buf)));
+}
+
+void V4L2ImageProcessor::V4L2VFRecycleTask(V4L2ReadableBufferRef buf) {
+  DVLOGF(4);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(device_sequence_checker_);
 
   // Release the buffer reference so we can directly call ProcessJobsTask()
   // knowing that we have an extra output buffer.
@@ -693,7 +779,7 @@ void V4L2ImageProcessor::V4L2VFDestructionObserver(V4L2ReadableBufferRef buf) {
 
 void V4L2ImageProcessor::Dequeue() {
   DVLOGF(4);
-  DCHECK_CALLED_ON_VALID_THREAD(device_thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(device_sequence_checker_);
   DCHECK(input_queue_);
   DCHECK(output_queue_);
   DCHECK(input_queue_->IsStreaming());
@@ -730,7 +816,11 @@ void V4L2ImageProcessor::Dequeue() {
     }
 
     // Jobs are always processed in FIFO order.
-    DCHECK(!running_jobs_.empty());
+    if (running_jobs_.empty() ||
+        running_jobs_.front()->output_buffer_id != buffer->BufferId()) {
+      DVLOGF(3) << "previous Reset() abondoned the job, ignore.";
+      continue;
+    }
     std::unique_ptr<JobRecord> job_record = std::move(running_jobs_.front());
     running_jobs_.pop();
 
@@ -744,9 +834,11 @@ void V4L2ImageProcessor::Dequeue() {
           output_frame = VideoFrame::WrapVideoFrame(
               orig_frame, orig_frame->format(), orig_frame->visible_rect(),
               orig_frame->natural_size());
-          output_frame->AddDestructionObserver(BindToCurrentLoop(
-              base::BindOnce(&V4L2ImageProcessor::V4L2VFDestructionObserver,
-                             weak_this_factory_.GetWeakPtr(), buffer)));
+          // Because VideoFrame destruction callback might be executed on any
+          // sequence, we use a thunk to post the task to |device_task_runner_|.
+          output_frame->AddDestructionObserver(
+              base::BindOnce(&V4L2ImageProcessor::V4L2VFRecycleThunk,
+                             device_task_runner_, device_weak_this_, buffer));
         }
         break;
 
@@ -761,17 +853,34 @@ void V4L2ImageProcessor::Dequeue() {
 
     output_frame->set_timestamp(job_record->input_frame->timestamp());
 
+    base::OnceClosure output_cb;
     if (!job_record->legacy_ready_cb.is_null()) {
-      std::move(job_record->legacy_ready_cb)
-          .Run(buffer->BufferId(), std::move(output_frame));
+      output_cb = base::BindOnce(std::move(job_record->legacy_ready_cb),
+                                 buffer->BufferId(), std::move(output_frame));
     } else {
-      std::move(job_record->ready_cb).Run(std::move(output_frame));
+      output_cb = base::BindOnce(std::move(job_record->ready_cb),
+                                 std::move(output_frame));
     }
+    // The task might be cancelled when Reset() is called and then
+    // |client_weak_this_| becomes invalid.
+    client_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&V4L2ImageProcessor::OutputFrameOnClientSequence,
+                       client_weak_this_, std::move(output_cb)));
   }
+}
+
+void V4L2ImageProcessor::OutputFrameOnClientSequence(
+    base::OnceClosure output_cb) {
+  DVLOGF(4);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+
+  std::move(output_cb).Run();
 }
 
 bool V4L2ImageProcessor::EnqueueInputRecord(const JobRecord* job_record) {
   DVLOGF(4);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(device_sequence_checker_);
   DCHECK(input_queue_);
   DCHECK_GT(input_queue_->FreeBuffersCount(), 0u);
 
@@ -808,12 +917,15 @@ bool V4L2ImageProcessor::EnqueueInputRecord(const JobRecord* job_record) {
   return true;
 }
 
-bool V4L2ImageProcessor::EnqueueOutputRecord(const JobRecord* job_record) {
+bool V4L2ImageProcessor::EnqueueOutputRecord(JobRecord* job_record) {
   DVLOGF(4);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(device_sequence_checker_);
   DCHECK_GT(output_queue_->FreeBuffersCount(), 0u);
 
   V4L2WritableBufferRef buffer(output_queue_->GetFreeBuffer());
   DCHECK(buffer.IsValid());
+
+  job_record->output_buffer_id = buffer.BufferId();
 
   switch (buffer.Memory()) {
     case V4L2_MEMORY_MMAP:
@@ -830,75 +942,10 @@ bool V4L2ImageProcessor::EnqueueOutputRecord(const JobRecord* job_record) {
 void V4L2ImageProcessor::AllocateBuffersTask(bool* result,
                                              base::WaitableEvent* done) {
   VLOGF(2);
-  DCHECK_CALLED_ON_VALID_THREAD(device_thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(device_sequence_checker_);
 
   *result = CreateInputBuffers() && CreateOutputBuffers();
   done->Signal();
-}
-
-void V4L2ImageProcessor::DestroyBuffersTask() {
-  VLOGF(2);
-  DCHECK_CALLED_ON_VALID_THREAD(device_thread_checker_);
-
-  weak_this_factory_.InvalidateWeakPtrs();
-
-  // We may be destroyed before we allocate any buffer.
-  if (input_queue_)
-    input_queue_->DeallocateBuffers();
-  if (output_queue_)
-    output_queue_->DeallocateBuffers();
-  input_queue_ = nullptr;
-  output_queue_ = nullptr;
-}
-
-void V4L2ImageProcessor::StartDevicePoll() {
-  DVLOGF(3) << "starting device poll";
-  DCHECK_CALLED_ON_VALID_THREAD(device_thread_checker_);
-  DCHECK(!device_poll_thread_.IsRunning());
-
-  // Start up the device poll thread and schedule its first DevicePollTask().
-  if (!device_poll_thread_.Start()) {
-    VLOGF(1) << "StartDevicePoll(): Device thread failed to start";
-    NotifyError();
-    return;
-  }
-  // Enqueue a poll task with no devices to poll on - will wait only for the
-  // poll interrupt
-  device_poll_thread_.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&V4L2ImageProcessor::DevicePollTask,
-                                base::Unretained(this), false));
-}
-
-void V4L2ImageProcessor::StopDevicePoll() {
-  DVLOGF(3) << "stopping device poll";
-  DCHECK_CALLED_ON_VALID_THREAD(device_thread_checker_);
-
-  // Signal the DevicePollTask() to stop, and stop the device poll thread.
-  bool result = device_->SetDevicePollInterrupt();
-  device_poll_thread_.Stop();
-  if (!result) {
-    NotifyError();
-    return;
-  }
-
-  // Clear the interrupt now, to be sure.
-  if (!device_->ClearDevicePollInterrupt()) {
-    NotifyError();
-    return;
-  }
-
-  if (input_queue_)
-    input_queue_->Streamoff();
-
-  if (output_queue_)
-    output_queue_->Streamoff();
-
-  // Reset all our accounting info.
-  while (!input_job_queue_.empty())
-    input_job_queue_.pop();
-
-  while (!running_jobs_.empty())
-    running_jobs_.pop();
 }
 
 }  // namespace media

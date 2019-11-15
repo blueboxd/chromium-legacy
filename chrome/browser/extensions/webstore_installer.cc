@@ -391,7 +391,7 @@ void WebstoreInstaller::OnExtensionInstalled(
     download_item_->Remove();
     download_item_ = NULL;
   }
-  crx_installer_ = NULL;
+  crx_installer_.reset();
 
   if (pending_modules_.empty()) {
     CHECK_EQ(extension->id(), id_);

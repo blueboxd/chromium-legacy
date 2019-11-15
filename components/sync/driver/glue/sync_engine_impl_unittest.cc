@@ -37,8 +37,7 @@
 #include "components/sync/engine/cycle/update_counters.h"
 #include "components/sync/engine/fake_sync_manager.h"
 #include "components/sync/engine/model_safe_worker.h"
-#include "components/sync/engine/net/http_bridge_network_resources.h"
-#include "components/sync/engine/net/network_resources.h"
+#include "components/sync/engine/net/http_bridge.h"
 #include "components/sync/engine/passive_model_worker.h"
 #include "components/sync/engine/sync_engine_host_stub.h"
 #include "components/sync/engine/sync_manager_factory.h"
@@ -167,6 +166,13 @@ class MockInvalidationService : public invalidation::InvalidationService {
                           void(const base::DictionaryValue&)> post_caller));
 };
 
+std::unique_ptr<HttpPostProviderFactory> CreateHttpBridgeFactory() {
+  return std::make_unique<HttpBridgeFactory>(
+      /*user_agent=*/"",
+      /*url_loader_factory_info=*/nullptr,
+      /*network_time_update_callback=*/base::DoNothing());
+}
+
 class SyncEngineImplTest : public testing::Test {
  protected:
   SyncEngineImplTest()
@@ -204,8 +210,6 @@ class SyncEngineImplTest : public testing::Test {
     enabled_types_.Put(SESSIONS);
     enabled_types_.Put(SEARCH_ENGINES);
     enabled_types_.Put(AUTOFILL);
-
-    network_resources_ = std::make_unique<HttpBridgeNetworkResources>();
   }
 
   void TearDown() override {
@@ -222,18 +226,13 @@ class SyncEngineImplTest : public testing::Test {
   // Synchronously initializes the backend.
   void InitializeBackend(bool expect_success) {
     host_.SetExpectSuccess(expect_success);
-    SyncEngine::HttpPostProviderFactoryGetter
-        http_post_provider_factory_getter =
-            base::BindOnce(&NetworkResources::GetHttpPostProviderFactory,
-                           base::Unretained(network_resources_.get()), "",
-                           nullptr, base::DoNothing());
 
     SyncEngine::InitParams params;
     params.sync_task_runner = sync_thread_.task_runner();
     params.host = &host_;
     params.registrar = std::make_unique<SyncBackendRegistrar>(
         std::string(), base::Bind(&CreateModelWorkerForGroup));
-    params.http_factory_getter = std::move(http_post_provider_factory_getter);
+    params.http_factory_getter = base::BindOnce(&CreateHttpBridgeFactory);
     params.authenticated_account_id = CoreAccountId("account_id");
     params.sync_manager_factory = std::move(fake_manager_factory_);
     params.unrecoverable_error_handler =
@@ -310,7 +309,6 @@ class SyncEngineImplTest : public testing::Test {
   FakeSyncManager* fake_manager_;
   ModelTypeSet engine_types_;
   ModelTypeSet enabled_types_;
-  std::unique_ptr<NetworkResources> network_resources_;
   base::OnceClosure quit_loop_;
   testing::NiceMock<MockInvalidationService> invalidator_;
 };

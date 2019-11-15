@@ -443,7 +443,7 @@ This file contains the strings for ash.
         deactivated
       </message>
       <message name="IDS_ASH_ACCESSIBILITY_FEATURE_MANAGED"
-               desc="The label used to indicate that, the accessiblity feature is being managed by a policy.">
+               desc="The label used to indicate that, the accessibility feature is being managed by a policy.">
         <ph name="FEATURE_NAME">$1<ex>Full-screen magnifier</ex></ph> This setting is enforced by your administrator.
       </message>
 

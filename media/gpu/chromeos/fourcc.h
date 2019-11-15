@@ -115,6 +115,7 @@ class MEDIA_GPU_EXPORT Fourcc {
   // Constructor for invalid Fourcc.
   Fourcc();
   explicit Fourcc(Fourcc::Value fourcc);
+  Fourcc& operator=(const Fourcc& fourcc);
   ~Fourcc();
 
   bool operator==(const Fourcc& rhs) const { return value_ == rhs.value_; }
@@ -163,7 +164,7 @@ class MEDIA_GPU_EXPORT Fourcc {
   std::string ToString() const;
 
  private:
-  const Value value_;
+  Value value_;
 };
 
 MEDIA_GPU_EXPORT bool operator==(uint32_t lhs, const Fourcc& rhs);

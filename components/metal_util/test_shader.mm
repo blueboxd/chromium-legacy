@@ -10,6 +10,7 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
 #include "components/metal_util/device.h"
@@ -39,7 +40,7 @@ const char* kTestShaderSource =
     "}\n"
     "\n"
     "fragment float4 fragmentShader(RasterizerData in [[stage_in]]) {\n"
-    "    return in.color;\n"
+    "    return %f * in.color;\n"
     "}\n"
     "";
 
@@ -68,13 +69,17 @@ class API_AVAILABLE(macos(10.11)) TestShaderState
 
 }  // namespace
 
-void TestShader(TestShaderCallback callback, const base::TimeDelta& timeout) {
+void TestShader(float seed,
+                TestShaderCallback callback,
+                const base::TimeDelta& timeout) {
   if (@available(macOS 10.11, *)) {
     base::scoped_nsprotocol<id<MTLDevice>> device(CreateDefaultDevice());
     if (device) {
       auto state = base::MakeRefCounted<TestShaderState>(std::move(callback));
+      const std::string shader_source =
+          base::StringPrintf(kTestShaderSource, seed);
       base::scoped_nsobject<NSString> source([[NSString alloc]
-          initWithCString:kTestShaderSource
+          initWithCString:shader_source.c_str()
                  encoding:NSASCIIStringEncoding]);
       base::scoped_nsobject<MTLCompileOptions> options(
           [[MTLCompileOptions alloc] init]);

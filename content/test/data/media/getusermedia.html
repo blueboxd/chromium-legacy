@@ -59,32 +59,6 @@
         .catch(error => { sendValueToTest(error.name); });
   }
 
-  // Requests getusermedia and sets it up to test audio muting callbacks.
-  function getUserMediaForAudioMutingTest(initial_muted_state) {
-    console.log('Calling getUserMediaForAudioMutingTest.');
-    navigator.mediaDevices.getUserMedia({audio: true})
-        .then(stream => {
-          var track = stream.getAudioTracks()[0];
-          track.onmute = function(event) {
-            cancelTestTimeout();
-            sendValueToTest("onmute: muted="+ track.muted.toString() +
-                            ", readyState=" + track.readyState);
-          }
-          track.onunmute = function(event) {
-            cancelTestTimeout();
-            sendValueToTest("onunmute: muted="+ track.muted.toString() +
-                              ", readyState=" + track.readyState);
-          }
-          if (track.muted == initial_muted_state) {
-            reportTestSuccess();
-          } else {
-            failTest("Expected track.muted to be: " + initial_muted_state +
-                     ", was: " + track.muted);
-          }
-        })
-        .catch(failTest);
-  }
-
   function renderClonedMediastreamAndStop(constraints, waitTimeInSeconds) {
     console.log('Calling renderClonedMediastreamAndStop.');
     navigator.mediaDevices.getUserMedia(constraints)

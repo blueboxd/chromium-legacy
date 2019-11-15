@@ -949,6 +949,9 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_AUTOMATIC_DOWNLOADS_PERMISSION_TITLE" desc="Title of the permission that allows websites to download multiple files automatically.">
         Automatic downloads
       </message>
+      <message name="IDS_LEGACY_COOKIE_ACCESS_PERMISSION_TITLE" desc="Title of the permission that allows websites to use less-secure legacy rules for accessing cookies in a third-party context.">
+        Legacy cookie access
+      </message>
       <message name="IDS_WEBSITE_SETTINGS_ADD_SITE" desc="The label for the button to add a new website to the exception list.">
         Add site exception
       </message>
@@ -975,6 +978,9 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
       <message name="IDS_WEBSITE_SETTINGS_ADD_SITE_DESCRIPTION_AUTOMATIC_DOWNLOADS" desc="The description for the allow Automatic Downloads for website dialog.">
         Allow a site to download multiple files automatically.
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_ADD_SITE_DESCRIPTION_LEGACY_COOKIE_ACCESS" desc="The description for the allow Legacy Cookie Access for website dialog.">
+        Allow a site to use less-secure legacy rules for accessing cookies in a third-party context.
       </message>
       <message name="IDS_WEBSITE_SETTINGS_ADD_SITE_DESCRIPTION_COOKIES_ALLOW" desc="The description for the allow Cookies for website dialog.">
         Allow cookies for a specific site.

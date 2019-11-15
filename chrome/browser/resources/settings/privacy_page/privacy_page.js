@@ -120,25 +120,6 @@ Polymer({
     },
 
     /** @private */
-    privacySettingsRedesignEnabled_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('privacySettingsRedesignEnabled');
-      },
-    },
-
-    /**
-     * Whether the more settings list is opened.
-     * @private
-     */
-    moreOpened_: {
-      type: Boolean,
-      value: function() {
-        return !loadTimeData.getBoolean('privacySettingsRedesignEnabled');
-      },
-    },
-
-    /** @private */
     enableBlockAutoplayContentSetting_: {
       type: Boolean,
       value: function() {
@@ -499,22 +480,6 @@ Polymer({
   onRestartTap_: function(e) {
     e.stopPropagation();
     settings.LifetimeBrowserProxyImpl.getInstance().restart();
-  },
-
-  /**
-   * @return {string}
-   * @private
-   */
-  getIronCollapseCssClass_: function() {
-    return this.privacySettingsRedesignEnabled_ ? 'iron-collapse-indented' : '';
-  },
-
-  /**
-   * @return {string}
-   * @private
-   */
-  getTopBarCssClass_: function() {
-    return this.privacySettingsRedesignEnabled_ ? 'settings-box first' : '';
   },
 });
 })();

@@ -5,16 +5,22 @@
 #include "android_webview/lib/webview_jni_onload.h"
 #include "base/android/jni_android.h"
 #include "base/android/library_loader/library_loader_hooks.h"
+
+#if defined(WEBVIEW_INCLUDES_WEBLAYER)
 #include "weblayer/app/jni_onload.h"
+#endif
 
 namespace {
 
 bool NativeInit(base::android::LibraryProcessType library_process_type) {
   switch (library_process_type) {
+#if defined(WEBVIEW_INCLUDES_WEBLAYER)
     case base::android::PROCESS_WEBLAYER:
     case base::android::PROCESS_WEBLAYER_CHILD:
       return weblayer::OnJNIOnLoadInit();
       break;
+#endif
+
     default:
       return android_webview::OnJNIOnLoadInit();
   }

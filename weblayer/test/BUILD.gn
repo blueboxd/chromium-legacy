@@ -94,6 +94,8 @@ test("weblayer_browsertests") {
     "browsertests_main.cc",
     "interstitial_utils.cc",
     "interstitial_utils.h",
+    "load_completion_observer.cc",
+    "load_completion_observer.h",
     "test_launcher_delegate_impl.cc",
     "test_launcher_delegate_impl.h",
     "test_navigation_observer.cc",

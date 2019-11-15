@@ -196,10 +196,9 @@ class LocalCardMigrationBrowserTest
 
     ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(
         browser()->profile())
-        ->OverrideNetworkResourcesForTest(
-            std::make_unique<fake_server::FakeServerNetworkResources>(
+        ->OverrideNetworkForTest(
+            fake_server::CreateFakeServerHttpPostProviderFactory(
                 GetFakeServer()->AsWeakPtr()));
-
     std::string username;
 #if defined(OS_CHROMEOS)
     // In ChromeOS browser tests, the profile may already by authenticated with

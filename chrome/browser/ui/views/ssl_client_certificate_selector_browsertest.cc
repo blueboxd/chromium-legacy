@@ -106,7 +106,7 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
 
     io_loop_finished_event_.Wait();
 
-    auth_requestor_ = NULL;
+    auth_requestor_.reset();
   }
 
   virtual void CleanUpOnIOThread() {
@@ -188,8 +188,8 @@ class SSLClientCertificateSelectorMultiTabTest
   }
 
   void TearDownOnMainThread() override {
-    auth_requestor_2_ = NULL;
-    auth_requestor_1_ = NULL;
+    auth_requestor_2_.reset();
+    auth_requestor_1_.reset();
     SSLClientCertificateSelectorTest::TearDownOnMainThread();
   }
 
@@ -254,7 +254,7 @@ class SSLClientCertificateSelectorMultiProfileTest
   }
 
   void TearDownOnMainThread() override {
-    auth_requestor_1_ = NULL;
+    auth_requestor_1_.reset();
     SSLClientCertificateSelectorTest::TearDownOnMainThread();
   }
 

@@ -13,7 +13,6 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/single_thread_task_runner.h"
@@ -114,11 +113,6 @@ class CONTENT_EXPORT ChildThreadImpl
   IPC::MessageRouter* GetRouter();
 
   mojom::RouteProvider* GetRemoteRouteProvider();
-
-  // Allocates a block of shared memory of the given size. Returns nullptr on
-  // failure.
-  static std::unique_ptr<base::SharedMemory> AllocateSharedMemory(
-      size_t buf_size);
 
   IPC::SyncMessageFilter* sync_message_filter() const {
     return sync_message_filter_.get();

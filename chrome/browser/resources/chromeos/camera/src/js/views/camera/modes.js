@@ -71,6 +71,11 @@ cca.views.camera.PhotoResult;
  */
 
 /**
+ * Callback for playing shutter effect.
+ * @callback PlayShutterEffect
+ */
+
+/**
  * Capture modes.
  * @enum {string}
  */
@@ -90,11 +95,12 @@ cca.views.camera.Mode = {
  * @param {!DoSavePhoto} doSavePhoto
  * @param {!CreateVideoSaver} createVideoSaver
  * @param {!DoSaveVideo} doSaveVideo
+ * @param {!PlayShutterEffect} playShutterEffect
  * @constructor
  */
 cca.views.camera.Modes = function(
     defaultMode, photoPreferrer, videoPreferrer, doSwitchMode, doSavePhoto,
-    createVideoSaver, doSaveVideo) {
+    createVideoSaver, doSaveVideo, playShutterEffect) {
   /**
    * @type {!DoSwitchMode}
    * @private
@@ -143,7 +149,8 @@ cca.views.camera.Modes = function(
     },
     'photo-mode': {
       captureFactory: () => new cca.views.camera.Photo(
-          this.stream_, doSavePhoto, this.captureResolution_),
+          this.stream_, doSavePhoto, this.captureResolution_,
+          playShutterEffect),
       isSupported: async () => true,
       resolutionConfig: photoPreferrer,
       v1Config: cca.views.camera.Modes.getV1Constraints.bind(this, false),
@@ -152,7 +159,8 @@ cca.views.camera.Modes = function(
     },
     'square-mode': {
       captureFactory: () => new cca.views.camera.Square(
-          this.stream_, doSavePhoto, this.captureResolution_),
+          this.stream_, doSavePhoto, this.captureResolution_,
+          playShutterEffect),
       isSupported: async () => true,
       resolutionConfig: photoPreferrer,
       v1Config: cca.views.camera.Modes.getV1Constraints.bind(this, false),
@@ -161,7 +169,8 @@ cca.views.camera.Modes = function(
     },
     'portrait-mode': {
       captureFactory: () => new cca.views.camera.Portrait(
-          this.stream_, doSavePhoto, this.captureResolution_),
+          this.stream_, doSavePhoto, this.captureResolution_,
+          playShutterEffect),
       isSupported: async (deviceId) => {
         if (deviceId === null) {
           return false;
@@ -653,9 +662,11 @@ cca.views.camera.Video.prototype.captureVideo_ = async function() {
  * @param {MediaStream} stream
  * @param {!DoSavePhoto} doSavePhoto
  * @param {?[number, number]} captureResolution
+ * @param {!PlayShutterEffect} playShutterEffect
  * @constructor
  */
-cca.views.camera.Photo = function(stream, doSavePhoto, captureResolution) {
+cca.views.camera.Photo = function(
+    stream, doSavePhoto, captureResolution, playShutterEffect) {
   cca.views.camera.ModeBase.call(this, stream, captureResolution);
 
   /**
@@ -667,10 +678,10 @@ cca.views.camera.Photo = function(stream, doSavePhoto, captureResolution) {
 
   /**
    * ImageCapture object to capture still photos.
-   * @type {?ImageCapture}
+   * @type {?cca.mojo.ImageCapture}
    * @private
    */
-  this.imageCapture_ = null;
+  this.crosImageCapture_ = null;
 
   /**
    * The observer id for saving metadata.
@@ -685,6 +696,13 @@ cca.views.camera.Photo = function(stream, doSavePhoto, captureResolution) {
    * @private
    */
   this.metadataNames_ = [];
+
+  /**
+   * Callback for playing shutter effect.
+   * @type {!PlayShutterEffect}
+   * @protected
+   */
+  this.playShutterEffect_ = playShutterEffect;
 };
 
 cca.views.camera.Photo.prototype = {
@@ -695,14 +713,9 @@ cca.views.camera.Photo.prototype = {
  * @override
  */
 cca.views.camera.Photo.prototype.start_ = async function() {
-  cca.sound.play('#sound-shutter');
-  if (this.imageCapture_ === null) {
-    try {
-      this.imageCapture_ = new ImageCapture(this.stream_.getVideoTracks()[0]);
-    } catch (e) {
-      cca.toast.show('error_msg_take_photo_failed');
-      throw e;
-    }
+  if (this.crosImageCapture_ === null) {
+    this.crosImageCapture_ =
+        new cca.mojo.ImageCapture(this.stream_.getVideoTracks()[0]);
   }
 
   const imageName = (new cca.models.Filenamer()).newImageName();
@@ -716,7 +729,6 @@ cca.views.camera.Photo.prototype.start_ = async function() {
     cca.toast.show('error_msg_take_photo_failed');
     throw e;
   }
-
   await this.doSavePhoto_(result, imageName);
 };
 
@@ -733,15 +745,23 @@ cca.views.camera.Photo.prototype.createPhotoResult_ = async function() {
       imageHeight: this.captureResolution_[1],
     };
   } else {
-    const caps = await this.imageCapture_.getPhotoCapabilities();
+    const caps = await this.crosImageCapture_.getPhotoCapabilities();
     photoSettings = {
       imageWidth: caps.imageWidth.max,
       imageHeight: caps.imageHeight.max,
     };
   }
-  const blob = await this.imageCapture_.takePhoto(photoSettings);
-  const {width, height} = await cca.util.blobToImage(blob);
-  return {resolution: {width, height}, blob};
+
+  try {
+    const results = await this.crosImageCapture_.takePhoto(photoSettings);
+    this.playShutterEffect_();
+    const blob = await results[0];
+    const {width, height} = await cca.util.blobToImage(blob);
+    return {resolution: {width, height}, blob};
+  } catch (e) {
+    cca.toast.show('error_msg_take_photo_failed');
+    throw e;
+  }
 };
 
 /**
@@ -820,10 +840,13 @@ cca.views.camera.Photo.prototype.removeMetadataObserver = async function() {
  * @param {MediaStream} stream
  * @param {!DoSavePhoto} doSavePhoto
  * @param {?[number, number]} captureResolution
+ * @param {!PlayShutterEffect} playShutterEffect
  * @constructor
  */
-cca.views.camera.Square = function(stream, doSavePhoto, captureResolution) {
-  cca.views.camera.Photo.call(this, stream, doSavePhoto, captureResolution);
+cca.views.camera.Square = function(
+    stream, doSavePhoto, captureResolution, playShutterEffect) {
+  cca.views.camera.Photo.call(
+      this, stream, doSavePhoto, captureResolution, playShutterEffect);
 
   /**
    * Photo saving callback from parent.
@@ -878,17 +901,13 @@ cca.views.camera.Square.prototype.cropSquare = async function(blob) {
  * @param {MediaStream} stream
  * @param {!DoSavePhoto} doSavePhoto
  * @param {?[number, number]} captureResolution
+ * @param {!PlayShutterEffect} playShutterEffect
  * @constructor
  */
-cca.views.camera.Portrait = function(stream, doSavePhoto, captureResolution) {
-  cca.views.camera.Photo.call(this, stream, doSavePhoto, captureResolution);
-
-  /**
-   * ImageCapture object to capture still photos.
-   * @type {?cca.mojo.ImageCapture}
-   * @private
-   */
-  this.crosImageCapture_ = null;
+cca.views.camera.Portrait = function(
+    stream, doSavePhoto, captureResolution, playShutterEffect) {
+  cca.views.camera.Photo.call(
+      this, stream, doSavePhoto, captureResolution, playShutterEffect);
 
   // End of properties, seal the object.
   Object.seal(this);
@@ -902,23 +921,18 @@ cca.views.camera.Portrait.prototype = {
  * @override
  */
 cca.views.camera.Portrait.prototype.start_ = async function() {
-  cca.sound.play('#sound-shutter');
   if (this.crosImageCapture_ === null) {
-    try {
-      this.crosImageCapture_ =
-          new cca.mojo.ImageCapture(this.stream_.getVideoTracks()[0]);
-    } catch (e) {
-      cca.toast.show('error_msg_take_photo_failed');
-      throw e;
-    }
+    this.crosImageCapture_ =
+        new cca.mojo.ImageCapture(this.stream_.getVideoTracks()[0]);
   }
+
   if (this.captureResolution_) {
     var photoSettings = {
       imageWidth: this.captureResolution_[0],
       imageHeight: this.captureResolution_[1],
     };
   } else {
-    const caps = await this.imageCapture_.getPhotoCapabilities();
+    const caps = await this.crosImageCapture_.getPhotoCapabilities();
     photoSettings = {
       imageWidth: caps.imageWidth.max,
       imageHeight: caps.imageHeight.max,
@@ -936,8 +950,9 @@ cca.views.camera.Portrait.prototype.start_ = async function() {
   }
 
   try {
-    var [reference, portrait] = this.crosImageCapture_.takePhoto(
+    var [reference, portrait] = await this.crosImageCapture_.takePhoto(
         photoSettings, [cros.mojom.Effect.PORTRAIT_MODE]);
+    this.playShutterEffect_();
   } catch (e) {
     cca.toast.show('error_msg_take_photo_failed');
     throw e;

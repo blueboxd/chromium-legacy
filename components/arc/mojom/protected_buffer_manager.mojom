@@ -8,8 +8,8 @@
 module arc.mojom;
 
 // This interface is exposed by the GPU process for translating dummy handles
-// for secure buffers into a usable shared memory handle. The output of a
-// decryption operation can then be written to that shared memory and will be
+// for secure buffers into a usable shared memory buffer handle. The output of
+// a decryption operation can then be written to that shared memory and will be
 // consumed by the video decoder in the GPU.
 // NOTE: This does not use a shared memory handle for the return type
 // because of incompatibilities between Chrome and Chrome OS mojo versions

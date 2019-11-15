@@ -151,7 +151,7 @@ void OnDidCheckMediaForCreateSnapshotFile(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   base::FilePath platform_path(platform_file.get()->path());
   if (error != base::File::FILE_OK)
-    platform_file = NULL;
+    platform_file.reset();
   std::move(callback).Run(error, file_info, platform_path, platform_file);
 }
 

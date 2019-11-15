@@ -12,7 +12,6 @@
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/test/mock_media_router.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
-#include "chrome/browser/ui/extensions/browser_action_test_util.h"
 #include "chrome/browser/ui/media_router/media_router_ui_service.h"
 #include "chrome/browser/ui/media_router/media_router_ui_service_factory.h"
 #include "chrome/browser/ui/toolbar/media_router_action_controller.h"
@@ -70,8 +69,6 @@ class MediaRouterContextualMenuUnitTest : public BrowserWithTestWindowTest {
     identity_test_env_adaptor_ =
         std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile());
 
-    browser_action_test_util_ = BrowserActionTestUtil::Create(browser(), false);
-
     // Pin the Cast icon to the toolbar.
     MediaRouterActionController::SetAlwaysShowActionPref(profile(), true);
 
@@ -84,7 +81,6 @@ class MediaRouterContextualMenuUnitTest : public BrowserWithTestWindowTest {
     // |identity_test_env_adaptor_| must be destroyed before the TestingProfile,
     // which occurs in BrowserWithTestWindowTest::TearDown().
     identity_test_env_adaptor_.reset();
-    browser_action_test_util_.reset();
     BrowserWithTestWindowTest::TearDown();
   }
 
@@ -107,7 +103,6 @@ class MediaRouterContextualMenuUnitTest : public BrowserWithTestWindowTest {
     return identity_test_env_adaptor_->identity_test_env();
   }
 
-  std::unique_ptr<BrowserActionTestUtil> browser_action_test_util_;
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
       identity_test_env_adaptor_;
 

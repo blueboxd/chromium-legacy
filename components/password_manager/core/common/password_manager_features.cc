@@ -59,7 +59,7 @@ const base::Feature kLeakHistory = {"PasswordLeakHistory",
 // Controls whether to offer manual password generation in the accessory sheet
 // on Android.
 const base::Feature kManualPasswordGenerationAndroid{
-    "ManualPasswordGenerationAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ManualPasswordGenerationAndroid", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables editing saved passwords for Android.
 const base::Feature kPasswordEditingAndroid = {

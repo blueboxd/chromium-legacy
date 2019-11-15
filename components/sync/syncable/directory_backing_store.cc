@@ -714,25 +714,6 @@ bool DirectoryBackingStore::SafeToPurgeOnLoading(
   return false;
 }
 
-bool DirectoryBackingStore::LoadDeleteJournals(JournalIndex* delete_journals) {
-  string select;
-  select.reserve(kUpdateStatementBufferSize);
-  select.append("SELECT ");
-  AppendColumnList(&select);
-  select.append(" FROM deleted_metas");
-
-  sql::Statement s(db_->GetUniqueStatement(select.c_str()));
-
-  while (s.Step()) {
-    std::unique_ptr<EntryKernel> kernel = UnpackEntry(&s);
-    // A null kernel is evidence of external data corruption.
-    if (!kernel)
-      return false;
-    DeleteJournal::AddEntryToJournalIndex(delete_journals, std::move(kernel));
-  }
-  return s.Succeeded();
-}
-
 bool DirectoryBackingStore::LoadInfo(Directory::KernelLoadInfo* info) {
   {
     sql::Statement s(db_->GetUniqueStatement(

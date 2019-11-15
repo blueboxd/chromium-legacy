@@ -35,8 +35,6 @@
 #include "content/browser/browser_interface_broker_impl.h"
 #include "content/browser/can_commit_status.h"
 #include "content/browser/frame_host/back_forward_cache_metrics.h"
-#include "content/browser/renderer_host/media/old_render_frame_audio_input_stream_factory.h"
-#include "content/browser/renderer_host/media/old_render_frame_audio_output_stream_factory.h"
 #include "content/browser/renderer_host/media/render_frame_audio_input_stream_factory.h"
 #include "content/browser/renderer_host/media/render_frame_audio_output_stream_factory.h"
 #include "content/browser/site_instance_impl.h"
@@ -1210,6 +1208,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void EnforceInsecureRequestPolicy(
       blink::WebInsecureRequestPolicy policy) override;
   void EnforceInsecureNavigationsSet(const std::vector<uint32_t>& set) override;
+  void DidChangeActiveSchedulerTrackedFeatures(uint64_t features_mask) override;
 
  protected:
   friend class RenderFrameHostFactory;
@@ -1491,7 +1490,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void UpdateEncoding(const std::string& encoding) override;
   void FrameSizeChanged(const gfx::Size& frame_size) override;
   void DocumentOnLoadCompleted() override;
-  void UpdateActiveSchedulerTrackedFeatures(uint64_t features_mask) override;
   void DidAddMessageToConsole(blink::mojom::ConsoleMessageLevel log_level,
                               const base::string16& message,
                               int32_t line_no,
@@ -2228,19 +2226,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   blink::SuddenTerminationDisablerType
       sudden_termination_disabler_types_enabled_ = 0;
 
-  // We switch between |audio_service_audio_output_stream_factory_| and
-  // |in_content_audio_output_stream_factory_| based on
-  // features::kAudioServiceAudioStreams status.
   base::Optional<RenderFrameAudioOutputStreamFactory>
       audio_service_audio_output_stream_factory_;
-  UniqueAudioOutputStreamFactoryPtr in_content_audio_output_stream_factory_;
-
-  // We switch between |audio_service_audio_input_stream_factory_| and
-  // |in_content_audio_input_stream_factory_| based on
-  // features::kAudioServiceAudioStreams status.
   base::Optional<RenderFrameAudioInputStreamFactory>
       audio_service_audio_input_stream_factory_;
-  UniqueAudioInputStreamFactoryPtr in_content_audio_input_stream_factory_;
 
   // Hosts media::mojom::InterfaceFactory for the RenderFrame and forwards
   // media::mojom::InterfaceFactory calls to the remote "media" service.

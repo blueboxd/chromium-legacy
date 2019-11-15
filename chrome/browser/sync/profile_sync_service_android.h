@@ -10,6 +10,7 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/macros.h"
 #include "components/sync/driver/sync_service_observer.h"
+#include "components/sync/engine/net/http_post_provider_factory.h"
 
 class Profile;
 
@@ -168,20 +169,18 @@ class ProfileSyncServiceAndroid : public syncer::SyncServiceObserver {
 
   // Functionality only available for testing purposes.
 
+  jlong GetProfileSyncServiceForTest(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+
   // Returns a timestamp for when a sync was last executed. The return value is
   // the internal value of base::Time.
   jlong GetLastSyncedTimeForTest(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
-  // Overrides ProfileSyncService's NetworkResources object. This is used to
-  // set up the Sync FakeServer for testing.
-  void OverrideNetworkResourcesForTest(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      jlong network_resources);
-
-  static ProfileSyncServiceAndroid* GetProfileSyncServiceAndroid();
+  void OverrideNetworkForTest(const syncer::CreateHttpPostProviderFactory&
+                                  create_http_post_provider_factory_cb);
 
   void TriggerRefresh(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& obj);

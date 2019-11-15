@@ -69,7 +69,6 @@ class DirectoryBackingStore {
   // NOTE: On success (return value of OPENED), the buckets are populated with
   // newly allocated items, meaning ownership is bestowed upon the caller.
   virtual DirOpenResult Load(Directory::MetahandlesMap* handles_map,
-                             JournalIndex* delete_journals,
                              MetahandleSet* metahandles_to_purge,
                              Directory::KernelLoadInfo* kernel_load_info) = 0;
 
@@ -141,7 +140,6 @@ class DirectoryBackingStore {
   // error.
   bool LoadEntries(Directory::MetahandlesMap* handles_map,
                    MetahandleSet* metahandles_to_purge);
-  bool LoadDeleteJournals(JournalIndex* delete_journals);
   bool LoadInfo(Directory::KernelLoadInfo* info);
 
   enum EntryTable {

@@ -37,7 +37,6 @@
 #include "content/browser/renderer_host/embedded_frame_sink_provider_impl.h"
 #include "content/browser/renderer_host/frame_sink_provider_impl.h"
 #include "content/browser/renderer_host/media/aec_dump_manager_impl.h"
-#include "content/browser/renderer_host/media/renderer_audio_output_stream_factory_context_impl.h"
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/child_process.mojom.h"
 #include "content/common/content_export.h"
@@ -472,9 +471,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Launch the zygote early in the browser startup.
   static void EarlyZygoteLaunch();
 #endif  // defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
-
-  RendererAudioOutputStreamFactoryContext*
-  GetRendererAudioOutputStreamFactoryContext() override;
 
   // Called when a video capture stream or an audio stream is added or removed
   // and used to determine if the process should be backgrounded or not.
@@ -1003,10 +999,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // Indicates whether RenderProcessHostImpl is currently iterating and calling
   // through RenderProcessHostObserver::RenderProcessExited.
   bool within_process_died_observer_;
-
-  std::unique_ptr<RendererAudioOutputStreamFactoryContextImpl,
-                  BrowserThread::DeleteOnIOThread>
-      audio_output_stream_factory_context_;
 
   std::unique_ptr<P2PSocketDispatcherHost> p2p_socket_dispatcher_host_;
 

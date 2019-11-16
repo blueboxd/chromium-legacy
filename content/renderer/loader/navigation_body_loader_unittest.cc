@@ -50,8 +50,7 @@ class NavigationBodyLoaderTest : public ::testing::Test,
     NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
         std::move(common_params), std::move(commit_params), 1 /* request_id */,
         network::mojom::URLResponseHead::New(),
-        mojo::ScopedDataPipeConsumerHandle() /* response_body */,
-        std::move(endpoints),
+        std::move(data_pipe_->consumer_handle), std::move(endpoints),
         blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
         2 /* render_frame_id */, true /* is_main_frame */, &navigation_params);
     loader_ = std::move(navigation_params.body_loader);
@@ -59,8 +58,6 @@ class NavigationBodyLoaderTest : public ::testing::Test,
 
   void StartLoading() {
     loader_->StartLoadingBody(this, false /* use_isolated_code_cache */);
-    client_ptr_->OnStartLoadingResponseBody(
-        std::move(data_pipe_->consumer_handle));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -317,11 +314,14 @@ TEST_F(NavigationBodyLoaderTest, FillResponseWithSecurityDetails) {
 
   blink::WebNavigationParams navigation_params;
   auto endpoints = network::mojom::URLLoaderClientEndpoints::New();
+  mojo::ScopedDataPipeProducerHandle producer_handle;
+  mojo::ScopedDataPipeConsumerHandle consumer_handle;
+  MojoResult rv =
+      mojo::CreateDataPipe(nullptr, &producer_handle, &consumer_handle);
+  ASSERT_EQ(MOJO_RESULT_OK, rv);
   NavigationBodyLoader::FillNavigationParamsResponseAndBodyLoader(
       std::move(common_params), std::move(commit_params), 1 /* request_id */,
-      std::move(response),
-      mojo::ScopedDataPipeConsumerHandle() /* response_body */,
-      std::move(endpoints),
+      std::move(response), std::move(consumer_handle), std::move(endpoints),
       blink::scheduler::GetSingleThreadTaskRunnerForTesting(),
       2 /* render_frame_id */, true /* is_main_frame */, &navigation_params);
   EXPECT_TRUE(

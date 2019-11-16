@@ -17,7 +17,7 @@
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/http/http_auth.h"
-#include "net/http/http_negotiate_auth_system.h"
+#include "net/http/http_auth_mechanism.h"
 
 namespace base {
 class TaskRunner;
@@ -64,8 +64,7 @@ class NET_EXPORT_PRIVATE JavaNegotiateResultWrapper {
 // provides a bridge to the Java code, and hence to the service. See
 // https://drive.google.com/open?id=1G7WAaYEKMzj16PTHT_cIYuKXJG6bBcrQ7QQBQ6ihOcQ&authuser=1
 // for the full details.
-class NET_EXPORT_PRIVATE HttpAuthNegotiateAndroid
-    : public HttpNegotiateAuthSystem {
+class NET_EXPORT_PRIVATE HttpAuthNegotiateAndroid : public HttpAuthMechanism {
  public:
   // Creates an object for one negotiation session. |prefs| are the
   // authentication preferences. In particular they include the Android account
@@ -73,7 +72,7 @@ class NET_EXPORT_PRIVATE HttpAuthNegotiateAndroid
   explicit HttpAuthNegotiateAndroid(const HttpAuthPreferences* prefs);
   ~HttpAuthNegotiateAndroid() override;
 
-  // HttpNegotiateAuthSystem implementation:
+  // HttpAuthMechanism implementation:
   bool Init(const NetLogWithSource& net_log) override;
   bool NeedsIdentity() const override;
   bool AllowsExplicitCredentials() const override;

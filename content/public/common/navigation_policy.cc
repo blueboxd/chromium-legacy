@@ -36,11 +36,6 @@ bool IsProactivelySwapBrowsingInstanceEnabled() {
          IsBackForwardCacheEnabled();
 }
 
-bool IsNavigationImmediateResponseBodyEnabled() {
-  return base::FeatureList::IsEnabled(
-      features::kNavigationImmediateResponseBody);
-}
-
 NavigationDownloadPolicy::NavigationDownloadPolicy() = default;
 NavigationDownloadPolicy::~NavigationDownloadPolicy() = default;
 NavigationDownloadPolicy::NavigationDownloadPolicy(

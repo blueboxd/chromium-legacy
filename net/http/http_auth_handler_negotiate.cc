@@ -48,7 +48,7 @@ base::Value NetLogParameterChannelBindings(
 
 // Uses |negotiate_auth_system_factory| to create the auth system, otherwise
 // creates the default auth system for each platform.
-std::unique_ptr<HttpNegotiateAuthSystem> CreateAuthSystem(
+std::unique_ptr<HttpAuthMechanism> CreateAuthSystem(
 #if !defined(OS_ANDROID)
     HttpAuthHandlerNegotiate::AuthLibrary* auth_library,
 #endif
@@ -140,7 +140,7 @@ int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
 }
 
 HttpAuthHandlerNegotiate::HttpAuthHandlerNegotiate(
-    std::unique_ptr<HttpNegotiateAuthSystem> auth_system,
+    std::unique_ptr<HttpAuthMechanism> auth_system,
     const HttpAuthPreferences* prefs,
     HostResolver* resolver)
     : auth_system_(std::move(auth_system)),

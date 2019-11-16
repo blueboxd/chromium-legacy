@@ -97,7 +97,7 @@ SignedExchangeLoader::SignedExchangeLoader(
 
   url_loader_.Bind(std::move(endpoints->url_loader));
 
-  // Available when NavigationImmediateResponse is enabled.
+  // |outer_response_body| is valid, when it's a navigation request.
   if (outer_response_body)
     OnStartLoadingResponseBody(std::move(outer_response_body));
 

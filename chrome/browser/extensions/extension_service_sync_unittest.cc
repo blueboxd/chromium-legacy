@@ -14,9 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
-#include "base/metrics/field_trial.h"
 #include "base/stl_util.h"
-#include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/webstore_private/webstore_private_api.h"
@@ -1761,8 +1759,7 @@ class ExtensionServiceTestSupervised
     : public ExtensionServiceSyncCustomGalleryTest,
       public SupervisedUserService::Delegate {
  public:
-  ExtensionServiceTestSupervised()
-      : field_trial_list_(std::make_unique<base::MockEntropyProvider>()) {}
+  ExtensionServiceTestSupervised() {}
 
   void TearDown() override {
     supervised_user_service()->SetDelegate(nullptr);
@@ -1915,7 +1912,6 @@ class ExtensionServiceTestSupervised
     return base_path().AppendASCII("permissions.pem");
   }
 
-  base::FieldTrialList field_trial_list_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 

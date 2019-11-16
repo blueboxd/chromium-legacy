@@ -206,6 +206,9 @@ void SplitViewHighlightView::OnWindowDraggingStateChanged(
     return;
   }
 
+  // Set the color according to |can_dragged_window_be_snapped|.
+  SetColor(can_dragged_window_be_snapped ? SK_ColorWHITE : SK_ColorBLACK);
+
   if (preview_position != SplitViewController::NONE) {
     DoSplitviewOpacityAnimation(
         layer(), is_right_or_bottom_ != IsPhysicalLeftOrTop(preview_position)
@@ -236,12 +239,11 @@ void SplitViewHighlightView::OnWindowDraggingStateChanged(
   }
 
   // The drag just started, and not in a snap area. If |previews_only|, there is
-  // nothing to do. Else set the color of the indicators and fade them in.
+  // nothing to do. Else fade in.
   DCHECK_EQ(SplitViewDragIndicators::WindowDraggingState::kNoDrag,
             previous_window_dragging_state);
   DCHECK_EQ(0.f, layer()->opacity());
   if (!previews_only) {
-    SetColor(can_dragged_window_be_snapped ? SK_ColorWHITE : SK_ColorBLACK);
     DoSplitviewOpacityAnimation(layer(), SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_IN);
     return;
   }

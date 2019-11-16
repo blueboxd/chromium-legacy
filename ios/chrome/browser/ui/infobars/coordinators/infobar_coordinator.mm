@@ -51,7 +51,8 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
     InfobarModalTransitionDriver* modalTransitionDriver;
 // Readwrite redefinition.
 @property(nonatomic, assign, readwrite) BOOL bannerWasPresented;
-// Completion block used to dismiss the banner after a set period of time.
+// Completion block used to dismiss the banner after a set period of time. This
+// needs to be created by dispatch_block_create() since it may get cancelled.
 @property(nonatomic, copy) dispatch_block_t dismissBannerBlock;
 
 @end
@@ -158,10 +159,11 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
       dispatch_block_cancel(self.dismissBannerBlock);
     }
     __weak InfobarCoordinator* weakSelf = self;
-    self.dismissBannerBlock = ^(void) {
-      [weakSelf dismissInfobarBannerIfReady];
-      weakSelf.dismissBannerBlock = nil;
-    };
+    self.dismissBannerBlock =
+        dispatch_block_create(DISPATCH_BLOCK_ASSIGN_CURRENT, ^{
+          [weakSelf dismissInfobarBannerIfReady];
+          weakSelf.dismissBannerBlock = nil;
+        });
     dispatch_after(popTime, dispatch_get_main_queue(), self.dismissBannerBlock);
   }
 }

@@ -337,11 +337,7 @@
       status: {"Android": "experimental", "default": "test"},
     },
     {
-      name: "ContactsManagerAddresses",
-      status: {"Android": "experimental", "default": "test"},
-    },
-    {
-      name: "ContactsManagerIcons",
+      name: "ContactsManagerExtraProperties",
       status: {"Android": "experimental", "default": "test"},
     },
     {

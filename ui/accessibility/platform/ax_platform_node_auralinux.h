@@ -171,6 +171,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   void ResendFocusSignalsForCurrentlyFocusedNode();
   bool SupportsSelectionWithAtkSelection();
   bool SelectionAndFocusAreTheSame();
+  void SetActiveViewsDialog();
 
   // AXPlatformNode overrides.
   // This has a side effect of creating the AtkObject if one does not already

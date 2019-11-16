@@ -22,7 +22,6 @@
 #include "build/build_config.h"
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/navigation_params.h"
-#include "content/public/common/navigation_policy.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/url_utils.h"
@@ -641,15 +640,13 @@ void ResourceDispatcher::ContinueForNavigation(int request_id) {
   if (!GetPendingRequestInfo(request_id))
     return;
 
-  if (response_override->response_body.is_valid()) {
-    DCHECK(IsNavigationImmediateResponseBodyEnabled());
-    client_ptr->OnStartLoadingResponseBody(
-        std::move(response_override->response_body));
+  DCHECK(response_override->response_body.is_valid());
+  client_ptr->OnStartLoadingResponseBody(
+      std::move(response_override->response_body));
 
-    // Abort if the request is cancelled.
-    if (!GetPendingRequestInfo(request_id))
-      return;
-  }
+  // Abort if the request is cancelled.
+  if (!GetPendingRequestInfo(request_id))
+    return;
 
   DCHECK(response_override->url_loader_client_endpoints);
   client_ptr->Bind(std::move(response_override->url_loader_client_endpoints));

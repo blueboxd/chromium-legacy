@@ -7696,6 +7696,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_SYNC_ERROR_USER_MENU_PASSPHRASE_BUTTON" desc="Button in the header of desktop user menu that prompts the user to enter the sync passphrase to fix the out-of-date passphrase error.">
         Enter passphrase
       </message>
+      <message name="IDS_SYNC_ERROR_USER_MENU_RETRIEVE_KEYS_MESSAGE" desc="Message of the sync error in the header of desktop user menu about reauthentication being required to sync encrypted datatypes.">
+        Fix the error to resume sync
+      </message>
+      <message name="IDS_SYNC_ERROR_USER_MENU_RETRIEVE_KEYS_BUTTON" desc="Button in the header of desktop user menu that prompts the user to reauthentication to fix the sync error affecting encrypted datatypes.">
+        Fix now
+      </message>
       <message name="IDS_SYNC_ERROR_USER_MENU_SIGNIN_AGAIN_MESSAGE" desc="Message of the unrecoverable error in the header of desktop user menu.">
         Try signing in again
       </message>

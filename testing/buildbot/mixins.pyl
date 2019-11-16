@@ -373,20 +373,6 @@
       'dimensions': {
         'os': 'Mac-10.14.6',
       },
-      'optional_dimensions': {
-        # Wait 5 minutes for 10.14.4, then 5 for .5, then fall back to 10.14.6
-        # The format for optional dimensions is: expiration: [{key, value}, ..].
-        300: [
-          {
-            'os': 'Mac-10.14.4',
-          },
-        ],
-        600: [
-          {
-            'os': 'Mac-10.14.5',
-          },
-        ],
-      },
     },
   },
   'mac_10.15_beta': {

@@ -178,6 +178,14 @@ static void TestAtkObjectBoolAttribute(
   EnsureAtkObjectHasAttributeWithValue(atk_object, attribute_name, "false");
 }
 
+static bool AtkObjectHasState(AtkObject* atk_object, AtkStateType state) {
+  AtkStateSet* state_set = atk_object_ref_state_set(atk_object);
+  EXPECT_TRUE(ATK_IS_STATE_SET(state_set));
+  bool in_state_set = atk_state_set_contains_state(state_set, state);
+  g_object_unref(state_set);
+  return in_state_set;
+}
+
 //
 // AtkObject tests
 //
@@ -1486,12 +1494,7 @@ class ActivationTester {
   }
 
   bool IsActivatedInStateSet() {
-    AtkStateSet* state_set = atk_object_ref_state_set(target_);
-    EXPECT_TRUE(ATK_IS_STATE_SET(state_set));
-    bool in_state_set =
-        atk_state_set_contains_state(state_set, ATK_STATE_ACTIVE);
-    g_object_unref(state_set);
-    return in_state_set;
+    return AtkObjectHasState(target_, ATK_STATE_ACTIVE);
   }
 
   void Reset() {
@@ -1590,18 +1593,10 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkWindowMinimized) {
   g_object_ref(root_atk_object);
 
   EXPECT_TRUE(ATK_IS_WINDOW(root_atk_object));
-
-  AtkStateSet* state_set = atk_object_ref_state_set(root_atk_object);
-  EXPECT_TRUE(ATK_IS_STATE_SET(state_set));
-  EXPECT_FALSE(atk_state_set_contains_state(state_set, ATK_STATE_ICONIFIED));
-  g_object_unref(state_set);
+  EXPECT_FALSE(AtkObjectHasState(root_atk_object, ATK_STATE_ICONIFIED));
 
   GetRootWrapper()->set_minimized(true);
-
-  state_set = atk_object_ref_state_set(root_atk_object);
-  EXPECT_TRUE(ATK_IS_STATE_SET(state_set));
-  EXPECT_TRUE(atk_state_set_contains_state(state_set, ATK_STATE_ICONIFIED));
-  g_object_unref(state_set);
+  EXPECT_TRUE(AtkObjectHasState(root_atk_object, ATK_STATE_ICONIFIED));
 
   bool saw_state_change = false;
   g_signal_connect(root_atk_object, "state-change",
@@ -2367,6 +2362,57 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestScrolledToAnchorEvent) {
   GetPlatformNode(item_1)->OnScrolledToAnchor();
 
   ASSERT_TRUE(saw_caret_moved);
+}
+
+TEST_F(AXPlatformNodeAuraLinuxTest, TestDialogActiveWhenChildFocused) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kWindow;
+  root.child_ids.push_back(2);
+  root.child_ids.push_back(3);
+
+  AXNodeData dialog;
+  dialog.id = 2;
+  dialog.role = ax::mojom::Role::kDialog;
+  dialog.child_ids.push_back(4);
+
+  AXNodeData node_outside_dialog;
+  node_outside_dialog.id = 3;
+  node_outside_dialog.role = ax::mojom::Role::kTextField;
+
+  AXNodeData entry;
+  entry.id = 4;
+  entry.role = ax::mojom::Role::kTextField;
+
+  Init(root, dialog, node_outside_dialog, entry);
+
+  AtkObject* root_atk_object(GetRootAtkObject());
+  EXPECT_TRUE(ATK_IS_OBJECT(root_atk_object));
+
+  AXNode* dialog_node = GetRootNode()->children()[0];
+  AtkObject* dialog_obj = AtkObjectFromNode(dialog_node);
+  bool saw_active_state_change = false;
+  g_signal_connect(dialog_obj, "state-change",
+                   G_CALLBACK(+[](AtkObject* atkobject, gchar* state_changed,
+                                  gboolean new_value, bool* flag) {
+                     if (!g_strcmp0(state_changed, "active"))
+                       *flag = true;
+                   }),
+                   &saw_active_state_change);
+
+  AXNode* entry_node = dialog_node->children()[0];
+  GetPlatformNode(entry_node)
+      ->NotifyAccessibilityEvent(ax::mojom::Event::kFocus);
+  EXPECT_TRUE(saw_active_state_change);
+  EXPECT_TRUE(AtkObjectHasState(dialog_obj, ATK_STATE_ACTIVE));
+
+  saw_active_state_change = false;
+
+  AXNode* outside_node = GetRootNode()->children()[1];
+  GetPlatformNode(outside_node)
+      ->NotifyAccessibilityEvent(ax::mojom::Event::kFocus);
+  EXPECT_TRUE(saw_active_state_change);
+  EXPECT_FALSE(AtkObjectHasState(dialog_obj, ATK_STATE_ACTIVE));
 }
 
 }  // namespace ui

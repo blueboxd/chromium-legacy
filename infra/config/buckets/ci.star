@@ -1372,6 +1372,17 @@ def fyi_mac_builder(
   )
 
 fyi_mac_builder(
+    name = 'Mac Builder Next',
+    goma_backend = goma.backend.RBE_PROD,
+    os = os.MAC_10_14,
+)
+
+fyi_mac_builder(
+    name = 'Mac10.14 Tests',
+    os = os.MAC_10_14,
+)
+
+fyi_mac_builder(
     name = 'Mac deterministic',
     cores = None,
     executable = luci.recipe(name = 'swarming/deterministic_build'),

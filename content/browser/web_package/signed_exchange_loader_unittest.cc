@@ -175,9 +175,15 @@ TEST_P(SignedExchangeLoaderTest, Simple) {
       net::SHA256HashValue({{0x00}}))});
 
   SignedExchangeLoader::SetSignedExchangeHandlerFactoryForTest(&factory);
+
+  mojo::ScopedDataPipeProducerHandle producer_handle;
+  mojo::ScopedDataPipeConsumerHandle consumer_handle;
+  MojoResult rv =
+      mojo::CreateDataPipe(nullptr, &producer_handle, &consumer_handle);
+  ASSERT_EQ(MOJO_RESULT_OK, rv);
   std::unique_ptr<SignedExchangeLoader> signed_exchange_loader =
       std::make_unique<SignedExchangeLoader>(
-          resource_request, response, mojo::ScopedDataPipeConsumerHandle(),
+          resource_request, response, std::move(consumer_handle),
           std::move(client), std::move(endpoints),
           network::mojom::kURLLoadOptionNone,
           false /* should_redirect_to_fallback */, nullptr /* devtools_proxy */,
@@ -201,25 +207,19 @@ TEST_P(SignedExchangeLoaderTest, Simple) {
   EXPECT_CALL(mock_client, OnReceiveRedirect(_, _));
   base::RunLoop().RunUntilIdle();
 
-  const std::string kTestString = "Hello, world!";
-  mojo::DataPipe data_pipe(static_cast<uint32_t>(kTestString.size()));
   std::unique_ptr<mojo::DataPipeProducer> producer =
-      std::make_unique<mojo::DataPipeProducer>(
-          std::move(data_pipe.producer_handle));
-
+      std::make_unique<mojo::DataPipeProducer>(std::move(producer_handle));
   mojo::DataPipeProducer* raw_producer = producer.get();
   base::RunLoop run_loop;
   raw_producer->Write(
       std::make_unique<mojo::StringDataSource>(
-          kTestString, mojo::StringDataSource::AsyncWritingMode::
-                           STRING_MAY_BE_INVALIDATED_BEFORE_COMPLETION),
+          "Hello, world!", mojo::StringDataSource::AsyncWritingMode::
+                               STRING_MAY_BE_INVALIDATED_BEFORE_COMPLETION),
       base::BindOnce([](std::unique_ptr<mojo::DataPipeProducer> producer,
                         base::OnceClosure quit_closure,
                         MojoResult result) { std::move(quit_closure).Run(); },
                      std::move(producer), run_loop.QuitClosure()));
 
-  loader_client->OnStartLoadingResponseBody(
-      std::move(data_pipe.consumer_handle));
   network::URLLoaderCompletionStatus status;
   loader_client->OnComplete(network::URLLoaderCompletionStatus(net::OK));
   base::RunLoop().RunUntilIdle();

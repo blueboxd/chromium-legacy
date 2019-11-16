@@ -192,7 +192,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': 'd021c9f3296d11b40a2a37303dc36437844bdf27',
+  'pdfium_revision': 'f86f81aa33dabb615273492885aa9de76a6ccf68',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -866,7 +866,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'df1d0b0a33e11fdd2803aee065500453d2cff6f4',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'c71af3a2659b6e914af7fafcf4663e611111a8c1',
       'condition': 'checkout_linux',
   },
 
@@ -1569,7 +1569,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@b6ce42227610a190e5bd1a1211d81a1b3628bcf3',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@8ff52d37c080d7a6da0eb5f6d8ba14268b75ac9d',
     'condition': 'checkout_src_internal',
   },
 

@@ -101,8 +101,8 @@
                   class="md-select"
                   on-change="onDeviceDropdownSelectionChanged_">
                 <template is="dom-repeat" items="[[devices]]">
-                  <option value$="[[item.deviceId]]">
-                    [[item.deviceName]]
+                  <option value$="[[item.remoteDevice.deviceId]]">
+                    [[item.remoteDevice.deviceName]]
                   </option>
                 </template>
               </select>

@@ -13,7 +13,6 @@
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/mock_entropy_provider.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
@@ -140,8 +139,7 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
                                public testing::WithParamInterface<bool> {
  public:
   ClientHintsBrowserTest()
-      : field_trial_list_(std::make_unique<base::MockEntropyProvider>()),
-        http_server_(net::EmbeddedTestServer::TYPE_HTTP),
+      : http_server_(net::EmbeddedTestServer::TYPE_HTTP),
         https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
         https_cross_origin_server_(net::EmbeddedTestServer::TYPE_HTTPS),
         expect_client_hints_on_main_frame_(false),
@@ -427,7 +425,6 @@ class ClientHintsBrowserTest : public InProcessBrowserTest,
     return main_frame_ua_observed_;
   }
 
-  base::FieldTrialList field_trial_list_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
   std::string intercept_iframe_resource_;

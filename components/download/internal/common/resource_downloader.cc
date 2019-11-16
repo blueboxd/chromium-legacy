@@ -205,10 +205,7 @@ void ResourceDownloader::InterceptResponse(
   // Simulate on the new URLLoaderClient calls that happened on the old client.
   response_head->head.cert_status = cert_status;
   url_loader_client_->OnReceiveResponse(response_head->head);
-
-  // Available when NavigationImmediateResponse is enabled.
-  if (response_body)
-    url_loader_client_->OnStartLoadingResponseBody(std::move(response_body));
+  url_loader_client_->OnStartLoadingResponseBody(std::move(response_body));
 
   // Bind the new client.
   url_loader_client_receiver_ =

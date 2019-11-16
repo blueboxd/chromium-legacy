@@ -64,7 +64,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/navigation_policy.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
@@ -813,11 +812,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
  private:
   // network::mojom::URLLoaderClient implementation:
   void OnReceiveResponse(network::mojom::URLResponseHeadPtr head) override {
-    // When NavigationImmediateResponseBody is enabled, wait for
-    // OnStartLoadingResponseBody() before sending anything to the renderer
-    // process.
-    if (IsNavigationImmediateResponseBodyEnabled() &&
-        !response_body_.is_valid()) {
+    // Wait for OnStartLoadingResponseBody() before sending anything to the
+    // renderer process.
+    if (!response_body_.is_valid()) {
       head_ = head;
       return;
     }
@@ -971,24 +968,13 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   }
 
   void OnReceiveCachedMetadata(mojo_base::BigBuffer data) override {
-    // No cached metadata is ever sent for the main resource. The
-    // NavigationImmediateResponse feature does not support it.
-    CHECK(false);
+    NOTREACHED();
   }
 
   void OnTransferSizeUpdated(int32_t transfer_size_diff) override {}
 
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle response_body) override {
-    // When NavigationImmediateResponseBody is disabled, this is not reached.
-    // Instead, the loader and client endpoints must have been unbound and
-    // forwarded to the renderer.
-    CHECK(IsNavigationImmediateResponseBodyEnabled());
-
-    // When NavigationImmediateResponseBody is enabled, the NavigationURLLoader
-    // waits for OnStartLoadingResponseBody() instead of OnReceiveResponse()
-    // before delegating the load to an URLLoaderClientImpl in the renderer
-    // process.
     response_body_ = std::move(response_body);
     OnReceiveResponse(head_);
   }

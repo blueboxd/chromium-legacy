@@ -71,9 +71,23 @@ Once compiled, the tests can be run using the following command line:
 `run_xr_browser_tests.py --enable-gpu --test-launcher-jobs=1
 --enable-pixel-output-in-tests`
 
+Additional options such as test filtering can be found by running
+`xr_browser_tests.exe --help` and `xr_browser_tests.exe --gtest_help`.
+
 Because the "test" is actually a Python wrapper script, you may need to prepend
 `python` to the front of the command on Windows if Python file association is
 not set up on your machine.
+
+## Adding New Files
+
+If you are adding a new test or infrastructure file to the target, you'll need
+to consider whether it's useful with the `enable_vr` gn arg set to false or not.
+If it is, then it should be included in `//chrome/test:xr_browser_tests_common`,
+otherwise it should be included in
+`//chrome/browser/vr:xr_browser_tests_vr_required`.
+
+If including in `//chrome/test:xr_browser_tests_common`, you may need to hide
+some VR-specific functionality in the file behind `#if BUILDFLAG(ENABLE_VR)`.
 
 ## Running A Test Multiple Times With Different Runtimes
 

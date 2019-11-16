@@ -349,6 +349,9 @@ void ProfileMenuView::OnSyncErrorButtonClicked(
     case sync_ui_util::UPGRADE_CLIENT_ERROR:
       chrome::OpenUpdateChromeDialog(browser());
       break;
+    case sync_ui_util::TRUSTED_VAULT_KEY_MISSING_ERROR:
+      sync_ui_util::OpenTabForSyncKeyRetrieval(browser());
+      break;
     case sync_ui_util::PASSPHRASE_ERROR:
     case sync_ui_util::SETTINGS_UNCONFIRMED_ERROR:
       chrome::ShowSettingsSubPage(browser(), chrome::kSyncSetupSubPage);
@@ -502,6 +505,7 @@ gfx::ImageSkia ProfileMenuView::GetSyncIcon() {
     case sync_ui_util::UNRECOVERABLE_ERROR:
     case sync_ui_util::UPGRADE_CLIENT_ERROR:
     case sync_ui_util::PASSPHRASE_ERROR:
+    case sync_ui_util::TRUSTED_VAULT_KEY_MISSING_ERROR:
     case sync_ui_util::SETTINGS_UNCONFIRMED_ERROR:
       icon = &kSyncPausedCircleIcon;
       color_id = ui::NativeTheme::kColorId_AlertSeverityHigh;

@@ -1342,7 +1342,7 @@
     },
     {
       "id": 137,
-      "description": "GPU rasterization on CrOS is blacklisted on anything but Intel, Mali T8/G, Imagination, or AMD GPUs for now.",
+      "description": "GPU rasterization on CrOS is blacklisted on anything but Intel, Mali T8/G, Imagination, Freedreno, or AMD GPU/drivers for now.",
       "cr_bugs": [684094, 996858, 1020500],
       "os": {
         "type": "chromeos"
@@ -1352,6 +1352,7 @@
       ],
       "exceptions": [
         { "vendor_id": "0x8086" },
+        { "gl_vendor": "freedreno" },
         { "gl_renderer": "Mali-T8.*",
           "subpixel_font_rendering": "unsupported"},
         { "gl_renderer": "Mali-G.*",

@@ -91,7 +91,7 @@ cr.define('multidevice_setup', function() {
       /**
        * Array of objects representing all potential MultiDevice hosts.
        *
-       * @private {!Array<!chromeos.multidevice.mojom.RemoteDevice>}
+       * @private {!Array<!chromeos.multideviceSetup.mojom.HostDevice>}
        */
       devices_: Array,
 
@@ -146,7 +146,7 @@ cr.define('multidevice_setup', function() {
 
     initializeSetupFlow: function() {
       this.mojoInterfaceProvider_.getMojoServiceRemote()
-          .getEligibleHostDevices()
+          .getEligibleActiveHostDevices()
           .then((responseParams) => {
             if (responseParams.eligibleHostDevices.length == 0) {
               console.warn('Potential host list is empty.');

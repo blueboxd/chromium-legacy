@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/sync/test/integration/encryption_helper.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
@@ -20,7 +21,6 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "components/sync/base/time.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/sync_engine_switches.h"
@@ -34,6 +34,7 @@ namespace {
 
 using encryption_helper::GetServerNigori;
 using encryption_helper::SetNigoriInFakeServer;
+using testing::NotNull;
 using testing::SizeIs;
 
 struct KeyParams {
@@ -149,7 +150,10 @@ class PageTitleChecker : public StatusChangeChecker,
   PageTitleChecker(const std::string& expected_title,
                    content::WebContents* web_contents)
       : WebContentsObserver(web_contents),
-        expected_title_(base::UTF8ToUTF16(expected_title)) {}
+        expected_title_(base::UTF8ToUTF16(expected_title)) {
+    DCHECK(web_contents);
+  }
+
   ~PageTitleChecker() override {}
 
   // StatusChangeChecker overrides.
@@ -463,17 +467,19 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
   encryption_helper::SetNigoriInFakeServer(
       GetFakeServer(), BuildTrustedVaultNigoriSpecifics({kTestEncryptionKey}));
 
-  SetupSyncNoWaitingForCompletion();
-  ASSERT_TRUE(TrustedVaultKeyRequiredStateChecker(GetSyncService(0),
-                                                  /*desired_state=*/true)
-                  .Wait());
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(GetSyncService(0)
+                  ->GetUserSettings()
+                  ->IsTrustedVaultKeyRequiredForPreferredDataTypes());
   ASSERT_FALSE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
+  ASSERT_TRUE(sync_ui_util::ShouldShowSyncKeysMissingError(GetSyncService(0)));
 
   // Mimic opening a web page where the user can interact with the retrieval
   // flow.
-  ui_test_utils::NavigateToURLWithDisposition(
-      GetBrowser(0), retrieval_url, WindowOpenDisposition::CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_NONE);
+  sync_ui_util::OpenTabForSyncKeyRetrievalWithURLForTesting(GetBrowser(0),
+                                                            retrieval_url);
+  ASSERT_THAT(GetBrowser(0)->tab_strip_model()->GetActiveWebContents(),
+              NotNull());
 
   // Wait until the title changes to "OK" via Javascript, which indicates
   // completion.
@@ -482,10 +488,11 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
       GetBrowser(0)->tab_strip_model()->GetActiveWebContents());
   EXPECT_TRUE(title_checker.Wait());
 
-  EXPECT_TRUE(TrustedVaultKeyRequiredStateChecker(GetSyncService(0),
-                                                  /*desired_state=*/false)
-                  .Wait());
   EXPECT_TRUE(PasswordsDataTypeActiveChecker(GetSyncService(0)).Wait());
+  EXPECT_FALSE(GetSyncService(0)
+                   ->GetUserSettings()
+                   ->IsTrustedVaultKeyRequiredForPreferredDataTypes());
+  EXPECT_FALSE(sync_ui_util::ShouldShowSyncKeysMissingError(GetSyncService(0)));
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
@@ -498,9 +505,10 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
 
   // Mimic opening a web page where the user can interact with the retrieval
   // flow, while the user is signed out.
-  ui_test_utils::NavigateToURLWithDisposition(
-      GetBrowser(0), retrieval_url, WindowOpenDisposition::CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_NONE);
+  sync_ui_util::OpenTabForSyncKeyRetrievalWithURLForTesting(GetBrowser(0),
+                                                            retrieval_url);
+  ASSERT_THAT(GetBrowser(0)->tab_strip_model()->GetActiveWebContents(),
+              NotNull());
 
   // Wait until the title changes to "OK" via Javascript, which indicates
   // completion.
@@ -527,6 +535,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiTest,
                    ->GetUserSettings()
                    ->IsTrustedVaultKeyRequiredForPreferredDataTypes());
   EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
+  EXPECT_FALSE(sync_ui_util::ShouldShowSyncKeysMissingError(GetSyncService(0)));
 }
 
 // Same as SingleClientNigoriWithWebApiTest but does NOT override
@@ -563,9 +572,10 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriWithWebApiFromUntrustedOriginTest,
 
   // Mimic opening a web page where the user can interact with the retrival
   // flow.
-  ui_test_utils::NavigateToURLWithDisposition(
-      GetBrowser(0), retrieval_url, WindowOpenDisposition::CURRENT_TAB,
-      ui_test_utils::BROWSER_TEST_NONE);
+  sync_ui_util::OpenTabForSyncKeyRetrievalWithURLForTesting(GetBrowser(0),
+                                                            retrieval_url);
+  ASSERT_THAT(GetBrowser(0)->tab_strip_model()->GetActiveWebContents(),
+              NotNull());
 
   // Wait until the title reflects the function is undefined.
   PageTitleChecker title_checker(

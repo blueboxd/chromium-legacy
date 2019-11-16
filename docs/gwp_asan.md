@@ -8,6 +8,8 @@ the error.
 It is also known by its recursive backronym, GWP-ASan Will Provide Allocation
 Sanity.
 
+To read a more in-depth explanation of GWP-ASan see [this post](https://sites.google.com/a/chromium.org/dev/Home/chromium-security/articles/gwp-asan).
+
 ## Allocator
 
 The GuardedPageAllocator returns allocations on pages buffered on both sides by
@@ -65,8 +67,8 @@ catch newly introduced bugs, and for specific processes depending on the
 particular allocator.
 
 A [hotlist of bugs discovered by by GWP-ASan](https://bugs.chromium.org/p/chromium/issues/list?can=1&q=Hotlist%3DGWP-ASan)
-exists, though GWP-ASan crashes are filed without external visibility by
-default.
+exists, though GWP-ASan crashes are filed Bug-Security, e.g. without external
+visibility, by default.
 
 ## Limitations
 

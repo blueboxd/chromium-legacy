@@ -8,12 +8,15 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
+#include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -212,6 +215,21 @@ MessageType GetStatusLabelsImpl(
   return SYNC_ERROR;
 }
 
+void FocusWebContents(Browser* browser) {
+  auto* const contents = browser->tab_strip_model()->GetActiveWebContents();
+  if (contents)
+    contents->Focus();
+}
+
+void OpenTabForSyncKeyRetrievalWithURL(Browser* browser, const GURL& url) {
+  DCHECK(browser);
+  FocusWebContents(browser);
+
+  NavigateParams params(GetSingletonTabNavigateParams(browser, url));
+  params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
+  ShowSingletonTabOverwritingNTP(browser, std::move(params));
+}
+
 }  // namespace
 
 MessageType GetStatusLabels(syncer::SyncService* sync_service,
@@ -316,6 +334,13 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(
     return SETTINGS_UNCONFIRMED_ERROR;
   }
 
+  // Check for sync encryption keys missing.
+  if (ShouldShowSyncKeysMissingError(service)) {
+    *content_string_id = IDS_SYNC_ERROR_USER_MENU_RETRIEVE_KEYS_MESSAGE;
+    *button_string_id = IDS_SYNC_ERROR_USER_MENU_RETRIEVE_KEYS_BUTTON;
+    return TRUSTED_VAULT_KEY_MISSING_ERROR;
+  }
+
   // There is no error.
   return NO_SYNC_ERROR;
 }
@@ -343,6 +368,22 @@ bool ShouldShowPassphraseError(const syncer::SyncService* service) {
   return service->GetUserSettings()->IsFirstSetupComplete() &&
          service->GetUserSettings()
              ->IsPassphraseRequiredForPreferredDataTypes();
+}
+
+bool ShouldShowSyncKeysMissingError(const syncer::SyncService* service) {
+  return service->GetUserSettings()->IsFirstSetupComplete() &&
+         service->GetUserSettings()
+             ->IsTrustedVaultKeyRequiredForPreferredDataTypes();
+}
+
+void OpenTabForSyncKeyRetrieval(Browser* browser) {
+  OpenTabForSyncKeyRetrievalWithURL(
+      browser, GaiaUrls::GetInstance()->signin_chrome_sync_keys_url());
+}
+
+void OpenTabForSyncKeyRetrievalWithURLForTesting(Browser* browser,
+                                                 const GURL& url) {
+  OpenTabForSyncKeyRetrievalWithURL(browser, url);
 }
 
 }  // namespace sync_ui_util

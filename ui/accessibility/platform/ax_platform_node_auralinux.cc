@@ -133,6 +133,8 @@ AXPlatformNodeAuraLinux* g_current_selected = nullptr;
 // null if if the AtkObject is destroyed.
 AtkObject* g_active_top_level_frame = nullptr;
 
+AtkObject* g_active_views_dialog = nullptr;
+
 #if defined(ATK_216)
 constexpr AtkRole kStaticRole = ATK_ROLE_STATIC;
 constexpr AtkRole kSubscriptRole = ATK_ROLE_SUBSCRIPT;
@@ -2676,6 +2678,9 @@ void AXPlatformNodeAuraLinux::GetAtkState(AtkStateSet* atk_state_set) {
       FindAtkObjectParentFrame(GetActiveMenus().back()) == atk_object_)
     atk_state_set_add_state(atk_state_set, ATK_STATE_ACTIVE);
 
+  if (atk_object_ && atk_object_ == g_active_views_dialog)
+    atk_state_set_add_state(atk_state_set, ATK_STATE_ACTIVE);
+
   bool is_minimized = delegate_->IsMinimized();
   if (is_minimized && data.role == ax::mojom::Role::kWindow)
     atk_state_set_add_state(atk_state_set, ATK_STATE_ICONIFIED);
@@ -3164,6 +3169,31 @@ void AXPlatformNodeAuraLinux::OnScrolledToAnchor() {
   g_signal_emit_by_name(atk_object, "text-caret-moved", 0);
 }
 
+void AXPlatformNodeAuraLinux::SetActiveViewsDialog() {
+  AtkObject* old_views_dialog = g_active_views_dialog;
+  AtkObject* new_views_dialog = nullptr;
+
+  AtkObject* parent = GetOrCreateAtkObject();
+  if (!GetDelegate()->IsWebContent()) {
+    while (parent) {
+      if (atk_object_get_role(parent) == ATK_ROLE_DIALOG) {
+        new_views_dialog = parent;
+        break;
+      }
+      parent = atk_object_get_parent(parent);
+    }
+  }
+
+  if (old_views_dialog == new_views_dialog)
+    return;
+
+  SetWeakGPtrToAtkObject(&g_active_views_dialog, new_views_dialog);
+  if (old_views_dialog)
+    atk_object_notify_state_change(old_views_dialog, ATK_STATE_ACTIVE, FALSE);
+  if (new_views_dialog)
+    atk_object_notify_state_change(new_views_dialog, ATK_STATE_ACTIVE, TRUE);
+}
+
 void AXPlatformNodeAuraLinux::OnFocused() {
   AtkObject* atk_object = GetOrCreateAtkObject();
 
@@ -3174,6 +3204,8 @@ void AXPlatformNodeAuraLinux::OnFocused() {
 
   if (atk_object == g_current_focused)
     return;
+
+  SetActiveViewsDialog();
 
   if (g_current_focused) {
     g_signal_emit_by_name(g_current_focused, "focus-event", false);

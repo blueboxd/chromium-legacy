@@ -181,11 +181,13 @@ class SplitViewDragIndicators::RotatedImageLabelView : public views::View {
       return;
     }
 
-    // When dragging begins, set the text and fade in with an indicator.
+    // Set the text according to |can_dragged_window_be_snapped|.
+    SetLabelText(l10n_util::GetStringUTF16(
+        can_dragged_window_be_snapped ? IDS_ASH_SPLIT_VIEW_GUIDANCE
+                                      : IDS_ASH_SPLIT_VIEW_CANNOT_SNAP));
+
+    // When dragging begins (without a snap preview), fade in with an indicator.
     if (previous_window_dragging_state == WindowDraggingState::kNoDrag) {
-      SetLabelText(l10n_util::GetStringUTF16(
-          can_dragged_window_be_snapped ? IDS_ASH_SPLIT_VIEW_GUIDANCE
-                                        : IDS_ASH_SPLIT_VIEW_CANNOT_SNAP));
       DoSplitviewOpacityAnimation(
           layer(), SPLITVIEW_ANIMATION_TEXT_FADE_IN_WITH_HIGHLIGHT);
       return;

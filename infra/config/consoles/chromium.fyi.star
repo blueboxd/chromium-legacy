@@ -52,6 +52,16 @@ luci.console_view(
             category = 'cronet',
         ),
         luci.console_view_entry(
+            builder = 'ci/Mac Builder Next',
+            category = 'mac',
+            short_name = 'bld',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Mac10.14 Tests',
+            category = 'mac',
+            short_name = '14',
+        ),
+        luci.console_view_entry(
             builder = 'ci/mac-hermetic-upgrade-rel',
             category = 'mac',
             short_name = 'herm',

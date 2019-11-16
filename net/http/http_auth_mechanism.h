@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_HTTP_HTTP_NEGOTIATE_AUTH_SYSTEM_H_
-#define NET_HTTP_HTTP_NEGOTIATE_AUTH_SYSTEM_H_
+#ifndef NET_HTTP_HTTP_AUTH_MECHANISM_H_
+#define NET_HTTP_HTTP_AUTH_MECHANISM_H_
 
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
@@ -15,9 +15,9 @@ class AuthCredentials;
 class HttpAuthChallengeTokenizer;
 class NetLogWithSource;
 
-class NET_EXPORT_PRIVATE HttpNegotiateAuthSystem {
+class NET_EXPORT_PRIVATE HttpAuthMechanism {
  public:
-  virtual ~HttpNegotiateAuthSystem() = default;
+  virtual ~HttpAuthMechanism() = default;
 
   virtual bool Init(const NetLogWithSource& net_log) = 0;
 
@@ -69,4 +69,4 @@ class NET_EXPORT_PRIVATE HttpNegotiateAuthSystem {
 
 }  // namespace net
 
-#endif  // NET_HTTP_HTTP_NEGOTIATE_AUTH_SYSTEM_H_
+#endif  // NET_HTTP_HTTP_AUTH_MECHANISM_H_

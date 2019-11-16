@@ -1449,6 +1449,11 @@ mac_builder(
 )
 
 mac_builder(
+    name = 'mac_chromium_10.14_rel_ng',
+    goma_backend = goma.backend.RBE_PROD,
+)
+
+mac_builder(
     name = 'mac_chromium_archive_rel_ng',
 )
 

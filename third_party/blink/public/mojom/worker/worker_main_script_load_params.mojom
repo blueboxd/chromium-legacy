@@ -14,9 +14,7 @@ struct WorkerMainScriptLoadParams {
   // Used for loading the pre-requested main script in the renderer process.
   network.mojom.URLResponseHead response_head;
 
-  // The |response_body| will be null when NavigationImmediateResponse is
-  // disabled.
-  handle<data_pipe_consumer>? response_body;
+  handle<data_pipe_consumer> response_body;
 
   network.mojom.URLLoaderClientEndpoints? url_loader_client_endpoints;
 

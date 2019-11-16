@@ -85,6 +85,7 @@ bool AvatarButtonErrorController::SyncErrorObserver::HasSyncError() {
   if (sync_service) {
     return sync_service->HasUnrecoverableError() ||
            sync_ui_util::ShouldShowPassphraseError(sync_service) ||
+           sync_ui_util::ShouldShowSyncKeysMissingError(sync_service) ||
            sync_ui_util::ShouldRequestSyncConfirmation(sync_service);
   }
   return false;

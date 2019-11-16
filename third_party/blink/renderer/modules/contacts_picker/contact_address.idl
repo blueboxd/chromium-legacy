@@ -7,5 +7,5 @@
 [
     SecureContext,
     Exposed=Window,
-    RuntimeEnabled=ContactsManagerAddresses
+    RuntimeEnabled=ContactsManagerExtraProperties
 ] interface ContactAddress : PaymentAddress {};

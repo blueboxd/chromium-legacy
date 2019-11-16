@@ -75,6 +75,9 @@ void SyncErrorNotifier::Shutdown() {
 void SyncErrorNotifier::OnStateChanged(syncer::SyncService* service) {
   DCHECK_EQ(service, sync_service_);
 
+  // TODO(crbug.com/1019687): A sync error should also be prompted for
+  // sync_ui_util::ShouldShowSyncKeysMissingError().
+
   if (sync_ui_util::ShouldShowPassphraseError(sync_service_) ==
       notification_displayed_) {
     return;

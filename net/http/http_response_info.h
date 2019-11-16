@@ -31,7 +31,7 @@ class NET_EXPORT HttpResponseInfo {
   // Describes the kind of connection used to fetch this response.
   //
   // NOTE: Please keep in sync with ConnectionInfo enum in
-  // tools/metrics/histograms/enum.xml.
+  // tools/metrics/histograms/enums.xml.
   // Because of that, and also because these values are persisted to
   // the cache, please make sure not to delete or reorder values.
   enum ConnectionInfo {
@@ -57,15 +57,19 @@ class NET_EXPORT HttpResponseInfo {
     CONNECTION_INFO_QUIC_41 = 19,
     CONNECTION_INFO_QUIC_42 = 20,
     CONNECTION_INFO_QUIC_43 = 21,
-    CONNECTION_INFO_QUIC_99 = 22,
+    CONNECTION_INFO_QUIC_Q099 = 22,
     CONNECTION_INFO_QUIC_44 = 23,
     CONNECTION_INFO_QUIC_45 = 24,
     CONNECTION_INFO_QUIC_46 = 25,
     CONNECTION_INFO_QUIC_47 = 26,
     CONNECTION_INFO_QUIC_999 = 27,
-    CONNECTION_INFO_QUIC_48 = 28,
-    CONNECTION_INFO_QUIC_49 = 29,
-    CONNECTION_INFO_QUIC_50 = 30,
+    CONNECTION_INFO_QUIC_Q048 = 28,
+    CONNECTION_INFO_QUIC_Q049 = 29,
+    CONNECTION_INFO_QUIC_Q050 = 30,
+    CONNECTION_INFO_QUIC_T048 = 31,
+    CONNECTION_INFO_QUIC_T049 = 32,
+    CONNECTION_INFO_QUIC_T050 = 33,
+    CONNECTION_INFO_QUIC_T099 = 34,
     NUM_OF_CONNECTION_INFOS,
   };
 

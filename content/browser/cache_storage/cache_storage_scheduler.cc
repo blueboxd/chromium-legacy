@@ -47,7 +47,13 @@ bool OpPointerLessThan(const std::unique_ptr<CacheStorageOperation>& left,
   //
   // Note, there might be a slight mis-ordering when the 64-bit id values
   // rollover, but this should not be critical and will happen very rarely.
-  return left->priority() < right->priority() || left->id() > right->id();
+  if (left->priority() < right->priority()) {
+    return true;
+  }
+  if (left->priority() > right->priority()) {
+    return false;
+  }
+  return left->id() > right->id();
 }
 
 }  // namespace

@@ -17,7 +17,6 @@ namespace content {
 
 CONTENT_EXPORT bool IsBackForwardCacheEnabled();
 CONTENT_EXPORT bool IsProactivelySwapBrowsingInstanceEnabled();
-CONTENT_EXPORT bool IsNavigationImmediateResponseBodyEnabled();
 
 // Navigation type that affects the download decision and relevant metrics to be
 // reported at download-discovery time.

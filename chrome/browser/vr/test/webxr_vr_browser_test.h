@@ -7,9 +7,7 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/vr/test/conditional_skipping.h"
-#include "chrome/browser/vr/test/fake_xr_session_request_consent_manager.h"
 #include "chrome/browser/vr/test/mock_xr_device_hook_base.h"
-#include "chrome/browser/vr/test/mock_xr_session_request_consent_manager.h"
 #include "chrome/browser/vr/test/webxr_browser_test.h"
 #include "chrome/browser/vr/test/xr_browser_test.h"
 #include "chrome/common/chrome_features.h"
@@ -23,13 +21,18 @@
 #include "services/service_manager/sandbox/features.h"
 #endif
 
+#if BUILDFLAG(ENABLE_VR)
+#include "chrome/browser/vr/test/fake_xr_session_request_consent_manager.h"
+#include "chrome/browser/vr/test/mock_xr_session_request_consent_manager.h"
+#endif  // BUILDFLAG(ENABLE_VR)
+
 namespace vr {
 
 // WebXR for VR-specific test base class without any particular runtime.
 class WebXrVrBrowserTestBase : public WebXrBrowserTestBase {
  public:
   WebXrVrBrowserTestBase();
-  virtual ~WebXrVrBrowserTestBase();
+  ~WebXrVrBrowserTestBase() override;
   void EnterSessionWithUserGesture(content::WebContents* web_contents) override;
   void EnterSessionWithUserGestureOrFail(
       content::WebContents* web_contents) override;
@@ -53,10 +56,13 @@ class WebXrVrBrowserTestBase : public WebXrBrowserTestBase {
   // accept or reject the dialog programmatically. While this is a more thorough
   // end-to-end test, the extra overhead should be avoided unless that is the
   // feature under test.
+  // Consent dialogs don't appear on platforms with enable_vr = false.
+#if BUILDFLAG(ENABLE_VR)
   void SetupFakeConsentManager(
       FakeXRSessionRequestConsentManager::UserResponse user_response);
   ::testing::NiceMock<MockXRSessionRequestConsentManager> consent_manager_;
   std::unique_ptr<FakeXRSessionRequestConsentManager> fake_consent_manager_;
+#endif  // BUILDFLAG(ENABLE_VR)
 };
 
 // Test class with OpenVR disabled.
@@ -65,14 +71,11 @@ class WebXrVrRuntimelessBrowserTest : public WebXrVrBrowserTestBase {
   WebXrVrRuntimelessBrowserTest();
 };
 
-// WebXrOrientationSensorDevice is only defined when the enable_vr flag is set.
-#if BUILDFLAG(ENABLE_VR)
 class WebXrVrRuntimelessBrowserTestSensorless
     : public WebXrVrRuntimelessBrowserTest {
  public:
   WebXrVrRuntimelessBrowserTestSensorless();
 };
-#endif  // BUILDFLAG(ENABLE_VR)
 
 // OpenVR and WMR feature only defined on Windows.
 #ifdef OS_WIN

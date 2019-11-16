@@ -425,12 +425,12 @@ TEST_F(HttpAuthHandlerNegotiateTest, AllowGssapiLibraryLoad) {
 
 #endif  // defined(OS_POSIX)
 
-class TestAuthSystem : public HttpNegotiateAuthSystem {
+class TestAuthSystem : public HttpAuthMechanism {
  public:
   TestAuthSystem() = default;
   ~TestAuthSystem() override = default;
 
-  // HttpNegotiateAuthSystem implementation:
+  // HttpAuthMechanism implementation:
   bool Init(const NetLogWithSource&) override { return true; }
   bool NeedsIdentity() const override { return true; }
   bool AllowsExplicitCredentials() const override { return true; }
@@ -454,11 +454,11 @@ class TestAuthSystem : public HttpNegotiateAuthSystem {
 };
 
 TEST_F(HttpAuthHandlerNegotiateTest, OverrideAuthSystem) {
-  auto negotiate_factory = std::make_unique<HttpAuthHandlerNegotiate::Factory>(
-      base::BindRepeating([](const HttpAuthPreferences*)
-                              -> std::unique_ptr<HttpNegotiateAuthSystem> {
-        return std::make_unique<TestAuthSystem>();
-      }));
+  auto negotiate_factory =
+      std::make_unique<HttpAuthHandlerNegotiate::Factory>(base::BindRepeating(
+          [](const HttpAuthPreferences*) -> std::unique_ptr<HttpAuthMechanism> {
+            return std::make_unique<TestAuthSystem>();
+          }));
   negotiate_factory->set_http_auth_preferences(http_auth_preferences());
 #if defined(OS_WIN)
   negotiate_factory->set_library(

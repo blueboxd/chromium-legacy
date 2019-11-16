@@ -1917,6 +1917,26 @@
             ]
         }
     ],
+    "DeprecateFtp": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux",
+                "android",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "ForcedOff_FtpProtocol",
+                    "disable_features": [
+                        "FtpProtcol"
+                    ]
+                }
+            ]
+        }
+    ],
     "DialMediaRouteProvider": [
         {
             "platforms": [

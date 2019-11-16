@@ -128,22 +128,8 @@ bool ShouldRefetchEventTarget(const MouseEventWithHitTestResults& mev) {
   return false;
 }
 
-IntPoint GetSelectionStartpoint(const PositionWithAffinity& position) {
-  const LocalCaretRect& local_caret_rect = LocalCaretRectOfPosition(position);
-  if (local_caret_rect.IsEmpty())
-    return IntPoint();
-  const IntRect rect = AbsoluteCaretBoundsOf(position);
-  // In a multiline edit, rect.MaxY() would end up on the next line, so
-  // take the midpoint in order to use this corner point directly.
-  if (local_caret_rect.layout_object->IsHorizontalWritingMode())
-    return {rect.X(), (rect.Y() + rect.MaxY()) / 2};
-
-  // When text is vertical, rect.MaxX() would end up on the next line, so
-  // take the midpoint in order to use this corner point directly.
-  return {(rect.X() + rect.MaxX()) / 2, rect.Y()};
-}
-
-IntPoint GetSelectionEndpoint(const PositionWithAffinity& position) {
+IntPoint GetMiddleSelectionCaretOfPosition(
+    const PositionWithAffinity& position) {
   const LocalCaretRect& local_caret_rect = LocalCaretRectOfPosition(position);
   if (local_caret_rect.IsEmpty())
     return IntPoint();
@@ -2056,10 +2042,11 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
         selection.ComputeVisibleSelectionInDOMTree().AsSelection();
     const PositionWithAffinity start_position(
         visible_selection.ComputeStartPosition(), visible_selection.Affinity());
-    const IntPoint start_point = GetSelectionStartpoint(start_position);
+    const IntPoint start_point =
+        GetMiddleSelectionCaretOfPosition(start_position);
     const PositionWithAffinity end_position(
         visible_selection.ComputeEndPosition(), visible_selection.Affinity());
-    const IntPoint end_point = GetSelectionEndpoint(end_position);
+    const IntPoint end_point = GetMiddleSelectionCaretOfPosition(end_position);
 
     int left = std::min(start_point.X(), end_point.X());
     int top = std::min(start_point.Y(), end_point.Y());

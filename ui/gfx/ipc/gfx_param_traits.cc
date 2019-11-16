@@ -70,6 +70,8 @@ void ParamTraits<gfx::SelectionBound>::Write(base::Pickle* m,
   WriteParam(m, static_cast<uint32_t>(p.type()));
   WriteParam(m, p.edge_start());
   WriteParam(m, p.edge_end());
+  WriteParam(m, p.visible_edge_start());
+  WriteParam(m, p.visible_edge_end());
   WriteParam(m, p.visible());
 }
 
@@ -79,16 +81,22 @@ bool ParamTraits<gfx::SelectionBound>::Read(const base::Pickle* m,
   gfx::SelectionBound::Type type;
   gfx::PointF edge_start;
   gfx::PointF edge_end;
+  gfx::PointF visible_edge_start;
+  gfx::PointF visible_edge_end;
   bool visible = false;
 
   if (!ReadParam(m, iter, &type) || !ReadParam(m, iter, &edge_start) ||
-      !ReadParam(m, iter, &edge_end) || !ReadParam(m, iter, &visible)) {
+      !ReadParam(m, iter, &edge_end) ||
+      !ReadParam(m, iter, &visible_edge_start) ||
+      !ReadParam(m, iter, &visible_edge_end) || !ReadParam(m, iter, &visible)) {
     return false;
   }
 
   r->set_type(type);
   r->SetEdgeStart(edge_start);
   r->SetEdgeEnd(edge_end);
+  r->SetVisibleEdgeStart(visible_edge_start);
+  r->SetVisibleEdgeEnd(visible_edge_end);
   r->set_visible(visible);
   return true;
 }
@@ -101,6 +109,10 @@ void ParamTraits<gfx::SelectionBound>::Log(const param_type& p,
   LogParam(p.edge_start(), l);
   l->append(", ");
   LogParam(p.edge_end(), l);
+  l->append(", ");
+  LogParam(p.visible_edge_start(), l);
+  l->append(", ");
+  LogParam(p.visible_edge_end(), l);
   l->append(", ");
   LogParam(p.visible(), l);
   l->append(")");

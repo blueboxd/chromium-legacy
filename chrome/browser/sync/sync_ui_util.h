@@ -8,6 +8,8 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 
+class Browser;
+class GURL;
 class Profile;
 
 namespace signin {
@@ -43,10 +45,11 @@ enum AvatarSyncErrorType {
   NO_SYNC_ERROR,                     // No sync error.
   MANAGED_USER_UNRECOVERABLE_ERROR,  // Unrecoverable error for managed users.
   UNRECOVERABLE_ERROR,               // Unrecoverable error for regular users.
-  AUTH_ERROR,                  // Authentication error.
-  UPGRADE_CLIENT_ERROR,        // Out-of-date client error.
-  PASSPHRASE_ERROR,            // Sync passphrase error.
-  SETTINGS_UNCONFIRMED_ERROR,  // Sync settings dialog not confirmed yet.
+  AUTH_ERROR,                        // Authentication error.
+  UPGRADE_CLIENT_ERROR,              // Out-of-date client error.
+  PASSPHRASE_ERROR,                  // Sync passphrase error.
+  TRUSTED_VAULT_KEY_MISSING_ERROR,   // Trusted vault keys missing.
+  SETTINGS_UNCONFIRMED_ERROR,        // Sync settings dialog not confirmed yet.
 };
 
 // Returns the high-level sync status, and populates status and link label
@@ -92,6 +95,18 @@ bool ShouldRequestSyncConfirmation(const syncer::SyncService* service);
 // Returns whether it makes sense to show a Sync passphrase error UI, i.e.
 // whether a missing passphrase is preventing Sync from fully starting up.
 bool ShouldShowPassphraseError(const syncer::SyncService* service);
+
+// Returns whether missing trusted vault keys is preventing sync from starting
+// up encrypted datatypes.
+bool ShouldShowSyncKeysMissingError(const syncer::SyncService* service);
+
+// Opens a tab to trigger a reauth to retrieve the trusted vault keys.
+void OpenTabForSyncKeyRetrieval(Browser* browser);
+
+// Testing-only variant of the above which allows the caller to specify the
+// URL.
+void OpenTabForSyncKeyRetrievalWithURLForTesting(Browser* browser,
+                                                 const GURL& url);
 
 }  // namespace sync_ui_util
 

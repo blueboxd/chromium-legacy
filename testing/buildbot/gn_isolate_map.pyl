@@ -3101,7 +3101,7 @@
     "type": "fuzzer",
   },
   "xr_browser_tests": {
-    "label": "//chrome/browser/vr:xr_browser_tests",
+    "label": "//chrome/test:xr_browser_tests",
     # We can't use the "script" type since we need to be run from the output
     # directory (or at least given the path). Thus, we need to tell mb.py to not
     # automatically append the .exe suffix on Windows.

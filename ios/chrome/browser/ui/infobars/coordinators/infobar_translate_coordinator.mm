@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/translate/translate_infobar_delegate_observer_bridge.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator_implementation.h"
+#import "ios/chrome/browser/ui/infobars/infobar_badge_ui_delegate.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_translate_modal_delegate.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_translate_table_view_controller.h"
@@ -57,8 +58,6 @@
 @synthesize bannerViewController = _bannerViewController;
 // Synthesize since readonly property from superclass is changed to readwrite.
 @synthesize modalViewController = _modalViewController;
-// Synthesized from InfobarCoordinatorImplementation
-@synthesize translateInProgress = _translateInProgress;
 
 - (instancetype)initWithInfoBarDelegate:
     (translate::TranslateInfoBarDelegate*)infoBarDelegate {
@@ -81,7 +80,34 @@
 - (void)translateInfoBarDelegate:(translate::TranslateInfoBarDelegate*)delegate
           didChangeTranslateStep:(translate::TranslateStep)step
                    withErrorType:(translate::TranslateErrors::Type)errorType {
-  // TODO(crbug.com/1014959): implement
+  DCHECK(self.currentStep != step);
+  self.currentStep = step;
+  switch (self.currentStep) {
+    case translate::TranslateStep::TRANSLATE_STEP_TRANSLATING:
+      self.translateInProgress = YES;
+      break;
+    case translate::TranslateStep::TRANSLATE_STEP_AFTER_TRANSLATE: {
+      [self.badgeDelegate infobarWasAccepted:self.infobarType
+                                 forWebState:self.webState];
+      ProceduralBlock completionBlock = ^{
+        // Mark as not in progress after banner dismisses so that
+        // InfobarCoordinator doesn't tell the ContainerViewController that
+        // banner presentation is finished until after the "Page Translated"
+        // banner is presented.
+        self.translateInProgress = NO;
+        [self createBannerViewController];
+        // Present the "Show original" banner.
+        [self presentInfobarBannerAnimated:YES completion:nil];
+      };
+      [self dismissInfobarBannerAnimated:YES completion:completionBlock];
+      break;
+    }
+    case translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE:
+    case translate::TranslateStep::TRANSLATE_STEP_NEVER_TRANSLATE:
+    case translate::TranslateStep::TRANSLATE_STEP_TRANSLATE_ERROR:
+      break;
+  }
+  [self updateBannerTextForCurrentTranslateStep];
 }
 
 - (BOOL)translateInfoBarDelegateDidDismissWithoutInteraction:
@@ -94,16 +120,7 @@
 - (void)start {
   if (!self.started) {
     self.started = YES;
-    self.bannerViewController = [[InfobarBannerViewController alloc]
-        initWithDelegate:self
-           presentsModal:self.hasBadge
-                    type:InfobarType::kInfobarTypeTranslate];
-    self.bannerViewController.titleText = [self titleText];
-    self.bannerViewController.buttonText = [self infobarButtonText];
-    self.bannerViewController.iconImage =
-        [UIImage imageNamed:@"infobar_translate_icon"];
-    self.bannerViewController.optionalAccessibilityLabel =
-        self.bannerViewController.titleText;
+    [self createBannerViewController];
   }
 }
 
@@ -126,17 +143,44 @@
 }
 
 - (void)performInfobarAction {
-  self.userAction |= UserActionTranslate;
+  switch (self.currentStep) {
+    case translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE:
+      self.userAction |= UserActionTranslate;
 
-  // TODO(crbug.com/1014959): Add metrics
-  if (self.translateInfoBarDelegate->ShouldAutoAlwaysTranslate()) {
-    self.translateInfoBarDelegate->ToggleAlwaysTranslate();
+      // TODO(crbug.com/1014959): Add metrics
+      if (self.translateInfoBarDelegate->ShouldAutoAlwaysTranslate()) {
+        // TODO(crbug.com/1014959): Figure out if we should prompt user with
+        // snackbar to auto always translate.
+        self.translateInfoBarDelegate->ToggleAlwaysTranslate();
+      }
+      self.translateInfoBarDelegate->Translate();
+      break;
+    case translate::TranslateStep::TRANSLATE_STEP_AFTER_TRANSLATE: {
+      self.userAction |= UserActionRevert;
+
+      // TODO(crbug.com/1014959): Add metrics
+
+      self.translateInfoBarDelegate->RevertWithoutClosingInfobar();
+      // There is no completion signal (i.e. change of TranslateStep) in
+      // translateInfoBarDelegate:didChangeTranslateStep:withErrorType: in
+      // response to RevertWithoutClosingInfobar(), so revert Infobar badge
+      // accepted state here.
+      self.currentStep =
+          translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE;
+      [self.badgeDelegate infobarWasReverted:self.infobarType
+                                 forWebState:self.webState];
+      break;
+    }
+    case translate::TranslateStep::TRANSLATE_STEP_TRANSLATING:
+    case translate::TranslateStep::TRANSLATE_STEP_TRANSLATE_ERROR:
+    case translate::TranslateStep::TRANSLATE_STEP_NEVER_TRANSLATE:
+      NOTREACHED() << "Translate infobar should not be able to perform its "
+                      "action in this state.";
+      break;
   }
-  self.translateInfoBarDelegate->Translate();
 }
 
 - (void)infobarWasDismissed {
-  // Release these strong ViewControllers at the time of infobar dismissal.
   self.bannerViewController = nil;
   self.modalViewController = nil;
 }
@@ -159,7 +203,8 @@
 }
 
 - (void)infobarBannerWillBeDismissed:(BOOL)userInitiated {
-  // TODO(crbug.com/1014959): implement
+  if (userInitiated && self.translateInfoBarDelegate)
+    self.translateInfoBarDelegate->InfoBarDismissed();
 }
 
 #pragma mark - Modal
@@ -222,15 +267,53 @@
 
 #pragma mark - Private
 
-- (NSString*)titleText {
-  // TODO(crbug.com/1014959): Return different strings depending on
-  // TranslateStep. Also, consider looking into base::i18n::MessageFormatter to
-  // ensure the dstring can be translated properly with a dynamic variable
-  // inserted.
-  return [NSString
-      stringWithFormat:@"%@ %@?", @"Translate",
-                       base::SysUTF16ToNSString(self.translateInfoBarDelegate
-                                                    ->target_language_name())];
+// Initialize and setup the banner.
+- (void)createBannerViewController {
+  self.bannerViewController = [[InfobarBannerViewController alloc]
+      initWithDelegate:self
+         presentsModal:self.hasBadge
+                  type:InfobarType::kInfobarTypeTranslate];
+  [self updateBannerTextForCurrentTranslateStep];
+  self.bannerViewController.iconImage =
+      [UIImage imageNamed:@"infobar_translate_icon"];
+  self.bannerViewController.optionalAccessibilityLabel =
+      self.bannerViewController.titleText;
+}
+
+// Updates the banner's text for |self.currentStep|.
+- (void)updateBannerTextForCurrentTranslateStep {
+  self.bannerViewController.titleText = [self bannerTitleText];
+  self.bannerViewController.buttonText = [self infobarButtonText];
+  self.bannerViewController.subTitleText = [self bannerSubtitleText];
+}
+
+// Returns the title text of the banner depending on the |currentStep|.
+- (NSString*)bannerTitleText {
+  switch (self.currentStep) {
+    case translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE:
+      return l10n_util::GetNSString(
+          IDS_IOS_TRANSLATE_INFOBAR_BEFORE_TRANSLATE_BANNER_TITLE);
+    case translate::TranslateStep::TRANSLATE_STEP_TRANSLATING:
+      return l10n_util::GetNSString(
+          IDS_IOS_TRANSLATE_INFOBAR_TRANSLATING_BANNER_TITLE);
+    case translate::TranslateStep::TRANSLATE_STEP_AFTER_TRANSLATE:
+      return l10n_util::GetNSString(
+          IDS_IOS_TRANSLATE_INFOBAR_AFTER_TRANSLATE_BANNER_TITLE);
+    case translate::TranslateStep::TRANSLATE_STEP_NEVER_TRANSLATE:
+    case translate::TranslateStep::TRANSLATE_STEP_TRANSLATE_ERROR:
+      NOTREACHED() << "Should not be presenting Banner in this TranslateStep";
+      return nil;
+  }
+}
+
+// Returns the subtitle text of the banner. Doesn't depend on state of
+// |self.currentStep|.
+- (NSString*)bannerSubtitleText {
+  // Formatted as "[source] to [target]".
+  return l10n_util::GetNSStringF(
+      IDS_IOS_TRANSLATE_INFOBAR_TRANSLATE_BANNER_SUBTITLE,
+      self.translateInfoBarDelegate->original_language_name(),
+      self.translateInfoBarDelegate->target_language_name());
 }
 
 // Returns the text of the banner and modal action button depending on the

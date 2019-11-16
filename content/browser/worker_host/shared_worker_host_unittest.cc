@@ -84,6 +84,12 @@ class SharedWorkerHostTest : public testing::Test {
         blink::mojom::WorkerMainScriptLoadParams::New();
     main_script_load_params->response_head =
         network::mojom::URLResponseHead::New();
+    mojo::ScopedDataPipeProducerHandle producer_handle;
+    mojo::ScopedDataPipeConsumerHandle consumer_handle;
+    MojoResult rv =
+        mojo::CreateDataPipe(nullptr, &producer_handle, &consumer_handle);
+    ASSERT_EQ(MOJO_RESULT_OK, rv);
+    main_script_load_params->response_body = std::move(consumer_handle);
     auto subresource_loader_factories =
         std::make_unique<blink::URLLoaderFactoryBundleInfo>();
 

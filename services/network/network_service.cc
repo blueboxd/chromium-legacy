@@ -115,14 +115,14 @@ void OnGetNetworkList(std::unique_ptr<net::NetworkInterfaceList> networks,
 #if defined(OS_ANDROID) && BUILDFLAG(USE_KERBEROS)
 // Used for Negotiate authentication on Android, which needs to generate tokens
 // in the browser process.
-class NetworkServiceAuthNegotiateAndroid : public net::HttpNegotiateAuthSystem {
+class NetworkServiceAuthNegotiateAndroid : public net::HttpAuthMechanism {
  public:
   NetworkServiceAuthNegotiateAndroid(NetworkContext* network_context,
                                      const net::HttpAuthPreferences* prefs)
       : network_context_(network_context), auth_negotiate_(prefs) {}
   ~NetworkServiceAuthNegotiateAndroid() override = default;
 
-  // HttpNegotiateAuthSystem implementation:
+  // HttpAuthMechanism implementation:
   bool Init(const net::NetLogWithSource& net_log) override {
     return auth_negotiate_.Init(net_log);
   }
@@ -173,7 +173,7 @@ class NetworkServiceAuthNegotiateAndroid : public net::HttpNegotiateAuthSystem {
   base::WeakPtrFactory<NetworkServiceAuthNegotiateAndroid> weak_factory_{this};
 };
 
-std::unique_ptr<net::HttpNegotiateAuthSystem> CreateAuthSystem(
+std::unique_ptr<net::HttpAuthMechanism> CreateAuthSystem(
     NetworkContext* network_context,
     const net::HttpAuthPreferences* prefs) {
   return std::make_unique<NetworkServiceAuthNegotiateAndroid>(network_context,

@@ -4302,6 +4302,9 @@
     'mac_specific_chromium_gtests': {
       'sandbox_mac_unittests': {},
       'updater_tests': {},
+      'xr_browser_tests': {
+        'test': 'xr_browser_tests',
+      },
     },
 
     'mac_specific_isolated_scripts': {

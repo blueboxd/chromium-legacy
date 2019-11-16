@@ -23,6 +23,8 @@ WebXrVrBrowserTestBase::~WebXrVrBrowserTestBase() = default;
 
 void WebXrVrBrowserTestBase::EnterSessionWithUserGesture(
     content::WebContents* web_contents) {
+// Consent dialogs don't appear on platforms with enable_vr = false.
+#if BUILDFLAG(ENABLE_VR)
   if (!fake_consent_manager_) {
     XRSessionRequestConsentManager::SetInstanceForTesting(&consent_manager_);
     ON_CALL(consent_manager_, ShowDialogAndGetConsent(_, _, _))
@@ -33,6 +35,7 @@ void WebXrVrBrowserTestBase::EnterSessionWithUserGesture(
               return nullptr;
             }));
   }
+#endif  // BUILDFLAG(ENABLE_VR)
 
   // ExecuteScript runs with a user gesture, so we can just directly call
   // requestSession instead of having to do the hacky workaround the
@@ -58,8 +61,11 @@ void WebXrVrBrowserTestBase::EnterSessionWithUserGestureOrFail(
 }
 
 void WebXrVrBrowserTestBase::EndSession(content::WebContents* web_contents) {
+// Consent dialogs don't appear on platforms with enable_vr = false.
+#if BUILDFLAG(ENABLE_VR)
   if (!fake_consent_manager_)
     XRSessionRequestConsentManager::SetInstanceForTesting(nullptr);
+#endif  // BUILDFLAG(ENABLE_VR)
 
   RunJavaScriptOrFail(
       "sessionInfos[sessionTypes.IMMERSIVE].currentSession.end()",
@@ -78,6 +84,8 @@ gfx::Vector3dF WebXrVrBrowserTestBase::GetControllerOffset() const {
   return gfx::Vector3dF();
 }
 
+// Consent dialogs don't appear on platforms with enable_vr = false.
+#if BUILDFLAG(ENABLE_VR)
 void WebXrVrBrowserTestBase::SetupFakeConsentManager(
     FakeXRSessionRequestConsentManager::UserResponse user_response) {
   fake_consent_manager_.reset(new FakeXRSessionRequestConsentManager(
@@ -85,6 +93,7 @@ void WebXrVrBrowserTestBase::SetupFakeConsentManager(
   XRSessionRequestConsentManager::SetInstanceForTesting(
       fake_consent_manager_.get());
 }
+#endif  // BUILDFLAG(ENABLE_VR)
 
 WebXrVrRuntimelessBrowserTest::WebXrVrRuntimelessBrowserTest() {
 #if BUILDFLAG(ENABLE_WINDOWS_MR)
@@ -94,7 +103,11 @@ WebXrVrRuntimelessBrowserTest::WebXrVrRuntimelessBrowserTest() {
 
 WebXrVrRuntimelessBrowserTestSensorless::
     WebXrVrRuntimelessBrowserTestSensorless() {
+  // WebXrOrientationSensorDevice is only defined when the enable_vr flag is
+  // set.
+#if BUILDFLAG(ENABLE_VR)
   disable_features_.push_back(device::kWebXrOrientationSensorDevice);
+#endif  // BUILDFLAG(ENABLE_VR)
 }
 
 #if defined(OS_WIN)

@@ -9912,12 +9912,19 @@ Called by update_net_error_codes.py.-->
   <int value="19" label="QUIC/41"/>
   <int value="20" label="QUIC/42"/>
   <int value="21" label="QUIC/43"/>
-  <int value="22" label="QUIC/99"/>
+  <int value="22" label="HTTP/3 (Q099)"/>
   <int value="23" label="QUIC/44"/>
   <int value="24" label="QUIC/45"/>
   <int value="25" label="QUIC/46"/>
   <int value="26" label="QUIC/47"/>
   <int value="27" label="QUIC/999"/>
+  <int value="28" label="HTTP/3 (Q048)"/>
+  <int value="29" label="HTTP/3 (Q049)"/>
+  <int value="30" label="HTTP/3 (Q050)"/>
+  <int value="31" label="HTTP/3 (T048)"/>
+  <int value="32" label="HTTP/3 (T049)"/>
+  <int value="33" label="HTTP/3 (T050)"/>
+  <int value="34" label="HTTP/3 (T099)"/>
 </enum>
 
 <enum name="ConnectionResult">

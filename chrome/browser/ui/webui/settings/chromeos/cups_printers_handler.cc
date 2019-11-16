@@ -51,6 +51,7 @@
 #include "components/device_event_log/device_event_log.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/filename_util.h"
@@ -940,16 +941,22 @@ void CupsPrintersHandler::HandleSelectPPDFile(const base::ListValue* args) {
           content::BrowserContext::GetDownloadManager(profile_))
           ->DownloadPath();
 
+  content::WebContents* web_contents = web_ui()->GetWebContents();
   select_file_dialog_ = ui::SelectFileDialog::Create(
-      this,
-      std::make_unique<ChromeSelectFilePolicy>(web_ui()->GetWebContents()));
+      this, std::make_unique<ChromeSelectFilePolicy>(web_contents));
+
   gfx::NativeWindow owning_window =
-      chrome::FindBrowserWithWebContents(web_ui()->GetWebContents())
-          ->window()
-          ->GetNativeWindow();
+      web_contents ? chrome::FindBrowserWithWebContents(web_contents)
+                         ->window()
+                         ->GetNativeWindow()
+                   : gfx::kNullNativeWindow;
+
+  ui::SelectFileDialog::FileTypeInfo file_type_info;
+  file_type_info.extensions.push_back({"ppd"});
+  file_type_info.extensions.push_back({"ppd.gz"});
   select_file_dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_OPEN_FILE, base::string16(), downloads_path,
-      nullptr, 0, FILE_PATH_LITERAL(""), owning_window, nullptr);
+      &file_type_info, 0, FILE_PATH_LITERAL(""), owning_window, nullptr);
 }
 
 void CupsPrintersHandler::ResolveManufacturersDone(

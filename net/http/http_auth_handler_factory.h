@@ -14,7 +14,7 @@
 #include "build/build_config.h"
 #include "net/base/net_export.h"
 #include "net/http/http_auth.h"
-#include "net/http/http_negotiate_auth_system.h"
+#include "net/http/http_auth_mechanism.h"
 #include "net/http/url_security_manager.h"
 #include "net/net_buildflags.h"
 
@@ -130,7 +130,7 @@ class NET_EXPORT HttpAuthHandlerFactory {
   // Factory callback to create the auth system used for Negotiate
   // authentication.
   using NegotiateAuthSystemFactory =
-      base::RepeatingCallback<std::unique_ptr<net::HttpNegotiateAuthSystem>(
+      base::RepeatingCallback<std::unique_ptr<net::HttpAuthMechanism>(
           const net::HttpAuthPreferences*)>;
 
   // Creates a standard HttpAuthHandlerRegistryFactory. The caller is

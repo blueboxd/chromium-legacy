@@ -102,10 +102,10 @@ constexpr char kIcon[] = "icon";
 ContactsManager::ContactsManager() {
   properties_ = {kEmail, kName, kTel};
 
-  if (RuntimeEnabledFeatures::ContactsManagerAddressesEnabled())
+  if (RuntimeEnabledFeatures::ContactsManagerExtraPropertiesEnabled()) {
     properties_.push_back(kAddress);
-  if (RuntimeEnabledFeatures::ContactsManagerIconsEnabled())
     properties_.push_back(kIcon);
+  }
 }
 
 ContactsManager::~ContactsManager() = default;

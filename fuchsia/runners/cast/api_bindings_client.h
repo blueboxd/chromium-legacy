@@ -22,7 +22,8 @@ class ApiBindingsClient {
   // after which the client may invoke AttachToFrame().
   ApiBindingsClient(
       fidl::InterfaceHandle<chromium::cast::ApiBindings> bindings_service,
-      base::OnceClosure on_bindings_received_callback);
+      base::OnceClosure on_bindings_received_callback,
+      base::OnceClosure on_error_callback);
   ~ApiBindingsClient();
 
   // Injects APIs and handles channel connections on |frame|.

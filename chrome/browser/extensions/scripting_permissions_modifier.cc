@@ -198,13 +198,7 @@ void ScriptingPermissionsModifier::SetWithholdHostPermissions(
 bool ScriptingPermissionsModifier::HasWithheldHostPermissions() const {
   DCHECK(CanAffectExtension());
 
-  base::Optional<bool> pref_value =
-      extension_prefs_->GetShouldWithholdPermissions(extension_->id());
-  if (!pref_value.has_value()) {
-    // If there is no value present, default to false.
-    return false;
-  }
-  return *pref_value;
+  return extension_prefs_->GetShouldWithholdPermissions(extension_->id());
 }
 
 bool ScriptingPermissionsModifier::CanAffectExtension() const {
@@ -359,26 +353,26 @@ ScriptingPermissionsModifier::WithholdPermissionsIfNecessary(
     const Extension& extension,
     const ExtensionPrefs& extension_prefs,
     const PermissionSet& permissions) {
-  bool should_withhold = false;
-  if (ShouldConsiderExtension(extension)) {
-    base::Optional<bool> pref_value =
-        extension_prefs.GetShouldWithholdPermissions(extension.id());
-    if (pref_value.has_value()) {
-      should_withhold = pref_value.value();
-    } else {
-      should_withhold =
-          extension.creation_flags() & Extension::WITHHOLD_PERMISSIONS;
-    }
-  } else {
+  if (!ShouldConsiderExtension(extension)) {
     // The withhold creation flag should never have been set in cases where
     // withholding isn't allowed.
     DCHECK(!(extension.creation_flags() & Extension::WITHHOLD_PERMISSIONS));
-  }
-
-  should_withhold &= !permissions.effective_hosts().is_empty();
-  if (!should_withhold) {
     return permissions.Clone();
   }
+
+  if (permissions.effective_hosts().is_empty())
+    return permissions.Clone();  // No hosts to withhold.
+
+  bool should_withhold = false;
+  if (extension.creation_flags() & Extension::WITHHOLD_PERMISSIONS) {
+    should_withhold = true;
+  } else {
+    should_withhold =
+        extension_prefs.GetShouldWithholdPermissions(extension.id());
+  }
+
+  if (!should_withhold)
+    return permissions.Clone();
 
   // Only grant host permissions that the user has explicitly granted at
   // runtime through the runtime host permissions feature or the optional

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/web_ui_test_handler.h"
 #include "chrome/common/chrome_paths.h"
@@ -18,8 +19,10 @@
 #include "chrome/test/data/webui/web_ui_test.mojom.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_client.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "services/service_manager/public/cpp/binder_map.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -54,10 +57,44 @@ class WebUITestPageHandler : public web_ui_test::mojom::TestRunner,
 
 }  // namespace
 
-MojoWebUIBrowserTest::MojoWebUIBrowserTest() {
-  registry_.AddInterface<web_ui_test::mojom::TestRunner>(base::BindRepeating(
-      &MojoWebUIBrowserTest::BindTestRunner, base::Unretained(this)));
-}
+class MojoWebUIBrowserTest::WebUITestContentBrowserClient
+    : public ChromeContentBrowserClient {
+ public:
+  WebUITestContentBrowserClient() {}
+  WebUITestContentBrowserClient(const WebUITestContentBrowserClient&) = delete;
+  WebUITestContentBrowserClient& operator=(
+      const WebUITestContentBrowserClient&) = delete;
+
+  ~WebUITestContentBrowserClient() override {}
+
+  void RegisterBrowserInterfaceBindersForFrame(
+      service_manager::BinderMapWithContext<content::RenderFrameHost*>* map)
+      override {
+    ChromeContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(map);
+    map->Add<web_ui_test::mojom::TestRunner>(
+        base::BindRepeating(&WebUITestContentBrowserClient::BindWebUITestRunner,
+                            base::Unretained(this)));
+  }
+
+  void set_test_page_handler(WebUITestPageHandler* test_page_handler) {
+    test_page_handler_ = test_page_handler;
+  }
+
+  void BindWebUITestRunner(
+      content::RenderFrameHost* const render_frame_host,
+      mojo::PendingReceiver<web_ui_test::mojom::TestRunner> receiver) {
+    // Right now, this is expected to be called only for main frames.
+    ASSERT_FALSE(render_frame_host->GetParent());
+    test_page_handler_->BindToTestRunnerReceiver(std::move(receiver));
+  }
+
+ private:
+  WebUITestPageHandler* test_page_handler_;
+};
+
+MojoWebUIBrowserTest::MojoWebUIBrowserTest()
+    : test_content_browser_client_(
+          std::make_unique<WebUITestContentBrowserClient>()) {}
 
 MojoWebUIBrowserTest::~MojoWebUIBrowserTest() = default;
 
@@ -69,26 +106,8 @@ void MojoWebUIBrowserTest::SetUpOnMainThread() {
   pak_path = pak_path.AppendASCII("browser_tests.pak");
   ui::ResourceBundle::GetSharedInstance().AddDataPackFromPath(
       pak_path, ui::SCALE_FACTOR_NONE);
-}
 
-void MojoWebUIBrowserTest::OnInterfaceRequestFromFrame(
-    content::RenderFrameHost* render_frame_host,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle* interface_pipe) {
-  // Right now, this is expected to be called only for main frames.
-  if (render_frame_host->GetParent()) {
-    FAIL() << "Terminating renderer for requesting " << interface_name
-           << " interface from subframe";
-    render_frame_host->GetProcess()->ShutdownForBadMessage(
-        content::RenderProcessHost::CrashReportMode::GENERATE_CRASH_DUMP);
-    return;
-  }
-  registry_.TryBindInterface(interface_name, interface_pipe);
-}
-
-void MojoWebUIBrowserTest::BindTestRunner(
-    mojo::PendingReceiver<web_ui_test::mojom::TestRunner> receiver) {
-  test_page_handler_->BindToTestRunnerReceiver(std::move(receiver));
+  content::SetBrowserClientForTesting(test_content_browser_client_.get());
 }
 
 void MojoWebUIBrowserTest::SetupHandlers() {
@@ -99,10 +118,8 @@ void MojoWebUIBrowserTest::SetupHandlers() {
   ASSERT_TRUE(web_ui_instance != nullptr);
 
   auto test_handler = std::make_unique<WebUITestPageHandler>(web_ui_instance);
-  test_page_handler_ = test_handler.get();
+  test_content_browser_client_->set_test_page_handler(test_handler.get());
   set_test_handler(std::move(test_handler));
-
-  Observe(web_ui_instance->GetWebContents());
 }
 
 void MojoWebUIBrowserTest::BrowsePreload(const GURL& browse_to) {

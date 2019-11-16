@@ -14,16 +14,10 @@ namespace blink {
 IceTransportAdapterImpl::IceTransportAdapterImpl(
     Delegate* delegate,
     std::unique_ptr<cricket::PortAllocator> port_allocator,
-    std::unique_ptr<webrtc::AsyncResolverFactory> async_resolver_factory,
-    rtc::Thread* thread)
+    std::unique_ptr<webrtc::AsyncResolverFactory> async_resolver_factory)
     : delegate_(delegate),
       port_allocator_(std::move(port_allocator)),
       async_resolver_factory_(std::move(async_resolver_factory)) {
-  // TODO(bugs.webrtc.org/9419): Remove once WebRTC can be built as a component.
-  if (!rtc::ThreadManager::Instance()->CurrentThread()) {
-    rtc::ThreadManager::Instance()->SetCurrentThread(thread);
-  }
-
   // These settings are copied from PeerConnection:
   // https://codesearch.chromium.org/chromium/src/third_party/webrtc/pc/peerconnection.cc?l=4708&rcl=820ebd0f661696043959b5105b2814e0edd8b694
   port_allocator_->set_step_delay(cricket::kMinimumStepDelay);
@@ -55,14 +49,8 @@ IceTransportAdapterImpl::IceTransportAdapterImpl(
 
 IceTransportAdapterImpl::IceTransportAdapterImpl(
     Delegate* delegate,
-    rtc::scoped_refptr<webrtc::IceTransportInterface> ice_transport,
-    rtc::Thread* thread)
+    rtc::scoped_refptr<webrtc::IceTransportInterface> ice_transport)
     : delegate_(delegate), ice_transport_channel_(ice_transport) {
-  // TODO(bugs.webrtc.org/9419): Remove once WebRTC can be built as a component.
-  if (!rtc::ThreadManager::Instance()->CurrentThread()) {
-    rtc::ThreadManager::Instance()->SetCurrentThread(thread);
-  }
-
   // The native webrtc peer connection might have been closed in the meantime,
   // clearing the ice transport channel; don't do anything in that case. |this|
   // will eventually be destroyed when the blink layer gets notified by the

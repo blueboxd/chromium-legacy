@@ -299,6 +299,12 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_AUTOFILL_SAVE_CARD" desc="Title for the view for saving a credit card. [Length: 15em] [iOS only]">
         Save Card
       </message>
+      <message name="IDS_IOS_AUTOFILL_SAVE_ELLIPSIS" desc="Title for the button that presents the View for Saving a credit card. The ellipsis indicate that a following action (the presentation) will take place. [Length: 10em] [iOS only]">
+        Save...
+      </message>
+      <message name="IDS_IOS_AUTOFILL_SAVE_CARD_BADGE_HINT" desc="Accessibility Hint for the Save Card button which presents the current options to Save a Card. This is spoken by VoiceOver.   [Length:Unlimited] [iOS only]">
+        Options to Save Card
+      </message>
       <message name="IDS_IOS_AUTOFILL_FULLNAME" desc="Title of the field of a profile address representing the full name of the addressee. [Length: 15em] [iOS only]">
         Full Name
       </message>
@@ -799,6 +805,9 @@ locale.  The strings in this file are specific to iOS.
       </message>
       <message name="IDS_IOS_INFOBAR_BADGES_PASSWORD_HINT" desc="The iOS infobar badge item for saving password credentials [Length:Unlimited]">
         Options to Save Password
+      </message>
+      <message name="IDS_IOS_INFOBAR_BADGES_TRANSLATE_HINT" desc="The iOS infobar badge item for translate [Length:Unlimited]">
+        Options to Translate the page
       </message>
       <message name="IDS_IOS_INFOBAR_MODAL_PASSWORD_SETTINGS_HINT" desc="Accessibility hint that indicates to the user that they can access the Password Settings. [Length:Unlimited]">
         Access password settings
@@ -1963,6 +1972,9 @@ New Search
       <message name="IDS_IOS_TRANSLATE_INFOBAR_ALWAYS_TRANSLATE_SOURCE_BUTTON_TITLE" desc="The text for the button in the Translate Infobar modal to always translate the source language. The variable inserted will be the source language.[iOS only]">
         Always translate <ph name="LANGUAGE">$1</ph>
       </message>
+      <message name="IDS_IOS_TRANSLATE_INFOBAR_OFFER_TRANSLATE_SOURCE_BUTTON_TITLE" desc="The text for the button in the Translate Infobar modal to revert back to asking the user to translate. The variable inserted will be the source language.[iOS only]">
+        Offer to translate <ph name="LANGUAGE">$1</ph>
+      </message>
       <message name="IDS_IOS_TRANSLATE_INFOBAR_AFTER_TRANSLATE_BANNER_TITLE" desc="The text for the title of the Translate Message Banner after translate was successful. [iOS only]">
         Page Translated
       </message>
@@ -1972,6 +1984,12 @@ New Search
       <message name="IDS_IOS_TRANSLATE_INFOBAR_MODAL_SOURCE_LANGUAGE_FIELD_NAME" desc="The text field name for the source language in the Translate Infobar modal. [iOS only]">
         From
       </message>
+      <message name="IDS_IOS_TRANSLATE_INFOBAR_MODAL_LANGUAGE_FIELD_NAME_HINT" desc="Text accompanying the language field name to indicate that the user can tap the row to show options to change the language. [iOS only]">
+        Tap to change language.
+      </message>
+      <message name="IDS_IOS_TRANSLATE_INFOBAR_MODAL_SELECT_LANGUAGE_HINT" desc="Text alongside the language to indicate to the user change the language by selecting the row. [iOS only]">
+        Tap to change to this language.
+      </message>
       <message name="IDS_IOS_TRANSLATE_INFOBAR_MODAL_TARGET_LANGUAGE_FIELD_NAME" desc="The text field name for the target language in the Translate Infobar modal. [iOS only]">
         To
       </message>
@@ -1980,6 +1998,9 @@ New Search
       </message>
       <message name="IDS_IOS_TRANSLATE_INFOBAR_NEVER_TRANSLATE_SITE_BUTTON_TITLE" desc="The text for the button in the Translate Infobar modal to never translate the current site. [iOS only]">
         Never translate this site
+      </message>
+      <message name="IDS_IOS_TRANSLATE_INFOBAR_OFFER_TRANSLATE_SITE_BUTTON_TITLE" desc="The text for the button in the Translate Infobar modal to revert back to asking the user to translate the current site. [iOS only]">
+        Offer to translate this site
       </message>
       <message name="IDS_IOS_TRANSLATE_INFOBAR_NEVER_TRANSLATE_SOURCE_BUTTON_TITLE" desc="The text for the button in the Translate Infobar modal to never translate the source language. The variable inserted will be the source language.[iOS only]">
         Never translate <ph name="LANGUAGE">$1</ph>

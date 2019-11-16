@@ -30,6 +30,7 @@ const char kEmbeddedSetupWindowsUrlSuffix[] = "embedded/setup/windows";
 // signs in to Chrome. Note that Gaia will pass this client specified parameter
 // to all URLs that are loaded as part of thi sign-in flow.
 const char kSigninChromeSyncDice[] = "signin/chrome/sync?ssp=1";
+const char kSigninChromeSyncKeysUrl[] = "encryption/unlock/desktop";
 const char kServiceLoginAuthUrlSuffix[] = "ServiceLoginAuth";
 const char kServiceLogoutUrlSuffix[] = "Logout";
 const char kContinueUrlForLogoutSuffix[] = "chrome/blank.html";
@@ -119,6 +120,7 @@ GaiaUrls::GaiaUrls() {
   embedded_setup_windows_url_ =
       gaia_url_.Resolve(kEmbeddedSetupWindowsUrlSuffix);
   signin_chrome_sync_dice_ = gaia_url_.Resolve(kSigninChromeSyncDice);
+  signin_chrome_sync_keys_url_ = gaia_url_.Resolve(kSigninChromeSyncKeysUrl);
   service_login_auth_url_ = gaia_url_.Resolve(kServiceLoginAuthUrlSuffix);
   service_logout_url_ = gaia_url_.Resolve(kServiceLogoutUrlSuffix);
   continue_url_for_logout_ = gaia_url_.Resolve(kContinueUrlForLogoutSuffix);
@@ -194,6 +196,10 @@ const GURL& GaiaUrls::embedded_setup_windows_url() const {
 
 const GURL& GaiaUrls::signin_chrome_sync_dice() const {
   return signin_chrome_sync_dice_;
+}
+
+const GURL& GaiaUrls::signin_chrome_sync_keys_url() const {
+  return signin_chrome_sync_keys_url_;
 }
 
 const GURL& GaiaUrls::service_login_auth_url() const {

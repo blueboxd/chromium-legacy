@@ -9,7 +9,7 @@
 goog.provide('Tutorial');
 
 goog.require('Msgs');
-goog.require('cvox.AbstractEarcons');
+goog.require('AbstractEarcons');
 
 /**
  * @constructor
@@ -35,8 +35,8 @@ Tutorial = function() {
  * @private
  */
 Tutorial.buildEarconPage_ = function(container) {
-  for (var earconId in cvox.EarconDescription) {
-    var msgid = cvox.EarconDescription[earconId];
+  for (var earconId in EarconDescription) {
+    var msgid = EarconDescription[earconId];
     var earconElement = document.createElement('p');
     earconElement.innerText = Msgs.getMsg(msgid);
     earconElement.setAttribute('tabindex', 0);
@@ -44,12 +44,11 @@ Tutorial.buildEarconPage_ = function(container) {
     var playEarcon = function(earcon) {
       if (prevEarcon) {
         chrome.extension
-            .getBackgroundPage()['cvox']['ChromeVox']['earcons']['cancelEarcon'](
+            .getBackgroundPage()['ChromeVox']['earcons']['cancelEarcon'](
                 prevEarcon);
       }
       chrome.extension
-          .getBackgroundPage()['cvox']['ChromeVox']['earcons']['playEarcon'](
-              earcon);
+          .getBackgroundPage()['ChromeVox']['earcons']['playEarcon'](earcon);
       prevEarcon = earcon;
     }.bind(this, earconId);
     earconElement.addEventListener('focus', playEarcon, false);

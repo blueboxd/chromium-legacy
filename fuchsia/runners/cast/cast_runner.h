@@ -62,6 +62,9 @@ class CastRunner : public WebContentRunner {
   void MaybeStartComponent(
       CastComponent::CastComponentParams* pending_component_params);
 
+  // Cancels the launch of a component.
+  void CancelComponentLaunch(CastComponent::CastComponentParams* params);
+
   void CreateAndRegisterCastComponent(
       CastComponent::CastComponentParams params);
   void GetConfigCallback(CastComponent::CastComponentParams* pending_component,

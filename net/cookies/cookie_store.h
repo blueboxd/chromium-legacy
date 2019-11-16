@@ -152,7 +152,6 @@ class NET_EXPORT CookieStore {
   virtual void DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd,
                                const std::string& parent_absolute_name) const;
 
- protected:
   // This may be null if no delegate has been set yet, or the delegate has been
   // reset to null.
   const CookieAccessDelegate* cookie_access_delegate() const {

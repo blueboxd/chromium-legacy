@@ -893,6 +893,7 @@
 <translation id="5329858041417644019">您的浏览器不受管理</translation>
 <translation id="5332219387342487447">送货方式</translation>
 <translation id="5334013548165032829">详细的系统日志</translation>
+<translation id="534295439873310000">NFC 设备</translation>
 <translation id="5344579389779391559">此页面可能会向您收取费用</translation>
 <translation id="5355557959165512791">您目前无法访问 <ph name="SITE" />，因为此证书已被撤消。网络错误和攻击行为通常是暂时的，因此，此网页稍后可能会恢复正常。</translation>
 <translation id="536296301121032821">无法存储策略设置</translation>
@@ -1513,6 +1514,7 @@
 <translation id="8466379296835108687">{COUNT,plural, =1{1 张信用卡}other{# 张信用卡}}</translation>
 <translation id="8473863474539038330">地址和其他信息</translation>
 <translation id="8479754468255770962">钉装（左下角）</translation>
+<translation id="8481133456511676116">您是想访问 <ph name="DOMAIN" /> 吧？</translation>
 <translation id="8483780878231876732">要使用您 Google 帐号中的信用卡，请登录 Chrome</translation>
 <translation id="8488350697529856933">适用对象</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> 的响应时间过长。</translation>

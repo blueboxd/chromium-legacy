@@ -50,8 +50,7 @@ export const SettingsBehavior = {
    *     to false.
    */
   setSettingSplice: function(settingName, start, end, newValue, noSticky) {
-    getInstance().setSettingSplice(
-        settingName, start, end, newValue, noSticky);
+    getInstance().setSettingSplice(settingName, start, end, newValue, noSticky);
   },
 
   /**

@@ -714,7 +714,7 @@ void LoginDisplayHostWebUI::Observe(
 
 void LoginDisplayHostWebUI::RenderProcessGone(base::TerminationStatus status) {
   // Do not try to restore on shutdown
-  if (browser_shutdown::GetShutdownType() != browser_shutdown::NOT_VALID)
+  if (browser_shutdown::HasShutdownStarted())
     return;
 
   crash_count_++;

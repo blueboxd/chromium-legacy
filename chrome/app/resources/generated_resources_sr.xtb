@@ -254,6 +254,7 @@
 <translation id="1365180424462182382"><ph name="BEGIN_LINK" />Прегледачем управља<ph name="END_LINK" /> <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="1366177842110999534">Покрените Linux алатке, уређиваче и IDE-ове на <ph name="DEVICE_TYPE" />-у. &lt;a target="_blank" href="<ph name="URL" />"&gt;Сазнајте више&lt;/a&gt;</translation>
 <translation id="1367951781824006909">Изабери датотеку</translation>
+<translation id="1369149969991017342">Приступ помоћу прекидача (контролишите рачунар помоћу само једног или два прекидача)</translation>
 <translation id="1372841398847029212">Синхронизујте са налогом</translation>
 <translation id="1374844444528092021">Сертификат који захтева мрежа „<ph name="NETWORK_NAME" />“ или није инсталиран или више није важећи. Набавите нови сертификат и покушајте поново да се повежете.</translation>
 <translation id="1375321115329958930">Сачуване лозинке</translation>
@@ -562,6 +563,7 @@
 <translation id="1794791083288629568">Шаљи повратне информације као помоћ за решавање овог проблема.</translation>
 <translation id="1795214765651529549">Користи класичну</translation>
 <translation id="1799071797295057738">Додатак „<ph name="EXTENSION_NAME" />“ је аутоматски онемогућен.</translation>
+<translation id="1802624026913571222">Пређи у стање спавања када се поклопац затвори</translation>
 <translation id="1802687198411089702">Страница се не одазива. Можете да сачекате да почне да се одазива или да је затворите.</translation>
 <translation id="1802931390041703523">Flash је блокиран на овој страници</translation>
 <translation id="1803531841600994172">Језик на који желите да преводите</translation>
@@ -663,6 +665,7 @@
 <translation id="1937774647013465102">Не можете да увезете тип архитектуре контејнера <ph name="ARCHITECTURE_CONTAINER" /> помоћу овог уређаја, који је <ph name="ARCHITECTURE_DEVICE" />. Можете да пробате да вратите овај контејнер на други уређај или да отворите апликацију Датотеке да бисте приступили датотекама у слици овог контејнера.</translation>
 <translation id="1938351510777341717">Спољна команда</translation>
 <translation id="1940546824932169984">Повезани уређаји</translation>
+<translation id="1942600407708803723">Искључи се када се поклопац затвори</translation>
 <translation id="1944921356641260203">Ажурирање је пронађено</translation>
 <translation id="1946577776959096882">Прикажи налоге</translation>
 <translation id="1951012854035635156">Помоћник</translation>
@@ -2436,6 +2439,7 @@
 <translation id="4546308221697447294">Прегледајте брзо уз Google Chrome</translation>
 <translation id="4547659257713117923">Нема картица са других уређаја</translation>
 <translation id="4547672827276975204">Подеси аутоматски</translation>
+<translation id="4549791035683739768">На безбедносном кључу нема сачуваних отисака прстију</translation>
 <translation id="4551763574344810652">Притисните <ph name="MODIFIER_KEY_DESCRIPTION" /> да бисте опозвали</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4554591392113183336">Верзија спољног додатка је иста или старија од постојећег.</translation>
@@ -2615,6 +2619,7 @@
 <translation id="4839303808932127586">Са&amp;чувај видео снимак као...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{Још 1}one{Још #}few{Још #}other{Још #}}</translation>
 <translation id="4842976633412754305">Ова страница покушава да учитава скрипте из извора чија аутентичност није потврђена.</translation>
+<translation id="4843488774506045600">Пријављивање пружа <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Остале тастатуре</translation>
 <translation id="4846680374085650406">Поштујете препоруку администратора за ово подешавање.</translation>
 <translation id="4848518990323155912">Омогући закључавање SIM картице (потребан је PIN за коришћење мобилних података)</translation>
@@ -3067,6 +3072,7 @@
 <translation id="5511823366942919280">Да ли стварно желите да подесите овај уређај као „Ајкулу“?</translation>
 <translation id="5512653252560939721">Копија сертификата корисника мора да постоји на хардверу.</translation>
 <translation id="5517304475148761050">Ова апликација захтева приступ Play продавници</translation>
+<translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> – <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Додајемо штампач на налог – то ће можда мало да потраје...</translation>
 <translation id="5518219166343146486">Питај када сајт жели да види текст и слике који су копирани у привремену меморију</translation>
 <translation id="5518584115117143805">Сертификат шифровања е-поште</translation>
@@ -3186,6 +3192,7 @@
 <translation id="567643736130151854">Пријавите се да би вам обележивачи, лозинке и други садржај били доступни на свим уређајима</translation>
 <translation id="5677503058916217575">Језик странице:</translation>
 <translation id="5677928146339483299">Блокирано</translation>
+<translation id="5678293144564424498">Апликација је паузирана</translation>
 <translation id="5678550637669481956">Одобрен је приступ за <ph name="VOLUME_NAME" /> ради читања и писања.</translation>
 <translation id="5678955352098267522">Читање ваших података на <ph name="WEBSITE_1" /></translation>
 <translation id="5684661240348539843">Идентификатор елемента</translation>
@@ -3453,6 +3460,7 @@
 <translation id="6055392876709372977">PKCS #1 SHA-256 са RSA шифровањем</translation>
 <translation id="6056710589053485679">Поново учитај нормално</translation>
 <translation id="6057381398996433816">Овом сајту је забрањено да користи сензоре за покрет и светло.</translation>
+<translation id="6058567592298841668">Прикључи виртуелну машину: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Хијерархија сертификата</translation>
 <translation id="6059925163896151826">USB уређаји</translation>
 <translation id="6061882183774845124">Пошаљите линк на своје уређаје</translation>
@@ -4401,6 +4409,7 @@
 <translation id="7476454130948140105">Ниво напуњености батерије је пренизак за ажурирање (<ph name="BATTERY_PERCENT" />%)</translation>
 <translation id="7477793887173910789">Контролишите музику, видео снимке и друго</translation>
 <translation id="7478485216301680444">Није могуће инсталирати киоск апликацију.</translation>
+<translation id="7479221278376295180">Преглед коришћења меморијског простора</translation>
 <translation id="7481312909269577407">Проследи</translation>
 <translation id="748138892655239008">Основна ограничења сертификата</translation>
 <translation id="7487067081878637334">Технологија</translation>
@@ -5377,6 +5386,7 @@
 <translation id="8845001906332463065">Затражите помоћ</translation>
 <translation id="8846132060409673887">Прочитајте произвођача и модел овог рачунара</translation>
 <translation id="8846141544112579928">Тражимо тастатуру...</translation>
+<translation id="8847523528195140327">Одјави ме када се поклопац затвори</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8850251000316748990">Прикажи више...</translation>
 <translation id="885246833287407341">Променљиве за API функцију</translation>
@@ -5439,6 +5449,7 @@
 <translation id="8930351635855238750">Ново подешавање колачића ће се применити када се страница поново учита</translation>
 <translation id="8931394284949551895">Нови уређаји</translation>
 <translation id="893254996965966411">Сачувајте откривене штампаче на профилу или додајте нов штампач.</translation>
+<translation id="8932894639908691771">Опције приступа помоћу прекидача</translation>
 <translation id="8933960630081805351">&amp;Прикажи у Finder-у</translation>
 <translation id="8934732568177537184">Настави</translation>
 <translation id="8938800817013097409">Уређај са USB прикључком типа C (задњи десни порт)</translation>
@@ -5502,6 +5513,7 @@
 <translation id="9023015617655685412">Обележи ову картицу...</translation>
 <translation id="9024127637873500333">&amp;Отвори на новој картици</translation>
 <translation id="9024158959543687197">Грешка при учитавању дељене датотеке. Проверите URL дељења датотека и пробајте поново.</translation>
+<translation id="9024885274934357065">Уређај је откључан помоћу Smart Lock-а. Притисните Enter да бисте откључали.</translation>
 <translation id="9026731007018893674">преузимање</translation>
 <translation id="9026852570893462412">Ово може да потраје неколико минута. Преузима се виртуелна машина.</translation>
 <translation id="9027459031423301635">Отвори линк у новој &amp;картици</translation>

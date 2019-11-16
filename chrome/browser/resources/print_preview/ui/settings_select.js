@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
 import 'chrome://resources/cr_elements/md_select_css.m.js';
-import {getStringForCurrentLocale} from '../print_preview_utils.js';
 import './print_preview_shared_css.js';
+
+import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {getStringForCurrentLocale} from '../print_preview_utils.js';
+
 import {SelectBehavior} from './select_behavior.js';
 import {SettingsBehavior} from './settings_behavior.js';
 

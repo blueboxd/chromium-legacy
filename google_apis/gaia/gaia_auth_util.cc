@@ -107,7 +107,7 @@ std::string ExtractDomainName(const std::string& email_address) {
 }
 
 bool IsGoogleInternalAccountEmail(const std::string& email) {
-  return ExtractDomainName(email) == kGoogleDomain;
+  return ExtractDomainName(SanitizeEmail(email)) == kGoogleDomain;
 }
 
 bool IsGaiaSignonRealm(const GURL& url) {

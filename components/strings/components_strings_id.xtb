@@ -912,6 +912,7 @@
 <translation id="5329858041417644019">Browser Anda tidak dikelola</translation>
 <translation id="5332219387342487447">Metode Pengiriman</translation>
 <translation id="5334013548165032829">Log sistem mendetail</translation>
+<translation id="534295439873310000">Perangkat NFC</translation>
 <translation id="5344579389779391559">Halaman ini mungkin mencoba menagih Anda</translation>
 <translation id="5355557959165512791">Anda tidak dapat membuka <ph name="SITE" /> sekarang karena sertifikatnya telah dicabut. Error jaringan dan serangan biasanya bersifat sementara, sehingga halaman ini mungkin akan berfungsi nanti.</translation>
 <translation id="536296301121032821">Gagal menyimpan setelan kebijakan</translation>
@@ -1529,6 +1530,7 @@
 <translation id="8466379296835108687">{COUNT,plural, =1{1 kartu kredit}other{# kartu kredit}}</translation>
 <translation id="8473863474539038330">Alamat dan lain-lain</translation>
 <translation id="8479754468255770962">Jepretan di kiri bawah</translation>
+<translation id="8481133456511676116">Mungkin maksud Anda <ph name="DOMAIN" />?</translation>
 <translation id="8483780878231876732">Untuk menggunakan kartu dari Akun Google Anda, masuk ke Chrome</translation>
 <translation id="8488350697529856933">Berlaku untuk</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> membutuhkan terlalu banyak waktu untuk merespons.</translation>

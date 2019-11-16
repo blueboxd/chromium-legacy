@@ -15,10 +15,10 @@ goog.require('LogStore');
 goog.require('Output');
 goog.require('PhoneticData');
 goog.require('TreeDumper');
-goog.require('cvox.ChromeVoxBackground');
-goog.require('cvox.ChromeVoxKbHandler');
-goog.require('cvox.ChromeVoxPrefs');
-goog.require('cvox.CommandStore');
+goog.require('ChromeVoxBackground');
+goog.require('ChromeVoxKbHandler');
+goog.require('ChromeVoxPrefs');
+goog.require('CommandStore');
 
 goog.scope(function() {
 var AutomationEvent = chrome.automation.AutomationEvent;
@@ -38,8 +38,8 @@ CommandHandler.incognito_ = !!chrome.runtime.getManifest()['incognito'];
  */
 CommandHandler.onCommand = function(command) {
   // Check for a command disallowed in OOBE/login.
-  if (CommandHandler.incognito_ && cvox.CommandStore.CMD_WHITELIST[command] &&
-      cvox.CommandStore.CMD_WHITELIST[command].disallowOOBE)
+  if (CommandHandler.incognito_ && CommandStore.CMD_WHITELIST[command] &&
+      CommandStore.CMD_WHITELIST[command].disallowOOBE)
     return true;
 
   // Check for loss of focus which results in us invalidating our current
@@ -73,7 +73,7 @@ CommandHandler.onCommand = function(command) {
           }
         });
         if (timeString) {
-          cvox.ChromeVox.tts.speak(timeString, cvox.QueueMode.FLUSH);
+          ChromeVox.tts.speak(timeString, QueueMode.FLUSH);
         } else {
           // Fallback to the old way of speaking time.
           var output = new Output();
@@ -90,19 +90,17 @@ CommandHandler.onCommand = function(command) {
       chrome.runtime.openOptionsPage();
       break;
     case 'toggleStickyMode':
-      cvox.ChromeVoxBackground.setPref(
-          'sticky', !cvox.ChromeVox.isStickyPrefOn, true);
+      ChromeVoxBackground.setPref('sticky', !ChromeVox.isStickyPrefOn, true);
 
-      if (cvox.ChromeVox.isStickyPrefOn) {
+      if (ChromeVox.isStickyPrefOn) {
         chrome.accessibilityPrivate.setKeyboardListener(true, true);
       } else {
         chrome.accessibilityPrivate.setKeyboardListener(true, false);
       }
       return false;
     case 'passThroughMode':
-      cvox.ChromeVox.passThroughMode = true;
-      cvox.ChromeVox.tts.speak(
-          Msgs.getMsg('pass_through_key'), cvox.QueueMode.QUEUE);
+      ChromeVox.passThroughMode = true;
+      ChromeVox.tts.speak(Msgs.getMsg('pass_through_key'), QueueMode.QUEUE);
       return true;
     case 'showKbExplorerPage':
       var explorerPage = {
@@ -116,15 +114,15 @@ CommandHandler.onCommand = function(command) {
       chrome.tabs.create(logPage);
       break;
     case 'enableLogging':
-      var prefs = new cvox.ChromeVoxPrefs();
-      for (var type in cvox.ChromeVoxPrefs.loggingPrefs) {
-        prefs.setLoggingPrefs(cvox.ChromeVoxPrefs.loggingPrefs[type], true);
+      var prefs = new ChromeVoxPrefs();
+      for (var type in ChromeVoxPrefs.loggingPrefs) {
+        prefs.setLoggingPrefs(ChromeVoxPrefs.loggingPrefs[type], true);
       }
       break;
     case 'disableLogging':
-      var prefs = new cvox.ChromeVoxPrefs();
-      for (var type in cvox.ChromeVoxPrefs.loggingPrefs) {
-        prefs.setLoggingPrefs(cvox.ChromeVoxPrefs.loggingPrefs[type], false);
+      var prefs = new ChromeVoxPrefs();
+      for (var type in ChromeVoxPrefs.loggingPrefs) {
+        prefs.setLoggingPrefs(ChromeVoxPrefs.loggingPrefs[type], false);
       }
       break;
     case 'dumpTree':
@@ -133,67 +131,61 @@ CommandHandler.onCommand = function(command) {
       });
       break;
     case 'decreaseTtsRate':
-      CommandHandler.increaseOrDecreaseSpeechProperty_(
-          cvox.AbstractTts.RATE, false);
+      CommandHandler.increaseOrDecreaseSpeechProperty_(AbstractTts.RATE, false);
       return false;
     case 'increaseTtsRate':
-      CommandHandler.increaseOrDecreaseSpeechProperty_(
-          cvox.AbstractTts.RATE, true);
+      CommandHandler.increaseOrDecreaseSpeechProperty_(AbstractTts.RATE, true);
       return false;
     case 'decreaseTtsPitch':
       CommandHandler.increaseOrDecreaseSpeechProperty_(
-          cvox.AbstractTts.PITCH, false);
+          AbstractTts.PITCH, false);
       return false;
     case 'increaseTtsPitch':
-      CommandHandler.increaseOrDecreaseSpeechProperty_(
-          cvox.AbstractTts.PITCH, true);
+      CommandHandler.increaseOrDecreaseSpeechProperty_(AbstractTts.PITCH, true);
       return false;
     case 'decreaseTtsVolume':
       CommandHandler.increaseOrDecreaseSpeechProperty_(
-          cvox.AbstractTts.VOLUME, false);
+          AbstractTts.VOLUME, false);
       return false;
     case 'increaseTtsVolume':
       CommandHandler.increaseOrDecreaseSpeechProperty_(
-          cvox.AbstractTts.VOLUME, true);
+          AbstractTts.VOLUME, true);
       return false;
     case 'stopSpeech':
-      cvox.ChromeVox.tts.stop();
+      ChromeVox.tts.stop();
       ChromeVoxState.isReadingContinuously = false;
       return false;
     case 'toggleEarcons':
-      cvox.AbstractEarcons.enabled = !cvox.AbstractEarcons.enabled;
-      var announce = cvox.AbstractEarcons.enabled ? Msgs.getMsg('earcons_on') :
-                                                    Msgs.getMsg('earcons_off');
-      cvox.ChromeVox.tts.speak(
-          announce, cvox.QueueMode.FLUSH,
-          cvox.AbstractTts.PERSONALITY_ANNOTATION);
+      AbstractEarcons.enabled = !AbstractEarcons.enabled;
+      var announce = AbstractEarcons.enabled ? Msgs.getMsg('earcons_on') :
+                                               Msgs.getMsg('earcons_off');
+      ChromeVox.tts.speak(
+          announce, QueueMode.FLUSH, AbstractTts.PERSONALITY_ANNOTATION);
       return false;
     case 'cycleTypingEcho':
-      cvox.ChromeVox.typingEcho =
-          cvox.TypingEcho.cycle(cvox.ChromeVox.typingEcho);
+      ChromeVox.typingEcho = TypingEcho.cycle(ChromeVox.typingEcho);
       var announce = '';
-      switch (cvox.ChromeVox.typingEcho) {
-        case cvox.TypingEcho.CHARACTER:
+      switch (ChromeVox.typingEcho) {
+        case TypingEcho.CHARACTER:
           announce = Msgs.getMsg('character_echo');
           break;
-        case cvox.TypingEcho.WORD:
+        case TypingEcho.WORD:
           announce = Msgs.getMsg('word_echo');
           break;
-        case cvox.TypingEcho.CHARACTER_AND_WORD:
+        case TypingEcho.CHARACTER_AND_WORD:
           announce = Msgs.getMsg('character_and_word_echo');
           break;
-        case cvox.TypingEcho.NONE:
+        case TypingEcho.NONE:
           announce = Msgs.getMsg('none_echo');
           break;
       }
-      cvox.ChromeVox.tts.speak(
-          announce, cvox.QueueMode.FLUSH,
-          cvox.AbstractTts.PERSONALITY_ANNOTATION);
+      ChromeVox.tts.speak(
+          announce, QueueMode.FLUSH, AbstractTts.PERSONALITY_ANNOTATION);
       return false;
     case 'cyclePunctuationEcho':
-      cvox.ChromeVox.tts.speak(
+      ChromeVox.tts.speak(
           Msgs.getMsg(ChromeVoxState.backgroundTts.cyclePunctuationEcho()),
-          cvox.QueueMode.FLUSH);
+          QueueMode.FLUSH);
       return false;
     case 'reportIssue':
       var url = 'https://code.google.com/p/chromium/issues/entry?' +
@@ -209,8 +201,8 @@ CommandHandler.onCommand = function(command) {
       chrome.tabs.create({url: url});
       return false;
     case 'toggleBrailleCaptions':
-      cvox.BrailleCaptionsBackground.setActive(
-          !cvox.BrailleCaptionsBackground.isEnabled());
+      BrailleCaptionsBackground.setActive(
+          !BrailleCaptionsBackground.isEnabled());
       return false;
     case 'toggleBrailleTable':
       var brailleTableType = localStorage['brailleTableType'];
@@ -229,7 +221,7 @@ CommandHandler.onCommand = function(command) {
 
       localStorage['brailleTable'] = localStorage[brailleTableType];
       localStorage['brailleTableType'] = brailleTableType;
-      cvox.BrailleBackground.getInstance().getTranslatorManager().refresh(
+      BrailleBackground.getInstance().getTranslatorManager().refresh(
           localStorage[brailleTableType]);
       new Output().format(output).go();
       return false;
@@ -249,7 +241,7 @@ CommandHandler.onCommand = function(command) {
       new Output().format('@undarken_screen').go();
       return false;
     case 'toggleSpeechOnOrOff':
-      var state = cvox.ChromeVox.tts.toggleSpeechOnOrOff();
+      var state = ChromeVox.tts.toggleSpeechOnOrOff();
       new Output().format(state ? '@speech_on' : '@speech_off').go();
       return false;
     case 'enableChromeVoxArcSupportForCurrentApp':
@@ -907,14 +899,14 @@ CommandHandler.onCommand = function(command) {
           announce = Msgs.getMsg('line_granularity');
           break;
       }
-      cvox.ChromeVox.tts.speak(announce, cvox.QueueMode.FLUSH);
+      ChromeVox.tts.speak(announce, QueueMode.FLUSH);
       return false;
     case 'announceBatteryDescription':
       chrome.accessibilityPrivate.getBatteryDescription(function(
           batteryDescription) {
         new Output()
             .withString(batteryDescription)
-            .withQueueMode(cvox.QueueMode.FLUSH)
+            .withQueueMode(QueueMode.FLUSH)
             .go();
       });
       break;
@@ -937,7 +929,7 @@ CommandHandler.onCommand = function(command) {
       var richTextDescription = Msgs.getMsg('rich_text_attributes', optSubs);
       new Output()
           .withString(richTextDescription)
-          .withQueueMode(cvox.QueueMode.CATEGORY_FLUSH)
+          .withQueueMode(QueueMode.CATEGORY_FLUSH)
           .go();
       return false;
     case 'readPhoneticPronunciation':
@@ -949,7 +941,7 @@ CommandHandler.onCommand = function(command) {
       if (!text) {
         new Output()
             .withString(Msgs.getMsg('empty_name'))
-            .withQueueMode(cvox.QueueMode.CATEGORY_FLUSH)
+            .withQueueMode(QueueMode.CATEGORY_FLUSH)
             .go();
         return false;
       }
@@ -989,13 +981,12 @@ CommandHandler.onCommand = function(command) {
         // was found.
         new Output()
             .withString(character)
-            .withQueueMode(
-                i === 0 ? cvox.QueueMode.CATEGORY_FLUSH : cvox.QueueMode.QUEUE)
+            .withQueueMode(i === 0 ? QueueMode.CATEGORY_FLUSH : QueueMode.QUEUE)
             .go();
         if (phoneticText) {
           new Output()
               .withString(phoneticText)
-              .withQueueMode(cvox.QueueMode.QUEUE)
+              .withQueueMode(QueueMode.QUEUE)
               .go();
         }
       }
@@ -1014,7 +1005,7 @@ CommandHandler.onCommand = function(command) {
           .withString(
               url ? Msgs.getMsg('url_behind_link', [url]) :
                     Msgs.getMsg('no_url_found'))
-          .withQueueMode(cvox.QueueMode.CATEGORY_FLUSH)
+          .withQueueMode(QueueMode.CATEGORY_FLUSH)
           .go();
       return false;
     default:
@@ -1051,12 +1042,12 @@ CommandHandler.onCommand = function(command) {
       if (node) {
         current = cursors.Range.fromNode(node);
       } else {
-        cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.WRAP);
+        ChromeVox.earcons.playEarcon(Earcon.WRAP);
         if (!shouldWrap) {
           if (predErrorMsg) {
             new Output()
                 .withString(Msgs.getMsg(predErrorMsg))
-                .withQueueMode(cvox.QueueMode.FLUSH)
+                .withQueueMode(QueueMode.FLUSH)
                 .go();
           }
           return false;
@@ -1090,7 +1081,7 @@ CommandHandler.onCommand = function(command) {
         } else if (predErrorMsg) {
           new Output()
               .withString(Msgs.getMsg(predErrorMsg))
-              .withQueueMode(cvox.QueueMode.FLUSH)
+              .withQueueMode(QueueMode.FLUSH)
               .go();
           return false;
         }
@@ -1171,7 +1162,7 @@ CommandHandler.onCommand = function(command) {
  */
 CommandHandler.increaseOrDecreaseSpeechProperty_ = function(
     propertyName, increase) {
-  cvox.ChromeVox.tts.increaseOrDecreaseProperty(propertyName, increase);
+  ChromeVox.tts.increaseOrDecreaseProperty(propertyName, increase);
 };
 
 /**
@@ -1202,8 +1193,8 @@ CommandHandler.onImageFrameUpdated_ = function(event) {
   }
 
   if (target.imageDataUrl) {
-    cvox.ChromeVox.braille.writeRawImage(target.imageDataUrl);
-    cvox.ChromeVox.braille.freeze();
+    ChromeVox.braille.writeRawImage(target.imageDataUrl);
+    ChromeVox.braille.freeze();
   }
 };
 
@@ -1250,7 +1241,7 @@ CommandHandler.viewGraphicAsBraille_ = function(current) {
  */
 CommandHandler.onEditCommand_ = function(command) {
   var current = ChromeVoxState.instance.currentRange;
-  if (cvox.ChromeVox.isStickyModeOn() || !current || !current.start ||
+  if (ChromeVox.isStickyModeOn() || !current || !current.start ||
       !current.start.node || !current.start.node.state[StateType.EDITABLE])
     return true;
 
@@ -1335,7 +1326,7 @@ CommandHandler.onEditCommand_ = function(command) {
  * Performs global initialization.
  */
 CommandHandler.init = function() {
-  cvox.ChromeVoxKbHandler.commandHandler = CommandHandler.onCommand;
+  ChromeVoxKbHandler.commandHandler = CommandHandler.onCommand;
   var firstRunId = 'jdgcneonijmofocbhmijhacgchbihela';
   chrome.runtime.onMessageExternal.addListener(function(
       request, sender, sendResponse) {

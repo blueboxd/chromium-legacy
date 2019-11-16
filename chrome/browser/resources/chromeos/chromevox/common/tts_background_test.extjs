@@ -22,7 +22,7 @@ ChromeVoxTtsBackgroundTest.prototype = {
 };
 
 SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'Preprocess', function() {
-  var tts = new cvox.TtsBackground(false);
+  var tts = new TtsBackground(false);
   var preprocess = tts.preprocess.bind(tts);
 
   // Punctuation.
@@ -45,7 +45,7 @@ SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'Preprocess', function() {
 });
 
 TEST_F('ChromeVoxTtsBackgroundTest', 'UpdateVoice', function() {
-  var tts = new cvox.TtsBackground(false);
+  var tts = new TtsBackground(false);
   var voices = [
     {lang: 'zh-CN', voiceName: 'Chinese'},
     {lang: 'zh-TW', voiceName: 'Chinese (Taiwan)'},
@@ -100,10 +100,10 @@ TEST_F('ChromeVoxTtsBackgroundTest', 'UpdateVoice', function() {
 // This test only works if Google tts is installed. Run it locally.
 TEST_F('ChromeVoxTtsBackgroundTest',
        'DISABLED_EmptyStringCallsCallbacks', function() {
-  var tts = new cvox.TtsBackground(false);
+  var tts = new TtsBackground(false);
   var startCalls = 0, endCalls = 0;
   assertCallsCallbacks = function(text, speakCalls) {
-    tts.speak(text, cvox.QueueMode.QUEUE,
+    tts.speak(text, QueueMode.QUEUE,
               {startCallback: function() { ++startCalls; },
                endCallback: this.newCallback(function() {
                  ++endCalls;

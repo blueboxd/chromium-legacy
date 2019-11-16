@@ -10,6 +10,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver_source.h"
 #include "net/dns/public/dns_query_type.h"
@@ -36,7 +37,8 @@ class HostCachePersistenceManagerTest : public testing::Test {
   // assumed to work (it's tested in net/dns/host_cache_unittest.cc).
   void WriteToCache(const std::string& host) {
     net::HostCache::Key key(host, net::DnsQueryType::UNSPECIFIED, 0,
-                            net::HostResolverSource::ANY);
+                            net::HostResolverSource::ANY,
+                            net::NetworkIsolationKey());
     net::HostCache::Entry entry(net::OK, net::AddressList(),
                                 net::HostCache::Entry::SOURCE_UNKNOWN);
     cache_->Set(key, entry, base::TimeTicks::Now(),
@@ -64,11 +66,14 @@ class HostCachePersistenceManagerTest : public testing::Test {
     net::HostCache temp_cache(10);
 
     net::HostCache::Key key1("1", net::DnsQueryType::UNSPECIFIED, 0,
-                             net::HostResolverSource::ANY);
+                             net::HostResolverSource::ANY,
+                             net::NetworkIsolationKey());
     net::HostCache::Key key2("2", net::DnsQueryType::UNSPECIFIED, 0,
-                             net::HostResolverSource::ANY);
+                             net::HostResolverSource::ANY,
+                             net::NetworkIsolationKey());
     net::HostCache::Key key3("3", net::DnsQueryType::UNSPECIFIED, 0,
-                             net::HostResolverSource::ANY);
+                             net::HostResolverSource::ANY,
+                             net::NetworkIsolationKey());
     net::HostCache::Entry entry(net::OK, net::AddressList(),
                                 net::HostCache::Entry::SOURCE_UNKNOWN);
 

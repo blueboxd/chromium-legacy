@@ -34,6 +34,18 @@ void Diff(const char* before_filename, const char* after_filename) {
   ParseSizeInfoFromFile(after_filename, &after);
 
   caspian::DeltaSizeInfo diff = Diff(&before, &after);
+
+  float pss = 0.0f;
+  float size = 0.0f;
+  float padding = 0.0f;
+  for (const auto& sym : diff.delta_symbols) {
+    pss += sym.Pss();
+    size += sym.Size();
+    padding += sym.Padding();
+  }
+  std::cout << "Pss: " << pss << std::endl;
+  std::cout << "Size: " << size << std::endl;
+  std::cout << "Padding: " << padding << std::endl;
 }
 
 void Validate(const char* filename) {
@@ -57,21 +69,25 @@ void Validate(const char* filename) {
   std::cout << "Largest number of aliases: " << max_aliases << std::endl;
 }
 
+void PrintUsageAndExit() {
+  std::cerr << "Must have exactly one of:" << std::endl;
+  std::cerr << "  validate, diff" << std::endl;
+  std::cerr << "Usage:" << std::endl;
+  std::cerr << "  cli validate <size file>" << std::endl;
+  std::cerr << "  cli diff <before_file> <after_file>" << std::endl;
+  exit(1);
+}
+
 int main(int argc, char* argv[]) {
   if (argc < 2) {
-    std::cerr << "Must have exactly one of:" << std::endl;
-    std::cerr << "  validate, diff" << std::endl;
-    std::cerr << "Usage: " << std::endl;
-    std::cerr << "  cli validate <size file>" << std::endl;
-    std::cerr << "  cli diff <before_file> <after_file>" << std::endl;
-    exit(1);
+    PrintUsageAndExit();
   }
   if (std::string_view(argv[1]) == "diff") {
     Diff(argv[2], argv[3]);
   } else if (std::string_view(argv[1]) == "validate") {
     Validate(argv[1]);
   } else {
-    exit(1);
+    PrintUsageAndExit();
   }
   return 0;
 }

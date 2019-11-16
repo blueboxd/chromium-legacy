@@ -756,6 +756,72 @@ TEST_P(RestrictedCookieManagerTest, CookiesEnabledFor) {
   EXPECT_TRUE(result);
 }
 
+// Test that special chrome:// scheme always attaches SameSite cookies when the
+// requested origin is secure.
+TEST_P(RestrictedCookieManagerTest, SameSiteCookiesSpecialScheme) {
+  cookie_settings_.set_secure_origin_cookies_allowed_schemes({"chrome"});
+
+  GURL extension_url("chrome-extension://abcdefghijklmnopqrstuvwxyz");
+  GURL chrome_url("chrome://whatever");
+  GURL http_url("http://example.com/test");
+  GURL https_url("https://example.com/test");
+  auto http_origin = url::Origin::Create(http_url);
+  auto https_origin = url::Origin::Create(https_url);
+
+  // Test if site_for_cookies is chrome, then SameSite cookies can be
+  // set and gotten if the origin is secure.
+  service_->OverrideSiteForCookiesForTesting(chrome_url);
+  service_->OverrideOriginForTesting(https_origin);
+  service_->OverrideTopFrameOriginForTesting(https_origin);
+  EXPECT_TRUE(sync_service_->SetCanonicalCookie(
+      net::CanonicalCookie(
+          "strict-cookie", "1", "example.com", "/", base::Time(), base::Time(),
+          base::Time(), /* secure = */ false,
+          /* httponly = */ false, net::CookieSameSite::STRICT_MODE,
+          net::COOKIE_PRIORITY_DEFAULT),
+      https_url, chrome_url, https_origin));
+  EXPECT_TRUE(sync_service_->SetCanonicalCookie(
+      net::CanonicalCookie("lax-cookie", "1", "example.com", "/", base::Time(),
+                           base::Time(), base::Time(), /* secure = */ false,
+                           /* httponly = */ false,
+                           net::CookieSameSite::LAX_MODE,
+                           net::COOKIE_PRIORITY_DEFAULT),
+      https_url, chrome_url, https_origin));
+
+  auto options = mojom::CookieManagerGetOptions::New();
+  options->name = "";
+  options->match_type = mojom::CookieMatchType::STARTS_WITH;
+  std::vector<net::CanonicalCookie> cookies = sync_service_->GetAllForUrl(
+      https_url, chrome_url, https_origin, std::move(options));
+  EXPECT_THAT(cookies, testing::SizeIs(2));
+
+  // Test if site_for_cookies is chrome, then SameSite cookies cannot be
+  // set and gotten if the origin is not secure.
+  service_->OverrideOriginForTesting(http_origin);
+  service_->OverrideTopFrameOriginForTesting(http_origin);
+  EXPECT_FALSE(sync_service_->SetCanonicalCookie(
+      net::CanonicalCookie(
+          "strict-cookie", "2", "example.com", "/", base::Time(), base::Time(),
+          base::Time(), /* secure = */ false,
+          /* httponly = */ false, net::CookieSameSite::STRICT_MODE,
+          net::COOKIE_PRIORITY_DEFAULT),
+      http_url, chrome_url, http_origin));
+  EXPECT_FALSE(sync_service_->SetCanonicalCookie(
+      net::CanonicalCookie("lax-cookie", "2", "example.com", "/", base::Time(),
+                           base::Time(), base::Time(), /* secure = */ false,
+                           /* httponly = */ false,
+                           net::CookieSameSite::LAX_MODE,
+                           net::COOKIE_PRIORITY_DEFAULT),
+      http_url, chrome_url, http_origin));
+
+  options = mojom::CookieManagerGetOptions::New();
+  options->name = "";
+  options->match_type = mojom::CookieMatchType::STARTS_WITH;
+  cookies = sync_service_->GetAllForUrl(http_url, chrome_url, http_origin,
+                                        std::move(options));
+  EXPECT_THAT(cookies, testing::SizeIs(0));
+}
+
 namespace {
 
 // Stashes the cookie changes it receives, for testing.

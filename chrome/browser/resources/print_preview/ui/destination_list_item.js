@@ -2,19 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import './icons.js';
+import './print_preview_vars_css.js';
+import '../strings.m.js';
+
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {removeHighlights} from 'chrome://resources/js/search_highlight_utils.m.js';
-import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
-import './icons.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 import {Destination, DestinationOrigin} from '../data/destination.js';
+
 import {HighlightResults, updateHighlights} from './highlight_utils.js';
-import './print_preview_vars_css.js';
-import '../strings.m.js';
+
 
 // <if expr="chromeos">
 /** @enum {number} */
@@ -98,8 +102,7 @@ Polymer({
     assert(
         this.destination.origin == DestinationOrigin.CROS &&
         !this.destination.capabilities);
-    this.configurationStatus_ =
-        DestinationConfigStatus.IN_PROGRESS;
+    this.configurationStatus_ = DestinationConfigStatus.IN_PROGRESS;
   },
 
   /**
@@ -107,9 +110,8 @@ Polymer({
    * @param {boolean} success Whether configuration was successful.
    */
   onConfigureComplete: function(success) {
-    this.configurationStatus_ = success ?
-        DestinationConfigStatus.IDLE :
-        DestinationConfigStatus.FAILED;
+    this.configurationStatus_ =
+        success ? DestinationConfigStatus.IDLE : DestinationConfigStatus.FAILED;
   },
 
   /**

@@ -9,6 +9,7 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/checked_math.h"
@@ -40,28 +41,81 @@
 #include "ui/gfx/skia_util.h"
 
 // Skia internal format depends on a platform. On Android it is ABGR, on others
-// it is ARGB.
+// it is ARGB. Commented out lines below don't exist in libyuv yet and are
+// shown here to indicate where ideal conversions are currently missing.
 #if SK_B32_SHIFT == 0 && SK_G32_SHIFT == 8 && SK_R32_SHIFT == 16 && \
     SK_A32_SHIFT == 24
 #define LIBYUV_I420_TO_ARGB libyuv::I420ToARGB
 #define LIBYUV_I422_TO_ARGB libyuv::I422ToARGB
 #define LIBYUV_I444_TO_ARGB libyuv::I444ToARGB
+
 #define LIBYUV_I420ALPHA_TO_ARGB libyuv::I420AlphaToARGB
+
 #define LIBYUV_J420_TO_ARGB libyuv::J420ToARGB
+#define LIBYUV_J422_TO_ARGB libyuv::J422ToARGB
+#define LIBYUV_J444_TO_ARGB libyuv::J444ToARGB
+
 #define LIBYUV_H420_TO_ARGB libyuv::H420ToARGB
+#define LIBYUV_H422_TO_ARGB libyuv::H422ToARGB
+#define LIBYUV_H444_TO_ARGB libyuv::H444ToARGB
+
+#define LIBYUV_U420_TO_ARGB libyuv::U420ToARGB
+#define LIBYUV_U422_TO_ARGB libyuv::U422ToARGB
+#define LIBYUV_U444_TO_ARGB libyuv::U444ToARGB
+
 #define LIBYUV_I010_TO_ARGB libyuv::I010ToARGB
+#define LIBYUV_I210_TO_ARGB libyuv::I210ToARGB
+// #define LIBYUV_I410_TO_ARGB libyuv::I410ToARGB
+
+// #define LIBYUV_J010_TO_ARGB libyuv::J010ToARGB
+// #define LIBYUV_J210_TO_ARGB libyuv::J210ToARGB
+// #define LIBYUV_J410_TO_ARGB libyuv::J410ToARGB
+
 #define LIBYUV_H010_TO_ARGB libyuv::H010ToARGB
+#define LIBYUV_H210_TO_ARGB libyuv::H210ToARGB
+// #define LIBYUV_H410_TO_ARGB libyuv::H410ToARGB
+
+#define LIBYUV_U010_TO_ARGB libyuv::U010ToARGB
+#define LIBYUV_U210_TO_ARGB libyuv::U210ToARGB
+// #define LIBYUV_U410_TO_ARGB libyuv::U410ToARGB
+
 #define LIBYUV_NV12_TO_ARGB libyuv::NV12ToARGB
 #elif SK_R32_SHIFT == 0 && SK_G32_SHIFT == 8 && SK_B32_SHIFT == 16 && \
     SK_A32_SHIFT == 24
 #define LIBYUV_I420_TO_ARGB libyuv::I420ToABGR
 #define LIBYUV_I422_TO_ARGB libyuv::I422ToABGR
 #define LIBYUV_I444_TO_ARGB libyuv::I444ToABGR
+
 #define LIBYUV_I420ALPHA_TO_ARGB libyuv::I420AlphaToABGR
+
 #define LIBYUV_J420_TO_ARGB libyuv::J420ToABGR
+#define LIBYUV_J422_TO_ARGB libyuv::J422ToABGR
+#define LIBYUV_J444_TO_ARGB libyuv::J444ToABGR
+
 #define LIBYUV_H420_TO_ARGB libyuv::H420ToABGR
+#define LIBYUV_H422_TO_ARGB libyuv::H422ToABGR
+#define LIBYUV_H444_TO_ARGB libyuv::H444ToABGR
+
+#define LIBYUV_U420_TO_ARGB libyuv::U420ToABGR
+#define LIBYUV_U422_TO_ARGB libyuv::U422ToABGR
+#define LIBYUV_U444_TO_ARGB libyuv::U444ToABGR
+
 #define LIBYUV_I010_TO_ARGB libyuv::I010ToABGR
+#define LIBYUV_I210_TO_ARGB libyuv::I210ToABGR
+// #define LIBYUV_I410_TO_ARGB libyuv::I410ToABGR
+
+// #define LIBYUV_J010_TO_ARGB libyuv::J010ToABGR
+// #define LIBYUV_J210_TO_ARGB libyuv::J210ToABGR
+// #define LIBYUV_J410_TO_ARGB libyuv::J410ToABGR
+
 #define LIBYUV_H010_TO_ARGB libyuv::H010ToABGR
+#define LIBYUV_H210_TO_ARGB libyuv::H210ToABGR
+// #define LIBYUV_H410_TO_ARGB libyuv::H410ToABGR
+
+#define LIBYUV_U010_TO_ARGB libyuv::H010ToABGR
+#define LIBYUV_U210_TO_ARGB libyuv::U210ToABGR
+// #define LIBYUV_U410_TO_ARGB libyuv::U410ToABGR
+
 #define LIBYUV_NV12_TO_ARGB libyuv::NV12ToABGR
 #else
 #error Unexpected Skia ARGB_8888 layout!
@@ -456,6 +510,17 @@ void ConvertVideoFrameToRGBPixelsTask(const VideoFrame* video_frame,
          rows);
   };
 
+  auto convert_yuv16 = [&](auto&& func) {
+    func(
+        reinterpret_cast<const uint16_t*>(plane_meta[VideoFrame::kYPlane].data),
+        plane_meta[VideoFrame::kYPlane].stride / 2,
+        reinterpret_cast<const uint16_t*>(plane_meta[VideoFrame::kUPlane].data),
+        plane_meta[VideoFrame::kUPlane].stride / 2,
+        reinterpret_cast<const uint16_t*>(plane_meta[VideoFrame::kVPlane].data),
+        plane_meta[VideoFrame::kVPlane].stride / 2, pixels, row_bytes, width,
+        rows);
+  };
+
   switch (video_frame->format()) {
     case PIXEL_FORMAT_YV12:
     case PIXEL_FORMAT_I420:
@@ -463,19 +528,36 @@ void ConvertVideoFrameToRGBPixelsTask(const VideoFrame* video_frame,
         case kJPEG_SkYUVColorSpace:
           convert_yuv(LIBYUV_J420_TO_ARGB);
           break;
-        case kRec709_SkYUVColorSpace: {
+        case kRec709_SkYUVColorSpace:
           convert_yuv(LIBYUV_H420_TO_ARGB);
           break;
-        }
         case kRec601_SkYUVColorSpace:
           convert_yuv(LIBYUV_I420_TO_ARGB);
+          break;
+        case kBT2020_SkYUVColorSpace:
+          convert_yuv(LIBYUV_U420_TO_ARGB);
           break;
         default:
           NOTREACHED();
       }
       break;
     case PIXEL_FORMAT_I422:
-      convert_yuv(LIBYUV_I422_TO_ARGB);
+      switch (color_space) {
+        case kJPEG_SkYUVColorSpace:
+          convert_yuv(LIBYUV_J422_TO_ARGB);
+          break;
+        case kRec709_SkYUVColorSpace:
+          convert_yuv(LIBYUV_H422_TO_ARGB);
+          break;
+        case kRec601_SkYUVColorSpace:
+          convert_yuv(LIBYUV_I422_TO_ARGB);
+          break;
+        case kBT2020_SkYUVColorSpace:
+          convert_yuv(LIBYUV_U422_TO_ARGB);
+          break;
+        default:
+          NOTREACHED();
+      }
       break;
 
     case PIXEL_FORMAT_I420A:
@@ -493,28 +575,61 @@ void ConvertVideoFrameToRGBPixelsTask(const VideoFrame* video_frame,
       break;
 
     case PIXEL_FORMAT_I444:
-      convert_yuv(LIBYUV_I444_TO_ARGB);
+      switch (color_space) {
+        case kJPEG_SkYUVColorSpace:
+          convert_yuv(LIBYUV_J444_TO_ARGB);
+          break;
+        case kRec709_SkYUVColorSpace:
+          convert_yuv(LIBYUV_H444_TO_ARGB);
+          break;
+        case kRec601_SkYUVColorSpace:
+          convert_yuv(LIBYUV_I444_TO_ARGB);
+          break;
+        case kBT2020_SkYUVColorSpace:
+          convert_yuv(LIBYUV_U444_TO_ARGB);
+          break;
+        default:
+          NOTREACHED();
+      }
       break;
 
     case PIXEL_FORMAT_YUV420P10:
-      (color_space == kRec709_SkYUVColorSpace
-           ? LIBYUV_H010_TO_ARGB
-           : LIBYUV_I010_TO_ARGB)(reinterpret_cast<const uint16_t*>(
-                                      plane_meta[VideoFrame::kYPlane].data),
-                                  plane_meta[VideoFrame::kYPlane].stride / 2,
-                                  reinterpret_cast<const uint16_t*>(
-                                      plane_meta[VideoFrame::kUPlane].data),
-                                  plane_meta[VideoFrame::kUPlane].stride / 2,
-                                  reinterpret_cast<const uint16_t*>(
-                                      plane_meta[VideoFrame::kVPlane].data),
-                                  plane_meta[VideoFrame::kVPlane].stride / 2,
-                                  pixels, row_bytes, width, rows);
+      switch (color_space) {
+        case kRec709_SkYUVColorSpace:
+          convert_yuv16(LIBYUV_H010_TO_ARGB);
+          break;
+        case kJPEG_SkYUVColorSpace:
+          FALLTHROUGH;
+        case kRec601_SkYUVColorSpace:
+          convert_yuv16(LIBYUV_I010_TO_ARGB);
+          break;
+        case kBT2020_SkYUVColorSpace:
+          convert_yuv16(LIBYUV_U010_TO_ARGB);
+          break;
+        default:
+          NOTREACHED();
+      }
       break;
-
+    case PIXEL_FORMAT_YUV422P10:
+      switch (color_space) {
+        case kRec709_SkYUVColorSpace:
+          convert_yuv16(LIBYUV_H210_TO_ARGB);
+          break;
+        case kJPEG_SkYUVColorSpace:
+          FALLTHROUGH;
+        case kRec601_SkYUVColorSpace:
+          convert_yuv16(LIBYUV_I210_TO_ARGB);
+          break;
+        case kBT2020_SkYUVColorSpace:
+          convert_yuv16(LIBYUV_U210_TO_ARGB);
+          break;
+        default:
+          NOTREACHED();
+      }
+      break;
     case PIXEL_FORMAT_YUV420P9:
     case PIXEL_FORMAT_YUV422P9:
     case PIXEL_FORMAT_YUV444P9:
-    case PIXEL_FORMAT_YUV422P10:
     case PIXEL_FORMAT_YUV444P10:
     case PIXEL_FORMAT_YUV420P12:
     case PIXEL_FORMAT_YUV422P12:
@@ -1052,7 +1167,6 @@ void PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
     case PIXEL_FORMAT_YUV420P9:
     case PIXEL_FORMAT_YUV422P9:
     case PIXEL_FORMAT_YUV444P9:
-    case PIXEL_FORMAT_YUV422P10:
     case PIXEL_FORMAT_YUV444P10:
     case PIXEL_FORMAT_YUV420P12:
     case PIXEL_FORMAT_YUV422P12:

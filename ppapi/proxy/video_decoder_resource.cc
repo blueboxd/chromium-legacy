@@ -335,10 +335,10 @@ int32_t VideoDecoderResource::Reset(scoped_refptr<TrackedCallback> callback) {
   // to avoid reentering the plugin.
   if (TrackedCallback::IsPending(decode_callback_))
     decode_callback_->PostAbort();
-  decode_callback_ = NULL;
+  decode_callback_.reset();
   if (TrackedCallback::IsPending(get_picture_callback_))
     get_picture_callback_->PostAbort();
-  get_picture_callback_ = NULL;
+  get_picture_callback_.reset();
   Call<PpapiPluginMsg_VideoDecoder_ResetReply>(
       RENDERER,
       PpapiHostMsg_VideoDecoder_Reset(),

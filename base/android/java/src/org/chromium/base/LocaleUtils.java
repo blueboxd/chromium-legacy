@@ -9,6 +9,8 @@ import android.os.Build;
 import android.os.LocaleList;
 import android.text.TextUtils;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.annotations.CalledByNative;
 
 import java.util.ArrayList;

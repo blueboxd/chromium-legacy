@@ -1006,7 +1006,11 @@ class SessionManagerClientImpl : public SessionManagerClient {
     if (!response) {
       LOG(ERROR) << "Failed to call EnableAdbSideload: "
                  << (error ? error->ToString() : "(null)");
-      std::move(callback).Run(false);
+      if (error && error->GetErrorName() == DBUS_ERROR_NOT_SUPPORTED) {
+        std::move(callback).Run(AdbSideloadResponseCode::NEED_POWERWASH);
+      } else {
+        std::move(callback).Run(AdbSideloadResponseCode::FAILED);
+      }
       return;
     }
 
@@ -1014,10 +1018,10 @@ class SessionManagerClientImpl : public SessionManagerClient {
     dbus::MessageReader reader(response);
     if (!reader.PopBool(&succeeded)) {
       LOG(ERROR) << "Failed to enable sideloading";
-      std::move(callback).Run(false);
+      std::move(callback).Run(AdbSideloadResponseCode::FAILED);
       return;
     }
-    std::move(callback).Run(true);
+    std::move(callback).Run(AdbSideloadResponseCode::SUCCESS);
   }
 
   void OnQueryAdbSideload(QueryAdbSideloadCallback callback,
@@ -1026,7 +1030,11 @@ class SessionManagerClientImpl : public SessionManagerClient {
     if (!response) {
       LOG(ERROR) << "Failed to call QueryAdbSideload: "
                  << (error ? error->ToString() : "(null)");
-      std::move(callback).Run(false, false);
+      if (error && error->GetErrorName() == DBUS_ERROR_NOT_SUPPORTED) {
+        std::move(callback).Run(AdbSideloadResponseCode::NEED_POWERWASH, false);
+      } else {
+        std::move(callback).Run(AdbSideloadResponseCode::FAILED, false);
+      }
       return;
     }
 
@@ -1034,9 +1042,10 @@ class SessionManagerClientImpl : public SessionManagerClient {
     dbus::MessageReader reader(response);
     if (!reader.PopBool(&is_allowed)) {
       LOG(ERROR) << "Failed to interpret the response";
-      std::move(callback).Run(false, false);
+      std::move(callback).Run(AdbSideloadResponseCode::FAILED, false);
+      return;
     }
-    std::move(callback).Run(true, is_allowed);
+    std::move(callback).Run(AdbSideloadResponseCode::SUCCESS, is_allowed);
   }
 
   dbus::ObjectProxy* session_manager_proxy_ = nullptr;

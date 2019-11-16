@@ -15,96 +15,77 @@ namespace ui {
 void AddUiColorMixers(ColorProvider* provider) {
   ColorMixer& mixer = provider->AddMixer();
 
-  mixer[kColorBubbleBackground] = FromInputColor(kColorPrimaryBackground);
-  mixer[kColorBubbleFooterBackground] =
-      FromInputColor(kColorSecondaryBackgroundSubtle);
-  mixer[kColorButtonBackground] = FromInputColor(kColorPrimaryBackground);
-  mixer[kColorButtonBorder] = FromInputColor(kColorSecondaryBackground);
-  mixer[kColorButtonDisabledForeground] =
-      FromInputColor(kColorDisabledForeground);
-  mixer[kColorButtonProminentBackground] = FromInputColor(kColorAccent);
-  mixer[kColorButtonProminentDisabledBackground] = AlphaBlend(
-      FromInputColor(kColorSecondaryBackground),
-      FromResultColor(kColorButtonBackground), gfx::kDisabledControlAlpha);
-  mixer[kColorButtonProminentFocusedBackground] = BlendForMinContrastWithSelf(
-      FromResultColor(kColorButtonProminentBackground), 1.3f);
+  mixer[kColorBubbleBackground] = {kColorPrimaryBackground};
+  mixer[kColorBubbleFooterBackground] = {kColorSecondaryBackgroundSubtle};
+  mixer[kColorButtonBackground] = {kColorPrimaryBackground};
+  mixer[kColorButtonBorder] = {kColorSecondaryBackground};
+  mixer[kColorButtonDisabledForeground] = {kColorDisabledForeground};
+  mixer[kColorButtonProminentBackground] = {kColorAccent};
+  mixer[kColorButtonProminentDisabledBackground] =
+      AlphaBlend(kColorSecondaryBackground, kColorButtonBackground,
+                 gfx::kDisabledControlAlpha);
+  mixer[kColorButtonProminentFocusedBackground] =
+      BlendForMinContrastWithSelf(kColorButtonProminentBackground, 1.3f);
   mixer[kColorButtonProminentForeground] =
-      GetColorWithMaxContrast(FromResultColor(kColorButtonProminentBackground));
-  mixer[kColorDialogBackground] = FromInputColor(kColorPrimaryBackground);
-  mixer[kColorFocusableBorderFocused] =
-      SetAlpha(FromInputColor(kColorAccent), 0x4D);
-  mixer[kColorFocusableBorderUnfocused] =
-      FromInputColor(kColorSecondaryBackground);
-  mixer[kColorLabelDisabledForeground] = SetAlpha(
-      FromResultColor(kColorLabelForeground), gfx::kDisabledControlAlpha);
-  mixer[kColorLabelForeground] = FromInputColor(kColorPrimaryForeground);
-  mixer[kColorLabelSelectionBackground] =
-      FromInputColor(kColorTextSelectionBackground);
-  mixer[kColorLabelSelectionForeground] =
-      FromResultColor(kColorLabelForeground);
-  mixer[kColorLinkDisabledForeground] = FromInputColor(kColorPrimaryForeground);
-  mixer[kColorLinkPressedForeground] = FromInputColor(kColorLinkForeground);
-  mixer[kColorMenuBackground] = FromInputColor(kColorPrimaryBackground);
-  mixer[kColorMenuBorder] = FromInputColor(kColorSecondaryBackground);
-  mixer[kColorMenuItemAlertedBackground] = FromInputColor(kColorAccent);
-  mixer[kColorMenuItemDisabledForeground] =
-      FromInputColor(kColorDisabledForeground);
-  mixer[kColorMenuItemForeground] = FromInputColor(kColorPrimaryForeground);
-  mixer[kColorMenuItemHighlightedBackground] =
-      FromInputColor(kColorSecondaryBackgroundSubtle);
-  mixer[kColorMenuItemHighlightedForeground] =
-      FromResultColor(kColorMenuItemForeground);
-  mixer[kColorMenuItemSecondaryForeground] =
-      FromInputColor(kColorSecondaryForeground);
-  mixer[kColorMenuItemSelectedBackground] =
-      FromInputColor(kColorSecondaryBackground);
-  mixer[kColorMenuItemSelectedForeground] =
-      FromResultColor(kColorMenuItemForeground);
-  mixer[kColorMenuSeparator] = FromInputColor(kColorSeparatorForeground);
-  mixer[kColorTabContentSeparator] = FromInputColor(kColorSecondaryBackground);
-  mixer[kColorTabForeground] = FromInputColor(kColorSecondaryForeground);
-  mixer[kColorTabSelectedForeground] = FromInputColor(kColorAccent);
-  mixer[kColorTableBackground] = FromInputColor(kColorPrimaryBackground);
-  mixer[kColorTableForeground] = FromInputColor(kColorPrimaryForeground);
-  mixer[kColorTableGroupingIndicator] =
-      FromResultColor(kColorTableSelectedFocusedBackground);
-  mixer[kColorTableHeaderBackground] = FromResultColor(kColorTableBackground);
-  mixer[kColorTableHeaderForeground] = FromResultColor(kColorTableForeground);
-  mixer[kColorTableHeaderSeparator] = FromInputColor(kColorSeparatorForeground);
-  mixer[kColorTableSelectedFocusedBackground] =
-      FromInputColor(kColorSecondaryBackground);
-  mixer[kColorTableSelectedFocusedForeground] =
-      FromResultColor(kColorTableForeground);
-  mixer[kColorTableSelectedUnfocusedBackground] =
-      FromResultColor(kColorTableSelectedFocusedBackground);
-  mixer[kColorTableSelectedUnfocusedForeground] =
-      FromResultColor(kColorTableSelectedFocusedForeground);
-  mixer[kColorTextfieldBackground] = FromInputColor(kColorPrimaryBackground);
-  mixer[kColorTextfieldDisabledBackground] =
-      FromResultColor(kColorTextfieldBackground);
-  mixer[kColorTextfieldDisabledForeground] = SetAlpha(
-      FromResultColor(kColorTextfieldForeground), gfx::kDisabledControlAlpha);
-  mixer[kColorTextfieldForeground] = FromInputColor(kColorPrimaryForeground);
-  mixer[kColorTextfieldSelectionBackground] =
-      FromInputColor(kColorTextSelectionBackground);
-  mixer[kColorTextfieldSelectionForeground] =
-      FromResultColor(kColorTextfieldForeground);
-  mixer[kColorThrobber] = FromInputColor(kColorAccent);
-  mixer[kColorTooltipBackground] = SetAlpha(
-      GetColorWithMaxContrast(FromInputColor(kColorPrimaryBackground)), 0xE9);
-  mixer[kColorTooltipForeground] = SetAlpha(
-      GetColorWithMaxContrast(FromResultColor(kColorTooltipBackground)), 0xDE);
-  mixer[kColorTreeBackground] = FromInputColor(kColorPrimaryBackground);
-  mixer[kColorTreeNodeForeground] = FromInputColor(kColorPrimaryForeground);
-  mixer[kColorTreeNodeSelectedFocusedBackground] =
-      FromInputColor(kColorSecondaryBackground);
-  mixer[kColorTreeNodeSelectedFocusedForeground] =
-      FromResultColor(kColorTreeNodeForeground);
-  mixer[kColorTreeNodeSelectedUnfocusedBackground] =
-      FromResultColor(kColorTreeNodeSelectedFocusedBackground);
-  mixer[kColorTreeNodeSelectedUnfocusedForeground] =
-      FromResultColor(kColorTreeNodeSelectedFocusedForeground);
-  mixer[kColorWindowBackground] = FromInputColor(kColorPrimaryBackground);
+      GetColorWithMaxContrast(kColorButtonProminentBackground);
+  mixer[kColorDialogBackground] = {kColorPrimaryBackground};
+  mixer[kColorFocusableBorderFocused] = SetAlpha(kColorAccent, 0x4D);
+  mixer[kColorFocusableBorderUnfocused] = {kColorSecondaryBackground};
+  mixer[kColorLabelDisabledForeground] =
+      SetAlpha(kColorLabelForeground, gfx::kDisabledControlAlpha);
+  mixer[kColorLabelForeground] = {kColorPrimaryForeground};
+  mixer[kColorLabelSelectionBackground] = {kColorTextSelectionBackground};
+  mixer[kColorLabelSelectionForeground] = {kColorLabelForeground};
+  mixer[kColorLinkDisabledForeground] = {kColorPrimaryForeground};
+  mixer[kColorLinkPressedForeground] = {kColorLinkForeground};
+  mixer[kColorMenuBackground] = {kColorPrimaryBackground};
+  mixer[kColorMenuBorder] = {kColorSecondaryBackground};
+  mixer[kColorMenuItemAlertedBackground] = {kColorAccent};
+  mixer[kColorMenuItemDisabledForeground] = {kColorDisabledForeground};
+  mixer[kColorMenuItemForeground] = {kColorPrimaryForeground};
+  mixer[kColorMenuItemHighlightedBackground] = {
+      kColorSecondaryBackgroundSubtle};
+  mixer[kColorMenuItemHighlightedForeground] = {kColorMenuItemForeground};
+  mixer[kColorMenuItemSecondaryForeground] = {kColorSecondaryForeground};
+  mixer[kColorMenuItemSelectedBackground] = {kColorSecondaryBackground};
+  mixer[kColorMenuItemSelectedForeground] = {kColorMenuItemForeground};
+  mixer[kColorMenuSeparator] = {kColorSeparatorForeground};
+  mixer[kColorTabContentSeparator] = {kColorSecondaryBackground};
+  mixer[kColorTabForeground] = {kColorSecondaryForeground};
+  mixer[kColorTabSelectedForeground] = {kColorAccent};
+  mixer[kColorTableBackground] = {kColorPrimaryBackground};
+  mixer[kColorTableForeground] = {kColorPrimaryForeground};
+  mixer[kColorTableGroupingIndicator] = {kColorTableSelectedFocusedBackground};
+  mixer[kColorTableHeaderBackground] = {kColorTableBackground};
+  mixer[kColorTableHeaderForeground] = {kColorTableForeground};
+  mixer[kColorTableHeaderSeparator] = {kColorSeparatorForeground};
+  mixer[kColorTableSelectedFocusedBackground] = {kColorSecondaryBackground};
+  mixer[kColorTableSelectedFocusedForeground] = {kColorTableForeground};
+  mixer[kColorTableSelectedUnfocusedBackground] = {
+      kColorTableSelectedFocusedBackground};
+  mixer[kColorTableSelectedUnfocusedForeground] = {
+      kColorTableSelectedFocusedForeground};
+  mixer[kColorTextfieldBackground] = {kColorPrimaryBackground};
+  mixer[kColorTextfieldDisabledBackground] = {kColorTextfieldBackground};
+  mixer[kColorTextfieldDisabledForeground] =
+      SetAlpha(kColorTextfieldForeground, gfx::kDisabledControlAlpha);
+  mixer[kColorTextfieldForeground] = {kColorPrimaryForeground};
+  mixer[kColorTextfieldSelectionBackground] = {kColorTextSelectionBackground};
+  mixer[kColorTextfieldSelectionForeground] = {kColorTextfieldForeground};
+  mixer[kColorThrobber] = {kColorAccent};
+  mixer[kColorTooltipBackground] =
+      SetAlpha(GetColorWithMaxContrast(kColorPrimaryBackground), 0xE9);
+  mixer[kColorTooltipForeground] =
+      SetAlpha(GetColorWithMaxContrast(kColorTooltipBackground), 0xDE);
+  mixer[kColorTreeBackground] = {kColorPrimaryBackground};
+  mixer[kColorTreeNodeForeground] = {kColorPrimaryForeground};
+  mixer[kColorTreeNodeSelectedFocusedBackground] = {kColorSecondaryBackground};
+  mixer[kColorTreeNodeSelectedFocusedForeground] = {kColorTreeNodeForeground};
+  mixer[kColorTreeNodeSelectedUnfocusedBackground] = {
+      kColorTreeNodeSelectedFocusedBackground};
+  mixer[kColorTreeNodeSelectedUnfocusedForeground] = {
+      kColorTreeNodeSelectedFocusedForeground};
+  mixer[kColorWindowBackground] = {kColorPrimaryBackground};
 }
 
 }  // namespace ui

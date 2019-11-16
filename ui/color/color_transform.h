@@ -29,6 +29,8 @@ class COMPONENT_EXPORT(COLOR) ColorTransform {
   ColorTransform(Callback callback);
   // Creates a transform that returns the supplied |color|.
   ColorTransform(SkColor color);
+  // Creates a transform that returns the result color for the supplied |id|.
+  ColorTransform(ColorId id);
   ColorTransform(const ColorTransform&);
   ColorTransform& operator=(const ColorTransform&);
   ~ColorTransform();
@@ -85,12 +87,6 @@ ColorTransform DeriveDefaultIconColor(ColorTransform transform);
 // A transform which returns the color |id| from set |set_id|.
 COMPONENT_EXPORT(COLOR)
 ColorTransform FromOriginalColorFromSet(ColorId id, ColorSetId set_id);
-
-// A transform which returns the input color |id|.
-COMPONENT_EXPORT(COLOR) ColorTransform FromInputColor(ColorId id);
-
-// A transform which returns the result color |id|.
-COMPONENT_EXPORT(COLOR) ColorTransform FromResultColor(ColorId id);
 
 // A transform which returns the transform's input color (i.e. does nothing).
 // This is useful to supply as an argument to other transforms to control how

@@ -47,9 +47,6 @@ class CastComponent : public WebComponent,
   void StartComponent() override;
 
  private:
-  // TODO(crbug.com/953958): Remove this.
-  void InitializeCastPlatformBindings();
-
   // WebComponent overrides.
   void DestroyComponent(int termination_exit_code,
                         fuchsia::sys::TerminationReason reason) override;

@@ -49,6 +49,8 @@ class ProactiveSuggestionsClientImpl : public ash::ProactiveSuggestionsClient,
   // content::WebContentsObserver:
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void DidChangeVerticalScrollDirection(
+      viz::VerticalScrollDirection scroll_direction) override;
 
   // AssistantStateObserver:
   void OnAssistantFeatureAllowedChanged(

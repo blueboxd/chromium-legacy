@@ -124,14 +124,16 @@
         <cr-link-row id="sync-setup"
             label="[[getSyncRowLabel_()]]"
             sub-label="[[getSyncAndGoogleServicesSubtext_(syncStatus)]]"
-            on-click="onSyncTap_">
+            on-click="onSyncTap_"
+            role-description="$i18n{subpageArrowRoleDescription}">
         </cr-link-row>
 
         <cr-link-row id="lock-screen-subpage-trigger" class="hr"
             on-click="onConfigureLockTap_"
             label="[[selectLockScreenTitleString(hasPinLogin)]]"
             sub-label="[[getPasswordState_(hasPin,
-                prefs.settings.enable_screen_lock.value)]]"></cr-link-row>
+                prefs.settings.enable_screen_lock.value)]]"
+            role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
 
         <template is="dom-if" if="[[showParentalControls_]]">
           <settings-parental-controls-page>
@@ -139,13 +141,15 @@
         </template>
 
         <cr-link-row id="manage-other-people-subpage-trigger"
-            label="$i18n{manageOtherPeople}" on-click="onManageOtherPeople_">
+            label="$i18n{manageOtherPeople}" on-click="onManageOtherPeople_"
+            role-description="$i18n{subpageArrowRoleDescription}">
         </cr-link-row>
 
         <template is="dom-if" if="[[pageVisibility.people.kerberosAccounts]]">
           <cr-link-row id="kerberos-accounts-subpage-trigger" class="hr"
               on-click="onKerberosAccountsTap_"
-              label="$i18n{kerberosAccountsSubMenuLabel}">
+              label="$i18n{kerberosAccountsSubMenuLabel}"
+              role-description="$i18n{subpageArrowRoleDescription}">
             <cr-policy-indicator indicator-type="userPolicy">
             </cr-policy-indicator>
           </cr-link-row>

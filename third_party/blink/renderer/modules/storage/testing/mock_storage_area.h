@@ -5,34 +5,32 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_STORAGE_TESTING_MOCK_STORAGE_AREA_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_STORAGE_TESTING_MOCK_STORAGE_AREA_H_
 
-#include "components/services/storage/public/mojom/dom_storage_area.mojom-blink.h"
-#include "components/services/storage/public/mojom/key_value_pair.mojom-blink.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/dom_storage/storage_area.mojom-blink.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 
 namespace blink {
 
 // Mock StorageArea that records all read and write events.
-class MockStorageArea : public storage::mojom::blink::DomStorageArea {
+class MockStorageArea : public mojom::blink::StorageArea {
  public:
   using ResultCallback = base::OnceCallback<void(bool)>;
 
   MockStorageArea();
   ~MockStorageArea() override;
 
-  mojo::PendingRemote<storage::mojom::blink::DomStorageArea>
-  GetInterfaceRemote();
-  mojo::PendingAssociatedRemote<storage::mojom::blink::DomStorageArea>
+  mojo::PendingRemote<mojom::blink::StorageArea> GetInterfaceRemote();
+  mojo::PendingAssociatedRemote<mojom::blink::StorageArea>
   GetAssociatedInterfaceRemote();
 
   // StorageArea implementation:
   void AddObserver(
-      mojo::PendingAssociatedRemote<
-          storage::mojom::blink::DomStorageAreaObserver> observer) override;
+      mojo::PendingAssociatedRemote<mojom::blink::StorageAreaObserver> observer)
+      override;
 
   void Put(const Vector<uint8_t>& key,
            const Vector<uint8_t>& value,
@@ -50,8 +48,7 @@ class MockStorageArea : public storage::mojom::blink::DomStorageArea {
   void Get(const Vector<uint8_t>& key, GetCallback callback) override;
 
   void GetAll(mojo::PendingAssociatedRemote<
-                  storage::mojom::blink::DomStorageAreaGetAllCallback>
-                  complete_callback,
+                  mojom::blink::StorageAreaGetAllCallback> complete_callback,
               GetAllCallback callback) override;
 
   // Methods and members for use by test fixtures.
@@ -101,8 +98,7 @@ class MockStorageArea : public storage::mojom::blink::DomStorageArea {
   const String& observed_source() const { return observed_source_; }
   size_t observer_count() const { return observer_count_; }
 
-  Vector<storage::mojom::blink::KeyValuePairPtr>&
-  mutable_get_all_return_values() {
+  Vector<mojom::blink::KeyValuePtr>& mutable_get_all_return_values() {
     return get_all_return_values_;
   }
 
@@ -117,11 +113,10 @@ class MockStorageArea : public storage::mojom::blink::DomStorageArea {
   String observed_source_;
   size_t observer_count_ = 0;
 
-  Vector<storage::mojom::blink::KeyValuePairPtr> get_all_return_values_;
+  Vector<mojom::blink::KeyValuePtr> get_all_return_values_;
 
-  mojo::ReceiverSet<storage::mojom::blink::DomStorageArea> receivers_;
-  mojo::AssociatedReceiverSet<storage::mojom::blink::DomStorageArea>
-      associated_receivers_;
+  mojo::ReceiverSet<mojom::blink::StorageArea> receivers_;
+  mojo::AssociatedReceiverSet<mojom::blink::StorageArea> associated_receivers_;
 };
 
 }  // namespace blink

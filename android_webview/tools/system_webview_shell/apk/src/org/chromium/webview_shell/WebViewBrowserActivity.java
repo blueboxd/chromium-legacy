@@ -514,6 +514,11 @@ public class WebViewBrowserActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
             menu.findItem(R.id.menu_enable_tracing).setEnabled(false);
         }
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            menu.findItem(R.id.menu_force_dark_off).setEnabled(false);
+            menu.findItem(R.id.menu_force_dark_auto).setEnabled(false);
+            menu.findItem(R.id.menu_force_dark_on).setEnabled(false);
+        }
         return true;
     }
 
@@ -521,6 +526,20 @@ public class WebViewBrowserActivity extends AppCompatActivity {
     public boolean onPrepareOptionsMenu(Menu menu) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             menu.findItem(R.id.menu_enable_tracing).setChecked(mEnableTracing);
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            int fdState = mWebView.getSettings().getForceDark();
+            switch (fdState) {
+                case WebSettings.FORCE_DARK_OFF:
+                    menu.findItem(R.id.menu_force_dark_off).setChecked(true);
+                    break;
+                case WebSettings.FORCE_DARK_AUTO:
+                    menu.findItem(R.id.menu_force_dark_auto).setChecked(true);
+                    break;
+                case WebSettings.FORCE_DARK_ON:
+                    menu.findItem(R.id.menu_force_dark_on).setChecked(true);
+                    break;
+            }
         }
         return true;
     }
@@ -566,6 +585,18 @@ public class WebViewBrowserActivity extends AppCompatActivity {
                         }
                     }
                 }
+                return true;
+            case R.id.menu_force_dark_off:
+                mWebView.getSettings().setForceDark(WebSettings.FORCE_DARK_OFF);
+                item.setChecked(true);
+                return true;
+            case R.id.menu_force_dark_auto:
+                mWebView.getSettings().setForceDark(WebSettings.FORCE_DARK_AUTO);
+                item.setChecked(true);
+                return true;
+            case R.id.menu_force_dark_on:
+                mWebView.getSettings().setForceDark(WebSettings.FORCE_DARK_ON);
+                item.setChecked(true);
                 return true;
             case R.id.start_animation_activity:
                 startActivity(new Intent(this, WebViewAnimationTestActivity.class));

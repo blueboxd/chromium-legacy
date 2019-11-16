@@ -51,6 +51,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -112,8 +113,7 @@ const std::string BuildQueryString(Profile* profile) {
     channel_name = "stable";
   const std::string username = profile->GetProfileUserName();
   std::string user_type;
-  if (base::EndsWith(username, "@google.com",
-                     base::CompareCase::INSENSITIVE_ASCII)) {
+  if (gaia::IsGoogleInternalAccountEmail(username)) {
     user_type = "googler";
   } else if (profile->GetProfilePolicyConnector()->IsManaged()) {
     user_type = "managed";

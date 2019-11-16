@@ -23,9 +23,12 @@
 #endif
 
 #if defined(OS_MACOSX)
-#import <SystemConfiguration/SCDynamicStoreCopySpecific.h>
 #include <stddef.h>
 #include <sys/sysctl.h>
+#endif
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#import <SystemConfiguration/SCDynamicStoreCopySpecific.h>
 #endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -72,6 +75,9 @@ std::string GetMachineName() {
     return hostname;
   return std::string();
 #elif defined(OS_MACOSX)
+// TODO(crbug.com/1024115): Find a different replacement for -[NSHost
+// currentHost] on iOS.
+#if !defined(OS_IOS)
   // Do not use NSHost currentHost, as it's very slow. http://crbug.com/138570
   SCDynamicStoreContext context = {0, NULL, NULL, NULL};
   base::ScopedCFTypeRef<SCDynamicStoreRef> store(SCDynamicStoreCreate(
@@ -86,6 +92,7 @@ std::string GetMachineName() {
       SCDynamicStoreCopyComputerName(store.get(), NULL));
   if (computer_name.get())
     return base::SysCFStringRefToUTF8(computer_name.get());
+#endif  // !OS_IOS
 
   // If all else fails, return to using a slightly nicer version of the
   // hardware model.

@@ -102,9 +102,9 @@ class ChromeContentClient : public content::ContentClient {
   media::MediaDrmBridgeClient* GetMediaDrmBridgeClient() override;
 #endif  // OS_ANDROID
 
-  void BindChildProcessInterface(
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle* receiving_handle) override;
+  void ExposeInterfacesToBrowser(
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner,
+      mojo::BinderMap* binders) override;
 
  private:
   // Used to lock when |origin_trial_policy_| is initialized.

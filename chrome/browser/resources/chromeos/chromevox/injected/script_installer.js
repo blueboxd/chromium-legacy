@@ -8,14 +8,14 @@
  *
  */
 
-goog.provide('cvox.ScriptInstaller');
+goog.provide('ScriptInstaller');
 
 
 /**
  * URL pattern where we do not allow script installation.
  * @type {RegExp}
  */
-cvox.ScriptInstaller.blacklistPattern = /chrome:\/\/|chrome-extension:\/\//;
+ScriptInstaller.blacklistPattern = /chrome:\/\/|chrome-extension:\/\//;
 
 /**
  * Installs a script in the web page.
@@ -29,19 +29,19 @@ cvox.ScriptInstaller.blacklistPattern = /chrome:\/\/|chrome-extension:\/\//;
  * @return {boolean} False if the script already existed and this function
  * didn't do anything.
  */
-cvox.ScriptInstaller.installScript = function(
+ScriptInstaller.installScript = function(
     srcs, uid, opt_onload, opt_chromevoxScriptBase) {
-  if (cvox.ScriptInstaller.blacklistPattern.test(document.URL)) {
+  if (ScriptInstaller.blacklistPattern.test(document.URL)) {
     return false;
   }
   if (document.querySelector('script[' + uid + ']')) {
-    cvox.ScriptInstaller.uninstallScript(uid);
+    ScriptInstaller.uninstallScript(uid);
   }
   if (!srcs || srcs.length == 0) {
     return false;
   }
 
-  cvox.ScriptInstaller.installScriptHelper_(
+  ScriptInstaller.installScriptHelper_(
       srcs, uid, opt_onload, opt_chromevoxScriptBase);
   return true;
 };
@@ -50,7 +50,7 @@ cvox.ScriptInstaller.installScript = function(
  * Uninstalls a script.
  * @param {string} uid Id of the script node.
  */
-cvox.ScriptInstaller.uninstallScript = function(uid) {
+ScriptInstaller.uninstallScript = function(uid) {
   var scriptNode;
   if (scriptNode = document.querySelector('script[' + uid + ']')) {
     scriptNode.remove();
@@ -69,11 +69,11 @@ cvox.ScriptInstaller.uninstallScript = function(uid) {
  *     attribute to add.
  * @private
  */
-cvox.ScriptInstaller.installScriptHelper_ = function(
+ScriptInstaller.installScriptHelper_ = function(
     srcs, uid, opt_onload, opt_chromevoxScriptBase) {
   function next() {
     if (srcs.length > 0) {
-      cvox.ScriptInstaller.installScriptHelper_(
+      ScriptInstaller.installScriptHelper_(
           srcs, uid, opt_onload, opt_chromevoxScriptBase);
     } else if (opt_onload) {
       opt_onload();

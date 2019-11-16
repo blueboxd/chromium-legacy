@@ -181,7 +181,7 @@
   {
     "name": "arc-print-spooler-experiment",
     "owners": [ "jschettler@google.com", "bmgordon@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 82
   },
   {
     "name": "arc-usb-host",
@@ -305,7 +305,7 @@
   {
     "name": "autofill-keyboard-accessory-view",
     "owners": [ "fhorschig@chromium.org" ],
-    "expiry_milestone": 79
+    "expiry_milestone": 82
   },
   {
     "name": "autofill-no-local-save-on-unmask-success",
@@ -660,7 +660,7 @@
   {
     "name": "decode-webp-images-to-yuv",
     "owners": [ "andrescj", "chromeos-gfx@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 88
   },
   {
     "name": "delegate-overscroll-swipes",
@@ -960,7 +960,7 @@
   {
     "name": "enable-assistant-dsp",
     "owners": [ "croissant-eng" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 88
   },
   {
     "name": "enable-assistant-key-remapping",
@@ -970,17 +970,17 @@
   {
     "name": "enable-assistant-launcher-integration",
     "owners": [ "croissant-eng" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 88
   },
   {
     "name": "enable-assistant-launcher-ui",
     "owners": [ "croissant-eng" ],
-    "expiry_milestone": 81
+    "expiry_milestone": 82
   },
   {
     "name": "enable-assistant-media-session-integration",
     "owners": [ "croissant-eng" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 88
   },
   {
     "name": "enable-assistant-routines",
@@ -990,7 +990,7 @@
   {
     "name": "enable-assistant-stereo-input",
     "owners": [ "croissant-eng" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 88
   },
   {
     "name": "enable-async-dns",
@@ -1058,7 +1058,7 @@
   {
     "name": "enable-autofill-manual-fallback",
     "owners": [ "fhorschig@chromium.org" ],
-    "expiry_milestone": 79
+    "expiry_milestone": 82
   },
   {
     "name": "enable-autofill-refresh-style",
@@ -1093,7 +1093,7 @@
   {
     "name": "enable-bookmark-reorder",
     "owners": ["jhimawan@google.com", "twellington" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 82
   },
   {
     "name": "enable-built-in-module-all",
@@ -1123,7 +1123,7 @@
   {
     "name": "enable-chrome-duet",
     "owners": [ "mdjones" ],
-    "expiry_milestone": 79
+    "expiry_milestone": 82
   },
   {
     "name": "enable-chrome-duet-labels",
@@ -1262,7 +1262,7 @@
   {
     "name": "enable-display-locking",
     "owners": [ "//third_party/blink/renderer/core/display_lock/OWNERS" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 82
   },
   {
     "name": "enable-edu-coexistence",
@@ -1322,7 +1322,7 @@
   {
     "name": "enable-experimental-fling-animation",
     "owners": [ "sarsha@microsoft.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 81
   },
   {
     "name": "enable-experimental-kernel-vm-support",
@@ -1524,7 +1524,7 @@
   {
     "name": "enable-mark-http-as",
     "owners": [ "cthomp", "estark" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 86
   },
   {
     "name": "enable-md-rounded-corners-on-dialogs",
@@ -1625,7 +1625,7 @@
     {
     "name": "enable-paint-holding",
     "owners": [ "schenney", "paint-dev" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 82
   },
   {
     "name": "enable-parallel-downloading",
@@ -2009,7 +2009,7 @@
   {
     "name": "enable-viz-display-compositor",
     "owners": [ "kylechar", "rjkroege" ],
-    "expiry_milestone": 79
+    "expiry_milestone": 81
   },
   {
     "name": "enable-viz-hit-test-surface-layer",
@@ -2238,7 +2238,7 @@
   {
     "name": "fill-on-account-select",
     "owners": [ "jdoerrie" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 82
   },
   {
     "name": "focus-mode",
@@ -2269,7 +2269,7 @@
   },
   {
     "name": "force-enable-system-aec",
-    "owners": [ "grunell" ],
+    "owners": [ "armax", "guidou" ],
     "expiry_milestone": 80
   },
   {
@@ -2438,8 +2438,8 @@
   },
   {
     "name": "interest-feed-content-suggestions",
-    "owners": [ "//chrome/android/feed/OWNERS" ],
-    "expiry_milestone": 80
+    "owners": [ "//chrome/android/feed/OWNERS", "feed@chromium.org" ],
+    "expiry_milestone": 90
   },
   {
     "name": "interest-feed-notifications",
@@ -2487,7 +2487,7 @@
   },
   {
     "name": "mac-system-media-permissions-info-ui",
-    "owners": [ "grunell", "engedy", "hkamila" ],
+    "owners": [ "guidou", "engedy", "hkamila" ],
     "expiry_milestone": 78
   },
   {
@@ -2774,7 +2774,7 @@
   {
     "name": "omnibox-experimental-keyword-mode",
     "owners": [ "krb", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 82
   },
   {
     "name": "omnibox-experimental-suggest-scoring",
@@ -2784,7 +2784,7 @@
   {
     "name": "omnibox-group-suggestions-by-search-vs-url",
     "owners": [ "krb", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 82
   },
   {
     "name": "omnibox-local-entity-suggestions",
@@ -2804,7 +2804,7 @@
   {
     "name": "omnibox-max-url-matches",
     "owners": [ "krb", "chromium-omnibox-team" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 82
   },
   {
     "name": "omnibox-on-device-head-suggestions",
@@ -2849,7 +2849,7 @@
   {
     "name": "omnibox-short-bookmark-suggestions",
     "owners": [ "krb", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 82
   },
   {
     "name": "omnibox-spare-renderer",
@@ -2904,7 +2904,7 @@
   {
     "name": "omnibox-ui-show-suggestion-favicons",
     "owners": [ "ender", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 79
+    "expiry_milestone": 85
   },
   {
     "name": "omnibox-ui-swap-title-and-url",
@@ -2944,7 +2944,7 @@
   {
     "name": "out-of-blink-cors",
     "owners": [ "toyoshim" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 82
   },
   {
     "name": "overlay-new-layout",
@@ -3196,6 +3196,11 @@
     "expiry_milestone": 83
   },
   {
+    "name": "sharing-rename-devices",
+    "owners": [ "//chrome/browser/sharing/OWNERS" ],
+    "expiry_milestone": 83
+  },
+  {
     "name": "sharing-use-device-info",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
     "expiry_milestone": 82
@@ -3431,7 +3436,7 @@
   {
     "name": "touch-to-fill",
     "owners": [ "jdoerrie" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 82
   },
   {
     "name": "touchpad-overscroll-history-navigation",

@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -303,6 +304,27 @@ base::string16 SaveCardBubbleControllerImpl::GetDeclineButtonText() const {
     case BubbleType::MANAGE_CARDS:
     case BubbleType::SIGN_IN_PROMO:
     case BubbleType::FAILURE:
+    case BubbleType::INACTIVE:
+      return base::string16();
+  }
+}
+
+base::string16 SaveCardBubbleControllerImpl::GetSaveCardIconTooltipText()
+    const {
+  switch (current_bubble_type_) {
+    case BubbleType::LOCAL_SAVE:
+    case BubbleType::UPLOAD_SAVE:
+    // TODO(crbug.com/932818): With |kAutofillCreditCardUploadFeedback| being
+    // enabled, sign in promo will not be shown from the credit card icon, and
+    // there will not be manage cards bubble. These two will be cleaned up in
+    // the future.
+    case BubbleType::MANAGE_CARDS:
+    case BubbleType::SIGN_IN_PROMO:
+      return l10n_util::GetStringUTF16(IDS_TOOLTIP_SAVE_CREDIT_CARD);
+    case BubbleType::UPLOAD_IN_PROGRESS:
+      return l10n_util::GetStringUTF16(IDS_TOOLTIP_SAVE_CREDIT_CARD_PENDING);
+    case BubbleType::FAILURE:
+      return l10n_util::GetStringUTF16(IDS_TOOLTIP_SAVE_CREDIT_CARD_FAILURE);
     case BubbleType::INACTIVE:
       return base::string16();
   }

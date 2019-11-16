@@ -278,10 +278,8 @@ bool NGInlineCursor::IsListMarker() const {
 bool NGInlineCursor::IsText() const {
   if (current_paint_fragment_)
     return current_paint_fragment_->PhysicalFragment().IsText();
-  if (current_item_) {
-    return current_item_->Type() == NGFragmentItem::kText ||
-           current_item_->Type() == NGFragmentItem::kGeneratedText;
-  }
+  if (current_item_)
+    return current_item_->IsText();
   NOTREACHED();
   return false;
 }

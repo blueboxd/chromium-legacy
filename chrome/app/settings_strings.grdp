@@ -662,6 +662,9 @@
     <message name="IDS_SETTINGS_CROSTINI_ARC_ADB_LABEL" desc="Label for enabling ADB in ARC.">
       Enable on this device
     </message>
+    <message name="IDS_SETTINGS_CROSTINI_ARC_ADB_POWERWASH_REQUIRED_SUBLABEL" desc="Sublabel notifying user of powerwash requirement before enabling ARC ADB sideloading.">
+            A factory reset of this Chromebook is required to enable ADB debugging. <ph name="BEGIN_LINK_LEARN_MORE">&lt;a target="_blank" href="$1"&gt;</ph>Learn more<ph name="END_LINK_LEARN_MORE">&lt;/a&gt;</ph>
+    </message>
     <message name="IDS_SETTINGS_CROSTINI_ARC_ADB_CONFIRMATION_TITLE_ENABLE" desc="Confirmation dialog title to restart for enabling ADB.">
       Enable ADB?
     </message>
@@ -3437,6 +3440,15 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_AUTOMATICALLY_BLOCKED_NOTIFICATIONS" desc="The label in notifications site settings -- a setting that is automatically set when the user declines notification permission prompts a few times.">
     Automatically blocked because you declined notifications a few times
   </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_SHOW_BLOCKED_NOTIFICATIONS_INDICATOR" desc="The label in notifications site settings -- a setting that enables showing a blocked indicator in the address bar when notifications are blocked for all sites. It can be set by the user or automatically set by Chrome when a user has denied notifications several times.">
+    Show an indicator in the address bar when notification are blocked
+  </message>
+    <message name="IDS_SETTINGS_SITE_SETTINGS_ENABLE_QUIET_NOTIFICATION_PROMPTS" desc="The label in notifications site settings -- a setting that enables showing a blocked indicator in the address bar instead of the prompt, when a site requests to send notifications. It can be set by the user or automatically set by Chrome when a user has denied notifications several times.">
+    Show prompts quietly
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_ENABLE_QUIET_NOTIFICATION_PROMPTS_DESCRIPTION" desc="The label description for 'quiet notifications' option in notifications site settings -- if a site requests to send notifications, the request will be blocked and a blocked indicator icon will appear in the address bar.">
+    Sites will be blocked from asking to show you notifications. If a site requests notifications, a blocked indicator will appear in the address bar.
+  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_DONT_SHOW_IMAGES" desc="Label for the global 'Do not show any images' toggle (category default) in site settings.">
     Do not show any images
   </message>
@@ -5363,6 +5375,9 @@
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_NO_BIOMETRIC_ENROLLMENT" desc="An error message shown when a user attempts to use the fingerprint sensor on their security key (an authentication hardware device) but the security key is not capable of storing fingerprints, or does not have a fingerprint sensor.">
     Your security key can't store fingerprints
+  </message>
+  <message name="IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_DELETE" desc="The label for a button that when clicked deletes a fingerprint from a security key (an authentication hardware device) with a built-in fingerprint reader.">
+    Delete this fingerprint
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_TOUCH_TO_CONTINUE" desc="A label instructing the user to physically touch the activation button on their security key (an authentication hardware device).">
     To continue, insert and touch your security key

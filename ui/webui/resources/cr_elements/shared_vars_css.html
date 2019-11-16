@@ -21,6 +21,8 @@
     --google-grey-800: rgb(var(--google-grey-800-rgb));
     --google-grey-900-rgb: 32, 33, 36;  /* #202124 */
     --google-grey-900: rgb(var(--google-grey-900-rgb));
+    /* --google-grey-900 + 4% white blended together. */
+    --google-grey-900-white-4-percent: #292a2d;
 
     --google-red-600-rgb: 217, 48, 37;  /* #d93025 */
     --google-red-600: rgb(var(--google-red-600-rgb));
@@ -77,6 +79,7 @@
     --cr-separator-color: rgba(0, 0, 0, .06);
     --cr-title-text-color: rgb(90, 90, 90);
     --cr-toggle-color: var(--google-blue-500);
+    --cr-toolbar-background-color: var(--google-blue-700);
   }
 
   @media (prefers-color-scheme: dark) {
@@ -107,6 +110,7 @@
       --cr-separator-color: rgba(255, 255, 255, .1);
       /* TODO(dbeam): --cr-toggle-color (CrOS only). */
       --cr-title-text-color: var(--cr-primary-text-color);
+      --cr-toolbar-background-color: var(--google-grey-900-white-4-percent);
     }
   }
 

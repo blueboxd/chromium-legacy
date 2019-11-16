@@ -69,12 +69,12 @@ static base::Time ExtractTimelineOffset(
     const AVFormatContext* format_context) {
   if (container == container_names::CONTAINER_WEBM) {
     const AVDictionaryEntry* entry =
-        av_dict_get(format_context->metadata, "creation_time", NULL, 0);
+        av_dict_get(format_context->metadata, "creation_time", nullptr, 0);
 
     base::Time timeline_offset;
 
     // FFmpegDemuxerTests assume base::Time::FromUTCString() is used here.
-    if (entry != NULL && entry->value != NULL &&
+    if (entry != nullptr && entry->value != nullptr &&
         base::Time::FromUTCString(entry->value, &timeline_offset)) {
       return timeline_offset;
     }
@@ -327,8 +327,8 @@ FFmpegDemuxerStream::FFmpegDemuxerStream(
   duration_ = ConvertStreamTimestamp(stream->time_base, stream->duration);
 
   if (is_encrypted) {
-    AVDictionaryEntry* key = av_dict_get(stream->metadata, "enc_key_id", NULL,
-                                         0);
+    AVDictionaryEntry* key =
+        av_dict_get(stream->metadata, "enc_key_id", nullptr, 0);
     DCHECK(key);
     DCHECK(key->value);
     if (!key || !key->value)
@@ -398,10 +398,10 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
   last_packet_dts_ = packet_dts;
 
   if (waiting_for_keyframe_) {
-    if (packet->flags & AV_PKT_FLAG_KEY)
+    if (packet->flags & AV_PKT_FLAG_KEY) {
       waiting_for_keyframe_ = false;
-    else {
-      DLOG(WARNING) << "Dropped non-keyframe pts=" << packet->pts;
+    } else {
+      DVLOG(1) << "Dropped non-keyframe pts=" << packet->pts;
       return;
     }
   }
@@ -881,8 +881,8 @@ size_t FFmpegDemuxerStream::MemoryUsage() const {
 
 std::string FFmpegDemuxerStream::GetMetadata(const char* key) const {
   const AVDictionaryEntry* entry =
-      av_dict_get(stream_->metadata, key, NULL, 0);
-  return (entry == NULL || entry->value == NULL) ? "" : entry->value;
+      av_dict_get(stream_->metadata, key, nullptr, 0);
+  return (entry == nullptr || entry->value == nullptr) ? "" : entry->value;
 }
 
 // static
@@ -905,21 +905,15 @@ FFmpegDemuxer::FFmpegDemuxer(
     const MediaTracksUpdatedCB& media_tracks_updated_cb,
     MediaLog* media_log,
     bool is_local_file)
-    : host_(NULL),
-      task_runner_(task_runner),
+    : task_runner_(task_runner),
       // FFmpeg has no asynchronous API, so we use base::WaitableEvents inside
       // the BlockingUrlProtocol to handle hops to the render thread for network
       // reads and seeks.
       blocking_task_runner_(
           base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
                                            base::TaskPriority::USER_BLOCKING})),
-      stopped_(false),
-      pending_read_(false),
       data_source_(data_source),
       media_log_(media_log),
-      bitrate_(0),
-      start_time_(kNoTimestamp),
-      duration_known_(false),
       encrypted_media_init_data_cb_(encrypted_media_init_data_cb),
       media_tracks_updated_cb_(media_tracks_updated_cb),
       is_local_file_(is_local_file) {
@@ -1035,7 +1029,7 @@ void FFmpegDemuxer::Stop() {
       stream->Stop();
   }
 
-  data_source_ = NULL;
+  data_source_ = nullptr;
 
   // Invalidate WeakPtrs on |task_runner_|, destruction may happen on another
   // thread. We don't need to wait for any outstanding tasks since they will all
@@ -1146,7 +1140,7 @@ FFmpegDemuxerStream* FFmpegDemuxer::GetFirstEnabledFFmpegStream(
       return stream.get();
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 base::TimeDelta FFmpegDemuxer::GetStartTime() const {

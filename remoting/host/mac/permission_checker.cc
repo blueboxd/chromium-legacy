@@ -21,17 +21,19 @@ PermissionChecker::PermissionChecker(
 PermissionChecker::~PermissionChecker() = default;
 
 std::string PermissionChecker::GetBundleName() {
+  std::string host_bundle;
   if (mode_ == HostMode::ME2ME) {
-    std::string host_bundle(HOST_BUNDLE_NAME);
-
-    // Strip off the ".app" suffix.
-    auto dot_position = host_bundle.rfind('.');
-    if (dot_position != std::string::npos) {
-      host_bundle = host_bundle.substr(0, dot_position);
-    }
-    return host_bundle;
+    host_bundle = HOST_BUNDLE_NAME;
+  } else {
+    host_bundle = REMOTE_ASSISTANCE_HOST_BUNDLE_NAME;
   }
-  return "remote_assistance_host";
+
+  // Strip off the ".app" suffix.
+  auto dot_position = host_bundle.rfind('.');
+  if (dot_position != std::string::npos) {
+    host_bundle = host_bundle.substr(0, dot_position);
+  }
+  return host_bundle;
 }
 
 void PermissionChecker::CheckAccessibilityPermission(

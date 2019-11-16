@@ -10,7 +10,6 @@
 #include <limits>
 
 #include "base/logging.h"
-#include "base/memory/shared_memory.h"
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,13 +23,6 @@ const off_t kUnalignedOffset = 3;
 
 const uint8_t kData[] = "hello";
 const size_t kDataSize = base::size(kData);
-
-base::SharedMemoryHandle CreateHandle(const uint8_t* data, size_t size) {
-  base::SharedMemory shm;
-  EXPECT_TRUE(shm.CreateAndMapAnonymous(size));
-  memcpy(shm.memory(), data, size);
-  return shm.TakeHandle();
-}
 
 base::UnsafeSharedMemoryRegion CreateRegion(const uint8_t* data, size_t size) {
   auto region = base::UnsafeSharedMemoryRegion::Create(size);
@@ -49,11 +41,6 @@ base::ReadOnlySharedMemoryRegion CreateReadOnlyRegion(const uint8_t* data,
 }
 }  // namespace
 
-TEST(UnalignedSharedMemoryTest, CreateAndDestroy) {
-  auto handle = CreateHandle(kData, kDataSize);
-  UnalignedSharedMemory shm(handle, kDataSize, true);
-}
-
 TEST(UnalignedSharedMemoryTest, CreateAndDestroyRegion) {
   auto region = CreateRegion(kData, kDataSize);
   UnalignedSharedMemory shm(
@@ -70,21 +57,9 @@ TEST(UnalignedSharedMemoryTest, CreateAndDestroyReadOnlyRegion) {
       kDataSize, true);
 }
 
-TEST(UnalignedSharedMemoryTest, CreateAndDestroy_InvalidHandle) {
-  base::SharedMemoryHandle handle;
-  UnalignedSharedMemory shm(handle, kDataSize, true);
-}
-
 TEST(UnalignedSharedMemoryTest, CreateAndDestroy_InvalidRegion) {
   UnalignedSharedMemory shm(base::subtle::PlatformSharedMemoryRegion(),
                             kDataSize, false);
-}
-
-TEST(UnalignedSharedMemoryTest, Map) {
-  auto handle = CreateHandle(kData, kDataSize);
-  UnalignedSharedMemory shm(handle, kDataSize, true);
-  ASSERT_TRUE(shm.MapAt(0, kDataSize));
-  EXPECT_EQ(0, memcmp(shm.memory(), kData, kDataSize));
 }
 
 TEST(UnalignedSharedMemoryTest, MapRegion) {
@@ -104,13 +79,6 @@ TEST(UnalignedSharedMemoryTest, MapReadOnlyRegion) {
           std::move(region)),
       kDataSize, true);
   ASSERT_TRUE(shm.MapAt(0, kDataSize));
-  EXPECT_EQ(0, memcmp(shm.memory(), kData, kDataSize));
-}
-
-TEST(UnalignedSharedMemoryTest, Map_Unaligned) {
-  auto handle = CreateHandle(kUnalignedData, kUnalignedDataSize);
-  UnalignedSharedMemory shm(handle, kUnalignedDataSize, true);
-  ASSERT_TRUE(shm.MapAt(kUnalignedOffset, kDataSize));
   EXPECT_EQ(0, memcmp(shm.memory(), kData, kDataSize));
 }
 
@@ -134,24 +102,11 @@ TEST(UnalignedSharedMemoryTest, Map_UnalignedReadOnlyRegion) {
   EXPECT_EQ(0, memcmp(shm.memory(), kData, kDataSize));
 }
 
-TEST(UnalignedSharedMemoryTest, Map_InvalidHandle) {
-  base::SharedMemoryHandle handle;
-  UnalignedSharedMemory shm(handle, kDataSize, true);
-  ASSERT_FALSE(shm.MapAt(1, kDataSize));
-  EXPECT_EQ(shm.memory(), nullptr);
-}
-
 TEST(UnalignedSharedMemoryTest, Map_InvalidRegion) {
   UnalignedSharedMemory shm(base::subtle::PlatformSharedMemoryRegion(),
                             kDataSize, true);
   ASSERT_FALSE(shm.MapAt(1, kDataSize));
   EXPECT_EQ(shm.memory(), nullptr);
-}
-
-TEST(UnalignedSharedMemoryTest, Map_NegativeOffset) {
-  auto handle = CreateHandle(kData, kDataSize);
-  UnalignedSharedMemory shm(handle, kDataSize, true);
-  ASSERT_FALSE(shm.MapAt(-1, kDataSize));
 }
 
 TEST(UnalignedSharedMemoryTest, Map_NegativeOffsetRegion) {
@@ -172,12 +127,6 @@ TEST(UnalignedSharedMemoryTest, Map_NegativeOffsetReadOnlyRegion) {
   ASSERT_FALSE(shm.MapAt(-1, kDataSize));
 }
 
-TEST(UnalignedSharedMemoryTest, Map_SizeOverflow) {
-  auto handle = CreateHandle(kData, kDataSize);
-  UnalignedSharedMemory shm(handle, kDataSize, true);
-  ASSERT_FALSE(shm.MapAt(1, std::numeric_limits<size_t>::max()));
-}
-
 TEST(UnalignedSharedMemoryTest, Map_SizeOverflowRegion) {
   auto region = CreateRegion(kData, kDataSize);
   UnalignedSharedMemory shm(
@@ -194,12 +143,6 @@ TEST(UnalignedSharedMemoryTest, Map_SizeOverflowReadOnlyRegion) {
           std::move(region)),
       kDataSize, true);
   ASSERT_FALSE(shm.MapAt(1, std::numeric_limits<size_t>::max()));
-}
-
-TEST(UnalignedSharedMemoryTest, UnmappedIsNullptr) {
-  auto handle = CreateHandle(kData, kDataSize);
-  UnalignedSharedMemory shm(handle, kDataSize, true);
-  ASSERT_EQ(shm.memory(), nullptr);
 }
 
 TEST(UnalignedSharedMemoryTest, UnmappedRegionIsNullptr) {

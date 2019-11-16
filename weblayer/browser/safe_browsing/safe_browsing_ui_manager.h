@@ -15,7 +15,6 @@ class SafeBrowsingUIManager : public safe_browsing::BaseUIManager {
   SafeBrowsingUIManager();
 
   // BaseUIManager overrides.
-  void DisplayBlockingPage(const UnsafeResource& resource) override;
   void SendSerializedThreatDetails(const std::string& serialized) override;
 
  protected:

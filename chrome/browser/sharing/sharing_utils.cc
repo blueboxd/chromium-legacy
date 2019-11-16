@@ -73,15 +73,16 @@ SharingDeviceNames GetSharingDeviceNames(const syncer::DeviceInfo* device) {
 
   base::SysInfo::HardwareInfo hardware_info = device->hardware_info();
   sync_pb::SyncEnums::DeviceType type = device->device_type();
-  // We only want to apply renaming for sign-in only devices. sign-in only
-  // devices has client_name == model. Additionally, Android and Chrome OS also
-  // uses model as client_name, so we should avoid renaming them as well.
-  // Lastly, avoid renaming if HardwareInfo is not available for M78- devices,
+  // 1. Skip renaming for M78- devices where HardwareInfo is not available.
+  // 2. Skip renaming if client_name is high quality i.e. not equals to model.
+  // 3. Skip renaming for Android and Chrome OS devices if feature is not
+  //    enabled, which always have low quality client_name.
   if (hardware_info.model.empty() ||
       hardware_info.model != device->client_name() ||
-      type == sync_pb::SyncEnums::TYPE_CROS ||
-      type == sync_pb::SyncEnums::TYPE_PHONE ||
-      type == sync_pb::SyncEnums::TYPE_TABLET) {
+      (!base::FeatureList::IsEnabled(kSharingRenameDevices) &&
+       (type == sync_pb::SyncEnums::TYPE_CROS ||
+        type == sync_pb::SyncEnums::TYPE_PHONE ||
+        type == sync_pb::SyncEnums::TYPE_TABLET))) {
     device_names.full_name = device_names.short_name = device->client_name();
     return device_names;
   }

@@ -4,13 +4,17 @@
 
 #include "tools/binary_size/libsupersize/caspian/diff.h"
 
+#include <deque>
 #include <functional>
 #include <iostream>
 #include <list>
+#include <string>
 #include <string_view>
 #include <unordered_map>
 #include <utility>
 #include <vector>
+
+#include "third_party/re2/src/re2/re2.h"
 
 namespace {
 struct SymbolMatchIndex {
@@ -68,34 +72,12 @@ std::string_view GetIdPath(const caspian::Symbol& sym) {
                                                  : sym.ObjectPath();
 }
 
-// |full_name| is costly enough to derive that we'd rather avoid it.
-// Try to match on |raw_name| if possible.
-SymbolMatchIndex SectionAndFullNameAndPathAndSize(const caspian::Symbol& sym) {
-  return SymbolMatchIndex(sym.section_id_, sym.full_name_, GetIdPath(sym),
-                          sym.Pss());
-}
-
-SymbolMatchIndex SectionAndFullNameAndPath(const caspian::Symbol& sym) {
-  return SymbolMatchIndex(sym.section_id_, sym.full_name_, GetIdPath(sym),
-                          0.0f);
-}
-
-// Allows signature changes (uses |Name()| rather than |FullName()|)
-SymbolMatchIndex SectionAndNameAndPath(const caspian::Symbol& sym) {
-  return SymbolMatchIndex(sym.section_id_, sym.Name(), GetIdPath(sym), 0.0f);
-}
-
-// Match on full name, but without path (to account for file moves)
-SymbolMatchIndex SectionAndFullName(const caspian::Symbol& sym) {
-  return SymbolMatchIndex(sym.section_id_, sym.full_name_, "", 0.0f);
-}
-
 int MatchSymbols(
     std::function<SymbolMatchIndex(const caspian::Symbol&)> key_func,
     std::vector<caspian::DeltaSymbol>* delta_symbols,
     std::vector<const caspian::Symbol*>* unmatched_before,
-    std::vector<const caspian::Symbol*>* unmatched_after) {
-  // TODO(jaspercb): Accumulate added/dropped padding by section name.
+    std::vector<const caspian::Symbol*>* unmatched_after,
+    std::unordered_map<caspian::SectionId, float>* padding_by_section_name) {
   int n_matched_symbols = 0;
   std::unordered_map<SymbolMatchIndex,
                      std::list<std::reference_wrapper<const caspian::Symbol*>>>
@@ -114,10 +96,16 @@ int MatchSymbols(
       if (found != before_symbols_by_key.end() && found->second.size()) {
         const caspian::Symbol*& before_sym = found->second.front().get();
         found->second.pop_front();
+        // Padding tracked in aggregate, except for padding-only symbols.
+        if (before_sym->SizeWithoutPadding() != 0) {
+          (*padding_by_section_name)[before_sym->section_id_] +=
+              after_sym->PaddingPss() - before_sym->PaddingPss();
+        }
         caspian::DeltaSymbol delta_sym(before_sym, after_sym);
         if (delta_sym.Pss() != 0.0) {
           delta_symbols->push_back(delta_sym);
         }
+        // Null associated pointers in |unmatched_before|, |unmatched_after|.
         before_sym = nullptr;
         after_sym = nullptr;
         n_matched_symbols++;
@@ -125,10 +113,82 @@ int MatchSymbols(
     }
   }
 
+  // Compact out nulled entries.
   Erase(*unmatched_before, nullptr);
   Erase(*unmatched_after, nullptr);
   return n_matched_symbols;
 }
+
+class DiffHelper {
+ public:
+  DiffHelper() = default;
+
+  std::string_view StripNumbers(std::string_view in) {
+    static const RE2 number_regex("\\d+");
+    re2::StringPiece piece(in.data(), in.size());
+    if (RE2::PartialMatch(piece, number_regex)) {
+      tmp_strings_.push_back(std::string(in));
+      RE2::GlobalReplace(&tmp_strings_.back(), number_regex, "");
+      return tmp_strings_.back();
+    }
+    return in;
+  }
+
+  std::string_view NormalizeStarSymbols(std::string_view in) {
+    // Used only for "*" symbols to strip suffixes "abc123" or "abc123 (any)".
+    static const RE2 normalize_star_symbols("\\s+\\d+(?: \\(.*\\))?$");
+    re2::StringPiece piece(in.data(), in.size());
+    if (RE2::PartialMatch(piece, normalize_star_symbols)) {
+      tmp_strings_.push_back(std::string(in));
+      RE2::Replace(&tmp_strings_.back(), normalize_star_symbols, "s");
+      return tmp_strings_.back();
+    }
+    return in;
+  }
+
+  using MatchFunc = std::function<SymbolMatchIndex(const caspian::Symbol&)>;
+
+  MatchFunc SectionAndFullNameAndPathAndSize() {
+    return [](const caspian::Symbol& sym) {
+      return SymbolMatchIndex(sym.section_id_, sym.full_name_, GetIdPath(sym),
+                              sym.Pss());
+    };
+  }
+
+  MatchFunc SectionAndFullNameAndPath() {
+    return [this](const caspian::Symbol& sym) {
+      return SymbolMatchIndex(sym.section_id_, StripNumbers(sym.full_name_),
+                              GetIdPath(sym), 0.0f);
+    };
+  }
+
+  // Allows signature changes (uses |Name()| rather than |FullName()|)
+  MatchFunc SectionAndNameAndPath() {
+    return [this](const caspian::Symbol& sym) {
+      std::string_view name = sym.Name();
+      if (!name.empty() && name[0] == '*') {
+        name = NormalizeStarSymbols(name);
+      }
+      return SymbolMatchIndex(sym.section_id_, name, GetIdPath(sym), 0.0f);
+    };
+  }
+
+  // Match on full name, but without path (to account for file moves)
+  MatchFunc SectionAndFullName() {
+    return [](const caspian::Symbol& sym) {
+      if (!sym.IsNameUnique()) {
+        return SymbolMatchIndex();
+      }
+      return SymbolMatchIndex(sym.section_id_, sym.full_name_, "", 0.0f);
+    };
+  }
+
+  void ClearStrings() { tmp_strings_.clear(); }
+
+ private:
+  // Holds strings created during number stripping/star symbol normalization.
+  std::deque<std::string> tmp_strings_;
+};
 }  // namespace
 
 namespace caspian {
@@ -149,13 +209,19 @@ DeltaSizeInfo Diff(const SizeInfo* before, const SizeInfo* after) {
   // Attempt several rounds to use increasingly loose matching on unmatched
   // symbols.  Any symbols still unmatched are tried in the next round.
   int step = 0;
-  auto key_funcs = {SectionAndFullNameAndPathAndSize, SectionAndFullNameAndPath,
-                    SectionAndNameAndPath, SectionAndFullName};
+  DiffHelper helper;
+  std::vector<DiffHelper::MatchFunc>
+      key_funcs = {helper.SectionAndFullNameAndPathAndSize(),
+                   helper.SectionAndFullNameAndPath(),
+                   helper.SectionAndNameAndPath(), helper.SectionAndFullName()};
+  std::unordered_map<SectionId, float> padding_by_section_name;
   for (const auto& key_function : key_funcs) {
-    int n_matched_symbols = MatchSymbols(key_function, &ret.delta_symbols,
-                                         &unmatched_before, &unmatched_after);
+    int n_matched_symbols =
+        MatchSymbols(key_function, &ret.delta_symbols, &unmatched_before,
+                     &unmatched_after, &padding_by_section_name);
     std::cout << "Matched " << n_matched_symbols << " symbols in matching pass "
               << ++step << std::endl;
+    helper.ClearStrings();
   }
 
   // Add removals or deletions for any unmatched symbols.
@@ -164,6 +230,24 @@ DeltaSizeInfo Diff(const SizeInfo* before, const SizeInfo* after) {
   }
   for (const Symbol* before_sym : unmatched_before) {
     ret.delta_symbols.push_back(DeltaSymbol(before_sym, nullptr));
+  }
+
+  // Create a DeltaSymbol to represent the zeroed out padding of matched
+  // symbols.
+  for (const auto& pair : padding_by_section_name) {
+    SectionId section_id = pair.first;
+    float padding = pair.second;
+    if (padding != 0.0f) {
+      ret.owned_symbols.emplace_back();
+      Symbol& after_sym = ret.owned_symbols.back();
+      after_sym.section_id_ = section_id;
+      after_sym.size_ = padding;
+      after_sym.padding_ = padding;
+      after_sym.full_name_ = "Overhead: aggregate padding of diff'ed symbols";
+      after_sym.template_name_ = after_sym.full_name_;
+      after_sym.name_ = after_sym.full_name_;
+      ret.delta_symbols.push_back(DeltaSymbol(nullptr, &after_sym));
+    }
   }
   return ret;
 }

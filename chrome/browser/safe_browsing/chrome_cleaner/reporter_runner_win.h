@@ -7,6 +7,8 @@
 
 #include <limits.h>
 
+#include "base/process/launch.h"
+#include "base/process/process.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/sw_reporter_invocation_win.h"
@@ -18,6 +20,53 @@ class TaskRunner;
 namespace safe_browsing {
 
 class ChromeCleanerController;
+
+namespace internal {
+
+// A delegate used by tests to implement test doubles (e.g., stubs, fakes, or
+// mocks).
+//
+// TODO(crbug.com/776538): Replace this with a proper delegate that defines the
+// default behaviour to be overridden (instead of defined) by tests.
+class SwReporterTestingDelegate {
+ public:
+  virtual ~SwReporterTestingDelegate() = default;
+
+  // Invoked by tests in place of base::LaunchProcess.
+  virtual base::Process LaunchReporterProcess(
+      const SwReporterInvocation& invocation,
+      const base::LaunchOptions& options) = 0;
+
+  // Invoked by tests in place of base::Process::WaitForExit.
+  virtual int WaitForReporterExit(
+      const base::Process& reporter_process) const = 0;
+
+  // Invoked by tests to override the current time.
+  // See Now() in reporter_runner_win.cc.
+  virtual base::Time Now() const = 0;
+
+  // A task runner used to spawn the reporter process (which blocks).
+  // See ReporterRunner::ScheduleNextInvocation().
+  virtual base::TaskRunner* BlockingTaskRunner() const = 0;
+
+  // Invoked by tests to return a mock to the cleaner controller.
+  virtual ChromeCleanerController* GetCleanerController() = 0;
+
+  // Invoked by tests in place of the actual creation of the dialog controller.
+  virtual void CreateChromeCleanerDialogController() = 0;
+};
+
+// Set a delegate for testing. The implementation will not take ownership of
+// |delegate| - it must remain valid until this function is called again to
+// reset the delegate. If |delegate| is nullptr, any previous delegate is
+// cleared.
+void SetSwReporterTestingDelegate(SwReporterTestingDelegate* delegate);
+
+// Launches a reporter process based on the command-line in |invocation| and
+// returns its exit code. Exposed for testing.
+int LaunchAndWaitForExit(const SwReporterInvocation& invocation);
+
+}  // namespace internal
 
 // A special exit code identifying a failure to run the reporter.
 const int kReporterNotLaunchedExitCode = INT_MAX;
@@ -46,39 +95,6 @@ bool SwReporterIsAllowedByPolicy();
 // Returns true if the sw_reported is allowed to report back results due to
 // enterprise policies.
 bool SwReporterReportingIsAllowedByPolicy(Profile* profile);
-
-// A delegate used by tests to implement test doubles (e.g., stubs, fakes, or
-// mocks).
-//
-// TODO(crbug.com/776538): Replace this with a proper delegate that defines the
-// default behaviour to be overriden (instead of defined) by tests.
-class SwReporterTestingDelegate {
- public:
-  virtual ~SwReporterTestingDelegate() {}
-
-  // Invoked by tests in place of base::LaunchProcess.
-  virtual int LaunchReporter(const SwReporterInvocation& invocation) = 0;
-
-  // Invoked by tests to override the current time.
-  // See Now() in reporter_runner_win.cc.
-  virtual base::Time Now() const = 0;
-
-  // A task runner used to spawn the reporter process (which blocks).
-  // See ReporterRunner::ScheduleNextInvocation().
-  virtual base::TaskRunner* BlockingTaskRunner() const = 0;
-
-  // Invoked by tests to return a mock to the cleaner controller.
-  virtual ChromeCleanerController* GetCleanerController() = 0;
-
-  // Invoked by tests in place of the actual creation of the dialog controller.
-  virtual void CreateChromeCleanerDialogController() = 0;
-};
-
-// Set a delegate for testing. The implementation will not take ownership of
-// |delegate| - it must remain valid until this function is called again to
-// reset the delegate. If |delegate| is nullptr, any previous delegate is
-// cleared.
-void SetSwReporterTestingDelegate(SwReporterTestingDelegate* delegate);
 
 }  // namespace safe_browsing
 

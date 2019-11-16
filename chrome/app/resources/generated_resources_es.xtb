@@ -254,6 +254,7 @@
 <translation id="1365180424462182382">El <ph name="BEGIN_LINK" />navegador está gestionado<ph name="END_LINK" /> por <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="1366177842110999534">Ejecuta herramientas, editores e IDEs de Linux en tu <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Más información&lt;/a&gt;</translation>
 <translation id="1367951781824006909">Selecciona un archivo</translation>
+<translation id="1369149969991017342">Accesibilidad mediante interruptores (controla el ordenador con uno o dos interruptores)</translation>
 <translation id="1372841398847029212">Sincronizar con tu cuenta</translation>
 <translation id="1374844444528092021">El certificado requerido por la red "<ph name="NETWORK_NAME" />" no está instalado o ya no es válido. Consigue un nuevo certificado y prueba a conectarte de nuevo.</translation>
 <translation id="1375321115329958930">Contraseñas guardadas</translation>
@@ -565,6 +566,7 @@
 <translation id="1794791083288629568">Envíanos un comentario para ayudarnos a solucionar el problema.</translation>
 <translation id="1795214765651529549">Utilizar tema clásico</translation>
 <translation id="1799071797295057738">La extensión <ph name="EXTENSION_NAME" /> se ha inhabilitado automáticamente.</translation>
+<translation id="1802624026913571222">Suspender cuando la tapa esté cerrada</translation>
 <translation id="1802687198411089702">La página no responde. Puedes esperar a que lo haga o cerrarla.</translation>
 <translation id="1802931390041703523">Se ha bloqueado Flash en esta página</translation>
 <translation id="1803531841600994172">Idioma al que quieres traducir</translation>
@@ -666,6 +668,7 @@
 <translation id="1937774647013465102">No se puede importar el tipo de arquitectura de contenedores <ph name="ARCHITECTURE_CONTAINER" /> con este dispositivo, que es <ph name="ARCHITECTURE_DEVICE" />. Intenta restaurar este contenedor en otro dispositivo o accede a los archivos de esta imagen de contenedor abriéndola en la aplicación Archivos.</translation>
 <translation id="1938351510777341717">Tecla Comando externa</translation>
 <translation id="1940546824932169984">Dispositivos conectados</translation>
+<translation id="1942600407708803723">Apagar cuando la tapa esté cerrada</translation>
 <translation id="1944921356641260203">Actualización encontrada</translation>
 <translation id="1946577776959096882">Ver cuentas</translation>
 <translation id="1951012854035635156">Asistente</translation>
@@ -2438,6 +2441,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="4546308221697447294">Navega de forma rápida con Google Chrome</translation>
 <translation id="4547659257713117923">No hay pestañas de otros dispositivos</translation>
 <translation id="4547672827276975204">Definir automáticamente</translation>
+<translation id="4549791035683739768">No hay ninguna huella digital almacenada en tu llave de seguridad</translation>
 <translation id="4551763574344810652">Pulsa <ph name="MODIFIER_KEY_DESCRIPTION" /> para deshacer</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4554591392113183336">La versión de la extensión externa es igual o anterior a la actual.</translation>
@@ -2617,6 +2621,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="4839303808932127586">Gu&amp;ardar vídeo como...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 más}other{# más}}</translation>
 <translation id="4842976633412754305">Esta página está intentando cargar scripts de fuentes no autorizadas.</translation>
+<translation id="4843488774506045600">Inicio de sesión facilitado por <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Otros teclados</translation>
 <translation id="4846680374085650406">Estás siguiendo la recomendación del administrador para esta opción.</translation>
 <translation id="4848518990323155912">Habilitar el bloqueo de la tarjeta SIM (solicitar PIN para usar datos móviles)</translation>
@@ -3037,7 +3042,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5466374726908360271">Pe&amp;gar y buscar "<ph name="SEARCH_TERMS" />"</translation>
 <translation id="5468173180030470402">Buscando sistemas de archivos compartidos</translation>
 <translation id="5471768120198416576">¡Hola! Soy tu voz de la síntesis de voz.</translation>
-<translation id="5472133193607270166">Si activas esta opción, los sitios web no podrán utilizar tu actividad de navegación para personalizar anuncios. Es posible que algunos sitios web no funcionen correctamente.</translation>
+<translation id="5472133193607270166">Si activas esta opción, los sitios web no podrán utilizar tu actividad de navegación en otros sitios web para personalizar anuncios. Es posible que algunos sitios no funcionen correctamente.</translation>
 <translation id="5473333559083690127">Volver a introducir el nuevo PIN</translation>
 <translation id="5481941284378890518">Añadir impresoras cercanas</translation>
 <translation id="5483785310822538350">Revocar acceso al archivo y al dispositivo</translation>
@@ -3069,6 +3074,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5511823366942919280">¿Seguro que quieres configurar este dispositivo como un "Shark"?</translation>
 <translation id="5512653252560939721">El certificado de usuario debe estar respaldado por hardware.</translation>
 <translation id="5517304475148761050">Esta aplicación requiere acceso a Play Store</translation>
+<translation id="5517412723934627386"><ph name="NETWORK_TYPE" />: <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Se está añadiendo la impresora a tu cuenta. Esta acción puede tardar unos minutos...</translation>
 <translation id="5518219166343146486">Preguntar cuando un sitio web quiera ver el texto y las imágenes que se hayan copiado en el portapapeles</translation>
 <translation id="5518584115117143805">Certificado de cifrado de correo electrónico</translation>
@@ -3187,6 +3193,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="567643736130151854">Inicia sesión y activa la sincronización para obtener tus marcadores, contraseñas y mucho más en todos tus dispositivos</translation>
 <translation id="5677503058916217575">Idioma de la página:</translation>
 <translation id="5677928146339483299">Bloqueado</translation>
+<translation id="5678293144564424498">Aplicación en pausa</translation>
 <translation id="5678550637669481956">Se ha concedido acceso de lectura y escritura a <ph name="VOLUME_NAME" />.</translation>
 <translation id="5678955352098267522">Leer tus datos en <ph name="WEBSITE_1" /></translation>
 <translation id="5684661240348539843">Identificador de recurso</translation>
@@ -3453,6 +3460,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6055392876709372977">PKCS #1 SHA-256 con cifrado RSA</translation>
 <translation id="6056710589053485679">Volver a cargar normalmente</translation>
 <translation id="6057381398996433816">Este sitio web no tiene permiso para usar los sensores de luz y movimiento.</translation>
+<translation id="6058567592298841668">Máquina virtual de plugin: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Jerarquía de certificados</translation>
 <translation id="6059925163896151826">Dispositivos USB</translation>
 <translation id="6061882183774845124">Enviar el enlace a tus dispositivos</translation>
@@ -4401,6 +4409,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7476454130948140105">No tienes suficiente batería para instalar la actualización (<ph name="BATTERY_PERCENT" />%)</translation>
 <translation id="7477793887173910789">Controla tu música, tus vídeos y mucho más</translation>
 <translation id="7478485216301680444">No se ha podido instalar la aplicación del kiosco.</translation>
+<translation id="7479221278376295180">Resumen del uso de almacenamiento</translation>
 <translation id="7481312909269577407">Adelante</translation>
 <translation id="748138892655239008">Restricciones básicas del certificado</translation>
 <translation id="7487067081878637334">Tecnología</translation>
@@ -5377,6 +5386,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8845001906332463065">Obtener ayuda</translation>
 <translation id="8846132060409673887">Consultar el fabricante y el modelo de este ordenador</translation>
 <translation id="8846141544112579928">Buscando teclado...</translation>
+<translation id="8847523528195140327">Cerrar sesión cuando la tapa esté cerrada</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8850251000316748990">Ver más...</translation>
 <translation id="885246833287407341">Argumentos de función de API</translation>
@@ -5439,6 +5449,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8930351635855238750">La nueva configuración de cookies se aplicará al volver a cargar la página</translation>
 <translation id="8931394284949551895">Nuevos dispositivos</translation>
 <translation id="893254996965966411">Guarda las impresoras detectadas en tu perfil o añade una nueva.</translation>
+<translation id="8932894639908691771">Opciones de accesibilidad mediante interruptores</translation>
 <translation id="8933960630081805351">&amp;Mostrar en Finder</translation>
 <translation id="8934732568177537184">Continuar</translation>
 <translation id="8938800817013097409">Dispositivo USB tipo C (puerto derecho situado en la parte trasera)</translation>
@@ -5502,6 +5513,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="9023015617655685412">Añadir esta pestaña a marcadores...</translation>
 <translation id="9024127637873500333">&amp;Abrir en una pestaña nueva</translation>
 <translation id="9024158959543687197">No se ha podido activar el recurso compartido. Comprueba la URL del recurso compartido y vuelve a intentarlo.</translation>
+<translation id="9024885274934357065">Tu dispositivo se desbloquea con Smart Lock. Pulsa Intro para desbloquearlo.</translation>
 <translation id="9026731007018893674">descarga</translation>
 <translation id="9026852570893462412">Descargando la máquina virtual. Este proceso puede tardar unos minutos.</translation>
 <translation id="9027459031423301635">Abrir enlace en una &amp;pestaña nueva</translation>

@@ -199,7 +199,8 @@
         <cr-link-row id="sync-setup"
             label="$i18n{syncAndNonPersonalizedServices}"
             sub-label="[[getSyncAndGoogleServicesSubtext_(syncStatus)]]"
-            on-click="onSyncTap_">
+            on-click="onSyncTap_"
+            role-description="$i18n{subpageArrowRoleDescription}">
         </cr-link-row>
 
 <if expr="not chromeos">
@@ -226,12 +227,15 @@
             label="[[selectLockScreenTitleString(hasPinLogin)]]"
             sub-label="[[getPasswordState_(hasPin,
                 prefs.settings.enable_screen_lock.value)]]"
+            role-description="$i18n{subpageArrowRoleDescription}"
             hidden="[[!pageVisibility.people.lockScreen]]"></cr-link-row>
 
         <template is="dom-if" if="[[pageVisibility.people.googleAccounts]]">
           <cr-link-row id="account-manager-subpage-trigger" class="hr"
               on-click="onAccountManagerTap_"
-              label="$i18n{accountManagerSubMenuLabel}"></cr-link-row>
+              label="$i18n{accountManagerSubMenuLabel}"
+              role-description="$i18n{subpageArrowRoleDescription}">
+          </cr-link-row>
         </template>
         <template is="dom-if" if="[[showParentalControls_]]">
           <settings-parental-controls-page>
@@ -239,13 +243,15 @@
         </template>
         <cr-link-row id="manage-other-people-subpage-trigger"
             label="$i18n{manageOtherPeople}" on-click="onManageOtherPeople_"
+            role-description="$i18n{subpageArrowRoleDescription}"
             hidden="[[!pageVisibility.people.manageUsers]]">
         </cr-link-row>
 
         <template is="dom-if" if="[[pageVisibility.people.kerberosAccounts]]">
           <cr-link-row id="kerberos-accounts-subpage-trigger" class="hr"
               on-click="onKerberosAccountsTap_"
-              label="$i18n{kerberosAccountsSubMenuLabel}">
+              label="$i18n{kerberosAccountsSubMenuLabel}"
+              role-description="$i18n{subpageArrowRoleDescription}">
             <cr-policy-indicator indicator-type="userPolicy">
             </cr-policy-indicator>
           </cr-link-row>

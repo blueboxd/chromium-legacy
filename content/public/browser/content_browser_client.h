@@ -336,13 +336,34 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Returns true if everything embedded inside a document with given scheme
   // should be treated as first-party content. |scheme| will be in canonical
-  // (lowercased) form.
+  // (lowercased) form. |is_embedded_origin_secure| refers to whether the origin
+  // that is embedded in a document with the given scheme is secure.
   //
   // See also WebSecurityPolicy::RegisterURLSchemeAsFirstPartyWhenTopLevel() in
-  // the renderer, and the field third_party_cookies_allowed_schemes in
-  // network::mojom::CookieManagerParams, which should be synchronized.
+  // the renderer, and the network::mojom::CookieManagerParams fields:
+  //  1. third_party_cookies_allowed_schemes (corresponding to schemes where
+  //     this returns true regardless of |is_embedded_origin_secure|), and
+  //  2. secure_origins_cookies_allowed_schemes (corresponding to schemes where
+  //     this returns true if |is_embedded_origin_secure| is true),
+  // which should both be synchronized with the output of this function.
+  //
+  // TODO(chlily): This doesn't take into account the
+  // matching_scheme_cookies_allowed_schemes, but maybe we should remove that
+  // anyway.
   virtual bool ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(
-      base::StringPiece scheme);
+      base::StringPiece scheme,
+      bool is_embedded_origin_secure);
+
+  // Similar to the above. Returns whether SameSite cookie restrictions should
+  // be ignored when the site_for_cookies's scheme is |scheme|.
+  // |is_embedded_origin_secure| refers to whether the origin that is embedded
+  // in a document with the given scheme is secure.
+  // This is a separate function from the above because the allowed schemes can
+  // be different, as SameSite restrictions and third-party cookie blocking are
+  // related but have different semantics.
+  virtual bool ShouldIgnoreSameSiteCookieRestrictionsWhenTopLevel(
+      base::StringPiece scheme,
+      bool is_embedded_origin_secure);
 
   // Called to create a URLLoaderFactory for network requests in the following
   // cases:

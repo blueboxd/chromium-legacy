@@ -46,11 +46,14 @@
 <if expr="_google_chrome and is_win">
         <cr-link-row class="hr" id="chromeCleanupSubpageTrigger"
             label="$i18n{resetCleanupComputerTrigger}"
-            on-click="onChromeCleanupTap_"></cr-link-row>
+            on-click="onChromeCleanupTap_"
+            role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
         <template is="dom-if" if="[[showIncompatibleApplications_]]" restamp>
           <cr-link-row class="hr" id="incompatibleApplicationsSubpageTrigger"
               label="$i18n{incompatibleApplicationsResetCardTitle}"
-              on-click="onIncompatibleApplicationsTap_"></cr-link-row>
+              on-click="onIncompatibleApplicationsTap_"
+              role-description="$i18n{subpageArrowRoleDescription}">
+          </cr-link-row>
         </template>
 </if>
       </div>

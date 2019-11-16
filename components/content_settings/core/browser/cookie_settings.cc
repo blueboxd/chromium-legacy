@@ -135,9 +135,34 @@ void CookieSettings::GetSettingForLegacyCookieAccess(
       std::string() /* resource_identifier */);
 }
 
+bool CookieSettings::ShouldIgnoreSameSiteRestrictions(
+    const GURL& url,
+    const GURL& site_for_cookies) const {
+  return site_for_cookies.SchemeIs(kChromeUIScheme) &&
+         url.SchemeIsCryptographic();
+}
+
 void CookieSettings::ShutdownOnUIThread() {
   DCHECK(thread_checker_.CalledOnValidThread());
   pref_change_registrar_.RemoveAll();
+}
+
+bool CookieSettings::ShouldAlwaysAllowCookies(
+    const GURL& url,
+    const GURL& first_party_url) const {
+  if (first_party_url.SchemeIs(kChromeUIScheme) &&
+      url.SchemeIsCryptographic()) {
+    return true;
+  }
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  if (url.SchemeIs(extension_scheme_) &&
+      first_party_url.SchemeIs(extension_scheme_)) {
+    return true;
+  }
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
+  return false;
 }
 
 void CookieSettings::GetCookieSettingInternal(
@@ -147,20 +172,11 @@ void CookieSettings::GetCookieSettingInternal(
     content_settings::SettingSource* source,
     ContentSetting* cookie_setting) const {
   DCHECK(cookie_setting);
-  // Auto-allow in extensions or for WebUI embedded in a secure origin.
-  if (first_party_url.SchemeIs(kChromeUIScheme) &&
-      url.SchemeIsCryptographic()) {
+  // Auto-allow in extensions or for WebUI embedding a secure origin.
+  if (ShouldAlwaysAllowCookies(url, first_party_url)) {
     *cookie_setting = CONTENT_SETTING_ALLOW;
     return;
   }
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (url.SchemeIs(extension_scheme_) &&
-      first_party_url.SchemeIs(extension_scheme_)) {
-    *cookie_setting = CONTENT_SETTING_ALLOW;
-    return;
-  }
-#endif
 
   // First get any host-specific settings.
   SettingInfo info;

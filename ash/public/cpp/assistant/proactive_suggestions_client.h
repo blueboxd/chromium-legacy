@@ -9,6 +9,10 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 
+namespace viz {
+enum class VerticalScrollDirection;
+}  // namespace viz
+
 namespace ash {
 
 class ProactiveSuggestions;
@@ -30,6 +34,11 @@ class ASH_PUBLIC_EXPORT ProactiveSuggestionsClient {
     // exist.
     virtual void OnProactiveSuggestionsChanged(
         scoped_refptr<const ProactiveSuggestions> proactive_suggestions) {}
+
+    // Invoked when the vertical |scroll_direction| is changed in the source
+    // web contents associated with the active set of proactive suggestions.
+    virtual void OnSourceVerticalScrollDirectionChanged(
+        viz::VerticalScrollDirection scroll_direction) {}
 
    protected:
     Delegate() = default;

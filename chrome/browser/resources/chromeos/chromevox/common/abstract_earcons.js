@@ -9,16 +9,16 @@
  *
  */
 
-goog.provide('cvox.AbstractEarcons');
-goog.provide('cvox.Earcon');
-goog.provide('cvox.EarconDescription');
+goog.provide('AbstractEarcons');
+goog.provide('Earcon');
+goog.provide('EarconDescription');
 
 
 /**
  * Earcon names.
  * @enum {string}
  */
-cvox.Earcon = {
+Earcon = {
   ALERT_MODAL: 'alert_modal',
   ALERT_NONMODAL: 'alert_nonmodal',
   BUTTON: 'button',
@@ -54,7 +54,7 @@ cvox.Earcon = {
  * used to generate tutorial content.
  * @type {Object<string, string>}
  */
-cvox.EarconDescription = {
+var EarconDescription = {
   alert_modal: 'alert_modal_earcon_description',
   alert_nonmodal: 'alert_nonmodal_earcon_description',
   button: 'button_earcon_description',
@@ -74,7 +74,7 @@ cvox.EarconDescription = {
 /**
  * @constructor
  */
-cvox.AbstractEarcons = function() {};
+AbstractEarcons = function() {};
 
 
 /**
@@ -82,30 +82,30 @@ cvox.AbstractEarcons = function() {};
  * toggle(); however, this member is public for initialization.
  * @type {boolean}
  */
-cvox.AbstractEarcons.enabled = true;
+AbstractEarcons.enabled = true;
 
 
 /**
  * Plays the specified earcon sound.
- * @param {cvox.Earcon} earcon An earcon identifier.
+ * @param {Earcon} earcon An earcon identifier.
  * @param {Object=} opt_location A location associated with the earcon such as a
  * control's bounding rectangle.
  */
-cvox.AbstractEarcons.prototype.playEarcon = function(earcon, opt_location) {};
+AbstractEarcons.prototype.playEarcon = function(earcon, opt_location) {};
 
 
 /**
  * Cancels the specified earcon sound.
- * @param {cvox.Earcon} earcon An earcon identifier.
+ * @param {Earcon} earcon An earcon identifier.
  */
-cvox.AbstractEarcons.prototype.cancelEarcon = function(earcon) {};
+AbstractEarcons.prototype.cancelEarcon = function(earcon) {};
 
 
 /**
  * Whether or not earcons are available.
  * @return {boolean} True if earcons are available.
  */
-cvox.AbstractEarcons.prototype.earconsAvailable = function() {
+AbstractEarcons.prototype.earconsAvailable = function() {
   return true;
 };
 
@@ -114,7 +114,7 @@ cvox.AbstractEarcons.prototype.earconsAvailable = function() {
  * Toggles earcons on or off.
  * @return {boolean} True if earcons are now enabled; false otherwise.
  */
-cvox.AbstractEarcons.prototype.toggle = function() {
-  cvox.AbstractEarcons.enabled = !cvox.AbstractEarcons.enabled;
-  return cvox.AbstractEarcons.enabled;
+AbstractEarcons.prototype.toggle = function() {
+  AbstractEarcons.enabled = !AbstractEarcons.enabled;
+  return AbstractEarcons.enabled;
 };

@@ -164,11 +164,12 @@
         <div id="other-sync-items" class="list-frame">
           <div id="sync-advanced-row" class="list-item first"
               on-click="onSyncAdvancedTap_" actionable>
-            <div class="start">
+            <div class="start" id="page-title" aria-hidden="true">
               $i18n{syncAdvancedPageTitle}
             </div>
             <cr-icon-button class="subpage-arrow"
-                aria-label="$i18n{syncAdvancedPageTitle}"></cr-icon-button>
+                aria-labelledby="page-title">
+            </cr-icon-button>
           </div>
 
           <a class="inherit-color no-outline list-item" tabindex="-1"

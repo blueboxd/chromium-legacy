@@ -254,6 +254,7 @@
 <translation id="1365180424462182382">Váš <ph name="BEGIN_LINK" />prohlížeč je spravován<ph name="END_LINK" /> doménou <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="1366177842110999534">Spouštějte ve svém zařízení <ph name="DEVICE_TYPE" /> nástroje, editory a prostředí IDE pro Linux. &lt;a target="_blank" href="<ph name="URL" />"&gt;Další informace&lt;/a&gt;</translation>
 <translation id="1367951781824006909">Vybrat soubor</translation>
+<translation id="1369149969991017342">Přístup pomocí přepínačů (ovládání počítače pouze jedním nebo dvěma přepínači)</translation>
 <translation id="1372841398847029212">Synchronizovat do vašeho účtu</translation>
 <translation id="1374844444528092021">Certifikát vyžadovaný sítí „<ph name="NETWORK_NAME" />“ není nainstalován, nebo je neplatný. Nainstalujte nový certifikát a zkuste se připojit znovu.</translation>
 <translation id="1375321115329958930">Uložená hesla</translation>
@@ -565,6 +566,7 @@
 <translation id="1794791083288629568">Odeslat zpětnou vazbu, která nám pomůže při řešení tohoto problému</translation>
 <translation id="1795214765651529549">Použít klasický motiv</translation>
 <translation id="1799071797295057738">Rozšíření <ph name="EXTENSION_NAME" /> bylo automaticky deaktivováno.</translation>
+<translation id="1802624026913571222">Při zavření víka přejít do režimu spánku</translation>
 <translation id="1802687198411089702">Stránka nereaguje. Můžete počkat nebo ji zavřít.</translation>
 <translation id="1802931390041703523">Na této stránce byl zablokován Flash.</translation>
 <translation id="1803531841600994172">Cílový jazyk překladu</translation>
@@ -666,6 +668,7 @@
 <translation id="1937774647013465102">Typ architektury kontejneru <ph name="ARCHITECTURE_CONTAINER" /> do tohoto zařízení s architekturou <ph name="ARCHITECTURE_DEVICE" /> nelze importovat. Můžete tento kontejner zkusit obnovit do jiného zařízení nebo soubory v obrazu kontejneru otevřít v aplikaci Soubory.</translation>
 <translation id="1938351510777341717">Externí příkaz</translation>
 <translation id="1940546824932169984">Připojená zařízení</translation>
+<translation id="1942600407708803723">Při zavření víka vypnout</translation>
 <translation id="1944921356641260203">Byla nalezena aktualizace</translation>
 <translation id="1946577776959096882">Zobrazit účty</translation>
 <translation id="1951012854035635156">Asistent</translation>
@@ -2437,6 +2440,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4546308221697447294">Pohybujte se na internetu rychle pomocí prohlížeče Google Chrome</translation>
 <translation id="4547659257713117923">Žádné karty z jiných zařízení</translation>
 <translation id="4547672827276975204">Nastavit automaticky</translation>
+<translation id="4549791035683739768">V bezpečnostním klíči nejsou uloženy žádné otisky</translation>
 <translation id="4551763574344810652">Stisknutím <ph name="MODIFIER_KEY_DESCRIPTION" /> vrátíte provedenou akci zpět</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4554591392113183336">Externí rozšíření má stejnou nebo nižší verzi než stávající.</translation>
@@ -2616,6 +2620,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4839303808932127586">Uložit &amp;video jako...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 další}few{# další}many{# další}other{# dalších}}</translation>
 <translation id="4842976633412754305">Tato stránka se pokouší načíst skripty z neověřených zdrojů.</translation>
+<translation id="4843488774506045600">Přihlášení poskytuje rozšíření <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Jiné klávesnice</translation>
 <translation id="4846680374085650406">Řídíte se doporučením administrátora pro toto nastavení.</translation>
 <translation id="4848518990323155912">Aktivovat uzamykání SIM karty (k použití mobilních dat vyžadovat PIN)</translation>
@@ -3068,6 +3073,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5511823366942919280">Opravdu toto zařízení chcete nastavit jako zařízení Shark?</translation>
 <translation id="5512653252560939721">Certifikát uživatele musí být hardwarový.</translation>
 <translation id="5517304475148761050">Tato aplikace vyžaduje přístup do Obchodu Play</translation>
+<translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> – <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Přidávání tiskárny do účtu – může to chvíli trvat...</translation>
 <translation id="5518219166343146486">Zeptat se, když chce web získat přístup k textu a obrázkům zkopírovaným do schránky</translation>
 <translation id="5518584115117143805">Certifikát šifrování e-mailu</translation>
@@ -3186,6 +3192,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="567643736130151854">Chcete-li mít své záložky, hesla a další obsah na všech zařízeních, přihlaste se a zapněte synchronizaci</translation>
 <translation id="5677503058916217575">Jazyk stránky:</translation>
 <translation id="5677928146339483299">Zablokováno</translation>
+<translation id="5678293144564424498">Aplikace je pozastavena</translation>
 <translation id="5678550637669481956">Oprávnění ke čtení a zápisu na jednotku <ph name="VOLUME_NAME" /> bylo uděleno.</translation>
 <translation id="5678955352098267522">Čtení vašich dat na webu <ph name="WEBSITE_1" /></translation>
 <translation id="5684661240348539843">Identifikátor položky</translation>
@@ -3452,6 +3459,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="6055392876709372977">Šifrování PKCS #1 SHA-256 s RSA</translation>
 <translation id="6056710589053485679">Běžné opětovné načtení</translation>
 <translation id="6057381398996433816">Tomuto webu bylo zablokováno používání senzorů pohybu a osvětlení.</translation>
+<translation id="6058567592298841668">Pluginový virtuální počítač: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Hierarchie certifikátů</translation>
 <translation id="6059925163896151826">Zařízení USB</translation>
 <translation id="6061882183774845124">Odeslat odkaz do vašich zařízení</translation>
@@ -4400,6 +4408,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="7476454130948140105">Aktualizaci nelze zahájit z důvodu slabé baterie (<ph name="BATTERY_PERCENT" /> %)</translation>
 <translation id="7477793887173910789">Ovládejte hudbu, videa a další obsah</translation>
 <translation id="7478485216301680444">Aplikaci pro režim veřejného terminálu se nepodařilo nainstalovat.</translation>
+<translation id="7479221278376295180">Přehled využití úložiště</translation>
 <translation id="7481312909269577407">Vpřed</translation>
 <translation id="748138892655239008">Základní omezení certifikátu</translation>
 <translation id="7487067081878637334">Technologie</translation>
@@ -5375,6 +5384,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8845001906332463065">Nápověda</translation>
 <translation id="8846132060409673887">Zjistit výrobce a model počítače</translation>
 <translation id="8846141544112579928">Vyhledávání klávesnice...</translation>
+<translation id="8847523528195140327">Při zavření víka se odhlásit</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8850251000316748990">Zobrazit další...</translation>
 <translation id="885246833287407341">Argumenty funkce rozhraní API</translation>
@@ -5437,6 +5447,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8930351635855238750">Nové nastavení souborů cookie se projeví po opětovném načtení stránky</translation>
 <translation id="8931394284949551895">Nová zařízení</translation>
 <translation id="893254996965966411">Uložte si nalezené tiskárny do svého profilu nebo přidejte novou tiskárnu.</translation>
+<translation id="8932894639908691771">Možnosti přístupu pomocí přepínačů</translation>
 <translation id="8933960630081805351">Zobrazit ve &amp;službě Finder</translation>
 <translation id="8934732568177537184">Pokračovat</translation>
 <translation id="8938800817013097409">Zařízení USB Type-C (pravý zadní port)</translation>
@@ -5500,6 +5511,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="9023015617655685412">Přidat tuto kartu do záložek...</translation>
 <translation id="9024127637873500333">&amp;Otevřít v nové kartě</translation>
 <translation id="9024158959543687197">Při připojování sdílené složky došlo k chybě. Zkontrolujte adresu URL sdíleného úložiště a zkuste to znovu.</translation>
+<translation id="9024885274934357065">Zařízení je odemknuté pomocí funkce Smart Lock. Odemknete ho stisknutím klávesy Enter.</translation>
 <translation id="9026731007018893674">stažený soubor</translation>
 <translation id="9026852570893462412">Tento proces může trvat několik minut. Probíhá stahování virtuálního počítače.</translation>
 <translation id="9027459031423301635">Otevří&amp;t odkaz v nové kartě</translation>

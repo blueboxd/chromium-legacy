@@ -78,8 +78,6 @@ if (enable_vr) {
 
       deps += [
         ":jni_headers",
-        "//device/gamepad",
-        "//device/gamepad/public/cpp:shared_with_blink",
         "//third_party/blink/public:blink_headers",
         "//third_party/gvr-android-sdk:gvr_shim",
       ]

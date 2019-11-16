@@ -54,19 +54,6 @@ bool BookmarkAppRegistrar::WasInstalledByUser(
   return extension && !extension->was_installed_by_default();
 }
 
-base::Optional<web_app::AppId> BookmarkAppRegistrar::FindAppWithUrlInScope(
-    const GURL& url) const {
-  const Extension* extension = util::GetInstalledPwaForUrl(profile(), url);
-
-  if (!extension)
-    extension = GetInstalledShortcutForUrl(profile(), url);
-
-  if (extension)
-    return extension->id();
-
-  return base::nullopt;
-}
-
 int BookmarkAppRegistrar::CountUserInstalledApps() const {
   return CountUserInstalledBookmarkApps(profile());
 }

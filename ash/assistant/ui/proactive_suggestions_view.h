@@ -9,6 +9,7 @@
 #include "ui/aura/window_observer.h"
 #include "ui/display/display_observer.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace views {
 class ImageButton;
@@ -23,6 +24,7 @@ class ProactiveSuggestions;
 class COMPONENT_EXPORT(ASSISTANT_UI) ProactiveSuggestionsView
     : public views::Button,
       public views::ButtonListener,
+      public views::WidgetObserver,
       public aura::WindowObserver,
       public display::DisplayObserver,
       public KeyboardControllerObserver {
@@ -41,6 +43,9 @@ class COMPONENT_EXPORT(ASSISTANT_UI) ProactiveSuggestionsView
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  // views::WidgetObserver:
+  void OnWidgetClosing(views::Widget* widget) override;
 
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;

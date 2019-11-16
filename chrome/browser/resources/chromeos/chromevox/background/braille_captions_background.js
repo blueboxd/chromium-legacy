@@ -8,17 +8,17 @@
  * other platforms.
  */
 
-goog.provide('cvox.BrailleCaptionsBackground');
+goog.provide('BrailleCaptionsBackground');
 
 goog.require('PanelCommand');
-goog.require('cvox.BrailleDisplayState');
-goog.require('cvox.ExtensionBridge');
+goog.require('BrailleDisplayState');
+goog.require('ExtensionBridge');
 
 /**
  * Key set in local storage when this feature is enabled.
  * @const
  */
-cvox.BrailleCaptionsBackground.PREF_KEY = 'brailleCaptions';
+BrailleCaptionsBackground.PREF_KEY = 'brailleCaptions';
 
 
 /**
@@ -27,7 +27,7 @@ cvox.BrailleCaptionsBackground.PREF_KEY = 'brailleCaptions';
  * the dots as per the ISO 11548-1 standard.
  * @const
  */
-cvox.BrailleCaptionsBackground.BRAILLE_UNICODE_BLOCK_START = 0x2800;
+BrailleCaptionsBackground.BRAILLE_UNICODE_BLOCK_START = 0x2800;
 
 
 /**
@@ -35,8 +35,8 @@ cvox.BrailleCaptionsBackground.BRAILLE_UNICODE_BLOCK_START = 0x2800;
  * @param {function()} stateCallback Called when the state of the captions
  *     feature changes.
  */
-cvox.BrailleCaptionsBackground.init = function(stateCallback) {
-  var self = cvox.BrailleCaptionsBackground;
+BrailleCaptionsBackground.init = function(stateCallback) {
+  var self = BrailleCaptionsBackground;
   /**
    * @type {function()}
    * @private
@@ -49,8 +49,8 @@ cvox.BrailleCaptionsBackground.init = function(stateCallback) {
  * Returns whether the braille captions feature is enabled.
  * @return {boolean}
  */
-cvox.BrailleCaptionsBackground.isEnabled = function() {
-  var self = cvox.BrailleCaptionsBackground;
+BrailleCaptionsBackground.isEnabled = function() {
+  var self = BrailleCaptionsBackground;
   return localStorage[self.PREF_KEY] === String(true);
 };
 
@@ -65,9 +65,9 @@ cvox.BrailleCaptionsBackground.isEnabled = function() {
  * @param {number} rows Number of rows to display.
  * @param {number} columns Number of columns to display.
  */
-cvox.BrailleCaptionsBackground.setContent = function(
+BrailleCaptionsBackground.setContent = function(
     text, cells, brailleToText, offsetsForSlices, rows, columns) {
-  var self = cvox.BrailleCaptionsBackground;
+  var self = BrailleCaptionsBackground;
   // Convert the cells to Unicode braille pattern characters.
   var byteBuf = new Uint8Array(cells);
   var brailleChars = '';
@@ -76,15 +76,10 @@ cvox.BrailleCaptionsBackground.setContent = function(
     brailleChars +=
         String.fromCharCode(self.BRAILLE_UNICODE_BLOCK_START | byteBuf[i]);
   }
-  var groups = cvox.BrailleCaptionsBackground.groupBrailleAndText(
+  var groups = BrailleCaptionsBackground.groupBrailleAndText(
       brailleChars, text, brailleToText, offsetsForSlices);
-  if (cvox.ChromeVox.isChromeOS) {
-    var data = {groups: groups, rows: rows, cols: columns};
-    (new PanelCommand(PanelCommandType.UPDATE_BRAILLE, data)).send();
-  } else {
-    cvox.ExtensionBridge.send(
-        {message: 'BRAILLE_CAPTION', text: text, brailleChars: brailleChars});
-  }
+  var data = {groups: groups, rows: rows, cols: columns};
+  (new PanelCommand(PanelCommandType.UPDATE_BRAILLE, data)).send();
 };
 
 /**
@@ -92,9 +87,8 @@ cvox.BrailleCaptionsBackground.setContent = function(
  * @param {number} rows Number of rows to display.
  * @param {number} columns Number of columns to display.
  */
-cvox.BrailleCaptionsBackground.setImageContent = function(
-    cells, rows, columns) {
-  var self = cvox.BrailleCaptionsBackground;
+BrailleCaptionsBackground.setImageContent = function(cells, rows, columns) {
+  var self = BrailleCaptionsBackground;
   // Convert the cells to Unicode braille pattern characters.
   var byteBuf = new Uint8Array(cells);
   var brailleChars = '';
@@ -119,7 +113,7 @@ cvox.BrailleCaptionsBackground.setImageContent = function(
  *    the second is the text offset.
  * @return {Array} The groups of braille and texts to be displayed.
  */
-cvox.BrailleCaptionsBackground.groupBrailleAndText = function(
+BrailleCaptionsBackground.groupBrailleAndText = function(
     brailleChars, text, brailleToText, offsets) {
   var brailleBuf = '';
   var groups = [];
@@ -152,8 +146,8 @@ cvox.BrailleCaptionsBackground.groupBrailleAndText = function(
  * Sets whether the overlay should be active.
  * @param {boolean} newValue The new value of the active flag.
  */
-cvox.BrailleCaptionsBackground.setActive = function(newValue) {
-  var self = cvox.BrailleCaptionsBackground;
+BrailleCaptionsBackground.setActive = function(newValue) {
+  var self = BrailleCaptionsBackground;
   var oldValue = self.isEnabled();
   window['prefs'].setPref(self.PREF_KEY, String(newValue));
   if (oldValue != newValue) {
@@ -162,19 +156,19 @@ cvox.BrailleCaptionsBackground.setActive = function(newValue) {
     }
     var msg = newValue ? Msgs.getMsg('braille_captions_enabled') :
                          Msgs.getMsg('braille_captions_disabled');
-    cvox.ChromeVox.tts.speak(msg, cvox.QueueMode.QUEUE);
-    cvox.ChromeVox.braille.write(cvox.NavBraille.fromText(msg));
+    ChromeVox.tts.speak(msg, QueueMode.QUEUE);
+    ChromeVox.braille.write(NavBraille.fromText(msg));
   }
 };
 
 /**
  * Calls a callback on a display state representing the state of the captions
  * feature. This is used when no actual hardware display is connected.
- * @param {function(!cvox.BrailleDisplayState)} callback The callback to pass
+ * @param {function(!BrailleDisplayState)} callback The callback to pass
  * the display state into.
  */
-cvox.BrailleCaptionsBackground.getVirtualDisplayState = function(callback) {
-  var self = cvox.BrailleCaptionsBackground;
+BrailleCaptionsBackground.getVirtualDisplayState = function(callback) {
+  var self = BrailleCaptionsBackground;
   if (self.isEnabled()) {
     chrome.storage.local.get({'virtualBrailleRows': 1}, function(items) {
       var rows = items['virtualBrailleRows'];

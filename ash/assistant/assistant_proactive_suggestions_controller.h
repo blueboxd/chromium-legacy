@@ -53,6 +53,8 @@ class AssistantProactiveSuggestionsController
   void OnProactiveSuggestionsClientDestroying() override;
   void OnProactiveSuggestionsChanged(
       scoped_refptr<const ProactiveSuggestions> proactive_suggestions) override;
+  void OnSourceVerticalScrollDirectionChanged(
+      viz::VerticalScrollDirection scroll_direction) override;
 
   // AssistantSuggestionsModelObserver:
   void OnProactiveSuggestionsChanged(
@@ -66,8 +68,9 @@ class AssistantProactiveSuggestionsController
   void OnProactiveSuggestionsViewPressed() override;
 
  private:
-  void ShowUi();
+  void MaybeShowUi();
   void CloseUi(ProactiveSuggestionsShowResult result);
+  void HideUi();
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
 

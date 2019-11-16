@@ -2746,9 +2746,6 @@ crbug.com/618969 external/wpt/css/css-grid/subgrid/ [ Skip ]
 
 crbug.com/1012627 [ Win7 ] external/wpt/css/css-text/line-breaking/line-breaking-021.html [ Failure ]
 
-crbug.com/1022141 external/wpt/speech-api/SpeechSynthesis-speak-events.html [ Crash Timeout ]
-crbug.com/1022141 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechSynthesis-speak-events.html [ Crash Timeout ]
-
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Linux ] external/wpt/css/css-align/baseline-rules/synthesized-baseline-table-cell-001.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-align/baseline-rules/synthesized-baseline-table-cell-001.html [ Failure ]
@@ -3303,9 +3300,7 @@ crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-justify-content-horiz-006.xhtml [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-content-horiz-002.xhtml [ Failure ]
 crbug.com/875411 external/wpt/svg/text/reftests/text-shape-inside-002.svg [ Failure ]
-crbug.com/626703 external/wpt/speech-api/SpeechSynthesis-speak-twice.html [ Timeout ]
 crbug.com/626703 external/wpt/speech-api/SpeechSynthesis-speak-without-activation-fails.tentative.html [ Failure ]
-crbug.com/626703 virtual/speech-with-unified-autoplay/external/wpt/speech-api/SpeechSynthesis-speak-twice.html [ Timeout ]
 crbug.com/366553 external/wpt/svg/text/reftests/text-inline-size-007.svg [ Failure ]
 crbug.com/366553 external/wpt/svg/text/reftests/text-inline-size-005.svg [ Failure ]
 crbug.com/366558 external/wpt/svg/text/reftests/text-multiline-002.svg [ Failure ]
@@ -5812,6 +5807,14 @@ external/wpt/trusted-types/eval-no-csp-no-tt-default-policy.tentative.html [ Fai
 # Temporarily disabled to change the API contract in V8
 crbug.com/1018029 virtual/wasm-site-isolated-code-cache/http/tests/devtools/wasm-isolated-code-cache/wasm-cache-test.js [ Pass Failure ]
 
+# First frame not always painted in time
+crbug.com/1024976 media/controls/paint-controls-webkit-appearance-none.html [ Pass Failure ]
+crbug.com/1024976 media/controls/paint-controls-webkit-appearance-none-custom-bg.html [ Pass Failure ]
+crbug.com/1024976 media/video-no-audio.html [ Pass Failure ]
+crbug.com/1024976 virtual/audio-service/media/controls/paint-controls-webkit-appearance-none.html [ Pass Failure ]
+crbug.com/1024976 virtual/audio-service/media/controls/paint-controls-webkit-appearance-none-custom-bg.html [ Pass Failure ]
+crbug.com/1024976 virtual/audio-service/media/video-no-audio.html [ Pass Failure ]
+
 # Sheriff 2019-10-31
 crbug.com/1020036 [ Debug ] external/wpt/lifecycle/freeze.html [ Failure Pass ]
 
@@ -5850,3 +5853,7 @@ crbug.com/892983 external/wpt/css/css-pseudo/first-line-with-before-after.html [
 
 # Sheriff 2019-11-15
 crbug.com/1025123 external/wpt/longtask-timing/longtask-in-sibling-iframe-crossorigin.html [ Pass Failure ]
+crbug.com/1025321 [ Win ] http/tests/devtools/tracing/console-timeline.js [ Pass Failure ]
+crbug.com/1025321 [ Win ] virtual/threaded/http/tests/devtools/tracing/console-timeline.js [ Pass Failure ]
+crbug.com/1025291 [ Linux ] virtual/android/fullscreen/video-scrolled-iframe.html [ Pass Failure ]
+crbug.com/1025437 virtual/not-site-per-process/http/tests/devtools/debugger/fetch-breakpoints.js [ Timeout Pass ]

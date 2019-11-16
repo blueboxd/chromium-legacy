@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/paint_preview/common/mojom/paint_preview_recorder.mojom.h"
 #include "components/paint_preview/common/paint_preview_tracker.h"
@@ -56,7 +55,8 @@ class PaintPreviewRecorderImpl : public content::RenderFrameObserver,
 
   base::WeakPtrFactory<PaintPreviewRecorderImpl> weak_ptr_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(PaintPreviewRecorderImpl);
+  PaintPreviewRecorderImpl(const PaintPreviewRecorderImpl&) = delete;
+  PaintPreviewRecorderImpl& operator=(const PaintPreviewRecorderImpl&) = delete;
 };
 
 }  // namespace paint_preview

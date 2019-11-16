@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ChromeFileProvider;
 import org.chromium.chrome.browser.util.UrlConstants;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.components.ui_metrics.CanonicalURLResult;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.GURLUtils;
@@ -42,10 +43,12 @@ class ShareSheetMediator {
     static final String CANONICAL_URL_RESULT_HISTOGRAM = "Mobile.CanonicalURLResult";
     private static boolean sScreenshotCaptureSkippedForTesting;
     private final ShareSheetDelegate mDelegate;
+    private final BottomSheetController mBottomSheetController;
 
     @VisibleForTesting
-    ShareSheetMediator(ShareSheetDelegate delegate) {
+    ShareSheetMediator(ShareSheetDelegate delegate, BottomSheetController controller) {
         mDelegate = delegate;
+        mBottomSheetController = controller;
     }
 
     /**
@@ -94,7 +97,17 @@ class ShareSheetMediator {
      * @param params The container holding the share parameters.
      */
     public void share(ShareParams params) {
-        mDelegate.share(params);
+        mDelegate.share(params, mBottomSheetController);
+    }
+
+    /**
+     * Creates and shows a custom share sheet.
+     *
+     * @param params The container holding the share parameters.
+     */
+    private static void showShareSheet(final ShareParams params, BottomSheetController controller) {
+        controller.requestShowContent(
+                (new ShareSheetBottomSheetContent(params.getWindow().getContext().get())), true);
     }
 
     protected void triggerShare(
@@ -239,11 +252,12 @@ class ShareSheetMediator {
         /**
          * Trigger the share action for the specified params.
          */
-        void share(ShareParams params) {
+        void share(ShareParams params, BottomSheetController controller) {
             if (params.shareDirectly()) {
                 ShareHelper.shareDirectly(params);
             } else if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARING_HUB)) {
                 // TODO(crbug/1009124): open custom share sheet.
+                showShareSheet(params, controller);
             } else if (ShareHelper.TargetChosenReceiver.isSupported()) {
                 // On L+ open system share sheet.
                 ShareHelper.makeIntentAndShare(params, null);

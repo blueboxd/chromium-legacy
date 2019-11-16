@@ -12,7 +12,7 @@
             active-network-state="[[item]]"
             device-state="[[get(item.type, deviceStates)]]"
             network-state-list="[[get(item.type, networkStateLists_)]]"
-            tether-device-state="[[get('Tether', deviceStates)]]">
+            tether-device-state="[[getTetherDeviceState_(deviceStates)]]">
         </network-summary-item>
       </template>
     </div>

@@ -2,32 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import './print_preview_vars_css.js';
+import '../strings.m.js';
+import './sidebar.js';
+
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {isMac, isWindows} from 'chrome://resources/js/cr.m.js';
+import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.m.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.m.js';
 import {hasKeyModifiers} from 'chrome://resources/js/util.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 import {CloudPrintInterface, CloudPrintInterfaceErrorEventDetail, CloudPrintInterfaceEventType} from '../cloud_print_interface.js';
 import {getCloudPrintInterface} from '../cloud_print_interface_manager.js';
-import {NativeInitialSettings, NativeLayer} from '../native_layer.js';
 import {Destination} from '../data/destination.js';
 import {DocumentSettings} from '../data/document_info.js';
 import {Margins} from '../data/margins.js';
 import {MeasurementSystem} from '../data/measurement_system.js';
+import {DuplexMode, whenReady} from '../data/model.js';
 import {PrintableArea} from '../data/printable_area.js';
 import {Size} from '../data/size.js';
-import {DuplexMode, whenReady} from '../data/model.js';
 import {Error, State} from '../data/state.js';
-import './print_preview_vars_css.js';
-import '../strings.m.js';
+import {NativeInitialSettings, NativeLayer} from '../native_layer.js';
+
 import {DestinationState} from './destination_settings.js';
-import {SettingsBehavior} from './settings_behavior.js';
 import {PreviewAreaState} from './preview_area.js';
-import './sidebar.js';
+import {SettingsBehavior} from './settings_behavior.js';
 
 Polymer({
   is: 'print-preview-app',
@@ -226,8 +229,7 @@ Polymer({
     }
 
     if ((e.code === 'Enter' || e.code === 'NumpadEnter') &&
-        this.state === State.READY &&
-        this.openDialogs_.length === 0) {
+        this.state === State.READY && this.openDialogs_.length === 0) {
       const activeElementTag = e.path[0].tagName;
       if (['CR-BUTTON', 'BUTTON', 'SELECT', 'A', 'CR-CHECKBOX'].includes(
               activeElementTag)) {
@@ -326,8 +328,7 @@ Polymer({
         cloudPrintUrl, assert(this.nativeLayer_), appKioskMode, uiLocale);
     this.tracker_.add(
         assert(this.cloudPrintInterface_).getEventTarget(),
-        CloudPrintInterfaceEventType.SUBMIT_DONE,
-        this.close_.bind(this));
+        CloudPrintInterfaceEventType.SUBMIT_DONE, this.close_.bind(this));
     this.tracker_.add(
         assert(this.cloudPrintInterface_).getEventTarget(),
         CloudPrintInterfaceEventType.SUBMIT_FAILED,
@@ -404,8 +405,7 @@ Polymer({
       this.nativeLayer_.dialogClose(this.cancelled_);
     } else if (this.state == State.HIDDEN) {
       if (this.destination_.isLocal &&
-          this.destination_.id !==
-              Destination.GooglePromotedId.SAVE_AS_PDF) {
+          this.destination_.id !== Destination.GooglePromotedId.SAVE_AS_PDF) {
         // Only hide the preview for local, non PDF destinations.
         this.nativeLayer_.hidePreview();
       }
@@ -416,8 +416,8 @@ Polymer({
               destination, this.openPdfInPreview_,
               this.showSystemDialogBeforePrint_));
       if (destination.isLocal) {
-        const onError = destination.id ==
-                Destination.GooglePromotedId.SAVE_AS_PDF ?
+        const onError =
+            destination.id == Destination.GooglePromotedId.SAVE_AS_PDF ?
             this.onFileSelectionCancel_.bind(this) :
             this.onPrintFailed_.bind(this);
         whenPrintDone.then(this.close_.bind(this), onError);
@@ -438,8 +438,7 @@ Polymer({
       return;
     }
     this.$.state.transitTo(
-        this.$.previewArea.previewLoaded() ? State.PRINTING :
-                                             State.HIDDEN);
+        this.$.previewArea.previewLoaded() ? State.PRINTING : State.HIDDEN);
   },
 
   /** @private */
@@ -526,12 +525,10 @@ Polymer({
         }
         break;
       case PreviewAreaState.ERROR:
-        if (this.state !== State.ERROR &&
-            this.state !== State.FATAL_ERROR) {
+        if (this.state !== State.ERROR && this.state !== State.FATAL_ERROR) {
           this.$.state.transitTo(
-              this.error_ === Error.INVALID_PRINTER ?
-                  State.ERROR :
-                  State.FATAL_ERROR);
+              this.error_ === Error.INVALID_PRINTER ? State.ERROR :
+                                                      State.FATAL_ERROR);
         }
         break;
       default:
@@ -590,16 +587,14 @@ Polymer({
     if (this.getSetting('duplex').available) {
       this.setSetting(
           'duplex',
-          duplex === DuplexMode.LONG_EDGE ||
-              duplex === DuplexMode.SHORT_EDGE,
+          duplex === DuplexMode.LONG_EDGE || duplex === DuplexMode.SHORT_EDGE,
           true);
     }
 
     if (duplex !== DuplexMode.SIMPLEX &&
         this.getSetting('duplexShortEdge').available) {
       this.setSetting(
-          'duplexShortEdge', duplex === DuplexMode.SHORT_EDGE,
-          true);
+          'duplexShortEdge', duplex === DuplexMode.SHORT_EDGE, true);
     }
   },
 

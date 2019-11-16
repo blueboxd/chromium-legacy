@@ -14,6 +14,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -383,7 +384,7 @@ TEST(CreateMdnsResponseTest,
 class SimpleNameGenerator : public MdnsResponderManager::NameGenerator {
  public:
   std::string CreateName() override {
-    return std::to_string(next_available_id_++);
+    return base::NumberToString(next_available_id_++);
   }
 
  private:

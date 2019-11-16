@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/time/time.h"
+#include "chrome/browser/sharing/shared_clipboard/remote_copy_handle_message_result.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_send_message_result.h"
 #include "components/sync/protocol/sharing_message.pb.h"
@@ -169,5 +170,8 @@ void LogSharedClipboardSelectedTextSize(int text_size);
 void LogClickToCallPhoneNumberSize(const std::string& number,
                                    SharingClickToCallEntryPoint entry_point,
                                    bool send_to_device);
+
+// Logs to UMA the result of handling a Remote Copy message.
+void LogRemoteCopyHandleMessageResult(RemoteCopyHandleMessageResult result);
 
 #endif  // CHROME_BROWSER_SHARING_SHARING_METRICS_H_

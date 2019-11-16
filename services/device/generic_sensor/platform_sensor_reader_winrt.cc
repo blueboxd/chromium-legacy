@@ -172,8 +172,8 @@ bool PlatformSensorReaderWinrtBase<
   }
 
   hr = sensor_statics->GetDefault(&sensor_);
-  base::UmaHistogramSparse("Sensors.Windows.WinRT.Activation.Result", hr);
   if (FAILED(hr)) {
+    base::UmaHistogramSparse("Sensors.Windows.WinRT.Activation.Result", hr);
     DLOG(ERROR) << "Failed to query default sensor: "
                 << logging::SystemErrorCodeToString(hr);
     return false;
@@ -181,9 +181,16 @@ bool PlatformSensorReaderWinrtBase<
 
   // GetDefault() returns null if the sensor does not exist
   if (!sensor_) {
+    // https://docs.microsoft.com/en-us/windows/win32/api/sensorsapi/nf-sensorsapi-isensormanager-getsensorsbytype
+    // The Win32 flavor returns HRESULT_FROM_WIN32(ERROR_NOT_FOUND) when the
+    // sensor is not found so log the same error result here as well.
+    base::UmaHistogramSparse("Sensors.Windows.WinRT.Activation.Result",
+                             HRESULT_FROM_WIN32(ERROR_NOT_FOUND));
     VLOG(1) << "Sensor does not exist on system";
     return false;
   }
+
+  base::UmaHistogramSparse("Sensors.Windows.WinRT.Activation.Result", S_OK);
 
   minimum_report_interval_ = GetMinimumReportIntervalFromSensor();
 

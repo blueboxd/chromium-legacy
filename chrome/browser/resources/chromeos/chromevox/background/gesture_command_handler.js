@@ -50,7 +50,7 @@ GestureCommandHandler.onAccessibilityGesture_ = function(gesture) {
     return;
   }
 
-  Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
+  Output.forceModeForNextSpeechUtterance(QueueMode.FLUSH);
 
   // Map gestures to arrow keys while within menus.
   var range = ChromeVoxState.instance.currentRange;

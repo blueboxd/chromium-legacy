@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/macros.h"
 #include "components/services/paint_preview_compositor/public/mojom/paint_preview_compositor.mojom.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -28,7 +27,8 @@ struct PaintPreviewFrame {
   std::vector<mojom::SubframeClipRect> subframe_clip_rects;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PaintPreviewFrame);
+  PaintPreviewFrame(const PaintPreviewFrame&) = delete;
+  PaintPreviewFrame& operator=(const PaintPreviewFrame&) = delete;
 };
 
 }  // namespace paint_preview

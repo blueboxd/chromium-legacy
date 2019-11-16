@@ -170,7 +170,7 @@ class MockEmbeddedSearchClientFactory
 
 class SearchIPCRouterTest : public BrowserWithTestWindowTest {
  public:
-  SearchIPCRouterTest() : field_trial_list_(NULL) {}
+  SearchIPCRouterTest() {}
 
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
@@ -252,7 +252,6 @@ class SearchIPCRouterTest : public BrowserWithTestWindowTest {
 
  private:
   MockSearchIPCRouterDelegate delegate_;
-  base::FieldTrialList field_trial_list_;
   MockEmbeddedSearchClient mock_embedded_search_client_;
 };
 

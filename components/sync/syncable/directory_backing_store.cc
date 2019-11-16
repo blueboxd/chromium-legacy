@@ -317,10 +317,6 @@ bool DirectoryBackingStore::DeleteEntries(EntryTable from,
       statement.Assign(db_->GetCachedStatement(
           SQL_FROM_HERE, "DELETE FROM metas WHERE metahandle = ?"));
       break;
-    case DELETE_JOURNAL_TABLE:
-      statement.Assign(db_->GetCachedStatement(
-          SQL_FROM_HERE, "DELETE FROM deleted_metas WHERE metahandle = ?"));
-      break;
   }
 
   for (auto i = handles.begin(); i != handles.end(); ++i) {
@@ -357,12 +353,6 @@ bool DirectoryBackingStore::SaveChanges(
   }
 
   if (!DeleteEntries(METAS_TABLE, snapshot.metahandles_to_purge))
-    return false;
-
-  PrepareSaveEntryStatement(DELETE_JOURNAL_TABLE,
-                            &save_delete_journal_statement_);
-
-  if (!DeleteEntries(DELETE_JOURNAL_TABLE, snapshot.delete_journals_to_purge))
     return false;
 
   if (save_info) {
@@ -1713,9 +1703,6 @@ void DirectoryBackingStore::PrepareSaveEntryStatement(
   switch (table) {
     case METAS_TABLE:
       query.append("INSERT OR REPLACE INTO metas ");
-      break;
-    case DELETE_JOURNAL_TABLE:
-      query.append("INSERT OR REPLACE INTO deleted_metas ");
       break;
   }
 

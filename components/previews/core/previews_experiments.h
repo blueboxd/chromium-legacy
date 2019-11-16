@@ -145,6 +145,9 @@ bool LitePageRedirectOnlyTriggerOnSuccessfulProbe();
 // Whether the preview should trigger on API page transitions.
 bool LitePageRedirectTriggerOnAPITransition();
 
+// Whether the preview should trigger on forward/back page transitions.
+bool LitePageRedirectValidateForwardBackTransition();
+
 // The URL to probe on the lite pages server.
 GURL LitePageRedirectProbeURL();
 

@@ -137,21 +137,28 @@ void ProactiveSuggestionsView::ButtonPressed(views::Button* sender,
   delegate_->OnProactiveSuggestionsViewPressed();
 }
 
+void ProactiveSuggestionsView::OnWidgetClosing(views::Widget* widget) {
+  widget->RemoveObserver(this);
+
+  // When closing, the proactive suggestions window fades out.
+  wm::SetWindowVisibilityAnimationType(
+      widget->GetNativeWindow(),
+      wm::WindowVisibilityAnimationType::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
+}
+
 void ProactiveSuggestionsView::OnWindowDestroying(aura::Window* window) {
   window->RemoveObserver(this);
 }
 
 void ProactiveSuggestionsView::OnWindowVisibilityChanging(aura::Window* window,
                                                           bool visible) {
-  if (!visible) {
-    // When exiting, the proactive suggestions window fades out.
-    wm::SetWindowVisibilityAnimationType(
-        window, wm::WindowVisibilityAnimationType::
-                    WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
+  // If the widget is marked as closed, we are in a closing sequence and we
+  // don't need to update the window animation as the appropriate animation for
+  // close has already been set in OnWidgetClosing().
+  if (GetWidget()->IsClosed())
     return;
-  }
 
-  // When entering, the proactive suggestions window translates in vertically.
+  // If showing/hiding, the proactive suggestions window translates vertically.
   wm::SetWindowVisibilityAnimationType(
       window, wm::WindowVisibilityAnimationType::
                   WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
@@ -271,6 +278,11 @@ void ProactiveSuggestionsView::InitWidget() {
   views::Widget* widget = new views::Widget();
   widget->Init(std::move(params));
   widget->SetContentsView(this);
+
+  // We observe the |widget| in order to modify animation behavior of its window
+  // prior to closing. This is necessary due to the fact that we utilize a
+  // different animation on widget close than we do for widget show and hide.
+  widget->AddObserver(this);
 }
 
 void ProactiveSuggestionsView::InitWindow() {
@@ -288,8 +300,7 @@ void ProactiveSuggestionsView::InitWindow() {
 
   // We observe the window in order to modify animation behavior prior to window
   // visibility changes. This needs to be done dynamically as bounds are not
-  // fully initialized yet for calculating offset position and the animation
-  // behavior for exit should only be set once the enter animation is completed.
+  // fully initialized yet for calculating offset position.
   window->AddObserver(this);
 }
 

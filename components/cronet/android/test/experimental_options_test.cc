@@ -13,6 +13,7 @@
 #include "components/cronet/android/test/cronet_test_util.h"
 #include "net/base/address_family.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_source.h"
@@ -34,10 +35,12 @@ void WriteToHostCacheOnNetworkThread(jlong jcontext_adapter,
   // Create multiple keys to ensure the test works in a variety of network
   // conditions.
   net::HostCache::Key key1(hostname, net::DnsQueryType::UNSPECIFIED, 0,
-                           net::HostResolverSource::ANY);
+                           net::HostResolverSource::ANY,
+                           net::NetworkIsolationKey());
   net::HostCache::Key key2(hostname, net::DnsQueryType::A,
                            net::HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6,
-                           net::HostResolverSource::ANY);
+                           net::HostResolverSource::ANY,
+                           net::NetworkIsolationKey());
 
   net::IPAddress address;
   CHECK(address.AssignFromIPLiteral(address_string));

@@ -45,7 +45,7 @@ SessionRateImpact CreateSessionRateImpactExplicit(
 
 class ChromeVariationsConfigurationTest : public ::testing::Test {
  public:
-  ChromeVariationsConfigurationTest() : field_trials_(nullptr) {
+  ChromeVariationsConfigurationTest() {
     base::FieldTrial* foo_trial =
         base::FieldTrialList::CreateFieldTrial(kFooTrialName, kGroupName);
     base::FieldTrial* bar_trial =
@@ -67,7 +67,7 @@ class ChromeVariationsConfigurationTest : public ::testing::Test {
         kChromeTestFeatureQux.name, base::FeatureList::OVERRIDE_ENABLE_FEATURE,
         qux_trial);
 
-    scoped_feature_list.InitWithFeatureList(std::move(feature_list));
+    scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
     EXPECT_EQ(foo_trial,
               base::FeatureList::GetFieldTrial(kChromeTestFeatureFoo));
     EXPECT_EQ(bar_trial,
@@ -111,9 +111,8 @@ class ChromeVariationsConfigurationTest : public ::testing::Test {
   ChromeVariationsConfiguration configuration_;
 
  private:
-  base::FieldTrialList field_trials_;
+  base::test::ScopedFeatureList scoped_feature_list_;
   std::map<std::string, base::FieldTrial*> trials_;
-  base::test::ScopedFeatureList scoped_feature_list;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeVariationsConfigurationTest);
 };

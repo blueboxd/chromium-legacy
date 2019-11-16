@@ -1173,10 +1173,12 @@ TEST_F(DeviceManagementRequestAuthTest, OAuthAndGaiaToken) {
   SendResponse(net::OK, 200, std::string());
 }
 
+#if defined(GTEST_HAS_DEATH_TEST)
 TEST_F(DeviceManagementRequestAuthTest, CannotUseOAuthTokenAsAuthData) {
   // Job type is not really relevant for the test.
   ASSERT_DEATH(StartJobWithAuthData(DMAuth::FromOAuthToken(kOAuthToken), ""),
                "");
 }
+#endif  // GTEST_HAS_DEATH_TEST
 
 }  // namespace policy

@@ -78,13 +78,6 @@ IPC::PlatformFileForTransit MockRendererPpapiHost::ShareHandleWithRemote(
   return IPC::InvalidPlatformFileForTransit();
 }
 
-base::SharedMemoryHandle
-MockRendererPpapiHost::ShareSharedMemoryHandleWithRemote(
-    const base::SharedMemoryHandle& handle) {
-  NOTIMPLEMENTED();
-  return base::SharedMemoryHandle();
-}
-
 base::UnsafeSharedMemoryRegion
 MockRendererPpapiHost::ShareUnsafeSharedMemoryRegionWithRemote(
     const base::UnsafeSharedMemoryRegion& region) {

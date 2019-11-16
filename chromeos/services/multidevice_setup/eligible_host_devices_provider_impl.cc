@@ -93,16 +93,16 @@ void EligibleHostDevicesProviderImpl::UpdateEligibleDevicesSet() {
                      second_device.last_update_time_millis();
             });
 
+  eligible_active_devices_from_last_sync_.clear();
+  for (const auto& remote_device : eligible_devices_from_last_sync_) {
+    eligible_active_devices_from_last_sync_.push_back(
+        multidevice::DeviceWithConnectivityStatus(
+            remote_device,
+            cryptauthv2::ConnectivityStatus::UNKNOWN_CONNECTIVITY));
+  }
+
   if (base::FeatureList::IsEnabled(
           features::kCryptAuthV2DeviceActivityStatus)) {
-    eligible_active_devices_from_last_sync_.clear();
-    for (const auto& remote_device : eligible_devices_from_last_sync_) {
-      eligible_active_devices_from_last_sync_.push_back(
-          multidevice::DeviceWithConnectivityStatus(
-              remote_device,
-              cryptauthv2::ConnectivityStatus::UNKNOWN_CONNECTIVITY));
-    }
-
     device_sync_client_->GetDevicesActivityStatus(
         base::Bind(&EligibleHostDevicesProviderImpl::OnGetDevicesActivityStatus,
                    base::Unretained(this)));

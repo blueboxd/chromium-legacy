@@ -18,9 +18,9 @@
 #include "net/base/test_completion_callback.h"
 #include "net/proxy_resolution/mock_proxy_resolver.h"
 #include "net/proxy_resolution/proxy_resolve_dns_operation.h"
-#include "net/proxy_resolution/proxy_resolver_v8_tracing.h"
 #include "net/test/event_waiter.h"
 #include "net/test/gtest_util.h"
+#include "services/proxy_resolver/proxy_resolver_v8_tracing.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

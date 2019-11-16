@@ -184,12 +184,12 @@ class CORE_EXPORT NGPhysicalFragment
   // incorrect, use |BaseDirection()| instead, and 2) margin/border/padding,
   // background etc. do not apply to the line box.
   const ComputedStyle& Style() const {
-    return layout_object_.EffectiveStyle(StyleVariant());
+    return layout_object_->EffectiveStyle(StyleVariant());
   }
   Node* GetNode() const;
 
   // Whether there is a PaintLayer associated with the fragment.
-  bool HasLayer() const { return IsCSSBox() && layout_object_.HasLayer(); }
+  bool HasLayer() const { return IsCSSBox() && layout_object_->HasLayer(); }
 
   // The PaintLayer associated with the fragment.
   PaintLayer* Layer() const;
@@ -213,12 +213,20 @@ class CORE_EXPORT NGPhysicalFragment
   // returns |nullptr| for the historical reasons. TODO(kojii): We may change
   // this in future. Use |IsLineBox()| instead of testing this is |nullptr|.
   const LayoutObject* GetLayoutObject() const {
-    return !IsLineBox() ? &layout_object_ : nullptr;
+    return !IsLineBox() ? layout_object_ : nullptr;
   }
   // TODO(kojii): We should not have mutable version at all, the use of this
   // function should be eliminiated over time.
   LayoutObject* GetMutableLayoutObject() const {
-    return !IsLineBox() ? &layout_object_ : nullptr;
+    return !IsLineBox() ? layout_object_ : nullptr;
+  }
+
+  // |NGPhysicalFragment| may live longer than the corresponding |LayoutObject|.
+  // Though |NGPhysicalFragment| is immutable, |layout_object_| is cleared to
+  // |nullptr| when it was destroyed to avoid reading destroyed objects.
+  bool IsAlive() const { return layout_object_; }
+  void LayoutObjectWillBeDestroyed() const {
+    const_cast<NGPhysicalFragment*>(this)->layout_object_ = nullptr;
   }
 
   // Returns the latest generation of the post-layout fragment. Returns
@@ -298,7 +306,7 @@ class CORE_EXPORT NGPhysicalFragment
 
   const Vector<NGInlineItem>& InlineItemsOfContainingBlock() const;
 
-  LayoutObject& layout_object_;
+  LayoutObject* layout_object_;
   const PhysicalSize size_;
 
   const unsigned type_ : 2;      // NGFragmentType

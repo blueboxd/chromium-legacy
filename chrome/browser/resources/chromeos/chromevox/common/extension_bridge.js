@@ -13,20 +13,20 @@
  *
  */
 
-goog.provide('cvox.ExtensionBridge');
+goog.provide('ExtensionBridge');
 
 /**
  * @constructor
  */
-cvox.ExtensionBridge = function() {};
+ExtensionBridge = function() {};
 
 /**
  * Initialize the extension bridge. Dynamically figure out whether we're in
  * the background page, content script, or in a page, and call the
  * corresponding function for more specific initialization.
  */
-cvox.ExtensionBridge.init = function() {
-  var self = cvox.ExtensionBridge;
+ExtensionBridge.init = function() {
+  var self = ExtensionBridge;
   self.messageListeners = [];
   self.disconnectListeners = [];
 
@@ -50,21 +50,21 @@ cvox.ExtensionBridge.init = function() {
  * @type {number}
  * @const
  */
-cvox.ExtensionBridge.BACKGROUND = 0;
+ExtensionBridge.BACKGROUND = 0;
 
 /**
  * Constant indicating we're in a content script.
  * @type {number}
  * @const
  */
-cvox.ExtensionBridge.CONTENT_SCRIPT = 1;
+ExtensionBridge.CONTENT_SCRIPT = 1;
 
 /**
  * The name of the port between the content script and background page.
  * @type {string}
  * @const
  */
-cvox.ExtensionBridge.PORT_NAME = 'cvox.ExtensionBridge.Port';
+ExtensionBridge.PORT_NAME = 'ExtensionBridge.Port';
 
 /**
  * The name of the message between the content script and background to
@@ -72,7 +72,7 @@ cvox.ExtensionBridge.PORT_NAME = 'cvox.ExtensionBridge.Port';
  * @type {string}
  * @const
  */
-cvox.ExtensionBridge.PING_MSG = 'cvox.ExtensionBridge.Ping';
+ExtensionBridge.PING_MSG = 'ExtensionBridge.Ping';
 
 /**
  * The name of the message between the background and content script to
@@ -80,7 +80,7 @@ cvox.ExtensionBridge.PING_MSG = 'cvox.ExtensionBridge.Ping';
  * @type {string}
  * @const
  */
-cvox.ExtensionBridge.PONG_MSG = 'cvox.ExtensionBridge.Pong';
+ExtensionBridge.PONG_MSG = 'ExtensionBridge.Pong';
 
 /**
  * Send a message. If the context is a page, sends a message to the
@@ -89,8 +89,8 @@ cvox.ExtensionBridge.PONG_MSG = 'cvox.ExtensionBridge.Pong';
  *
  * @param {Object} message The message to be sent.
  */
-cvox.ExtensionBridge.send = function(message) {
-  var self = cvox.ExtensionBridge;
+ExtensionBridge.send = function(message) {
+  var self = ExtensionBridge;
   switch (self.context) {
     case self.BACKGROUND:
       self.sendBackgroundToContentScript(message);
@@ -111,8 +111,8 @@ cvox.ExtensionBridge.send = function(message) {
  *
  * @param {function(Object, Port)} listener The message listener.
  */
-cvox.ExtensionBridge.addMessageListener = function(listener) {
-  cvox.ExtensionBridge.messageListeners.push(listener);
+ExtensionBridge.addMessageListener = function(listener) {
+  ExtensionBridge.messageListeners.push(listener);
 };
 
 /**
@@ -121,15 +121,15 @@ cvox.ExtensionBridge.addMessageListener = function(listener) {
  *
  * @param {function()} listener The listener.
  */
-cvox.ExtensionBridge.addDisconnectListener = function(listener) {
-  cvox.ExtensionBridge.disconnectListeners.push(listener);
+ExtensionBridge.addDisconnectListener = function(listener) {
+  ExtensionBridge.disconnectListeners.push(listener);
 };
 
 /**
  * Removes all message listeners from the extension bridge.
  */
-cvox.ExtensionBridge.removeMessageListeners = function() {
-  cvox.ExtensionBridge.messageListeners.length = 0;
+ExtensionBridge.removeMessageListeners = function() {
+  ExtensionBridge.messageListeners.length = 0;
 };
 
 /**
@@ -137,16 +137,16 @@ cvox.ExtensionBridge.removeMessageListeners = function() {
  *
  * @return {number}
  */
-cvox.ExtensionBridge.uniqueId = function() {
-  return cvox.ExtensionBridge.id_;
+ExtensionBridge.uniqueId = function() {
+  return ExtensionBridge.id_;
 };
 
 /**
  * Initialize the extension bridge in a background page context by registering
  * a listener for connections from the content script.
  */
-cvox.ExtensionBridge.initBackground = function() {
-  var self = cvox.ExtensionBridge;
+ExtensionBridge.initBackground = function() {
+  var self = ExtensionBridge;
 
   /** @type {!Array<Port>} @private */
   self.portCache_ = [];
@@ -163,9 +163,9 @@ cvox.ExtensionBridge.initBackground = function() {
     self.portCache_.push(port);
 
     port.onMessage.addListener(function(message) {
-      if (message[cvox.ExtensionBridge.PING_MSG]) {
+      if (message[ExtensionBridge.PING_MSG]) {
         var pongMessage = {};
-        pongMessage[cvox.ExtensionBridge.PONG_MSG] = self.nextPongId_++;
+        pongMessage[ExtensionBridge.PONG_MSG] = self.nextPongId_++;
         port.postMessage(pongMessage);
         return;
       }
@@ -192,8 +192,8 @@ cvox.ExtensionBridge.initBackground = function() {
  * Initialize the extension bridge in a content script context, listening
  * for messages from the background page.
  */
-cvox.ExtensionBridge.initContentScript = function() {
-  var self = cvox.ExtensionBridge;
+ExtensionBridge.initContentScript = function() {
+  var self = ExtensionBridge;
   self.connected = false;
   self.pingAttempts = 0;
   self.queuedMessages = [];
@@ -207,11 +207,11 @@ cvox.ExtensionBridge.initContentScript = function() {
       // the background page, but it is in the Chrome OS case.
       return;
     }
-    if (request[cvox.ExtensionBridge.PONG_MSG]) {
-      self.gotPongFromBackgroundPage(request[cvox.ExtensionBridge.PONG_MSG]);
+    if (request[ExtensionBridge.PONG_MSG]) {
+      self.gotPongFromBackgroundPage(request[ExtensionBridge.PONG_MSG]);
     } else {
       for (var i = 0; i < self.messageListeners.length; i++) {
-        self.messageListeners[i](request, cvox.ExtensionBridge.backgroundPort);
+        self.messageListeners[i](request, ExtensionBridge.backgroundPort);
       }
     }
     sendResponse({});
@@ -229,16 +229,16 @@ cvox.ExtensionBridge.initContentScript = function() {
 /**
  * Set up the connection to the background page.
  */
-cvox.ExtensionBridge.setupBackgroundPort = function() {
+ExtensionBridge.setupBackgroundPort = function() {
   // Set up the connection to the background page.
-  var self = cvox.ExtensionBridge;
+  var self = ExtensionBridge;
   self.backgroundPort = chrome.extension.connect({name: self.PORT_NAME});
   if (!self.backgroundPort) {
     return;
   }
   self.backgroundPort.onMessage.addListener(function(message) {
-    if (message[cvox.ExtensionBridge.PONG_MSG]) {
-      self.gotPongFromBackgroundPage(message[cvox.ExtensionBridge.PONG_MSG]);
+    if (message[ExtensionBridge.PONG_MSG]) {
+      self.gotPongFromBackgroundPage(message[ExtensionBridge.PONG_MSG]);
     } else {
       for (var i = 0; i < self.messageListeners.length; i++) {
         self.messageListeners[i](message, self.backgroundPort);
@@ -263,8 +263,8 @@ cvox.ExtensionBridge.setupBackgroundPort = function() {
 /**
  * Try to ping the background page.
  */
-cvox.ExtensionBridge.tryToPingBackgroundPage = function() {
-  var self = cvox.ExtensionBridge;
+ExtensionBridge.tryToPingBackgroundPage = function() {
+  var self = ExtensionBridge;
 
   // If we already got a pong, great - we're done.
   if (self.connected) {
@@ -283,7 +283,7 @@ cvox.ExtensionBridge.tryToPingBackgroundPage = function() {
 
   // Send the ping.
   var msg = {};
-  msg[cvox.ExtensionBridge.PING_MSG] = 1;
+  msg[ExtensionBridge.PING_MSG] = 1;
   if (!self.backgroundPort) {
     self.setupBackgroundPort();
   }
@@ -292,7 +292,7 @@ cvox.ExtensionBridge.tryToPingBackgroundPage = function() {
   }
 
   // Check again in 500 ms in case we get no response.
-  window.setTimeout(cvox.ExtensionBridge.tryToPingBackgroundPage, 500);
+  window.setTimeout(ExtensionBridge.tryToPingBackgroundPage, 500);
 };
 
 /**
@@ -300,8 +300,8 @@ cvox.ExtensionBridge.tryToPingBackgroundPage = function() {
  * successful.
  * @param {number} pongId unique id assigned to us by the background page
  */
-cvox.ExtensionBridge.gotPongFromBackgroundPage = function(pongId) {
-  var self = cvox.ExtensionBridge;
+ExtensionBridge.gotPongFromBackgroundPage = function(pongId) {
+  var self = ExtensionBridge;
   self.connected = true;
   self.id_ = pongId;
 
@@ -315,8 +315,8 @@ cvox.ExtensionBridge.gotPongFromBackgroundPage = function(pongId) {
  *
  * @param {Object} message The message to send.
  */
-cvox.ExtensionBridge.sendContentScriptToBackground = function(message) {
-  var self = cvox.ExtensionBridge;
+ExtensionBridge.sendContentScriptToBackground = function(message) {
+  var self = ExtensionBridge;
   if (!self.connected) {
     // We're not connected to the background page, so queue this message
     // until we're connected.
@@ -324,8 +324,8 @@ cvox.ExtensionBridge.sendContentScriptToBackground = function(message) {
     return;
   }
 
-  if (cvox.ExtensionBridge.backgroundPort) {
-    cvox.ExtensionBridge.backgroundPort.postMessage(message);
+  if (ExtensionBridge.backgroundPort) {
+    ExtensionBridge.backgroundPort.postMessage(message);
   } else {
     chrome.extension.sendMessage(message);
   }
@@ -337,10 +337,10 @@ cvox.ExtensionBridge.sendContentScriptToBackground = function(message) {
  *
  * @param {Object} message The message to send.
  */
-cvox.ExtensionBridge.sendBackgroundToContentScript = function(message) {
-  cvox.ExtensionBridge.portCache_.forEach(function(port) {
+ExtensionBridge.sendBackgroundToContentScript = function(message) {
+  ExtensionBridge.portCache_.forEach(function(port) {
     port.postMessage(message);
   });
 };
 
-cvox.ExtensionBridge.init();
+ExtensionBridge.init();

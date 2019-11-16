@@ -2,20 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Polymer, html, Base} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/cr_elements/md_select_css.m.js';
-import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import 'chrome://resources/js/util.m.js';
 import 'chrome://resources/polymer/v3_0/iron-iconset-svg/iron-iconset-svg.js';
 import 'chrome://resources/polymer/v3_0/iron-meta/iron-meta.js';
 import './icons.js';
-import {getSelectDropdownBackground} from '../print_preview_utils.js';
-import {createDestinationKey, createRecentDestinationKey, Destination, DestinationOrigin, RecentDestination} from '../data/destination.js';
 import './print_preview_shared_css.js';
-import {SelectBehavior} from './select_behavior.js';
 import '../strings.m.js';
+
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {Base, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {createDestinationKey, createRecentDestinationKey, Destination, DestinationOrigin, RecentDestination} from '../data/destination.js';
+import {getSelectDropdownBackground} from '../print_preview_utils.js';
+
+import {SelectBehavior} from './select_behavior.js';
 
 Polymer({
   is: 'print-preview-destination-select',
@@ -61,8 +64,7 @@ Polymer({
    */
   getPdfDestinationKey_: function() {
     return createDestinationKey(
-        Destination.GooglePromotedId.SAVE_AS_PDF,
-        DestinationOrigin.LOCAL, '');
+        Destination.GooglePromotedId.SAVE_AS_PDF, DestinationOrigin.LOCAL, '');
   },
 
   /**
@@ -71,8 +73,8 @@ Polymer({
    */
   getGoogleDriveDestinationKey_: function() {
     return createDestinationKey(
-        Destination.GooglePromotedId.DOCS,
-        DestinationOrigin.COOKIES, this.activeUser);
+        Destination.GooglePromotedId.DOCS, DestinationOrigin.COOKIES,
+        this.activeUser);
   },
 
   /**
@@ -98,8 +100,7 @@ Polymer({
     if (keyParams[0] === Destination.GooglePromotedId.DOCS) {
       return 'print-preview:save-to-drive';
     }
-    if (keyParams[0] ===
-        Destination.GooglePromotedId.SAVE_AS_PDF) {
+    if (keyParams[0] === Destination.GooglePromotedId.SAVE_AS_PDF) {
       return 'cr:insert-drive-file';
     }
 

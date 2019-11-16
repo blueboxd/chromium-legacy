@@ -861,15 +861,14 @@ class BasePreviewsLitePageRedirectServerBrowserTest
         // This will not cause a redirect loop because on following this
         // redirect, the URL will no longer be a preview URL and the embedded
         // test server will respond with HTTP 400.
-        response->AddCustomHeader("Location", HttpsLitePageURL(kBypass).spec());
+        response->AddCustomHeader("Location", original_url.spec());
         break;
       case kBypassAndBlacklistOriginHost:
         response->set_code(net::HTTP_TEMPORARY_REDIRECT);
         // This will not cause a redirect loop because on following this
         // redirect, the URL will no longer be a preview URL and the embedded
         // test server will respond with HTTP 400.
-        response->AddCustomHeader(
-            "Location", HttpsLitePageURL(kBypassAndBlacklistOriginHost).spec());
+        response->AddCustomHeader("Location", original_url.spec());
         response->AddCustomHeader("chrome-proxy", "host-blacklisted");
         break;
       case kAuthFailure:
@@ -1551,37 +1550,97 @@ IN_PROC_BROWSER_TEST_P(
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectServerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(LitePagePreviewsNavigation)) {
+  // Use a sequence of different URLs, otherwise forward/back doesn't work as
+  // expected.
+  const auto url1 = GURL(HttpsLitePageURL(kSuccess).spec() + "&z=1");
+  const auto url2 = GURL(HttpsLitePageURL(kSuccess).spec() + "&z=2");
+  const auto url3 = GURL(HttpsLitePageURL(kSuccess).spec() + "&z=3");
+  const auto url4 = GURL(HttpsLitePageURL(kSuccess).spec() + "&z=4");
+
+  // 2g so we get previews.
+  auto* nqt = g_browser_process->network_quality_tracker();
+  nqt->ReportEffectiveConnectionTypeForTesting(
+      net::EFFECTIVE_CONNECTION_TYPE_2G);
+
   {
     SCOPED_TRACE("First preview load");
-    ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
+    ui_test_utils::NavigateToURL(browser(), url1);
     VerifyPreviewLoaded();
   }
 
   {
-    SCOPED_TRACE("Go to a new page that doesn't Preview");
-    ui_test_utils::NavigateToURL(browser(), http_url());
+    SCOPED_TRACE("Second preview load");
+    ui_test_utils::NavigateToURL(browser(), url2);
+    VerifyPreviewLoaded();
+  }
+
+  // 4g so we don't get previews.
+  nqt->ReportEffectiveConnectionTypeForTesting(
+      net::EFFECTIVE_CONNECTION_TYPE_4G);
+
+  {
+    SCOPED_TRACE("First non-preview load");
+    ui_test_utils::NavigateToURL(browser(), url3);
     VerifyPreviewNotLoaded();
-    ClearDeciderState();
+  }
+
+  {
+    SCOPED_TRACE("Second non-preview load");
+    ui_test_utils::NavigateToURL(browser(), url4);
+    VerifyPreviewNotLoaded();
   }
 
   // Note: |VerifyPreviewLoaded| calls |content::WaitForLoadStop()| so these are
   // safe.
 
+  // 2g to re-enable previews. However, since all of the following navigations
+  // are forward/back, they should use reuse the same previews state from the
+  // corresponding original navigation.
+  nqt->ReportEffectiveConnectionTypeForTesting(
+      net::EFFECTIVE_CONNECTION_TYPE_2G);
+
   {
-    SCOPED_TRACE("Navigate back");
+    SCOPED_TRACE("Navigate back to first non-preview load");
+    base::HistogramTester histogram_tester;
     GetWebContents()->GetController().GoBack();
     VerifyPreviewNotLoaded();
+    histogram_tester.ExpectBucketCount(
+        "Previews.ServerLitePage.IneligibleReasons",
+        previews::LitePageRedirectIneligibleReason::kForwardBackPageTransition,
+        1);
   }
 
   {
-    SCOPED_TRACE("Navigate forward");
+    SCOPED_TRACE("Navigate back to second preview load");
+    GetWebContents()->GetController().GoBack();
+    VerifyPreviewLoaded();
+  }
+
+  {
+    SCOPED_TRACE("Navigate back to first preview load");
+    GetWebContents()->GetController().GoBack();
+    VerifyPreviewLoaded();
+  }
+
+  {
+    SCOPED_TRACE("Navigate forward to second preview load");
+    GetWebContents()->GetController().GoForward();
+    VerifyPreviewLoaded();
+  }
+
+  {
+    SCOPED_TRACE("Navigate forward to first non-preview load");
+    base::HistogramTester histogram_tester;
     GetWebContents()->GetController().GoForward();
     VerifyPreviewNotLoaded();
-    ClearDeciderState();
+    histogram_tester.ExpectBucketCount(
+        "Previews.ServerLitePage.IneligibleReasons",
+        previews::LitePageRedirectIneligibleReason::kForwardBackPageTransition,
+        1);
   }
 
   {
-    SCOPED_TRACE("Navigate back again");
+    SCOPED_TRACE("Navigate back again to second preview load");
     GetWebContents()->GetController().GoBack();
     VerifyPreviewLoaded();
   }
@@ -1663,10 +1722,12 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageRedirectServerTimeoutBrowserTest,
   }
 }
 
+// Disabled previously on WIN/MAC/CHROMEOS, flakiness still occurred on various
+// linux bots, so this test is now fully disabled due to that flakiness. See
+// https://crbug.com/1024824.
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectServerTimeoutBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMEOS(
-        LitePagePreviewsOriginProbe_ExternalFailureReported)) {
+    DISABLED_LitePagePreviewsOriginProbe_ExternalFailureReported) {
   set_origin_probe_success(true);
 
   base::HistogramTester histogram_tester;

@@ -19,6 +19,7 @@
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_errors.h"
+#include "weblayer/browser/i18n_util.h"
 #include "weblayer/browser/tab_impl.h"
 #include "weblayer/public/error_page_delegate.h"
 
@@ -42,7 +43,7 @@ class SSLErrorControllerClient
             web_contents,
             std::move(metrics_helper),
             nullptr /*prefs*/,
-            "en_US",
+            i18n::GetApplicationLocale(),
             GURL("about:blank") /*default_safe_page*/),
         cert_error_(cert_error),
         ssl_info_(ssl_info),

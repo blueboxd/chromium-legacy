@@ -913,6 +913,7 @@
 <translation id="5329858041417644019">Прегледачем нико не управља</translation>
 <translation id="5332219387342487447">Начин испоруке</translation>
 <translation id="5334013548165032829">Детаљне евиденције система</translation>
+<translation id="534295439873310000">NFC уређаји</translation>
 <translation id="5344579389779391559">Ова страница може да покуша да вам нешто наплати</translation>
 <translation id="5355557959165512791">Тренутно не можете да посетите <ph name="SITE" /> јер је његов сертификат опозван. Грешке и напади на мрежи су обично привремени, па ће ова страница вероватно функционисати касније.</translation>
 <translation id="536296301121032821">Складиштење подешавања смерница није успело</translation>
@@ -1533,6 +1534,7 @@
 <translation id="8466379296835108687">{COUNT,plural, =1{1 кредитна картица}one{# кредитна картица}few{# кредитне картице}other{# кредитних картица}}</translation>
 <translation id="8473863474539038330">Адресе и друго</translation>
 <translation id="8479754468255770962">Спајање у доњем левом углу</translation>
+<translation id="8481133456511676116">Да ли сте мислили <ph name="DOMAIN" />?</translation>
 <translation id="8483780878231876732">Да бисте користили картице са Google налога, пријавите се у Chrome</translation>
 <translation id="8488350697529856933">Односе се на</translation>
 <translation id="8498891568109133222">Одговор хоста <ph name="HOST_NAME" /> је трајао предуго.</translation>

@@ -616,6 +616,10 @@ void D3D11VideoDecoder::CreatePictureBuffers() {
   for (size_t i = 0; i < TextureSelector::BUFFER_COUNT; i++) {
     auto tex_wrapper = texture_selector_->CreateTextureWrapper(
         device_, video_device_, device_context_, in_texture, size);
+    if (!tex_wrapper) {
+      NotifyError("Unable to allocate a texture for a CopyingTexture2DWrapper");
+      return;
+    }
 
     picture_buffers_.push_back(
         new D3D11PictureBuffer(std::move(tex_wrapper), size, i));

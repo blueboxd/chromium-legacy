@@ -5,9 +5,12 @@
 #ifndef TOOLS_BINARY_SIZE_LIBSUPERSIZE_CASPIAN_MODEL_H_
 #define TOOLS_BINARY_SIZE_LIBSUPERSIZE_CASPIAN_MODEL_H_
 
+#include <stdint.h>
 #include <stdlib.h>
 
+#include <array>
 #include <deque>
+#include <functional>
 #include <map>
 #include <string>
 #include <string_view>
@@ -40,6 +43,13 @@ enum class SectionId : char {
   kText = 't',
   kPakNontranslated = 'P',
   kPakTranslations = 'p',
+};
+
+enum class DiffStatus : uint8_t {
+  kUnchanged = 0,
+  kChanged = 1,
+  kAdded = 2,
+  kRemoved = 3,
 };
 
 class Symbol;
@@ -102,12 +112,15 @@ class BaseSymbol {
             section_id == SectionId::kText || section_id == SectionId::kRoData);
   }
 
-  bool IsStringLiteral() const { return FullName().substr(0, 1) == "\""; }
+  bool IsStringLiteral() const {
+    std::string_view full_name = FullName();
+    return !full_name.empty() && full_name[0] == '"';
+  }
 
   bool IsNameUnique() const {
-    return IsStringLiteral() || IsOverhead() ||
-           FullName().substr(0, 1) == "*" ||
-           (IsNative() && FullName().find('.') != std::string::npos);
+    return !(IsStringLiteral() || IsOverhead() ||
+             (!FullName().empty() && FullName()[0] == '*') ||
+             (IsNative() && FullName().find('.') != std::string_view::npos));
   }
 };
 
@@ -162,7 +175,7 @@ class Symbol : public BaseSymbol {
   // The SizeInfo the symbol was constructed from. Primarily used for
   // allocating commonly-reused strings in a context where they won't outlive
   // the symbol.
-  BaseSizeInfo* size_info = nullptr;
+  BaseSizeInfo* size_info_ = nullptr;
 
  private:
   void DeriveNames() const;
@@ -192,6 +205,19 @@ class DeltaSymbol : public BaseSymbol {
   float Pss() const override;
   float PssWithoutPadding() const override;
   float PaddingPss() const override;
+
+  DiffStatus DiffStatus() const {
+    if (!before_) {
+      return DiffStatus::kAdded;
+    }
+    if (!after_) {
+      return DiffStatus::kRemoved;
+    }
+    if (Size() || Pss() != 0) {
+      return DiffStatus::kChanged;
+    }
+    return DiffStatus::kUnchanged;
+  }
 
  private:
   const Symbol* before_ = nullptr;
@@ -234,9 +260,20 @@ struct DeltaSizeInfo : BaseSizeInfo {
   DeltaSizeInfo(const DeltaSizeInfo&);
   DeltaSizeInfo& operator=(const DeltaSizeInfo&);
 
+  using Results = std::array<int32_t, 4>;
+  Results CountsByDiffStatus() const {
+    Results ret{0};
+    for (const DeltaSymbol& sym : delta_symbols) {
+      ret[static_cast<uint8_t>(sym.DiffStatus())]++;
+    }
+    return ret;
+  }
+
   const SizeInfo* before = nullptr;
   const SizeInfo* after = nullptr;
   std::vector<DeltaSymbol> delta_symbols;
+  // Symbols created during diffing, e.g. aggregated padding symbols.
+  std::deque<Symbol> owned_symbols;
 };
 
 struct Stat {
@@ -256,6 +293,7 @@ struct NodeStats {
   void WriteIntoJson(Json::Value* out) const;
   NodeStats& operator+=(const NodeStats& other);
   SectionId ComputeBiggestSection() const;
+  int32_t SumCount() const;
 
   std::map<SectionId, Stat> child_stats;
 };
@@ -263,7 +301,11 @@ struct NodeStats {
 struct TreeNode {
   TreeNode();
   ~TreeNode();
-  void WriteIntoJson(Json::Value* out, int depth);
+
+  using CompareFunc =
+      std::function<bool(const TreeNode* const& l, const TreeNode* const& r)>;
+
+  void WriteIntoJson(Json::Value* out, int depth, CompareFunc compare_func);
 
   std::string_view id_path;
   const char* src_path = nullptr;

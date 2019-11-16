@@ -248,9 +248,13 @@ Polymer({
       return;
     }
     const INTERVAL_MS = 10 * 1000;
-    this.networkConfig_.requestNetworkScan(this.deviceState.type);
+    let type = this.deviceState.type;
+    if (type == mojom.NetworkType.kCellular && this.tetherDeviceState) {
+      type = mojom.NetworkType.kMobile;
+    }
+    this.networkConfig_.requestNetworkScan(type);
     this.scanIntervalId_ = window.setInterval(() => {
-      this.networkConfig_.requestNetworkScan(this.deviceState.type);
+      this.networkConfig_.requestNetworkScan(type);
     }, INTERVAL_MS);
   },
 

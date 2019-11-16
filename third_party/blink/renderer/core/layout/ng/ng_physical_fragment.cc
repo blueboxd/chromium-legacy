@@ -218,7 +218,7 @@ void NGPhysicalFragmentTraits::Destruct(const NGPhysicalFragment* fragment) {
 NGPhysicalFragment::NGPhysicalFragment(NGFragmentBuilder* builder,
                                        NGFragmentType type,
                                        unsigned sub_type)
-    : layout_object_(*builder->layout_object_),
+    : layout_object_(builder->layout_object_),
       size_(ToPhysicalSize(builder->size_, builder->GetWritingMode())),
       type_(type),
       sub_type_(sub_type),
@@ -235,7 +235,7 @@ NGPhysicalFragment::NGPhysicalFragment(LayoutObject* layout_object,
                                        PhysicalSize size,
                                        NGFragmentType type,
                                        unsigned sub_type)
-    : layout_object_(*layout_object),
+    : layout_object_(layout_object),
       size_(size),
       type_(type),
       sub_type_(sub_type),
@@ -270,7 +270,7 @@ void NGPhysicalFragment::Destroy() const {
 }
 
 Node* NGPhysicalFragment::GetNode() const {
-  return !IsLineBox() ? layout_object_.GetNode() : nullptr;
+  return !IsLineBox() ? layout_object_->GetNode() : nullptr;
 }
 
 PaintLayer* NGPhysicalFragment::Layer() const {
@@ -279,7 +279,7 @@ PaintLayer* NGPhysicalFragment::Layer() const {
 
   // If the underlying LayoutObject has a layer it's guaranteed to be a
   // LayoutBoxModelObject.
-  return static_cast<LayoutBoxModelObject&>(layout_object_).Layer();
+  return static_cast<LayoutBoxModelObject*>(layout_object_)->Layer();
 }
 
 bool NGPhysicalFragment::HasSelfPaintingLayer() const {
@@ -288,24 +288,24 @@ bool NGPhysicalFragment::HasSelfPaintingLayer() const {
 
   // If the underlying LayoutObject has a layer it's guaranteed to be a
   // LayoutBoxModelObject.
-  return static_cast<LayoutBoxModelObject&>(layout_object_)
-      .HasSelfPaintingLayer();
+  return static_cast<LayoutBoxModelObject*>(layout_object_)
+      ->HasSelfPaintingLayer();
 }
 
 bool NGPhysicalFragment::HasOverflowClip() const {
-  return !IsLineBox() && layout_object_.HasOverflowClip();
+  return !IsLineBox() && layout_object_->HasOverflowClip();
 }
 
 bool NGPhysicalFragment::ShouldClipOverflow() const {
-  return !IsLineBox() && layout_object_.ShouldClipOverflow();
+  return !IsLineBox() && layout_object_->ShouldClipOverflow();
 }
 
 bool NGPhysicalFragment::IsBlockFlow() const {
-  return !IsLineBox() && layout_object_.IsLayoutBlockFlow();
+  return !IsLineBox() && layout_object_->IsLayoutBlockFlow();
 }
 
 bool NGPhysicalFragment::IsListMarker() const {
-  return !IsLineBox() && layout_object_.IsLayoutNGListMarker();
+  return !IsLineBox() && layout_object_->IsLayoutNGListMarker();
 }
 
 bool NGPhysicalFragment::IsPlacedByLayoutNG() const {
@@ -313,7 +313,7 @@ bool NGPhysicalFragment::IsPlacedByLayoutNG() const {
   // to set.
   if (IsLineBox())
     return false;
-  const LayoutBlock* container = layout_object_.ContainingBlock();
+  const LayoutBlock* container = layout_object_->ContainingBlock();
   if (!container)
     return false;
   return container->IsLayoutNGMixin();
@@ -338,15 +338,15 @@ void NGPhysicalFragment::CheckType() const {
     case kFragmentBox:
     case kFragmentRenderedLegend:
       if (IsInlineBox()) {
-        DCHECK(layout_object_.IsLayoutInline());
+        DCHECK(layout_object_->IsLayoutInline());
       } else {
-        DCHECK(layout_object_.IsBox());
+        DCHECK(layout_object_->IsBox());
       }
       if (IsColumnBox()) {
         // Column fragments are associated with the same layout object as their
         // multicol container. The fragments themselves are regular in-flow
         // block container fragments for most purposes.
-        DCHECK(layout_object_.IsLayoutBlockFlow());
+        DCHECK(layout_object_->IsLayoutBlockFlow());
         DCHECK(IsBox());
         DCHECK(!IsFloating());
         DCHECK(!IsOutOfFlowPositioned());
@@ -354,7 +354,7 @@ void NGPhysicalFragment::CheckType() const {
         DCHECK(!IsBlockFormattingContextRoot());
         break;
       }
-      if (layout_object_.IsLayoutNGListMarker()) {
+      if (layout_object_->IsLayoutNGListMarker()) {
         // List marker is an atomic inline if it appears in a line box, or a
         // block box.
         DCHECK(!IsFloating());
@@ -362,21 +362,21 @@ void NGPhysicalFragment::CheckType() const {
         DCHECK(IsAtomicInline() || (IsBox() && BoxType() == kBlockFlowRoot));
         break;
       }
-      DCHECK_EQ(IsFloating(), layout_object_.IsFloating());
+      DCHECK_EQ(IsFloating(), layout_object_->IsFloating());
       DCHECK_EQ(IsOutOfFlowPositioned(),
-                layout_object_.IsOutOfFlowPositioned());
-      DCHECK_EQ(IsAtomicInline(), layout_object_.IsInline() &&
-                                      layout_object_.IsAtomicInlineLevel());
+                layout_object_->IsOutOfFlowPositioned());
+      DCHECK_EQ(IsAtomicInline(), layout_object_->IsInline() &&
+                                      layout_object_->IsAtomicInlineLevel());
       break;
     case kFragmentText:
       if (To<NGPhysicalTextFragment>(this)->IsGeneratedText()) {
         // Ellipsis has the truncated in-flow LayoutObject.
-        DCHECK(layout_object_.IsText() ||
-               (layout_object_.IsInline() &&
-                layout_object_.IsAtomicInlineLevel()) ||
-               layout_object_.IsLayoutInline());
+        DCHECK(layout_object_->IsText() ||
+               (layout_object_->IsInline() &&
+                layout_object_->IsAtomicInlineLevel()) ||
+               layout_object_->IsLayoutInline());
       } else {
-        DCHECK(layout_object_.IsText());
+        DCHECK(layout_object_->IsText());
       }
       DCHECK(!IsFloating());
       DCHECK(!IsOutOfFlowPositioned());
@@ -384,7 +384,7 @@ void NGPhysicalFragment::CheckType() const {
       DCHECK(!IsAtomicInline());
       break;
     case kFragmentLineBox:
-      DCHECK(layout_object_.IsLayoutBlockFlow());
+      DCHECK(layout_object_->IsLayoutBlockFlow());
       DCHECK(!IsFloating());
       DCHECK(!IsOutOfFlowPositioned());
       DCHECK(!IsInlineBox());

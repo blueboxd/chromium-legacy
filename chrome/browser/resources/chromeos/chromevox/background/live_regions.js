@@ -186,7 +186,7 @@ LiveRegions.prototype = {
   outputLiveRegionChangeForNode_: function(node, opt_prependFormatStr) {
     var range = cursors.Range.fromNode(node);
     var output = new Output();
-    output.withSpeechCategory(cvox.TtsCategory.LIVE);
+    output.withSpeechCategory(TtsCategory.LIVE);
 
     // Queue live regions coming from background tabs.
     var webView = AutomationUtil.getTopLevelRoot(node);
@@ -200,9 +200,9 @@ LiveRegions.prototype = {
     var currentTime = new Date();
     var delta = currentTime - this.lastLiveRegionTime_;
     if (delta > queueTime && !forceQueue) {
-      output.withQueueMode(cvox.QueueMode.CATEGORY_FLUSH);
+      output.withQueueMode(QueueMode.CATEGORY_FLUSH);
     } else {
-      output.withQueueMode(cvox.QueueMode.QUEUE);
+      output.withQueueMode(QueueMode.QUEUE);
     }
 
     if (opt_prependFormatStr) {

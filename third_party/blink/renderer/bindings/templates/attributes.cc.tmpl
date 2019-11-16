@@ -476,7 +476,7 @@ static void {{attribute.camel_case_name}}AttributeSetter{{world_suffix}}(
   V8PrivateProperty::GetSymbol(
       isolate,
       kPrivateProperty{{attribute.camel_case_name}})
-      .DeleteProperty(holder, v8::Undefined(isolate));
+      .DeleteProperty(holder);
   {% endif %}
   {% endif %}{# attribute.is_put_forwards #}
   {% endfilter %}{# format_remove_duplicates #}

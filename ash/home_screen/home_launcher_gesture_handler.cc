@@ -398,9 +398,10 @@ bool HomeLauncherGestureHandler::IsDragInProgress() const {
 }
 
 void HomeLauncherGestureHandler::NotifyHomeLauncherPositionChanged(
-    bool showing,
+    int percent_shown,
     int64_t display_id) {
-  GetHomeScreenDelegate()->OnHomeLauncherPositionChanged(showing, display_id);
+  GetHomeScreenDelegate()->OnHomeLauncherPositionChanged(percent_shown,
+                                                         display_id);
 }
 
 void HomeLauncherGestureHandler::NotifyHomeLauncherAnimationComplete(
@@ -556,11 +557,11 @@ void HomeLauncherGestureHandler::AnimateToFinalState(AnimationTrigger trigger) {
                                 trigger /**animation_trigger*/);
 
   if (!is_final_state_show && mode_ == Mode::kSlideDownToHide) {
-    NotifyHomeLauncherPositionChanged(false /*showing*/, display_.id());
+    if (GetActiveWindow())
+      wm::ActivateWindow(GetActiveWindow());
     base::RecordAction(
         base::UserMetricsAction("AppList_HomeLauncherToMRUWindow"));
   } else if (is_final_state_show && mode_ == Mode::kSlideUpToShow) {
-    NotifyHomeLauncherPositionChanged(true /*showing*/, display_.id());
     base::RecordAction(
         base::UserMetricsAction("AppList_CurrentWindowToHomeLauncher"));
   }
@@ -644,7 +645,7 @@ void HomeLauncherGestureHandler::UpdateWindowsForSlideUpOrDown(
     return;
   }
 
-  // Helper to update a single windows opacity and transform based on by
+  // Helper to update a single window's opacity and transform based on by
   // calculating the in between values using |value| and |values|.
   auto update_windows_helper = [this](double progress, bool animate,
                                       aura::Window* window,
@@ -734,7 +735,7 @@ bool HomeLauncherGestureHandler::IsFinalStateShow() {
   DCHECK(display_.is_valid());
 
   // If fling velocity is greater than the threshold, show the launcher if
-  // sliding up, or hide the launcher if sliding down, irregardless of
+  // sliding up, or hide the launcher if sliding down, regardless of
   // |last_event_location_|.
   if (mode_ == Mode::kSlideUpToShow &&
       last_scroll_y_ < -kScrollVelocityThreshold) {
@@ -856,7 +857,6 @@ bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
     if (!active_window_ || !GetActiveWindow())
       return false;
 
-    wm::ActivateWindow(GetActiveWindow());
     GetActiveWindow()->layer()->SetOpacity(1.f);
   }
 
@@ -909,15 +909,14 @@ void HomeLauncherGestureHandler::OnDragStarted(const gfx::PointF& location) {
     swipe_home_to_overview_controller_ =
         std::make_unique<SwipeHomeToOverviewController>(display_.id());
   } else {
-    NotifyHomeLauncherPositionChanged(mode_ == Mode::kSlideUpToShow /*showing*/,
-                                      display_.id());
-
+    const double progress = mode_ == Mode::kSlideUpToShow ? 0 : 1;
+    NotifyHomeLauncherPositionChanged(100 * progress, display_.id());
     HomeScreenDelegate* home_screen_delegate = GetHomeScreenDelegate();
     DCHECK(home_screen_delegate);
     home_screen_delegate->OnHomeLauncherDragStart();
 
     PauseBackdropUpdatesForActiveWindow();
-    UpdateWindowsForSlideUpOrDown(0.0 /*progress*/,
+    UpdateWindowsForSlideUpOrDown(progress,
                                   base::nullopt /*animation_trigger*/);
   }
 }
@@ -928,13 +927,16 @@ void HomeLauncherGestureHandler::OnDragContinued(const gfx::PointF& location,
   if (mode_ == Mode::kSwipeHomeToOverview) {
     swipe_home_to_overview_controller_->Drag(location, scroll_x, scroll_y);
   } else {
+    const double progress =
+        GetHeightInWorkAreaAsRatio(location, display_.work_area());
     HomeScreenDelegate* home_screen_delegate = GetHomeScreenDelegate();
     DCHECK(home_screen_delegate);
     home_screen_delegate->OnHomeLauncherDragInProgress();
 
-    UpdateWindowsForSlideUpOrDown(
-        GetHeightInWorkAreaAsRatio(location, display_.work_area()),
-        base::nullopt /*animation_trigger*/);
+    UpdateWindowsForSlideUpOrDown(progress,
+                                  base::nullopt /*animation_trigger*/);
+    const int percent_shown = static_cast<int>(progress * 100);
+    NotifyHomeLauncherPositionChanged(percent_shown, display_.id());
   }
 }
 

@@ -18,7 +18,7 @@ SharedWorkerInstance::SharedWorkerInstance(
     const std::string& name,
     const url::Origin& constructor_origin,
     const std::string& content_security_policy,
-    blink::mojom::ContentSecurityPolicyType security_policy_type,
+    network::mojom::ContentSecurityPolicyType security_policy_type,
     network::mojom::IPAddressSpace creation_address_space,
     blink::mojom::SharedWorkerCreationContextType creation_context_type)
     : id_(id),

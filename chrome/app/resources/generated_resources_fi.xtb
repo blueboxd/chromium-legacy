@@ -254,6 +254,7 @@
 <translation id="1365180424462182382"><ph name="BEGIN_LINK" />Selaintasi ylläpitää<ph name="END_LINK" /> <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="1366177842110999534">Käytä Linux-työkaluja, muokkausohjelmia ja integroituja kehitysympäristöjä (<ph name="DEVICE_TYPE" />). &lt;a target="_blank" href="<ph name="URL" />"&gt;Lue lisää&lt;/a&gt;</translation>
 <translation id="1367951781824006909">Valitse tiedosto</translation>
+<translation id="1369149969991017342">Kytkimen käyttö (ohjaa tietokonetta yhdellä tai kahdella kytkimellä)</translation>
 <translation id="1372841398847029212">Synkronoi tilillesi</translation>
 <translation id="1374844444528092021">Verkon <ph name="NETWORK_NAME" /> vaatimaa varmennetta ei ole asennettu tai varmenne ei ole enää voimassa. Hanki uusi varmenne ja yritä muodostaa yhteys uudelleen.</translation>
 <translation id="1375321115329958930">Tallennetut salasanat</translation>
@@ -565,6 +566,7 @@
 <translation id="1794791083288629568">Lähetä palautetta, niin autat meitä korjaamaan ongelman.</translation>
 <translation id="1795214765651529549">Ota käyttöön perinteinen</translation>
 <translation id="1799071797295057738">Laajennus <ph name="EXTENSION_NAME" /> on poistettu käytöstä automaattisesti.</translation>
+<translation id="1802624026913571222">Lepotila, kun kansi suljetaan</translation>
 <translation id="1802687198411089702">Tämä sivu ei vastaa. Voit odottaa sitä tai sulkea sen.</translation>
 <translation id="1802931390041703523">Flash estettiin tällä sivulla</translation>
 <translation id="1803531841600994172">Kieli, johon käännetään</translation>
@@ -666,6 +668,7 @@
 <translation id="1937774647013465102">Säilön arkkitehtuurityyppiä <ph name="ARCHITECTURE_CONTAINER" /> ei voi tuoda tällä laitteella, joka on <ph name="ARCHITECTURE_DEVICE" />. Voit yrittää palauttaa säilön eri laitteelle tai voit käyttää säilön sisällä olevia tiedostoja avaamalla Files-sovelluksen.</translation>
 <translation id="1938351510777341717">Ulkoinen Komento-näppäin</translation>
 <translation id="1940546824932169984">Yhdistetyt laitteet</translation>
+<translation id="1942600407708803723">Sammuta, kun kansi suljetaan</translation>
 <translation id="1944921356641260203">Päivitys saatavilla</translation>
 <translation id="1946577776959096882">Näytä tilit</translation>
 <translation id="1951012854035635156">Assistant</translation>
@@ -2436,6 +2439,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="4546308221697447294">Selaa nopeasti Google Chromella.</translation>
 <translation id="4547659257713117923">Ei välilehtiä muista laitteista</translation>
 <translation id="4547672827276975204">Aseta automaattisesti</translation>
+<translation id="4549791035683739768">Suojausavaimeesi ei ole tallennettu sormenjälkiä.</translation>
 <translation id="4551763574344810652">Kumoa painamalla <ph name="MODIFIER_KEY_DESCRIPTION" /></translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4554591392113183336">Ulkoinen laajennus on sama tai aiempi versio kuin nykyinen.</translation>
@@ -2615,6 +2619,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="4839303808932127586">Tallenna &amp;video nimellä...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 muu}other{# muuta}}</translation>
 <translation id="4842976633412754305">Tämä sivu yrittää ladata koodia todentamattomista lähteistä.</translation>
+<translation id="4843488774506045600">Kirjautumisnäytön tarjoaa <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Muut näppäimistöt</translation>
 <translation id="4846680374085650406">Noudatat järjestelmänvalvojan tätä asetusta koskevaa suositusta.</translation>
 <translation id="4848518990323155912">Ota SIM-kortin lukitus käyttöön (mobiilidatan käyttö edellyttää PIN-koodia)</translation>
@@ -3067,6 +3072,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="5511823366942919280">Haluatko varmasti antaa tälle laitteelle tunnuksen Shark?</translation>
 <translation id="5512653252560939721">Käyttäjävarmenteen tulee olla laitteiston tukema.</translation>
 <translation id="5517304475148761050">Sovellus edellyttää pääsyä Play Kauppaan</translation>
+<translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> – <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Lisätään tulostinta tiliisi – tässä voi kestää hetki…</translation>
 <translation id="5518219166343146486">Kysy, kun sivusto haluaa nähdä leikepöydälle kopioidun tekstin ja kuvat</translation>
 <translation id="5518584115117143805">Sähköpostin salausvarmenne</translation>
@@ -3185,6 +3191,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="567643736130151854">Kirjaudu sisään ja ota synkronoi käyttöön, niin voit käyttää kirjanmerkkejä, salasanoja ja muita asetuksiasi kaikilla laitteilla</translation>
 <translation id="5677503058916217575">Sivun kieli:</translation>
 <translation id="5677928146339483299">Estetty</translation>
+<translation id="5678293144564424498">Sovellus keskeytetty</translation>
 <translation id="5678550637669481956">Laajennukselle myönnettiin luku- ja kirjoitusoikeus tallennusvälineeseen <ph name="VOLUME_NAME" />.</translation>
 <translation id="5678955352098267522">Lukea tietojasi sivustossa <ph name="WEBSITE_1" /></translation>
 <translation id="5684661240348539843">Laitteen tunnus</translation>
@@ -3451,6 +3458,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6055392876709372977">PKCS #1 SHA-256 ja RSA-salaus</translation>
 <translation id="6056710589053485679">Normaali päivitys</translation>
 <translation id="6057381398996433816">Tältä sivustolta on estetty liikkeen- tai valontunnistimien käyttö.</translation>
+<translation id="6058567592298841668">Liitettävä virtuaalikone: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Varmennehierarkia</translation>
 <translation id="6059925163896151826">USB-laitteet</translation>
 <translation id="6061882183774845124">Lähetä linkki laitteillesi</translation>
@@ -4401,6 +4409,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7476454130948140105">Akun varaus ei riitä päivittämiseen (<ph name="BATTERY_PERCENT" /> %).</translation>
 <translation id="7477793887173910789">Ohjaa musiikkia, videoita ja muuta</translation>
 <translation id="7478485216301680444">Kioskisovelluksen asentaminen ei onnistunut.</translation>
+<translation id="7479221278376295180">Tallennustilan käytön yleiskatsaus</translation>
 <translation id="7481312909269577407">Seuraava</translation>
 <translation id="748138892655239008">Varmenteen perusrajoitukset</translation>
 <translation id="7487067081878637334">Tekniikka</translation>
@@ -5376,6 +5385,7 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8845001906332463065">Hae ohjeita</translation>
 <translation id="8846132060409673887">Lue tietokoneen valmistaja ja malli</translation>
 <translation id="8846141544112579928">Näppäimistöä etsitään…</translation>
+<translation id="8847523528195140327">Kirjaudu ulos, kun kansi suljetaan</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8850251000316748990">Katso lisää…</translation>
 <translation id="885246833287407341">Sovellusliittymätoimintojen argumentit</translation>
@@ -5438,6 +5448,7 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8930351635855238750">Uudet evästeasetukset tulevat voimaan päivitettyäsi sivun.</translation>
 <translation id="8931394284949551895">Uudet laitteet</translation>
 <translation id="893254996965966411">Tallenna havaitut tulostimet profiiliin tai lisää uusi tulostin.</translation>
+<translation id="8932894639908691771">Muuta kytkinasetuksia</translation>
 <translation id="8933960630081805351">Näytä Finderi&amp;ssä</translation>
 <translation id="8934732568177537184">Jatka</translation>
 <translation id="8938800817013097409">C-tyypin USB-laite (oikeanpuoleinen takaportti)</translation>
@@ -5501,6 +5512,7 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="9023015617655685412">Lisää tämä välilehti kirjanmerkiksi…</translation>
 <translation id="9024127637873500333">Avaa uudessa välilehdessä</translation>
 <translation id="9024158959543687197">Virhe jaon käyttöönotossa. Tarkista tiedostojaon URL-osoite ja yritä uudelleen.</translation>
+<translation id="9024885274934357065">Laite on avattu Smart Lockilla. Avaa painamalla Enter.</translation>
 <translation id="9026731007018893674">lataus</translation>
 <translation id="9026852570893462412">Tämä voi kestää muutaman minuutin. Ladataan virtuaalikonetta.</translation>
 <translation id="9027459031423301635">Avaa linkki uudessa &amp;välilehdessä</translation>

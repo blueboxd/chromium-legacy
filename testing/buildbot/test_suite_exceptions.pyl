@@ -316,6 +316,11 @@
       'android-pie-arm64-rel': {
         'experiment_percentage': 100, # https://crbug.com/1010211
       },
+      'android-marshmallow-arm64-rel': {
+        'swarming': {
+          'shards': 22,
+        },
+      },
       'KitKat Phone Tester (dbg)': {
         'swarming': {
           'shards': 20,
@@ -429,6 +434,11 @@
       'android-kitkat-arm-rel': {
         'swarming': {
           'shards': 15,
+        },
+      },
+      'android-marshmallow-arm64-rel': {
+        'swarming': {
+          'shards': 11,
         },
       },
       # chromium.linux
@@ -1587,7 +1597,7 @@
               'temp_band': '<30',
             },
           ],
-          'shards': 15,
+          'shards': 13,
         },
       },
       'android-pie-arm64-rel': {

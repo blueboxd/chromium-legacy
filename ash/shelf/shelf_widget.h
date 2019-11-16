@@ -133,6 +133,7 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
                        gfx::Rect* hit_test_rect_touch);
 
   void ForceToShowHotseat();
+  void ForceToHideHotseat();
 
   bool is_hotseat_forced_to_show() const { return is_hotseat_forced_to_show_; }
 

@@ -103,10 +103,10 @@ blink::WebRTCSessionDescription CreateWebKitSessionDescription(
   return CreateWebKitSessionDescription(sdp, native_desc->type());
 }
 
-void RunClosureWithTrace(const base::Closure& closure,
+void RunClosureWithTrace(base::OnceClosure closure,
                          const char* trace_event_name) {
   TRACE_EVENT0("webrtc", trace_event_name);
-  closure.Run();
+  std::move(closure).Run();
 }
 
 void RunSynchronousOnceClosure(base::OnceClosure closure,
@@ -1286,11 +1286,11 @@ void RTCPeerConnectionHandler::SetLocalDescription(
       FROM_HERE,
       base::BindOnce(
           &RunClosureWithTrace,
-          base::Bind(static_cast<void (webrtc::PeerConnectionInterface::*)(
-                         webrtc::SetSessionDescriptionObserver*)>(
-                         &webrtc::PeerConnectionInterface::SetLocalDescription),
-                     native_peer_connection_,
-                     base::RetainedRef(webrtc_observer)),
+          base::BindOnce(
+              static_cast<void (webrtc::PeerConnectionInterface::*)(
+                  webrtc::SetSessionDescriptionObserver*)>(
+                  &webrtc::PeerConnectionInterface::SetLocalDescription),
+              native_peer_connection_, base::RetainedRef(webrtc_observer)),
           "SetLocalDescription"));
 }
 
@@ -1362,7 +1362,7 @@ void RTCPeerConnectionHandler::SetLocalDescription(
       FROM_HERE,
       base::BindOnce(
           &RunClosureWithTrace,
-          base::Bind(
+          base::BindOnce(
               static_cast<void (webrtc::PeerConnectionInterface::*)(
                   webrtc::SetSessionDescriptionObserver*,
                   webrtc::SessionDescriptionInterface*)>(
@@ -1445,7 +1445,7 @@ void RTCPeerConnectionHandler::SetRemoteDescription(
       FROM_HERE,
       base::BindOnce(
           &RunClosureWithTrace,
-          base::Bind(
+          base::BindOnce(
               static_cast<void (webrtc::PeerConnectionInterface::*)(
                   std::unique_ptr<webrtc::SessionDescriptionInterface>,
                   rtc::scoped_refptr<

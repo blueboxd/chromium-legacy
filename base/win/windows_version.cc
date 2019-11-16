@@ -198,6 +198,19 @@ Version OSInfo::Kernel32Version() const {
   return kernel32_version;
 }
 
+Version OSInfo::UcrtVersion() const {
+  auto ucrt_version_info = FileVersionInfoWin::CreateFileVersionInfoWin(
+      FilePath(FILE_PATH_LITERAL("ucrtbase.dll")));
+  if (ucrt_version_info) {
+    auto ucrt_components = ucrt_version_info->GetFileVersion().components();
+    if (ucrt_components.size() == 4) {
+      return MajorMinorBuildToVersion(ucrt_components[0], ucrt_components[1],
+                                      ucrt_components[2]);
+    }
+  }
+  return Version();
+}
+
 // Retrieve a version from kernel32. This is useful because when running in
 // compatibility mode for a down-level version of the OS, the file version of
 // kernel32 will still be the "real" version.

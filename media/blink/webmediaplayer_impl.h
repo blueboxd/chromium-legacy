@@ -123,6 +123,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void Seek(double seconds) override;
   void SetRate(double rate) override;
   void SetVolume(double volume) override;
+  void SetLatencyHint(double seconds) override;
   void OnRequestPictureInPicture() override;
   void SetSinkId(
       const blink::WebString& sink_id,

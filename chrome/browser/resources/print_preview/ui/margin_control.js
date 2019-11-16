@@ -2,18 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input_style_css.m.js';
+import '../strings.m.js';
+
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
-import {observerDepsDefined} from '../print_preview_utils.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 import {Coordinate2d} from '../data/coordinate2d.js';
 import {CustomMarginsOrientation} from '../data/margins.js';
 import {MeasurementSystem} from '../data/measurement_system.js';
 import {Size} from '../data/size.js';
+import {observerDepsDefined} from '../print_preview_utils.js';
+
 import {InputBehavior} from './input_behavior.js';
-import '../strings.m.js';
 
 /**
  * Radius of the margin control in pixels. Padding of control + 1 for border.

@@ -118,8 +118,7 @@ const SwitchAccessPredicate = {
       return false;
     }
 
-    let interestingBranchesCount =
-        SwitchAccessPredicate.isActionable(node) ? 1 : 0;
+    let interestingBranchesCount = 0;
     let child = node.firstChild;
     while (child) {
       if (SwitchAccessPredicate.isInterestingSubtree(child)) {

@@ -26,27 +26,33 @@ class Profile;
 // arrive to the native side to be saved.
 class PasswordEditingBridge {
  public:
-  PasswordEditingBridge();
-  ~PasswordEditingBridge();
-
-  // This is called when the view is destroyed and must be called because
-  // it's the only way to destroy the bridge and the delegate with it.
+  // This is must be called when the view is destroyed, as it's the only way to
+  // destroy the bridge and the delegate with it.
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
   // Creates a new PasswordEditingBridge and connects it with a new delegate.
+  // |forms_to_change| contains all the password forms that share a sort key
+  // with the form that will be edited. |existing_usernames| belong to other
+  // saved credentials for the same site and are used to check if the edited
+  // username conflicts with any previously existing ones.
   static void LaunchPasswordEntryEditor(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& context,
       Profile* profile,
-      const autofill::PasswordForm& password_form);
+      base::span<const std::unique_ptr<autofill::PasswordForm>> forms_to_change,
+      std::vector<base::string16> existing_usernames);
 
   void HandleEditSavedPasswordEntry(
       JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& object,
+      const base::android::JavaParamRef<jobject>& java_object,
       const base::android::JavaParamRef<jstring>& new_username,
       const base::android::JavaParamRef<jstring>& new_password);
 
  private:
+  explicit PasswordEditingBridge(
+      std::unique_ptr<PasswordEditDelegate> password_edit_delegate);
+  ~PasswordEditingBridge();
+
   // The corresponding java object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
 

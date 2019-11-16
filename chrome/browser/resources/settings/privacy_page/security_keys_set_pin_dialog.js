@@ -2,13 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
-'use strict';
-
 /**
  * @fileoverview 'settings-security-keys-set-pin-dialog' is a dialog for
  * setting and changing security key PINs.
  */
+
+cr.define('settings', function() {
+  /** @enum {string} */
+  const SetPINDialogPage = {
+    INITIAL: 'initial',
+    NO_PIN_SUPPORT: 'noPINSupport',
+    REINSERT: 'reinsert',
+    LOCKED: 'locked',
+    ERROR: 'error',
+    PIN_PROMPT: 'pinPrompt',
+    SUCCESS: 'success',
+  };
+
+  return {
+    SetPINDialogPage: SetPINDialogPage,
+  };
+});
+
+(function() {
+'use strict';
+
+const SetPINDialogPage = settings.SetPINDialogPage;
+
 Polymer({
   is: 'settings-security-keys-set-pin-dialog',
 
@@ -119,11 +139,11 @@ Polymer({
 
     /**
      * The id of an element on the page that is currently shown.
-     * @private
+     * @private {!settings.SetPINDialogPage}
      */
     shown_: {
       type: String,
-      value: 'initial',
+      value: SetPINDialogPage.INITIAL,
     },
 
     /**
@@ -158,22 +178,22 @@ Polymer({
         // Operation is complete. errorCode is a CTAP error code. See
         // https://fidoalliance.org/specs/fido-v2.0-rd-20180702/fido-client-to-authenticator-protocol-v2.0-rd-20180702.html#error-responses
         if (errorCode == 1 /* INVALID_COMMAND */) {
-          this.shown_ = 'noPINSupport';
+          this.shown_ = SetPINDialogPage.NO_PIN_SUPPORT;
           this.finish_();
         } else if (errorCode == 52 /* temporarily locked */) {
-          this.shown_ = 'reinsert';
+          this.shown_ = SetPINDialogPage.REINSERT;
           this.finish_();
         } else if (errorCode == 50 /* locked */) {
-          this.shown_ = 'locked';
+          this.shown_ = SetPINDialogPage.LOCKED;
           this.finish_();
         } else {
           this.errorCode_ = errorCode;
-          this.shown_ = 'error';
+          this.shown_ = SetPINDialogPage.ERROR;
           this.finish_();
         }
       } else if (errorCode == 0) {
         // A device can also signal that it is locked by returning zero retries.
-        this.shown_ = 'locked';
+        this.shown_ = SetPINDialogPage.LOCKED;
         this.finish_();
       } else {
         // Need to prompt for a pin. Initially set the text boxes to valid so
@@ -196,7 +216,7 @@ Polymer({
           this.title_ = this.i18n('securityKeysSetPINChangeTitle');
         }
 
-        this.shown_ = 'pinPrompt';
+        this.shown_ = SetPINDialogPage.PIN_PROMPT;
         // Focus cannot be set directly from within a backend callback.
         window.setTimeout(function() {
           focusTarget.focus();
@@ -367,13 +387,13 @@ Polymer({
       // result[1] is a CTAP2 error code. See
       // https://fidoalliance.org/specs/fido-v2.0-rd-20180702/fido-client-to-authenticator-protocol-v2.0-rd-20180702.html#error-responses
       if (result[1] == 0 /* SUCCESS */) {
-        this.shown_ = 'success';
+        this.shown_ = SetPINDialogPage.SUCCESS;
         this.finish_();
       } else if (result[1] == 52 /* temporarily locked */) {
-        this.shown_ = 'reinsert';
+        this.shown_ = SetPINDialogPage.REINSERT;
         this.finish_();
       } else if (result[1] == 50 /* locked */) {
-        this.shown_ = 'locked';
+        this.shown_ = SetPINDialogPage.LOCKED;
         this.finish_();
       } else if (result[1] == 49 /* PIN_INVALID */) {
         this.currentPINValid_ = false;
@@ -386,7 +406,7 @@ Polymer({
       } else {
         // Unknown error.
         this.errorCode_ = result[1];
-        this.shown_ = 'error';
+        this.shown_ = SetPINDialogPage.ERROR;
         this.finish_();
       }
     });

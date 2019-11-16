@@ -1357,6 +1357,7 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
         builder.setBytesReceived(result.bytesDownloaded);
         if (!TextUtils.isEmpty(result.fileName)) builder.setFileName(result.fileName);
         if (!TextUtils.isEmpty(result.mimeType)) builder.setMimeType(result.mimeType);
+        builder.setFilePath(result.filePath);
         item.setDownloadInfo(builder.build());
 
         if (result.downloadStatus == DownloadStatus.IN_PROGRESS) return;

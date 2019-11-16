@@ -79,22 +79,25 @@ IN_PROC_BROWSER_TEST_F(NamedMessagePortConnectorTest, EndToEnd) {
   fuchsia::web::NavigationControllerPtr controller;
   frame_->GetNavigationController(controller.NewRequest());
 
+  fidl::InterfaceHandle<fuchsia::web::MessagePort> received_port;
   base::RunLoop receive_port_run_loop;
-  cr_fuchsia::ResultReceiver<fidl::InterfaceHandle<fuchsia::web::MessagePort>>
-      message_port_receiver(receive_port_run_loop.QuitClosure());
-  connector_->Register(
-      "hello",
-      base::BindRepeating(
-          &cr_fuchsia::ResultReceiver<
-              fidl::InterfaceHandle<fuchsia::web::MessagePort>>::ReceiveResult,
-          base::Unretained(&message_port_receiver)));
+  connector_->Register(base::BindRepeating(
+      [](fidl::InterfaceHandle<fuchsia::web::MessagePort>* received_port,
+         base::RunLoop* receive_port_run_loop, base::StringPiece name,
+         fidl::InterfaceHandle<fuchsia::web::MessagePort> message_port) {
+        *received_port = std::move(message_port);
+        receive_port_run_loop->Quit();
+      },
+      base::Unretained(&received_port),
+      base::Unretained(&receive_port_run_loop)));
+
   EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
       controller.get(), fuchsia::web::LoadUrlParams(), test_url.spec()));
   navigation_listener_.RunUntilUrlEquals(test_url);
 
   receive_port_run_loop.Run();
 
-  fuchsia::web::MessagePortPtr message_port = message_port_receiver->Bind();
+  fuchsia::web::MessagePortPtr message_port = received_port.Bind();
 
   fuchsia::web::WebMessage msg;
   msg.set_data(cr_fuchsia::MemBufferFromString("ping", "test"));
@@ -131,8 +134,6 @@ IN_PROC_BROWSER_TEST_F(NamedMessagePortConnectorTest, EndToEnd) {
         controller.get(), fuchsia::web::LoadUrlParams(), "about:blank"));
     run_loop.Run();
   }
-
-  connector_->Unregister("hello");
 }
 
 // Tests that the NamedMessagePortConnector can receive more than one port over
@@ -145,46 +146,41 @@ IN_PROC_BROWSER_TEST_F(NamedMessagePortConnectorTest, MultiplePorts) {
   fuchsia::web::NavigationControllerPtr controller;
   frame_->GetNavigationController(controller.NewRequest());
 
-  base::RunLoop receive_port_1_run_loop;
-  base::RunLoop receive_port_2_run_loop;
-  cr_fuchsia::ResultReceiver<fidl::InterfaceHandle<fuchsia::web::MessagePort>>
-      port_1_receiver(receive_port_1_run_loop.QuitClosure());
-  cr_fuchsia::ResultReceiver<fidl::InterfaceHandle<fuchsia::web::MessagePort>>
-      port_2_receiver(receive_port_2_run_loop.QuitClosure());
-  connector_->Register(
-      "port1",
-      base::BindRepeating(
-          &cr_fuchsia::ResultReceiver<
-              fidl::InterfaceHandle<fuchsia::web::MessagePort>>::ReceiveResult,
-          base::Unretained(&port_1_receiver)));
-  connector_->Register(
-      "port2",
-      base::BindRepeating(
-          &cr_fuchsia::ResultReceiver<
-              fidl::InterfaceHandle<fuchsia::web::MessagePort>>::ReceiveResult,
-          base::Unretained(&port_2_receiver)));
+  std::vector<fidl::InterfaceHandle<fuchsia::web::MessagePort>> received_ports;
+  base::RunLoop receive_ports_run_loop;
+  connector_->Register(base::BindRepeating(
+      [](std::vector<fidl::InterfaceHandle<fuchsia::web::MessagePort>>*
+             received_ports,
+         base::RunLoop* receive_ports_run_loop, base::StringPiece name,
+         fidl::InterfaceHandle<fuchsia::web::MessagePort> message_port) {
+        received_ports->push_back(std::move(message_port));
+
+        if (received_ports->size() == 3)
+          receive_ports_run_loop->Quit();
+      },
+      base::Unretained(&received_ports),
+      base::Unretained(&receive_ports_run_loop)));
+
   EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
       controller.get(), fuchsia::web::LoadUrlParams(), test_url.spec()));
   navigation_listener_.RunUntilUrlEquals(test_url);
 
-  receive_port_1_run_loop.Run();
-  receive_port_2_run_loop.Run();
+  receive_ports_run_loop.Run();
 
-  fuchsia::web::MessagePortPtr port_1 = (*port_1_receiver).Bind();
-  fuchsia::web::MessagePortPtr port_2 = (*port_2_receiver).Bind();
-
-  for (fuchsia::web::MessagePortPtr* port : {&port_1, &port_2}) {
+  for (fidl::InterfaceHandle<fuchsia::web::MessagePort>& message_port :
+       received_ports) {
+    fuchsia::web::MessagePortPtr port = message_port.Bind();
     fuchsia::web::WebMessage msg;
     msg.set_data(cr_fuchsia::MemBufferFromString("ping", "test"));
     cr_fuchsia::ResultReceiver<fuchsia::web::MessagePort_PostMessage_Result>
         post_result;
-    (*port)->PostMessage(std::move(msg), cr_fuchsia::CallbackToFitFunction(
-                                             post_result.GetReceiveCallback()));
+    port->PostMessage(std::move(msg), cr_fuchsia::CallbackToFitFunction(
+                                          post_result.GetReceiveCallback()));
 
     base::RunLoop run_loop;
     cr_fuchsia::ResultReceiver<fuchsia::web::WebMessage> message_receiver(
         run_loop.QuitClosure());
-    (*port)->ReceiveMessage(cr_fuchsia::CallbackToFitFunction(
+    port->ReceiveMessage(cr_fuchsia::CallbackToFitFunction(
         message_receiver.GetReceiveCallback()));
     run_loop.Run();
 
@@ -194,52 +190,4 @@ IN_PROC_BROWSER_TEST_F(NamedMessagePortConnectorTest, MultiplePorts) {
         cr_fuchsia::StringFromMemBuffer(message_receiver->data(), &data));
     EXPECT_EQ(data, "ack ping");
   }
-
-  connector_->Unregister("port1");
-  connector_->Unregister("port2");
-}
-
-// Verifies that 'port1' and 'port2' are delivered via the DefaultHandler
-// callback.
-IN_PROC_BROWSER_TEST_F(NamedMessagePortConnectorTest,
-                       MultiplePortsViaDefaultHandler) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL test_url(
-      embedded_test_server()->GetURL("/connector_multiple_ports.html"));
-
-  fuchsia::web::NavigationControllerPtr controller;
-  frame_->GetNavigationController(controller.NewRequest());
-
-  std::set<std::string> received_ports;
-  base::RunLoop receive_ports_run_loop;
-
-  // Register port1 to ensure that registered and "default handled" ports can
-  // coexist happily.
-  connector_->Register(
-      "port1", base::BindRepeating(
-                   [](fidl::InterfaceHandle<fuchsia::web::MessagePort>) {}));
-
-  // Resume test execution once two ports are received. Since ports are
-  // received in order, if those two ports are "port2" and "port3", then that
-  // means "port1" was handled separately and correctly.
-  connector_->RegisterDefaultHandler(base::BindRepeating(
-      [](std::set<std::string>* received_ports,
-         base::RunLoop* receive_ports_run_loop, base::StringPiece name,
-         fidl::InterfaceHandle<fuchsia::web::MessagePort>) {
-        received_ports->insert(name.as_string());
-
-        if (received_ports->size() == 2)
-          receive_ports_run_loop->Quit();
-      },
-      base::Unretained(&received_ports),
-      base::Unretained(&receive_ports_run_loop)));
-
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      controller.get(), fuchsia::web::LoadUrlParams(), test_url.spec()));
-  receive_ports_run_loop.Run();
-
-  EXPECT_TRUE(received_ports.find("port2") != received_ports.end());
-  EXPECT_TRUE(received_ports.find("port3") != received_ports.end());
-
-  connector_->Unregister("port1");
 }

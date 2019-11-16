@@ -6,8 +6,6 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
   sources = [
-    "dom_storage_area.mojom",
-    "key_value_pair.mojom",
     "origin_context.mojom",
     "partition.mojom",
     "storage_service.mojom",
@@ -17,21 +15,4 @@ mojom("mojom") {
     "//mojo/public/mojom/base",
     "//url/mojom:url_mojom_origin",
   ]
-
-  generate_java = true
-
-  # Blink depends on this mojom target from within its own platform mojom. This
-  # means that our own generated Blink bindings will end up exclusively linked
-  # into the platform component library; yet they are consumed by the Blink
-  # storage module sources, which have separate linkage.
-  #
-  # These settings ensure that when linking this target into Blink, we properly
-  # export our generated symbols from the platform component library. This can
-  # eventually be removed if Blink's dependencies on this target can be limited
-  # to the storage module sources only.
-  if (!is_ios) {
-    export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
-    export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
-    export_header_blink = "third_party/blink/public/platform/web_common.h"
-  }
 }

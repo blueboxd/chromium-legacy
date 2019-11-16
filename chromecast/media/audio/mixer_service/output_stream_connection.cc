@@ -11,31 +11,13 @@
 #include "base/memory/aligned_memory.h"
 #include "chromecast/media/audio/mixer_service/conversions.h"
 #include "chromecast/media/audio/mixer_service/mixer_service.pb.h"
-#include "net/socket/stream_socket.h"
+#include "chromecast/net/io_buffer_pool.h"
 
 namespace chromecast {
 namespace media {
 namespace mixer_service {
 
 namespace {
-
-constexpr size_t kAlignment = 16;
-
-class AlignedIOBuffer : public ::net::IOBuffer {
- public:
-  AlignedIOBuffer(size_t size)
-      : ::net::IOBuffer(
-            static_cast<char*>(base::AlignedAlloc(size, kAlignment))),
-        real_data_(data_) {}
-
- private:
-  ~AlignedIOBuffer() override {
-    data_ = nullptr;
-    base::AlignedFree(real_data_);
-  }
-
-  void* const real_data_;
-};
 
 int GetFrameSize(const OutputStreamParams& params) {
   return GetSampleSizeBytes(params.sample_format()) * params.num_channels();
@@ -57,9 +39,12 @@ OutputStreamConnection::OutputStreamConnection(Delegate* delegate,
       params_(std::make_unique<OutputStreamParams>(params)),
       frame_size_(GetFrameSize(params)),
       fill_size_frames_(GetFillSizeFrames(params)),
-      audio_buffer_(base::MakeRefCounted<AlignedIOBuffer>(
+      buffer_pool_(base::MakeRefCounted<IOBufferPool>(
           MixerSocket::kAudioMessageHeaderSize +
-          fill_size_frames_ * frame_size_)) {
+              fill_size_frames_ * frame_size_,
+          std::numeric_limits<size_t>::max(),
+          true /* threadsafe */)),
+      audio_buffer_(buffer_pool_->GetBuffer()) {
   DCHECK(delegate_);
   DCHECK_GT(params_->sample_rate(), 0);
   DCHECK_GT(params_->num_channels(), 0);
@@ -73,7 +58,8 @@ void OutputStreamConnection::Connect() {
 }
 
 void OutputStreamConnection::SendNextBuffer(int filled_frames, int64_t pts) {
-  SendAudioBuffer(audio_buffer_, filled_frames, pts);
+  SendAudioBuffer(std::move(audio_buffer_), filled_frames, pts);
+  audio_buffer_ = buffer_pool_->GetBuffer();
 }
 
 void OutputStreamConnection::SendAudioBuffer(

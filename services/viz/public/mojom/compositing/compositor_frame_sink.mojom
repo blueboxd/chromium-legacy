@@ -88,7 +88,10 @@ interface CompositorFrameSinkClient {
   // rid of it.
   DidReceiveCompositorFrameAck(array<ReturnedResource> resources);
 
-  // Notification for the client to generate a CompositorFrame.
+  // Notification for the client to generate a CompositorFrame. The client is
+  // required to respond with either SubmitCompositorFrame() or
+  // DidNotProduceFrame(). If the client is unresponsive then begin frames will
+  // be throttled and eventually stopped entirely.
   OnBeginFrame(BeginFrameArgs args,
                map<uint32, FrameTimingDetails> details);
 

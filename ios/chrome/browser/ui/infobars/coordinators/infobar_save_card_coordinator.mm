@@ -65,8 +65,8 @@
            presentsModal:self.hasBadge
                     type:InfobarType::kInfobarTypeSaveCard];
     if (self.saveCardInfoBarDelegate->upload()) {
-      // TODO(crbug.com/1014652): Use real string once its been created.
-      self.bannerViewController.buttonText = @"Save...";
+      self.bannerViewController.buttonText =
+          l10n_util::GetNSString(IDS_IOS_AUTOFILL_SAVE_ELLIPSIS);
     } else {
       self.bannerViewController.buttonText =
           base::SysUTF16ToNSString(self.saveCardInfoBarDelegate->GetButtonLabel(

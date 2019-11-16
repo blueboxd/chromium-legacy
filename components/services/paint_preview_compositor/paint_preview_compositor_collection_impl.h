@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/unguessable_token.h"
@@ -63,7 +62,10 @@ class PaintPreviewCompositorCollectionImpl
                  std::unique_ptr<PaintPreviewCompositorImpl>>
       compositors_;
 
-  DISALLOW_COPY_AND_ASSIGN(PaintPreviewCompositorCollectionImpl);
+  PaintPreviewCompositorCollectionImpl(
+      const PaintPreviewCompositorCollectionImpl&) = delete;
+  PaintPreviewCompositorCollectionImpl& operator=(
+      const PaintPreviewCompositorCollectionImpl&) = delete;
 };
 
 }  // namespace paint_preview

@@ -150,7 +150,6 @@ _TEST_APK_LIBS = [
   (0x0b408000, 0x0b421744, 0x00019744, 'libmojom_platform_shared.cr.so'),
   (0x0b422000, 0x0b43451c, 0x0001251c, 'libnative_theme.cr.so'),
   (0x0b435000, 0x0baaa1bc, 0x006751bc, 'libnet.cr.so'),
-  (0x0baab000, 0x0bac3c08, 0x00018c08, 'libnet_with_v8.cr.so'),
   (0x0bac4000, 0x0bb74670, 0x000b0670, 'libnetwork_cpp.cr.so'),
   (0x0bb75000, 0x0bbaee8c, 0x00039e8c, 'libnetwork_cpp_base.cr.so'),
   (0x0bbaf000, 0x0bd21844, 0x00172844, 'libnetwork_service.cr.so'),

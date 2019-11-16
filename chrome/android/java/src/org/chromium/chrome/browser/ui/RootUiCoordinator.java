@@ -27,7 +27,8 @@ import org.chromium.chrome.browser.findinpage.FindToolbarObserver;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.metrics.UkmRecorder;
-import org.chromium.chrome.browser.share.ShareSheetCoordinator;
+import org.chromium.chrome.browser.share.ShareDelegate;
+;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
@@ -54,6 +55,7 @@ public class RootUiCoordinator
     protected @Nullable AppMenuCoordinator mAppMenuCoordinator;
     private final MenuOrKeyboardActionController mMenuOrKeyboardActionController;
     private ActivityTabProvider mActivityTabProvider;
+    private ShareDelegate mShareDelegate;
 
     protected @Nullable FindToolbarManager mFindToolbarManager;
     private @Nullable FindToolbarObserver mFindToolbarObserver;
@@ -88,11 +90,13 @@ public class RootUiCoordinator
      */
     public RootUiCoordinator(ChromeActivity activity,
             @Nullable Callback<ToolbarManager> toolbarManagerCallback,
-            @Nullable Callback<Boolean> onOmniboxFocusChangedListener) {
+            @Nullable Callback<Boolean> onOmniboxFocusChangedListener,
+            ShareDelegate shareDelegate) {
         mActivity = activity;
         mOnOmniboxFocusChangedListener = onOmniboxFocusChangedListener;
         mToolbarManagerCallback = toolbarManagerCallback;
         mActivity.getLifecycleDispatcher().register(this);
+        mShareDelegate = shareDelegate;
 
         mMenuOrKeyboardActionController = mActivity.getMenuOrKeyboardActionController();
         mMenuOrKeyboardActionController.registerMenuOrKeyboardActionHandler(this);
@@ -195,8 +199,7 @@ public class RootUiCoordinator
      */
     @VisibleForTesting
     public void onShareMenuItemSelected(final boolean shareDirectly, final boolean isIncognito) {
-        ShareSheetCoordinator.create().onShareSelected(
-                mActivity, mActivityTabProvider.get(), shareDirectly, isIncognito);
+        mShareDelegate.share(mActivityTabProvider.get(), shareDirectly);
     }
 
     // MenuOrKeyboardActionHandler implementation
@@ -295,7 +298,7 @@ public class RootUiCoordinator
             };
             mToolbarManager = new ToolbarManager(mActivity, toolbarContainer,
                     mActivity.getCompositorViewHolder().getInvalidator(), urlFocusChangedCallback,
-                    mTabThemeColorProvider);
+                    mTabThemeColorProvider, mShareDelegate);
             if (!mActivity.supportsAppMenu()) {
                 mToolbarManager.getToolbar().disableMenuButton();
             }

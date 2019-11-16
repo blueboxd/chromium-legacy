@@ -64,22 +64,17 @@ class DtlsIceTransportAdapterCrossThreadFactory
       rtc::scoped_refptr<webrtc::IceTransportInterface> ice_transport)
       : ice_transport_(ice_transport) {}
   void InitializeOnMainThread(LocalFrame& frame) override {
-    DCHECK(!worker_thread_rtc_thread_);
-    worker_thread_rtc_thread_ = PeerConnectionDependencyFactory::GetInstance()
-                                    ->GetWebRtcWorkerThreadRtcThread();
   }
 
   std::unique_ptr<IceTransportAdapter> ConstructOnWorkerThread(
       IceTransportAdapter::Delegate* delegate) override {
     DCHECK(ice_transport_);
-    DCHECK(worker_thread_rtc_thread_);
-    return std::make_unique<IceTransportAdapterImpl>(
-        delegate, std::move(ice_transport_), worker_thread_rtc_thread_);
+    return std::make_unique<IceTransportAdapterImpl>(delegate,
+                                                     std::move(ice_transport_));
   }
 
  private:
   rtc::scoped_refptr<webrtc::IceTransportInterface> ice_transport_;
-  rtc::Thread* worker_thread_rtc_thread_ = nullptr;
 };
 
 class DefaultIceTransportAdapterCrossThreadFactory
@@ -87,7 +82,6 @@ class DefaultIceTransportAdapterCrossThreadFactory
  public:
   void InitializeOnMainThread(LocalFrame& frame) override {
     DCHECK(!port_allocator_);
-    DCHECK(!worker_thread_rtc_thread_);
     DCHECK(!async_resolver_factory_);
 
     auto* rtc_dependency_factory =
@@ -96,24 +90,20 @@ class DefaultIceTransportAdapterCrossThreadFactory
         frame.Client()->GetWebFrame());
     async_resolver_factory_ =
         rtc_dependency_factory->CreateAsyncResolverFactory();
-    worker_thread_rtc_thread_ =
-        rtc_dependency_factory->GetWebRtcWorkerThreadRtcThread();
   }
 
   std::unique_ptr<IceTransportAdapter> ConstructOnWorkerThread(
       IceTransportAdapter::Delegate* delegate) override {
     DCHECK(port_allocator_);
-    DCHECK(worker_thread_rtc_thread_);
     DCHECK(async_resolver_factory_);
     return std::make_unique<IceTransportAdapterImpl>(
         delegate, std::move(port_allocator_),
-        std::move(async_resolver_factory_), worker_thread_rtc_thread_);
+        std::move(async_resolver_factory_));
   }
 
  private:
   std::unique_ptr<cricket::PortAllocator> port_allocator_;
   std::unique_ptr<webrtc::AsyncResolverFactory> async_resolver_factory_;
-  rtc::Thread* worker_thread_rtc_thread_ = nullptr;
 };
 
 }  // namespace

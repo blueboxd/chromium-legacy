@@ -341,7 +341,7 @@ bool OmniboxPopupModel::SelectedLineIsTabSwitchSuggestion() {
 
 void OmniboxPopupModel::OnFaviconFetched(const GURL& page_url,
                                          const gfx::Image& icon) {
-  if (icon.IsEmpty())
+  if (icon.IsEmpty() || !view_->IsOpen())
     return;
 
   // Notify all affected matches.

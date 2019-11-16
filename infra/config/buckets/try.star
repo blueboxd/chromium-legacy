@@ -1,88 +1,8 @@
 load('//lib/builders.star', 'builder', 'cpu', 'defaults', 'goma', 'os')
 
-luci.bucket(
-    name = 'try',
-    acls = [
-        acl.entry(
-            roles = acl.BUILDBUCKET_READER,
-            groups = 'all',
-        ),
-        acl.entry(
-            roles = acl.BUILDBUCKET_TRIGGERER,
-            users = [
-                'findit-for-me@appspot.gserviceaccount.com',
-                'tricium-prod@appspot.gserviceaccount.com',
-            ],
-            groups = [
-                'project-chromium-tryjob-access',
-                # Allow Pinpoint to trigger builds for bisection
-                'service-account-chromeperf',
-                'service-account-cq',
-            ],
-        ),
-        acl.entry(
-            roles = acl.BUILDBUCKET_OWNER,
-            groups = 'service-account-chromium-tryserver',
-        ),
-    ],
-)
-
-luci.cq_group(
-    name = 'cq',
-    # TODO(crbug/959436): enable it.
-    cancel_stale_tryjobs = False,
-    retry_config = cq.RETRY_ALL_FAILURES,
-    tree_status_host = 'chromium-status.appspot.com/',
-    watch = cq.refset(
-        repo = 'https://chromium.googlesource.com/chromium/src',
-        refs = ['refs/heads/.+'],
-    ),
-    acls = [
-        acl.entry(
-            acl.CQ_COMMITTER,
-            groups = 'project-chromium-committers',
-        ),
-        acl.entry(
-            acl.CQ_DRY_RUNNER,
-            groups = 'project-chromium-tryjob-access',
-        ),
-    ],
-)
-
-# TODO(https://crbug.com/922150) Configure branch CQ in versioned files
-luci.cq_group(
-    name = 'cq-branches',
-    cancel_stale_tryjobs = False,
-    retry_config = cq.RETRY_ALL_FAILURES,
-    tree_status_host = 'chromium-status.appspot.com/',
-    watch = cq.refset(
-        repo = 'https://chromium.googlesource.com/chromium/src',
-        refs = ['refs/branch-heads/.+'],
-    ),
-    acls = [
-        acl.entry(
-            acl.CQ_COMMITTER,
-            groups = 'project-chromium-committers',
-        ),
-        acl.entry(
-            acl.CQ_DRY_RUNNER,
-            groups = 'project-chromium-tryjob-access',
-        ),
-    ],
-    verifiers = [
-        luci.cq_tryjob_verifier(
-            builder = builder,
-            experiment_percentage = 100,
-        ) for builder in [
-            'linux-rel',
-        ]
-    ],
-)
-
-
+# Defaults that apply to all branch versions of the bucket
 luci.recipe.defaults.cipd_package.set('infra/recipe_bundles/chromium.googlesource.com/chromium/tools/build')
 
-defaults.bucket.set('try')
 defaults.build_numbers.set(True)
 defaults.configure_kitchen.set(True)
 defaults.cores.set(8)
@@ -139,6 +59,17 @@ def try_builder(
   )
 
 
+# Execute the versioned files to define all of the per-branch entities
+# (bucket, builders, console, cq_group, etc.)
+exec('//versioned/branches/beta/buckets/try.star')
+exec('//versioned/branches/stable/buckets/try.star')
+exec('//versioned/trunk/buckets/try.star')
+
+
+# *** After this point everything is trunk only ***
+defaults.bucket.set('try')
+
+
 # Builders appear after the function used to define them, with all builders
 # defined using the same function ordered lexicographically by name
 # Builder functions are defined in lexicographic order by name ignoring the
@@ -162,6 +93,7 @@ def android_builder(*, name, **kwargs):
 android_builder(
     name = 'android-binary-size',
     executable = luci.recipe(name = 'binary_size_trybot'),
+    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
     tryjob = tryjob(),
 )
@@ -206,6 +138,7 @@ android_builder(
 android_builder(
     name = 'android-marshmallow-arm64-coverage-rel',
     cores = 16,
+    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J300,
     ssd = True,
     use_java_coverage = True,
@@ -254,10 +187,12 @@ android_builder(
 
 android_builder(
     name = 'android-pie-x86-fyi-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-pie-arm64-rel',
+    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(
         experiment_percentage = 50,
     ),
@@ -281,6 +216,7 @@ android_builder(
 
 android_builder(
     name = 'android-webview-pie-arm64-fyi-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
@@ -296,6 +232,7 @@ android_builder(
 
 android_builder(
     name = 'android_blink_rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
@@ -419,18 +356,22 @@ angle_builder(
 
 angle_builder(
     name = 'android_angle_vk32_deqp_rel_ng',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 angle_builder(
     name = 'android_angle_vk32_rel_ng',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 angle_builder(
     name = 'android_angle_vk64_deqp_rel_ng',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 angle_builder(
     name = 'android_angle_vk64_rel_ng',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 angle_builder(
@@ -524,18 +465,22 @@ def blink_mac_builder(*, name, **kwargs):
 
 blink_mac_builder(
     name = 'mac10.10-blink-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 blink_mac_builder(
     name = 'mac10.11-blink-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 blink_mac_builder(
     name = 'mac10.12-blink-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 blink_mac_builder(
     name = 'mac10.13-blink-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 blink_mac_builder(
@@ -967,6 +912,7 @@ gpu_mac_builder(
 
 gpu_mac_builder(
     name = 'gpu-fyi-try-mac-intel-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_mac_builder(
@@ -998,6 +944,7 @@ gpu_mac_builder(
 
 gpu_mac_builder(
     name = 'mac_optional_gpu_tests_rel',
+    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(
         location_regexp = [
             '.+/[+]/chrome/browser/vr/.+',
@@ -1145,21 +1092,6 @@ linux_builder(
 )
 
 linux_builder(
-    name = 'chromium_presubmit',
-    executable = luci.recipe(name = 'presubmit'),
-    properties = {
-        '$depot_tools/presubmit': {
-            'runhooks': True,
-            'timeout_s': 480,
-        },
-        'repo_name': 'chromium',
-    },
-    tryjob = tryjob(
-        disable_reuse = True,
-    ),
-)
-
-linux_builder(
     name = 'closure_compilation',
     executable = luci.recipe(name = 'closure_compilation'),
     tryjob = tryjob(
@@ -1281,14 +1213,6 @@ linux_builder(
     name = 'linux-ozone-rel',
     goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(),
-)
-
-linux_builder(
-    name = 'linux-rel',
-    goma_backend = goma.backend.RBE_PROD,
-    goma_jobs = goma.jobs.J150,
-    tryjob = tryjob(),
-    use_clang_coverage = True,
 )
 
 linux_builder(

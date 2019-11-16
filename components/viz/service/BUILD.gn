@@ -206,6 +206,7 @@ viz_component("service") {
     "//media/capture:capture_lib",
     "//media/mojo/services",
     "//services/viz/privileged/mojom",
+    "//skia:skcms",
     "//ui/display/types",
   ]
 

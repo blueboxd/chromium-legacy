@@ -241,18 +241,6 @@
       <structure name="IDR_PRINT_PREVIEW_UI_HIGHLIGHT_UTILS_JS"
                  file="ui/highlight_utils.js"
                  type="chrome_html" />
-
-      <if expr="not optimize_webui">
-        <!-- TODO(crbug.com/965770): The folowing 2 files are unrelated to Print
-             Preview, they are only used during Polymer 3 experimentation, and
-             should be removed after experimentation concludes. -->
-        <structure name="IDR_PRINT_PREVIEW_POLYMER3_DEMO_HTML"
-                   file="polymer3/demo.html"
-                   type="chrome_html" />
-        <structure name="IDR_PRINT_PREVIEW_POLYMER3_DEMO_JS"
-                   file="polymer3/demo.js"
-                   type="chrome_html" />
-      </if>
     </structures>
   </release>
 </grit>

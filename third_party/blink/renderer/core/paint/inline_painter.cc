@@ -39,20 +39,8 @@ void InlinePainter::Paint(const PaintInfo& paint_info) {
   }
 
   if (layout_inline_.IsInLayoutNGInlineFormattingContext()) {
-    for (const NGPaintFragment* fragment :
-         NGPaintFragment::SafeInlineFragmentsFor(&layout_inline_)) {
-      auto child_offset = paint_offset +
-                          fragment->InlineOffsetToContainerBox() -
-                          fragment->Offset();
-
-      if (fragment->PhysicalFragment().IsText()) {
-        NGTextPainterCursor cursor(*fragment);
-        NGTextFragmentPainter<NGTextPainterCursor>(cursor).Paint(paint_info,
-                                                                 child_offset);
-      } else {
-        NGInlineBoxFragmentPainter(*fragment).Paint(paint_info, child_offset);
-      }
-    }
+    NGInlineBoxFragmentPainter::PaintAllFragments(layout_inline_, paint_info,
+                                                  paint_offset);
     return;
   }
 

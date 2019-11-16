@@ -135,7 +135,14 @@ ContentBrowserClient::GetInitiatorSchemeBypassingDocumentBlocking() {
 }
 
 bool ContentBrowserClient::ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(
-    base::StringPiece scheme) {
+    base::StringPiece scheme,
+    bool is_embedded_origin_secure) {
+  return false;
+}
+
+bool ContentBrowserClient::ShouldIgnoreSameSiteCookieRestrictionsWhenTopLevel(
+    base::StringPiece scheme,
+    bool is_embedded_origin_secure) {
   return false;
 }
 

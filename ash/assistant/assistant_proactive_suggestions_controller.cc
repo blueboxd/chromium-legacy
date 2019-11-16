@@ -11,6 +11,7 @@
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "ash/public/cpp/assistant/util/histogram_util.h"
 #include "chromeos/services/assistant/public/features.h"
+#include "components/viz/common/vertical_scroll_direction.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -70,6 +71,39 @@ void AssistantProactiveSuggestionsController::OnProactiveSuggestionsChanged(
       ->OnProactiveSuggestionsChanged(std::move(proactive_suggestions));
 }
 
+void AssistantProactiveSuggestionsController::
+    OnSourceVerticalScrollDirectionChanged(
+        viz::VerticalScrollDirection scroll_direction) {
+  if (!chromeos::assistant::features::
+          IsProactiveSuggestionsShowOnScrollEnabled()) {
+    // If show-on-scroll is disabled, presentation logic of the view executes
+    // immediately as a result of changes in the active set of proactive
+    // suggestions.
+    return;
+  }
+
+  switch (scroll_direction) {
+    case viz::VerticalScrollDirection::kDown:
+      // When the user scrolls down, the proactive suggestions widget is hidden
+      // as this is a strong signal that the user is engaging with the page.
+      HideUi();
+      return;
+    case viz::VerticalScrollDirection::kUp:
+      // When the user scrolls up, the proactive suggestions widget will be
+      // shown to the user as this is a signal that the user may be interested
+      // in engaging with related content as part of a deeper dive. Note that
+      // this method will no-op if there is no active set of proactive
+      // suggestions or if the set has been blacklisted from being shown.
+      MaybeShowUi();
+      return;
+    case viz::VerticalScrollDirection::kNull:
+      // The value |kNull| only exists to indicate the absence of a vertical
+      // scroll direction and should never be propagated in a change event.
+      NOTREACHED();
+      return;
+  }
+}
+
 void AssistantProactiveSuggestionsController::OnProactiveSuggestionsChanged(
     scoped_refptr<const ProactiveSuggestions> proactive_suggestions,
     scoped_refptr<const ProactiveSuggestions> old_proactive_suggestions) {
@@ -78,22 +112,18 @@ void AssistantProactiveSuggestionsController::OnProactiveSuggestionsChanged(
   // will no-op if the proactive suggestions view does not exist.
   CloseUi(ProactiveSuggestionsShowResult::kCloseByContextChange);
 
-  if (!proactive_suggestions)
-    return;
-
-  // If this set of proactive suggestions is blacklisted, it should not be shown
-  // to the user. A set of proactive suggestions may be blacklisted as a result
-  // of duplicate suppression or as a result of the user explicitly closing the
-  // proactive suggestions view.
-  if (base::Contains(proactive_suggestions_blacklist_,
-                     proactive_suggestions->hash())) {
-    RecordProactiveSuggestionsShowAttempt(
-        proactive_suggestions->category(),
-        ProactiveSuggestionsShowAttempt::kAbortedByDuplicateSuppression);
+  if (chromeos::assistant::features::
+          IsProactiveSuggestionsShowOnScrollEnabled()) {
+    // When show-on-scroll is enabled, presentation of the proactive suggestions
+    // view is handled in response to changes in vertical scroll direction.
     return;
   }
 
-  ShowUi();
+  // We'll now attempt to show the proactive suggestions view to the user. Note
+  // that this method will no-op if there is no active set of proactive
+  // suggestions or if the set of proactive suggestions is blacklisted from
+  // being shown to the user.
+  MaybeShowUi();
 }
 
 void AssistantProactiveSuggestionsController::
@@ -148,8 +178,36 @@ void AssistantProactiveSuggestionsController::
       AssistantEntryPoint::kProactiveSuggestions);
 }
 
-void AssistantProactiveSuggestionsController::ShowUi() {
-  DCHECK(!view_);
+void AssistantProactiveSuggestionsController::MaybeShowUi() {
+  if (view_) {
+    // If the |view_| already exists, calling MaybeShowUi() will just ensure
+    // that its widget is showing to the user.
+    view_->GetWidget()->ShowInactive();
+    return;
+  }
+
+  // Retrieve the cached set of proactive suggestions.
+  scoped_refptr<const ProactiveSuggestions> proactive_suggestions =
+      assistant_controller_->suggestions_controller()
+          ->model()
+          ->GetProactiveSuggestions();
+
+  // There's nothing to show if there are no proactive suggestions in the cache.
+  if (!proactive_suggestions)
+    return;
+
+  // If the cached set of proactive suggestions is blacklisted, it should not be
+  // shown to the user. A set of proactive suggestions may be blacklisted as a
+  // result of duplicate suppression or as a result of the user explicitly
+  // closing the proactive suggestions view.
+  if (base::Contains(proactive_suggestions_blacklist_,
+                     proactive_suggestions->hash())) {
+    RecordProactiveSuggestionsShowAttempt(
+        proactive_suggestions->category(),
+        ProactiveSuggestionsShowAttempt::kAbortedByDuplicateSuppression);
+    return;
+  }
+
   view_ = new ProactiveSuggestionsView(assistant_controller_->view_delegate());
   view_->GetWidget()->ShowInactive();
 
@@ -187,6 +245,11 @@ void AssistantProactiveSuggestionsController::CloseUi(
 
   view_->GetWidget()->Close();
   view_ = nullptr;
+}
+
+void AssistantProactiveSuggestionsController::HideUi() {
+  if (view_)
+    view_->GetWidget()->Hide();
 }
 
 }  // namespace ash

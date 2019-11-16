@@ -79,4 +79,10 @@ TEST(HashTest, CString) {
   EXPECT_EQ(2794219650u, Hash(str, strlen("hello world")));
 }
 
+TEST(HashTest, FastHash) {
+  std::string s;
+  constexpr char kEmptyString[] = "";
+  EXPECT_EQ(FastHash(s), FastHash(kEmptyString));
+}
+
 }  // namespace base

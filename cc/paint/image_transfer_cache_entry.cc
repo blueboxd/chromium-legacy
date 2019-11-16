@@ -250,7 +250,7 @@ void ClientImageTransferCacheEntry::ValidateYUVDataBeforeSerializing() const {
     const SkPixmap* plane = yuv_pixmaps_->at(i);
     DCHECK_GT(plane->width(), 0);
     DCHECK_GT(plane->height(), 0);
-    DCHECK_GT(plane->rowBytesAsPixels(), 0);
+    DCHECK_GT(plane->rowBytes(), 0u);
   }
 }
 
@@ -274,7 +274,7 @@ bool ClientImageTransferCacheEntry::Serialize(base::span<uint8_t> data) const {
       const SkPixmap* plane = yuv_pixmaps_->at(i);
       writer.Write(plane->width());
       writer.Write(plane->height());
-      writer.Write(plane->rowBytesAsPixels());
+      writer.WriteSize(plane->rowBytes());
       size_t plane_size = plane->computeByteSize();
       if (plane_size == SIZE_MAX)
         return false;
@@ -405,8 +405,8 @@ bool ServiceImageTransferCacheEntry::Deserialize(
       reader.Read(&plane_width);
       uint32_t plane_height = 0;
       reader.Read(&plane_height);
-      uint32_t plane_stride = 0;
-      reader.Read(&plane_stride);
+      size_t plane_stride = 0;
+      reader.ReadSize(&plane_stride);
       // Because Skia does not support YUV rasterization from software planes,
       // we require that each pixmap fits in a GPU texture. In the
       // GpuImageDecodeCache, we veto YUV decoding if the planes would be too

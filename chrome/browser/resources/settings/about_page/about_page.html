@@ -246,11 +246,13 @@
           <cr-link-row class="hr" id="detailed-build-info-trigger"
               on-click="onDetailedBuildInfoTap_"
               label="$i18n{aboutDetailedBuildInfo}"
+              role-description="$i18n{subpageArrowRoleDescription}"
               hidden$="[[!showOsSettings_]]">
           </cr-link-row>
 </if>
           <cr-link-row class="hr" on-click="onManagementPageTap_"
               start-icon="cr:domain" label="$i18n{managementPage}"
+              role-description="$i18n{subpageArrowRoleDescription}"
               hidden$="[[!isManaged_]]"></cr-link-row>
         </div>
 <if expr="chromeos">

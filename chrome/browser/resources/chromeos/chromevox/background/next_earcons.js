@@ -13,18 +13,18 @@ goog.provide('NextEarcons');
 goog.require('EarconEngine');
 goog.require('LogStore');
 goog.require('TextLog');
-goog.require('cvox.AbstractEarcons');
+goog.require('AbstractEarcons');
 
 
 /**
  * @constructor
- * @extends {cvox.AbstractEarcons}
+ * @extends {AbstractEarcons}
  */
 NextEarcons = function() {
-  cvox.AbstractEarcons.call(this);
+  AbstractEarcons.call(this);
 
   if (localStorage['earcons'] === 'false') {
-    cvox.AbstractEarcons.enabled = false;
+    AbstractEarcons.enabled = false;
   }
 
   /**
@@ -59,7 +59,7 @@ NextEarcons.prototype = {
    * @override
    */
   playEarcon: function(earcon, opt_location) {
-    if (!cvox.AbstractEarcons.enabled) {
+    if (!AbstractEarcons.enabled) {
       return;
     }
     if (localStorage['enableEarconLogging'] == 'true') {
@@ -78,68 +78,68 @@ NextEarcons.prototype = {
       }
     }
     switch (earcon) {
-      case cvox.Earcon.ALERT_MODAL:
-      case cvox.Earcon.ALERT_NONMODAL:
+      case Earcon.ALERT_MODAL:
+      case Earcon.ALERT_NONMODAL:
         this.engine_.onAlert();
         break;
-      case cvox.Earcon.BUTTON:
+      case Earcon.BUTTON:
         this.engine_.onButton();
         break;
-      case cvox.Earcon.CHECK_OFF:
+      case Earcon.CHECK_OFF:
         this.engine_.onCheckOff();
         break;
-      case cvox.Earcon.CHECK_ON:
+      case Earcon.CHECK_ON:
         this.engine_.onCheckOn();
         break;
-      case cvox.Earcon.EDITABLE_TEXT:
+      case Earcon.EDITABLE_TEXT:
         this.engine_.onTextField();
         break;
-      case cvox.Earcon.INVALID_KEYPRESS:
+      case Earcon.INVALID_KEYPRESS:
         this.engine_.onWrap();
         break;
-      case cvox.Earcon.LINK:
+      case Earcon.LINK:
         this.engine_.onLink();
         break;
-      case cvox.Earcon.LISTBOX:
+      case Earcon.LISTBOX:
         this.engine_.onSelect();
         break;
-      case cvox.Earcon.LIST_ITEM:
-      case cvox.Earcon.LONG_DESC:
-      case cvox.Earcon.MATH:
-      case cvox.Earcon.OBJECT_CLOSE:
-      case cvox.Earcon.OBJECT_ENTER:
-      case cvox.Earcon.OBJECT_EXIT:
-      case cvox.Earcon.OBJECT_OPEN:
-      case cvox.Earcon.OBJECT_SELECT:
+      case Earcon.LIST_ITEM:
+      case Earcon.LONG_DESC:
+      case Earcon.MATH:
+      case Earcon.OBJECT_CLOSE:
+      case Earcon.OBJECT_ENTER:
+      case Earcon.OBJECT_EXIT:
+      case Earcon.OBJECT_OPEN:
+      case Earcon.OBJECT_SELECT:
         // TODO(dmazzoni): decide if we want new earcons for these
         // or not. We may choose to not have earcons for some of these.
         break;
-      case cvox.Earcon.PAGE_FINISH_LOADING:
+      case Earcon.PAGE_FINISH_LOADING:
         this.engine_.cancelProgress();
         break;
-      case cvox.Earcon.PAGE_START_LOADING:
+      case Earcon.PAGE_START_LOADING:
         this.engine_.startProgress();
         break;
-      case cvox.Earcon.POP_UP_BUTTON:
+      case Earcon.POP_UP_BUTTON:
         this.engine_.onPopUpButton();
         break;
-      case cvox.Earcon.RECOVER_FOCUS:
+      case Earcon.RECOVER_FOCUS:
         // TODO(dmazzoni): decide if we want new earcons for this.
         break;
-      case cvox.Earcon.SELECTION:
+      case Earcon.SELECTION:
         this.engine_.onSelection();
         break;
-      case cvox.Earcon.SELECTION_REVERSE:
+      case Earcon.SELECTION_REVERSE:
         this.engine_.onSelectionReverse();
         break;
-      case cvox.Earcon.SKIP:
+      case Earcon.SKIP:
         this.engine_.onSkim();
         break;
-      case cvox.Earcon.SLIDER:
+      case Earcon.SLIDER:
         this.engine_.onSlider();
         break;
-      case cvox.Earcon.WRAP:
-      case cvox.Earcon.WRAP_EDGE:
+      case Earcon.WRAP:
+      case Earcon.WRAP_EDGE:
         this.engine_.onWrap();
         break;
     }
@@ -150,7 +150,7 @@ NextEarcons.prototype = {
    */
   cancelEarcon: function(earcon) {
     switch (earcon) {
-      case cvox.Earcon.PAGE_START_LOADING:
+      case Earcon.PAGE_START_LOADING:
         this.engine_.cancelProgress();
         break;
     }

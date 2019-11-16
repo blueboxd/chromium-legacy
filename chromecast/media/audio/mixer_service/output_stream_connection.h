@@ -15,6 +15,8 @@
 #include "net/base/io_buffer.h"
 
 namespace chromecast {
+class IOBufferPool;
+
 namespace media {
 namespace mixer_service {
 class Generic;
@@ -107,7 +109,9 @@ class OutputStreamConnection : public MixerConnection,
 
   const int frame_size_;
   const int fill_size_frames_;
-  const scoped_refptr<net::IOBuffer> audio_buffer_;
+
+  const scoped_refptr<IOBufferPool> buffer_pool_;
+  scoped_refptr<net::IOBuffer> audio_buffer_;
 
   std::unique_ptr<MixerSocket> socket_;
   float volume_multiplier_ = 1.0f;

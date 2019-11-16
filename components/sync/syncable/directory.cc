@@ -87,8 +87,7 @@ Directory::SaveChangesSnapshot::SaveChangesSnapshot()
 Directory::SaveChangesSnapshot::~SaveChangesSnapshot() {}
 
 bool Directory::SaveChangesSnapshot::HasUnsavedMetahandleChanges() const {
-  return !dirty_metas.empty() || !metahandles_to_purge.empty() ||
-         !delete_journals_to_purge.empty();
+  return !dirty_metas.empty() || !metahandles_to_purge.empty();
 }
 
 Directory::Kernel::Kernel(
@@ -194,7 +193,6 @@ DirOpenResult Directory::OpenImpl(
   kernel_ =
       std::make_unique<Kernel>(name, info, delegate, transaction_observer);
   kernel_->metahandles_to_purge.swap(metahandles_to_purge);
-  delete_journal_ = std::make_unique<DeleteJournal>();
   InitializeIndices(&tmp_handles_map);
 
   // Save changes back in case there are any metahandles to purge.
@@ -208,11 +206,6 @@ DirOpenResult Directory::OpenImpl(
       &Directory::OnCatastrophicError, weak_ptr_factory_.GetWeakPtr()));
 
   return result;
-}
-
-DeleteJournal* Directory::delete_journal() {
-  DCHECK(delete_journal_);
-  return delete_journal_.get();
 }
 
 void Directory::Close() {
@@ -515,9 +508,6 @@ void Directory::TakeSnapshotForSaveChanges(SaveChangesSnapshot* snapshot) {
   snapshot->kernel_info_status = kernel_->info_status;
   // This one we reset on failure.
   kernel_->info_status = KERNEL_SHARE_INFO_VALID;
-
-  delete_journal_->TakeSnapshotAndClear(&trans,
-                                        &snapshot->delete_journals_to_purge);
 }
 
 bool Directory::SaveChanges() {
@@ -784,10 +774,6 @@ void Directory::HandleSaveChangesFailure(const SaveChangesSnapshot& snapshot) {
 
   kernel_->metahandles_to_purge.insert(snapshot.metahandles_to_purge.begin(),
                                        snapshot.metahandles_to_purge.end());
-
-  // Restore delete journals.
-  delete_journal_->PurgeDeleteJournals(&trans,
-                                       snapshot.delete_journals_to_purge);
 }
 
 void Directory::GetDownloadProgress(

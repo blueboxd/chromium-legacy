@@ -18,9 +18,9 @@ def Die(message):
 # Tempalte for the test_messages.js.
 _JS_TEMPLATE = '''// GENERATED FROM %(in_file)s
 
-goog.provide('cvox.TestMessages');
+goog.provide('TestMessages');
 
-cvox.TestMessages = %(json)s;
+TestMessages = %(json)s;
 '''
 
 

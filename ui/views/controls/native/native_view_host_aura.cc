@@ -328,7 +328,6 @@ void NativeViewHostAura::RemoveClippingWindow() {
     } else {
       clipping_window_->RemoveChild(host_->native_view());
     }
-    host_->native_view()->SetBounds(clipping_window_->bounds());
   }
   if (clipping_window_->parent())
     clipping_window_->parent()->RemoveChild(clipping_window_.get());

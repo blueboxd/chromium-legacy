@@ -603,11 +603,12 @@ Status WebViewImpl::DispatchTouchEventWithMultiPoints(
     return Status(kOk);
 
   base::DictionaryValue params;
-  std::string type = GetAsString(events.front().type);
-  params.SetString("type", type);
   std::unique_ptr<base::ListValue> point_list(new base::ListValue);
   Status status(kOk);
   for (auto it = events.begin(); it != events.end(); ++it) {
+    std::string type = GetAsString(it->type);
+    if (!type.empty())
+      params.SetString("type", type);
     if (type == "touchStart" || type == "touchMove") {
       std::unique_ptr<base::DictionaryValue> point = GenerateTouchPoint(*it);
       point_list->Append(std::move(point));

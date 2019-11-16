@@ -230,13 +230,13 @@ void TrackedCallback::MarkAsCompletedWithLock() {
   // We may not have a valid resource, in which case we're not in the tracker.
   if (resource_id_)
     tracker_->Remove(thiz);
-  tracker_ = NULL;
+  tracker_.reset();
 
   // Relax the cross-thread access restriction to non-thread-safe RefCount.
   // |lock_| protects the access to Resource instances.
   base::ScopedAllowCrossThreadRefCountAccess
       allow_cross_thread_ref_count_access;
-  target_loop_ = NULL;
+  target_loop_.reset();
 }
 
 void TrackedCallback::PostRunWithLock(int32_t result) {

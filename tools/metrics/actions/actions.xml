@@ -11295,7 +11295,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Media.OpenPreferencesClicked">
-  <owner>grunell@chromium.org</owner>
+  <owner>guidou@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>hkamila@chromium.org</owner>
   <description>
@@ -11326,7 +11326,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Media.ShowSystemMediaPermissionBubble">
-  <owner>grunell@chromium.org</owner>
+  <owner>guidou@chromium.org</owner>
   <owner>engedy@chromium.org</owner>
   <owner>hkamila@chromium.org</owner>
   <description>

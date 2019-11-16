@@ -6,12 +6,12 @@
  * @fileoverview Responsible for loading scripts into the inject context.
  */
 
-goog.provide('cvox.InjectedScriptLoader');
+goog.provide('InjectedScriptLoader');
 
 
 
 /** @constructor */
-cvox.InjectedScriptLoader = function() {};
+InjectedScriptLoader = function() {};
 
 
 /**
@@ -21,7 +21,7 @@ cvox.InjectedScriptLoader = function() {};
  *     the files have been loaded. Called with the code map as the first
  *     parameter.
  */
-cvox.InjectedScriptLoader.fetchCode = function(files, done) {
+InjectedScriptLoader.fetchCode = function(files, done) {
   var code = {};
   var waiting = files.length;
   var startTime = new Date();

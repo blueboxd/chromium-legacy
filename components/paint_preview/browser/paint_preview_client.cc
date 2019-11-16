@@ -99,13 +99,15 @@ void PaintPreviewClient::CapturePaintPreview(
     const PaintPreviewParams& params,
     content::RenderFrameHost* render_frame_host,
     PaintPreviewCallback callback) {
-  if (base::Contains(document_data_, params.document_guid)) {
+  if (base::Contains(all_document_data_, params.document_guid)) {
     std::move(callback).Run(params.document_guid,
                             mojom::PaintPreviewStatus::kGuidCollision, nullptr);
     return;
   }
-  document_data_.insert({params.document_guid, PaintPreviewData()});
-  document_data_[params.document_guid].callback = std::move(callback);
+  all_document_data_.insert({params.document_guid, PaintPreviewData()});
+  auto* document_data = &all_document_data_[params.document_guid];
+  document_data->root_dir = params.root_dir;
+  document_data->callback = std::move(callback);
   CapturePaintPreviewInternal(params, render_frame_host);
 }
 
@@ -127,8 +129,8 @@ void PaintPreviewClient::RenderFrameDeleted(
   if (it == pending_previews_on_subframe_.end())
     return;
   for (const auto& document_guid : it->second) {
-    auto data_it = document_data_.find(document_guid);
-    if (data_it == document_data_.end())
+    auto data_it = all_document_data_.find(document_guid);
+    if (data_it == all_document_data_.end())
       continue;
     data_it->second.awaiting_subframes.erase(frame_guid);
     data_it->second.finished_subframes.insert(frame_guid);
@@ -166,12 +168,12 @@ void PaintPreviewClient::CapturePaintPreviewInternal(
     const PaintPreviewParams& params,
     content::RenderFrameHost* render_frame_host) {
   uint64_t frame_guid = GenerateFrameGuid(render_frame_host);
-  auto* document_data = &document_data_[params.document_guid];
+  auto* document_data = &all_document_data_[params.document_guid];
   // Deduplicate data if a subframe is required multiple times.
   if (base::Contains(document_data->awaiting_subframes, frame_guid) ||
       base::Contains(document_data->finished_subframes, frame_guid))
     return;
-  base::FilePath file_path = params.root_dir.AppendASCII(
+  base::FilePath file_path = document_data->root_dir.AppendASCII(
       base::StrCat({base::NumberToString(frame_guid), ".skp"}));
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
@@ -189,7 +191,7 @@ void PaintPreviewClient::RequestCaptureOnUIThread(
     const base::FilePath& file_path,
     CreateResult result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  auto* document_data = &document_data_[params.document_guid];
+  auto* document_data = &all_document_data_[params.document_guid];
   if (result.error != base::File::FILE_OK) {
     // Don't block up the UI thread and answer the callback on a different
     // thread.
@@ -239,13 +241,12 @@ void PaintPreviewClient::OnPaintPreviewCapturedCallback(
   if (status == mojom::PaintPreviewStatus::kOk)
     status = RecordFrame(guid, frame_guid, is_main_frame, filename,
                          render_frame_host, std::move(response));
-  auto* document_data = &document_data_[guid];
+  auto* document_data = &all_document_data_[guid];
   if (status != mojom::PaintPreviewStatus::kOk)
     document_data->had_error = true;
 
-  if (document_data->awaiting_subframes.empty()) {
+  if (document_data->awaiting_subframes.empty())
     OnFinished(guid, document_data);
-  }
 }
 
 void PaintPreviewClient::MarkFrameAsProcessed(base::UnguessableToken guid,
@@ -253,8 +254,8 @@ void PaintPreviewClient::MarkFrameAsProcessed(base::UnguessableToken guid,
   pending_previews_on_subframe_[frame_guid].erase(guid);
   if (pending_previews_on_subframe_[frame_guid].empty())
     interface_ptrs_.erase(frame_guid);
-  document_data_[guid].finished_subframes.insert(frame_guid);
-  document_data_[guid].awaiting_subframes.erase(frame_guid);
+  all_document_data_[guid].finished_subframes.insert(frame_guid);
+  all_document_data_[guid].awaiting_subframes.erase(frame_guid);
 }
 
 mojom::PaintPreviewStatus PaintPreviewClient::RecordFrame(
@@ -264,7 +265,7 @@ mojom::PaintPreviewStatus PaintPreviewClient::RecordFrame(
     const base::FilePath& filename,
     content::RenderFrameHost* render_frame_host,
     mojom::PaintPreviewCaptureResponsePtr response) {
-  auto it = document_data_.find(guid);
+  auto it = all_document_data_.find(guid);
   if (!it->second.proto)
     it->second.proto = std::make_unique<PaintPreviewProto>();
 
@@ -313,7 +314,7 @@ void PaintPreviewClient::OnFinished(base::UnguessableToken guid,
                    base::BindOnce(std::move(document_data->callback), guid,
                                   mojom::PaintPreviewStatus::kFailed, nullptr));
   }
-  document_data_.erase(guid);
+  all_document_data_.erase(guid);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(PaintPreviewClient)

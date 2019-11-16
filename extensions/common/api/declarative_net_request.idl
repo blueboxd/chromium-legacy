@@ -134,6 +134,9 @@ namespace declarativeNetRequest {
     //
     // If omitted, all urls are matched. An empty string is not allowed.
     //
+    // A pattern beginning with <code>||*</code> is not allowed. Use
+    // <code>*</code> instead.
+    //
     // Note: The <code>urlFilter</code> must be composed of only ASCII
     // characters. This is matched against a url where the host is encoded in
     // the punycode format (in case of internationalized domains) and any other

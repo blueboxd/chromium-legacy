@@ -2,16 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
-import {Destination} from '../data/destination.js';
-import {State, Error} from '../data/state.js';
 import './icons.js';
-import {SettingsBehavior} from './settings_behavior.js';
 import './print_preview_vars_css.js';
 import '../strings.m.js';
+
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {Destination} from '../data/destination.js';
+import {Error, State} from '../data/state.js';
+
+import {SettingsBehavior} from './settings_behavior.js';
 
 /**
  * @typedef {{numPages: number,
@@ -60,10 +63,8 @@ Polymer({
    */
   isPdfOrDrive_: function() {
     return this.destination &&
-        (this.destination.id ==
-             Destination.GooglePromotedId.SAVE_AS_PDF ||
-         this.destination.id ==
-             Destination.GooglePromotedId.DOCS);
+        (this.destination.id == Destination.GooglePromotedId.SAVE_AS_PDF ||
+         this.destination.id == Destination.GooglePromotedId.DOCS);
   },
 
   /**

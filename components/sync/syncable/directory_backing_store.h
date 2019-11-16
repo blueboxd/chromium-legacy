@@ -144,7 +144,6 @@ class DirectoryBackingStore {
 
   enum EntryTable {
     METAS_TABLE,
-    DELETE_JOURNAL_TABLE,
   };
   // Removes each entry whose metahandle is in |handles| from the table
   // specified by |from| table. Does synchronous I/O.  Returns false on error.
@@ -265,7 +264,6 @@ class DirectoryBackingStore {
 
   std::unique_ptr<sql::Database> db_;
   sql::Statement save_meta_statement_;
-  sql::Statement save_delete_journal_statement_;
 
   // Set to true if migration left some old columns around that need to be
   // discarded.

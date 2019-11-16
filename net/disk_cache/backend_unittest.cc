@@ -2129,7 +2129,7 @@ TEST_F(DiskCacheBackendTest, InMemorySparseEvict) {
   disk_cache::Entry* entry = nullptr;
   // Create a bunch of entries
   for (size_t i = 0; i < 14; i++) {
-    std::string name = "http://www." + std::to_string(i) + ".com/";
+    std::string name = "http://www." + base::NumberToString(i) + ".com/";
     ASSERT_THAT(CreateEntry(name, &entry), IsOk());
     entries.push_back(disk_cache::ScopedEntryPtr(entry));
   }

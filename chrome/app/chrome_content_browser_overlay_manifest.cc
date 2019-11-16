@@ -22,7 +22,6 @@
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "chrome/common/net_benchmarking.mojom.h"
 #include "chrome/common/offline_page_auto_fetcher.mojom.h"
-#include "chrome/test/data/webui/web_ui_test.mojom.h"
 #include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
 #include "components/contextual_search/content/common/mojom/contextual_search_js_api_service.mojom.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy.mojom.h"
@@ -185,8 +184,7 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                 mojom::OmniboxPageHandler, mojom::ResetPasswordHandler,
                 mojom::SiteEngagementDetailsProvider,
                 mojom::UsbInternalsPageHandler,
-                snippets_internals::mojom::PageHandlerFactory,
-                web_ui_test::mojom::TestRunner>())
+                snippets_internals::mojom::PageHandlerFactory>())
         .PackageService(prefs::GetManifest())
 #if defined(OS_CHROMEOS)
         .PackageService(chromeos::multidevice_setup::GetManifest())

@@ -776,13 +776,6 @@ public class OMADownloadHandler extends BroadcastReceiver {
             return;
         }
 
-        if (!TextUtils.isEmpty(response.filePath)) {
-            DownloadInfo newInfo =
-                    DownloadInfo.Builder.fromDownloadInfo(downloadItem.getDownloadInfo())
-                            .setFilePath(response.filePath)
-                            .build();
-            downloadItem.setDownloadInfo(newInfo);
-        }
         if (mSystemDownloadIdMap.size() == 0) {
             mContext.registerReceiver(
                     this, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
@@ -829,10 +822,8 @@ public class OMADownloadHandler extends BroadcastReceiver {
             builder.setBytesTotalSize(result.bytesTotal);
             if (!TextUtils.isEmpty(result.fileName)) builder.setFileName(result.fileName);
             if (!TextUtils.isEmpty(result.mimeType)) builder.setMimeType(result.mimeType);
+            builder.setFilePath(result.filePath);
 
-            // Since the requested file path may not be same as the actual file path, set it to
-            // null. This will result in using contentUri instead.
-            builder.setFilePath(null);
             item.setDownloadInfo(builder.build());
 
             showDownloadsUi(downloadId, item, result, installNotifyURI);
@@ -853,6 +844,11 @@ public class OMADownloadHandler extends BroadcastReceiver {
             @Override
             protected void onPostExecute(Boolean canResolve) {
                 if (result.downloadStatus == DownloadStatus.COMPLETE) {
+                    DownloadInfo.Builder builder = item.getDownloadInfo() == null
+                            ? new DownloadInfo.Builder()
+                            : DownloadInfo.Builder.fromDownloadInfo(item.getDownloadInfo());
+                    builder.setFilePath(result.filePath);
+                    item.setDownloadInfo(builder.build());
                     onDownloadCompleted(item.getDownloadInfo(), downloadId, installNotifyURI);
                     removeOMADownloadFromSharedPrefs(downloadId);
                     showDownloadOnInfoBar(item, result.downloadStatus);

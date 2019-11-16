@@ -7,7 +7,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/unguessable_token.h"
@@ -77,7 +76,8 @@ class MockPaintPreviewRecorder : public mojom::PaintPreviewRecorder {
   mojom::PaintPreviewCaptureResponsePtr response_;
   mojo::AssociatedReceiver<mojom::PaintPreviewRecorder> binding_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(MockPaintPreviewRecorder);
+  MockPaintPreviewRecorder(const MockPaintPreviewRecorder&) = delete;
+  MockPaintPreviewRecorder& operator=(const MockPaintPreviewRecorder&) = delete;
 };
 
 // Returns the GUID corresponding to |rfh|.
@@ -127,7 +127,10 @@ class PaintPreviewClientRenderViewHostTest
   base::ScopedTempDir temp_dir_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PaintPreviewClientRenderViewHostTest);
+  PaintPreviewClientRenderViewHostTest(
+      const PaintPreviewClientRenderViewHostTest&) = delete;
+  PaintPreviewClientRenderViewHostTest& operator=(
+      const PaintPreviewClientRenderViewHostTest&) = delete;
 };
 
 TEST_F(PaintPreviewClientRenderViewHostTest, CaptureMainFrameMock) {

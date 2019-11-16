@@ -254,6 +254,7 @@
 <translation id="1365180424462182382">您的<ph name="BEGIN_LINK" />浏览器<ph name="END_LINK" />由 <ph name="ENROLLMENT_DOMAIN" /> 管理</translation>
 <translation id="1366177842110999534">在 <ph name="DEVICE_TYPE" /> 上运行 Linux 工具、编辑器和 IDE。&lt;a target="_blank" href="<ph name="URL" />"&gt;了解详情&lt;/a&gt;</translation>
 <translation id="1367951781824006909">选择文件</translation>
+<translation id="1369149969991017342">开关控制（只需 1-2 个开关即可控制计算机）</translation>
 <translation id="1372841398847029212">同步到您的帐号中</translation>
 <translation id="1374844444528092021">网络“<ph name="NETWORK_NAME" />”所需的证书尚未安装或已无效。请获取新的证书并尝试重新连接。</translation>
 <translation id="1375321115329958930">已保存的密码</translation>
@@ -562,6 +563,7 @@
 <translation id="1794791083288629568">发送反馈，以协助我们解决此问题。</translation>
 <translation id="1795214765651529549">使用经典主题背景</translation>
 <translation id="1799071797295057738">扩展程序“<ph name="EXTENSION_NAME" />”已被自动停用。</translation>
+<translation id="1802624026913571222">合盖后休眠</translation>
 <translation id="1802687198411089702">该页面没有响应。您可以继续等待，也可以退出。</translation>
 <translation id="1802931390041703523">已禁止在此网页上运行 Flash</translation>
 <translation id="1803531841600994172">翻译目标语言</translation>
@@ -663,6 +665,7 @@
 <translation id="1937774647013465102">无法使用此设备（即 <ph name="ARCHITECTURE_DEVICE" />）导入容器架构类型 <ph name="ARCHITECTURE_CONTAINER" />。您既可尝试将此容器恢复到另一设备中，也可使用“文件”应用打开此容器映像内的文件以进行访问。</translation>
 <translation id="1938351510777341717">外部命令</translation>
 <translation id="1940546824932169984">已连接的设备</translation>
+<translation id="1942600407708803723">合盖后关机</translation>
 <translation id="1944921356641260203">发现更新</translation>
 <translation id="1946577776959096882">查看帐号</translation>
 <translation id="1951012854035635156">智能助理</translation>
@@ -2434,6 +2437,7 @@
 <translation id="4546308221697447294">使用 Google Chrome 进行快速浏览</translation>
 <translation id="4547659257713117923">没有从其他设备打开的标签页</translation>
 <translation id="4547672827276975204">自动设置</translation>
+<translation id="4549791035683739768">您的安全密钥未存储任何指纹</translation>
 <translation id="4551763574344810652">按 <ph name="MODIFIER_KEY_DESCRIPTION" /> 即可撤消</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4554591392113183336">外部扩展程序的版本与现有版本相同或更低。</translation>
@@ -2613,6 +2617,7 @@
 <translation id="4839303808932127586">视频另存为(&amp;V)...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{另外 1 项内容}other{另外 # 项内容}}</translation>
 <translation id="4842976633412754305">此网页正试图从未经验证的来源加载脚本。</translation>
+<translation id="4843488774506045600">登录服务提供方：<ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">其他键盘布局</translation>
 <translation id="4846680374085650406">您目前所采用的是管理员的建议设置。</translation>
 <translation id="4848518990323155912">启用 SIM 卡锁定功能（需要输入 PIN 码才能使用移动数据网络）</translation>
@@ -3065,6 +3070,7 @@
 <translation id="5511823366942919280">确定要将此设备设为“Shark”吗？</translation>
 <translation id="5512653252560939721">用户证书必须受硬件支持。</translation>
 <translation id="5517304475148761050">此应用需要获得对 Play 商店的访问权限</translation>
+<translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> - <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">正在将打印机添加到您的帐号 - 这可能需要一段时间…</translation>
 <translation id="5518219166343146486">当网站想查看复制到剪贴板的文字和图片时询问您</translation>
 <translation id="5518584115117143805">电子邮件加密证书</translation>
@@ -3183,6 +3189,7 @@
 <translation id="567643736130151854">您只需登录帐号并开启同步功能，即可将您的书签和密码等信息同步到所有设备上</translation>
 <translation id="5677503058916217575">网页语言：</translation>
 <translation id="5677928146339483299">已禁止</translation>
+<translation id="5678293144564424498">应用已暂停</translation>
 <translation id="5678550637669481956">已授予对 <ph name="VOLUME_NAME" />的读写权限。</translation>
 <translation id="5678955352098267522">读取您在 <ph name="WEBSITE_1" /> 上的数据</translation>
 <translation id="5684661240348539843">资产标识符</translation>
@@ -3449,6 +3456,7 @@
 <translation id="6055392876709372977">PKCS #1，带有 RSA 加密的 SHA-256</translation>
 <translation id="6056710589053485679">正常重新加载</translation>
 <translation id="6057381398996433816">此网站已被禁止使用动态传感器和光传感器。</translation>
+<translation id="6058567592298841668">插件虚拟机：<ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">证书层次结构</translation>
 <translation id="6059925163896151826">USB 设备</translation>
 <translation id="6061882183774845124">将链接发送到您的设备</translation>
@@ -4397,6 +4405,7 @@
 <translation id="7476454130948140105">电量太低 (<ph name="BATTERY_PERCENT" />%)，无法更新</translation>
 <translation id="7477793887173910789">控制您的音乐、视频等媒体内容</translation>
 <translation id="7478485216301680444">无法安装自助服务终端应用。</translation>
+<translation id="7479221278376295180">存储空间使用情况概览</translation>
 <translation id="7481312909269577407">前进</translation>
 <translation id="748138892655239008">证书基本约束</translation>
 <translation id="7487067081878637334">技术</translation>
@@ -5372,6 +5381,7 @@
 <translation id="8845001906332463065">获取帮助</translation>
 <translation id="8846132060409673887">查看此计算机的制造商和型号</translation>
 <translation id="8846141544112579928">正在搜索键盘…</translation>
+<translation id="8847523528195140327">合盖后退出帐号</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8850251000316748990">查看更多…</translation>
 <translation id="885246833287407341">API 函数参数</translation>
@@ -5434,6 +5444,7 @@
 <translation id="8930351635855238750">您需要重新加载网页，才能使新的 Cookie 设置生效</translation>
 <translation id="8931394284949551895">新设备</translation>
 <translation id="893254996965966411">您可以将检测到的打印机保存到您的配置文件，或添加新的打印机。</translation>
+<translation id="8932894639908691771">开关控制选项</translation>
 <translation id="8933960630081805351">在 Finder 中显示(&amp;S)</translation>
 <translation id="8934732568177537184">继续</translation>
 <translation id="8938800817013097409">USB-C 设备（背面右侧端口）</translation>
@@ -5497,6 +5508,7 @@
 <translation id="9023015617655685412">为此标签页添加书签…</translation>
 <translation id="9024127637873500333">在新标签页中打开(&amp;O)</translation>
 <translation id="9024158959543687197">装载共享资源时出错。请检查文件共享网址，然后重试。</translation>
+<translation id="9024885274934357065">您的设备可通过 Smart Lock 解锁。按 Enter 键即可解锁。</translation>
 <translation id="9026731007018893674">下载</translation>
 <translation id="9026852570893462412">此过程可能需要几分钟的时间。正在下载虚拟机。</translation>
 <translation id="9027459031423301635">在新标签页中打开链接(&amp;T)</translation>

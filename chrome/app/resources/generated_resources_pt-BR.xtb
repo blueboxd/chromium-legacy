@@ -181,6 +181,7 @@
 <translation id="1241753985463165747">Ler e alterar todos os seus dados no website atual quando invocado</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> deseja redefinir suas configurações.</translation>
 <translation id="1243314992276662751">Fazer upload</translation>
+<translation id="1243398753772016127">O Google Sites não pode usar sua atividade de navegação em diferentes sites para personalizar anúncios</translation>
 <translation id="1244265436519979884">A restauração do Linux está em andamento</translation>
 <translation id="1244303850296295656">Erro na extensão</translation>
 <translation id="1246905108078336582">Remover sugestão da área de transferência?</translation>
@@ -253,6 +254,7 @@
 <translation id="1365180424462182382">Seu <ph name="BEGIN_LINK" />navegador é gerenciado<ph name="END_LINK" /> por <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="1366177842110999534">Execute ferramentas, editores e ambientes de desenvolvimento integrado do Linux no seu <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Saiba mais&lt;/a&gt;</translation>
 <translation id="1367951781824006909">Escolher um arquivo</translation>
+<translation id="1369149969991017342">Acesso com interruptor (controlar o computador com apenas um ou dois interruptores)</translation>
 <translation id="1372841398847029212">Sincronizar com sua conta</translation>
 <translation id="1374844444528092021">O certificado exigido pela rede "<ph name="NETWORK_NAME" />" não está instalado ou não é mais válido. Obtenha um novo certificado e tente se conectar novamente.</translation>
 <translation id="1375321115329958930">Senhas salvas</translation>
@@ -564,6 +566,7 @@
 <translation id="1794791083288629568">Envie um feedback para nos ajudar a corrigir esse problema.</translation>
 <translation id="1795214765651529549">Usar "Clássico"</translation>
 <translation id="1799071797295057738">A extensão "<ph name="EXTENSION_NAME" />" foi desativada automaticamente.</translation>
+<translation id="1802624026913571222">Suspender quando a capa for fechada</translation>
 <translation id="1802687198411089702">A página não está respondendo. Você pode esperar até que ele volte a responder ou sair.</translation>
 <translation id="1802931390041703523">O Flash foi bloqueado nesta página</translation>
 <translation id="1803531841600994172">Idioma de destino</translation>
@@ -665,6 +668,7 @@
 <translation id="1937774647013465102">Não é possível importar o tipo de arquitetura de contêiner <ph name="ARCHITECTURE_CONTAINER" /> com este dispositivo, que é <ph name="ARCHITECTURE_DEVICE" />. Tente restaurar esse contêiner em um dispositivo diferente ou acesse os arquivos que estão dentro desta imagem do contêiner abrindo-os no app Arquivos.</translation>
 <translation id="1938351510777341717">Comando externo</translation>
 <translation id="1940546824932169984">Dispositivos conectados</translation>
+<translation id="1942600407708803723">Desligar quando a capa for fechada</translation>
 <translation id="1944921356641260203">Atualização encontrada</translation>
 <translation id="1946577776959096882">Visualizar contas</translation>
 <translation id="1951012854035635156">Assistente</translation>
@@ -2438,6 +2442,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4546308221697447294">Navegue rapidamente com o Google Chrome</translation>
 <translation id="4547659257713117923">Nenhuma guia de outros dispositivos</translation>
 <translation id="4547672827276975204">Definir automaticamente</translation>
+<translation id="4549791035683739768">Sua chave de segurança não tem nenhuma impressão digital armazenada</translation>
 <translation id="4551763574344810652">Pressione <ph name="MODIFIER_KEY_DESCRIPTION" /> para desfazer</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4554591392113183336">A extensão externa está na mesma versão ou em uma versão anterior à existente.</translation>
@@ -2617,6 +2622,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4839303808932127586">Sal&amp;var vídeo como...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{Mais 1}one{Mais #}other{Mais #}}</translation>
 <translation id="4842976633412754305">Esta página está tentando carregar scripts de fontes não autenticadas.</translation>
+<translation id="4843488774506045600">Login fornecido por <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Outros teclados</translation>
 <translation id="4846680374085650406">Você está seguindo a recomendação do administrador para esta configuração.</translation>
 <translation id="4848518990323155912">Ativar bloqueio do chip (PIN necessário para o uso de dados móveis)</translation>
@@ -3069,6 +3075,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="5511823366942919280">Tem certeza que quer configurar este dispositivo como um "Shark"?</translation>
 <translation id="5512653252560939721">O certificado de usuário deve ter proteção por hardware.</translation>
 <translation id="5517304475148761050">Este app precisa de acesso à Play Store</translation>
+<translation id="5517412723934627386"><ph name="NETWORK_TYPE" />: <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Adicionando a impressora a sua conta. Isso pode demorar um pouco...</translation>
 <translation id="5518219166343146486">Perguntar quando um site quiser ver os textos e imagens copiados para a área de transferência</translation>
 <translation id="5518584115117143805">Certificado de criptografia de e-mail</translation>
@@ -3188,6 +3195,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="567643736130151854">Faça login e ative a sincronização para ver seus favoritos, senhas e muito mais em todos os seus dispositivos.</translation>
 <translation id="5677503058916217575">Idioma da página:</translation>
 <translation id="5677928146339483299">Bloqueado</translation>
+<translation id="5678293144564424498">App pausado</translation>
 <translation id="5678550637669481956">Foi concedido acesso de leitura e gravação a <ph name="VOLUME_NAME" />.</translation>
 <translation id="5678955352098267522">Leia seus dados em <ph name="WEBSITE_1" /></translation>
 <translation id="5684661240348539843">Identificador de recurso</translation>
@@ -3454,6 +3462,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="6055392876709372977">PKCS #1 SHA-256 com criptografia RSA</translation>
 <translation id="6056710589053485679">Recarregamento normal</translation>
 <translation id="6057381398996433816">Este site foi impedido de usar sensores de luz e movimento.</translation>
+<translation id="6058567592298841668">Plug-in de máquina virtual: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Hierarquia de certificados</translation>
 <translation id="6059925163896151826">Dispositivos USB</translation>
 <translation id="6061882183774845124">Enviar link para seus dispositivos</translation>
@@ -4403,6 +4412,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7476454130948140105">Bateria muito fraca para atualizar (<ph name="BATTERY_PERCENT" />%</translation>
 <translation id="7477793887173910789">Controle suas músicas, seus vídeos e muito mais</translation>
 <translation id="7478485216301680444">Não foi possível instalar o aplicativo de quiosque.</translation>
+<translation id="7479221278376295180">Visão geral do uso do armazenamento</translation>
 <translation id="7481312909269577407">Avançar</translation>
 <translation id="748138892655239008">Restrições básicas do certificado </translation>
 <translation id="7487067081878637334">Tecnologia</translation>
@@ -5379,6 +5389,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8845001906332463065">Ajuda</translation>
 <translation id="8846132060409673887">Ler as informações sobre o fabricante e modelo deste computador</translation>
 <translation id="8846141544112579928">Procurando teclado...</translation>
+<translation id="8847523528195140327">Sair quando a capa for fechada</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8850251000316748990">Ver mais…</translation>
 <translation id="885246833287407341">Argumentos de função da API</translation>
@@ -5441,6 +5452,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8930351635855238750">Novas configurações de cookies entrarão em vigor depois que a página for atualizada</translation>
 <translation id="8931394284949551895">Novos dispositivos</translation>
 <translation id="893254996965966411">Salve impressoras detectadas no perfil ou adicione uma nova impressora.</translation>
+<translation id="8932894639908691771">Opções do "acesso com interruptor"</translation>
 <translation id="8933960630081805351">&amp;Mostrar no Finder</translation>
 <translation id="8934732568177537184">Continuar</translation>
 <translation id="8938800817013097409">Dispositivo USB-C (porta traseira da direita)</translation>
@@ -5504,6 +5516,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="9023015617655685412">Adicionar esta guia aos favoritos...</translation>
 <translation id="9024127637873500333">&amp;Abrir em nova guia</translation>
 <translation id="9024158959543687197">Erro ao ativar o compartilhamento. Verifique o URL de compartilhamento de arquivos e tente novamente.</translation>
+<translation id="9024885274934357065">Seu dispositivo foi desbloqueado com o Smart Lock. Pressione "Enter" para desbloquear.</translation>
 <translation id="9026731007018893674">download</translation>
 <translation id="9026852570893462412">O processo pode levar alguns minutos. Fazendo o download da máquina virtual.</translation>
 <translation id="9027459031423301635">Abrir link em uma nova &amp;guia</translation>

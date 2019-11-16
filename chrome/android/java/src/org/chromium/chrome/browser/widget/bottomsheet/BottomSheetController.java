@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.widget.bottomsheet;
 
 import android.view.View;
+import android.view.Window;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
@@ -27,6 +28,7 @@ import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.ScrimView.ScrimObserver;
 import org.chromium.chrome.browser.widget.ScrimView.ScrimParams;
+import org.chromium.ui.KeyboardVisibilityDelegate;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -42,6 +44,12 @@ import java.util.PriorityQueue;
  * content was actually shown (see full doc on method).
  */
 public class BottomSheetController implements Destroyable {
+    /**
+     * The base duration of the settling animation of the sheet. 218 ms is a spec for material
+     * design (this is the minimum time a user is guaranteed to pay attention to something).
+     */
+    public static final int BASE_ANIMATION_DURATION_MS = 218;
+
     /** The different states that the bottom sheet can have. */
     @IntDef({SheetState.NONE, SheetState.HIDDEN, SheetState.PEEK, SheetState.HALF, SheetState.FULL,
             SheetState.SCROLLING})
@@ -141,15 +149,16 @@ public class BottomSheetController implements Destroyable {
      * @param lifecycleDispatcher The {@link ActivityLifecycleDispatcher} for the {@code activity}.
      * @param activityTabProvider The provider of the activity's current tab.
      * @param scrim The scrim that shows when the bottom sheet is opened.
-     * @param bottomSheetSupplier A mechanism for creating a {@link BottomSheet}.
+     * @param bottomSheetViewSupplier A mechanism for creating a {@link BottomSheet}.
      * @param overlayManager A supplier of the manager for overlay panels to attach listeners to.
      *                       This is a supplier to get around wating for native to be initialized.
      * @param fullscreenManager A fullscreen manager for access to browser controls offsets.
      */
     public BottomSheetController(final ActivityLifecycleDispatcher lifecycleDispatcher,
             final ActivityTabProvider activityTabProvider, final ScrimView scrim,
-            Supplier<BottomSheet> bottomSheetSupplier, Supplier<OverlayPanelManager> overlayManager,
-            ChromeFullscreenManager fullscreenManager) {
+            Supplier<View> bottomSheetViewSupplier, Supplier<OverlayPanelManager> overlayManager,
+            ChromeFullscreenManager fullscreenManager, Window window,
+            KeyboardVisibilityDelegate keyboardDelegate) {
         mTabProvider = activityTabProvider;
         mOverlayPanelManager = overlayManager;
         mFullscreenManager = fullscreenManager;
@@ -215,7 +224,8 @@ public class BottomSheetController implements Destroyable {
         mFullscreenManager.addListener(mFullscreenListener);
 
         mSheetInitializer = () -> {
-            initializeSheet(lifecycleDispatcher, scrim, bottomSheetSupplier);
+            initializeSheet(
+                    lifecycleDispatcher, scrim, bottomSheetViewSupplier, window, keyboardDelegate);
         };
     }
 
@@ -223,11 +233,13 @@ public class BottomSheetController implements Destroyable {
      * Do the actual initialization of the bottom sheet.
      * @param lifecycleDispatcher A means of binding to the activity's lifecycle.
      * @param scrim The scrim to show behind the sheet.
-     * @param bottomSheetSupplier A means of creating the bottom sheet.
+     * @param bottomSheetViewSupplier A means of creating the bottom sheet.
      */
     private void initializeSheet(final ActivityLifecycleDispatcher lifecycleDispatcher,
-            final ScrimView scrim, Supplier<BottomSheet> bottomSheetSupplier) {
-        mBottomSheet = bottomSheetSupplier.get();
+            final ScrimView scrim, Supplier<View> bottomSheetViewSupplier, Window window,
+            KeyboardVisibilityDelegate keyboardDelegate) {
+        mBottomSheet = (BottomSheet) bottomSheetViewSupplier.get();
+        mBottomSheet.init(mTabProvider, window, keyboardDelegate);
 
         // Initialize the queue with a comparator that checks content priority.
         mContentQueue = new PriorityQueue<>(INITIAL_QUEUE_CAPACITY,
@@ -498,6 +510,16 @@ public class BottomSheetController implements Destroyable {
     @VisibleForTesting
     public View getBottomSheetViewForTesting() {
         return mBottomSheet;
+    }
+
+    /**
+     * This is the same as {@link BottomSheet#setSheetOffsetFromBottom(float, int)} but exclusively
+     * for testing.
+     * @param offset The offset to set the sheet to.
+     */
+    @VisibleForTesting
+    public void setSheetOffsetFromBottomForTesting(float offset) {
+        mBottomSheet.setSheetOffsetFromBottom(offset, StateChangeReason.NONE);
     }
 
     /**

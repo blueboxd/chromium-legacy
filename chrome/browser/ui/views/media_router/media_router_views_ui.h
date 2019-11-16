@@ -114,10 +114,6 @@ class MediaRouterViewsUI
   // Calls MediaRouter to terminate the given route.
   void TerminateRoute(const MediaRoute::Id& route_id);
 
-  // Logs a UMA stat for the source that was cast if the result is successful.
-  void MaybeReportCastingSource(MediaCastMode cast_mode,
-                                const RouteRequestResult& result);
-
   // Returns a subset of |sinks_| that should be listed in the dialog. This
   // excludes the wired display that the initiator WebContents is on.
   // Also filters cloud sinks in incognito windows.

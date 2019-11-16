@@ -8,6 +8,7 @@
 #include "net/base/net_export.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
+#include "url/gurl.h"
 
 namespace net {
 
@@ -20,6 +21,12 @@ class NET_EXPORT CookieAccessDelegate {
   // whether a policy specifies that legacy access semantics should apply).
   virtual CookieAccessSemantics GetAccessSemantics(
       const CanonicalCookie& cookie) const = 0;
+
+  // Returns whether a cookie should be attached regardless of its SameSite
+  // value vs the request context.
+  virtual bool ShouldIgnoreSameSiteRestrictions(
+      const GURL& url,
+      const GURL& site_for_cookies) const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CookieAccessDelegate);

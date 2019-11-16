@@ -205,17 +205,15 @@ function assertShown(allDivs, dialog, expectedID) {
 
 
 suite('SecurityKeysResetDialog', function() {
-  const allDivs = [
-    'initial', 'noReset', 'resetFailed', 'reset2', 'resetSuccess',
-    'resetNotAllowed'
-  ];
   let dialog = null;
+  let allDivs = null;
 
   setup(function() {
     browserProxy = new TestSecurityKeysResetBrowserProxy();
     settings.SecurityKeysResetBrowserProxyImpl.instance_ = browserProxy;
     PolymerTest.clearBody();
     dialog = document.createElement('settings-security-keys-reset-dialog');
+    allDivs = Object.values(settings.ResetDialogPage);
   });
 
   function assertComplete() {
@@ -278,7 +276,7 @@ suite('SecurityKeysResetDialog', function() {
     await browserProxy.whenCalled('reset');
     await browserProxy.whenCalled('completeReset');
     assertNotComplete();
-    assertShown(allDivs, dialog, 'reset2');
+    assertShown(allDivs, dialog, 'resetConfirm');
     promiseResolver.resolve(0 /* success */);
     await browserProxy.whenCalled('close');
     assertComplete();
@@ -315,17 +313,15 @@ suite('SecurityKeysResetDialog', function() {
 });
 
 suite('SecurityKeysSetPINDialog', function() {
-  const allDivs = [
-    'initial', 'noPINSupport', 'pinPrompt', 'success', 'error', 'locked',
-    'reinsert'
-  ];
   let dialog = null;
+  let allDivs = null;
 
   setup(function() {
     browserProxy = new TestSecurityKeysPINBrowserProxy();
     settings.SecurityKeysPINBrowserProxyImpl.instance_ = browserProxy;
     PolymerTest.clearBody();
     dialog = document.createElement('settings-security-keys-set-pin-dialog');
+    allDivs = Object.values(settings.SetPINDialogPage);
   });
 
   function assertComplete() {
@@ -556,8 +552,8 @@ suite('SecurityKeysSetPINDialog', function() {
 });
 
 suite('SecurityKeysCredentialManagement', function() {
-  const allDivs = ['initial', 'pinPrompt', 'credentials', 'error'];
   let dialog = null;
+  let allDivs = null;
 
   setup(function() {
     browserProxy = new TestSecurityKeysCredentialBrowserProxy();
@@ -565,6 +561,7 @@ suite('SecurityKeysCredentialManagement', function() {
     PolymerTest.clearBody();
     dialog = document.createElement(
         'settings-security-keys-credential-management-dialog');
+    allDivs = Object.values(settings.CredentialManagementDialogPage);
   });
 
   test('Initialization', async function() {
@@ -680,15 +677,15 @@ suite('SecurityKeysCredentialManagement', function() {
 });
 
 suite('SecurityKeysBioEnrollment', function() {
-  const allDivs =
-      ['initial', 'pinPrompt', 'enrollments', 'enroll', 'chooseName', 'error'];
   let dialog = null;
+  let allDivs = null;
 
   setup(function() {
     browserProxy = new TestSecurityKeysBioEnrollProxy();
     settings.SecurityKeysBioEnrollProxyImpl.instance_ = browserProxy;
     PolymerTest.clearBody();
     dialog = document.createElement('settings-security-keys-bio-enroll-dialog');
+    allDivs = Object.values(settings.BioEnrollDialogPage);
   });
 
   test('Initialization', async function() {

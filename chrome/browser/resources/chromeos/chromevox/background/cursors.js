@@ -670,7 +670,7 @@ cursors.WrappingCursor.prototype = {
       }
 
       if (playEarcon) {
-        cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.WRAP);
+        ChromeVox.earcons.playEarcon(Earcon.WRAP);
       }
 
       return new cursors.WrappingCursor(endpoint, cursors.NODE_INDEX);

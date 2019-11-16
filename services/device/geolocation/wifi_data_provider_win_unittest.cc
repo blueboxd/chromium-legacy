@@ -17,7 +17,7 @@ TEST(GeolocationWifiDataProviderWinTest, CreateDestroy) {
   base::test::SingleThreadTaskEnvironment task_environment(
       base::test::SingleThreadTaskEnvironment::MainThreadType::UI);
   scoped_refptr<WifiDataProviderWin> instance(new WifiDataProviderWin);
-  instance = NULL;
+  instance.reset();
   SUCCEED();
   // Can't actually call start provider on the WifiDataProviderWin without
   // it accessing hardware and so risking making the test flaky.

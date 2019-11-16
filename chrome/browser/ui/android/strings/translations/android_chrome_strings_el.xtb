@@ -12,6 +12,7 @@
 <translation id="107147699690128016">Εάν αλλάξετε την επέκταση αρχείου, το αρχείο μπορεί να ανοίξει σε διαφορετική εφαρμογή και να αποτελέσει δυνητικό κίνδυνο για τη συσκευή σας.</translation>
 <translation id="1100066534610197918">Άνοιγμα σε νέα καρτ. σε ομάδα</translation>
 <translation id="1105960400813249514">Λήψη οθόνης</translation>
+<translation id="1110022065703191351">Εικονίδια</translation>
 <translation id="1111673857033749125">Οι σελιδοδείκτες που είναι αποθηκευμένοι σε άλλες συσκευές θα εμφανίζονται εδώ.</translation>
 <translation id="1113597929977215864">Εμφάνιση απλοποιημένης προβολής</translation>
 <translation id="1124772482545689468">Χρήστης</translation>
@@ -363,6 +364,7 @@
 <translation id="3730075448226062617">Για να επιτρέψετε στο Chrome να αποκτήσει πρόσβαση στο μικρόφωνό σας, ενεργοποιήστε επίσης το μικρόφωνο στις <ph name="BEGIN_LINK" />Ρυθμίσεις Android<ph name="END_LINK" />.</translation>
 <translation id="3739899004075612870">Ο σελιδοδείκτης προστέθηκε στο <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Συγχρονισμός παρασκηνίου</translation>
+<translation id="3749259744154402564">Δεν υποστηρίζεται</translation>
 <translation id="3771001275138982843">Δεν ήταν δυνατή η λήψη της ενημέρωσης</translation>
 <translation id="3771033907050503522">Καρτ.αν.περιήγ.</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Ενεργοποιήστε το Bluetooth<ph name="END_LINK" />, για να επιτρέψετε τη σύζευξη</translation>
@@ -576,6 +578,7 @@
 <translation id="5327248766486351172">Όνομα</translation>
 <translation id="5335288049665977812">Να επιτρέπεται στους ιστότοπους να εκτελούν JavaScript (συνιστάται)</translation>
 <translation id="5342314432463739672">Αιτήματα για άδειες</translation>
+<translation id="534295439873310000">Συσκευές NFC</translation>
 <translation id="5357811892247919462">Έγινε λήψη της καρτέλας</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> ανοιχτή καρτέλα, πατήστε για εναλλαγή καρτελών}other{<ph name="OPEN_TABS_MANY" /> ανοιχτές καρτέλες, πατήστε για εναλλαγή καρτελών}}</translation>
 <translation id="5391532827096253100">Η σύνδεσή σας σε αυτόν τον ιστότοπο δεν είναι ασφαλής. Πληροφορίες ιστοτόπου</translation>
@@ -632,6 +635,7 @@
 <translation id="5686790454216892815">Το όνομα του αρχείου είναι πολύ μεγάλο</translation>
 <translation id="5689516760719285838">Τοποθεσία</translation>
 <translation id="569536719314091526">Μεταφράστε αυτήν τη σελίδα σε οποιαδήποτε γλώσσα από το κουμπί "Περισσότερες επιλογές"</translation>
+<translation id="5710871682236653961">Να γίνεται ερώτηση προτού επιτραπεί σε ιστοτόπους η αποστολή ή η λήψη πληροφοριών κατά το πάτημα συσκευών NFC (συνιστάται).</translation>
 <translation id="572328651809341494">Πρόσφατες καρτέλες</translation>
 <translation id="5726692708398506830">Μεγέθυνση όλων των στοιχείων της σελίδας</translation>
 <translation id="5748802427693696783">Έγινε εναλλαγή σε τυπικές καρτέλες</translation>
@@ -881,6 +885,7 @@
 <translation id="7559975015014302720">Η λειτουργία Lite είναι απενεργοποιημένη</translation>
 <translation id="7562080006725997899">Διαγραφή δεδομένων περιήγησης</translation>
 <translation id="756809126120519699">Τα δεδομένα του Chrome διαγράφηκαν</translation>
+<translation id="7572498721684305250">Αποκλεισμός ιστοτόπων από την αποστολή ή τη λήψη πληροφοριών κατά το πάτημα συσκευών NFC.</translation>
 <translation id="757524316907819857">Αποκλεισμός αναπαραγωγής προστατευόμενου περιεχομένου από ιστοτόπους</translation>
 <translation id="757855969265046257">{FILES,plural, =1{Έγινε λήψη <ph name="FILES_DOWNLOADED_ONE" /> αρχείου}other{Έγινε λήψη <ph name="FILES_DOWNLOADED_MANY" /> αρχείων}}</translation>
 <translation id="7588219262685291874">Ενεργοποιήστε το σκούρο θέμα όταν η λειτουργία εξοικονόμησης μπαταρίας της συσκευής σας είναι ενεργοποιημένη.</translation>

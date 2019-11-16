@@ -12,17 +12,9 @@ namespace weblayer {
 
 SafeBrowsingUIManager::SafeBrowsingUIManager() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // TODO(timvolodine): properly init the ui manager and the context.
 }
 
 SafeBrowsingUIManager::~SafeBrowsingUIManager() {}
-
-void SafeBrowsingUIManager::DisplayBlockingPage(
-    const UnsafeResource& resource) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // TODO(timvolodine): check if we can reuse the base class implementation here
-  // as is.
-}
 
 void SafeBrowsingUIManager::SendSerializedThreatDetails(
     const std::string& serialized) {

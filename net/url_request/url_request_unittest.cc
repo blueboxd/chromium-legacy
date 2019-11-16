@@ -80,6 +80,7 @@
 #include "net/cookies/canonical_cookie_test_helpers.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store_test_helpers.h"
+#include "net/cookies/test_cookie_access_delegate.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_byte_range.h"
@@ -2399,6 +2400,93 @@ TEST_F(URLRequestTest, SettingSameSiteCookies) {
     // attempted to be set, and were not rejected by the NetworkDelegate, so the
     // count here is 2 more than the number of cookies actually set.
     EXPECT_EQ(expected_cookies + 2, network_delegate.set_cookie_count());
+  }
+}
+
+// Tests special chrome:// scheme that is supposed to always attach SameSite
+// cookies if the requested site is secure.
+TEST_F(URLRequestTest, SameSiteCookiesSpecialScheme) {
+  EmbeddedTestServer https_test_server(EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.AddDefaultHandlers(base::FilePath());
+  ASSERT_TRUE(https_test_server.Start());
+  EmbeddedTestServer http_test_server(EmbeddedTestServer::TYPE_HTTP);
+  http_test_server.AddDefaultHandlers(base::FilePath());
+  // Ensure they are on different ports.
+  ASSERT_TRUE(http_test_server.Start(https_test_server.port() + 1));
+  // Both hostnames should be 127.0.0.1 (so that we can use the same set of
+  // cookies on both, for convenience).
+  ASSERT_EQ(https_test_server.host_port_pair().host(),
+            http_test_server.host_port_pair().host());
+
+  // Set up special schemes
+  auto cad = std::make_unique<TestCookieAccessDelegate>();
+  cad->SetIgnoreSameSiteRestrictionsScheme("chrome", true);
+
+  CookieMonster cm(nullptr, nullptr);
+  cm.SetCookieAccessDelegate(std::move(cad));
+
+  TestURLRequestContext context(true);
+  context.set_cookie_store(&cm);
+  context.Init();
+
+  // SameSite cookies are not set for 'chrome' scheme if requested origin is not
+  // secure.
+  {
+    TestDelegate d;
+    std::unique_ptr<URLRequest> req(context.CreateRequest(
+        http_test_server.GetURL(
+            "/set-cookie?StrictSameSiteCookie=1;SameSite=Strict&"
+            "LaxSameSiteCookie=1;SameSite=Lax"),
+        DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->set_site_for_cookies(GURL("chrome://whatever/"));
+    req->Start();
+    d.RunUntilComplete();
+    EXPECT_EQ(0u, GetAllCookies(&context).size());
+  }
+
+  // But they are set for 'chrome' scheme if the requested origin is secure.
+  {
+    TestDelegate d;
+    std::unique_ptr<URLRequest> req(context.CreateRequest(
+        https_test_server.GetURL(
+            "/set-cookie?StrictSameSiteCookie=1;SameSite=Strict&"
+            "LaxSameSiteCookie=1;SameSite=Lax"),
+        DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->set_site_for_cookies(GURL("chrome://whatever/"));
+    req->Start();
+    d.RunUntilComplete();
+    CookieList cookies = GetAllCookies(&context);
+    EXPECT_EQ(2u, cookies.size());
+  }
+
+  // Verify that they are both sent when the site_for_cookies scheme is
+  // 'chrome' and the requested origin is secure.
+  {
+    TestDelegate d;
+    std::unique_ptr<URLRequest> req(context.CreateRequest(
+        https_test_server.GetURL("/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
+        TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->set_site_for_cookies(GURL("chrome://whatever/"));
+    req->Start();
+    d.RunUntilComplete();
+    EXPECT_NE(std::string::npos,
+              d.data_received().find("StrictSameSiteCookie=1"));
+    EXPECT_NE(std::string::npos, d.data_received().find("LaxSameSiteCookie=1"));
+  }
+
+  // Verify that they are not sent when the site_for_cookies scheme is
+  // 'chrome' and the requested origin is not secure.
+  {
+    TestDelegate d;
+    std::unique_ptr<URLRequest> req(context.CreateRequest(
+        http_test_server.GetURL("/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
+        TRAFFIC_ANNOTATION_FOR_TESTS));
+    req->set_site_for_cookies(GURL("chrome://whatever/"));
+    req->Start();
+    d.RunUntilComplete();
+    EXPECT_EQ(std::string::npos,
+              d.data_received().find("StrictSameSiteCookie"));
+    EXPECT_EQ(std::string::npos, d.data_received().find("LaxSameSiteCookie"));
   }
 }
 

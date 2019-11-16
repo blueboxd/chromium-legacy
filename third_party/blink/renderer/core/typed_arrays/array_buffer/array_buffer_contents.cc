@@ -58,6 +58,9 @@ ArrayBufferContents::ArrayBufferContents(
   }
   size_t length = checked_length.ValueOrDie();
   void* data = AllocateMemoryOrNull(length, policy);
+  if (!data) {
+    return;
+  }
   auto deleter = [](void* data, size_t, void*) { FreeMemory(data); };
   if (is_shared == kNotShared) {
     backing_store_ =

@@ -50,6 +50,12 @@ class CallbackCookieSettings : public CookieSettingsBase {
         net::cookie_util::CookieOriginToURL(cookie_domain, false);
     *setting = callback_.Run(cookie_domain_url);
   }
+  bool ShouldIgnoreSameSiteRestrictions(
+      const GURL& url,
+      const GURL& site_for_cookies) const override {
+    NOTREACHED();
+    return false;
+  }
 
  private:
   GetSettingCallback callback_;

@@ -2868,6 +2868,33 @@ TEST_F(HttpCacheTest, RangeGET_CachedRedirect) {
   EXPECT_EQ(1, cache.network_layer()->transaction_count());
   EXPECT_EQ(1, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  // Now read the full body. This normally would not be done for a 301 by
+  // higher layers, but e.g. a 500 could hit a further bug here.
+  {
+    std::unique_ptr<HttpTransaction> trans;
+    ASSERT_THAT(cache.CreateTransaction(&trans), IsOk());
+
+    int rv = trans->Start(&request, callback.callback(), NetLogWithSource());
+    if (rv == ERR_IO_PENDING)
+      rv = callback.WaitForResult();
+    ASSERT_THAT(rv, IsOk());
+
+    const HttpResponseInfo* info = trans->GetResponseInfo();
+    ASSERT_TRUE(info);
+
+    EXPECT_EQ(info->headers->response_code(), 301);
+
+    std::string location;
+    info->headers->EnumerateHeader(nullptr, "Location", &location);
+    EXPECT_EQ(location, "/elsewhere");
+
+    ReadAndVerifyTransaction(trans.get(), transaction);
+  }
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  // No extra open since it picks up a previous ActiveEntry.
+  EXPECT_EQ(1, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
 }
 
 // A transaction that fails to validate an entry, while attempting to write

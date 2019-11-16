@@ -12,9 +12,8 @@
   <template>
     <style include="cr-icons cr-hidden-style">
       :host {
-        --cr-icon-button-focus-color: var(--google-blue-700);
         align-items: center;
-        background-color: var(--google-blue-700);
+        background-color: var(--cr-toolbar-background-color);
         color: #fff;
         display: flex;
         height: var(--cr-toolbar-height);
@@ -22,10 +21,6 @@
 
       @media (prefers-color-scheme: dark) {
         :host {
-          /* Toolbar background color rgba(255, 255, 255, .04) added to body
-             background color --google-grey-900. */
-          --cr-icon-button-focus-color: #28292c;
-          background-color: rgba(255, 255, 255, .04);
           border-bottom: var(--cr-separator-line);
           box-sizing: border-box;
           color: var(--cr-secondary-text-color);
@@ -63,6 +58,7 @@
       }
 
       cr-icon-button {
+        --cr-icon-button-fill-color-focus: var(--cr-toolbar-background-color);
         --cr-icon-button-size: 32px;
         min-width: 32px;
       }

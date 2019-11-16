@@ -100,8 +100,9 @@ class MediaRouterMetrics {
   static const char kHistogramStartLocalSessionSuccessful[];
   static const char kHistogramStopRoute[];
   static const char kHistogramUiDeviceCount[];
-  static const char kHistogramUiDialogPaint[];
+  static const char kHistogramUiDialogIconStateAtOpen[];
   static const char kHistogramUiDialogLoadedWithData[];
+  static const char kHistogramUiDialogPaint[];
   static const char kHistogramUiFirstAction[];
 
   // Records where the user clicked to open the Media Router dialog.
@@ -176,6 +177,10 @@ class MediaRouterMetrics {
   // Records whether or not a sink was found for the ID that the user manually
   // entered and attempted to cast to.
   static void RecordSearchSinkOutcome(bool success);
+
+  // Records whether the toolbar icon is pinned by the user pref / admin policy.
+  // Recorded whenever the Cast dialog is opened.
+  static void RecordIconStateAtDialogOpen(bool is_pinned);
 };
 
 }  // namespace media_router

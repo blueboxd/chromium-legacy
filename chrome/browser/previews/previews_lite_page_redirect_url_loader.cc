@@ -135,9 +135,22 @@ void PreviewsLitePageRedirectURLLoader::StartRedirectToPreview(
              GetSessionKeyFromRequestHeaders(chrome_proxy_headers)
                  .has_value());
 
-  GURL original_url = modified_resource_request_.url;
-  GURL lite_page_url =
-      GetLitePageRedirectURLForURL(modified_resource_request_.url);
+  std::string original_url_str;
+  GURL original_url;
+  GURL lite_page_url;
+
+  if (previews::ExtractOriginalURLFromLitePageRedirectURL(
+          modified_resource_request_.url, &original_url_str)) {
+    // We are navigating directly to a lite pages URL. This can happen for
+    // forward/back navigations.
+    original_url = GURL(original_url_str);
+    lite_page_url = modified_resource_request_.url;
+  } else {
+    // We are navigating to an origin URL, which needs to be redirected to a
+    // lite pages URL.
+    original_url = modified_resource_request_.url;
+    lite_page_url = GetLitePageRedirectURLForURL(original_url);
+  }
 
   CreateRedirectInformation(lite_page_url);
 

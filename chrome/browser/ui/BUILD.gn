@@ -88,7 +88,6 @@ jumbo_static_library("ui") {
     "browser_ui_prefs.h",
     "chrome_select_file_policy.cc",
     "chrome_select_file_policy.h",
-    "color/chrome_color_id.h",
     "color_chooser.h",
     "confirm_bubble.h",
     "crypto_module_password_dialog.h",
@@ -373,7 +372,6 @@ jumbo_static_library("ui") {
     "//components/translate/content/browser",
     "//content/public/browser",
     "//mojo/public/cpp/bindings",
-    "//ui/color:color",
   ]
   deps = [
     "//base",
@@ -1379,6 +1377,7 @@ jumbo_static_library("ui") {
       "//chrome/browser/resource_coordinator:tab_metrics_event_proto",
       "//chrome/browser/resource_coordinator/tab_ranker",
       "//chrome/browser/safe_browsing:advanced_protection",
+      "//chrome/browser/ui/color:color",
       "//chrome/browser/ui/webui/app_management:mojo_bindings",
       "//chrome/common:buildflags",
       "//chrome/common:search_mojom",

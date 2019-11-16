@@ -38,7 +38,7 @@ class CSPContextTest : public CSPContext {
 
 ContentSecurityPolicyHeader EmptyCspHeader() {
   return ContentSecurityPolicyHeader(
-      std::string(), blink::mojom::ContentSecurityPolicyType::kEnforce,
+      std::string(), network::mojom::ContentSecurityPolicyType::kEnforce,
       blink::kWebContentSecurityPolicySourceHTTP);
 }
 

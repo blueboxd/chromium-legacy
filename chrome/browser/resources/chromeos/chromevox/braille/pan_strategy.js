@@ -6,7 +6,7 @@
  * content that might not fit on a single display.
  */
 
-goog.provide('cvox.PanStrategy');
+goog.provide('PanStrategy');
 
 /**
  * @constructor
@@ -14,7 +14,7 @@ goog.provide('cvox.PanStrategy');
  * A stateful class that keeps track of the current 'viewport' of a braille
  * display in a line of content.
  */
-cvox.PanStrategy = function() {
+PanStrategy = function() {
   /**
    * @type {{rows: number, columns: number}}
    * @private
@@ -23,7 +23,7 @@ cvox.PanStrategy = function() {
 
   /**
    * Start and end are both inclusive.
-   * @type {!cvox.PanStrategy.Range}
+   * @type {!PanStrategy.Range}
    * @private
    */
   this.viewPort_ = {firstRow: 0, lastRow: 0};
@@ -87,14 +87,14 @@ cvox.PanStrategy = function() {
  * end position.
  * @typedef {{firstRow: number, lastRow: number}}
  */
-cvox.PanStrategy.Range;
+PanStrategy.Range;
 
-cvox.PanStrategy.prototype = {
+PanStrategy.prototype = {
   /**
    * Gets the current viewport which is never larger than the current
    * display size and whose end points are always within the limits of
    * the current content.
-   * @type {!cvox.PanStrategy.Range}
+   * @type {!PanStrategy.Range}
    */
   get viewPort() {
     return this.viewPort_;
@@ -172,9 +172,9 @@ cvox.PanStrategy.prototype = {
       while (startIndex < endIndex) {
         var value = dataView.getUint8(startIndex);
         if (opt_showCursor) {
-          value |= cvox.BrailleDisplayManager.CURSOR_DOTS;
+          value |= BrailleDisplayManager.CURSOR_DOTS;
         } else {
-          value &= ~cvox.BrailleDisplayManager.CURSOR_DOTS;
+          value &= ~BrailleDisplayManager.CURSOR_DOTS;
         }
         dataView.setUint8(startIndex, value);
         startIndex++;

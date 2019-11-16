@@ -138,7 +138,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         return new RootUiCoordinator(this, (toolbarManager) -> {
             mToolbarCoordinator.onToolbarInitialized(toolbarManager);
             mNavigationController.onToolbarInitialized(toolbarManager);
-        }, null);
+        }, null, getShareDelegate());
     }
 
     @Override

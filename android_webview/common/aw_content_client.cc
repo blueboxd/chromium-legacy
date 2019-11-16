@@ -18,6 +18,7 @@
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_util.h"
 #include "ipc/ipc_message.h"
+#include "mojo/public/cpp/bindings/binder_map.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -77,18 +78,21 @@ media::MediaDrmBridgeClient* AwContentClient::GetMediaDrmBridgeClient() {
       AwResource::GetConfigKeySystemUuidMapping());
 }
 
-void AwContentClient::BindChildProcessInterface(
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle* receiving_handle) {
+void AwContentClient::ExposeInterfacesToBrowser(
+    scoped_refptr<base::SequencedTaskRunner> io_task_runner,
+    mojo::BinderMap* binders) {
   // This creates a process-wide heap_profiling::ProfilingClient that listens
   // for requests from the HeapProfilingService to start profiling the current
   // process.
-  static base::NoDestructor<heap_profiling::ProfilingClient> profiling_client;
-  if (interface_name == heap_profiling::ProfilingClient::Name_) {
-    profiling_client->BindToInterface(
-        mojo::PendingReceiver<heap_profiling::mojom::ProfilingClient>(
-            std::move(*receiving_handle)));
-  }
+  binders->Add(
+      base::BindRepeating(
+          [](mojo::PendingReceiver<heap_profiling::mojom::ProfilingClient>
+                 receiver) {
+            static base::NoDestructor<heap_profiling::ProfilingClient>
+                profiling_client;
+            profiling_client->BindToInterface(std::move(receiver));
+          }),
+      io_task_runner);
 }
 
 }  // namespace android_webview

@@ -53,6 +53,15 @@ class PasswordManagerPresenter
   // Gets the password entry at |index|.
   const autofill::PasswordForm* GetPassword(size_t index) const;
 
+  // Gets the vector of password entries with the same credentials and from the
+  // same site as the one stored at |index|.
+  base::span<const std::unique_ptr<autofill::PasswordForm>> GetPasswords(
+      size_t index) const;
+
+  // Gets the vector of usernames from password entries from the same site as
+  // the one stored at |index|. Note that this vector can contain duplicates.
+  std::vector<base::string16> GetUsernamesForRealm(size_t index);
+
   // password::manager::CredentialProviderInterface:
   std::vector<std::unique_ptr<autofill::PasswordForm>> GetAllPasswords()
       override;

@@ -12,6 +12,7 @@
 <translation id="107147699690128016">अगर आप फ़ाइल का एक्सटेंशन बदलते हैं, तो हो सकता है कि फ़ाइल अलग ऐप्लिकेशन में खुले. इससे आपके डिवाइस को नुकसान पहुंच सकता है.</translation>
 <translation id="1100066534610197918">समूह में नए टैब में खोलें</translation>
 <translation id="1105960400813249514">स्‍क्रीन कैप्‍चर</translation>
+<translation id="1110022065703191351">आइकॉन</translation>
 <translation id="1111673857033749125">आपके अन्‍य डिवाइस पर सहेजे गए बुकमार्क यहां दिखाई देंगे.</translation>
 <translation id="1113597929977215864">सरल बनाया गया व्यू दिखाएं</translation>
 <translation id="1124772482545689468">उपयोगकर्ता</translation>
@@ -363,6 +364,7 @@
 <translation id="3730075448226062617">Chrome को अपना माइक्रोफ़ोन ऐक्सेस करने देने के लिए, <ph name="BEGIN_LINK" />Android की सेटिंग<ph name="END_LINK" /> में जाकर भी माइक्रोफ़ोन चालू करें.</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> में बुकमार्क किया गया</translation>
 <translation id="3744111561329211289">बैकग्राउंड सिंक</translation>
+<translation id="3749259744154402564">काम नहीं करता</translation>
 <translation id="3771001275138982843">अपडेट डाउनलोड नहीं किया जा सका</translation>
 <translation id="3771033907050503522">गुप्त टैब</translation>
 <translation id="3773755127849930740">युग्मन की अनुमति देने के लिए <ph name="BEGIN_LINK" />ब्लूटूथ चालू करें<ph name="END_LINK" /></translation>
@@ -576,6 +578,7 @@
 <translation id="5327248766486351172">नाम</translation>
 <translation id="5335288049665977812">साइटों को JavaScript चलाने की अनुमति दें (हम इस सेटिंग को चालू रखने का सुझाव देते हैं)</translation>
 <translation id="5342314432463739672">अनुमति से जुड़े अनुरोध</translation>
+<translation id="534295439873310000">NFC डिवाइस</translation>
 <translation id="5357811892247919462">टैब मिला</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> टैब खुला है, एक टैब से दूसरे टैब पर जाने के लिए टैप करें}one{<ph name="OPEN_TABS_MANY" /> टैब खुले हैं, एक टैब से दूसरे टैब पर जाने के लिए टैप करें}other{<ph name="OPEN_TABS_MANY" /> टैब खुले हैं, एक टैब से दूसरे टैब पर जाने के लिए टैप करें}}</translation>
 <translation id="5391532827096253100">इस साइट से आपका कनेक्शन सुरक्षित नहीं है. साइट की जानकारी</translation>
@@ -632,6 +635,7 @@
 <translation id="5686790454216892815">फ़ाइल का नाम बहुत लंबा है</translation>
 <translation id="5689516760719285838">स्थान</translation>
 <translation id="569536719314091526">'ज़्यादा विकल्प' बटन से इस पेज का अनुवाद किसी भी भाषा में करें</translation>
+<translation id="5710871682236653961">NFC डिवाइस पर टैप करने के बाद, साइटों को जानकारी भेजने और पाने की अनुमति देने से पहले पूछें (सुझाया गया)</translation>
 <translation id="572328651809341494">हाल ही के टैब</translation>
 <translation id="5726692708398506830">पेज पर सब कुछ बड़ा करें</translation>
 <translation id="5748802427693696783">मानक टैब पर स्विच कर दिया गया</translation>
@@ -881,6 +885,7 @@
 <translation id="7559975015014302720">लाइट मोड बंद है</translation>
 <translation id="7562080006725997899">ब्राउज़िंग डेटा साफ़ हो रहा है</translation>
 <translation id="756809126120519699">साफ़ किया गया Chrome डेटा</translation>
+<translation id="7572498721684305250">NFC डिवाइस पर टैप करने के बाद, साइटों को जानकारी भेजने और पाने पर रोक लगाएं</translation>
 <translation id="757524316907819857">साइटों को सुरक्षित सामग्री चलाने से रोकें</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> फ़ाइल डाउनलोड की गई}one{<ph name="FILES_DOWNLOADED_MANY" /> फ़ाइलें डाउनलोड की गईं}other{<ph name="FILES_DOWNLOADED_MANY" /> फ़ाइलें डाउनलोड की गईं}}</translation>
 <translation id="7588219262685291874">आपके डिवाइस की 'बैटरी सेवर' सुविधा चालू होने पर 'गहरे रंग वाली थीम' चालू करें</translation>

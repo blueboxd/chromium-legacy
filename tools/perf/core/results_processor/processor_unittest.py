@@ -90,20 +90,20 @@ class ResultsProcessorUnitTests(unittest.TestCase):
           test_suite_start='2019-10-01T12:00:00.123456Z')
     self.assertEqual(run_identifier, 'src_abc_123_20191001T120000_54321')
 
-  def testAggregateJsonTraces(self):
+  def testAggregateTBMv2Traces(self):
     test_result = testing.TestResult(
         'benchmark/story2',
         output_artifacts={
             'trace/1.json': testing.Artifact(
                 os.path.join('test_run', 'story2', 'trace', '1.json')),
-            'trace/2.json': testing.Artifact(
-                os.path.join('test_run', 'story2', 'trace', '2.json')),
+            'trace/2.txt': testing.Artifact(
+                os.path.join('test_run', 'story2', 'trace', '2.txt')),
         },
     )
 
     serialize_method = 'tracing.trace_data.trace_data.SerializeAsHtml'
     with mock.patch(serialize_method) as mock_serialize:
-      processor.AggregateJsonTraces(test_result)
+      processor.AggregateTBMv2Traces(test_result)
 
     self.assertEqual(mock_serialize.call_count, 1)
     trace_files, file_path = mock_serialize.call_args[0][:2]
@@ -111,7 +111,7 @@ class ResultsProcessorUnitTests(unittest.TestCase):
         set(trace_files),
         set([
             os.path.join('test_run', 'story2', 'trace', '1.json'),
-            os.path.join('test_run', 'story2', 'trace', '2.json'),
+            os.path.join('test_run', 'story2', 'trace', '2.txt'),
         ]),
     )
     self.assertEqual(

@@ -4,30 +4,27 @@
     found in the LICENSE file. -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/omnibox_answer"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/omnibox_suggestion_answer_height"
-    android:layout_centerVertical="true"
+    android:layout_height="wrap_content"
     android:orientation="vertical"
+    android:minHeight="@dimen/omnibox_suggestion_height"
     android:paddingVertical="10dp">
 
     <TextView
-        android:ellipsize="end"
         android:id="@+id/omnibox_answer_line_1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:maxLines="1"
-        android:singleLine="true"
+        android:ellipsize="end"
         android:textAlignment="viewStart" />
 
     <TextView
-        android:ellipsize="end"
         android:id="@+id/omnibox_answer_line_2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:maxLines="3"
-        android:singleLine="false"
+        android:ellipsize="end"
         android:textAlignment="viewStart" />
 
 </LinearLayout>

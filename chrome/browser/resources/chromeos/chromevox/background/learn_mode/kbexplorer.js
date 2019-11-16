@@ -7,59 +7,58 @@
  *
  */
 
-goog.provide('cvox.KbExplorer');
+goog.provide('KbExplorer');
 
 goog.require('BrailleCommandData');
 goog.require('GestureCommandData');
 goog.require('Spannable');
-goog.require('cvox.AbstractTts');
-goog.require('cvox.BrailleKeyCommand');
-goog.require('cvox.ChromeVoxKbHandler');
-goog.require('cvox.CommandStore');
-goog.require('cvox.KeyMap');
-goog.require('cvox.KeyUtil');
-goog.require('cvox.LibLouis');
+goog.require('AbstractTts');
+goog.require('BrailleKeyCommand');
+goog.require('ChromeVoxKbHandler');
+goog.require('CommandStore');
+goog.require('KeyMap');
+goog.require('KeyUtil');
+goog.require('LibLouis');
 
 /**
  * Class to manage the keyboard explorer.
  * @constructor
  */
-cvox.KbExplorer = function() {};
+KbExplorer = function() {};
 
 
 /**
  * Initialize keyboard explorer.
  */
-cvox.KbExplorer.init = function() {
+KbExplorer.init = function() {
   var backgroundWindow = chrome.extension.getBackgroundPage();
-  backgroundWindow.addEventListener('keydown', cvox.KbExplorer.onKeyDown, true);
-  backgroundWindow.addEventListener('keyup', cvox.KbExplorer.onKeyUp, true);
-  backgroundWindow.addEventListener(
-      'keypress', cvox.KbExplorer.onKeyPress, true);
+  backgroundWindow.addEventListener('keydown', KbExplorer.onKeyDown, true);
+  backgroundWindow.addEventListener('keyup', KbExplorer.onKeyUp, true);
+  backgroundWindow.addEventListener('keypress', KbExplorer.onKeyPress, true);
   chrome.brailleDisplayPrivate.onKeyEvent.addListener(
-      cvox.KbExplorer.onBrailleKeyEvent);
+      KbExplorer.onBrailleKeyEvent);
   chrome.accessibilityPrivate.onAccessibilityGesture.addListener(
-      cvox.KbExplorer.onAccessibilityGesture);
+      KbExplorer.onAccessibilityGesture);
   chrome.accessibilityPrivate.setKeyboardListener(true, true);
   backgroundWindow['BrailleCommandHandler']['setEnabled'](false);
   backgroundWindow['GestureCommandHandler']['setEnabled'](false);
 
   if (localStorage['useClassic'] != 'true') {
-    cvox.ChromeVoxKbHandler.handlerKeyMap = cvox.KeyMap.fromNext();
-    cvox.ChromeVox.modKeyStr = 'Search';
+    ChromeVoxKbHandler.handlerKeyMap = KeyMap.fromNext();
+    ChromeVox.modKeyStr = 'Search';
   } else {
-    cvox.ChromeVoxKbHandler.handlerKeyMap = cvox.KeyMap.fromDefaults();
-    cvox.ChromeVox.modKeyStr = 'Search+Shift';
+    ChromeVoxKbHandler.handlerKeyMap = KeyMap.fromDefaults();
+    ChromeVox.modKeyStr = 'Search+Shift';
   }
 
-  /** @type {cvox.LibLouis.Translator} */
-  cvox.KbExplorer.currentBrailleTranslator_ =
-      backgroundWindow['cvox']['BrailleBackground']['getInstance']()['getTranslatorManager']()['getDefaultTranslator']();
+  /** @type {LibLouis.Translator} */
+  KbExplorer.currentBrailleTranslator_ =
+      backgroundWindow['BrailleBackground']['getInstance']()['getTranslatorManager']()['getDefaultTranslator']();
 
-  cvox.ChromeVoxKbHandler.commandHandler = cvox.KbExplorer.onCommand;
+  ChromeVoxKbHandler.commandHandler = KbExplorer.onCommand;
   $('instruction').focus();
 
-  cvox.KbExplorer.output(Msgs.getMsg('learn_mode_intro'));
+  KbExplorer.output(Msgs.getMsg('learn_mode_intro'));
 };
 
 
@@ -68,19 +67,19 @@ cvox.KbExplorer.init = function() {
  * @param {Event} evt key event.
  * @return {boolean} True if the default action should be performed.
  */
-cvox.KbExplorer.onKeyDown = function(evt) {
+KbExplorer.onKeyDown = function(evt) {
   chrome.extension.getBackgroundPage()['speak'](
-      cvox.KeyUtil.getReadableNameForKeyCode(evt.keyCode), false,
-      cvox.AbstractTts.PERSONALITY_ANNOTATION);
+      KeyUtil.getReadableNameForKeyCode(evt.keyCode), false,
+      AbstractTts.PERSONALITY_ANNOTATION);
 
   // Allow Ctrl+W or escape to be handled.
   if ((evt.key == 'w' && evt.ctrlKey) || evt.key == 'Escape') {
-    cvox.KbExplorer.close_();
+    KbExplorer.close_();
     return true;
   }
 
-  cvox.ChromeVoxKbHandler.basicKeyDownActionsListener(evt);
-  cvox.KbExplorer.clearRange();
+  ChromeVoxKbHandler.basicKeyDownActionsListener(evt);
+  KbExplorer.clearRange();
   evt.preventDefault();
   evt.stopPropagation();
   return false;
@@ -91,9 +90,9 @@ cvox.KbExplorer.onKeyDown = function(evt) {
  * Handles keyup events.
  * @param {Event} evt key event.
  */
-cvox.KbExplorer.onKeyUp = function(evt) {
-  cvox.KbExplorer.maybeClose_();
-  cvox.KbExplorer.clearRange();
+KbExplorer.onKeyUp = function(evt) {
+  KbExplorer.maybeClose_();
+  KbExplorer.clearRange();
   evt.preventDefault();
   evt.stopPropagation();
 };
@@ -103,59 +102,59 @@ cvox.KbExplorer.onKeyUp = function(evt) {
  * Handles keypress events.
  * @param {Event} evt key event.
  */
-cvox.KbExplorer.onKeyPress = function(evt) {
-  cvox.KbExplorer.clearRange();
+KbExplorer.onKeyPress = function(evt) {
+  KbExplorer.clearRange();
   evt.preventDefault();
   evt.stopPropagation();
 };
 
 /**
- * @param {cvox.BrailleKeyEvent} evt The key event.
+ * @param {BrailleKeyEvent} evt The key event.
  */
-cvox.KbExplorer.onBrailleKeyEvent = function(evt) {
-  cvox.KbExplorer.maybeClose_();
+KbExplorer.onBrailleKeyEvent = function(evt) {
+  KbExplorer.maybeClose_();
   var msgid;
   var msgArgs = [];
   var text;
   switch (evt.command) {
-    case cvox.BrailleKeyCommand.PAN_LEFT:
+    case BrailleKeyCommand.PAN_LEFT:
       msgid = 'braille_pan_left';
       break;
-    case cvox.BrailleKeyCommand.PAN_RIGHT:
+    case BrailleKeyCommand.PAN_RIGHT:
       msgid = 'braille_pan_right';
       break;
-    case cvox.BrailleKeyCommand.LINE_UP:
+    case BrailleKeyCommand.LINE_UP:
       msgid = 'braille_line_up';
       break;
-    case cvox.BrailleKeyCommand.LINE_DOWN:
+    case BrailleKeyCommand.LINE_DOWN:
       msgid = 'braille_line_down';
       break;
-    case cvox.BrailleKeyCommand.TOP:
+    case BrailleKeyCommand.TOP:
       msgid = 'braille_top';
       break;
-    case cvox.BrailleKeyCommand.BOTTOM:
+    case BrailleKeyCommand.BOTTOM:
       msgid = 'braille_bottom';
       break;
-    case cvox.BrailleKeyCommand.ROUTING:
-    case cvox.BrailleKeyCommand.SECONDARY_ROUTING:
+    case BrailleKeyCommand.ROUTING:
+    case BrailleKeyCommand.SECONDARY_ROUTING:
       msgid = 'braille_routing';
       msgArgs.push(/** @type {number} */ (evt.displayPosition + 1));
       break;
-    case cvox.BrailleKeyCommand.CHORD:
+    case BrailleKeyCommand.CHORD:
       var dots = evt.brailleDots;
       if (!dots) {
         return;
       }
 
       // First, check for the dots mapping to a key code.
-      var keyCode = cvox.BrailleKeyEvent.brailleChordsToStandardKeyCode[dots];
+      var keyCode = BrailleKeyEvent.brailleChordsToStandardKeyCode[dots];
       if (keyCode) {
         text = keyCode;
         break;
       }
 
       // Next, check for the modifier mappings.
-      var mods = cvox.BrailleKeyEvent.brailleDotsToModifiers[dots];
+      var mods = BrailleKeyEvent.brailleDotsToModifiers[dots];
       if (mods) {
         var outputs = [];
         for (var mod in mods) {
@@ -173,12 +172,12 @@ cvox.KbExplorer.onBrailleKeyEvent = function(evt) {
       }
 
       var command = BrailleCommandData.getCommand(dots);
-      if (command && cvox.KbExplorer.onCommand(command)) {
+      if (command && KbExplorer.onCommand(command)) {
         return;
       }
       text = BrailleCommandData.makeShortcutText(dots, true);
       break;
-    case cvox.BrailleKeyCommand.DOTS:
+    case BrailleKeyCommand.DOTS:
       var dots = evt.brailleDots;
       if (!dots) {
         return;
@@ -186,19 +185,18 @@ cvox.KbExplorer.onBrailleKeyEvent = function(evt) {
       var cells = new ArrayBuffer(1);
       var view = new Uint8Array(cells);
       view[0] = dots;
-      cvox.KbExplorer.currentBrailleTranslator_.backTranslate(
-          cells, function(res) {
-            cvox.KbExplorer.output(res);
-          }.bind(this));
+      KbExplorer.currentBrailleTranslator_.backTranslate(cells, function(res) {
+        KbExplorer.output(res);
+      }.bind(this));
       return;
-    case cvox.BrailleKeyCommand.STANDARD_KEY:
+    case BrailleKeyCommand.STANDARD_KEY:
       break;
   }
   if (msgid) {
     text = Msgs.getMsg(msgid, msgArgs);
   }
-  cvox.KbExplorer.output(text || evt.command);
-  cvox.KbExplorer.clearRange();
+  KbExplorer.output(text || evt.command);
+  KbExplorer.clearRange();
 };
 
 /**
@@ -206,11 +204,11 @@ cvox.KbExplorer.onBrailleKeyEvent = function(evt) {
  * @param {string} gesture The gesture to handle, based on the
  *     ax::mojom::Gesture enum defined in ui/accessibility/ax_enums.mojom
  */
-cvox.KbExplorer.onAccessibilityGesture = function(gesture) {
-  cvox.KbExplorer.maybeClose_();
+KbExplorer.onAccessibilityGesture = function(gesture) {
+  KbExplorer.maybeClose_();
   var gestureData = GestureCommandData.GESTURE_COMMAND_MAP[gesture];
   if (gestureData) {
-    cvox.KbExplorer.onCommand(gestureData.command);
+    KbExplorer.onCommand(gestureData.command);
   }
 };
 
@@ -219,12 +217,12 @@ cvox.KbExplorer.onAccessibilityGesture = function(gesture) {
  * @param {string} command
  * @return {boolean|undefined} True if command existed and was handled.
  */
-cvox.KbExplorer.onCommand = function(command) {
-  var msg = cvox.CommandStore.messageForCommand(command);
+KbExplorer.onCommand = function(command) {
+  var msg = CommandStore.messageForCommand(command);
   if (msg) {
     var commandText = Msgs.getMsg(msg);
-    cvox.KbExplorer.output(commandText);
-    cvox.KbExplorer.clearRange();
+    KbExplorer.output(commandText);
+    KbExplorer.clearRange();
     return true;
   }
 };
@@ -233,38 +231,36 @@ cvox.KbExplorer.onCommand = function(command) {
  * @param {string} text
  * @param {string=} opt_braille If different from text.
  */
-cvox.KbExplorer.output = function(text, opt_braille) {
+KbExplorer.output = function(text, opt_braille) {
   chrome.extension.getBackgroundPage()['speak'](text);
-  chrome.extension.getBackgroundPage().cvox.ChromeVox.braille.write(
+  chrome.extension.getBackgroundPage().ChromeVox.braille.write(
       {text: new Spannable(opt_braille || text)});
 };
 
 /** Clears ChromeVox range. */
-cvox.KbExplorer.clearRange = function() {
+KbExplorer.clearRange = function() {
   chrome.extension
       .getBackgroundPage()['ChromeVoxState']['instance']['setCurrentRange'](
           null);
 };
 
 /** @private */
-cvox.KbExplorer.resetListeners_ = function() {
+KbExplorer.resetListeners_ = function() {
   var backgroundWindow = chrome.extension.getBackgroundPage();
-  backgroundWindow.removeEventListener(
-      'keydown', cvox.KbExplorer.onKeyDown, true);
-  backgroundWindow.removeEventListener('keyup', cvox.KbExplorer.onKeyUp, true);
-  backgroundWindow.removeEventListener(
-      'keypress', cvox.KbExplorer.onKeyPress, true);
+  backgroundWindow.removeEventListener('keydown', KbExplorer.onKeyDown, true);
+  backgroundWindow.removeEventListener('keyup', KbExplorer.onKeyUp, true);
+  backgroundWindow.removeEventListener('keypress', KbExplorer.onKeyPress, true);
   chrome.brailleDisplayPrivate.onKeyEvent.removeListener(
-      cvox.KbExplorer.onBrailleKeyEvent);
+      KbExplorer.onBrailleKeyEvent);
   chrome.accessibilityPrivate.onAccessibilityGesture.removeListener(
-      cvox.KbExplorer.onAccessibilityGesture);
+      KbExplorer.onAccessibilityGesture);
   chrome.accessibilityPrivate.setKeyboardListener(true, false);
   backgroundWindow['BrailleCommandHandler']['setEnabled'](true);
   backgroundWindow['GestureCommandHandler']['setEnabled'](true);
 };
 
 /** @private */
-cvox.KbExplorer.maybeClose_ = function() {
+KbExplorer.maybeClose_ = function() {
   // Reset listeners and close this page if we somehow move outside of the
   // explorer window.
   chrome.windows.getLastFocused({populate: true}, (focusedWindow) => {
@@ -274,13 +270,13 @@ cvox.KbExplorer.maybeClose_ = function() {
         }))
       return;
 
-    cvox.KbExplorer.close_();
+    KbExplorer.close_();
   });
 };
 
 /** @private */
-cvox.KbExplorer.close_ = function() {
-  cvox.KbExplorer.output(Msgs.getMsg('learn_mode_outtro'));
-  cvox.KbExplorer.resetListeners_();
+KbExplorer.close_ = function() {
+  KbExplorer.output(Msgs.getMsg('learn_mode_outtro'));
+  KbExplorer.resetListeners_();
   window.close();
 };

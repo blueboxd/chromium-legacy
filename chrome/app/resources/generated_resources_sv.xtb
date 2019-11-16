@@ -254,6 +254,7 @@
 <translation id="1365180424462182382">Din <ph name="BEGIN_LINK" />webbläsare hanteras<ph name="END_LINK" /> av <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="1366177842110999534">Kör Linux-verktyg, redigerare och IDE:er på <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Läs mer&lt;/a&gt;</translation>
 <translation id="1367951781824006909">Välj fil</translation>
+<translation id="1369149969991017342">Brytarstyrning (styr datorn med bara en eller två brytare)</translation>
 <translation id="1372841398847029212">Synkronisera till ditt konto</translation>
 <translation id="1374844444528092021">Det certifikat som krävs av nätverket <ph name="NETWORK_NAME" /> är inte installerat eller inte längre giltigt. Hämta ett nytt certifikat och försök ansluta igen.</translation>
 <translation id="1375321115329958930">Sparade lösenord</translation>
@@ -565,6 +566,7 @@
 <translation id="1794791083288629568">Skicka feedback som hjälper oss att åtgärda problemet.</translation>
 <translation id="1795214765651529549">Använd klassiskt</translation>
 <translation id="1799071797295057738">Tillägget <ph name="EXTENSION_NAME" /> har inaktiverats automatiskt.</translation>
+<translation id="1802624026913571222">Aktivera viloläge när fodralet stängs</translation>
 <translation id="1802687198411089702">Sidan svarar inte. Vänta tills den svarar eller avbryt.</translation>
 <translation id="1802931390041703523">Flash är blockerat på den här sidan</translation>
 <translation id="1803531841600994172">Språk att översätta till</translation>
@@ -666,6 +668,7 @@
 <translation id="1937774647013465102">Det går inte att importera en behållararkitektur av typen <ph name="ARCHITECTURE_CONTAINER" /> med den här enheten, som är en <ph name="ARCHITECTURE_DEVICE" />. Du kan testa att återställa behållaren till en annan enhet, eller så kan du öppna filerna i behållarbilden via appen Filer.</translation>
 <translation id="1938351510777341717">Extern kommandotangent</translation>
 <translation id="1940546824932169984">Anslutna enheter</translation>
+<translation id="1942600407708803723">Stäng av när fodralet är stängs</translation>
 <translation id="1944921356641260203">En uppdatering hittades</translation>
 <translation id="1946577776959096882">Visa konton</translation>
 <translation id="1951012854035635156">Assistent</translation>
@@ -2439,6 +2442,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4546308221697447294">Surfa snabbt med Google Chrome</translation>
 <translation id="4547659257713117923">Inga flikar från andra enheter</translation>
 <translation id="4547672827276975204">Ange automatiskt</translation>
+<translation id="4549791035683739768">Det finns inga sparade fingeravtryck på säkerhetsnyckeln.</translation>
 <translation id="4551763574344810652">Tryck på <ph name="MODIFIER_KEY_DESCRIPTION" /> för att ångra</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4554591392113183336">Det externa tillägget har samma eller lägre version än det som redan finns.</translation>
@@ -2618,6 +2622,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4839303808932127586">S&amp;para video som...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 till}other{# till}}</translation>
 <translation id="4842976633412754305">Sidan försöker att läsa in skript från overifierade källor.</translation>
+<translation id="4843488774506045600">Inloggning tillhandahålls av <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Övriga tangentbord</translation>
 <translation id="4846680374085650406">Du följer administratörens rekommendation för den här inställningen.</translation>
 <translation id="4848518990323155912">Aktivera SIM-kortslåsning (kräv pinkod för att använda mobildata)</translation>
@@ -3038,6 +3043,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5466374726908360271">Kli&amp;stra in och sök efter <ph name="SEARCH_TERMS" /></translation>
 <translation id="5468173180030470402">Söker efter filresurser</translation>
 <translation id="5471768120198416576">Hejsan! Nu används min röst för text till tal.</translation>
+<translation id="5472133193607270166">När detta är aktiverat kan en webbplats inte anpassa annonser utifrån din aktivitet på webben. Vissa webbplatser kanske inte fungerar som de ska.</translation>
 <translation id="5473333559083690127">Ange ny pinkod igen</translation>
 <translation id="5481941284378890518">Lägg till skrivare i närheten</translation>
 <translation id="5483785310822538350">Återkalla åtkomst till enheten och filer</translation>
@@ -3069,6 +3075,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5511823366942919280">Vill du ställa in enheten som en Shark?</translation>
 <translation id="5512653252560939721">Användarcertifikat måste vara maskinvarustödda.</translation>
 <translation id="5517304475148761050">Den här appen kräver åtkomst till Play Butik</translation>
+<translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> – <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Skrivaren läggs till i kontot. Det kan ta en stund ...</translation>
 <translation id="5518219166343146486">Fråga när en webbplats vill få tillgång till text och bilder som kopierats till Urklipp</translation>
 <translation id="5518584115117143805">Certifikat för e-postkryptering</translation>
@@ -3187,6 +3194,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="567643736130151854">Logga in och aktivera synkronisering om du vill få dina bokmärken, lösenord och annat på alla dina enheter</translation>
 <translation id="5677503058916217575">Sidans språk:</translation>
 <translation id="5677928146339483299">Blockerade</translation>
+<translation id="5678293144564424498">Appen har pausats</translation>
 <translation id="5678550637669481956">Läs- och skrivåtkomst till <ph name="VOLUME_NAME" /> har beviljats.</translation>
 <translation id="5678955352098267522">Läsa din data på <ph name="WEBSITE_1" /></translation>
 <translation id="5684661240348539843">Tillgångsidentifierare</translation>
@@ -3453,6 +3461,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="6055392876709372977">PKCS #1 SHA-256 med RSA-kryptering</translation>
 <translation id="6056710589053485679">Normal inläsning</translation>
 <translation id="6057381398996433816">Den här webbplatsen får inte använda enhetens rörelse- och ljussensor.</translation>
+<translation id="6058567592298841668">Plugin för virtuell maskin: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Certifikathierarki</translation>
 <translation id="6059925163896151826">USB-enheter</translation>
 <translation id="6061882183774845124">Skicka länken till dina enheter</translation>
@@ -4401,6 +4410,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="7476454130948140105">Batterinivån är för låg för uppdateringen (<ph name="BATTERY_PERCENT" /> %)</translation>
 <translation id="7477793887173910789">Styr uppspelningen av musik, videor med mera</translation>
 <translation id="7478485216301680444">Det gick inte att installera kioskappen.</translation>
+<translation id="7479221278376295180">Översikt över användning av lagringsutrymme</translation>
 <translation id="7481312909269577407">Framåt</translation>
 <translation id="748138892655239008">Grundbegränsningar för certifikat</translation>
 <translation id="7487067081878637334">Teknik</translation>
@@ -5377,6 +5387,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8845001906332463065">Få hjälp</translation>
 <translation id="8846132060409673887">Läsa information om datorns tillverkare och modell</translation>
 <translation id="8846141544112579928">Söker efter tangentbord …</translation>
+<translation id="8847523528195140327">Logga ut när fodralet stängs</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8850251000316748990">Visa fler …</translation>
 <translation id="885246833287407341">API-funktionens argument</translation>
@@ -5439,6 +5450,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8930351635855238750">De nya inställningarna för cookies börjar gälla när sidan uppdateras</translation>
 <translation id="8931394284949551895">Nya enheter</translation>
 <translation id="893254996965966411">Spara identifierade skrivare i profilen eller lägg till en ny skrivare.</translation>
+<translation id="8932894639908691771">Alternativ för brytarstyrning</translation>
 <translation id="8933960630081805351">&amp;Visa i Finder</translation>
 <translation id="8934732568177537184">Fortsätt</translation>
 <translation id="8938800817013097409">USB-C-enhet (högra porten på baksidan)</translation>
@@ -5502,6 +5514,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="9023015617655685412">Bokmärk den här fliken …</translation>
 <translation id="9024127637873500333">&amp;Öppna i ny flik</translation>
 <translation id="9024158959543687197">Det gick inte att montera den delade resursen. Kontrollera filresursens webbadress och försök igen.</translation>
+<translation id="9024885274934357065">Enheten är upplåst med Smart Lock. Tryck på Retur för att låsa upp.</translation>
 <translation id="9026731007018893674">ladda ned</translation>
 <translation id="9026852570893462412">Detta kan ta några minuter. Den virtuella maskinen laddas ned.</translation>
 <translation id="9027459031423301635">Öppna länk i ny &amp;flik</translation>

@@ -255,13 +255,6 @@ PluginProxyTestHarness::PluginDelegateMock::ShareHandleWithRemote(
                                         should_close_source);
 }
 
-base::SharedMemoryHandle
-PluginProxyTestHarness::PluginDelegateMock::ShareSharedMemoryHandleWithRemote(
-    const base::SharedMemoryHandle& handle,
-    base::ProcessId /* remote_pid */) {
-  return base::SharedMemory::DuplicateHandle(handle);
-}
-
 base::UnsafeSharedMemoryRegion PluginProxyTestHarness::PluginDelegateMock::
     ShareUnsafeSharedMemoryRegionWithRemote(
         const base::UnsafeSharedMemoryRegion& region,
@@ -371,12 +364,12 @@ void PluginProxyMultiThreadTest::RunTest() {
 
     // The destruction requires a valid PpapiGlobals instance, so we should
     // explicitly release it.
-    secondary_thread_message_loop_ = NULL;
+    secondary_thread_message_loop_.reset();
   }
 
   secondary_thread_.reset(NULL);
   nested_main_thread_message_loop_.reset(NULL);
-  main_thread_task_runner_ = NULL;
+  main_thread_task_runner_.reset();
 }
 
 void PluginProxyMultiThreadTest::CheckOnThread(ThreadType thread_type) {
@@ -504,13 +497,6 @@ HostProxyTestHarness::DelegateMock::ShareHandleWithRemote(
     bool should_close_source) {
   return IPC::GetPlatformFileForTransit(handle,
                                         should_close_source);
-}
-
-base::SharedMemoryHandle
-HostProxyTestHarness::DelegateMock::ShareSharedMemoryHandleWithRemote(
-    const base::SharedMemoryHandle& handle,
-    base::ProcessId /*remote_pid*/) {
-  return base::SharedMemory::DuplicateHandle(handle);
 }
 
 base::UnsafeSharedMemoryRegion

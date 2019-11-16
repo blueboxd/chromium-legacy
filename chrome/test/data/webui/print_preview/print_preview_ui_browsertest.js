@@ -726,36 +726,38 @@ var PrintPreviewDestinationSearchTestChromeOS = class extends PrintPreviewTest {
 };
 
 TEST_F(
-    'PrintPreviewDestinationSearchTestChromeOS',
-    'ReceiveSuccessfulSetup', function() {
+    'PrintPreviewDestinationSearchTestChromeOS', 'ReceiveSuccessfulSetup',
+    function() {
       this.runMochaTest(
           destination_search_test_chromeos.TestNames.ReceiveSuccessfulSetup);
     });
 
-TEST_F('PrintPreviewDestinationSearchTestChromeOS',
-    'ResolutionFails', function() {
-  this.runMochaTest(destination_search_test_chromeos.TestNames.ResolutionFails);
-});
-
-TEST_F('PrintPreviewDestinationSearchTestChromeOS',
-    'ReceiveFailedSetup', function() {
-  this.runMochaTest(
-      destination_search_test_chromeos.TestNames.ReceiveFailedSetup);
-});
-
 TEST_F(
-    'PrintPreviewDestinationSearchTestChromeOS',
-    'ReceiveSuccessfultSetupWithPolicies',
-    function() {
+    'PrintPreviewDestinationSearchTestChromeOS', 'ResolutionFails', function() {
       this.runMochaTest(
           destination_search_test_chromeos.TestNames.ResolutionFails);
     });
 
-TEST_F('PrintPreviewDestinationSearchTestChromeOS', 'CloudKioskPrinter',
+TEST_F(
+    'PrintPreviewDestinationSearchTestChromeOS', 'ReceiveFailedSetup',
     function() {
-  this.runMochaTest(
-      destination_search_test_chromeos.TestNames.CloudKioskPrinter);
-});
+      this.runMochaTest(
+          destination_search_test_chromeos.TestNames.ReceiveFailedSetup);
+    });
+
+TEST_F(
+    'PrintPreviewDestinationSearchTestChromeOS',
+    'ReceiveSuccessfultSetupWithPolicies', function() {
+      this.runMochaTest(
+          destination_search_test_chromeos.TestNames.ResolutionFails);
+    });
+
+TEST_F(
+    'PrintPreviewDestinationSearchTestChromeOS', 'CloudKioskPrinter',
+    function() {
+      this.runMochaTest(
+          destination_search_test_chromeos.TestNames.CloudKioskPrinter);
+    });
 
 GEN('#else');
 // eslint-disable-next-line no-var

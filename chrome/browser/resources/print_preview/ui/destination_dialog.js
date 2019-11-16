@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Polymer, html, beforeNextRender} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
@@ -11,20 +10,10 @@ import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/js/action_link.js';
 import 'chrome://resources/cr_elements/action_link_css.m.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
-import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
-import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
-import {ListPropertyUpdateBehavior} from 'chrome://resources/js/list_property_update_behavior.m.js';
 import 'chrome://resources/cr_elements/md_select_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import './icons.js';
-import {Metrics, MetricsContext} from '../metrics.js';
-import {NativeLayer} from '../native_layer.js';
 import '../print_preview_utils.js';
-import {Destination} from '../data/destination.js';
-import {DestinationStore} from '../data/destination_store.js';
-import {Invitation} from '../data/invitation.js';
-import {InvitationStore} from '../data/invitation_store.js';
 import './destination_list.js';
 import './print_preview_search_box.js';
 import './print_preview_shared_css.js';
@@ -32,6 +21,19 @@ import './print_preview_vars_css.js';
 import './provisional_destination_resolver.js';
 import '../strings.m.js';
 import './throbber_css.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {ListPropertyUpdateBehavior} from 'chrome://resources/js/list_property_update_behavior.m.js';
+import {beforeNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {Destination} from '../data/destination.js';
+import {DestinationStore} from '../data/destination_store.js';
+import {Invitation} from '../data/invitation.js';
+import {InvitationStore} from '../data/invitation_store.js';
+import {Metrics, MetricsContext} from '../metrics.js';
+import {NativeLayer} from '../native_layer.js';
 
 Polymer({
   is: 'print-preview-destination-dialog',
@@ -166,12 +168,10 @@ Polymer({
     assert(this.destinations_.length == 0);
     const destinationStore = assert(this.destinationStore);
     this.tracker_.add(
-        destinationStore,
-        DestinationStore.EventType.DESTINATIONS_INSERTED,
+        destinationStore, DestinationStore.EventType.DESTINATIONS_INSERTED,
         this.updateDestinations_.bind(this));
     this.tracker_.add(
-        destinationStore,
-        DestinationStore.EventType.DESTINATION_SEARCH_DONE,
+        destinationStore, DestinationStore.EventType.DESTINATION_SEARCH_DONE,
         this.updateDestinationsAndInvitations_.bind(this));
     this.initialized_ = true;
   },
@@ -180,12 +180,10 @@ Polymer({
   onInvitationStoreSet_: function() {
     const invitationStore = assert(this.invitationStore);
     this.tracker_.add(
-        invitationStore,
-        InvitationStore.EventType.INVITATION_SEARCH_DONE,
+        invitationStore, InvitationStore.EventType.INVITATION_SEARCH_DONE,
         this.updateInvitations_.bind(this));
     this.tracker_.add(
-        invitationStore,
-        InvitationStore.EventType.INVITATION_PROCESSED,
+        invitationStore, InvitationStore.EventType.INVITATION_PROCESSED,
         this.updateInvitations_.bind(this));
   },
 
@@ -231,10 +229,9 @@ Polymer({
     }
     const cancelled = this.$.dialog.getNative().returnValue !== 'success';
     this.metrics_.record(
-        cancelled ? Metrics.DestinationSearchBucket
-                        .DESTINATION_CLOSED_UNCHANGED :
-                    Metrics.DestinationSearchBucket
-                        .DESTINATION_CLOSED_CHANGED);
+        cancelled ?
+            Metrics.DestinationSearchBucket.DESTINATION_CLOSED_UNCHANGED :
+            Metrics.DestinationSearchBucket.DESTINATION_CLOSED_CHANGED);
     if (this.currentDestinationAccount &&
         this.currentDestinationAccount !== this.activeUser) {
       this.fire('account-change', this.currentDestinationAccount);
@@ -322,8 +319,7 @@ Polymer({
     this.$.dialog.showModal();
     this.loadingDestinations_ = this.destinationStore === undefined ||
         this.destinationStore.isPrintDestinationSearchInProgress;
-    this.metrics_.record(
-        Metrics.DestinationSearchBucket.DESTINATION_SHOWN);
+    this.metrics_.record(Metrics.DestinationSearchBucket.DESTINATION_SHOWN);
     if (this.activeUser) {
       beforeNextRender(assert(this.$$('select')), () => {
         this.$$('select').value = this.activeUser;
@@ -339,8 +335,7 @@ Polymer({
 
   /** @private */
   onSignInClick_: function() {
-    this.metrics_.record(
-        Metrics.DestinationSearchBucket.SIGNIN_TRIGGERED);
+    this.metrics_.record(Metrics.DestinationSearchBucket.SIGNIN_TRIGGERED);
     NativeLayer.getInstance().signIn(false);
   },
 
@@ -405,16 +400,14 @@ Polymer({
 
   /** @private */
   onInvitationAcceptClick_: function() {
-    this.metrics_.record(
-        Metrics.DestinationSearchBucket.INVITATION_ACCEPTED);
+    this.metrics_.record(Metrics.DestinationSearchBucket.INVITATION_ACCEPTED);
     this.invitationStore.processInvitation(assert(this.invitation_), true);
     this.updateInvitations_();
   },
 
   /** @private */
   onInvitationRejectClick_: function() {
-    this.metrics_.record(
-        Metrics.DestinationSearchBucket.INVITATION_REJECTED);
+    this.metrics_.record(Metrics.DestinationSearchBucket.INVITATION_REJECTED);
     this.invitationStore.processInvitation(assert(this.invitation_), false);
     this.updateInvitations_();
   },
@@ -426,8 +419,7 @@ Polymer({
     if (account) {
       this.loadingDestinations_ = true;
       this.fire('account-change', account);
-      this.metrics_.record(
-          Metrics.DestinationSearchBucket.ACCOUNT_CHANGED);
+      this.metrics_.record(Metrics.DestinationSearchBucket.ACCOUNT_CHANGED);
     } else {
       select.value = this.activeUser;
       NativeLayer.getInstance().signIn(true);
@@ -448,8 +440,7 @@ Polymer({
   /** @private */
   onShouldShowCloudPrintPromoChanged_: function() {
     if (this.shouldShowCloudPrintPromo_) {
-      this.metrics_.record(
-          Metrics.DestinationSearchBucket.SIGNIN_PROMPT);
+      this.metrics_.record(Metrics.DestinationSearchBucket.SIGNIN_PROMPT);
     } else {
       // Since the sign in link/dismiss promo button is disappearing, focus the
       // search box.
@@ -467,8 +458,7 @@ Polymer({
 
   /** @private */
   onOpenSettingsPrintPage_: function() {
-    this.metrics_.record(
-        Metrics.DestinationSearchBucket.MANAGE_BUTTON_CLICKED);
+    this.metrics_.record(Metrics.DestinationSearchBucket.MANAGE_BUTTON_CLICKED);
     NativeLayer.getInstance().openSettingsPrintPage();
   },
 });

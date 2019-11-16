@@ -358,6 +358,7 @@ void ParseSizeInfo(const char* gzipped,
         new_sym.component_ = info->components[cur_component_indices[i]];
       }
       new_sym.flags_ = flags;
+      new_sym.size_info_ = info;
 
       // When we encounter a symbol with an alias count, the next N symbols we
       // encounter should be placed in the same symbol group.

@@ -711,9 +711,6 @@ TEST_F(PaymentsClientTest, GetUploadDetailsVariationsTest) {
   // headers. Also, the variations header provider may have been registered to
   // observe some other field trial list, so reset it.
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-  // Note: This needs a base::FieldTrialList instance because it does not use
-  // ScopedFeatureList, which provides its own, unlike other tests that do.
-  base::FieldTrialList field_trial_list_(nullptr);
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
   StartGettingUploadDetails();
 
@@ -825,9 +822,6 @@ TEST_F(PaymentsClientTest, UploadCardVariationsTest) {
   // headers. Also, the variations header provider may have been registered to
   // observe some other field trial list, so reset it.
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-  // Note: This needs a base::FieldTrialList instance because it does not use
-  // ScopedFeatureList, which provides its own, unlike other tests that do.
-  base::FieldTrialList field_trial_list_(nullptr);
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
   StartUploading(/*include_cvc=*/true);
   IssueOAuthToken();
@@ -843,9 +837,6 @@ TEST_F(PaymentsClientTest, UnmaskCardVariationsTest) {
   // headers. Also, the variations header provider may have been registered to
   // observe some other field trial list, so reset it.
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-  // Note: This needs a base::FieldTrialList instance because it does not use
-  // ScopedFeatureList, which provides its own, unlike other tests that do.
-  base::FieldTrialList field_trial_list_(nullptr);
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
   StartUnmasking(CardUnmaskOptions());
   IssueOAuthToken();
@@ -861,9 +852,6 @@ TEST_F(PaymentsClientTest, MigrateCardsVariationsTest) {
   // headers. Also, the variations header provider may have been registered to
   // observe some other field trial list, so reset it.
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
-  // Note: This needs a base::FieldTrialList instance because it does not use
-  // ScopedFeatureList, which provides its own, unlike other tests that do.
-  base::FieldTrialList field_trial_list_(nullptr);
   CreateFieldTrialWithId("AutofillTest", "Group", 369);
   StartMigrating(/*has_cardholder_name=*/true);
   IssueOAuthToken();

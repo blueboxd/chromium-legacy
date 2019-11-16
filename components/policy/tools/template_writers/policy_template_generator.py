@@ -113,6 +113,7 @@ class PolicyTemplateGenerator:
         product, platform = {
             'android': ('chrome', 'android'),
             'webview_android': ('webview', 'android'),
+            'ios': ('chrome', 'ios'),
             'chrome_os': ('chrome_os', 'chrome_os'),
             'chrome_frame': ('chrome_frame', 'win'),
         }[product_platform_part]

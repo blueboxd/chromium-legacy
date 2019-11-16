@@ -102,7 +102,7 @@ def ProcessTestResult(test_result, upload_bucket, results_label,
                       run_identifier, test_suite_start, should_compute_metrics,
                       max_num_values, test_path_format, trace_processor_path):
   ConvertProtoTraces(test_result, trace_processor_path)
-  AggregateJsonTraces(test_result)
+  AggregateTBMv2Traces(test_result)
   if upload_bucket is not None:
     UploadArtifacts(test_result, upload_bucket, run_identifier)
 
@@ -162,9 +162,10 @@ def _IsProtoTrace(trace_name):
           (trace_name.endswith('.pb') or trace_name.endswith('.pb.gz')))
 
 
-def _IsJsonTrace(trace_name):
+def _IsTBMv2Trace(trace_name):
   return (trace_name.startswith('trace/') and
-          (trace_name.endswith('.json') or trace_name.endswith('.json.gz')))
+          (trace_name.endswith('.json') or trace_name.endswith('.json.gz') or
+          trace_name.endswith('.txt') or trace_name.endswith('.txt.gz')))
 
 
 def _BuildOutputPath(input_files, output_name):
@@ -200,25 +201,26 @@ def ConvertProtoTraces(test_result, trace_processor_path):
     }
 
 
-def AggregateJsonTraces(test_result):
-  """Replace individual json traces with an aggregate HTML trace.
+def AggregateTBMv2Traces(test_result):
+  """Replace individual non-proto traces with an aggregate HTML trace.
 
-  For a test result with json traces, generates an aggregate HTML trace. Removes
-  all entries for individual traces and adds one entry for aggregate one.
+  For a test result with non-proto traces, generates an aggregate HTML trace.
+  Removes all entries for individual traces and adds one entry for
+  the aggregate one.
   """
   artifacts = test_result.get('outputArtifacts', {})
-  json_traces = [name for name in artifacts if _IsJsonTrace(name)]
-  if json_traces:
-    trace_files = [artifacts[name]['filePath'] for name in json_traces]
+  traces = [name for name in artifacts if _IsTBMv2Trace(name)]
+  if traces:
+    trace_files = [artifacts[name]['filePath'] for name in traces]
     html_path = _BuildOutputPath(trace_files, compute_metrics.HTML_TRACE_NAME)
-    logging.info('%s: Aggregating json traces %s.',
+    logging.info('%s: Aggregating traces %s.',
                  test_result['testPath'], trace_files)
     trace_data.SerializeAsHtml(trace_files, html_path)
     artifacts[compute_metrics.HTML_TRACE_NAME] = {
       'filePath': html_path,
       'contentType': 'text/html',
     }
-  for name in json_traces:
+  for name in traces:
     del artifacts[name]
 
 

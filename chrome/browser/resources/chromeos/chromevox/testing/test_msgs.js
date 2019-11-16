@@ -10,7 +10,7 @@
 goog.provide('TestMsgs');
 
 goog.require('Msgs');
-goog.require('cvox.TestMessages');
+goog.require('TestMessages');
 
 /**
  * @constructor
@@ -46,8 +46,7 @@ TestMsgs.getMsg = function(messageId, opt_subs) {
   }
   var messageString = TestMsgs.Untranslated[messageId.toUpperCase()];
   if (messageString === undefined) {
-    var messageObj =
-        cvox.TestMessages[('chromevox_' + messageId).toUpperCase()];
+    var messageObj = TestMessages[('chromevox_' + messageId).toUpperCase()];
     if (messageObj === undefined) {
       throw Error('missing-msg: ' + messageId);
     }

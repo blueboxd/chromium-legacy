@@ -28,13 +28,16 @@
         focus-config="[[focusConfig_]]">
       <div route-path="default">
         <cr-link-row id="passwordManagerButton" start-icon="settings20:vpn-key"
-            label="$i18n{passwords}" on-click="onPasswordsClick_"></cr-link-row>
+            label="$i18n{passwords}" on-click="onPasswordsClick_"
+            role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
         <cr-link-row id="paymentManagerButton"
             start-icon="settings20:credit-card" label="$i18n{creditCards}"
-            on-click="onPaymentsClick_"></cr-link-row>
+            on-click="onPaymentsClick_"
+            role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
         <cr-link-row id="addressesManagerButton"
             start-icon="settings20:location-on" label="$i18n{addressesTitle}"
-            on-click="onAddressesClick_"></cr-link-row>
+            on-click="onAddressesClick_"
+            role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
       </div>
       <template is="dom-if" route-path="/passwords">
         <settings-subpage

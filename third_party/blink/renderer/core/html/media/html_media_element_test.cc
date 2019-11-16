@@ -25,9 +25,10 @@
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
-using ::testing::AnyNumber;
-using ::testing::Return;
 using ::testing::_;
+using ::testing::AnyNumber;
+using ::testing::NanSensitiveDoubleEq;
+using ::testing::Return;
 
 namespace blink {
 
@@ -37,6 +38,7 @@ class MockWebMediaPlayer : public EmptyWebMediaPlayer {
   MOCK_CONST_METHOD0(HasVideo, bool());
   MOCK_CONST_METHOD0(Duration, double());
   MOCK_CONST_METHOD0(CurrentTime, double());
+  MOCK_METHOD1(SetLatencyHint, void(double));
   MOCK_METHOD1(EnabledAudioTracksChanged, void(const WebVector<TrackId>&));
   MOCK_METHOD1(SelectedVideoTrackChanged, void(TrackId*));
   MOCK_METHOD3(
@@ -295,6 +297,28 @@ TEST_P(HTMLMediaElementTest, CouldPlayIfEnoughDataRespondsToError) {
 
   SetError(MakeGarbageCollected<MediaError>(MediaError::kMediaErrDecode, ""));
   EXPECT_FALSE(CouldPlayIfEnoughData());
+}
+
+TEST_P(HTMLMediaElementTest, SetLatencyHint) {
+  const double kNan = std::numeric_limits<double>::quiet_NaN();
+
+  // Initial value.
+  Media()->SetSrc(SrcSchemeToURL(TestURLScheme::kHttp));
+  EXPECT_CALL(*MockMediaPlayer(), SetLatencyHint(NanSensitiveDoubleEq(kNan)));
+
+  test::RunPendingTasks();
+  testing::Mock::VerifyAndClearExpectations(MockMediaPlayer());
+
+  // Valid value.
+  EXPECT_CALL(*MockMediaPlayer(), SetLatencyHint(NanSensitiveDoubleEq(1.0)));
+  Media()->setLatencyHint(1.0);
+
+  test::RunPendingTasks();
+  testing::Mock::VerifyAndClearExpectations(MockMediaPlayer());
+
+  // Invalid value.
+  EXPECT_CALL(*MockMediaPlayer(), SetLatencyHint(NanSensitiveDoubleEq(kNan)));
+  Media()->setLatencyHint(-1.0);
 }
 
 TEST_P(HTMLMediaElementTest, CouldPlayIfEnoughDataInfiniteStreamNeverEnds) {

@@ -7,16 +7,16 @@
  *
  */
 
-goog.provide('cvox.ChromeTtsBase');
+goog.provide('ChromeTtsBase');
 
-goog.require('cvox.AbstractTts');
+goog.require('AbstractTts');
 
 
 /**
  * @constructor
- * @extends {cvox.AbstractTts}
+ * @extends {AbstractTts}
  */
-cvox.ChromeTtsBase = function() {
+ChromeTtsBase = function() {
   goog.base(this);
   this.propertyDefault['pitch'] = 1;
   this.propertyMin['pitch'] = 0.2;
@@ -30,4 +30,4 @@ cvox.ChromeTtsBase = function() {
   this.propertyMin['volume'] = 0.2;
   this.propertyMax['volume'] = 1.0;
 };
-goog.inherits(cvox.ChromeTtsBase, cvox.AbstractTts);
+goog.inherits(ChromeTtsBase, AbstractTts);

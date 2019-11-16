@@ -134,7 +134,7 @@ public class SigninFragment extends SigninFragmentBase {
     protected void onSigninAccepted(String accountName, boolean isDefaultAccount,
             boolean settingsClicked, Runnable callback) {
         IdentityServicesProvider.getSigninManager().signIn(
-                accountName, getActivity(), new SigninManager.SignInCallback() {
+                accountName, new SigninManager.SignInCallback() {
                     @Override
                     public void onSignInComplete() {
                         UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(

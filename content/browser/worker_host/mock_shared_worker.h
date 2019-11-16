@@ -19,6 +19,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/network/public/mojom/content_security_policy.mojom-forward.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
@@ -67,7 +68,7 @@ class MockSharedWorkerFactory : public blink::mojom::SharedWorkerFactory {
   bool CheckReceivedCreateSharedWorker(
       const GURL& expected_url,
       const std::string& expected_name,
-      blink::mojom::ContentSecurityPolicyType
+      network::mojom::ContentSecurityPolicyType
           expected_content_security_policy_type,
       mojo::Remote<blink::mojom::SharedWorkerHost>* host,
       mojo::PendingReceiver<blink::mojom::SharedWorker>* receiver);

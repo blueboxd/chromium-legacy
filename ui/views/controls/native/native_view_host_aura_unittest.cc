@@ -353,7 +353,7 @@ TEST_F(NativeViewHostAuraTest, ParentAfterDetach) {
             test_observer.events().back().type);
 }
 
-// Ensure the clipping window is hidden before setting the native view's bounds.
+// Ensure the clipping window is hidden before any other operations.
 // This is a regression test for http://crbug.com/388699.
 TEST_F(NativeViewHostAuraTest, RemoveClippingWindowOrder) {
   CreateHost();
@@ -368,16 +368,10 @@ TEST_F(NativeViewHostAuraTest, RemoveClippingWindowOrder) {
 
   host()->Detach();
 
-  ASSERT_EQ(3u, test_observer.events().size());
+  ASSERT_GE(test_observer.events().size(), 1u);
   EXPECT_EQ(NativeViewHostWindowObserver::EVENT_HIDDEN,
             test_observer.events()[0].type);
   EXPECT_EQ(clipping_window(), test_observer.events()[0].window);
-  EXPECT_EQ(NativeViewHostWindowObserver::EVENT_BOUNDS_CHANGED,
-            test_observer.events()[1].type);
-  EXPECT_EQ(child()->GetNativeView(), test_observer.events()[1].window);
-  EXPECT_EQ(NativeViewHostWindowObserver::EVENT_HIDDEN,
-            test_observer.events()[2].type);
-  EXPECT_EQ(child()->GetNativeView(), test_observer.events()[2].window);
 
   clipping_window()->RemoveObserver(&test_observer);
   child()->GetNativeView()->RemoveObserver(&test_observer);
@@ -572,6 +566,28 @@ TEST_F(NativeViewHostAuraTest, WindowHiddenWhenAttached) {
   host->Attach(window.get());
   // Is |host| is not visible, |window| should immediately be hidden.
   EXPECT_FALSE(window->TargetVisibility());
+}
+
+TEST_F(NativeViewHostAuraTest, ClippedWindowNotResizedOnDetach) {
+  CreateTopLevel();
+  toplevel()->SetSize(gfx::Size(100, 100));
+  toplevel()->Show();
+
+  std::unique_ptr<aura::Window> window =
+      std::make_unique<aura::Window>(nullptr);
+  window->Init(ui::LAYER_NOT_DRAWN);
+  window->set_owned_by_parent(false);
+  window->SetBounds(gfx::Rect(0, 0, 200, 200));
+  window->Show();
+
+  NativeViewHost* host = toplevel()->GetRootView()->AddChildView(
+      std::make_unique<NativeViewHost>());
+  host->SetVisible(true);
+  host->SetBoundsRect(gfx::Rect(0, 0, 100, 100));
+  host->Attach(window.get());
+  EXPECT_EQ(gfx::Size(200, 200), window->bounds().size());
+  host->Detach();
+  EXPECT_EQ(gfx::Size(200, 200), window->bounds().size());
 }
 
 }  // namespace views

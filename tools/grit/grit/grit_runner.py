@@ -66,6 +66,12 @@ def ToolFactoryUnit():
   import grit.tool.unit
   return grit.tool.unit.UnitTestTool()
 
+
+def ToolFactoryUpdateResourceIds():
+  import grit.tool.update_resource_ids
+  return grit.tool.update_resource_ids.UpdateResourceIds()
+
+
 def ToolFactoryXmb():
   import grit.tool.xmb
   return grit.tool.xmb.OutputXmb()
@@ -82,28 +88,73 @@ _HIDDEN = 3  # optional key - presence indicates tool is hidden
 # Maps tool names to the tool's module.  Done as a list of (key, value) tuples
 # instead of a map to preserve ordering.
 _TOOLS = [
-  ['android2grd', {
-      _FACTORY: ToolAndroid2Grd,
-      _REQUIRES_INPUT : False }],
-  ['build', { _FACTORY : ToolFactoryBuild, _REQUIRES_INPUT : True }],
-  ['buildinfo', { _FACTORY : ToolFactoryBuildInfo, _REQUIRES_INPUT : True }],
-  ['count', { _FACTORY : ToolFactoryCount, _REQUIRES_INPUT : True }],
-  ['menufromparts', {
-      _FACTORY: ToolFactoryMenuTranslationsFromParts,
-      _REQUIRES_INPUT : True, _HIDDEN : True }],
-  ['newgrd', { _FACTORY  : ToolFactoryNewGrd, _REQUIRES_INPUT : False }],
-  ['rc2grd', { _FACTORY : ToolFactoryRc2Grd, _REQUIRES_INPUT : False }],
-  ['resize', {
-      _FACTORY : ToolFactoryResizeDialog, _REQUIRES_INPUT : True }],
-  ['sdiff', { _FACTORY : ToolFactoryDiffStructures,
-              _REQUIRES_INPUT : False }],
-  ['test', {
-      _FACTORY: ToolFactoryTest, _REQUIRES_INPUT : True,
-      _HIDDEN : True }],
-  ['transl2tc', { _FACTORY : ToolFactoryTranslationToTc,
-                  _REQUIRES_INPUT : False }],
-  ['unit', { _FACTORY : ToolFactoryUnit, _REQUIRES_INPUT : False }],
-  ['xmb', { _FACTORY : ToolFactoryXmb, _REQUIRES_INPUT : True }],
+    ['android2grd', {
+        _FACTORY: ToolAndroid2Grd,
+        _REQUIRES_INPUT: False
+    }],
+    ['build', {
+        _FACTORY: ToolFactoryBuild,
+        _REQUIRES_INPUT: True
+    }],
+    ['buildinfo', {
+        _FACTORY: ToolFactoryBuildInfo,
+        _REQUIRES_INPUT: True
+    }],
+    ['count', {
+        _FACTORY: ToolFactoryCount,
+        _REQUIRES_INPUT: True
+    }],
+    [
+        'menufromparts',
+        {
+            _FACTORY: ToolFactoryMenuTranslationsFromParts,
+            _REQUIRES_INPUT: True,
+            _HIDDEN: True
+        }
+    ],
+    ['newgrd', {
+        _FACTORY: ToolFactoryNewGrd,
+        _REQUIRES_INPUT: False
+    }],
+    ['rc2grd', {
+        _FACTORY: ToolFactoryRc2Grd,
+        _REQUIRES_INPUT: False
+    }],
+    ['resize', {
+        _FACTORY: ToolFactoryResizeDialog,
+        _REQUIRES_INPUT: True
+    }],
+    ['sdiff', {
+        _FACTORY: ToolFactoryDiffStructures,
+        _REQUIRES_INPUT: False
+    }],
+    ['test', {
+        _FACTORY: ToolFactoryTest,
+        _REQUIRES_INPUT: True,
+        _HIDDEN: True
+    }],
+    [
+        'transl2tc',
+        {
+            _FACTORY: ToolFactoryTranslationToTc,
+            _REQUIRES_INPUT: False
+        }
+    ],
+    ['unit', {
+        _FACTORY: ToolFactoryUnit,
+        _REQUIRES_INPUT: False
+    }],
+    [
+        'update_resource_ids',
+        {
+            _FACTORY: ToolFactoryUpdateResourceIds,
+            _REQUIRES_INPUT: False
+        }
+    ],
+    ['xmb', {
+        _FACTORY: ToolFactoryXmb,
+        _REQUIRES_INPUT: True
+    }],
 ]
 
 

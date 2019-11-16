@@ -177,7 +177,6 @@
                       completion:(ProceduralBlock)completion {
   DCHECK(viewController);
   DCHECK(self.topViewController);
-  DCHECK(![self.topViewController presentedViewController]);
   [self.topViewController presentViewController:viewController
                                        animated:animated
                                      completion:completion];

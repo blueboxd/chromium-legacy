@@ -118,6 +118,16 @@ class CookieSettingsBase {
   // have to be removed.
   //
   // This may be called on any thread.
+  //
+  // Legacy access means we treat "SameSite unspecified" as if it were
+  // SameSite=None. Also, we don't require SameSite=None cookies to be Secure.
+  //
+  // If something is "Legacy" but explicitly says SameSite=Lax or
+  // SameSite=Strict, it will still be treated as SameSite=Lax or
+  // SameSite=Strict.
+  //
+  // Legacy behavior is based on the domain of the cookie itself, effectively
+  // the domain of the requested URL, which may be embedded in another domain.
   net::CookieAccessSemantics GetCookieAccessSemanticsForDomain(
       const std::string& cookie_domain) const;
 
@@ -128,6 +138,28 @@ class CookieSettingsBase {
   virtual void GetSettingForLegacyCookieAccess(
       const std::string& cookie_domain,
       ContentSetting* setting) const = 0;
+
+  // Returns whether a cookie should be attached regardless of its SameSite
+  // value vs the request context.
+  // This currently returns true if the |site_for_cookies| is a Chrome UI scheme
+  // URL and the |url| is secure.
+  //
+  // This bypass refers to all SameSite cookies (unspecified-defaulted-into-Lax,
+  // as well as explicitly specified Lax or Strict). This addresses cases where
+  // the context should be treated as "first party" even if URLs have different
+  // sites (or even different schemes).
+  //
+  // (One such situation is e.g. chrome://print embedding some content from
+  // https://accounts.google.com for Cloud Print login. Because we trust the
+  // chrome:// scheme, and the embedded content is https://, we can treat this
+  // as effectively first-party for the purposes of SameSite cookies.)
+  //
+  // This differs from "legacy SameSite behavior" because rather than the
+  // requested URL, this bypass is based on the site_for_cookies, i.e. the
+  // embedding context.
+  virtual bool ShouldIgnoreSameSiteRestrictions(
+      const GURL& url,
+      const GURL& site_for_cookies) const = 0;
 
   // Determines whether |setting| is a valid content setting for cookies.
   static bool IsValidSetting(ContentSetting setting);

@@ -48,13 +48,11 @@ namespace net {
 class NET_EXPORT HostCache {
  public:
   struct NET_EXPORT Key {
-    // TODO(mmenke): Make |network_isolation_key| mandatory.
     Key(const std::string& hostname,
         DnsQueryType dns_query_type,
         HostResolverFlags host_resolver_flags,
         HostResolverSource host_resolver_source,
-        const NetworkIsolationKey& network_isolation_key =
-            NetworkIsolationKey());
+        const NetworkIsolationKey& network_isolation_key);
     Key();
     Key(const Key& key);
     Key(Key&& key);

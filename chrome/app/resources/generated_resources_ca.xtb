@@ -254,6 +254,7 @@
 <translation id="1365180424462182382">El <ph name="BEGIN_LINK" />navegador està gestionat<ph name="END_LINK" /> per <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="1366177842110999534">Executa les eines, els editors i els IDE de Linux a <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Més informació&lt;/a&gt;</translation>
 <translation id="1367951781824006909">Trieu un fitxer</translation>
+<translation id="1369149969991017342">Accés amb interruptors (controla l'ordinador amb només un o dos interruptors)</translation>
 <translation id="1372841398847029212">Sincronitza amb el meu compte</translation>
 <translation id="1374844444528092021">El certificat necessari per a la xarxa "<ph name="NETWORK_NAME" />" no està instal·lat o ja no és vàlid. Obtingueu un certificat nou i proveu de tornar-vos a connectar.</translation>
 <translation id="1375321115329958930">Contrasenyes desades</translation>
@@ -565,6 +566,7 @@
 <translation id="1794791083288629568">Envia suggeriments per ajudar-nos a solucionar el problema.</translation>
 <translation id="1795214765651529549">Utilitza el tema clàssic</translation>
 <translation id="1799071797295057738">L'extensió <ph name="EXTENSION_NAME" /> s'ha desactivat automàticament.</translation>
+<translation id="1802624026913571222">Posa en repòs quan es tanqui la tapa</translation>
 <translation id="1802687198411089702">La pàgina no respon. Pots esperar que respongui o pots sortir-ne.</translation>
 <translation id="1802931390041703523">Flash està bloquejat en aquesta pàgina</translation>
 <translation id="1803531841600994172">Idioma d'arribada de la traducció</translation>
@@ -666,6 +668,7 @@
 <translation id="1937774647013465102">No es pot importar el tipus d'arquitectura de contenidors<ph name="ARCHITECTURE_CONTAINER" /> amb aquest dispositiu, que és <ph name="ARCHITECTURE_DEVICE" />. Pots provar de restaurar el contenidor en un altre dispositiu o accedir als fitxers que inclou la imatge del contenidor obrint l'aplicació Fitxers.</translation>
 <translation id="1938351510777341717">Ordre externa</translation>
 <translation id="1940546824932169984">Dispositius connectats</translation>
+<translation id="1942600407708803723">Apaga quan es tanqui la tapa</translation>
 <translation id="1944921356641260203">S'ha trobat una actualització.</translation>
 <translation id="1946577776959096882">Mostra els comptes</translation>
 <translation id="1951012854035635156">Assistent</translation>
@@ -2436,6 +2439,7 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="4546308221697447294">Navega ràpidament amb Google Chrome</translation>
 <translation id="4547659257713117923">Cap pestanya d'altres dispositius</translation>
 <translation id="4547672827276975204">Defineix automàticament</translation>
+<translation id="4549791035683739768">La clau de seguretat no té empremtes digitals emmagatzemades</translation>
 <translation id="4551763574344810652">Prem <ph name="MODIFIER_KEY_DESCRIPTION" /> per desfer l'acció</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4554591392113183336">L'extensió externa té la mateixa versió, o una d'anterior, en comparació amb l'existent.</translation>
@@ -2615,6 +2619,7 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="4839303808932127586">De&amp;sa el vídeo com a...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 més}other{# més}}</translation>
 <translation id="4842976633412754305">Aquesta pàgina està provant de carregar scripts de fonts no autenticades.</translation>
+<translation id="4843488774506045600">Inici de sessió proporcionat per <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Altres teclats</translation>
 <translation id="4846680374085650406">Esteu seguint la recomanació de l'administració per a aquesta configuració.</translation>
 <translation id="4848518990323155912">Activa el bloqueig de la targeta SIM (requereix el PIN per utilitzar dades de telefonia mòbil)</translation>
@@ -3068,6 +3073,7 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="5511823366942919280">Confirmes que vols configurar aquest dispositiu com a "Tauró"?</translation>
 <translation id="5512653252560939721">El certificat d'usuari ha de ser al maquinari.</translation>
 <translation id="5517304475148761050">Aquesta aplicació requereix accés a Play Store</translation>
+<translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> - <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">S'està afegint la impressora al compte. Pot ser que aquest procés tardi una estona...</translation>
 <translation id="5518219166343146486">Pregunta'm quan un lloc web vulgui veure el text i les imatges copiats al porta-retalls</translation>
 <translation id="5518584115117143805">Certificat d'encriptació de correu electrònic</translation>
@@ -3187,6 +3193,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="567643736130151854">Inicia la sessió i activa la sincronització per accedir a les teves adreces d'interès, les contrasenyes i altres opcions des de tots els teus dispositius</translation>
 <translation id="5677503058916217575">Idioma de la pàgina:</translation>
 <translation id="5677928146339483299">Bloquejat</translation>
+<translation id="5678293144564424498">Aplicació en pausa</translation>
 <translation id="5678550637669481956">S'ha concedit accés de lectura i d'escriptura a <ph name="VOLUME_NAME" />.</translation>
 <translation id="5678955352098267522">Llegir les dades del lloc <ph name="WEBSITE_1" /></translation>
 <translation id="5684661240348539843">Identificador d'elements</translation>
@@ -3453,6 +3460,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6055392876709372977">PKCS #1 SHA-256 amb encriptació RSA</translation>
 <translation id="6056710589053485679">Torna a carregar de manera normal</translation>
 <translation id="6057381398996433816">No es permet que aquest lloc web utilitzi els sensors de llum i moviment.</translation>
+<translation id="6058567592298841668">Màquina virtual de connectors: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Jerarquia del certificat</translation>
 <translation id="6059925163896151826">Dispositius USB</translation>
 <translation id="6061882183774845124">Envia l'enllaç als teus dispositius</translation>
@@ -4401,6 +4409,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7476454130948140105">No hi ha prou bateria per fer l'actualització (<ph name="BATTERY_PERCENT" />%)</translation>
 <translation id="7477793887173910789">Controla la música, els vídeos i molt més</translation>
 <translation id="7478485216301680444">No s'ha pogut instal·lar l'aplicació de quiosc.</translation>
+<translation id="7479221278376295180">Informació general sobre l'ús de dades</translation>
 <translation id="7481312909269577407">Endavant</translation>
 <translation id="748138892655239008">Restriccions bàsiques de certificats</translation>
 <translation id="7487067081878637334">Tecnologia</translation>
@@ -5377,6 +5386,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8845001906332463065">Obteniu ajuda</translation>
 <translation id="8846132060409673887">Consultar el fabricant i el model d'aquest ordinador</translation>
 <translation id="8846141544112579928">S'està cercant el teclat...</translation>
+<translation id="8847523528195140327">Tanca la sessió quan es tanqui la tapa</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8850251000316748990">Mostra'n més...</translation>
 <translation id="885246833287407341">Arguments de les funcions de l'API</translation>
@@ -5439,6 +5449,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8930351635855238750">La nova configuració de galetes s'aplicarà quan tornis a carregar la pàgina</translation>
 <translation id="8931394284949551895">Dispositius nous</translation>
 <translation id="893254996965966411">Desa al teu perfil impressores detectades o afegeix-ne una de nova.</translation>
+<translation id="8932894639908691771">Opcions d'accés amb interruptors</translation>
 <translation id="8933960630081805351">&amp;Mostra a Finder</translation>
 <translation id="8934732568177537184">Continua</translation>
 <translation id="8938800817013097409">Dispositiu USB-C (port posterior dret)</translation>
@@ -5502,6 +5513,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="9023015617655685412">Afegeix aquesta pestanya a les adreces d'interès...</translation>
 <translation id="9024127637873500333">&amp;Obre en una pestanya nova</translation>
 <translation id="9024158959543687197">S'ha produït un error en activar l'ús compartit. Comprova l'URL de l'ús compartit del fitxer i torna-ho a provar.</translation>
+<translation id="9024885274934357065">El dispositiu es desbloqueja amb Smart Lock. Prem Retorn per desbloquejar-lo.</translation>
 <translation id="9026731007018893674">baixa</translation>
 <translation id="9026852570893462412">Aquest procés pot tardar uns quants minuts. S'està baixant la màquina virtual.</translation>
 <translation id="9027459031423301635">Obre l'enllaç en una pes&amp;tanya nova</translation>

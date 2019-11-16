@@ -2195,12 +2195,16 @@
     },
     {
       "id": 219,
-      "description": "Zero-copy DXGI video hangs or displays incorrect colors on AMD drivers",
-      "cr_bugs": [623029],
+      "description": "Zero-copy DXGI video hangs or displays incorrect colors on older AMD drivers",
+      "cr_bugs": [623029, 1025427],
       "os": {
         "type": "win"
       },
       "vendor_id": "0x1002",
+      "driver_version": {
+        "op": "<",
+        "value": "23.20.826.5120"
+      },
       "features": [
         "disable_dxgi_zero_copy_video"
       ]
@@ -3096,14 +3100,17 @@
     },
     {
       "id": 294,
-      "cr_bugs": [932879],
-      "description": "Hardware overlays result in black videos on non-Intel GPUs",
+      "cr_bugs": [932879, 1025427],
+      "description": "Hardware overlays are only supported on certain Intel/AMD gpus",
       "os": {
         "type": "win"
       },
       "exceptions": [
         {
           "vendor_id": "0x8086"
+        },
+        {
+          "vendor_id": "0x1002"
         }
       ],
       "features": [
@@ -3414,6 +3421,56 @@
       },
       "features": [
         "remove_dynamic_indexing_of_swizzled_vector"
+      ]
+    },
+    {
+      "id": 321,
+      "description": "Zero-copy DXGI video hangs or displays incorrect colors on older AMD drivers",
+      "cr_bugs": [623029, 1025427],
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x1002",
+      "device_id": ["0x9870", "0x9874", "0x98E4"],
+      "driver_version": {
+        "op": "<",
+        "value": "26.20.15000.37"
+      },
+      "features": [
+        "disable_dxgi_zero_copy_video"
+      ]
+    },
+    {
+      "id": 322,
+      "cr_bugs": [932879, 1025427],
+      "description": "Hardware overlays fail to work on older AMD drivers",
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x1002",
+      "driver_version": {
+        "op": "<",
+        "value": "23.20.826.5120"
+      },
+      "features": [
+        "disable_direct_composition_video_overlays"
+      ]
+    },
+    {
+      "id": 323,
+      "cr_bugs": [932879, 1025427],
+      "description": "Hardware overlays fail to work on older AMD drivers",
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x1002",
+      "device_id": ["0x9870", "0x9874", "0x98E4"],
+      "driver_version": {
+        "op": "<",
+        "value": "26.20.15000.37"
+      },
+      "features": [
+        "disable_direct_composition_video_overlays"
       ]
     }
   ]

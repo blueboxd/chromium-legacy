@@ -31,12 +31,12 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_with_source.h"
 #include "net/proxy_resolution/pac_file_data.h"
-#include "net/proxy_resolution/pac_library.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_resolve_dns_operation.h"
 #include "net/proxy_resolution/proxy_resolver.h"
 #include "net/proxy_resolution/proxy_resolver_error_observer.h"
 #include "services/network/mojo_host_resolver_impl.h"
+#include "services/network/proxy_auto_config_library.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 
 namespace net {
@@ -62,7 +62,7 @@ void DoMyIpAddressOnWorker(
         client_remote) {
   // Resolve the list of IP addresses.
   std::vector<net::IPAddress> my_ip_addresses =
-      is_ex ? net::PacMyIpAddressEx() : net::PacMyIpAddress();
+      is_ex ? PacMyIpAddressEx() : PacMyIpAddress();
 
   mojo::Remote<proxy_resolver::mojom::HostResolverRequestClient> client(
       std::move(client_remote));

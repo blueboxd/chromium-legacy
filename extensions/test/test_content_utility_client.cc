@@ -4,11 +4,6 @@
 
 #include "extensions/test/test_content_utility_client.h"
 
-#include "content/public/child/child_thread.h"
-#include "content/public/common/service_manager_connection.h"
-#include "content/public/common/simple_connection_filter.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
-
 namespace extensions {
 
 TestContentUtilityClient::TestContentUtilityClient() = default;

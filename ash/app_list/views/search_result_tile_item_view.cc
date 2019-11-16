@@ -389,24 +389,30 @@ void SearchResultTileItemView::OnMenuClosed() {
 
 void SearchResultTileItemView::ActivateResult(int event_flags,
                                               bool by_button_press) {
+  const bool launch_as_default = is_default_result() && !by_button_press;
   if (result()->result_type() == AppListSearchResultType::kPlayStoreApp) {
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "Arc.PlayStoreSearch.ResultClickLatency",
-        base::TimeTicks::Now() - result_display_start_time());
+    const base::TimeDelta activation_delay =
+        base::TimeTicks::Now() - result_display_start_time();
+    UMA_HISTOGRAM_MEDIUM_TIMES("Arc.PlayStoreSearch.ResultClickLatency",
+                               activation_delay);
     UMA_HISTOGRAM_EXACT_LINEAR(
         "Apps.AppListPlayStoreAppLaunchedIndex",
         group_index_in_container_view(),
         AppListConfig::instance().max_search_result_tiles());
+    if (launch_as_default) {
+      UMA_HISTOGRAM_MEDIUM_TIMES(
+          "Arc.PlayStoreSearch.DefaultResultClickLatency", activation_delay);
+    }
   }
 
   LogAppLaunchForSuggestedApp();
 
   RecordSearchResultOpenSource(result(), view_delegate_->GetModel(),
                                view_delegate_->GetSearchModel());
-  view_delegate_->OpenSearchResult(
-      result()->id(), event_flags, AppListLaunchedFrom::kLaunchedFromSearchBox,
-      AppListLaunchType::kAppSearchResult, index_in_container(),
-      is_default_result() && !by_button_press /* launch_as_default */);
+  view_delegate_->OpenSearchResult(result()->id(), event_flags,
+                                   AppListLaunchedFrom::kLaunchedFromSearchBox,
+                                   AppListLaunchType::kAppSearchResult,
+                                   index_in_container(), launch_as_default);
   view_delegate_->LogResultLaunchHistogram(
       SearchResultLaunchLocation::kTileList, index_in_container());
 }

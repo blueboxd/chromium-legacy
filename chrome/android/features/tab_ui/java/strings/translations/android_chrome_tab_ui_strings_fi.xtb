@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
+<translation id="1075622780330595106"><ph name="NUMBER_OF_TABS" /> välilehteä ei ole käytetty vähään aikaan. Suljetaanko ne?</translation>
 <translation id="1181037720776840403">Poista</translation>
 <translation id="125153950246128346">Näytä toinen välilehti napauttamalla</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> välilehti}other{<ph name="TABS_COUNT_MANY" /> välilehteä}}</translation>
@@ -10,6 +11,7 @@
 <translation id="2977480621796371840">Poista ryhmästä</translation>
 <translation id="4212246570487010370">Jatka selaamista</translation>
 <translation id="4648718555153979859">Välilehtesi on koottu tänne</translation>
+<translation id="5007392906805964215">Tarkista</translation>
 <translation id="5073204694187207510">Piilota koko näytön ruudukko</translation>
 <translation id="5082793167783849073">Luo ryhmä vertaillaksesi sivuja nopeasti. Aloita koskettamalla linkkiä pitkään.</translation>
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> välilehteä ryhmiteltiin</translation>

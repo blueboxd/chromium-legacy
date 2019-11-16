@@ -50,6 +50,8 @@ to its format as follows:
 |.json.gz | Gzipped json trace
 |.pb | Proto trace
 |.pb.gz | Gzipped proto trace
+|.txt | Other (e.g. atrace)
+|.txt.gz | Gzipped other
 
 Note that this convention relates to the artifact name only, the actual file
 stored in the host does not have to follow it.

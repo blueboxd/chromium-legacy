@@ -12,6 +12,7 @@
 <translation id="107147699690128016">ファイル拡張子を変更すると、ファイルが別のアプリケーションで開かれる可能性があり、場合によってはデバイスに損害が生じます。</translation>
 <translation id="1100066534610197918">新しいタブをグループで開く</translation>
 <translation id="1105960400813249514">画面キャプチャ</translation>
+<translation id="1110022065703191351">アイコン</translation>
 <translation id="1111673857033749125">他のデバイスに保存されているブックマークがここに表示されます。</translation>
 <translation id="1113597929977215864">簡易表示する</translation>
 <translation id="1124772482545689468">ユーザー</translation>
@@ -363,6 +364,7 @@
 <translation id="3730075448226062617">Chrome にマイクへのアクセスを許可するには、<ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />でもマイクをオンにしてください。</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> にブックマークしました</translation>
 <translation id="3744111561329211289">バックグラウンド同期</translation>
+<translation id="3749259744154402564">サポートされていません</translation>
 <translation id="3771001275138982843">アップデートをダウンロードできませんでした</translation>
 <translation id="3771033907050503522">シークレットタブ</translation>
 <translation id="3773755127849930740">ペア設定するには <ph name="BEGIN_LINK" />Bluetooth をオン<ph name="END_LINK" />にしてください</translation>
@@ -576,6 +578,7 @@
 <translation id="5327248766486351172">名前</translation>
 <translation id="5335288049665977812">サイトに Javascript の実行を許可する（推奨）</translation>
 <translation id="5342314432463739672">権限のリクエスト</translation>
+<translation id="534295439873310000">NFC デバイス</translation>
 <translation id="5357811892247919462">タブが共有されました</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> 個のタブが開いています。タブを切り替えるにはタップします}other{<ph name="OPEN_TABS_MANY" /> 個のタブが開いています。タブを切り替えるにはタップします}}</translation>
 <translation id="5391532827096253100">このサイトへの接続は保護されていません。サイト情報</translation>
@@ -632,6 +635,7 @@
 <translation id="5686790454216892815">ファイル名が長すぎます</translation>
 <translation id="5689516760719285838">位置情報</translation>
 <translation id="569536719314091526">[その他のオプション] から、このページを任意の言語に翻訳できます</translation>
+<translation id="5710871682236653961">NFC デバイスをタップしたとき、情報の送受信をサイトに許可するかどうかを確認する（推奨）</translation>
 <translation id="572328651809341494">最近使ったタブ</translation>
 <translation id="5726692708398506830">ページ上のすべての要素を拡大する</translation>
 <translation id="5748802427693696783">標準のタブに切り替えました</translation>
@@ -881,6 +885,7 @@
 <translation id="7559975015014302720">ライトモードはオフです</translation>
 <translation id="7562080006725997899">閲覧データの消去</translation>
 <translation id="756809126120519699">Chrome データの消去完了</translation>
+<translation id="7572498721684305250">NFC デバイスをタップしたとき、サイトによる情報の送受信をブロックする</translation>
 <translation id="757524316907819857">サイトでの保護されたコンテンツの再生をブロックする</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> 件のファイルをダウンロードしました}other{<ph name="FILES_DOWNLOADED_MANY" /> 件のファイルをダウンロードしました}}</translation>
 <translation id="7588219262685291874">デバイスがバッテリー セーバー モードの場合にダークテーマを有効にする</translation>

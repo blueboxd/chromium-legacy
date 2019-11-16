@@ -18,49 +18,46 @@ void AddOmniboxColorMixer(ui::ColorProvider* provider, bool high_contrast) {
       high_contrast ? 6.0f : color_utils::kMinimumReadableContrastRatio;
 
   // Omnibox background colors.
-  mixer[kColorOmniboxBackground] = ui::GetResultingPaintColor(
-      ui::FromTransformInput(), ui::FromInputColor(kColorToolbar));
-  mixer[kColorOmniboxBackgroundHovered] = ui::BlendTowardMaxContrast(
-      ui::FromResultColor(kColorOmniboxBackground), 0x0A);
+  mixer[kColorOmniboxBackground] =
+      ui::GetResultingPaintColor(ui::FromTransformInput(), kColorToolbar);
+  mixer[kColorOmniboxBackgroundHovered] =
+      ui::BlendTowardMaxContrast(kColorOmniboxBackground, 0x0A);
 
   // Omnibox text colors.
   mixer[kColorOmniboxText] = ui::GetResultingPaintColor(
-      ui::FromTransformInput(), ui::FromResultColor(kColorOmniboxBackground));
+      ui::FromTransformInput(), kColorOmniboxBackground);
   {
     auto& selected_text = mixer[kColorOmniboxResultsTextSelected];
-    selected_text = ui::FromResultColor(kColorOmniboxText);
+    selected_text = {kColorOmniboxText};
     if (high_contrast)
       selected_text += ui::ContrastInvert(ui::FromTransformInput());
   }
   mixer[kColorOmniboxSelectedKeyword] = ui::SelectBasedOnDarkInput(
-      ui::FromResultColor(kColorOmniboxBackground), gfx::kGoogleGrey100,
-      ui::FromResultColor(kColorOmniboxResultsUrl));
+      kColorOmniboxBackground, gfx::kGoogleGrey100, kColorOmniboxResultsUrl);
 
   // Bubble outline colors.
-  mixer[kColorOmniboxBubbleOutline] = ui::SelectBasedOnDarkInput(
-      ui::FromResultColor(kColorOmniboxBackground), gfx::kGoogleGrey100,
-      SkColorSetA(gfx::kGoogleGrey900, 0x24));
-  mixer[kColorOmniboxBubbleOutlineExperimentalKeywordMode] =
-      ui::FromResultColor(kColorOmniboxSelectedKeyword);
+  mixer[kColorOmniboxBubbleOutline] =
+      ui::SelectBasedOnDarkInput(kColorOmniboxBackground, gfx::kGoogleGrey100,
+                                 SkColorSetA(gfx::kGoogleGrey900, 0x24));
+  mixer[kColorOmniboxBubbleOutlineExperimentalKeywordMode] = {
+      kColorOmniboxSelectedKeyword};
 
   // Results background colors.
   mixer[kColorOmniboxResultsBackground] =
-      ui::GetColorWithMaxContrast(ui::FromResultColor(kColorOmniboxText));
+      ui::GetColorWithMaxContrast(kColorOmniboxText);
   mixer[kColorOmniboxResultsBackgroundHovered] = ui::BlendTowardMaxContrast(
-      ui::FromResultColor(kColorOmniboxResultsBackground),
-      gfx::kGoogleGreyAlpha200);
+      kColorOmniboxResultsBackground, gfx::kGoogleGreyAlpha200);
   mixer[kColorOmniboxResultsBackgroundSelected] = ui::BlendTowardMaxContrast(
-      ui::GetColorWithMaxContrast(
-          ui::FromResultColor(kColorOmniboxResultsTextSelected)),
+      ui::GetColorWithMaxContrast(kColorOmniboxResultsTextSelected),
       gfx::kGoogleGreyAlpha300);
 
   // Results icon colors.
   {
     const auto results_icon = [minimum_contrast](ui::ColorId text_id,
                                                  ui::ColorId background_id) {
-      return ui::BlendForMinContrast(
-          ui::DeriveDefaultIconColor(ui::FromResultColor(text_id)),
-          ui::FromResultColor(background_id), base::nullopt, minimum_contrast);
+      return ui::BlendForMinContrast(ui::DeriveDefaultIconColor(text_id),
+                                     background_id, base::nullopt,
+                                     minimum_contrast);
     };
     mixer[kColorOmniboxResultsIcon] =
         results_icon(kColorOmniboxText, kColorOmniboxResultsBackground);
@@ -75,11 +72,9 @@ void AddOmniboxColorMixer(ui::ColorProvider* provider, bool high_contrast) {
                                                  ui::ColorId foreground_id,
                                                  ui::ColorId background_id) {
       return ui::BlendForMinContrast(
-          ui::FromResultColor(foreground_id),
-          ui::FromResultColor(foreground_id),
-          ui::BlendForMinContrast(ui::FromResultColor(background_id),
-                                  ui::FromResultColor(background_id),
-                                  base::nullopt, minimum_contrast),
+          foreground_id, foreground_id,
+          ui::BlendForMinContrast(background_id, background_id, base::nullopt,
+                                  minimum_contrast),
           minimum_contrast);
     };
     mixer[kColorOmniboxResultsTextDimmed] = blend_with_clamped_contrast(
@@ -95,9 +90,9 @@ void AddOmniboxColorMixer(ui::ColorProvider* provider, bool high_contrast) {
   {
     const auto url_color = [minimum_contrast](ui::ColorId id) {
       return ui::BlendForMinContrast(
-          gfx::kGoogleBlue500, ui::FromResultColor(id),
-          ui::SelectBasedOnDarkInput(ui::FromResultColor(id),
-                                     gfx::kGoogleBlue050, gfx::kGoogleBlue900),
+          gfx::kGoogleBlue500, id,
+          ui::SelectBasedOnDarkInput(id, gfx::kGoogleBlue050,
+                                     gfx::kGoogleBlue900),
           minimum_contrast);
     };
     mixer[kColorOmniboxResultsUrl] =
@@ -111,19 +106,16 @@ void AddOmniboxColorMixer(ui::ColorProvider* provider, bool high_contrast) {
     const auto security_chip_color =
         [minimum_contrast](ui::ColorTransform transform) {
           return ui::SelectBasedOnDarkInput(
-              ui::FromResultColor(kColorOmniboxBackground),
-              ui::BlendTowardMaxContrast(ui::FromResultColor(kColorOmniboxText),
-                                         0x18),
-              ui::BlendForMinContrast(
-                  std::move(transform),
-                  ui::FromResultColor(kColorOmniboxBackgroundHovered),
-                  base::nullopt, minimum_contrast));
+              kColorOmniboxBackground,
+              ui::BlendTowardMaxContrast(kColorOmniboxText, 0x18),
+              ui::BlendForMinContrast(std::move(transform),
+                                      kColorOmniboxBackgroundHovered,
+                                      base::nullopt, minimum_contrast));
         };
     mixer[kColorOmniboxSecurityChipDangerous] =
         security_chip_color(gfx::kGoogleRed600);
-    mixer[kColorOmniboxSecurityChipSecure] = security_chip_color(
-        ui::DeriveDefaultIconColor(ui::FromResultColor(kColorOmniboxText)));
+    mixer[kColorOmniboxSecurityChipSecure] =
+        security_chip_color(ui::DeriveDefaultIconColor(kColorOmniboxText));
   }
-  mixer[kColorOmniboxSecurityChipDefault] =
-      ui::FromResultColor(kColorOmniboxSecurityChipSecure);
+  mixer[kColorOmniboxSecurityChipDefault] = {kColorOmniboxSecurityChipSecure};
 }

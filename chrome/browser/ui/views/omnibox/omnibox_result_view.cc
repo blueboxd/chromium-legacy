@@ -47,14 +47,14 @@
 
 OmniboxResultView::OmniboxResultView(
     OmniboxPopupContentsView* popup_contents_view,
-    int model_index,
+    size_t model_index,
     const ui::ThemeProvider* theme_provider)
     : AnimationDelegateViews(this),
       popup_contents_view_(popup_contents_view),
       model_index_(model_index),
       theme_provider_(theme_provider),
       animation_(new gfx::SlideAnimation(this)) {
-  CHECK_GE(model_index, 0);
+  CHECK_GE(model_index, 0u);
 
   suggestion_view_ = AddChildView(std::make_unique<OmniboxMatchCellView>(this));
 

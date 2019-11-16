@@ -53,6 +53,7 @@
 #include "media/base/media_switches.h"
 #include "media/base/video_codecs.h"
 #include "media/media_buildflags.h"
+#include "mojo/public/cpp/bindings/binder_map.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/http/http_util.h"
 #include "pdf/buildflags.h"
@@ -839,13 +840,16 @@ media::MediaDrmBridgeClient* ChromeContentClient::GetMediaDrmBridgeClient() {
 }
 #endif  // OS_ANDROID
 
-void ChromeContentClient::BindChildProcessInterface(
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle* receiving_handle) {
-  static base::NoDestructor<heap_profiling::ProfilingClient> profiling_client;
-  if (interface_name == heap_profiling::ProfilingClient::Name_) {
-    profiling_client->BindToInterface(
-        mojo::PendingReceiver<heap_profiling::mojom::ProfilingClient>(
-            std::move(*receiving_handle)));
-  }
+void ChromeContentClient::ExposeInterfacesToBrowser(
+    scoped_refptr<base::SequencedTaskRunner> io_task_runner,
+    mojo::BinderMap* binders) {
+  binders->Add(
+      base::BindRepeating(
+          [](mojo::PendingReceiver<heap_profiling::mojom::ProfilingClient>
+                 receiver) {
+            static base::NoDestructor<heap_profiling::ProfilingClient>
+                profiling_client;
+            profiling_client->BindToInterface(std::move(receiver));
+          }),
+      io_task_runner);
 }

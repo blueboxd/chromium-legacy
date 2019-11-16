@@ -291,7 +291,7 @@ void WebRemoteFrameImpl::SetReplicatedFeaturePolicyHeaderAndOpenerPolicies(
 
 void WebRemoteFrameImpl::AddReplicatedContentSecurityPolicyHeader(
     const WebString& header_value,
-    mojom::ContentSecurityPolicyType type,
+    network::mojom::ContentSecurityPolicyType type,
     WebContentSecurityPolicySource source) {
   GetFrame()
       ->GetSecurityContext()

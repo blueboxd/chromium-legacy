@@ -8,9 +8,8 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 
-// The delegate, which is created and destroyed together with the bridge, holds
-// all the information about the password form that was loaded and edited in the
-// PasswordEntryEditor.
+// An interface used for launching the entry editor and editing a credential
+// record.
 class PasswordEditDelegate {
  public:
   PasswordEditDelegate() = default;

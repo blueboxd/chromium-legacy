@@ -1600,169 +1600,78 @@ be describing additional metrics about the same event.
       The time spent in main frame animation, between navigation and First
       Contentful Paint, in microseconds.
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <quantiles type="std-percentiles"/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="Compositing">
     <summary>
       The time spent in main thread compositing, between navigation and First
       Contentful Paint, in microseconds.
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <quantiles type="std-percentiles"/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="CompositingCommit">
     <summary>
       The time spent committing main thread compositing results, between
       navigation and First Contentful Paint, in microseconds.
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <quantiles type="std-percentiles"/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="ForcedStyleAndLayout">
     <summary>
       The time spent in forced style recalc and layouts, between navigation and
       First Contentful Paint, in microseconds.
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <quantiles type="std-percentiles"/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="HandleInputEvents">
     <summary>
       The time spent in processing rAF-aligned input for the main frame, between
       navigation and First Contentful Paint, in microseconds.
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <quantiles type="std-percentiles"/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="IntersectionObservation">
     <summary>
       The time spent computing intersection observer state, between navigation
       and First Contentful Paint, in microseconds.
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <quantiles type="std-percentiles"/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="Layout">
     <summary>
       The time spent in layout document lifecycle work, between navigation and
       First Contentful Paint, in microseconds.
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <quantiles type="std-percentiles"/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="MainFrame">
     <summary>
       The time spent in ProxyMain::BeginMainFrame, between navigation and First
       Contentful Paint, in microseconds.
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <quantiles type="std-percentiles"/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="Paint">
     <summary>
       The time spent in paint document lifecycle work, between navigation and
       First Contentful Paint, in microseconds.
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <quantiles type="std-percentiles"/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="PrePaint">
     <summary>
       The time spent in pre-paint document lifecycle work, between navigation
       and First Contentful Paint, in microseconds.
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <quantiles type="std-percentiles"/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="ProxyCommit">
     <summary>
       The time spent committing main thread to impl layer tree information,
       between navigation and First Contentful Paint, in microseconds.
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <quantiles type="std-percentiles"/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="ScrollingCoordinator">
     <summary>
       The time spent in ScrollingCoordinator, between navigation and First
       Contentful Paint, in microseconds.
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <quantiles type="std-percentiles"/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="Style">
     <summary>
       The time spent in style document lifecycle work, between navigation and
       First Contentful Paint, in microseconds.
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <quantiles type="std-percentiles"/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="StyleAndLayout">
     <summary>
@@ -1770,26 +1679,12 @@ be describing additional metrics about the same event.
       navigation and First Contentful Paint, in microseconds. Will be obsolete
       in M-82.
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <quantiles type="std-percentiles"/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
   <metric name="UpdateLayers">
     <summary>
       The time spent in for LayerTreeHost::UpdateLayers, between navigation and
       First Contentful Paint, in microseconds.
     </summary>
-    <aggregation>
-      <history>
-        <statistics>
-          <quantiles type="std-percentiles"/>
-        </statistics>
-      </history>
-    </aggregation>
   </metric>
 </event>
 

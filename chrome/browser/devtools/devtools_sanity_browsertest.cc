@@ -1793,7 +1793,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsAutoOpenerTest, TestAutoOpenForTabs) {
 }
 
 // Flaky timeouts on Win7 Tests (dbg)(1); see https://crbug.com/985255.
-#if defined(OS_WIN) && !defined(NDEBUG)
+// Flaky timeouts and failures on Win7 (32) Tests; see
+// https://crbug.com/1025411.
+#if defined(OS_WIN)
 #define MAYBE_DevToolsReattachAfterCrashTest \
   DISABLED_DevToolsReattachAfterCrashTest
 #else
@@ -1817,13 +1819,23 @@ class MAYBE_DevToolsReattachAfterCrashTest : public DevToolsSanityTest {
   }
 };
 
+// Crashes on Win. http://crbug.com/1025369
+#if defined(OS_WIN)
+#define MAYBE_TestReattachAfterCrashOnTimeline \
+  DISABLED_TestReattachAfterCrashOnTimeline
+#define MAYBE_TestReattachAfterCrashOnNetwork \
+  DISABLED_TestReattachAfterCrashOnNetwork
+#else
+#define MAYBE_TestReattachAfterCrashOnTimeline TestReattachAfterCrashOnTimeline
+#define MAYBE_TestReattachAfterCrashOnNetwork TestReattachAfterCrashOnNetwork
+#endif
 IN_PROC_BROWSER_TEST_F(MAYBE_DevToolsReattachAfterCrashTest,
-                       TestReattachAfterCrashOnTimeline) {
+                       MAYBE_TestReattachAfterCrashOnTimeline) {
   RunTestWithPanel("timeline");
 }
 
 IN_PROC_BROWSER_TEST_F(MAYBE_DevToolsReattachAfterCrashTest,
-                       TestReattachAfterCrashOnNetwork) {
+                       MAYBE_TestReattachAfterCrashOnNetwork) {
   RunTestWithPanel("network");
 }
 

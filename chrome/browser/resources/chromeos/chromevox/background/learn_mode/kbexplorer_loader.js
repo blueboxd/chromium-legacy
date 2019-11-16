@@ -6,8 +6,8 @@
  * @fileoverview Description of this file.
  */
 
-goog.require('cvox.KbExplorer');
+goog.require('KbExplorer');
 
 document.addEventListener('DOMContentLoaded', function() {
-  cvox.KbExplorer.init();
+  KbExplorer.init();
 }, false);

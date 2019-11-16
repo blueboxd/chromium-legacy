@@ -10,6 +10,10 @@
 class Browser;
 class ExtensionsToolbarContainer;
 
+namespace views {
+class MenuButtonController;
+}  // namespace views
+
 // Button in the toolbar that provides access to the corresponding extensions
 // menu.
 class ExtensionsToolbarButton : public ToolbarButton,
@@ -25,6 +29,7 @@ class ExtensionsToolbarButton : public ToolbarButton,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   Browser* const browser_;
+  views::MenuButtonController* menu_button_controller_;
   ExtensionsToolbarContainer* const extensions_container_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsToolbarButton);

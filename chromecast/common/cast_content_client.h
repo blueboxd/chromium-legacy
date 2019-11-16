@@ -29,9 +29,9 @@ class CastContentClient : public content::ContentClient {
 #if defined(OS_ANDROID)
   ::media::MediaDrmBridgeClient* GetMediaDrmBridgeClient() override;
 #endif  // OS_ANDROID
-  void BindChildProcessInterface(
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle* receiving_handle) override;
+  void ExposeInterfacesToBrowser(
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner,
+      mojo::BinderMap* binders) override;
 
  private:
   GURL last_active_url_;

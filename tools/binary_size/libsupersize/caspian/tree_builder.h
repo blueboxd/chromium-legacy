@@ -21,6 +21,7 @@ class TreeBuilder {
   TreeBuilder(DeltaSizeInfo* size_info);
   ~TreeBuilder();
   void Build(bool group_by_component,
+             bool method_count_mode,
              std::vector<std::function<bool(const BaseSymbol&)>> filters);
   Json::Value Open(const char* path);
 
@@ -52,6 +53,7 @@ class TreeBuilder {
   // Deque is used for stability, to support string_view.
   std::deque<std::string> owned_strings_;
   bool group_by_component_;
+  bool method_count_mode_;
   // The current path separator: '>' if grouping by component, '/' otherwise.
   // Note that we split paths on '/' no matter the value of separator, since
   // when grouping by component, paths look like Component>path/to/file.

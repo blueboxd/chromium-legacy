@@ -40,9 +40,10 @@ class ChipLabel : public views::Label {
 
   // views::Label
   gfx::Insets GetInsets() const override {
+    const int icon_size = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
     const int chip_corner_radius =
         views::LayoutProvider::Get()->GetCornerRadiusMetric(
-            views::EMPHASIS_MAXIMUM, size());
+            views::EMPHASIS_MAXIMUM, gfx::Size(icon_size, icon_size));
     return gfx::Insets(0, chip_corner_radius, 0, chip_corner_radius);
   }
   gfx::Size CalculatePreferredSize() const override {

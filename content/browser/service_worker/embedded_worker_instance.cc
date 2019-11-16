@@ -281,8 +281,6 @@ bool HasSentStartWorker(EmbeddedWorkerInstance::StartingPhase phase) {
       return false;
     case EmbeddedWorkerInstance::SENT_START_WORKER:
     case EmbeddedWorkerInstance::SCRIPT_DOWNLOADING:
-    case EmbeddedWorkerInstance::SCRIPT_READ_STARTED:
-    case EmbeddedWorkerInstance::SCRIPT_READ_FINISHED:
     case EmbeddedWorkerInstance::SCRIPT_STREAMING:
     case EmbeddedWorkerInstance::SCRIPT_LOADED:
     case EmbeddedWorkerInstance::SCRIPT_EVALUATION:
@@ -907,14 +905,6 @@ void EmbeddedWorkerInstance::OnReadyForInspection(
                                                   std::move(host_receiver));
 }
 
-void EmbeddedWorkerInstance::OnScriptReadStarted() {
-  starting_phase_ = SCRIPT_READ_STARTED;
-}
-
-void EmbeddedWorkerInstance::OnScriptReadFinished() {
-  starting_phase_ = SCRIPT_READ_FINISHED;
-}
-
 void EmbeddedWorkerInstance::OnScriptLoaded() {
   if (!inflight_start_task_)
     return;
@@ -1242,10 +1232,6 @@ std::string EmbeddedWorkerInstance::StartingPhaseToString(StartingPhase phase) {
       return "Script downloading";
     case SCRIPT_LOADED:
       return "Script loaded";
-    case SCRIPT_READ_STARTED:
-      return "Script read started";
-    case SCRIPT_READ_FINISHED:
-      return "Script read finished";
     case SCRIPT_STREAMING:
       return "Script streaming";
     case SCRIPT_EVALUATION:

@@ -258,6 +258,8 @@ class DownloadFileTest : public testing::Test {
     base::WeakPtrFactory<DownloadFileTest> weak_ptr_factory(this);
     DownloadInterruptReason result = DOWNLOAD_INTERRUPT_REASON_NONE;
     base::RunLoop loop_runner;
+    download_file_->SetTaskRunnerForTesting(
+        base::SequencedTaskRunnerHandle::Get());
     download_file_->Initialize(
         base::BindRepeating(&DownloadFileTest::SetInterruptReasonCallback,
                             weak_ptr_factory.GetWeakPtr(),

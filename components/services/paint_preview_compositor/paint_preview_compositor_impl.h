@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
 #include "components/paint_preview/common/proto/paint_preview.pb.h"
 #include "components/services/paint_preview_compositor/paint_preview_frame.h"
 #include "components/services/paint_preview_compositor/public/mojom/paint_preview_compositor.mojom.h"
@@ -63,7 +62,9 @@ class PaintPreviewCompositorImpl : public mojom::PaintPreviewCompositor {
   // A mapping from frame GUID to its associated data.
   base::flat_map<int64_t, PaintPreviewFrame> frames_;
 
-  DISALLOW_COPY_AND_ASSIGN(PaintPreviewCompositorImpl);
+  PaintPreviewCompositorImpl(const PaintPreviewCompositorImpl&) = delete;
+  PaintPreviewCompositorImpl& operator=(const PaintPreviewCompositorImpl&) =
+      delete;
 };
 
 }  // namespace paint_preview

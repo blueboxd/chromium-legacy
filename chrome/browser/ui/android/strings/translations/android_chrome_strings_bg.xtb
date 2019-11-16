@@ -12,6 +12,7 @@
 <translation id="107147699690128016">Ако промените файловото разширение, файлът може да се отвори в друго приложение и потенциално да навреди на устройството ви.</translation>
 <translation id="1100066534610197918">Отваряне в нов раздел в група</translation>
 <translation id="1105960400813249514">Заснемане на екрана</translation>
+<translation id="1110022065703191351">Икони</translation>
 <translation id="1111673857033749125">Тук ще се показват отметките, които сте запазили на другите си устройства.</translation>
 <translation id="1113597929977215864">Показване на опростения изглед</translation>
 <translation id="1124772482545689468">Потребител</translation>
@@ -363,6 +364,7 @@
 <translation id="3730075448226062617">За да разрешите на Chrome да осъществява достъп до микрофона ви, той трябва да бъде включен и от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
 <translation id="3739899004075612870">Отметката бе запазена в/ъв <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Синхронизиране на заден план</translation>
+<translation id="3749259744154402564">Не се поддържа</translation>
 <translation id="3771001275138982843">Актуализацията не можа да бъде изтеглена</translation>
 <translation id="3771033907050503522">Раздели „инкогнито“</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Включете Bluetooth<ph name="END_LINK" />, за да разрешите сдвояването</translation>
@@ -576,6 +578,7 @@
 <translation id="5327248766486351172">Име</translation>
 <translation id="5335288049665977812">Разрешаване на сайтовете да изпълняват JavaScript (препоръчително)</translation>
 <translation id="5342314432463739672">Искания за разрешение</translation>
+<translation id="534295439873310000">Устройства с NFC</translation>
 <translation id="5357811892247919462">Получихте раздел</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> отворен раздел. Докоснете за превключване между разделите}other{<ph name="OPEN_TABS_MANY" /> отворени раздела. Докоснете за превключване между тях}}</translation>
 <translation id="5391532827096253100">Връзката ви с този сайт не е защитена. Информация за сайта</translation>
@@ -632,6 +635,7 @@
 <translation id="5686790454216892815">Името на файла е твърде дълго</translation>
 <translation id="5689516760719285838">Местоположение</translation>
 <translation id="569536719314091526">Страницата може да бъде преведена на който и да е език чрез бутона за още опции</translation>
+<translation id="5710871682236653961">Извеждане на запитване преди разрешаване на сайтовете да изпращат и получават информация при допиране на устройства с NFC (препоръчително)</translation>
 <translation id="572328651809341494">Скорошни раздели</translation>
 <translation id="5726692708398506830">Уголемяване на всички елементи на страницата</translation>
 <translation id="5748802427693696783">Превключихте към стандартните раздели</translation>
@@ -881,6 +885,7 @@
 <translation id="7559975015014302720">Олекотеният режим е изключен</translation>
 <translation id="7562080006725997899">Данните за сърфирането се изчистват</translation>
 <translation id="756809126120519699">Данните в Chrome са изчистени</translation>
+<translation id="7572498721684305250">Блокиране на сайтовете, така че да не изпращат и получават информация при допиране на устройства с NFC</translation>
 <translation id="757524316907819857">Блокиране на възможността на сайтовете да възпроизвеждат защитено съдържание</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> файл бе изтеглен}other{<ph name="FILES_DOWNLOADED_MANY" /> файла бяха изтеглени}}</translation>
 <translation id="7588219262685291874">Включване на тъмната тема, когато режимът за запазване на батерията на устройството ви е включен</translation>

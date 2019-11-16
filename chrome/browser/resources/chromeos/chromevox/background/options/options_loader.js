@@ -6,4 +6,4 @@
  * @fileoverview Loads the options script.
  */
 
-goog.require('cvox.OptionsPage');
+goog.require('OptionsPage');

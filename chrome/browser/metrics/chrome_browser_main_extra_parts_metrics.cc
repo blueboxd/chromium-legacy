@@ -224,6 +224,11 @@ void RecordStartupMetrics() {
   DCHECK(patch_level) << "Windows version too high!";
   base::UmaHistogramSparse("Windows.PatchLevel", patch_level);
 
+  // Record installed UCRT version information. This is of particular interest
+  // on Windows 7 due to Windows 7 crashes - https://crbug.com/920704
+  UMA_HISTOGRAM_ENUMERATION("Windows.UCRTVersion", os_info.UcrtVersion(),
+                            base::win::Version::WIN_LAST);
+
   UMA_HISTOGRAM_BOOLEAN("Windows.HasHighResolutionTimeTicks",
                         base::TimeTicks::IsHighResolution());
 

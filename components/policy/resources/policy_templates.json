@@ -106,7 +106,7 @@
 #   numbers can be any string that does not contain ':' or '-' characters.
 #
 #   Currently supported product names:
-#       'chrome_frame', 'chrome_os', 'android', 'webview_android',
+#       'chrome_frame', 'chrome_os', 'android', 'webview_android', 'ios',
 #       'chrome.win', 'chrome.win7', 'chrome.linux', 'chrome.mac', 'chrome.*'
 #     For example if 'chrome.*:5-10' is specified for a policy, then it should
 #     be read as:
@@ -115,7 +115,7 @@
 #   The product name also affects in which templates the policy is included:
 #     chrome.*, chrome.win, chrome_frame -> ADM, ADMX, ADML, doc
 #     chrome.*, chrome.linux -> JSON, doc
-#     chrome.*, chrome.mac -> plist, plist_strings, doc
+#     chrome.*, chrome.mac, ios -> plist, plist_strings, doc
 #     everything else -> doc
 #
 #   The default list of policies supported by Chrome is also generated based
@@ -1242,6 +1242,7 @@
         'chrome.*:8-',
         'chrome_os:11-',
         'android:30-',
+        'ios:80-',
       ],
       'features': {
         'can_be_recommended': True,
@@ -4350,6 +4351,7 @@
         'chrome.*:8-',
         'chrome_os:11-',
         'android:30-',
+        'ios:80-',
       ],
       'features': {
         'dynamic_refresh': True,
@@ -4382,6 +4384,7 @@
         'chrome.*:8-',
         'chrome_os:11-',
         'android:30-',
+        'ios:80-',
       ],
       'features': {
         'dynamic_refresh': True,
@@ -4874,6 +4877,7 @@
         'chrome.*:10-',
         'chrome_os:11-',
         'android:33-',
+        'ios:80-',
       ],
       'features': {
         'dynamic_refresh': True,
@@ -6634,6 +6638,7 @@
         'chrome_os:15-',
         'android:30-',
         'webview_android:47-',
+        'ios:80-',
       ],
       'features': {
         'dynamic_refresh': True,
@@ -6669,6 +6674,7 @@
         'chrome_os:15-',
         'android:30-',
         'webview_android:47-',
+        'ios:80-',
       ],
       'features': {
         'dynamic_refresh': True,
@@ -8892,6 +8898,8 @@
       'caption': '''Use built-in DNS client''',
       'tags': [],
       'desc': '''Controls whether the built-in DNS client is used in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+
+      This does not affect which DNS servers are used; just the software stack which is used to communicate with them. For example if the operating system is configured to use an enterprise DNS server, that same server would be used by the built-in DNS client. It is however possible that the built-in DNS client will address servers in different ways by using more modern DNS-related protocols such as DNS-over-TLS.
 
       If this policy is set to true, the built-in DNS client will be used, if available.
 
@@ -12557,7 +12565,9 @@
       'name': 'SuppressUnsupportedOSWarning',
       'owners': ['grt@chromium.org'],
       'caption': '''Suppress the unsupported OS warning''',
-      'desc': '''Suppresses the warning that appears when <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is running on a computer or operating system that is no longer supported.''',
+      'desc': '''Suppresses the warning that appears when <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is running on a computer or operating system that is no longer supported.
+
+      If this policy is false or unset, the warnings will appear on such unsupported computers or operating systems.''',
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:49-','chrome_os:49-'],
@@ -14574,7 +14584,7 @@
 
       If this policy is set to a non empty string, that string will be used as the device hostname during DHCP request.
 
-      The string can contain variables <ph name="ASSET_ID_PLACEHOLDER">${ASSET_ID}</ph>, <ph name="SERIAL_NUM_PLACEHOLDER">${SERIAL_NUM}</ph>, <ph name="MAC_ADDR_PLACEHOLDER">${MAC_ADDR}</ph>, <ph name="MACHINE_NAME_PLACEHOLDER">${MACHINE_NAME}</ph> that would be replaced with values on the device before using as a hostname. Resulting substitution should be a valid hostname (per RFC 1035, section 3.1).
+      The string can contain variables <ph name="ASSET_ID_PLACEHOLDER">${ASSET_ID}</ph>, <ph name="SERIAL_NUM_PLACEHOLDER">${SERIAL_NUM}</ph>, <ph name="MAC_ADDR_PLACEHOLDER">${MAC_ADDR}</ph>, <ph name="MACHINE_NAME_PLACEHOLDER">${MACHINE_NAME}</ph>, <ph name="LOCATION_PLACEHOLDER">${LOCATION}</ph> that would be replaced with values on the device before using as a hostname. Resulting substitution should be a valid hostname (per RFC 1035, section 3.1).
 
       If this policy is not set, or the value after substitution is not a valid hostname, no hostname will be set in DHCP request. '''
     },

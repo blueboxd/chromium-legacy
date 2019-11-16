@@ -4,7 +4,12 @@
 
 #include "weblayer/browser/safe_browsing/url_checker_delegate_impl.h"
 
+#include "base/bind.h"
+#include "base/task/post_task.h"
 #include "components/safe_browsing/db/database_manager.h"
+#include "components/security_interstitials/content/unsafe_resource.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "weblayer/browser/safe_browsing/safe_browsing_ui_manager.h"
 
 namespace weblayer {
@@ -31,7 +36,24 @@ void UrlCheckerDelegateImpl::StartDisplayingBlockingPageHelper(
     const net::HttpRequestHeaders& headers,
     bool is_main_frame,
     bool has_user_gesture) {
-  // TODO(timvolodine): figure out what to do here.
+  base::PostTask(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(
+          &UrlCheckerDelegateImpl::StartDisplayingDefaultBlockingPage,
+          base::Unretained(this), resource));
+}
+
+void UrlCheckerDelegateImpl::StartDisplayingDefaultBlockingPage(
+    const security_interstitials::UnsafeResource& resource) {
+  content::WebContents* web_contents = resource.web_contents_getter.Run();
+  if (web_contents) {
+    GetUIManager()->DisplayBlockingPage(resource);
+    return;
+  }
+
+  // Report back that it is not ok to proceed with loading the URL.
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                 base::BindOnce(resource.callback, false));
 }
 
 bool UrlCheckerDelegateImpl::IsUrlWhitelisted(const GURL& url) {
@@ -57,7 +79,6 @@ void UrlCheckerDelegateImpl::NotifySuspiciousSiteDetected(
         web_contents_getter) {}
 
 const safe_browsing::SBThreatTypeSet& UrlCheckerDelegateImpl::GetThreatTypes() {
-  // TODO(timvolodine): revisit with the relevant threat types.
   return threat_types_;
 }
 

@@ -443,6 +443,14 @@ ui::Layer* ShelfWidget::GetAnimatingBackground() {
   return delegate_view_->animating_background();
 }
 
+void ShelfWidget::ForceToHideHotseat() {
+  if (!is_hotseat_forced_to_show_)
+    return;
+
+  is_hotseat_forced_to_show_ = false;
+  shelf_layout_manager_->UpdateVisibilityState();
+}
+
 ShelfWidget::ShelfWidget(Shelf* shelf)
     : shelf_(shelf),
       background_animator_(shelf_, Shell::Get()->wallpaper_controller()),

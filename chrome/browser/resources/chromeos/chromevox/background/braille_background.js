@@ -6,45 +6,45 @@
  * @fileoverview Sends Braille commands to the Braille API.
  */
 
-goog.provide('cvox.BrailleBackground');
+goog.provide('BrailleBackground');
 
 goog.require('BrailleKeyEventRewriter');
 goog.require('ChromeVoxState');
 goog.require('LogStore');
-goog.require('cvox.BrailleDisplayManager');
-goog.require('cvox.BrailleInputHandler');
-goog.require('cvox.BrailleInterface');
-goog.require('cvox.BrailleKeyEvent');
-goog.require('cvox.BrailleTranslatorManager');
+goog.require('BrailleDisplayManager');
+goog.require('BrailleInputHandler');
+goog.require('BrailleInterface');
+goog.require('BrailleKeyEvent');
+goog.require('BrailleTranslatorManager');
 
 /**
  * @constructor
- * @param {cvox.BrailleDisplayManager=} opt_displayManagerForTest
+ * @param {BrailleDisplayManager=} opt_displayManagerForTest
  *        Display manager (for mocking in tests).
- * @param {cvox.BrailleInputHandler=} opt_inputHandlerForTest Input handler
+ * @param {BrailleInputHandler=} opt_inputHandlerForTest Input handler
  *        (for mocking in tests).
- * @param {cvox.BrailleTranslatorManager=} opt_translatorManagerForTest
+ * @param {BrailleTranslatorManager=} opt_translatorManagerForTest
  *        Braille translator manager (for mocking in tests)
- * @implements {cvox.BrailleInterface}
+ * @implements {BrailleInterface}
  */
-cvox.BrailleBackground = function(
+BrailleBackground = function(
     opt_displayManagerForTest, opt_inputHandlerForTest,
     opt_translatorManagerForTest) {
   /**
-   * @type {!cvox.BrailleTranslatorManager}
+   * @type {!BrailleTranslatorManager}
    * @private
    */
   this.translatorManager_ =
-      opt_translatorManagerForTest || new cvox.BrailleTranslatorManager();
+      opt_translatorManagerForTest || new BrailleTranslatorManager();
   /**
-   * @type {cvox.BrailleDisplayManager}
+   * @type {BrailleDisplayManager}
    * @private
    */
   this.displayManager_ = opt_displayManagerForTest ||
-      new cvox.BrailleDisplayManager(this.translatorManager_);
+      new BrailleDisplayManager(this.translatorManager_);
   this.displayManager_.setCommandListener(this.onBrailleKeyEvent_.bind(this));
   /**
-   * @type {cvox.NavBraille}
+   * @type {NavBraille}
    * @private
    */
   this.lastContent_ = null;
@@ -54,11 +54,11 @@ cvox.BrailleBackground = function(
    */
   this.lastContentId_ = null;
   /**
-   * @type {!cvox.BrailleInputHandler}
+   * @type {!BrailleInputHandler}
    * @private
    */
   this.inputHandler_ = opt_inputHandlerForTest ||
-      new cvox.BrailleInputHandler(this.translatorManager_);
+      new BrailleInputHandler(this.translatorManager_);
   this.inputHandler_.init();
 
   /** @private {boolean} */
@@ -67,11 +67,11 @@ cvox.BrailleBackground = function(
   /** @private {BrailleKeyEventRewriter} */
   this.keyEventRewriter_ = new BrailleKeyEventRewriter();
 };
-goog.addSingletonGetter(cvox.BrailleBackground);
+goog.addSingletonGetter(BrailleBackground);
 
 
 /** @override */
-cvox.BrailleBackground.prototype.write = function(params) {
+BrailleBackground.prototype.write = function(params) {
   if (this.frozen_) {
     return;
   }
@@ -87,7 +87,7 @@ cvox.BrailleBackground.prototype.write = function(params) {
 
 
 /** @override */
-cvox.BrailleBackground.prototype.writeRawImage = function(imageDataUrl) {
+BrailleBackground.prototype.writeRawImage = function(imageDataUrl) {
   if (this.frozen_) {
     return;
   }
@@ -96,39 +96,38 @@ cvox.BrailleBackground.prototype.writeRawImage = function(imageDataUrl) {
 
 
 /** @override */
-cvox.BrailleBackground.prototype.freeze = function() {
+BrailleBackground.prototype.freeze = function() {
   this.frozen_ = true;
 };
 
 
 /** @override */
-cvox.BrailleBackground.prototype.thaw = function() {
+BrailleBackground.prototype.thaw = function() {
   this.frozen_ = false;
 };
 
 
 /** @override */
-cvox.BrailleBackground.prototype.getDisplayState = function() {
+BrailleBackground.prototype.getDisplayState = function() {
   return this.displayManager_.getDisplayState();
 };
 
 
 /**
- * @return {cvox.BrailleTranslatorManager} The translator manager used by this
+ * @return {BrailleTranslatorManager} The translator manager used by this
  *     instance.
  */
-cvox.BrailleBackground.prototype.getTranslatorManager = function() {
+BrailleBackground.prototype.getTranslatorManager = function() {
   return this.translatorManager_;
 };
 
 
 /**
- * @param {!cvox.NavBraille} newContent
+ * @param {!NavBraille} newContent
  * @param {?string} newContentId
  * @private
  */
-cvox.BrailleBackground.prototype.setContent_ = function(
-    newContent, newContentId) {
+BrailleBackground.prototype.setContent_ = function(newContent, newContentId) {
   var updateContent = function() {
     this.lastContent_ = newContentId ? newContent : null;
     this.lastContentId_ = newContentId;
@@ -143,12 +142,11 @@ cvox.BrailleBackground.prototype.setContent_ = function(
 /**
  * Handles braille key events by dispatching either to the input handler,
  * ChromeVox next's background object or ChromeVox classic's content script.
- * @param {!cvox.BrailleKeyEvent} brailleEvt The event.
- * @param {!cvox.NavBraille} content Content of display when event fired.
+ * @param {!BrailleKeyEvent} brailleEvt The event.
+ * @param {!NavBraille} content Content of display when event fired.
  * @private
  */
-cvox.BrailleBackground.prototype.onBrailleKeyEvent_ = function(
-    brailleEvt, content) {
+BrailleBackground.prototype.onBrailleKeyEvent_ = function(brailleEvt, content) {
   if (this.keyEventRewriter_.onBrailleKeyEvent(brailleEvt)) {
     return;
   }

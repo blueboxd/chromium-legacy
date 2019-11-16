@@ -36,12 +36,12 @@ import org.chromium.base.Supplier;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -211,23 +211,21 @@ class AutofillAssistantUiTestUtil {
     static BottomSheetController createBottomSheetController(ChromeActivity activity) {
         // Copied from {@link ChromeActivity#initializeBottomSheet}.
 
-        Supplier<BottomSheet> sheetSupplier = () -> {
+        Supplier<View> sheetSupplier = () -> {
             ViewGroup coordinator = activity.findViewById(R.id.coordinator);
             LayoutInflater.from(activity).inflate(R.layout.bottom_sheet, coordinator);
-            BottomSheet bottomSheet = coordinator.findViewById(R.id.bottom_sheet);
-            bottomSheet.init(coordinator, activity.getActivityTabProvider(), activity.getWindow(),
-                    activity.getWindowAndroid().getKeyboardDelegate());
-
+            View bottomSheet = coordinator.findViewById(R.id.bottom_sheet);
             return bottomSheet;
+        };
+
+        Supplier<OverlayPanelManager> panelManagerProvider = () -> {
+            return activity.getCompositorViewHolder().getLayoutManager().getOverlayPanelManager();
         };
 
         return new BottomSheetController(activity.getLifecycleDispatcher(),
                 activity.getActivityTabProvider(), activity.getScrim(), sheetSupplier,
-                ()
-                        -> activity.getCompositorViewHolder()
-                                   .getLayoutManager()
-                                   .getOverlayPanelManager(),
-                activity.getFullscreenManager());
+                panelManagerProvider, activity.getFullscreenManager(), activity.getWindow(),
+                activity.getWindowAndroid().getKeyboardDelegate());
     }
 
     /**

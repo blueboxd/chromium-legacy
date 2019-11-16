@@ -1018,16 +1018,20 @@
       'ToTWin': {
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
+          'isolated_scripts': 'win_specific_isolated_scripts',
         },
       },
       'ToTWin(dbg)': {
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
+          # Doesn't run win_specific_isolated_scripts because the mini
+          # installer isn't hooked up in 32-bit debug builds.
         },
       },
       'ToTWin(dll)': {
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
+          'isolated_scripts': 'win_specific_isolated_scripts',
         },
       },
       'ToTWin64': {
@@ -1037,6 +1041,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
+          'isolated_scripts': 'win_specific_isolated_scripts',
         },
       },
       'ToTWin64(dbg)': {
@@ -1046,6 +1051,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
+          'isolated_scripts': 'win_specific_isolated_scripts',
         },
       },
       'ToTWin64(dll)': {
@@ -1055,31 +1061,37 @@
         ],
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
+          'isolated_scripts': 'win_specific_isolated_scripts',
         },
       },
       'ToTWinCFI': {
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
+          'isolated_scripts': 'win_specific_isolated_scripts',
         },
       },
       'ToTWinCFI64': {
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
+          'isolated_scripts': 'win_specific_isolated_scripts',
         },
       },
       'ToTWinLibcxx64': {
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
+          'isolated_scripts': 'win_specific_isolated_scripts',
         },
       },
       'ToTWinOfficial': {
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
+          'isolated_scripts': 'win_specific_isolated_scripts',
         },
       },
       'ToTWinThinLTO64': {
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
+          'isolated_scripts': 'win_specific_isolated_scripts',
         },
       },
       'UBSanVptr Linux': {
@@ -1724,6 +1736,7 @@
         },
         'mixins': [
           'arm64',
+          'docker',
           'linux-xenial',
         ],
       },

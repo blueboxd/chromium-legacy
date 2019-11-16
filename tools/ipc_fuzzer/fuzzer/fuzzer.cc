@@ -11,7 +11,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/shared_memory_handle.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/unguessable_token.h"
@@ -443,18 +442,6 @@ struct FuzzTraits<base::NullableString16> {
     return true;
   }
 };
-
-#if defined(OS_WIN) || defined(OS_MACOSX)
-template <>
-struct FuzzTraits<base::SharedMemoryHandle> {
-  static bool Fuzz(base::SharedMemoryHandle* p, Fuzzer* fuzzer) {
-    // This generates an invalid SharedMemoryHandle. Generating a valid
-    // SharedMemoryHandle requires setting/knowing state in both the sending and
-    // receiving process, which is not currently possible.
-    return true;
-  }
-};
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 template <>
 struct FuzzTraits<base::Time> {
@@ -1080,9 +1067,6 @@ struct FuzzTraits<std::unique_ptr<IPC::Message>> {
   }
 };
 
-#if !defined(OS_WIN)
-// PlatformfileForTransit is just SharedMemoryHandle on Windows, which already
-// has a trait, see ipc/ipc_platform_file.h
 template <>
 struct FuzzTraits<IPC::PlatformFileForTransit> {
   static bool Fuzz(IPC::PlatformFileForTransit* p, Fuzzer* fuzzer) {
@@ -1091,7 +1075,6 @@ struct FuzzTraits<IPC::PlatformFileForTransit> {
     return true;
   }
 };
-#endif
 
 template <>
 struct FuzzTraits<IPC::ChannelHandle> {

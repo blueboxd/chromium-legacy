@@ -23,7 +23,6 @@ import org.chromium.chrome.browser.notifications.NotificationMetadata;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.PendingIntentProvider;
 import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
-import org.chromium.chrome.browser.share.ShareSheetCoordinator;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.ui.base.Clipboard;
@@ -134,7 +133,7 @@ class WebappActionsNotificationManager {
             // Not routing through onMenuOrKeyboardAction to control UMA String.
             Tab tab = webappActivity.getActivityTab();
             boolean isIncognito = tab.isIncognito();
-            ShareSheetCoordinator.create().onShareSelected(webappActivity, tab, false, isIncognito);
+            webappActivity.getShareDelegate().share(tab, false);
             RecordUserAction.record("Webapp.NotificationShare");
             return true;
         } else if (ACTION_OPEN_IN_CHROME.equals(intent.getAction())) {

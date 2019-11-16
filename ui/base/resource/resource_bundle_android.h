@@ -48,8 +48,12 @@ UI_BASE_EXPORT void SetLoadSecondaryLocalePaks(bool value);
 // Returns the path within the apk for the given locale's .pak file, or an
 // empty string if it doesn't exist.
 // Only locale paks for the active Android language can be retrieved.
+// If |inSplit| is true, look into bundle split-specific location (e.g.
+// 'assets/locales#lang_<lang>/<locale>.pak', otherwise use the default
+// WebView-related location, i.e. 'assets/stored-locales/<locale>.pak'.
 UI_BASE_EXPORT std::string GetPathForAndroidLocalePakWithinApk(
-    const std::string& locale);
+    const std::string& locale,
+    bool in_split = false);
 
 // Get the density of the primary display. Use this instead of using Display
 // to avoid initializing Display in child processes.

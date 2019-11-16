@@ -34,7 +34,9 @@
 #include <type_traits>
 
 #include "base/macros.h"
+#include "base/strings/stringprintf.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -509,6 +511,7 @@ void UserMediaRequest::Start() {
 }
 
 void UserMediaRequest::Succeed(MediaStreamDescriptor* stream_descriptor) {
+  DCHECK(!is_resolved_);
   if (!GetExecutionContext())
     return;
 
@@ -528,20 +531,24 @@ void UserMediaRequest::Succeed(MediaStreamDescriptor* stream_descriptor) {
   }
 
   callbacks_->OnSuccess(nullptr, stream);
+  is_resolved_ = true;
 }
 
 void UserMediaRequest::FailConstraint(const String& constraint_name,
                                       const String& message) {
   DCHECK(!constraint_name.IsEmpty());
+  DCHECK(!is_resolved_);
   if (!GetExecutionContext())
     return;
   callbacks_->OnError(
       nullptr, DOMExceptionOrOverconstrainedError::FromOverconstrainedError(
                    OverconstrainedError::Create(constraint_name, message)));
+  is_resolved_ = true;
 }
 
 void UserMediaRequest::Fail(WebUserMediaRequest::Error name,
                             const String& message) {
+  DCHECK(!is_resolved_);
   if (!GetExecutionContext())
     return;
 
@@ -579,11 +586,24 @@ void UserMediaRequest::Fail(WebUserMediaRequest::Error name,
       nullptr,
       DOMExceptionOrOverconstrainedError::FromDOMException(
           MakeGarbageCollected<DOMException>(exception_code, message)));
+  is_resolved_ = true;
 }
 
 void UserMediaRequest::ContextDestroyed(ExecutionContext*) {
   if (controller_) {
     controller_->CancelUserMediaRequest(this);
+    if (!is_resolved_) {
+      blink::WebRtcLogMessage(base::StringPrintf(
+          "UMR::ContextDestroyed. Resolving unsolved request. "
+          "audio constraints=%s, video constraints=%s",
+          AudioConstraints().ToString().Utf8().c_str(),
+          VideoConstraints().ToString().Utf8().c_str()));
+      callbacks_->OnError(
+          nullptr,
+          DOMExceptionOrOverconstrainedError::FromDOMException(
+              MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError,
+                                                 "Context destroyed")));
+    }
     controller_ = nullptr;
   }
 }

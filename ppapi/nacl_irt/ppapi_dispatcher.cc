@@ -72,12 +72,6 @@ IPC::PlatformFileForTransit PpapiDispatcher::ShareHandleWithRemote(
   return IPC::InvalidPlatformFileForTransit();
 }
 
-base::SharedMemoryHandle PpapiDispatcher::ShareSharedMemoryHandleWithRemote(
-    const base::SharedMemoryHandle& handle,
-    base::ProcessId remote_pid) {
-  return base::SharedMemoryHandle();
-}
-
 base::UnsafeSharedMemoryRegion
 PpapiDispatcher::ShareUnsafeSharedMemoryRegionWithRemote(
     const base::UnsafeSharedMemoryRegion& region,

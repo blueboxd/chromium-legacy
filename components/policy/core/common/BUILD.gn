@@ -201,7 +201,7 @@ jumbo_source_set("internal") {
       "registry_dict.h",
     ]
   }
-  if (is_android) {
+  if (is_android || is_ios) {
     sources += [ "cloud/component_cloud_policy_service_stub.cc" ]
     sources -= [
       "cloud/component_cloud_policy_service.cc",
@@ -242,17 +242,16 @@ jumbo_source_set("internal") {
       "cloud/user_cloud_policy_store.h",
     ]
   }
-  if (is_mac) {
-    libs = [
-      "CoreFoundation.framework",
-      "SystemConfiguration.framework",
-    ]
-  }
   if (is_ios || is_mac) {
     sources += [
       "mac_util.cc",
       "mac_util.h",
     ]
+    libs = [ "CoreFoundation.framework" ]
+
+    if (is_mac) {
+      libs += [ "SystemConfiguration.framework" ]
+    }
   }
 }
 

@@ -61,7 +61,8 @@ enum class LitePageRedirectIneligibleReason {
   kServiceProbeIncomplete = 12,
   kServiceProbeFailed = 13,
   kAPIPageTransition = 14,
-  kMaxValue = kAPIPageTransition,
+  kForwardBackPageTransition = 15,
+  kMaxValue = kForwardBackPageTransition,
 };
 
 // The response type from the previews server. This enum must
@@ -176,6 +177,10 @@ class PreviewsLitePageRedirectURLLoaderInterceptor
       std::unique_ptr<PreviewsLitePageRedirectServingURLLoader>
           serving_url_loader,
       RequestHandler handler);
+
+  // Checks if the pending navigation is a forward/back nav and should be
+  // disallowed according to experiment parameters.
+  bool IsDisallowedFwdBackNavigation();
 
   // All URLs already seen in this navigation. This prevents redirect loops,
   // etc.

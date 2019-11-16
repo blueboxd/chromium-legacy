@@ -1804,11 +1804,24 @@ TEST_F(NetworkStateHandlerTest, RequestScan) {
   EXPECT_EQ(0u, test_observer_->scan_requested_count());
   network_state_handler_->RequestScan(NetworkTypePattern::WiFi());
   network_state_handler_->RequestScan(NetworkTypePattern::Tether());
-  EXPECT_EQ(2u, test_observer_->scan_requested_count());
+  network_state_handler_->RequestScan(NetworkTypePattern::Mobile());
+  EXPECT_EQ(3u, test_observer_->scan_requested_count());
   EXPECT_TRUE(
       NetworkTypePattern::WiFi().Equals(test_observer_->scan_requests()[0]));
   EXPECT_TRUE(
       NetworkTypePattern::Tether().Equals(test_observer_->scan_requests()[1]));
+  EXPECT_TRUE(
+      NetworkTypePattern::Mobile().Equals(test_observer_->scan_requests()[2]));
+
+  // Disable cellular, scan request for cellular only should not send a
+  // notification
+  test_observer_->reset_change_counts();
+  network_state_handler_->SetTechnologyEnabled(
+      NetworkTypePattern::Cellular(), false, network_handler::ErrorCallback());
+  network_state_handler_->RequestScan(NetworkTypePattern::Cellular());
+  EXPECT_EQ(0u, test_observer_->scan_requested_count());
+  network_state_handler_->RequestScan(NetworkTypePattern::Mobile());
+  EXPECT_EQ(1u, test_observer_->scan_requested_count());
 
   // Disable wifi, scan request for wifi only should not send a notification.
   test_observer_->reset_change_counts();

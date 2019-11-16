@@ -5,6 +5,7 @@
 #include "ash/public/cpp/login_screen_test_api.h"
 #include "base/bind.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -636,7 +637,13 @@ class EnrollmentRecoveryTest : public EnrollmentLocalPolicyServerBase {
   DISALLOW_COPY_AND_ASSIGN(EnrollmentRecoveryTest);
 };
 
-IN_PROC_BROWSER_TEST_F(EnrollmentRecoveryTest, Success) {
+// Consistently timing out on Linux. http://crbug.com/1025220
+#if defined(OS_LINUX)
+#define MAYBE_Success DISABLED_Success
+#else
+#define MAYBE_Success Success
+#endif
+IN_PROC_BROWSER_TEST_F(EnrollmentRecoveryTest, MAYBE_Success) {
   test::SkipToEnrollmentOnRecovery();
 
   ASSERT_TRUE(StartupUtils::IsDeviceRegistered());

@@ -1036,6 +1036,8 @@ Unknown properties are collapsed to zero. -->
   <int value="3" label="Enabled by user"/>
   <int value="4" label="Failed to display the prompt"/>
   <int value="5" label="Failed to enable"/>
+  <int value="6" label="Failed to display the prompt (need powerwash)"/>
+  <int value="7" label="Failed to enable (need powerwash)"/>
 </enum>
 
 <enum name="AddIceCandidateResult">
@@ -16581,8 +16583,8 @@ Called by update_net_error_codes.py.-->
   <int value="5" label="SCRIPT_LOADED"/>
   <int value="6" label="SCRIPT_EVALUATED (obsolete)"/>
   <int value="7" label="THREAD_STARTED"/>
-  <int value="8" label="SCRIPT_READ_STARTED"/>
-  <int value="9" label="SCRIPT_READ_FINISHED"/>
+  <int value="8" label="SCRIPT_READ_STARTED (obsolete)"/>
+  <int value="9" label="SCRIPT_READ_FINISHED (obsolete)"/>
   <int value="10" label="SCRIPT_STREAMING"/>
   <int value="11" label="SCRIPT_EVALUATION"/>
 </enum>
@@ -36358,6 +36360,7 @@ from previous Chrome versions.
   <int value="-1252976780" label="ShillSandboxing:disabled"/>
   <int value="-1252706530" label="AutoFetchOnNetErrorPage:disabled"/>
   <int value="-1251411236" label="disable-new-md-input-view"/>
+  <int value="-1251359563" label="SharingRenameDevices:disabled"/>
   <int value="-1250611337" label="ChromeVoxArcSupport:disabled"/>
   <int value="-1248478422" label="enable-zip-archiver-packer"/>
   <int value="-1247631459" label="TerminalSystemAppSplits:disabled"/>
@@ -36574,6 +36577,7 @@ from previous Chrome versions.
   <int value="-984052166" label="DoodlesOnLocalNtp:enabled"/>
   <int value="-983342281" label="TabSwitcherLongpressMenu:disabled"/>
   <int value="-981237342" label="SyncUSSAutofillWalletMetadata:disabled"/>
+  <int value="-980889204" label="SharingRenameDevices:enabled"/>
   <int value="-980317085" label="EnablePasswordsAccountStorage:disabled"/>
   <int value="-980260493" label="NTPSnippets:disabled"/>
   <int value="-979313250" label="enable-google-branded-context-menu"/>
@@ -40974,6 +40978,11 @@ Called by update_use_counter_css.py.-->
   <int value="1" label="Route not found"/>
   <int value="2" label="Sink not found"/>
   <int value="3" label="Stop app failed"/>
+</enum>
+
+<enum name="MediaRouterIconState">
+  <int value="0" label="Ephemeral"/>
+  <int value="1" label="Pinned"/>
 </enum>
 
 <enum name="MediaRouterInitialViews">
@@ -50779,6 +50788,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="12" label="The network probe has not completed yet"/>
   <int value="13" label="The network probe completed and failed"/>
   <int value="14" label="Preview is disabled for API navigations"/>
+  <int value="15" label="Preview is disabled for forward/back navigations"/>
 </enum>
 
 <enum name="PreviewsServerLitePageServerResponse">
@@ -56011,6 +56021,17 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Images and videos"/>
 </enum>
 
+<enum name="SendBeginFrameResult">
+  <int value="0" label="Sent for frame timing"/>
+  <int value="1" label="Stopped by client request"/>
+  <int value="2" label="Stopped for unresponsive client"/>
+  <int value="3" label="Throttled for unresponsive client"/>
+  <int value="4" label="Sent for no active surface"/>
+  <int value="5" label="Sent for blocked embedder"/>
+  <int value="6" label="Throttled for too many undrawn frames"/>
+  <int value="7" label="Sent by default"/>
+</enum>
+
 <enum name="SendPasswordFormToBrowserProcess">
   <obsolete>
     Removed from code March 2019.
@@ -56855,6 +56876,17 @@ Called by update_net_trust_anchors.py.-->
   <int value="8" label="IceCandidateMessage"/>
 </enum>
 
+<enum name="SharingRemoteCopyHandleMessageResult">
+  <int value="0" label="Success: handled text"/>
+  <int value="1" label="Success: handled image"/>
+  <int value="2" label="Failure: empty text"/>
+  <int value="3" label="Failure: image url not trustworthy"/>
+  <int value="4" label="Failure: image origin not allowed"/>
+  <int value="5" label="Failure: no image content loaded"/>
+  <int value="6" label="Failure: decode image failed"/>
+  <int value="7" label="Failure: decoded image draws nothing"/>
+</enum>
+
 <enum name="SharingSendMessageResult">
   <int value="0" label="Successful"/>
   <int value="1" label="Device is not found"/>
@@ -57016,6 +57048,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Window close">The last browser window was closed.</int>
   <int value="2" label="Browser exit">User clicked on the Exit menu item.</int>
   <int value="3" label="End session">OS is logging off or shutting down.</int>
+  <int value="4" label="Silent exit relaunch">
+    Exit without onbeforeunload or in-progress download prompts.
+  </int>
 </enum>
 
 <enum name="SideloadUIEvents">

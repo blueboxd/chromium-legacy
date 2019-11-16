@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -649,8 +648,6 @@ TEST_F(PermissionManagerTest, KillSwitchOnIsNotOverridable) {
           PermissionType::GEOLOCATION, kLocalHost));
 
   // Turn on kill switch for GEOLOCATION.
-  base::FieldTrialList field_trial_list(
-      std::make_unique<base::MockEntropyProvider>());
   variations::testing::ClearAllVariationParams();
   std::map<std::string, std::string> params;
   params[PermissionUtil::GetPermissionString(

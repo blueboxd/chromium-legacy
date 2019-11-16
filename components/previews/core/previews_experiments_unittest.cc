@@ -53,8 +53,6 @@ TEST(PreviewsExperimentsTest, TestParamsForBlackListAndOffline) {
             params::GetECTThresholdForPreview(PreviewsType::NOSCRIPT));
   EXPECT_EQ(0, params::OfflinePreviewsVersion());
 
-  base::FieldTrialList field_trial_list(nullptr);
-
   // Set some custom params. Somewhat random yet valid values.
   std::map<std::string, std::string> custom_params = {
       {"per_host_max_stored_history_length", "3"},
@@ -245,7 +243,6 @@ TEST(PreviewsExperimentsTest, TestShouldExcludeMediaSuffix) {
 }
 
 TEST(PreviewsExperimentsTest, TestPreviewsEligibleForUserConsistentStudy) {
-  base::FieldTrialList field_trial_list(nullptr);
   EXPECT_TRUE(base::FieldTrialList::CreateFieldTrial("CoinFlipPreviews",
                                                      "NonCoinFlipGroup"));
 
@@ -347,10 +344,6 @@ TEST(PreviewsExperimentsTest, TestPreviewsEligibleForUserConsistentStudy) {
 }
 
 TEST(PreviewsExperimentsTest, TestLitePageServerPreviewsCoinFlipExperiment) {
-  base::FieldTrialList field_trial_list(nullptr);
-  EXPECT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      kPreviewsFieldTrial, "LitePageServerPreviewsCoinFlipExperimentGroup"));
-
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeaturesAndParameters(
       {{features::kLitePageServerPreviewsUserConsistentStudy,
@@ -363,6 +356,9 @@ TEST(PreviewsExperimentsTest, TestLitePageServerPreviewsCoinFlipExperiment) {
       {features::kEligibleForUserConsistentStudy,
        features::kDeferAllScriptPreviews});
 
+  EXPECT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      kPreviewsFieldTrial, "LitePageServerPreviewsCoinFlipExperimentGroup"));
+
   EXPECT_TRUE(params::IsLitePageServerPreviewsEnabled());
   EXPECT_EQ(222, params::LitePageServerPreviewsVersion());
   EXPECT_EQ(GURL("https://coinflippreviewhost.org/"),
@@ -371,10 +367,6 @@ TEST(PreviewsExperimentsTest, TestLitePageServerPreviewsCoinFlipExperiment) {
 }
 
 TEST(PreviewsExperimentsTest, TestDeferAllScriptPreviewsCoinFlipExperiment) {
-  base::FieldTrialList field_trial_list(nullptr);
-  EXPECT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      kPreviewsFieldTrial, "DeferAllScriptPreviewsCoinFlipExperimentGroup"));
-
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeaturesAndParameters(
       {{features::kDeferAllScriptPreviewsUserConsistentStudy,
@@ -382,6 +374,9 @@ TEST(PreviewsExperimentsTest, TestDeferAllScriptPreviewsCoinFlipExperiment) {
        {features::kDeferAllScriptPreviews, {{"version", "444"}}}},
       {features::kEligibleForUserConsistentStudy,
        features::kLitePageServerPreviews});
+
+  EXPECT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      kPreviewsFieldTrial, "DeferAllScriptPreviewsCoinFlipExperimentGroup"));
 
   EXPECT_TRUE(params::IsDeferAllScriptPreviewsEnabled());
   EXPECT_EQ(444, params::DeferAllScriptPreviewsVersion());

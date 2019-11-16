@@ -39,7 +39,11 @@ namespace ash {
 namespace {
 
 // The minimum window scale factor when dragging a window from shelf.
-constexpr float kMinimumWindowScaleDuringDragging = 0.2f;
+constexpr float kMinimumWindowScaleDuringDragging = 0.3f;
+
+// The ratio in display height at which point the dragged window shrinks to its
+// minimum scale kMinimumWindowScaleDuringDragging.
+constexpr float kMinYDisplayHeightRatio = 0.125f;
 
 // Amount of time to wait to show overview after the user slows down or stops
 // window dragging.
@@ -153,14 +157,7 @@ void DragWindowFromShelfController::Drag(const gfx::Point& location_in_screen,
       !overview_controller->InOverviewSession()) {
     overview_controller->StartOverview(
         OverviewSession::EnterExitOverviewType::kImmediateEnter);
-    OverviewSession* overview_session = overview_controller->overview_session();
-    overview_session->OnWindowDragStarted(window_, /*animate=*/false);
-    if (ShouldAllowSplitView())
-      overview_session->SetSplitViewDragIndicatorsDraggedWindow(window_);
-    // Hide overview windows first and fade in the windows after delaying
-    // kShowOverviewTimeWhenDragSuspend.
-    overview_session->SetVisibleDuringWindowDragging(/*visible=*/false,
-                                                     /*animate=*/false);
+    OnWindowDragStartedInOverview();
   }
 
   // If overview is active, update its splitview indicator during dragging if
@@ -311,13 +308,8 @@ void DragWindowFromShelfController::OnDragStarted(
       SplitViewController::Get(Shell::GetPrimaryRootWindow());
   split_view_controller->OnWindowDragStarted(window_);
   // Note SplitViewController::OnWindowDragStarted() may open overview.
-  OverviewController* overview_controller = Shell::Get()->overview_controller();
-  if (overview_controller->InOverviewSession()) {
-    OverviewSession* overview_session = overview_controller->overview_session();
-    overview_session->OnWindowDragStarted(window_, /*animate=*/false);
-    if (ShouldAllowSplitView())
-      overview_session->SetSplitViewDragIndicatorsDraggedWindow(window_);
-  }
+  if (Shell::Get()->overview_controller()->InOverviewSession())
+    OnWindowDragStartedInOverview();
 }
 
 void DragWindowFromShelfController::OnDragEnded(
@@ -371,12 +363,19 @@ void DragWindowFromShelfController::UpdateDraggedWindow(
 
   // Calculate the window's transform based on the location.
   // For scale, at |initial_location_in_screen_| or bounds.bottom(), the scale
-  // is 1.0, and at the middle y position of its bounds, it reaches to its
+  // is 1.0, and at the |min_y| position of its bounds, it reaches to its
   // minimum scale 0.2. Calculate the desired scale based on the current y
   // position.
-  int y_full = std::min(initial_location_in_screen_.y(), bounds.bottom()) -
-               bounds.CenterPoint().y();
-  int y_diff = location_in_screen.y() - bounds.CenterPoint().y();
+  const gfx::Rect display_bounds =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestPoint(location_in_screen)
+          .bounds();
+  const float min_y = display_bounds.y() +
+                      display_bounds.height() * kMinYDisplayHeightRatio +
+                      kMinimumWindowScaleDuringDragging * bounds.height();
+  int y_full =
+      std::min(initial_location_in_screen_.y(), bounds.bottom()) - min_y;
+  int y_diff = location_in_screen.y() - min_y;
   float scale = (1.0f - kMinimumWindowScaleDuringDragging) * y_diff / y_full +
                 kMinimumWindowScaleDuringDragging;
   scale = base::ClampToRange(scale, /*min=*/kMinimumWindowScaleDuringDragging,
@@ -399,10 +398,6 @@ void DragWindowFromShelfController::UpdateDraggedWindow(
       gfx::ToRoundedPoint(transformed_bounds.origin()), transform);
   new_tranform.TransformRect(&transformed_bounds);
   ::wm::TranslateRectToScreen(window_->parent(), &transformed_bounds);
-  const gfx::Rect display_bounds =
-      display::Screen::GetScreen()
-          ->GetDisplayNearestPoint(location_in_screen)
-          .bounds();
   if (transformed_bounds.y() < display_bounds.y()) {
     transform.Translate(0,
                         (display_bounds.y() - transformed_bounds.y()) / scale);
@@ -557,6 +552,19 @@ void DragWindowFromShelfController::OnWindowRestoredToOrignalBounds(
         OverviewSession::EnterExitOverviewType::kImmediateExit);
   }
   ReshowHiddenWindowsOnDragEnd();
+}
+
+void DragWindowFromShelfController::OnWindowDragStartedInOverview() {
+  OverviewSession* overview_session =
+      Shell::Get()->overview_controller()->overview_session();
+  DCHECK(overview_session);
+  overview_session->OnWindowDragStarted(window_, /*animate=*/false);
+  if (ShouldAllowSplitView())
+    overview_session->SetSplitViewDragIndicatorsDraggedWindow(window_);
+  // Hide overview windows first and fade in the windows after delaying
+  // kShowOverviewTimeWhenDragSuspend.
+  overview_session->SetVisibleDuringWindowDragging(/*visible=*/false,
+                                                   /*animate=*/false);
 }
 
 }  // namespace ash

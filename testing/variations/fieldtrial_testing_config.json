@@ -848,16 +848,9 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_Full",
+                    "name": "Enabled_Full_20191119",
                     "enable_features": [
-                        "AutofillKeyboardAccessoryView",
-                        "AutofillManualFallbackAndroid"
-                    ]
-                },
-                {
-                    "name": "Disabled",
-                    "disable_features": [
-                        "AutofillKeyboardAccessoryView",
+                        "AutofillKeyboardAccessory",
                         "AutofillManualFallbackAndroid"
                     ]
                 }
@@ -1814,6 +1807,26 @@
                     "name": "Enabled",
                     "enable_features": [
                         "DataReductionProxyLowMemoryDevicePromo"
+                    ]
+                }
+            ]
+        }
+    ],
+    "DecodeJpegToYuv": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Experiment",
+                    "enable_features": [
+                        "DecodeJpeg420ImagesToYUV"
                     ]
                 }
             ]
@@ -4125,21 +4138,6 @@
             ]
         }
     ],
-    "OptimizationGuideKeyedService": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20190904",
-                    "enable_features": [
-                        "OptimizationGuideKeyedService"
-                    ]
-                }
-            ]
-        }
-    ],
     "OutOfBlinkCors": [
         {
             "platforms": [
@@ -5773,6 +5771,7 @@
                 "android",
                 "android_webview",
                 "chromeos",
+                "ios",
                 "linux",
                 "mac",
                 "windows"
@@ -6867,6 +6866,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "UseFluentLanguageModel"
+                    ]
+                }
+            ]
+        }
+    ],
+    "UseInProgressDownloadManagerForDownloadService": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "UseInProgressDownloadManagerForDownloadService"
                     ]
                 }
             ]

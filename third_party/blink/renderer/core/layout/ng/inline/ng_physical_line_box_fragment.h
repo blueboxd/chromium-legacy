@@ -69,7 +69,7 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
 
   // Returns the |LayoutObject| of the container. |GetLayoutObject()| returns
   // |nullptr| because line boxes do not have corresponding |LayoutObject|.
-  const LayoutObject* ContainerLayoutObject() const { return &layout_object_; }
+  const LayoutObject* ContainerLayoutObject() const { return layout_object_; }
 
  private:
   NGPhysicalLineBoxFragment(NGLineBoxFragmentBuilder* builder);

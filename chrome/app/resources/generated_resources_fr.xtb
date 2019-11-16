@@ -181,6 +181,7 @@
 <translation id="1241753985463165747">Accéder à toutes vos données sur le site Web actuellement consulté et les modifier</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> souhaite rétablir vos paramètres.</translation>
 <translation id="1243314992276662751">Importer</translation>
+<translation id="1243398753772016127">Les sites ne peuvent pas utiliser votre activité de navigation sur d'autres sites pour personnaliser les annonces</translation>
 <translation id="1244265436519979884">Restauration Linux…</translation>
 <translation id="1244303850296295656">Erreur au niveau des extensions.</translation>
 <translation id="1246905108078336582">Supprimer la suggestion du presse-papiers ?</translation>
@@ -253,6 +254,7 @@
 <translation id="1365180424462182382">Votre <ph name="BEGIN_LINK" />navigateur est géré<ph name="END_LINK" /> par <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="1366177842110999534">Exécutez des outils, des éditeurs et des IDE Linux sur votre <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;En savoir plus&lt;/a&gt;</translation>
 <translation id="1367951781824006909">Choisir un fichier</translation>
+<translation id="1369149969991017342">Switch Access (contrôler l'ordinateur avec un ou deux contacteurs seulement)</translation>
 <translation id="1372841398847029212">Synchroniser avec votre compte</translation>
 <translation id="1374844444528092021">Le certificat requis par le réseau "<ph name="NETWORK_NAME" />" n'est pas installé ou n'est plus valide. Veuillez obtenir un nouveau certificat et réessayer de vous connecter.</translation>
 <translation id="1375321115329958930">Mots de passe enregistrés</translation>
@@ -564,6 +566,7 @@
 <translation id="1794791083288629568">Envoyer des commentaires pour nous aider à résoudre ce problème.</translation>
 <translation id="1795214765651529549">Utiliser le thème classique</translation>
 <translation id="1799071797295057738">L'extension "<ph name="EXTENSION_NAME" />" a été désactivée automatiquement.</translation>
+<translation id="1802624026913571222">Mettre en veille quand l'écran est rabattu</translation>
 <translation id="1802687198411089702">La page ne répond plus. Vous pouvez attendre qu'elle soit de nouveau accessible ou la fermer.</translation>
 <translation id="1802931390041703523">Flash a été bloqué sur cette page</translation>
 <translation id="1803531841600994172">Langue cible</translation>
@@ -665,6 +668,7 @@
 <translation id="1937774647013465102">Impossible d'importer le type d'architecture de conteneur <ph name="ARCHITECTURE_CONTAINER" /> avec l'appareil <ph name="ARCHITECTURE_DEVICE" />. Vous pouvez essayer de restaurer ce conteneur dans un autre appareil ou accéder aux fichiers inclus dans l'image de ce conteneur en les ouvrant dans l'application Fichiers.</translation>
 <translation id="1938351510777341717">Commande externe</translation>
 <translation id="1940546824932169984">Appareils connectés</translation>
+<translation id="1942600407708803723">Éteindre quand l'écran est rabattu</translation>
 <translation id="1944921356641260203">Mise à jour trouvée</translation>
 <translation id="1946577776959096882">Afficher les comptes</translation>
 <translation id="1951012854035635156">Assistant</translation>
@@ -2438,6 +2442,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4546308221697447294">Naviguez à toute vitesse avec Google Chrome</translation>
 <translation id="4547659257713117923">Aucun onglet issu d'autres appareils</translation>
 <translation id="4547672827276975204">Définir automatiquement</translation>
+<translation id="4549791035683739768">Aucune empreinte digitale n'est stockée dans votre clé de sécurité</translation>
 <translation id="4551763574344810652">Appuyez sur <ph name="MODIFIER_KEY_DESCRIPTION" /> pour annuler</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4554591392113183336">La version d'extension externe est identique ou antérieure à la version existante.</translation>
@@ -2617,6 +2622,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4839303808932127586">En&amp;registrer la vidéo sous...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 autre}one{# autre}other{# autres}}</translation>
 <translation id="4842976633412754305">Cette page tente de charger des scripts à partir de sources non authentifiées.</translation>
+<translation id="4843488774506045600">Informations de connexion fournies par <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Autres claviers</translation>
 <translation id="4846680374085650406">Vous suivez la recommandation de l'administrateur pour ce paramètre.</translation>
 <translation id="4848518990323155912">Activer le verrouillage de la carte SIM (code obligatoire pour utiliser les données mobiles)</translation>
@@ -3037,6 +3043,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5466374726908360271">Coller et chercher "<ph name="SEARCH_TERMS" />"</translation>
 <translation id="5468173180030470402">Recherche de partages de fichiers…</translation>
 <translation id="5471768120198416576">Bonjour ! Je suis la voix de votre synthèse vocale.</translation>
+<translation id="5472133193607270166">Lorsque cette option est activée, les sites ne peuvent pas utiliser votre activité de navigation sur différents sites pour personnaliser les annonces. Certains sites peuvent ne pas fonctionner correctement.</translation>
 <translation id="5473333559083690127">Saisir encore le nouveau code</translation>
 <translation id="5481941284378890518">Ajouter des imprimantes à proximité</translation>
 <translation id="5483785310822538350">Retirer les droits d'accès aux fichiers et aux appareils</translation>
@@ -3068,6 +3075,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5511823366942919280">Voulez-vous vraiment configurer cet appareil en tant que "requin" ?</translation>
 <translation id="5512653252560939721">Le certificat utilisateur doit être intégré à l'ordinateur.</translation>
 <translation id="5517304475148761050">Cette application a besoin d'accéder au Play Store</translation>
+<translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> - <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Ajout de l'imprimante à votre compte en cours. Cette opération peut prendre quelques instants…</translation>
 <translation id="5518219166343146486">Me demander lorsqu'un site souhaite voir le texte et les images copiés dans le presse-papiers</translation>
 <translation id="5518584115117143805">Certificat de chiffrement de courrier électronique</translation>
@@ -3187,6 +3195,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="567643736130151854">Connectez-vous et activez la synchronisation pour accéder à vos favoris, mots de passe et bien plus sur tous vos appareils</translation>
 <translation id="5677503058916217575">Langue de la page :</translation>
 <translation id="5677928146339483299">Bloqué</translation>
+<translation id="5678293144564424498">Application suspendue</translation>
 <translation id="5678550637669481956">L'accès en lecture et en écriture à "<ph name="VOLUME_NAME" />" a été accordé.</translation>
 <translation id="5678955352098267522">Lire vos données sur <ph name="WEBSITE_1" /></translation>
 <translation id="5684661240348539843">Identifiant d'élément</translation>
@@ -3453,6 +3462,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6055392876709372977">PKCS #1 SHA-256 avec chiffrement RSA</translation>
 <translation id="6056710589053485679">Actualisation normale</translation>
 <translation id="6057381398996433816">L'utilisation des capteurs de mouvement ou de lumière a été bloquée pour ce site.</translation>
+<translation id="6058567592298841668">Plug-in de machine virtuelle : <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Hiérarchie des certificats</translation>
 <translation id="6059925163896151826">Appareils USB</translation>
 <translation id="6061882183774845124">Envoyer le lien vers vos appareils</translation>
@@ -4401,6 +4411,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7476454130948140105">Batterie trop faible pour la mise à jour (<ph name="BATTERY_PERCENT" /> %)</translation>
 <translation id="7477793887173910789">Contrôler votre musique, vos vidéos et d'autres contenus</translation>
 <translation id="7478485216301680444">Impossible d'installer l'application kiosque.</translation>
+<translation id="7479221278376295180">Utilisation de l'espace de stockage</translation>
 <translation id="7481312909269577407">Avancer</translation>
 <translation id="748138892655239008">Contraintes de base du certificat</translation>
 <translation id="7487067081878637334">Technologie</translation>
@@ -5377,6 +5388,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8845001906332463065">Obtenir de l'aide</translation>
 <translation id="8846132060409673887">Lire le fabricant et le modèle de cet ordinateur</translation>
 <translation id="8846141544112579928">Recherche du clavier en cours…</translation>
+<translation id="8847523528195140327">Se déconnecter lorsque l'écran est rabattu</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8850251000316748990">Voir plus…</translation>
 <translation id="885246833287407341">Arguments de fonction API</translation>
@@ -5439,6 +5451,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8930351635855238750">Les nouveaux paramètres des cookies seront appliqués quand vous aurez actualisé la page</translation>
 <translation id="8931394284949551895">Nouveaux périphériques</translation>
 <translation id="893254996965966411">Enregistrez les imprimantes détectées dans votre profil ou ajoutez une imprimante.</translation>
+<translation id="8932894639908691771">Options Switch Access</translation>
 <translation id="8933960630081805351">&amp;Afficher dans le Finder</translation>
 <translation id="8934732568177537184">Continuer</translation>
 <translation id="8938800817013097409">Appareil USB de type C (port situé sur l'arrière de l'appareil, à droite)</translation>
@@ -5502,6 +5515,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="9023015617655685412">Ajouter cet onglet aux favoris…</translation>
 <translation id="9024127637873500333">&amp;Ouvrir dans un nouvel onglet</translation>
 <translation id="9024158959543687197">Erreur lors de l'installation du partage. Vérifiez l'URL de partage de fichiers, puis réessayez.</translation>
+<translation id="9024885274934357065">Votre appareil se déverrouille avec Smart Lock. Appuyez sur Entrée pour le déverrouiller.</translation>
 <translation id="9026731007018893674">téléchargement</translation>
 <translation id="9026852570893462412">Cette opération peut prendre quelques minutes. Téléchargement de la machine virtuelle…</translation>
 <translation id="9027459031423301635">Ouvrir le lien dans un nouvel ongle&amp;t</translation>

@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/containers/span.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -55,22 +56,35 @@ namespace {
 // Convenience typedef for the commonly used vector of PasswordForm pointers.
 using FormVector = std::vector<std::unique_ptr<autofill::PasswordForm>>;
 
-const autofill::PasswordForm* TryGetPasswordForm(
-    const std::map<std::string, FormVector>& map,
+base::span<const std::unique_ptr<autofill::PasswordForm>> TryGetPasswordForms(
+    const std::map<std::string, FormVector>& password_form_map,
     size_t index) {
   // |index| out of bounds might come from a compromised renderer
   // (http://crbug.com/362054), or the user removed a password while a request
   // to the store is in progress (i.e. |forms| is empty). Don't let it crash
   // the browser.
-  if (map.size() <= index)
-    return nullptr;
+  if (password_form_map.size() <= index)
+    return {};
 
   // Android tries to obtain a PasswordForm corresponding to a specific index,
   // and does not know about sort keys. In order to efficiently obtain the n'th
   // element in the map we make use of std::next() here.
-  const auto& forms = std::next(map.begin(), index)->second;
+  const auto& forms = std::next(password_form_map.begin(), index)->second;
   DCHECK(!forms.empty());
-  return forms[0].get();
+  return base::make_span(forms);
+}
+
+const autofill::PasswordForm* TryGetPasswordForm(
+    const std::map<std::string, FormVector>& password_form_map,
+    size_t index) {
+  // |index| out of bounds might come from a compromised renderer
+  // (http://crbug.com/362054), or the user removed a password while a request
+  // to the store is in progress (i.e. |forms| is empty). Don't let it crash
+  // the browser.
+  if (password_form_map.size() <= index)
+    return nullptr;
+
+  return TryGetPasswordForms(password_form_map, index)[0].get();
 }
 
 // Processes |map| and returns a FormVector where each equivalence class in
@@ -213,6 +227,24 @@ const autofill::PasswordForm* PasswordManagerPresenter::GetPassword(
   return TryGetPasswordForm(password_map_, index);
 }
 
+base::span<const std::unique_ptr<autofill::PasswordForm>>
+PasswordManagerPresenter::GetPasswords(size_t index) const {
+  return TryGetPasswordForms(password_map_, index);
+}
+
+std::vector<base::string16> PasswordManagerPresenter::GetUsernamesForRealm(
+    size_t index) {
+  const autofill::PasswordForm* current_form =
+      TryGetPasswordForm(password_map_, index);
+  FormVector password_forms = GetAllPasswords();
+  std::vector<base::string16> usernames;
+  for (auto& password_form : password_forms) {
+    if (current_form->signon_realm == password_form->signon_realm)
+      usernames.push_back(password_form->username_value);
+  }
+  return usernames;
+}
+
 FormVector PasswordManagerPresenter::GetAllPasswords() {
   FormVector ret_val;
   for (const auto& pair : password_map_) {
@@ -269,9 +301,8 @@ void PasswordManagerPresenter::ChangeSavedPassword(
     }
   }
 
-  EditSavedPasswords(password_view_->GetProfile(), old_forms, old_username,
-                     signon_realm, new_username,
-                     base::OptionalOrNullptr(new_password));
+  EditSavedPasswords(password_view_->GetProfile(), old_forms, new_username,
+                     new_password);
 }
 
 void PasswordManagerPresenter::RemoveSavedPassword(size_t index) {

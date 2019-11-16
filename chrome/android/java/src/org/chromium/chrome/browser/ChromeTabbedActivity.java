@@ -1579,7 +1579,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
     @Override
     protected RootUiCoordinator createRootUiCoordinator() {
         return new TabbedRootUiCoordinator(
-                this, null, this::onOmniboxFocusChanged, mIntentWithEffect);
+                this, null, this::onOmniboxFocusChanged, mIntentWithEffect, getShareDelegate());
     }
 
     @Override

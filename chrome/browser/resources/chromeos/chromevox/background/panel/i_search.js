@@ -69,7 +69,7 @@ ISearch = function(cursor) {
 
   // Global exports.
   /** Exported for this background script. */
-  cvox.ChromeVox = chrome.extension.getBackgroundPage()['cvox']['ChromeVox'];
+  ChromeVox = chrome.extension.getBackgroundPage()['ChromeVox'];
 };
 
 ISearch.prototype = {
@@ -217,7 +217,7 @@ ISearchUI.prototype = {
    */
   onSearchReachedBoundary: function(boundaryNode) {
     this.output_(boundaryNode);
-    cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.WRAP);
+    ChromeVox.earcons.playEarcon(Earcon.WRAP);
   },
 
   /**
@@ -234,7 +234,7 @@ ISearchUI.prototype = {
    * @private
    */
   output_: function(node, opt_start, opt_end) {
-    Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
+    Output.forceModeForNextSpeechUtterance(QueueMode.FLUSH);
     var o = new Output();
     if (opt_start && opt_end) {
       o.withString([

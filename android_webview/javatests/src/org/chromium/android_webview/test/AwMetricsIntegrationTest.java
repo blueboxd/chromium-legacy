@@ -251,6 +251,7 @@ public class AwMetricsIntegrationTest {
     @Test
     @MediumTest
     @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add("enable-features=WebViewWakeMetricsService")
     public void testPageLoadsEnableMultipleUploads() throws Throwable {
         mPlatformServiceBridge.waitForNextMetricsLog();
 

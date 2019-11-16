@@ -4,34 +4,34 @@
 
 import {CloudPrintInterface} from './cloud_print_interface.js';
 
-  /** @implements {CloudPrintInterface} */
-  export class CloudPrintInterfaceNative {
-    constructor() {}
+/** @implements {CloudPrintInterface} */
+export class CloudPrintInterfaceNative {
+  constructor() {}
 
-    /** @override */
-    areCookieDestinationsDisabled() {}
+  /** @override */
+  areCookieDestinationsDisabled() {}
 
-    /** @override */
-    isCloudDestinationSearchInProgress() {}
+  /** @override */
+  isCloudDestinationSearchInProgress() {}
 
-    /** @override */
-    getEventTarget() {}
+  /** @override */
+  getEventTarget() {}
 
-    /** @override */
-    search(opt_account, opt_origin) {}
+  /** @override */
+  search(opt_account, opt_origin) {}
 
-    /** @override */
-    setUsers(users) {}
+  /** @override */
+  setUsers(users) {}
 
-    /** @override */
-    invites(account) {}
+  /** @override */
+  invites(account) {}
 
-    /** @override */
-    processInvite(invitation, accept) {}
+  /** @override */
+  processInvite(invitation, accept) {}
 
-    /** @override */
-    submit(destination, printTicket, documentTitle, data) {}
+  /** @override */
+  submit(destination, printTicket, documentTitle, data) {}
 
-    /** @override */
-    printer(printerId, origin, account) {}
-  }
+  /** @override */
+  printer(printerId, origin, account) {}
+}

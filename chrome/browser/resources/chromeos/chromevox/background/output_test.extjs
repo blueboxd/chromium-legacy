@@ -589,7 +589,7 @@ SYNC_TEST_F('ChromeVoxOutputE2ETest', 'MessageIdAndEarconValidity', function() {
       assertFalse(/[A-Z]+/.test(value.msgId));
     }
     if (value.earconId) {
-      assertNotNullNorUndefined(cvox.Earcon[value.earconId]);
+      assertNotNullNorUndefined(Earcon[value.earconId]);
     }
   }
   for (var key in Output.STATE_INFO_) {
@@ -604,7 +604,7 @@ SYNC_TEST_F('ChromeVoxOutputE2ETest', 'MessageIdAndEarconValidity', function() {
       Msgs.getMsg(innerValue.msgId + '_brl');
       assertFalse(/[A-Z]+/.test(innerValue.msgId));
       if (innerValue.earconId) {
-        assertNotNullNorUndefined(cvox.Earcon[innerValue.earconId]);
+        assertNotNullNorUndefined(Earcon[innerValue.earconId]);
       }
     }
   }

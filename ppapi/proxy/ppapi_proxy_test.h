@@ -147,9 +147,6 @@ class PluginProxyTestHarness : public ProxyTestHarnessBase {
         base::PlatformFile handle,
         base::ProcessId remote_pid,
         bool should_close_source) override;
-    base::SharedMemoryHandle ShareSharedMemoryHandleWithRemote(
-        const base::SharedMemoryHandle& handle,
-        base::ProcessId remote_pid) override;
     base::UnsafeSharedMemoryRegion ShareUnsafeSharedMemoryRegionWithRemote(
         const base::UnsafeSharedMemoryRegion& region,
         base::ProcessId remote_pid) override;
@@ -296,9 +293,6 @@ class HostProxyTestHarness : public ProxyTestHarnessBase {
         base::PlatformFile handle,
         base::ProcessId remote_pid,
         bool should_close_source) override;
-    base::SharedMemoryHandle ShareSharedMemoryHandleWithRemote(
-        const base::SharedMemoryHandle& handle,
-        base::ProcessId remote_pid) override;
     base::UnsafeSharedMemoryRegion ShareUnsafeSharedMemoryRegionWithRemote(
         const base::UnsafeSharedMemoryRegion& region,
         base::ProcessId remote_pid) override;

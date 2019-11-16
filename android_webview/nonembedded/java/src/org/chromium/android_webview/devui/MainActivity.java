@@ -8,7 +8,6 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
@@ -20,6 +19,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import org.chromium.android_webview.devui.util.NavigationMenuHelper;
+import org.chromium.android_webview.devui.util.WebViewPackageHelper;
 import org.chromium.ui.widget.Toast;
 
 import java.util.Locale;
@@ -30,19 +30,19 @@ import java.util.Locale;
  * It helps to navigate to other WebView developer tools.
  */
 public class MainActivity extends Activity {
+    private WebViewPackageError mDifferentPackageError;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
 
-        PackageInfo webViewPackage = getPackageInfo();
+        PackageInfo webViewPackage = WebViewPackageHelper.getContextPackageInfo(this);
         InfoItem[] infoItems = new InfoItem[] {
-                new InfoItem("WebView package",
-                        webViewPackage == null ? null : webViewPackage.packageName),
+                new InfoItem("WebView package", webViewPackage.packageName),
                 new InfoItem("WebView version",
-                        String.format(Locale.US, "%s (%s)",
-                                webViewPackage == null ? null : webViewPackage.versionName,
+                        String.format(Locale.US, "%s (%s)", webViewPackage.versionName,
                                 webViewPackage.versionCode)),
                 new InfoItem("Device info",
                         String.format(Locale.US, "%s - %s", Build.MODEL, Build.FINGERPRINT)),
@@ -62,6 +62,20 @@ public class MainActivity extends Activity {
             // Show a toast that the text has been copied.
             Toast.makeText(MainActivity.this, "Copied " + item.title, Toast.LENGTH_SHORT).show();
         });
+
+        mDifferentPackageError =
+                new WebViewPackageError(this, findViewById(R.id.main_activity_layout));
+        // show the dialog once when the activity is created.
+        mDifferentPackageError.showDialogIfDifferent();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Check package status in onResume() to hide/show the error message if the user
+        // changes WebView implementation from system settings and then returns back to the
+        // activity.
+        mDifferentPackageError.showMessageIfDifferent();
     }
 
     /**
@@ -124,13 +138,5 @@ public class MainActivity extends Activity {
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    private PackageInfo getPackageInfo() {
-        try {
-            return getPackageManager().getPackageInfo(getPackageName(), 0);
-        } catch (NameNotFoundException e) {
-            return null;
-        }
     }
 }

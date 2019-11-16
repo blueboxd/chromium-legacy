@@ -117,6 +117,9 @@ class CookieSettings : public CookieSettingsBase,
   // content_settings::CookieSettingsBase:
   void GetSettingForLegacyCookieAccess(const std::string& cookie_domain,
                                        ContentSetting* setting) const override;
+  bool ShouldIgnoreSameSiteRestrictions(
+      const GURL& url,
+      const GURL& site_for_cookies) const override;
 
   // Detaches the |CookieSettings| from |PrefService|. This methods needs to be
   // called before destroying the service. Afterwards, only const methods can be
@@ -135,6 +138,17 @@ class CookieSettings : public CookieSettingsBase,
 
  private:
   ~CookieSettings() override;
+
+  // Returns whether third-party cookie blocking should be bypassed (i.e. always
+  // allow the cookie regardless of cookie content settings and third-party
+  // cookie blocking settings.
+  // This just checks the scheme of the |url| and |site_for_cookies|:
+  //  - Allow cookies if the |site_for_cookies| is a chrome:// scheme URL, and
+  //    the |url| has a secure scheme.
+  //  - Allow cookies if the |site_for_cookies| and the |url| match in scheme
+  //    and both have the Chrome extensions scheme.
+  bool ShouldAlwaysAllowCookies(const GURL& url,
+                                const GURL& first_party_url) const;
 
   // content_settings::CookieSettingsBase:
   void GetCookieSettingInternal(const GURL& url,

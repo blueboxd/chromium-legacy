@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
+<translation id="1075622780330595106">Toliko zavihkov nedavno niste uporabljali: <ph name="NUMBER_OF_TABS" />. Ali jih želite zapreti?</translation>
 <translation id="1181037720776840403">Odstrani</translation>
 <translation id="125153950246128346">Dotaknite se, če želite prikazati drug zavihek</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> zavihek}one{<ph name="TABS_COUNT_MANY" /> zavihek}two{<ph name="TABS_COUNT_MANY" /> zavihka}few{<ph name="TABS_COUNT_MANY" /> zavihki}other{<ph name="TABS_COUNT_MANY" /> zavihkov}}</translation>
@@ -10,6 +11,7 @@
 <translation id="2977480621796371840">Odstrani iz skupine</translation>
 <translation id="4212246570487010370">Nadaljevanje brskanja</translation>
 <translation id="4648718555153979859">Zavihki so združeni tukaj</translation>
+<translation id="5007392906805964215">Pregled</translation>
 <translation id="5073204694187207510">Skrij celozaslonsko mrežo</translation>
 <translation id="5082793167783849073">Hitro primerjate strani tako, da ustvarite skupino. Če želite začeti, se dotaknite povezave in jo pridržite.</translation>
 <translation id="5580090775658607195">Št. združenih zavihkov: <ph name="TAB_COUNT" /></translation>

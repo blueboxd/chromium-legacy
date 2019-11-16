@@ -30,8 +30,6 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
   bool WasExternalAppUninstalledByUser(
       const web_app::AppId& app_id) const override;
   bool WasInstalledByUser(const web_app::AppId& app_id) const override;
-  base::Optional<web_app::AppId> FindAppWithUrlInScope(
-      const GURL& url) const override;
   int CountUserInstalledApps() const override;
   std::string GetAppShortName(const web_app::AppId& app_id) const override;
   std::string GetAppDescription(const web_app::AppId& app_id) const override;

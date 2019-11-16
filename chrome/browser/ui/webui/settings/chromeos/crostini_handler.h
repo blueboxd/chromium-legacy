@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/usb/cros_usb_detector.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
 
 class Profile;
 
@@ -70,7 +71,9 @@ class CrostiniHandler : public ::settings::SettingsPageUIHandler,
   // Handle a request for disabling adb sideloading in ARC.
   void HandleDisableArcAdbRequest(const base::ListValue* args);
   // Callback of HandleQueryArcAdbRequest.
-  void OnQueryAdbSideload(bool success, bool enabled);
+  void OnQueryAdbSideload(
+      SessionManagerClient::AdbSideloadResponseCode response_code,
+      bool enabled);
   // Returns whether the current user can change adb sideloading configuration
   // on current device.
   bool CheckEligibilityToChangeArcAdbSideloading() const;

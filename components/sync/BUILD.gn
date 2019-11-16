@@ -386,8 +386,6 @@ jumbo_static_library("rest_of_sync") {
     "syncable/syncable_base_write_transaction.h",
     "syncable/syncable_changes_version.h",
     "syncable/syncable_columns.h",
-    "syncable/syncable_delete_journal.cc",
-    "syncable/syncable_delete_journal.h",
     "syncable/syncable_enum_conversions.cc",
     "syncable/syncable_enum_conversions.h",
     "syncable/syncable_id.cc",

@@ -37,7 +37,8 @@ class ApiBindingsClientTest : public cr_fuchsia::WebEngineBrowserTest {
     // Get the bindings from |api_service_|.
     base::RunLoop run_loop;
     client_ = std::make_unique<ApiBindingsClient>(
-        api_service_binding_.NewBinding(), run_loop.QuitClosure());
+        api_service_binding_.NewBinding(), run_loop.QuitClosure(),
+        base::MakeExpectedNotRunClosure(FROM_HERE));
     EXPECT_FALSE(client_->HasBindings());
     run_loop.Run();
     EXPECT_TRUE(client_->HasBindings());

@@ -556,9 +556,4 @@ class AppMenu implements OnItemClickListener, OnKeyListener, AppMenuAdapter.OnCl
     void finishAnimationsForTests() {
         if (mMenuItemEnterAnimator != null) mMenuItemEnterAnimator.end();
     }
-
-    @VisibleForTesting
-    AppMenuAdapter getAdapterForTests() {
-        return mAdapter;
-    }
 }

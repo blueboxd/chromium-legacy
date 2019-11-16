@@ -546,10 +546,17 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
     CookieOptions options;
     options.set_return_excluded_cookies();
     options.set_include_httponly();
+    bool attach_same_site_cookies = request_->attach_same_site_cookies();
+    if (cookie_store->cookie_access_delegate() &&
+        cookie_store->cookie_access_delegate()
+            ->ShouldIgnoreSameSiteRestrictions(request_->url(),
+                                               request_->site_for_cookies())) {
+      attach_same_site_cookies = true;
+    }
     options.set_same_site_cookie_context(
         net::cookie_util::ComputeSameSiteContextForRequest(
             request_->method(), request_->url(), request_->site_for_cookies(),
-            request_->initiator(), request_->attach_same_site_cookies()));
+            request_->initiator(), attach_same_site_cookies));
     cookie_store->GetCookieListWithOptionsAsync(
         request_->url(), options,
         base::BindOnce(&URLRequestHttpJob::SetCookieHeaderAndStart,
@@ -640,8 +647,9 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
     return;
   }
 
-  if ((request_info_.load_flags & LOAD_DO_NOT_SAVE_COOKIES) ||
-      !request_->context()->cookie_store()) {
+  CookieStore* cookie_store = request_->context()->cookie_store();
+
+  if ((request_info_.load_flags & LOAD_DO_NOT_SAVE_COOKIES) || !cookie_store) {
     NotifyHeadersComplete();
     return;
   }
@@ -653,10 +661,16 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
 
   CookieOptions options;
   options.set_include_httponly();
+  bool attach_same_site_cookies = request_->attach_same_site_cookies();
+  if (cookie_store->cookie_access_delegate() &&
+      cookie_store->cookie_access_delegate()->ShouldIgnoreSameSiteRestrictions(
+          request_->url(), request_->site_for_cookies())) {
+    attach_same_site_cookies = true;
+  }
   options.set_same_site_cookie_context(
       net::cookie_util::ComputeSameSiteContextForResponse(
           request_->url(), request_->site_for_cookies(), request_->initiator(),
-          request_->attach_same_site_cookies()));
+          attach_same_site_cookies));
 
   options.set_return_excluded_cookies();
 

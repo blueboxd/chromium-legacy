@@ -100,6 +100,7 @@ group("gn_all") {
   if (!is_ios && !is_android && !is_chromecast && !is_fuchsia) {
     deps += [
       "//chrome",
+      "//chrome/browser/ui/color:dump_colors",
       "//chrome/test:browser_tests",
       "//chrome/test:interactive_ui_tests",
       "//chrome/test:sync_integration_tests",
@@ -149,6 +150,7 @@ group("gn_all") {
       "//ui/accessibility:accessibility_unittests",
       "//ui/accessibility/extensions:extension_tests",
       "//ui/accessibility/extensions:extensions",
+      "//ui/color:color_unittests",
     ]
   }
 
@@ -182,7 +184,6 @@ group("gn_all") {
       "//third_party/blink/renderer/platform/heap:blink_heap_unittests",
       "//third_party/blink/renderer/platform/wtf:wtf_unittests",
       "//tools/imagediff",
-      "//ui/color:color_unittests",
       "//ui/display:display_unittests",
       "//ui/events:events_unittests",
       "//ui/gl:gl_unittests",
@@ -226,7 +227,10 @@ group("gn_all") {
       "//third_party/smhasher:pmurhash",
     ]
   } else if (is_ios) {
-    deps += [ "//ios:all" ]
+    deps += [
+      "//ios:all",
+      "//third_party/crashpad/crashpad:crashpad_tests",
+    ]
   } else if (is_fuchsia) {
     deps += [
       ":d8_fuchsia",

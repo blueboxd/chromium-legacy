@@ -60,6 +60,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
   void OverrideSiteForCookiesForTesting(const GURL& new_site_for_cookies) {
     site_for_cookies_ = new_site_for_cookies;
   }
+  void OverrideOriginForTesting(const url::Origin& new_origin) {
+    origin_ = new_origin;
+  }
+  void OverrideTopFrameOriginForTesting(
+      const url::Origin& new_top_frame_origin) {
+    top_frame_origin_ = new_top_frame_origin;
+  }
 
   const CookieSettings* cookie_settings() const { return cookie_settings_; }
 
@@ -139,9 +146,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
   const mojom::RestrictedCookieManagerRole role_;
   net::CookieStore* const cookie_store_;
   const CookieSettings* const cookie_settings_;
-  const url::Origin origin_;
+  url::Origin origin_;
   GURL site_for_cookies_;
-  const url::Origin top_frame_origin_;
+  url::Origin top_frame_origin_;
   mojom::NetworkContextClient* const network_context_client_;
   const bool is_service_worker_;
   const int32_t process_id_;

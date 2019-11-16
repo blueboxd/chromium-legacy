@@ -12,6 +12,7 @@
 <translation id="107147699690128016">Si cambias la extensión de archivo, es posible que el archivo se abra en una app diferente y dañe el dispositivo.</translation>
 <translation id="1100066534610197918">Abrir pestaña nueva en grupo</translation>
 <translation id="1105960400813249514">Captura de pantalla</translation>
+<translation id="1110022065703191351">Íconos</translation>
 <translation id="1111673857033749125">Los favoritos guardados en tus otros dispositivos aparecerán aquí.</translation>
 <translation id="1113597929977215864">Mostrar la vista simplificada</translation>
 <translation id="1124772482545689468">Usuario</translation>
@@ -363,6 +364,7 @@
 <translation id="3730075448226062617">Para permitir que Chrome acceda a tu micrófono, actívalo también en <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" />.</translation>
 <translation id="3739899004075612870">Agregado a favoritos en <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Sincronización en segundo plano</translation>
+<translation id="3749259744154402564">No se admite esa acción</translation>
 <translation id="3771001275138982843">No se pudo descargar la actualización</translation>
 <translation id="3771033907050503522">Pestañas de incógnito</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Activa Bluetooth<ph name="END_LINK" /> para permitir la sincronización</translation>
@@ -576,6 +578,7 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="5327248766486351172">Nombre</translation>
 <translation id="5335288049665977812">Permitir que los sitios ejecuten JavaScript (recomendado)</translation>
 <translation id="5342314432463739672">Solicitudes de permisos</translation>
+<translation id="534295439873310000">Dispositivos NFC</translation>
 <translation id="5357811892247919462">Se recibió una pestaña</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> pestaña abierta; presiona para cambiar de pestaña}other{<ph name="OPEN_TABS_MANY" /> pestañas abiertas; presiona para cambiar de pestaña}}</translation>
 <translation id="5391532827096253100">La conexión con este sitio no es segura. Consulta la información del sitio.</translation>
@@ -632,6 +635,7 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="5686790454216892815">El nombre del archivo es demasiado largo</translation>
 <translation id="5689516760719285838">Ubicación</translation>
 <translation id="569536719314091526">Traduce esta página a cualquier idioma desde el botón Más opciones</translation>
+<translation id="5710871682236653961">Preguntar antes de permitir que los sitios envíen y reciban información cuando presionas dispositivos NFC (recomendado)</translation>
 <translation id="572328651809341494">Pestañas recientes</translation>
 <translation id="5726692708398506830">Agrandar todos los elementos de la página</translation>
 <translation id="5748802427693696783">Se seleccionaron las pestañas estándar</translation>
@@ -881,6 +885,7 @@ El sitio NO podrá acceder a la cámara. Solo tú podrás ver las imágenes de l
 <translation id="7559975015014302720">El modo lite está desactivado</translation>
 <translation id="7562080006725997899">Borrando datos de navegación</translation>
 <translation id="756809126120519699">Datos de Chrome borrados</translation>
+<translation id="7572498721684305250">Impide que los sitios envíen y reciban información cuando presionas dispositivos NFC</translation>
 <translation id="757524316907819857">Impedir que los sitios reproduzcan contenido protegido</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> archivo descargado}other{<ph name="FILES_DOWNLOADED_MANY" /> archivos descargados}}</translation>
 <translation id="7588219262685291874">Activar el tema oscuro cuando esté activado el Ahorro de batería de tu dispositivo</translation>

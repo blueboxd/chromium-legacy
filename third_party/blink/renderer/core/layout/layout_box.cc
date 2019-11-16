@@ -6292,6 +6292,17 @@ void LayoutBox::RemoveSnapArea(const LayoutBox& snap_area) {
   }
 }
 
+void LayoutBox::ReassignSnapAreas(LayoutBox& new_container) {
+  SnapAreaSet* areas = SnapAreas();
+  if (!areas)
+    return;
+  for (auto* const snap_area : *areas) {
+    snap_area->rare_data_->snap_container_ = &new_container;
+    new_container.AddSnapArea(*snap_area);
+  }
+  areas->clear();
+}
+
 bool LayoutBox::AllowedToPropagateRecursiveScrollToParentFrame(
     const WebScrollIntoViewParams& params) {
   if (!GetFrameView()->SafeToPropagateScrollToParent())

@@ -19,6 +19,7 @@ import org.chromium.base.test.util.MetricsUtils.HistogramDelta;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.share.ShareSheetMediator.ShareSheetDelegate;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.ui_metrics.CanonicalURLResult;
@@ -111,14 +112,16 @@ public class ShareSheetMediatorIntegrationTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ShareSheetDelegate delegate = new ShareSheetDelegate() {
                 @Override
-                void share(ShareParams params) {
+                void share(ShareParams params, BottomSheetController controller) {
                     paramsRef.set(params);
                     helper.notifyCalled();
                 }
             };
 
-            new ShareSheetMediator(delegate).onShareSelected(mActivityTestRule.getActivity(),
-                    mActivityTestRule.getActivity().getActivityTab(), false, false);
+            new ShareSheetMediator(
+                    delegate, mActivityTestRule.getActivity().getBottomSheetController())
+                    .onShareSelected(mActivityTestRule.getActivity(),
+                            mActivityTestRule.getActivity().getActivityTab(), false, false);
         });
         helper.waitForCallback(0);
         return paramsRef.get();

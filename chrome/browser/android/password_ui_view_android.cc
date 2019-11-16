@@ -197,7 +197,8 @@ void PasswordUIViewAndroid::HandleShowPasswordEntryEditingView(
     int index) {
   PasswordEditingBridge::LaunchPasswordEntryEditor(
       env, context, GetProfile(),
-      *password_manager_presenter_.GetPassword(index));
+      password_manager_presenter_.GetPasswords(index),
+      password_manager_presenter_.GetUsernamesForRealm(index));
 }
 
 ScopedJavaLocalRef<jstring> JNI_PasswordUIView_GetAccountDashboardURL(

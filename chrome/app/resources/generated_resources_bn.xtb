@@ -181,6 +181,7 @@
 <translation id="1241753985463165747">চালু করলে বর্তমান ওয়েবসাইটের সব ডেটা পড়ে ও পরিবর্তন করে</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> আপনার সেটিংস রিসেট করতে চায়।</translation>
 <translation id="1243314992276662751">আপলোড</translation>
+<translation id="1243398753772016127">বিজ্ঞাপন নিজের মতো করে সাজিয়ে নিতে Sites আপনার অন্যান্য সাইটে করা ব্রাউজিং অ্যাক্টিভিটি ব্যবহার করতে পারবে না</translation>
 <translation id="1244265436519979884">বর্তমানে Linux ফিরিয়ে আনার কাজ চলছে</translation>
 <translation id="1244303850296295656">এক্সটেনশন সমস্যা</translation>
 <translation id="1246905108078336582">ক্লিপবোর্ড থেকে সাজেশন সরাতে চান?</translation>
@@ -253,6 +254,7 @@
 <translation id="1365180424462182382"><ph name="ENROLLMENT_DOMAIN" /> আপনার <ph name="BEGIN_LINK" />ব্রাউজার ম্যানেজ করে<ph name="END_LINK" /></translation>
 <translation id="1366177842110999534">আপনার <ph name="DEVICE_TYPE" />-এ Linux টুল, এডিটর, এবং IDEs চালান। &lt;a target="_blank" href="<ph name="URL" />"&gt;আরও জানুন&lt;/a&gt;</translation>
 <translation id="1367951781824006909">একটি ফাইল বেছে নিন</translation>
+<translation id="1369149969991017342">অ্যাক্সেস পাল্টান (মাত্র এক অথবা দুইবার অ্যাক্সেস পাল্টে কম্পিউটার নিয়ন্ত্রণ করুন)</translation>
 <translation id="1372841398847029212">আপনার অ্যাকাউন্টে সিঙ্ক করুন</translation>
 <translation id="1374844444528092021">নেটওয়ার্কের প্রয়োজনীয় সার্টিফিকেট "<ph name="NETWORK_NAME" />" হয় ইনস্টল করা নেই অথবা তা আর বৈধ নয়৷ অনুগ্রহ করে একটি নতুন সার্টিফিকেট আনুন আর সংযোগ করতে পুনরায় চেষ্টা করুন৷</translation>
 <translation id="1375321115329958930">সংরক্ষিত পাসওয়ার্ড</translation>
@@ -564,6 +566,7 @@
 <translation id="1794791083288629568">এই সমস্যা সমাধানে আমাদের সাহায্য করতে প্রতিবার্তা পাঠান।</translation>
 <translation id="1795214765651529549">ক্লাসিক ব্যবহার করুন</translation>
 <translation id="1799071797295057738">"<ph name="EXTENSION_NAME" />" এক্সটেনশনটি অটোমেটিক বন্ধ করা হয়েছে।</translation>
+<translation id="1802624026913571222">ডিভাইসের কভার বন্ধ করলে স্লিপ মোডে চলে যাবে</translation>
 <translation id="1802687198411089702">পৃষ্ঠাটি সাড়া দিচ্ছে না। আপনি অপেক্ষা করতে পারেন অথবা পৃষ্ঠা ছেড়ে যেতে পারেন।</translation>
 <translation id="1802931390041703523">এই পৃষ্ঠাতে ফ্ল্যাশ ব্লক করা হয়েছে</translation>
 <translation id="1803531841600994172">যে ভাষায় অনুবাদ করতে হবে</translation>
@@ -665,6 +668,7 @@
 <translation id="1937774647013465102">এই ডিভাইস <ph name="ARCHITECTURE_DEVICE" /> হওয়ার ফলে <ph name="ARCHITECTURE_CONTAINER" /> ধরনের কন্টেনার আর্কিটেকচার ইম্পোর্ট করা যাচ্ছে না। আপনি একটি অন্য ডিভাইসে এই কন্টেনার ফিরিয়ে আনার চেষ্টা করতে পারেন অথবা 'ফাইল' অ্যাপ খুলে কন্টেনার ছবির অন্তর্ভুক্ত ফাইল অ্যাক্সেস করতে পারেন।</translation>
 <translation id="1938351510777341717">এক্সটার্নাল কমান্ড</translation>
 <translation id="1940546824932169984">সংযুক্ত ডিভাইস</translation>
+<translation id="1942600407708803723">ডিভাইসের কভার বন্ধ করলে শাট ডাউন হয়ে যাবে</translation>
 <translation id="1944921356641260203">আপডেট পাওয়া গেছে</translation>
 <translation id="1946577776959096882">অ্যাকাউন্ট দেখুন</translation>
 <translation id="1951012854035635156">সহায়ক</translation>
@@ -2436,6 +2440,7 @@
 <translation id="4546308221697447294">Google Chrome দিয়ে দ্রুত ব্রাউজ করুন</translation>
 <translation id="4547659257713117923">অন্য ডিভাইসগুলি থেকে কোনো ট্যাব নেই</translation>
 <translation id="4547672827276975204">অটোমেটিক সেট হবে</translation>
+<translation id="4549791035683739768">আপনার 'নিরাপত্তা কী'-তে কোনও ফিঙ্গারপ্রিন্ট সেভ করা নেই</translation>
 <translation id="4551763574344810652">আগের অবস্থায় ফিরে যেতে <ph name="MODIFIER_KEY_DESCRIPTION" /> টিপুন</translation>
 <translation id="4552089082226364758">ফ্ল্যাশ</translation>
 <translation id="4554591392113183336">বিদ্যমানটির তুলনায় বাহ্যিক এক্সটেনশনটি একই বা আরও পুরনো ভার্সনের৷</translation>
@@ -2615,6 +2620,7 @@
 <translation id="4839303808932127586">এইরূপে ভিডিও সংর&amp;ক্ষণ করুন...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{আরও ১টি}one{আরও #টি}other{আরও #টি}}</translation>
 <translation id="4842976633412754305">এই পৃষ্ঠাটি প্রমাণীকৃত নয় এমন সূত্র থেকে স্ক্রিপ্ট লোড করার চেষ্টা করছে।</translation>
+<translation id="4843488774506045600"><ph name="EXTENSION_NAME" /> লগ-ইন করার ডেটা প্রদান করেছে</translation>
 <translation id="4844333629810439236">অন্য কীবোর্ডগুলি</translation>
 <translation id="4846680374085650406">আপনি এই সেটিংয়ের জন্য প্রশাসকের সুপারিশ অনুসরণ করছেন৷</translation>
 <translation id="4848518990323155912">সিম কার্ড লক হয়ে যাওয়া চালু করুন (মোবাইল ডেটা ব্যবহারের জন্য পিন প্রয়োজন)</translation>
@@ -3035,6 +3041,7 @@
 <translation id="5466374726908360271">“<ph name="SEARCH_TERMS" />” পে&amp;স্ট করে সার্চ করুন</translation>
 <translation id="5468173180030470402">ফাইল শেয়ার বিকল্পটি খোঁজা হচ্ছে</translation>
 <translation id="5471768120198416576">হ্যালো! আমি হলাম আপনার পাঠ্য থেকে ভাষ্য ভয়েস।</translation>
+<translation id="5472133193607270166">এটি চালু থাকাকালীন, বিজ্ঞাপন নিজের মতো করে সাজিয়ে নিতে সাইট আপনার অন্যান্য সাইটে করা ব্রাউজিং অ্যাক্টিভিটি ব্যবহার করতে পারবে না। কিছু সাইট সঠিকভাবে কাজ নাও করতে পারে।</translation>
 <translation id="5473333559083690127">নতুন পিন পুনরায় লিখুন</translation>
 <translation id="5481941284378890518">আশেপাশের প্রিন্টারগুলি যোগ করুন</translation>
 <translation id="5483785310822538350">ফাইল এবং ডিভাইসের অ্যাক্সেস প্রত্যাহার করুন</translation>
@@ -3066,6 +3073,7 @@
 <translation id="5511823366942919280">আপনি কি "শার্ক" হিসেবে এই ডিভাইসটিকে সেটআপ করতে ইচ্ছুক?</translation>
 <translation id="5512653252560939721">ব্যবহারকারীর সার্টিফিকেট হার্ডওয়্যার-সাহায্যপ্রাপ্ত হওয়া আবশ্যক৷</translation>
 <translation id="5517304475148761050">Play Store অ্যাক্সেস করতে এই অ্যাপকে অনুমতি দিতে হবে</translation>
+<translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> - <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">আপনার অ্যাকাউন্টে প্রিন্টার যোগ করার হচ্ছে - এতে একটু সময় লাগতে পারে...</translation>
 <translation id="5518219166343146486">ক্লিপবোর্ডে কপি করা টেক্সট এবং ছবি কোনও সাইট দেখতে চাইলে আপনাকে জিজ্ঞেস করা হবে</translation>
 <translation id="5518584115117143805">ইমেল এনক্রিপশন সার্টিফিকেট</translation>
@@ -3185,6 +3193,7 @@
 <translation id="567643736130151854">সমস্ত ডিভাইসে আপনার বুকমার্ক, পাসওয়ার্ড এবং আরও অনেক কিছু পাওয়ার জন্য সাইন-ইন করে সিঙ্ক বিকল্পটি চালু করুন</translation>
 <translation id="5677503058916217575">পৃষ্ঠার ভাষা:</translation>
 <translation id="5677928146339483299">অবরুদ্ধ</translation>
+<translation id="5678293144564424498">অ্যাপ পজ করা হয়েছে</translation>
 <translation id="5678550637669481956"><ph name="VOLUME_NAME" />-এর পড়া এবং লেখার অ্যাক্সেস মঞ্জুর করা হয়েছে৷</translation>
 <translation id="5678955352098267522"><ph name="WEBSITE_1" />এ আপনার ডেটা পড়ে</translation>
 <translation id="5684661240348539843">সম্পদ শনাক্তকারী</translation>
@@ -3451,6 +3460,7 @@
 <translation id="6055392876709372977">RSA এনক্রিপশানের সাথে PKCS #1 SHA-256</translation>
 <translation id="6056710589053485679">সাধারণ রিলোড</translation>
 <translation id="6057381398996433816">মোশন এবং লাইট সেন্সর ব্যবহার করা থেকে এই সাইটটি ব্লক করা হয়েছে।</translation>
+<translation id="6058567592298841668">ভার্চুয়াল মেশিন প্লাগ-ইন করুন: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">সার্টিফিকেট শ্রেণীক্রম</translation>
 <translation id="6059925163896151826">USB ডিভাইসগুলি</translation>
 <translation id="6061882183774845124">আপনার ডিভাইসে লিঙ্ক পাঠান</translation>
@@ -4400,6 +4410,7 @@
 <translation id="7476454130948140105">চার্জ খুব কম (<ph name="BATTERY_PERCENT" />%), আপডেট করা যাবে না</translation>
 <translation id="7477793887173910789">আপনার মিউজিক, ভিডিও ও আরও অনেক কিছু নিয়ন্ত্রণ করুন</translation>
 <translation id="7478485216301680444">Kiosk অ্যাপ্লিকেশান ইনস্টল করা যাবে না৷</translation>
+<translation id="7479221278376295180">এক নজরে স্টোরেজের ব্যবহার</translation>
 <translation id="7481312909269577407">ফরওয়ার্ড</translation>
 <translation id="748138892655239008">সার্টিফিকেট প্রাথমিক বাধ্যবাধকতা</translation>
 <translation id="7487067081878637334">প্রযুক্তি</translation>
@@ -5374,6 +5385,7 @@
 <translation id="8845001906332463065">সাহায্য পান</translation>
 <translation id="8846132060409673887">এই কম্পিউটারের প্রস্তুতকারক এবং মডেলটি পড়ুন</translation>
 <translation id="8846141544112579928">কীবোর্ডের জন্য সার্চ করা হচ্ছে...</translation>
+<translation id="8847523528195140327">ডিভাইসের কভার বন্ধ করলে সাইন-আউট হয়ে যাবে</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8850251000316748990">আরও দেখুন…</translation>
 <translation id="885246833287407341">এপিআই ফাংশন আর্গুমেন্ট</translation>
@@ -5436,6 +5448,7 @@
 <translation id="8930351635855238750">পৃষ্ঠা আবার লোড হওয়ার পর নতুন কুকি সেটিংস প্রভাবিত হবে</translation>
 <translation id="8931394284949551895">নতুন ডিভাইসগুলি</translation>
 <translation id="893254996965966411">আপনার প্রোফাইলে শনাক্ত করা প্রিন্টার সেভ করুন বা কোনও নতুন প্রিন্টার যোগ করুন।</translation>
+<translation id="8932894639908691771">অ্যাক্সেস পাল্টানোর বিকল্প</translation>
 <translation id="8933960630081805351">ফাইন্ডারে &amp;দেখান</translation>
 <translation id="8934732568177537184">অবিরত থাকুন</translation>
 <translation id="8938800817013097409">USB-C ডিভাইস (পিছনের ডান পোর্ট)</translation>
@@ -5499,6 +5512,7 @@
 <translation id="9023015617655685412">এই ট্যাব বুকমার্ক করুন...</translation>
 <translation id="9024127637873500333">&amp;নতুন ট্যাবে খুলুন</translation>
 <translation id="9024158959543687197">শেয়ার মাউন্ট করা যায়নি। ফাইল শেয়ার করার ইউআরএল যাচাই করে আবার চেষ্টা করুন।</translation>
+<translation id="9024885274934357065">Smart Lock ফিচারের সাহায্যে আপনার ডিভাইস আনলক করা যাবে। আনলক করতে এন্টার বোতামে প্রেস করুন।</translation>
 <translation id="9026731007018893674">ডাউনলোড</translation>
 <translation id="9026852570893462412">এতে কয়েক মিনিট সময় লাগতে পারে। ভার্চুয়াল মেশিন ডাউনলোড হচ্ছে।</translation>
 <translation id="9027459031423301635">নতুন ট্যাবে লিঙ্ক খুলুন</translation>

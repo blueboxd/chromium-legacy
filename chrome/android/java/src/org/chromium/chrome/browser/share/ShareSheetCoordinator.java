@@ -9,6 +9,7 @@ import android.app.Activity;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 
 /**
  * Coordinator for displaying the share sheet.
@@ -17,16 +18,10 @@ public class ShareSheetCoordinator {
     private ShareSheetMediator mMediator;
 
     /**
-     * Create and return a new ShareSheetCoordinator.
-     */
-    public static ShareSheetCoordinator create() {
-        return new ShareSheetCoordinator();
-    }
-    /**
      * Constructs a new ShareSheetCoordinator.
      */
-    private ShareSheetCoordinator() {
-        mMediator = new ShareSheetMediator(new ShareSheetMediator.ShareSheetDelegate());
+    public ShareSheetCoordinator(BottomSheetController controller) {
+        mMediator = new ShareSheetMediator(new ShareSheetMediator.ShareSheetDelegate(), controller);
     }
 
     /**

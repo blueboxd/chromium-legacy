@@ -6,17 +6,17 @@
  * @fileoverview JavaScript shim for the liblouis Native Client wrapper.
  */
 
-goog.provide('cvox.LibLouis');
-goog.provide('cvox.LibLouis.FormType');
+goog.provide('LibLouis');
+goog.provide('LibLouis.FormType');
 
 /**
  * Encapsulates a liblouis Native Client instance in the page.
  * @constructor
  * @param {string} wasmPath Path to .wasm file for the module.
  * @param {string=} opt_tablesDir Path to tables directory.
- * @param {function(cvox.LibLouis)=} opt_loadCallback
+ * @param {function(LibLouis)=} opt_loadCallback
  */
-cvox.LibLouis = function(wasmPath, opt_tablesDir, opt_loadCallback) {
+LibLouis = function(wasmPath, opt_tablesDir, opt_loadCallback) {
   /**
    * Path to .wasm file for the module.
    * @private {string}
@@ -57,7 +57,7 @@ cvox.LibLouis = function(wasmPath, opt_tablesDir, opt_loadCallback) {
  * Controls braille indicator insertion during translation.
  * @enum {number}
  */
-cvox.LibLouis.FormType = {
+LibLouis.FormType = {
   PLAIN_TEXT: 0,
   ITALIC: 1,
   UNDERLINE: 2,
@@ -70,9 +70,9 @@ cvox.LibLouis.FormType = {
  * Set to {@code true} to enable debug logging of RPC messages.
  * @type {boolean}
  */
-cvox.LibLouis.DEBUG = false;
+LibLouis.DEBUG = false;
 
-cvox.LibLouis.prototype.isLoaded = function() {
+LibLouis.prototype.isLoaded = function() {
   return this.isLoaded_;
 };
 
@@ -82,17 +82,17 @@ cvox.LibLouis.prototype.isLoaded = function() {
  * This object must be attached to a document when requesting a translator.
  * @param {string} tableNames Comma separated list of braille table names for
  *     liblouis.
- * @param {function(cvox.LibLouis.Translator)} callback
+ * @param {function(LibLouis.Translator)} callback
  *     Callback which will receive the translator, or {@code null} on failure.
  */
-cvox.LibLouis.prototype.getTranslator = function(tableNames, callback) {
+LibLouis.prototype.getTranslator = function(tableNames, callback) {
   if (!this.isLoaded_) {
     // TODO: save last callback.
     return;
   }
   this.rpc_('CheckTable', {'table_names': tableNames}, function(reply) {
     if (reply['success']) {
-      var translator = new cvox.LibLouis.Translator(this, tableNames);
+      var translator = new LibLouis.Translator(this, tableNames);
       callback(translator);
     } else {
       callback(null /* translator */);
@@ -109,7 +109,7 @@ cvox.LibLouis.prototype.getTranslator = function(tableNames, callback) {
  * @param {function(!Object)} callback Callback to receive the reply.
  * @private
  */
-cvox.LibLouis.prototype.rpc_ = function(command, message, callback) {
+LibLouis.prototype.rpc_ = function(command, message, callback) {
   if (!this.worker_) {
     throw Error('Cannot send RPC: liblouis instance not loaded');
   }
@@ -117,7 +117,7 @@ cvox.LibLouis.prototype.rpc_ = function(command, message, callback) {
   message['message_id'] = messageId;
   message['command'] = command;
   var json = JSON.stringify(message);
-  if (cvox.LibLouis.DEBUG) {
+  if (LibLouis.DEBUG) {
     window.console.debug('RPC -> ' + json);
   }
   this.worker_.postMessage(json);
@@ -130,7 +130,7 @@ cvox.LibLouis.prototype.rpc_ = function(command, message, callback) {
  * @param {Event} e Event dispatched after loading.
  * @private
  */
-cvox.LibLouis.prototype.onInstanceLoad_ = function(e) {
+LibLouis.prototype.onInstanceLoad_ = function(e) {
   window.console.info('loaded liblouis Native Client instance');
 };
 
@@ -140,7 +140,7 @@ cvox.LibLouis.prototype.onInstanceLoad_ = function(e) {
  * @param {Event} e Event dispatched after loading failure.
  * @private
  */
-cvox.LibLouis.prototype.onInstanceError_ = function(e) {
+LibLouis.prototype.onInstanceError_ = function(e) {
   window.console.error('Error in liblouis ' + e.toString());
   this.loadOrReload_();
 };
@@ -151,8 +151,8 @@ cvox.LibLouis.prototype.onInstanceError_ = function(e) {
  * @param {Event} e Event dispatched after the message was posted.
  * @private
  */
-cvox.LibLouis.prototype.onInstanceMessage_ = function(e) {
-  if (cvox.LibLouis.DEBUG) {
+LibLouis.prototype.onInstanceMessage_ = function(e) {
+  if (LibLouis.DEBUG) {
     window.console.debug('RPC <- ' + e.data);
   }
   var message = /** @type {!Object} */ (JSON.parse(e.data));
@@ -173,10 +173,10 @@ cvox.LibLouis.prototype.onInstanceMessage_ = function(e) {
 };
 
 /**
- * @param {function(cvox.LibLouis)=} opt_loadCallback
+ * @param {function(LibLouis)=} opt_loadCallback
  * @private
  */
-cvox.LibLouis.prototype.loadOrReload_ = function(opt_loadCallback) {
+LibLouis.prototype.loadOrReload_ = function(opt_loadCallback) {
   this.worker_ = new Worker(this.wasmPath_);
   this.worker_.addEventListener(
       'message', goog.bind(this.onInstanceMessage_, this),
@@ -194,14 +194,14 @@ cvox.LibLouis.prototype.loadOrReload_ = function(opt_loadCallback) {
 /**
  * Braille translator which uses a Native Client instance of liblouis.
  * @constructor
- * @param {!cvox.LibLouis} instance The instance wrapper.
+ * @param {!LibLouis} instance The instance wrapper.
  * @param {string} tableNames Comma separated list of Table names to be passed
  *     to liblouis.
  */
-cvox.LibLouis.Translator = function(instance, tableNames) {
+LibLouis.Translator = function(instance, tableNames) {
   /**
    * The instance wrapper.
-   * @private {!cvox.LibLouis}
+   * @private {!LibLouis}
    */
   this.instance_ = instance;
 
@@ -222,7 +222,7 @@ cvox.LibLouis.Translator = function(instance, tableNames) {
  *     text positions.  If translation fails for any reason, all parameters are
  *     {@code null}.
  */
-cvox.LibLouis.Translator.prototype.translate = function(
+LibLouis.Translator.prototype.translate = function(
     text, formTypeMap, callback) {
   if (!this.instance_.worker_) {
     callback(null /*cells*/, null /*textToBraille*/, null /*brailleToText*/);
@@ -238,7 +238,7 @@ cvox.LibLouis.Translator.prototype.translate = function(
     var textToBraille = null;
     var brailleToText = null;
     if (reply['success'] && goog.isString(reply['cells'])) {
-      cells = cvox.LibLouis.Translator.decodeHexString_(reply['cells']);
+      cells = LibLouis.Translator.decodeHexString_(reply['cells']);
       if (goog.isDef(reply['text_to_braille'])) {
         textToBraille = reply['text_to_braille'];
       }
@@ -260,7 +260,7 @@ cvox.LibLouis.Translator.prototype.translate = function(
  * @param {!ArrayBuffer} cells Cells to be translated.
  * @param {function(?string)} callback Callback for result.
  */
-cvox.LibLouis.Translator.prototype.backTranslate = function(cells, callback) {
+LibLouis.Translator.prototype.backTranslate = function(cells, callback) {
   if (!this.instance_.worker_) {
     callback(null /*text*/);
     return;
@@ -273,7 +273,7 @@ cvox.LibLouis.Translator.prototype.backTranslate = function(cells, callback) {
   }
   var message = {
     'table_names': this.tableNames_,
-    'cells': cvox.LibLouis.Translator.encodeHexString_(cells)
+    'cells': LibLouis.Translator.encodeHexString_(cells)
   };
   this.instance_.rpc_('BackTranslate', message, function(reply) {
     if (reply['success'] && goog.isString(reply['text'])) {
@@ -291,7 +291,7 @@ cvox.LibLouis.Translator.prototype.backTranslate = function(cells, callback) {
  * @return {!ArrayBuffer} Decoded binary data.
  * @private
  */
-cvox.LibLouis.Translator.decodeHexString_ = function(hex) {
+LibLouis.Translator.decodeHexString_ = function(hex) {
   if (!/^([0-9a-f]{2})*$/i.test(hex)) {
     throw Error('invalid hexadecimal string');
   }
@@ -310,7 +310,7 @@ cvox.LibLouis.Translator.decodeHexString_ = function(hex) {
  * @return {string} Hexadecimal string.
  * @private
  */
-cvox.LibLouis.Translator.encodeHexString_ = function(arrayBuffer) {
+LibLouis.Translator.encodeHexString_ = function(arrayBuffer) {
   var array = new Uint8Array(arrayBuffer);
   var hex = '';
   for (var i = 0; i < array.length; i++) {

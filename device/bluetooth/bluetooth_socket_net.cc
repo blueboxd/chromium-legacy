@@ -135,7 +135,7 @@ void BluetoothSocketNet::DoClose() {
   // Note: Closing |tcp_socket_| above released all potential pending
   // Send/Receive operations, so we can no safely release the state associated
   // to those pending operations.
-  read_buffer_ = NULL;
+  read_buffer_.reset();
   base::queue<std::unique_ptr<WriteRequest>> empty;
   std::swap(write_queue_, empty);
 

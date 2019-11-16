@@ -227,16 +227,6 @@ IPC::PlatformFileForTransit RendererPpapiHostImpl::ShareHandleWithRemote(
   return dispatcher_->ShareHandleWithRemote(handle, should_close_source);
 }
 
-base::SharedMemoryHandle
-RendererPpapiHostImpl::ShareSharedMemoryHandleWithRemote(
-    const base::SharedMemoryHandle& handle) {
-  if (!dispatcher_) {
-    DCHECK(is_running_in_process_);
-    return base::SharedMemory::DuplicateHandle(handle);
-  }
-  return dispatcher_->ShareSharedMemoryHandleWithRemote(handle);
-}
-
 base::UnsafeSharedMemoryRegion
 RendererPpapiHostImpl::ShareUnsafeSharedMemoryRegionWithRemote(
     const base::UnsafeSharedMemoryRegion& region) {

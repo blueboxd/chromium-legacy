@@ -4,15 +4,18 @@
 
 #include "chrome/browser/sharing/shared_clipboard/remote_copy_message_handler.h"
 
-#include <memory>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
+#include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/sync/protocol/sharing_message.pb.h"
 #include "components/sync/protocol/sharing_remote_copy_message.pb.h"
@@ -29,7 +32,7 @@
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
-#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace {
 const net::NetworkTrafficAnnotationTag kTrafficAnnotation =
@@ -88,21 +91,29 @@ void RemoteCopyMessageHandler::OnMessage(
 }
 
 void RemoteCopyMessageHandler::HandleText(const std::string& text) {
-  if (!text.empty()) {
-    {
-      ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
-          .WriteText(base::UTF8ToUTF16(text));
-    }
-    ShowNotification();
+  if (text.empty()) {
+    Finish(RemoteCopyHandleMessageResult::kFailureEmptyText);
+    return;
   }
-  Finish();
+
+  {
+    ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
+        .WriteText(base::UTF8ToUTF16(text));
+  }
+  ShowNotification();
+  Finish(RemoteCopyHandleMessageResult::kSuccessHandledText);
 }
 
 void RemoteCopyMessageHandler::HandleImage(const std::string& image_url) {
   GURL url(image_url);
-  // TODO(mvanouwerkerk): Whitelist check.
+
   if (!network::IsUrlPotentiallyTrustworthy(url)) {
-    Finish();
+    Finish(RemoteCopyHandleMessageResult::kFailureImageUrlNotTrustworthy);
+    return;
+  }
+
+  if (!IsOriginAllowed(url)) {
+    Finish(RemoteCopyHandleMessageResult::kFailureImageOriginNotAllowed);
     return;
   }
 
@@ -124,11 +135,24 @@ void RemoteCopyMessageHandler::HandleImage(const std::string& image_url) {
       network::SimpleURLLoader::kMaxBoundedStringDownloadSize);
 }
 
+bool RemoteCopyMessageHandler::IsOriginAllowed(const GURL& image_url) {
+  url::Origin image_origin = url::Origin::Create(image_url);
+  std::vector<std::string> parts =
+      base::SplitString(kRemoteCopyAllowedOrigins.Get(), ",",
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  for (const auto& part : parts) {
+    url::Origin allowed_origin = url::Origin::Create(GURL(part));
+    if (image_origin.IsSameOriginWith(allowed_origin))
+      return true;
+  }
+  return false;
+}
+
 void RemoteCopyMessageHandler::OnURLLoadComplete(
     std::unique_ptr<std::string> content) {
   url_loader_.reset();
   if (!content || content->empty()) {
-    Finish();
+    Finish(RemoteCopyHandleMessageResult::kFailureNoImageContentLoaded);
     return;
   }
 
@@ -136,18 +160,21 @@ void RemoteCopyMessageHandler::OnURLLoadComplete(
 }
 
 void RemoteCopyMessageHandler::OnImageDecoded(const SkBitmap& decoded_image) {
-  if (!decoded_image.drawsNothing()) {
-    {
-      ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
-          .WriteImage(decoded_image);
-    }
-    ShowNotification();
+  if (decoded_image.drawsNothing()) {
+    Finish(RemoteCopyHandleMessageResult::kFailureDecodedImageDrawsNothing);
+    return;
   }
-  Finish();
+
+  {
+    ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
+        .WriteImage(decoded_image);
+  }
+  ShowNotification();
+  Finish(RemoteCopyHandleMessageResult::kSuccessHandledImage);
 }
 
 void RemoteCopyMessageHandler::OnDecodeImageFailed() {
-  Finish();
+  Finish(RemoteCopyHandleMessageResult::kFailureDecodeImageFailed);
 }
 
 void RemoteCopyMessageHandler::ShowNotification() {
@@ -177,7 +204,7 @@ void RemoteCopyMessageHandler::ShowNotification() {
       NotificationHandler::Type::SHARING, notification, /*metadata=*/nullptr);
 }
 
-void RemoteCopyMessageHandler::Finish() {
-  // TODO(mvanouwerkerk): UMA logging.
+void RemoteCopyMessageHandler::Finish(RemoteCopyHandleMessageResult result) {
+  LogRemoteCopyHandleMessageResult(result);
   device_name_.clear();
 }

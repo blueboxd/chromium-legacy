@@ -1978,7 +1978,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   if (web::IsWKWebViewSSLCertError(error) &&
       base::FeatureList::IsEnabled(web::features::kSSLCommittedInterstitials)) {
     web::GetSSLInfoFromWKWebViewSSLCertError(error, &info);
-    ssl_info = base::make_optional<net::SSLInfo>(info);
     if (info.cert) {
       // Retrieve verification results from _certVerificationErrors cache to
       // avoid unnecessary recalculations. Verification results are cached for
@@ -2007,6 +2006,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
         }
       }
     }
+    ssl_info = base::make_optional<net::SSLInfo>(info);
   } else if (web::IsWKWebViewSSLCertError(error) &&
              !base::FeatureList::IsEnabled(
                  web::features::kSSLCommittedInterstitials)) {

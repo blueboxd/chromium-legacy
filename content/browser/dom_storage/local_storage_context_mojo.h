@@ -20,12 +20,12 @@
 #include "base/trace_event/memory_dump_provider.h"
 #include "components/services/storage/dom_storage/async_dom_storage_database.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
-#include "components/services/storage/public/mojom/dom_storage_area.mojom.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/blink/public/mojom/dom_storage/storage_area.mojom.h"
 #include "url/origin.h"
 
 namespace storage {
@@ -61,7 +61,7 @@ class CONTENT_EXPORT LocalStorageContextMojo
 
   void OpenLocalStorage(
       const url::Origin& origin,
-      mojo::PendingReceiver<storage::mojom::DomStorageArea> receiver);
+      mojo::PendingReceiver<blink::mojom::StorageArea> receiver);
   void GetStorageUsage(GetStorageUsageCallback callback);
   // |callback| is called when the deletion is sent to the database and
   // GetStorageUsage() will not return entries for |origin| anymore.
@@ -133,7 +133,7 @@ class CONTENT_EXPORT LocalStorageContextMojo
   // directly from that function, or through |on_database_open_callbacks_|.
   void BindLocalStorage(
       const url::Origin& origin,
-      mojo::PendingReceiver<storage::mojom::DomStorageArea> receiver);
+      mojo::PendingReceiver<blink::mojom::StorageArea> receiver);
   StorageAreaHolder* GetOrCreateStorageArea(const url::Origin& origin);
 
   // The (possibly delayed) implementation of GetStorageUsage(). Can be called

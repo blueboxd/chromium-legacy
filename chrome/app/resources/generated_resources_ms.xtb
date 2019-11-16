@@ -181,7 +181,7 @@
 <translation id="1241753985463165747">Baca dan ubah semua data anda pada tapak web semasa apabila digunakan</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> mahu menetapkan semula tetapan anda.</translation>
 <translation id="1243314992276662751">Muat naik</translation>
-<translation id="1243398753772016127">Tapak tidak boleh menggunakan aktiviti penyemakan imbas anda merentas tapak berbeza untuk memperibadikan iklan</translation>
+<translation id="1243398753772016127">Tapak tidak boleh menggunakan aktiviti penyemakan imbas anda di tapak lain untuk memperibadikan iklan</translation>
 <translation id="1244265436519979884">Pemulihan Linux sedang dijalankan</translation>
 <translation id="1244303850296295656">Ralat sambungan</translation>
 <translation id="1246905108078336582">Alih keluar cadangan daripada papan keratan?</translation>
@@ -3043,7 +3043,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="5466374726908360271">Ta&amp;mpal dan cari “<ph name="SEARCH_TERMS" />”</translation>
 <translation id="5468173180030470402">Mencari perkongsian fail</translation>
 <translation id="5471768120198416576">Hai! Saya ialah suara teks ke pertuturan anda.</translation>
-<translation id="5472133193607270166">Apabila dihidupkan, tapak tidak boleh menggunakan aktiviti penyemakan imbas anda merentas tapak berbeza untuk memperibadikan iklan. Sesetengah tapak mungkin tidak dapat berfungsi dengan betul.</translation>
+<translation id="5472133193607270166">Apabila kuki dihidupkan, tapak tidak boleh menggunakan aktiviti penyemakan imbas anda di tapak lain untuk memperibadikan iklan. Sesetengah tapak mungkin tidak dapat berfungsi dengan betul.</translation>
 <translation id="5473333559083690127">Masukkan semula PIN baharu</translation>
 <translation id="5481941284378890518">Tambahkan Pencetak Berdekatan</translation>
 <translation id="5483785310822538350">Batalkan akses fail dan peranti</translation>

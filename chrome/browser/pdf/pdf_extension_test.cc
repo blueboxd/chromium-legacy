@@ -449,7 +449,11 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
                       "});")
           .ExtractBool());
 
-  // Make sure the text area is focused.
+  // Make sure the text area is focused. First, we must explicitly focus the
+  // child iframe containing the text area.
+  content::RenderFrameHost* main_frame = embedder_web_contents->GetMainFrame();
+  content::RenderFrameHost* child_text_area = ChildFrameAt(main_frame, 0);
+  ASSERT_TRUE(content::ExecJs(child_text_area, "window.focus();"));
   ASSERT_TRUE(content::EvalJs(
                   embedder_web_contents,
                   "new Promise((resolve) => {"

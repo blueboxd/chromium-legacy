@@ -190,6 +190,11 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
     DISALLOW_COPY_AND_ASSIGN(SourceStream);
   };
 
+  // Sets the task runner for testing purpose, must be called before
+  // Initialize().
+  void SetTaskRunnerForTesting(
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
+
  protected:
   // For test class overrides.
   // Validate the first |bytes_to_validate| bytes and write the next
@@ -373,6 +378,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFileImpl : public DownloadFile {
 
   // TaskRunner to post updates to the |observer_|.
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+
+  // TaskRunner this object lives on after initialization.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
 #if defined(OS_ANDROID)
   base::FilePath display_name_;

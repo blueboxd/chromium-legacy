@@ -6,24 +6,26 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/omnibox_answer"
     android:layout_width="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical"
+    android:minHeight="@dimen/omnibox_suggestion_height"
     android:paddingVertical="10dp">
 
     <TextView
         android:id="@+id/entity_subject"
-        android:textAppearance="@style/TextAppearance.BlackBodyDefault"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:singleLine="true"
+        android:textAppearance="@style/TextAppearance.BlackBodyDefault"
+        android:maxLines="1"
         android:ellipsize="end"
         android:textAlignment="viewStart" />
 
     <TextView
         android:id="@+id/entity_description"
-        android:textAppearance="@style/TextAppearance.BlackBody"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:singleLine="true"
+        android:textAppearance="@style/TextAppearance.BlackBody"
+        android:maxLines="1"
         android:ellipsize="end"
         android:textAlignment="viewStart" />
 

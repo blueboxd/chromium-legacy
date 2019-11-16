@@ -12,6 +12,7 @@
 <translation id="107147699690128016">اگر پسوند فایل را تغییر دهید، ممکن است فایل در برنامه دیگری باز شود و به‌طور بالقوه برای دستگاه مضر باشد.</translation>
 <translation id="1100066534610197918">باز کردن در برگه جدید در گروه</translation>
 <translation id="1105960400813249514">گرفتن عکس از صفحه‌</translation>
+<translation id="1110022065703191351">نمادها</translation>
 <translation id="1111673857033749125">نشانک‌های ذخیره‌شده در سایر دستگاه‌های شما در اینجا نشان داده می‌شوند.</translation>
 <translation id="1113597929977215864">نمایش نمای ساده‌شده</translation>
 <translation id="1124772482545689468">کاربر</translation>
@@ -363,6 +364,7 @@
 <translation id="3730075448226062617">‏برای اینکه به Chrome امکان دهید به میکروفون دسترسی یابد، در <ph name="BEGIN_LINK" />تنظیمات Android<ph name="END_LINK" /> هم میکروفون را روشن کنید.</translation>
 <translation id="3739899004075612870">در <ph name="PRODUCT_NAME" /> نشانک‌گذاری شد</translation>
 <translation id="3744111561329211289">همگام‌سازی پس‌زمینه</translation>
+<translation id="3749259744154402564">پشتیبانی‌نشده</translation>
 <translation id="3771001275138982843">به‌روزرسانی بارگیری نشد</translation>
 <translation id="3771033907050503522">برگه‌های ناشناس</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />بلوتوث را روشن کنید<ph name="END_LINK" /> تا مرتبط‌سازی امکان‌پذیر شود</translation>
@@ -576,6 +578,7 @@
 <translation id="5327248766486351172">نام</translation>
 <translation id="5335288049665977812">مجاز کردن همه سایت‌ها برای اجرای جاوااسکریپت (توصیه‌ می‌شود)</translation>
 <translation id="5342314432463739672">درخواست‌های مجوز</translation>
+<translation id="534295439873310000">‏دستگاه‌های NFC</translation>
 <translation id="5357811892247919462">برگه دریافت شد</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> برگه باز، برای جستجوی برگه ضربه بزنید}one{<ph name="OPEN_TABS_MANY" /> برگه باز، برای جستجوی برگه ضربه بزنید}other{<ph name="OPEN_TABS_MANY" /> برگه باز، برای جستجوی برگه ضربه بزنید}}</translation>
 <translation id="5391532827096253100">اتصال شما به این سایت امن نیست. اطلاعات سایت</translation>
@@ -632,6 +635,7 @@
 <translation id="5686790454216892815">نام فایل خیلی طولانی است</translation>
 <translation id="5689516760719285838">مکان</translation>
 <translation id="569536719314091526">با استفاده از دکمه «گزینه‌های بیشتر»، این صفحه را به زبان‌های دیگر ترجمه کنید</translation>
+<translation id="5710871682236653961">‏وقتی روی دستگاه‌های NFC ضربه می‌زنید، قبل از ارسال و دریافت اطلاعات سؤال شود (توصیه می‌شود)</translation>
 <translation id="572328651809341494">برگه‌های اخیر</translation>
 <translation id="5726692708398506830">بزرگ‌تر کردن همه‌چیز در صفحه</translation>
 <translation id="5748802427693696783">به برگه‌های استاندارد تغییر یافت</translation>
@@ -881,6 +885,7 @@
 <translation id="7559975015014302720">«حالت ساده» خاموش است</translation>
 <translation id="7562080006725997899">پاک کردن داده‌های مرور</translation>
 <translation id="756809126120519699">‏داده‌های Chrome پاک شد</translation>
+<translation id="7572498721684305250">‏وقتی روی دستگاه‌های NFC ضربه می‌زنید، ارسال و دریافت اطلاعات در سایت‌ها مسدود شود</translation>
 <translation id="757524316907819857">مسدود کردن سایت‌ها برای پخش محتوای محافظت‌شده</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> فایل بارگیری شد}one{<ph name="FILES_DOWNLOADED_MANY" /> فایل بارگیری شد}other{<ph name="FILES_DOWNLOADED_MANY" /> فایل بارگیری شد}}</translation>
 <translation id="7588219262685291874">روشن شدن طرح زمینه تیره وقتی «بهینه‌سازی باتری» دستگاه روشن است</translation>

@@ -10,7 +10,6 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
@@ -30,7 +29,8 @@ enum class AdbSideloadingPromptEvent {
   kEnabled = 3,
   kFailedToDisplay = 4,
   kFailedToEnable = 5,
-  kMaxValue = kFailedToEnable,
+  kFailedToDisplay_NeedPowerwash = 6,
+  kMaxValue = kFailedToDisplay_NeedPowerwash,
 };
 
 void LogEvent(AdbSideloadingPromptEvent action) {
@@ -79,32 +79,44 @@ void EnableAdbSideloadingScreen::Show() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void EnableAdbSideloadingScreen::OnQueryAdbSideload(bool success,
-                                                    bool enabled) {
+void EnableAdbSideloadingScreen::OnQueryAdbSideload(
+    SessionManagerClient::AdbSideloadResponseCode response_code,
+    bool enabled) {
   DVLOG(1) << "EnableAdbSideloadingScreen::OnQueryAdbSideload"
-           << ", success=" << success << ", enabled=" << enabled;
-  DCHECK(view_);
-  bool already_enabled = success && enabled;
-  if (already_enabled) {
-    LogEvent(AdbSideloadingPromptEvent::kSkipped);
-    exit_callback_.Run();
-  } else {
-    if (success) {
-      LogEvent(AdbSideloadingPromptEvent::kPromptShown);
-      view_->SetScreenState(
-          EnableAdbSideloadingScreenView::UIState::UI_STATE_SETUP);
-    } else {
-      LogEvent(AdbSideloadingPromptEvent::kFailedToDisplay);
-      view_->SetScreenState(
-          EnableAdbSideloadingScreenView::UIState::UI_STATE_ERROR);
-    }
-    view_->Show();
-  }
+           << ", response_code=" << static_cast<int>(response_code)
+           << ", enabled=" << enabled;
 
   // Clear prefs so that the screen won't be triggered again.
   PrefService* prefs = g_browser_process->local_state();
   prefs->ClearPref(prefs::kEnableAdbSideloadingRequested);
   prefs->CommitPendingWrite();
+
+  if (enabled) {
+    DCHECK_EQ(response_code,
+              SessionManagerClient::AdbSideloadResponseCode::SUCCESS);
+    LogEvent(AdbSideloadingPromptEvent::kSkipped);
+    exit_callback_.Run();
+    return;
+  }
+
+  DCHECK(view_);
+  EnableAdbSideloadingScreenView::UIState ui_state;
+  switch (response_code) {
+    case SessionManagerClient::AdbSideloadResponseCode::SUCCESS:
+      LogEvent(AdbSideloadingPromptEvent::kPromptShown);
+      ui_state = EnableAdbSideloadingScreenView::UIState::UI_STATE_SETUP;
+      break;
+    case SessionManagerClient::AdbSideloadResponseCode::NEED_POWERWASH:
+      LogEvent(AdbSideloadingPromptEvent::kFailedToDisplay_NeedPowerwash);
+      ui_state = EnableAdbSideloadingScreenView::UIState::UI_STATE_ERROR;
+      break;
+    case SessionManagerClient::AdbSideloadResponseCode::FAILED:
+      LogEvent(AdbSideloadingPromptEvent::kFailedToDisplay);
+      ui_state = EnableAdbSideloadingScreenView::UIState::UI_STATE_ERROR;
+      break;
+  }
+  view_->SetScreenState(ui_state);
+  view_->Show();
 }
 
 void EnableAdbSideloadingScreen::Hide() {
@@ -125,15 +137,20 @@ void EnableAdbSideloadingScreen::OnEnable() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void EnableAdbSideloadingScreen::OnEnableAdbSideload(bool success) {
-  if (success) {
-    LogEvent(AdbSideloadingPromptEvent::kEnabled);
-    exit_callback_.Run();
-  } else {
-    LogEvent(AdbSideloadingPromptEvent::kFailedToEnable);
-    DCHECK(view_);
-    view_->SetScreenState(
-        EnableAdbSideloadingScreenView::UIState::UI_STATE_ERROR);
+void EnableAdbSideloadingScreen::OnEnableAdbSideload(
+    SessionManagerClient::AdbSideloadResponseCode response_code) {
+  switch (response_code) {
+    case SessionManagerClient::AdbSideloadResponseCode::SUCCESS:
+      LogEvent(AdbSideloadingPromptEvent::kEnabled);
+      exit_callback_.Run();
+      break;
+    case SessionManagerClient::AdbSideloadResponseCode::NEED_POWERWASH:
+    case SessionManagerClient::AdbSideloadResponseCode::FAILED:
+      LogEvent(AdbSideloadingPromptEvent::kFailedToEnable);
+      DCHECK(view_);
+      view_->SetScreenState(
+          EnableAdbSideloadingScreenView::UIState::UI_STATE_ERROR);
+      break;
   }
 }
 

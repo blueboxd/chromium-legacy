@@ -853,7 +853,6 @@ TEST_F(NetworkContextTest, DiskCache) {
 // This makes sure that network_session_configurator::ChooseCacheType is
 // connected to NetworkContext.
 TEST_F(NetworkContextTest, SimpleCache) {
-  base::FieldTrialList field_trials(nullptr);
   base::FieldTrialList::CreateFieldTrial("SimpleCacheTrial", "ExperimentYes");
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
   context_params->http_cache_enabled = true;
@@ -1517,7 +1516,8 @@ TEST_F(NetworkContextTest, ClearHostCache) {
     for (const auto* domain : kDomains) {
       host_cache->Set(
           net::HostCache::Key(domain, net::DnsQueryType::UNSPECIFIED, 0,
-                              net::HostResolverSource::ANY),
+                              net::HostResolverSource::ANY,
+                              net::NetworkIsolationKey()),
           net::HostCache::Entry(net::OK, net::AddressList(),
                                 net::HostCache::Entry::SOURCE_UNKNOWN),
           base::TimeTicks::Now(), base::TimeDelta::FromDays(1));

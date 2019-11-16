@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
+<translation id="1075622780330595106"><ph name="NUMBER_OF_TABS" /> von Ihren Tabs wurden längere Zeit nicht verwendet. Möchten Sie sie schließen?</translation>
 <translation id="1181037720776840403">Entfernen</translation>
 <translation id="125153950246128346">Tippen, um einen anderen Tab zu sehen</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> Tab}other{<ph name="TABS_COUNT_MANY" /> Tabs}}</translation>
@@ -10,6 +11,7 @@
 <translation id="2977480621796371840">Aus Gruppe entfernen</translation>
 <translation id="4212246570487010370">Weitersurfen</translation>
 <translation id="4648718555153979859">Ihre Tabs werden hier in Gruppen zusammengefasst</translation>
+<translation id="5007392906805964215">Ansehen</translation>
 <translation id="5073204694187207510">Vollbildraster ausblenden</translation>
 <translation id="5082793167783849073">Sie können Seiten schnell miteinander vergleichen, indem Sie eine Gruppe erstellen. Berühren und halten Sie einen Link, um den Vorgang zu starten.</translation>
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> Tabs gruppiert</translation>

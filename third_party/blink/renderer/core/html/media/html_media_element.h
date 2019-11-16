@@ -205,6 +205,8 @@ class CORE_EXPORT HTMLMediaElement
   ScriptPromise playForBindings(ScriptState*);
   base::Optional<DOMExceptionCode> Play();
   void pause();
+  double latencyHint() const;
+  void setLatencyHint(double);
   void FlingingStarted();
   void FlingingStopped();
 

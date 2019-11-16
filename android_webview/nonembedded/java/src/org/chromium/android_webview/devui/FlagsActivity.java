@@ -42,6 +42,8 @@ public class FlagsActivity extends Activity {
             "Disabled",
     };
 
+    private WebViewPackageError mDifferentPackageError;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,6 +58,20 @@ public class FlagsActivity extends Activity {
 
         List<Flag> flagsList = Arrays.asList(ProductionSupportedFlagList.sFlagList);
         flagsListView.setAdapter(new FlagsListAdapter(flagsList));
+
+        mDifferentPackageError =
+                new WebViewPackageError(this, findViewById(R.id.flags_activity_layout));
+        // show the dialog once when the activity is created.
+        mDifferentPackageError.showDialogIfDifferent();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Check package status in onResume() to hide/show the error message if the user
+        // changes WebView implementation from system settings and then returns back to the
+        // activity.
+        mDifferentPackageError.showMessageIfDifferent();
     }
 
     private class FlagStateSpinnerSelectedListener implements AdapterView.OnItemSelectedListener {

@@ -195,7 +195,7 @@ NavigationThrottle::ThrottleCheckResult AncestorThrottle::ProcessResponseImpl(
                       blocked_url.spec().c_str()),
                   blocked_url, report_endpoints, policy->use_reporting_api,
                   "" /* header */,
-                  blink::mojom::ContentSecurityPolicyType::kEnforce,
+                  network::mojom::ContentSecurityPolicyType::kEnforce,
                   has_followed_redirect, source_location));
 
           return NavigationThrottle::BLOCK_RESPONSE;

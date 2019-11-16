@@ -2,20 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
-import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
-import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
-import {Destination} from '../data/destination.js';
-import {DestinationStore} from '../data/destination_store.js';
 import './print_preview_shared_css.js';
 import './print_preview_vars_css.js';
 import '../strings.m.js';
 import './throbber_css.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {Destination} from '../data/destination.js';
+import {DestinationStore} from '../data/destination_store.js';
 
 /**
  * @fileoverview PrintPreviewProvisionalDestinationResolver
@@ -110,8 +112,7 @@ Polymer({
         .then(
             /** @param {?Destination} resolvedDestination */
             (resolvedDestination) => {
-              if (this.state_ !=
-                  ResolverState.GRANTING_PERMISSION) {
+              if (this.state_ != ResolverState.GRANTING_PERMISSION) {
                 return;
               }
 
@@ -186,8 +187,6 @@ Polymer({
    *     state, empty otherwise.
    */
   getThrobberClass_: function() {
-    return this.state_ == ResolverState.GRANTING_PERMISSION ?
-        'throbber' :
-        '';
+    return this.state_ == ResolverState.GRANTING_PERMISSION ? 'throbber' : '';
   },
 });

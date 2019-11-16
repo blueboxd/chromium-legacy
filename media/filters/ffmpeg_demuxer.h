@@ -41,6 +41,7 @@
 #include "media/base/demuxer.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/text_track_config.h"
+#include "media/base/timestamp_constants.h"
 #include "media/base/video_decoder_config.h"
 #include "media/ffmpeg/ffmpeg_deleters.h"
 #include "media/filters/blocking_url_protocol.h"
@@ -337,7 +338,7 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   // Executes |pending_seek_cb_| with |status| and closes out the async trace.
   void RunPendingSeekCB(PipelineStatus status);
 
-  DemuxerHost* host_;
+  DemuxerHost* host_ = nullptr;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
@@ -348,13 +349,13 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   PipelineStatusCallback init_cb_;
 
   // Indicates if Stop() has been called.
-  bool stopped_;
+  bool stopped_ = false;
 
   // Tracks if there's an outstanding av_read_frame() operation.
   //
   // TODO(scherkus): Allow more than one read in flight for higher read
   // throughput using demuxer_bench to verify improvements.
-  bool pending_read_;
+  bool pending_read_ = false;
 
   // Tracks if there's an outstanding av_seek_frame() operation. Used to discard
   // results of pre-seek av_read_frame() operations.
@@ -379,12 +380,12 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   MediaLog* media_log_;
 
   // Derived bitrate after initialization has completed.
-  int bitrate_;
+  int bitrate_ = 0;
 
   // The first timestamp of the audio or video stream, whichever is lower.  This
   // is used to adjust timestamps so that external consumers always see a zero
   // based timeline.
-  base::TimeDelta start_time_;
+  base::TimeDelta start_time_ = kNoTimestamp;
 
   // The Time associated with timestamp 0. Set to a null
   // time if the file doesn't have an association to Time.
@@ -392,7 +393,7 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
 
   // Set if we know duration of the audio stream. Used when processing end of
   // stream -- at this moment we definitely know duration.
-  bool duration_known_;
+  bool duration_known_ = false;
   base::TimeDelta duration_;
 
   // FFmpegURLProtocol implementation and corresponding glue bits.

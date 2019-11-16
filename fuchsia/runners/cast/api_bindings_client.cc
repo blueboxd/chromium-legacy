@@ -18,7 +18,8 @@ uint64_t kBindingsIdStart = 0xFF0000;
 
 ApiBindingsClient::ApiBindingsClient(
     fidl::InterfaceHandle<chromium::cast::ApiBindings> bindings_service,
-    base::OnceClosure on_bindings_received_callback)
+    base::OnceClosure on_bindings_received_callback,
+    base::OnceClosure on_error_callback)
     : bindings_service_(bindings_service.Bind()),
       on_bindings_received_callback_(std::move(on_bindings_received_callback)) {
   DCHECK(bindings_service_);
@@ -28,9 +29,10 @@ ApiBindingsClient::ApiBindingsClient(
       fit::bind_member(this, &ApiBindingsClient::OnBindingsReceived));
 
   bindings_service_.set_error_handler(
-      [](zx_status_t status) mutable {
-        ZX_LOG(FATAL, status)
-            << "ApiBindings service disconnected before entries were returned.";
+      [on_error_callback =
+           std::move(on_error_callback)](zx_status_t status) mutable {
+        ZX_LOG(ERROR, status) << "ApiBindings dicsonnected.";
+        std::move(on_error_callback).Run();
       });
 }
 
@@ -61,8 +63,8 @@ void ApiBindingsClient::AttachToFrame(fuchsia::web::Frame* frame,
     std::move(on_error_callback).Run();
   });
 
-  connector_->RegisterDefaultHandler(base::BindRepeating(
-      &ApiBindingsClient::OnPortConnected, base::Unretained(this)));
+  connector_->Register(base::BindRepeating(&ApiBindingsClient::OnPortConnected,
+                                           base::Unretained(this)));
 
   // Enumerate and inject all scripts in |bindings|.
   uint64_t bindings_id = kBindingsIdStart;
@@ -78,7 +80,7 @@ void ApiBindingsClient::AttachToFrame(fuchsia::web::Frame* frame,
 
 ApiBindingsClient::~ApiBindingsClient() {
   if (connector_ && frame_) {
-    connector_->RegisterDefaultHandler({});
+    connector_->Register({});
 
     // Remove all injected scripts using their automatically enumerated IDs.
     for (uint64_t i = 0; i < bindings_->size(); ++i)

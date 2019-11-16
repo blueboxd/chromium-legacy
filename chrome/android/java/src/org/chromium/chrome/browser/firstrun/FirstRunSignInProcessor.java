@@ -75,7 +75,7 @@ public final class FirstRunSignInProcessor {
         }
 
         final boolean setUp = getFirstRunFlowSignInSetup();
-        signinManager.signIn(accountName, activity, new SignInCallback() {
+        signinManager.signIn(accountName, new SignInCallback() {
             @Override
             public void onSignInComplete() {
                 UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(true);

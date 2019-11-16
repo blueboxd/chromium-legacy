@@ -37,6 +37,7 @@
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_controller.h"
+#include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_metrics.h"
 #include "ash/shelf/shelf_navigation_widget.h"
@@ -4087,8 +4088,7 @@ TEST_P(HotseatShelfLayoutManagerTest, InAppToHomeChangesStateOnce) {
   wm::ActivateWindow(window.get());
   SwipeUpOnShelf();
 
-  // Press the HomeLauncher button, the hotseat should transition directly to
-  // kShown.
+  // Press the home button, the hotseat should transition directly to kShown.
   {
     HotseatStateWatcher watcher(GetShelfLayoutManager());
     views::View* home_button =
@@ -4102,7 +4102,7 @@ TEST_P(HotseatShelfLayoutManagerTest, InAppToHomeChangesStateOnce) {
   window->Show();
   wm::ActivateWindow(window.get());
 
-  // Extend the hotseat, then Swipe up to go home. the hotseat should transition
+  // Extend the hotseat, then Swipe up to go home, the hotseat should transition
   // directly to kShown.
   SwipeUpOnShelf();
   {
@@ -4122,8 +4122,7 @@ TEST_P(HotseatShelfLayoutManagerTest, InAppToHomeChangesStateOnce) {
   window->Show();
   wm::ActivateWindow(window.get());
 
-  // Press the HomeLauncher button, the hotseat should transition directly to
-  // kShown.
+  // Press the home button, the hotseat should transition directly to kShown.
   {
     HotseatStateWatcher watcher(GetShelfLayoutManager());
     views::View* home_button =
@@ -4373,29 +4372,26 @@ class DisplayWorkAreaChangeCounter : public display::DisplayObserver {
   DISALLOW_COPY_AND_ASSIGN(DisplayWorkAreaChangeCounter);
 };
 
-// TODO(https:/crbug.com/1019531): Re-enable this test after the work-area
-// exhibits the desired behavior.
-// Tests that the work area does not update after going to/from tablet mode with
-// no windows open.
+// Tests that the work area updates once each when going to/from tablet mode
+// with no windows open.
 TEST_F(HotseatShelfLayoutManagerTest,
-       DISABLED_WorkAreaDoesNotUpdateClamshellToFromHomeLauncherNoWindows) {
+       WorkAreaUpdatesClamshellToFromHomeLauncherNoWindows) {
   DisplayWorkAreaChangeCounter counter;
   TabletModeControllerTestApi().EnterTabletMode();
 
-  EXPECT_EQ(0, counter.count());
+  EXPECT_EQ(1, counter.count());
 
   TabletModeControllerTestApi().LeaveTabletMode();
 
-  EXPECT_EQ(0, counter.count());
+  EXPECT_EQ(2, counter.count());
 }
 
-// TODO(https:/crbug.com/1019531): Re-enable this test after the work-area
-// exhibits the desired behavior.
-// Tests that opening a window in tablet mode changes the work area.
-TEST_F(HotseatShelfLayoutManagerTest,
-       DISABLED_OpenWindowInTabletModeChangesWorkArea) {
+// Tests that the work area changes just once when opening a window in tablet
+// mode.
+TEST_F(HotseatShelfLayoutManagerTest, OpenWindowInTabletModeChangesWorkArea) {
   DisplayWorkAreaChangeCounter counter;
   TabletModeControllerTestApi().EnterTabletMode();
+  ASSERT_EQ(1, counter.count());
 
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -4404,12 +4400,10 @@ TEST_F(HotseatShelfLayoutManagerTest,
   EXPECT_EQ(1, counter.count());
 }
 
-// TODO(https:/crbug.com/1019531): Re-enable this test after the work-area
-// exhibits the desired behavior.
 // Tests that going to and from tablet mode with an open window results in a
 // work area change.
 TEST_F(HotseatShelfLayoutManagerTest,
-       DISABLED_ToFromTabletModeWithWindowChangesWorkArea) {
+       ToFromTabletModeWithWindowChangesWorkArea) {
   DisplayWorkAreaChangeCounter counter;
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -4422,14 +4416,13 @@ TEST_F(HotseatShelfLayoutManagerTest,
   EXPECT_EQ(2, counter.count());
 }
 
-// TODO(https:/crbug.com/1019531): Re-enable this test after the work-area
-// exhibits the desired behavior.
 // Tests that going between Applist and overview in tablet mode with no windows
 // results in no work area change.
 TEST_F(HotseatShelfLayoutManagerTest,
-       DISABLED_WorkAreaDoesNotUpdateAppListToFromOverviewWithNoWindow) {
-  DisplayWorkAreaChangeCounter counter;
+       WorkAreaDoesNotUpdateAppListToFromOverviewWithNoWindow) {
   TabletModeControllerTestApi().EnterTabletMode();
+  DisplayWorkAreaChangeCounter counter;
+
   {
     OverviewAnimationWaiter waiter;
     Shell::Get()->overview_controller()->StartOverview();
@@ -4447,12 +4440,10 @@ TEST_F(HotseatShelfLayoutManagerTest,
   EXPECT_EQ(0, counter.count());
 }
 
-// TODO(https:/crbug.com/1019531): Re-enable this test after the work-area
-// exhibits the desired behavior.
 // Tests that switching between AppList and overview with a window results in no
 // work area change.
 TEST_F(HotseatShelfLayoutManagerTest,
-       DISABLED_WorkAreaDoesNotUpdateAppListToFromOverviewWithWindow) {
+       WorkAreaDoesNotUpdateAppListToFromOverviewWithWindow) {
   DisplayWorkAreaChangeCounter counter;
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =
@@ -4493,12 +4484,10 @@ TEST_F(HotseatShelfLayoutManagerTest,
   EXPECT_EQ(1, counter.count());
 }
 
-// TODO(https:/crbug.com/1019531): Re-enable this test after the work-area
-// exhibits the desired behavior.
 // Tests that switching between AppList and an active window does not update the
 // work area.
 TEST_F(HotseatShelfLayoutManagerTest,
-       DISABLED_WorkAreaDoesNotUpdateOpenWindowToFromAppList) {
+       WorkAreaDoesNotUpdateOpenWindowToFromAppList) {
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -4521,12 +4510,10 @@ TEST_F(HotseatShelfLayoutManagerTest,
   EXPECT_EQ(0, counter.count());
 }
 
-// TODO(https:/crbug.com/1019531): Re-enable this test after the work-area
-// exhibits the desired behavior.
 // Tests that switching between overview and an active window does not update
 // the work area.
 TEST_F(HotseatShelfLayoutManagerTest,
-       DISABLED_WorkAreaDoesNotUpdateOpenWindowToFromOverview) {
+       WorkAreaDoesNotUpdateOpenWindowToFromOverview) {
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -4573,6 +4560,38 @@ TEST_F(HotseatShelfLayoutManagerTest,
   TabletModeControllerTestApi().EnterTabletMode();
 
   EXPECT_FALSE(GetShelfWidget()->GetOpaqueBackground()->visible());
+}
+
+// Tests that closing a window which was opened prior to entering tablet mode
+// results in a kShown hotseat.
+TEST_F(HotseatShelfLayoutManagerTest, ExtendHotseatIfFocusedWithKeyboard) {
+  TabletModeControllerTestApi().EnterTabletMode();
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+  ASSERT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
+
+  // Focus the shelf. Hotseat should now show extended.
+  GetPrimaryShelf()->shelf_focus_cycler()->FocusShelf(false /* last_element */);
+  EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
+
+  // Focus the navigation widget. Hotseat should now hide, as it was
+  // automatically extended by focusing it.
+  GetPrimaryShelf()->shelf_focus_cycler()->FocusNavigation(
+      false /* last_element */);
+  EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
+
+  // Now swipe up to show the shelf and then focus it with the keyboard. Hotseat
+  // should keep extended.
+  SwipeUpOnShelf();
+  GetPrimaryShelf()->shelf_focus_cycler()->FocusShelf(false /* last_element */);
+  EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
+
+  // Now focus the navigation widget again. Hotseat should remain shown, as it
+  // was manually extended.
+  GetPrimaryShelf()->shelf_focus_cycler()->FocusNavigation(
+      false /* last_element */);
+  EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
 }
 
 class ShelfLayoutManagerWindowDraggingTest : public ShelfLayoutManagerTestBase {

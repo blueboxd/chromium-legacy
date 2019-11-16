@@ -150,8 +150,10 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // Creates the animation for scrolling shelf by |scroll_distance|.
   void StartShelfScrollAnimation(float scroll_distance);
 
-  // Updates the layout strategy based on the available space.
-  void UpdateLayoutStrategy();
+  // Calculates the layout strategy based on the available space and scroll
+  // distance.
+  LayoutStrategy CalculateLayoutStrategy(
+      int scroll_distance_on_main_axis) const;
 
   // Returns whether the view should adapt to RTL.
   bool ShouldAdaptToRTL() const;
@@ -246,9 +248,11 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   void ScrollToXOffset(float x_target_offset, bool animating);
   void ScrollToYOffset(float y_target_offset, bool animating);
 
-  // Calculates the distance of scrolling to show a new page of shelf icons.
-  // |forward| indicates whether the next page or previous page is shown.
-  float CalculatePageScrollingOffset(bool forward) const;
+  // Calculates the scroll distance to show a new page of shelf icons for
+  // the given layout strategy. |forward| indicates whether the next page or
+  // previous page is shown.
+  float CalculatePageScrollingOffset(bool forward,
+                                     LayoutStrategy layout_strategy) const;
 
   // Updates the gradient zone.
   void UpdateGradientZone();
@@ -269,6 +273,14 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
 
   // Updates |first_tappable_app_index_| and |last_tappable_app_index_|.
   void UpdateTappableIconIndices();
+
+  // Calculates the indices of the first/last tappable app under the given
+  // layout strategy and offset along the main axis (that is the x-axis when
+  // shelf is horizontally aligned or the y-axis if the shelf is vertically
+  // aligned).
+  std::pair<int, int> CalculateTappableIconIndices(
+      LayoutStrategy layout_strategy,
+      int scroll_distance_on_main_axis) const;
 
   views::View* FindFirstFocusableChild();
   views::View* FindLastFocusableChild();
@@ -312,6 +324,9 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // Returns whether a scroll event should be handled by this view or delegated
   // to the shelf.
   bool ShouldDelegateScrollToShelf(const ui::ScrollEvent& event) const;
+
+  // Calculates the scroll distance along the main axis.
+  float CalculateMainAxisScrollDistance() const;
 
   LayoutStrategy layout_strategy_ = kNotShowArrowButtons;
 

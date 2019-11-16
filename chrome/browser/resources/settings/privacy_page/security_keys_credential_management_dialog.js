@@ -2,13 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
-'use strict';
-
 /**
  * @fileoverview 'settings-security-keys-credential-management-dialog' is a
  * dialog for viewing and erasing credentials stored on a security key.
  */
+
+cr.define('settings', function() {
+  /** @enum {string} */
+  const CredentialManagementDialogPage = {
+    INITIAL: 'initial',
+    PIN_PROMPT: 'pinPrompt',
+    CREDENTIALS: 'credentials',
+    ERROR: 'error',
+  };
+
+  return {
+    CredentialManagementDialogPage: CredentialManagementDialogPage,
+  };
+});
+
+(function() {
+'use strict';
+
+const CredentialManagementDialogPage = settings.CredentialManagementDialogPage;
+
 Polymer({
   is: 'settings-security-keys-credential-management-dialog',
 
@@ -20,11 +37,11 @@ Polymer({
   properties: {
     /**
      * The ID of the element currently shown in the dialog.
-     * @private
+     * @private {!settings.CredentialManagementDialogPage}
      */
     dialogPage_: {
       type: String,
-      value: 'initial',
+      value: CredentialManagementDialogPage.INITIAL,
       observer: 'dialogPageChanged_',
     },
 
@@ -80,7 +97,7 @@ Polymer({
 
   /** @private */
   collectPin_: function() {
-    this.dialogPage_ = 'pinPrompt';
+    this.dialogPage_ = CredentialManagementDialogPage.PIN_PROMPT;
     this.$.pin.focus();
   },
 
@@ -90,7 +107,7 @@ Polymer({
    */
   onError_: function(error) {
     this.errorMsg_ = error;
-    this.dialogPage_ = 'error';
+    this.dialogPage_ = CredentialManagementDialogPage.ERROR;
   },
 
   /** @private */
@@ -137,25 +154,25 @@ Polymer({
     }
     this.credentials_ = credentials;
     this.$.credentialList.fire('iron-resize');
-    this.dialogPage_ = 'credentials';
+    this.dialogPage_ = CredentialManagementDialogPage.CREDENTIALS;
   },
 
   /** @private */
   dialogPageChanged_: function() {
     switch (this.dialogPage_) {
-      case 'initial':
+      case CredentialManagementDialogPage.INITIAL:
         this.cancelButtonVisible_ = true;
         this.confirmButtonVisible_ = false;
         this.closeButtonVisible_ = false;
         break;
-      case 'pinPrompt':
+      case CredentialManagementDialogPage.PIN_PROMPT:
         this.cancelButtonVisible_ = true;
         this.confirmButtonLabel_ = this.i18n('continue');
         this.confirmButtonDisabled_ = false;
         this.confirmButtonVisible_ = true;
         this.closeButtonVisible_ = false;
         break;
-      case 'credentials':
+      case CredentialManagementDialogPage.CREDENTIALS:
         this.cancelButtonVisible_ = true;
         this.confirmButtonLabel_ =
             this.i18n('securityKeysCredentialManagementErase');
@@ -163,7 +180,7 @@ Polymer({
         this.confirmButtonVisible_ = true;
         this.closeButtonVisible_ = false;
         break;
-      case 'error':
+      case CredentialManagementDialogPage.ERROR:
         this.cancelButtonVisible_ = false;
         this.confirmButtonVisible_ = false;
         this.closeButtonVisible_ = true;
@@ -177,10 +194,10 @@ Polymer({
   /** @private */
   confirmButtonClick_: function() {
     switch (this.dialogPage_) {
-      case 'pinPrompt':
+      case CredentialManagementDialogPage.PIN_PROMPT:
         this.submitPIN_();
         break;
-      case 'credentials':
+      case CredentialManagementDialogPage.CREDENTIALS:
         this.deleteSelectedCredentials_();
         break;
       default:
@@ -256,7 +273,7 @@ Polymer({
 
   /** @private */
   deleteSelectedCredentials_: function() {
-    assert(this.dialogPage_ == 'credentials');
+    assert(this.dialogPage_ == CredentialManagementDialogPage.CREDENTIALS);
     assert(this.credentials_ && this.credentials_.length > 0);
     assert(this.checkedCredentialIds_.size > 0);
 
@@ -269,6 +286,5 @@ Polymer({
           this.onError_(err);
         });
   },
-
 });
 })();

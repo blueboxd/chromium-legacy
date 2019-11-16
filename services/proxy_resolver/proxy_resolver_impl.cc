@@ -13,8 +13,8 @@
 #include "net/base/network_isolation_key.h"
 #include "net/proxy_resolution/pac_file_data.h"
 #include "net/proxy_resolution/proxy_info.h"
-#include "net/proxy_resolution/proxy_resolver_v8_tracing.h"
 #include "services/proxy_resolver/mojo_proxy_resolver_v8_tracing_bindings.h"
+#include "services/proxy_resolver/proxy_resolver_v8_tracing.h"
 
 namespace proxy_resolver {
 

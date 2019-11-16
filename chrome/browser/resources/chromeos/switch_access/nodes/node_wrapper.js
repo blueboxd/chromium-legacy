@@ -18,6 +18,9 @@ class NodeWrapper extends SAChildNode {
     /** @private {!AutomationNode} */
     this.baseNode_ = baseNode;
 
+    /** @private {?SARootNode} */
+    this.parent_ = parent;
+
     /** @private {boolean} */
     this.isGroup_ = SwitchAccessPredicate.isGroup(this.baseNode_, parent);
   }
@@ -147,6 +150,11 @@ class NodeWrapper extends SAChildNode {
     }
   }
 
+  /** @override */
+  refresh() {
+    this.isGroup_ = SwitchAccessPredicate.isGroup(this.baseNode_, this.parent_);
+  }
+
   // ================= Private methods =================
 
   /**
@@ -174,6 +182,12 @@ class RootNodeWrapper extends SARootNode {
 
     /** @private {!AutomationNode} */
     this.baseNode_ = baseNode;
+
+    /** @private {number} */
+    this.automationChildCount_ = baseNode.children.length;
+
+    /** @private {number} */
+    this.childCheckTimestamp_ = 0;
   }
 
   // ================= Getters and setters =================
@@ -207,7 +221,29 @@ class RootNodeWrapper extends SARootNode {
 
   /** @override */
   isValid() {
-    return !!this.baseNode_.role;
+    if (!this.baseNode_.role) {
+      return false;
+    }
+
+    // getInterestingChildren() is an expensive operation. To avoid hanging
+    // Switch Access, throttle calculation of validity.
+    if (Date.now() - this.childCheckTimestamp_ <
+        SAConstants.THROTTLE_THRESHOLD_MS) {
+      return true;
+    }
+
+    this.childCheckTimestamp_ = Date.now();
+    return RootNodeWrapper.getInterestingChildren(this).length > 1;
+  }
+
+  /** @override */
+  refresh() {
+    if (this.baseNode_.children.length !== this.automationChildCount_) {
+      const childConstructor = (n) => new NodeWrapper(n, this);
+      RootNodeWrapper.findAndSetChildren(this, childConstructor);
+      this.automationChildCount_ = this.baseNode_.children.length;
+    }
+    super.refresh();
   }
 
   // ================= Static methods =================

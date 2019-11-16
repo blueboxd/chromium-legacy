@@ -17,8 +17,8 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ui.appmenu.internal.R;

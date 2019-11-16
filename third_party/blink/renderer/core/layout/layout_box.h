@@ -1477,6 +1477,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // For snap containers, returns all associated snap areas.
   SnapAreaSet* SnapAreas() const;
   void ClearSnapAreas();
+  // Moves all snap areas to the new container.
+  void ReassignSnapAreas(LayoutBox& new_container);
 
   // CustomLayoutChild only exists if this LayoutBox is a IsCustomItem (aka. a
   // child of a LayoutCustom). This is created/destroyed when this LayoutBox is

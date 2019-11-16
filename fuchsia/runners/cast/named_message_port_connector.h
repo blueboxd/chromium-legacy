@@ -21,28 +21,12 @@ class NamedMessagePortConnector {
       base::StringPiece,
       fidl::InterfaceHandle<fuchsia::web::MessagePort>)>;
 
-  // TODO(crbug.com/953958): Deprecated, remove this.
-  using PortConnectedCallback = base::RepeatingCallback<void(
-      fidl::InterfaceHandle<fuchsia::web::MessagePort>)>;
-
   explicit NamedMessagePortConnector(fuchsia::web::Frame* frame);
   ~NamedMessagePortConnector();
 
   // Sets the handler that is called for connected ports which aren't
   // registered in advance.
-  // TODO(crbug.com/953958): Rename this to Register() when the transition is
-  // complete.
-  void RegisterDefaultHandler(DefaultPortConnectedCallback handler);
-
-  // Registers a |handler| which will receive MessagePorts originating from
-  // |frame_|'s web content. |port_name| is a non-empty, alphanumeric string
-  // shared with the native backends.
-  // TODO(crbug.com/953958): Remove this method.
-  void Register(const std::string& port_name, PortConnectedCallback handler);
-
-  // Unregisters a handler.
-  // TODO(crbug.com/953958): Remove this method.
-  void Unregister(const std::string& port_name);
+  void Register(DefaultPortConnectedCallback handler);
 
   // Invoked by the caller after every |frame_| page load.
   // Half-connected ports from prior page generations will be discarded.
@@ -59,10 +43,6 @@ class NamedMessagePortConnector {
 
   // Invoked for ports which weren't previously Register()'ed.
   DefaultPortConnectedCallback default_handler_;
-
-  // Deprecated.
-  // TODO(crbug.com/953958): Remove this.
-  std::map<std::string, PortConnectedCallback> port_connected_handlers_;
 
   fuchsia::web::MessagePortPtr control_port_;
 

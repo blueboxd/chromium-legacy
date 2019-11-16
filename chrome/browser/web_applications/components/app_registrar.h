@@ -61,11 +61,6 @@ class AppRegistrar {
       const AppId& app_id,
       ExternalInstallSource install_source) const;
 
-  // Searches for the first app id in the registry for which the |url| is in
-  // scope.
-  virtual base::Optional<AppId> FindAppWithUrlInScope(
-      const GURL& url) const = 0;
-
   // Count a number of all apps which are installed by user (non-default).
   // Requires app registry to be in a ready state.
   virtual int CountUserInstalledApps() const = 0;
@@ -81,6 +76,10 @@ class AppRegistrar {
   virtual DisplayMode GetAppUserDisplayMode(const AppId& app_id) const = 0;
 
   virtual std::vector<AppId> GetAppIds() const = 0;
+
+  // Searches for the first app id in the registry for which the |url| is in
+  // scope.
+  base::Optional<AppId> FindAppWithUrlInScope(const GURL& url) const;
 
   // Finds all apps that are installed under |scope|.
   std::vector<AppId> FindAppsInScope(const GURL& scope) const;

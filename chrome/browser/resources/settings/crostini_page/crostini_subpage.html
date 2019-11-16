@@ -15,20 +15,23 @@
     <cr-link-row
         id="crostini-shared-paths"
         label="$i18n{crostiniSharedPaths}"
-        on-click="onSharedPathsClick_">
+        on-click="onSharedPathsClick_"
+        role-description="$i18n{subpageArrowRoleDescription}">
     </cr-link-row>
     <cr-link-row
         class="hr"
         label="$i18n{crostiniSharedUsbDevicesLabel}"
         id="crostini-shared-usb-devices"
-        on-click="onSharedUsbDevicesClick_">
+        on-click="onSharedUsbDevicesClick_"
+        role-description="$i18n{subpageArrowRoleDescription}">
     </cr-link-row>
     <template is="dom-if" if="[[showCrostiniExportImport_]]">
       <cr-link-row
           class="hr"
           label="$i18n{crostiniExportImportTitle}"
           id="crostini-export-import"
-          on-click="onExportImportClick_">
+          on-click="onExportImportClick_"
+          role-description="$i18n{subpageArrowRoleDescription}">
       </cr-link-row>
     </template>
     <template is="dom-if" if="[[showArcAdbSideloading_]]">
@@ -36,7 +39,8 @@
           class="hr"
           label="$i18n{crostiniArcAdbTitle}"
           id="crostini-enable-arc-adb"
-          on-click="onEnableArcAdbClick_">
+          on-click="onEnableArcAdbClick_"
+          role-description="$i18n{subpageArrowRoleDescription}">
       </cr-link-row>
     </template>
     <template is="dom-if" if="[[!hideCrostiniUninstall_]]">

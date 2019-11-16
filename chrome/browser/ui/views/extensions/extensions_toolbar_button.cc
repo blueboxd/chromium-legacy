@@ -23,6 +23,13 @@ ExtensionsToolbarButton::ExtensionsToolbarButton(
     : ToolbarButton(this),
       browser_(browser),
       extensions_container_(extensions_container) {
+  std::unique_ptr<views::MenuButtonController> menu_button_controller =
+      std::make_unique<views::MenuButtonController>(
+          this, this,
+          std::make_unique<views::Button::DefaultButtonControllerDelegate>(
+              this));
+  menu_button_controller_ = menu_button_controller.get();
+  SetButtonController(std::move(menu_button_controller));
   SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_EXTENSIONS_BUTTON));
   button_controller()->set_notify_action(
       views::ButtonController::NotifyAction::kOnPress);

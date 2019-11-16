@@ -73,7 +73,7 @@ import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.previews.PreviewsUma;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
-import org.chromium.chrome.browser.share.ShareSheetCoordinator;
+import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
@@ -189,6 +189,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     private OverviewModeBehavior mOverviewModeBehavior;
     private LayoutManager mLayoutManager;
     private IdentityDiscController mIdentityDiscController;
+    private final ShareDelegate mShareDelegate;
 
     private TabObserver mTabObserver;
     private BookmarkBridge.BookmarkModelObserver mBookmarksObserver;
@@ -241,9 +242,10 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
      */
     public ToolbarManager(ChromeActivity activity, ToolbarControlContainer controlContainer,
             Invalidator invalidator, Callback<Boolean> urlFocusChangedCallback,
-            ThemeColorProvider themeColorProvider) {
+            ThemeColorProvider themeColorProvider, ShareDelegate shareDelegate) {
         mActivity = activity;
         mActionBarDelegate = new ViewShiftingActionBarDelegate(activity, controlContainer);
+        mShareDelegate = shareDelegate;
 
         mLocationBarModel = new LocationBarModel(activity);
         mControlContainer = controlContainer;
@@ -780,7 +782,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                 activity = tab.getActivity();
                 isIncognito = tab.isIncognito();
             }
-            ShareSheetCoordinator.create().onShareSelected(activity, tab, false, isIncognito);
+            mShareDelegate.share(tab, /*shareDirectly=*/false);
         };
 
         mBottomControlsCoordinator = new BottomControlsCoordinator(mActivity.getFullscreenManager(),

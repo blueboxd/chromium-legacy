@@ -4,8 +4,8 @@
 
 module blink.mojom;
 
-import "components/services/storage/public/mojom/dom_storage_area.mojom";
 import "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom";
+import "third_party/blink/public/mojom/dom_storage/storage_area.mojom";
 import "url/mojom/origin.mojom";
 
 // Returns services related to the current storage partition.  This is
@@ -14,7 +14,7 @@ import "url/mojom/origin.mojom";
 // should probably move to some other directory.
 interface StoragePartitionService {
   OpenLocalStorage(url.mojom.Origin origin,
-                   pending_receiver<storage.mojom.DomStorageArea> area);
+                   pending_receiver<StorageArea> area);
   OpenSessionStorage(string namespace_id,
                      pending_receiver<SessionStorageNamespace> session_namespace);
 };

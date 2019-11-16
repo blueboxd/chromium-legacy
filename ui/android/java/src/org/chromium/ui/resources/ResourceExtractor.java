@@ -38,7 +38,6 @@ public class ResourceExtractor {
     private static final String V8_SNAPSHOT_DATA_FILENAME = "snapshot_blob.bin";
     private static final String FALLBACK_LOCALE = "en-US";
     private static final String COMPRESSED_LOCALES_DIR = "locales";
-    private static final String COMPRESSED_LOCALES_FALLBACK_DIR = "fallback-locales";
 
     private class ExtractTask implements Runnable {
         private final List<Runnable> mCompletionCallbacks = new ArrayList<Runnable>();
@@ -169,62 +168,29 @@ public class ResourceExtractor {
             activeLocales.add(FALLBACK_LOCALE);
         }
 
+        // * For bundles, locale pak files are always stored uncompressed
+        //   either under base.apk!/assets/fallback-locales/<locale>.pak or
+        //   base-<lang>.apk!/assets/locales#lang_<lang>/<locale>.pak. They
+        //   never need to be extracted.
+        //
         // * For regular APKs, the locale pak files are stored under:
         //      base.apk!/assets/locales/<locale>.pak
         //
         //   where <locale> is a Chromium-specific locale name.
         //
-        // * When using app bundles, the locale pak files are stored in
-        //   language-specific directories that look like:
-        //      <split>.apk!/assets/locales#lang_<lang>/<locale>.pak
-        //
-        //   Where <lang> is an Android-specific ISO-639-1 language identifier.
-        //
-        // * With the exception of the fallback (English) pak files which are stored
-        //   in the base module under:
-        //       assets/locales-fallback/<locale>.pak
-        //
-        //   Moreover, when the bundle uses APK splits, there is no guarantee that the split
-        //   corresponding to the current device locale is installed yet, but the one matching
-        //   uiLanguage should be there, since the value is determined by loading a resource string
-        //   from the current application's asset manager.
-        //
         AssetManager assetManager = ContextUtils.getApplicationAssets();
-        String localesSrcDir;
-        String androidSplitLanguage = LocalizationUtils.getSplitLanguageForAndroid(uiLanguage);
-        String langSpecificPath = COMPRESSED_LOCALES_DIR + "#lang_" + androidSplitLanguage;
-        String defaultLocalePakName =
-                LocalizationUtils.getDefaultCompressedPakLocaleForLanguage(uiLanguage) + ".pak";
-
-        if (assetPathHasFile(assetManager, langSpecificPath, defaultLocalePakName)) {
-            // This is an app bundle, and the split containing the pak files for
-            // the current locale is installed.
-            localesSrcDir = langSpecificPath;
-        } else if (assetPathHasFile(
-                           assetManager, COMPRESSED_LOCALES_DIR, activeLocales.get(0) + ".pak")) {
-            // This is a regular APK, and all pak files are available.
-            localesSrcDir = COMPRESSED_LOCALES_DIR;
-        } else if (assetPathHasFile(assetManager, COMPRESSED_LOCALES_FALLBACK_DIR,
-                           activeLocales.get(0) + ".pak")) {
-            // This is a fallback language pak file.
-            localesSrcDir = COMPRESSED_LOCALES_FALLBACK_DIR;
-        } else {
-            // This is an app bundle, but the split containing the pak files for the current UI
-            // locale is *not* installed yet. This should never happen in theory, and there is
-            // little that can be done at this point, so return an empty list. Nothing will get
-            // extracted, and Chromium may later crash when trying to access the PAK file from
-            // native code.
-            Log.e(TAG, "Android Locale: %s misses split for .pak files: %s", defaultLocale,
-                    Arrays.toString(activeLocales.toArray()));
+        if (!assetPathHasFile(
+                    assetManager, COMPRESSED_LOCALES_DIR, activeLocales.get(0) + ".pak")) {
+            Log.i(TAG, "No locale pak files to extract, assuming app bundle.");
             return new String[] {};
         }
 
+        // This is a regular APK, and all pak files are available.
         // Return the list of locale pak file paths corresponding to the current language.
         String[] localePakFiles = new String[activeLocales.size()];
         for (int n = 0; n < activeLocales.size(); ++n) {
-            localePakFiles[n] = localesSrcDir + '/' + activeLocales.get(n) + ".pak";
+            localePakFiles[n] = COMPRESSED_LOCALES_DIR + '/' + activeLocales.get(n) + ".pak";
         }
-        Log.i(TAG, "Using app bundle locale directory: " + localesSrcDir);
         Log.i(TAG, "UI Language: %s requires .pak files: %s", uiLanguage,
                 Arrays.toString(activeLocales.toArray()));
 
@@ -318,11 +284,11 @@ public class ResourceExtractor {
             return;
         }
 
-        // If a previous release extracted resources, and the current release does not,
-        // deleteFiles() will not run and some files will be left. This currently
-        // can happen for ContentShell, but not for Chrome proper, since we always extract
-        // locale pak files.
+        // If a previous release extracted resources, and the current release does not, delete the
+        // old files since they are no longer needed.
         if (shouldSkipPakExtraction()) {
+            PostTask.postTask(
+                    TaskTraits.BEST_EFFORT, () -> { deleteFiles(getOutputDir().list()); });
             return;
         }
 

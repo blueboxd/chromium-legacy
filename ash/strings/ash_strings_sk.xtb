@@ -26,6 +26,7 @@
 <translation id="1272079795634619415">Zastaviť</translation>
 <translation id="1275285675049378717">Napája sa zariadenie <ph name="POWER_SOURCE" /></translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
+<translation id="1287638800910363800"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, sila signálu <ph name="SIGNAL_STRENGTH" />, ovládané vaším správcom</translation>
 <translation id="1289185460362160437">Vráťte sa o <ph name="COME_BACK_TIME" /> v tento deň: <ph name="COME_BACK_DAY_OF_WEEK" /></translation>
 <translation id="1290331692326790741">Slabý signál</translation>
 <translation id="1293264513303784526">Zariadenie USB-C (port vľavo)</translation>
@@ -33,6 +34,7 @@
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1302880136325416935">Zobraziť nastavenia Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1316069254387866896">Vždy zobrazovať poličku</translation>
+<translation id="1331336659607007576"><ph name="PHONE_NAME" />, sila signálu <ph name="SIGNAL_STRENGTH" />, batéria telefónu <ph name="BATTERY_STATUS" /></translation>
 <translation id="1341651618736211726">Rozšírené</translation>
 <translation id="1346748346194534595">Doprava</translation>
 <translation id="1351937230027495976">Zbaliť ponuku</translation>
@@ -48,13 +50,14 @@
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Zobraziť nastavenia upozornení. Upozornenia sú pre aplikáciu vypnuté}few{Zobraziť nastavenia upozornení. Upozornenia sú vypnuté pre # aplikácie}many{Show notification settings. Notifications are off for # apps}other{Zobraziť nastavenia upozornení. Upozornenia sú vypnuté pre # aplikácií}}</translation>
 <translation id="1525508553941733066">ZATVORIŤ</translation>
 <translation id="15373452373711364">Veľký kurzor myši</translation>
-<translation id="1546492247443594934">Pracovné prostredie 2</translation>
+<translation id="1546492247443594934">2. plocha</translation>
 <translation id="1550523713251050646">Kliknutím zobrazíte ďalšie možnosti</translation>
 <translation id="1570871743947603115">Prepnúť Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1589090746204042747">Získajte prístup k všetkej svojej aktivite v tejto relácii</translation>
 <translation id="1608626060424371292">Odstrániť tohto používateľa</translation>
 <translation id="1654477262762802994">Spustiť hlasový dopyt</translation>
 <translation id="1658406695958299976">Je nám to ľúto, ale vaše heslo sa stále nedarí overiť. Poznámka: Ak ste ho nedávno zmenili, nové heslo sa použije až po odhlásení. Tu použite staré heslo.</translation>
+<translation id="1661469207525701666"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, ovládané vaším správcom</translation>
 <translation id="1677472565718498478">Zostávajúci čas: <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Adresa IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1743570585616704562">Nerozpoznané</translation>
@@ -85,15 +88,17 @@
 <translation id="2012624427112548395">Ctrl+Hľadať+H</translation>
 <translation id="2016340657076538683">Zadajte správu</translation>
 <translation id="2050339315714019657">Na výšku</translation>
+<translation id="2053685863250070766"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, sila signálu <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="2067602449040652523">Jas klávesnice</translation>
 <translation id="209965399369889474">Nemáte pripojenie k sieti</translation>
-<translation id="2126242104232412123">Nový pracovný priestor</translation>
+<translation id="2126242104232412123">Nová plocha</translation>
 <translation id="2127372758936585790">Nabíjačka s nízkym výkonom</translation>
 <translation id="2135456203358955318">Ukotvená lupa</translation>
 <translation id="2144487987174258011">Reštartujte a aktualizujte tak Adobe Flash Player</translation>
 <translation id="2148902151539191989">SPÄŤ</translation>
 <translation id="2208323208084708176">Režim zjednotenej pracovnej plochy</translation>
 <translation id="2220572644011485463">PIN alebo heslo</translation>
+<translation id="2222338659135520253">Vyžaduje sa prihlásenie</translation>
 <translation id="225680501294068881">Hľadajú sa zariadenia...</translation>
 <translation id="2268130516524549846">Rozhranie Bluetooth je deaktivované</translation>
 <translation id="2268813581635650749">Odhlásiť všetkých</translation>
@@ -123,6 +128,7 @@
 <translation id="2575685495496069081">Viacnásobné prihlásenie bolo zakázané</translation>
 <translation id="2582112259361606227">Reštartovaním vykonáte aktualizáciu</translation>
 <translation id="2617342710774726426">SIM karta je uzamknutá</translation>
+<translation id="2621713457727696555">Zabezpečená</translation>
 <translation id="2653659639078652383">Odoslať</translation>
 <translation id="2658778018866295321">Kliknúť a presunúť</translation>
 <translation id="2700493154570097719">Nastavenie klávesnice</translation>
@@ -156,7 +162,7 @@
 <translation id="3087734570205094154">Spodok</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Reštartovaním vykonáte aktualizáciu</translation>
-<translation id="3139942575505304791">Pracovné prostredie 1</translation>
+<translation id="3139942575505304791">1. plocha</translation>
 <translation id="315116470104423982">Mobilné dátové prenosy</translation>
 <translation id="3151786313568798007">Orientácia</translation>
 <translation id="3153444934357957346">V rámci viacnásobného prihlásenia môžete mať maximálne nasledujúci počet účtov: <ph name="MULTI_PROFILE_USER_LIMIT" />.</translation>
@@ -164,9 +170,10 @@
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Pripojené k zariadeniu}few{Pripojené k # zariadeniam}many{Connected to # devices}other{Pripojené k # zariadeniam}}</translation>
 <translation id="3226991577105957773">a ďalšie (<ph name="COUNT" />)</translation>
 <translation id="3236488194889173876">Nie je k dispozícii žiadna mobilná sieť</translation>
-<translation id="3249513730522716925">Okno <ph name="WINDOW_TITLE" /> bolo presunuté z pracovného prostredia <ph name="ACTIVE_DESK" /> do pracovného prostredia <ph name="TARGET_DESK" /></translation>
+<translation id="3249513730522716925">Okno <ph name="WINDOW_TITLE" /> bolo presunuté z plochy <ph name="ACTIVE_DESK" /> na plochu <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">Čo dokážeš?</translation>
 <translation id="3277674767125718685">Zvuk je zapnutý.</translation>
+<translation id="3290356915286466215">Nezabezpečená</translation>
 <translation id="3294437725009624529">Hosť</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> sa bude môcť stále prihlásiť neskôr.</translation>
 <translation id="3321628682574733415">Nesprávny kód rodiča</translation>
@@ -187,8 +194,9 @@
 <translation id="3513798432020909783">Správca účtu: <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Zmeniť späť na miestne nastavenie „<ph name="FROM_LOCALE" />“ (vyžaduje sa reštart)</translation>
 <translation id="3576141592585647168">Zmena časového pásma</translation>
+<translation id="3593646759913489391"><ph name="NETWORK_NAME" />, ovládané vaším správcom</translation>
 <translation id="3595596368722241419">Batéria je nabitá</translation>
-<translation id="3604801046548457007">Pracovné prostredie <ph name="DESK_TITILE" /> bolo vytvorené</translation>
+<translation id="3604801046548457007">Bola vytvorená plocha <ph name="DESK_TITILE" /></translation>
 <translation id="3606978283550408104">Bola pripojená Braillova obrazovka.</translation>
 <translation id="3621202678540785336">Vstup</translation>
 <translation id="3626281679859535460">Jas</translation>
@@ -249,6 +257,7 @@
 <translation id="4430019312045809116">Hlasitosť</translation>
 <translation id="4450893287417543264">Nabudúce nezobrazovať</translation>
 <translation id="4477350412780666475">Ďalšia stopa</translation>
+<translation id="4477892968187500306">Toto zariadenie môže obsahovať aplikácie, ktoré neboli overené Googlom.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Nespárované zariadenia</translation>
 <translation id="4505050298327493054">Aktívna plocha.</translation>
@@ -284,22 +293,25 @@
 <translation id="4917385247580444890">Silné</translation>
 <translation id="4918086044614829423">Prijať</translation>
 <translation id="4924411785043111640">Reštartovať a resetovať</translation>
+<translation id="4943005740606146647"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, sila signálu <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="495046168593986294">Posunúť nahor</translation>
 <translation id="4961318399572185831">Prenášanie obrazovky</translation>
 <translation id="5030687792513154421">Čas vypršal</translation>
 <translation id="5035236842988137213">Zariadenie <ph name="DEVICE_NAME" /> bolo pripojené k novému telefónu</translation>
 <translation id="5083553833479578423">Odblokujte ďalšie funkcie Asistenta.</translation>
 <translation id="5136175204352732067">Bola pripojená iná klávesnica</translation>
+<translation id="5164328133545158294"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, sila signálu <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="5168181903108465623">Dostupné zariadenia na prenos</translation>
 <translation id="5207949376430453814">Zvýrazniť textový kurzor</translation>
 <translation id="5222676887888702881">Odhlásiť sa</translation>
 <translation id="523505283826916779">Nastavenia zjednodušenia prístupu</translation>
-<translation id="5260676007519551770">Pracovné prostredie 4</translation>
+<translation id="5260676007519551770">4. plocha</translation>
 <translation id="5283198616748585639">Pridať 1 minútu</translation>
 <translation id="5302048478445481009">Jazyk</translation>
 <translation id="5313326810920013265">Nastavenia Bluetooth</translation>
 <translation id="5331975486040154427">Zariadenie USB-C (port vľavo vzadu)</translation>
 <translation id="5379115545237091094">Príliš veľa pokusov</translation>
+<translation id="5388865552779376172"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="5397578532367286026">Aktivitu a históriu tohto používateľa môže skontrolovať správca (<ph name="MANAGER_EMAIL" />) na adrese chrome.com.</translation>
 <translation id="5430931332414098647">Dynamický tethering</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
@@ -353,6 +365,7 @@
 <translation id="6062360702481658777">Odhlásenie prebehne automaticky o <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064337552080329342">Vaše heslo sa nepodarilo overiť. Skúste to znova.</translation>
 <translation id="607652042414456612">Váš počítač je viditeľný pre zariadenia Bluetooth v blízkosti a zobrazí sa ako <ph name="NAME" /> s adresou <ph name="ADDRESS" /></translation>
+<translation id="6120841317807235082"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, sila signálu <ph name="SIGNAL_STRENGTH" />, ovládané vaším správcom</translation>
 <translation id="612734058257491180">Asistent Google nie je k dispozícii v relácii hosťa.</translation>
 <translation id="615957422585914272">Zobraziť klávesnicu na obrazovke</translation>
 <translation id="6164005077879661055">Všetky súbory a miestne údaje spojené s týmto kontrolovaným používateľom budú po jeho odstránení natrvalo odstránené. Správca bude môcť naďalej zobraziť navštívené webové stránky a nastavenia tohto používateľa na adrese <ph name="MANAGEMENT_URL" />.</translation>
@@ -389,7 +402,8 @@
 <translation id="6650933572246256093">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME" /> žiada o povolenie párovania. Zadajte na danom zariadení tento prístupový kľúč: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Heslo</translation>
 <translation id="6665545700722362599">Udeľte webom, aplikáciám a rozšíreniam povolenie používať služby určovania polohy, mikrofón zariadenia, kameru alebo ďalšie funkcie</translation>
-<translation id="6670153871843998651">Pracovné prostredie 3</translation>
+<translation id="6670153871843998651">3. plocha</translation>
+<translation id="6676604402165549692"><ph name="NETWORK_NAME" />, sila signálu <ph name="SIGNAL_STRENGTH" />, ovládané vaším správcom</translation>
 <translation id="6691659475504239918">Hľadať+Shift+H</translation>
 <translation id="6696025732084565524">Odoberateľná klávesnica potrebuje kritickú aktualizáciu</translation>
 <translation id="6700713906295497288">Tlačidlo ponuky IME</translation>
@@ -398,8 +412,9 @@
 <translation id="6723839937902243910">Napájanie</translation>
 <translation id="6727969043791803658">Pripojené, <ph name="BATTERY_PERCENTAGE" /> % batérie</translation>
 <translation id="6751826523481687655">Trasovanie výkonnosti je zapnuté</translation>
-<translation id="6752912906630585008">Pracovné prostredie <ph name="REMOVED_DESK" /> bolo odstránené a zlúčené s pracovným prostredím <ph name="RECEIVE_DESK" /></translation>
+<translation id="6752912906630585008">Plocha <ph name="REMOVED_DESK" /> bola odstránená a zlúčená s plochou <ph name="RECEIVE_DESK" /></translation>
 <translation id="6777216307882431711">Napájajú sa pripojené zariadenia USB-C</translation>
+<translation id="6780359977073194850"><ph name="NETWORK_NAME" />, sila signálu <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="6790428901817661496">Prehrať</translation>
 <translation id="6803622936009808957">Obraz na monitoroch sa nedá zrkadliť, pretože sa nenašli podporované rozlíšenia. Namiesto toho sa spustil režim rozšírenej pracovnej plochy.</translation>
 <translation id="6820676911989879663">Urobte si prestávku.</translation>
@@ -445,6 +460,7 @@
 <translation id="7526573455193969409">Sieť môže byť sledovaná</translation>
 <translation id="7536035074519304529">Adresa IP: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Je čas ísť do postele</translation>
+<translation id="75510698954995432"><ph name="PHONE_NAME" />, <ph name="CONNECTION_STATUS" />, sila signálu <ph name="SIGNAL_STRENGTH" />, batéria telefónu <ph name="BATTERY_STATUS" /></translation>
 <translation id="7561014039265304140">Obrazovka <ph name="DISPLAY_NAME" /> nepodporuje rozlíšenie <ph name="SPECIFIED_RESOLUTION" />. Rozlíšenie bolo zmenené na <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Paleta emodži</translation>
 <translation id="7564874036684306347">Presunutie okien na inú obrazovku môže spôsobiť neočakávané správanie. Nasledujúce upozornenia, okná a dialógové okná sa môžu zobraziť rozdelené na viacerých pracovných plochách.</translation>
@@ -497,13 +513,14 @@
 <translation id="8192202700944119416">Upozornenia sú skryté.</translation>
 <translation id="8203795194971602413">Kliknutie pravým tlačidlom myši</translation>
 <translation id="8236042855478648955">Čas na prestávku</translation>
+<translation id="826107067893790409">Stlačením tlačidla Enter odomknite pre účet <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8261506727792406068">Odstrániť</translation>
 <translation id="8297006494302853456">Slabé</translation>
 <translation id="8308637677604853869">Predchádzajúca ponuka</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Vytvoriť poznámku</translation>
 <translation id="8375916635258623388">Toto zariadenie <ph name="DEVICE_NAME" /> a váš telefón sa automaticky pripoja</translation>
-<translation id="8388750414311082622">Posledné pracovné prostredie sa nedá odstrániť.</translation>
+<translation id="8388750414311082622">Posledná plocha sa nedá odstrániť.</translation>
 <translation id="8392451568018454956">Ponuka možností pre používateľa <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Tvoj rodič uzamkol toto zariadenie</translation>
 <translation id="8425213833346101688">Zmeniť</translation>
@@ -511,7 +528,7 @@
 <translation id="8428213095426709021">Nastavenia</translation>
 <translation id="8433186206711564395">Nastavenia siete</translation>
 <translation id="8433977262951327081">Klávesová skratka na zobrazenie bubliny s možnosťami vstupu na poličke sa zmenila. Namiesto skratky <ph name="OLD_SHORTCUT" /> použite skratku <ph name="NEW_SHORTCUT" />.</translation>
-<translation id="8444246603146515890">Pracovné prostredie <ph name="DESK_TITILE" /> bolo aktivované</translation>
+<translation id="8444246603146515890">Bola aktivovaná plocha <ph name="DESK_TITILE" /></translation>
 <translation id="8452135315243592079">Chýba SIM karta</translation>
 <translation id="8454013096329229812">Pripojenie Wi‑Fi je zapnuté.</translation>
 <translation id="847056008324733326">Nastavenia hustoty zobrazenia</translation>
@@ -562,6 +579,7 @@
 <translation id="9084606467167974638">Prepnúť pozíciu ponuky</translation>
 <translation id="9089416786594320554">Metódy vstupu</translation>
 <translation id="9091626656156419976">Obrazovka <ph name="DISPLAY_NAME" /> bola odstránená</translation>
+<translation id="9092415813919137737"><ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, sila signálu <ph name="SIGNAL_STRENGTH" />, ovládané vaším správcom</translation>
 <translation id="9151726767154816831">Aktualizáciu uskutočníte reštartovaním a použitím funkcie Powerwash</translation>
 <translation id="9179259655489829027">Táto funkcia vám umožní rýchly prístup k ľubovoľnému prihlásenému používateľovi bez hesla. Používajte ju iba s dôveryhodnými účtami.</translation>
 <translation id="9183456764293710005">Lupa na celú obrazovku</translation>

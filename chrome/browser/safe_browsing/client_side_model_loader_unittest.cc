@@ -15,6 +15,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "chrome/common/safe_browsing/client_model.pb.h"
 #include "components/safe_browsing/proto/csd.pb.h"
@@ -59,8 +60,9 @@ class ModelLoaderTest : public testing::Test {
   ModelLoaderTest()
       : test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                &test_url_loader_factory_)),
-        field_trials_(new base::FieldTrialList(nullptr)) {}
+                &test_url_loader_factory_)) {
+    scoped_feature_list_.Init();
+  }
 
   void SetUp() override {
     variations::testing::ClearAllVariationIDs();
@@ -70,10 +72,8 @@ class ModelLoaderTest : public testing::Test {
   // Set up the finch experiment to control the model number
   // used in the model URL. This clears all existing state.
   void SetFinchModelNumber(int model_number) {
-    // Destroy the existing FieldTrialList before creating a new one to avoid
-    // a DCHECK.
-    field_trials_.reset();
-    field_trials_.reset(new base::FieldTrialList(nullptr));
+    scoped_feature_list_.Reset();
+    scoped_feature_list_.Init();
     variations::testing::ClearAllVariationIDs();
     variations::testing::ClearAllVariationParams();
 
@@ -111,8 +111,8 @@ class ModelLoaderTest : public testing::Test {
  private:
   content::BrowserTaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
+  base::test::ScopedFeatureList scoped_feature_list_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
-  std::unique_ptr<base::FieldTrialList> field_trials_;
   GURL model_url_;
 };
 

@@ -24,8 +24,6 @@ struct UserMetricsAction;
 
 namespace content {
 
-class ServiceManagerConnection;
-
 // An abstract base class that contains logic shared between most child
 // processes of the embedder.
 class CONTENT_EXPORT ChildThread : public IPC::Sender {
@@ -54,10 +52,6 @@ class CONTENT_EXPORT ChildThread : public IPC::Sender {
   // When you use this you need to also update the rules for extracting known
   // actions in chrome/tools/extract_actions.py.
   virtual void RecordComputedAction(const std::string& action) = 0;
-
-  // Returns the ServiceManagerConnection for the thread (from which a
-  // service_manager::Connector can be obtained).
-  virtual ServiceManagerConnection* GetServiceManagerConnection() = 0;
 
   // Asks the browser-side process host object to bind |receiver|. Whether or
   // not the interface type encapsulated by |receiver| is supported depends on

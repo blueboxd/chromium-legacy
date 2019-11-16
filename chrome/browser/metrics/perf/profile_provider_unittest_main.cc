@@ -118,7 +118,7 @@ class TestProfileProvider : public ProfileProvider {
 // real collections from debugd.
 class ProfileProviderRealCollectionTest : public testing::Test {
  public:
-  ProfileProviderRealCollectionTest() : field_trial_list_(nullptr) {}
+  ProfileProviderRealCollectionTest() {}
 
   void SetUp() override {
     chromeos::DBusThreadManager::Initialize();
@@ -167,7 +167,6 @@ class ProfileProviderRealCollectionTest : public testing::Test {
   // last.
   content::BrowserTaskEnvironment task_environment_;
 
-  base::FieldTrialList field_trial_list_;
   scoped_refptr<base::FieldTrial> field_trial_;
 
   std::unique_ptr<TestProfileProvider> profile_provider_;

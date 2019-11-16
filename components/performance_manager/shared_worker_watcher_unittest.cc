@@ -123,7 +123,7 @@ content::SharedWorkerInstance TestSharedWorkerService::StartSharedWorker(
   content::SharedWorkerInstance instance(
       next_shared_worker_instance_id_++, worker_url, "SharedWorker",
       url::Origin::Create(worker_url), "",
-      blink::mojom::ContentSecurityPolicyType::kReport,
+      network::mojom::ContentSecurityPolicyType::kReport,
       network::mojom::IPAddressSpace::kPublic,
       blink::mojom::SharedWorkerCreationContextType::kSecure);
 

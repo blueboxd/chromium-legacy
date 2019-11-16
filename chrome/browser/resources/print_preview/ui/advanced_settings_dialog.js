@@ -2,20 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
-import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
-import {Metrics, MetricsContext} from '../metrics.js';
-import {Destination} from '../data/destination.js';
 import './advanced_settings_item.js';
-import {SettingsBehavior} from './settings_behavior.js';
-import {removeHighlights} from 'chrome://resources/js/search_highlight_utils.m.js';
 import './print_preview_search_box.js';
 import './print_preview_shared_css.js';
 import './print_preview_vars_css.js';
 import '../strings.m.js';
+
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {removeHighlights} from 'chrome://resources/js/search_highlight_utils.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {Destination} from '../data/destination.js';
+import {Metrics, MetricsContext} from '../metrics.js';
+
+import {SettingsBehavior} from './settings_behavior.js';
 
 Polymer({
   is: 'print-preview-advanced-settings-dialog',
@@ -57,8 +60,8 @@ Polymer({
 
   /** @override */
   attached: function() {
-    this.metrics_.record(Metrics.PrintSettingsUiBucket
-                             .ADVANCED_SETTINGS_DIALOG_SHOWN);
+    this.metrics_.record(
+        Metrics.PrintSettingsUiBucket.ADVANCED_SETTINGS_DIALOG_SHOWN);
     this.$.dialog.showModal();
   },
 
@@ -139,8 +142,8 @@ Polymer({
       this.$.searchBox.setValue('');
     }
     if (this.$.dialog.getNative().returnValue == 'success') {
-      this.metrics_.record(Metrics.PrintSettingsUiBucket
-                               .ADVANCED_SETTINGS_DIALOG_CANCELED);
+      this.metrics_.record(
+          Metrics.PrintSettingsUiBucket.ADVANCED_SETTINGS_DIALOG_CANCELED);
     }
   },
 

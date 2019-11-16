@@ -23,11 +23,13 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.share.ShareSheetCoordinator;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
 import org.chromium.chrome.browser.util.ChromeFileProvider;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -137,6 +139,16 @@ public class ShareIntentTest {
         public ActivityTabProvider getActivityTabProvider() {
             return mActivity.getActivityTabProvider();
         }
+
+        @Override
+        public BottomSheetController getBottomSheetController() {
+            return mActivity.getBottomSheetController();
+        }
+
+        @Override
+        public ShareDelegate getShareDelegate() {
+            return mActivity.getShareDelegate();
+        }
     }
 
     @Test
@@ -149,8 +161,9 @@ public class ShareIntentTest {
             // package and class names do not matter.
             return new MockChromeActivity(mActivityTestRule.getActivity());
         });
-        RootUiCoordinator rootUiCoordinator = TestThreadUtils.runOnUiThreadBlocking(
-                () -> { return new RootUiCoordinator(mockActivity, null, null); });
+        RootUiCoordinator rootUiCoordinator = TestThreadUtils.runOnUiThreadBlocking(() -> {
+            return new RootUiCoordinator(mockActivity, null, null, mockActivity.getShareDelegate());
+        });
         ShareHelper.setLastShareComponentName(
                 new ComponentName("test.package", "test.activity"), null);
         // Skips the capture of screenshot and notifies with an empty file.

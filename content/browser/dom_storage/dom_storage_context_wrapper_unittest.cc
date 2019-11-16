@@ -19,6 +19,7 @@
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/dom_storage/storage_area.mojom.h"
 
 namespace content {
 

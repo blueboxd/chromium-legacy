@@ -12,6 +12,7 @@
 <translation id="107147699690128016">আপনি ফাইলের এক্সটেনশন পরিবর্তন করলে, সেটি অন্য অ্যাপ্লিকেশনে খুলতে পারে এবং আপনার ডিভাইসে সমস্যার সৃষ্টি করতে পারে।</translation>
 <translation id="1100066534610197918">গ্রুপে একটি নতুন ট্যাব খুলুন</translation>
 <translation id="1105960400813249514">স্ক্রিন ক্যাপচার</translation>
+<translation id="1110022065703191351">আইকন</translation>
 <translation id="1111673857033749125">আপনার অন্যান্য ডিভাইসে সেভ করা বুকমার্কগুলি এখানে দেখা যাবে।</translation>
 <translation id="1113597929977215864">সরলীকৃত ভিউ দেখান</translation>
 <translation id="1124772482545689468">ব্যবহারকারী</translation>
@@ -363,6 +364,7 @@
 <translation id="3730075448226062617">Chrome যাতে আপনার মাইক্রোফোন অ্যাক্সেস করতে পারে তার জন্য <ph name="BEGIN_LINK" />Android সেটিংস<ph name="END_LINK" />-এ গিয়ে মাইক্রোফোন চালু করুন।</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> এ বুকমার্ক করা হয়েছে</translation>
 <translation id="3744111561329211289">পটভূমি সিঙ্ক</translation>
+<translation id="3749259744154402564">কাজ করে না</translation>
 <translation id="3771001275138982843">আপডেট ডাউনলোড করা যায়নি</translation>
 <translation id="3771033907050503522">ছদ্মবেশী ট্যাবগুলি</translation>
 <translation id="3773755127849930740">যুক্ত করার মঞ্জুরি দিতে <ph name="BEGIN_LINK" />ব্লুটুথ চালু করুন<ph name="END_LINK" /></translation>
@@ -578,6 +580,7 @@
 <translation id="5327248766486351172">নাম</translation>
 <translation id="5335288049665977812">সাইটগুলিকে JavaScript চালানোর অনুমতি দিন (প্রস্তাবিত)</translation>
 <translation id="5342314432463739672">অনুমতি দেওয়ার অনুরোধ</translation>
+<translation id="534295439873310000">NFC ডিভাইস</translation>
 <translation id="5357811892247919462">ট্যাব পাওয়া গেছে</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" />টি খোলা ট্যাব, এক ট্যাব থেকে অন্য ট্যাবে যেতে ট্যাপ করুন}one{<ph name="OPEN_TABS_MANY" />টি খোলা ট্যাব, এক ট্যাব থেকে অন্য ট্যাবে যেতে ট্যাপ করুন}other{<ph name="OPEN_TABS_MANY" />টি খোলা ট্যাব, এক ট্যাব থেকে অন্য ট্যাবে যেতে ট্যাপ করুন}}</translation>
 <translation id="5391532827096253100">এই সাইটে আপনার কানেকশন নিরাপদ নয়। সাইটের তথ্য</translation>
@@ -634,6 +637,7 @@
 <translation id="5686790454216892815">ফাইলের নামটি খুব বড়</translation>
 <translation id="5689516760719285838">লোকেশন</translation>
 <translation id="569536719314091526">আরও বিকল্প বোতাম থেকে এই পৃষ্ঠাটিকে যেকোনও ভাষায় অনুবাদ করুন</translation>
+<translation id="5710871682236653961">NFC ডিভাইসে ট্যাপ করলে (সাজেস্ট করা হয়েছে) সাইট থেকে তথ্য পাঠানো বা পাওয়ার আগে অনুমতি নিতে হবে</translation>
 <translation id="572328651809341494">সাম্প্রতিক ট্যাবগুলি</translation>
 <translation id="5726692708398506830">পৃষ্ঠাতে থাকা সবকিছুকে বড় করুন</translation>
 <translation id="5748802427693696783">স্ট্যান্ডার্ড ট্যাবে পাল্টানো হয়েছে</translation>
@@ -883,6 +887,7 @@
 <translation id="7559975015014302720">লাইট মোড বন্ধ আছে</translation>
 <translation id="7562080006725997899">ব্রাউজিং ইতিহাস সাফ করা হচ্ছে</translation>
 <translation id="756809126120519699">Chrome ডেটা সাফ হয়েছে</translation>
+<translation id="7572498721684305250">আপনি NFC ডিভাইসে ট্যাপ করলে সাইট থেকে তথ্য পাঠানো ও পাওয়া, কোনওটাই করা যাবে না</translation>
 <translation id="757524316907819857">সুরক্ষিত কন্টেন্ট চালানো থেকে সাইটকে ব্লক করুন</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" />টি ফাইল ডাউনলোড হয়েছে}one{<ph name="FILES_DOWNLOADED_MANY" />টি ফাইল ডাউনলোড হয়েছে}other{<ph name="FILES_DOWNLOADED_MANY" />টি ফাইল ডাউনলোড হয়েছে}}</translation>
 <translation id="7588219262685291874">আপনার ডিভাইস ব্যাটারি সেভারে চললে গাঢ় থিম চালু করুন</translation>

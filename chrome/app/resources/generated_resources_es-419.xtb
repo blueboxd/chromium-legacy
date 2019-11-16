@@ -181,6 +181,7 @@
 <translation id="1241753985463165747">Leer y modificar todos los datos del sitio web actual cuando se invoca</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> quiere restablecer la configuración.</translation>
 <translation id="1243314992276662751">Cargar</translation>
+<translation id="1243398753772016127">Los sitios no podrán usar tu actividad de navegación en diferentes sitios para personalizar anuncios</translation>
 <translation id="1244265436519979884">El restablecimiento de Linux está en curso</translation>
 <translation id="1244303850296295656">Error de extensión</translation>
 <translation id="1246905108078336582">¿Quieres quitar la sugerencia del portapapeles?</translation>
@@ -253,6 +254,7 @@
 <translation id="1365180424462182382"><ph name="ENROLLMENT_DOMAIN" /> administra tu <ph name="BEGIN_LINK" />navegador<ph name="END_LINK" /></translation>
 <translation id="1366177842110999534">Ejecuta IDE, editores y herramientas de Linux en tu <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Más información&lt;/a&gt;</translation>
 <translation id="1367951781824006909">Selecciona un archivo</translation>
+<translation id="1369149969991017342">Accesibilidad mejorada (controlar la computadora con solo uno o dos cambios)</translation>
 <translation id="1372841398847029212">Sincronizar con tu cuenta</translation>
 <translation id="1374844444528092021">El certificado que requiere la red "<ph name="NETWORK_NAME" />" no está instalado o ya no es válido. Obtén un nuevo certificado e intenta volver a conectarte.</translation>
 <translation id="1375321115329958930">Contraseñas guardadas</translation>
@@ -561,6 +563,7 @@
 <translation id="1794791083288629568">Enviar comentarios para ayudarnos a solucionar este problema</translation>
 <translation id="1795214765651529549">Usar el tema clásico</translation>
 <translation id="1799071797295057738">La extensión "<ph name="EXTENSION_NAME" />" se inhabilitó automáticamente.</translation>
+<translation id="1802624026913571222">Suspender cuando se cierra la tapa</translation>
 <translation id="1802687198411089702">La página no responde. Puedes esperar o salir.</translation>
 <translation id="1802931390041703523">Flash está bloqueado en esta página</translation>
 <translation id="1803531841600994172">Idioma de destino de la traducción</translation>
@@ -662,6 +665,7 @@
 <translation id="1937774647013465102">No se puede importar el tipo de arquitectura de contenedores <ph name="ARCHITECTURE_CONTAINER" /> con este dispositivo porque es <ph name="ARCHITECTURE_DEVICE" />. Puedes intentar restablecer este contenedor en otro dispositivo o acceder a los archivos en su interior con la app de Archivos.</translation>
 <translation id="1938351510777341717">Tecla externa Comando</translation>
 <translation id="1940546824932169984">Dispositivos conectados</translation>
+<translation id="1942600407708803723">Apagar cuando se cierra la tapa</translation>
 <translation id="1944921356641260203">Actualización encontrada</translation>
 <translation id="1946577776959096882">Ver cuentas</translation>
 <translation id="1951012854035635156">Asistente</translation>
@@ -2435,6 +2439,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4546308221697447294">Navega de forma rápida con Google Chrome</translation>
 <translation id="4547659257713117923">No hay pestañas de otros dispositivos</translation>
 <translation id="4547672827276975204">Establecer automáticamente</translation>
+<translation id="4549791035683739768">Tu llave de seguridad no tiene huellas digitales almacenadas</translation>
 <translation id="4551763574344810652">Presiona <ph name="MODIFIER_KEY_DESCRIPTION" /> para deshacer</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4554591392113183336">La versión de la extensión externa es igual o anterior a la actual.</translation>
@@ -2614,6 +2619,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4839303808932127586">Guardar video como...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 más}other{# más}}</translation>
 <translation id="4842976633412754305">Esta página está tratando de cargar scripts de fuentes no autenticadas.</translation>
+<translation id="4843488774506045600">Acceso proporcionado por <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Otros teclados</translation>
 <translation id="4846680374085650406">Estás siguiendo la recomendación del administrador para esta configuración.</translation>
 <translation id="4848518990323155912">Habilitar el bloqueo de la tarjeta SIM (se requiere el PIN para usar los datos móviles)</translation>
@@ -3034,7 +3040,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5466374726908360271">&amp;Pegar y buscar "<ph name="SEARCH_TERMS" />"</translation>
 <translation id="5468173180030470402">Buscando archivos compartidos</translation>
 <translation id="5471768120198416576">Hola, soy la voz que leerá tus textos.</translation>
-<translation id="5472133193607270166">Si se activa esta opción, los sitios no podrán usar tu actividad de navegación en diferentes sitios para personalizar anuncios. Es posible que algunos sitios no funcionen correctamente.</translation>
+<translation id="5472133193607270166">Si se activa esta opción, los sitios web no podrán usar tu actividad de navegación en diferentes sitios para personalizar anuncios. Es posible que algunos sitios no funcionen correctamente.</translation>
 <translation id="5473333559083690127">Vuelve a ingresar el PIN nuevo</translation>
 <translation id="5481941284378890518">Agregar impresoras cercanas</translation>
 <translation id="5483785310822538350">Revocar acceso al archivo y al dispositivo</translation>
@@ -3066,6 +3072,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5511823366942919280">¿Confirmas que quieres configurar este dispositivo como "Shark"?</translation>
 <translation id="5512653252560939721">El certificado de usuario debe estar respaldado por el hardware.</translation>
 <translation id="5517304475148761050">Esta app necesita acceso a Play Store</translation>
+<translation id="5517412723934627386"><ph name="NETWORK_TYPE" />: <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Se está agregando la impresora a la cuenta. Esta acción puede tardar unos minutos…</translation>
 <translation id="5518219166343146486">Preguntarme cuando un sitio desee ver el texto y las imágenes copiados en el portapapeles</translation>
 <translation id="5518584115117143805">Enviar por correo electrónico certificado de encriptación</translation>
@@ -3184,6 +3191,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="567643736130151854">Accede y activa la sincronización para obtener tus favoritos, contraseñas y mucho más en todos tus dispositivos</translation>
 <translation id="5677503058916217575">Idioma de la página:</translation>
 <translation id="5677928146339483299">Bloqueados</translation>
+<translation id="5678293144564424498">Se pausó la app</translation>
 <translation id="5678550637669481956">Se concedió acceso de lectura y escritura a <ph name="VOLUME_NAME" />.</translation>
 <translation id="5678955352098267522">Leer los datos en <ph name="WEBSITE_1" /></translation>
 <translation id="5684661240348539843">Identificador de recursos</translation>
@@ -3450,6 +3458,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6055392876709372977">PKCS N. º 1 SHA-256 con encriptación RSA</translation>
 <translation id="6056710589053485679">Volver a cargar normalmente</translation>
 <translation id="6057381398996433816">Este sitio no tiene permiso para usar los sensores de movimiento y luz.</translation>
+<translation id="6058567592298841668">Máquina virtual de complementos: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Jerarquía de certificados</translation>
 <translation id="6059925163896151826">Dispositivos USB</translation>
 <translation id="6061882183774845124">Enviar vínculo a tus dispositivos</translation>
@@ -4398,6 +4407,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7476454130948140105">El nivel de la batería es demasiado bajo para la actualización (<ph name="BATTERY_PERCENT" />%)</translation>
 <translation id="7477793887173910789">Controla tu música, videos y mucho más</translation>
 <translation id="7478485216301680444">No se pudo instalar la aplicación del kiosco.</translation>
+<translation id="7479221278376295180">Descripción general sobre el uso del almacenamiento</translation>
 <translation id="7481312909269577407">Reenviar</translation>
 <translation id="748138892655239008">Restricciones básicas del certificado</translation>
 <translation id="7487067081878637334">Tecnología</translation>
@@ -5374,6 +5384,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8845001906332463065">Obtener ayuda</translation>
 <translation id="8846132060409673887">Leer el fabricante y el modelo de esta computadora</translation>
 <translation id="8846141544112579928">Buscando teclado…</translation>
+<translation id="8847523528195140327">Salir cuando se cierra la tapa</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8850251000316748990">Ver más…</translation>
 <translation id="885246833287407341">Argumentos de la función de la API</translation>
@@ -5436,6 +5447,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8930351635855238750">La nueva configuración de cookies se implementará cuando vuelvas a cargar la página</translation>
 <translation id="8931394284949551895">Nuevos dispositivos</translation>
 <translation id="893254996965966411">Guarda las impresoras detectadas en tu perfil o agrega una nueva.</translation>
+<translation id="8932894639908691771">Opciones de la accesibilidad mejorada</translation>
 <translation id="8933960630081805351">Mo&amp;strar en Buscador</translation>
 <translation id="8934732568177537184">Continuar</translation>
 <translation id="8938800817013097409">Dispositivo USB-C (puerto derecho en la parte posterior)</translation>
@@ -5499,6 +5511,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="9023015617655685412">Agregar esta pestaña a favoritos…</translation>
 <translation id="9024127637873500333">&amp;Abrir en una nueva pestaña</translation>
 <translation id="9024158959543687197">Se produjo un error al activar el recurso compartido. Revisa la URL del archivo compartido y vuelve a intentarlo.</translation>
+<translation id="9024885274934357065">Tu dispositivo se desbloquea mediante Smart Lock. Presiona Intro para permitir el acceso.</translation>
 <translation id="9026731007018893674">descarga</translation>
 <translation id="9026852570893462412">Este proceso puede demorar unos minutos. Se está descargando la máquina virtual.</translation>
 <translation id="9027459031423301635">Abrir vínculo en la pes&amp;taña nueva</translation>

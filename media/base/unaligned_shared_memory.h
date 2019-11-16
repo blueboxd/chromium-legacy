@@ -10,25 +10,20 @@
 #include "base/macros.h"
 #include "base/memory/platform_shared_memory_region.h"
 #include "base/memory/read_only_shared_memory_region.h"
-#include "base/memory/shared_memory.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "media/base/media_export.h"
 
 namespace media {
 
-// Wrapper over base::SharedMemory that can be mapped at unaligned offsets.
+// Wrapper over base::PlatformSharedMemoryRegion that can be mapped at unaligned
+// offsets.
 // DEPRECATED! See https://crbug.com/795291.
 class MEDIA_EXPORT UnalignedSharedMemory {
  public:
   // Creates an |UnalignedSharedMemory| instance from a
-  // |SharedMemoryHandle|. |size| sets the maximum size that may be mapped. This
-  // instance will own the handle.
-  UnalignedSharedMemory(const base::SharedMemoryHandle& handle,
-                        size_t size,
-                        bool read_only);
-
-  // As above, but from a PlatformSharedMemoryRegion.
+  // |PlatformSharedMemoryRegion|. |size| sets the maximum size that may be
+  // mapped. This instance will own the handle.
   UnalignedSharedMemory(base::subtle::PlatformSharedMemoryRegion region,
                         size_t size,
                         bool read_only);
@@ -42,11 +37,9 @@ class MEDIA_EXPORT UnalignedSharedMemory {
   void* memory() const { return mapping_ptr_; }
 
  private:
-  // Either |shm_| or the set |region_| and one of the mappings are active,
-  // depending on which constructor was used and the value of read_only_. These
-  // variables are held to keep the shared memory mapping valid for the lifetime
-  // of this instance.
-  base::SharedMemory shm_;
+  // Only one of the mappings is active, depending on the value of |read_only_|.
+  // These variables are held to keep the shared memory mapping valid for the
+  // lifetime of this instance.
   base::subtle::PlatformSharedMemoryRegion region_;
   base::WritableSharedMemoryMapping writable_mapping_;
   base::ReadOnlySharedMemoryMapping read_only_mapping_;
@@ -54,7 +47,7 @@ class MEDIA_EXPORT UnalignedSharedMemory {
   // If the mapping should be made read-only.
   bool read_only_;
 
-  // The size of the region associated with |shm_|.
+  // The size of the region associated with |region_|.
   size_t size_;
 
   // Pointer to the unaligned data in the shared memory mapping.

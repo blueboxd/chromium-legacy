@@ -12,6 +12,7 @@
 <translation id="107147699690128016">如果變更副檔名，這個檔案可能會在其他應用程式中開啟，並可能對裝置造成損害。</translation>
 <translation id="1100066534610197918">在群組的新分頁中開啟</translation>
 <translation id="1105960400813249514">螢幕擷取</translation>
+<translation id="1110022065703191351">圖示</translation>
 <translation id="1111673857033749125">儲存在您其他裝置上的書籤會顯示在這裡。</translation>
 <translation id="1113597929977215864">顯示「簡易檢視」模式</translation>
 <translation id="1124772482545689468">使用者</translation>
@@ -363,6 +364,7 @@
 <translation id="3730075448226062617">如要讓 Chrome 存取你的麥克風，請一併在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中開啟麥克風。</translation>
 <translation id="3739899004075612870">已加入 <ph name="PRODUCT_NAME" /> 書籤</translation>
 <translation id="3744111561329211289">背景同步處理</translation>
+<translation id="3749259744154402564">不支援</translation>
 <translation id="3771001275138982843">無法下載更新</translation>
 <translation id="3771033907050503522">無痕式分頁</translation>
 <translation id="3773755127849930740">如要允許配對，請<ph name="BEGIN_LINK" />開啟藍牙功能<ph name="END_LINK" /></translation>
@@ -576,6 +578,7 @@
 <translation id="5327248766486351172">名稱</translation>
 <translation id="5335288049665977812">允許網站執行 JavaScript (建議)</translation>
 <translation id="5342314432463739672">權限要求</translation>
+<translation id="534295439873310000">NFC 裝置</translation>
 <translation id="5357811892247919462">已收到分頁</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{已開啟 <ph name="OPEN_TABS_ONE" /> 個分頁，輕觸即可切換分頁}other{已開啟 <ph name="OPEN_TABS_MANY" /> 個分頁，輕觸即可切換分頁}}</translation>
 <translation id="5391532827096253100">你與這個網站的連線不安全。網站資訊</translation>
@@ -632,6 +635,7 @@
 <translation id="5686790454216892815">檔案名稱過長</translation>
 <translation id="5689516760719285838">位置</translation>
 <translation id="569536719314091526">透過 [更多選項] 按鈕將這個網頁翻譯成任何語言</translation>
+<translation id="5710871682236653961">系統必須先詢問你，才能允許網站在你輕觸 NFC 裝置時傳送及接收資訊 (建議設定)</translation>
 <translation id="572328651809341494">最近開啟的分頁</translation>
 <translation id="5726692708398506830">放大網頁上的所有內容</translation>
 <translation id="5748802427693696783">已切換成標準分頁</translation>
@@ -881,6 +885,7 @@
 <translation id="7559975015014302720">精簡模式已關閉</translation>
 <translation id="7562080006725997899">正在清除瀏覽資料</translation>
 <translation id="756809126120519699">已清除 Chrome 資料</translation>
+<translation id="7572498721684305250">禁止網站在你輕觸 NFC 裝置時傳送及接收資訊</translation>
 <translation id="757524316907819857">禁止網站播放受保護的內容</translation>
 <translation id="757855969265046257">{FILES,plural, =1{已下載 <ph name="FILES_DOWNLOADED_ONE" /> 個檔案}other{已下載 <ph name="FILES_DOWNLOADED_MANY" /> 個檔案}}</translation>
 <translation id="7588219262685291874">在裝置開啟「節約耗電量」後啟用深色主題</translation>

@@ -97,7 +97,7 @@ PluginGlobals::~PluginGlobals() {
     // we clear plugin_globals_, because the Resource destructor tries to access
     // this PluginGlobals.
     DCHECK(!loop_for_main_thread_.get() || loop_for_main_thread_->HasOneRef());
-    loop_for_main_thread_ = NULL;
+    loop_for_main_thread_.reset();
   }
   plugin_globals_ = NULL;
 }

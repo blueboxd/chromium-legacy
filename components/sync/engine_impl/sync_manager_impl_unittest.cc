@@ -13,7 +13,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
 #include "base/location.h"
-#include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -1981,8 +1980,6 @@ TEST_F(SyncManagerTest, UpdatePasswordReencryptEverything) {
 // written when it's applicable, namely that password specifics entity is marked
 // unsynced, when data was written to the unencrypted metadata field.
 TEST_F(SyncManagerTest, UpdatePasswordReencryptEverythingFillMetadata) {
-  base::FieldTrialList field_trial_list(nullptr);
-
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
   sync_pb::EntitySpecifics entity_specifics;
   {
@@ -2027,8 +2024,6 @@ TEST_F(SyncManagerTest, UpdatePasswordReencryptEverythingFillMetadata) {
 // ReEncryption, entity is not marked as unsynced.
 TEST_F(SyncManagerTest,
        UpdatePasswordReencryptEverythingDontMarkUnsyncWhenNotNeeded) {
-  base::FieldTrialList field_trial_list(nullptr);
-
   EXPECT_TRUE(SetUpEncryption(WRITE_TO_NIGORI, DEFAULT_ENCRYPTION));
   sync_pb::EntitySpecifics entity_specifics;
   {

@@ -54,9 +54,10 @@ bool LoadFromApkOrFile(const char* apk_path,
 }
 
 int LoadLocalePakFromApk(const std::string& app_locale,
+                         bool in_split,
                          base::MemoryMappedFile::Region* out_region) {
   std::string locale_path_within_apk =
-      GetPathForAndroidLocalePakWithinApk(app_locale);
+      GetPathForAndroidLocalePakWithinApk(app_locale, in_split);
   if (locale_path_within_apk.empty()) {
     LOG(WARNING) << "locale_path_within_apk.empty() for locale "
                  << app_locale;
@@ -95,8 +96,10 @@ void ResourceBundle::LoadCommonResources() {
 // static
 bool ResourceBundle::LocaleDataPakExists(const std::string& locale) {
   if (g_locale_paks_in_apk) {
-    return !GetPathForAndroidLocalePakWithinApk(locale).empty();
+    return !GetPathForAndroidLocalePakWithinApk(locale, false).empty();
   }
+  if (!GetPathForAndroidLocalePakWithinApk(locale, true).empty())
+    return true;
   return !GetLocaleFilePath(locale).empty();
 }
 
@@ -111,22 +114,74 @@ std::string ResourceBundle::LoadLocaleResources(
   }
   std::string app_locale = l10n_util::GetApplicationLocale(pref_locale);
 
+  // Some Chromium apps have two sets of .pak files for their UI strings, i.e.:
+  //
+  // a) WebView strings, which are always stored uncompressed under
+  //    assets/stored-locales/ inside the APK or App Bundle.
+  //
+  // b) For APKs, the Chrome UI strings are stored under assets/locales/
+  //    in compressed form. The relevant pak files is extracted on startup
+  //    and stored on the /data partition, with a version-specific suffix.
+  //
+  // c) For App Bundles, Chrome UI strings are stored uncompressed under
+  //    assets/locales#lang_<lang>/ (where <lang> is an Android language code)
+  //    and assets/fallback-locales/ (for en-US.pak only).
+  //
+  // Which .pak files to load are determined here by two global variables with
+  // the following meaning:
+  //
+  //  g_locale_paks_in_apk:
+  //    If true, load the WebView strings from stored-locales/<locale>.pak file
+  //    as the primary locale pak file.
+  //
+  //    If false, try to load it from the app bundle specific location
+  //    (e.g. locales#lang_<language>/<locale>.pak). If the latter does not
+  //    exist, try to lookup the extracted APK-specific locale .pak file
+  //    from /data/app/.../<locale>.pak@<version> instead.
+  //
+  //    g_locale_paks_in_apk is set by SetLocalePaksStoredInApk() which
+  //    is called from the WebView startup code.
+  //
+  //  g_load_secondary_locale_paks:
+  //    If true, load the Webview strings from stored-locales/<locale>.pak file
+  //    as the secondary locale pak file. Otherwise don't load a secondary
+  //    locale at all.
+  //
+  //    This is set by SetLoadSecondaryLocalePaks() which is called
+  //    during ChromeMainDelegate::PostEarlyInitialization() with a value
+  //    that is true iff there are stored-locale/ .pak files.
+  //
+  // In other words, if both |g_locale_paks_in_apk| and
+  // |g_load_secondary_locale_paks| are true, the stored-locales file will be
+  // loaded twice as both the primary and secondary. However, this should
+  // never happen in practice.
+
   // Load primary locale .pak file.
   if (g_locale_paks_in_apk) {
-    g_locale_pack_fd = LoadLocalePakFromApk(app_locale, &g_locale_pack_region);
+    g_locale_pack_fd =
+        LoadLocalePakFromApk(app_locale, false, &g_locale_pack_region);
   } else {
+    // Support overridden pak path for testing.
     base::FilePath locale_file_path = GetOverriddenPakPath();
-    if (locale_file_path.empty())
-      locale_file_path = GetLocaleFilePath(app_locale);
-
     if (locale_file_path.empty()) {
-      // It's possible that there is no locale.pak.
-      LOG(WARNING) << "locale_file_path.empty() for locale " << app_locale;
-      return std::string();
+      // Try to find the uncompressed split-specific asset file.
+      g_locale_pack_fd =
+          LoadLocalePakFromApk(app_locale, true, &g_locale_pack_region);
     }
-    int flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
-    g_locale_pack_fd = base::File(locale_file_path, flags).TakePlatformFile();
-    g_locale_pack_region = base::MemoryMappedFile::Region::kWholeFile;
+    if (g_locale_pack_fd < 0) {
+      // Otherwise, try to locate the extracted locale .pak file.
+      if (locale_file_path.empty())
+        locale_file_path = GetLocaleFilePath(app_locale);
+
+      if (locale_file_path.empty()) {
+        // It's possible that there is no locale.pak.
+        LOG(WARNING) << "locale_file_path.empty() for locale " << app_locale;
+        return std::string();
+      }
+      int flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
+      g_locale_pack_fd = base::File(locale_file_path, flags).TakePlatformFile();
+      g_locale_pack_region = base::MemoryMappedFile::Region::kWholeFile;
+    }
   }
 
   locale_resources_data_ = LoadDataPackFromLocalePak(
@@ -141,7 +196,7 @@ std::string ResourceBundle::LoadLocaleResources(
   // would have a copy of all the resources in the secondary locale pak.
   if (g_load_secondary_locale_paks) {
     g_secondary_locale_pack_fd = LoadLocalePakFromApk(
-        app_locale, &g_secondary_locale_pack_region);
+        app_locale, false, &g_secondary_locale_pack_region);
 
     secondary_locale_resources_data_ = LoadDataPackFromLocalePak(
         g_secondary_locale_pack_fd, g_secondary_locale_pack_region);
@@ -208,11 +263,12 @@ int GetSecondaryLocalePackFd(base::MemoryMappedFile::Region* out_region) {
   return g_secondary_locale_pack_fd;
 }
 
-std::string GetPathForAndroidLocalePakWithinApk(const std::string& locale) {
+std::string GetPathForAndroidLocalePakWithinApk(const std::string& locale,
+                                                bool in_bundle) {
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jstring> ret =
       Java_ResourceBundle_getLocalePakResourcePath(
-          env, base::android::ConvertUTF8ToJavaString(env, locale));
+          env, base::android::ConvertUTF8ToJavaString(env, locale), in_bundle);
   if (ret.obj() == nullptr) {
     return std::string();
   }

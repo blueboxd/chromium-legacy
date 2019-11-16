@@ -123,6 +123,8 @@ void SpeechSynthesisUtterance::Start(SpeechSynthesis* synthesis) {
       mojom_utterance_->Clone();
   if (mojom_utterance_to_send->voice.IsNull())
     mojom_utterance_to_send->voice = String("");
+  if (mojom_utterance_to_send->text.IsNull())
+    mojom_utterance_to_send->text = String("");
 
   receiver_.reset();
 

@@ -114,10 +114,6 @@ class FakeRendererPpapiHost : public content::RendererPpapiHost {
       bool should_close_source) override {
     return IPC::PlatformFileForTransit();
   }
-  base::SharedMemoryHandle ShareSharedMemoryHandleWithRemote(
-      const base::SharedMemoryHandle& handle) override {
-    return base::SharedMemoryHandle();
-  }
   base::UnsafeSharedMemoryRegion ShareUnsafeSharedMemoryRegionWithRemote(
       const base::UnsafeSharedMemoryRegion& region) override {
     return base::UnsafeSharedMemoryRegion();

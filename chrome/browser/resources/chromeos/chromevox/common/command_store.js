@@ -12,12 +12,12 @@
  *
  * If you are looking to add a user command, follow the below steps for best
  * integration with existing components:
- * 1. Add a command below in cvox.CommandStore.CMD_WHITELIST. Pick a
+ * 1. Add a command below in CommandStore.CMD_WHITELIST. Pick a
  * programmatic name and fill in each of the relevant JSON keys.
  * Be sure to add a msg id and define it in chromevox/messages/messages.js which
  * describes the command. Please also add a category msg id so that the command
  * will show up in the options page.
- * 2. Add the command's logic to cvox.UserCommands inside of our switch-based
+ * 2. Add the command's logic to UserCommands inside of our switch-based
  * dispatch method (doCommand_).
  * 3. Add a key binding in chromevox/background/keymaps/classic_keymap.json and
  * chromevox/background/keymaps/flat_keymap.json.
@@ -31,16 +31,16 @@
  */
 
 
-goog.provide('cvox.CommandStore');
+goog.provide('CommandStore');
 
 /**
  * Returns all of the categories in the store as an array.
  * @return {Array<string>} The collection of categories.
  */
-cvox.CommandStore.categories = function() {
+CommandStore.categories = function() {
   var categorySet = {};
-  for (var cmd in cvox.CommandStore.CMD_WHITELIST) {
-    var struct = cvox.CommandStore.CMD_WHITELIST[cmd];
+  for (var cmd in CommandStore.CMD_WHITELIST) {
+    var struct = CommandStore.CMD_WHITELIST[cmd];
     if (struct.category) {
       categorySet[struct.category] = true;
     }
@@ -58,8 +58,8 @@ cvox.CommandStore.categories = function() {
  * @param {string} command The command to query.
  * @return {string|undefined} The message id, if any.
  */
-cvox.CommandStore.messageForCommand = function(command) {
-  return (cvox.CommandStore.CMD_WHITELIST[command] || {}).msgId;
+CommandStore.messageForCommand = function(command) {
+  return (CommandStore.CMD_WHITELIST[command] || {}).msgId;
 };
 
 
@@ -68,8 +68,8 @@ cvox.CommandStore.messageForCommand = function(command) {
  * @param {string} command The command to query.
  * @return {string|undefined} The command, if any.
  */
-cvox.CommandStore.categoryForCommand = function(command) {
-  return (cvox.CommandStore.CMD_WHITELIST[command] || {}).category;
+CommandStore.categoryForCommand = function(command) {
+  return (CommandStore.CMD_WHITELIST[command] || {}).category;
 };
 
 
@@ -78,10 +78,10 @@ cvox.CommandStore.categoryForCommand = function(command) {
  * @param {string} category The category to query.
  * @return {Array<string>} The commands, if any.
  */
-cvox.CommandStore.commandsForCategory = function(category) {
+CommandStore.commandsForCategory = function(category) {
   var ret = [];
-  for (var cmd in cvox.CommandStore.CMD_WHITELIST) {
-    var struct = cvox.CommandStore.CMD_WHITELIST[cmd];
+  for (var cmd in CommandStore.CMD_WHITELIST) {
+    var struct = CommandStore.CMD_WHITELIST[cmd];
     if (category == struct.category) {
       ret.push(cmd);
     }
@@ -125,7 +125,7 @@ cvox.CommandStore.commandsForCategory = function(category) {
  *  disallowContinuation: Disallows continuous read to proceed. Defaults to
  * false.
  */
-cvox.CommandStore.CMD_WHITELIST = {
+CommandStore.CMD_WHITELIST = {
   'toggleStickyMode':
       {announce: false, msgId: 'toggle_sticky_mode', category: 'modifier_keys'},
   'passThroughMode': {
@@ -910,7 +910,7 @@ cvox.CommandStore.CMD_WHITELIST = {
  *  forwardError: The message id of the error string when moving forward.
  *  backwardError: The message id of the error string when moving backward.
  */
-cvox.CommandStore.NODE_INFO_MAP = {
+CommandStore.NODE_INFO_MAP = {
   'checkbox': {
     predicate: 'checkboxPredicate',
     forwardError: 'no_next_checkbox',

@@ -43,6 +43,8 @@ class NavigationManager {
       return;
     }
 
+    SwitchAccessMetrics.recordMenuAction('EnterGroup');
+
     const newGroup = this.node_.asRootNode();
     if (newGroup) {
       this.groupStack_.push(this.group_);
@@ -136,12 +138,15 @@ class NavigationManager {
     }
 
     if (this.node_.hasAction(SAConstants.MenuAction.OPEN_KEYBOARD)) {
+      SwitchAccessMetrics.recordMenuAction(
+          SAConstants.MenuAction.OPEN_KEYBOARD);
       this.node_.performAction(SAConstants.MenuAction.OPEN_KEYBOARD);
       this.enterKeyboard();
       return;
     }
 
     if (this.node_.hasAction(SAConstants.MenuAction.SELECT)) {
+      SwitchAccessMetrics.recordMenuAction(SAConstants.MenuAction.SELECT);
       this.node_.performAction(SAConstants.MenuAction.SELECT);
     }
   }
@@ -204,6 +209,7 @@ class NavigationManager {
       return;
     }
     this.moveToValidNode_();
+    this.group_.refresh();
   }
 
   // -------------------------------------------------------
@@ -255,6 +261,7 @@ class NavigationManager {
       this.group_ = this.groupStack_.pop();
     } while (!this.group_.isValid() && this.groupStack_.length);
 
+    this.group_.refresh();
     this.setNode_(this.group_.firstChild);
   }
 

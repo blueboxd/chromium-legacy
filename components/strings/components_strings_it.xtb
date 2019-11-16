@@ -910,6 +910,7 @@
 <translation id="5329858041417644019">Il browser in uso non è gestito</translation>
 <translation id="5332219387342487447">Modalità di spedizione</translation>
 <translation id="5334013548165032829">Log di sistema dettagliati</translation>
+<translation id="534295439873310000">Dispositivi NFC</translation>
 <translation id="5344579389779391559">Questa pagina potrebbe tentare di addebitarti dei costi</translation>
 <translation id="5355557959165512791">Al momento non puoi visitare il sito <ph name="SITE" /> perché il relativo certificato è stato revocato. In genere gli errori di rete e gli attacchi sono temporanei, pertanto questa pagina potrebbe funzionare più tardi.</translation>
 <translation id="536296301121032821">Archiviazione delle impostazioni criterio non riuscita</translation>
@@ -1530,6 +1531,7 @@ Ulteriori dettagli:
 <translation id="8466379296835108687">{COUNT,plural, =1{1 carta di credito}other{# carte di credito}}</translation>
 <translation id="8473863474539038330">Indirizzi e altro</translation>
 <translation id="8479754468255770962">Pinzatura in basso a sinistra</translation>
+<translation id="8481133456511676116">Forse cercavi: <ph name="DOMAIN" /></translation>
 <translation id="8483780878231876732">Accedi a Chrome per usare le carte memorizzate nel tuo Account Google</translation>
 <translation id="8488350697529856933">Si applica a</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ha impiegato troppo tempo a rispondere.</translation>

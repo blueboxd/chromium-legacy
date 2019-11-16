@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.webshare;
 
 import org.chromium.base.Callback;
 import org.chromium.base.task.PostTask;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.share.ShareParams;
-import org.chromium.chrome.browser.share.ShareSheetCoordinator;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.mojo.system.MojoResult;
 import org.chromium.webshare.mojom.ShareError;
@@ -54,7 +54,8 @@ public class SharedFileCollator implements Callback<Integer> {
 
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
             if (result == MojoResult.OK) {
-                ShareSheetCoordinator.create().share(mParams);
+                ChromeActivity activity = (ChromeActivity) mParams.getWindow().getActivity().get();
+                activity.getShareDelegate().share(mParams);
             } else {
                 callback.call(ShareError.INTERNAL_ERROR);
             }

@@ -26,7 +26,6 @@
 #include "components/sync/syncable/entry_kernel.h"
 #include "components/sync/syncable/metahandle_set.h"
 #include "components/sync/syncable/parent_child_index.h"
-#include "components/sync/syncable/syncable_delete_journal.h"
 
 namespace base {
 namespace trace_event {
@@ -144,7 +143,6 @@ class Directory {
     PersistedKernelInfo kernel_info;
     OwnedEntryKernelSet dirty_metas;
     MetahandleSet metahandles_to_purge;
-    MetahandleSet delete_journals_to_purge;
   };
 
   struct Kernel {
@@ -344,8 +342,6 @@ class Directory {
                             const base::Location& location,
                             const std::string& message);
 
-  DeleteJournal* delete_journal();
-
   // Returns the child meta handles (even those for deleted/unlinked
   // nodes) for given parent id.  Clears |result| if there are no
   // children.
@@ -507,7 +503,6 @@ class Directory {
  private:
   friend class SyncableDirectoryTest;
   friend class syncer::TestUserShare;
-  FRIEND_TEST_ALL_PREFIXES(SyncableDirectoryTest, ManageDeleteJournals);
   FRIEND_TEST_ALL_PREFIXES(SyncableDirectoryTest,
                            TakeSnapshotGetsAllDirtyHandlesTest);
   FRIEND_TEST_ALL_PREFIXES(SyncableDirectoryTest,
@@ -622,10 +617,6 @@ class Directory {
   NigoriHandler* const nigori_handler_;
 
   InvariantCheckLevel invariant_check_level_;
-
-  // Maintain deleted entries not in |kernel_| until it's verified that they
-  // are deleted in native models as well.
-  std::unique_ptr<DeleteJournal> delete_journal_;
 
   base::WeakPtrFactory<Directory> weak_ptr_factory_{this};
 

@@ -483,10 +483,15 @@ CookieOptions::SameSiteCookieContext ComputeSameSiteContextForRequest(
 }
 
 NET_EXPORT CookieOptions::SameSiteCookieContext
-ComputeSameSiteContextForScriptGet(
-    const GURL& url,
-    const GURL& site_for_cookies,
-    const base::Optional<url::Origin>& initiator) {
+ComputeSameSiteContextForScriptGet(const GURL& url,
+                                   const GURL& site_for_cookies,
+                                   const base::Optional<url::Origin>& initiator,
+                                   bool attach_same_site_cookies) {
+  if (attach_same_site_cookies) {
+    return ComputeSchemeChange(
+        CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT, url,
+        site_for_cookies);
+  }
   return ComputeSameSiteContext(url, site_for_cookies, initiator);
 }
 
@@ -509,8 +514,10 @@ CookieOptions::SameSiteCookieContext ComputeSameSiteContextForResponse(
 
 CookieOptions::SameSiteCookieContext ComputeSameSiteContextForScriptSet(
     const GURL& url,
-    const GURL& site_for_cookies) {
-  if (MatchesSiteForCookies(url, site_for_cookies)) {
+    const GURL& site_for_cookies,
+    bool attach_same_site_cookies) {
+  if (attach_same_site_cookies ||
+      MatchesSiteForCookies(url, site_for_cookies)) {
     return ComputeSchemeChange(
         CookieOptions::SameSiteCookieContext::SAME_SITE_LAX, url,
         site_for_cookies);
@@ -519,12 +526,14 @@ CookieOptions::SameSiteCookieContext ComputeSameSiteContextForScriptSet(
   }
 }
 
-NET_EXPORT CookieOptions::SameSiteCookieContext
-ComputeSameSiteContextForSubresource(const GURL& url,
-                                     const GURL& site_for_cookies) {
+CookieOptions::SameSiteCookieContext ComputeSameSiteContextForSubresource(
+    const GURL& url,
+    const GURL& site_for_cookies,
+    bool attach_same_site_cookies) {
   // If the URL is same-site as site_for_cookies it's same-site as all frames
   // in the tree from the initiator frame up --- including the initiator frame.
-  if (MatchesSiteForCookies(url, site_for_cookies)) {
+  if (attach_same_site_cookies ||
+      MatchesSiteForCookies(url, site_for_cookies)) {
     return ComputeSchemeChange(
         CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT, url,
         site_for_cookies);

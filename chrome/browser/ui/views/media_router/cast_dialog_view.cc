@@ -262,7 +262,7 @@ CastDialogView::CastDialogView(views::View* anchor_view,
       selected_source_(SourceType::kTab),
       controller_(controller),
       profile_(profile),
-      metrics_(start_time) {
+      metrics_(start_time, profile) {
   DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
   sources_button_ = DialogDelegate::SetExtraView(CreateSourcesButton(this));
   ShowNoSinksView();

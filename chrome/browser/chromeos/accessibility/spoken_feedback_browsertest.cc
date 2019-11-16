@@ -133,7 +133,7 @@ void LoggedInSpokenFeedbackTest::DisableEarcons() {
   // (http://crbug.com/396507). Work around this by just telling
   // ChromeVox to not ever play earcons (prerecorded sound effects).
   RunJavaScriptInChromeVoxBackgroundPage(
-      "cvox.ChromeVox.earcons.playEarcon = function() {};");
+      "ChromeVox.earcons.playEarcon = function() {};");
 }
 
 void LoggedInSpokenFeedbackTest::EnableChromeVox() {

@@ -111,6 +111,11 @@ test("shell_dialogs_unittests") {
   if (is_mac) {
     deps += [ "//components/remote_cocoa/app_shim" ]
   }
+
+  # TODO: Remove once http://crbug.com/951419 is fixed.
+  if (is_android) {
+    deps += [ "//ui/android:ui_java" ]
+  }
 }
 
 source_set("test_support") {

@@ -18,12 +18,17 @@
     <div class="settings-box">
       <div id="enableArcAdbLabel" class="start">
         $i18n{crostiniArcAdbLabel}
+        <div class="secondary" hidden="[[!arcAdbNeedPowerwash_]]"
+            inner-h-t-m-l="[[i18nAdvanced(
+                'crostiniArcAdbPowerwashRequiredSublabel')]]">
+        </div>
       </div>
       <cr-policy-indicator indicator-type="[[getPolicyIndicatorType_(
           isOwnerProfile_, isEnterpriseManaged_)]]"></cr-policy-indicator>
       <cr-toggle id="arcAdbEnabledButton" aria-labelledby="enableArcAdbLabel"
           checked$="[[arcAdbEnabled_]]"
-          disabled="[[shouldDisable_(isOwnerProfile_, isEnterpriseManaged_)]]"
+          disabled="[[shouldDisable_(isOwnerProfile_, isEnterpriseManaged_,
+                      arcAdbNeedPowerwash_)]]"
           on-change="onArcAdbToggleChanged_">
       </cr-toggle>
     </div>

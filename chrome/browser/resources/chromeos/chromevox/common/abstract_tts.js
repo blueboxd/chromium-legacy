@@ -8,18 +8,18 @@
  *
  */
 
-goog.provide('cvox.AbstractTts');
+goog.provide('AbstractTts');
 
 goog.require('Msgs');
-goog.require('cvox.TtsInterface');
+goog.require('TtsInterface');
 goog.require('goog.i18n.MessageFormat');
 
 /**
  * Creates a new instance.
  * @constructor
- * @implements {cvox.TtsInterface}
+ * @implements {TtsInterface}
  */
-cvox.AbstractTts = function() {
+AbstractTts = function() {
   this.ttsProperties = new Object();
 
   /**
@@ -60,15 +60,15 @@ cvox.AbstractTts = function() {
    */
   this.propertyStep = {'rate': 0.1, 'pitch': 0.1, 'volume': 0.1};
 
-  if (cvox.AbstractTts.substitutionDictionaryRegexp_ == undefined) {
+  if (AbstractTts.substitutionDictionaryRegexp_ == undefined) {
     // Create an expression that matches all words in the substitution
     // dictionary.
     var symbols = [];
-    for (var symbol in cvox.AbstractTts.SUBSTITUTION_DICTIONARY) {
+    for (var symbol in AbstractTts.SUBSTITUTION_DICTIONARY) {
       symbols.push(symbol);
     }
     var expr = '(' + symbols.join('|') + ')';
-    cvox.AbstractTts.substitutionDictionaryRegexp_ = new RegExp(expr, 'ig');
+    AbstractTts.substitutionDictionaryRegexp_ = new RegExp(expr, 'ig');
   }
 };
 
@@ -78,31 +78,31 @@ cvox.AbstractTts = function() {
  * @type {Object}
  * @protected
  */
-cvox.AbstractTts.prototype.ttsProperties;
+AbstractTts.prototype.ttsProperties;
 
 
 /** @override */
-cvox.AbstractTts.prototype.speak = function(textString, queueMode, properties) {
+AbstractTts.prototype.speak = function(textString, queueMode, properties) {
   return this;
 };
 
 
 /** @override */
-cvox.AbstractTts.prototype.isSpeaking = function() {
+AbstractTts.prototype.isSpeaking = function() {
   return false;
 };
 
 
 /** @override */
-cvox.AbstractTts.prototype.stop = function() {};
+AbstractTts.prototype.stop = function() {};
 
 
 /** @override */
-cvox.AbstractTts.prototype.addCapturingEventListener = function(listener) {};
+AbstractTts.prototype.addCapturingEventListener = function(listener) {};
 
 
 /** @override */
-cvox.AbstractTts.prototype.increaseOrDecreaseProperty = function(
+AbstractTts.prototype.increaseOrDecreaseProperty = function(
     propertyName, increase) {
   var min = this.propertyMin[propertyName];
   var max = this.propertyMax[propertyName];
@@ -117,7 +117,7 @@ cvox.AbstractTts.prototype.increaseOrDecreaseProperty = function(
  * @param {string} property The property to convert.
  * @return {?number} The percentage of the property.
  */
-cvox.AbstractTts.prototype.propertyToPercentage = function(property) {
+AbstractTts.prototype.propertyToPercentage = function(property) {
   return (this.ttsProperties[property] - this.propertyMin[property]) /
       Math.abs(this.propertyMax[property] - this.propertyMin[property]);
 };
@@ -130,7 +130,7 @@ cvox.AbstractTts.prototype.propertyToPercentage = function(property) {
  * @return {Object} The merged properties.
  * @protected
  */
-cvox.AbstractTts.prototype.mergeProperties = function(properties) {
+AbstractTts.prototype.mergeProperties = function(properties) {
   var mergedProperties = new Object();
   var p;
   if (this.ttsProperties) {
@@ -139,7 +139,7 @@ cvox.AbstractTts.prototype.mergeProperties = function(properties) {
     }
   }
   if (properties) {
-    var tts = cvox.AbstractTts;
+    var tts = AbstractTts;
     if (typeof (properties[tts.VOLUME]) == 'number') {
       mergedProperties[tts.VOLUME] = properties[tts.VOLUME];
     }
@@ -199,11 +199,11 @@ cvox.AbstractTts.prototype.mergeProperties = function(properties) {
  *     most speech engines.
  * @protected
  */
-cvox.AbstractTts.prototype.preprocess = function(text, properties) {
+AbstractTts.prototype.preprocess = function(text, properties) {
   if (text.length == 1 && text >= 'A' && text <= 'Z') {
-    for (var prop in cvox.AbstractTts.PERSONALITY_CAPITAL) {
+    for (var prop in AbstractTts.PERSONALITY_CAPITAL) {
       if (properties[prop] === undefined) {
-        properties[prop] = cvox.AbstractTts.PERSONALITY_CAPITAL[prop];
+        properties[prop] = AbstractTts.PERSONALITY_CAPITAL[prop];
       }
     }
   }
@@ -211,61 +211,61 @@ cvox.AbstractTts.prototype.preprocess = function(text, properties) {
   // Substitute all symbols in the substitution dictionary. This is pretty
   // efficient because we use a single regexp that matches all symbols
   // simultaneously.
-  text = text.replace(
-      cvox.AbstractTts.substitutionDictionaryRegexp_, function(symbol) {
-        return ' ' + cvox.AbstractTts.SUBSTITUTION_DICTIONARY[symbol] + ' ';
+  text =
+      text.replace(AbstractTts.substitutionDictionaryRegexp_, function(symbol) {
+        return ' ' + AbstractTts.SUBSTITUTION_DICTIONARY[symbol] + ' ';
       });
 
   // Handle single characters that we want to make sure we pronounce.
   if (text.length == 1) {
-    return cvox.AbstractTts.CHARACTER_DICTIONARY[text] ?
+    return AbstractTts.CHARACTER_DICTIONARY[text] ?
         (new goog.i18n.MessageFormat(
-             Msgs.getMsg(cvox.AbstractTts.CHARACTER_DICTIONARY[text])))
+             Msgs.getMsg(AbstractTts.CHARACTER_DICTIONARY[text])))
             .format({'COUNT': 1}) :
         text.toUpperCase();
   }
 
   // Expand all repeated characters.
   text = text.replace(
-      cvox.AbstractTts.repetitionRegexp_, cvox.AbstractTts.repetitionReplace_);
+      AbstractTts.repetitionRegexp_, AbstractTts.repetitionReplace_);
 
   return text;
 };
 
 
 /** TTS rate property. @type {string} */
-cvox.AbstractTts.RATE = 'rate';
+AbstractTts.RATE = 'rate';
 /** TTS pitch property. @type {string} */
-cvox.AbstractTts.PITCH = 'pitch';
+AbstractTts.PITCH = 'pitch';
 /** TTS volume property. @type {string} */
-cvox.AbstractTts.VOLUME = 'volume';
+AbstractTts.VOLUME = 'volume';
 /** TTS language property. @type {string} */
-cvox.AbstractTts.LANG = 'lang';
+AbstractTts.LANG = 'lang';
 
 /** TTS relative rate property. @type {string} */
-cvox.AbstractTts.RELATIVE_RATE = 'relativeRate';
+AbstractTts.RELATIVE_RATE = 'relativeRate';
 /** TTS relative pitch property. @type {string} */
-cvox.AbstractTts.RELATIVE_PITCH = 'relativePitch';
+AbstractTts.RELATIVE_PITCH = 'relativePitch';
 /** TTS relative volume property. @type {string} */
-cvox.AbstractTts.RELATIVE_VOLUME = 'relativeVolume';
+AbstractTts.RELATIVE_VOLUME = 'relativeVolume';
 
 /** TTS color property (for the lens display). @type {string} */
-cvox.AbstractTts.COLOR = 'color';
+AbstractTts.COLOR = 'color';
 /** TTS CSS font-weight property (for the lens display). @type {string} */
-cvox.AbstractTts.FONT_WEIGHT = 'fontWeight';
+AbstractTts.FONT_WEIGHT = 'fontWeight';
 
 /** TTS punctuation-echo property. @type {string} */
-cvox.AbstractTts.PUNCTUATION_ECHO = 'punctuationEcho';
+AbstractTts.PUNCTUATION_ECHO = 'punctuationEcho';
 
 /** TTS pause property. @type {string} */
-cvox.AbstractTts.PAUSE = 'pause';
+AbstractTts.PAUSE = 'pause';
 
 /**
  * TTS personality for annotations - text spoken by ChromeVox that
  * elaborates on a user interface element but isn't displayed on-screen.
  * @type {Object}
  */
-cvox.AbstractTts.PERSONALITY_ANNOTATION = {
+AbstractTts.PERSONALITY_ANNOTATION = {
   'relativePitch': -0.25,
   // TODO:(rshearer) Added this color change for I/O presentation.
   'color': 'yellow',
@@ -278,7 +278,7 @@ cvox.AbstractTts.PERSONALITY_ANNOTATION = {
  * isn't tied to any user interface elements.
  * @type {Object}
  */
-cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT = {
+AbstractTts.PERSONALITY_ANNOUNCEMENT = {
   'punctuationEcho': 'none'
 };
 
@@ -287,7 +287,7 @@ cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT = {
  * warnings.
  * @type {Object}
  */
-cvox.AbstractTts.PERSONALITY_SYSTEM_ALERT = {
+AbstractTts.PERSONALITY_SYSTEM_ALERT = {
   'punctuationEcho': 'none',
   'doNotInterrupt': true
 };
@@ -296,7 +296,7 @@ cvox.AbstractTts.PERSONALITY_SYSTEM_ALERT = {
  * TTS personality for an aside - text in parentheses.
  * @type {Object}
  */
-cvox.AbstractTts.PERSONALITY_ASIDE = {
+AbstractTts.PERSONALITY_ASIDE = {
   'relativePitch': -0.1,
   'color': '#669'
 };
@@ -306,7 +306,7 @@ cvox.AbstractTts.PERSONALITY_ASIDE = {
  * TTS personality for capital letters.
  * @type {Object}
  */
-cvox.AbstractTts.PERSONALITY_CAPITAL = {
+AbstractTts.PERSONALITY_CAPITAL = {
   'relativePitch': 0.2
 };
 
@@ -315,7 +315,7 @@ cvox.AbstractTts.PERSONALITY_CAPITAL = {
  * TTS personality for deleted text.
  * @type {Object}
  */
-cvox.AbstractTts.PERSONALITY_DELETED = {
+AbstractTts.PERSONALITY_DELETED = {
   'punctuationEcho': 'none',
   'relativePitch': -0.6
 };
@@ -325,7 +325,7 @@ cvox.AbstractTts.PERSONALITY_DELETED = {
  * TTS personality for quoted text.
  * @type {Object}
  */
-cvox.AbstractTts.PERSONALITY_QUOTE = {
+AbstractTts.PERSONALITY_QUOTE = {
   'relativePitch': 0.1,
   'color': '#b6b',
   'fontWeight': 'bold'
@@ -336,7 +336,7 @@ cvox.AbstractTts.PERSONALITY_QUOTE = {
  * TTS personality for strong or bold text.
  * @type {Object}
  */
-cvox.AbstractTts.PERSONALITY_STRONG = {
+AbstractTts.PERSONALITY_STRONG = {
   'relativePitch': 0.1,
   'color': '#b66',
   'fontWeight': 'bold'
@@ -347,7 +347,7 @@ cvox.AbstractTts.PERSONALITY_STRONG = {
  * TTS personality for emphasis or italicized text.
  * @type {Object}
  */
-cvox.AbstractTts.PERSONALITY_EMPHASIS = {
+AbstractTts.PERSONALITY_EMPHASIS = {
   'relativeVolume': 0.1,
   'relativeRate': -0.1,
   'color': '#6bb',
@@ -359,7 +359,7 @@ cvox.AbstractTts.PERSONALITY_EMPHASIS = {
  * Flag indicating if the TTS is being debugged.
  * @type {boolean}
  */
-cvox.AbstractTts.DEBUG = true;
+AbstractTts.DEBUG = true;
 
 
 /**
@@ -367,7 +367,7 @@ cvox.AbstractTts.DEBUG = true;
  * equivalents. This replacement only occurs for single character utterances.
  * @type {Object<string>}
  */
-cvox.AbstractTts.CHARACTER_DICTIONARY = {
+AbstractTts.CHARACTER_DICTIONARY = {
   ' ': 'space',
   '`': 'backtick',
   '~': 'tilde',
@@ -413,7 +413,7 @@ cvox.AbstractTts.CHARACTER_DICTIONARY = {
  * @type {RegExp};
  * @private
  */
-cvox.AbstractTts.pronunciationDictionaryRegexp_;
+AbstractTts.pronunciationDictionaryRegexp_;
 
 
 /**
@@ -425,7 +425,7 @@ cvox.AbstractTts.pronunciationDictionaryRegexp_;
  * "two dollars".
  * @type {Object<string>}
  */
-cvox.AbstractTts.SUBSTITUTION_DICTIONARY = {
+AbstractTts.SUBSTITUTION_DICTIONARY = {
   '://': 'colon slash slash',
   '\u00bc': 'one fourth',
   '\u00bd': 'one half',
@@ -473,7 +473,7 @@ cvox.AbstractTts.SUBSTITUTION_DICTIONARY = {
  * @type {RegExp};
  * @private
  */
-cvox.AbstractTts.substitutionDictionaryRegexp_;
+AbstractTts.substitutionDictionaryRegexp_;
 
 
 /**
@@ -481,7 +481,7 @@ cvox.AbstractTts.substitutionDictionaryRegexp_;
  * @type {RegExp}
  * @private
  */
-cvox.AbstractTts.repetitionRegexp_ =
+AbstractTts.repetitionRegexp_ =
     /([-\/\\|!@#$%^&*\(\)=_+\[\]\{\}.?;'":<>\u2022])\1{1,}/g;
 
 
@@ -492,11 +492,11 @@ cvox.AbstractTts.repetitionRegexp_ =
  * @return {string} The description.
  * @private
  */
-cvox.AbstractTts.repetitionReplace_ = function(match) {
+AbstractTts.repetitionReplace_ = function(match) {
   var count = match.length;
   return ' ' +
       (new goog.i18n.MessageFormat(
-           Msgs.getMsg(cvox.AbstractTts.CHARACTER_DICTIONARY[match[0]])))
+           Msgs.getMsg(AbstractTts.CHARACTER_DICTIONARY[match[0]])))
           .format({'COUNT': count}) +
       ' ';
 };
@@ -505,12 +505,12 @@ cvox.AbstractTts.repetitionReplace_ = function(match) {
 /**
  * @override
  */
-cvox.AbstractTts.prototype.getDefaultProperty = function(property) {
+AbstractTts.prototype.getDefaultProperty = function(property) {
   return this.propertyDefault[property];
 };
 
 
 /** @override */
-cvox.AbstractTts.prototype.toggleSpeechOnOrOff = function() {
+AbstractTts.prototype.toggleSpeechOnOrOff = function() {
   return true;
 };

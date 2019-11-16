@@ -52,15 +52,8 @@ import org.chromium.ui.KeyboardVisibilityDelegate;
  * All the computation in this file is based off of the bottom of the screen instead of the top
  * for simplicity. This means that the bottom of the screen is 0 on the Y axis.
  */
-public class BottomSheet
-        extends FrameLayout implements BottomSheetSwipeDetector.SwipeableBottomSheet,
-                                       NativePageHost, View.OnLayoutChangeListener {
-    /**
-     * The base duration of the settling animation of the sheet. 218 ms is a spec for material
-     * design (this is the minimum time a user is guaranteed to pay attention to something).
-     */
-    public static final long BASE_ANIMATION_DURATION_MS = 218;
-
+class BottomSheet extends FrameLayout implements BottomSheetSwipeDetector.SwipeableBottomSheet,
+                                                 NativePageHost, View.OnLayoutChangeListener {
     /**
      * The fraction of the way to the next state the sheet must be swiped to animate there when
      * released. This is the value used when there are 3 active states. A smaller value here means
@@ -275,13 +268,13 @@ public class BottomSheet
      * Adds layout change listeners to the views that the bottom sheet depends on. Namely the
      * heights of the root view and control container are important as they are used in many of the
      * calculations in this class.
-     * @param root The container of the bottom sheet.
      * @param tabProvider A means of accessing the active tab.
      * @param window Android window for getting insets.
      * @param keyboardDelegate Delegate for hiding the keyboard.
      */
-    public void init(View root, ActivityTabProvider tabProvider, Window window,
+    public void init(ActivityTabProvider tabProvider, Window window,
             KeyboardVisibilityDelegate keyboardDelegate) {
+        View root = (View) getParent();
         mTabSupplier = tabProvider;
 
         mToolbarHolder =
@@ -609,7 +602,7 @@ public class BottomSheet
         mTargetState = targetState;
         mSettleAnimator =
                 ValueAnimator.ofFloat(getCurrentOffsetPx(), getSheetHeightForState(targetState));
-        mSettleAnimator.setDuration(BASE_ANIMATION_DURATION_MS);
+        mSettleAnimator.setDuration(BottomSheetController.BASE_ANIMATION_DURATION_MS);
         mSettleAnimator.setInterpolator(mInterpolator);
 
         // When the animation is canceled or ends, reset the handle to null.
@@ -650,7 +643,7 @@ public class BottomSheet
      * Sets the sheet's offset relative to the bottom of the screen.
      * @param offset The offset that the sheet should be.
      */
-    private void setSheetOffsetFromBottom(float offset, @StateChangeReason int reason) {
+    void setSheetOffsetFromBottom(float offset, @StateChangeReason int reason) {
         mCurrentOffsetPx = offset;
 
         // The browser controls offset is added here so that the sheet's toolbar behaves like the

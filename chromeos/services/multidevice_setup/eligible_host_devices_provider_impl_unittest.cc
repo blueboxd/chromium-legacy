@@ -186,22 +186,23 @@ TEST_P(MultiDeviceSetupEligibleHostDevicesProviderImplTest,
         std::move(device_activity_statuses));
   }
 
+  multidevice::DeviceWithConnectivityStatusList eligible_active_devices =
+      provider()->GetEligibleActiveHostDevices();
+  EXPECT_EQ(4u, eligible_active_devices.size());
+
   if (use_get_devices_activity_status()) {
-    multidevice::DeviceWithConnectivityStatusList eligible_devices =
-        provider()->GetEligibleActiveHostDevices();
-    EXPECT_EQ(4u, eligible_devices.size());
-    EXPECT_EQ(test_devices()[2], eligible_devices[0].remote_device);
-    EXPECT_EQ(test_devices()[3], eligible_devices[1].remote_device);
-    EXPECT_EQ(test_devices()[0], eligible_devices[2].remote_device);
-    EXPECT_EQ(test_devices()[1], eligible_devices[3].remote_device);
+    EXPECT_EQ(test_devices()[2], eligible_active_devices[0].remote_device);
+    EXPECT_EQ(test_devices()[3], eligible_active_devices[1].remote_device);
+    EXPECT_EQ(test_devices()[0], eligible_active_devices[2].remote_device);
+    EXPECT_EQ(test_devices()[1], eligible_active_devices[3].remote_device);
     EXPECT_EQ(cryptauthv2::ConnectivityStatus::ONLINE,
-              eligible_devices[0].connectivity_status);
+              eligible_active_devices[0].connectivity_status);
     EXPECT_EQ(cryptauthv2::ConnectivityStatus::ONLINE,
-              eligible_devices[1].connectivity_status);
+              eligible_active_devices[1].connectivity_status);
     EXPECT_EQ(cryptauthv2::ConnectivityStatus::ONLINE,
-              eligible_devices[2].connectivity_status);
+              eligible_active_devices[2].connectivity_status);
     EXPECT_EQ(cryptauthv2::ConnectivityStatus::OFFLINE,
-              eligible_devices[3].connectivity_status);
+              eligible_active_devices[3].connectivity_status);
   } else {
     multidevice::RemoteDeviceRefList eligible_devices =
         provider()->GetEligibleHostDevices();
@@ -210,6 +211,14 @@ TEST_P(MultiDeviceSetupEligibleHostDevicesProviderImplTest,
     EXPECT_EQ(test_devices()[1], eligible_devices[1]);
     EXPECT_EQ(test_devices()[2], eligible_devices[2]);
     EXPECT_EQ(test_devices()[0], eligible_devices[3]);
+
+    for (size_t i = 0; i < 4; i++) {
+      EXPECT_EQ(eligible_devices[i], eligible_active_devices[i].remote_device);
+    }
+    for (size_t i = 0; i < 4; i++) {
+      EXPECT_EQ(cryptauthv2::ConnectivityStatus::UNKNOWN_CONNECTIVITY,
+                eligible_active_devices[i].connectivity_status);
+    }
   }
 }
 

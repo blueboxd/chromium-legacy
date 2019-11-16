@@ -454,6 +454,9 @@ ProfileNetworkContextService::CreateCookieManagerParams(
   out->secure_origin_cookies_allowed_schemes.push_back(
       content::kChromeUIScheme);
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+  // TODO(chlily): To be consistent with the content_settings version of
+  // CookieSettings, we should probably also add kExtensionScheme to the list of
+  // matching_scheme_cookies_allowed_schemes.
   out->third_party_cookies_allowed_schemes.push_back(
       extensions::kExtensionScheme);
 #endif

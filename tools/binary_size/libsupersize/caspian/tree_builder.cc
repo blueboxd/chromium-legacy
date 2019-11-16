@@ -30,13 +30,9 @@ size_t LastSeparatorIndex(std::string_view str, char sep, char othersep) {
 }
 
 std::string_view DirName(std::string_view path, char sep, char othersep) {
-  auto end = LastSeparatorIndex(path, sep, othersep);
-  if (end != std::string_view::npos) {
-    std::string_view ret = path;
-    ret.remove_suffix(path.size() - end);
-    return ret;
-  }
-  return "";
+  size_t sep_idx = LastSeparatorIndex(path, sep, othersep);
+  return sep_idx != std::string_view::npos ? path.substr(0, sep_idx)
+                                           : std::string_view();
 }
 }  // namespace
 
@@ -58,9 +54,12 @@ TreeBuilder::~TreeBuilder() = default;
 
 void TreeBuilder::Build(
     bool group_by_component,
+    bool method_count_mode,
     std::vector<std::function<bool(const BaseSymbol&)>> filters) {
   group_by_component_ = group_by_component;
+  method_count_mode_ = method_count_mode;
   filters_ = filters;
+  sep_ = group_by_component ? kComponentSep : kPathSep;
 
   // Initialize tree root.
   root_.container_type = ContainerType::kDirectory;
@@ -84,14 +83,37 @@ void TreeBuilder::Build(
   }
 }
 
+namespace {
+bool CompareAbsSize(const TreeNode* const& l, const TreeNode* const& r) {
+  float l_size = abs(l->size);
+  float r_size = abs(r->size);
+  if (l_size == r_size) {
+    return l->id_path < r->id_path;
+  }
+  return abs(l->size) > abs(r->size);
+}
+
+bool CompareCount(const TreeNode* const& l, const TreeNode* const& r) {
+  int32_t l_count = l->node_stats.SumCount();
+  int32_t r_count = r->node_stats.SumCount();
+  if (l_count == r_count) {
+    return l->id_path < r->id_path;
+  }
+  return l_count > r_count;
+}
+}  // namespace
+
 Json::Value TreeBuilder::Open(const char* path) {
   // Returns a string that can be parsed to a JS object.
   static std::string result;
   const auto node = _parents.find(path);
 
+  TreeNode::CompareFunc node_sort_func =
+      method_count_mode_ ? &CompareCount : &CompareAbsSize;
+
   if (node != _parents.end()) {
     Json::Value v;
-    node->second->WriteIntoJson(&v, 1);
+    node->second->WriteIntoJson(&v, 1, node_sort_func);
     return v;
   } else {
     std::cerr << "Tried to open nonexistent node with path: " << path

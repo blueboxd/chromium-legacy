@@ -11,7 +11,7 @@
 goog.provide('MediaAutomationHandler');
 
 goog.require('BaseAutomationHandler');
-goog.require('cvox.TtsCapturingEventListener');
+goog.require('TtsCapturingEventListener');
 
 goog.scope(function() {
 var AutomationEvent = chrome.automation.AutomationEvent;
@@ -22,7 +22,7 @@ var RoleType = chrome.automation.RoleType;
 /**
  * @constructor
  * @extends {BaseAutomationHandler}
- * @implements {cvox.TtsCapturingEventListener}
+ * @implements {TtsCapturingEventListener}
  */
 MediaAutomationHandler = function() {
   /** @type {!Set<AutomationNode>} @private */
@@ -31,7 +31,7 @@ MediaAutomationHandler = function() {
   /** @type {Date} @private */
   this.lastTtsEvent_ = new Date();
 
-  cvox.ChromeVox.tts.addCapturingEventListener(this);
+  ChromeVox.tts.addCapturingEventListener(this);
 
   chrome.automation.getDesktop(function(node) {
     BaseAutomationHandler.call(this, node);
@@ -79,7 +79,7 @@ MediaAutomationHandler.prototype = {
   onMediaStartedPlaying: function(evt) {
     this.mediaRoots_.add(evt.target);
     var audioStrategy = localStorage['audioStrategy'];
-    if (cvox.ChromeVox.tts.isSpeaking() && audioStrategy == 'audioDuck') {
+    if (ChromeVox.tts.isSpeaking() && audioStrategy == 'audioDuck') {
       this.update_({start: true});
     }
   },

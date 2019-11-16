@@ -7,20 +7,20 @@
  * feedback for events that happen in the "Chrome of Chrome".
  */
 
-goog.provide('cvox.TabsApiHandler');
+goog.provide('TabsApiHandler');
 
-goog.require('cvox.AbstractEarcons');
-goog.require('cvox.AbstractTts');
-goog.require('cvox.BrailleInterface');
-goog.require('cvox.ChromeVox');
-goog.require('cvox.NavBraille');
+goog.require('AbstractEarcons');
+goog.require('AbstractTts');
+goog.require('BrailleInterface');
+goog.require('ChromeVox');
+goog.require('NavBraille');
 
 
 /**
  * Class that adds listeners and handles events from the tabs API.
  * @constructor
  */
-cvox.TabsApiHandler = function() {
+TabsApiHandler = function() {
   /** @type {function(string, Array<string>=)} @private */
   this.msg_ = Msgs.getMsg.bind(Msgs);
   /**
@@ -52,22 +52,22 @@ cvox.TabsApiHandler = function() {
 /**
  * @type {boolean}
  */
-cvox.TabsApiHandler.shouldOutputSpeechAndBraille = true;
+TabsApiHandler.shouldOutputSpeechAndBraille = true;
 
-cvox.TabsApiHandler.prototype = {
+TabsApiHandler.prototype = {
   /**
    * Handles chrome.tabs.onCreated.
    * @param {Object} tab
    */
   onCreated: function(tab) {
-    if (cvox.TabsApiHandler.shouldOutputSpeechAndBraille) {
-      cvox.ChromeVox.tts.speak(
-          this.msg_('chrome_tab_created'), cvox.QueueMode.FLUSH,
-          cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
-      cvox.ChromeVox.braille.write(
-          cvox.NavBraille.fromText(this.msg_('chrome_tab_created')));
+    if (TabsApiHandler.shouldOutputSpeechAndBraille) {
+      ChromeVox.tts.speak(
+          this.msg_('chrome_tab_created'), QueueMode.FLUSH,
+          AbstractTts.PERSONALITY_ANNOUNCEMENT);
+      ChromeVox.braille.write(
+          NavBraille.fromText(this.msg_('chrome_tab_created')));
     }
-    cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.OBJECT_OPEN);
+    ChromeVox.earcons.playEarcon(Earcon.OBJECT_OPEN);
   },
 
   /**
@@ -75,11 +75,11 @@ cvox.TabsApiHandler.prototype = {
    * @param {Object} tab
    */
   onRemoved: function(tab) {
-    cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.OBJECT_CLOSE);
+    ChromeVox.earcons.playEarcon(Earcon.OBJECT_CLOSE);
 
     chrome.tabs.query({active: true}, function(tabs) {
       if (tabs.length == 0 && this.isPlayingPageLoadingSound_()) {
-        cvox.ChromeVox.earcons.cancelEarcon(cvox.Earcon.PAGE_START_LOADING);
+        ChromeVox.earcons.cancelEarcon(Earcon.PAGE_START_LOADING);
         this.cancelPageLoadTimer_();
       }
     }.bind(this));
@@ -96,15 +96,15 @@ cvox.TabsApiHandler.prototype = {
         return;
       }
 
-      if (cvox.TabsApiHandler.shouldOutputSpeechAndBraille) {
+      if (TabsApiHandler.shouldOutputSpeechAndBraille) {
         var title = tab.title ? tab.title : tab.url;
-        cvox.ChromeVox.tts.speak(
-            this.msg_('chrome_tab_selected', [title]), cvox.QueueMode.FLUSH,
-            cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
-        cvox.ChromeVox.braille.write(cvox.NavBraille.fromText(
-            this.msg_('chrome_tab_selected', [title])));
+        ChromeVox.tts.speak(
+            this.msg_('chrome_tab_selected', [title]), QueueMode.FLUSH,
+            AbstractTts.PERSONALITY_ANNOUNCEMENT);
+        ChromeVox.braille.write(
+            NavBraille.fromText(this.msg_('chrome_tab_selected', [title])));
       }
-      cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.OBJECT_SELECT);
+      ChromeVox.earcons.playEarcon(Earcon.OBJECT_SELECT);
     }.bind(this));
   },
 
@@ -117,10 +117,10 @@ cvox.TabsApiHandler.prototype = {
     chrome.tabs.get(tabId, function(tab) {
       this.lastActiveTabLoaded_ = tab.status == 'complete';
       if (tab.status == 'loading' && !this.isPlayingPageLoadingSound_()) {
-        cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.PAGE_START_LOADING);
+        ChromeVox.earcons.playEarcon(Earcon.PAGE_START_LOADING);
         this.startPageLoadTimer_(tabId);
       } else {
-        cvox.ChromeVox.earcons.cancelEarcon(cvox.Earcon.PAGE_START_LOADING);
+        ChromeVox.earcons.cancelEarcon(Earcon.PAGE_START_LOADING);
         this.cancelPageLoadTimer_();
       }
     }.bind(this));
@@ -139,12 +139,12 @@ cvox.TabsApiHandler.prototype = {
       if (tab.status == 'loading') {
         this.lastActiveTabLoaded_ = false;
         if (!this.isPlayingPageLoadingSound_()) {
-          cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.PAGE_START_LOADING);
+          ChromeVox.earcons.playEarcon(Earcon.PAGE_START_LOADING);
           this.startPageLoadTimer_(tabId);
         }
       } else if (!this.lastActiveTabLoaded_) {
         this.lastActiveTabLoaded_ = true;
-        cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.PAGE_FINISH_LOADING);
+        ChromeVox.earcons.playEarcon(Earcon.PAGE_FINISH_LOADING);
         this.cancelPageLoadTimer_();
       }
     }.bind(this));

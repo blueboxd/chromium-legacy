@@ -31,6 +31,11 @@ const base::Feature kWebViewConnectionlessSafeBrowsing{
 const base::Feature kWebViewSniffMimeType{"WebViewSniffMimeType",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Wake up the MetricsService for each page load start/finish, renderer hang,
+// and renderer close. This aligns with Chrome's behavior.
+const base::Feature kWebViewWakeMetricsService{
+    "WebViewWakeMetricsService", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable raster in wide color gamut for apps that use webview in a wide color
 // gamut activity.
 const base::Feature kWebViewWideColorGamutSupport{

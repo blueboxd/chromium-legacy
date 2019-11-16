@@ -5,17 +5,16 @@
 #include "chrome/browser/chromeos/bluetooth/debug_logs_manager.h"
 
 #include "base/feature_list.h"
-#include "base/strings/string_util.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 
 namespace chromeos {
 
 namespace bluetooth {
 
 namespace {
-const char kSupportedEmailSuffix[] = "@google.com";
 const char kVerboseLoggingEnablePrefName[] = "bluetooth.verboseLogging.enable";
 }  // namespace
 
@@ -60,8 +59,7 @@ bool DebugLogsManager::AreDebugLogsSupported() const {
     return false;
   }
 
-  return base::EndsWith(primary_user_email_, kSupportedEmailSuffix,
-                        base::CompareCase::INSENSITIVE_ASCII);
+  return gaia::IsGoogleInternalAccountEmail(primary_user_email_);
 }
 
 }  // namespace bluetooth

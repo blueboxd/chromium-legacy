@@ -53,6 +53,7 @@ void LoadBeforeSizeFile(const char* compressed, size_t size) {
 }
 
 void BuildTree(bool group_by_component,
+               bool method_count_mode,
                const char* include_regex_str,
                const char* exclude_regex_str,
                const char* include_sections,
@@ -128,7 +129,7 @@ void BuildTree(bool group_by_component,
   } else {
     builder.reset(new TreeBuilder(info.get()));
   }
-  builder->Build(group_by_component, filters);
+  builder->Build(group_by_component, method_count_mode, filters);
 }
 
 const char* Open(const char* path) {

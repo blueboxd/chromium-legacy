@@ -73,7 +73,7 @@ template("trichrome_library_apk_tmpl") {
     use_chromium_linker = false
 
     uncompress_shared_libraries = true
-    uncompress_dex = use_uncompressed_dex
+    uncompress_dex = true
     version_name = chrome_version_name
 
     if (defined(invoker.is_64_bit_browser) && invoker.is_64_bit_browser) {

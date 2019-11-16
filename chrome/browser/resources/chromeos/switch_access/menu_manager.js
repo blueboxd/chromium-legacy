@@ -565,6 +565,7 @@ class MenuManager {
    * @param {!SAConstants.MenuAction} action
    */
   performAction(action) {
+    SwitchAccessMetrics.recordMenuAction(action);
     // Some actions involve navigation events. Handle those explicitly.
     if (action === SAConstants.MenuAction.SELECT &&
         this.menuOriginNode_.isGroup()) {

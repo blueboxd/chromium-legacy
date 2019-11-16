@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/metrics/field_trial.h"
 #include "base/test/simple_test_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/search/instant_service.h"
@@ -34,7 +33,6 @@ class InstantUnitTestBase : public BrowserWithTestWindowTest {
 
   InstantService* instant_service_;
   TemplateURLService* template_url_service_;
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
   base::SimpleTestClock* clock_;
 
  private:

@@ -6,7 +6,6 @@
 #define COMPONENTS_PAINT_PREVIEW_COMMON_FILE_STREAM_H_
 
 #include "base/files/file.h"
-#include "base/macros.h"
 #include "third_party/skia/include/core/SkStream.h"
 
 namespace paint_preview {
@@ -29,7 +28,8 @@ class FileWStream : public SkWStream {
   base::File file_;
   size_t bytes_written_;
 
-  DISALLOW_COPY_AND_ASSIGN(FileWStream);
+  FileWStream(const FileWStream&) = delete;
+  FileWStream& operator=(const FileWStream&) = delete;
 };
 
 // An implementation of the SkWStream interface backed by base::File. Only
@@ -52,7 +52,8 @@ class FileRStream : public SkStream {
   const size_t length_;
   size_t bytes_read_;
 
-  DISALLOW_COPY_AND_ASSIGN(FileRStream);
+  FileRStream(const FileRStream&) = delete;
+  FileRStream& operator=(const FileRStream&) = delete;
 };
 
 }  // namespace paint_preview

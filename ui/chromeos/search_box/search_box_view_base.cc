@@ -91,7 +91,7 @@ class SearchBoxImageButton : public views::ImageButton {
 
     // Avoid drawing default dashed focus and draw customized focus in
     // OnPaintBackground();
-    SetFocusPainter(nullptr);
+    SetInstallFocusRingOnFocus(false);
 
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);

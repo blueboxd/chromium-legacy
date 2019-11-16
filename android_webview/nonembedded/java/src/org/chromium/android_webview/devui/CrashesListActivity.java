@@ -41,8 +41,9 @@ public class CrashesListActivity extends Activity {
 
     private TextView mCrashesSummaryView;
     private BaseExpandableListAdapter mCrashListViewAdapter;
-    private WebViewCrashInfoCollector mCrashCollector;
+    private WebViewPackageError mDifferentPackageError;
 
+    private WebViewCrashInfoCollector mCrashCollector;
     private List<CrashInfo> mCrashInfoList;
 
     private static final String CRASH_REPORT_TEMPLATE = ""
@@ -91,6 +92,20 @@ public class CrashesListActivity extends Activity {
 
         ExpandableListView crashListView = findViewById(R.id.crashes_list);
         crashListView.setAdapter(mCrashListViewAdapter);
+
+        mDifferentPackageError =
+                new WebViewPackageError(this, findViewById(R.id.crashes_list_activity_layout));
+        // show the dialog once when the activity is created.
+        mDifferentPackageError.showDialogIfDifferent();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Check package status in onResume() to hide/show the error message if the user
+        // changes WebView implementation from system settings and then returns back to the
+        // activity.
+        mDifferentPackageError.showMessageIfDifferent();
     }
 
     /**

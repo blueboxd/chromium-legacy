@@ -17,6 +17,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
 import org.chromium.chrome.browser.preferences.MainPreferences;
 import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
@@ -962,14 +963,14 @@ public class PersonalDataManager {
      * @return Whether the Autofill feature for Profiles (addresses) is enabled.
      */
     public static boolean isAutofillProfileEnabled() {
-        return PersonalDataManagerJni.get().getPref(Pref.AUTOFILL_PROFILE_ENABLED);
+        return PrefServiceBridge.getInstance().getBoolean(Pref.AUTOFILL_PROFILE_ENABLED);
     }
 
     /**
      * @return Whether the Autofill feature for Credit Cards is enabled.
      */
     public static boolean isAutofillCreditCardEnabled() {
-        return PersonalDataManagerJni.get().getPref(Pref.AUTOFILL_CREDIT_CARD_ENABLED);
+        return PrefServiceBridge.getInstance().getBoolean(Pref.AUTOFILL_CREDIT_CARD_ENABLED);
     }
 
     /**
@@ -977,7 +978,7 @@ public class PersonalDataManager {
      * @param enable True to disable profile Autofill, false otherwise.
      */
     public static void setAutofillProfileEnabled(boolean enable) {
-        PersonalDataManagerJni.get().setPref(Pref.AUTOFILL_PROFILE_ENABLED, enable);
+        PrefServiceBridge.getInstance().setBoolean(Pref.AUTOFILL_PROFILE_ENABLED, enable);
     }
 
     /**
@@ -985,7 +986,7 @@ public class PersonalDataManager {
      * @param enable True to disable credit card Autofill, false otherwise.
      */
     public static void setAutofillCreditCardEnabled(boolean enable) {
-        PersonalDataManagerJni.get().setPref(Pref.AUTOFILL_CREDIT_CARD_ENABLED, enable);
+        PrefServiceBridge.getInstance().setBoolean(Pref.AUTOFILL_CREDIT_CARD_ENABLED, enable);
     }
 
     /**
@@ -1129,7 +1130,5 @@ public class PersonalDataManager {
         String toCountryCode(String countryName);
         void cancelPendingGetSubKeys(long nativePersonalDataManagerAndroid);
         void setSyncServiceForTesting(long nativePersonalDataManagerAndroid);
-        boolean getPref(int preference);
-        void setPref(int preference, boolean enable);
     }
 }

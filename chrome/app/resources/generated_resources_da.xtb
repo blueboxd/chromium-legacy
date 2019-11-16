@@ -254,6 +254,7 @@
 <translation id="1365180424462182382">Din <ph name="BEGIN_LINK" />browser administreres<ph name="END_LINK" /> af <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="1366177842110999534">Kør værktøjer, redigeringsværktøjer og IDE-pakker fra Linux på din <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Få flere oplysninger&lt;/a&gt;</translation>
 <translation id="1367951781824006909">Vælg en fil</translation>
+<translation id="1369149969991017342">Kontaktadgang (styr computeren med blot én eller to kontakter)</translation>
 <translation id="1372841398847029212">Synkroniser med din konto</translation>
 <translation id="1374844444528092021">Det certifikat, som netværket "<ph name="NETWORK_NAME" />" kræver, er enten ikke installeret eller ikke længere gyldigt.  Få fat i et nyt certifikat, og prøv at oprette forbindelse igen.</translation>
 <translation id="1375321115329958930">Gemte adgangskoder</translation>
@@ -565,6 +566,7 @@
 <translation id="1794791083288629568">Send feedback for at hjælpe os med at løse problemet.</translation>
 <translation id="1795214765651529549">Brug Klassisk</translation>
 <translation id="1799071797295057738">Udvidelsen "<ph name="EXTENSION_NAME" />" blev automatisk deaktiveret.</translation>
+<translation id="1802624026913571222">Gå i dvale, når etuiet er lukket</translation>
 <translation id="1802687198411089702">Siden svarer ikke. Du kan vente på den eller afslutte.</translation>
 <translation id="1802931390041703523">Flash blev blokeret på denne side</translation>
 <translation id="1803531841600994172">Sprog, der skal oversættes til</translation>
@@ -666,6 +668,7 @@
 <translation id="1937774647013465102">Containerarkitekturen <ph name="ARCHITECTURE_CONTAINER" /> kan ikke importeres med denne enhed, som kører med <ph name="ARCHITECTURE_DEVICE" />. Du kan prøve at gendanne denne container i en anden enhed, eller også kan du åbne filerne i containerbilledet i appen Filer.</translation>
 <translation id="1938351510777341717">Ekstern kommando</translation>
 <translation id="1940546824932169984">Tilsluttede enheder</translation>
+<translation id="1942600407708803723">Luk ned, når etuiet er lukket</translation>
 <translation id="1944921356641260203">En opdatering er fundet</translation>
 <translation id="1946577776959096882">Se konti</translation>
 <translation id="1951012854035635156">Assistent</translation>
@@ -2439,6 +2442,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4546308221697447294">Hurtig browsing med Google Chrome</translation>
 <translation id="4547659257713117923">Ingen faner fra andre enheder</translation>
 <translation id="4547672827276975204">Indstil automatisk</translation>
+<translation id="4549791035683739768">Der er ikke gemt nogen fingeraftryk i din sikkerhedsnøgle</translation>
 <translation id="4551763574344810652">Tryk på <ph name="MODIFIER_KEY_DESCRIPTION" /> for at fortryde</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4554591392113183336">Ekstern udvidelse er den samme version eller en ældre version end den eksisterende.</translation>
@@ -2618,6 +2622,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4839303808932127586">&amp;Gem video som ...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 anden}one{# anden}other{# andre}}</translation>
 <translation id="4842976633412754305">Denne side forsøger at indlæse scripts fra kilder, som ikke er godkendte.</translation>
+<translation id="4843488774506045600">Login leveres af <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Andre tastaturer</translation>
 <translation id="4846680374085650406">Du følger administratorens anbefaling for denne indstilling.</translation>
 <translation id="4848518990323155912">Aktivér låsning af Sim-kort (det kræver pinkode at bruge mobildata)</translation>
@@ -3038,7 +3043,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5466374726908360271">Ind&amp;sæt, og søg efter "<ph name="SEARCH_TERMS" />"</translation>
 <translation id="5468173180030470402">Søger efter fildelinger</translation>
 <translation id="5471768120198416576">Hej! Jeg er din stemme til oplæsning.</translation>
-<translation id="5472133193607270166">Når dette er slået til, kan websites ikke anvende din browseraktivitet på andre websites til at tilpasse annoncer. Nogle websites fungerer muligvis ikke korrekt.</translation>
+<translation id="5472133193607270166">Når dette er slået til, kan websites ikke anvende din browseraktivitet på andre websites til at tilpasse annoncer. Nogle websites vil muligvis ikke fungere korrekt.</translation>
 <translation id="5473333559083690127">Angiv ny pinkode igen</translation>
 <translation id="5481941284378890518">Tilføj printere i nærheden</translation>
 <translation id="5483785310822538350">Tilbagekald adgang til fil og enhed</translation>
@@ -3070,6 +3075,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5511823366942919280">Er du sikker på, at du vil konfigurere denne enhed som en "Shark"?</translation>
 <translation id="5512653252560939721">Brugercertifikatet skal findes på hardwaren.</translation>
 <translation id="5517304475148761050">Denne app kræver adgang til Play Butik</translation>
+<translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> – <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Føjer printer til din konto – dette kan tage et øjeblik...</translation>
 <translation id="5518219166343146486">Spørg, når et website vil se tekst og billeder, der er kopieret til udklipsholderen</translation>
 <translation id="5518584115117143805">Certifikat til kryptering af mail</translation>
@@ -3188,6 +3194,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="567643736130151854">Log ind, og aktivér synkronisering for at få dine bogmærker, adgangskoder og meget mere på alle enheder</translation>
 <translation id="5677503058916217575">Sidens sprog:</translation>
 <translation id="5677928146339483299">Blokeret</translation>
+<translation id="5678293144564424498">Appen er sat på pause</translation>
 <translation id="5678550637669481956">Læse- og skriveadgang til <ph name="VOLUME_NAME" /> er blevet tildelt.</translation>
 <translation id="5678955352098267522">Læs dine data på <ph name="WEBSITE_1" /></translation>
 <translation id="5684661240348539843">Aktiv-id</translation>
@@ -3454,6 +3461,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6055392876709372977">PKCS #1 SHA-256 med RSA-kryptering</translation>
 <translation id="6056710589053485679">Genindlæs som normalt</translation>
 <translation id="6057381398996433816">Dette website er blevet blokeret fra at anvende bevægelses- og lyssensorer.</translation>
+<translation id="6058567592298841668">Plugin for virtuel maskine: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Certifikathierarki</translation>
 <translation id="6059925163896151826">USB-enheder</translation>
 <translation id="6061882183774845124">Send linket til dine enheder</translation>
@@ -4403,6 +4411,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7476454130948140105">Batteriniveauet er for lavt til at opdatere (<ph name="BATTERY_PERCENT" /> %)</translation>
 <translation id="7477793887173910789">Styr din musik, dine videoer og meget mere</translation>
 <translation id="7478485216301680444">Kioskapplikationen kunne ikke installeres.</translation>
+<translation id="7479221278376295180">Oversigt over brug af lagerplads</translation>
 <translation id="7481312909269577407">Frem</translation>
 <translation id="748138892655239008">Grundlæggende begrænsninger for certifikat</translation>
 <translation id="7487067081878637334">Teknologi</translation>
@@ -5379,6 +5388,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8845001906332463065">Få hjælp</translation>
 <translation id="8846132060409673887">Læs computerens producent og model</translation>
 <translation id="8846141544112579928">Søger efter tastatur...</translation>
+<translation id="8847523528195140327">Log ud, når etuiet er lukket</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8850251000316748990">Se flere...</translation>
 <translation id="885246833287407341">Argumenter for API-funktion</translation>
@@ -5441,6 +5451,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8930351635855238750">De nye indstillinger for cookies træder i kraft, når siden genindlæses</translation>
 <translation id="8931394284949551895">Nye enheder</translation>
 <translation id="893254996965966411">Gem registrerede printere på din profil, eller tilføj en ny printer.</translation>
+<translation id="8932894639908691771">Indstillinger for kontaktadgang</translation>
 <translation id="8933960630081805351">&amp;Vis i Finder</translation>
 <translation id="8934732568177537184">Fortsæt</translation>
 <translation id="8938800817013097409">USB-C-enhed (porten bagpå i højre side)</translation>
@@ -5504,6 +5515,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="9023015617655685412">Tilføj denne fane som bogmærke...</translation>
 <translation id="9024127637873500333">&amp;Åbn på ny fane</translation>
 <translation id="9024158959543687197">Der opstod en fejl ved anvendelse af deling. Tjek webadressen til fildeling, og prøv igen.</translation>
+<translation id="9024885274934357065">Din enhed er låst ved hjælp af Smart Lock. Tryk på Enter for at låse op.</translation>
 <translation id="9026731007018893674">download</translation>
 <translation id="9026852570893462412">Denne proces kan tage et par minutter. Den virtuelle maskine downloades.</translation>
 <translation id="9027459031423301635">Åbn link på ny &amp;fane</translation>

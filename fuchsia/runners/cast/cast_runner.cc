@@ -111,6 +111,8 @@ void CastRunner::StartComponent(
   pending_component->api_bindings_client = std::make_unique<ApiBindingsClient>(
       std::move(api_bindings_client),
       base::BindOnce(&CastRunner::MaybeStartComponent, base::Unretained(this),
+                     base::Unretained(pending_component.get())),
+      base::BindOnce(&CastRunner::CancelComponentLaunch, base::Unretained(this),
                      base::Unretained(pending_component.get())));
 
   // Get UrlRequestRewriteRulesProvider from the Agent.
@@ -122,10 +124,7 @@ void CastRunner::StartComponent(
   pending_component->rewrite_rules_provider.set_error_handler(
       [this, pending_component = pending_component.get()](zx_status_t status) {
         ZX_LOG(ERROR, status) << "UrlRequestRewriteRulesProvider disconnected.";
-
-        // The rules provider disconnected, cancel the component launch.
-        size_t count = pending_components_.erase(pending_component);
-        DCHECK_EQ(count, 1u);
+        CancelComponentLaunch(pending_component);
       });
   pending_component->rewrite_rules_provider->GetUrlRequestRewriteRules(
       [this, pending_component = pending_component.get()](
@@ -142,8 +141,7 @@ void CastRunner::StartComponent(
   pending_component->app_config_manager.set_error_handler(
       [this, pending_component = pending_component.get()](zx_status_t status) {
         ZX_LOG(ERROR, status) << "ApplicationConfigManager disconnected.";
-        GetConfigCallback(pending_component,
-                          chromium::cast::ApplicationConfig());
+        CancelComponentLaunch(pending_component);
       });
   const std::string cast_app_id(cast_url.GetContent());
   pending_component->app_config_manager->GetConfig(
@@ -209,6 +207,12 @@ void CastRunner::MaybeStartComponent(
   component_owner->CreateAndRegisterCastComponent(
       std::move(*pending_component_params));
   pending_components_.erase(pending_component_params);
+}
+
+void CastRunner::CancelComponentLaunch(
+    CastComponent::CastComponentParams* params) {
+  size_t count = pending_components_.erase(params);
+  DCHECK_EQ(count, 1u);
 }
 
 void CastRunner::CreateAndRegisterCastComponent(

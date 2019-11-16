@@ -1748,6 +1748,16 @@ TEST_F(PlatformSensorReaderTestWinrt, CheckSensorActivationHistogram) {
                 "Sensors.Windows.WinRT.Activation.Result", S_OK),
             1);
 
+  // Trigger HRESULT_FROM_WIN32(ERROR_NOT_FOUND) which happens when the sensor
+  // does not exist
+  fake_sensor_factory->fake_sensor_ = nullptr;
+  EXPECT_EQ(sensor->Initialize(), false);
+
+  EXPECT_EQ(
+      histogram_tester.GetBucketCount("Sensors.Windows.WinRT.Activation.Result",
+                                      HRESULT_FROM_WIN32(ERROR_NOT_FOUND)),
+      1);
+
   // Trigger E_ACCESSDENIED twice
   fake_sensor_factory->SetGetDefaultReturnCode(E_ACCESSDENIED);
   EXPECT_FALSE(sensor->Initialize());
@@ -1763,7 +1773,7 @@ TEST_F(PlatformSensorReaderTestWinrt, CheckSensorActivationHistogram) {
             2);
 
   histogram_tester.ExpectTotalCount("Sensors.Windows.WinRT.Activation.Result",
-                                    3);
+                                    4);
 }
 
 // Tests the sensor start histogram tracks sensor start return codes

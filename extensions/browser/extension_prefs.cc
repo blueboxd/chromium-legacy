@@ -213,6 +213,10 @@ constexpr const char kPrefDNRDynamicRulesetChecksum[] =
 constexpr const char kPrefDNRUseActionCountAsBadgeText[] =
     "dnr_use_action_count_as_badge_text";
 
+// The default value to use for permission withholding when setting the pref on
+// installation or for extensions where the pref has not been set.
+constexpr bool kDefaultWithholdingBehavior = false;
+
 // Provider of write access to a dictionary storing extension prefs.
 class ScopedExtensionPrefUpdate : public prefs::ScopedDictionaryPrefUpdate {
  public:
@@ -1038,17 +1042,25 @@ void ExtensionPrefs::SetShouldWithholdPermissions(
                       std::make_unique<base::Value>(permissions_allowed));
 }
 
-base::Optional<bool> ExtensionPrefs::GetShouldWithholdPermissions(
+bool ExtensionPrefs::GetShouldWithholdPermissions(
     const ExtensionId& extension_id) const {
   bool permissions_allowed = false;
-  if (!ReadPrefAsBoolean(extension_id, kGrantExtensionAllHostPermissions,
-                         &permissions_allowed)) {
-    return base::nullopt;
+  if (ReadPrefAsBoolean(extension_id, kGrantExtensionAllHostPermissions,
+                        &permissions_allowed)) {
+    // NOTE: For legacy reasons, the preference stores whether the extension was
+    // allowed access to all its host permissions, rather than if Chrome should
+    // withhold permissions. Invert the boolean for backwards compatibility.
+    return !permissions_allowed;
   }
-  // NOTE: For legacy reasons, the preference stores whether the extension was
-  // allowed access to all its host permissions, rather than if Chrome should
-  // withhold permissions. Invert the boolean for backwards compatibility.
-  return !permissions_allowed;
+
+  // If no pref was found, we use the default.
+  return kDefaultWithholdingBehavior;
+}
+
+bool ExtensionPrefs::HasShouldWithholdPermissionsSetting(
+    const ExtensionId& extension_id) const {
+  const base::DictionaryValue* ext = GetExtensionPref(extension_id);
+  return ext && ext->HasKey(kGrantExtensionAllHostPermissions);
 }
 
 std::unique_ptr<const PermissionSet>
@@ -2011,8 +2023,19 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
     extension_dict->SetBoolean(kPrefBlacklist, true);
   if (dnr_ruleset_checksum)
     extension_dict->SetInteger(kPrefDNRRulesetChecksum, *dnr_ruleset_checksum);
-  if (extension->creation_flags() & Extension::WITHHOLD_PERMISSIONS)
+
+  // If the withhold permission creation flag is present it takes precedence
+  // over any previous stored value.
+  if (extension->creation_flags() & Extension::WITHHOLD_PERMISSIONS) {
     extension_dict->SetBoolean(kGrantExtensionAllHostPermissions, false);
+  } else if (!HasShouldWithholdPermissionsSetting(extension->id())) {
+    // If no withholding creation flag was specified and there is no value
+    // stored already, we set the default value.
+    // NOTE: For legacy reasons the value is inverted here as the pref itself
+    // stores if the extension was allowed access to all its host permissions.
+    extension_dict->SetBoolean(kGrantExtensionAllHostPermissions,
+                               !kDefaultWithholdingBehavior);
+  }
 
   base::FilePath::StringType path = MakePathRelative(install_directory_,
                                                      extension->path());

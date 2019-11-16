@@ -85,7 +85,6 @@ class MockRenderThread : public RenderThread {
   void PreCacheFont(const LOGFONT& log_font) override;
   void ReleaseCachedFonts() override;
 #endif
-  ServiceManagerConnection* GetServiceManagerConnection() override;
   void SetFieldTrialGroup(const std::string& trial_name,
                           const std::string& group_name) override;
 

@@ -192,13 +192,6 @@ IPC::PlatformFileForTransit PpapiThread::ShareHandleWithRemote(
   return IPC::GetPlatformFileForTransit(handle, should_close_source);
 }
 
-base::SharedMemoryHandle PpapiThread::ShareSharedMemoryHandleWithRemote(
-    const base::SharedMemoryHandle& handle,
-    base::ProcessId remote_pid) {
-  DCHECK(remote_pid != base::kNullProcessId);
-  return base::SharedMemory::DuplicateHandle(handle);
-}
-
 base::UnsafeSharedMemoryRegion
 PpapiThread::ShareUnsafeSharedMemoryRegionWithRemote(
     const base::UnsafeSharedMemoryRegion& region,

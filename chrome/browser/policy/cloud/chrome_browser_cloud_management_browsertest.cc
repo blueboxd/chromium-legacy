@@ -512,7 +512,13 @@ class ChromeBrowserCloudManagementEnrollmentTest
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserCloudManagementEnrollmentTest);
 };
 
-IN_PROC_BROWSER_TEST_P(ChromeBrowserCloudManagementEnrollmentTest, Test) {
+// Consistently timing out on Windows. http://crbug.com/1025220
+#if defined(OS_WIN)
+#define MAYBE_Test DISABLED_Test
+#else
+#define MAYBE_Test Test
+#endif
+IN_PROC_BROWSER_TEST_P(ChromeBrowserCloudManagementEnrollmentTest, MAYBE_Test) {
   // Test body is run only if enrollment is succeeded or failed without error
   // message.
   EXPECT_TRUE(is_enrollment_token_valid() || !should_display_error_message());

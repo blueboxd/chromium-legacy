@@ -30,8 +30,7 @@ class MockStoragePartitionService
  public:
   void OpenLocalStorage(
       const scoped_refptr<const SecurityOrigin>& origin,
-      mojo::PendingReceiver<storage::mojom::blink::DomStorageArea> receiver)
-      override {}
+      mojo::PendingReceiver<mojom::blink::StorageArea> receiver) override {}
 
   void OpenSessionStorage(
       const String& namespace_id,

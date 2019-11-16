@@ -174,7 +174,7 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
   // origin. Before connection, it checks to make sure the |process_id| given to
   // the |Bind| method can access the given origin.
   void OpenArea(const url::Origin& origin,
-                mojo::PendingAssociatedReceiver<storage::mojom::DomStorageArea>
+                mojo::PendingAssociatedReceiver<blink::mojom::StorageArea>
                     receiver) override;
 
   // Simply calls the |add_namespace_callback_| callback with this namespace's

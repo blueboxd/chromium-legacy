@@ -13,3 +13,14 @@ android_library("java") {
     "//base:base_java",
   ]
 }
+
+android_library("javatests") {
+  testonly = true
+  java_files = [ "android/java/src/org/chromium/chrome/browser/preferences/ChromePreferenceKeysTest.java" ]
+  deps = [
+    ":java",
+    "//base:base_java",
+    "//chrome/test/android:chrome_java_test_support",
+    "//third_party/junit",
+  ]
+}

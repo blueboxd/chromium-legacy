@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hi">
+<translation id="1075622780330595106">आपके <ph name="NUMBER_OF_TABS" /> टैब का हाल फ़िलहाल में इस्तेमाल नहीं हुआ है. उन्हें बंद करना चाहेंगे?</translation>
 <translation id="1181037720776840403">हटाएं</translation>
 <translation id="125153950246128346">कोई दूसरा टैब देखने के लिए टैप करें</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> टैब}one{<ph name="TABS_COUNT_MANY" /> टैब}other{<ph name="TABS_COUNT_MANY" /> टैब}}</translation>
@@ -10,6 +11,7 @@
 <translation id="2977480621796371840">समूह से हटाएं</translation>
 <translation id="4212246570487010370">लगातार ब्राउज़िंग</translation>
 <translation id="4648718555153979859">यहां पर आपके टैब एक ही समूह में रखे जाते हैं</translation>
+<translation id="5007392906805964215">समीक्षा करें</translation>
 <translation id="5073204694187207510">फ़ुलस्क्रीन ग्रिड को छिपाएं</translation>
 <translation id="5082793167783849073">पेजों की तुलना तुरंत करने के लिए समूह बनाएं. शुरू करने के लिए, लिंक को दबाकर रखें.</translation>
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> टैब समूह में लगाए गए</translation>

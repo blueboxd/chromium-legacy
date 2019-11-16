@@ -96,7 +96,7 @@ DownloadHandler.init = function() {
       // Speech and braille output.
       var optSubs = [DownloadHandler.downloadItemData_[id].fileName];
       DownloadHandler.speechAndBrailleOutput(
-          'download_started', cvox.QueueMode.FLUSH, optSubs);
+          'download_started', QueueMode.FLUSH, optSubs);
     } else if (state) {
       var currentState = state.current;
       var msgId = '';
@@ -114,8 +114,7 @@ DownloadHandler.init = function() {
       clearInterval(storedItem.notifyProgressId);
       delete DownloadHandler.downloadItemData_[id];
       // Speech and braille output.
-      DownloadHandler.speechAndBrailleOutput(
-          msgId, cvox.QueueMode.FLUSH, optSubs);
+      DownloadHandler.speechAndBrailleOutput(msgId, QueueMode.FLUSH, optSubs);
     } else if (paused) {
       // Will be either resumed or paused.
       var msgId = 'download_resumed';
@@ -132,8 +131,7 @@ DownloadHandler.init = function() {
         storedItem.time = Date.now();
       }
       // Speech and braille output.
-      DownloadHandler.speechAndBrailleOutput(
-          msgId, cvox.QueueMode.FLUSH, optSubs);
+      DownloadHandler.speechAndBrailleOutput(msgId, QueueMode.FLUSH, optSubs);
     }
   });
 };
@@ -203,7 +201,7 @@ DownloadHandler.notifyProgress = function(id) {
         storedItem.percentComplete, storedItem.fileName, timeRemaining, timeUnit
       ];
       DownloadHandler.speechAndBrailleOutput(
-          'download_progress', cvox.QueueMode.FLUSH, optSubs);
+          'download_progress', QueueMode.FLUSH, optSubs);
     }
   });
 };
@@ -241,7 +239,7 @@ DownloadHandler.startTrackingDownload = function(item) {
 /**
  * Output download notification as speech and braille.
  * @param{string} msgId The msgId for Output.
- * @param{cvox.QueueMode} queueMode The queue mode.
+ * @param{QueueMode} queueMode The queue mode.
  * @param{Array<string>} optSubs Substitution strings.
  */
 DownloadHandler.speechAndBrailleOutput = function(msgId, queueMode, optSubs) {

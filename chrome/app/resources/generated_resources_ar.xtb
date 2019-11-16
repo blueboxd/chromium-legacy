@@ -181,7 +181,7 @@
 <translation id="1241753985463165747">قراءة جميع بياناتك وتغييرها على موقع الويب الحالي عند الاستدعاء</translation>
 <translation id="1242633766021457174">يريد <ph name="THIRD_PARTY_TOOL_NAME" /> إعادة تعيين إعداداتك.</translation>
 <translation id="1243314992276662751">تحميل</translation>
-<translation id="1243398753772016127">لا يمكن للمواقع الإلكترونية استخدام نشاط التصفّح على المواقع الإلكترونية المختلفة لتخصيص الإعلانات.</translation>
+<translation id="1243398753772016127">لا يمكن للمواقع الإلكترونية تخصيص الإعلانات بالاستناد إلى نشاط تصفّحك لمواقع إلكترونية أخرى.</translation>
 <translation id="1244265436519979884">‏استعادة Linux قيد التقدم حاليًا</translation>
 <translation id="1244303850296295656">خطأ في الإضافة</translation>
 <translation id="1246905108078336582">هل تريد إزالة اقتراح من الحافظة؟</translation>
@@ -254,6 +254,7 @@
 <translation id="1365180424462182382"><ph name="BEGIN_LINK" />تتم إدارة متصفّحك<ph name="END_LINK" /> من خلال <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="1366177842110999534">‏يمكنك تشغيل أدوات Linux وأدوات التحرير وبرامج IDE على <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;مزيد من المعلومات&lt;/a&gt;</translation>
 <translation id="1367951781824006909">اختيار ملف</translation>
+<translation id="1369149969991017342">الوصول عبر مفتاح التحويل (التحكم في جهاز الكمبيوتر بمفتاح واحد فقط أو مفتاحَين للتحويل)</translation>
 <translation id="1372841398847029212">المزامنة مع حسابك</translation>
 <translation id="1374844444528092021">الشهادة المطلوبة من الشبكة "<ph name="NETWORK_NAME" />" لم يتم تثبيتها أو لم تعد صالحة.  يُرجى الحصول على شهادة جديدة وإعادة الاتصال من جديد.</translation>
 <translation id="1375321115329958930">كلمات المرور المحفوظة</translation>
@@ -565,6 +566,7 @@
 <translation id="1794791083288629568">يمكنك إرسال تعليقات لمساعدتنا في إصلاح هذه المشكلة.</translation>
 <translation id="1795214765651529549">استخدام المظهر الكلاسيكي</translation>
 <translation id="1799071797295057738">تم إيقاف الإضافة "<ph name="EXTENSION_NAME" />" تلقائيًا.</translation>
+<translation id="1802624026913571222">السكون عند غلق الغلاف</translation>
 <translation id="1802687198411089702">الصفحة لا تستجيب. يمكنك الانتظار أو الخروج منها.</translation>
 <translation id="1802931390041703523">‏تم حظر تشغيل Flash في هذه الصفحة</translation>
 <translation id="1803531841600994172">اللغة التي تريد الترجمة إليها</translation>
@@ -666,6 +668,7 @@
 <translation id="1937774647013465102">يتعذّر استيراد نوع بنية الحاوية <ph name="ARCHITECTURE_CONTAINER" /> باستخدام هذا الجهاز الذي يمثل <ph name="ARCHITECTURE_DEVICE" />.يمكنك محاولة استعادة هذه الحاوية على جهاز مختلف، أو يمكنك الوصول إلى الملفات داخل صورة الحاوية هذه عن طريق فتح تطبيق "الملفات".</translation>
 <translation id="1938351510777341717">‏مفتاح Command الخارجي</translation>
 <translation id="1940546824932169984">الأجهزة المتصلة</translation>
+<translation id="1942600407708803723">إيقاف التشغيل عند غلق الغلاف</translation>
 <translation id="1944921356641260203">تم العثور على التحديث</translation>
 <translation id="1946577776959096882">عرض الحسابات</translation>
 <translation id="1951012854035635156">المساعد</translation>
@@ -2436,6 +2439,7 @@
 <translation id="4546308221697447294">‏استمتع بالتصفح السريع باستخدام Google Chrome</translation>
 <translation id="4547659257713117923">ليست هناك علامات تبويب من أجهزة أخرى</translation>
 <translation id="4547672827276975204">ضبط المنطقة الزمنية تلقائيًا</translation>
+<translation id="4549791035683739768">لا يتضمّن مفتاح الأمان على بصمات أصابع مخزّنة.</translation>
 <translation id="4551763574344810652">اضغط على <ph name="MODIFIER_KEY_DESCRIPTION" /> للتراجع</translation>
 <translation id="4552089082226364758">الفلاش</translation>
 <translation id="4554591392113183336">الإضافة الخارجية في نفس الإصدار أو إصدار أقل مقارنة بالموجودة حاليًا.</translation>
@@ -2615,6 +2619,7 @@
 <translation id="4839303808932127586">حف&amp;ظ الفيديو باسم...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{عنصر واحد آخر}zero{# عنصر آخر}two{عنصران (#) آخران}few{# عناصر أخرى}many{# عنصرًا آخر}other{# عنصر آخر}}</translation>
 <translation id="4842976633412754305">تحاول هذه الصفحة تحميل نصوص برمجية من مصادر غير مصادقة.</translation>
+<translation id="4843488774506045600">تقدم الإضافة <ph name="EXTENSION_NAME" /> تسجيل الدخول</translation>
 <translation id="4844333629810439236">لوحات مفاتيح أخرى</translation>
 <translation id="4846680374085650406">أنت تتبع توصية المشرف لهذا الإعداد.</translation>
 <translation id="4848518990323155912">‏تفعيل قفل شريحة SIM (مطلوب رقم التعريف الشخصي لاستخدام بيانات الجوّال)</translation>
@@ -3067,6 +3072,7 @@
 <translation id="5511823366942919280">‏هل أنت متأكد من أنك تريد إعداد هذا الجهاز كـ "Shark"؟</translation>
 <translation id="5512653252560939721">يجب أن تكون شهادة المستخدم مستندة إلى الأجهزة.</translation>
 <translation id="5517304475148761050">‏يتطلّب هذا التطبيق الوصول إلى "متجر Play"</translation>
+<translation id="5517412723934627386">الشبكة <ph name="NETWORK_TYPE" />، الاسم المعروض للشبكة <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">إضافة الطابعة إلى حسابك - قد يستغرق ذلك القليل من الوقت...</translation>
 <translation id="5518219166343146486">طلب الإذن عند محاولة أحد المواقع الاطلاع على النصوص والصور التي تم نسختها إلى الحافظة</translation>
 <translation id="5518584115117143805">شهادة تشفير البريد الإلكتروني</translation>
@@ -3185,6 +3191,7 @@
 <translation id="567643736130151854">سجّل الدخول وفعِّل المزامنة للحصول على الإشارات المرجعية وكلمات المرور والمزيد على جميع الأجهزة</translation>
 <translation id="5677503058916217575">لغة الصفحة:</translation>
 <translation id="5677928146339483299">محظور </translation>
+<translation id="5678293144564424498">تم إيقاف التطبيق مؤقتًا</translation>
 <translation id="5678550637669481956">تم منح إذن دخول للقراءة والكتابة إلى <ph name="VOLUME_NAME" />.</translation>
 <translation id="5678955352098267522">قراءة بياناتك على <ph name="WEBSITE_1" /></translation>
 <translation id="5684661240348539843">معرّف الأصول</translation>
@@ -3451,6 +3458,7 @@
 <translation id="6055392876709372977">‏PKCS #1 SHA-256 مع تشفير RSA</translation>
 <translation id="6056710589053485679">إعادة تحميل عادية</translation>
 <translation id="6057381398996433816">تم حظر هذا الموقع من استخدام أجهزة استشعار الإضاءة والحركة.</translation>
+<translation id="6058567592298841668">آلة افتراضية للمكوّن الإضافي: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">التسلسل الهرمي للشهادة</translation>
 <translation id="6059925163896151826">‏أجهزة USB</translation>
 <translation id="6061882183774845124">إرسال الرابط إلى الأجهزة</translation>
@@ -4400,6 +4408,7 @@
 <translation id="7476454130948140105">مستوى البطارية ضعيف جدًا لإجراء التحديث (<ph name="BATTERY_PERCENT" />%)</translation>
 <translation id="7477793887173910789">التحكم في الموسيقى والفيديوهات وغير ذلك</translation>
 <translation id="7478485216301680444">‏تعذر تثبيت تطبيق Kiosk.</translation>
+<translation id="7479221278376295180">نظرة عامة على "استخدام مساحة التخزين"</translation>
 <translation id="7481312909269577407">إلى الأمام</translation>
 <translation id="748138892655239008">القيود الأساسية على الشهادة</translation>
 <translation id="7487067081878637334">التقنية</translation>
@@ -5376,6 +5385,7 @@
 <translation id="8845001906332463065">الحصول على مساعدة</translation>
 <translation id="8846132060409673887">قراءة نموذج هذا الكمبيوتر والشركة المصنِّعة</translation>
 <translation id="8846141544112579928">جارٍ البحث عن لوحة المفاتيح...</translation>
+<translation id="8847523528195140327">تسجيل الخروج عند غلق الغلاف</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8850251000316748990">عرض المزيد...</translation>
 <translation id="885246833287407341">وسيطات وظيفة واجهة برمجة التطبيقات</translation>
@@ -5438,6 +5448,7 @@
 <translation id="8930351635855238750">ستسري إعدادات ملفات تعريف الارتباط الجديدة بعد إعادة تحميل الصفحة.</translation>
 <translation id="8931394284949551895">الأجهزة الجديدة</translation>
 <translation id="893254996965966411">احفَظ الطابعات التي تم رصدها في ملفك الشخصي، أو أضِف طابعة جديدة.</translation>
+<translation id="8932894639908691771">خيارات الوصول عبر مفتاح التحويل</translation>
 <translation id="8933960630081805351">إ&amp;ظهار في الباحث</translation>
 <translation id="8934732568177537184">متابعة</translation>
 <translation id="8938800817013097409">‏جهاز USB-C (المنفذ الأيمن في الخلف)</translation>
@@ -5501,6 +5512,7 @@
 <translation id="9023015617655685412">وضع إشارة مرجعية لعلامة التبويب هذه</translation>
 <translation id="9024127637873500333">&amp;فتح في علامة تبويب جديدة</translation>
 <translation id="9024158959543687197">‏حدث خطأ في تحميل المشاركة. يُرجى التحقُّق من عنوان URL لخادم مشاركة الملفات وإعادة المحاولة.</translation>
+<translation id="9024885274934357065">‏تم فتح قفل جهازك باستخدام Smart Lock. عليك النقر على Enter لفتح القفل.</translation>
 <translation id="9026731007018893674">تنزيل</translation>
 <translation id="9026852570893462412">قد تستغرق هذه العملية بضع دقائق. جارٍ تنزيل الآلة الافتراضية.</translation>
 <translation id="9027459031423301635">فتح الرابط في &amp;علامة تبويب جديدة</translation>

@@ -48,7 +48,7 @@ static_library("utility") {
     "//extensions/buildflags",
     "//ipc",
     "//media",
-    "//net:net_with_v8",
+    "//net",
     "//printing/buildflags",
     "//services/data_decoder:lib",
     "//services/network:network_service",

@@ -266,23 +266,6 @@ class ChannelBootstrapFilter : public ConnectionFilter {
   DISALLOW_COPY_AND_ASSIGN(ChannelBootstrapFilter);
 };
 
-class ContentClientConnectionFilter : public ConnectionFilter {
- public:
-  ContentClientConnectionFilter() = default;
-
- private:
-  // ConnectionFilter:
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle* interface_pipe,
-                       service_manager::Connector* connector) override {
-    GetContentClient()->BindChildProcessInterface(interface_name,
-                                                  interface_pipe);
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(ContentClientConnectionFilter);
-};
-
 }  // namespace
 
 // Implements the mojom ChildProcess interface and lives on the IO thread.
@@ -397,14 +380,6 @@ class ChildThreadImpl::IOThreadState
   }
 
   void BindReceiver(mojo::GenericPendingReceiver receiver) override {
-    std::string interface_name = *receiver.interface_name();
-    mojo::ScopedMessagePipeHandle pipe = receiver.PassPipe();
-    // TODO(crbug.com/977637): Rework this API to use the BinderMap.
-    GetContentClient()->BindChildProcessInterface(interface_name, &pipe);
-    if (!pipe)
-      return;
-    receiver = mojo::GenericPendingReceiver(interface_name, std::move(pipe));
-
     if (wait_for_interface_binders_) {
       pending_binding_requests_.push_back(std::move(receiver));
       return;
@@ -642,15 +617,12 @@ void ChildThreadImpl::Init(const Options& options) {
   thread_safe_sender_ =
       new ThreadSafeSender(main_thread_runner_, sync_message_filter_.get());
 
-  GetServiceManagerConnection()->AddConnectionFilter(
-      std::make_unique<ContentClientConnectionFilter>());
-
   auto registry = std::make_unique<service_manager::BinderRegistry>();
   registry->AddInterface(
       base::BindRepeating(&IOThreadState::BindChildProcessReceiver,
                           io_thread_state_),
       ChildThreadImpl::GetIOTaskRunner());
-  GetServiceManagerConnection()->AddConnectionFilter(
+  service_manager_connection_->AddConnectionFilter(
       std::make_unique<SimpleConnectionFilter>(std::move(registry)));
 
   // In single process mode, browser-side tracing and memory will cover the
@@ -802,10 +774,6 @@ void ChildThreadImpl::RecordAction(const base::UserMetricsAction& action) {
 
 void ChildThreadImpl::RecordComputedAction(const std::string& action) {
     NOTREACHED();
-}
-
-ServiceManagerConnection* ChildThreadImpl::GetServiceManagerConnection() {
-  return service_manager_connection_.get();
 }
 
 void ChildThreadImpl::BindHostReceiver(mojo::GenericPendingReceiver receiver) {

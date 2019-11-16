@@ -180,7 +180,7 @@ class CloudPolicyManagerTest : public testing::Test {
     expected_bundle_.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
         .CopyFrom(policy_map_);
 
-    policy_.payload().mutable_passwordmanagerenabled()->set_value(false);
+    policy_.payload().mutable_searchsuggestenabled()->set_value(false);
     policy_.Build();
 
     EXPECT_CALL(store_, Load());

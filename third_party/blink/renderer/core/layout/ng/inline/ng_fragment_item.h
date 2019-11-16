@@ -72,6 +72,7 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
 
   ItemType Type() const { return static_cast<ItemType>(type_); }
 
+  bool IsText() const { return Type() == kText || Type() == kGeneratedText; }
   bool IsContainer() const { return Type() == kBox || Type() == kLine; }
   bool IsAtomicInline() const;
   bool IsEmptyLineBox() const;

@@ -580,9 +580,9 @@ base::string16 TableView::GetTooltipText(const gfx::Point& p) const {
 }
 
 void TableView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  // ID, class name and relative bounds are added by ViewAccessibility for all
+  // non-virtual views, so we don't need to add them here.
   node_data->role = ax::mojom::Role::kListGrid;
-  node_data->AddStringAttribute(ax::mojom::StringAttribute::kClassName,
-                                GetClassName());
   node_data->SetRestriction(ax::mojom::Restriction::kReadOnly);
   node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kActivate);
   // Subclasses should overwrite the name with the control's associated label.
@@ -592,7 +592,6 @@ void TableView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
                              static_cast<int32_t>(GetRowCount()));
   node_data->AddIntAttribute(ax::mojom::IntAttribute::kTableColumnCount,
                              static_cast<int32_t>(visible_columns_.size()));
-  node_data->relative_bounds.bounds = gfx::RectF(GetVisibleBounds());
 }
 
 bool TableView::HandleAccessibleAction(const ui::AXActionData& action_data) {

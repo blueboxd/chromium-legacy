@@ -38,7 +38,8 @@ class HostnameHandler : public chromeos::NetworkStateHandlerObserver {
                                     const std::string& asset_id,
                                     const std::string& serial,
                                     const std::string& mac,
-                                    const std::string& machine_name);
+                                    const std::string& machine_name,
+                                    const std::string& location);
 
   void OnDeviceHostnamePropertyChanged();
 

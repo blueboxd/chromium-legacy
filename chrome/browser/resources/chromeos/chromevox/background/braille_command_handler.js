@@ -26,8 +26,8 @@ BrailleCommandHandler.setEnabled = function(state) {
 
 /**
  * Handles a braille command.
- * @param {!cvox.BrailleKeyEvent} evt
- * @param {!cvox.NavBraille} content
+ * @param {!BrailleKeyEvent} evt
+ * @param {!NavBraille} content
  * @return {boolean} True if evt was processed.
  */
 BrailleCommandHandler.onBrailleKeyEvent = function(evt, content) {
@@ -38,33 +38,33 @@ BrailleCommandHandler.onBrailleKeyEvent = function(evt, content) {
   EventSourceState.set(EventSourceType.BRAILLE_KEYBOARD);
 
   // Note: panning within content occurs earlier in event dispatch.
-  Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
+  Output.forceModeForNextSpeechUtterance(QueueMode.FLUSH);
   switch (evt.command) {
-    case cvox.BrailleKeyCommand.PAN_LEFT:
+    case BrailleKeyCommand.PAN_LEFT:
       CommandHandler.onCommand('previousObject');
       break;
-    case cvox.BrailleKeyCommand.PAN_RIGHT:
+    case BrailleKeyCommand.PAN_RIGHT:
       CommandHandler.onCommand('nextObject');
       break;
-    case cvox.BrailleKeyCommand.LINE_UP:
+    case BrailleKeyCommand.LINE_UP:
       CommandHandler.onCommand('previousLine');
       break;
-    case cvox.BrailleKeyCommand.LINE_DOWN:
+    case BrailleKeyCommand.LINE_DOWN:
       CommandHandler.onCommand('nextLine');
       break;
-    case cvox.BrailleKeyCommand.TOP:
+    case BrailleKeyCommand.TOP:
       CommandHandler.onCommand('jumpToTop');
       break;
-    case cvox.BrailleKeyCommand.BOTTOM:
+    case BrailleKeyCommand.BOTTOM:
       CommandHandler.onCommand('jumpToBottom');
       break;
-    case cvox.BrailleKeyCommand.ROUTING:
+    case BrailleKeyCommand.ROUTING:
       BrailleCommandHandler.onRoutingCommand_(
           content.text,
           // Cast ok since displayPosition is always defined in this case.
           /** @type {number} */ (evt.displayPosition));
       break;
-    case cvox.BrailleKeyCommand.CHORD:
+    case BrailleKeyCommand.CHORD:
       if (!evt.brailleDots) {
         return false;
       }
@@ -156,7 +156,7 @@ BrailleCommandHandler.onRoutingCommand_ = function(text, position) {
  */
 BrailleCommandHandler.onEditCommand_ = function(command) {
   var current = ChromeVoxState.instance.currentRange;
-  if (cvox.ChromeVox.isStickyModeOn() || !current || !current.start ||
+  if (ChromeVox.isStickyModeOn() || !current || !current.start ||
       !current.start.node || !current.start.node.state[StateType.EDITABLE])
     return true;
 

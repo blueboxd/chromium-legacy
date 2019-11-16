@@ -17,8 +17,8 @@ goog.require('PanelCommand');
 goog.require('PanelMenu');
 goog.require('PanelMenuItem');
 goog.require('Tutorial');
-goog.require('cvox.ChromeVoxKbHandler');
-goog.require('cvox.CommandStore');
+goog.require('ChromeVoxKbHandler');
+goog.require('CommandStore');
 
 /**
  * Class to manage the panel.
@@ -319,7 +319,7 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
 
   // Get the key map from the background page.
   var bkgnd = chrome.extension.getBackgroundPage();
-  var keymap = bkgnd['cvox']['KeyMap']['fromCurrentKeyMap']();
+  var keymap = bkgnd['KeyMap']['fromCurrentKeyMap']();
 
   // Make a copy of the key bindings, get the localized title of each
   // command, and then sort them.
@@ -327,8 +327,8 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
   sortedBindings.forEach(goog.bind(function(binding) {
     var command = binding.command;
     var keySeq = binding.sequence;
-    binding.keySeq = cvox.KeyUtil.keySequenceToString(keySeq, true);
-    var titleMsgId = cvox.CommandStore.messageForCommand(command);
+    binding.keySeq = KeyUtil.keySequenceToString(keySeq, true);
+    var titleMsgId = CommandStore.messageForCommand(command);
     if (!titleMsgId) {
       console.error('No localization for: ' + command);
       binding.title = '';
@@ -354,7 +354,7 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
       return;
     }
     sawBindingSet[command] = true;
-    var category = cvox.CommandStore.categoryForCommand(binding.command);
+    var category = CommandStore.categoryForCommand(binding.command);
     var menu = category ? categoryToMenu[category] : null;
     var eventSource = bkgnd['EventSourceState']['get']();
     if (binding.title && menu) {
@@ -964,7 +964,7 @@ window.addEventListener('hashchange', function() {
 
   // Save the sticky state when a user first focuses the panel.
   if (location.hash == '#fullscreen' || location.hash == '#focus') {
-    Panel.originalStickyState_ = bkgnd['cvox']['ChromeVox']['isStickyPrefOn'];
+    Panel.originalStickyState_ = bkgnd['ChromeVox']['isStickyPrefOn'];
   }
 
   // If the original sticky state was on when we first entered the panel, toggle

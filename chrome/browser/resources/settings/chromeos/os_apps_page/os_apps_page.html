@@ -35,7 +35,8 @@
       <template is="dom-if" if="[[showAppManagement]]">
         <cr-link-row id="appManagement"
           label="$i18n{appManagementTitle}"
-          on-click="onClickAppManagement_">
+          on-click="onClickAppManagement_"
+          role-description="$i18n{subpageArrowRoleDescription}">
         </cr-link-row>
       </template>
       <template is="dom-if" if="[[showAndroidApps]]">

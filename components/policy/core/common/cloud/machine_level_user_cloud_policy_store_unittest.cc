@@ -30,7 +30,7 @@ class MachineLevelUserCloudPolicyStoreTest : public ::testing::Test {
     policy_.SetDefaultInitialSigningKey();
     policy_.policy_data().set_policy_type(
         dm_protocol::kChromeMachineLevelUserCloudPolicyType);
-    policy_.payload().mutable_incognitoenabled()->set_value(false);
+    policy_.payload().mutable_searchsuggestenabled()->set_value(false);
     policy_.Build();
   }
 
@@ -43,7 +43,7 @@ class MachineLevelUserCloudPolicyStoreTest : public ::testing::Test {
 
   void SetExpectedPolicyMap(PolicySource source) {
     expected_policy_map_.Clear();
-    expected_policy_map_.Set("IncognitoEnabled", POLICY_LEVEL_MANDATORY,
+    expected_policy_map_.Set("SearchSuggestEnabled", POLICY_LEVEL_MANDATORY,
                              POLICY_SCOPE_MACHINE, source,
                              std::make_unique<base::Value>(false), nullptr);
   }

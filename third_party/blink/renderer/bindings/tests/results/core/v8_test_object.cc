@@ -1993,7 +1993,7 @@ static void ActivityLoggingSetterForAllWorldsLongAttributeAttributeSetter(
 }
 
 // Define a private property key shared between getter and setter.
-static const V8PrivateProperty::SymbolKey kCachedAttributeAnyAttribute;
+static const V8PrivateProperty::SymbolKey kPrivatePropertyCachedAttributeAnyAttribute;
 
 static void CachedAttributeAnyAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
@@ -2041,11 +2041,11 @@ static void CachedAttributeAnyAttributeAttributeSetter(
   V8PrivateProperty::GetSymbol(
       isolate,
       kPrivatePropertyCachedAttributeAnyAttribute)
-      .DeleteProperty(holder, v8::Undefined(isolate));
+      .DeleteProperty(holder);
 }
 
 // Define a private property key shared between getter and setter.
-static const V8PrivateProperty::SymbolKey kCachedArrayAttribute;
+static const V8PrivateProperty::SymbolKey kPrivatePropertyCachedArrayAttribute;
 
 static void CachedArrayAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
@@ -2097,7 +2097,7 @@ static void CachedArrayAttributeAttributeSetter(
   V8PrivateProperty::GetSymbol(
       isolate,
       kPrivatePropertyCachedArrayAttribute)
-      .DeleteProperty(holder, v8::Undefined(isolate));
+      .DeleteProperty(holder);
 }
 
 static void ReadonlyCachedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -2129,7 +2129,7 @@ static void ReadonlyCachedAttributeAttributeGetter(const v8::FunctionCallbackInf
 }
 
 // Define a private property key shared between getter and setter.
-static const V8PrivateProperty::SymbolKey kCachedStringOrNoneAttribute;
+static const V8PrivateProperty::SymbolKey kPrivatePropertyCachedStringOrNoneAttribute;
 
 static void CachedStringOrNoneAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
@@ -2179,7 +2179,7 @@ static void CachedStringOrNoneAttributeAttributeSetter(
   V8PrivateProperty::GetSymbol(
       isolate,
       kPrivatePropertyCachedStringOrNoneAttribute)
-      .DeleteProperty(holder, v8::Undefined(isolate));
+      .DeleteProperty(holder);
 }
 
 static void CallWithExecutionContextAnyAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -3139,7 +3139,7 @@ static void RaisesExceptionTestInterfaceEmptyAttributeAttributeSetter(
 }
 
 // Define a private property key shared between getter and setter.
-static const V8PrivateProperty::SymbolKey kCachedAttributeRaisesExceptionGetterAnyAttribute;
+static const V8PrivateProperty::SymbolKey kPrivatePropertyCachedAttributeRaisesExceptionGetterAnyAttribute;
 
 static void CachedAttributeRaisesExceptionGetterAnyAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Object> holder = info.Holder();
@@ -3194,7 +3194,7 @@ static void CachedAttributeRaisesExceptionGetterAnyAttributeAttributeSetter(
   V8PrivateProperty::GetSymbol(
       isolate,
       kPrivatePropertyCachedAttributeRaisesExceptionGetterAnyAttribute)
-      .DeleteProperty(holder, v8::Undefined(isolate));
+      .DeleteProperty(holder);
 }
 
 static void ReflectTestInterfaceAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {

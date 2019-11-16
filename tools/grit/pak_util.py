@@ -12,9 +12,12 @@ https://dev.chromium.org/developers/design-documents/linuxresourcesandlocalizeds
 from __future__ import print_function
 
 import argparse
+import gzip
 import hashlib
 import os
+import shutil
 import sys
+import tempfile
 
 # Import grit first to get local third_party modules.
 import grit  # pylint: disable=ungrouped-imports,unused-import
@@ -25,8 +28,25 @@ from grit.format import data_pack
 
 
 def _RepackMain(args):
-  data_pack.RePack(args.output_pak_file, args.input_pak_files, args.whitelist,
-                   args.suppress_removed_key_output)
+  output_info_filepath = args.output_pak_file + '.info'
+  if args.compress:
+    # If the file needs to be compressed, call RePack with a tempfile path,
+    # then compress the tempfile to args.output_pak_file.
+    temp_outfile = tempfile.NamedTemporaryFile()
+    out_path = temp_outfile.name
+    # Strip any non .pak extension from the .info output file path.
+    splitext = os.path.splitext(args.output_pak_file)
+    if splitext[1] != '.pak':
+      output_info_filepath = splitext[0] + '.info'
+  else:
+    out_path = args.output_pak_file
+  data_pack.RePack(out_path, args.input_pak_files, args.whitelist,
+                   args.suppress_removed_key_output,
+                   output_info_filepath=output_info_filepath)
+  if args.compress:
+    with open(args.output_pak_file, 'wb') as out:
+      with gzip.GzipFile(filename='', mode='wb', fileobj=out, mtime=0) as outgz:
+        shutil.copyfileobj(temp_outfile, outgz)
 
 
 def _ExtractMain(args):
@@ -140,6 +160,8 @@ def main():
       help='Path to a whitelist used to filter output pak file resource IDs.')
   sub_parser.add_argument('--suppress-removed-key-output', action='store_true',
       help='Do not log which keys were removed by the whitelist.')
+  sub_parser.add_argument('--compress', dest='compress', action='store_true',
+      default=False, help='Compress output_pak_file using gzip.')
   sub_parser.set_defaults(func=_RepackMain)
 
   sub_parser = sub_parsers.add_parser('extract', help='Extracts pak file')

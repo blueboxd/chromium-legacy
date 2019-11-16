@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 
 namespace device {
@@ -83,7 +84,9 @@ class VersionInfoUpdater : public policy::CloudPolicyStore::Observer {
   void OnGetAdapter(scoped_refptr<device::BluetoothAdapter> adapter);
 
   // Callback from SessionManagerClient::QueryAdbSideload.
-  void OnQueryAdbSideload(bool success, bool enabled);
+  void OnQueryAdbSideload(
+      SessionManagerClient::AdbSideloadResponseCode response_code,
+      bool enabled);
 
   // Information pieces for version label.
   std::string version_text_;

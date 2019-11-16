@@ -139,7 +139,7 @@ class BluetoothGattBlueZTest : public testing::Test {
   }
 
   void TearDown() override {
-    adapter_ = NULL;
+    adapter_.reset();
     update_sessions_.clear();
     gatt_conn_.reset();
     bluez::BluezDBusManager::Shutdown();
@@ -589,7 +589,7 @@ TEST_F(BluetoothGattBlueZTest, GattServiceAddedAndRemoved) {
 TEST_F(BluetoothGattBlueZTest, ServicesDiscoveredBeforeAdapterIsCreated) {
   // Tests that all GATT objects are created for a device whose D-Bus objects
   // were already exposed and for which services have been resolved.
-  adapter_ = NULL;
+  adapter_.reset();
   ASSERT_FALSE(device::BluetoothAdapterFactory::HasSharedInstanceForTesting());
 
   // Create the fake D-Bus objects.
@@ -685,7 +685,7 @@ TEST_F(BluetoothGattBlueZTest, DiscoverCachedServices) {
   // This unit test tests that all remote GATT objects are created for D-Bus
   // objects that were already exposed and all relevant events have been
   // dispatched.
-  adapter_ = NULL;
+  adapter_.reset();
   ASSERT_FALSE(device::BluetoothAdapterFactory::HasSharedInstanceForTesting());
 
   // Create the fake D-Bus objects.
@@ -774,7 +774,7 @@ TEST_F(BluetoothGattBlueZTest, DiscoverNewServices) {
 TEST_F(BluetoothGattBlueZTest, DiscoverCachedAndNewServices) {
   // This unit test tests that all remote GATT objects are created for D-Bus
   // objects that were already exposed and for new GATT Objects.
-  adapter_ = NULL;
+  adapter_.reset();
   ASSERT_FALSE(device::BluetoothAdapterFactory::HasSharedInstanceForTesting());
 
   // Create the fake D-Bus objects.

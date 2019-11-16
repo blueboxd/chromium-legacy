@@ -136,12 +136,14 @@ class NGInlineBoxFragmentPainter : public NGInlineBoxFragmentPainterBase {
 
   // Constructor for |NGFragmentItem|.
   NGInlineBoxFragmentPainter(const NGFragmentItem& inline_box_item,
-                             const NGPhysicalBoxFragment& inline_box_fragment)
+                             const NGPhysicalBoxFragment& inline_box_fragment,
+                             NGInlineCursor* descendants = nullptr)
       : NGInlineBoxFragmentPainterBase(inline_box_item,
                                        inline_box_fragment,
                                        *inline_box_fragment.GetLayoutObject(),
                                        inline_box_fragment.Style(),
-                                       inline_box_fragment.Style()) {
+                                       inline_box_fragment.Style()),
+        descendants_(descendants) {
     DCHECK_EQ(inline_box_fragment.Type(),
               NGPhysicalFragment::NGFragmentType::kFragmentBox);
     DCHECK_EQ(inline_box_fragment.BoxType(),
@@ -149,6 +151,10 @@ class NGInlineBoxFragmentPainter : public NGInlineBoxFragmentPainterBase {
   }
 
   void Paint(const PaintInfo&, const PhysicalOffset& paint_offset);
+
+  static void PaintAllFragments(const LayoutInline& layout_inline,
+                                const PaintInfo&,
+                                const PhysicalOffset& paint_offset);
 
  private:
   const NGPhysicalBoxFragment& PhysicalFragment() const {
@@ -158,6 +164,7 @@ class NGInlineBoxFragmentPainter : public NGInlineBoxFragmentPainterBase {
   const NGBorderEdges BorderEdges() const final;
 
   mutable base::Optional<NGBorderEdges> border_edges_;
+  NGInlineCursor* descendants_ = nullptr;
 };
 
 // Painter for LayoutNG line box fragments. Line boxes don't paint anything,

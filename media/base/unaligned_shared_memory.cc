@@ -46,11 +46,6 @@ bool CalculateMisalignmentAndOffset(size_t size,
 }
 
 }  // namespace
-UnalignedSharedMemory::UnalignedSharedMemory(
-    const base::SharedMemoryHandle& handle,
-    size_t size,
-    bool read_only)
-    : shm_(handle, read_only), read_only_(read_only), size_(size) {}
 
 UnalignedSharedMemory::UnalignedSharedMemory(
     base::subtle::PlatformSharedMemoryRegion region,
@@ -74,36 +69,27 @@ bool UnalignedSharedMemory::MapAt(off_t offset, size_t size) {
     return false;
   }
 
-  if (region_.IsValid()) {
-    if (read_only_) {
-      auto shm =
-          base::ReadOnlySharedMemoryRegion::Deserialize(std::move(region_));
-      read_only_mapping_ = shm.MapAt(adjusted_offset, size + misalignment);
-      if (!read_only_mapping_.IsValid()) {
-        DLOG(ERROR) << "Failed to map shared memory";
-        return false;
-      }
-      // TODO(crbug.com/849207): this ugly const cast will go away when uses of
-      // UnalignedSharedMemory are converted to
-      // {Writable,ReadOnly}UnalignedMapping.
-      mapping_ptr_ = const_cast<uint8_t*>(
-          static_cast<const uint8_t*>(read_only_mapping_.memory()));
-    } else {
-      auto shm =
-          base::UnsafeSharedMemoryRegion::Deserialize(std::move(region_));
-      writable_mapping_ = shm.MapAt(adjusted_offset, size + misalignment);
-      if (!writable_mapping_.IsValid()) {
-        DLOG(ERROR) << "Failed to map shared memory";
-        return false;
-      }
-      mapping_ptr_ = static_cast<uint8_t*>(writable_mapping_.memory());
-    }
-  } else {
-    if (!shm_.MapAt(adjusted_offset, size + misalignment)) {
+  if (read_only_) {
+    auto shm =
+        base::ReadOnlySharedMemoryRegion::Deserialize(std::move(region_));
+    read_only_mapping_ = shm.MapAt(adjusted_offset, size + misalignment);
+    if (!read_only_mapping_.IsValid()) {
       DLOG(ERROR) << "Failed to map shared memory";
       return false;
     }
-    mapping_ptr_ = static_cast<uint8_t*>(shm_.memory());
+    // TODO(crbug.com/849207): this ugly const cast will go away when uses of
+    // UnalignedSharedMemory are converted to
+    // {Writable,ReadOnly}UnalignedMapping.
+    mapping_ptr_ = const_cast<uint8_t*>(
+        static_cast<const uint8_t*>(read_only_mapping_.memory()));
+  } else {
+    auto shm = base::UnsafeSharedMemoryRegion::Deserialize(std::move(region_));
+    writable_mapping_ = shm.MapAt(adjusted_offset, size + misalignment);
+    if (!writable_mapping_.IsValid()) {
+      DLOG(ERROR) << "Failed to map shared memory";
+      return false;
+    }
+    mapping_ptr_ = static_cast<uint8_t*>(writable_mapping_.memory());
   }
 
   DCHECK(mapping_ptr_);

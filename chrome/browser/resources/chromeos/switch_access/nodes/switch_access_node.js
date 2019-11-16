@@ -143,6 +143,9 @@ class SAChildNode {
    */
   performAction(action) {}
 
+  /** Called when this node may have changed. */
+  refresh() {}
+
   // ================= Debug methods =================
 
   /**
@@ -273,6 +276,13 @@ class SARootNode {
 
   /** Called when a group is exiting. */
   onExit() {}
+
+  /** Called when this node or its children may have changed. */
+  refresh() {
+    for (const child of this.children_) {
+      child.refresh();
+    }
+  }
 
   // ================= Debug methods =================
 

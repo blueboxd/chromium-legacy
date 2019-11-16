@@ -133,8 +133,7 @@ ChromeVoxBackgroundTest.prototype = {
 
 /** Tests that ChromeVox classic is in this context. */
 SYNC_TEST_F('ChromeVoxBackgroundTest', 'ClassicNamespaces', function() {
-  assertEquals('object', typeof(cvox));
-  assertEquals('function', typeof(cvox.ChromeVoxBackground));
+  assertEquals('function', typeof(ChromeVoxBackground));
 });
 
 /** Tests that ChromeVox next is in this context. */
@@ -364,7 +363,7 @@ TEST_F('ChromeVoxBackgroundTest', 'BrailleRouting', function() {
   var mockFeedback = this.createMockFeedback();
   var route = function(position) {
     assertTrue(ChromeVoxState.instance.onBrailleKeyEvent(
-        {command: cvox.BrailleKeyCommand.ROUTING,
+        {command: BrailleKeyCommand.ROUTING,
          displayPosition: position},
         mockFeedback.lastMatchedBraille));
   };
@@ -476,32 +475,32 @@ TEST_F('ChromeVoxBackgroundTest', 'EarconsForControls', function() {
     function(rootNode) {
       mockFeedback.call(doCmd('nextObject'))
           .expectSpeech('MyLink')
-          .expectEarcon(cvox.Earcon.LINK)
+          .expectEarcon(Earcon.LINK)
           .call(doCmd('nextObject'))
           .expectSpeech('MyButton')
-          .expectEarcon(cvox.Earcon.BUTTON)
+          .expectEarcon(Earcon.BUTTON)
           .call(doCmd('nextObject'))
           .expectSpeech('Check box')
-          .expectEarcon(cvox.Earcon.CHECK_OFF)
+          .expectEarcon(Earcon.CHECK_OFF)
           .call(doCmd('nextObject'))
           .expectSpeech('Check box')
-          .expectEarcon(cvox.Earcon.CHECK_ON)
+          .expectEarcon(Earcon.CHECK_ON)
           .call(doCmd('nextObject'))
           .expectSpeech('Edit text')
-          .expectEarcon(cvox.Earcon.EDITABLE_TEXT)
+          .expectEarcon(Earcon.EDITABLE_TEXT)
 
       // Editable text Search re-mappings are in effect.
           .call(doCmd('toggleStickyMode'))
           .expectSpeech('Sticky mode enabled')
           .call(doCmd('nextObject'))
           .expectSpeech('List box')
-          .expectEarcon(cvox.Earcon.LISTBOX)
+          .expectEarcon(Earcon.LISTBOX)
           .call(doCmd('nextObject'))
           .expectSpeech('Button', 'has pop up')
-          .expectEarcon(cvox.Earcon.POP_UP_BUTTON)
+          .expectEarcon(Earcon.POP_UP_BUTTON)
           .call(doCmd('nextObject'))
           .expectSpeech(/Slider/)
-          .expectEarcon(cvox.Earcon.SLIDER);
+          .expectEarcon(Earcon.SLIDER);
 
       mockFeedback.replay();
     }.bind(this));
@@ -1393,15 +1392,15 @@ TEST_F_WITH_PREAMBLE(`
     mockFeedback.call(textField.focus.bind(textField))
         .expectSpeech('Edit text')
         .call(div.doDefault.bind(div))
-        .expectSpeechWithQueueMode('go', cvox.QueueMode.CATEGORY_FLUSH)
+        .expectSpeechWithQueueMode('go', QueueMode.CATEGORY_FLUSH)
 
         .call(div.doDefault.bind(div))
-        .expectSpeechWithQueueMode('e', cvox.QueueMode.FLUSH)
-        .expectSpeechWithQueueMode('queued', cvox.QueueMode.QUEUE)
+        .expectSpeechWithQueueMode('e', QueueMode.FLUSH)
+        .expectSpeechWithQueueMode('queued', QueueMode.QUEUE)
 
         .call(div.doDefault.bind(div))
-        .expectSpeechWithQueueMode('s', cvox.QueueMode.FLUSH)
-        .expectSpeechWithQueueMode('interrupted', cvox.QueueMode.QUEUE)
+        .expectSpeechWithQueueMode('s', QueueMode.FLUSH)
+        .expectSpeechWithQueueMode('interrupted', QueueMode.QUEUE)
 
         .replay();
   });
@@ -1583,7 +1582,7 @@ TEST_F('ChromeVoxBackgroundTest', 'NavigationIgnoresLabels', function() {
         .call(doCmd('nextObject'))
         .expectSpeech('label', 'lebal', 'Button')
         .call(doCmd('nextObject'))
-        .expectEarcon(cvox.Earcon.WRAP)
+        .expectEarcon(Earcon.WRAP)
         .call(doCmd('nextObject'))
         .expectSpeech('before')
         .replay();
@@ -1615,7 +1614,7 @@ TEST_F('ChromeVoxBackgroundTest', 'NavigationIgnoresDescriptions', function() {
         .call(doCmd('nextObject'))
         .expectSpeech('label', 'lebal', 'Button')
         .call(doCmd('nextObject'))
-        .expectEarcon(cvox.Earcon.WRAP)
+        .expectEarcon(Earcon.WRAP)
         .call(doCmd('nextObject'))
         .expectSpeech('before')
         .replay();

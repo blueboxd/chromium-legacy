@@ -16,9 +16,9 @@ goog.require('Output.EventType');
 goog.require('TreePathRecoveryStrategy');
 goog.require('cursors.Cursor');
 goog.require('cursors.Range');
-goog.require('cvox.BrailleBackground');
-goog.require('cvox.ChromeVoxEditableTextBase');
-goog.require('cvox.LibLouis.FormType');
+goog.require('BrailleBackground');
+goog.require('ChromeVoxEditableTextBase');
+goog.require('LibLouis.FormType');
 
 goog.scope(function() {
 var AutomationEvent = chrome.automation.AutomationEvent;
@@ -26,7 +26,7 @@ var AutomationNode = chrome.automation.AutomationNode;
 var Cursor = cursors.Cursor;
 var Dir = constants.Dir;
 var EventType = chrome.automation.EventType;
-var FormType = cvox.LibLouis.FormType;
+var FormType = LibLouis.FormType;
 var Range = cursors.Range;
 var RoleType = chrome.automation.RoleType;
 var StateType = chrome.automation.StateType;
@@ -123,7 +123,7 @@ editing.TextEditHandler.prototype = {
  * for automation tree text fields.
  * @constructor
  * @param {!AutomationNode} node
- * @extends {cvox.ChromeVoxEditableTextBase}
+ * @extends {ChromeVoxEditableTextBase}
  */
 function AutomationEditableText(node) {
   if (!node.state.editable) {
@@ -135,10 +135,10 @@ function AutomationEditableText(node) {
   this.updateLineBreaks_(value);
   var start = node.textSelStart;
   var end = node.textSelEnd;
-  cvox.ChromeVoxEditableTextBase.call(
+  ChromeVoxEditableTextBase.call(
       this, value, Math.min(start, end, value.length),
       Math.min(Math.max(start, end), value.length),
-      node.state[StateType.PROTECTED] /**password*/, cvox.ChromeVox.tts);
+      node.state[StateType.PROTECTED] /**password*/, ChromeVox.tts);
   /** @override */
   this.multiline = node.state[StateType.MULTILINE] || false;
   /** @type {!AutomationNode} @private */
@@ -146,7 +146,7 @@ function AutomationEditableText(node) {
 }
 
 AutomationEditableText.prototype = {
-  __proto__: cvox.ChromeVoxEditableTextBase.prototype,
+  __proto__: ChromeVoxEditableTextBase.prototype,
 
   /**
    * Called when the text field has been updated.
@@ -159,7 +159,7 @@ AutomationEditableText.prototype = {
     var newValue = this.getProcessedValue_(this.node_) || '';
     this.updateLineBreaks_(newValue);
 
-    var textChangeEvent = new cvox.TextChangeEvent(
+    var textChangeEvent = new TextChangeEvent(
         newValue, Math.min(this.node_.textSelStart || 0, newValue.length),
         Math.min(this.node_.textSelEnd || 0, newValue.length),
         true /* triggered by user */);
@@ -222,7 +222,7 @@ AutomationEditableText.prototype = {
           Msgs.getMsg(this.multiline ? 'tag_textarea_brl' : 'role_textbox_brl');
     }
 
-    cvox.ChromeVox.braille.write(new cvox.NavBraille({
+    ChromeVox.braille.write(new NavBraille({
       text: lineText,
       startIndex: this.start - lineStart,
       endIndex: this.end - lineStart
@@ -412,8 +412,8 @@ AutomationRichEditableText.prototype = {
         if (text == '\n') {
           text = '';
         }
-        this.changed(new cvox.TextChangeEvent(
-            text, cur.startOffset, cur.endOffset, true));
+        this.changed(
+            new TextChangeEvent(text, cur.startOffset, cur.endOffset, true));
       } else {
         // Handle description of non-textual lines.
         new Output()
@@ -455,10 +455,10 @@ AutomationRichEditableText.prototype = {
       // Take the difference of the text at the paragraph level (i.e. the value
       // of the container) and speak that.
       this.describeTextChanged(
-          new cvox.TextChangeEvent(
+          new TextChangeEvent(
               prev.startContainerValue_, prev.localContainerStartOffset_,
               prev.localContainerEndOffset_, true),
-          new cvox.TextChangeEvent(
+          new TextChangeEvent(
               cur.startContainerValue_, cur.localContainerStartOffset_,
               cur.localContainerEndOffset_, true));
 
@@ -529,8 +529,8 @@ AutomationRichEditableText.prototype = {
         }
       }
 
-      cvox.ChromeVox.tts.speak(text, cvox.QueueMode.CATEGORY_FLUSH);
-      cvox.ChromeVox.tts.speak(Msgs.getMsg(suffixMsg), cvox.QueueMode.QUEUE);
+      ChromeVox.tts.speak(text, QueueMode.CATEGORY_FLUSH);
+      ChromeVox.tts.speak(Msgs.getMsg(suffixMsg), QueueMode.QUEUE);
       this.brailleCurrentRichLine_();
     } else {
       // A catch-all for any other transitions.
@@ -612,9 +612,9 @@ AutomationRichEditableText.prototype = {
 
     if (msgs.length) {
       msgs.forEach(function(msg) {
-        cvox.ChromeVox.tts.speak(
-            Msgs.getMsg(msg), cvox.QueueMode.QUEUE,
-            cvox.AbstractTts.PERSONALITY_ANNOTATION);
+        ChromeVox.tts.speak(
+            Msgs.getMsg(msg), QueueMode.QUEUE,
+            AbstractTts.PERSONALITY_ANNOTATION);
       });
     }
   },
@@ -682,9 +682,9 @@ AutomationRichEditableText.prototype = {
 
     if (msgs.length) {
       msgs.forEach(function(obj) {
-        cvox.ChromeVox.tts.speak(
-            Msgs.getMsg(obj.msg, obj.opt_subs), cvox.QueueMode.QUEUE,
-            cvox.AbstractTts.PERSONALITY_ANNOTATION);
+        ChromeVox.tts.speak(
+            Msgs.getMsg(obj.msg, obj.opt_subs), QueueMode.QUEUE,
+            AbstractTts.PERSONALITY_ANNOTATION);
       });
     }
   },
@@ -701,7 +701,7 @@ AutomationRichEditableText.prototype = {
         /** @type {Array<!AutomationNode>} */ (
             this.line_.value_.getSpansInstanceOf(
                 /** @type {function()} */ (this.node_.constructor)));
-    var queueMode = cvox.QueueMode.CATEGORY_FLUSH;
+    var queueMode = QueueMode.CATEGORY_FLUSH;
     for (var i = 0, cur; cur = lineNodes[i]; i++) {
       if (cur.children.length) {
         continue;
@@ -720,7 +720,7 @@ AutomationRichEditableText.prototype = {
         o.go();
       }
       prev = cur;
-      queueMode = cvox.QueueMode.QUEUE;
+      queueMode = QueueMode.QUEUE;
     }
   },
 
@@ -758,8 +758,8 @@ AutomationRichEditableText.prototype = {
       var start = value.getSpanStart(span);
       var end = value.getSpanEnd(span);
       value.setSpan(
-          new cvox.BrailleTextStyleSpan(
-              /** @type {cvox.LibLouis.FormType<number>} */ (formType)),
+          new BrailleTextStyleSpan(
+              /** @type {LibLouis.FormType<number>} */ (formType)),
           start, end);
     });
 
@@ -792,10 +792,9 @@ AutomationRichEditableText.prototype = {
       }
       value.append(Msgs.getMsg('tag_textarea_brl'));
     }
-    value.setSpan(new cvox.ValueSpan(0), 0, cur.value_.length);
-    value.setSpan(
-        new cvox.ValueSelectionSpan(), cur.startOffset, cur.endOffset);
-    cvox.ChromeVox.braille.write(new cvox.NavBraille(
+    value.setSpan(new ValueSpan(0), 0, cur.value_.length);
+    value.setSpan(new ValueSelectionSpan(), cur.startOffset, cur.endOffset);
+    ChromeVox.braille.write(new NavBraille(
         {text: value, startIndex: cur.startOffset, endIndex: cur.endOffset}));
   },
 
@@ -809,7 +808,7 @@ AutomationRichEditableText.prototype = {
       return;
     }
 
-    cvox.ChromeVoxEditableTextBase.prototype.describeSelectionChanged.call(
+    ChromeVoxEditableTextBase.prototype.describeSelectionChanged.call(
         this, evt);
   },
 
@@ -832,7 +831,7 @@ AutomationRichEditableText.prototype = {
   changed: function(evt) {
     // This path does not use the Output module to synthesize speech.
     Output.forceModeForNextSpeechUtterance(undefined);
-    cvox.ChromeVoxEditableTextBase.prototype.changed.call(this, evt);
+    ChromeVoxEditableTextBase.prototype.changed.call(this, evt);
   },
 
   /**
@@ -876,11 +875,11 @@ editing.EditingChromeVoxStateObserver.prototype = {
   onCurrentRangeChanged: function(range) {
     var inputType = range && range.start.node.inputType;
     if (inputType == 'email' || inputType == 'url') {
-      cvox.BrailleBackground.getInstance().getTranslatorManager().refresh(
+      BrailleBackground.getInstance().getTranslatorManager().refresh(
           localStorage['brailleTable8']);
       return;
     }
-    cvox.BrailleBackground.getInstance().getTranslatorManager().refresh(
+    BrailleBackground.getInstance().getTranslatorManager().refresh(
         localStorage['brailleTable']);
   }
 };

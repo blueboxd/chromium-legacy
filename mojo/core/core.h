@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/shared_memory_handle.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
 #include "build/build_config.h"

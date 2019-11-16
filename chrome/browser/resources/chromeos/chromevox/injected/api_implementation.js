@@ -7,16 +7,16 @@
  *
  */
 
-goog.provide('cvox.ApiImplementation');
+goog.provide('ApiImplementation');
 
-goog.require('cvox.ChromeVox');
-goog.require('cvox.ExtensionBridge');
-goog.require('cvox.ScriptInstaller');
+goog.require('ChromeVox');
+goog.require('ExtensionBridge');
+goog.require('ScriptInstaller');
 
 /**
  * @constructor
  */
-cvox.ApiImplementation = function() {};
+ApiImplementation = function() {};
 
 /**
  * The message between content script and the page that indicates the
@@ -24,26 +24,25 @@ cvox.ApiImplementation = function() {};
  * @type {string}
  * @const
  */
-cvox.ApiImplementation.DISCONNECT_MSG = 'cvox.Disconnect';
+ApiImplementation.DISCONNECT_MSG = 'Disconnect';
 
 /**
  * Inject the API into the page and set up communication with it.
  * @param {function()=} opt_onload A function called when the script is loaded.
  */
-cvox.ApiImplementation.init = function(opt_onload) {
-  window.addEventListener('message', cvox.ApiImplementation.portSetup, true);
+ApiImplementation.init = function(opt_onload) {
+  window.addEventListener('message', ApiImplementation.portSetup, true);
   var scripts = [window.chrome.extension.getURL('injected/api.js')];
 
   var didInstall =
-      cvox.ScriptInstaller.installScript(scripts, 'cvoxapi', opt_onload);
+      ScriptInstaller.installScript(scripts, 'cvoxapi', opt_onload);
   if (!didInstall) {
     console.error('Unable to install api scripts');
   }
 
-  cvox.ExtensionBridge.addDisconnectListener(function() {
-    cvox.ApiImplementation.port.postMessage(
-        cvox.ApiImplementation.DISCONNECT_MSG);
-    cvox.ScriptInstaller.uninstallScript('cvoxapi');
+  ExtensionBridge.addDisconnectListener(function() {
+    ApiImplementation.port.postMessage(ApiImplementation.DISCONNECT_MSG);
+    ScriptInstaller.uninstallScript('cvoxapi');
   });
 };
 
@@ -53,11 +52,11 @@ cvox.ApiImplementation.init = function(opt_onload) {
  * @param {Event} event The DOM event with the message data.
  * @return {boolean} True if default event processing should continue.
  */
-cvox.ApiImplementation.portSetup = function(event) {
-  if (event.data == 'cvox.PortSetup') {
-    cvox.ApiImplementation.port = event.ports[0];
-    cvox.ApiImplementation.port.onmessage = function(event) {
-      cvox.ApiImplementation.dispatchApiMessage(JSON.parse(event.data));
+ApiImplementation.portSetup = function(event) {
+  if (event.data == 'PortSetup') {
+    ApiImplementation.port = event.ports[0];
+    ApiImplementation.port.onmessage = function(event) {
+      ApiImplementation.dispatchApiMessage(JSON.parse(event.data));
     };
 
     // Stop propagation since it was our message.
@@ -71,11 +70,11 @@ cvox.ApiImplementation.portSetup = function(event) {
  * Call the appropriate API function given a message from the page.
  * @param {*} message The message.
  */
-cvox.ApiImplementation.dispatchApiMessage = function(message) {
+ApiImplementation.dispatchApiMessage = function(message) {
   var method;
   switch (message['cmd']) {
     case 'speak':
-      method = cvox.ApiImplementation.speak;
+      method = ApiImplementation.speak;
       break;
       break;
   }
@@ -83,7 +82,7 @@ cvox.ApiImplementation.dispatchApiMessage = function(message) {
     throw 'Unknown API call: ' + message['cmd'];
   }
 
-  method.apply(cvox.ApiImplementation, message['args']);
+  method.apply(ApiImplementation, message['args']);
 };
 
 /**
@@ -94,7 +93,7 @@ cvox.ApiImplementation.dispatchApiMessage = function(message) {
  */
 function setupEndCallback_(properties, callbackId) {
   var endCallback = function() {
-    cvox.ApiImplementation.port.postMessage(JSON.stringify({'id': callbackId}));
+    ApiImplementation.port.postMessage(JSON.stringify({'id': callbackId}));
   };
   if (properties) {
     properties['endCallback'] = endCallback;
@@ -109,7 +108,7 @@ function setupEndCallback_(properties, callbackId) {
  * @param {number=} queueMode Valid modes are 0 for flush; 1 for queue.
  * @param {Object=} properties Speech properties to use for this utterance.
  */
-cvox.ApiImplementation.speak = function(
+ApiImplementation.speak = function(
     callbackId, textString, queueMode, properties) {
   if (!properties) {
     properties = {};
@@ -123,5 +122,5 @@ cvox.ApiImplementation.speak = function(
     'properties': properties
   };
 
-  cvox.ExtensionBridge.send(message);
+  ExtensionBridge.send(message);
 };

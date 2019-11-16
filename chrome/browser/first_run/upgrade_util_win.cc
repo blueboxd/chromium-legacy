@@ -32,7 +32,9 @@
 #include "build/branding_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/upgrade_util_win.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/install_static/install_util.h"
@@ -99,6 +101,21 @@ bool InvokeGoogleUpdateForRename() {
 namespace upgrade_util {
 
 bool RelaunchChromeBrowserImpl(const base::CommandLine& command_line) {
+  // Breakpad will upload crash reports if the breakpad pipe name environment
+  // variable is defined. So we undefine this environment variable before
+  // restarting, as the restarted processes will inherit their environment
+  // variables from ours, thus suppressing crash uploads.
+  if (!ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled()) {
+    HMODULE exe_module = GetModuleHandle(chrome::kBrowserProcessExecutableName);
+    if (exe_module) {
+      typedef void(__cdecl * ClearBreakpadPipeEnvVar)();
+      ClearBreakpadPipeEnvVar clear = reinterpret_cast<ClearBreakpadPipeEnvVar>(
+          GetProcAddress(exe_module, "ClearBreakpadPipeEnvironmentVariable"));
+      if (clear)
+        clear();
+    }
+  }
+
   base::FilePath chrome_exe;
   if (!base::PathService::Get(base::FILE_EXE, &chrome_exe)) {
     NOTREACHED();

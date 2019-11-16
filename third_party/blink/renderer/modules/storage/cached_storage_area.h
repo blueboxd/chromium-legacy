@@ -6,12 +6,12 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_STORAGE_CACHED_STORAGE_AREA_H_
 
 #include "base/trace_event/memory_dump_provider.h"
-#include "components/services/storage/public/mojom/dom_storage_area.mojom-blink.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/blink/public/mojom/dom_storage/storage_area.mojom-blink.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/storage/storage_area_map.h"
@@ -31,7 +31,7 @@ namespace blink {
 // There is one CachedStorageArea for potentially many LocalStorageArea
 // objects.
 class MODULES_EXPORT CachedStorageArea
-    : public storage::mojom::blink::DomStorageAreaObserver,
+    : public mojom::blink::StorageAreaObserver,
       public RefCounted<CachedStorageArea>,
       public base::trace_event::MemoryDumpProvider {
  public:
@@ -66,12 +66,12 @@ class MODULES_EXPORT CachedStorageArea
 
   static scoped_refptr<CachedStorageArea> CreateForLocalStorage(
       scoped_refptr<const SecurityOrigin> origin,
-      mojo::PendingRemote<storage::mojom::blink::DomStorageArea> area,
+      mojo::PendingRemote<mojom::blink::StorageArea> area,
       scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
       InspectorEventListener* listener);
   static scoped_refptr<CachedStorageArea> CreateForSessionStorage(
       scoped_refptr<const SecurityOrigin> origin,
-      mojo::PendingAssociatedRemote<storage::mojom::blink::DomStorageArea> area,
+      mojo::PendingAssociatedRemote<mojom::blink::StorageArea> area,
       scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
       InspectorEventListener* listener);
 
@@ -99,14 +99,13 @@ class MODULES_EXPORT CachedStorageArea
   };
 
  private:
+  CachedStorageArea(scoped_refptr<const SecurityOrigin> origin,
+                    mojo::PendingRemote<mojom::blink::StorageArea> area,
+                    scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
+                    InspectorEventListener* listener);
   CachedStorageArea(
       scoped_refptr<const SecurityOrigin> origin,
-      mojo::PendingRemote<storage::mojom::blink::DomStorageArea> area,
-      scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
-      InspectorEventListener* listener);
-  CachedStorageArea(
-      scoped_refptr<const SecurityOrigin> origin,
-      mojo::PendingAssociatedRemote<storage::mojom::blink::DomStorageArea> area,
+      mojo::PendingAssociatedRemote<mojom::blink::StorageArea> area,
       scoped_refptr<base::SingleThreadTaskRunner> ipc_runner,
       InspectorEventListener* listener);
 
@@ -184,12 +183,11 @@ class MODULES_EXPORT CachedStorageArea
   // Depending on if this is a session storage or local storage area only one of
   // |mojo_area_remote_| and |mojo_area_associated_remote_| will be non-null.
   // Either way |mojo_area_| will be equal to the non-null one.
-  mojo::Remote<storage::mojom::blink::DomStorageArea> mojo_area_remote_;
-  mojo::AssociatedRemote<storage::mojom::blink::DomStorageArea>
+  mojo::Remote<mojom::blink::StorageArea> mojo_area_remote_;
+  mojo::AssociatedRemote<mojom::blink::StorageArea>
       mojo_area_associated_remote_;
-  storage::mojom::blink::DomStorageArea* mojo_area_;
-  mojo::AssociatedReceiver<storage::mojom::blink::DomStorageAreaObserver>
-      receiver_{this};
+  mojom::blink::StorageArea* mojo_area_;
+  mojo::AssociatedReceiver<mojom::blink::StorageAreaObserver> receiver_{this};
 
   Persistent<HeapHashMap<WeakMember<Source>, String>> areas_;
 

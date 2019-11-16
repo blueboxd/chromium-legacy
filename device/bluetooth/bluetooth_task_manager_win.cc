@@ -455,12 +455,8 @@ void BluetoothTaskManagerWin::StopDiscovery() {
 
 void BluetoothTaskManagerWin::DiscoverDevices(int timeout_multiplier) {
   DCHECK(bluetooth_task_runner_->RunsTasksInCurrentSequence());
-  if (!discovering_ || !classic_wrapper_->HasHandle()) {
-    ui_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&BluetoothTaskManagerWin::OnDiscoveryStopped, this));
+  if (!discovering_ || !classic_wrapper_->HasHandle())
     return;
-  }
 
   std::vector<std::unique_ptr<DeviceState>> device_list;
   if (SearchDevices(timeout_multiplier, false, &device_list)) {

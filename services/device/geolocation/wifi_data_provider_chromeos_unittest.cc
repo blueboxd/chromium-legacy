@@ -33,7 +33,7 @@ class GeolocationChromeOsWifiDataProviderTest : public testing::Test {
   }
 
   void TearDown() override {
-    provider_ = NULL;
+    provider_.reset();
     chromeos::NetworkHandler::Shutdown();
     chromeos::shill_clients::Shutdown();
   }

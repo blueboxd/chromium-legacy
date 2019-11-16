@@ -59,8 +59,8 @@ class SharedWorkerHostTest : public testing::Test {
     std::string name("name");
     url::Origin origin = url::Origin::Create(url);
     std::string content_security_policy;
-    blink::mojom::ContentSecurityPolicyType content_security_policy_type =
-        blink::mojom::ContentSecurityPolicyType::kReport;
+    network::mojom::ContentSecurityPolicyType content_security_policy_type =
+        network::mojom::ContentSecurityPolicyType::kReport;
     network::mojom::IPAddressSpace creation_address_space =
         network::mojom::IPAddressSpace::kPublic;
     blink::mojom::SharedWorkerCreationContextType creation_context_type =

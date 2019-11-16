@@ -81,7 +81,8 @@
         <!-- Manage search engines -->
         <cr-link-row class="hr" id="enginesSubpageTrigger"
             label="$i18n{searchEnginesManage}"
-            on-click="onManageSearchEnginesTap_"></cr-link-row>
+            on-click="onManageSearchEnginesTap_"
+            role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
 
 <if expr="chromeos">
         <!-- Google Assistant -->
@@ -92,7 +93,8 @@
               label="$i18n{searchGoogleAssistant}"
               sub-label="[[getAssistantEnabledDisabledLabel_(
                   prefs.settings.voice_interaction.enabled.value)]]"
-              on-click="onGoogleAssistantTap_">
+              on-click="onGoogleAssistantTap_"
+              role-description="$i18n{subpageArrowRoleDescription}">
           </cr-link-row>
         </template>
 </if>

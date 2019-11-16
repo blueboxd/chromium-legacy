@@ -45,7 +45,6 @@
 #include "components/sync/syncable/directory_cryptographer.h"
 #include "components/sync/syncable/mutable_entry.h"
 #include "components/sync/syncable/nigori_util.h"
-#include "components/sync/syncable/syncable_delete_journal.h"
 #include "components/sync/syncable/syncable_read_transaction.h"
 #include "components/sync/syncable/syncable_util.h"
 #include "components/sync/syncable/syncable_write_transaction.h"

@@ -40,7 +40,7 @@ jumbo_source_set("utility") {
     "//content/public/common:common_sources",
     "//media:media_buildflags",
     "//mojo/public/cpp/bindings",
-    "//net:net_with_v8",
+    "//net",
     "//sandbox",
     "//services/audio:lib",
     "//services/audio/public/mojom:constants",
@@ -73,6 +73,11 @@ jumbo_source_set("utility") {
 
   if (is_chromeos) {
     deps += [ "//chromeos/services/ime:sandbox_hook" ]
+  }
+
+  # PAC execution is done in process on Android.
+  if (!is_android) {
+    deps += [ "//services/proxy_resolver:lib" ]
   }
 }
 

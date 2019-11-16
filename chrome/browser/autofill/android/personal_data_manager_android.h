@@ -340,8 +340,6 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
 
   void SetSyncServiceForTesting(JNIEnv* env);
 
-  static const char* GetPrefNameExposedToJava(int pref_index);
-
  private:
   ~PersonalDataManagerAndroid() override;
 

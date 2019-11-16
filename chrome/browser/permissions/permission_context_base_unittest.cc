@@ -17,7 +17,6 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -155,21 +154,18 @@ class TestKillSwitchPermissionContext : public TestPermissionContext {
   TestKillSwitchPermissionContext(
       Profile* profile,
       const ContentSettingsType content_settings_type)
-      : TestPermissionContext(profile, content_settings_type),
-        field_trial_list_(std::make_unique<base::FieldTrialList>(
-            std::make_unique<base::MockEntropyProvider>())) {}
+      : TestPermissionContext(profile, content_settings_type) {
+    ResetFieldTrialList();
+  }
 
   void ResetFieldTrialList() {
-    // Destroy the existing FieldTrialList before creating a new one to avoid
-    // a DCHECK.
-    field_trial_list_.reset();
-    field_trial_list_ = std::make_unique<base::FieldTrialList>(
-        std::make_unique<base::MockEntropyProvider>());
+    scoped_feature_list_.Reset();
+    scoped_feature_list_.Init();
     variations::testing::ClearAllVariationParams();
   }
 
  private:
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(TestKillSwitchPermissionContext);
 };

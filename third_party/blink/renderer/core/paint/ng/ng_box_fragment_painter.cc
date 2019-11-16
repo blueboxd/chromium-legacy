@@ -381,7 +381,7 @@ void NGBoxFragmentPainter::PaintObject(
 
   if (paint_phase != PaintPhase::kSelfOutlineOnly &&
       (!physical_box_fragment.Children().empty() ||
-       physical_box_fragment.HasItems()) &&
+       physical_box_fragment.HasItems() || descendants_) &&
       !paint_info.DescendantPaintingBlocked()) {
     if (RuntimeEnabledFeatures::LayoutNGFragmentPaintEnabled()) {
       if (UNLIKELY(paint_phase == PaintPhase::kForeground &&
@@ -391,8 +391,12 @@ void NGBoxFragmentPainter::PaintObject(
 
     if (paint_phase != PaintPhase::kFloat) {
       if (physical_box_fragment.ChildrenInline()) {
-        DCHECK(paint_fragment_ || PhysicalFragment().HasItems());
-        if (physical_box_fragment.IsBlockFlow()) {
+        DCHECK(paint_fragment_ || PhysicalFragment().HasItems() ||
+               descendants_);
+        if (UNLIKELY(descendants_)) {
+          PaintInlineItems(paint_info.ForDescendants(), paint_offset,
+                           descendants_);
+        } else if (physical_box_fragment.IsBlockFlow()) {
           PaintBlockFlowContents(paint_info, paint_offset);
         } else if (ShouldPaintDescendantOutlines(paint_info.phase)) {
           // TODO(kojii): |PaintInlineChildrenOutlines()| should do the work
@@ -452,7 +456,8 @@ void NGBoxFragmentPainter::PaintBlockFlowContents(
   DCHECK(paint_fragment_ || items_);
 
   if (items_) {
-    PaintInlineItems(paint_info.ForDescendants(), paint_offset);
+    NGInlineCursor cursor(*items_);
+    PaintInlineItems(paint_info.ForDescendants(), paint_offset, &cursor);
     return;
   }
 
@@ -1025,39 +1030,36 @@ void NGBoxFragmentPainter::PaintAllPhasesAtomically(
   PaintInternal(local_paint_info);
 }
 
-void NGBoxFragmentPainter::PaintInlineItems(
-    const PaintInfo& paint_info,
-    const PhysicalOffset& paint_offset) {
-  DCHECK(items_);
-
+void NGBoxFragmentPainter::PaintInlineItems(const PaintInfo& paint_info,
+                                            const PhysicalOffset& paint_offset,
+                                            NGInlineCursor* cursor) {
   ScopedPaintTimingDetectorBlockPaintHook
       scoped_paint_timing_detector_block_paint_hook;
   // TODO(kojii): Copy more from |PaintLineBoxChildren|.
 
-  NGInlineCursor cursor(*items_);
-  while (cursor) {
-    const NGFragmentItem* item = cursor.CurrentItem();
+  while (*cursor) {
+    const NGFragmentItem* item = cursor->CurrentItem();
     DCHECK(item);
     switch (item->Type()) {
       case NGFragmentItem::kText:
       case NGFragmentItem::kGeneratedText:
-        PaintTextItem(cursor, paint_info, paint_offset);
+        PaintTextItem(*cursor, paint_info, paint_offset);
         break;
       case NGFragmentItem::kLine:
         if (PaintLineBoxItem(*item, paint_info, paint_offset) ==
             kSkipChildren) {
-          cursor.MoveToNextSkippingChildren();
+          cursor->MoveToNextSkippingChildren();
           continue;
         }
         break;
       case NGFragmentItem::kBox:
         if (PaintBoxItem(*item, paint_info, paint_offset) == kSkipChildren) {
-          cursor.MoveToNextSkippingChildren();
+          cursor->MoveToNextSkippingChildren();
           continue;
         }
         break;
     }
-    cursor.MoveToNext();
+    cursor->MoveToNext();
   }
 }
 
@@ -1271,8 +1273,7 @@ void NGBoxFragmentPainter::PaintTextItem(const NGInlineCursor& cursor,
                                          const PhysicalOffset& paint_offset) {
   DCHECK(cursor.CurrentItem());
   const NGFragmentItem& item = *cursor.CurrentItem();
-  DCHECK(cursor.IsText()) << item;
-  DCHECK(items_);
+  DCHECK(item.IsText()) << item;
 
   // Only paint during the foreground/selection phases.
   if (paint_info.phase != PaintPhase::kForeground &&
@@ -1310,7 +1311,6 @@ NGBoxFragmentPainter::MoveTo NGBoxFragmentPainter::PaintBoxItem(
     const PaintInfo& paint_info,
     const PhysicalOffset& paint_offset) {
   DCHECK_EQ(item.Type(), NGFragmentItem::kBox);
-  DCHECK(items_);
 
   const ComputedStyle& style = item.Style();
   if (UNLIKELY(!IsVisibleToPaint(item, style)))

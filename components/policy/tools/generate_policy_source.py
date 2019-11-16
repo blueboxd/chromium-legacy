@@ -7,7 +7,7 @@
 Pass at least:
 --chrome-version-file <path to src/chrome/VERSION> or --all-chrome-versions
 --target-platform <which platform the target code will be generated for and can
-  be one of (win, mac, linux, chromeos, fuchsia)>
+  be one of (win, mac, linux, chromeos, fuchsia, ios)>
 --policy_templates <path to the policy_templates.json input file>.'''
 
 
@@ -92,6 +92,7 @@ class PolicyDetails:
           'chrome_os',
           'android',
           'webview_android',
+          'ios',
           'chrome.win',
           'chrome.linux',
           'chrome.mac',

@@ -118,6 +118,12 @@ void ProactiveSuggestionsClientImpl::DidStartNavigation(
   SetActiveUrl(active_contents_->GetURL());
 }
 
+void ProactiveSuggestionsClientImpl::DidChangeVerticalScrollDirection(
+    viz::VerticalScrollDirection scroll_direction) {
+  if (delegate_)
+    delegate_->OnSourceVerticalScrollDirectionChanged(scroll_direction);
+}
+
 void ProactiveSuggestionsClientImpl::OnAssistantFeatureAllowedChanged(
     ash::mojom::AssistantAllowedState state) {
   // When the Assistant feature is allowed/disallowed we may need to resume/

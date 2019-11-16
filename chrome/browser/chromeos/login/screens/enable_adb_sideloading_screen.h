@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/ui/webui/chromeos/login/enable_adb_sideloading_screen_handler.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
 
 class PrefRegistrySimple;
 
@@ -41,8 +42,11 @@ class EnableAdbSideloadingScreen : public BaseScreen {
   base::RepeatingClosure* exit_callback() { return &exit_callback_; }
 
  private:
-  void OnQueryAdbSideload(bool success, bool enabled);
-  void OnEnableAdbSideload(bool success);
+  void OnQueryAdbSideload(
+      SessionManagerClient::AdbSideloadResponseCode response_code,
+      bool enabled);
+  void OnEnableAdbSideload(
+      SessionManagerClient::AdbSideloadResponseCode response_code);
 
   void OnEnable();
   void OnCancel();

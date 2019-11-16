@@ -254,6 +254,7 @@
 <translation id="1365180424462182382"><ph name="BEGIN_LINK" />Браузърът ви се управлява<ph name="END_LINK" /> от <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="1366177842110999534">Изпълнявайте инструменти, редактори и интегрирани среди за програмиране за Linux на устройството си <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Научете повече&lt;/a&gt;</translation>
 <translation id="1367951781824006909">Избор на файл</translation>
+<translation id="1369149969991017342">Достъп с превключване (контролиране на компютъра само с един или два превключвателя)</translation>
 <translation id="1372841398847029212">Синхронизиране с профила ви</translation>
 <translation id="1374844444528092021">Сертификатът, който се изисква от мрежата „<ph name="NETWORK_NAME" />“, не е инсталиран или вече не е валиден.  Моля, получете нов сертификат и опитайте пак да се свържете.</translation>
 <translation id="1375321115329958930">Запазени пароли</translation>
@@ -562,6 +563,7 @@
 <translation id="1794791083288629568">Изпращане на отзиви, за да ни помогнете да отстраним този проблем.</translation>
 <translation id="1795214765651529549">Използване на класическата тема</translation>
 <translation id="1799071797295057738">Разширението „<ph name="EXTENSION_NAME" />“ бе деактивирано автоматично.</translation>
+<translation id="1802624026913571222">Преминаване в спящ режим при затваряне на капака</translation>
 <translation id="1802687198411089702">Страницата не реагира. Можете да изчакате или да я затворите.</translation>
 <translation id="1802931390041703523">Изпълняването на Flash бе блокирано на тази страница</translation>
 <translation id="1803531841600994172">Целеви език</translation>
@@ -663,6 +665,7 @@
 <translation id="1937774647013465102">Архитектурата на контейнера е от тип <ph name="ARCHITECTURE_CONTAINER" /> и не може да се импортира в това устройство, което е от тип <ph name="ARCHITECTURE_DEVICE" />. Можете да опитате да възстановите контейнера на друго устройство или да използвате файловете в образа му, като го отворите в приложението „Файлове“.</translation>
 <translation id="1938351510777341717">Външен клавиш Command</translation>
 <translation id="1940546824932169984">Свързани устройства</translation>
+<translation id="1942600407708803723">Изключване при затваряне на капака</translation>
 <translation id="1944921356641260203">Намерена е актуализация</translation>
 <translation id="1946577776959096882">Преглед на профилите</translation>
 <translation id="1951012854035635156">Асистент</translation>
@@ -2438,6 +2441,7 @@
 <translation id="4546308221697447294">Сърфирайте бързо с Google Chrome</translation>
 <translation id="4547659257713117923">Няма раздели от други устройства</translation>
 <translation id="4547672827276975204">Автоматично задаване</translation>
+<translation id="4549791035683739768">В ключа ви за сигурност няма съхранени отпечатъци</translation>
 <translation id="4551763574344810652">Натиснете <ph name="MODIFIER_KEY_DESCRIPTION" /> за отмяна</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4554591392113183336">Версията на външното разширение е същата или по-стара в сравнение със съществуващата.</translation>
@@ -2617,6 +2621,7 @@
 <translation id="4839303808932127586">&amp;Запазване на видеоклипа като...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{още 1}other{още #}}</translation>
 <translation id="4842976633412754305">Тази страница опитва да зареди скриптове от неудостоверени източници.</translation>
+<translation id="4843488774506045600">Екранът за вход е предоставен от <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Други клавиатури</translation>
 <translation id="4846680374085650406">Следвате препоръката на администратора за тази настройка.</translation>
 <translation id="4848518990323155912">Активиране на заключването на SIM картата (за използването на мобилни данни се изисква ПИН)</translation>
@@ -3069,6 +3074,7 @@
 <translation id="5511823366942919280">Наистина ли искате да настроите това устройство като Shark?</translation>
 <translation id="5512653252560939721">Потребителският сертификат трябва да бъде с хардуерна поддръжка.</translation>
 <translation id="5517304475148761050">Това приложение изисква достъп до Google Play Магазин</translation>
+<translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> – <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Принтерът се добавя в профила ви. Това може да отнеме известно време...</translation>
 <translation id="5518219166343146486">Извеждане на запитване, когато сайт иска да преглежда текста и изображенията, копирани в буферната памет</translation>
 <translation id="5518584115117143805">Сертификат за шифроване на имейли</translation>
@@ -3188,6 +3194,7 @@
 <translation id="567643736130151854">Влезте в профила си и включете синхронизирането, за да получите отметките, паролите и другите си неща на всичките си устройства</translation>
 <translation id="5677503058916217575">Език на страницата:</translation>
 <translation id="5677928146339483299">Блокирано</translation>
+<translation id="5678293144564424498">Приложението е на пауза</translation>
 <translation id="5678550637669481956">Предоставен е достъп до „<ph name="VOLUME_NAME" />“ за четене и запис.</translation>
 <translation id="5678955352098267522">Четене на данните ви от <ph name="WEBSITE_1" /></translation>
 <translation id="5684661240348539843">Идентификатор на актива</translation>
@@ -3454,6 +3461,7 @@
 <translation id="6055392876709372977">PKCS 1 SHA-256 с RSA шифроване</translation>
 <translation id="6056710589053485679">Нормално презареждане</translation>
 <translation id="6057381398996433816">Сайтът бе блокиран, така че да не използва сензорите за движение и светлина.</translation>
+<translation id="6058567592298841668">Приставка за виртуална машина: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Йерархия на сертификатите</translation>
 <translation id="6059925163896151826">USB устройства</translation>
 <translation id="6061882183774845124">Изпращане на връзката до устройствата ви</translation>
@@ -4402,6 +4410,7 @@
 <translation id="7476454130948140105">Батерията е твърде изтощена (<ph name="BATTERY_PERCENT" />%) за стартиране на актуализацията</translation>
 <translation id="7477793887173910789">Управление на музиката, видеоклиповете и др.</translation>
 <translation id="7478485216301680444">Павилионното приложение не можа да бъде инсталирано.</translation>
+<translation id="7479221278376295180">Общ преглед на използваното място в хранилището</translation>
 <translation id="7481312909269577407">Препращане</translation>
 <translation id="748138892655239008">Основни ограничения на сертификата</translation>
 <translation id="7487067081878637334">Технологии</translation>
@@ -5378,6 +5387,7 @@
 <translation id="8845001906332463065">Получете помощ</translation>
 <translation id="8846132060409673887">Четене на производителя и модела на този компютър</translation>
 <translation id="8846141544112579928">Търси се клавиатура...</translation>
+<translation id="8847523528195140327">Излизане от профила при затваряне на капака</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8850251000316748990">Вижте още...</translation>
 <translation id="885246833287407341">Аргументи за функция за API</translation>
@@ -5440,6 +5450,7 @@
 <translation id="8930351635855238750">Новите настройки за „бисквитките“ ще влязат в сила след презареждането на страницата</translation>
 <translation id="8931394284949551895">Нови устройства</translation>
 <translation id="893254996965966411">Запазване на откритите принтери в потребителския ви профил или добавяне на нов принтер.</translation>
+<translation id="8932894639908691771">Опции за функцията за достъп с превключване</translation>
 <translation id="8933960630081805351">&amp;Показване във Finder</translation>
 <translation id="8934732568177537184">Напред</translation>
 <translation id="8938800817013097409">Устройство с USB-C (десният порт на гърба)</translation>
@@ -5503,6 +5514,7 @@
 <translation id="9023015617655685412">Запазване на отметка към този раздел...</translation>
 <translation id="9024127637873500333">&amp;Отваряне в нов раздел</translation>
 <translation id="9024158959543687197">Възникна грешка при свързването на дяла. Проверете URL адреса за споделяне на файлове и опитайте отново.</translation>
+<translation id="9024885274934357065">Устройството ви е отключено чрез Smart Lock. Натиснете Enter, за да потвърдите.</translation>
 <translation id="9026731007018893674">изтеглен файл</translation>
 <translation id="9026852570893462412">Това може да отнеме няколко минути. Виртуалната машина се изтегля.</translation>
 <translation id="9027459031423301635">Отваряне на връзката в нов &amp;раздел</translation>

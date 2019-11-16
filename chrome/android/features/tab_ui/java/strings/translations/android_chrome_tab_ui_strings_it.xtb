@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
+<translation id="1075622780330595106"><ph name="NUMBER_OF_TABS" /> delle tue schede non sono state usate ultimamente. Vuoi chiuderle?</translation>
 <translation id="1181037720776840403">Rimuovi</translation>
 <translation id="125153950246128346">Tocca per visualizzare un'altra scheda</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> scheda}other{<ph name="TABS_COUNT_MANY" /> schede}}</translation>
@@ -10,6 +11,7 @@
 <translation id="2977480621796371840">Rimuovi dal gruppo</translation>
 <translation id="4212246570487010370">Continua la navigazione</translation>
 <translation id="4648718555153979859">Le schede sono raggruppate qui</translation>
+<translation id="5007392906805964215">Verifica</translation>
 <translation id="5073204694187207510">Nascondi la griglia a schermo intero</translation>
 <translation id="5082793167783849073">Confronta rapidamente le pagine creando un gruppo. Innanzitutto, tocca e tieni premuto un link.</translation>
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> schede raggruppate</translation>

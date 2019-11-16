@@ -16,6 +16,7 @@
 #include "base/containers/span.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_piece.h"
 
 namespace base {
 
@@ -25,7 +26,7 @@ namespace base {
 // Deprecated: Computes a hash of a memory buffer, use FastHash() instead.
 // If you need to persist a change on disk or between computers, use
 // PersistentHash().
-// TODO(cavalcantii): Migrate client code to new hash function.
+// TODO(https://crbug.com/1025358): Migrate client code to new hash function.
 BASE_EXPORT uint32_t Hash(const void* data, size_t length);
 BASE_EXPORT uint32_t Hash(const std::string& str);
 BASE_EXPORT uint32_t Hash(const string16& str);
@@ -37,7 +38,9 @@ BASE_EXPORT uint32_t Hash(const string16& str);
 // publicly available.
 // May changed without warning, do not expect stability of outputs.
 BASE_EXPORT size_t FastHash(base::span<const uint8_t> data);
-BASE_EXPORT size_t FastHash(const std::string& str);
+inline size_t FastHash(StringPiece str) {
+  return FastHash(as_bytes(make_span(str)));
+}
 
 // Computes a hash of a memory buffer. This hash function must not change so
 // that code can use the hashed values for persistent storage purposes or

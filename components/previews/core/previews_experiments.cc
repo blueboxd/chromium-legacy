@@ -324,6 +324,16 @@ bool LitePageRedirectTriggerOnAPITransition() {
       false);
 }
 
+bool LitePageRedirectValidateForwardBackTransition() {
+  // When enabled, validate every forward/back transition to ensure we reuse
+  // the same previews state. For example, if we navigate to A then B, then
+  // click back, we will show a preview for A iff the first navigation to A
+  // showed a preview.
+  return base::GetFieldTrialParamByFeatureAsBool(
+      features::kLitePageServerPreviews,
+      "should_validate_forward_back_transitions", true);
+}
+
 base::TimeDelta LitePageRedirectPreviewOriginProbeTimeout() {
   return base::TimeDelta::FromMilliseconds(
       base::GetFieldTrialParamByFeatureAsInt(GetLitePageServerPreviewsFeature(),

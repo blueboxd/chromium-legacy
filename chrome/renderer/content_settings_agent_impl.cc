@@ -125,7 +125,6 @@ ContentSettingsAgentImpl::ContentSettingsAgentImpl(
   render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
       base::Bind(&ContentSettingsAgentImpl::OnContentSettingsAgentRequest,
                  base::Unretained(this)));
-  EnsureContentSettingsManagerConnection();
 
   content::RenderFrame* main_frame =
       render_frame->GetRenderView()->GetMainRenderFrame();
@@ -145,14 +144,11 @@ ContentSettingsAgentImpl::ContentSettingsAgentImpl(
 
 ContentSettingsAgentImpl::~ContentSettingsAgentImpl() {}
 
-void ContentSettingsAgentImpl::EnsureContentSettingsManagerConnection() {
-  if (content_settings_manager_.is_bound() &&
-      content_settings_manager_.is_connected())
-    return;
-
-  content_settings_manager_.reset();
-  render_frame()->GetBrowserInterfaceBroker()->GetInterface(
-      content_settings_manager_.BindNewPipeAndPassReceiver());
+chrome::mojom::ContentSettingsManager&
+ContentSettingsAgentImpl::GetContentSettingsManager() {
+  if (!content_settings_manager_)
+    BindContentSettingsManager(&content_settings_manager_);
+  return *content_settings_manager_;
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -188,12 +184,14 @@ void ContentSettingsAgentImpl::DidBlockContentType(
     ContentSettingsType settings_type) {
   bool newly_blocked = content_blocked_.insert(settings_type).second;
   if (newly_blocked)
-    content_settings_manager_->OnContentBlocked(settings_type);
+    GetContentSettingsManager().OnContentBlocked(settings_type);
 }
 
-void ContentSettingsAgentImpl::SetContentSettingsManagerForTesting(
-    mojo::Remote<chrome::mojom::ContentSettingsManager> manager) {
-  content_settings_manager_ = std::move(manager);
+void ContentSettingsAgentImpl::BindContentSettingsManager(
+    mojo::Remote<chrome::mojom::ContentSettingsManager>* manager) {
+  DCHECK(!*manager);
+  render_frame()->GetBrowserInterfaceBroker()->GetInterface(
+      manager->BindNewPipeAndPassReceiver());
 }
 
 bool ContentSettingsAgentImpl::OnMessageReceived(const IPC::Message& message) {
@@ -212,8 +210,6 @@ void ContentSettingsAgentImpl::DidCommitProvisionalLoad(
   if (frame->Parent())
     return;  // Not a top-level navigation.
 
-  EnsureContentSettingsManagerConnection();
-
   if (!is_same_document_navigation) {
     // Clear "block" flags for the new page. This needs to happen before any of
     // |allowScript()|, |allowScriptFromSource()|, |allowImage()|, or
@@ -222,6 +218,10 @@ void ContentSettingsAgentImpl::DidCommitProvisionalLoad(
     // "blocked".
     ClearBlockedContentSettings();
     temporarily_allowed_plugins_.clear();
+
+    // The BrowserInterfaceBroker is reset on navigation, so we will need to
+    // re-acquire the ContentSettingsManager.
+    content_settings_manager_.reset();
   }
 
   GURL url = frame->GetDocument().Url();
@@ -267,7 +267,7 @@ void ContentSettingsAgentImpl::RequestFileSystemAccessAsync(
     return;
   }
 
-  content_settings_manager_->AllowStorageAccess(
+  GetContentSettingsManager().AllowStorageAccess(
       chrome::mojom::ContentSettingsManager::StorageType::FILE_SYSTEM,
       frame->GetSecurityOrigin(), frame->GetDocument().SiteForCookies(),
       frame->GetDocument().TopFrameOrigin(), std::move(callback));
@@ -370,7 +370,7 @@ bool ContentSettingsAgentImpl::AllowStorage(bool local) {
     return permissions->second;
 
   bool result = false;
-  content_settings_manager_->AllowStorageAccess(
+  GetContentSettingsManager().AllowStorageAccess(
       local
           ? chrome::mojom::ContentSettingsManager::StorageType::LOCAL_STORAGE
           : chrome::mojom::ContentSettingsManager::StorageType::SESSION_STORAGE,
@@ -634,7 +634,7 @@ bool ContentSettingsAgentImpl::AllowStorageAccess(
     return false;
 
   bool result = false;
-  content_settings_manager_->AllowStorageAccess(
+  GetContentSettingsManager().AllowStorageAccess(
       storage_type, frame->GetSecurityOrigin(),
       frame->GetDocument().SiteForCookies(),
       frame->GetDocument().TopFrameOrigin(), &result);

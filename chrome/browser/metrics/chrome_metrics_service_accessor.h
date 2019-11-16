@@ -26,8 +26,8 @@ class CrashesDOMHandler;
 class FlashDOMHandler;
 }
 
-namespace chrome {
-void AttemptRestart();
+namespace base {
+class CommandLine;
 }
 
 namespace domain_reliability {
@@ -60,13 +60,20 @@ namespace safe_browsing {
 class ChromeCleanerControllerDelegate;
 class DownloadUrlSBClient;
 class IncidentReportingService;
-class ReporterRunner;
 class SafeBrowsingService;
 class SafeBrowsingUIManager;
-}
+
+namespace internal {
+class ReporterRunner;
+}  // namespace internal
+}  // namespace safe_browsing
 
 namespace settings {
 class MetricsReportingHandler;
+}
+
+namespace upgrade_util {
+bool RelaunchChromeBrowserImpl(const base::CommandLine&);
 }
 
 // This class limits and documents access to metrics service helper methods.
@@ -84,7 +91,6 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
  private:
   friend class ::CrashesDOMHandler;
   friend class ::FlashDOMHandler;
-  friend void chrome::AttemptRestart();
   friend class ChromeBrowserFieldTrials;
   // For StackSamplingConfiguration.
   friend class ChromeBrowserMainParts;
@@ -105,13 +111,14 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class safe_browsing::ChromeCleanerControllerDelegate;
   friend class safe_browsing::DownloadUrlSBClient;
   friend class safe_browsing::IncidentReportingService;
-  friend class safe_browsing::ReporterRunner;
+  friend class safe_browsing::internal::ReporterRunner;
   friend class safe_browsing::SafeBrowsingService;
   friend class safe_browsing::SafeBrowsingUIManager;
   friend class ChromeMetricsServiceClient;
   friend class ChromePasswordManagerClient;
   friend void welcome::JoinOnboardingGroup(Profile* profile);
   friend class NavigationMetricsRecorder;
+  friend bool upgrade_util::RelaunchChromeBrowserImpl(const base::CommandLine&);
 
   // Testing related friends.
   friend class first_run::FirstRunMasterPrefsVariationsSeedTest;

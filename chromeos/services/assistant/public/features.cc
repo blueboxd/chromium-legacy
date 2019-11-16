@@ -34,8 +34,14 @@ const base::FeatureParam<std::string>
     kAssistantProactiveSuggestionsServerExperimentIds{
         &kAssistantProactiveSuggestions, "server-experiment-ids", ""};
 
+// When enabled, the proactive suggestions view will show only after the user
+// scrolls up in the source web contents. When disabled, the view will be shown
+// immediately once the set of proactive suggestions are available.
+const base::FeatureParam<bool> kAssistantProactiveSuggestionsShowOnScroll{
+    &kAssistantProactiveSuggestions, "show-on-scroll", true};
+
 const base::FeatureParam<bool> kAssistantProactiveSuggestionsSuppressDuplicates{
-    &kAssistantProactiveSuggestions, "suppress-duplicates", true};
+    &kAssistantProactiveSuggestions, "suppress-duplicates", false};
 
 const base::FeatureParam<int>
     kAssistantProactiveSuggestionsTimeoutThresholdMillis{
@@ -125,6 +131,10 @@ bool IsPowerManagerEnabled() {
 
 bool IsProactiveSuggestionsEnabled() {
   return base::FeatureList::IsEnabled(kAssistantProactiveSuggestions);
+}
+
+bool IsProactiveSuggestionsShowOnScrollEnabled() {
+  return kAssistantProactiveSuggestionsShowOnScroll.Get();
 }
 
 bool IsProactiveSuggestionsSuppressDuplicatesEnabled() {

@@ -12,8 +12,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "net/dns/host_cache.h"
-#include "net/proxy_resolution/proxy_host_resolver.h"
 #include "net/proxy_resolution/proxy_resolve_dns_operation.h"
+#include "services/proxy_resolver/proxy_host_resolver.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 
 namespace net {

@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "net/base/network_isolation_key.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -1068,8 +1069,8 @@ TEST(HostCacheTest, SerializeAndDeserialize_Esni) {
   base::TimeTicks now;
 
   base::TimeDelta ttl = base::TimeDelta::FromSeconds(99);
-  HostCache::Key key("example.com", DnsQueryType::A, 0,
-                     HostResolverSource::DNS);
+  HostCache::Key key("example.com", DnsQueryType::A, 0, HostResolverSource::DNS,
+                     NetworkIsolationKey());
   key.secure = true;
 
   const std::string kEsniKey = "a";
@@ -1117,7 +1118,7 @@ class HostCacheMalformedEsniSerializationTest : public ::testing::Test {
 
     base::TimeDelta ttl = base::TimeDelta::FromSeconds(99);
     HostCache::Key key("example.com", DnsQueryType::A, 0,
-                       HostResolverSource::DNS);
+                       HostResolverSource::DNS, NetworkIsolationKey());
     key.secure = true;
 
     const std::string esni_key = "a";

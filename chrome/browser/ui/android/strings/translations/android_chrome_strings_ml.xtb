@@ -12,6 +12,7 @@
 <translation id="107147699690128016">ഫയൽ എക്സ്റ്റൻഷൻ മാറ്റിയാൽ, ഫയൽ വ്യത്യസ്ത ആപ്പിൽ തുറന്നേക്കാം, ഒപ്പം അത് നിങ്ങളുടെ ഉപകരണത്തിന് ദോഷകരമാവാൻ സാധ്യതയുണ്ട്.</translation>
 <translation id="1100066534610197918">ഗ്രൂപ്പിലെ പുതിയ ടാബിൽ തുറക്കൂ</translation>
 <translation id="1105960400813249514">സ്‌ക്രീൻ ക്യാപ്‌ചർ</translation>
+<translation id="1110022065703191351">ഐക്കണുകൾ</translation>
 <translation id="1111673857033749125">നിങ്ങളുടെ മറ്റ് ഉപകരണങ്ങളിൽ സംരക്ഷിച്ച ബുക്ക്‌മാർക്കുകൾ ഇവിടെ ദൃശ്യമാകും.</translation>
 <translation id="1113597929977215864">ലളിതവൽക്കരിച്ച കാഴ്‌ച കാണിക്കുക</translation>
 <translation id="1124772482545689468">ഉപയോക്താവ്</translation>
@@ -363,6 +364,7 @@
 <translation id="3730075448226062617">Chrome-നെ നിങ്ങളുടെ മൈക്രോഫോൺ ആക്‌സസ് ചെയ്യാൻ അനുവദിക്കുന്നതിന്, <ph name="BEGIN_LINK" />Android ക്രമീകരണത്തിൽ<ph name="END_LINK" /> മൈക്രോഫോണും ഓണാക്കുക.</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> എന്നതിൽ ബുക്ക്‌മാർക്ക് ചെയ്‌തു</translation>
 <translation id="3744111561329211289">പശ്ചാത്തല സമന്വയിപ്പിക്കൽ</translation>
+<translation id="3749259744154402564">പിന്തുണയ്‌ക്കുന്നില്ല</translation>
 <translation id="3771001275138982843">അപ്‌ഡേറ്റ് ഡൗൺലോഡ് ചെയ്യാനായില്ല</translation>
 <translation id="3771033907050503522">ആൾമാറാട്ട ടാബുകൾ</translation>
 <translation id="3773755127849930740">ജോടിയാക്കാൻ, <ph name="BEGIN_LINK" />Bluetooth ഓണാക്കുക<ph name="END_LINK" /></translation>
@@ -576,6 +578,7 @@
 <translation id="5327248766486351172">പേര്</translation>
 <translation id="5335288049665977812">JavaScript റൺ ചെയ്യാൻ സൈറ്റുകളെ അനുവദിക്കുക (ശുപാർശചെയ്‌തിരിക്കുന്നു)</translation>
 <translation id="5342314432463739672">അനുമതി അഭ്യർത്ഥനകൾ</translation>
+<translation id="534295439873310000">NFC ഉപകരണങ്ങൾ</translation>
 <translation id="5357811892247919462">ടാബ് സ്വീകരിച്ചു</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> ടാബ് തുറന്നിരിക്കുന്നു, ടാബുകൾ മാറാനായി ടാപ്പ് ചെയ്യുക}other{<ph name="OPEN_TABS_MANY" /> ടാബുകൾ തുറന്നിരിക്കുന്നു, മാറാനായി ടാപ്പ് ചെയ്യുക}}</translation>
 <translation id="5391532827096253100">ഈ സൈറ്റിലേക്കുള്ള നിങ്ങളുടെ കണക്ഷൻ സുരക്ഷിതമല്ല. സൈറ്റ് വിവരങ്ങള്‍</translation>
@@ -632,6 +635,7 @@
 <translation id="5686790454216892815">ഫയലിന്റെ പേര് ദൈർഘ്യമേറിയതാണ്</translation>
 <translation id="5689516760719285838">ലൊക്കേഷൻ</translation>
 <translation id="569536719314091526">'കൂടുതൽ ഓപ്‌ഷനുകൾ' ബട്ടണിൽ നിന്ന്, ഈ പേജ് ഏത് ഭാഷയിലേക്കും വിവർത്തനം ചെയ്യുക</translation>
+<translation id="5710871682236653961">നിങ്ങൾ NFC ഉപകരണങ്ങളിൽ ടാപ്പ് ചെയ്യുമ്പോൾ വിവരങ്ങൾ അയയ്‌ക്കാനും സ്വീകരിക്കാനും സൈറ്റുകളെ അനുവദിക്കുന്നതിന് മുമ്പ് ചോദിക്കുക (ശുപാർശ ചെയ്യുന്നത്)</translation>
 <translation id="572328651809341494">അടുത്തിടെയുള്ള ടാബുകൾ</translation>
 <translation id="5726692708398506830">പേജിൽ എല്ലാം വലുതായി നൽകുക</translation>
 <translation id="5748802427693696783">സ്റ്റാൻഡേർഡ് ടാബുകളിലേക്ക് മാറി</translation>
@@ -881,6 +885,7 @@
 <translation id="7559975015014302720">ലൈറ്റ് മോഡ് ഓഫാണ്</translation>
 <translation id="7562080006725997899">ബ്രൗസിംഗ് ഡാറ്റ മായ്‌ക്കൽ</translation>
 <translation id="756809126120519699">Chrome ഡാറ്റ മായ്‌ച്ചു</translation>
+<translation id="7572498721684305250">നിങ്ങൾ NFC ഉപകരണങ്ങളിൽ ടാപ്പ് ചെയ്യുമ്പോൾ വിവരങ്ങൾ അയയ്‌ക്കുന്നതിൽ നിന്നും സ്വീകരിക്കുന്നതിൽ നിന്നും സൈറ്റുകളെ ബ്ലോക്ക് ചെയ്യുക</translation>
 <translation id="757524316907819857">പരിരക്ഷിത ഉള്ളടക്കം പ്ലേ ചെയ്യുന്നതിൽ നിന്ന് സൈറ്റുകളെ ബ്ലോക്ക് ചെയ്യുക</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> ഫയൽ ഡൗൺലോഡ് ചെയ്‌തു}other{<ph name="FILES_DOWNLOADED_MANY" /> ഫയലുകൾ ഡൗൺലോഡ് ചെയ്‌തു}}</translation>
 <translation id="7588219262685291874">ഉപകരണത്തിൻ്റെ ബാറ്ററി ലാഭിക്കൽ ഓണായിരിക്കുമ്പോൾ ഇരുണ്ട തീം ഓണാക്കുക</translation>

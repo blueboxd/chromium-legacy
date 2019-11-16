@@ -33,7 +33,7 @@
 #endif
 
 #if defined(OS_FUCHSIA)
-#include <lib/zx/vmo.h>
+#include <lib/zx/vmar.h>
 #include <zircon/types.h>
 #include "base/fuchsia/fuchsia_logging.h"
 #endif
@@ -423,10 +423,14 @@ bool DiscardableSharedMemory::Purge(Time current_time) {
     CHECK(ptr);
   }
 #elif defined(OS_FUCHSIA)
-  zx::unowned_vmo vmo = shared_memory_region_.GetPlatformHandle();
-  zx_status_t status =
-      vmo->op_range(ZX_VMO_OP_DECOMMIT, AlignToPageSize(sizeof(SharedState)),
-                    AlignToPageSize(mapped_size_), nullptr, 0);
+  // De-commit via our VMAR, rather than relying on the VMO handle, since the
+  // handle may have been closed after the memory was mapped into this process.
+  uint64_t address_int = reinterpret_cast<uint64_t>(
+      static_cast<char*>(shared_memory_mapping_.memory()) +
+      AlignToPageSize(sizeof(SharedState)));
+  zx_status_t status = zx::vmar::root_self()->op_range(
+      ZX_VMO_OP_DECOMMIT, address_int, AlignToPageSize(mapped_size_), nullptr,
+      0);
   ZX_DCHECK(status == ZX_OK, status) << "zx_vmo_op_range(ZX_VMO_OP_DECOMMIT)";
 #endif  // defined(OS_FUCHSIA)
 

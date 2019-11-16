@@ -230,7 +230,9 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       assertWithMatcher:grey_nil()];
 }
 
-- (void)testCloseNTPWhenSwitching {
+// TODO(crbug.com/1025199): On smaller form factors, the desired "Switch
+// to tab" row does not fit above the fold, so this test fails.
+- (void)DISABLED_testCloseNTPWhenSwitching {
   // Open the first page.
   GURL URL1 = self.testServer->GetURL(kPage1URL);
   [ChromeEarlGrey loadURL:URL1];

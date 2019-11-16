@@ -72,7 +72,7 @@ TEST_F(ResourceTrackerTest, LastPluginRef) {
   EXPECT_EQ(1, mock_resource_alive_count);
 
   resource_tracker().DidDeleteInstance(instance);
-  resource = NULL;
+  resource.reset();
   EXPECT_FALSE(resource_tracker().GetResource(pp_resource));
 }
 
@@ -117,7 +117,7 @@ TEST_F(ResourceTrackerTest, InstanceDeletedWithBothRefed) {
   EXPECT_EQ(1, instance_was_deleted_count);
   EXPECT_EQ(0, resource->pp_instance());
 
-  resource = NULL;
+  resource.reset();
   EXPECT_EQ(0, mock_resource_alive_count);
 }
 

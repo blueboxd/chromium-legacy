@@ -78,6 +78,31 @@ void CookieSettings::GetSettingForLegacyCookieAccess(
   }
 }
 
+bool CookieSettings::ShouldIgnoreSameSiteRestrictions(
+    const GURL& url,
+    const GURL& site_for_cookies) const {
+  return base::Contains(secure_origin_cookies_allowed_schemes_,
+                        site_for_cookies.scheme()) &&
+         url.SchemeIsCryptographic();
+}
+
+bool CookieSettings::ShouldAlwaysAllowCookies(
+    const GURL& url,
+    const GURL& first_party_url) const {
+  if (base::Contains(secure_origin_cookies_allowed_schemes_,
+                     first_party_url.scheme()) &&
+      url.SchemeIsCryptographic()) {
+    return true;
+  }
+
+  if (base::Contains(matching_scheme_cookies_allowed_schemes_, url.scheme()) &&
+      url.SchemeIs(first_party_url.scheme_piece())) {
+    return true;
+  }
+
+  return false;
+}
+
 void CookieSettings::GetCookieSettingInternal(
     const GURL& url,
     const GURL& first_party_url,
@@ -85,15 +110,7 @@ void CookieSettings::GetCookieSettingInternal(
     content_settings::SettingSource* source,
     ContentSetting* cookie_setting) const {
   DCHECK(cookie_setting);
-  if (base::Contains(secure_origin_cookies_allowed_schemes_,
-                     first_party_url.scheme()) &&
-      url.SchemeIsCryptographic()) {
-    *cookie_setting = CONTENT_SETTING_ALLOW;
-    return;
-  }
-
-  if (base::Contains(matching_scheme_cookies_allowed_schemes_, url.scheme()) &&
-      url.SchemeIs(first_party_url.scheme_piece())) {
+  if (ShouldAlwaysAllowCookies(url, first_party_url)) {
     *cookie_setting = CONTENT_SETTING_ALLOW;
     return;
   }

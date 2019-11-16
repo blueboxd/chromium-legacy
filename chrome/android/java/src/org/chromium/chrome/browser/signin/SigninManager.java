@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.signin;
 
 import android.accounts.Account;
-import android.app.Activity;
 
 import androidx.annotation.MainThread;
 import androidx.annotation.Nullable;
@@ -413,8 +412,7 @@ public class SigninManager
      * Same as above but retrieves the Account object for the given accountName.
      */
     // TODO(crbug.com/1002056) SigninManager.Signin should use CoreAccountInfo as a parameter.
-    public void signIn(String accountName, @Nullable final Activity activity,
-            @Nullable final SignInCallback callback) {
+    public void signIn(String accountName, @Nullable final SignInCallback callback) {
         AccountManagerFacade.get().getAccountFromName(
                 accountName, account -> signIn(account, callback));
     }

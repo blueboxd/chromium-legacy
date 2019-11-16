@@ -12,7 +12,7 @@ goog.provide('SpeechLog');
 goog.provide('TextLog');
 goog.provide('TreeLog');
 
-goog.require('cvox.QueueMode');
+goog.require('QueueMode');
 
 /** @constructor */
 BaseLog = function(logType) {
@@ -74,7 +74,7 @@ EventLog.prototype.toString = function() {
 
 /**
  * @param {!string} textString
- * @param {!cvox.QueueMode} queueMode
+ * @param {!QueueMode} queueMode
  * @param {?string} category
  * @constructor
  * @extends {BaseLog}
@@ -89,7 +89,7 @@ SpeechLog = function(textString, queueMode, category) {
   this.textString_ = textString;
 
   /**
-   * @type {cvox.QueueMode}
+   * @type {QueueMode}
    * @private
    */
   this.queueMode_ = queueMode;
@@ -105,9 +105,9 @@ goog.inherits(SpeechLog, BaseLog);
 /** @override */
 SpeechLog.prototype.toString = function() {
   let logStr = 'Speak';
-  if (this.queueMode_ == cvox.QueueMode.FLUSH) {
+  if (this.queueMode_ == QueueMode.FLUSH) {
     logStr += ' (I)';
-  } else if (this.queueMode_ == cvox.QueueMode.CATEGORY_FLUSH) {
+  } else if (this.queueMode_ == QueueMode.CATEGORY_FLUSH) {
     logStr += ' (C)';
   } else {
     logStr += ' (Q)';

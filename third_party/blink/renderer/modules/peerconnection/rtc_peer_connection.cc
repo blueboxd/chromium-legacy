@@ -1308,9 +1308,11 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
     const RTCSessionDescriptionInit* session_description_init,
     V8VoidFunction* success_callback,
     V8RTCPeerConnectionErrorCallback* error_callback) {
-  MaybeWarnAboutUnsafeSdp(session_description_init);
-  ReportSetSdpUsage(SetSdpOperationType::kSetLocalDescription,
-                    session_description_init);
+  if (session_description_init->type() != "rollback") {
+    MaybeWarnAboutUnsafeSdp(session_description_init);
+    ReportSetSdpUsage(SetSdpOperationType::kSetLocalDescription,
+                      session_description_init);
+  }
   ExecutionContext* context = ExecutionContext::From(script_state);
   if (success_callback && error_callback) {
     UseCounter::Count(
@@ -1328,16 +1330,16 @@ ScriptPromise RTCPeerConnection::setLocalDescription(
           WebFeature::
               kRTCPeerConnectionSetLocalDescriptionLegacyNoFailureCallback);
   }
-
   String sdp;
-  DOMException* exception =
-      checkSdpForStateErrors(context, session_description_init, &sdp);
-  if (exception) {
-    if (error_callback)
-      AsyncCallErrorCallback(error_callback, exception);
-    return ScriptPromise::CastUndefined(script_state);
+  if (session_description_init->type() != "rollback") {
+    DOMException* exception =
+        checkSdpForStateErrors(context, session_description_init, &sdp);
+    if (exception) {
+      if (error_callback)
+        AsyncCallErrorCallback(error_callback, exception);
+      return ScriptPromise::CastUndefined(script_state);
+    }
   }
-
   NoteCallSetupStateEventPending(SetSdpOperationType::kSetLocalDescription,
                                  *session_description_init);
   auto* request = MakeGarbageCollected<RTCVoidRequestImpl>(
@@ -1413,9 +1415,11 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(
     const RTCSessionDescriptionInit* session_description_init,
     V8VoidFunction* success_callback,
     V8RTCPeerConnectionErrorCallback* error_callback) {
-  MaybeWarnAboutUnsafeSdp(session_description_init);
-  ReportSetSdpUsage(SetSdpOperationType::kSetRemoteDescription,
-                    session_description_init);
+  if (session_description_init->type() != "rollback") {
+    MaybeWarnAboutUnsafeSdp(session_description_init);
+    ReportSetSdpUsage(SetSdpOperationType::kSetRemoteDescription,
+                      session_description_init);
+  }
   ExecutionContext* context = ExecutionContext::From(script_state);
   if (success_callback && error_callback) {
     UseCounter::Count(

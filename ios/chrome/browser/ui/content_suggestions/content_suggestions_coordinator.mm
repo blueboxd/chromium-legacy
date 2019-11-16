@@ -145,17 +145,14 @@
             largeIconService:largeIconService
               largeIconCache:cache
              mostVisitedSite:std::move(mostVisitedFactory)
-            readingListModel:readingListModel];
+            readingListModel:readingListModel
+                 prefService:prefs];
   self.contentSuggestionsMediator.commandHandler = self.NTPMediator;
   self.contentSuggestionsMediator.headerProvider = self.headerController;
   self.contentSuggestionsMediator.contentArticlesExpanded =
       [[PrefBackedBoolean alloc]
           initWithPrefService:prefs
                      prefName:ntp_snippets::prefs::kArticlesListVisible];
-  self.contentSuggestionsMediator.contentArticlesEnabled =
-      [[PrefBackedBoolean alloc]
-          initWithPrefService:prefs
-                     prefName:prefs::kArticlesForYouEnabled];
 
   self.headerController.promoCanShow =
       [self.contentSuggestionsMediator notificationPromo]->CanShow();

@@ -68,6 +68,7 @@ run_jsbundler("switch_access_copied_files") {
     "menu_panel.html",
     "menu_panel.js",
     "menu_panel_interface.js",
+    "metrics.js",
     "navigation_manager.js",
     "nodes/back_button_node.js",
     "nodes/group_node.js",
@@ -186,6 +187,7 @@ js_type_check("closure_compile") {
     ":menu_manager",
     ":menu_panel",
     ":menu_panel_interface",
+    ":metrics",
     ":navigation_manager",
     ":node_wrapper",
     ":preferences",
@@ -294,6 +296,7 @@ js_library("menu_manager") {
   deps = [
     ":event_helper",
     ":menu_panel_interface",
+    ":metrics",
     ":node_wrapper",
     ":rect_helper",
     ":switch_access_constants",
@@ -322,12 +325,20 @@ js_library("menu_panel") {
 js_library("menu_panel_interface") {
 }
 
+js_library("metrics") {
+  deps = [
+    ":switch_access_constants",
+  ]
+  externs_list = [ "$externs_path/metrics_private.js" ]
+}
+
 js_library("navigation_manager") {
   deps = [
     ":focus_ring_manager",
     ":keyboard_node",
     ":menu_manager",
     ":menu_panel_interface",
+    ":metrics",
     ":node_wrapper",
     ":switch_access_constants",
     ":switch_access_node",

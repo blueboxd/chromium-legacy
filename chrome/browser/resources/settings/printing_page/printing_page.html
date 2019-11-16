@@ -21,14 +21,16 @@
 <if expr="chromeos">
         <cr-link-row hidden$="[[!showCupsPrinters_]]"
             id="cupsPrinters" label="$i18n{cupsPrintersTitle}"
-            on-click="onTapCupsPrinters_"></cr-link-row>
+            on-click="onTapCupsPrinters_"
+            role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
 </if>
 <if expr="not chromeos">
         <cr-link-row label="$i18n{localPrintersTitle}"
             on-click="onTapLocalPrinters_" external></cr-link-row>
 </if>
         <cr-link-row class="hr" id="cloudPrinters"
-            label="$i18n{cloudPrintersTitle}" on-click="onTapCloudPrinters_">
+            label="$i18n{cloudPrintersTitle}" on-click="onTapCloudPrinters_"
+            role-description="$i18n{subpageArrowRoleDescription}">
         </cr-link-row>
       </div>
 <if expr="chromeos">

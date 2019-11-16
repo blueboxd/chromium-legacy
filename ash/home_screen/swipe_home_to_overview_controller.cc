@@ -29,16 +29,16 @@ namespace {
 constexpr float kTargetHomeScale = 0.92f;
 
 // The home UI will be scaled down towards center of the screen as drag location
-// approaches the threshold for the transition to overview. The target threshold
-// for scaling is extended above the actual threshold to make the UI change more
-// noticeable to the user as drag approaches the threshold - this is the ratio
-// by which the projected threshold is extended.
-constexpr float kExtendedVerticalThresholdForOverviewTransitionRatio = 0.5f;
+// moves upwards. The target threshold for scaling is extended above the actual
+// threshold for transition so the UI keeps changing even when the gesture goes
+// over the threshold. This is the target home screen scaling threshold in terms
+// of ratio of the display height.
+constexpr float kHomeScalingThresholdDisplayHeightRatio = 0.5f;
 
-// The amount of time the drag has to remain still before the transition to the
-// overview starts.
+// The amount of time the drag has to remain bellow velocity threshold before
+// the transition to the overview starts.
 constexpr base::TimeDelta kOverviewTransitionDelay =
-    base::TimeDelta::FromMilliseconds(350);
+    base::TimeDelta::FromMilliseconds(150);
 
 // The duration of transition from the home screen current scaled state to the
 // initial (unscaled) state when the gesture is canceled.
@@ -90,27 +90,19 @@ void SwipeHomeToOverviewController::Drag(const gfx::PointF& location_in_screen,
 
     overview_transition_threshold_y_ =
         shelf_top - kVerticalThresholdForOverviewTransition;
+    scaling_threshold_y_ =
+        display.bounds().y() +
+        display.bounds().height() * kHomeScalingThresholdDisplayHeightRatio;
     state_ = State::kTrackingDrag;
   } else {
-    const bool over_overview_transition_threshold =
-        location_in_screen.y() <= overview_transition_threshold_y_;
-
-    // Ignore small drag updates, unless they move the drag above the overview
-    // transition threshold.
-    if (std::abs(location_in_screen.y() - last_location_in_screen_.y()) <
-            kMovementThreshold &&
-        (!over_overview_transition_threshold ||
-         overview_transition_timer_.IsRunning())) {
-      return;
-    }
-
-    if (over_overview_transition_threshold)
+    if (location_in_screen.y() <= overview_transition_threshold_y_ &&
+        std::abs(scroll_x) + std::abs(scroll_y) <= kMovementVelocityThreshold) {
       ScheduleFinalizeDragAndShowOverview();
-    else
+    } else {
       overview_transition_timer_.Stop();
+    }
   }
 
-  last_location_in_screen_ = location_in_screen;
 
   // Update the home screen scale to match progress during the drag.
   // Use extended threshold as the projected final transition position - UI
@@ -118,15 +110,10 @@ void SwipeHomeToOverviewController::Drag(const gfx::PointF& location_in_screen,
   // more likely to keep dragging up when they get really close to the threshold
   // for transition to overview (and reduce false negatives for detecting
   // transition to overview).
-  const float extended_threshold =
-      overview_transition_threshold_y_ -
-      kVerticalThresholdForOverviewTransition *
-          kExtendedVerticalThresholdForOverviewTransitionRatio;
-
-  const float distance = location_in_screen.y() - extended_threshold;
-  const float target_distance =
-      kVerticalThresholdForOverviewTransition *
-      (1.f + kExtendedVerticalThresholdForOverviewTransitionRatio);
+  const float distance = location_in_screen.y() - scaling_threshold_y_;
+  const float target_distance = overview_transition_threshold_y_ -
+                                scaling_threshold_y_ +
+                                kVerticalThresholdForOverviewTransition;
 
   const float progress = gfx::Tween::CalculateValue(
       gfx::Tween::FAST_OUT_SLOW_IN,
@@ -156,7 +143,6 @@ void SwipeHomeToOverviewController::CancelDrag() {
   }
 
   overview_transition_timer_.Stop();
-  last_location_in_screen_ = gfx::PointF();
   overview_transition_threshold_y_ = 0;
   state_ = State::kFinished;
 
@@ -171,6 +157,9 @@ void SwipeHomeToOverviewController::CancelDrag() {
 }
 
 void SwipeHomeToOverviewController::ScheduleFinalizeDragAndShowOverview() {
+  if (overview_transition_timer_.IsRunning())
+    return;
+
   overview_transition_timer_.Start(
       FROM_HERE, kOverviewTransitionDelay,
       base::BindOnce(
@@ -179,7 +168,6 @@ void SwipeHomeToOverviewController::ScheduleFinalizeDragAndShowOverview() {
 }
 
 void SwipeHomeToOverviewController::FinalizeDragAndShowOverview() {
-  last_location_in_screen_ = gfx::PointF();
   state_ = State::kFinished;
   overview_transition_threshold_y_ = 0;
 

@@ -57,6 +57,9 @@ class SaveCardBubbleController {
   virtual base::string16 GetAcceptButtonText() const = 0;
   virtual base::string16 GetDeclineButtonText() const = 0;
 
+  // Returns the tooltip message for the save card icon.
+  virtual base::string16 GetSaveCardIconTooltipText() const = 0;
+
   // Returns the account info of the signed-in user.
   virtual const AccountInfo& GetAccountInfo() const = 0;
 

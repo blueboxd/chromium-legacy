@@ -117,7 +117,11 @@
     },
 
     'android_monochrome_smoke_tests': {
-      'monochrome_public_bundle_fake_modules_smoke_test': {},
+      'monochrome_public_bundle_fake_modules_smoke_test': {
+        # TODO(https://crbug.com/1025316): Make non-experimental when these work
+        # properly with component builds.
+        'experiment_percentage': 100
+      },
       'monochrome_public_bundle_smoke_test': {},
       'monochrome_public_smoke_test': {},
     },
@@ -330,6 +334,9 @@
     'cast_video_specific_chromium_gtests': {
       'cast_graphics_unittests': {},
       'exo_unittests': {},
+      'views_unittests': {
+        'experiment_percentage': 100,
+      },
     },
 
     'check_network_annotations_script': {
@@ -485,7 +492,6 @@
         ],
       },
       'cc_unittests': {},
-      'color_unittests': {},
       'crypto_unittests': {},
       'display_unittests': {},
       'google_apis_unittests': {},
@@ -2333,7 +2339,6 @@
         ],
       },
       'cast_unittests': {},
-      'color_unittests': {},
       'components_browsertests': {},
       'components_unittests': {
         'android_swarming': {
@@ -4481,6 +4486,7 @@
       },
       'chrome_app_unittests': {},
       'chromedriver_unittests': {},
+      'color_unittests': {},
       'extensions_browsertests': {},
       'extensions_unittests': {},
       'filesystem_service_unittests': {},  # https://crbug.com/862712

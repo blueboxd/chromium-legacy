@@ -8,12 +8,8 @@
  */
 if (typeof (goog) != 'undefined' && goog.provide) {
 goog.provide('cvox.Api');
-goog.provide('cvox.Api.Math');
 }
 
-if (typeof (goog) != 'undefined' && goog.require) {
-goog.require('cvox.ApiImplementation');
-}
 
 (function() {
 /*
@@ -182,19 +178,6 @@ var cvox = window.cvox;
 
 
 /**
- * ApiImplementation - this is only visible if all the scripts are compiled
- * together like in the Android case. Otherwise, implementation will remain
- * null which means communication must happen over the bridge.
- *
- * @type {*}
- */
-var implementation = null;
-if (typeof (cvox.ApiImplementation) != 'undefined') {
-  implementation = cvox.ApiImplementation;
-}
-
-
-/**
  * @constructor
  */
 cvox.Api = function() {};
@@ -205,9 +188,7 @@ cvox.Api = function() {};
  */
 cvox.Api.internalEnable = function() {
   isActive = true;
-  if (!implementation) {
-    connect_();
-  }
+  connect_();
   var event = document.createEvent('UIEvents');
   event.initEvent('chromeVoxLoaded', true, false);
   document.dispatchEvent(event);
@@ -224,9 +205,6 @@ cvox.Api.internalEnable = function() {
  * @return {boolean} True if ChromeVox is currently active.
  */
 cvox.Api.isChromeVoxActive = function() {
-  if (implementation) {
-    return isActive;
-  }
   return !!channel;
 };
 
@@ -242,12 +220,8 @@ cvox.Api.speak = function(textString, queueMode, properties) {
     return;
   }
 
-  if (implementation) {
-    implementation.speak(textString, queueMode, properties);
-  } else {
-    var message = {'cmd': 'speak', 'args': [textString, queueMode, properties]};
-    callSpeakAsync_(message, properties);
-  }
+  var message = {'cmd': 'speak', 'args': [textString, queueMode, properties]};
+  callSpeakAsync_(message, properties);
 };
 
 /**

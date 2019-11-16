@@ -20,7 +20,6 @@
 #include "base/threading/thread.h"
 #include "components/services/storage/dom_storage/async_dom_storage_database.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
-#include "components/services/storage/public/mojom/key_value_pair.mojom.h"
 #include "content/browser/dom_storage/test/storage_area_test_util.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -137,7 +136,7 @@ StorageAreaImpl::Options GetDefaultTestingOptions(CacheMode cache_mode) {
 }  // namespace
 
 class StorageAreaImplTest : public testing::Test,
-                            public storage::mojom::DomStorageAreaObserver {
+                            public blink::mojom::StorageAreaObserver {
  public:
   struct Observation {
     enum { kAdd, kChange, kDelete, kDeleteAll, kSendOldValue } type;
@@ -229,14 +228,14 @@ class StorageAreaImplTest : public testing::Test,
     loop.Run();
   }
 
-  storage::mojom::DomStorageArea* storage_area() {
+  blink::mojom::StorageArea* storage_area() {
     return storage_area_remote_.get();
   }
   StorageAreaImpl* storage_area_impl() { return storage_area_.get(); }
 
   void FlushAreaBinding() { storage_area_remote_.FlushForTesting(); }
 
-  bool GetSync(storage::mojom::DomStorageArea* area,
+  bool GetSync(blink::mojom::StorageArea* area,
                const std::vector<uint8_t>& key,
                std::vector<uint8_t>* result) {
     bool success = false;
@@ -247,13 +246,13 @@ class StorageAreaImplTest : public testing::Test,
   }
 
   bool DeleteSync(
-      storage::mojom::DomStorageArea* area,
+      blink::mojom::StorageArea* area,
       const std::vector<uint8_t>& key,
       const base::Optional<std::vector<uint8_t>>& client_old_value) {
     return test::DeleteSync(area, key, client_old_value, test_source_);
   }
 
-  bool DeleteAllSync(storage::mojom::DomStorageArea* area) {
+  bool DeleteAllSync(blink::mojom::StorageArea* area) {
     return test::DeleteAllSync(area, test_source_);
   }
 
@@ -278,7 +277,7 @@ class StorageAreaImplTest : public testing::Test,
 
   std::string GetSyncStrUsingGetAll(StorageAreaImpl* area_impl,
                                     const std::string& key) {
-    std::vector<storage::mojom::KeyValuePairPtr> data;
+    std::vector<blink::mojom::KeyValuePtr> data;
     bool success = test::GetAllSyncOnDedicatedPipe(area_impl, &data);
 
     if (!success)
@@ -365,8 +364,8 @@ class StorageAreaImplTest : public testing::Test,
   std::unique_ptr<storage::AsyncDomStorageDatabase> db_;
   MockDelegate delegate_;
   std::unique_ptr<StorageAreaImpl> storage_area_;
-  mojo::Remote<storage::mojom::DomStorageArea> storage_area_remote_;
-  mojo::AssociatedReceiver<storage::mojom::DomStorageAreaObserver>
+  mojo::Remote<blink::mojom::StorageArea> storage_area_remote_;
+  mojo::AssociatedReceiver<blink::mojom::StorageAreaObserver>
       observer_receiver_{this};
   std::vector<Observation> observations_;
   bool should_record_send_old_value_observations_ = false;
@@ -400,7 +399,7 @@ TEST_F(StorageAreaImplTest, NoDataCallsOnMapLoaded) {
   // migration code is triggered.
   auto area = std::make_unique<StorageAreaImpl>(database(), test_copy_prefix2_,
                                                 delegate(), options);
-  std::vector<storage::mojom::KeyValuePairPtr> data;
+  std::vector<blink::mojom::KeyValuePtr> data;
   EXPECT_TRUE(test::GetAllSyncOnDedicatedPipe(area.get(), &data));
   EXPECT_TRUE(data.empty());
   EXPECT_EQ(1, delegate()->map_load_count());
@@ -472,7 +471,7 @@ TEST_F(StorageAreaImplTest, PutLoadsValuesAfterCacheModeUpgrade) {
 TEST_P(StorageAreaImplParamTest, GetAll) {
   storage_area_impl()->SetCacheModeForTesting(GetParam());
 
-  std::vector<storage::mojom::KeyValuePairPtr> data;
+  std::vector<blink::mojom::KeyValuePtr> data;
   EXPECT_TRUE(test::GetAllSync(storage_area(), &data));
   EXPECT_EQ(2u, data.size());
 }
@@ -770,7 +769,7 @@ TEST_P(StorageAreaImplParamTest, FixUpData) {
   changes.push_back(std::make_pair(test_prefix_bytes_, ToBytes("bla")));
   delegate()->set_mock_changes(std::move(changes));
 
-  std::vector<storage::mojom::KeyValuePairPtr> data;
+  std::vector<blink::mojom::KeyValuePtr> data;
   EXPECT_TRUE(test::GetAllSync(storage_area(), &data));
 
   ASSERT_EQ(2u, data.size());
@@ -791,7 +790,7 @@ TEST_F(StorageAreaImplTest, SetOnlyKeysWithoutDatabase) {
   StorageAreaImpl storage_area(
       nullptr, test_prefix_, &delegate,
       GetDefaultTestingOptions(CacheMode::KEYS_ONLY_WHEN_POSSIBLE));
-  mojo::Remote<storage::mojom::DomStorageArea> storage_area_remote;
+  mojo::Remote<blink::mojom::StorageArea> storage_area_remote;
   storage_area.Bind(storage_area_remote.BindNewPipeAndPassReceiver());
   // Setting only keys mode is noop.
   storage_area.SetCacheModeForTesting(CacheMode::KEYS_ONLY_WHEN_POSSIBLE);
@@ -904,7 +903,7 @@ TEST_F(StorageAreaImplTest, GetAllWhenCacheOnlyKeys) {
   EXPECT_TRUE(storage_area_impl()->has_changes_to_commit());
 
   bool get_all_success = false;
-  std::vector<storage::mojom::KeyValuePairPtr> data;
+  std::vector<blink::mojom::KeyValuePtr> data;
   bool result = false;
 
   base::RunLoop loop;
@@ -937,9 +936,9 @@ TEST_F(StorageAreaImplTest, GetAllWhenCacheOnlyKeys) {
 
   EXPECT_EQ(2u, data.size());
   EXPECT_TRUE(data[1]->Equals(
-      storage::mojom::KeyValuePair(test_key1_bytes_, test_value1_bytes_)))
+      blink::mojom::KeyValue(test_key1_bytes_, test_value1_bytes_)))
       << ToString(data[1]->value) << " vs expected " << test_value1_;
-  EXPECT_TRUE(data[0]->Equals(storage::mojom::KeyValuePair(key, value)))
+  EXPECT_TRUE(data[0]->Equals(blink::mojom::KeyValue(key, value)))
       << ToString(data[0]->value) << " vs expected " << ToString(value);
 
   EXPECT_TRUE(get_all_success);
@@ -975,7 +974,7 @@ TEST_F(StorageAreaImplTest, GetAllAfterSetCacheMode) {
   base::RunLoop loop;
 
   bool put_success = false;
-  std::vector<storage::mojom::KeyValuePairPtr> data;
+  std::vector<blink::mojom::KeyValuePtr> data;
   bool get_all_success = false;
   bool get_all_callback_success = false;
   bool delete_success = false;
@@ -1005,9 +1004,9 @@ TEST_F(StorageAreaImplTest, GetAllAfterSetCacheMode) {
 
   EXPECT_EQ(2u, data.size());
   EXPECT_TRUE(data[1]->Equals(
-      storage::mojom::KeyValuePair(test_key1_bytes_, test_value1_bytes_)))
+      blink::mojom::KeyValue(test_key1_bytes_, test_value1_bytes_)))
       << ToString(data[1]->value) << " vs expected " << test_value1_;
-  EXPECT_TRUE(data[0]->Equals(storage::mojom::KeyValuePair(key, value)))
+  EXPECT_TRUE(data[0]->Equals(blink::mojom::KeyValue(key, value)))
       << ToString(data[0]->value) << " vs expected " << ToString(value2);
 
   EXPECT_TRUE(get_all_callback_success);

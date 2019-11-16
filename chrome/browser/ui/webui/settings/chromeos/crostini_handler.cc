@@ -21,7 +21,6 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -302,14 +301,19 @@ void CrostiniHandler::HandleQueryArcAdbRequest(const base::ListValue* args) {
                                       weak_ptr_factory_.GetWeakPtr()));
 }
 
-void CrostiniHandler::OnQueryAdbSideload(bool success, bool enabled) {
-  if (!success) {
+void CrostiniHandler::OnQueryAdbSideload(
+    SessionManagerClient::AdbSideloadResponseCode response_code,
+    bool enabled) {
+  if (response_code != SessionManagerClient::AdbSideloadResponseCode::SUCCESS) {
     LOG(ERROR) << "Failed to query adb sideload status";
     enabled = false;
   }
+  bool need_powerwash =
+      response_code ==
+      SessionManagerClient::AdbSideloadResponseCode::NEED_POWERWASH;
   // Other side listens with cr.addWebUIListener
   FireWebUIListener("crostini-arc-adb-sideload-status-changed",
-                    base::Value(enabled));
+                    base::Value(enabled), base::Value(need_powerwash));
 }
 
 void CrostiniHandler::HandleEnableArcAdbRequest(const base::ListValue* args) {

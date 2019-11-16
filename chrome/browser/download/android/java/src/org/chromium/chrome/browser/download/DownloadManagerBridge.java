@@ -54,6 +54,7 @@ public class DownloadManagerBridge {
         public long bytesDownloaded;
         public long bytesTotal;
         public int failureReason;
+        public String filePath;
 
         public DownloadQueryResult(long downloadId) {
             this.downloadId = downloadId;
@@ -81,7 +82,6 @@ public class DownloadManagerBridge {
         public boolean result;
         public int failureReason;
         public long startTime;
-        public String filePath;
     }
 
     /**
@@ -203,6 +203,11 @@ public class DownloadManagerBridge {
                     c.getLong(c.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));
             result.bytesTotal =
                     c.getLong(c.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES));
+            String localUri = c.getString(c.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI));
+            if (!TextUtils.isEmpty(localUri)) {
+                Uri uri = Uri.parse(localUri);
+                result.filePath = uri.getPath();
+            }
         } else {
             result.downloadStatus = DownloadStatus.CANCELLED;
         }
@@ -352,7 +357,6 @@ public class DownloadManagerBridge {
         private long mDownloadId;
         private int mFailureReason;
         private long mStartTime;
-        private String mFilePath;
 
         public EnqueueNewDownloadTask(
                 DownloadEnqueueRequest enqueueRequest, Callback<DownloadEnqueueResponse> callback) {
@@ -385,7 +389,6 @@ public class DownloadManagerBridge {
                     File dir = new File(getContext().getExternalFilesDir(null), DOWNLOAD_DIRECTORY);
                     if (dir.mkdir() || dir.isDirectory()) {
                         File file = new File(dir, mEnqueueRequest.fileName);
-                        mFilePath = file.getAbsolutePath();
                         request.setDestinationUri(Uri.fromFile(file));
                     } else {
                         Log.e(TAG, "Cannot create download directory");
@@ -444,7 +447,6 @@ public class DownloadManagerBridge {
             enqueueResult.failureReason = mFailureReason;
             enqueueResult.downloadId = mDownloadId;
             enqueueResult.startTime = mStartTime;
-            enqueueResult.filePath = mFilePath;
             mCallback.onResult(enqueueResult);
         }
     }

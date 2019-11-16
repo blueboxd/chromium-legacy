@@ -112,6 +112,9 @@ class PLATFORM_EXPORT SchemeRegistry {
   static bool IsFetchScheme(const String& scheme);
 
   // Schemes which override the first-/third-party checks on a Document.
+  // TODO(chlily): This should also reflect the fact that chrome:// scheme
+  // should be considered first-party if the embedded origin is secure, to be
+  // consistent with other places that check this.
   static void RegisterURLSchemeAsFirstPartyWhenTopLevel(const String& scheme);
   static void RemoveURLSchemeAsFirstPartyWhenTopLevel(const String& scheme);
   static bool ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(

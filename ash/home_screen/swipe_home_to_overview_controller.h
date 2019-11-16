@@ -25,9 +25,8 @@ class ASH_EXPORT SwipeHomeToOverviewController {
   // work area for the gesture to trigger transition to overview.
   static constexpr int kVerticalThresholdForOverviewTransition = 56;
 
-  // The min location change distance required for a drag update to be
-  // registered.
-  static constexpr int kMovementThreshold = 3;
+  // The max pointer velocity at which home transitions to overview.
+  static constexpr int kMovementVelocityThreshold = 10;
 
   // The constructor that uses default tick clock for
   // |overview_transition_timer_|. Should be preferred outside of test
@@ -56,7 +55,7 @@ class ASH_EXPORT SwipeHomeToOverviewController {
  private:
   enum class State { kInitial, kTrackingDrag, kFinished };
 
-  // (Re)starts |overview_transition_timer_|.
+  // Starts |overview_transition_timer_|. No-op if the timer is already running.
   void ScheduleFinalizeDragAndShowOverview();
 
   // Finalizes the drag sequence, and starts overview session.
@@ -68,14 +67,16 @@ class ASH_EXPORT SwipeHomeToOverviewController {
 
   State state_ = State::kInitial;
 
-  // The last detected drag location.
-  gfx::PointF last_location_in_screen_;
-
   // The y in-screen coordinate at which drag, when stopped, will cause
   // transition to overview. Overview session will be started iff the drag stops
   // above this line.
   // The value is set when the controller transitions to kStarted state.
   int overview_transition_threshold_y_ = 0;
+
+  // Home screen is scaled down depending on gesture vertical distance from the
+  // shelf - this is the target gesture vertical location at which home screen
+  // should be scaled by the target scale factor.
+  int scaling_threshold_y_ = 0;
 
   // The timer to run FinalizeDragAndShowOverview().
   base::OneShotTimer overview_transition_timer_;

@@ -6,6 +6,29 @@
  * @fileoverview 'settings-security-keys-reset-dialog' is a dialog for
  * triggering factory resets of security keys.
  */
+
+cr.define('settings', function() {
+  /** @enum {string} */
+  const ResetDialogPage = {
+    INITIAL: 'initial',
+    NO_RESET: 'noReset',
+    RESET_FAILED: 'resetFailed',
+    RESET_CONFIRM: 'resetConfirm',
+    RESET_SUCCESS: 'resetSuccess',
+    RESET_NOT_ALLOWED: 'resetNotAllowed',
+  };
+
+
+  return {
+    ResetDialogPage: ResetDialogPage,
+  };
+});
+
+(function() {
+'use strict';
+
+const ResetDialogPage = settings.ResetDialogPage;
+
 Polymer({
   is: 'settings-security-keys-reset-dialog',
 
@@ -29,11 +52,11 @@ Polymer({
 
     /**
      * The id of an element on the page that is currently shown.
-     * @private
+     * @private {!settings.ResetDialogPage}
      */
     shown_: {
       type: String,
-      value: 'initial',
+      value: ResetDialogPage.INITIAL,
     },
 
     /**
@@ -56,24 +79,24 @@ Polymer({
       // code is a CTAP error code. See
       // https://fidoalliance.org/specs/fido-v2.0-rd-20180702/fido-client-to-authenticator-protocol-v2.0-rd-20180702.html#error-responses
       if (code == 1 /* INVALID_COMMAND */) {
-        this.shown_ = 'noReset';
+        this.shown_ = ResetDialogPage.NO_RESET;
         this.finish_();
       } else if (code != 0 /* unknown error */) {
         this.errorCode_ = code;
-        this.shown_ = 'resetFailed';
+        this.shown_ = ResetDialogPage.RESET_FAILED;
         this.finish_();
       } else {
         this.title_ = this.i18n('securityKeysResetConfirmTitle');
-        this.shown_ = 'reset2';
+        this.shown_ = ResetDialogPage.RESET_CONFIRM;
         this.browserProxy_.completeReset().then(code => {
           this.title_ = this.i18n('securityKeysResetTitle');
           if (code == 0 /* SUCCESS */) {
-            this.shown_ = 'resetSuccess';
+            this.shown_ = ResetDialogPage.RESET_SUCCESS;
           } else if (code == 48 /* NOT_ALLOWED */) {
-            this.shown_ = 'resetNotAllowed';
+            this.shown_ = ResetDialogPage.RESET_NOT_ALLOWED;
           } else /* unknown error */ {
             this.errorCode_ = code;
-            this.shown_ = 'resetFailed';
+            this.shown_ = ResetDialogPage.RESET_FAILED;
           }
           this.finish_();
         });
@@ -139,3 +162,4 @@ Polymer({
     return complete ? 'action-button' : 'cancel-button';
   },
 });
+})();

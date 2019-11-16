@@ -19,7 +19,6 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
@@ -182,9 +181,11 @@ void VersionInfoUpdater::OnStoreError(policy::CloudPolicyStore* store) {
   UpdateEnterpriseInfo();
 }
 
-void VersionInfoUpdater::OnQueryAdbSideload(bool success, bool enabled) {
-  if (!success) {
-    LOG(ERROR) << "Failed to query adb sideload status";
+void VersionInfoUpdater::OnQueryAdbSideload(
+    SessionManagerClient::AdbSideloadResponseCode response_code,
+    bool enabled) {
+  if (response_code != SessionManagerClient::AdbSideloadResponseCode::SUCCESS) {
+    LOG(WARNING) << "Failed to query adb sideload status";
     // Pretend to be enabled to show warning at login screen conservatively.
     enabled = true;
   }

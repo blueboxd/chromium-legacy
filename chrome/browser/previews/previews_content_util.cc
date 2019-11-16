@@ -35,6 +35,8 @@
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_lite_page_redirect.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/ip_address.h"
@@ -125,6 +127,21 @@ bool ShouldAllowRedirectPreview(content::NavigationHandle* navigation_handle) {
       navigation_handle->GetPageTransition() & ui::PAGE_TRANSITION_FROM_API) {
     ineligible_reasons.push_back(
         previews::LitePageRedirectIneligibleReason::kAPIPageTransition);
+  }
+
+  if (previews::params::LitePageRedirectValidateForwardBackTransition() &&
+      navigation_handle->GetPageTransition() &
+          ui::PAGE_TRANSITION_FORWARD_BACK) {
+    // On forward/back navigations, enable LPR iff we showed an LPR for the
+    // prior navigation that we are returning to. For example, suppose the user
+    // navigates to A then B, without getting a preview for either navigation.
+    // If the user navigates back to A, we should load the original page as that
+    // is likely cached; loading a preview would be much slower as that requires
+    // contacting the litepages server.
+    if (!previews::IsLitePageRedirectPreviewURL(navigation_handle->GetURL())) {
+      ineligible_reasons.push_back(previews::LitePageRedirectIneligibleReason::
+                                       kForwardBackPageTransition);
+    }
   }
 
   // Record UMA.
@@ -401,7 +418,6 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
     content::PreviewsState previews_state,
     const previews::PreviewsDecider* previews_decider,
     content::NavigationHandle* navigation_handle) {
-
   // Record whether the hint cache has a matching entry for this committed URL.
   previews_decider->LogHintCacheMatch(url, true /* is_committed */);
 

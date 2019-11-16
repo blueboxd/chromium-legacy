@@ -23,8 +23,8 @@ import org.chromium.chrome.browser.thinwebview.ThinWebView;
 import org.chromium.chrome.browser.thinwebview.ThinWebViewFactory;
 import org.chromium.chrome.browser.ui.widget.FadingShadow;
 import org.chromium.chrome.browser.ui.widget.FadingShadowView;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.RenderCoordinates;
@@ -143,7 +143,7 @@ public class EphemeralTabSheetContent implements BottomSheetContent {
             TransitionDrawable transitionDrawable = ApiCompatibilityUtils.createTransitionDrawable(
                     new Drawable[] {mCurrentFavicon, favicon});
             transitionDrawable.setCrossFadeEnabled(true);
-            transitionDrawable.startTransition((int) BottomSheet.BASE_ANIMATION_DURATION_MS);
+            transitionDrawable.startTransition(BottomSheetController.BASE_ANIMATION_DURATION_MS);
             presentedDrawable = transitionDrawable;
         }
 

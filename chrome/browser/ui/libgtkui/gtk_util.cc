@@ -95,7 +95,7 @@ GdkModifierType ExtractGdkEventStateFromKeyEvent(
       {ui::EF_CONTROL_DOWN, GDK_CONTROL_MASK},
       {ui::EF_ALT_DOWN, GDK_MOD1_MASK},
       {ui::EF_NUM_LOCK_ON, GDK_MOD2_MASK},
-      {ui::EF_MOD3_DOWN, GDK_META_MASK},
+      {ui::EF_MOD3_DOWN, GDK_MOD3_MASK},
       {ui::EF_COMMAND_DOWN, GDK_MOD4_MASK},
       {ui::EF_ALTGR_DOWN, GDK_MOD5_MASK},
       {ui::EF_LEFT_MOUSE_BUTTON, GDK_BUTTON1_MASK},

@@ -722,7 +722,7 @@ TEST_F(PerfCollectorTest, JankinessCollectionDurationElapsed) {
 
 class PerfCollectorCollectionParamsTest : public testing::Test {
  public:
-  PerfCollectorCollectionParamsTest() : field_trial_list_(nullptr) {}
+  PerfCollectorCollectionParamsTest() {}
 
   void TearDown() override {
     variations::testing::ClearAllVariationParams();
@@ -730,8 +730,6 @@ class PerfCollectorCollectionParamsTest : public testing::Test {
 
  protected:
   content::BrowserTaskEnvironment task_environment_;
-
-  base::FieldTrialList field_trial_list_;
 
   DISALLOW_COPY_AND_ASSIGN(PerfCollectorCollectionParamsTest);
 };

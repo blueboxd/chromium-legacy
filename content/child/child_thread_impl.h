@@ -61,6 +61,7 @@ class BackgroundTracingAgentProviderImpl;
 
 namespace content {
 class InProcessChildThreadParams;
+class ServiceManagerConnection;
 class ThreadSafeSender;
 
 // The main thread of a child process derives from this class.
@@ -98,7 +99,6 @@ class CONTENT_EXPORT ChildThreadImpl
 #endif
   void RecordAction(const base::UserMetricsAction& action) override;
   void RecordComputedAction(const std::string& action) override;
-  ServiceManagerConnection* GetServiceManagerConnection() override;
   void BindHostReceiver(mojo::GenericPendingReceiver receiver) override;
   scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() override;
   void SetFieldTrialGroup(const std::string& trial_name,

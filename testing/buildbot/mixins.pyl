@@ -167,6 +167,13 @@
   'code-coverage': {
     'isolate_coverage_data': True,
   },
+  'docker': {
+    'swarming': {
+      'dimensions': {
+        'inside_docker': '1',
+      },
+    },
+  },
   'flounder': {
     # Nexus 9
     'swarming': {
@@ -604,7 +611,7 @@
     # Currently same as stable version.
     'swarming': {
       'dimensions': {
-        'gpu': '8086:5912-24.20.100.6286',
+        'gpu': '8086:5912-26.20.100.7323',
         'os': 'Windows-10',
         'pool': 'Chrome-GPU',
       },

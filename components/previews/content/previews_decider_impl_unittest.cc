@@ -433,8 +433,7 @@ class PreviewsDeciderImplTest
     : public optimization_guide::ProtoDatabaseProviderTestBase {
  public:
   PreviewsDeciderImplTest()
-      : field_trial_list_(nullptr),
-        previews_decider_impl_(nullptr),
+      : previews_decider_impl_(nullptr),
         optimization_guide_service_(
             task_environment_.GetMainThreadTaskRunner()) {
     clock_.SetNow(base::Time::Now());
@@ -514,7 +513,6 @@ class PreviewsDeciderImplTest
 
  private:
   base::test::TaskEnvironment task_environment_;
-  base::FieldTrialList field_trial_list_;
   TestPreviewsDeciderImpl* previews_decider_impl_;
   optimization_guide::OptimizationGuideService optimization_guide_service_;
   TestPreviewsOptimizationGuide* previews_opt_guide_;

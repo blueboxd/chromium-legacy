@@ -89,7 +89,13 @@ const gfx::VectorIcon& SaveCardIconView::GetVectorIconBadge() const {
 }
 
 base::string16 SaveCardIconView::GetTextForTooltipAndAccessibleName() const {
-  return l10n_util::GetStringUTF16(IDS_TOOLTIP_SAVE_CREDIT_CARD);
+  SaveCardBubbleController* controller = GetController();
+  if (!controller) {
+    // The controller can be null in unit tests only.
+    return base::string16();
+  }
+
+  return controller->GetSaveCardIconTooltipText();
 }
 
 SaveCardBubbleController* SaveCardIconView::GetController() const {

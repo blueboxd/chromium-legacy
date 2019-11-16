@@ -2,24 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {CrContainerShadowBehavior} from 'chrome://resources/cr_elements/cr_container_shadow_behavior.m.js';
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
-import {CloudPrintInterface} from '../cloud_print_interface.js';
-import {Metrics, MetricsContext} from '../metrics.js';
-import {DarkModeBehavior} from '../dark_mode_behavior.js';
-import {Destination} from '../data/destination.js';
-import {Error, State} from '../data/state.js';
 import './advanced_options_settings.js';
 import './button_strip.js';
 import './color_settings.js';
 import './copies_settings.js';
-import {DestinationState} from './destination_settings.js';
 import './dpi_settings.js';
 import './duplex_settings.js';
 import './header.js';
@@ -35,11 +25,24 @@ import './pin_settings.js';
 // </if>
 import './print_preview_vars_css.js';
 import './scaling_settings.js';
-import {SettingsBehavior} from './settings_behavior.js';
 import '../strings.m.js';
 // <if expr="not chromeos">
 import './link_container.js';
 // </if>
+
+import {CrContainerShadowBehavior} from 'chrome://resources/cr_elements/cr_container_shadow_behavior.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {CloudPrintInterface} from '../cloud_print_interface.js';
+import {DarkModeBehavior} from '../dark_mode_behavior.js';
+import {Destination} from '../data/destination.js';
+import {Error, State} from '../data/state.js';
+import {Metrics, MetricsContext} from '../metrics.js';
+
+import {DestinationState} from './destination_settings.js';
+import {SettingsBehavior} from './settings_behavior.js';
 
 /**
  * Number of settings sections to show when "More settings" is collapsed.
@@ -202,10 +205,8 @@ Polymer({
     if (this.shouldShowMoreSettings_) {
       MetricsContext.printSettingsUi().record(
           this.settingsExpandedByUser_ ?
-              Metrics.PrintSettingsUiBucket
-                  .PRINT_WITH_SETTINGS_EXPANDED :
-              Metrics.PrintSettingsUiBucket
-                  .PRINT_WITH_SETTINGS_COLLAPSED);
+              Metrics.PrintSettingsUiBucket.PRINT_WITH_SETTINGS_EXPANDED :
+              Metrics.PrintSettingsUiBucket.PRINT_WITH_SETTINGS_COLLAPSED);
     }
   },
 

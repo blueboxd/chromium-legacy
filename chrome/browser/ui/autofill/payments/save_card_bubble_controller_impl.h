@@ -111,6 +111,7 @@ class SaveCardBubbleControllerImpl
   base::string16 GetExplanatoryMessage() const override;
   base::string16 GetAcceptButtonText() const override;
   base::string16 GetDeclineButtonText() const override;
+  base::string16 GetSaveCardIconTooltipText() const override;
   const AccountInfo& GetAccountInfo() const override;
   Profile* GetProfile() const override;
   const CreditCard& GetCard() const override;

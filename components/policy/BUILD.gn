@@ -10,8 +10,6 @@ import("//components/policy/resources/policy_templates.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//tools/grit/grit_rule.gni")
 
-assert(!is_ios, "Policy should not be referenced on iOS")
-
 # To generate policy documentation for local use, set this to true for the
 # links between pages and subpages to work.
 gen_policy_templates_local = false

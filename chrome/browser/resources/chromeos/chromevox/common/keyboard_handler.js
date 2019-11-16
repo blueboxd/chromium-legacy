@@ -2,46 +2,44 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-goog.provide('cvox.ChromeVoxKbHandler');
+goog.provide('ChromeVoxKbHandler');
 
-goog.require('cvox.ChromeVox');
-goog.require('cvox.KeyMap');
-goog.require('cvox.KeySequence');
-goog.require('cvox.KeyUtil');
+goog.require('ChromeVox');
+goog.require('KeyMap');
+goog.require('KeySequence');
+goog.require('KeyUtil');
 
 /**
  * @fileoverview Handles user keyboard input events.
  *
  */
-cvox.ChromeVoxKbHandler = {};
+ChromeVoxKbHandler = {};
 
 /**
  * The key map
  *
- * @type {cvox.KeyMap}
+ * @type {KeyMap}
  */
-cvox.ChromeVoxKbHandler.handlerKeyMap;
+ChromeVoxKbHandler.handlerKeyMap;
 
 /**
  * Handler for ChromeVox commands. Returns undefined if the command does not
  * exist. Otherwise, returns the result of executing the command.
  * @type {function(string): (boolean|undefined)}
  */
-cvox.ChromeVoxKbHandler.commandHandler;
+ChromeVoxKbHandler.commandHandler;
 
 /**
  * Loads the key bindings into the keyToFunctionsTable.
  *
  * @param {string} keyToFunctionsTable The key bindings table in JSON form.
  */
-cvox.ChromeVoxKbHandler.loadKeyToFunctionsTable = function(
-    keyToFunctionsTable) {
+ChromeVoxKbHandler.loadKeyToFunctionsTable = function(keyToFunctionsTable) {
   if (!window.JSON) {
     return;
   }
 
-  cvox.ChromeVoxKbHandler.handlerKeyMap =
-      cvox.KeyMap.fromJSON(keyToFunctionsTable);
+  ChromeVoxKbHandler.handlerKeyMap = KeyMap.fromJSON(keyToFunctionsTable);
 };
 
 /**
@@ -55,8 +53,7 @@ cvox.ChromeVoxKbHandler.loadKeyToFunctionsTable = function(
  * key binding and its associated function name.
  * @private
  */
-cvox.ChromeVoxKbHandler.sortKeyToFunctionsTable_ = function(
-    keyToFunctionsTable) {
+ChromeVoxKbHandler.sortKeyToFunctionsTable_ = function(keyToFunctionsTable) {
   var sortingArray = [];
 
   for (var keySeqStr in keyToFunctionsTable) {
@@ -86,12 +83,11 @@ cvox.ChromeVoxKbHandler.sortKeyToFunctionsTable_ = function(
  * @param {Event} evt The key down event to process.
  * @return {boolean} True if the default action should be performed.
  */
-cvox.ChromeVoxKbHandler.basicKeyDownActionsListener = function(evt) {
-  var keySequence = cvox.KeyUtil.keyEventToKeySequence(evt);
+ChromeVoxKbHandler.basicKeyDownActionsListener = function(evt) {
+  var keySequence = KeyUtil.keyEventToKeySequence(evt);
   var functionName;
-  if (cvox.ChromeVoxKbHandler.handlerKeyMap != undefined) {
-    functionName =
-        cvox.ChromeVoxKbHandler.handlerKeyMap.commandForKey(keySequence);
+  if (ChromeVoxKbHandler.handlerKeyMap != undefined) {
+    functionName = ChromeVoxKbHandler.handlerKeyMap.commandForKey(keySequence);
   } else {
     functionName = null;
   }
@@ -101,14 +97,14 @@ cvox.ChromeVoxKbHandler.basicKeyDownActionsListener = function(evt) {
   // is some feedback.
 
   if (!functionName) {
-    return !cvox.KeyUtil.sequencing;
+    return !KeyUtil.sequencing;
   }
 
   // This is the key event handler return value - true if the event should
   // propagate and the default action should be performed, false if we eat
   // the key.
   var returnValue = true;
-  var commandResult = cvox.ChromeVoxKbHandler.commandHandler(functionName);
+  var commandResult = ChromeVoxKbHandler.commandHandler(functionName);
   if (commandResult !== undefined) {
     returnValue = commandResult;
   } else if (keySequence.cvoxModifier) {
@@ -118,7 +114,7 @@ cvox.ChromeVoxKbHandler.basicKeyDownActionsListener = function(evt) {
 
   // If the whole document is hidden from screen readers, let the app
   // catch keys as well.
-  if (cvox.ChromeVox.entireDocumentIsHidden) {
+  if (ChromeVox.entireDocumentIsHidden) {
     returnValue = true;
   }
   return returnValue;

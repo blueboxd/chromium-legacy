@@ -122,7 +122,7 @@ int32_t MessageLoopResource::Run() {
   run_loop_ = previous_run_loop;
 
   if (should_destroy_ && nested_invocations_ == 0) {
-    task_runner_ = NULL;
+    task_runner_.reset();
     single_thread_task_executor_.reset();
     destroyed_ = true;
   }
@@ -171,7 +171,7 @@ MessageLoopResource* MessageLoopResource::GetCurrent() {
 void MessageLoopResource::DetachFromThread() {
   // Note that the task executor must be destroyed on the thread it was created
   // on.
-  task_runner_ = NULL;
+  task_runner_.reset();
   single_thread_task_executor_.reset();
 
   // Cancel out the AddRef in AttachToCurrentThread().

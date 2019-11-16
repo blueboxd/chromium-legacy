@@ -123,7 +123,8 @@ void CastWebViewDefault::CloseContents(content::WebContents* source) {
 
 void CastWebViewDefault::InitializeWindow(mojom::ZOrder z_order,
                                           VisibilityPriority initial_priority) {
-  DCHECK(window_);
+  if (!window_)
+    return;
   window_->CreateWindowForWebContents(&cast_web_contents_, z_order,
                                       initial_priority);
   web_contents_->Focus();

@@ -6,7 +6,7 @@
  * @fileoverview Script that runs on the background page.
  */
 
-goog.provide('cvox.ChromeVoxBackground');
+goog.provide('ChromeVoxBackground');
 
 goog.require('ChromeVoxState');
 goog.require('ConsoleTts');
@@ -14,19 +14,19 @@ goog.require('EventStreamLogger');
 goog.require('LogStore');
 goog.require('Msgs');
 goog.require('constants');
-goog.require('cvox.AbstractEarcons');
-goog.require('cvox.BrailleBackground');
-goog.require('cvox.BrailleCaptionsBackground');
-goog.require('cvox.ChromeVox');
-goog.require('cvox.ChromeVoxEditableTextBase');
-goog.require('cvox.ChromeVoxPrefs');
-goog.require('cvox.CompositeTts');
-goog.require('cvox.ExtensionBridge');
-goog.require('cvox.InjectedScriptLoader');
-goog.require('cvox.NavBraille');
-goog.require('cvox.QueueMode');
-goog.require('cvox.TabsApiHandler');
-goog.require('cvox.TtsBackground');
+goog.require('AbstractEarcons');
+goog.require('BrailleBackground');
+goog.require('BrailleCaptionsBackground');
+goog.require('ChromeVox');
+goog.require('ChromeVoxEditableTextBase');
+goog.require('ChromeVoxPrefs');
+goog.require('CompositeTts');
+goog.require('ExtensionBridge');
+goog.require('InjectedScriptLoader');
+goog.require('NavBraille');
+goog.require('QueueMode');
+goog.require('TabsApiHandler');
+goog.require('TtsBackground');
 
 
 /**
@@ -35,7 +35,7 @@ goog.require('cvox.TtsBackground');
  * interprets them.
  * @constructor
  */
-cvox.ChromeVoxBackground = function() {};
+ChromeVoxBackground = function() {};
 
 
 /**
@@ -43,71 +43,69 @@ cvox.ChromeVoxBackground = function() {};
  * @param {*} value
  * @param {boolean} announce
  */
-cvox.ChromeVoxBackground.setPref = function(pref, value, announce) {
+ChromeVoxBackground.setPref = function(pref, value, announce) {
   if (pref == 'earcons') {
-    cvox.AbstractEarcons.enabled = !!value;
+    AbstractEarcons.enabled = !!value;
   } else if (pref == 'sticky' && announce) {
     if (value) {
-      cvox.ChromeVox.tts.speak(
-          Msgs.getMsg('sticky_mode_enabled'), cvox.QueueMode.FLUSH);
+      ChromeVox.tts.speak(Msgs.getMsg('sticky_mode_enabled'), QueueMode.FLUSH);
     } else {
-      cvox.ChromeVox.tts.speak(
-          Msgs.getMsg('sticky_mode_disabled'), cvox.QueueMode.FLUSH);
+      ChromeVox.tts.speak(Msgs.getMsg('sticky_mode_disabled'), QueueMode.FLUSH);
     }
   } else if (pref == 'typingEcho' && announce) {
     var announceStr = '';
     switch (value) {
-      case cvox.TypingEcho.CHARACTER:
+      case TypingEcho.CHARACTER:
         announceStr = Msgs.getMsg('character_echo');
         break;
-      case cvox.TypingEcho.WORD:
+      case TypingEcho.WORD:
         announceStr = Msgs.getMsg('word_echo');
         break;
-      case cvox.TypingEcho.CHARACTER_AND_WORD:
+      case TypingEcho.CHARACTER_AND_WORD:
         announceStr = Msgs.getMsg('character_and_word_echo');
         break;
-      case cvox.TypingEcho.NONE:
+      case TypingEcho.NONE:
         announceStr = Msgs.getMsg('none_echo');
         break;
       default:
         break;
     }
     if (announceStr) {
-      cvox.ChromeVox.tts.speak(announceStr, cvox.QueueMode.QUEUE);
+      ChromeVox.tts.speak(announceStr, QueueMode.QUEUE);
     }
   } else if (pref == 'brailleCaptions') {
-    cvox.BrailleCaptionsBackground.setActive(!!value);
+    BrailleCaptionsBackground.setActive(!!value);
   } else if (pref == 'position') {
-    cvox.ChromeVox.position =
+    ChromeVox.position =
         /** @type {Object<string, constants.Point>} */ (JSON.parse(
             /** @type {string} */ (value)));
   }
   window['prefs'].setPref(pref, value);
-  cvox.ChromeVoxBackground.readPrefs();
+  ChromeVoxBackground.readPrefs();
 };
 
 
 /**
  * Read and apply preferences that affect the background context.
  */
-cvox.ChromeVoxBackground.readPrefs = function() {
+ChromeVoxBackground.readPrefs = function() {
   if (!window['prefs']) {
     return;
   }
 
   var prefs = window['prefs'].getPrefs();
-  cvox.ChromeVoxEditableTextBase.useIBeamCursor =
+  ChromeVoxEditableTextBase.useIBeamCursor =
       (prefs['useIBeamCursor'] == 'true');
-  cvox.ChromeVox.isStickyPrefOn = (prefs['sticky'] == 'true');
+  ChromeVox.isStickyPrefOn = (prefs['sticky'] == 'true');
 };
 
 
 /**
  * Initialize the background page: set up TTS and bridge listeners.
  */
-cvox.ChromeVoxBackground.prototype.init = function() {
-  this.prefs = new cvox.ChromeVoxPrefs();
-  cvox.ChromeVoxBackground.readPrefs();
+ChromeVoxBackground.prototype.init = function() {
+  this.prefs = new ChromeVoxPrefs();
+  ChromeVoxBackground.readPrefs();
 
   var consoleTts = ConsoleTts.getInstance();
   consoleTts.setEnabled(this.prefs.getPrefs()['enableSpeechLogging'] == 'true');
@@ -116,30 +114,30 @@ cvox.ChromeVoxBackground.prototype.init = function() {
 
   /**
    * Chrome's actual TTS which knows and cares about pitch, volume, etc.
-   * @type {cvox.TtsBackground}
+   * @type {TtsBackground}
    * @private
    */
-  this.backgroundTts_ = new cvox.TtsBackground();
+  this.backgroundTts_ = new TtsBackground();
 
   /**
-   * @type {cvox.TtsInterface}
+   * @type {TtsInterface}
    */
-  this.tts = new cvox.CompositeTts().add(this.backgroundTts_).add(consoleTts);
+  this.tts = new CompositeTts().add(this.backgroundTts_).add(consoleTts);
 
   this.addBridgeListener();
 
   /**
    * The actual Braille service.
-   * @type {cvox.BrailleBackground}
+   * @type {BrailleBackground}
    * @private
    */
-  this.backgroundBraille_ = cvox.BrailleBackground.getInstance();
+  this.backgroundBraille_ = BrailleBackground.getInstance();
 
-  this.tabsApiHandler_ = new cvox.TabsApiHandler();
+  this.tabsApiHandler_ = new TabsApiHandler();
 
-  // Export globals on cvox.ChromeVox.
-  cvox.ChromeVox.tts = this.tts;
-  cvox.ChromeVox.braille = this.backgroundBraille_;
+  // Export globals on ChromeVox.
+  ChromeVox.tts = this.tts;
+  ChromeVox.braille = this.backgroundBraille_;
 
   chrome.accessibilityPrivate.onIntroduceChromeVox.addListener(
       this.onIntroduceChromeVox);
@@ -149,7 +147,7 @@ cvox.ChromeVoxBackground.prototype.init = function() {
   chrome.extension.onMessage.addListener(function(request, sender, callback) {
     if (request['srcFile']) {
       var srcFile = request['srcFile'];
-      cvox.InjectedScriptLoader.fetchCode([srcFile], function(code) {
+      InjectedScriptLoader.fetchCode([srcFile], function(code) {
         callback({'code': code[srcFile]});
       });
     }
@@ -183,7 +181,7 @@ cvox.ChromeVoxBackground.prototype.init = function() {
  * Inject ChromeVox into a tab.
  * @param {Array<Tab>} tabs The tab where ChromeVox scripts should be injected.
  */
-cvox.ChromeVoxBackground.prototype.injectChromeVoxIntoTabs = function(tabs) {
+ChromeVoxBackground.prototype.injectChromeVoxIntoTabs = function(tabs) {
   var listOfFiles;
 
   // These lists of files must match the content_scripts section in
@@ -219,7 +217,7 @@ cvox.ChromeVoxBackground.prototype.injectChromeVoxIntoTabs = function(tabs) {
               console.error('Could not inject into tab', tab);
               this.tts.speak(
                   'Error starting ChromeVox for ' + tab.title + ', ' + tab.url,
-                  cvox.QueueMode.QUEUE);
+                  QueueMode.QUEUE);
             }, this));
       }, this);
 
@@ -250,7 +248,7 @@ cvox.ChromeVoxBackground.prototype.injectChromeVoxIntoTabs = function(tabs) {
   // We use fetchCode instead of chrome.extensions.executeFile because
   // executeFile doesn't propagate the file name to the content script
   // which means that script is not visible in Dev Tools.
-  cvox.InjectedScriptLoader.fetchCode(listOfFiles, stageTwo);
+  InjectedScriptLoader.fetchCode(listOfFiles, stageTwo);
 };
 
 
@@ -258,7 +256,7 @@ cvox.ChromeVoxBackground.prototype.injectChromeVoxIntoTabs = function(tabs) {
  * Called when a TTS message is received from a page content script.
  * @param {Object} msg The TTS message.
  */
-cvox.ChromeVoxBackground.prototype.onTtsMessage = function(msg) {
+ChromeVoxBackground.prototype.onTtsMessage = function(msg) {
   if (msg['action'] == 'speak') {
     // The only caller sending this message is a ChromeVox Classic api client.
     // Disallow empty strings.
@@ -268,7 +266,7 @@ cvox.ChromeVoxBackground.prototype.onTtsMessage = function(msg) {
 
     this.tts.speak(
         msg['text'],
-        /** cvox.QueueMode */ msg['queueMode'], msg['properties']);
+        /** QueueMode */ msg['queueMode'], msg['properties']);
   } else if (msg['action'] == 'stop') {
     this.tts.stop();
   } else if (msg['action'] == 'increaseOrDecrease') {
@@ -279,25 +277,24 @@ cvox.ChromeVoxBackground.prototype.onTtsMessage = function(msg) {
         Math.round(this.backgroundTts_.propertyToPercentage(property) * 100);
     var announcement;
     switch (msg['property']) {
-      case cvox.AbstractTts.RATE:
+      case AbstractTts.RATE:
         announcement = Msgs.getMsg('announce_rate', [valueAsPercent]);
         break;
-      case cvox.AbstractTts.PITCH:
+      case AbstractTts.PITCH:
         announcement = Msgs.getMsg('announce_pitch', [valueAsPercent]);
         break;
-      case cvox.AbstractTts.VOLUME:
+      case AbstractTts.VOLUME:
         announcement = Msgs.getMsg('announce_volume', [valueAsPercent]);
         break;
     }
     if (announcement) {
       this.tts.speak(
-          announcement, cvox.QueueMode.FLUSH,
-          cvox.AbstractTts.PERSONALITY_ANNOTATION);
+          announcement, QueueMode.FLUSH, AbstractTts.PERSONALITY_ANNOTATION);
     }
   } else if (msg['action'] == 'cyclePunctuationEcho') {
     this.tts.speak(
         Msgs.getMsg(this.backgroundTts_.cyclePunctuationEcho()),
-        cvox.QueueMode.FLUSH);
+        QueueMode.FLUSH);
   }
 };
 
@@ -306,8 +303,8 @@ cvox.ChromeVoxBackground.prototype.onTtsMessage = function(msg) {
  * Listen for connections from our content script bridges, and dispatch the
  * messages to the proper destination.
  */
-cvox.ChromeVoxBackground.prototype.addBridgeListener = function() {
-  cvox.ExtensionBridge.addMessageListener(goog.bind(function(msg, port) {
+ChromeVoxBackground.prototype.addBridgeListener = function() {
+  ExtensionBridge.addMessageListener(goog.bind(function(msg, port) {
     var target = msg['target'];
     var action = msg['action'];
 
@@ -346,12 +343,10 @@ cvox.ChromeVoxBackground.prototype.addBridgeListener = function() {
 /**
  * Handles the onIntroduceChromeVox event.
  */
-cvox.ChromeVoxBackground.prototype.onIntroduceChromeVox = function() {
-  cvox.ChromeVox.tts.speak(
-      Msgs.getMsg('chromevox_intro'), cvox.QueueMode.QUEUE,
-      {doNotInterrupt: true});
-  cvox.ChromeVox.braille.write(
-      cvox.NavBraille.fromText(Msgs.getMsg('intro_brl')));
+ChromeVoxBackground.prototype.onIntroduceChromeVox = function() {
+  ChromeVox.tts.speak(
+      Msgs.getMsg('chromevox_intro'), QueueMode.QUEUE, {doNotInterrupt: true});
+  ChromeVox.braille.write(NavBraille.fromText(Msgs.getMsg('intro_brl')));
 };
 
 
@@ -359,7 +354,7 @@ cvox.ChromeVoxBackground.prototype.onIntroduceChromeVox = function() {
  * Gets the voice currently used by ChromeVox when calling tts.
  * @return {string}
  */
-cvox.ChromeVoxBackground.prototype.getCurrentVoice = function() {
+ChromeVoxBackground.prototype.getCurrentVoice = function() {
   return this.backgroundTts_.currentVoice;
 };
 
@@ -368,7 +363,7 @@ cvox.ChromeVoxBackground.prototype.getCurrentVoice = function() {
 // so that other background pages can access it. Also export the prefs object
 // for access by the options page.
 (function() {
-var background = new cvox.ChromeVoxBackground();
+var background = new ChromeVoxBackground();
 background.init();
 window['speak'] = goog.bind(background.tts.speak, background.tts);
 ChromeVoxState.backgroundTts = background.backgroundTts_;

@@ -26,28 +26,29 @@ SnapCoordinator::SnapCoordinator() : snap_containers_() {}
 
 SnapCoordinator::~SnapCoordinator() = default;
 
-// Returns the scroll container that can be affected by this snap area.
-static LayoutBox* FindSnapContainer(const LayoutBox& snap_area) {
+// Returns the layout box's next ancestor that can be a snap container.
+// The origin may be either a snap area or a snap container.
+LayoutBox* FindSnapContainer(const LayoutBox& origin_box) {
   // According to the new spec
   // https://drafts.csswg.org/css-scroll-snap/#snap-model
   // "Snap positions must only affect the nearest ancestor (on the element’s
   // containing block chain) scroll container".
-  Element* document_element = snap_area.GetDocument().documentElement();
-  LayoutBox* box = snap_area.ContainingBlock();
+  Element* document_element = origin_box.GetDocument().documentElement();
+  LayoutBox* box = origin_box.ContainingBlock();
   while (box && !box->HasOverflowClip() && !box->IsLayoutView() &&
          box->GetNode() != document_element)
     box = box->ContainingBlock();
 
-  // If we reach to document element then we dispatch to viewport
+  // If we reach to document element then we dispatch to layout view.
   if (box && box->GetNode() == document_element)
-    return snap_area.GetDocument().GetLayoutView();
+    return origin_box.GetDocument().GetLayoutView();
 
   return box;
 }
 
 // Snap types are categorized according to the spec
 // https://drafts.csswg.org/css-scroll-snap-1/#snap-axis
-static cc::ScrollSnapType GetPhysicalSnapType(const LayoutBox& snap_container) {
+cc::ScrollSnapType GetPhysicalSnapType(const LayoutBox& snap_container) {
   cc::ScrollSnapType scroll_snap_type =
       snap_container.Style()->GetScrollSnapType();
   if (scroll_snap_type.axis == cc::SnapAxis::kInline) {
@@ -67,13 +68,31 @@ static cc::ScrollSnapType GetPhysicalSnapType(const LayoutBox& snap_container) {
 }
 
 void SnapCoordinator::AddSnapContainer(LayoutBox& snap_container) {
+  // TODO(http://crbug.com/1007456): Reassign snap areas that should be assigned
+  // to this new snap container.
   snap_containers_.insert(&snap_container);
 }
 
 void SnapCoordinator::RemoveSnapContainer(LayoutBox& snap_container) {
-  // TODO(majidvp): The snap areas assigned to this container may need to be
-  // re-assigned. http://crbug.com/1007456
-  snap_container.ClearSnapAreas();
+  LayoutBox* ancestor_snap_container = FindSnapContainer(snap_container);
+
+  // We remove the snap container if it is no longer scrollable, or if the
+  // element is detached.
+  // - If it is no longer scrollable, then we reassign its snap areas to the
+  // next ancestor snap container.
+  // - If it is detached, then we simply clear its snap areas since they will be
+  // detached as well.
+  if (ancestor_snap_container) {
+    // No need to update the ancestor's snap container data because it will be
+    // updated at the end of the layout.
+    snap_container.ReassignSnapAreas(*ancestor_snap_container);
+  } else {
+    DCHECK(!snap_container.Parent());
+    snap_container.ClearSnapAreas();
+  }
+  // We don't need to update the old snap container's data since the
+  // corresponding ScrollableArea is being removed, and thus the snap container
+  // data is removed too.
   snap_container.SetNeedsPaintPropertyUpdate();
   snap_containers_.erase(&snap_container);
 }
@@ -105,13 +124,6 @@ void SnapCoordinator::SnapContainerDidChange(LayoutBox& snap_container) {
 
   // TODO(sunyunjia): Only update when the localframe doesn't need layout.
   UpdateSnapContainerData(snap_container);
-
-  // TODO(majidvp): Add logic to correctly handle orphaned snap areas here.
-  // 1. Removing container: find a new snap container for its orphan snap
-  // areas (most likely nearest ancestor of current container) otherwise add
-  // them to an orphan list.
-  // 2. Adding container: may take over snap areas from nearest ancestor snap
-  // container or from existing areas in orphan pool.
 }
 
 void SnapCoordinator::SnapAreaDidChange(LayoutBox& snap_area,
@@ -133,10 +145,6 @@ void SnapCoordinator::SnapAreaDidChange(LayoutBox& snap_area,
     UpdateSnapContainerData(*new_container);
     if (old_container && old_container != new_container)
       UpdateSnapContainerData(*old_container);
-  } else {
-    // TODO(majidvp): keep track of snap areas that do not have any
-    // container so that we check them again when a new container is
-    // added to the page.
   }
 }
 

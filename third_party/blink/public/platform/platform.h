@@ -550,8 +550,6 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // WebRTC ----------------------------------------------------------
 
-  // Checks if the default minimum starting volume value for the AGC is
-  // overridden on the command line.
   virtual base::Optional<double> GetWebRtcMaxCaptureFrameRate() {
     return base::nullopt;
   }

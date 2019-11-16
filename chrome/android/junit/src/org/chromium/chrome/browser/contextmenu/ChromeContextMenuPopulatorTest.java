@@ -33,6 +33,8 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator.ContextMenuMode;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulatorTest.ShadowUrlUtilities;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
+import org.chromium.chrome.browser.share.ShareDelegate;
+;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.search_engines.TemplateUrlService;
@@ -64,6 +66,8 @@ public class ChromeContextMenuPopulatorTest {
     private ContextMenuItemDelegate mItemDelegate;
     @Mock
     private TemplateUrlService mTemplateUrlService;
+    @Mock
+    private ShareDelegate mShareDelegate;
 
     private ChromeContextMenuPopulator mPopulator;
 
@@ -89,7 +93,8 @@ public class ChromeContextMenuPopulatorTest {
     }
 
     private void initializePopulator(@ContextMenuMode int mode) {
-        mPopulator = Mockito.spy(new ChromeContextMenuPopulator(mItemDelegate, mode));
+        mPopulator =
+                Mockito.spy(new ChromeContextMenuPopulator(mItemDelegate, mShareDelegate, mode));
         doReturn(mTemplateUrlService).when(mPopulator).getTemplateUrlService();
     }
 

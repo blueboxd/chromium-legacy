@@ -254,6 +254,7 @@
 <translation id="1365180424462182382">Вашим <ph name="BEGIN_LINK" />веб-переглядачем керує<ph name="END_LINK" /> домен <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="1366177842110999534">Користуйтесь інструментами, редакторами й ІСР Linux на <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Докладніше&lt;/a&gt;</translation>
 <translation id="1367951781824006909">Вибрати файл</translation>
+<translation id="1369149969991017342">Кнопковий доступ (керуйте комп'ютером однією чи двома кнопками)</translation>
 <translation id="1372841398847029212">Синхронізувати з обліковим записом</translation>
 <translation id="1374844444528092021">Сертифікат, який вимагає мережа "<ph name="NETWORK_NAME" />", не встановлено або він більше не дійсний. Отримайте новий сертифікат і повторіть спробу під’єднатися.</translation>
 <translation id="1375321115329958930">Збережені паролі</translation>
@@ -565,6 +566,7 @@
 <translation id="1794791083288629568">Надіслати відгук, щоб допомогти нам вирішити цю проблему.</translation>
 <translation id="1795214765651529549">Вибрати класичну тему</translation>
 <translation id="1799071797295057738">Розширення "<ph name="EXTENSION_NAME" />" автоматично вимкнено.</translation>
+<translation id="1802624026913571222">Переходити в режим сну, коли кришка закрита</translation>
 <translation id="1802687198411089702">Сторінка не відповідає. Зачекайте або закрийте її.</translation>
 <translation id="1802931390041703523">Flash заблоковано на цій сторінці</translation>
 <translation id="1803531841600994172">Мова перекладу</translation>
@@ -666,6 +668,7 @@
 <translation id="1937774647013465102">Не вдається імпортувати контейнер архітектури <ph name="ARCHITECTURE_CONTAINER" /> на пристрій з архітектурою <ph name="ARCHITECTURE_DEVICE" />. Ви можете спробувати відновити цей контейнер на іншому пристрої або отримати доступ до його вмісту в додатку Файли.</translation>
 <translation id="1938351510777341717">Зовнішня клавіша Command</translation>
 <translation id="1940546824932169984">Під’єднані пристрої</translation>
+<translation id="1942600407708803723">Завершувати роботу, коли кришка закрита</translation>
 <translation id="1944921356641260203">Знайдено оновлення</translation>
 <translation id="1946577776959096882">Переглянути облікові записи</translation>
 <translation id="1951012854035635156">Асистент</translation>
@@ -2439,6 +2442,7 @@
 <translation id="4546308221697447294">Швидке завантаження сайтів у Google Chrome</translation>
 <translation id="4547659257713117923">Немає вкладок з інших пристроїв</translation>
 <translation id="4547672827276975204">Налаштовувати автоматично</translation>
+<translation id="4549791035683739768">На ключі безпеки немає збережених відбитків</translation>
 <translation id="4551763574344810652">Щоб відмінити, натисніть <ph name="MODIFIER_KEY_DESCRIPTION" /></translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4554591392113183336">Зовнішнє розширення має таку саму або нижчу версію порівняно з наявним.</translation>
@@ -2618,6 +2622,7 @@
 <translation id="4839303808932127586">Збере&amp;гти відео як...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{Ще 1}one{Ще #}few{Ще #}many{Ще #}other{Ще #}}</translation>
 <translation id="4842976633412754305">Ця сторінка намагається завантажити сценарії з неперевірених джерел.</translation>
+<translation id="4843488774506045600">Дані для входу надає <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Інші клавіатури</translation>
 <translation id="4846680374085650406">Ви дотримуєтеся рекомендації адміністратора щодо цього налаштування.</translation>
 <translation id="4848518990323155912">Увімкнути блокування SIM-карти (потрібен PIN-код для використання мобільного трафіку)</translation>
@@ -3070,6 +3075,7 @@
 <translation id="5511823366942919280">Налаштувати цей пристрій як "Shark"?</translation>
 <translation id="5512653252560939721">Сертифікату користувача потрібна апаратна підтримка.</translation>
 <translation id="5517304475148761050">Цьому додатку потрібен доступ до Play Маркету</translation>
+<translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> – <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Додавання принтера в обліковий запис. Це може тривати деякий час…</translation>
 <translation id="5518219166343146486">Запитувати, коли сайт хоче переглядати тексти й зображення в буфері обміну</translation>
 <translation id="5518584115117143805">Сертифікат шифрування електронної пошти</translation>
@@ -3188,6 +3194,7 @@
 <translation id="567643736130151854">Увійдіть в обліковий запис і ввімкніть синхронізацію, щоб мати доступ до своїх закладок, паролів та інших даних на всіх пристроях</translation>
 <translation id="5677503058916217575">Мова сторінки:</translation>
 <translation id="5677928146339483299">Заблоковано</translation>
+<translation id="5678293144564424498">Додаток призупинено</translation>
 <translation id="5678550637669481956"><ph name="VOLUME_NAME" />: надано доступ для перегляду й редагування.</translation>
 <translation id="5678955352098267522">Переглядати ваші дані на веб-сайті <ph name="WEBSITE_1" /></translation>
 <translation id="5684661240348539843">Ідентифікатор об’єкта</translation>
@@ -3454,6 +3461,7 @@
 <translation id="6055392876709372977">PKCS #1 SHA-256 із шифруванням RSA</translation>
 <translation id="6056710589053485679">Звичайне перезавантаження</translation>
 <translation id="6057381398996433816">Цьому сайту заборонено використовувати датчики руху та світла.</translation>
+<translation id="6058567592298841668">Віртуальна машина плагіна: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Ієрархія сертифіката</translation>
 <translation id="6059925163896151826">Пристрої USB</translation>
 <translation id="6061882183774845124">Надіслати посилання на пристрої</translation>
@@ -4402,6 +4410,7 @@
 <translation id="7476454130948140105">Акумулятор недостатньо заряджений, щоб оновити дані (<ph name="BATTERY_PERCENT" />%)</translation>
 <translation id="7477793887173910789">Керуйте музикою, відео й іншим контентом</translation>
 <translation id="7478485216301680444">Не вдалося встановити програму для терміналів.</translation>
+<translation id="7479221278376295180">Огляд використання пам'яті</translation>
 <translation id="7481312909269577407">Переслати</translation>
 <translation id="748138892655239008">Базові обмеження сертифіката</translation>
 <translation id="7487067081878637334">Технології</translation>
@@ -5378,6 +5387,7 @@
 <translation id="8845001906332463065">Отримати довідку</translation>
 <translation id="8846132060409673887">Показувати виробника й модель цього комп’ютера</translation>
 <translation id="8846141544112579928">Пошук клавіатури…</translation>
+<translation id="8847523528195140327">Виходити з облікового запису, коли кришка закрита</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8850251000316748990">Показати більше…</translation>
 <translation id="885246833287407341">Аргументи функції API</translation>
@@ -5440,6 +5450,7 @@
 <translation id="8930351635855238750">Нові налаштування файлів cookie почнуть діяти після оновлення сторінки</translation>
 <translation id="8931394284949551895">Нові пристрої</translation>
 <translation id="893254996965966411">Збережіть виявлені принтери у своєму профілі або додайте новий.</translation>
+<translation id="8932894639908691771">Параметри кнопкового доступу</translation>
 <translation id="8933960630081805351">&amp;Показати в програмі Finder</translation>
 <translation id="8934732568177537184">Продовжити</translation>
 <translation id="8938800817013097409">Пристрій, під’єднаний до порту USB-C (праворуч на задній панелі)</translation>
@@ -5503,6 +5514,7 @@
 <translation id="9023015617655685412">Додати цю вкладку до закладок…</translation>
 <translation id="9024127637873500333">&amp;Відкрити в новій вкладці</translation>
 <translation id="9024158959543687197">Помилка підключення спільного доступу. Перевірте URL-адресу файлу та повторіть спробу.</translation>
+<translation id="9024885274934357065">Ваш пристрій можна розблоковувати за допомогою Smart Lock. Натисніть клавішу Enter, щоб розблокувати.</translation>
 <translation id="9026731007018893674">завантаження</translation>
 <translation id="9026852570893462412">Це може тривати кілька хвилин. Завантажується віртуальна машина.</translation>
 <translation id="9027459031423301635">Відкрити посилання в новій &amp;вкладці</translation>

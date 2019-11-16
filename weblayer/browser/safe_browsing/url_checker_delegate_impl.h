@@ -9,6 +9,10 @@
 #include "base/memory/ref_counted.h"
 #include "components/safe_browsing/browser/url_checker_delegate.h"
 
+namespace security_interstitials {
+struct UnsafeResource;
+}
+
 namespace weblayer {
 
 class SafeBrowsingUIManager;
@@ -46,6 +50,9 @@ class UrlCheckerDelegateImpl : public safe_browsing::UrlCheckerDelegate {
   const safe_browsing::SBThreatTypeSet& GetThreatTypes() override;
   safe_browsing::SafeBrowsingDatabaseManager* GetDatabaseManager() override;
   safe_browsing::BaseUIManager* GetUIManager() override;
+
+  void StartDisplayingDefaultBlockingPage(
+      const security_interstitials::UnsafeResource& resource);
 
   scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager> database_manager_;
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;

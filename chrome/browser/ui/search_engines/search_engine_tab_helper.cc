@@ -146,7 +146,7 @@ void SearchEngineTabHelper::PageHasOpenSearchDescriptionDocument(
   // new keyword will be created when done.
   TemplateURLFetcherFactory::GetForProfile(profile)->ScheduleDownload(
       keyword, osdd_url, entry->GetFavicon().url,
-      url::Origin::Create(web_contents()->GetURL()), url_loader_factory.get(),
+      frame->GetLastCommittedOrigin(), url_loader_factory.get(),
       frame->GetRoutingID(),
       static_cast<int>(content::ResourceType::kSubResource));
 }

@@ -908,6 +908,7 @@
 <translation id="5329858041417644019">Tarayıcınız yönetilmemektedir</translation>
 <translation id="5332219387342487447">Gönderim Yöntemi</translation>
 <translation id="5334013548165032829">Ayrıntılı sistem günlükleri</translation>
+<translation id="534295439873310000">NFC cihazları</translation>
 <translation id="5344579389779391559">Bu sayfa sizden para almaya çalışabilir</translation>
 <translation id="5355557959165512791">Sertifikası iptal edildiği için <ph name="SITE" /> sitesini şu anda ziyaret edemezsiniz. Ağ hataları ve saldırılar genellikle geçici olduğundan, bu sayfa muhtemelen daha sonra çalışacaktır.</translation>
 <translation id="536296301121032821">Politika ayarları saklanamadı</translation>
@@ -1529,6 +1530,7 @@ Ek ayrıntılar:
 <translation id="8466379296835108687">{COUNT,plural, =1{1 kredi kartı}other{# kredi kartı}}</translation>
 <translation id="8473863474539038330">Adresler ve daha fazlası</translation>
 <translation id="8479754468255770962">Sol altta tel zımba</translation>
+<translation id="8481133456511676116">Şunu mu demek istediniz: <ph name="DOMAIN" />?</translation>
 <translation id="8483780878231876732">Google Hesabınızda kayıtlı kartları kullanmak için Chrome'da oturum açın</translation>
 <translation id="8488350697529856933">Uygulandığı yer</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ana makinesinin yanıt vermesi çok uzun sürdü.</translation>

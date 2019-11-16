@@ -16,6 +16,7 @@
 #include "base/time/time_to_iso8601.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_test_utils.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
@@ -728,7 +729,16 @@ IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowErrorDefault) {
   EXPECT_FALSE(StartupUtils::IsDeviceRegistered());
 }
 
-IN_PROC_BROWSER_TEST_F(DemoSetupTest, OnlineSetupFlowErrorPowerwashRequired) {
+// Consistently timing out on xxx. http://crbug/com/1025213
+#if defined(OS_LINUX)
+#define MAYBE_OnlineSetupFlowErrorPowerwashRequired \
+  DISABLED_OnlineSetupFlowErrorPowerwashRequired
+#else
+#define MAYBE_OnlineSetupFlowErrorPowerwashRequired \
+  OnlineSetupFlowErrorPowerwashRequired
+#endif
+IN_PROC_BROWSER_TEST_F(DemoSetupTest,
+                       MAYBE_OnlineSetupFlowErrorPowerwashRequired) {
   // Simulate online setup failure that requires powerwash.
   enrollment_helper_.ExpectEnrollmentMode(
       policy::EnrollmentConfig::MODE_ATTESTATION);

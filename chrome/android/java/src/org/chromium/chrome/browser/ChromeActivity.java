@@ -126,6 +126,8 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.share.ShareDelegate;
+import org.chromium.chrome.browser.share.ShareDelegateImpl;
 import org.chromium.chrome.browser.snackbar.BottomContainer;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
@@ -159,7 +161,6 @@ import org.chromium.chrome.browser.vr.ArDelegateProvider;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.webapps.addtohomescreen.AddToHomescreenManager;
 import org.chromium.chrome.browser.widget.ScrimView;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
@@ -279,6 +280,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private CompositorViewHolder mCompositorViewHolder;
     private ObservableSupplierImpl<LayoutManager> mLayoutManagerSupplier =
             new ObservableSupplierImpl<>();
+    private ObservableSupplierImpl<BottomSheetController> mBottomSheetControllerSupplier =
+            new ObservableSupplierImpl<>();
     private InsetObserverView mInsetObserverView;
     private ContextualSearchManager mContextualSearchManager;
     protected ReaderModeManager mReaderModeManager;
@@ -290,6 +293,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private UpdateNotificationController mUpdateNotificationController;
     private ScrimView mScrimView;
     private StatusBarColorController mStatusBarColorController;
+    private ShareDelegate mShareDelegate;
 
     // Timestamp in ms when initial layout inflation begins
     private long mInflateInitialLayoutBeginMs;
@@ -355,6 +359,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         super.performPreInflationStartup();
 
+        mShareDelegate = new ShareDelegateImpl(getBottomSheetControllerSupplier());
         mRootUiCoordinator = createRootUiCoordinator();
 
         VrModuleProvider.getDelegate().doPreInflationStartup(this, getSavedInstanceState());
@@ -384,7 +389,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // to the RootUiCoordinator, passing the activity is an easy way to get access to a
         // number of objects that will ultimately be owned by the RootUiCoordinator. This is not
         // a recommended pattern.
-        return new RootUiCoordinator(this, null, null);
+        return new RootUiCoordinator(this, null, null, mShareDelegate);
     }
 
     private C createComponent() {
@@ -1421,16 +1426,15 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     /**
-     * Initializes the {@link BottomSheetController}. The {@link BottomSheet} is only initialized
-     * after content is requested for the first time.
+     * Initializes the {@link BottomSheetController}. The bottom sheet is only initialized after
+     * content is requested for the first time.
      */
     protected void initializeBottomSheetController() {
-        Supplier<BottomSheet> sheetSupplier = () -> {
+        Supplier<View> sheetViewSupplier = () -> {
             ViewGroup coordinator = findViewById(R.id.coordinator);
             getLayoutInflater().inflate(R.layout.bottom_sheet, coordinator);
-            BottomSheet sheet = coordinator.findViewById(R.id.bottom_sheet);
-            sheet.init(coordinator, getActivityTabProvider(), getWindow(),
-                    getWindowAndroid().getKeyboardDelegate());
+
+            View sheet = coordinator.findViewById(R.id.bottom_sheet);
 
             mBottomSheetSnackbarManager = new SnackbarManager(
                     this, sheet.findViewById(R.id.bottom_sheet_snackbar_container));
@@ -1440,9 +1444,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         Supplier<OverlayPanelManager> panelManagerSupplier =
                 () -> getCompositorViewHolder().getLayoutManager().getOverlayPanelManager();
-        mBottomSheetController =
-                new BottomSheetController(getLifecycleDispatcher(), mActivityTabProvider,
-                        mScrimView, sheetSupplier, panelManagerSupplier, getFullscreenManager());
+
+        mBottomSheetController = new BottomSheetController(getLifecycleDispatcher(),
+                mActivityTabProvider, mScrimView, sheetViewSupplier, panelManagerSupplier,
+                getFullscreenManager(), getWindow(), getWindowAndroid().getKeyboardDelegate());
 
         ((BottomContainer) findViewById(R.id.bottom_container))
                 .setBottomSheetController(mBottomSheetController);
@@ -1523,6 +1528,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 mBottomSheetSnackbarManager.dismissAllSnackbars();
             }
         });
+
+        mBottomSheetControllerSupplier.set(mBottomSheetController);
     }
 
     /**
@@ -1916,6 +1923,14 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     public ObservableSupplier<LayoutManager> getLayoutManagerSupplier() {
         return mLayoutManagerSupplier;
+    }
+
+    /**
+     * @return An {@link ObservableSupplier} that will supply the {@link BottomSheetController} when
+     *         it is ready.
+     */
+    public ObservableSupplier<BottomSheetController> getBottomSheetControllerSupplier() {
+        return mBottomSheetControllerSupplier;
     }
 
     /**
@@ -2533,6 +2548,13 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     public BottomSheetController getBottomSheetController() {
         return mBottomSheetController;
+    }
+
+    /**
+     * @return A {@link ShareDelegate}.
+     */
+    public ShareDelegate getShareDelegate() {
+        return mShareDelegate;
     }
 
     @VisibleForTesting

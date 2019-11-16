@@ -16,7 +16,7 @@
 #include "content/public/common/page_visibility_state.h"
 #include "content/public/common/resource_type.h"
 #include "ipc/ipc_message_macros.h"
-#include "third_party/blink/public/mojom/csp/content_security_policy.mojom.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/platform/web_content_security_policy.h"
 #include "third_party/blink/public/platform/web_cursor_info.h"
@@ -38,8 +38,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::ResourceType,
                           content::ResourceType::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContentSecurityPolicySource,
                           blink::kWebContentSecurityPolicySourceLast)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::ContentSecurityPolicyType,
-                          blink::mojom::ContentSecurityPolicyType::kMaxValue)
+IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::ContentSecurityPolicyType,
+                          network::mojom::ContentSecurityPolicyType::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(ui::CursorType, ui::CursorType::kMaxValue)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebInputEvent::Type,
                               blink::WebInputEvent::kTypeFirst,

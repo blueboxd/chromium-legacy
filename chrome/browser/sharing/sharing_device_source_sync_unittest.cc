@@ -10,7 +10,9 @@
 #include "base/guid.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/sharing_utils.h"
 #include "components/sync/driver/test_sync_service.h"
 #include "components/sync_device_info/device_info.h"
@@ -36,6 +38,10 @@ std::unique_ptr<syncer::DeviceInfo> CreateDeviceInfo(
 
 class SharingDeviceSourceSyncTest : public testing::Test {
  public:
+  SharingDeviceSourceSyncTest() {
+    scoped_feature_list_.InitAndEnableFeature(kSharingRenameDevices);
+  }
+
   std::unique_ptr<SharingDeviceSourceSync> CreateDeviceSource(
       bool wait_until_ready) {
     auto device_source = std::make_unique<SharingDeviceSourceSync>(
@@ -59,6 +65,7 @@ class SharingDeviceSourceSyncTest : public testing::Test {
  protected:
   content::BrowserTaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   syncer::TestSyncService test_sync_service_;
   syncer::FakeLocalDeviceInfoProvider fake_local_device_info_provider_;

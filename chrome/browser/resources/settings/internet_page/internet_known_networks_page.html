@@ -35,7 +35,8 @@
           filter="networkIsPreferred_">
         <div class="list-item">
           <cr-link-row embedded label="[[getNetworkDisplayName_(item)]]"
-              on-click="fireShowDetails_">
+              on-click="fireShowDetails_"
+              role-description="$i18n{subpageArrowRoleDescription}">
             <template is="dom-if" if="[[isPolicySource(item.source))]]">
               <cr-policy-indicator on-click="doNothing_"
                   indicator-type="[[getIndicatorTypeForSource(item.source)]]">
@@ -59,7 +60,8 @@
           filter="networkIsNotPreferred_">
         <div class="list-item">
           <cr-link-row embedded label="[[getNetworkDisplayName_(item)]]"
-              on-click="fireShowDetails_">
+              on-click="fireShowDetails_"
+              role-description="$i18n{subpageArrowRoleDescription}">
             <template is="dom-if" if="[[isPolicySource(item.source))]]">
               <cr-policy-indicator on-click="doNothing_"
                   indicator-type="[[getIndicatorTypeForSource(item.source)]]">

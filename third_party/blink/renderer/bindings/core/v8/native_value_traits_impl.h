@@ -517,7 +517,7 @@ struct NativeValueTraits<IDLSequence<T>>
       }
       if (done->BooleanValue(isolate))
         break;
-      result.emplace_back(
+      result.push_back(
           NativeValueTraits<T>::NativeValue(isolate, element, exception_state));
       if (exception_state.HadException())
         return;

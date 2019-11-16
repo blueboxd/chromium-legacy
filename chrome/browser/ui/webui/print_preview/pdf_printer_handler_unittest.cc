@@ -8,12 +8,21 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/scoped_browser_locale.h"
 #include "components/url_formatter/url_formatter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+#if defined(OS_MACOSX)
+#include "base/test/scoped_feature_list.h"
+#include "components/printing/browser/features.h"
+#include "components/printing/browser/printer_capabilities_mac.h"
+#include "printing/backend/print_backend.h"
+#include "ui/gfx/geometry/size.h"
+#endif
 
 #define FPL(x) FILE_PATH_LITERAL(x)
 
@@ -115,6 +124,17 @@ void RecordCapability(base::OnceClosure done_closure,
   std::move(done_closure).Run();
 }
 
+#if defined(OS_MACOSX)
+base::Value GetValueFromCustomPaper(
+    const PrinterSemanticCapsAndDefaults::Paper& paper) {
+  base::Value paper_value(base::Value::Type::DICTIONARY);
+  paper_value.SetStringKey("custom_display_name", paper.display_name);
+  paper_value.SetIntKey("height_microns", paper.size_um.height());
+  paper_value.SetIntKey("width_microns", paper.size_um.width());
+  return paper_value;
+}
+#endif
+
 }  // namespace
 
 using PdfPrinterHandlerTest = testing::Test;
@@ -127,6 +147,9 @@ class PdfPrinterHandlerGetCapabilityTest : public BrowserWithTestWindowTest {
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
 
+    // Set the locale to ensure NA_LETTER is the default paper size.
+    scoped_browser_locale_ = std::make_unique<ScopedBrowserLocale>("en-US");
+
     // Create the PDF printer handler
     pdf_printer_handler_ = std::make_unique<PdfPrinterHandler>(
         profile(), browser()->tab_strip_model()->GetActiveWebContents(),
@@ -134,11 +157,19 @@ class PdfPrinterHandlerGetCapabilityTest : public BrowserWithTestWindowTest {
   }
 
  protected:
-  PdfPrinterHandler* GetPdfPrinterHandler() const {
-    return pdf_printer_handler_.get();
+  base::Value StartGetCapabilityAndWaitForResults() {
+    base::RunLoop run_loop;
+    base::Value capability;
+    pdf_printer_handler_->StartGetCapability(
+        kPdfDeviceName,
+        base::BindOnce(&RecordCapability, run_loop.QuitClosure(), &capability));
+    run_loop.Run();
+
+    return capability;
   }
 
  private:
+  std::unique_ptr<ScopedBrowserLocale> scoped_browser_locale_;
   std::unique_ptr<PdfPrinterHandler> pdf_printer_handler_;
 };
 
@@ -237,17 +268,47 @@ TEST_F(PdfPrinterHandlerGetCapabilityTest, GetCapability) {
       base::JSONReader::Read(kPdfPrinterCapability);
   ASSERT_TRUE(expected_capability.has_value());
 
-  // Set the locale to ensure NA_LETTER is the default paper size.
-  ScopedBrowserLocale scoped_browser_locale("en-US");
-
-  base::RunLoop run_loop;
-  base::Value capability;
-  GetPdfPrinterHandler()->StartGetCapability(
-      kPdfDeviceName,
-      base::BindOnce(&RecordCapability, run_loop.QuitClosure(), &capability));
-  run_loop.Run();
-
+  base::Value capability = StartGetCapabilityAndWaitForResults();
   EXPECT_EQ(expected_capability.value(), capability);
 }
+
+#if defined(OS_MACOSX)
+TEST_F(PdfPrinterHandlerGetCapabilityTest,
+       GetMacCustomPaperSizesInCapabilities) {
+  base::test::ScopedFeatureList local_feature;
+  local_feature.InitAndEnableFeature(
+      printing::features::kEnableCustomMacPaperSizes);
+
+  constexpr char kPaperOptionPath[] = "capabilities.printer.media_size.option";
+  static const PrinterSemanticCapsAndDefaults::Papers kTestPapers = {
+      {"printer1", "", gfx::Size(101600, 127000)},
+      {"printer2", "", gfx::Size(76200, 152400)},
+      {"printer3", "", gfx::Size(330200, 863600)},
+      {"printer4", "", gfx::Size(101600, 50800)},
+  };
+
+  base::Optional<base::Value> expected_capability =
+      base::JSONReader::Read(kPdfPrinterCapability);
+  ASSERT_TRUE(expected_capability.has_value());
+  ASSERT_TRUE(expected_capability.value().is_dict());
+
+  base::Value* expected_paper_options =
+      expected_capability.value().FindListPath(kPaperOptionPath);
+  ASSERT_TRUE(expected_paper_options);
+
+  for (const PrinterSemanticCapsAndDefaults::Paper& paper : kTestPapers) {
+    expected_paper_options->Append(GetValueFromCustomPaper(paper));
+  }
+
+  SetMacCustomPaperSizesForTesting(kTestPapers);
+
+  base::Value capability = StartGetCapabilityAndWaitForResults();
+  ASSERT_TRUE(capability.is_dict());
+
+  base::Value* paper_options = capability.FindListPath(kPaperOptionPath);
+  ASSERT_TRUE(paper_options);
+  EXPECT_EQ(*expected_paper_options, *paper_options);
+}
+#endif
 
 }  // namespace printing

@@ -1214,7 +1214,7 @@ class StoragePartitonInterceptor
   // security checks can be tested.
   void OpenLocalStorage(
       const url::Origin& origin,
-      mojo::PendingReceiver<storage::mojom::DomStorageArea> receiver) override {
+      mojo::PendingReceiver<blink::mojom::StorageArea> receiver) override {
     GetForwardingInterface()->OpenLocalStorage(origin_to_inject_,
                                                std::move(receiver));
   }

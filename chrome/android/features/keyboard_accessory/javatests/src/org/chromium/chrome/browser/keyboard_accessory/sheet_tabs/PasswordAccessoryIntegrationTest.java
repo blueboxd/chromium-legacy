@@ -12,11 +12,12 @@ import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.core.AllOf.allOf;
 
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingTestHelper.isTransformed;
-import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingTestHelper.scrollToLastElement;
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingTestHelper.selectTabAtPosition;
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingTestHelper.whenDisplayed;
+import static org.chromium.chrome.browser.keyboard_accessory.tab_layout_component.KeyboardAccessoryTabTestHelper.isKeyboardAccessoryTabLayout;
 
 import android.os.Build;
 import android.support.test.filters.SmallTest;
@@ -42,11 +43,10 @@ import java.util.concurrent.TimeoutException;
  * Integration tests for password accessory views.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@DisableIf
-        .Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/958631")
-        @RetryOnFailure
-        @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-        public class PasswordAccessoryIntegrationTest {
+@DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP, message = "crbug.com/958631")
+@RetryOnFailure
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+public class PasswordAccessoryIntegrationTest {
     @Rule
     public final ChromeTabbedActivityTestRule mActivityTestRule =
             new ChromeTabbedActivityTestRule();
@@ -78,7 +78,8 @@ import java.util.concurrent.TimeoutException;
         // Focus the field to bring up the accessory.
         mHelper.focusPasswordField();
         mHelper.waitForKeyboardAccessoryToBeShown();
-        whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
+        whenDisplayed(allOf(isDisplayed(), isKeyboardAccessoryTabLayout()))
+                .perform(selectTabAtPosition(0));
 
         // Check that the provided elements are there.
         whenDisplayed(withText("mayapark@gmail.com"));
@@ -93,7 +94,8 @@ import java.util.concurrent.TimeoutException;
         // Focus the field to bring up the accessory.
         mHelper.focusPasswordField();
         mHelper.waitForKeyboardAccessoryToBeShown();
-        whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
+        whenDisplayed(allOf(isDisplayed(), isKeyboardAccessoryTabLayout()))
+                .perform(selectTabAtPosition(0));
 
         mHelper.waitForKeyboardToDisappear();
         whenDisplayed(withId(R.id.passwords_sheet));
@@ -109,8 +111,8 @@ import java.util.concurrent.TimeoutException;
         // Focus the field to bring up the accessory.
         mHelper.focusPasswordField();
         mHelper.waitForKeyboardAccessoryToBeShown();
-        whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
-        whenDisplayed(withId(R.id.passwords_sheet)).perform(scrollToLastElement());
+        whenDisplayed(allOf(isDisplayed(), isKeyboardAccessoryTabLayout()))
+                .perform(selectTabAtPosition(0));
 
         // Click the suggestion.
         whenDisplayed(withText("ShorterPassword")).perform(click());
@@ -130,7 +132,8 @@ import java.util.concurrent.TimeoutException;
         mHelper.waitForKeyboardAccessoryToBeShown();
 
         // Click the tab to show the sheet and hide the keyboard.
-        whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
+        whenDisplayed(allOf(isDisplayed(), isKeyboardAccessoryTabLayout()))
+                .perform(selectTabAtPosition(0));
         mHelper.waitForKeyboardToDisappear();
         whenDisplayed(withId(R.id.passwords_sheet));
         onView(withText(containsString("No saved passwords"))).check(matches(isDisplayed()));

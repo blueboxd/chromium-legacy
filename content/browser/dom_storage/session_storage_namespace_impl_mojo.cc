@@ -170,7 +170,7 @@ void SessionStorageNamespaceImplMojo::RemoveOriginData(
 
 void SessionStorageNamespaceImplMojo::OpenArea(
     const url::Origin& origin,
-    mojo::PendingAssociatedReceiver<storage::mojom::DomStorageArea> receiver) {
+    mojo::PendingAssociatedReceiver<blink::mojom::StorageArea> receiver) {
   DCHECK(IsPopulated());
   DCHECK(!receivers_.empty());
   int process_id = receivers_.current_context();

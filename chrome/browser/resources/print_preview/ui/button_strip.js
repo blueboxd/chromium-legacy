@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import '../strings.m.js';
+
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 import {Destination} from '../data/destination.js';
 import {State} from '../data/state.js';
-import '../strings.m.js';
 
 Polymer({
   is: 'print-preview-button-strip',
@@ -63,10 +65,8 @@ Polymer({
    */
   isPdfOrDrive_: function() {
     return this.destination &&
-        (this.destination.id ==
-             Destination.GooglePromotedId.SAVE_AS_PDF ||
-         this.destination.id ==
-             Destination.GooglePromotedId.DOCS);
+        (this.destination.id == Destination.GooglePromotedId.SAVE_AS_PDF ||
+         this.destination.id == Destination.GooglePromotedId.DOCS);
   },
 
   /** @private */

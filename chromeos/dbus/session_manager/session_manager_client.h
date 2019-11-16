@@ -63,6 +63,15 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
     COUNT
   };
 
+  enum class AdbSideloadResponseCode {
+    // ADB sideload operation has finished successfully.
+    SUCCESS = 1,
+    // ADB sideload operation has failed.
+    FAILED = 2,
+    // ADB sideload requires a powerwash to unblock (to define nvram).
+    NEED_POWERWASH = 3,
+  };
+
   // Interface for observing changes from the session manager.
   class Observer {
    public:
@@ -421,7 +430,8 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
   virtual void GetArcStartTime(
       DBusMethodCallback<base::TimeTicks> callback) = 0;
 
-  using EnableAdbSideloadCallback = base::OnceCallback<void(bool succeeded)>;
+  using EnableAdbSideloadCallback =
+      base::OnceCallback<void(AdbSideloadResponseCode response_code)>;
 
   // Asynchronously attempts to enable ARC APK Sideloading. Upon completion,
   // invokes |callback| with the result; true on success, false on failure of
@@ -429,7 +439,8 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
   virtual void EnableAdbSideload(EnableAdbSideloadCallback callback) = 0;
 
   using QueryAdbSideloadCallback =
-      base::OnceCallback<void(bool succeeded, bool is_allowed)>;
+      base::OnceCallback<void(AdbSideloadResponseCode response_code,
+                              bool is_allowed)>;
 
   // Asynchronously queries for the current status of ARC APK Sideloading. Upon
   // completion, invokes |callback| with |succeeded| indicating if the query

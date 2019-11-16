@@ -102,14 +102,13 @@ scoped_refptr<CachedStorageArea> StorageNamespace::GetCachedArea(
   controller_->ClearAreasIfNeeded();
   if (IsSessionStorage()) {
     EnsureConnected();
-    mojo::PendingAssociatedRemote<storage::mojom::blink::DomStorageArea>
-        area_remote;
+    mojo::PendingAssociatedRemote<mojom::blink::StorageArea> area_remote;
     namespace_->OpenArea(origin,
                          area_remote.InitWithNewEndpointAndPassReceiver());
     result = CachedStorageArea::CreateForSessionStorage(
         origin, std::move(area_remote), controller_->IPCTaskRunner(), this);
   } else {
-    mojo::PendingRemote<storage::mojom::blink::DomStorageArea> area_remote;
+    mojo::PendingRemote<mojom::blink::StorageArea> area_remote;
     controller_->storage_partition_service()->OpenLocalStorage(
         origin, area_remote.InitWithNewPipeAndPassReceiver());
     result = CachedStorageArea::CreateForLocalStorage(

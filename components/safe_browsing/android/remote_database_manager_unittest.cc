@@ -37,8 +37,7 @@ class TestSafeBrowsingApiHandler : public SafeBrowsingApiHandler {
 
 class RemoteDatabaseManagerTest : public testing::Test {
  protected:
-  RemoteDatabaseManagerTest()
-      : field_trials_(new base::FieldTrialList(nullptr)) {}
+  RemoteDatabaseManagerTest() {}
 
   void SetUp() override {
     SafeBrowsingApiHandler::SetInstance(&api_handler_);
@@ -52,10 +51,6 @@ class RemoteDatabaseManagerTest : public testing::Test {
 
   // Setup the two field trial params.  These are read in db_'s ctor.
   void SetFieldTrialParams(const std::string types_to_check_val) {
-    // Destroy the existing FieldTrialList before creating a new one to avoid
-    // a DCHECK.
-    field_trials_.reset();
-    field_trials_.reset(new base::FieldTrialList(nullptr));
     variations::testing::ClearAllVariationIDs();
     variations::testing::ClearAllVariationParams();
 
@@ -73,7 +68,6 @@ class RemoteDatabaseManagerTest : public testing::Test {
   }
 
   content::BrowserTaskEnvironment task_environment_;
-  std::unique_ptr<base::FieldTrialList> field_trials_;
   TestSafeBrowsingApiHandler api_handler_;
   scoped_refptr<RemoteSafeBrowsingDatabaseManager> db_;
 };

@@ -927,6 +927,11 @@ void WebMediaPlayerImpl::SetVolume(double volume) {
   UpdatePlayState();
 }
 
+void WebMediaPlayerImpl::SetLatencyHint(double seconds) {
+  DVLOG(1) << __func__ << "(" << seconds << ")";
+  // TODO(chcunningham): Plumb to the pipeline.
+}
+
 void WebMediaPlayerImpl::OnRequestPictureInPicture() {
   if (!surface_layer_for_video_enabled_)
     ActivateSurfaceLayerForVideo();

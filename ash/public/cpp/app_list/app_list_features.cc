@@ -40,7 +40,7 @@ const base::Feature kEnableAppReinstallZeroState{
 const base::Feature kEnableAssistantSearch{"EnableEmbeddedAssistantUI",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableAssistantLauncherUI{
-    "EnableAssistantLauncherUI", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnableAssistantLauncherUI", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kEnableAppGridGhost{"EnableAppGridGhost",
                                         base::FEATURE_DISABLED_BY_DEFAULT};

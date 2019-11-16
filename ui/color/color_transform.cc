@@ -5,6 +5,7 @@
 #include "ui/color/color_transform.h"
 
 #include "base/bind.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/color/color_mixer.h"
 
 namespace ui {
@@ -16,6 +17,15 @@ ColorTransform::ColorTransform(SkColor color) {
   const auto generator = [](SkColor color, SkColor input_color,
                             const ColorMixer& mixer) { return color; };
   callback_ = base::Bind(generator, color);
+}
+
+ColorTransform::ColorTransform(ColorId id) {
+  DCHECK_COLOR_ID_VALID(id);
+  const auto generator = [](ColorId id, SkColor input_color,
+                            const ColorMixer& mixer) {
+    return mixer.GetResultColor(id);
+  };
+  callback_ = base::Bind(generator, id);
 }
 
 ColorTransform::ColorTransform(const ColorTransform&) = default;
@@ -123,24 +133,6 @@ ColorTransform FromOriginalColorFromSet(ColorId id, ColorSetId set_id) {
     return mixer.GetOriginalColorFromSet(id, set_id);
   };
   return base::Bind(generator, id, set_id);
-}
-
-ColorTransform FromInputColor(ColorId id) {
-  DCHECK_COLOR_ID_VALID(id);
-  const auto generator = [](ColorId id, SkColor input_color,
-                            const ColorMixer& mixer) {
-    return mixer.GetInputColor(id);
-  };
-  return base::Bind(generator, id);
-}
-
-ColorTransform FromResultColor(ColorId id) {
-  DCHECK_COLOR_ID_VALID(id);
-  const auto generator = [](ColorId id, SkColor input_color,
-                            const ColorMixer& mixer) {
-    return mixer.GetResultColor(id);
-  };
-  return base::Bind(generator, id);
 }
 
 ColorTransform FromTransformInput() {

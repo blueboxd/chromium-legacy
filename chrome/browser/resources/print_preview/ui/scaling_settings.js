@@ -2,15 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import 'chrome://resources/cr_elements/md_select_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
-import {ScalingType} from '../data/scaling.js';
 import './number_settings_section.js';
 import './print_preview_shared_css.js';
+import './settings_section.js';
+
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {ScalingType} from '../data/scaling.js';
+
 import {SelectBehavior} from './select_behavior.js';
 import {SettingsBehavior} from './settings_behavior.js';
-import './settings_section.js';
 
 /*
  * Fit to page and fit to paper options will only be displayed for PDF
@@ -105,10 +108,8 @@ Polymer({
       this.setSetting('scalingType', valueAsNumber);
     }
     if (this.isPdf ||
-        this.getSetting('scalingTypePdf').value ===
-            ScalingType.DEFAULT ||
-        this.getSetting('scalingTypePdf').value ===
-            ScalingType.CUSTOM) {
+        this.getSetting('scalingTypePdf').value === ScalingType.DEFAULT ||
+        this.getSetting('scalingTypePdf').value === ScalingType.CUSTOM) {
       this.setSetting('scalingTypePdf', valueAsNumber);
     }
 
@@ -185,8 +186,7 @@ Polymer({
    */
   computeCustomSelected_: function() {
     return !!this.settingKey_ &&
-        this.getSettingValue(this.settingKey_) ===
-        ScalingType.CUSTOM;
+        this.getSettingValue(this.settingKey_) === ScalingType.CUSTOM;
   },
 
   /**

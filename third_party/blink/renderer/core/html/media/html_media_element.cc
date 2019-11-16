@@ -644,6 +644,10 @@ void HTMLMediaElement::ParseAttribute(
             !params.new_value.IsNull());
       }
     }
+  } else if (name == html_names::kLatencyhintAttr &&
+             RuntimeEnabledFeatures::MediaLatencyHintEnabled()) {
+    if (GetWebMediaPlayer())
+      GetWebMediaPlayer()->SetLatencyHint(latencyHint());
   } else {
     HTMLElement::ParseAttribute(params);
   }
@@ -1308,6 +1312,8 @@ void HTMLMediaElement::StartPlayerLoad() {
 
   if (IsFullscreen())
     web_media_player_->EnteredFullscreen();
+
+  web_media_player_->SetLatencyHint(latencyHint());
 
   OnLoadStarted();
 }
@@ -2530,6 +2536,21 @@ void HTMLMediaElement::PauseInternal() {
   }
 
   UpdatePlayState();
+}
+
+double HTMLMediaElement::latencyHint() const {
+  // Parse error will fallback to std::numeric_limits<double>::quiet_NaN()
+  double seconds = GetFloatingPointAttribute(html_names::kLatencyhintAttr);
+
+  // Return NaN for invalid values.
+  if (!std::isfinite(seconds) || seconds < 0)
+    return std::numeric_limits<double>::quiet_NaN();
+
+  return seconds;
+}
+
+void HTMLMediaElement::setLatencyHint(double seconds) {
+  SetFloatingPointAttribute(html_names::kLatencyhintAttr, seconds);
 }
 
 void HTMLMediaElement::FlingingStarted() {

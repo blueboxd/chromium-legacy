@@ -73,10 +73,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
     SCRIPT_LOADED = 5,
     // SCRIPT_EVALUATED = 6,  // Obsolete
     // THREAD_STARTED = 7,  // Obsolete
-    // Script read happens after SENT_START_WORKER and before SCRIPT_LOADED
-    // (installed scripts only)
-    SCRIPT_READ_STARTED = 8,
-    SCRIPT_READ_FINISHED = 9,
+    // SCRIPT_READ_STARTED = 8,  // Obsolete
+    // SCRIPT_READ_FINISHED = 9,  // Obsolete
     SCRIPT_STREAMING = 10,
     SCRIPT_EVALUATION = 11,
     // Add new values here and update enums.xml.
@@ -194,11 +192,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
 
   // Called when the main script load accessed the network.
   void OnNetworkAccessedForScriptLoad();
-
-  // Called when reading the main script from the service worker script cache
-  // begins and ends.
-  void OnScriptReadStarted();
-  void OnScriptReadFinished();
 
   // Called when the worker is installed.
   void OnWorkerVersionInstalled();

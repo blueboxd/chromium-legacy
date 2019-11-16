@@ -254,6 +254,7 @@
 <translation id="1365180424462182382"><ph name="BEGIN_LINK" />Böngészőjét<ph name="END_LINK" /> a(z) <ph name="ENROLLMENT_DOMAIN" /> felügyeli</translation>
 <translation id="1366177842110999534">Linuxos eszközöket, szerkesztőket és IDE-ket futtathat <ph name="DEVICE_TYPE" /> eszközén. &lt;a target="_blank" href="<ph name="URL" />"&gt;További információ&lt;/a&gt;.</translation>
 <translation id="1367951781824006909">Válasszon egy fájlt</translation>
+<translation id="1369149969991017342">Kapcsolóalapú hozzáférés (a számítógép irányítása egy vagy két kapcsolóval)</translation>
 <translation id="1372841398847029212">Szinkronizálás saját fiókkal</translation>
 <translation id="1374844444528092021">A(z) "<ph name="NETWORK_NAME" />" hálózat által megkövetelt tanúsítvány nincs telepítve, illetve már nem érvényes. Kérjen egy új tanúsítványt, majd próbáljon újrakapcsolódni.</translation>
 <translation id="1375321115329958930">Mentett jelszavak</translation>
@@ -565,6 +566,7 @@
 <translation id="1794791083288629568">Küldjön visszajelzést, hogy segítsen a probléma megoldásában.</translation>
 <translation id="1795214765651529549">Klasszikus téma használata</translation>
 <translation id="1799071797295057738">A(z) „<ph name="EXTENSION_NAME" />” bővítmény automatikusan letiltva.</translation>
+<translation id="1802624026913571222">Alvó mód bekapcsolása a képernyő lecsukásakor</translation>
 <translation id="1802687198411089702">Az oldal nem válaszol. Várakozhat tovább, vagy bezárhatja.</translation>
 <translation id="1802931390041703523">Le van tiltva a Flash ezen az oldalon</translation>
 <translation id="1803531841600994172">Fordítás célnyelve</translation>
@@ -666,6 +668,7 @@
 <translation id="1937774647013465102">Nem lehet importálni a tároló <ph name="ARCHITECTURE_CONTAINER" /> architektúratípusát, ugyanis az eszköz architektúrájának típusa <ph name="ARCHITECTURE_DEVICE" />. Megpróbálhatja helyreállítani ezt a tárolót egy másik eszközön, vagy a Fájlok alkalmazás megnyitásával hozzáférhet a tároló lemezképében lévő fájlokhoz.</translation>
 <translation id="1938351510777341717">Külső parancs</translation>
 <translation id="1940546824932169984">Társított eszközök</translation>
+<translation id="1942600407708803723">Kikapcsolás a képernyő lecsukásakor</translation>
 <translation id="1944921356641260203">A rendszer frissítést talált</translation>
 <translation id="1946577776959096882">Fiókok megtekintése</translation>
 <translation id="1951012854035635156">Segéd</translation>
@@ -2438,6 +2441,7 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4546308221697447294">Gyors böngészés a Google Chrome-mal</translation>
 <translation id="4547659257713117923">Nincs más eszközről származó lap</translation>
 <translation id="4547672827276975204">Automatikus beállítás</translation>
+<translation id="4549791035683739768">A biztonsági kulcs nem tárol ujjlenyomatokat</translation>
 <translation id="4551763574344810652">Nyomja meg a <ph name="MODIFIER_KEY_DESCRIPTION" /> billentyűparancsot a visszavonáshoz</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4554591392113183336">A külső bővítmény a meglévő bővítmény verziószintjén vagy az alatt van.</translation>
@@ -2617,6 +2621,7 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4839303808932127586">Vi&amp;deo mentése másként...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 további}other{# további}}</translation>
 <translation id="4842976633412754305">Az oldal nem hiteles forrásokból próbál szkripteket betölteni.</translation>
+<translation id="4843488774506045600">A bejelentkezést biztosította: <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Egyéb billentyűzetek</translation>
 <translation id="4846680374085650406">A rendszergazda javaslatát fogadja el ennél a beállításnál.</translation>
 <translation id="4848518990323155912">SIM-kártya zárolásának engedélyezése (PIN-kód bekérése mobiladatok használatához)</translation>
@@ -3070,6 +3075,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="5511823366942919280">Biztosan beállítja ezt az eszközt „Shark” eszközként?</translation>
 <translation id="5512653252560939721">A felhasználói tanúsítványnak hardvertámogatottnak kell lennie.</translation>
 <translation id="5517304475148761050">Ennek az alkalmazásnak hozzáférésre van szüksége a Play Áruházhoz</translation>
+<translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> – <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Nyomtató hozzáadása a fiókhoz; ez eltarthat egy darabig...</translation>
 <translation id="5518219166343146486">Kérdezzen rá, amikor az adott webhely szeretné megtekinteni a vágólapra másolt szövegeket és képeket</translation>
 <translation id="5518584115117143805">E-mail titkosítási tanúsítvány</translation>
@@ -3189,6 +3195,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="567643736130151854">Jelentkezzen be, és kapcsolja be a szinkronizálást, hogy az összes eszközén hozzáférhessen könyvjelzőihez, jelszavaihoz és más beállításaihoz.</translation>
 <translation id="5677503058916217575">Az oldal nyelve:</translation>
 <translation id="5677928146339483299">Letiltva</translation>
+<translation id="5678293144564424498">Alkalmazás szüneteltetve</translation>
 <translation id="5678550637669481956">Megkapta az írási és olvasási hozzáférést a következőhöz: <ph name="VOLUME_NAME" /></translation>
 <translation id="5678955352098267522">Adatok beolvasása a következő webhelyen: <ph name="WEBSITE_1" /></translation>
 <translation id="5684661240348539843">Tartalomazonosító</translation>
@@ -3455,6 +3462,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6055392876709372977">PKCS #1 SHA-256 RSA titkosítással</translation>
 <translation id="6056710589053485679">Normál újratöltés</translation>
 <translation id="6057381398996433816">Ennél a webhelynél le van tiltva a mozgás- és fényérzékelők használata.</translation>
+<translation id="6058567592298841668">Virtuális gép beépülő modul: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Tanúsítvány-hierarchia</translation>
 <translation id="6059925163896151826">USB-eszközök</translation>
 <translation id="6061882183774845124">Link küldése az eszközeire</translation>
@@ -4403,6 +4411,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7476454130948140105">Az akkumulátor töltöttségi szintje túl alacsony a frissítéshez (<ph name="BATTERY_PERCENT" />%)</translation>
 <translation id="7477793887173910789">Zeneszámok, videók és további tartalmak vezérlése</translation>
 <translation id="7478485216301680444">A kiosk-alkalmazást nem sikerült telepíteni.</translation>
+<translation id="7479221278376295180">Tárhelyhasználat áttekintése</translation>
 <translation id="7481312909269577407">Előre</translation>
 <translation id="748138892655239008">Tanúsítvány alapvető típusmegkötései</translation>
 <translation id="7487067081878637334">Technológia</translation>
@@ -5379,6 +5388,7 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8845001906332463065">Súgó</translation>
 <translation id="8846132060409673887">A számítógép gyártójának és típusának elolvasása</translation>
 <translation id="8846141544112579928">Billentyűzet keresése…</translation>
+<translation id="8847523528195140327">Kijelentkezés a képernyő lecsukásakor</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8850251000316748990">Továbbiak...</translation>
 <translation id="885246833287407341">API-funkció argumentumai</translation>
@@ -5441,6 +5451,7 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8930351635855238750">Az új cookie-beállítások az oldal ismételt betöltése után lépnek életbe</translation>
 <translation id="8931394284949551895">Új eszközök</translation>
 <translation id="893254996965966411">Elmentheti az észlelt nyomtatókat a profiljába, vagy hozzáadhat új nyomtatót.</translation>
+<translation id="8932894639908691771">Kapcsolóalapú hozzáférés beállításai</translation>
 <translation id="8933960630081805351">&amp;Megjelenítés a Finderben</translation>
 <translation id="8934732568177537184">Tovább</translation>
 <translation id="8938800817013097409">C típusú USB-vel kompatibilis eszköz (jobb hátsó port)</translation>
@@ -5504,6 +5515,7 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="9023015617655685412">Lap hozzáadása a könyvjelzőkhöz…</translation>
 <translation id="9024127637873500333">&amp;Megnyitás új lapon</translation>
 <translation id="9024158959543687197">Hiba történt a megosztott tároló csatlakoztatása során. Ellenőrizze a fájlmegosztási URL-t, és próbálkozzon újra.</translation>
+<translation id="9024885274934357065">Az eszköz fel lett oldva a Smart Lock használatával. A feloldáshoz nyomja meg az Enter billentyűt.</translation>
 <translation id="9026731007018893674">letöltés</translation>
 <translation id="9026852570893462412">Ez a folyamat néhány percet is igénybe vehet. A virtuális gép letöltése folyamatban van.</translation>
 <translation id="9027459031423301635">Link megnyitása új &amp;lapon</translation>

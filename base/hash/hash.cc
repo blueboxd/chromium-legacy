@@ -4,6 +4,7 @@
 
 #include "base/hash/hash.h"
 
+#include "base/rand_util.h"
 #include "base/third_party/cityhash/city.h"
 #include "build/build_config.h"
 
@@ -17,20 +18,16 @@ namespace base {
 size_t FastHash(base::span<const uint8_t> data) {
   // We use the updated CityHash within our namespace (not the deprecated
   // version from third_party/smhasher).
-#if defined(ARCH_CPU_64_BITS)
+#if DCHECK_IS_ON()
+  static const uint64_t seed = base::RandUint64();
+  return base::internal::cityhash_v111::CityHash64WithSeed(
+      reinterpret_cast<const char*>(data.data()), data.size(), seed);
+#elif defined(ARCH_CPU_64_BITS)
   return base::internal::cityhash_v111::CityHash64(
       reinterpret_cast<const char*>(data.data()), data.size());
 #else
   return base::internal::cityhash_v111::CityHash32(
       reinterpret_cast<const char*>(data.data()), data.size());
-#endif
-}
-
-size_t FastHash(const std::string& str) {
-#if defined(ARCH_CPU_64_BITS)
-  return base::internal::cityhash_v111::CityHash64(str.data(), str.size());
-#else
-  return base::internal::cityhash_v111::CityHash32(str.data(), str.size());
 #endif
 }
 

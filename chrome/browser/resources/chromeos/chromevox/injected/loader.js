@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-goog.require('cvox.ApiImplementation');
+goog.require('ApiImplementation');
 
 /**
  * Initializes minimal content script.
  */
 function initMin() {
-  cvox.ApiImplementation.init();
+  ApiImplementation.init();
 }
 
 initMin();

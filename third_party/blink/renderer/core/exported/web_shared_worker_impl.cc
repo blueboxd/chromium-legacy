@@ -154,7 +154,7 @@ void WebSharedWorkerImpl::StartWorkerContext(
     const WebString& name,
     const WebString& user_agent,
     const WebString& content_security_policy,
-    mojom::ContentSecurityPolicyType policy_type,
+    network::mojom::ContentSecurityPolicyType policy_type,
     network::mojom::IPAddressSpace creation_address_space,
     const base::UnguessableToken& appcache_host_id,
     const base::UnguessableToken& devtools_worker_token,

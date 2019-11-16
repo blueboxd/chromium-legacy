@@ -11,8 +11,7 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/sequenced_task_runner_handle.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
@@ -194,6 +193,8 @@ void DownloadFileImpl::Initialize(
   int64_t bytes_so_far = 0;
   cancel_request_callback_ = cancel_request_callback;
   received_slices_ = received_slices;
+  if (!task_runner_)
+    task_runner_ = base::GetContinuationTaskRunner();
 
   // If the last slice is finished, then we know the actual content size.
   if (!received_slices_.empty() && received_slices_.back().finished) {
@@ -451,7 +452,7 @@ void DownloadFileImpl::RenameWithRetryInternal(
     --parameters->retries_left;
     if (parameters->time_of_first_failure.is_null())
       parameters->time_of_first_failure = base::TimeTicks::Now();
-    base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+    task_runner_->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&DownloadFileImpl::RenameWithRetryInternal,
                        weak_factory_.GetWeakPtr(), std::move(parameters)),
@@ -631,7 +632,7 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream,
   // If we're stopping to yield the thread, post a task so we come back.
   if (state == InputStream::HAS_DATA && now - start > delta &&
       !should_terminate) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
+    task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&DownloadFileImpl::StreamActive,
                                   weak_factory_.GetWeakPtr(), source_stream,
                                   MOJO_RESULT_OK));
@@ -909,6 +910,11 @@ void DownloadFileImpl::DebugStates() const {
   }
 
   DebugSlicesInfo(received_slices_);
+}
+
+void DownloadFileImpl::SetTaskRunnerForTesting(
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+  task_runner_ = std::move(task_runner);
 }
 
 DownloadFileImpl::RenameParameters::RenameParameters(

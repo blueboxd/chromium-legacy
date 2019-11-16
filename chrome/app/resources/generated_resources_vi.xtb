@@ -2387,7 +2387,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="4469477701382819144">Đã chặn trên những trang web hiển thị quảng cáo xâm nhập hoặc quảng cáo gây hiểu nhầm</translation>
 <translation id="4469762931504673593"><ph name="ORIGIN" /> có thể chỉnh sửa tệp trong <ph name="FOLDERNAME" /></translation>
 <translation id="4470957202018033307">Tùy chọn bộ nhớ bên ngoài</translation>
-<translation id="447252321002412580">Giúp cải thiện hiệu suất cũng như các tính năng của Chrome</translation>
+<translation id="447252321002412580">Giúp cải thiện hiệu suất và các tính năng của Chrome</translation>
 <translation id="4474155171896946103">Đánh dấu tất cả các tab...</translation>
 <translation id="4474461121892222090">Có thể mất tối đa 15 phút để hoàn tất quá trình kích hoạt dữ liệu di động.</translation>
 <translation id="4475552974751346499">Tìm kiếm trong các tệp đã tải xuống</translation>
@@ -3038,6 +3038,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="5466374726908360271">Dá&amp;n và tìm kiếm “<ph name="SEARCH_TERMS" />”</translation>
 <translation id="5468173180030470402">Đang tìm mục chia sẻ tệp</translation>
 <translation id="5471768120198416576">Chào bạn! Đây là giọng nói của tính năng chuyển văn bản sang lời nói.</translation>
+<translation id="5472133193607270166">Khi tùy chọn này đang bật, các trang web không thể dùng hoạt động duyệt web của bạn trên nhiều trang web để cá nhân hóa quảng cáo. Một số trang web có thể không hoạt động bình thường.</translation>
 <translation id="5473333559083690127">Nhập lại mã PIN mới</translation>
 <translation id="5481941284378890518">Thêm máy in lân cận</translation>
 <translation id="5483785310822538350">Thu hồi quyền truy cập vào tệp và thiết bị</translation>
@@ -3590,7 +3591,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6247802389331535091">Hệ thống: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="624789221780392884">Bản cập nhật đã sẵn sàng</translation>
-<translation id="6248988683584659830">Cài đặt tìm kiếm</translation>
+<translation id="6248988683584659830">Tìm kiếm trong phần cài đặt</translation>
 <translation id="6251870443722440887">Quản lý GDI</translation>
 <translation id="6251889282623539337">Điều khoản dịch vụ <ph name="DOMAIN" /></translation>
 <translation id="6254503684448816922">Lộ Khoá</translation>

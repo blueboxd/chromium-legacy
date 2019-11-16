@@ -486,7 +486,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   //
   // The result can be used to check if cookies (including storage APIs and
   // shared/service workers) are accessible.
-  GURL ComputeSiteForCookies() const;
+  GURL ComputeSiteForCookies();
 
   // Allows overriding the last committed origin in tests.
   void SetLastCommittedOriginForTesting(const url::Origin& origin);
@@ -1424,8 +1424,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // To be called by ComputeSiteForCookiesForNavigation() and
   // ComputeSiteForCookies().
   // Starts traversing the tree from |render_frame_host|.
+  // |is_origin_secure| is whether the origin of the destination of the
+  // navigation whose site_for_cookies is being calculated is secure.
   GURL ComputeSiteForCookiesInternal(
-      const RenderFrameHostImpl* render_frame_host) const;
+      const RenderFrameHostImpl* render_frame_host,
+      bool is_origin_secure) const;
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   void OnShowPopup(const FrameHostMsg_ShowPopup_Params& params);

@@ -12,6 +12,7 @@
 <translation id="107147699690128016">तुम्ही फाइल एक्स्टेंशन बदलल्यास, फाइल कदाचित दुसऱ्या ॲप्लिकेशनमध्ये उघडू शकते आणि यामुळे तुमच्या डिव्हाइसला संभाव्य धोका असू शकतो.</translation>
 <translation id="1100066534610197918">गटामधील नवीन टॅबमध्ये उघडा</translation>
 <translation id="1105960400813249514">स्‍क्रीन कॅप्‍चर</translation>
+<translation id="1110022065703191351">आयकन</translation>
 <translation id="1111673857033749125">आपल्या इतर डिव्हाइसेेसवर सेव्ह केलेले बुकमार्क येथे दिसतील.</translation>
 <translation id="1113597929977215864">सिंप्लिफाइड व्ह्यू दाखवा</translation>
 <translation id="1124772482545689468">वापरकर्ता</translation>
@@ -363,6 +364,7 @@
 <translation id="3730075448226062617">Chrome ला तुमच्या मायक्रोफोनचा ॲक्सेस द्या, <ph name="BEGIN_LINK" />Android सेटिंग्ज<ph name="END_LINK" /> मध्ये देखील मायक्रोफोन सुरू करा.</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> मध्ये बुकमार्क केले</translation>
 <translation id="3744111561329211289">पार्श्वभूमी संकालन</translation>
+<translation id="3749259744154402564">सपोर्ट नसलेली</translation>
 <translation id="3771001275138982843">अपडेट डाउनलोड करता आले नाही</translation>
 <translation id="3771033907050503522">गुप्त टॅब</translation>
 <translation id="3773755127849930740">पेअरिंगला अनुमती देण्‍यासाठी <ph name="BEGIN_LINK" />ब्लूटूथ सुरू करा<ph name="END_LINK" /></translation>
@@ -576,6 +578,7 @@
 <translation id="5327248766486351172">नाव</translation>
 <translation id="5335288049665977812">साइटना JavaScript रन करण्याची अनुमती द्या (शिफारस केलेले)</translation>
 <translation id="5342314432463739672">परवानगीच्या विनंत्या</translation>
+<translation id="534295439873310000">NFC डिव्हाइस</translation>
 <translation id="5357811892247919462">टॅब मिळाला</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> खुला टॅब, टॅब स्विच करण्यासाठी टॅप करा}other{<ph name="OPEN_TABS_MANY" /> खुला टॅब, टॅब स्विच करण्यासाठी टॅप करा}}</translation>
 <translation id="5391532827096253100">या साइटवरील तुमचे कनेक्शन सुरक्षित नाही. साइट माहिती</translation>
@@ -632,6 +635,7 @@
 <translation id="5686790454216892815">फाइलचे नाव खूप लांब आहे</translation>
 <translation id="5689516760719285838">स्थान</translation>
 <translation id="569536719314091526">अधिक पर्याय बटणावरून या पेजचे कोणत्याही भाषेत भाषांतर करा</translation>
+<translation id="5710871682236653961">तुम्ही NFC डिव्हाइसवर टॅप करता तेव्हा साइटना माहिती पाठवण्याची आणि मिळवण्याची अनुमती देण्यापूर्वी परवानगीची विनंती करा (शिफारस केलेले)</translation>
 <translation id="572328651809341494">अलीकडील टॅब</translation>
 <translation id="5726692708398506830">पृष्ठावरील प्रत्येकगोष्ट आणखी मोठी करा</translation>
 <translation id="5748802427693696783">मानक टॅबवर स्विच केले</translation>
@@ -881,6 +885,7 @@
 <translation id="7559975015014302720">लाइट मोड बंद आहे</translation>
 <translation id="7562080006725997899">ब्राउझिंग डेटा साफ करत आहे</translation>
 <translation id="756809126120519699">Chrome डेटा साफ केला</translation>
+<translation id="7572498721684305250">तुम्ही NFC डिव्हाइसवर टॅप करता तेव्हा साइटना माहिती पाठवण्यापासून किंवा मिळवण्यापासून ब्लॉक करा</translation>
 <translation id="757524316907819857">संरक्षित आशय प्ले करण्यापासून सायटी ब्लॉक करा</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> फाइल डाउनलोड केली}other{<ph name="FILES_DOWNLOADED_MANY" /> फायली डाउनलोड केल्या}}</translation>
 <translation id="7588219262685291874">तुमच्या डिव्हाइसचे बॅटरी सेव्हर सुरू असेल तेव्हा गडद थीम सुरू करा</translation>

@@ -84,8 +84,6 @@ import java.util.List;
         "force-fieldtrials=Study/Group"})
 @Restriction(
         {UiRestriction.RESTRICTION_TYPE_PHONE, Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-@DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.M,
-        message = "https://crbug.com/1023833")
 public class StartSurfaceLayoutTest {
     // clang-format on
     private static final String BASE_PARAMS = "force-fieldtrial-params="
@@ -604,6 +602,8 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     @CommandLineFlags.Add({BASE_PARAMS})
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.M,
+            message = "https://crbug.com/1023833")
     public void testIncognitoToggle_tabCount() throws InterruptedException {
         mActivityTestRule.loadUrl(mUrl);
 
@@ -628,6 +628,8 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     @CommandLineFlags.Add({BASE_PARAMS})
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.M,
+            message = "https://crbug.com/1023833")
     public void testIncognitoToggle_thumbnailFetchCount() throws InterruptedException {
         mActivityTestRule.loadUrl(mUrl);
         int oldFetchCount = mTabListDelegate.getBitmapFetchCountForTesting();

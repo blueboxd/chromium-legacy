@@ -8,14 +8,14 @@
  *
  */
 
-goog.provide('cvox.ChromeVoxPrefs');
-goog.provide('cvox.RichTextSpeechStyle');
+goog.provide('ChromeVoxPrefs');
+goog.provide('RichTextSpeechStyle');
 
 goog.require('ConsoleTts');
 goog.require('EventStreamLogger');
-goog.require('cvox.ChromeVox');
-goog.require('cvox.ExtensionBridge');
-goog.require('cvox.KeyMap');
+goog.require('ChromeVox');
+goog.require('ExtensionBridge');
+goog.require('KeyMap');
 
 /**
  * This object has default values of preferences and contains the common
@@ -23,7 +23,7 @@ goog.require('cvox.KeyMap');
  * pages.
  * @constructor
  */
-cvox.ChromeVoxPrefs = function() {
+ChromeVoxPrefs = function() {
   var lastRunVersion = localStorage['lastRunVersion'];
   if (!lastRunVersion) {
     lastRunVersion = '1.16.0';
@@ -38,11 +38,11 @@ cvox.ChromeVoxPrefs = function() {
 
   /**
    * The current mapping from keys to command.
-   * @type {!cvox.KeyMap}
+   * @type {!KeyMap}
    * @private
    */
-  this.keyMap_ = cvox.KeyMap.fromLocalStorage() || cvox.KeyMap.fromDefaults();
-  this.keyMap_.merge(cvox.KeyMap.fromDefaults());
+  this.keyMap_ = KeyMap.fromLocalStorage() || KeyMap.fromDefaults();
+  this.keyMap_.merge(KeyMap.fromDefaults());
 
   // Clear per session preferences.
   // This is to keep the position dictionary from growing excessively large.
@@ -60,7 +60,7 @@ cvox.ChromeVoxPrefs = function() {
  * @const
  * @type {Object<Object>}
  */
-cvox.ChromeVoxPrefs.DEFAULT_PREFS = {
+ChromeVoxPrefs.DEFAULT_PREFS = {
   'announceDownloadNotifications': true,
   'announceRichTextAttributes': true,
   'audioStrategy': 'audioNormal',
@@ -73,7 +73,7 @@ cvox.ChromeVoxPrefs.DEFAULT_PREFS = {
   // TODO(dtseng): Leaking state about multiple key maps here until we have a
   // class to manage multiple key maps. Also, this doesn't belong as a pref;
   // should just store in local storage.
-  'currentKeyMap': cvox.KeyMap.DEFAULT_KEYMAP,
+  'currentKeyMap': KeyMap.DEFAULT_KEYMAP,
   'cvoxKey': '',
   'enableBrailleLogging': false,
   'enableEarconLogging': false,
@@ -92,7 +92,7 @@ cvox.ChromeVoxPrefs.DEFAULT_PREFS = {
   'speakTextUnderMouse': false,
   'sticky': false,
   'typingEcho': 0,
-  'useIBeamCursor': cvox.ChromeVox.isMac,
+  'useIBeamCursor': false,
   'useClassic': false,
   'useVerboseMode': true,
 
@@ -160,11 +160,11 @@ cvox.ChromeVoxPrefs.DEFAULT_PREFS = {
  * changes to keyboard shortcuts and need to make sure they aren't
  * overridden by the old keymap in local storage.
  */
-cvox.ChromeVoxPrefs.prototype.init = function(pullFromLocalStorage) {
+ChromeVoxPrefs.prototype.init = function(pullFromLocalStorage) {
   // Set the default value of any pref that isn't already in localStorage.
-  for (var pref in cvox.ChromeVoxPrefs.DEFAULT_PREFS) {
+  for (var pref in ChromeVoxPrefs.DEFAULT_PREFS) {
     if (localStorage[pref] === undefined) {
-      localStorage[pref] = cvox.ChromeVoxPrefs.DEFAULT_PREFS[pref];
+      localStorage[pref] = ChromeVoxPrefs.DEFAULT_PREFS[pref];
     }
   }
   // Since language switching is currently an experimental feature, ensure that
@@ -181,20 +181,20 @@ cvox.ChromeVoxPrefs.prototype.init = function(pullFromLocalStorage) {
 /**
  * Switches to another key map.
  * @param {string} selectedKeyMap The id of the keymap in
- * cvox.KeyMap.AVAIABLE_KEYMAP_INFO.
+ * KeyMap.AVAIABLE_KEYMAP_INFO.
  */
-cvox.ChromeVoxPrefs.prototype.switchToKeyMap = function(selectedKeyMap) {
+ChromeVoxPrefs.prototype.switchToKeyMap = function(selectedKeyMap) {
   // Switching key maps potentially affects the key codes that involve
   // sequencing. Without resetting this list, potentially stale key
   // codes remain. The key codes themselves get pushed in
-  // cvox.KeySequence.deserialize which gets called by cvox.KeyMap.
-  cvox.ChromeVox.sequenceSwitchKeyCodes = [];
+  // KeySequence.deserialize which gets called by KeyMap.
+  ChromeVox.sequenceSwitchKeyCodes = [];
 
   // TODO(dtseng): Leaking state about multiple key maps here until we have a
   // class to manage multiple key maps.
   localStorage['currentKeyMap'] = selectedKeyMap;
-  this.keyMap_ = cvox.KeyMap.fromCurrentKeyMap();
-  cvox.ChromeVoxKbHandler.handlerKeyMap = this.keyMap_;
+  this.keyMap_ = KeyMap.fromCurrentKeyMap();
+  ChromeVoxKbHandler.handlerKeyMap = this.keyMap_;
   this.keyMap_.toLocalStorage();
   this.keyMap_.resetModifier();
 };
@@ -204,9 +204,9 @@ cvox.ChromeVoxPrefs.prototype.switchToKeyMap = function(selectedKeyMap) {
  * Get the prefs (not including keys).
  * @return {Object} A map of all prefs except the key map from localStorage.
  */
-cvox.ChromeVoxPrefs.prototype.getPrefs = function() {
+ChromeVoxPrefs.prototype.getPrefs = function() {
   var prefs = {};
-  for (var pref in cvox.ChromeVoxPrefs.DEFAULT_PREFS) {
+  for (var pref in ChromeVoxPrefs.DEFAULT_PREFS) {
     prefs[pref] = localStorage[pref];
   }
   prefs['version'] = chrome.runtime.getManifest().version;
@@ -217,13 +217,13 @@ cvox.ChromeVoxPrefs.prototype.getPrefs = function() {
 /**
  * Reloads the key map from local storage.
  */
-cvox.ChromeVoxPrefs.prototype.reloadKeyMap = function() {
+ChromeVoxPrefs.prototype.reloadKeyMap = function() {
   // Get the current key map from localStorage.
   // TODO(dtseng): We currently don't support merges since we write the entire
   // map back to local storage.
-  var currentKeyMap = cvox.KeyMap.fromLocalStorage();
+  var currentKeyMap = KeyMap.fromLocalStorage();
   if (!currentKeyMap) {
-    currentKeyMap = cvox.KeyMap.fromCurrentKeyMap();
+    currentKeyMap = KeyMap.fromCurrentKeyMap();
     currentKeyMap.toLocalStorage();
   }
   this.keyMap_ = currentKeyMap;
@@ -232,9 +232,9 @@ cvox.ChromeVoxPrefs.prototype.reloadKeyMap = function() {
 
 /**
  * Get the key map, from key binding to an array of [command, description].
- * @return {cvox.KeyMap} The key map.
+ * @return {KeyMap} The key map.
  */
-cvox.ChromeVoxPrefs.prototype.getKeyMap = function() {
+ChromeVoxPrefs.prototype.getKeyMap = function() {
   return this.keyMap_;
 };
 
@@ -242,8 +242,8 @@ cvox.ChromeVoxPrefs.prototype.getKeyMap = function() {
 /**
  * Reset to the default key bindings.
  */
-cvox.ChromeVoxPrefs.prototype.resetKeys = function() {
-  this.keyMap_ = cvox.KeyMap.fromDefaults();
+ChromeVoxPrefs.prototype.resetKeys = function() {
+  this.keyMap_ = KeyMap.fromDefaults();
   this.keyMap_.toLocalStorage();
 };
 
@@ -253,14 +253,14 @@ cvox.ChromeVoxPrefs.prototype.resetKeys = function() {
  * @param {string} key The pref key.
  * @param {Object|string|boolean} value The new value of the pref.
  */
-cvox.ChromeVoxPrefs.prototype.setPref = function(key, value) {
+ChromeVoxPrefs.prototype.setPref = function(key, value) {
   if (localStorage[key] != value) {
     localStorage[key] = value;
   }
 };
 
 /** @enum {string} */
-cvox.ChromeVoxPrefs.loggingPrefs = {
+ChromeVoxPrefs.loggingPrefs = {
   SPEECH: 'enableSpeechLogging',
   BRAILLE: 'enableBrailleLogging',
   EARCON: 'enableEarconLogging',
@@ -269,10 +269,10 @@ cvox.ChromeVoxPrefs.loggingPrefs = {
 
 /**
  * Set the value of a pref of logging options.
- * @param {cvox.ChromeVoxPrefs.loggingPrefs} key The pref key.
+ * @param {ChromeVoxPrefs.loggingPrefs} key The pref key.
  * @param {boolean} value The new value of the pref.
  */
-cvox.ChromeVoxPrefs.prototype.setLoggingPrefs = function(key, value) {
+ChromeVoxPrefs.prototype.setLoggingPrefs = function(key, value) {
   localStorage[key] = value;
   if (key == 'enableSpeechLogging') {
     ConsoleTts.getInstance().setEnabled(value);
@@ -282,12 +282,12 @@ cvox.ChromeVoxPrefs.prototype.setLoggingPrefs = function(key, value) {
 };
 
 /**
- * Delegates to cvox.KeyMap.
+ * Delegates to KeyMap.
  * @param {string} command The command to set.
- * @param {cvox.KeySequence} newKey The new key to assign it to.
+ * @param {KeySequence} newKey The new key to assign it to.
  * @return {boolean} True if the key was bound to the command.
  */
-cvox.ChromeVoxPrefs.prototype.setKey = function(command, newKey) {
+ChromeVoxPrefs.prototype.setKey = function(command, newKey) {
   if (this.keyMap_.rebind(command, newKey)) {
     this.keyMap_.toLocalStorage();
     return true;

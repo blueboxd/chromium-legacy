@@ -399,8 +399,7 @@ class ExtensionPrefs : public KeyedService {
   // permissions from the user.
   void SetShouldWithholdPermissions(const ExtensionId& extension_id,
                                     bool should_withhold);
-  base::Optional<bool> GetShouldWithholdPermissions(
-      const ExtensionId& extension_id) const;
+  bool GetShouldWithholdPermissions(const ExtensionId& extension_id) const;
 
   // Returns the set of runtime-granted permissions. These are permissions that
   // the user explicitly approved at runtime, rather than install time (such
@@ -780,6 +779,11 @@ class ExtensionPrefs : public KeyedService {
       bool needs_sort_ordinal,
       const syncer::StringOrdinal& suggested_page_ordinal,
       prefs::DictionaryValueUpdate* extension_dict);
+
+  // Returns true if the prefs have any permission withholding setting stored
+  // for a given extension.
+  bool HasShouldWithholdPermissionsSetting(
+      const ExtensionId& extension_id) const;
 
   content::BrowserContext* browser_context_;
 

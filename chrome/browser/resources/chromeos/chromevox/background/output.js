@@ -20,12 +20,12 @@ goog.require('constants');
 goog.require('cursors.Cursor');
 goog.require('cursors.Range');
 goog.require('cursors.Unit');
-goog.require('cvox.AbstractEarcons');
-goog.require('cvox.ChromeVox');
-goog.require('cvox.NavBraille');
-goog.require('cvox.TtsCategory');
-goog.require('cvox.ValueSelectionSpan');
-goog.require('cvox.ValueSpan');
+goog.require('AbstractEarcons');
+goog.require('ChromeVox');
+goog.require('NavBraille');
+goog.require('TtsCategory');
+goog.require('ValueSelectionSpan');
+goog.require('ValueSpan');
 goog.require('goog.i18n.MessageFormat');
 goog.require('LanguageSwitching');
 
@@ -91,14 +91,14 @@ Output = function() {
 
   /**
    * The speech category for the generated speech utterance.
-   * @type {cvox.TtsCategory}
+   * @type {TtsCategory}
    * @private
    */
-  this.speechCategory_ = cvox.TtsCategory.NAV;
+  this.speechCategory_ = TtsCategory.NAV;
 
   /**
    * The speech queue mode for the generated speech utterance.
-   * @type {cvox.QueueMode}
+   * @type {QueueMode}
    * @private
    */
   this.queueMode_;
@@ -654,8 +654,7 @@ Output.EarconAction.prototype = {
 
   /** @override */
   run: function() {
-    cvox.ChromeVox.earcons.playEarcon(
-        cvox.Earcon[this.earconId], this.location);
+    ChromeVox.earcons.playEarcon(Earcon[this.earconId], this.location);
   },
 
   /** @override */
@@ -700,7 +699,7 @@ Output.EventType = {
 /**
  * If set, the next speech utterance will use this value instead of the normal
  * queueing mode.
- * @type {cvox.QueueMode|undefined}
+ * @type {QueueMode|undefined}
  * @private
  */
 Output.forceModeForNextSpeechUtterance_;
@@ -709,7 +708,7 @@ Output.forceModeForNextSpeechUtterance_;
  * Calling this will make the next speech utterance use |mode| even if it would
  * normally queue or do a category flush. This differs from the |withQueueMode|
  * instance method as it can apply to future output.
- * @param {cvox.QueueMode|undefined} mode
+ * @param {QueueMode|undefined} mode
  */
 Output.forceModeForNextSpeechUtterance = function(mode) {
   Output.forceModeForNextSpeechUtterance_ = mode;
@@ -888,7 +887,7 @@ Output.prototype = {
 
   /**
    * Applies the given speech category to the output.
-   * @param {cvox.TtsCategory} category
+   * @param {TtsCategory} category
    * @return {!Output}
    */
   withSpeechCategory: function(category) {
@@ -898,7 +897,7 @@ Output.prototype = {
 
   /**
    * Applies the given speech queue mode to the output.
-   * @param {cvox.QueueMode} queueMode The queueMode for the speech.
+   * @param {QueueMode} queueMode The queueMode for the speech.
    * @return {!Output}
    */
   withQueueMode: function(queueMode) {
@@ -1023,12 +1022,12 @@ Output.prototype = {
    */
   go: function() {
     // Speech.
-    var queueMode = cvox.QueueMode.QUEUE;
+    var queueMode = QueueMode.QUEUE;
     if (Output.forceModeForNextSpeechUtterance_ !== undefined) {
-      queueMode = /** @type{cvox.QueueMode} */ (
-          Output.forceModeForNextSpeechUtterance_);
+      queueMode =
+          /** @type{QueueMode} */ (Output.forceModeForNextSpeechUtterance_);
     } else if (this.queueMode_ !== undefined) {
-      queueMode = /** @type{cvox.QueueMode} */ (this.queueMode_);
+      queueMode = /** @type{QueueMode} */ (this.queueMode_);
     }
 
     if (this.speechBuffer_.length > 0) {
@@ -1073,8 +1072,8 @@ Output.prototype = {
         speechProps['endCallback'] = this.speechEndCallback_;
       }
 
-      cvox.ChromeVox.tts.speak(buff.toString(), queueMode, speechProps);
-      queueMode = cvox.QueueMode.QUEUE;
+      ChromeVox.tts.speak(buff.toString(), queueMode, speechProps);
+      queueMode = QueueMode.QUEUE;
     }
     if (this.speechRulesStr_.str) {
       LogStore.getInstance().writeTextLog(
@@ -1092,16 +1091,16 @@ Output.prototype = {
         startIndex = valueStart + selSpan.startIndex;
         endIndex = valueStart + selSpan.endIndex;
         try {
-          buff.setSpan(new cvox.ValueSpan(0), valueStart, valueEnd);
-          buff.setSpan(new cvox.ValueSelectionSpan(), startIndex, endIndex);
+          buff.setSpan(new ValueSpan(0), valueStart, valueEnd);
+          buff.setSpan(new ValueSelectionSpan(), startIndex, endIndex);
         } catch (e) {
         }
       }
 
-      var output = new cvox.NavBraille(
+      var output = new NavBraille(
           {text: buff, startIndex: startIndex, endIndex: endIndex});
 
-      cvox.ChromeVox.braille.write(output);
+      ChromeVox.braille.write(output);
       if (this.brailleRulesStr_.str) {
         LogStore.getInstance().writeTextLog(
             this.brailleRulesStr_.str, LogStore.LogType.BRAILLE_RULE);
@@ -1109,7 +1108,7 @@ Output.prototype = {
     }
 
     // Display.
-    if (this.speechCategory_ != cvox.TtsCategory.LIVE) {
+    if (this.speechCategory_ != TtsCategory.LIVE) {
       chrome.accessibilityPrivate.setFocusRings([{
         rects: this.locations_,
         type: chrome.accessibilityPrivate.FocusType.GLOW,
@@ -2351,7 +2350,7 @@ Output.prototype = {
       return;
     }
 
-    if (node.state[StateType.EDITABLE] && cvox.ChromeVox.isStickyPrefOn) {
+    if (node.state[StateType.EDITABLE] && ChromeVox.isStickyPrefOn) {
       this.format_({
         node: node,
         outputFormat: '@sticky_mode_enabled',

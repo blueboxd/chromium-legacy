@@ -243,7 +243,6 @@ jumbo_source_set("browser") {
     ":accessibility_buildflags",
     "//base/util/memory_pressure",
     "//base/util/type_safety",
-    "//components/services/storage/public/mojom",
     "//ipc",
     "//media/mojo/mojom:remoting",
     "//third_party/blink/public/mojom:embedded_frame_sink_mojo_bindings",

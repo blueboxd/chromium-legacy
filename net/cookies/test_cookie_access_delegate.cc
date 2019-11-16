@@ -20,10 +20,29 @@ CookieAccessSemantics TestCookieAccessDelegate::GetAccessSemantics(
   return CookieAccessSemantics::UNKNOWN;
 }
 
+bool TestCookieAccessDelegate::ShouldIgnoreSameSiteRestrictions(
+    const GURL& url,
+    const GURL& site_for_cookies) const {
+  auto it =
+      ignore_samesite_restrictions_schemes_.find(site_for_cookies.scheme());
+  if (it == ignore_samesite_restrictions_schemes_.end())
+    return false;
+  if (it->second)
+    return url.SchemeIsCryptographic();
+  return true;
+}
+
 void TestCookieAccessDelegate::SetExpectationForCookieDomain(
     const std::string& cookie_domain,
     CookieAccessSemantics access_semantics) {
   expectations_[GetKeyForDomainValue(cookie_domain)] = access_semantics;
+}
+
+void TestCookieAccessDelegate::SetIgnoreSameSiteRestrictionsScheme(
+    const std::string& site_for_cookies_scheme,
+    bool require_secure_origin) {
+  ignore_samesite_restrictions_schemes_[site_for_cookies_scheme] =
+      require_secure_origin;
 }
 
 std::string TestCookieAccessDelegate::GetKeyForDomainValue(

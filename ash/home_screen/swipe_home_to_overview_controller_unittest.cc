@@ -296,12 +296,24 @@ TEST_F(SwipeHomeToOverviewControllerTest, DragMovementRestartsTimeout) {
       GetTimerDesiredRunTime() - tick_clock_.NowTicks();
   EXPECT_GT(delay, base::TimeDelta());
 
-  // Advance clock, and simulate another drag.
-  tick_clock_.Advance(base::TimeDelta::FromMilliseconds(10));
+  const float max_allowed_velocity =
+      SwipeHomeToOverviewController::kMovementVelocityThreshold;
+  // Advance clock, and simulate another drag whose speed is above the max
+  // allowed.
+  tick_clock_.Advance(base::TimeDelta::FromMilliseconds(1));
   Drag(shelf_bounds.top_center() - gfx::Vector2d(0, 2 * transition_threshold),
-       0.f, 1.f);
+       0.f, max_allowed_velocity + 10);
 
-  // Verify the expected timer run time was updated.
+  // Verify the timer was stopped.
+  EXPECT_FALSE(OverviewTransitionTimerRunning());
+  EXPECT_FALSE(OverviewStarted());
+
+  tick_clock_.Advance(base::TimeDelta::FromMilliseconds(1));
+
+  // Another slow drag should restart the timer.
+  Drag(shelf_bounds.top_center() - gfx::Vector2d(0, 2 * transition_threshold),
+       0.f, max_allowed_velocity / 2);
+
   EXPECT_TRUE(OverviewTransitionTimerRunning());
   EXPECT_FALSE(OverviewStarted());
 
@@ -337,33 +349,30 @@ TEST_F(SwipeHomeToOverviewControllerTest,
       GetTimerDesiredRunTime() - tick_clock_.NowTicks();
   EXPECT_GT(delay, base::TimeDelta());
 
-  const int movement_threshold =
-      SwipeHomeToOverviewController::kMovementThreshold;
-  // Advance clock, and simulate another drag, but for small amount.
-  tick_clock_.Advance(base::TimeDelta::FromMilliseconds(10));
+  const float movement_threshold =
+      SwipeHomeToOverviewController::kMovementVelocityThreshold;
+
+  // Advance clock, and simulate another drag, for an amount below the movement
+  // threshold.
+  tick_clock_.Advance(base::TimeDelta::FromMilliseconds(1));
   Drag(shelf_bounds.top_center() -
            gfx::Vector2d(0, transition_threshold + movement_threshold - 1),
-       0.f, 1.f);
+       0.f, movement_threshold / 2);
 
   // Verify the expected timer run time was not updated.
   EXPECT_TRUE(OverviewTransitionTimerRunning());
   EXPECT_FALSE(OverviewStarted());
 
-  EXPECT_EQ(delay - base::TimeDelta::FromMilliseconds(10),
+  EXPECT_EQ(delay - base::TimeDelta::FromMilliseconds(1),
             GetTimerDesiredRunTime() - tick_clock_.NowTicks());
 
-  // Advance clock, and simulate another small drag (the total distance from the
-  // last position being over the movement detection threshold) - verify the
-  // timer is updated.
-  tick_clock_.Advance(base::TimeDelta::FromMilliseconds(10));
+  // Movement with velocity above the allowed threshold restarts the timer.
   Drag(shelf_bounds.top_center() -
-           gfx::Vector2d(0, transition_threshold + movement_threshold),
-       0.f, 1.f);
+           gfx::Vector2d(0, transition_threshold + movement_threshold - 1),
+       0.f, movement_threshold + 1);
 
-  EXPECT_TRUE(OverviewTransitionTimerRunning());
+  EXPECT_FALSE(OverviewTransitionTimerRunning());
   EXPECT_FALSE(OverviewStarted());
-
-  EXPECT_EQ(delay, GetTimerDesiredRunTime() - tick_clock_.NowTicks());
 }
 
 TEST_F(SwipeHomeToOverviewControllerTest, DragBellowThresholdStopsTimer) {

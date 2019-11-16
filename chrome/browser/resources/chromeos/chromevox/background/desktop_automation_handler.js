@@ -326,7 +326,7 @@ DesktopAutomationHandler.prototype = {
       this.textEditHandler_ = null;
     }
 
-    Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
+    Output.forceModeForNextSpeechUtterance(QueueMode.FLUSH);
     this.onEventDefault(
         new CustomAutomationEvent(evt.type, target, evt.eventFrom));
   },
@@ -342,7 +342,7 @@ DesktopAutomationHandler.prototype = {
 
     // Various events might come before a key press (which forces flushed
     // speech) and this handler. Force output to be at least category flushed.
-    Output.forceModeForNextSpeechUtterance(cvox.QueueMode.CATEGORY_FLUSH);
+    Output.forceModeForNextSpeechUtterance(QueueMode.CATEGORY_FLUSH);
     this.onEventIfInRange(evt);
   },
 
@@ -355,7 +355,7 @@ DesktopAutomationHandler.prototype = {
     var range = cursors.Range.fromNode(node);
 
     new Output()
-        .withSpeechCategory(cvox.TtsCategory.LIVE)
+        .withSpeechCategory(TtsCategory.LIVE)
         .withSpeechAndBraille(range, null, evt.type)
         .go();
   },
@@ -491,7 +491,7 @@ DesktopAutomationHandler.prototype = {
           AutomationUtil.getTopLevelRoot(evt.target) == evt.target) {
         ChromeVoxState.instance.setCurrentRange(
             cursors.Range.fromNode(evt.target));
-        cvox.ChromeVox.tts.stop();
+        ChromeVox.tts.stop();
         CommandHandler.onCommand('readFromHere');
         return;
       }
@@ -620,7 +620,7 @@ DesktopAutomationHandler.prototype = {
       this.lastValueChanged_ = new Date();
 
       var output = new Output();
-      output.withQueueMode(cvox.QueueMode.CATEGORY_FLUSH);
+      output.withQueueMode(QueueMode.CATEGORY_FLUSH);
 
       if (fromDesktop &&
           (!this.lastValueTarget_ || this.lastValueTarget_ !== t)) {
@@ -775,7 +775,7 @@ DesktopAutomationHandler.prototype = {
     // Restore to previous position.
     var url = focusedRoot.docUrl;
     url = url.substring(0, url.indexOf('#')) || url;
-    var pos = cvox.ChromeVox.position[url];
+    var pos = ChromeVox.position[url];
 
     // Disallow recovery for chrome urls.
     if (pos && url.indexOf('chrome://') != 0) {

@@ -25,7 +25,7 @@ scoped_refptr<BluetoothSocketThread> BluetoothSocketThread::Get() {
 // static
 void BluetoothSocketThread::CleanupForTesting() {
   DCHECK(g_instance.Get().get());
-  g_instance.Get() = NULL;
+  g_instance.Get().reset();
 }
 
 BluetoothSocketThread::BluetoothSocketThread()
@@ -35,7 +35,7 @@ BluetoothSocketThread::~BluetoothSocketThread() {
   if (thread_) {
     thread_->Stop();
     thread_.reset(NULL);
-    task_runner_ = NULL;
+    task_runner_.reset();
   }
 }
 

@@ -82,9 +82,10 @@ std::string AudioDecoderConfig::AsHumanReadableString() const {
   std::ostringstream s;
   s << "codec: " << GetCodecName(codec())
     << ", bytes_per_channel: " << bytes_per_channel()
-    << ", channel_layout: " << channel_layout() << ", channels: " << channels()
+    << ", channel_layout: " << ChannelLayoutToString(channel_layout())
+    << ", channels: " << channels()
     << ", samples_per_second: " << samples_per_second()
-    << ", sample_format: " << sample_format()
+    << ", sample_format: " << SampleFormatToString(sample_format())
     << ", bytes_per_frame: " << bytes_per_frame()
     << ", seek_preroll: " << seek_preroll().InMicroseconds() << "us"
     << ", codec_delay: " << codec_delay()

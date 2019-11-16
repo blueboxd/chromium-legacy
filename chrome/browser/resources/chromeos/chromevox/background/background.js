@@ -33,11 +33,11 @@ goog.require('PanelCommand');
 goog.require('PhoneticData');
 goog.require('constants');
 goog.require('cursors.Cursor');
-goog.require('cvox.BrailleKeyCommand');
-goog.require('cvox.ChromeVoxBackground');
-goog.require('cvox.ChromeVoxEditableTextBase');
-goog.require('cvox.ExtensionBridge');
-goog.require('cvox.NavBraille');
+goog.require('BrailleKeyCommand');
+goog.require('ChromeVoxBackground');
+goog.require('ChromeVoxEditableTextBase');
+goog.require('ExtensionBridge');
+goog.require('NavBraille');
 
 goog.scope(function() {
 var AutomationNode = chrome.automation.AutomationNode;
@@ -75,34 +75,32 @@ Background = function() {
     }
   }
 
-  /** @type {!cvox.AbstractEarcons} @private */
+  /** @type {!AbstractEarcons} @private */
   this.nextEarcons_ = new NextEarcons();
 
   // Read-only earcons.
-  Object.defineProperty(cvox.ChromeVox, 'earcons', {
+  Object.defineProperty(ChromeVox, 'earcons', {
     get: (function() {
            return this.nextEarcons_;
          }).bind(this)
   });
 
-  if (cvox.ChromeVox.isChromeOS) {
-    Object.defineProperty(cvox.ChromeVox, 'modKeyStr', {
-      get: function() {
-        return 'Search';
-      }.bind(this)
-    });
+  Object.defineProperty(ChromeVox, 'modKeyStr', {
+    get: function() {
+      return 'Search';
+    }.bind(this)
+  });
 
-    Object.defineProperty(cvox.ChromeVox, 'typingEcho', {
-      get: function() {
-        return parseInt(localStorage['typingEcho'], 10);
-      }.bind(this),
-      set: function(v) {
-        localStorage['typingEcho'] = v;
-      }.bind(this)
-    });
-  }
+  Object.defineProperty(ChromeVox, 'typingEcho', {
+    get: function() {
+      return parseInt(localStorage['typingEcho'], 10);
+    }.bind(this),
+    set: function(v) {
+      localStorage['typingEcho'] = v;
+    }.bind(this)
+  });
 
-  Object.defineProperty(cvox.ChromeVox, 'typingEcho', {
+  Object.defineProperty(ChromeVox, 'typingEcho', {
     get: function() {
       var typingEcho = parseInt(localStorage['typingEcho'], 10) || 0;
       return typingEcho;
@@ -112,7 +110,7 @@ Background = function() {
     }
   });
 
-  cvox.ExtensionBridge.addMessageListener(this.onMessage_);
+  ExtensionBridge.addMessageListener(this.onMessage_);
 
   /** @type {!BackgroundKeyboardHandler} @private */
   this.keyboardHandler_ = new BackgroundKeyboardHandler();
@@ -152,7 +150,7 @@ Background = function() {
 
   chrome.accessibilityPrivate.onAnnounceForAccessibility.addListener(
       (announceText) => {
-        cvox.ChromeVox.tts.speak(announceText.join(' '), cvox.QueueMode.FLUSH);
+        ChromeVox.tts.speak(announceText.join(' '), QueueMode.FLUSH);
       });
 };
 
@@ -183,7 +181,7 @@ Background.prototype = {
   setCurrentRange: function(newRange) {
     // Clear anything that was frozen on the braille display whenever
     // the user navigates.
-    cvox.ChromeVox.braille.thaw();
+    ChromeVox.braille.thaw();
 
     if (newRange && !newRange.isValid()) {
       chrome.accessibilityPrivate.setFocusRings([{
@@ -222,7 +220,7 @@ Background.prototype = {
     position.y = loc.top + loc.height / 2;
     var url = root.docUrl;
     url = url.substring(0, url.indexOf('#')) || url;
-    cvox.ChromeVox.position[url] = position;
+    ChromeVox.position[url] = position;
   },
 
   /**
@@ -311,7 +309,7 @@ Background.prototype = {
     o.withRichSpeechAndBraille(
         selectedRange || range, prevRange, Output.EventType.NAVIGATE);
 
-    o.withQueueMode(cvox.QueueMode.FLUSH);
+    o.withQueueMode(QueueMode.FLUSH);
 
     if (msg) {
       o.format(msg);
@@ -336,7 +334,7 @@ Background.prototype = {
    * Open the options page in a new tab.
    */
   showOptionsPage: function() {
-    var optionsPage = {url: 'chromevox/background/options.html'};
+    var optionsPage = {url: 'background/options/options.html'};
     chrome.tabs.create(optionsPage);
   },
 
@@ -366,7 +364,7 @@ Background.prototype = {
         } else if (action == 'onCommand') {
           CommandHandler.onCommand(msg['command']);
         } else if (action == 'flushNextUtterance') {
-          Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
+          Output.forceModeForNextSpeechUtterance(QueueMode.FLUSH);
         }
         break;
     }
@@ -404,8 +402,7 @@ Background.prototype = {
         return;
       }
       text = evt.clipboardData.getData('text');
-      cvox.ChromeVox.tts.speak(
-          Msgs.getMsg(evt.type, [text]), cvox.QueueMode.QUEUE);
+      ChromeVox.tts.speak(Msgs.getMsg(evt.type, [text]), QueueMode.QUEUE);
     } else if (evt.type == 'copy' || evt.type == 'cut') {
       this.preventPasteOutput_ = true;
       var textarea = document.createElement('textarea');
@@ -414,8 +411,8 @@ Background.prototype = {
       document.execCommand('paste');
       var clipboardContent = textarea.value;
       textarea.remove();
-      cvox.ChromeVox.tts.speak(
-          Msgs.getMsg(evt.type, [clipboardContent]), cvox.QueueMode.FLUSH);
+      ChromeVox.tts.speak(
+          Msgs.getMsg(evt.type, [clipboardContent]), QueueMode.FLUSH);
       ChromeVoxState.instance.pageSel_ = null;
     }
   },

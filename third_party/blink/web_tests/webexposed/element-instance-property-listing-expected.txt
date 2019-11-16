@@ -398,6 +398,7 @@ html element audio
     property duration
     property ended
     property error
+    property latencyHint
     property load
     property loop
     property mediaKeys
@@ -1151,6 +1152,7 @@ html element video
     property error
     property getVideoPlaybackQuality
     property height
+    property latencyHint
     property load
     property loop
     property mediaKeys

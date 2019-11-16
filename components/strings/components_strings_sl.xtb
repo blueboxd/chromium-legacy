@@ -913,6 +913,7 @@
 <translation id="5329858041417644019">Vaš brskalnik ni upravljan</translation>
 <translation id="5332219387342487447">Način pošiljanja</translation>
 <translation id="5334013548165032829">Podrobni sistemski dnevniki</translation>
+<translation id="534295439873310000">Naprave s tehnologijo NFC</translation>
 <translation id="5344579389779391559">Ta stran vam bo morda poskusila kaj zaračunati</translation>
 <translation id="5355557959165512791">Spletnega mesta <ph name="SITE" /> trenutno ni mogoče obiskati, saj je to potrdilo preklicano. Napake omrežja in napadi na omrežje so običajno začasni, zato bo ta stran verjetno delovala pozneje.</translation>
 <translation id="536296301121032821">Nastavitev pravilnika ni bilo mogoče shraniti</translation>
@@ -1534,6 +1535,7 @@ Dodatne podrobnosti:
 <translation id="8466379296835108687">{COUNT,plural, =1{1 kreditna kartica}one{# kreditna kartica}two{# kreditni kartici}few{# kreditne kartice}other{# kreditnih kartic}}</translation>
 <translation id="8473863474539038330">Naslovi in drugo</translation>
 <translation id="8479754468255770962">Spenjanje spodaj levo</translation>
+<translation id="8481133456511676116">Ali ste mislili <ph name="DOMAIN" />?</translation>
 <translation id="8483780878231876732">Če želite uporabljati kartice iz Google Računa, se prijavite v Chrome</translation>
 <translation id="8488350697529856933">Velja za</translation>
 <translation id="8498891568109133222">Spletno mesto <ph name="HOST_NAME" /> se ni odzvalo v ustreznem času.</translation>

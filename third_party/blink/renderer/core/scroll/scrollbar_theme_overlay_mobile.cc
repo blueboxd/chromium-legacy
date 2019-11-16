@@ -15,9 +15,15 @@ namespace blink {
 
 static const WebThemeEngine::ScrollbarStyle& ScrollbarStyle() {
   static bool initialized = false;
-  DEFINE_STATIC_LOCAL(WebThemeEngine::ScrollbarStyle, style, ());
+  DEFINE_STATIC_LOCAL(WebThemeEngine::ScrollbarStyle, style,
+                      (WebThemeEngine::ScrollbarStyle{3, 4, 0x80808080}));
   if (!initialized) {
+    // During device emulation, the chrome WebThemeEngine implementation may not
+    // be the mobile theme which can provide the overlay scrollbar styles.
+    // In the case the following call will do nothing and we'll use the default
+    // styles specified above.
     Platform::Current()->ThemeEngine()->GetOverlayScrollbarStyle(&style);
+    DCHECK(style.thumb_thickness);
     initialized = true;
   }
   return style;

@@ -294,7 +294,9 @@
             </template>
             <cr-link-row class="hr list-item" id="manageInputMethods"
                 on-click="onManageInputMethodsTap_"
-                label="$i18n{manageInputMethods}"></cr-link-row>
+                label="$i18n{manageInputMethods}"
+                role-description="$i18n{subpageArrowRoleDescription}">
+            </cr-link-row>
           </div>
           <settings-toggle-button
               pref="{{prefs.settings.language.ime_menu_activated}}"
@@ -395,7 +397,8 @@
           </div>
           <cr-link-row on-click="onEditDictionaryTap_"
               id="spellCheckSubpageTrigger"
-              label="$i18n{manageSpellCheck}">
+              label="$i18n{manageSpellCheck}"
+              role-description="$i18n{subpageArrowRoleDescription}">
           </cr-link-row>
 </if> <!-- not is_macosx -->
         </iron-collapse>

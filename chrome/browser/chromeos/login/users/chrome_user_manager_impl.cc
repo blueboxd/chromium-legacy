@@ -131,8 +131,6 @@ const char kDeviceLocalAccountPendingDataRemoval[] =
 // data.
 const char kDeviceLocalAccountsWithSavedData[] = "PublicAccounts";
 
-constexpr char kGoogleDotCom[] = "@google.com";
-
 constexpr char kBluetoothLoggingUpstartJob[] = "bluetoothlog";
 
 // If the service doesn't exist or the policy is not set, enable managed
@@ -199,13 +197,11 @@ policy::MinimumVersionPolicyHandler* GetMinimumVersionPolicyHandler() {
       ->GetMinimumVersionPolicyHandler();
 }
 
-// Starts bluetooth logging service for accounts ending with |kGoogleDotCom|
-// and certain devices.
+// Starts bluetooth logging service for internal accounts and certain devices.
 void MaybeStartBluetoothLogging(const AccountId& account_id) {
-  if (!base::EndsWith(account_id.GetUserEmail(), kGoogleDotCom,
-                      base::CompareCase::INSENSITIVE_ASCII)) {
+  if (!gaia::IsGoogleInternalAccountEmail(account_id.GetUserEmail()))
     return;
-  }
+
   chromeos::UpstartClient::Get()->StartJob(kBluetoothLoggingUpstartJob, {},
                                            EmptyVoidDBusMethodCallback());
 }

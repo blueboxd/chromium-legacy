@@ -97,17 +97,6 @@ public class CastWebContentsView extends FrameLayout {
     }
 
     @Override
-    public AccessibilityNodeProvider getAccessibilityNodeProvider() {
-        View contentView = getContentView();
-        if (contentView != null) {
-            return contentView.getAccessibilityNodeProvider();
-        } else {
-            Log.w(TAG, "Content view is null! Returns a null AccessibilityNodeProvider.");
-            return null;
-        }
-    }
-
-    @Override
     public void setAccessibilityDelegate(AccessibilityDelegate delegate) {
         View contentView = getContentView();
         if (contentView != null) {
@@ -125,6 +114,16 @@ public class CastWebContentsView extends FrameLayout {
         } else {
             Log.w(TAG, "Content view is null!");
             return false;
+        }
+    }
+
+    public AccessibilityNodeProvider getWebContentsAccessibilityNodeProvider() {
+        View contentView = getContentView();
+        if (contentView != null) {
+            return contentView.getAccessibilityNodeProvider();
+        } else {
+            Log.w(TAG, "Content view is null! Returns a null AccessibilityNodeProvider.");
+            return null;
         }
     }
 

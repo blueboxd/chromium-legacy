@@ -237,10 +237,6 @@ void MockRenderThread::ReleaseCachedFonts() {
 }
 #endif
 
-ServiceManagerConnection* MockRenderThread::GetServiceManagerConnection() {
-  return nullptr;
-}
-
 void MockRenderThread::SetFieldTrialGroup(const std::string& trial_name,
                                           const std::string& group_name) {}
 

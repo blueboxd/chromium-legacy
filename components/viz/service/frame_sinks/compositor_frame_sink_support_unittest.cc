@@ -1329,4 +1329,88 @@ TEST_F(CompositorFrameSinkSupportTest, HitTestRegionValidation) {
             2u);
 }
 
+// Verifies that an unresponsive client has OnBeginFrame() messages throttled
+// and then stopped until it becomes responsive again.
+TEST_F(CompositorFrameSinkSupportTest, ThrottleUnresponsiveClient) {
+  FakeExternalBeginFrameSource begin_frame_source(0.f, false);
+
+  MockCompositorFrameSinkClient mock_client;
+  auto support = std::make_unique<CompositorFrameSinkSupport>(
+      &mock_client, &manager_, kAnotherArbitraryFrameSinkId, /*is_root=*/true,
+      kNeedsSyncPoints);
+  support->SetBeginFrameSource(&begin_frame_source);
+  support->SetNeedsBeginFrame(true);
+
+  constexpr base::TimeDelta interval = BeginFrameArgs::DefaultInterval();
+  base::TimeTicks frametime;
+  uint64_t sequence_number = 1;
+  int sent_frames = 0;
+  BeginFrameArgs args;
+
+  // Issue ten OnBeginFrame() messages with no response. They should all be
+  // received by the client.
+  for (; sent_frames < CompositorFrameSinkSupport::kOutstandingFramesThrottle;
+       ++sent_frames) {
+    frametime += interval;
+
+    args = CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0,
+                                          sequence_number++, frametime);
+    EXPECT_CALL(mock_client, OnBeginFrame(args, _));
+    begin_frame_source.TestOnBeginFrame(args);
+    testing::Mock::VerifyAndClearExpectations(&mock_client);
+  }
+
+  for (; sent_frames < CompositorFrameSinkSupport::kOutstandingFramesStop;
+       ++sent_frames) {
+    base::TimeTicks unthrottle_time =
+        frametime + base::TimeDelta::FromSeconds(1);
+
+    // The client should now be throttled for the next second and won't receive
+    // OnBeginFrames().
+    frametime += interval;
+    args = CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0,
+                                          sequence_number++, frametime);
+    EXPECT_CALL(mock_client, OnBeginFrame(args, _)).Times(0);
+    begin_frame_source.TestOnBeginFrame(args);
+    testing::Mock::VerifyAndClearExpectations(&mock_client);
+
+    frametime = unthrottle_time - base::TimeDelta::FromMicroseconds(1);
+    args = CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0,
+                                          sequence_number++, frametime);
+    EXPECT_CALL(mock_client, OnBeginFrame(args, _)).Times(0);
+    begin_frame_source.TestOnBeginFrame(args);
+    testing::Mock::VerifyAndClearExpectations(&mock_client);
+
+    // After one second OnBeginFrame() the client should receive OnBeginFrame().
+    frametime = unthrottle_time;
+    args = CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0,
+                                          sequence_number++, frametime);
+    EXPECT_CALL(mock_client, OnBeginFrame(args, _));
+    begin_frame_source.TestOnBeginFrame(args);
+    testing::Mock::VerifyAndClearExpectations(&mock_client);
+  }
+
+  // The client should no longer receive OnBeginFrame() until it becomes
+  // responsive again.
+  frametime += base::TimeDelta::FromMinutes(1);
+  args = CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0,
+                                        sequence_number++, frametime);
+  EXPECT_CALL(mock_client, OnBeginFrame(args, _)).Times(0);
+  begin_frame_source.TestOnBeginFrame(args);
+  testing::Mock::VerifyAndClearExpectations(&mock_client);
+
+  // The client becomes responsive again. The next OnBeginFrame() message should
+  // be delivered.
+  support->DidNotProduceFrame(BeginFrameAck(args, false));
+
+  frametime += interval;
+  args = CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0,
+                                        sequence_number++, frametime);
+  EXPECT_CALL(mock_client, OnBeginFrame(args, _));
+  begin_frame_source.TestOnBeginFrame(args);
+  testing::Mock::VerifyAndClearExpectations(&mock_client);
+
+  support->SetNeedsBeginFrame(false);
+}
+
 }  // namespace viz

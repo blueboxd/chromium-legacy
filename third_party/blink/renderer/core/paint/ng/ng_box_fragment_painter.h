@@ -34,7 +34,8 @@ class NGBoxFragmentPainter : public BoxPainterBase {
 
  public:
   NGBoxFragmentPainter(const NGPhysicalBoxFragment&,
-                       const NGPaintFragment* = nullptr);
+                       const NGPaintFragment* = nullptr,
+                       NGInlineCursor* descendants = nullptr);
   NGBoxFragmentPainter(const NGPaintFragment&);
 
   void Paint(const PaintInfo&);
@@ -85,7 +86,9 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   void PaintInternal(const PaintInfo&);
   void PaintAllPhasesAtomically(const PaintInfo&);
   void PaintBlockChildren(const PaintInfo&);
-  void PaintInlineItems(const PaintInfo&, const PhysicalOffset& paint_offset);
+  void PaintInlineItems(const PaintInfo&,
+                        const PhysicalOffset& paint_offset,
+                        NGInlineCursor* cursor);
   void PaintLineBoxChildren(NGPaintFragment::ChildList,
                             const PaintInfo&,
                             const PhysicalOffset& paint_offset);
@@ -205,18 +208,21 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   // |NGPaintFragment| once the transition is done. crbug.com/982194
   const NGPaintFragment* paint_fragment_;
   const NGFragmentItems* items_;
+  NGInlineCursor* descendants_ = nullptr;
   mutable base::Optional<NGBorderEdges> border_edges_;
 };
 
 inline NGBoxFragmentPainter::NGBoxFragmentPainter(
     const NGPhysicalBoxFragment& box,
-    const NGPaintFragment* paint_fragment)
+    const NGPaintFragment* paint_fragment,
+    NGInlineCursor* descendants)
     : BoxPainterBase(&box.GetLayoutObject()->GetDocument(),
                      box.Style(),
                      box.GetLayoutObject()->GeneratingNode()),
       box_fragment_(box),
       paint_fragment_(paint_fragment),
-      items_(box.Items()) {
+      items_(box.Items()),
+      descendants_(descendants) {
   DCHECK(box.IsBox() || box.IsRenderedLegend());
 #if DCHECK_IS_ON()
   if (box.IsInlineBox()) {

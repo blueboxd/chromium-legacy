@@ -6,5 +6,6 @@
 -->
 
 <resources>
-    <color name="warningText">#C5221F</color>
+    <color name="error_red">#C5221F</color>
+    <color name="warning_yellow">#FFCC00</color>
 </resources>

@@ -7,7 +7,6 @@
 // clang-format off
 // #import 'chrome://resources/cr_components/managed_footnote/managed_footnote.m.js';
 //
-// #import '../strings.m.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {isChromeOS} from 'chrome://resources/js/cr.m.js';
 // #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
@@ -25,11 +24,11 @@ cr.define('managed_footnote_test', function() {
   const suiteName = 'ManagedFootnoteTest';
 
   suite(suiteName, function() {
-    setup(function() {
-      PolymerTest.clearBody();
+    suiteSetup(function() {
+      loadTimeData.data = {};
     });
 
-    teardown(function() {
+    setup(function() {
       PolymerTest.clearBody();
     });
 

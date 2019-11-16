@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 import {Coordinate2d} from './coordinate2d.js';
 import {CustomMarginsOrientation, Margins} from './margins.js';
 import {PrintableArea} from './printable_area.js';
@@ -98,9 +99,7 @@ Polymer({
       type: Object,
       notify: true,
       value: function() {
-        return new PrintableArea(
-            new Coordinate2d(0, 0),
-            new Size(612, 792));
+        return new PrintableArea(new Coordinate2d(0, 0), new Size(612, 792));
       },
     },
   },
@@ -159,10 +158,10 @@ Polymer({
    * @private
    */
   onPageLayoutReady_: function(pageLayout, hasCustomPageSizeStyle) {
-    const origin = new Coordinate2d(
-        pageLayout.printableAreaX, pageLayout.printableAreaY);
-    const size = new Size(
-        pageLayout.printableAreaWidth, pageLayout.printableAreaHeight);
+    const origin =
+        new Coordinate2d(pageLayout.printableAreaX, pageLayout.printableAreaY);
+    const size =
+        new Size(pageLayout.printableAreaWidth, pageLayout.printableAreaHeight);
 
     const margins = new Margins(
         Math.round(pageLayout.marginTop), Math.round(pageLayout.marginRight),

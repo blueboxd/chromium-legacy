@@ -70,6 +70,7 @@ cast_source_set("output_stream_connection") {
     ":connection",
     ":proto",
     "//base",
+    "//chromecast/net:io_buffer_pool",
     "//net",
   ]
 }

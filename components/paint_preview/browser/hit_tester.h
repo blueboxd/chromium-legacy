@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/macros.h"
 #include "cc/base/rtree.h"
 #include "components/paint_preview/common/proto/paint_preview.pb.h"
 #include "ui/gfx/geometry/rect.h"
@@ -45,7 +44,8 @@ class HitTester {
  private:
   cc::RTree<GURL> rtree_;
 
-  DISALLOW_COPY_AND_ASSIGN(HitTester);
+  HitTester(const HitTester&) = delete;
+  HitTester& operator=(const HitTester&) = delete;
 };
 
 }  // namespace paint_preview

@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.chrome.browser.fullscreen.ComposedBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
+import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.BrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAssociatedApp;
@@ -256,6 +257,7 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
     private final ExternalAuthUtils mExternalAuthUtils;
     private final MultiWindowUtils mMultiWindowUtils;
     private final PendingIntent mFocusIntent;
+    private final ShareDelegate mShareDelegate;
 
     private ExternalNavigationDelegateImpl mNavigationDelegate;
 
@@ -275,7 +277,8 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
             boolean isOpenedByChrome, boolean isTrustedWebActivity,
             boolean shouldEnableEmbeddedMediaExperience,
             BrowserControlsVisibilityDelegate visibilityDelegate, ExternalAuthUtils authUtils,
-            MultiWindowUtils multiWindowUtils, @Nullable PendingIntent focusIntent) {
+            MultiWindowUtils multiWindowUtils, @Nullable PendingIntent focusIntent,
+            ShareDelegate shareDelegate) {
         mActivity = activity;
         mShouldHideBrowserControls = shouldHideBrowserControls;
         mIsOpenedByChrome = isOpenedByChrome;
@@ -285,6 +288,7 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
         mExternalAuthUtils = authUtils;
         mMultiWindowUtils = multiWindowUtils;
         mFocusIntent = focusIntent;
+        mShareDelegate = shareDelegate;
     }
 
     @Inject
@@ -297,7 +301,8 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
         this(activity, intentDataProvider.shouldEnableUrlBarHiding(),
                 intentDataProvider.isOpenedByChrome(), intentDataProvider.isTrustedWebActivity(),
                 intentDataProvider.shouldEnableEmbeddedMediaExperience(), visibilityDelegate,
-                authUtils, multiWindowUtils, intentDataProvider.getFocusIntent());
+                authUtils, multiWindowUtils, intentDataProvider.getFocusIntent(),
+                activity.getShareDelegate());
     }
 
     /**
@@ -306,7 +311,7 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
      */
     static CustomTabDelegateFactory createDummy() {
         return new CustomTabDelegateFactory(
-                null, false, false, false, false, null, null, null, null);
+                null, false, false, false, false, null, null, null, null, null);
     }
 
     @Override
@@ -346,7 +351,7 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
 
     @Override
     public ContextMenuPopulator createContextMenuPopulator(Tab tab) {
-        return new ChromeContextMenuPopulator(new TabContextMenuItemDelegate(tab),
+        return new ChromeContextMenuPopulator(new TabContextMenuItemDelegate(tab), mShareDelegate,
                 ChromeContextMenuPopulator.ContextMenuMode.CUSTOM_TAB);
     }
 

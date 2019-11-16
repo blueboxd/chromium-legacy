@@ -9,6 +9,14 @@
 /* Set the global 'box-sizing' state to 'border-box'.
  * *::after and *::before used to select pseudo-elements not selectable by *. */
 
+:root {
+  --google-blue-700: 25, 103, 210;
+  --google-brown-900: 62, 39, 35;
+  --google-purple-700: 132, 48, 206;
+  --google-yellow-50: 254, 247, 224;
+  --google-yellow-100: 254, 239, 195;
+}
+
 *,
 *::after,
 *::before {
@@ -113,22 +121,28 @@ body {
 }
 
 .sepia {
-  background-color: rgb(203, 173, 141);
-  color: #000;
+  background-color: rgb(var(--google-yellow-50));
+  color: rgb(var(--google-brown-900));
 }
 
-.light a:link,
-.sepia a:link {
+.light a:link {
   color: rgb(85, 85, 255);
+}
+
+.sepia a:link {
+  color: rgb(var(--google-blue-700));
 }
 
 .dark a:link {
   color: rgb(136, 136, 255);
 }
 
-.light a:visited,
-.sepia a:visited {
+.light a:visited {
   color: rgb(144, 34, 144);
+}
+
+.sepia a:visited {
+  color: rgb(var(--google-purple-700));
 }
 
 .dark a:visited {
@@ -143,8 +157,8 @@ body {
 
 .sepia code,
 .sepia pre {
-  background-color: rgb(217, 196, 175);
-  border-color: rgb(147, 125, 102);
+  background-color: rgb(var(--google-yellow-100));
+  border-color: rgba(var(--google-brown-900), 0.5);
 }
 
 .dark code,

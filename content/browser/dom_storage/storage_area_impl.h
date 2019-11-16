@@ -16,12 +16,12 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
-#include "components/services/storage/public/mojom/dom_storage_area.mojom.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
+#include "third_party/blink/public/mojom/dom_storage/storage_area.mojom.h"
 
 namespace base {
 namespace trace_event {
@@ -46,7 +46,7 @@ namespace content {
 // 4) Throttles requests to avoid overwhelming the disk.
 //
 // The wrapper supports two different caching modes.
-class CONTENT_EXPORT StorageAreaImpl : public storage::mojom::DomStorageArea {
+class CONTENT_EXPORT StorageAreaImpl : public blink::mojom::StorageArea {
  public:
   using ValueMap = std::map<std::vector<uint8_t>, std::vector<uint8_t>>;
   using ValueMapCallback = base::OnceCallback<void(std::unique_ptr<ValueMap>)>;
@@ -117,7 +117,7 @@ class CONTENT_EXPORT StorageAreaImpl : public storage::mojom::DomStorageArea {
   // to check.
   void InitializeAsEmpty();
 
-  void Bind(mojo::PendingReceiver<storage::mojom::DomStorageArea> receiver);
+  void Bind(mojo::PendingReceiver<blink::mojom::StorageArea> receiver);
 
   // Forks, or copies, all data in this prefix to another prefix.
   // Note: this object (the parent) must stay alive until the forked area
@@ -184,10 +184,10 @@ class CONTENT_EXPORT StorageAreaImpl : public storage::mojom::DomStorageArea {
   // SetCacheMode().
   void SetCacheModeForTesting(CacheMode cache_mode);
 
-  // storage::mojom::DomStorageArea:
+  // blink::mojom::StorageArea:
   void AddObserver(
-      mojo::PendingAssociatedRemote<storage::mojom::DomStorageAreaObserver>
-          observer) override;
+      mojo::PendingAssociatedRemote<blink::mojom::StorageAreaObserver> observer)
+      override;
   void Put(const std::vector<uint8_t>& key,
            const std::vector<uint8_t>& value,
            const base::Optional<std::vector<uint8_t>>& client_old_value,
@@ -200,10 +200,9 @@ class CONTENT_EXPORT StorageAreaImpl : public storage::mojom::DomStorageArea {
   void DeleteAll(const std::string& source,
                  DeleteAllCallback callback) override;
   void Get(const std::vector<uint8_t>& key, GetCallback callback) override;
-  void GetAll(
-      mojo::PendingAssociatedRemote<
-          storage::mojom::DomStorageAreaGetAllCallback> complete_callback,
-      GetAllCallback callback) override;
+  void GetAll(mojo::PendingAssociatedRemote<
+                  blink::mojom::StorageAreaGetAllCallback> complete_callback,
+              GetAllCallback callback) override;
 
   void SetOnLoadCallbackForTesting(base::OnceClosure callback) {
     on_load_callback_for_testing_ = std::move(callback);
@@ -326,8 +325,8 @@ class CONTENT_EXPORT StorageAreaImpl : public storage::mojom::DomStorageArea {
                          const KeysOnlyMap& key_only_map);
 
   std::vector<uint8_t> prefix_;
-  mojo::ReceiverSet<storage::mojom::DomStorageArea> receivers_;
-  mojo::AssociatedRemoteSet<storage::mojom::DomStorageAreaObserver> observers_;
+  mojo::ReceiverSet<blink::mojom::StorageArea> receivers_;
+  mojo::AssociatedRemoteSet<blink::mojom::StorageAreaObserver> observers_;
   Delegate* delegate_;
   storage::AsyncDomStorageDatabase* database_;
 

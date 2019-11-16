@@ -22,11 +22,8 @@
 #include "components/search/search.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/variations/entropy_provider.h"
 
 InstantUnitTestBase::InstantUnitTestBase() {
-  field_trial_list_.reset(new base::FieldTrialList(
-      std::make_unique<variations::SHA1EntropyProvider>("42")));
 }
 
 InstantUnitTestBase::~InstantUnitTestBase() {

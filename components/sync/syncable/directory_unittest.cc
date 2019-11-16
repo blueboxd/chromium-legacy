@@ -1663,11 +1663,6 @@ TEST_F(SyncableDirectoryTest, SaveChangesSnapshot_HasUnsavedMetahandleChanges) {
   snapshot.metahandles_to_purge.insert(1);
   EXPECT_TRUE(snapshot.HasUnsavedMetahandleChanges());
   snapshot.metahandles_to_purge.clear();
-
-  EXPECT_FALSE(snapshot.HasUnsavedMetahandleChanges());
-  snapshot.delete_journals_to_purge.insert(1);
-  EXPECT_TRUE(snapshot.HasUnsavedMetahandleChanges());
-  snapshot.delete_journals_to_purge.clear();
 }
 
 // Verify that Directory triggers an unrecoverable error when a catastrophic

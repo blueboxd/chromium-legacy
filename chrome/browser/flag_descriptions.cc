@@ -1882,6 +1882,12 @@ const char kSharingPeerConnectionSenderDescription[] =
     "Enables the sender devices to connect with chosen device using a peer to "
     "peer connection for transferring data.";
 
+const char kSharingRenameDevicesName[] =
+    "Enable device renaming in Sharing features.";
+const char kSharingRenameDevicesDescription[] =
+    "Enables renaming devices using HardwareInfo when populating device list "
+    "and sender device info.";
+
 const char kSharingUseDeviceInfoName[] =
     "Enable Sharing device registration in DeviceInfo";
 const char kSharingUseDeviceInfoDescription[] =

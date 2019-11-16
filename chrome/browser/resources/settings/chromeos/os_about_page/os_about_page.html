@@ -176,7 +176,9 @@
 </if>
           <cr-link-row class="hr" id="detailed-build-info-trigger"
               on-click="onDetailedBuildInfoClick_"
-              label="$i18n{aboutDetailedBuildInfo}"></cr-link-row>
+              label="$i18n{aboutDetailedBuildInfo}"
+              role-description="$i18n{subpageArrowRoleDescription}">
+          </cr-link-row>
           <cr-link-row class="hr" on-click="onManagementPageClick_"
               start-icon="cr:domain" label="$i18n{managementPage}"
               hidden$="[[!isManaged_]]" external></cr-link-row>

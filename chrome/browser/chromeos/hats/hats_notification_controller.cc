@@ -26,6 +26,7 @@
 #include "chromeos/network/network_state.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -70,10 +71,6 @@ bool DidShowSurveyToProfileRecently(Profile* profile,
 bool IsNewDevice() {
   return chromeos::StartupUtils::GetTimeSinceOobeFlagFileCreation() <=
          kHatsNewDeviceThreshold;
-}
-
-bool IsGoogleUser(std::string username) {
-  return username.find("@google.com") != std::string::npos;
 }
 
 // Returns true if the |kForceHappinessTrackingSystem| flag is enabled.
@@ -145,7 +142,8 @@ bool HatsNotificationController::ShouldShowSurveyToProfile(Profile* profile) {
                                           ->IsEnterpriseManaged();
 
   // Do not show survey if this is a non dogfood enterprise enrolled device.
-  if (is_enterprise_enrolled && !IsGoogleUser(profile->GetProfileUserName()))
+  if (is_enterprise_enrolled &&
+      !gaia::IsGoogleInternalAccountEmail(profile->GetProfileUserName()))
     return false;
 
   // In an enterprise enrolled device, the user can never be the owner, hence
@@ -158,9 +156,10 @@ bool HatsNotificationController::ShouldShowSurveyToProfile(Profile* profile) {
   if (!hats_finch_helper.IsDeviceSelectedForCurrentCycle())
     return false;
 
-  base::TimeDelta threshold_time = IsGoogleUser(profile->GetProfileUserName())
-                                       ? kHatsGooglerThreshold
-                                       : kHatsThreshold;
+  base::TimeDelta threshold_time =
+      gaia::IsGoogleInternalAccountEmail(profile->GetProfileUserName())
+          ? kHatsGooglerThreshold
+          : kHatsThreshold;
   // Do not show survey to user if user has interacted with HaTS within the past
   // |threshold_time| time delta.
   if (DidShowSurveyToProfileRecently(profile, threshold_time))
@@ -177,7 +176,8 @@ void HatsNotificationController::Click(
   UpdateLastInteractionTime();
 
   // The dialog deletes itself on close.
-  HatsDialog::CreateAndShow(IsGoogleUser(profile_->GetProfileUserName()));
+  HatsDialog::CreateAndShow(
+      gaia::IsGoogleInternalAccountEmail(profile_->GetProfileUserName()));
 
   // Remove the notification.
   network_portal_detector::GetInstance()->RemoveObserver(this);

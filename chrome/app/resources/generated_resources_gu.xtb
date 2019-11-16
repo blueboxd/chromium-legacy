@@ -254,6 +254,7 @@
 <translation id="1365180424462182382"><ph name="ENROLLMENT_DOMAIN" />તમારા <ph name="BEGIN_LINK" />બ્રાઉઝરને મેનેજ કરે છે<ph name="END_LINK" /></translation>
 <translation id="1366177842110999534">તમારા <ph name="DEVICE_TYPE" /> પર Linuxના સાધનો, એડિટર અને IDEs ચલાવો. &lt;a target="_blank" href="<ph name="URL" />"&gt;વધુ જાણો&lt;/a&gt;</translation>
 <translation id="1367951781824006909">એક ફાઇલ પસંદ કરો</translation>
+<translation id="1369149969991017342">સ્વિચ ઍક્સેસ (એક કે બે સ્વિચ વડે કમ્પ્યુટરને નિયંત્રિત કરો)</translation>
 <translation id="1372841398847029212">તમારા એકાઉન્ટ સાથે સિંક કરો</translation>
 <translation id="1374844444528092021">નેટવર્ક "<ph name="NETWORK_NAME" />" દ્વારા આવશ્યક પ્રમાણપત્ર કાં તો ઇન્સ્ટોલ કરેલું નથી અથવા માન્ય નહીં હોય. કૃપા કરીને એક નવું પ્રમાણપત્ર લો અને ફરીથી કનેક્ટ કરવાનો પ્રયાસ કરો.</translation>
 <translation id="1375321115329958930">સાચવેલા પાસવર્ડ્સ</translation>
@@ -561,6 +562,7 @@
 <translation id="1794791083288629568">આ સમસ્યાને ઠીક કરવામાં અમારી સહાય કરવા માટે પ્રતિસાદ મોકલો.</translation>
 <translation id="1795214765651529549">ક્લાસિકનો ઉપયોગ કરો</translation>
 <translation id="1799071797295057738">એક્સટેન્શન "<ph name="EXTENSION_NAME" />" આપમેળે અક્ષમ કરવામાં આવ્યું છે.</translation>
+<translation id="1802624026913571222">કવર બંધ કરવામાં આવે ત્યારે નિષ્ક્રિય કરો</translation>
 <translation id="1802687198411089702">પેજ પ્રતિસાદ આપી રહ્યું નથી. તમે તેની રાહ જોઈ શકો છો અથવા બહાર નીકળી શકો છો.</translation>
 <translation id="1802931390041703523">આ પેજ પર ફ્લૅશને અવરોધવામાં આવ્યો હતો</translation>
 <translation id="1803531841600994172">જેમાં અનુવાદ કરવો છે તે ભાષા</translation>
@@ -662,6 +664,7 @@
 <translation id="1937774647013465102">આ ડિવાઇસ કે જે <ph name="ARCHITECTURE_DEVICE" /> છે તેના વડે <ph name="ARCHITECTURE_CONTAINER" /> પ્રકારના કન્ટેનર આર્કિટેક્ચરની આયાત કરી શકાતી નથી. તમે આ કન્ટેનરની જુદા ડિવાઇસમાં પુનઃસ્થાપના કરવાનો પ્રયાસ કરી શકો છો અથવા તમે આ કન્ટેનર છબીમાંની ફાઇલોને ફાઇલો ઍપમાં ખોલીને તેમને ઍક્સેસ કરી શકો છો.</translation>
 <translation id="1938351510777341717">બાહ્ય આદેશ</translation>
 <translation id="1940546824932169984">કનેક્ટ થયેલ ઉપકરણો</translation>
+<translation id="1942600407708803723">કવર બંધ કરવામાં આવે ત્યારે શટ ડાઉન કરો</translation>
 <translation id="1944921356641260203">અપડેટ મળ્યું</translation>
 <translation id="1946577776959096882">એકાઉન્ટ જુઓ</translation>
 <translation id="1951012854035635156">સહાયક</translation>
@@ -2435,6 +2438,7 @@
 <translation id="4546308221697447294">Google Chrome વડે ઝડપથી બ્રાઉઝ કરો</translation>
 <translation id="4547659257713117923">અન્ય ઉપકરણોમાંથી કોઈ ટેબ્સ નથી</translation>
 <translation id="4547672827276975204">આપમેળે સેટ કરો</translation>
+<translation id="4549791035683739768">તમારી સિક્યુરિટી કીમાં કોઈ ફિંગરપ્રિન્ટ સંગ્રહિત નથી</translation>
 <translation id="4551763574344810652">છેલ્લો ફેરફાર રદ કરવા માટે <ph name="MODIFIER_KEY_DESCRIPTION" /> દબાવો</translation>
 <translation id="4552089082226364758">ફ્લેશ</translation>
 <translation id="4554591392113183336">બાહ્ય એક્સ્ટેંશન હાલના એક્સ્ટેંશનની સરખામણીએ સમાન અથવા નીચલા વર્ઝન પર છે.</translation>
@@ -2614,6 +2618,7 @@
 <translation id="4839303808932127586">વીડિયોને આ રૂપે સા&amp;ચવો...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 વધુ}one{# વધુ}other{# વધુ}}</translation>
 <translation id="4842976633412754305">આ પૃષ્ઠ અનધિકૃત સ્રોતોમાંથી સ્ક્રિપ્ટ્સ લોડ કરવાનો પ્રયાસ કરી રહ્યું છે.</translation>
+<translation id="4843488774506045600"><ph name="EXTENSION_NAME" /> દ્વારા આપવામાં આવેલું લૉગ ઇન</translation>
 <translation id="4844333629810439236">અન્ય કીબોર્ડ્સ</translation>
 <translation id="4846680374085650406">તમે આ સેટિંગ માટે વ્ય્વસ્થાપકની ભલામણને અનુસરી રહ્યાં છો.</translation>
 <translation id="4848518990323155912">SIM કાર્ડ લૉક કરવું ચાલુ કરો (મોબાઇલ ડેટાનો ઉપયોગ કરવા માટે પિન જરૂરી છે)</translation>
@@ -3066,6 +3071,7 @@
 <translation id="5511823366942919280">શું તમે ખરેખર આ ઉપકરણને "Shark" તરીકે સેટ કરવા માગો છો?</translation>
 <translation id="5512653252560939721">વપરાશકર્તા પ્રમાણપત્ર હાર્ડવેર-સમર્થિત હોવું જોઈએ</translation>
 <translation id="5517304475148761050">આ ઍપ માટે Play સ્ટોરનો ઍક્સેસ આવશ્યક છે</translation>
+<translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> - <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">તમારા એકાઉન્ટમાં પ્રિન્ટર ઉમેરાઈ રહ્યું છે - આમાં થોડો સમય લાગી શકે...</translation>
 <translation id="5518219166343146486">જ્યારે ક્લિપબોર્ડ પર કૉપિ કરેલ ટેક્સ્ટ અને છબીઓને સાઇટ જોવા માંગે ત્યારે પૂછો</translation>
 <translation id="5518584115117143805">એન્ક્રિપ્શન પ્રમાણપત્ર ઇમેઇલ કરો</translation>
@@ -3185,6 +3191,7 @@
 <translation id="567643736130151854">બધા ડિવાઇસ પર તમારા બુકમાર્ક, પાસવર્ડ અને વધુ મેળવવા માટે સાઇન ઇન કરો અને સિંક ચાલુ કરો</translation>
 <translation id="5677503058916217575">પૃષ્ઠ ભાષા:</translation>
 <translation id="5677928146339483299">અવરોધિત</translation>
+<translation id="5678293144564424498">ઍપ થોભાવી</translation>
 <translation id="5678550637669481956"><ph name="VOLUME_NAME" /> ને વાંચવા લખવાની ઍક્સેસ મંજૂર કરવામાં આવી છે.</translation>
 <translation id="5678955352098267522"><ph name="WEBSITE_1" /> પર તમારો ડેટા વાંચી શકે છે</translation>
 <translation id="5684661240348539843">સંપત્તિ ઓળખકર્તા</translation>
@@ -3452,6 +3459,7 @@ USB ડિવાઇસ</translation>
 <translation id="6055392876709372977">RSA એન્ક્રિપ્શનવાળા PKCS #1 SHA-256</translation>
 <translation id="6056710589053485679">સામાન્ય રીતે ફરીથી લોડ કરો</translation>
 <translation id="6057381398996433816">આ સાઇટને મોશન અને લાઇટ સેન્સરનો ઉપયોગ કરવાથી બ્લૉક કરવામાં આવી છે.</translation>
+<translation id="6058567592298841668">પ્લગ-ઇન વર્ચ્યુઅલ મશીન: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">પ્રમાણપત્ર હાયરાર્કી</translation>
 <translation id="6059925163896151826">USB ઉપકરણો</translation>
 <translation id="6061882183774845124">તમારા ડિવાઇસ પર લિંક મોકલો</translation>
@@ -4400,6 +4408,7 @@ USB ડિવાઇસ</translation>
 <translation id="7476454130948140105">અપડેટ માટે બૅટરી ખૂબ ઓછી છે (<ph name="BATTERY_PERCENT" />%)</translation>
 <translation id="7477793887173910789">તમારું મ્યુઝિક, વીડિયો અને બીજું ઘણું નિયંત્રિત કરો</translation>
 <translation id="7478485216301680444">કિઓસ્ક ઍપ્લિકેશન ઇન્સ્ટોલ કરી શકાઈ નથી.</translation>
+<translation id="7479221278376295180">સ્ટોરેજ વપરાશની ઝલક</translation>
 <translation id="7481312909269577407">ફોર્વર્ડ કરો</translation>
 <translation id="748138892655239008">પ્રમાણપત્રની મૂળભૂત મર્યાદાઓ</translation>
 <translation id="7487067081878637334">તકનીક</translation>
@@ -4464,7 +4473,7 @@ USB ડિવાઇસ</translation>
 <translation id="7580671184200851182">તમામ સ્પીકર્સ મારફતે સમાન ઑડિઓ ચલાવો (મોનો ઑડિઓ)</translation>
 <translation id="7581462281756524039">સફાઈ સાધન</translation>
 <translation id="7582582252461552277">આ નેટવર્કને પસંદ કરો</translation>
-<translation id="7583948862126372804">સંખ્યા</translation>
+<translation id="7583948862126372804">મતની સંખ્યા</translation>
 <translation id="7586498138629385861">Chrome Apps ખુલ્લી હોય ત્યારે Chrome શરૂ થવાનું ચાલુ રાખશે.</translation>
 <translation id="7589461650300748890">અરે, ત્યાં છો. સાવધ રહો.</translation>
 <translation id="7591957897535945411">આ પૃષ્ઠનો અનુવાદ કરવામાં આવ્યો છે.</translation>
@@ -5370,6 +5379,7 @@ USB ડિવાઇસ</translation>
 <translation id="8845001906332463065">સહાય મેળવો</translation>
 <translation id="8846132060409673887">આ કમ્પ્યુટરના ઉત્પાદક અને મૉડલનું નામ વાંચો</translation>
 <translation id="8846141544112579928">કીબોર્ડ માટે શોધ કરી રહ્યું છે...</translation>
+<translation id="8847523528195140327">કવર બંધ કરેલું હોય ત્યારે સાઇન આઉટ કરો</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8850251000316748990">વધુ જુઓ...</translation>
 <translation id="885246833287407341">API કાર્યના તર્ક</translation>
@@ -5432,6 +5442,7 @@ USB ડિવાઇસ</translation>
 <translation id="8930351635855238750">પેજ ફરીથી લોડ થાય પછી નવી કુકી સેટિંગ પ્રભાવમાં આવશે</translation>
 <translation id="8931394284949551895">નવા ઉપકરણો</translation>
 <translation id="893254996965966411">શોધાયેલા બધાં પ્રિન્ટરને તમારી પ્રોફાઇલમાં સાચવો અથવા એક નવું પ્રિન્ટર ઉમેરો.</translation>
+<translation id="8932894639908691771">સ્વિચ ઍક્સેસ માટે વિકલ્પો</translation>
 <translation id="8933960630081805351">ફાઇન્ડર માં &amp;બતાવો</translation>
 <translation id="8934732568177537184">ચાલુ રાખો</translation>
 <translation id="8938800817013097409">USB-C ડિવાઇસ (પાછળની બાજુએ જમણું પોર્ટ)</translation>
@@ -5495,6 +5506,7 @@ USB ડિવાઇસ</translation>
 <translation id="9023015617655685412">આ ટૅબને બુકમાર્ક કરો...</translation>
 <translation id="9024127637873500333">નવા ટૅબમાં &amp;ખોલો</translation>
 <translation id="9024158959543687197">શેર માઉન્ટ કરવામાં ભૂલ આવી. શેર કરેલ ફાઇલ URL ચેક કરો અને ફરી પ્રયાસ કરો.</translation>
+<translation id="9024885274934357065">તમારા ડિવાઇસને Smart Lock વડે અનલૉક કરેલું છે. અનલૉક કરવા માટે Enter દબાવો.</translation>
 <translation id="9026731007018893674">ડાઉનલોડ કરો</translation>
 <translation id="9026852570893462412">આ પ્રક્રિયામાં થોડો સમય લાગી શકે છે. વર્ચ્યુઅલ મશીન ડાઉનલોડ કરી રહ્યાં છીએ.</translation>
 <translation id="9027459031423301635">લિંક નવા &amp;ટૅબમાં ખોલો</translation>

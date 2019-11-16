@@ -25,20 +25,25 @@
       }
 
       cr-icon-button {
+        --cr-icon-button-fill-color-focus: var(
+            --cr-toolbar-search-field-input-bg-color,
+            var(--cr-toolbar-background-color));
         --cr-icon-button-size: 32px;
         margin: 6px;
       }
 
       @media (prefers-color-scheme: light) {
         cr-icon-button {
-          --cr-icon-button-color: var(--cr-toolbar-search-field-input-color,
+          --cr-icon-button-fill-color: var(
+              --cr-toolbar-search-field-input-color,
               white);
         }
       }
 
       @media (prefers-color-scheme: dark) {
         cr-icon-button {
-          --cr-icon-button-color: var(--cr-toolbar-search-field-input-color,
+          --cr-icon-button-fill-color: var(
+              --cr-toolbar-search-field-input-color,
               var(--google-grey-refresh-500));
         }
       }

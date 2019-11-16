@@ -56,7 +56,8 @@ void CastComponent::StartComponent() {
   connector_ = std::make_unique<NamedMessagePortConnector>(frame());
 
   rewrite_rules_provider_.set_error_handler([this](zx_status_t status) {
-    ZX_LOG(ERROR, status) << "UrlRequestRewriteRulesProvider disconnected.";
+    ZX_LOG_IF(ERROR, status != ZX_OK, status)
+        << "UrlRequestRewriteRulesProvider disconnected.";
     DestroyComponent(kRewriteRulesProviderDisconnectExitCode,
                      fuchsia::sys::TerminationReason::INTERNAL_ERROR);
   });

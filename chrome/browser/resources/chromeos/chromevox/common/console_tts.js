@@ -10,12 +10,12 @@ goog.provide('ConsoleTts');
 
 goog.require('LogStore');
 goog.require('SpeechLog');
-goog.require('cvox.AbstractTts');
-goog.require('cvox.TtsInterface');
+goog.require('AbstractTts');
+goog.require('TtsInterface');
 
 /**
  * @constructor
- * @implements {cvox.TtsInterface}
+ * @implements {TtsInterface}
  */
 ConsoleTts = function() {
   /**
@@ -32,7 +32,7 @@ goog.addSingletonGetter(ConsoleTts);
 ConsoleTts.prototype = {
   speak: function(textString, queueMode, properties) {
     if (this.enabled_ && window['console']) {
-      var category = cvox.TtsCategory.NAV;
+      var category = TtsCategory.NAV;
       if (properties && properties.category) {
         category = properties.category;
       }

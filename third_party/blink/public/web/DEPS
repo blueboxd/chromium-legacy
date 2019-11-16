@@ -25,6 +25,7 @@ include_rules = [
     "+components/viz/common/surfaces/frame_sink_id.h",
     "+mojo/public",
     "+services/metrics/public/cpp/ukm_source_id.h",
+    "+services/network/public/mojom/content_security_policy.mojom-shared.h",
     "+services/network/public/mojom/cors.mojom-shared.h",
     "+services/network/public/mojom/cors_origin_pattern.mojom-shared.h",
     "+services/network/public/mojom/fetch_api.mojom-shared.h",

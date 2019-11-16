@@ -608,12 +608,6 @@ PeerConnectionDependencyFactory::GetWebRtcWorkerTaskRunner() {
                                            : nullptr;
 }
 
-rtc::Thread* PeerConnectionDependencyFactory::GetWebRtcWorkerThreadRtcThread() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  EnsureInitialized();
-  return chrome_worker_thread_.IsRunning() ? worker_thread_ : nullptr;
-}
-
 scoped_refptr<base::SingleThreadTaskRunner>
 PeerConnectionDependencyFactory::GetWebRtcSignalingTaskRunner() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

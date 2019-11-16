@@ -10,10 +10,12 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
+#include "chrome/browser/sharing/shared_clipboard/remote_copy_handle_message_result.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_fcm_handler.h"
 #include "chrome/browser/sharing/sharing_service.h"
@@ -32,6 +34,7 @@
 namespace {
 const char kDeviceName[] = "test device name";
 const char kText[] = "test text";
+const char kHistogramName[] = "Sharing.RemoteCopyHandleMessageResult";
 
 class ClipboardObserver : public ui::ClipboardObserver {
  public:
@@ -64,14 +67,6 @@ class RemoteCopyBrowserTestBase : public InProcessBrowserTest {
   void TearDownOnMainThread() override {
     notification_tester_.reset();
     ui::Clipboard::DestroyClipboardForCurrentThread();
-  }
-
-  GURL StartServerAndGetURL(const std::string& relative_url) {
-    server_ = std::make_unique<net::EmbeddedTestServer>(
-        net::EmbeddedTestServer::TYPE_HTTP);
-    server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
-    EXPECT_TRUE(server_->Start());
-    return server_->GetURL(relative_url);
   }
 
   gcm::IncomingMessage CreateMessage(const std::string& device_name,
@@ -145,6 +140,7 @@ class RemoteCopyBrowserTestBase : public InProcessBrowserTest {
 
  protected:
   base::test::ScopedFeatureList feature_list_;
+  base::HistogramTester histograms_;
   std::unique_ptr<NotificationDisplayServiceTester> notification_tester_;
   SharingService* sharing_service_;
   std::unique_ptr<net::EmbeddedTestServer> server_;
@@ -167,14 +163,24 @@ IN_PROC_BROWSER_TEST_F(RemoteCopyDisabledBrowserTest, FeatureDisabled) {
   // Send a message with text.
   SendTextMessage(kDeviceName, kText);
 
-  // The clipboard is still empty because the feature is disabled.
+  // The clipboard is still empty because the feature is disabled and the
+  // handler is not installed.
   ASSERT_TRUE(GetAvailableClipboardTypes().empty());
+  histograms_.ExpectTotalCount(kHistogramName, 0);
 }
 
 class RemoteCopyBrowserTest : public RemoteCopyBrowserTestBase {
  public:
   RemoteCopyBrowserTest() {
-    feature_list_.InitAndEnableFeature(kRemoteCopyReceiver);
+    server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTP);
+    server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
+    EXPECT_TRUE(server_->Start());
+
+    url::Origin allowlist_origin = url::Origin::Create(server_->base_url());
+    feature_list_.InitAndEnableFeatureWithParameters(
+        kRemoteCopyReceiver,
+        {{kRemoteCopyAllowedOrigins.name, allowlist_origin.Serialize()}});
   }
 };
 
@@ -194,6 +200,8 @@ IN_PROC_BROWSER_TEST_F(RemoteCopyBrowserTest, Text) {
                 IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_NOTIFICATION_TITLE,
                 base::ASCIIToUTF16(kDeviceName)),
             GetNotification().title());
+  histograms_.ExpectUniqueSample(
+      kHistogramName, RemoteCopyHandleMessageResult::kSuccessHandledText, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(RemoteCopyBrowserTest, ImageUrl) {
@@ -201,8 +209,7 @@ IN_PROC_BROWSER_TEST_F(RemoteCopyBrowserTest, ImageUrl) {
   ASSERT_TRUE(GetAvailableClipboardTypes().empty());
 
   // Send a message with an image url.
-  SendImageMessage(kDeviceName,
-                   StartServerAndGetURL("/image_decoding/droids.jpg"));
+  SendImageMessage(kDeviceName, server_->GetURL("/image_decoding/droids.jpg"));
 
   // The image is in the clipboard and a notification is shown.
   std::vector<base::string16> types = GetAvailableClipboardTypes();
@@ -216,11 +223,14 @@ IN_PROC_BROWSER_TEST_F(RemoteCopyBrowserTest, ImageUrl) {
                 IDS_CONTENT_CONTEXT_SHARING_SHARED_CLIPBOARD_NOTIFICATION_TITLE,
                 base::ASCIIToUTF16(kDeviceName)),
             GetNotification().title());
+  histograms_.ExpectUniqueSample(
+      kHistogramName, RemoteCopyHandleMessageResult::kSuccessHandledImage, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(RemoteCopyBrowserTest, TextThenImageUrl) {
   // The clipboard is empty.
   ASSERT_TRUE(GetAvailableClipboardTypes().empty());
+  histograms_.ExpectTotalCount(kHistogramName, 0);
 
   // Send a message with text.
   SendTextMessage(kDeviceName, kText);
@@ -230,14 +240,19 @@ IN_PROC_BROWSER_TEST_F(RemoteCopyBrowserTest, TextThenImageUrl) {
   ASSERT_EQ(1u, types.size());
   ASSERT_EQ(ui::kMimeTypeText, base::UTF16ToASCII(types[0]));
   ASSERT_EQ(kText, ReadClipboardText());
+  histograms_.ExpectTotalCount(kHistogramName, 1);
+  histograms_.ExpectUniqueSample(
+      kHistogramName, RemoteCopyHandleMessageResult::kSuccessHandledText, 1);
 
   // Send a message with an image url.
-  SendImageMessage(kDeviceName,
-                   StartServerAndGetURL("/image_decoding/droids.jpg"));
+  SendImageMessage(kDeviceName, server_->GetURL("/image_decoding/droids.jpg"));
 
   // The image is in the clipboard and the text has been cleared.
   types = GetAvailableClipboardTypes();
   ASSERT_EQ(1u, types.size());
   ASSERT_EQ(ui::kMimeTypePNG, base::UTF16ToASCII(types[0]));
   ASSERT_EQ(std::string(), ReadClipboardText());
+  histograms_.ExpectTotalCount(kHistogramName, 2);
+  histograms_.ExpectBucketCount(
+      kHistogramName, RemoteCopyHandleMessageResult::kSuccessHandledImage, 1);
 }

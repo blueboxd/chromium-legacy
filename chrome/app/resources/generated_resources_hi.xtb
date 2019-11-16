@@ -254,6 +254,7 @@
 <translation id="1365180424462182382"><ph name="ENROLLMENT_DOMAIN" /> आपके <ph name="BEGIN_LINK" />ब्राउज़र को प्रबंधित करता है<ph name="END_LINK" /></translation>
 <translation id="1366177842110999534">अपने <ph name="DEVICE_TYPE" /> पर Linux टूल, एडिटर और आईडीई चलाएं. &lt;a target="_blank" href="<ph name="URL" />"&gt;ज़्यादा जानें&lt;/a&gt;</translation>
 <translation id="1367951781824006909">कोई फ़ाइल चुनें</translation>
+<translation id="1369149969991017342">ऐक्सेस करने का तरीका बदलें (बस एक या दो स्विच से कंप्यूटर नियंत्रित करें)</translation>
 <translation id="1372841398847029212">अपने खाते से सिंक करें</translation>
 <translation id="1374844444528092021">नेटवर्क "<ph name="NETWORK_NAME" />" के लिए ज़रूरी प्रमाणपत्र या तो इंस्टॉल नहीं है या अब मान्य नहीं है.  कृपया नया प्रमाणपत्र पाएं और फिर से कनेक्ट करने की कोशिश करें.</translation>
 <translation id="1375321115329958930">सेव किए गए पासवर्ड</translation>
@@ -565,6 +566,7 @@
 <translation id="1794791083288629568">इस समस्या को ठीक करने में हमारी सहायता करने के लिए फ़ीडबैक भेजें.</translation>
 <translation id="1795214765651529549">क्लासिक का उपयोग करें</translation>
 <translation id="1799071797295057738">"<ph name="EXTENSION_NAME" />" एक्सटेंशन अपने आप अक्षम हो गया था.</translation>
+<translation id="1802624026913571222">कवर बंद होने पर, डिवाइस को नींद मोड में करें</translation>
 <translation id="1802687198411089702">पेज काम नहीं कर रहा है. आप इंतज़ार कर सकते हैं या बाहर निकल सकते हैं.</translation>
 <translation id="1802931390041703523">इस पेज पर फ़्लैश ब्लॉक कर दिया गया था</translation>
 <translation id="1803531841600994172">वह भाषा जिसमें अनुवाद करना है</translation>
@@ -666,6 +668,7 @@
 <translation id="1937774647013465102">कंटेनर संरचना प्रकार <ph name="ARCHITECTURE_CONTAINER" /> को इस डिवाइस <ph name="ARCHITECTURE_DEVICE" />के साथ इंपोर्ट नहीं किया जा सकता. आप इस कंटेनर को किसी दूसरे डिवाइस में बहाल करके देख सकते हैं या फिर आप फ़ाइल ऐप्लिकेशन खोलकर इस कंटेनर में मौजूद फ़ाइलें ऐक्सेस कर सकते हैं.</translation>
 <translation id="1938351510777341717">बाहरी निर्देश</translation>
 <translation id="1940546824932169984">कनेक्ट किए गए डिवाइस</translation>
+<translation id="1942600407708803723">कवर बंद होने पर शट डाउन करें</translation>
 <translation id="1944921356641260203">अपडेट मिला</translation>
 <translation id="1946577776959096882">खातों को देखें</translation>
 <translation id="1951012854035635156">सहायक</translation>
@@ -2438,6 +2441,7 @@
 <translation id="4546308221697447294">Google Chrome के ज़रिए तेज़ी से ब्राउज़़ करें</translation>
 <translation id="4547659257713117923">अन्य डिवाइसों से कोई टैब नहीं</translation>
 <translation id="4547672827276975204">अपने आप सेट करें</translation>
+<translation id="4549791035683739768">आपकी सुरक्षा कुंजी में कोई फ़िंगरप्रिंट सेव नहीं है</translation>
 <translation id="4551763574344810652">पहले जैसा करने के लिए <ph name="MODIFIER_KEY_DESCRIPTION" /> दबाएं</translation>
 <translation id="4552089082226364758">फ़्लैश</translation>
 <translation id="4554591392113183336">बाहरी एक्‍सटेंशन मौजूदा की तुलना में समान या निम्नतर संस्‍करण पर है.</translation>
@@ -2617,6 +2621,7 @@
 <translation id="4839303808932127586">इस रूप में वीडियो स&amp;हेजें...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 और}one{# और}other{# और}}</translation>
 <translation id="4842976633412754305">यह पृष्‍ठ अप्रमाणीकृत स्रोतों से स्‍क्रिप्‍ट लोड करने का प्रयास कर रहा है.</translation>
+<translation id="4843488774506045600"><ph name="EXTENSION_NAME" /> ने लॉगिन की सुविधा दी है</translation>
 <translation id="4844333629810439236">अन्य कीबोर्ड</translation>
 <translation id="4846680374085650406">आप इस सेटिंग के लिए व्यवस्थापक की अनुशंसा का अनुसरण कर रहे हैं.</translation>
 <translation id="4848518990323155912">SIM कार्ड लॉक करना चालू करें (मोबाइल डेटा का इस्तेमाल करने के लिए पिन ज़रूरी है)</translation>
@@ -3037,6 +3042,7 @@
 <translation id="5466374726908360271">“<ph name="SEARCH_TERMS" />” को चिपकाएं और खोजें</translation>
 <translation id="5468173180030470402">फ़ाइल शेयर को ढूंढा जा रहा है</translation>
 <translation id="5471768120198416576">नमस्ते! मैं आपकी लिखाई को बोली में बदलने वाली आवाज़ हूं.</translation>
+<translation id="5472133193607270166">जब यह चालू होगा, तब साइटें अलग-अलग साइटों पर की गई आपकी ब्राउज़िंग गतिविधि का इस्तेमाल दर्शकों की पसंद को ध्यान में रखकर विज्ञापन दिखाने के लिए नहीं कर पाएंगी. कुछ साइटें शायद ठीक से काम नहीं करेंगी.</translation>
 <translation id="5473333559083690127">नया पिन फिर से डालें</translation>
 <translation id="5481941284378890518">आस-पास के प्रिंटर जोड़ें</translation>
 <translation id="5483785310822538350">फ़ाइल और डिवाइस के एक्सेस रद्द करें</translation>
@@ -3068,6 +3074,7 @@
 <translation id="5511823366942919280">क्या आप वाकई इस डिवाइस को "Shark" के रूप में सेट करना चाहते हैं?</translation>
 <translation id="5512653252560939721">उपयोगकर्ता का प्रमाणपत्र हार्डवेयर के समर्थन वाला होना चाहिए.</translation>
 <translation id="5517304475148761050">इस ऐप्लिकेशन काे 'Play स्टोर' के ऐक्सेस की ज़रूरत है</translation>
+<translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> - <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">अपने खाते में प्रिंटर जोड़ना - इसमें कुछ समय लग सकता है...</translation>
 <translation id="5518219166343146486">जब कोई साइट क्लिपबोर्ड पर कॉपी किए गए लेख और इमेज देखना चाहे, तो इसके लिए पूछें</translation>
 <translation id="5518584115117143805">ईमेल सुरक्षित करने का तरीकों के लिए प्रमाणपत्र</translation>
@@ -3186,6 +3193,7 @@
 <translation id="567643736130151854">सभी डिवाइस पर अपने बुकमार्क, पासवर्ड वगैरह पाने के लिए साइन इन करें और सिंक सुविधा चालू करें</translation>
 <translation id="5677503058916217575">पेज की भाषा:</translation>
 <translation id="5677928146339483299">ब्लॉक किया गया है</translation>
+<translation id="5678293144564424498">ऐप्लिकेशन का इस्तेमाल रोका गया</translation>
 <translation id="5678550637669481956"><ph name="VOLUME_NAME" /> पर पढ़ने और लिखने की ऐक्‍सेस दी गई है.</translation>
 <translation id="5678955352098267522"><ph name="WEBSITE_1" /> पर अपना डेटा पढ़ें</translation>
 <translation id="5684661240348539843">एसेट पहचानकर्ता</translation>
@@ -3452,6 +3460,7 @@
 <translation id="6055392876709372977">RSA सुरक्षित करने के तरीके के साथ PKCS #1 SHA-256</translation>
 <translation id="6056710589053485679">सामान्य रीलोड</translation>
 <translation id="6057381398996433816">इस साइट को आपके डिवाइस के गति या रोशनी के सेंसर का इस्तेमाल करने से ब्लॉक कर दिया गया है.</translation>
+<translation id="6058567592298841668">वर्चुअल मशीन का प्लग इन: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">प्रमाणपत्र पदानुक्रम</translation>
 <translation id="6059925163896151826">USB डिवाइस</translation>
 <translation id="6061882183774845124">अपने डिवाइस पर लिंक भेजें</translation>
@@ -4400,6 +4409,7 @@
 <translation id="7476454130948140105">अपडेट करने के लिए बैटरी बहुत कम है (<ph name="BATTERY_PERCENT" />%)</translation>
 <translation id="7477793887173910789">अपने संगीत और वीडियो के साथ दूसरी चीज़ें नियंत्रित करें</translation>
 <translation id="7478485216301680444">कियोस्क ऐप्स  इंस्टॉल नहीं किया जा सका.</translation>
+<translation id="7479221278376295180">मेमोरी के इस्तेमाल की खास जानकारी</translation>
 <translation id="7481312909269577407">आगे जाएं</translation>
 <translation id="748138892655239008">प्रमाणपत्र मूल बाध्यताएं</translation>
 <translation id="7487067081878637334">तकनीक</translation>
@@ -5375,6 +5385,7 @@
 <translation id="8845001906332463065">सहायता पाएं</translation>
 <translation id="8846132060409673887">इस कंप्यूटर का निर्माता और मॉडल पढ़ें</translation>
 <translation id="8846141544112579928">कीबोर्ड खोजा जा रहा है...</translation>
+<translation id="8847523528195140327">कवर बंद होने पर साइन आउट करें</translation>
 <translation id="8847988622838149491">यूएसबी</translation>
 <translation id="8850251000316748990">ज़्यादा देखें...</translation>
 <translation id="885246833287407341">एपीआई फ़ंक्शन के तर्क</translation>
@@ -5437,6 +5448,7 @@
 <translation id="8930351635855238750">पेज के फिर से लोड होने के बाद नई कुकी सेटिंग लागू होगी</translation>
 <translation id="8931394284949551895">नए डिवाइस</translation>
 <translation id="893254996965966411">अपनी प्रोफ़ाइल में वे प्रिंटर सेव करें जिनका पता लगाया जा चुका है या नया प्रिंटर जोड़ें.</translation>
+<translation id="8932894639908691771">ऐक्सेस का तरीका बदलने के विकल्प</translation>
 <translation id="8933960630081805351">खोजकर्ता में &amp;दिखाएं</translation>
 <translation id="8934732568177537184">जारी रखें</translation>
 <translation id="8938800817013097409">USB-C डिवाइस (पीछे की ओर दायां पोर्ट)</translation>
@@ -5500,6 +5512,7 @@
 <translation id="9023015617655685412">इस टैब को बुकमार्क करें...</translation>
 <translation id="9024127637873500333">नए टैब में &amp;खोलें</translation>
 <translation id="9024158959543687197">शेयर माउंट करने में गड़बड़ी. फ़ाइल शेयर यूआरएल देखें और दोबारा कोशिश करें.</translation>
+<translation id="9024885274934357065">आपका डिवाइस Smart Lock से अनलॉक होता है. अनलॉक करने के लिए Enter दबाएं.</translation>
 <translation id="9026731007018893674">डाउनलोड करें</translation>
 <translation id="9026852570893462412">इस प्रोसेस में कुछ मिनट लग सकते हैं. वर्चुअल मशीन को डाउनलोड किया जा रहा है.</translation>
 <translation id="9027459031423301635">नए &amp;टैब में लिंक खोलें</translation>

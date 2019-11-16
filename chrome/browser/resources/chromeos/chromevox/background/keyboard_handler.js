@@ -12,8 +12,8 @@ goog.require('ChromeVoxState');
 goog.require('EventSourceState');
 goog.require('MathHandler');
 goog.require('Output');
-goog.require('cvox.ChromeVoxKbHandler');
-goog.require('cvox.ChromeVoxPrefs');
+goog.require('ChromeVoxKbHandler');
+goog.require('ChromeVoxPrefs');
 
 /** @constructor */
 BackgroundKeyboardHandler = function() {
@@ -27,7 +27,7 @@ BackgroundKeyboardHandler = function() {
   document.addEventListener('keyup', this.onKeyUp.bind(this), false);
 
   chrome.accessibilityPrivate.setKeyboardListener(
-      true, cvox.ChromeVox.isStickyPrefOn);
+      true, ChromeVox.isStickyPrefOn);
   window['prefs'].switchToKeyMap('keymap_next');
 };
 
@@ -40,17 +40,17 @@ BackgroundKeyboardHandler.prototype = {
    */
   onKeyDown: function(evt) {
     EventSourceState.set(EventSourceType.STANDARD_KEYBOARD);
-    evt.stickyMode = cvox.ChromeVox.isStickyModeOn();
-    if (cvox.ChromeVox.passThroughMode) {
+    evt.stickyMode = ChromeVox.isStickyModeOn();
+    if (ChromeVox.passThroughMode) {
       return false;
     }
 
-    Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
+    Output.forceModeForNextSpeechUtterance(QueueMode.FLUSH);
 
     // Defer first to the math handler, if it exists, then ordinary keyboard
     // commands.
     if (!MathHandler.onKeyDown(evt) ||
-        !cvox.ChromeVoxKbHandler.basicKeyDownActionsListener(evt) ||
+        !ChromeVoxKbHandler.basicKeyDownActionsListener(evt) ||
         // We natively always capture Search, so we have to be very careful to
         // either eat it here or re-inject it; otherwise, some components, like
         // ARC++ with TalkBack never get it. We only want to re-inject when
@@ -73,9 +73,9 @@ BackgroundKeyboardHandler.prototype = {
   onKeyUp: function(evt) {
     // Reset pass through mode once a keyup (not involving the pass through key)
     // is seen. The pass through command involves three keys.
-    if (cvox.ChromeVox.passThroughMode) {
+    if (ChromeVox.passThroughMode) {
       if (this.passThroughKeyUpCount_ >= 3) {
-        cvox.ChromeVox.passThroughMode = false;
+        ChromeVox.passThroughMode = false;
         this.passThroughKeyUpCount_ = 0;
       } else {
         this.passThroughKeyUpCount_++;

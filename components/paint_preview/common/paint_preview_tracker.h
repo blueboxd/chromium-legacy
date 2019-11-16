@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
-#include "base/macros.h"
 #include "base/unguessable_token.h"
 #include "components/paint_preview/common/glyph_usage.h"
 #include "components/paint_preview/common/mojom/paint_preview_recorder.mojom.h"
@@ -81,7 +80,8 @@ class PaintPreviewTracker {
   TypefaceUsageMap typeface_glyph_usage_;
   base::flat_map<uint32_t, sk_sp<SkPicture>> subframe_pics_;
 
-  DISALLOW_COPY_AND_ASSIGN(PaintPreviewTracker);
+  PaintPreviewTracker(const PaintPreviewTracker&) = delete;
+  PaintPreviewTracker& operator=(const PaintPreviewTracker&) = delete;
 };
 
 }  // namespace paint_preview

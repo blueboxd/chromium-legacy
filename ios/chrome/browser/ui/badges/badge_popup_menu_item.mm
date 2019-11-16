@@ -61,9 +61,7 @@ const CGFloat kBadgeCornerRadius = 5.0;
         break;
       case BadgeType::kBadgeTypeSaveCard:
         _actionIdentifier = PopupMenuActionShowSaveCardOptions;
-        // TODO(crbug.com/1014652): Replace with final String. Its currently
-        // "Save Card" on the delegate and "Save Credit Card on mocks.
-        _title = @"Save Credit Card";
+        _title = l10n_util::GetNSString(IDS_IOS_AUTOFILL_SAVE_CARD);
         break;
       case BadgeType::kBadgeTypeTranslate:
         _actionIdentifier = PopupMenuActionShowTranslateOptions;

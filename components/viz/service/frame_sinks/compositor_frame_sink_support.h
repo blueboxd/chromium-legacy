@@ -69,6 +69,11 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // us to have one outstanding undrawn frame under normal operation.
   static constexpr uint32_t kUndrawnFrameLimit = 3;
 
+  // Defines the number of begin frames that have been sent to a client without
+  // a response before we throttle or stop sending begin frames altogether.
+  static constexpr int kOutstandingFramesStop = 100;
+  static constexpr int kOutstandingFramesThrottle = 10;
+
   CompositorFrameSinkSupport(mojom::CompositorFrameSinkClient* client,
                              FrameSinkManagerImpl* frame_sink_manager,
                              const FrameSinkId& frame_sink_id,
@@ -296,7 +301,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // clients would be able to capture content for which they are not authorized.
   bool allow_copy_output_requests_;
 
-  // TODO(crbug.com/754872): Remove once tab capture has moved into VIZ.
+  // Used for tests only.
   AggregatedDamageCallback aggregated_damage_callback_;
 
   uint64_t last_frame_index_ = kFrameIndexStart - 1;
@@ -327,6 +332,12 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   bool callback_received_begin_frame_ = true;
   bool callback_received_receive_ack_ = true;
   uint32_t trace_sequence_ = 0;
+
+  // Keep track of the number of OnBeginFrame() messages sent the client without
+  // getting a response back. This is to prevent sending a large number of IPCs
+  // to a client that is unresponsive and having the message queue balloon in
+  // size.
+  int outstanding_begin_frames_ = 0;
 
   // Maps |frame_token| to the timestamp when that frame was received. This
   // timestamp is combined with the information received in OnSurfacePresented()

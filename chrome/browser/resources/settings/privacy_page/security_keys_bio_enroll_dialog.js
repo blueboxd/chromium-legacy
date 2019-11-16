@@ -2,14 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
-'use strict';
-
 /**
  * @fileoverview 'settings-security-keys-bio-enroll-dialog' is a dialog for
  * listing, adding, renaming, and deleting biometric enrollments stored on a
  * security key.
  */
+
+cr.define('settings', function() {
+  /** @enum {string} */
+  const BioEnrollDialogPage = {
+    INITIAL: 'initial',
+    PIN_PROMPT: 'pinPrompt',
+    ENROLLMENTS: 'enrollments',
+    ENROLL: 'enroll',
+    CHOOSE_NAME: 'chooseName',
+    ERROR: 'error',
+  };
+
+  return {
+    BioEnrollDialogPage: BioEnrollDialogPage,
+  };
+});
+
+(function() {
+'use strict';
+
+const BioEnrollDialogPage = settings.BioEnrollDialogPage;
+
 Polymer({
   is: 'settings-security-keys-bio-enroll-dialog',
 
@@ -36,11 +55,11 @@ Polymer({
 
     /**
      * The ID of the element currently shown in the dialog.
-     * @private
+     * @private {!settings.BioEnrollDialogPage}
      */
     dialogPage_: {
       type: String,
-      value: 'initial',
+      value: BioEnrollDialogPage.INITIAL,
       observer: 'dialogPageChanged_',
     },
 
@@ -88,7 +107,7 @@ Polymer({
 
   /** @private */
   collectPIN_: function() {
-    this.dialogPage_ = 'pinPrompt';
+    this.dialogPage_ = BioEnrollDialogPage.PIN_PROMPT;
     this.$.pin.focus();
   },
 
@@ -98,7 +117,7 @@ Polymer({
    */
   onError_: function(error) {
     this.errorMsg_ = error;
-    this.dialogPage_ = 'error';
+    this.dialogPage_ = BioEnrollDialogPage.ERROR;
   },
 
   /** @private */
@@ -124,44 +143,44 @@ Polymer({
   onEnrollments_: function(enrollments) {
     this.enrollments_ = enrollments;
     this.$.enrollmentList.fire('iron-resize');
-    this.dialogPage_ = 'enrollments';
+    this.dialogPage_ = BioEnrollDialogPage.ENROLLMENTS;
   },
 
   /** @private */
   dialogPageChanged_: function() {
     switch (this.dialogPage_) {
-      case 'initial':
+      case BioEnrollDialogPage.INITIAL:
         this.cancelButtonVisible_ = true;
         this.cancelButtonDisabled_ = false;
         this.confirmButtonVisible_ = false;
         this.doneButtonVisible_ = false;
         break;
-      case 'pinPrompt':
+      case BioEnrollDialogPage.PIN_PROMPT:
         this.cancelButtonVisible_ = true;
         this.cancelButtonDisabled_ = false;
         this.confirmButtonVisible_ = true;
         this.confirmButtonDisabled_ = false;
         this.doneButtonVisible_ = false;
         break;
-      case 'enrollments':
+      case BioEnrollDialogPage.ENROLLMENTS:
         this.cancelButtonVisible_ = false;
         this.confirmButtonVisible_ = false;
         this.doneButtonVisible_ = true;
         break;
-      case 'enroll':
+      case BioEnrollDialogPage.ENROLL:
         this.cancelButtonVisible_ = true;
         this.cancelButtonDisabled_ = false;
         this.confirmButtonVisible_ = false;
         this.doneButtonVisible_ = false;
         break;
-      case 'chooseName':
+      case BioEnrollDialogPage.CHOOSE_NAME:
         this.cancelButtonVisible_ = false;
         this.confirmButtonVisible_ = true;
         this.confirmButtonDisabled_ = !this.recentEnrollmentName_.length;
         this.doneButtonVisible_ = false;
         this.$.enrollmentName.focus();
         break;
-      case 'error':
+      case BioEnrollDialogPage.ERROR:
         this.cancelButtonVisible_ = false;
         this.confirmButtonVisible_ = false;
         this.doneButtonVisible_ = true;
@@ -174,7 +193,7 @@ Polymer({
 
   /** @private */
   addButtonClick_: function() {
-    assert(this.dialogPage_ == 'enrollments');
+    assert(this.dialogPage_ == BioEnrollDialogPage.ENROLLMENTS);
 
     this.maxSamples_ = -1;  // Reset maxSamples_ before enrolling starts.
     this.$.arc.reset();
@@ -184,7 +203,7 @@ Polymer({
     this.recentEnrollmentId_ = '';
     this.recentEnrollmentName_ = '';
 
-    this.dialogPage_ = 'enroll';
+    this.dialogPage_ = BioEnrollDialogPage.ENROLL;
 
     this.browserProxy_.startEnrolling().then(response => {
       this.onEnrolling_(response);
@@ -240,14 +259,14 @@ Polymer({
     // pending. Resetting |dialogPage_| will re-enable it.
     this.confirmButtonDisabled_ = true;
     switch (this.dialogPage_) {
-      case 'pinPrompt':
+      case BioEnrollDialogPage.PIN_PROMPT:
         this.submitPIN_();
         break;
-      case 'enroll':
+      case BioEnrollDialogPage.ENROLL:
         assert(!!this.recentEnrollmentId_.length);
-        this.dialogPage_ = 'chooseName';
+        this.dialogPage_ = BioEnrollDialogPage.CHOOSE_NAME;
         break;
-      case 'chooseName':
+      case BioEnrollDialogPage.CHOOSE_NAME:
         this.browserProxy_
             .renameEnrollment(
                 this.recentEnrollmentId_, this.recentEnrollmentName_)
@@ -269,7 +288,7 @@ Polymer({
 
   /** @private */
   cancel_: function() {
-    if (this.dialogPage_ == 'enroll') {
+    if (this.dialogPage_ == BioEnrollDialogPage.ENROLL) {
       // Cancel an ongoing enrollment.  Will cause the pending
       // enumerateEnrollments() promise to be resolved and proceed to the
       // enrollments page.
@@ -324,11 +343,12 @@ Polymer({
 
   /**
    * @private
-   * @param {string} dialogPage
+   * @param {!settings.BioEnrollDialogPage} dialogPage
    * @return {string} The title string for the current dialog page.
    */
   dialogTitle_: function(dialogPage) {
-    if (dialogPage == 'enroll' || dialogPage == 'chooseName') {
+    if (dialogPage == BioEnrollDialogPage.ENROLL ||
+        dialogPage == BioEnrollDialogPage.CHOOSE_NAME) {
       return this.i18n('securityKeysBioEnrollmentAddTitle');
     }
     return this.i18n('securityKeysBioEnrollmentDialogTitle');

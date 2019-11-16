@@ -8,9 +8,9 @@
  */
 
 
-goog.provide('cvox.KeySequence');
+goog.provide('KeySequence');
 
-goog.require('cvox.ChromeVox');
+goog.require('ChromeVox');
 
 
 /**
@@ -43,7 +43,7 @@ goog.require('cvox.ChromeVox');
  * @param {boolean=} opt_requireStickyMode Whether to require sticky mode.
  * @constructor
  */
-cvox.KeySequence = function(
+KeySequence = function(
     originalEvent, opt_cvoxModifier, opt_doubleTap, opt_skipStripping,
     opt_requireStickyMode) {
   /** @type {boolean} */
@@ -103,7 +103,7 @@ cvox.KeySequence = function(
  * Maps a keypress keycode to a keydown or keyup keycode.
  * @type {Object<number, number>}
  */
-cvox.KeySequence.KEY_PRESS_CODE = {
+KeySequence.KEY_PRESS_CODE = {
   39: 222,
   44: 188,
   45: 189,
@@ -119,9 +119,9 @@ cvox.KeySequence.KEY_PRESS_CODE = {
  * A cache of all key sequences that have been set as double-tappable. We need
  * this cache because repeated key down computations causes ChromeVox to become
  * less responsive. This list is small so we currently use an array.
- * @type {!Array<cvox.KeySequence>}
+ * @type {!Array<KeySequence>}
  */
-cvox.KeySequence.doubleTapCache = [];
+KeySequence.doubleTapCache = [];
 
 
 /**
@@ -134,7 +134,7 @@ cvox.KeySequence.doubleTapCache = [];
  * @return {boolean} Whether or not we were able to add a key. Returns false
  * if there are already two keys attached to this event.
  */
-cvox.KeySequence.prototype.addKeyEvent = function(additionalKeyEvent) {
+KeySequence.prototype.addKeyEvent = function(additionalKeyEvent) {
   if (this.keys.keyCode.length > 1) {
     return false;
   }
@@ -154,10 +154,10 @@ cvox.KeySequence.prototype.addKeyEvent = function(additionalKeyEvent) {
  * - Next we try and match with the ChromeVox modifier. If both commands have
  * the same key code, and one of them has the ChromeVox modifier and the other
  * has sticky mode or an active prefix, then we also have a match.
- * @param {!cvox.KeySequence} rhs The key sequence to compare against.
+ * @param {!KeySequence} rhs The key sequence to compare against.
  * @return {boolean} True if equal.
  */
-cvox.KeySequence.prototype.equals = function(rhs) {
+KeySequence.prototype.equals = function(rhs) {
   // Check to make sure the same keys with the same modifiers were pressed.
   if (!this.checkKeyEquality_(rhs)) {
     return false;
@@ -197,7 +197,7 @@ cvox.KeySequence.prototype.equals = function(rhs) {
  * from.
  * @private
  */
-cvox.KeySequence.prototype.extractKey_ = function(keyEvent) {
+KeySequence.prototype.extractKey_ = function(keyEvent) {
   for (var prop in this.keys) {
     if (prop == 'keyCode') {
       var keyCode;
@@ -208,7 +208,7 @@ cvox.KeySequence.prototype.extractKey_ = function(keyEvent) {
         // Alphabetic keypress. Convert to the upper case ASCII code.
         keyCode = keyEvent[prop] - 32;
       } else if (keyEvent.type == 'keypress') {
-        keyCode = cvox.KeySequence.KEY_PRESS_CODE[keyEvent[prop]];
+        keyCode = KeySequence.KEY_PRESS_CODE[keyEvent[prop]];
       }
       this.keys[prop].push(keyCode || keyEvent[prop]);
     } else {
@@ -236,14 +236,14 @@ cvox.KeySequence.prototype.extractKey_ = function(keyEvent) {
  * together, which doesn't make any sense.
  * @private
  */
-cvox.KeySequence.prototype.rationalizeKeys_ = function() {
+KeySequence.prototype.rationalizeKeys_ = function() {
   if (this.skipStripping) {
     return;
   }
 
   // TODO (rshearer): This is a hack. When the modifier key becomes customizable
   // then we will not have to deal with strings here.
-  var modifierKeyCombo = cvox.ChromeVox.modKeyStr.split(/\+/g);
+  var modifierKeyCombo = ChromeVox.modKeyStr.split(/\+/g);
 
   var index = this.keys.keyCode.length - 1;
   // For each modifier that is part of the CVox modifier, remove it from keys.
@@ -276,26 +276,20 @@ cvox.KeySequence.prototype.rationalizeKeys_ = function() {
  * @return {string} The user-facing string name for the meta key.
  * @private
  */
-cvox.KeySequence.prototype.getMetaKeyName_ = function() {
-  if (cvox.ChromeVox.isChromeOS) {
-    return 'Search';
-  } else if (cvox.ChromeVox.isMac) {
-    return 'Cmd';
-  } else {
-    return 'Win';
-  }
+KeySequence.prototype.getMetaKeyName_ = function() {
+  return 'Search';
 };
 
 
 /**
  * Utility method that checks for equality of the modifiers (like shift and alt)
  * and the equality of key codes.
- * @param {!cvox.KeySequence} rhs The key sequence to compare against.
+ * @param {!KeySequence} rhs The key sequence to compare against.
  * @return {boolean} True if the modifiers and key codes in the key sequence are
  * the same.
  * @private
  */
-cvox.KeySequence.prototype.checkKeyEquality_ = function(rhs) {
+KeySequence.prototype.checkKeyEquality_ = function(rhs) {
   for (var i in this.keys) {
     for (var j = this.keys[i].length; j--;) {
       if (this.keys[i][j] !== rhs.keys[i][j]) {
@@ -311,7 +305,7 @@ cvox.KeySequence.prototype.checkKeyEquality_ = function(rhs) {
  * Gets first key code
  * @return {number} The first key code.
  */
-cvox.KeySequence.prototype.getFirstKeyCode = function() {
+KeySequence.prototype.getFirstKeyCode = function() {
   return this.keys.keyCode[0];
 };
 
@@ -320,7 +314,7 @@ cvox.KeySequence.prototype.getFirstKeyCode = function() {
  * Gets the number of keys in the sequence. Should be 1 or 2.
  * @return {number} The number of keys in the sequence.
  */
-cvox.KeySequence.prototype.length = function() {
+KeySequence.prototype.length = function() {
   return this.keys.keyCode.length;
 };
 
@@ -333,7 +327,7 @@ cvox.KeySequence.prototype.length = function() {
  * @param {number} keyCode key code.
  * @return {boolean} true if it is a modifier keycode, false otherwise.
  */
-cvox.KeySequence.prototype.isModifierKey = function(keyCode) {
+KeySequence.prototype.isModifierKey = function(keyCode) {
   // Shift, Ctrl, Alt, Search/LWin
   return keyCode == 16 || keyCode == 17 || keyCode == 18 || keyCode == 91 ||
       keyCode == 93;
@@ -346,9 +340,9 @@ cvox.KeySequence.prototype.isModifierKey = function(keyCode) {
  * @return {boolean} Whether or not the modifier key was active during the
  * keyEvent.
  */
-cvox.KeySequence.prototype.isCVoxModifierActive = function(keyEvent) {
+KeySequence.prototype.isCVoxModifierActive = function(keyEvent) {
   // TODO (rshearer): Update this when the modifier key becomes customizable
-  var modifierKeyCombo = cvox.ChromeVox.modKeyStr.split(/\+/g);
+  var modifierKeyCombo = ChromeVox.modKeyStr.split(/\+/g);
 
   // For each modifier that is held down, remove it from the combo.
   // If the combo string becomes empty, then the user has activated the combo.
@@ -386,7 +380,7 @@ cvox.KeySequence.prototype.isCVoxModifierActive = function(keyEvent) {
  * @return {boolean} Whether or not the modifier key was active during the
  * keyEvent.
  */
-cvox.KeySequence.prototype.isKeyModifierActive = function(keyEvent, modifier) {
+KeySequence.prototype.isKeyModifierActive = function(keyEvent, modifier) {
   // We need to check the key event modifier and the keyCode because Linux will
   // not set the keyEvent.modKey property if it is the modKey by itself.
   // This bug filed as crbug.com/74044
@@ -404,9 +398,7 @@ cvox.KeySequence.prototype.isKeyModifierActive = function(keyEvent, modifier) {
       return (keyEvent.metaKey || (keyEvent.keyCode == 91));
       break;
     case 'searchKeyHeld':
-      return (
-          (cvox.ChromeVox.isChromeOS && keyEvent.keyCode == 91) ||
-          keyEvent['searchKeyHeld']);
+      return keyEvent.keyCode == 91 || keyEvent['searchKeyHeld'];
       break;
   }
   return false;
@@ -416,7 +408,7 @@ cvox.KeySequence.prototype.isKeyModifierActive = function(keyEvent, modifier) {
  * Returns if any modifier is active in this sequence.
  * @return {boolean} The result.
  */
-cvox.KeySequence.prototype.isAnyModifierActive = function() {
+KeySequence.prototype.isAnyModifierActive = function() {
   for (var modifierType in this.keys) {
     for (var i = 0; i < this.length(); i++) {
       if (this.keys[modifierType][i] && modifierType != 'keyCode') {
@@ -431,9 +423,9 @@ cvox.KeySequence.prototype.isAnyModifierActive = function() {
 /**
  * Creates a KeySequence event from a generic object.
  * @param {Object} sequenceObject The object.
- * @return {cvox.KeySequence} The created KeySequence object.
+ * @return {KeySequence} The created KeySequence object.
  */
-cvox.KeySequence.deserialize = function(sequenceObject) {
+KeySequence.deserialize = function(sequenceObject) {
   var firstSequenceEvent = {};
 
   firstSequenceEvent['stickyMode'] = (sequenceObject.stickyMode == undefined) ?
@@ -455,17 +447,17 @@ cvox.KeySequence.deserialize = function(sequenceObject) {
   var skipStripping = sequenceObject.skipStripping !== undefined ?
       sequenceObject.skipStripping :
       true;
-  var keySeq = new cvox.KeySequence(
+  var keySeq = new KeySequence(
       firstSequenceEvent, sequenceObject.cvoxModifier, sequenceObject.doubleTap,
       skipStripping, sequenceObject.requireStickyMode);
   if (secondKeyPressed) {
-    cvox.ChromeVox.sequenceSwitchKeyCodes.push(
-        new cvox.KeySequence(firstSequenceEvent, sequenceObject.cvoxModifier));
+    ChromeVox.sequenceSwitchKeyCodes.push(
+        new KeySequence(firstSequenceEvent, sequenceObject.cvoxModifier));
     keySeq.addKeyEvent(secondSequenceEvent);
   }
 
   if (sequenceObject.doubleTap) {
-    cvox.KeySequence.doubleTapCache.push(keySeq);
+    KeySequence.doubleTapCache.push(keySeq);
   }
 
   return keySeq;
@@ -477,9 +469,9 @@ cvox.KeySequence.deserialize = function(sequenceObject) {
  * standard key sequence format described in keyUtil.keySequenceToString and
  * used in the key map JSON files.
  * @param {string} keyStr The string representation of a key sequence.
- * @return {!cvox.KeySequence} The created KeySequence object.
+ * @return {!KeySequence} The created KeySequence object.
  */
-cvox.KeySequence.fromStr = function(keyStr) {
+KeySequence.fromStr = function(keyStr) {
   var sequenceEvent = {};
   var secondSequenceEvent = {};
 
@@ -518,12 +510,12 @@ cvox.KeySequence.fromStr = function(keyStr) {
       } else {
         // Key is a modifier key
         if (j > 0) {
-          cvox.KeySequence.setModifiersOnEvent_(keyName, secondSequenceEvent);
+          KeySequence.setModifiersOnEvent_(keyName, secondSequenceEvent);
           if (keyName == 'Cvox') {
             cvoxPressed = true;
           }
         } else {
-          cvox.KeySequence.setModifiersOnEvent_(keyName, sequenceEvent);
+          KeySequence.setModifiersOnEvent_(keyName, sequenceEvent);
           if (keyName == 'Cvox') {
             cvoxPressed = true;
           }
@@ -531,7 +523,7 @@ cvox.KeySequence.fromStr = function(keyStr) {
       }
     }
   }
-  var keySeq = new cvox.KeySequence(sequenceEvent, cvoxPressed);
+  var keySeq = new KeySequence(sequenceEvent, cvoxPressed);
   if (secondKeyPressed) {
     keySeq.addKeyEvent(secondSequenceEvent);
   }
@@ -546,7 +538,7 @@ cvox.KeySequence.fromStr = function(keyStr) {
  * @param {Object} seqEvent The event to populate.
  * @private
  */
-cvox.KeySequence.setModifiersOnEvent_ = function(keyName, seqEvent) {
+KeySequence.setModifiersOnEvent_ = function(keyName, seqEvent) {
   if (keyName == 'Ctrl') {
     seqEvent['ctrlKey'] = true;
     seqEvent['keyCode'] = 17;

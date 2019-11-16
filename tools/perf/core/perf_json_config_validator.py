@@ -50,7 +50,7 @@ def _ParseShardMapFileName(args):
 def _ParseBrowserFlags(args):
   parser = argparse.ArgumentParser()
   parser.add_argument('--browser')
-  parser.add_argument('--webview-embedder-apk')
+  parser.add_argument('--webview-embedder-apk', action='append')
   options, _ = parser.parse_known_args(args)
   return options
 
@@ -92,8 +92,9 @@ def _ValidateBrowserType(builder_name, test_config):
       raise ValueError(
           "%s must use 'android-webview', 'android-webview-google' or 'exact' "
           "browser" % builder_name)
-    if not browser_options.webview_embedder_apk:
-      raise ValueError('%s must set --webview-embedder-apk flag' % builder_name)
+    if len(browser_options.webview_embedder_apk) != 1:
+      raise ValueError('%s must set --webview-embedder-apk flag exactly once' %
+                       builder_name)
   elif 'Android' in builder_name or 'android' in builder_name:
     if browser_options.browser not in (
         'android-chromium', 'android-chrome', 'exact'):

@@ -43,7 +43,7 @@ class OmniboxResultView : public views::View,
                           public views::ButtonListener {
  public:
   OmniboxResultView(OmniboxPopupContentsView* popup_contents_view,
-                    int model_index,
+                    size_t model_index,
                     const ui::ThemeProvider* theme_provider);
   ~OmniboxResultView() override;
 

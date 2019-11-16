@@ -15,13 +15,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
-#include "components/services/storage/public/mojom/dom_storage_area.mojom.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom.h"
+#include "third_party/blink/public/mojom/dom_storage/storage_area.mojom.h"
 
 namespace base {
 class FilePath;
@@ -96,7 +96,7 @@ class CONTENT_EXPORT DOMStorageContextWrapper
   // See mojom::StoragePartitionService interface.
   void OpenLocalStorage(
       const url::Origin& origin,
-      mojo::PendingReceiver<storage::mojom::DomStorageArea> receiver);
+      mojo::PendingReceiver<blink::mojom::StorageArea> receiver);
   void OpenSessionStorage(
       int process_id,
       const std::string& namespace_id,

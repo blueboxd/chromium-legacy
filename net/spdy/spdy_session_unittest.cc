@@ -1351,8 +1351,8 @@ TEST_F(SpdySessionTest, StreamIdSpaceExhausted) {
 
   // Session is going away. Created and stalled streams were aborted.
   EXPECT_TRUE(session_->IsGoingAway());
-  EXPECT_THAT(delegate3.WaitForClose(), IsError(ERR_ABORTED));
-  EXPECT_THAT(callback4.WaitForResult(), IsError(ERR_ABORTED));
+  EXPECT_THAT(delegate3.WaitForClose(), IsError(ERR_HTTP2_PROTOCOL_ERROR));
+  EXPECT_THAT(callback4.WaitForResult(), IsError(ERR_HTTP2_PROTOCOL_ERROR));
   EXPECT_EQ(0u, num_created_streams());
   EXPECT_EQ(0u, pending_create_stream_queue_size(MEDIUM));
 

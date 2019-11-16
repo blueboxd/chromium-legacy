@@ -39,12 +39,15 @@ android_library("devui_java") {
     "java/src/org/chromium/android_webview/devui/CrashesListActivity.java",
     "java/src/org/chromium/android_webview/devui/FlagsActivity.java",
     "java/src/org/chromium/android_webview/devui/MainActivity.java",
+    "java/src/org/chromium/android_webview/devui/PersistentErrorView.java",
+    "java/src/org/chromium/android_webview/devui/WebViewPackageError.java",
     "java/src/org/chromium/android_webview/devui/util/CrashInfoLoader.java",
     "java/src/org/chromium/android_webview/devui/util/NavigationMenuHelper.java",
     "java/src/org/chromium/android_webview/devui/util/UnuploadedFilesStateLoader.java",
     "java/src/org/chromium/android_webview/devui/util/UploadedCrashesInfoLoader.java",
     "java/src/org/chromium/android_webview/devui/util/WebViewCrashInfoCollector.java",
     "java/src/org/chromium/android_webview/devui/util/WebViewCrashLogParser.java",
+    "java/src/org/chromium/android_webview/devui/util/WebViewPackageHelper.java",
   ]
   deps = [
     ":devui_resources",

@@ -10,11 +10,22 @@
 Polymer({
   is: 'settings-crostini-arc-adb',
 
-  behaviors: [WebUIListenerBehavior],
+  behaviors: [I18nBehavior, WebUIListenerBehavior],
 
   properties: {
     /** @private {boolean} */
     arcAdbEnabled_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * Whether the device requires a powerwash first (to define nvram for boot
+     * lockbox). This happens to devices initialized through OOBE flow before
+     * M74.
+     * @private {boolean}
+     */
+    arcAdbNeedPowerwash_: {
       type: Boolean,
       value: false,
     },
@@ -44,8 +55,10 @@ Polymer({
 
   attached: function() {
     this.addWebUIListener(
-        'crostini-arc-adb-sideload-status-changed', (enabled) => {
+        'crostini-arc-adb-sideload-status-changed',
+        (enabled, need_powerwash) => {
           this.arcAdbEnabled_ = enabled;
+          this.arcAdbNeedPowerwash_ = need_powerwash;
         });
     settings.CrostiniBrowserProxyImpl.getInstance()
         .requestArcAdbSideloadStatus();
@@ -58,8 +71,9 @@ Polymer({
    * developer tool.
    * @private
    */
-  shouldDisable_: function(isOwnerProfile, isEnterpriseManaged) {
-    return !isOwnerProfile || isEnterpriseManaged;
+  shouldDisable_: function(
+      isOwnerProfile, isEnterpriseManaged, arcAdbNeedPowerwash) {
+    return !isOwnerProfile || isEnterpriseManaged || arcAdbNeedPowerwash;
   },
 
   /** @private */

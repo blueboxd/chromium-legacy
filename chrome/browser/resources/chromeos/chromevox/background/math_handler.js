@@ -51,9 +51,8 @@ MathHandler.prototype = {
       return false;
     }
 
-    cvox.ChromeVox.tts.speak(text, cvox.QueueMode.FLUSH);
-    cvox.ChromeVox.tts.speak(
-        Msgs.getMsg('hint_math_keyboard'), cvox.QueueMode.QUEUE);
+    ChromeVox.tts.speak(text, QueueMode.FLUSH);
+    ChromeVox.tts.speak(Msgs.getMsg('hint_math_keyboard'), QueueMode.QUEUE);
     return true;
   }
 };
@@ -96,7 +95,7 @@ MathHandler.onKeyDown = function(evt) {
   var instance = MathHandler.instance;
   var output = SRE.move(evt.keyCode);
   if (output) {
-    cvox.ChromeVox.tts.speak(output, cvox.QueueMode.FLUSH);
+    ChromeVox.tts.speak(output, QueueMode.FLUSH);
   }
   return false;
 };

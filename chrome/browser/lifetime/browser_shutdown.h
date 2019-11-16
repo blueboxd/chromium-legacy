@@ -41,24 +41,36 @@ enum class RestartMode {
 
 #endif  // !defined(OS_ANDROID)
 
-enum ShutdownType {
-  // an uninitialized value
-  NOT_VALID = 0,
-  // the last browser window was closed
-  WINDOW_CLOSE,
-  // user clicked on the Exit menu item
-  BROWSER_EXIT,
-  // windows is logging off or shutting down
-  END_SESSION
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class ShutdownType {
+  // An uninitialized value.
+  kNotValid = 0,
+  // The last browser window was closed.
+  kWindowClose = 1,
+  // The user clicked on the Exit menu item.
+  kBrowserExit = 2,
+  // User logoff or system shutdown.
+  kEndSession = 3,
+  // Exit without onbeforeunload or in-progress download prompts.
+  kSilentExit = 4,
+  kMaxValue = kSilentExit
 };
-
-constexpr int kNumShutdownTypes = END_SESSION + 1;
 
 void RegisterPrefs(PrefRegistrySimple* registry);
 
 // Called when the browser starts shutting down so that we can measure shutdown
 // time.
 void OnShutdownStarting(ShutdownType type);
+
+// Returns true if OnShutdownStarting has been called to note that shutdown has
+// started.
+bool HasShutdownStarted();
+
+// Returns true if OnShutdownStarting has been called and unload handlers (e.g.,
+// an in-progress download or a page's beforeunload handler) should be ignored.
+// This is true for kEndSession and kSilentExit shutdown types.
+bool ShouldIgnoreUnloadHandlers();
 
 // Get the current shutdown type.
 ShutdownType GetShutdownType();

@@ -202,3 +202,10 @@ SAConstants.ErrorType = {
  * @const
  */
 SAConstants.ErrorTypeCountForUMA = Object.keys(SAConstants.ErrorType).length;
+
+/**
+ * The minimum duration between expensive checks to RootNodeWrapper.isValid().
+ * @type {number}
+ * @const
+ */
+SAConstants.THROTTLE_THRESHOLD_MS = 500;

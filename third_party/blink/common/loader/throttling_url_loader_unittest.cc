@@ -226,12 +226,12 @@ class TestURLLoaderClient : public network::mojom::URLLoaderClient {
 class TestURLLoaderThrottle : public blink::URLLoaderThrottle {
  public:
   TestURLLoaderThrottle() {}
-  explicit TestURLLoaderThrottle(const base::Closure& destruction_notifier)
-      : destruction_notifier_(destruction_notifier) {}
+  explicit TestURLLoaderThrottle(base::OnceClosure destruction_notifier)
+      : destruction_notifier_(std::move(destruction_notifier)) {}
 
   ~TestURLLoaderThrottle() override {
     if (destruction_notifier_)
-      destruction_notifier_.Run();
+      std::move(destruction_notifier_).Run();
   }
 
   using ThrottleCallback =
@@ -338,7 +338,7 @@ class TestURLLoaderThrottle : public blink::URLLoaderThrottle {
 
   GURL modify_url_in_will_start_;
 
-  base::Closure destruction_notifier_;
+  base::OnceClosure destruction_notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(TestURLLoaderThrottle);
 };
@@ -354,8 +354,8 @@ class ThrottlingURLLoaderTest : public testing::Test {
   // testing::Test implementation.
   void SetUp() override {
     auto throttle = std::make_unique<TestURLLoaderThrottle>(
-        base::Bind(&ThrottlingURLLoaderTest::ResetThrottleRawPointer,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&ThrottlingURLLoaderTest::ResetThrottleRawPointer,
+                       weak_factory_.GetWeakPtr()));
 
     throttle_ = throttle.get();
 

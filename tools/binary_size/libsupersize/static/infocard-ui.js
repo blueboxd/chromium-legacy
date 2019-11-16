@@ -91,10 +91,7 @@ const displayInfocard = (() => {
       } else {
         const path = node.idPath.slice(0, node.shortNameIndex);
         const boldShortName = dom.textElement(
-          'span',
-          shortName(node),
-          'symbol-name-info'
-        );
+            'span', node.fullName || shortName(node), 'symbol-name-info');
         pathFragment = dom.createFragment([
           document.createTextNode(path),
           boldShortName,

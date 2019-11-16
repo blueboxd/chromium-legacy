@@ -12,7 +12,6 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "components/services/storage/dom_storage/async_dom_storage_database.h"
-#include "components/services/storage/public/mojom/key_value_pair.mojom.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
@@ -103,7 +102,7 @@ void StorageAreaImpl::InitializeAsEmpty() {
 }
 
 void StorageAreaImpl::Bind(
-    mojo::PendingReceiver<storage::mojom::DomStorageArea> receiver) {
+    mojo::PendingReceiver<blink::mojom::StorageArea> receiver) {
   receivers_.Add(this, std::move(receiver));
   // If the number of bindings is more than 1, then the |client_old_value| sent
   // by the clients need not be valid due to races on updates from multiple
@@ -226,10 +225,9 @@ void StorageAreaImpl::SetCacheModeForTesting(CacheMode cache_mode) {
 }
 
 void StorageAreaImpl::AddObserver(
-    mojo::PendingAssociatedRemote<storage::mojom::DomStorageAreaObserver>
-        observer) {
-  mojo::AssociatedRemote<storage::mojom::DomStorageAreaObserver>
-      observer_remote(std::move(observer));
+    mojo::PendingAssociatedRemote<blink::mojom::StorageAreaObserver> observer) {
+  mojo::AssociatedRemote<blink::mojom::StorageAreaObserver> observer_remote(
+      std::move(observer));
   if (cache_mode_ == CacheMode::KEYS_AND_VALUES)
     observer_remote->ShouldSendOldValueOnMutations(false);
   observers_.Add(std::move(observer_remote));
@@ -480,15 +478,14 @@ void StorageAreaImpl::Get(const std::vector<uint8_t>& key,
 }
 
 void StorageAreaImpl::GetAll(
-    mojo::PendingAssociatedRemote<storage::mojom::DomStorageAreaGetAllCallback>
+    mojo::PendingAssociatedRemote<blink::mojom::StorageAreaGetAllCallback>
         complete_callback,
     GetAllCallback callback) {
   // If the map is keys-only and empty, then no loading is necessary.
   if (IsMapLoadedAndEmpty()) {
-    std::move(callback).Run(true,
-                            std::vector<storage::mojom::KeyValuePairPtr>());
+    std::move(callback).Run(true, std::vector<blink::mojom::KeyValuePtr>());
     if (complete_callback.is_valid()) {
-      mojo::AssociatedRemote<storage::mojom::DomStorageAreaGetAllCallback>
+      mojo::AssociatedRemote<blink::mojom::StorageAreaGetAllCallback>
           complete_remote(std::move(complete_callback));
       complete_remote->Complete(true);
     }
@@ -503,16 +500,16 @@ void StorageAreaImpl::GetAll(
     return;
   }
 
-  std::vector<storage::mojom::KeyValuePairPtr> all;
+  std::vector<blink::mojom::KeyValuePtr> all;
   for (const auto& it : keys_values_map_) {
-    auto kv = storage::mojom::KeyValuePair::New();
+    auto kv = blink::mojom::KeyValue::New();
     kv->key = it.first;
     kv->value = it.second;
     all.push_back(std::move(kv));
   }
   std::move(callback).Run(true, std::move(all));
   if (complete_callback.is_valid()) {
-    mojo::AssociatedRemote<storage::mojom::DomStorageAreaGetAllCallback>
+    mojo::AssociatedRemote<blink::mojom::StorageAreaGetAllCallback>
         complete_remote(std::move(complete_callback));
     complete_remote->Complete(true);
   }

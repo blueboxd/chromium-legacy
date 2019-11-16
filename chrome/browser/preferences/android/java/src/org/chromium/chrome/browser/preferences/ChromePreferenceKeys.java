@@ -4,15 +4,20 @@
 
 package org.chromium.chrome.browser.preferences;
 
+import org.chromium.base.annotations.CheckDiscard;
+
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Contains String constants with the SharedPreferences keys used by Chrome.
  *
- * All Chrome layer SharedPreferences keys should be added here.
+ * All Chrome layer SharedPreferences keys should be:
+ * - Added here as a constants
+ * - Follow the format "Chrome.[Feature].[Key]"
+ * - Added to the list of used keys in {@link ChromePreferenceKeys#createUsedKeys()}:
  *
- * Do not remove constants from here. Keys that were used in past versions but are not used anymore
- * cannot be reused. Mark them as @Deprecated.
- *
- * TODO(crbug.com/1013781): Implement key deprecation. For now, just mark them as @Deprecated.
+ * Tests in ChromePreferenceKeysTest ensure the sanity of this file.
  */
 public final class ChromePreferenceKeys {
     /** An all-time counter of taps that triggered the Contextual Search peeking panel. */
@@ -108,70 +113,10 @@ public final class ChromePreferenceKeys {
             "signin_promo_last_shown_account_names";
 
     /**
-     * This value was used prior to KitKat to keep existing low-end devices on the normal UI rather
-     * than the simplified UI.
-     *
-     * This value may still exist in shared preferences file. Do not reuse.
-     */
-    @Deprecated
-    private static final String ALLOW_LOW_END_DEVICE_UI = "allow_low_end_device_ui";
-
-    @Deprecated
-    private static final String PREF_WEBSITE_SETTINGS_FILTER = "website_settings_filter";
-
-    /**
      * Whether Chrome is set as the default browser.
      * Default value is false.
      */
     public static final String CHROME_DEFAULT_BROWSER = "applink.chrome_default_browser";
-
-    /**
-     * Deprecated in M70. This value may still exist in the shared preferences file. Do not reuse.
-     */
-    @Deprecated
-    private static final String CHROME_MODERN_DESIGN_ENABLED_KEY = "chrome_modern_design_enabled";
-
-    /**
-     * Whether or not the home page button is force enabled.
-     * Default value is false.
-     */
-    @Deprecated
-    private static final String HOME_PAGE_BUTTON_FORCE_ENABLED_KEY =
-            "home_page_button_force_enabled";
-
-    /**
-     * Whether or not the homepage tile will be shown.
-     * Default value is false.
-     */
-    @Deprecated
-    private static final String HOMEPAGE_TILE_ENABLED_KEY = "homepage_tile_enabled";
-
-    /**
-     * Whether or not the new tab page button is enabled.
-     * Default value is false.
-     */
-    @Deprecated
-    private static final String NTP_BUTTON_ENABLED_KEY = "ntp_button_enabled";
-
-    /**
-     * Deprecated in M71. This value may still exist in the shared preferences file. Do not reuse.
-     */
-    @Deprecated
-    private static final String NTP_BUTTON_VARIANT_KEY = "ntp_button_variant";
-
-    /**
-     * Deprecated in M77. This value may still exist in shared preferences file. Do not reuse.
-     */
-    @Deprecated
-    private static final String TAB_PERSISTENT_STORE_TASK_RUNNER_ENABLED_KEY =
-            "tab_persistent_store_task_runner_enabled";
-
-    /**
-     * Deprecated in M75. This value may still exist in shared preferences file. Do not reuse.
-     */
-    @Deprecated
-    private static final String INFLATE_TOOLBAR_ON_BACKGROUND_THREAD_KEY =
-            "inflate_toolbar_on_background_thread";
 
     /**
      * The current theme setting in the user settings.
@@ -211,12 +156,6 @@ public final class ChromePreferenceKeys {
     public static final String SUCCESS_UPLOAD_SUFFIX = "_crash_success_upload";
     public static final String FAILURE_UPLOAD_SUFFIX = "_crash_failure_upload";
 
-    /**
-     * Deprecated in M76. This value may still exist in the shared preferences file. Do not reuse.
-     */
-    @Deprecated
-    private static final String SOLE_INTEGRATION_ENABLED_KEY = "sole_integration_enabled";
-
     public static final String VERIFIED_DIGITAL_ASSET_LINKS = "verified_digital_asset_links";
     public static final String TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES =
             "trusted_web_activity_disclosure_accepted_packages";
@@ -252,34 +191,8 @@ public final class ChromePreferenceKeys {
     public static final String TWA_DIALOG_NUMBER_OF_DISMISSALS_ON_CLEAR_DATA =
             "twa_dialog_number_of_dismissals_on_clear_data";
 
-    /** Key for deferred recording of WebAPK uninstalls. */
-    @Deprecated
-    private static final String WEBAPK_NUMBER_OF_UNINSTALLS = "webapk_number_of_uninstalls";
-
     /** Key for deferred recording of list of uninstalled WebAPK packages. */
     public static final String WEBAPK_UNINSTALLED_PACKAGES = "webapk_uninstalled_packages";
-
-    /**
-     * Key for whether it allows to start in service manager only mode.
-     * Default value is false.
-     * Deprecated in M77.
-     */
-    @Deprecated
-    private static final String ALLOW_STARTING_SERVICE_MANAGER_ONLY_KEY =
-            "allow_starting_service_manager_only";
-
-    /**
-     * Deprecated keys for Chrome Home.
-     */
-    @Deprecated
-    private static final String CHROME_HOME_USER_ENABLED_KEY = "chrome_home_user_enabled";
-    @Deprecated
-    private static final String CHROME_HOME_OPT_OUT_SNACKBAR_SHOWN =
-            "chrome_home_opt_out_snackbar_shown";
-    @Deprecated
-    private static final String CHROME_HOME_INFO_PROMO_SHOWN_KEY = "chrome_home_info_promo_shown";
-    @Deprecated
-    private static final String CHROME_HOME_SHARED_PREFERENCES_KEY = "chrome_home_enabled_date";
 
     /**
      * Contains a trial group that was used to determine whether the reached code profiler should be
@@ -292,11 +205,136 @@ public final class ChromePreferenceKeys {
      */
     public static final String OFFLINE_INDICATOR_V2_ENABLED_KEY = "offline_indicator_v2_enabled";
 
-    /**
-     * Previously used to migrate {@link PrefServiceBridge} preferences to current version.
-     */
-    @Deprecated
-    private static final String MIGRATION_PREF_KEY = "PrefMigrationVersion";
+    @CheckDiscard("Validation is performed in tests and in debug builds.")
+    static List<String> createUsedKeys() {
+        // These values are currently used as SharedPreferences keys.
+        // To deprecate a key that is not used anymore:
+        // 1. Add its constant value to |sDeprecatedKeys|
+        // 2. Remove the key from |sUsedKeys|
+        // 3. Delete the constant.
+
+        // clang-format off
+        return Arrays.asList(
+                CONTEXTUAL_SEARCH_ALL_TIME_TAP_COUNT,
+                CONTEXTUAL_SEARCH_ALL_TIME_OPEN_COUNT,
+                CONTEXTUAL_SEARCH_ALL_TIME_TAP_QUICK_ANSWER_COUNT,
+                CONTEXTUAL_SEARCH_TAP_SINCE_OPEN_COUNT,
+                CONTEXTUAL_SEARCH_TAP_SINCE_OPEN_QUICK_ANSWER_COUNT,
+                CONTEXTUAL_SEARCH_PROMO_OPEN_COUNT,
+                CONTEXTUAL_SEARCH_ENTITY_IMPRESSIONS_COUNT,
+                CONTEXTUAL_SEARCH_ENTITY_OPENS_COUNT,
+                CONTEXTUAL_SEARCH_QUICK_ACTION_IMPRESSIONS_COUNT,
+                CONTEXTUAL_SEARCH_QUICK_ACTIONS_TAKEN_COUNT,
+                CONTEXTUAL_SEARCH_QUICK_ACTIONS_IGNORED_COUNT,
+                CONTEXTUAL_SEARCH_PREVIOUS_INTERACTION_EVENT_ID,
+                CONTEXTUAL_SEARCH_PREVIOUS_INTERACTION_ENCODED_OUTCOMES,
+                CONTEXTUAL_SEARCH_PREVIOUS_INTERACTION_TIMESTAMP,
+                CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_COUNT,
+                CONTEXTUAL_SEARCH_LAST_ANIMATION_TIME,
+                CONTEXTUAL_SEARCH_CURRENT_WEEK_NUMBER,
+                PROMOS_SKIPPED_ON_FIRST_START,
+                SIGNIN_PROMO_LAST_SHOWN_MAJOR_VERSION,
+                SIGNIN_PROMO_LAST_SHOWN_ACCOUNT_NAMES,
+                CHROME_DEFAULT_BROWSER,
+                UI_THEME_SETTING_KEY,
+                DARKEN_WEBSITES_ENABLED_KEY,
+                CONTENT_SUGGESTIONS_SHOWN_KEY,
+                SETTINGS_PERSONALIZED_SIGNIN_PROMO_DISMISSED,
+                NTP_SIGNIN_PROMO_DISMISSED,
+                NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START,
+                SUCCESS_UPLOAD_SUFFIX,
+                FAILURE_UPLOAD_SUFFIX,
+                VERIFIED_DIGITAL_ASSET_LINKS,
+                TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES,
+                SHOULD_REGISTER_VR_ASSETS_COMPONENT_ON_STARTUP,
+                ACCESSIBILITY_TAB_SWITCHER,
+                LATEST_UNSUPPORTED_VERSION,
+                TWA_DIALOG_NUMBER_OF_DISMISSALS_ON_UNINSTALL,
+                TWA_DIALOG_NUMBER_OF_DISMISSALS_ON_CLEAR_DATA,
+                WEBAPK_UNINSTALLED_PACKAGES,
+                REACHED_CODE_PROFILER_GROUP_KEY,
+                OFFLINE_INDICATOR_V2_ENABLED_KEY
+        );
+        // clang-format on
+    }
+
+    @CheckDiscard("Validation is performed in tests and in debug builds.")
+    static List<String> createDeprecatedKeysForTesting() {
+        // These values have been used as SharedPreferences keys in the past and should not be
+        // reused. Do not remove values from this list.
+
+        // clang-format off
+        return Arrays.asList(
+                "allow_low_end_device_ui",
+                "website_settings_filter",
+                "chrome_modern_design_enabled",
+                "home_page_button_force_enabled",
+                "homepage_tile_enabled",
+                "ntp_button_enabled",
+                "ntp_button_variant",
+                "tab_persistent_store_task_runner_enabled",
+                "inflate_toolbar_on_background_thread",
+                "sole_integration_enabled",
+                "webapk_number_of_uninstalls",
+                "allow_starting_service_manager_only",
+                "chrome_home_user_enabled",
+                "chrome_home_opt_out_snackbar_shown",
+                "chrome_home_info_promo_shown",
+                "chrome_home_enabled_date",
+                "PrefMigrationVersion"
+        );
+        // clang-format on
+    }
+
+    @CheckDiscard("Validation is performed in tests and in debug builds.")
+    static List<String> createGrandfatheredFormatKeysForTesting() {
+        // Do not add new constants to this list. Instead, declare new keys in the format
+        // "Chrome.[Feature].[Key]", for example "Chrome.FooBar.FooEnabled".
+
+        // clang-format off
+        return Arrays.asList(
+                CONTEXTUAL_SEARCH_ALL_TIME_TAP_COUNT,
+                CONTEXTUAL_SEARCH_ALL_TIME_OPEN_COUNT,
+                CONTEXTUAL_SEARCH_ALL_TIME_TAP_QUICK_ANSWER_COUNT,
+                CONTEXTUAL_SEARCH_TAP_SINCE_OPEN_COUNT,
+                CONTEXTUAL_SEARCH_TAP_SINCE_OPEN_QUICK_ANSWER_COUNT,
+                CONTEXTUAL_SEARCH_PROMO_OPEN_COUNT,
+                CONTEXTUAL_SEARCH_ENTITY_IMPRESSIONS_COUNT,
+                CONTEXTUAL_SEARCH_ENTITY_OPENS_COUNT,
+                CONTEXTUAL_SEARCH_QUICK_ACTION_IMPRESSIONS_COUNT,
+                CONTEXTUAL_SEARCH_QUICK_ACTIONS_TAKEN_COUNT,
+                CONTEXTUAL_SEARCH_QUICK_ACTIONS_IGNORED_COUNT,
+                CONTEXTUAL_SEARCH_PREVIOUS_INTERACTION_EVENT_ID,
+                CONTEXTUAL_SEARCH_PREVIOUS_INTERACTION_ENCODED_OUTCOMES,
+                CONTEXTUAL_SEARCH_PREVIOUS_INTERACTION_TIMESTAMP,
+                CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_COUNT,
+                CONTEXTUAL_SEARCH_LAST_ANIMATION_TIME,
+                CONTEXTUAL_SEARCH_CURRENT_WEEK_NUMBER,
+                PROMOS_SKIPPED_ON_FIRST_START,
+                SIGNIN_PROMO_LAST_SHOWN_MAJOR_VERSION,
+                SIGNIN_PROMO_LAST_SHOWN_ACCOUNT_NAMES,
+                CHROME_DEFAULT_BROWSER,
+                UI_THEME_SETTING_KEY,
+                DARKEN_WEBSITES_ENABLED_KEY,
+                CONTENT_SUGGESTIONS_SHOWN_KEY,
+                SETTINGS_PERSONALIZED_SIGNIN_PROMO_DISMISSED,
+                NTP_SIGNIN_PROMO_DISMISSED,
+                NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START,
+                SUCCESS_UPLOAD_SUFFIX,
+                FAILURE_UPLOAD_SUFFIX,
+                VERIFIED_DIGITAL_ASSET_LINKS,
+                TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES,
+                SHOULD_REGISTER_VR_ASSETS_COMPONENT_ON_STARTUP,
+                ACCESSIBILITY_TAB_SWITCHER,
+                LATEST_UNSUPPORTED_VERSION,
+                TWA_DIALOG_NUMBER_OF_DISMISSALS_ON_UNINSTALL,
+                TWA_DIALOG_NUMBER_OF_DISMISSALS_ON_CLEAR_DATA,
+                WEBAPK_UNINSTALLED_PACKAGES,
+                REACHED_CODE_PROFILER_GROUP_KEY,
+                OFFLINE_INDICATOR_V2_ENABLED_KEY
+        );
+        // clang-format on
+    }
 
     private ChromePreferenceKeys() {}
 }

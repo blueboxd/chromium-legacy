@@ -7,6 +7,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/screens/assistant_optin_flow_screen.h"
 #include "chrome/browser/chromeos/login/screens/sync_consent_screen.h"
@@ -230,7 +231,14 @@ class SyncConsentTestWithParams
   DISALLOW_COPY_AND_ASSIGN(SyncConsentTestWithParams);
 };
 
-IN_PROC_BROWSER_TEST_P(SyncConsentTestWithParams, SyncConsentTestWithLocale) {
+// Consistently timing out on linux  http://crbug.com/1025213
+#if defined(OS_LINUX)
+#define MAYBE_SyncConsentTestWithLocale DISABLED_SyncConsentTestWithLocale
+#else
+#define MAYBE_SyncConsentTestWithLocale SyncConsentTestWithLocale
+#endif
+IN_PROC_BROWSER_TEST_P(SyncConsentTestWithParams,
+                       MAYBE_SyncConsentTestWithLocale) {
   LOG(INFO) << "SyncConsentTestWithParams() started with param='" << GetParam()
             << "'";
   EXPECT_EQ(g_browser_process->GetApplicationLocale(), "en-US");

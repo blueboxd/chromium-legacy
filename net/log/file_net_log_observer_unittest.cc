@@ -15,6 +15,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
@@ -79,7 +80,7 @@ void AddEntries(FileNetLogObserver* logger,
 
   for (int i = 0; i < num_entries; i++) {
     source = NetLogSource(NetLogSourceType::HTTP2_SESSION, i);
-    std::string id = std::to_string(i);
+    std::string id = base::NumberToString(i);
 
     // String size accounts for the number of digits in id so that all events
     // are the same size.
@@ -319,7 +320,7 @@ class FileNetLogObserverBoundedTest : public ::testing::Test,
 
   base::FilePath GetEventFilePath(int index) const {
     return GetInprogressDirectory().AppendASCII(
-        "event_file_" + std::to_string(index) + ".json");
+        "event_file_" + base::NumberToString(index) + ".json");
   }
 
   base::FilePath GetEndNetlogPath() const {

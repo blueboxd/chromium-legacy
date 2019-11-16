@@ -81,7 +81,8 @@
                 action:@selector(saveCardBadgeButtonTapped:)
       forControlEvents:UIControlEventTouchUpInside];
   button.accessibilityIdentifier = kBadgeButtonSaveCardAccessibilityIdentifier;
-  // TODO(crbug.com/1014652): Create a11y label hint.
+  button.accessibilityLabel =
+      l10n_util::GetNSString(IDS_IOS_AUTOFILL_SAVE_CARD_BADGE_HINT);
   return button;
 }
 

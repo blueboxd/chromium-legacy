@@ -911,6 +911,7 @@
 <translation id="5329858041417644019">Браузърът ви не се управлява</translation>
 <translation id="5332219387342487447">Начин за доставка</translation>
 <translation id="5334013548165032829">Подробните системни регистрационни файлове</translation>
+<translation id="534295439873310000">Устройства с NFC</translation>
 <translation id="5344579389779391559">Тази страница може да опита да ви таксува пари</translation>
 <translation id="5355557959165512791">В момента не можете да посетите сайта <ph name="SITE" />, защото сертификатът му е анулиран. Обикновено грешките в мрежата и атаките срещу нея са временни, така че тази страница вероятно ще работи по-късно.</translation>
 <translation id="536296301121032821">Съхраняването на настройките за правилото не бе успешно</translation>
@@ -1532,6 +1533,7 @@
 <translation id="8466379296835108687">{COUNT,plural, =1{1 кредитна карта}other{# кредитни карти}}</translation>
 <translation id="8473863474539038330">Адреси и др.</translation>
 <translation id="8479754468255770962">Телбодиране долу вляво</translation>
+<translation id="8481133456511676116">Може би имахте предвид <ph name="DOMAIN" />?</translation>
 <translation id="8483780878231876732">За да използвате картите от профила си в Google, влезте в Chrome</translation>
 <translation id="8488350697529856933">Прилага се към</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> не отговаря твърде дълго време.</translation>

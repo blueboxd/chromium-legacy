@@ -254,6 +254,7 @@
 <translation id="1365180424462182382"><ph name="BEGIN_LINK" />Браузер находится под управлением<ph name="END_LINK" /> домена <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="1366177842110999534">Запускайте инструменты, редакторы и интегрированные среды разработки Linux на устройстве <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Подробнее…&lt;/a&gt;</translation>
 <translation id="1367951781824006909">Выберите файл</translation>
+<translation id="1369149969991017342">Включить функцию Switch Access (позволяет управлять компьютером с помощью переключателей)</translation>
 <translation id="1372841398847029212">Синхронизировать с моим аккаунтом</translation>
 <translation id="1374844444528092021">Сертификат, запрашиваемый сетью <ph name="NETWORK_NAME" />, не установлен или уже не действителен. Получите новый и попробуйте подключиться еще раз.</translation>
 <translation id="1375321115329958930">Сохраненные пароли</translation>
@@ -564,6 +565,7 @@
 <translation id="1794791083288629568">Отправить отзыв, чтобы помочь устранить ошибку</translation>
 <translation id="1795214765651529549">Использовать классическую тему</translation>
 <translation id="1799071797295057738">Расширение "<ph name="EXTENSION_NAME" />" было автоматически отключено.</translation>
+<translation id="1802624026913571222">Перейти в спящий режим, когда обложка закрыта</translation>
 <translation id="1802687198411089702">Страница не отвечает. Вы можете закрыть ее или дождаться ответа сервера.</translation>
 <translation id="1802931390041703523">Flash-контент на этой странице заблокирован</translation>
 <translation id="1803531841600994172">Язык перевода</translation>
@@ -665,6 +667,7 @@
 <translation id="1937774647013465102">Не удалось импортировать тип архитектуры контейнера <ph name="ARCHITECTURE_CONTAINER" /> на это устройство (<ph name="ARCHITECTURE_DEVICE" />). Вы можете попробовать восстановить этот контейнер на другом устройстве или получить доступ к файлам, открыв образ контейнера в приложении "Файлы".</translation>
 <translation id="1938351510777341717">Внешняя клавиша Command</translation>
 <translation id="1940546824932169984">Подключенные устройства</translation>
+<translation id="1942600407708803723">Завершить работу, когда обложка закрыта</translation>
 <translation id="1944921356641260203">Найдено обновление</translation>
 <translation id="1946577776959096882">Посмотреть аккаунты</translation>
 <translation id="1951012854035635156">Ассистент</translation>
@@ -2437,6 +2440,7 @@
 <translation id="4546308221697447294">Быстрый и удобный браузер Google Chrome</translation>
 <translation id="4547659257713117923">Нет вкладок с других устройств</translation>
 <translation id="4547672827276975204">Автоматическое определение</translation>
+<translation id="4549791035683739768">На вашем электронном ключе нет сохраненных отпечатков пальцев.</translation>
 <translation id="4551763574344810652">Чтобы отменить действие, нажмите <ph name="MODIFIER_KEY_DESCRIPTION" /></translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4554591392113183336">Внешнее расширение не новее существующего.</translation>
@@ -2616,6 +2620,7 @@
 <translation id="4839303808932127586">Со&amp;хранить видео как...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{ещё один}one{ещё #}few{ещё #}many{ещё #}other{ещё #}}</translation>
 <translation id="4842976633412754305">Страница пытается загрузить скрипты из непроверенных источников.</translation>
+<translation id="4843488774506045600">Вход инициализирован поставщиком: <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Другие раскладки</translation>
 <translation id="4846680374085650406">Параметр настроен в соответствии с рекомендациями администратора.</translation>
 <translation id="4848518990323155912">Разрешить блокировку SIM-карты (для использования мобильной передачи данных потребуется PIN-код)</translation>
@@ -3068,6 +3073,7 @@
 <translation id="5511823366942919280">Использовать это устройство как Shark?</translation>
 <translation id="5512653252560939721">Сертификат пользователя должен поддерживаться аппаратным обеспечением.</translation>
 <translation id="5517304475148761050">Этому приложению необходим доступ к Play Маркету</translation>
+<translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> – <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Добавление принтера в аккаунт. Это может занять несколько минут...</translation>
 <translation id="5518219166343146486">Запрашивать мое разрешение на доступ сайтов к тексту и изображениям, скопированным в буфер обмена</translation>
 <translation id="5518584115117143805">Сертификат шифрования электронной почты</translation>
@@ -3186,6 +3192,7 @@
 <translation id="567643736130151854">Чтобы закладки, пароли и другие данные стали доступны на всех ваших устройствах, войдите в Chrome и включите синхронизацию.</translation>
 <translation id="5677503058916217575">Язык страницы:</translation>
 <translation id="5677928146339483299">Заблокировано</translation>
+<translation id="5678293144564424498">Приложение приостановлено</translation>
 <translation id="5678550637669481956">Предоставлен доступ к тому <ph name="VOLUME_NAME" /> (чтение и запись данных).</translation>
 <translation id="5678955352098267522">Просмотр данных на сайте <ph name="WEBSITE_1" /></translation>
 <translation id="5684661240348539843">Идентификатор объекта</translation>
@@ -3452,6 +3459,7 @@
 <translation id="6055392876709372977">PKCS #1 SHA-256 с шифрованием RSA</translation>
 <translation id="6056710589053485679">Обычная перезагрузка</translation>
 <translation id="6057381398996433816">Этому сайту запрещено использовать датчики движения и освещенности</translation>
+<translation id="6058567592298841668">Виртуальная машина для плагинов: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Иерархия сертификатов</translation>
 <translation id="6059925163896151826">USB-устройства</translation>
 <translation id="6061882183774845124">Отправить ссылку на мои устройства</translation>
@@ -4400,6 +4408,7 @@
 <translation id="7476454130948140105">Слишком низкий заряд батареи (<ph name="BATTERY_PERCENT" />%). Обновление невозможно.</translation>
 <translation id="7477793887173910789">Управляйте воспроизведением музыки, видео и других медиафайлов</translation>
 <translation id="7478485216301680444">Не удалось установить киоск-приложение.</translation>
+<translation id="7479221278376295180">Обзор использования хранилища</translation>
 <translation id="7481312909269577407">Вперед</translation>
 <translation id="748138892655239008">Базовые ограничения сертификата</translation>
 <translation id="7487067081878637334">Технологии</translation>
@@ -5375,6 +5384,7 @@
 <translation id="8845001906332463065">Справка</translation>
 <translation id="8846132060409673887">Доступ к информации о производителе и модели компьютера</translation>
 <translation id="8846141544112579928">Поиск клавиатуры…</translation>
+<translation id="8847523528195140327">Выйти из системы, когда обложка закрыта</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8850251000316748990">Ещё...</translation>
 <translation id="885246833287407341">Аргументы функций API</translation>
@@ -5437,6 +5447,7 @@
 <translation id="8930351635855238750">Новые настройки файлов cookie вступят в силу после обновления страницы.</translation>
 <translation id="8931394284949551895">Новые устройства</translation>
 <translation id="893254996965966411">Сохраните найденные принтеры в своем профиле или добавьте новый принтер.</translation>
+<translation id="8932894639908691771">Параметры функции Switch Access</translation>
 <translation id="8933960630081805351">Показать в Finder</translation>
 <translation id="8934732568177537184">Продолжить</translation>
 <translation id="8938800817013097409">Устройство USB-C (порт справа на задней панели)</translation>
@@ -5500,6 +5511,7 @@
 <translation id="9023015617655685412">Добавить страницу в закладки...</translation>
 <translation id="9024127637873500333">&amp;Открыть в новой вкладке</translation>
 <translation id="9024158959543687197">Не удалось подключить ресурс. Проверьте URL и повторите попытку.</translation>
+<translation id="9024885274934357065">Устройство разблокировано при помощи функции Smart Lock. Чтобы разблокировать, нажмите Ввод.</translation>
 <translation id="9026731007018893674">Без названия</translation>
 <translation id="9026852570893462412">Подождите несколько минут. Скачивание виртуальной машины…</translation>
 <translation id="9027459031423301635">Открыть ссылку в новой вкладке</translation>

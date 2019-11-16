@@ -52,7 +52,7 @@ ChromeVoxLiveRegionsTest.prototype = {
    * touch.
  */
   simulateUserInteraction: function() {
-    Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
+    Output.forceModeForNextSpeechUtterance(QueueMode.FLUSH);
   },
 };
 
@@ -201,9 +201,9 @@ TEST_F('ChromeVoxLiveRegionsTest', 'LiveRegionThenFocus', function() {
         sawFocus = candidate.text == 'Focus' || sawFocus;
         sawLive = candidate.text == 'Live' || sawLive;
         if (sawFocus && sawLive) {
-          return candidate.queueMode != cvox.QueueMode.FLUSH;
+          return candidate.queueMode != QueueMode.FLUSH;
         } else if (sawFocus || sawLive) {
-          return candidate.queueMode == cvox.QueueMode.FLUSH;
+          return candidate.queueMode == QueueMode.FLUSH;
         }
       };
       var go = rootNode.find({ role: RoleType.BUTTON });

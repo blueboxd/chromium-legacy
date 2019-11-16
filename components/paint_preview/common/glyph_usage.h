@@ -11,7 +11,6 @@
 
 #include "base/callback_forward.h"
 #include "base/containers/flat_set.h"
-#include "base/macros.h"
 
 namespace paint_preview {
 
@@ -42,7 +41,8 @@ class GlyphUsage {
   uint16_t first_;
   uint16_t last_;
 
-  DISALLOW_COPY_AND_ASSIGN(GlyphUsage);
+  GlyphUsage(const GlyphUsage&) = delete;
+  GlyphUsage& operator=(const GlyphUsage&) = delete;
 };
 
 // An implementation of GlyphUsage that works well for densely set glyphs.
@@ -66,7 +66,8 @@ class DenseGlyphUsage : public GlyphUsage {
  private:
   std::vector<bool> bitset_;
 
-  DISALLOW_COPY_AND_ASSIGN(DenseGlyphUsage);
+  DenseGlyphUsage(const DenseGlyphUsage&) = delete;
+  DenseGlyphUsage& operator=(const DenseGlyphUsage&) = delete;
 };
 
 // An implementation of GlyphUsage that works well for sparsely set glyphs.
@@ -92,7 +93,8 @@ class SparseGlyphUsage : public GlyphUsage {
  private:
   base::flat_set<uint16_t> glyph_ids_;
 
-  DISALLOW_COPY_AND_ASSIGN(SparseGlyphUsage);
+  SparseGlyphUsage(const SparseGlyphUsage&) = delete;
+  SparseGlyphUsage& operator=(const SparseGlyphUsage&) = delete;
 };
 
 }  // namespace paint_preview

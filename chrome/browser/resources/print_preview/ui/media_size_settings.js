@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import './print_preview_shared_css.js';
-import {SettingsBehavior} from './settings_behavior.js';
 import './settings_section.js';
+
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {SettingsBehavior} from './settings_behavior.js';
 import {SelectOption} from './settings_select.js';
 
 Polymer({
@@ -31,8 +33,7 @@ Polymer({
     }
     const valueToSet = JSON.stringify(this.getSettingValue('mediaSize'));
     for (const option of
-         /** @type {!Array<!SelectOption>} */ (
-             this.capability.option)) {
+         /** @type {!Array<!SelectOption>} */ (this.capability.option)) {
       if (JSON.stringify(option) === valueToSet) {
         this.$$('print-preview-settings-select').selectValue(valueToSet);
         return;

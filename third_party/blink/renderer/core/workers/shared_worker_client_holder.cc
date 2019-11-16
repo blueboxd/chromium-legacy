@@ -92,11 +92,11 @@ void SharedWorkerClientHolder::Connect(
   Vector<CSPHeaderAndType> headers =
       worker->GetExecutionContext()->GetContentSecurityPolicy()->Headers();
   WebString header = "";
-  auto header_type = mojom::ContentSecurityPolicyType::kReport;
+  auto header_type = network::mojom::ContentSecurityPolicyType::kReport;
   if (headers.size() > 0) {
     header = headers[0].first;
-    header_type =
-        static_cast<mojom::ContentSecurityPolicyType>(headers[0].second);
+    header_type = static_cast<network::mojom::ContentSecurityPolicyType>(
+        headers[0].second);
   }
 
   mojom::blink::SharedWorkerInfoPtr info(mojom::blink::SharedWorkerInfo::New(

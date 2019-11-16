@@ -6,7 +6,6 @@
 #define COMPONENTS_PAINT_PREVIEW_BROWSER_FILE_MANAGER_H_
 
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/time/time.h"
 #include "url/gurl.h"
 
@@ -55,7 +54,8 @@ class FileManager {
 
   base::FilePath root_directory_;
 
-  DISALLOW_COPY_AND_ASSIGN(FileManager);
+  FileManager(const FileManager&) = delete;
+  FileManager& operator=(const FileManager&) = delete;
 };
 
 }  // namespace paint_preview

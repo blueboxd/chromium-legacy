@@ -54,6 +54,7 @@
 #include "third_party/skia/include/effects/SkOverdrawColorFilter.h"
 #include "third_party/skia/include/effects/SkShaderMaskFilter.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
+#include "third_party/skia/include/third_party/skcms/skcms.h"
 #include "third_party/skia/src/core/SkColorFilterPriv.h"
 #include "ui/gfx/color_transform.h"
 #include "ui/gfx/geometry/axis_transform2d.h"
@@ -1642,9 +1643,26 @@ void SkiaRenderer::DrawColoredQuad(SkColor color,
   color = SkColorSetA(color, params->opacity * SkColorGetA(color));
   const SkPoint* draw_region =
       params->draw_region.has_value() ? params->draw_region->points : nullptr;
+
+  SkColor4f color4f = SkColor4f::FromColor(color);
+  float sdr_white_level = current_frame()->sdr_white_level;
+  if (sdr_white_level != gfx::ColorSpace::kDefaultSDRWhiteLevel) {
+    // SkColor is always sRGB. Use skcms to linearize, scale, and re-encode
+    const float scale_factor =
+        sdr_white_level / gfx::ColorSpace::kDefaultSDRWhiteLevel;
+    const auto* srgb_to_linear = skcms_sRGB_TransferFunction();
+    const auto* linear_to_srgb = skcms_sRGB_Inverse_TransferFunction();
+
+    for (int c = 0; c < 3; ++c) {
+      color4f[c] = skcms_TransferFunction_eval(
+          linear_to_srgb, scale_factor * skcms_TransferFunction_eval(
+                                             srgb_to_linear, color4f[c]));
+    }
+  }
+
   current_canvas_->experimental_DrawEdgeAAQuad(
       gfx::RectFToSkRect(params->visible_rect), draw_region,
-      static_cast<SkCanvas::QuadAAFlags>(params->aa_flags), color,
+      static_cast<SkCanvas::QuadAAFlags>(params->aa_flags), color4f,
       params->blend_mode);
 }
 
@@ -2078,12 +2096,20 @@ sk_sp<SkColorFilter> SkiaRenderer::GetColorFilter(const gfx::ColorSpace& src,
                                                   const gfx::ColorSpace& dst,
                                                   float resource_offset,
                                                   float resource_multiplier) {
+  gfx::ColorSpace adjusted_src = src;
+  float sdr_white_level = current_frame()->sdr_white_level;
+  if (src.IsValid() && !src.IsHDR() &&
+      sdr_white_level != gfx::ColorSpace::kDefaultSDRWhiteLevel) {
+    adjusted_src = src.GetScaledColorSpace(
+        sdr_white_level / gfx::ColorSpace::kDefaultSDRWhiteLevel);
+  }
+
   std::unique_ptr<SkRuntimeColorFilterFactory>& factory =
-      color_filter_cache_[dst][src];
+      color_filter_cache_[dst][adjusted_src];
   if (!factory) {
     std::unique_ptr<gfx::ColorTransform> transform =
         gfx::ColorTransform::NewColorTransform(
-            src, dst, gfx::ColorTransform::Intent::INTENT_PERCEPTUAL);
+            adjusted_src, dst, gfx::ColorTransform::Intent::INTENT_PERCEPTUAL);
     // TODO(backer): Support lookup table transforms (e.g.
     // COLOR_CONVERSION_MODE_LUT).
     if (!transform->CanGetShaderSource())

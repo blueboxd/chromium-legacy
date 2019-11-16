@@ -52,7 +52,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
       scoped_refptr<NGPaintFragment> previous_instance = nullptr);
 
   const NGPhysicalFragment& PhysicalFragment() const {
-    CHECK(!is_layout_object_destroyed_);
+    CHECK(IsAlive());
     return *physical_fragment_;
   }
 
@@ -253,10 +253,6 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   // Returns a range of NGPaintFragment in an inline formatting context that are
   // for a LayoutObject.
   static FragmentRange InlineFragmentsFor(const LayoutObject*);
-  // A safer version that returns empty if the block flow is dirty.
-  // TODO(kojii): If the block flow is dirty, children of these fragments maybe
-  // already deleted. crbug.com/963103
-  static FragmentRange SafeInlineFragmentsFor(const LayoutObject*);
 
   const NGPaintFragment* LastForSameLayoutObject() const;
   NGPaintFragment* LastForSameLayoutObject();
@@ -282,10 +278,12 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   static base::Optional<PhysicalRect> LocalVisualRectFor(const LayoutObject&);
 
  private:
+  bool IsAlive() const { return physical_fragment_->IsAlive(); }
+
   // Returns the first "alive" fragment; i.e., fragment that doesn't have
   // destroyed LayoutObject.
   static NGPaintFragment* FirstAlive(NGPaintFragment* fragment) {
-    while (UNLIKELY(fragment && fragment->is_layout_object_destroyed_))
+    while (UNLIKELY(fragment && !fragment->IsAlive()))
       fragment = fragment->next_sibling_.get();
     return fragment;
   }
@@ -364,9 +362,6 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
 
   // The ink overflow storage for when |InkOverflowOwnerBox()| is nullptr.
   std::unique_ptr<NGContainerInkOverflow> ink_overflow_;
-
-  // Set when the corresponding LayoutObject is destroyed.
-  unsigned is_layout_object_destroyed_ : 1;
 
   // For a line box, this indicates it is dirty. This helps to determine if the
   // fragment is re-usable when part of an inline formatting context is changed.

@@ -2322,15 +2322,18 @@ GURL RenderFrameHostImpl::ComputeSiteForCookiesForNavigation(
   // Check if everything above the frame being navigated is consistent. It's OK
   // to skip checking the frame itself since it will be validated against
   // |site_for_cookies| anyway.
-  return ComputeSiteForCookiesInternal(parent_);
+  return ComputeSiteForCookiesInternal(parent_,
+                                       destination.SchemeIsCryptographic());
 }
 
-GURL RenderFrameHostImpl::ComputeSiteForCookies() const {
-  return ComputeSiteForCookiesInternal(this);
+GURL RenderFrameHostImpl::ComputeSiteForCookies() {
+  return ComputeSiteForCookiesInternal(
+      this, GetLastCommittedURL().SchemeIsCryptographic());
 }
 
 GURL RenderFrameHostImpl::ComputeSiteForCookiesInternal(
-    const RenderFrameHostImpl* render_frame_host) const {
+    const RenderFrameHostImpl* render_frame_host,
+    bool is_origin_secure) const {
 #if defined(OS_ANDROID)
   // On Android, a base URL can be set for the frame. If this the case, it is
   // the URL to use for cookies.
@@ -2350,7 +2353,7 @@ GURL RenderFrameHostImpl::ComputeSiteForCookiesInternal(
   if (GetContentClient()
           ->browser()
           ->ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(
-              top_document_url.scheme_piece())) {
+              top_document_url.scheme_piece(), is_origin_secure)) {
     return top_document_url;
   }
 

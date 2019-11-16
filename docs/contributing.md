@@ -287,11 +287,13 @@ be used in emergencies because it will bypass all the safety nets.
 In addition to the adhering to the [styleguide][cr-styleguide], the following
 general rules of thumb can be helpful in navigating how to structure changes:
 
-- **Code in the Chromium project should be in service of code in the Chromium
-  project.** This is important so developers can understand the constraints
-  informing a design decision. Those constraints should be apparent from the
-  scope of code within the boundary of the project and its various
-  repositories.
+- **Code in the Chromium project should be in service of other code in the
+  Chromium project.** This is important so developers can understand the
+  constraints informing a design decision. Those constraints should be apparent
+  from the scope of code within the boundary of the project and its various
+  repositories. In other words, for each line of code, you should be able to
+  find a product in the Chromium repositories that depends on that line of code
+  or else the line of code should be removed.
 
 - **Code should only be moved to a central location (e.g., //base) when
   multiple consumers would benefit.** We should resist the temptation to

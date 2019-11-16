@@ -103,10 +103,14 @@ class PrerenderTestContentBrowserClient : public TestContentBrowserClient {
 };
 
 const char kTrustMeUrl[] = "trustme://host/path/";
+const char kTrustMeIfEmbeddingSecureUrl[] =
+    "trustmeifembeddingsecure://host/path/";
 
 // Configure trustme: as a scheme that should cause cookies to be treated as
 // first-party when top-level, and also installs a URLLoaderFactory that
 // makes all requests to it via kTrustMeUrl return a particular iframe.
+// Same for trustmeifembeddingsecure, which does the same if the embedded origin
+// is secure.
 class FirstPartySchemeContentBrowserClient : public TestContentBrowserClient {
  public:
   explicit FirstPartySchemeContentBrowserClient(const GURL& iframe_url)
@@ -115,19 +119,27 @@ class FirstPartySchemeContentBrowserClient : public TestContentBrowserClient {
   ~FirstPartySchemeContentBrowserClient() override = default;
 
   bool ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(
-      base::StringPiece scheme) override {
+      base::StringPiece scheme,
+      bool is_embedded_origin_secure) override {
+    if (is_embedded_origin_secure && scheme == "trustmeifembeddingsecure")
+      return true;
     return scheme == "trustme";
   }
 
   void RegisterNonNetworkNavigationURLLoaderFactories(
       int frame_tree_node_id,
       NonNetworkURLLoaderFactoryMap* factories) override {
-    auto test_url_loader_factory =
+    auto trustme_factory = std::make_unique<network::TestURLLoaderFactory>();
+    auto trustmeifembeddingsecure_factory =
         std::make_unique<network::TestURLLoaderFactory>();
-    test_url_loader_factory->AddResponse(
-        kTrustMeUrl,
-        base::StrCat({"<iframe src=\"", iframe_url_.spec(), "\"></iframe>"}));
-    factories->emplace("trustme", std::move(test_url_loader_factory));
+    std::string response_body =
+        base::StrCat({"<iframe src=\"", iframe_url_.spec(), "\"></iframe>"});
+    trustme_factory->AddResponse(kTrustMeUrl, response_body);
+    trustmeifembeddingsecure_factory->AddResponse(kTrustMeIfEmbeddingSecureUrl,
+                                                  response_body);
+    factories->emplace("trustme", std::move(trustme_factory));
+    factories->emplace("trustmeifembeddingsecure",
+                       std::move(trustmeifembeddingsecure_factory));
   }
 
  private:
@@ -144,6 +156,10 @@ class FirstPartySchemeContentBrowserClient : public TestContentBrowserClient {
 // See https://crbug.com/491535
 class RenderFrameHostImplBrowserTest : public ContentBrowserTest {
  public:
+  RenderFrameHostImplBrowserTest()
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+  ~RenderFrameHostImplBrowserTest() override {}
+
   // Return an URL for loading a local test file.
   GURL GetFileURL(const base::FilePath::CharType* file_path) {
     base::FilePath path;
@@ -159,6 +175,10 @@ class RenderFrameHostImplBrowserTest : public ContentBrowserTest {
     SetupCrossSiteRedirector(embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
   }
+  net::EmbeddedTestServer* https_server() { return &https_server_; }
+
+ private:
+  net::EmbeddedTestServer https_server_;
 };
 
 // Test that when creating a new window, the main frame is correctly focused.
@@ -2770,6 +2790,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                        ComputeSiteForCookiesForNavigation) {
+  // Start second server for HTTPS.
+  https_server()->ServeFilesFromSourceDirectory(GetTestDataFilePath());
+  ASSERT_TRUE(https_server()->Start());
+
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a(b(d)),c())");
 
@@ -2778,6 +2802,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 
   GURL b_url = embedded_test_server()->GetURL("b.com", "/");
   GURL c_url = embedded_test_server()->GetURL("c.com", "/");
+  GURL secure_url = https_server()->GetURL("/");
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
   {
@@ -2917,6 +2942,67 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
     EXPECT_EQ(trusty_url.GetOrigin(),
               child_aabd->current_frame_host()
                   ->ComputeSiteForCookiesForNavigation(c_url)
+                  .GetOrigin());
+  }
+
+  // Test trusted scheme that gives first-partiness if the url is secure.
+  GURL trusty_if_secure_url(kTrustMeIfEmbeddingSecureUrl);
+  EXPECT_TRUE(NavigateToURL(shell(), trusty_if_secure_url));
+  {
+    WebContentsImpl* wc =
+        static_cast<WebContentsImpl*>(shell()->web_contents());
+    RenderFrameHostImpl* main_frame =
+        static_cast<RenderFrameHostImpl*>(wc->GetMainFrame());
+    EXPECT_EQ(trusty_if_secure_url.GetOrigin(),
+              main_frame->GetLastCommittedURL().GetOrigin());
+
+    ASSERT_EQ(1u, main_frame->child_count());
+    FrameTreeNode* child_a = main_frame->child_at(0);
+    EXPECT_EQ("a.com", child_a->current_url().host());
+
+    ASSERT_EQ(2u, child_a->child_count());
+    FrameTreeNode* child_aa = child_a->child_at(0);
+    EXPECT_EQ("a.com", child_aa->current_url().host());
+
+    ASSERT_EQ(1u, child_aa->child_count());
+    FrameTreeNode* child_aab = child_aa->child_at(0);
+    EXPECT_EQ("b.com", child_aab->current_url().host());
+
+    ASSERT_EQ(1u, child_aab->child_count());
+    FrameTreeNode* child_aabd = child_aab->child_at(0);
+    EXPECT_EQ("d.com", child_aabd->current_url().host());
+
+    // Main frame navigations are not affected by the special schema.
+    EXPECT_EQ(url.GetOrigin(),
+              main_frame->ComputeSiteForCookiesForNavigation(url).GetOrigin());
+    EXPECT_EQ(
+        b_url.GetOrigin(),
+        main_frame->ComputeSiteForCookiesForNavigation(b_url).GetOrigin());
+    EXPECT_EQ(
+        secure_url.GetOrigin(),
+        main_frame->ComputeSiteForCookiesForNavigation(secure_url).GetOrigin());
+
+    // Child navigation gets the magic scheme iff secure.
+    EXPECT_EQ("", child_aa->current_frame_host()
+                      ->ComputeSiteForCookiesForNavigation(url)
+                      .GetOrigin());
+    EXPECT_EQ("", child_aa->current_frame_host()
+                      ->ComputeSiteForCookiesForNavigation(b_url)
+                      .GetOrigin());
+    EXPECT_EQ(trusty_url.GetOrigin(),
+              child_aa->current_frame_host()
+                  ->ComputeSiteForCookiesForNavigation(secure_url)
+                  .GetOrigin());
+
+    EXPECT_EQ("", child_aabd->current_frame_host()
+                      ->ComputeSiteForCookiesForNavigation(url)
+                      .GetOrigin());
+    EXPECT_EQ("", child_aabd->current_frame_host()
+                      ->ComputeSiteForCookiesForNavigation(b_url)
+                      .GetOrigin());
+    EXPECT_EQ(trusty_url.GetOrigin(),
+              child_aabd->current_frame_host()
+                  ->ComputeSiteForCookiesForNavigation(secure_url)
                   .GetOrigin());
   }
 

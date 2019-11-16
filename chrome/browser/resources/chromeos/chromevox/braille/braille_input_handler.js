@@ -8,19 +8,19 @@
  * that is built into Chrome OS to do the actual text editing.
  */
 
-goog.provide('cvox.BrailleInputHandler');
+goog.provide('BrailleInputHandler');
 
 goog.require('StringUtil');
-goog.require('cvox.BrailleKeyCommand');
-goog.require('cvox.BrailleKeyEvent');
-goog.require('cvox.ExpandingBrailleTranslator');
+goog.require('BrailleKeyCommand');
+goog.require('BrailleKeyEvent');
+goog.require('ExpandingBrailleTranslator');
 
 /**
- * @param {!cvox.BrailleTranslatorManager} translatorManager Keeps track of
+ * @param {!BrailleTranslatorManager} translatorManager Keeps track of
  *     the current braille translator(s).
  * @constructor
  */
-cvox.BrailleInputHandler = function(translatorManager) {
+BrailleInputHandler = function(translatorManager) {
   /**
    * Port of the connected IME if any.
    * @type {Port}
@@ -42,7 +42,7 @@ cvox.BrailleInputHandler = function(translatorManager) {
    */
   this.inputContext_ = null;
   /**
-   * @type {!cvox.BrailleTranslatorManager}
+   * @type {!BrailleTranslatorManager}
    * @private
    */
   this.translatorManager_ = translatorManager;
@@ -69,12 +69,12 @@ cvox.BrailleInputHandler = function(translatorManager) {
    */
   this.pendingCells_ = [];
   /**
-   * @type {cvox.BrailleInputHandler.EntryState_}
+   * @type {BrailleInputHandler.EntryState_}
    * @private
    */
   this.entryState_ = null;
   /**
-   * @type {cvox.ExtraCellsSpan}
+   * @type {ExtraCellsSpan}
    * @private
    */
   this.uncommittedCellsSpan_ = null;
@@ -93,14 +93,14 @@ cvox.BrailleInputHandler = function(translatorManager) {
  * @const {string}
  * @private
  */
-cvox.BrailleInputHandler.IME_EXTENSION_ID_ = 'jddehjeebkoimngcbdkaahpobgicbffp';
+BrailleInputHandler.IME_EXTENSION_ID_ = 'jddehjeebkoimngcbdkaahpobgicbffp';
 
 /**
  * Name of the port to use for communicating with the Braille IME.
  * @const {string}
  * @private
  */
-cvox.BrailleInputHandler.IME_PORT_NAME_ = 'cvox.BrailleIme.Port';
+BrailleInputHandler.IME_PORT_NAME_ = 'BrailleIme.Port';
 
 /**
  * Regular expression that matches a string that starts with at least one
@@ -108,7 +108,7 @@ cvox.BrailleInputHandler.IME_PORT_NAME_ = 'cvox.BrailleIme.Port';
  * @const {RegExp}
  * @private
  */
-cvox.BrailleInputHandler.STARTS_WITH_NON_WHITESPACE_RE_ = /^\S/;
+BrailleInputHandler.STARTS_WITH_NON_WHITESPACE_RE_ = /^\S/;
 
 /**
  * Regular expression that matches a string that ends with at least one
@@ -116,9 +116,9 @@ cvox.BrailleInputHandler.STARTS_WITH_NON_WHITESPACE_RE_ = /^\S/;
  * @const {RegExp}
  * @private
  */
-cvox.BrailleInputHandler.ENDS_WITH_NON_WHITESPACE_RE_ = /\S$/;
+BrailleInputHandler.ENDS_WITH_NON_WHITESPACE_RE_ = /\S$/;
 
-cvox.BrailleInputHandler.prototype = {
+BrailleInputHandler.prototype = {
   /**
    * Starts to listen for connections from the Chrome OS braille IME.
    */
@@ -134,8 +134,8 @@ cvox.BrailleInputHandler.prototype = {
    *     have changed.
    */
   onDisplayContentChanged: function(text, listener) {
-    var valueSpan = text.getSpanInstanceOf(cvox.ValueSpan);
-    var selectionSpan = text.getSpanInstanceOf(cvox.ValueSelectionSpan);
+    var valueSpan = text.getSpanInstanceOf(ValueSpan);
+    var selectionSpan = text.getSpanInstanceOf(ValueSelectionSpan);
     if (!(valueSpan && selectionSpan)) {
       return;
     }
@@ -158,7 +158,7 @@ cvox.BrailleInputHandler.prototype = {
     }
     this.currentTextBefore_ = newTextBefore;
     this.currentTextAfter_ = text.toString().substring(selectionEnd, valueEnd);
-    this.uncommittedCellsSpan_ = new cvox.ExtraCellsSpan();
+    this.uncommittedCellsSpan_ = new ExtraCellsSpan();
     text.setSpan(this.uncommittedCellsSpan_, selectionStart, selectionStart);
     if (this.entryState_ && this.entryState_.usesUncommittedCells) {
       this.updateUncommittedCells_(
@@ -170,17 +170,17 @@ cvox.BrailleInputHandler.prototype = {
   /**
    * Handles braille key events used for input by editing the current input
    * field appropriately.
-   * @param {!cvox.BrailleKeyEvent} event The key event.
+   * @param {!BrailleKeyEvent} event The key event.
    * @return {boolean} {@code true} if the event was handled, {@code false}
    *     if it should propagate further.
    */
   onBrailleKeyEvent: function(event) {
-    if (event.command === cvox.BrailleKeyCommand.DOTS) {
+    if (event.command === BrailleKeyCommand.DOTS) {
       return this.onBrailleDots_(/** @type {number} */ (event.brailleDots));
     }
     // Any other braille command cancels the pending cells.
     this.pendingCells_.length = 0;
-    if (event.command === cvox.BrailleKeyCommand.STANDARD_KEY) {
+    if (event.command === BrailleKeyCommand.STANDARD_KEY) {
       if (event.standardKeyCode === 'Backspace' && !event.altKey &&
           !event.ctrlKey && !event.shiftKey && this.onBackspace_()) {
         return true;
@@ -196,19 +196,19 @@ cvox.BrailleInputHandler.prototype = {
   /**
    * Returns how the value of the currently displayed content should be
    * expanded given the current input state.
-   * @return {cvox.ExpandingBrailleTranslator.ExpansionType}
+   * @return {ExpandingBrailleTranslator.ExpansionType}
    *     The current expansion type.
    */
   getExpansionType: function() {
     if (this.inAlwaysUncontractedContext_()) {
-      return cvox.ExpandingBrailleTranslator.ExpansionType.ALL;
+      return ExpandingBrailleTranslator.ExpansionType.ALL;
     }
     if (this.entryState_ &&
         this.entryState_.translator ===
             this.translatorManager_.getDefaultTranslator()) {
-      return cvox.ExpandingBrailleTranslator.ExpansionType.NONE;
+      return ExpandingBrailleTranslator.ExpansionType.NONE;
     }
-    return cvox.ExpandingBrailleTranslator.ExpansionType.SELECTION;
+    return ExpandingBrailleTranslator.ExpansionType.SELECTION;
   },
 
   /**
@@ -262,7 +262,7 @@ cvox.BrailleInputHandler.prototype = {
   /**
    * Creates a new empty {@code EntryState_} based on the current input context
    * and surrounding text.
-   * @return {cvox.BrailleInputHandler.EntryState_} The newly created state
+   * @return {BrailleInputHandler.EntryState_} The newly created state
    *     object, or null if it couldn't be created (e.g. if there's no braille
    *     translator available yet).
    * @private
@@ -274,18 +274,17 @@ cvox.BrailleInputHandler.prototype = {
     }
     var uncontractedTranslator =
         this.translatorManager_.getUncontractedTranslator();
-    var constructor = cvox.BrailleInputHandler.EditsEntryState_;
+    var constructor = BrailleInputHandler.EditsEntryState_;
     if (uncontractedTranslator) {
       var textBefore = this.currentTextBefore_;
       var textAfter = this.currentTextAfter_;
       if (this.inAlwaysUncontractedContext_() ||
-          (cvox.BrailleInputHandler.ENDS_WITH_NON_WHITESPACE_RE_.test(
-              textBefore)) ||
-          (cvox.BrailleInputHandler.STARTS_WITH_NON_WHITESPACE_RE_.test(
+          (BrailleInputHandler.ENDS_WITH_NON_WHITESPACE_RE_.test(textBefore)) ||
+          (BrailleInputHandler.STARTS_WITH_NON_WHITESPACE_RE_.test(
               textAfter))) {
         translator = uncontractedTranslator;
       } else {
-        constructor = cvox.BrailleInputHandler.LateCommitEntryState_;
+        constructor = BrailleInputHandler.LateCommitEntryState_;
       }
     }
 
@@ -338,8 +337,8 @@ cvox.BrailleInputHandler.prototype = {
    * @private
    */
   onImeConnect_: function(port) {
-    if (port.name !== cvox.BrailleInputHandler.IME_PORT_NAME_ ||
-        port.sender.id !== cvox.BrailleInputHandler.IME_EXTENSION_ID_) {
+    if (port.name !== BrailleInputHandler.IME_PORT_NAME_ ||
+        port.sender.id !== BrailleInputHandler.IME_EXTENSION_ID_) {
       return;
     }
     if (this.imePort_) {
@@ -425,7 +424,7 @@ cvox.BrailleInputHandler.prototype = {
   /**
    * Sends a {@code keydown} key event followed by a {@code keyup} event
    * corresponding to an event generated by the braille display.
-   * @param {!cvox.BrailleKeyEvent} event The braille key event to base the
+   * @param {!BrailleKeyEvent} event The braille key event to base the
    *     key events on.
    * @private
    */
@@ -434,7 +433,7 @@ cvox.BrailleInputHandler.prototype = {
       // Use the virtual keyboard API instead of the IME key event API
       // so that these keys work even if the Braille IME is not active.
       var keyName = /** @type {string} */ (event.standardKeyCode);
-      var numericCode = cvox.BrailleKeyEvent.keyCodeToLegacyCode(keyName);
+      var numericCode = BrailleKeyEvent.keyCodeToLegacyCode(keyName);
       if (!goog.isDef(numericCode)) {
         throw Error('Unknown key code in event: ' + JSON.stringify(event));
       }
@@ -459,21 +458,21 @@ cvox.BrailleInputHandler.prototype = {
  * The entry state is the state related to entering a series of braille cells
  * without 'interruption', where interruption can be things like non braille
  * keyboard input or unexpected changes to the text surrounding the cursor.
- * @param {!cvox.BrailleInputHandler} inputHandler
- * @param {!cvox.LibLouis.Translator} translator
+ * @param {!BrailleInputHandler} inputHandler
+ * @param {!LibLouis.Translator} translator
  * @constructor
  * @private
  */
-cvox.BrailleInputHandler.EntryState_ = function(inputHandler, translator) {
+BrailleInputHandler.EntryState_ = function(inputHandler, translator) {
   /**
-   * @type {cvox.BrailleInputHandler}
+   * @type {BrailleInputHandler}
    * @private
    */
   this.inputHandler_ = inputHandler;
   /**
    * The translator currently used for typing, if
    * {@code this.cells_.length > 0}.
-   * @type {!cvox.LibLouis.Translator}
+   * @type {!LibLouis.Translator}
    * @private
    */
   this.translator_ = translator;
@@ -499,9 +498,9 @@ cvox.BrailleInputHandler.EntryState_ = function(inputHandler, translator) {
   this.pendingTextsBefore_ = [];
 };
 
-cvox.BrailleInputHandler.EntryState_.prototype = {
+BrailleInputHandler.EntryState_.prototype = {
   /**
-   * @return {!cvox.LibLouis.Translator} The translator used by this entry
+   * @return {!LibLouis.Translator} The translator used by this entry
    *     state.  This doesn't change for a given object.
    */
   get translator() {
@@ -614,18 +613,18 @@ cvox.BrailleInputHandler.EntryState_.prototype = {
 /**
  * Entry state that uses {@code deleteSurroundingText} and {@code commitText}
  * calls to the IME to update the currently enetered text.
- * @param {!cvox.BrailleInputHandler} inputHandler
- * @param {!cvox.LibLouis.Translator} translator
+ * @param {!BrailleInputHandler} inputHandler
+ * @param {!LibLouis.Translator} translator
  * @constructor
- * @extends {cvox.BrailleInputHandler.EntryState_}
+ * @extends {BrailleInputHandler.EntryState_}
  * @private
  */
-cvox.BrailleInputHandler.EditsEntryState_ = function(inputHandler, translator) {
-  cvox.BrailleInputHandler.EntryState_.call(this, inputHandler, translator);
+BrailleInputHandler.EditsEntryState_ = function(inputHandler, translator) {
+  BrailleInputHandler.EntryState_.call(this, inputHandler, translator);
 };
 
-cvox.BrailleInputHandler.EditsEntryState_.prototype = {
-  __proto__: cvox.BrailleInputHandler.EntryState_.prototype,
+BrailleInputHandler.EditsEntryState_.prototype = {
+  __proto__: BrailleInputHandler.EntryState_.prototype,
 
   /** @override */
   sendTextChange_: function(newText) {
@@ -668,19 +667,18 @@ cvox.BrailleInputHandler.EditsEntryState_.prototype = {
  * Entry state that only updates the edit field when a blank cell is entered.
  * During the input of a single 'word', the uncommitted text is stored by the
  * IME.
- * @param {!cvox.BrailleInputHandler} inputHandler
- * @param {!cvox.LibLouis.Translator} translator
+ * @param {!BrailleInputHandler} inputHandler
+ * @param {!LibLouis.Translator} translator
  * @constructor
  * @private
- * @extends {cvox.BrailleInputHandler.EntryState_}
+ * @extends {BrailleInputHandler.EntryState_}
  */
-cvox.BrailleInputHandler.LateCommitEntryState_ = function(
-    inputHandler, translator) {
-  cvox.BrailleInputHandler.EntryState_.call(this, inputHandler, translator);
+BrailleInputHandler.LateCommitEntryState_ = function(inputHandler, translator) {
+  BrailleInputHandler.EntryState_.call(this, inputHandler, translator);
 };
 
-cvox.BrailleInputHandler.LateCommitEntryState_.prototype = {
-  __proto__: cvox.BrailleInputHandler.EntryState_.prototype,
+BrailleInputHandler.LateCommitEntryState_.prototype = {
+  __proto__: BrailleInputHandler.EntryState_.prototype,
 
   /** @override */
   commit: function() {

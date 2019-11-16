@@ -16,7 +16,6 @@
 #include "base/test/task_environment.h"
 #include "components/services/storage/dom_storage/async_dom_storage_database.h"
 #include "components/services/storage/dom_storage/dom_storage_database.h"
-#include "components/services/storage/public/mojom/key_value_pair.mojom.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
@@ -52,26 +51,25 @@ class MockListener : public SessionStorageDataMap::Listener {
 };
 
 void GetAllDataCallback(bool* success_out,
-                        std::vector<storage::mojom::KeyValuePairPtr>* data_out,
+                        std::vector<blink::mojom::KeyValuePtr>* data_out,
                         bool success,
-                        std::vector<storage::mojom::KeyValuePairPtr> data) {
+                        std::vector<blink::mojom::KeyValuePtr> data) {
   *success_out = success;
   *data_out = std::move(data);
 }
 
 base::OnceCallback<void(bool success,
-                        std::vector<storage::mojom::KeyValuePairPtr> data)>
+                        std::vector<blink::mojom::KeyValuePtr> data)>
 MakeGetAllCallback(bool* sucess_out,
-                   std::vector<storage::mojom::KeyValuePairPtr>* data_out) {
+                   std::vector<blink::mojom::KeyValuePtr>* data_out) {
   return base::BindOnce(&GetAllDataCallback, sucess_out, data_out);
 }
 
-class GetAllCallback : public storage::mojom::DomStorageAreaGetAllCallback {
+class GetAllCallback : public blink::mojom::StorageAreaGetAllCallback {
  public:
-  static mojo::PendingAssociatedRemote<
-      storage::mojom::DomStorageAreaGetAllCallback>
+  static mojo::PendingAssociatedRemote<blink::mojom::StorageAreaGetAllCallback>
   CreateAndBind(bool* result, base::OnceClosure callback) {
-    mojo::AssociatedRemote<storage::mojom::DomStorageAreaGetAllCallback> remote;
+    mojo::AssociatedRemote<blink::mojom::StorageAreaGetAllCallback> remote;
     mojo::MakeSelfOwnedAssociatedReceiver(
         base::WrapUnique(new GetAllCallback(result, std::move(callback))),
         remote.BindNewEndpointAndPassDedicatedReceiverForTesting());
@@ -163,7 +161,7 @@ TEST_F(SessionStorageDataMapTest, BasicEmptyCreation) {
           database_.get());
 
   bool success;
-  std::vector<storage::mojom::KeyValuePairPtr> data;
+  std::vector<blink::mojom::KeyValuePtr> data;
   bool done = false;
   base::RunLoop loop;
   map->storage_area()->GetAll(
@@ -195,7 +193,7 @@ TEST_F(SessionStorageDataMapTest, ExplicitlyEmpty) {
       database_.get());
 
   bool success;
-  std::vector<storage::mojom::KeyValuePairPtr> data;
+  std::vector<blink::mojom::KeyValuePtr> data;
   bool done = false;
   base::RunLoop loop;
   map->storage_area()->GetAll(
@@ -240,7 +238,7 @@ TEST_F(SessionStorageDataMapTest, Clone) {
           map1);
 
   bool success;
-  std::vector<storage::mojom::KeyValuePairPtr> data;
+  std::vector<blink::mojom::KeyValuePtr> data;
   bool done = false;
   base::RunLoop loop;
   map2->storage_area()->GetAll(

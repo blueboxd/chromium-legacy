@@ -796,9 +796,10 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, IdleWakeups) {
   ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(1, MatchTab("title1.html")));
 }
 
+// Crashes on multiple builders.  http://crbug.com/1025346
 // Checks that task manager counts utility process JS heap size.
 IN_PROC_BROWSER_TEST_F(TaskManagerUtilityProcessBrowserTest,
-                       UtilityJSHeapMemory) {
+                       DISABLED_UtilityJSHeapMemory) {
   ShowTaskManager();
   model()->ToggleColumnVisibility(ColumnSpecifier::V8_MEMORY);
 

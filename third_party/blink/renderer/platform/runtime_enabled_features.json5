@@ -978,6 +978,10 @@
       name: "MediaEngagementBypassAutoplayPolicies",
     },
     {
+      name: "MediaLatencyHint",
+      status: "test",
+    },
+    {
       name: "MediaQueryNavigationControls",
     },
     {

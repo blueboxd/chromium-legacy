@@ -1,6 +1,5 @@
 include_rules = [
   "+crypto",
-  "+gin",
   "+mojo/public",
   "+net/net_jni_headers",
   "+third_party/apple_apsl",
@@ -8,7 +7,6 @@ include_rules = [
   "+third_party/nss",
   "+third_party/protobuf/src/google/protobuf",
   "+third_party/zlib",
-  "+v8",
 
   # Most of net should not depend on icu, and brotli to keep size down when
   # built as a library.

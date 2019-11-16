@@ -13,7 +13,7 @@ goog.provide('ChromeVoxStateObserver');
 
 goog.require('cursors.Cursor');
 goog.require('cursors.Range');
-goog.require('cvox.BrailleKeyEvent');
+goog.require('BrailleKeyEvent');
 
 /**
  * An interface implemented by objects that want to observe ChromeVox state
@@ -91,8 +91,8 @@ ChromeVoxState.prototype = {
 
   /**
    * Handles a braille command.
-   * @param {!cvox.BrailleKeyEvent} evt
-   * @param {!cvox.NavBraille} content
+   * @param {!BrailleKeyEvent} evt
+   * @param {!NavBraille} content
    * @return {boolean} True if evt was processed.
    */
   onBrailleKeyEvent: goog.abstractMethod

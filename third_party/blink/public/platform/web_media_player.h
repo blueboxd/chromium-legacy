@@ -149,6 +149,12 @@ class WebMediaPlayer {
   virtual void SetRate(double) = 0;
   virtual void SetVolume(double) = 0;
 
+  // Set a target value for media pipeline latency for post-decode buffering.
+  // |seconds| is a target value for post-decode buffering latency. As a default
+  // |seconds| may also be NaN, indicating no preference. NaN will also be the
+  // value if the hint is cleared.
+  virtual void SetLatencyHint(double seconds) = 0;
+
   // The associated media element is going to enter Picture-in-Picture. This
   // method should make sure the player is set up for this and has a SurfaceId
   // as it will be needed.

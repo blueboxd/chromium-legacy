@@ -469,9 +469,13 @@ void ScrollableShelfView::OnFocusRingActivationChanged(bool activated) {
   if (activated) {
     focus_ring_activated_ = true;
     SetPaneFocusAndFocusDefault();
+    if (IsInTabletMode() && chromeos::switches::ShouldShowShelfHotseat())
+      GetShelf()->shelf_widget()->ForceToShowHotseat();
   } else {
     // Shows the gradient shader when the focus ring is disabled.
     focus_ring_activated_ = false;
+    if (IsInTabletMode() && chromeos::switches::ShouldShowShelfHotseat())
+      GetShelf()->shelf_widget()->ForceToHideHotseat();
   }
 
   // Not needs to update the gradient areas. Returns early.
@@ -483,7 +487,7 @@ void ScrollableShelfView::OnFocusRingActivationChanged(bool activated) {
 }
 
 void ScrollableShelfView::ScrollToNewPage(bool forward) {
-  float offset = CalculatePageScrollingOffset(forward);
+  const float offset = CalculatePageScrollingOffset(forward, layout_strategy_);
   if (GetShelf()->IsHorizontalAlignment())
     ScrollByXOffset(offset, /*animating=*/true);
   else
@@ -592,25 +596,25 @@ void ScrollableShelfView::StartShelfScrollAnimation(float scroll_distance) {
   shelf_view_->layer()->SetTransform(current_transform);
 }
 
-void ScrollableShelfView::UpdateLayoutStrategy() {
-  if (CanFitAllAppsWithoutScrolling()) {
-    layout_strategy_ = kNotShowArrowButtons;
-    return;
+ScrollableShelfView::LayoutStrategy
+ScrollableShelfView::CalculateLayoutStrategy(
+    int scroll_distance_on_main_axis) const {
+  if (CanFitAllAppsWithoutScrolling())
+    return kNotShowArrowButtons;
+
+  if (scroll_distance_on_main_axis == 0) {
+    // No invisible shelf buttons at the left side. So hide the left button.
+    return kShowRightArrowButton;
   }
 
-  int scroll_length = GetShelf()->IsHorizontalAlignment() ? scroll_offset_.x()
-                                                          : scroll_offset_.y();
-  if (scroll_length == 0) {
-    // No invisible shelf buttons at the left side. So hide the left button.
-    layout_strategy_ = kShowRightArrowButton;
-  } else if (scroll_length == CalculateScrollUpperBound()) {
+  if (scroll_distance_on_main_axis == CalculateScrollUpperBound()) {
     // If there is no invisible shelf button at the right side, hide the right
     // button.
-    layout_strategy_ = kShowLeftArrowButton;
-  } else {
-    // There are invisible shelf buttons at both sides. So show two buttons.
-    layout_strategy_ = kShowButtons;
+    return kShowLeftArrowButton;
   }
+
+  // There are invisible shelf buttons at both sides. So show two buttons.
+  return kShowButtons;
 }
 
 bool ScrollableShelfView::ShouldAdaptToRTL() const {
@@ -677,7 +681,7 @@ void ScrollableShelfView::Layout() {
   else
     scroll_offset_.set_y(CalculateClampedScrollOffset(scroll_offset_.y()));
 
-  UpdateLayoutStrategy();
+  layout_strategy_ = CalculateLayoutStrategy(CalculateMainAxisScrollDistance());
 
   gfx::Size arrow_button_size(kArrowButtonSize, kArrowButtonSize);
   gfx::Rect shelf_container_bounds = gfx::Rect(size());
@@ -1217,7 +1221,7 @@ bool ScrollableShelfView::ProcessGestureEvent(const ui::GestureEvent& event) {
                                     ? event.details().velocity_x()
                                     : event.details().velocity_y();
     float page_scrolling_offset =
-        CalculatePageScrollingOffset(scroll_velocity < 0);
+        CalculatePageScrollingOffset(scroll_velocity < 0, layout_strategy_);
     if (is_horizontal_alignment) {
       ScrollToXOffset(
           scroll_offset_before_main_axis_scrolling_.x() + page_scrolling_offset,
@@ -1273,11 +1277,13 @@ void ScrollableShelfView::HandleMouseWheelEvent(ui::MouseWheelEvent* event) {
     // contents.
     float max_absolute_offset =
         abs(x_offset) > abs(y_offset) ? x_offset : y_offset;
-    ScrollByXOffset(CalculatePageScrollingOffset(max_absolute_offset < 0),
-                    /*animating=*/true);
+    ScrollByXOffset(
+        CalculatePageScrollingOffset(max_absolute_offset < 0, layout_strategy_),
+        /*animating=*/true);
   } else {
-    ScrollByYOffset(CalculatePageScrollingOffset(event->y_offset() < 0),
-                    /*animating=*/true);
+    ScrollByYOffset(
+        CalculatePageScrollingOffset(event->y_offset() < 0, layout_strategy_),
+        /*animating=*/true);
   }
 }
 
@@ -1312,8 +1318,15 @@ void ScrollableShelfView::ScrollToYOffset(float y_target_offset,
     StartShelfScrollAnimation(diff);
 }
 
-float ScrollableShelfView::CalculatePageScrollingOffset(bool forward) const {
-  DCHECK_NE(kNotShowArrowButtons, layout_strategy_);
+float ScrollableShelfView::CalculatePageScrollingOffset(
+    bool forward,
+    LayoutStrategy layout_strategy) const {
+  // Returns zero if inputs are invalid.
+  const bool invalid = (layout_strategy == kNotShowArrowButtons) ||
+                       (layout_strategy == kShowLeftArrowButton && forward) ||
+                       (layout_strategy == kShowRightArrowButton && !forward);
+  if (invalid)
+    return 0;
 
   // Implement the arrow button handler in the same way with the gesture
   // scrolling. The key is to calculate the suitable scroll distance.
@@ -1323,7 +1336,7 @@ float ScrollableShelfView::CalculatePageScrollingOffset(bool forward) const {
   // The available space for icons excluding the area taken by arrow button(s).
   int space_excluding_arrow;
 
-  if (layout_strategy_ == kShowRightArrowButton) {
+  if (layout_strategy == kShowRightArrowButton) {
     space_excluding_arrow = GetSpaceForIcons() - kArrowButtonGroupWidth;
 
     // After scrolling, the left arrow button will show. Adapts the offset
@@ -1333,15 +1346,15 @@ float ScrollableShelfView::CalculatePageScrollingOffset(bool forward) const {
 
     const int mod = space_excluding_arrow % GetUnit();
     offset = space_excluding_arrow - mod - offset_for_extra_arrow;
-  } else if (layout_strategy_ == kShowButtons ||
-             layout_strategy_ == kShowLeftArrowButton) {
+  } else if (layout_strategy == kShowButtons ||
+             layout_strategy == kShowLeftArrowButton) {
     space_excluding_arrow = GetSpaceForIcons() - 2 * kArrowButtonGroupWidth;
     const int mod = space_excluding_arrow % GetUnit();
     offset = space_excluding_arrow - mod;
 
     // Layout of kShowLeftArrowButton can be regarded as the layout of
     // kShowButtons with extra offset.
-    if (layout_strategy_ == kShowLeftArrowButton) {
+    if (layout_strategy == kShowLeftArrowButton) {
       const int extra_offset =
           -ShelfConfig::Get()->button_spacing() -
           (GetSpaceForIcons() - kArrowButtonGroupWidth) % GetUnit() +
@@ -1460,46 +1473,57 @@ void ScrollableShelfView::UpdateGradientZoneState() {
 }
 
 int ScrollableShelfView::GetActualScrollOffset() const {
-  int scroll_distance = GetShelf()->IsHorizontalAlignment()
-                            ? scroll_offset_.x()
-                            : scroll_offset_.y();
+  int scroll_distance = CalculateMainAxisScrollDistance();
   if (left_arrow_->GetVisible())
     scroll_distance += (kArrowButtonGroupWidth - GetAppIconEndPadding());
   return scroll_distance;
 }
 
 void ScrollableShelfView::UpdateTappableIconIndices() {
-  if (layout_strategy_ == kNotShowArrowButtons) {
-    first_tappable_app_index_ = shelf_view_->first_visible_index();
-    last_tappable_app_index_ = shelf_view_->last_visible_index();
-    return;
+  const std::pair<int, int> tappable_indices = CalculateTappableIconIndices(
+      layout_strategy_, CalculateMainAxisScrollDistance());
+  first_tappable_app_index_ = tappable_indices.first;
+  last_tappable_app_index_ = tappable_indices.second;
+}
+
+std::pair<int, int> ScrollableShelfView::CalculateTappableIconIndices(
+    ScrollableShelfView::LayoutStrategy layout_strategy,
+    int scroll_distance_on_main_axis) const {
+  std::pair<int, int> tappable_icon_indices;
+
+  int& first_tappable_app_index = tappable_icon_indices.first;
+  int& last_tappable_app_index = tappable_icon_indices.second;
+
+  if (layout_strategy == ScrollableShelfView::kNotShowArrowButtons) {
+    first_tappable_app_index = shelf_view_->first_visible_index();
+    last_tappable_app_index = shelf_view_->last_visible_index();
+    return tappable_icon_indices;
   }
 
-  const int scroll_distance_on_main_axis = GetShelf()->IsHorizontalAlignment()
-                                               ? scroll_offset_.x()
-                                               : scroll_offset_.y();
   const int visible_size = GetShelf()->IsHorizontalAlignment()
                                ? visible_space_.width()
                                : visible_space_.height();
 
-  if (layout_strategy_ == kShowRightArrowButton ||
-      layout_strategy_ == kShowButtons) {
-    first_tappable_app_index_ = scroll_distance_on_main_axis / GetUnit() +
-                                (layout_strategy_ == kShowButtons ? 1 : 0);
-    last_tappable_app_index_ =
-        first_tappable_app_index_ + visible_size / GetUnit();
+  if (layout_strategy == kShowRightArrowButton ||
+      layout_strategy == kShowButtons) {
+    first_tappable_app_index = scroll_distance_on_main_axis / GetUnit() +
+                               (layout_strategy == kShowButtons ? 1 : 0);
+    last_tappable_app_index =
+        first_tappable_app_index + visible_size / GetUnit();
 
-    const int end_of_last_tappable_app = last_tappable_app_index_ * GetUnit() +
+    const int end_of_last_tappable_app = last_tappable_app_index * GetUnit() +
                                          ShelfConfig::Get()->button_size() -
                                          scroll_distance_on_main_axis;
     if (end_of_last_tappable_app > visible_size)
-      last_tappable_app_index_--;
+      last_tappable_app_index--;
   } else {
-    DCHECK_EQ(layout_strategy_, kShowLeftArrowButton);
-    last_tappable_app_index_ = shelf_view_->last_visible_index();
-    first_tappable_app_index_ =
-        last_tappable_app_index_ - visible_size / GetUnit() + 1;
+    DCHECK_EQ(layout_strategy, kShowLeftArrowButton);
+    last_tappable_app_index = shelf_view_->last_visible_index();
+    first_tappable_app_index =
+        last_tappable_app_index - visible_size / GetUnit() + 1;
   }
+
+  return tappable_icon_indices;
 }
 
 views::View* ScrollableShelfView::FindFirstFocusableChild() {
@@ -1572,9 +1596,7 @@ void ScrollableShelfView::AdjustOffset() {
 
 int ScrollableShelfView::CalculateAdjustedOffset() const {
   // Returns early when it does not need to adjust the shelf view's location.
-  const int scroll_distance = GetShelf()->IsHorizontalAlignment()
-                                  ? scroll_offset_.x()
-                                  : scroll_offset_.y();
+  const int scroll_distance = CalculateMainAxisScrollDistance();
   if (scroll_distance >= CalculateScrollUpperBound())
     return 0;
 
@@ -1707,6 +1729,11 @@ bool ScrollableShelfView::ShouldDelegateScrollToShelf(
   // We only delegate to the shelf scroll events across the main axis,
   // otherwise, let them propagate and be handled as MouseWheel Events.
   return std::abs(main_offset) < std::abs(cross_offset);
+}
+
+float ScrollableShelfView::CalculateMainAxisScrollDistance() const {
+  return GetShelf()->IsHorizontalAlignment() ? scroll_offset_.x()
+                                             : scroll_offset_.y();
 }
 
 }  // namespace ash

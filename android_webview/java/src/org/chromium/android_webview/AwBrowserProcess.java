@@ -262,6 +262,55 @@ public final class AwBrowserProcess {
         return crashesInfoList;
     }
 
+    private static void deleteMinidumps(final File[] minidumpFiles) {
+        for (File minidump : minidumpFiles) {
+            if (!minidump.delete()) {
+                Log.w(TAG, "Couldn't delete file " + minidump.getAbsolutePath());
+            }
+        }
+    }
+
+    private static void transmitMinidumps(final File[] minidumpFiles,
+            final Map<String, Map<String, String>> crashesInfoMap,
+            final ICrashReceiverService service) {
+        // Pass file descriptors pointing to our minidumps to the
+        // minidump-copying service, allowing it to copy contents of the
+        // minidumps to WebView's data directory.
+        // Delete the app filesystem references to the minidumps after passing
+        // the file descriptors so that we avoid trying to copy the minidumps
+        // again if anything goes wrong. This makes sense given that a failure
+        // to copy a file usually means that retrying won't succeed either,
+        // because e.g. the disk is full, or the file system is corrupted.
+        final ParcelFileDescriptor[] minidumpFds = new ParcelFileDescriptor[minidumpFiles.length];
+        try {
+            for (int i = 0; i < minidumpFiles.length; ++i) {
+                try {
+                    minidumpFds[i] = ParcelFileDescriptor.open(
+                            minidumpFiles[i], ParcelFileDescriptor.MODE_READ_ONLY);
+                } catch (FileNotFoundException e) {
+                    minidumpFds[i] = null; // This is slightly ugly :)
+                }
+            }
+            try {
+                List<Map<String, String>> crashesInfoList =
+                        getCrashKeysForCrashFiles(minidumpFiles, crashesInfoMap);
+                service.transmitCrashes(minidumpFds, crashesInfoList);
+            } catch (RemoteException e) {
+                // TODO(gsennton): add a UMA metric here to ensure we aren't losing
+                // too many minidumps because of this.
+            }
+        } finally {
+            deleteMinidumps(minidumpFiles);
+            // Close FDs
+            for (int i = 0; i < minidumpFds.length; ++i) {
+                try {
+                    if (minidumpFds[i] != null) minidumpFds[i].close();
+                } catch (IOException e) {
+                }
+            }
+        }
+    }
+
     /**
      * Pass Minidumps to a separate Service declared in the WebView provider package.
      * That Service will copy the Minidumps to its own data directory - at which point we can delete
@@ -286,11 +335,7 @@ public final class AwBrowserProcess {
 
             // Delete the minidumps if the user doesn't allow crash data uploading.
             if (!userApproved) {
-                for (File minidump : minidumpFiles) {
-                    if (!minidump.delete()) {
-                        Log.w(TAG, "Couldn't delete file " + minidump.getAbsolutePath());
-                    }
-                }
+                deleteMinidumps(minidumpFiles);
                 return;
             }
 
@@ -300,48 +345,13 @@ public final class AwBrowserProcess {
             ServiceConnection connection = new ServiceConnection() {
                 @Override
                 public void onServiceConnected(ComponentName className, IBinder service) {
-                    // Pass file descriptors, pointing to our minidumps, to the minidump-copying
-                    // service so that the contents of the minidumps will be copied to WebView's
-                    // data directory. Delete our direct File-references to the minidumps after
-                    // creating the file-descriptors to resign from retrying to copy the
-                    // minidumps if anything goes wrong - this makes sense given that a failure
-                    // to copy a file usually means that retrying won't succeed either, e.g. the
-                    // disk being full, or the file system being corrupted.
-                    final ParcelFileDescriptor[] minidumpFds =
-                            new ParcelFileDescriptor[minidumpFiles.length];
-                    try {
-                        for (int i = 0; i < minidumpFiles.length; ++i) {
-                            try {
-                                minidumpFds[i] = ParcelFileDescriptor.open(
-                                        minidumpFiles[i], ParcelFileDescriptor.MODE_READ_ONLY);
-                            } catch (FileNotFoundException e) {
-                                minidumpFds[i] = null; // This is slightly ugly :)
-                            }
-                            if (!minidumpFiles[i].delete()) {
-                                Log.w(TAG,
-                                        "Couldn't delete file "
-                                                + minidumpFiles[i].getAbsolutePath());
-                            }
-                        }
-                        try {
-                            List<Map<String, String>> crashesInfoList =
-                                    getCrashKeysForCrashFiles(minidumpFiles, crashesInfoMap);
-                            ICrashReceiverService.Stub.asInterface(service).transmitCrashes(
-                                    minidumpFds, crashesInfoList);
-                        } catch (RemoteException e) {
-                            // TODO(gsennton): add a UMA metric here to ensure we aren't losing
-                            // too many minidumps because of this.
-                        }
-                    } finally {
-                        // Close FDs
-                        for (int i = 0; i < minidumpFds.length; ++i) {
-                            try {
-                                if (minidumpFds[i] != null) minidumpFds[i].close();
-                            } catch (IOException e) {
-                            }
-                        }
+                    // onServiceConnected is called on the UI thread, so punt this back to the
+                    // background thread.
+                    sSequencedTaskRunner.postTask(() -> {
+                        transmitMinidumps(minidumpFiles, crashesInfoMap,
+                                ICrashReceiverService.Stub.asInterface(service));
                         appContext.unbindService(this);
-                    }
+                    });
                 }
 
                 @Override

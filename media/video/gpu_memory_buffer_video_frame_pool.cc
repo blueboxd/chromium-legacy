@@ -458,7 +458,17 @@ void CopyRowsToRGB10Buffer(bool is_argb,
                          v_plane, v_plane_stride, dest_rgb10, dest_stride,
                          width, rows);
     }
-  } else {
+  } else if (skyuv == kBT2020_SkYUVColorSpace) {
+    if (is_argb) {
+      libyuv::U010ToAR30(y_plane, y_plane_stride, u_plane, u_plane_stride,
+                         v_plane, v_plane_stride, dest_rgb10, dest_stride,
+                         width, rows);
+    } else {
+      libyuv::U010ToAB30(y_plane, y_plane_stride, u_plane, u_plane_stride,
+                         v_plane, v_plane_stride, dest_rgb10, dest_stride,
+                         width, rows);
+    }
+  } else {  // BT.709
     if (is_argb) {
       libyuv::H010ToAR30(y_plane, y_plane_stride, u_plane, u_plane_stride,
                          v_plane, v_plane_stride, dest_rgb10, dest_stride,

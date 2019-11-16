@@ -25,14 +25,14 @@ function nodeToDomNode(node) {
     return document.createTextNode(node.value);
   }
   // Else the node is of type 'element'.
-  var domNode = document.createElement(node.value);
+  const domNode = document.createElement(node.value);
   if ('children' in node) {
     node.children.forEach((child) => {
       domNode.appendChild(nodeToDomNode(child));
     });
   }
   if ('attributes' in node) {
-    for (var attribute in node.attributes) {
+    for (const attribute in node.attributes) {
       domNode.setAttribute(attribute, node.attributes[attribute]);
     }
   }
@@ -84,12 +84,12 @@ function notifyAboutIncognito(isIncognito) {
 }
 
 function notifyAboutVariations(variations) {
-  var list = document.createElement("div");
-  for (let item of variations) {
+  const list = document.createElement("div");
+  for (const item of variations) {
     list.appendChild(document.createTextNode(item));
     list.appendChild(document.createElement("br"));
   }
-  var variationsList = document.getElementById("variations-list");
+  const variationsList = document.getElementById("variations-list");
   variationsList.appendChild(list);
 }
 

@@ -294,3 +294,8 @@ void LogClickToCallPhoneNumberSize(const std::string& number,
   base::UmaHistogramCounts100(
       base::StrCat({"Sharing.ClickToCallPhoneNumberDigits.", suffix}), digits);
 }
+
+void LogRemoteCopyHandleMessageResult(RemoteCopyHandleMessageResult result) {
+  base::UmaHistogramEnumeration("Sharing.RemoteCopyHandleMessageResult",
+                                result);
+}

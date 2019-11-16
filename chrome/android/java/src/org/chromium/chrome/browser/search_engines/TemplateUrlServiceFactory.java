@@ -42,8 +42,10 @@ public class TemplateUrlServiceFactory {
         return TemplateUrlServiceFactoryJni.get().doesDefaultSearchEngineHaveLogo();
     }
 
+    // Natives interface is public to allow mocking in tests outside of
+    // org.chromium.chrome.browser.search_engines package.
     @NativeMethods
-    interface Natives {
+    public interface Natives {
         TemplateUrlService getTemplateUrlService();
         boolean doesDefaultSearchEngineHaveLogo();
     }

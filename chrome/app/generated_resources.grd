@@ -2549,6 +2549,12 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_ALLOW_BUTTON" desc="Text displayed on a button that enables notifications for a site. This button is part of the notifications status bubble, which is triggered when a user clicks on the blocked notifications icon in the omnibox.">
         Allow for this site
       </message>
+      <message name="IDS_NOTIFICATIONS_QUIET_PERMISSION_EARLY_PROMO" desc="Text of the blocked notifications indicator promo, that shows under the blocked notifications indicator in the address bar. The promo follows the user action of blocking notifications for the site they are visiting, and informs the user that we (Chrome) understood that they do not usually accept notification prompts, and we will automatically block notification prompts in the future.">
+        Got it. By default, new sites that you visit won't send you notifications.
+      </message>
+      <message name="IDS_NOTIFICATIONS_QUIET_PERMISSION_NEW_REQUEST_PROMO" desc="Text of the blocked notifications indicator promo, that shows under the blocked notifications indicator in the address bar, when a site requests notifications permission. The promo informs the user that as a result of them usually blocking notifications, the request from the site is automatically blocked, and the user can click on the icon to allow notifications.">
+        You usually block notifications. To let this site notify you, click here.
+      </message>
 
       <!-- Cookie controls strings. -->
       <message name="IDS_COOKIE_CONTROLS_DIALOG_TITLE" desc="Title of the dialog that allows users to control cookie blocking.">
@@ -5405,7 +5411,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Search by voice
       </message>
       <message name="IDS_TOOLTIP_SAVE_CREDIT_CARD" desc="The tooltip for the icon that shows the save credit card bubble">
-        Save credit card
+        Save card
+      </message>
+      <message name="IDS_TOOLTIP_SAVE_CREDIT_CARD_PENDING" desc="The tooltip for the icon that shows the credit card upload is in progress">
+        Saving card
+      </message>
+      <message name="IDS_TOOLTIP_SAVE_CREDIT_CARD_FAILURE" desc="The tooltip for the icon that shows the credit card is not successfully uploaded">
+        Can't save card right now
       </message>
       <message name="IDS_TOOLTIP_MIGRATE_LOCAL_CARD" desc="Tooltip for the credit card icon that appears in the address bar. Icon is shown when a user has a credit card stored locally in Chrome but not in Google Pay.">
         Save payment method

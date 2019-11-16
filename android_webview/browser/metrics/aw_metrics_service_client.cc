@@ -14,6 +14,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/feature_list.h"
 #include "base/hash/hash.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram_functions.h"
@@ -347,7 +348,8 @@ void AwMetricsServiceClient::Observe(
     case content::NOTIFICATION_LOAD_START:
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSED:
     case content::NOTIFICATION_RENDER_WIDGET_HOST_HANG:
-      metrics_service_->OnApplicationNotIdle();
+      if (base::FeatureList::IsEnabled(features::kWebViewWakeMetricsService))
+        metrics_service_->OnApplicationNotIdle();
       break;
     default:
       NOTREACHED();

@@ -12,6 +12,7 @@
 <translation id="107147699690128016">파일 확장자를 변경하면 파일이 다른 애플리케이션에서 열리고 기기가 위험에 노출될 수도 있습니다.</translation>
 <translation id="1100066534610197918">새 탭을 그룹에서 열기</translation>
 <translation id="1105960400813249514">화면 캡처</translation>
+<translation id="1110022065703191351">아이콘</translation>
 <translation id="1111673857033749125">다른 기기에서 저장한 북마크가 여기에 표시됩니다.</translation>
 <translation id="1113597929977215864">간단히 보기 표시</translation>
 <translation id="1124772482545689468">사용자</translation>
@@ -363,6 +364,7 @@
 <translation id="3730075448226062617">Chrome에서 마이크에 액세스하도록 허용하려면 <ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서도 마이크를 사용 설정하세요.</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" /> 북마크에 추가됨</translation>
 <translation id="3744111561329211289">백그라운드 동기화</translation>
+<translation id="3749259744154402564">지원되지 않음</translation>
 <translation id="3771001275138982843">업데이트를 다운로드할 수 없음</translation>
 <translation id="3771033907050503522">시크릿 탭</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />블루투스를 사용 설정<ph name="END_LINK" />하여 페어링을 허용하세요.</translation>
@@ -576,6 +578,7 @@
 <translation id="5327248766486351172">이름</translation>
 <translation id="5335288049665977812">사이트에서 자바스크립트를 실행하도록 허용(권장)</translation>
 <translation id="5342314432463739672">권한 요청</translation>
+<translation id="534295439873310000">NFC 기기</translation>
 <translation id="5357811892247919462">탭 수신함</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{열려 있는 탭 <ph name="OPEN_TABS_ONE" />개, 탭 간에 전환하려면 탭하세요.}other{열려 있는 탭 <ph name="OPEN_TABS_MANY" />개, 탭 간에 전환하려면 탭하세요.}}</translation>
 <translation id="5391532827096253100">이 사이트와의 연결은 안전하지 않습니다. 사이트 정보</translation>
@@ -632,6 +635,7 @@
 <translation id="5686790454216892815">파일 이름이 너무 깁니다.</translation>
 <translation id="5689516760719285838">위치</translation>
 <translation id="569536719314091526">옵션 더보기 버튼을 눌러 이 페이지를 원하는 언어로 번역하세요</translation>
+<translation id="5710871682236653961">NFC 기기를 탭하면 사이트가 정보를 주고받도록 허용할지 확인(권장)</translation>
 <translation id="572328651809341494">최근 탭</translation>
 <translation id="5726692708398506830">페이지의 모든 항목 확대</translation>
 <translation id="5748802427693696783">일반 탭으로 전환됨</translation>
@@ -881,6 +885,7 @@
 <translation id="7559975015014302720">라이트 모드 사용 중지됨</translation>
 <translation id="7562080006725997899">인터넷 사용 기록 삭제</translation>
 <translation id="756809126120519699">Chrome 데이터 삭제됨</translation>
+<translation id="7572498721684305250">NFC 기기를 탭할 때 사이트가 정보를 주고받지 못하도록 차단</translation>
 <translation id="757524316907819857">사이트에서 보호된 콘텐츠를 재생하지 못하도록 차단</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" />개 파일 다운로드됨}other{<ph name="FILES_DOWNLOADED_MANY" />개 파일 다운로드됨}}</translation>
 <translation id="7588219262685291874">기기 절전 모드 사용 시 어두운 테마 사용 설정</translation>

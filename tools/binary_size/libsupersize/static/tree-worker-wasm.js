@@ -177,12 +177,12 @@ async function buildTree(
 
     const BuildTree = Module.cwrap(
         'BuildTree', 'void',
-        ['bool', 'string', 'string', 'string', 'number', 'number']);
+        ['bool', 'bool', 'string', 'string', 'string', 'number', 'number']);
     const start_time = Date.now();
     const groupByComponent = groupBy === 'component';
     BuildTree(
-        groupByComponent, includeRegex, excludeRegex, includeSections,
-        minSymbolSize, flagToFilter);
+        groupByComponent, methodCountMode, includeRegex, excludeRegex,
+        includeSections, minSymbolSize, flagToFilter);
     console.log(
         'Constructed tree in ' + (Date.now() - start_time) / 1000.0 +
         ' seconds');
@@ -236,6 +236,7 @@ function parseOptions(options) {
     includeSections,
     minSymbolSize,
     flagToFilter,
+    methodCountMode,
     url,
     beforeUrl,
   };
@@ -251,6 +252,7 @@ const actions = {
       includeSections,
       minSymbolSize,
       flagToFilter,
+      methodCountMode,
       url,
       beforeUrl,
     } = parseOptions(options);
@@ -269,7 +271,7 @@ const actions = {
 
     return buildTree(
         groupBy, includeRegex, excludeRegex, includeSections, minSymbolSize,
-        flagToFilter, progress => {
+        flagToFilter, methodCountMode, progress => {
           // @ts-ignore
           self.postMessage(progress);
         });

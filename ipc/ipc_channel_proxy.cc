@@ -54,7 +54,7 @@ ChannelProxy::Context::Context(
 ChannelProxy::Context::~Context() = default;
 
 void ChannelProxy::Context::ClearIPCTaskRunner() {
-  ipc_task_runner_ = NULL;
+  ipc_task_runner_.reset();
 }
 
 void ChannelProxy::Context::CreateChannel(

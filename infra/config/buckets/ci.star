@@ -356,6 +356,7 @@ android_builder(
 
 android_builder(
     name = 'android-pie-arm64-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 
@@ -368,6 +369,7 @@ def android_fyi_builder(*, name, **kwargs):
 
 android_fyi_builder(
     name = 'android-bfcache-debug',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_fyi_builder(
@@ -377,6 +379,7 @@ android_fyi_builder(
 
 android_fyi_builder(
     name = 'Android WebView P OOR-CORS FYI (rel)',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_fyi_builder(
@@ -385,6 +388,7 @@ android_fyi_builder(
 
 android_fyi_builder(
     name = 'android-pie-x86-fyi-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_fyi_builder(
@@ -404,11 +408,13 @@ chromium_builder(
     name = 'android-archive-dbg',
     # Bump to 32 if needed.
     cores = 8,
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 chromium_builder(
     name = 'android-archive-rel',
     cores = 32,
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 chromium_builder(
@@ -428,11 +434,13 @@ chromium_builder(
     name = 'mac-archive-dbg',
     # Bump to 8 cores if needed.
     cores = 4,
+    goma_backend = goma.backend.RBE_PROD,
     os = os.MAC_DEFAULT,
 )
 
 chromium_builder(
     name = 'mac-archive-rel',
+    goma_backend = goma.backend.RBE_PROD,
     os = os.MAC_DEFAULT,
 )
 
@@ -1244,6 +1252,7 @@ def fyi_coverage_builder(
 
 fyi_coverage_builder(
     name = 'android-code-coverage',
+    goma_backend = goma.backend.RBE_PROD,
     use_java_coverage = True,
     ssd = True,
 )
@@ -1541,6 +1550,7 @@ gpu_fyi_linux_builder(
 
 gpu_fyi_linux_builder(
     name = 'GPU FYI Perf Android 64 Builder',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
@@ -2225,6 +2235,7 @@ memory_builder(
 
 memory_builder(
     name = 'android-asan',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 memory_builder(

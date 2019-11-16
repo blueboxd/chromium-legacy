@@ -104,6 +104,10 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   // Returns the ideal bounds of the shelf assuming it is visible.
   gfx::Rect GetIdealBounds() const;
 
+  // Returns the ideal bounds of the shelf, but always returns in-app shelf
+  // bounds in tablet mode.
+  gfx::Rect GetIdealBoundsForWorkAreaCalculation() const;
+
   // Stops any animations, sets the bounds of the shelf and status widgets, and
   // changes the work area
   void LayoutShelf();
@@ -394,8 +398,7 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   // Updates the bounds and opacity of the shelf and status widgets.
   // If |observer| is specified, it will be called back when the animations, if
   // any, are complete.
-  void UpdateBoundsAndOpacity(const TargetBounds& target_bounds,
-                              bool animate,
+  void UpdateBoundsAndOpacity(bool animate,
                               ui::ImplicitAnimationObserver* observer);
 
   // Returns true if a maximized or fullscreen window is being dragged from the
@@ -409,19 +412,16 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   // Calculates shelf target bounds assuming visibility of
   // |state.visibilty_state| and |hotseat_target_state|.
   void CalculateTargetBounds(const State& state,
-                             TargetBounds* target_bounds,
-                             HotseatState hotseat_target_state) const;
+                             HotseatState hotseat_target_state);
 
   // Calculates the target bounds using |state_|, |hotseat_target_state|, and
   // updates the |user_work_area_bounds_|.
   void CalculateTargetBoundsAndUpdateWorkArea(
-      TargetBounds* target_bounds,
       HotseatState hotseat_target_state);
 
   // Updates the target bounds if a gesture-drag is in progress. This is only
   // used by |CalculateTargetBounds()|.
-  void UpdateTargetBoundsForGesture(TargetBounds* target_bounds,
-                                    HotseatState target_hotseat_state) const;
+  void UpdateTargetBoundsForGesture(HotseatState target_hotseat_state);
 
   // Updates the auto hide state immediately.
   void UpdateAutoHideStateNow();
@@ -647,6 +647,9 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
 
   // Location of the beginning of a drag in screen coordinates.
   gfx::Point drag_start_point_in_screen_;
+
+  // The current set of target bounds for shelf-related widgets.
+  TargetBounds target_bounds_;
 
   // When it is true, |CalculateAutoHideState| returns the current auto hide
   // state.

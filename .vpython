@@ -116,10 +116,11 @@ wheel: <
 >
 
 # Used by:
-#   chrome/browser/policy/test/policy_testserver.py
+#   build/android/pylib/local/emulator/avd.py
+#   components/policy/test_support/policy_testserver.py
 wheel: <
   name: "infra/python/wheels/protobuf-py2_py3"
-  version: "version:3.2.0"
+  version: "version:3.6.1"
 >
 wheel: <
   name: "infra/python/wheels/six-py2_py3"

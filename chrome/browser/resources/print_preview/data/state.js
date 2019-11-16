@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 /** @enum {number} */
 export const State = {
@@ -56,34 +56,28 @@ Polymer({
     switch (newState) {
       case (State.NOT_READY):
         assert(
-            this.state == State.NOT_READY ||
-            this.state == State.READY ||
+            this.state == State.NOT_READY || this.state == State.READY ||
             this.state == State.ERROR);
         break;
       case (State.READY):
         assert(
-            this.state == State.ERROR ||
-            this.state == State.NOT_READY ||
+            this.state == State.ERROR || this.state == State.NOT_READY ||
             this.state == State.PRINTING);
         break;
       case (State.HIDDEN):
         assert(this.state == State.READY);
         break;
       case (State.PRINTING):
-        assert(
-            this.state == State.READY ||
-            this.state == State.HIDDEN);
+        assert(this.state == State.READY || this.state == State.HIDDEN);
         break;
       case (State.SYSTEM_DIALOG):
         assert(
-            this.state != State.HIDDEN &&
-            this.state != State.PRINTING &&
+            this.state != State.HIDDEN && this.state != State.PRINTING &&
             this.state != State.CLOSING);
         break;
       case (State.ERROR):
         assert(
-            this.state == State.ERROR ||
-            this.state == State.NOT_READY ||
+            this.state == State.ERROR || this.state == State.NOT_READY ||
             this.state == State.READY);
         break;
       case (State.CLOSING):
@@ -91,8 +85,7 @@ Polymer({
         break;
     }
     this.state = newState;
-    if (newState !== State.ERROR &&
-        newState !== State.FATAL_ERROR) {
+    if (newState !== State.ERROR && newState !== State.FATAL_ERROR) {
       this.error = Error.NONE;
     }
   },

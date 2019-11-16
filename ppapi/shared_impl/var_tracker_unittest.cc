@@ -69,7 +69,7 @@ TEST_F(VarTrackerTest, LastResourceRef) {
   EXPECT_FALSE(var->HasValidVarID());
   EXPECT_EQ(1, mock_var_alive_count);
 
-  var = NULL;
+  var.reset();
   EXPECT_EQ(0, mock_var_alive_count);
 }
 
@@ -94,10 +94,10 @@ TEST_F(VarTrackerTest, GetPluginRefAgain) {
   EXPECT_FALSE(var->HasValidVarID());
   EXPECT_EQ(1, mock_var_alive_count);
 
-  var = NULL;
+  var.reset();
   EXPECT_FALSE(var_tracker().GetVar(pp_var));
   EXPECT_EQ(1, mock_var_alive_count);
-  another_var = NULL;
+  another_var.reset();
   EXPECT_FALSE(var_tracker().GetVar(pp_var));
   EXPECT_EQ(0, mock_var_alive_count);
 }
@@ -110,7 +110,7 @@ TEST_F(VarTrackerTest, PluginRefWithoutVarRef) {
   scoped_refptr<MockStringVar> var(new MockStringVar(std::string("zzz")));
   PP_Var pp_var = var->GetPPVar();
   EXPECT_EQ(1, mock_var_alive_count);
-  var = NULL;
+  var.reset();
   EXPECT_EQ(1, mock_var_alive_count);
 
   // The var is owned only by VarTracker. PP_Var must be still valid.
@@ -139,10 +139,10 @@ TEST_F(VarTrackerTest, ObjectRef) {
   EXPECT_EQ(1, mock_var_alive_count);
 
   // Releasing all references, then only VarTracker own the instance.
-  var = NULL;
+  var.reset();
   EXPECT_TRUE(var_tracker().GetVar(pp_var));
   EXPECT_EQ(1, mock_var_alive_count);
-  another_var = NULL;
+  another_var.reset();
   EXPECT_TRUE(var_tracker().GetVar(pp_var));
   EXPECT_EQ(1, mock_var_alive_count);
 

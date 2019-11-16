@@ -35,6 +35,8 @@
 #include "components/previews/core/previews_lite_page_redirect.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/previews_state.h"
@@ -274,8 +276,11 @@ void PreviewsLitePageRedirectURLLoaderInterceptor::MaybeCreateLoader(
 
   urls_processed_.insert(tentative_resource_request.url);
 
+  // Don't allow direct navigations to LitePageRedirect URLs, except for
+  // back/forward navigations. In that case, the navigation history
   std::string original_url;
-  if (previews::ExtractOriginalURLFromLitePageRedirectURL(
+  if (!IsDisallowedFwdBackNavigation() &&
+      previews::ExtractOriginalURLFromLitePageRedirectURL(
           tentative_resource_request.url, &original_url)) {
     // Add the original URL to |urls_processed_| so that we will not retrigger
     // on this navigation. This is used to allow `location.reload()` JavaScript
@@ -351,6 +356,23 @@ void PreviewsLitePageRedirectURLLoaderInterceptor::HandleRedirectLoader(
   // |handler| is guaranteed to be called.
   redirect_url_loader_.release();
   std::move(callback).Run(std::move(handler));
+}
+
+bool PreviewsLitePageRedirectURLLoaderInterceptor::
+    IsDisallowedFwdBackNavigation() {
+  if (!previews::params::LitePageRedirectValidateForwardBackTransition()) {
+    return false;
+  }
+
+  auto* web_contents =
+      content::WebContents::FromFrameTreeNodeId(frame_tree_node_id_);
+  if (!web_contents) {
+    return false;
+  }
+
+  auto* entry = web_contents->GetController().GetPendingEntry();
+  return entry &&
+         (entry->GetTransitionType() & ui::PAGE_TRANSITION_FORWARD_BACK);
 }
 
 }  // namespace previews

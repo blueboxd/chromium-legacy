@@ -12,6 +12,7 @@
 <translation id="107147699690128016">Kui muudate faililaiendit, võib fail avaneda mõnes teises rakenduses ja teie seadmele ohtu kujutada.</translation>
 <translation id="1100066534610197918">Ava rühmas uuel vahelehel</translation>
 <translation id="1105960400813249514">Kuva jäädvustamine</translation>
+<translation id="1110022065703191351">Ikoonid</translation>
 <translation id="1111673857033749125">Siin kuvatakse teie teistes seadmetes salvestatud järjehoidjad.</translation>
 <translation id="1113597929977215864">Kuva lihtsustatud vaade</translation>
 <translation id="1124772482545689468">Kasutaja</translation>
@@ -363,6 +364,7 @@
 <translation id="3730075448226062617">Selleks et anda Chrome'ile juurdepääs teie mikrofonile, lülitage mikrofon sisse ka <ph name="BEGIN_LINK" />Androidi seadetes<ph name="END_LINK" />.</translation>
 <translation id="3739899004075612870">Teenuses <ph name="PRODUCT_NAME" /> järjehoidj. lisatud</translation>
 <translation id="3744111561329211289">Taustal sünkroonimine</translation>
+<translation id="3749259744154402564">Ei toetata</translation>
 <translation id="3771001275138982843">Värskendust ei saanud alla laadida</translation>
 <translation id="3771033907050503522">Inkogn. vahelehed</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Lülitage Bluetooth sisse<ph name="END_LINK" />, et sidumine lubada</translation>
@@ -576,6 +578,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5327248766486351172">Nimi</translation>
 <translation id="5335288049665977812">Luba saitidel käitada JavaScripti (soovitatav)</translation>
 <translation id="5342314432463739672">Lubade taotlused</translation>
+<translation id="534295439873310000">NFC-seadmed</translation>
 <translation id="5357811892247919462">Vaheleht võeti vastu</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> avatud vaheleht, puudutage vahelehtede vahetamiseks}other{<ph name="OPEN_TABS_MANY" /> avatud vahelehte, puudutage vahelehtede vahetamiseks}}</translation>
 <translation id="5391532827096253100">Teie ühendus selle saidiga ei ole turvaline. Saidi teave</translation>
@@ -632,6 +635,7 @@ Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END
 <translation id="5686790454216892815">Faili nimi on liiga pikk</translation>
 <translation id="5689516760719285838">Asukoht</translation>
 <translation id="569536719314091526">Tõlkige leht mis tahes keelde nupuga Rohkem valikuid</translation>
+<translation id="5710871682236653961">Küsitakse, enne kui lubatakse saitide jaoks teabe saatmine ja saamine, kui puudutate NFC-seadmeid (soovitatav)</translation>
 <translation id="572328651809341494">Hiljutised vahelehed</translation>
 <translation id="5726692708398506830">Lehel kuvatud sisu suurendamine</translation>
 <translation id="5748802427693696783">Tavapärased vahelehed on aktiveeritud</translation>
@@ -881,6 +885,7 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="7559975015014302720">Lihtsustatud režiim on väljas</translation>
 <translation id="7562080006725997899">Sirvimisandmete kustutamine</translation>
 <translation id="756809126120519699">Chrome'i andmed kustutati</translation>
+<translation id="7572498721684305250">Saitide jaoks blokeeritakse teabe saatmine ja saamine, kui puudutate NFC-seadmeid</translation>
 <translation id="757524316907819857">Saitidel kaitstud sisu esitamise blokeerimine</translation>
 <translation id="757855969265046257">{FILES,plural, =1{<ph name="FILES_DOWNLOADED_ONE" /> fail laaditi alla}other{<ph name="FILES_DOWNLOADED_MANY" /> faili laaditi alla}}</translation>
 <translation id="7588219262685291874">Aktiveeri tume teema, kui akusäästja on seadmes sisse lülitatud</translation>

@@ -15,3 +15,6 @@ const base::Feature kSharingQRCodeGenerator{"SharingQRCodeGenerator",
 
 const base::Feature kSharingDeriveVapidKey{"SharingDeriveVapidKey",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSharingRenameDevices{"SharingRenameDevices",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};

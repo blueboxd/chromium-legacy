@@ -737,6 +737,61 @@ luci.console_view(
             short_name = 'oorcors',
         ),
         luci.console_view_entry(
+            builder = 'ci/Android WebView P OOR-CORS FYI (rel)',
+            category = 'week15b|android|webview p',
+            short_name = 'oorcors',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/android-archive-rel',
+            category = 'week15b|android|archive',
+            short_name = 'rel',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/android-archive-dbg',
+            category = 'week15b|android|archive',
+            short_name = 'dbg',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/android-asan',
+            category = 'week15b|android',
+            short_name = 'asan',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/android-bfcache-debug',
+            category = 'week15b|android',
+            short_name = 'bfc',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/android-code-coverage',
+            category = 'week15b|android',
+            short_name = 'code',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/android-pie-arm64-rel',
+            category = 'week15b|android|pie',
+            short_name = 'arm64',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/android-pie-x86-fyi-rel',
+            category = 'week15b|android|pie',
+            short_name = 'x86',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/GPU FYI Perf Android 64 Builder',
+            category = 'week15b|android|gpu',
+            short_name = 'perf64',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/mac-archive-rel',
+            category = 'week15b|mac|archive',
+            short_name = 'rel',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/mac-archive-dbg',
+            category = 'week15b|mac|archive',
+            short_name = 'dbg',
+        ),
+        luci.console_view_entry(
             builder = 'ci/Win ASan Release',
             category = 'win|week1|asan',
         ),

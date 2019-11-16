@@ -299,7 +299,13 @@ IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, DISABLED_OriginFlagEnabled) {
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kSwitchName));
 }
 
-IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, ExpiryHidesFlag) {
+// Crashes on Win.  http://crbug.com/1025213
+#if defined(OS_WIN)
+#define MAYBE_ExpiryHidesFlag DISABLED_ExpiryHidesFlag
+#else
+#define MAYBE_ExpiryHidesFlag ExpiryHidesFlag
+#endif
+IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, MAYBE_ExpiryHidesFlag) {
   NavigateToFlagsPage();
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();

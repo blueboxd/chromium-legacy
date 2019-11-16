@@ -12,6 +12,7 @@
 <translation id="107147699690128016">Якщо ви зміните розширення файлу, він може відкритися в іншому додатку або зашкодити пристрою.</translation>
 <translation id="1100066534610197918">Відкрити нову вкладку в групі</translation>
 <translation id="1105960400813249514">Знімок екрана</translation>
+<translation id="1110022065703191351">Значки</translation>
 <translation id="1111673857033749125">Тут відображатимуться закладки, збережені на інших ваших пристроях.</translation>
 <translation id="1113597929977215864">Показати в режимі спрощеного перегляду</translation>
 <translation id="1124772482545689468">Користувач</translation>
@@ -363,6 +364,7 @@
 <translation id="3730075448226062617">Щоб надати Chrome доступ до мікрофона, також увімкніть його в <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
 <translation id="3739899004075612870">Створено закладку в продукті <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111561329211289">Фонова синхронізація</translation>
+<translation id="3749259744154402564">Не підтримується</translation>
 <translation id="3771001275138982843">Не вдалося завантажити оновлення</translation>
 <translation id="3771033907050503522">Анонімні вкладки</translation>
 <translation id="3773755127849930740"><ph name="BEGIN_LINK" />Увімкніть Bluetooth<ph name="END_LINK" />, щоб підключити</translation>
@@ -576,6 +578,7 @@
 <translation id="5327248766486351172">Назва</translation>
 <translation id="5335288049665977812">Дозволити сайтам запускати Javascript (рекомендується)</translation>
 <translation id="5342314432463739672">Запити на дозволи</translation>
+<translation id="534295439873310000">Пристрої NFC</translation>
 <translation id="5357811892247919462">Вкладку отримано</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> відкрита вкладка: натисніть, щоб перейти на іншу вкладку}one{<ph name="OPEN_TABS_MANY" /> відкрита вкладка: натисніть, щоб перейти на іншу вкладку}few{<ph name="OPEN_TABS_MANY" /> відкриті вкладки: натисніть, щоб перейти на іншу вкладку}many{<ph name="OPEN_TABS_MANY" /> відкритих вкладок: натисніть, щоб перейти на іншу вкладку}other{<ph name="OPEN_TABS_MANY" /> відкритої вкладки: натисніть, щоб перейти на іншу вкладку}}</translation>
 <translation id="5391532827096253100">Ваше з’єднання з цим сайтом незахищене. Інформація про сайт</translation>
@@ -632,6 +635,7 @@
 <translation id="5686790454216892815">Назва файлу задовга</translation>
 <translation id="5689516760719285838">Місцезнаходження</translation>
 <translation id="569536719314091526">Перекладіть цю сторінку будь-якою мовою, натиснувши кнопку "Більше опцій"</translation>
+<translation id="5710871682236653961">Запитувати, перш ніж дозволяти сайтам надсилати й отримувати дані, коли ви вибираєте пристрої NFC (рекомендовано)</translation>
 <translation id="572328651809341494">Останні вкладки</translation>
 <translation id="5726692708398506830">Збільшити всі елементи на сторінці</translation>
 <translation id="5748802427693696783">Ви перейшли на стандартні вкладки</translation>
@@ -881,6 +885,7 @@
 <translation id="7559975015014302720">Спрощений режим вимкнено</translation>
 <translation id="7562080006725997899">Очищення даних веб-перегляду</translation>
 <translation id="756809126120519699">Дані Chrome видалено</translation>
+<translation id="7572498721684305250">Заборонити сайтам надсилати й отримувати дані, коли ви вибираєте пристрої NFC</translation>
 <translation id="757524316907819857">Заборонити сайтам відтворювати захищений вміст</translation>
 <translation id="757855969265046257">{FILES,plural, =1{Завантажено <ph name="FILES_DOWNLOADED_ONE" /> файл}one{Завантажено <ph name="FILES_DOWNLOADED_MANY" /> файл}few{Завантажено <ph name="FILES_DOWNLOADED_MANY" /> файли}many{Завантажено <ph name="FILES_DOWNLOADED_MANY" /> файлів}other{Завантажено <ph name="FILES_DOWNLOADED_MANY" /> файлу}}</translation>
 <translation id="7588219262685291874">Показувати темну тему, коли на пристрої ввімкнено режим енергозбереження</translation>

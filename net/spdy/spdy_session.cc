@@ -2363,7 +2363,7 @@ int SpdySession::DoWrite() {
         // We've exhausted the stream ID space, and no new streams may be
         // created after this one.
         MakeUnavailable();
-        StartGoingAway(kLastStreamId, ERR_ABORTED);
+        StartGoingAway(kLastStreamId, ERR_HTTP2_PROTOCOL_ERROR);
       }
     }
 

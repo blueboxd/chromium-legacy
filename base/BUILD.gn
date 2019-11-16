@@ -3337,7 +3337,6 @@ if (is_android) {
       "android/java/src/org/chromium/base/UnguessableToken.java",
       "android/java/src/org/chromium/base/UserData.java",
       "android/java/src/org/chromium/base/UserDataHost.java",
-      "android/java/src/org/chromium/base/VisibleForTesting.java",
       "android/java/src/org/chromium/base/annotations/AccessedByNative.java",
       "android/java/src/org/chromium/base/annotations/CalledByNative.java",
       "android/java/src/org/chromium/base/annotations/CalledByNativeUnchecked.java",

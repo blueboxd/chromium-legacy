@@ -18,6 +18,7 @@
 #import "components/reading_list/ios/reading_list_model_bridge_observer.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/ntp_tiles/most_visited_sites_observer_bridge.h"
+#include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_learn_more_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_action_item.h"
@@ -65,6 +66,11 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   std::unique_ptr<ReadingListModelBridge> _readingListModelBridge;
 }
 
+// Whether the contents section should be hidden completely.
+// Don't use PrefBackedBoolean or PrefMember as this value needs to be checked
+// when the Preference is updated.
+@property(nullable, nonatomic, assign)
+    const PrefService::Preference* contentArticlesEnabled;
 // Most visited items from the MostVisitedSites service currently displayed.
 @property(nonatomic, strong)
     NSMutableArray<ContentSuggestionsMostVisitedItem*>* mostVisitedItems;
@@ -112,38 +118,23 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
 @implementation ContentSuggestionsMediator
 
-@synthesize mostVisitedItems = _mostVisitedItems;
-@synthesize actionButtonItems = _actionButtonItems;
-@synthesize freshMostVisitedItems = _freshMostVisitedItems;
-@synthesize logoSectionInfo = _logoSectionInfo;
-@synthesize promoSectionInfo = _promoSectionInfo;
-@synthesize mostVisitedSectionInfo = _mostVisitedSectionInfo;
-@synthesize learnMoreSectionInfo = _learnMoreSectionInfo;
-@synthesize recordedPageImpression = _recordedPageImpression;
-@synthesize contentService = _contentService;
 @synthesize dataSink = _dataSink;
-@synthesize sectionInformationByCategory = _sectionInformationByCategory;
-@synthesize commandHandler = _commandHandler;
-@synthesize headerProvider = _headerProvider;
-@synthesize faviconMediator = _faviconMediator;
-@synthesize learnMoreItem = _learnMoreItem;
-@synthesize readingListNeedsReload = _readingListNeedsReload;
-@synthesize readingListItem = _readingListItem;
-@synthesize readingListUnreadCount = _readingListUnreadCount;
-@synthesize contentArticlesExpanded = _contentArticlesExpanded;
-@synthesize contentArticlesEnabled = _contentArticlesEnabled;
 
 #pragma mark - Public
 
 - (instancetype)
-initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
-      largeIconService:(favicon::LargeIconService*)largeIconService
-        largeIconCache:(LargeIconCache*)largeIconCache
-       mostVisitedSite:
-           (std::unique_ptr<ntp_tiles::MostVisitedSites>)mostVisitedSites
-      readingListModel:(ReadingListModel*)readingListModel {
+    initWithContentService:
+        (ntp_snippets::ContentSuggestionsService*)contentService
+          largeIconService:(favicon::LargeIconService*)largeIconService
+            largeIconCache:(LargeIconCache*)largeIconCache
+           mostVisitedSite:
+               (std::unique_ptr<ntp_tiles::MostVisitedSites>)mostVisitedSites
+          readingListModel:(ReadingListModel*)readingListModel
+               prefService:(PrefService*)prefService {
   self = [super init];
   if (self) {
+    _contentArticlesEnabled =
+        prefService->FindPreference(prefs::kArticlesForYouEnabled);
     _suggestionBridge =
         std::make_unique<ContentSuggestionsServiceBridge>(self, contentService);
     _contentService = contentService;
@@ -624,7 +615,7 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
       self.contentService->GetCategoryStatus(category);
   if (category.IsKnownCategory(ntp_snippets::KnownCategories::ARTICLES) &&
       status == ntp_snippets::CategoryStatus::CATEGORY_EXPLICITLY_DISABLED)
-    return [self.contentArticlesEnabled value];
+    return self.contentArticlesEnabled->GetValue()->GetBool();
   else
     return IsCategoryStatusInitOrAvailable(
         self.contentService->GetCategoryStatus(category));
@@ -638,7 +629,7 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
       self.contentService->GetCategoryStatus(category);
   if (category.IsKnownCategory(ntp_snippets::KnownCategories::ARTICLES) &&
       status == ntp_snippets::CategoryStatus::CATEGORY_EXPLICITLY_DISABLED) {
-    return [self.contentArticlesEnabled value];
+    return self.contentArticlesEnabled->GetValue()->GetBool();
   } else {
     return IsCategoryStatusAvailable(
         self.contentService->GetCategoryStatus(category));

@@ -596,6 +596,12 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source,
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_CROSTINI_SUBTEXT, ui::GetChromeOSDeviceName(),
           GetHelpUrlWithBoard(chrome::kLinuxAppsLearnMoreURL)));
+  // TODO(crbug.com/893332): replace with the final URL
+  html_source->AddString(
+      "crostiniArcAdbPowerwashRequiredSublabel",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_CROSTINI_ARC_ADB_POWERWASH_REQUIRED_SUBLABEL,
+          GetHelpUrlWithBoard(chrome::kLinuxAppsLearnMoreURL)));
   html_source->AddString("crostiniRemove", l10n_util::GetStringFUTF16(
                                                IDS_SETTINGS_CROSTINI_REMOVE,
                                                ui::GetChromeOSDeviceName()));
@@ -3288,6 +3294,8 @@ void AddSecurityKeysStrings(content::WebUIDataSource* html_source) {
   static constexpr LocalizedString kSecurityKeysStrings[] = {
       {"securityKeysBioEnrollmentAddTitle",
        IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_ADD_TITLE},
+      {"securityKeysBioEnrollmentDelete",
+       IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_DELETE},
       {"securityKeysBioEnrollmentDialogTitle",
        IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_DIALOG_TITLE},
       {"securityKeysBioEnrollmentEnrollingCompleteLabel",

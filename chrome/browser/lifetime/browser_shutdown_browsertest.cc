@@ -70,14 +70,15 @@ IN_PROC_BROWSER_TEST_F(BrowserShutdownBrowserTest,
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(BrowserList::GetInstance()->empty());
   EXPECT_EQ(browser_shutdown::GetShutdownType(),
-            browser_shutdown::WINDOW_CLOSE);
+            browser_shutdown::ShutdownType::kWindowClose);
   BrowserList::RemoveObserver(&closing_observer);
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserShutdownBrowserTest,
                        TwoBrowsersClosingShutdownHistograms) {
-  histogram_tester_.ExpectUniqueSample("Shutdown.ShutdownType",
-                                       browser_shutdown::WINDOW_CLOSE, 1);
+  histogram_tester_.ExpectUniqueSample(
+      "Shutdown.ShutdownType",
+      static_cast<int>(browser_shutdown::ShutdownType::kWindowClose), 1);
   histogram_tester_.ExpectTotalCount("Shutdown.renderers.total", 1);
   histogram_tester_.ExpectTotalCount("Shutdown.window_close.time2", 1);
   histogram_tester_.ExpectTotalCount("Shutdown.window_close.time_per_process",

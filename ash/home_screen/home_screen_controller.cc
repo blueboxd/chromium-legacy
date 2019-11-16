@@ -185,7 +185,8 @@ bool HomeScreenController::GoHome(int64_t display_id) {
             std::make_unique<ScopedAnimationDisabler>(window));
       }
 
-      delegate_->OnHomeLauncherPositionChanged(true /* showing */, display_id);
+      delegate_->OnHomeLauncherPositionChanged(100 /* percent_shown */,
+                                               display_id);
     }
 
     base::RepeatingClosure window_transforms_callback = base::BarrierClosure(
@@ -266,18 +267,37 @@ void HomeScreenController::OnOverviewModeStarting() {
 
 void HomeScreenController::OnOverviewModeEnding(
     OverviewSession* overview_session) {
-  // The launcher should be shown after overview mode finishes animating, in
-  // OnOverviewModeEndingAnimationComplete(). Overview however is nullptr by the
-  // time the animations are finished, so cache the exit type here.
+  // The launcher will be shown after overview mode finishes animating, in
+  // OnOverviewModeEndingAnimationComplete(). Overview however is nullptr by
+  // the time the animations are finished, so cache the exit type here.
   overview_exit_type_ =
       base::make_optional(overview_session->enter_exit_overview_type());
+
+  // If the overview is fading out, start the home screen animation in parallel.
+  // Otherwise the transition will be initiated in
+  // OnOverviewModeEndingAnimationComplete().
+  if (overview_session->enter_exit_overview_type() ==
+      OverviewSession::EnterExitOverviewType::kFadeOutExit) {
+    home_screen_presenter_.ScheduleOverviewModeAnimation(
+        HomeScreenPresenter::TransitionType::kScaleHomeIn, true /*animate*/);
+
+    // Make sure the window visibility is updated, in case it was previously
+    // hidden due to overview being shown.
+    UpdateVisibility();
+  }
 }
 
 void HomeScreenController::OnOverviewModeEndingAnimationComplete(
     bool canceled) {
-  if (canceled)
-    return;
   DCHECK(overview_exit_type_.has_value());
+
+  // For kFadeOutExit EnterExitOverviewType, the home animation is scheduled in
+  // OnOverviewModeEnding(), so there is nothing else to do at this point.
+  if (canceled || *overview_exit_type_ ==
+                      OverviewSession::EnterExitOverviewType::kFadeOutExit) {
+    overview_exit_type_ = base::nullopt;
+    return;
+  }
 
   const bool animate =
       *overview_exit_type_ ==

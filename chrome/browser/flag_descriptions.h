@@ -1101,6 +1101,9 @@ extern const char kSharingPeerConnectionReceiverDescription[];
 extern const char kSharingPeerConnectionSenderName[];
 extern const char kSharingPeerConnectionSenderDescription[];
 
+extern const char kSharingRenameDevicesName[];
+extern const char kSharingRenameDevicesDescription[];
+
 extern const char kSharingUseDeviceInfoName[];
 extern const char kSharingUseDeviceInfoDescription[];
 

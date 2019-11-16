@@ -239,7 +239,7 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     // Create child views lazily.  Since especially the first result view may be
     // expensive to create due to loading font data, this saves time and memory
     // during browser startup.
-    if (children().size() <= i) {
+    if (children().size() == i) {
       AddChildView(
           std::make_unique<OmniboxResultView>(this, i, theme_provider_));
     }

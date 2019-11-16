@@ -55,7 +55,8 @@
           hidden="[[!pageVisibility.googleDrive]]">
       </settings-toggle-button>
       <cr-link-row id="smbShares" class="hr" on-click="onTapSmbShares_"
-          hidden="[[!pageVisibility.smbShares]]" label="$i18n{smbSharesTitle}">
+          hidden="[[!pageVisibility.smbShares]]" label="$i18n{smbSharesTitle}"
+          role-description="$i18n{subpageArrowRoleDescription}">
       </cr-link-row>
 </if>
       <template is="dom-if" if="[[autoOpenDownloads_]]" restamp>

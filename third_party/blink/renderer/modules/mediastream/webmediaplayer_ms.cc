@@ -670,6 +670,13 @@ void WebMediaPlayerMS::SetVolume(double volume) {
   delegate_->DidPlayerMutedStatusChange(delegate_id_, volume == 0.0);
 }
 
+void WebMediaPlayerMS::SetLatencyHint(double seconds) {
+  // WebRTC latency has separate latency APIs, focused more on network jitter
+  // and implemented inside the WebRTC stack.
+  // https://webrtc.org/experiments/rtp-hdrext/playout-delay/
+  // https://henbos.github.io/webrtc-timing/#dom-rtcrtpreceiver-playoutdelayhint
+}
+
 void WebMediaPlayerMS::OnRequestPictureInPicture() {
   if (!bridge_)
     ActivateSurfaceLayerForVideo();

@@ -32,14 +32,21 @@
 #include "components/cloud_devices/common/printer_description.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/filename_util.h"
+#include "printing/backend/print_backend.h"
 #include "printing/print_job_constants.h"
 #include "printing/printing_context.h"
 #include "printing/units.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
+
+#if defined(OS_MACOSX)
+#include "components/printing/browser/features.h"
+#include "components/printing/browser/printer_capabilities_mac.h"
+#endif
 
 namespace printing {
 
@@ -71,7 +78,9 @@ gfx::Size GetDefaultPdfMediaSizeMicrons() {
                    pdf_media_size.height() * device_microns_per_device_unit);
 }
 
-base::Value GetPdfCapabilities(const std::string& locale) {
+base::Value GetPdfCapabilities(
+    const std::string& locale,
+    PrinterSemanticCapsAndDefaults::Papers custom_papers) {
   using cloud_devices::printer::MediaType;
 
   cloud_devices::CloudDeviceDescription description;
@@ -110,6 +119,12 @@ base::Value GetPdfCapabilities(const std::string& locale) {
     media.AddDefaultOption(media_option,
                            default_media.type == media_option.type);
   }
+  for (const PrinterSemanticCapsAndDefaults::Paper& paper : custom_papers) {
+    cloud_devices::printer::Media media_option(
+        paper.display_name, paper.vendor_id, paper.size_um.width(),
+        paper.size_um.height());
+    media.AddOption(media_option);
+  }
   media.SaveTo(&description);
 
   return std::move(description).ToValue();
@@ -134,6 +149,21 @@ base::FilePath SelectSaveDirectory(const base::FilePath& path,
   if (!base::DirectoryExists(default_path))
     base::CreateDirectory(default_path);
   return default_path;
+}
+
+void ConstructCapabilitiesAndCompleteCallback(
+    const std::string& destination_id,
+    PdfPrinterHandler::GetCapabilityCallback callback,
+    PrinterSemanticCapsAndDefaults::Papers custom_papers) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  base::Value printer_info(base::Value::Type::DICTIONARY);
+  printer_info.SetStringKey(kSettingDeviceName, destination_id);
+  printer_info.SetKey(
+      kSettingCapabilities,
+      GetPdfCapabilities(g_browser_process->GetApplicationLocale(),
+                         custom_papers));
+  std::move(callback).Run(std::move(printer_info));
 }
 
 }  // namespace
@@ -162,12 +192,26 @@ void PdfPrinterHandler::StartGetPrinters(
 
 void PdfPrinterHandler::StartGetCapability(const std::string& destination_id,
                                            GetCapabilityCallback callback) {
-  base::Value printer_info(base::Value::Type::DICTIONARY);
-  printer_info.SetKey(kSettingDeviceName, base::Value(destination_id));
-  printer_info.SetKey(
-      kSettingCapabilities,
-      GetPdfCapabilities(g_browser_process->GetApplicationLocale()));
-  std::move(callback).Run(std::move(printer_info));
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+#if defined(OS_MACOSX)
+  if (base::FeatureList::IsEnabled(features::kEnableCustomMacPaperSizes)) {
+    // Read the Mac custom paper sizes on a separate thread.
+    // USER_VISIBLE because the result is displayed in the print preview dialog.
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskPriority::USER_VISIBLE},
+        base::BindOnce(&GetMacCustomPaperSizes),
+        base::BindOnce(&ConstructCapabilitiesAndCompleteCallback,
+                       destination_id, std::move(callback)));
+    return;
+  }
+#endif
+
+  ConstructCapabilitiesAndCompleteCallback(
+      destination_id, std::move(callback),
+      PrinterSemanticCapsAndDefaults::Papers());
 }
 
 void PdfPrinterHandler::StartPrint(

@@ -8,13 +8,13 @@
  *
  */
 
-goog.provide('cvox.TtsBackground');
+goog.provide('TtsBackground');
 
 goog.require('PanelCommand');
 goog.require('PhoneticData');
-goog.require('cvox.AbstractTts');
-goog.require('cvox.ChromeTtsBase');
-goog.require('cvox.ChromeVox');
+goog.require('AbstractTts');
+goog.require('ChromeTtsBase');
+goog.require('ChromeVox');
 goog.require('goog.i18n.MessageFormat');
 
 
@@ -23,10 +23,10 @@ goog.require('goog.i18n.MessageFormat');
  * @param {string} textString The string of text to be spoken.
  * @param {Object} properties Speech properties to use for this utterance.
  */
-cvox.Utterance = function(textString, properties) {
+var Utterance = function(textString, properties) {
   this.textString = textString;
   this.properties = properties;
-  this.id = cvox.Utterance.nextUtteranceId_++;
+  this.id = Utterance.nextUtteranceId_++;
 };
 
 /**
@@ -34,20 +34,20 @@ cvox.Utterance = function(textString, properties) {
  * @type {number}
  * @private
  */
-cvox.Utterance.nextUtteranceId_ = 1;
+Utterance.nextUtteranceId_ = 1;
 
 /**
  * @constructor
- * @extends {cvox.ChromeTtsBase}
+ * @extends {ChromeTtsBase}
  */
-cvox.TtsBackground = function() {
+TtsBackground = function() {
   goog.base(this);
 
   this.lastEventType = 'end';
 
   /** @private {number} */
   this.currentPunctuationEcho_ =
-      parseInt(localStorage[cvox.AbstractTts.PUNCTUATION_ECHO] || 1, 10);
+      parseInt(localStorage[AbstractTts.PUNCTUATION_ECHO] || 1, 10);
 
   /**
    * @type {!Array<{name:(string),
@@ -105,21 +105,21 @@ cvox.TtsBackground = function() {
 
   /**
    * Capturing tts event listeners.
-   * @type {Array<cvox.TtsCapturingEventListener>}
+   * @type {Array<TtsCapturingEventListener>}
    * @private
    */
   this.capturingTtsEventListeners_ = [];
 
   /**
    * The current utterance.
-   * @type {cvox.Utterance}
+   * @type {Utterance}
    * @private
    */
   this.currentUtterance_ = null;
 
   /**
    * The utterance queue.
-   * @type {Array<cvox.Utterance>}
+   * @type {Array<Utterance>}
    * @private
    */
   this.utteranceQueue_ = [];
@@ -179,7 +179,7 @@ cvox.TtsBackground = function() {
   chrome.settingsPrivate.onPrefsChanged.addListener(
       this.updateFromPrefs_.bind(this, true));
 };
-goog.inherits(cvox.TtsBackground, cvox.ChromeTtsBase);
+goog.inherits(TtsBackground, ChromeTtsBase);
 
 
 /**
@@ -188,7 +188,7 @@ goog.inherits(cvox.TtsBackground, cvox.ChromeTtsBase);
  * @private
  * @const
  */
-cvox.TtsBackground.HINT_DELAY_MS_ = 1000;
+TtsBackground.HINT_DELAY_MS_ = 1000;
 
 /**
  * The list of properties allowed to be passed to the chrome.tts.speak API.
@@ -197,18 +197,17 @@ cvox.TtsBackground.HINT_DELAY_MS_ = 1000;
  * @private
  * @const
  */
-cvox.TtsBackground.ALLOWED_PROPERTIES_ = [
+TtsBackground.ALLOWED_PROPERTIES_ = [
   'desiredEventTypes', 'enqueue', 'extensionId', 'gender', 'lang', 'onEvent',
   'pitch', 'rate', 'requiredEventTypes', 'voiceName', 'volume'
 ];
 
 
 /** @override */
-cvox.TtsBackground.prototype.speak = function(
-    textString, queueMode, properties) {
+TtsBackground.prototype.speak = function(textString, queueMode, properties) {
   goog.base(this, 'speak', textString, queueMode, properties);
 
-  if (this.ttsProperties[cvox.AbstractTts.VOLUME] === 0) {
+  if (this.ttsProperties[AbstractTts.VOLUME] === 0) {
     return this;
   }
 
@@ -238,7 +237,7 @@ cvox.TtsBackground.prototype.speak = function(
       propertiesCopy['onEvent'] =
           i == (splitTextString.length - 1) ? onEvent : null;
       this.speak(splitTextString[i], queueMode, propertiesCopy);
-      queueMode = cvox.QueueMode.QUEUE;
+      queueMode = QueueMode.QUEUE;
     }
     return this;
   }
@@ -252,7 +251,7 @@ cvox.TtsBackground.prototype.speak = function(
   // TODO(dtseng): some TTS engines don't handle strings that don't produce any
   // speech very well. Handle empty and whitespace only strings (including
   // non-breaking space) here to mitigate the issue somewhat.
-  if (cvox.TtsBackground.SKIP_WHITESPACE_.test(textString)) {
+  if (TtsBackground.SKIP_WHITESPACE_.test(textString)) {
     // Explicitly call start and end callbacks before skipping this text.
     if (properties['startCallback']) {
       try {
@@ -266,7 +265,7 @@ cvox.TtsBackground.prototype.speak = function(
       } catch (e) {
       }
     }
-    if (queueMode === cvox.QueueMode.FLUSH) {
+    if (queueMode === QueueMode.FLUSH) {
       this.stop();
     }
     return this;
@@ -278,12 +277,11 @@ cvox.TtsBackground.prototype.speak = function(
     mergedProperties['voiceName'] = this.currentVoice;
   }
 
-  if (queueMode == cvox.QueueMode.CATEGORY_FLUSH &&
-      !mergedProperties['category']) {
-    queueMode = cvox.QueueMode.FLUSH;
+  if (queueMode == QueueMode.CATEGORY_FLUSH && !mergedProperties['category']) {
+    queueMode = QueueMode.FLUSH;
   }
 
-  var utterance = new cvox.Utterance(textString, mergedProperties);
+  var utterance = new Utterance(textString, mergedProperties);
   this.speakUsingQueue_(utterance, queueMode);
   // Attempt to queue phonetic speech with property['delay']. This ensures that
   // phonetic hints are delayed when we process them.
@@ -293,16 +291,15 @@ cvox.TtsBackground.prototype.speak = function(
 
 /**
  * Use the speech queue to handle the given speech request.
- * @param {cvox.Utterance} utterance The utterance to speak.
- * @param {cvox.QueueMode} queueMode The queue mode.
+ * @param {Utterance} utterance The utterance to speak.
+ * @param {QueueMode} queueMode The queue mode.
  * @private
  */
-cvox.TtsBackground.prototype.speakUsingQueue_ = function(utterance, queueMode) {
+TtsBackground.prototype.speakUsingQueue_ = function(utterance, queueMode) {
   // First, take care of removing the current utterance and flushing
   // anything from the queue we need to. If we remove the current utterance,
   // make a note that we're going to stop speech.
-  if (queueMode == cvox.QueueMode.FLUSH ||
-      queueMode == cvox.QueueMode.CATEGORY_FLUSH) {
+  if (queueMode == QueueMode.FLUSH || queueMode == QueueMode.CATEGORY_FLUSH) {
     (new PanelCommand(PanelCommandType.CLEAR_SPEECH)).send();
 
     if (this.shouldCancel_(this.currentUtterance_, utterance, queueMode)) {
@@ -335,7 +332,7 @@ cvox.TtsBackground.prototype.speakUsingQueue_ = function(utterance, queueMode) {
  * when the current utterance finishes speaking.
  * @private
  */
-cvox.TtsBackground.prototype.startSpeakingNextItemInQueue_ = function() {
+TtsBackground.prototype.startSpeakingNextItemInQueue_ = function() {
   if (this.currentUtterance_) {
     return;
   }
@@ -360,7 +357,7 @@ cvox.TtsBackground.prototype.startSpeakingNextItemInQueue_ = function() {
     delete this.utteranceQueue_[0].properties['delay'];
     this.timeoutId_ = setTimeout(
         () => this.startSpeakingNextItemInQueue_(),
-        cvox.TtsBackground.HINT_DELAY_MS_);
+        TtsBackground.HINT_DELAY_MS_);
 
     return;
   }
@@ -374,8 +371,8 @@ cvox.TtsBackground.prototype.startSpeakingNextItemInQueue_ = function() {
   }, this);
 
   var validatedProperties = {};
-  for (var i = 0; i < cvox.TtsBackground.ALLOWED_PROPERTIES_.length; i++) {
-    var p = cvox.TtsBackground.ALLOWED_PROPERTIES_[i];
+  for (var i = 0; i < TtsBackground.ALLOWED_PROPERTIES_.length; i++) {
+    var p = TtsBackground.ALLOWED_PROPERTIES_[i];
     if (utterance.properties[p]) {
       validatedProperties[p] = utterance.properties[p];
     }
@@ -404,7 +401,7 @@ cvox.TtsBackground.prototype.startSpeakingNextItemInQueue_ = function() {
  * @param {number} utteranceId The id of the associated utterance.
  * @private
  */
-cvox.TtsBackground.prototype.onTtsEvent_ = function(event, utteranceId) {
+TtsBackground.prototype.onTtsEvent_ = function(event, utteranceId) {
   this.lastEventType = event['type'];
 
   // Ignore events sent on utterances other than the current one.
@@ -465,13 +462,13 @@ cvox.TtsBackground.prototype.onTtsEvent_ = function(event, utteranceId) {
  * QUEUE or FLUSH, the logic is straightforward. If the queue mode is
  * CATEGORY_FLUSH, we only flush utterances with the same category.
  *
- * @param {cvox.Utterance} utteranceToCancel The utterance in question.
- * @param {cvox.Utterance} newUtterance The new utterance we're enqueueing.
- * @param {cvox.QueueMode} queueMode The queue mode.
+ * @param {Utterance} utteranceToCancel The utterance in question.
+ * @param {Utterance} newUtterance The new utterance we're enqueueing.
+ * @param {QueueMode} queueMode The queue mode.
  * @return {boolean} True if this utterance should be canceled.
  * @private
  */
-cvox.TtsBackground.prototype.shouldCancel_ = function(
+TtsBackground.prototype.shouldCancel_ = function(
     utteranceToCancel, newUtterance, queueMode) {
   if (!utteranceToCancel) {
     return false;
@@ -480,11 +477,11 @@ cvox.TtsBackground.prototype.shouldCancel_ = function(
     return false;
   }
   switch (queueMode) {
-    case cvox.QueueMode.QUEUE:
+    case QueueMode.QUEUE:
       return false;
-    case cvox.QueueMode.FLUSH:
+    case QueueMode.FLUSH:
       return true;
-    case cvox.QueueMode.CATEGORY_FLUSH:
+    case QueueMode.CATEGORY_FLUSH:
       return (
           utteranceToCancel.properties['category'] ==
           newUtterance.properties['category']);
@@ -495,10 +492,10 @@ cvox.TtsBackground.prototype.shouldCancel_ = function(
 /**
  * Do any cleanup necessary to cancel an utterance, like callings its
  * callback function if any.
- * @param {cvox.Utterance} utterance The utterance to cancel.
+ * @param {Utterance} utterance The utterance to cancel.
  * @private
  */
-cvox.TtsBackground.prototype.cancelUtterance_ = function(utterance) {
+TtsBackground.prototype.cancelUtterance_ = function(utterance) {
   if (utterance && utterance.properties['endCallback']) {
     try {
       utterance.properties['endCallback'](true);
@@ -508,19 +505,19 @@ cvox.TtsBackground.prototype.cancelUtterance_ = function(utterance) {
 };
 
 /** @override */
-cvox.TtsBackground.prototype.increaseOrDecreaseProperty = function(
+TtsBackground.prototype.increaseOrDecreaseProperty = function(
     propertyName, increase) {
   goog.base(this, 'increaseOrDecreaseProperty', propertyName, increase);
 
   var pref;
   switch (propertyName) {
-    case cvox.AbstractTts.RATE:
+    case AbstractTts.RATE:
       pref = 'settings.tts.speech_rate';
       break;
-    case cvox.AbstractTts.PITCH:
+    case AbstractTts.PITCH:
       pref = 'settings.tts.speech_pitch';
       break;
-    case cvox.AbstractTts.VOLUME:
+    case AbstractTts.VOLUME:
       pref = 'settings.tts.speech_volume';
       break;
     default:
@@ -531,13 +528,13 @@ cvox.TtsBackground.prototype.increaseOrDecreaseProperty = function(
 };
 
 /** @override */
-cvox.TtsBackground.prototype.isSpeaking = function() {
+TtsBackground.prototype.isSpeaking = function() {
   goog.base(this, 'isSpeaking');
   return this.lastEventType != 'end';
 };
 
 /** @override */
-cvox.TtsBackground.prototype.stop = function() {
+TtsBackground.prototype.stop = function() {
   goog.base(this, 'stop');
 
   this.cancelUtterance_(this.currentUtterance_);
@@ -558,7 +555,7 @@ cvox.TtsBackground.prototype.stop = function() {
 };
 
 /** @override */
-cvox.TtsBackground.prototype.addCapturingEventListener = function(listener) {
+TtsBackground.prototype.addCapturingEventListener = function(listener) {
   this.capturingTtsEventListeners_.push(listener);
 };
 
@@ -567,14 +564,14 @@ cvox.TtsBackground.prototype.addCapturingEventListener = function(listener) {
  * @param {string} errorMessage Describes the error (set by onEvent).
  * @private
  */
-cvox.TtsBackground.prototype.onError_ = function(errorMessage) {
+TtsBackground.prototype.onError_ = function(errorMessage) {
   this.updateVoice_(this.currentVoice);
 };
 
 /**
  * @override
  */
-cvox.TtsBackground.prototype.preprocess = function(text, properties) {
+TtsBackground.prototype.preprocess = function(text, properties) {
   properties = properties ? properties : {};
 
   // Perform generic processing.
@@ -582,9 +579,9 @@ cvox.TtsBackground.prototype.preprocess = function(text, properties) {
 
   // Perform any remaining processing such as punctuation expansion.
   var pE = null;
-  if (properties[cvox.AbstractTts.PUNCTUATION_ECHO]) {
+  if (properties[AbstractTts.PUNCTUATION_ECHO]) {
     for (var i = 0; pE = this.punctuationEchoes_[i]; i++) {
-      if (properties[cvox.AbstractTts.PUNCTUATION_ECHO] == pE.name) {
+      if (properties[AbstractTts.PUNCTUATION_ECHO] == pE.name) {
         break;
       }
     }
@@ -602,13 +599,13 @@ cvox.TtsBackground.prototype.preprocess = function(text, properties) {
 
 
 /** @override */
-cvox.TtsBackground.prototype.toggleSpeechOnOrOff = function() {
-  var previousValue = this.ttsProperties[cvox.AbstractTts.VOLUME];
+TtsBackground.prototype.toggleSpeechOnOrOff = function() {
+  var previousValue = this.ttsProperties[AbstractTts.VOLUME];
   var toggle = function() {
     if (previousValue == 0) {
-      this.ttsProperties[cvox.AbstractTts.VOLUME] = 1;
+      this.ttsProperties[AbstractTts.VOLUME] = 1;
     } else {
-      this.ttsProperties[cvox.AbstractTts.VOLUME] = 0;
+      this.ttsProperties[AbstractTts.VOLUME] = 0;
     }
   }.bind(this);
 
@@ -628,11 +625,10 @@ cvox.TtsBackground.prototype.toggleSpeechOnOrOff = function() {
  * Method that cycles among the available punctuation echo levels.
  * @return {string} The resulting punctuation level message id.
  */
-cvox.TtsBackground.prototype.cyclePunctuationEcho = function() {
+TtsBackground.prototype.cyclePunctuationEcho = function() {
   this.currentPunctuationEcho_ =
       (this.currentPunctuationEcho_ + 1) % this.punctuationEchoes_.length;
-  localStorage[cvox.AbstractTts.PUNCTUATION_ECHO] =
-      this.currentPunctuationEcho_;
+  localStorage[AbstractTts.PUNCTUATION_ECHO] = this.currentPunctuationEcho_;
   return this.punctuationEchoes_[this.currentPunctuationEcho_].msg;
 };
 
@@ -646,7 +642,7 @@ cvox.TtsBackground.prototype.cyclePunctuationEcho = function() {
  * @return {string} A string with all numbers converted.
  * @private
  */
-cvox.TtsBackground.prototype.getNumberAsDigits_ = function(text) {
+TtsBackground.prototype.getNumberAsDigits_ = function(text) {
   return text.replace(/\d+/g, function(num) {
     if (num.length <= 4) {
       return num;
@@ -663,13 +659,13 @@ cvox.TtsBackground.prototype.getNumberAsDigits_ = function(text) {
  * @return {function(string): string} The replacement function.
  * @private
  */
-cvox.TtsBackground.prototype.createPunctuationReplace_ = function(clear) {
+TtsBackground.prototype.createPunctuationReplace_ = function(clear) {
   return goog.bind(function(match) {
     var retain = this.retainPunctuation_.indexOf(match) != -1 ? match : ' ';
     return clear ? retain :
                    ' ' +
             (new goog.i18n.MessageFormat(
-                 Msgs.getMsg(cvox.AbstractTts.CHARACTER_DICTIONARY[match])))
+                 Msgs.getMsg(AbstractTts.CHARACTER_DICTIONARY[match])))
                 .format({'COUNT': 1}) +
             retain + ' ';
   }, this);
@@ -682,8 +678,7 @@ cvox.TtsBackground.prototype.createPunctuationReplace_ = function(clear) {
  * @param {Object} properties Speech properties to use for this utterance.
  * @private
  */
-cvox.TtsBackground.prototype.pronouncePhonetically_ = function(
-    text, properties) {
+TtsBackground.prototype.pronouncePhonetically_ = function(text, properties) {
   // Math should never be pronounced phonetically.
   if (properties.math) {
     return;
@@ -699,7 +694,7 @@ cvox.TtsBackground.prototype.pronouncePhonetically_ = function(
       PhoneticData.getPhoneticDisambiguation(properties['lang'], text);
   if (phoneticText) {
     properties['delay'] = true;
-    this.speak(phoneticText, cvox.QueueMode.QUEUE, properties);
+    this.speak(phoneticText, QueueMode.QUEUE, properties);
   }
 };
 
@@ -708,7 +703,7 @@ cvox.TtsBackground.prototype.pronouncePhonetically_ = function(
  * Clears the last timeout set via setTimeout.
  * @private
  */
-cvox.TtsBackground.prototype.clearTimeout_ = function() {
+TtsBackground.prototype.clearTimeout_ = function() {
   if (goog.isDef(this.timeoutId_)) {
     clearTimeout(this.timeoutId_);
     this.timeoutId_ = undefined;
@@ -724,7 +719,7 @@ cvox.TtsBackground.prototype.clearTimeout_ = function() {
  * determined.
  * @private
  */
-cvox.TtsBackground.prototype.updateVoice_ = function(voiceName, opt_callback) {
+TtsBackground.prototype.updateVoice_ = function(voiceName, opt_callback) {
   chrome.tts.getVoices(goog.bind(function(voices) {
     let systemVoice = {voiceName: constants.SYSTEM_VOICE};
     voices.unshift(systemVoice);
@@ -747,21 +742,21 @@ cvox.TtsBackground.prototype.updateVoice_ = function(voiceName, opt_callback) {
  * @param {Array<chrome.settingsPrivate.PrefObject>} prefs
  * @private
  */
-cvox.TtsBackground.prototype.updateFromPrefs_ = function(announce, prefs) {
+TtsBackground.prototype.updateFromPrefs_ = function(announce, prefs) {
   prefs.forEach((pref) => {
     var msg;
     var propertyName;
     switch (pref.key) {
       case 'settings.tts.speech_rate':
-        propertyName = cvox.AbstractTts.RATE;
+        propertyName = AbstractTts.RATE;
         msg = 'announce_rate';
         break;
       case 'settings.tts.speech_pitch':
-        propertyName = cvox.AbstractTts.PITCH;
+        propertyName = AbstractTts.PITCH;
         msg = 'announce_pitch';
         break;
       case 'settings.tts.speech_volume':
-        propertyName = cvox.AbstractTts.VOLUME;
+        propertyName = AbstractTts.VOLUME;
         msg = 'announce_volume';
         break;
       default:
@@ -777,11 +772,10 @@ cvox.TtsBackground.prototype.updateFromPrefs_ = function(announce, prefs) {
     var valueAsPercent =
         Math.round(this.propertyToPercentage(propertyName) * 100);
     var announcement = Msgs.getMsg(msg, [valueAsPercent]);
-    cvox.ChromeVox.tts.speak(
-        announcement, cvox.QueueMode.FLUSH,
-        cvox.AbstractTts.PERSONALITY_ANNOTATION);
+    ChromeVox.tts.speak(
+        announcement, QueueMode.FLUSH, AbstractTts.PERSONALITY_ANNOTATION);
   });
 };
 
 /** @private {RegExp} */
-cvox.TtsBackground.SKIP_WHITESPACE_ = /^[\s\u00a0]*$/;
+TtsBackground.SKIP_WHITESPACE_ = /^[\s\u00a0]*$/;

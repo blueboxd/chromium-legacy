@@ -230,8 +230,7 @@ TEST(ColorMixerTest, GetResultColorChained) {
   mixer[kColorTest1] = BlendTowardMaxContrast(
       GetColorWithMaxContrast(FromTransformInput()), 0x29);
   mixer[kColorTest2] =
-      BlendForMinContrast(gfx::kGoogleBlue500, FromResultColor(kColorTest1),
-                          FromResultColor(kColorTest0));
+      BlendForMinContrast(gfx::kGoogleBlue500, kColorTest1, kColorTest0);
   EXPECT_EQ(SkColorSetRGB(0x89, 0xB3, 0xF8), mixer.GetResultColor(kColorTest2));
 }
 

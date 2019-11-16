@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.signin.SigninPromoUtil;
 import org.chromium.chrome.browser.status_indicator.StatusIndicatorCoordinator;
 import org.chromium.chrome.browser.toolbar.ToolbarButtonInProductHelpController;
@@ -61,8 +62,9 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
      */
     public TabbedRootUiCoordinator(ChromeActivity activity,
             Callback<ToolbarManager> toolbarManagerCallback,
-            Callback<Boolean> onOmniboxFocusChangedListener, boolean intentWithEffect) {
-        super(activity, toolbarManagerCallback, onOmniboxFocusChangedListener);
+            Callback<Boolean> onOmniboxFocusChangedListener, boolean intentWithEffect,
+            ShareDelegate shareDelegate) {
+        super(activity, toolbarManagerCallback, onOmniboxFocusChangedListener, shareDelegate);
         mIntentWithEffect = intentWithEffect;
     }
 

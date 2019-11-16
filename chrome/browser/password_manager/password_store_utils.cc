@@ -12,44 +12,36 @@
 
 void EditSavedPasswords(
     Profile* profile,
-    const base::span<const std::unique_ptr<autofill::PasswordForm>> old_forms,
-    const base::string16& old_username,
-    const std::string& signon_realm,
+    const base::span<const std::unique_ptr<autofill::PasswordForm>>
+        forms_to_change,
     const base::string16& new_username,
-    const base::string16* new_password) {
-  DCHECK(!old_forms.empty());
+    const base::Optional<base::string16>& new_password) {
+  DCHECK(!forms_to_change.empty());
 
-  const bool username_changed = old_username != new_username;
+  const std::string signon_realm = forms_to_change[0]->signon_realm;
 
-  // In case the username changed, make sure that there exists no other
-  // credential with the same signon_realm and username.
-  if (username_changed &&
-      std::any_of(old_forms.begin(), old_forms.end(),
-                  [&](const auto& old_form) {
-                    return old_form->signon_realm == signon_realm &&
-                           old_form->username_value == new_username;
-                  })) {
-    // TODO(crbug.com/1002021): We shouldn't fail silently.
-    DLOG(ERROR) << "A credential with the same signon_realm and username "
-                   "already exists.";
-    return;
-  }
+  const bool username_changed =
+      new_username != forms_to_change[0]->username_value;
 
   // An updated username implies a change in the primary key, thus we need to
   // make sure to call the right API. Update every entry in the equivalence
   // class.
-  for (const auto& old_form : old_forms) {
+  for (const auto& old_form : forms_to_change) {
     scoped_refptr<password_manager::PasswordStore> store =
         GetPasswordStore(profile, old_form->IsUsingAccountStore());
 
-    if (!store)
+    if (!store) {
       continue;
+    }
     autofill::PasswordForm new_form = *old_form;
-    if (new_password)
-      new_form.password_value = *new_password;
+    new_form.username_value = new_username;
 
+    // The desktop logic allows to edit usernames even in cases when the
+    // password cannot be displayed. In those cases, new_password won't have
+    // a value.
+    if (new_password.has_value())
+      new_form.password_value = new_password.value();
     if (username_changed) {
-      new_form.username_value = new_username;
       store->UpdateLoginWithPrimaryKey(new_form, *old_form);
     } else {
       store->UpdateLogin(new_form);

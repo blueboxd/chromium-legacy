@@ -7,7 +7,7 @@ cr.exportPath('settings');
 /**
  * Ctap2Status contains a subset of CTAP2 status codes. See
  * device::CtapDeviceResponseCode for the full list.
- * @enum{number}
+ * @enum {number}
  */
 const Ctap2Status = {
   OK: 0x0,

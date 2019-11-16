@@ -254,6 +254,7 @@
 <translation id="1365180424462182382">Il tuo <ph name="BEGIN_LINK" />browser è gestito<ph name="END_LINK" /> da <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="1366177842110999534">Esegui strumenti, editor e IDE di Linux sul tuo dispositivo <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;Ulteriori informazioni&lt;/a&gt;</translation>
 <translation id="1367951781824006909">Scegli un file</translation>
+<translation id="1369149969991017342">Switch Access (consente l'utilizzo del computer semplicemente mediante uno o due sensori)</translation>
 <translation id="1372841398847029212">Sincronizza con il tuo account</translation>
 <translation id="1374844444528092021">Il certificato richiesto dalla rete "<ph name="NETWORK_NAME" />" non è installato o non è più valido. Richiedi un nuovo certificato e riprova a connetterti.</translation>
 <translation id="1375321115329958930">Password salvate</translation>
@@ -565,6 +566,7 @@
 <translation id="1794791083288629568">Invia feedback per aiutarci a risolvere questo problema.</translation>
 <translation id="1795214765651529549">Usa classico</translation>
 <translation id="1799071797295057738">L'estensione "<ph name="EXTENSION_NAME" />" è stata disattivata automaticamente.</translation>
+<translation id="1802624026913571222">Sospendi alla chiusura del coperchio</translation>
 <translation id="1802687198411089702">La pagina non risponde. Puoi aspettare oppure chiuderla.</translation>
 <translation id="1802931390041703523">Flash è stato bloccato in questa pagina</translation>
 <translation id="1803531841600994172">Lingua in cui tradurre</translation>
@@ -666,6 +668,7 @@
 <translation id="1937774647013465102">Impossibile importare il tipo di architettura del contenitore <ph name="ARCHITECTURE_CONTAINER" /> con questo dispositivo che invece è <ph name="ARCHITECTURE_DEVICE" />. Puoi provare a ripristinare questo contenitore in un diverso dispositivo oppure puoi accedere ai file all'interno dell'immagine del contenitore aprendoli nell'app File.</translation>
 <translation id="1938351510777341717">Comando esterno</translation>
 <translation id="1940546824932169984">Dispositivi connessi</translation>
+<translation id="1942600407708803723">Spegni alla chiusura del coperchio</translation>
 <translation id="1944921356641260203">Aggiornamento trovato</translation>
 <translation id="1946577776959096882">Visualizza account</translation>
 <translation id="1951012854035635156">Assistente</translation>
@@ -2438,6 +2441,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4546308221697447294">Naviga velocemente con Google Chrome</translation>
 <translation id="4547659257713117923">Nessuna scheda di altri dispositivi</translation>
 <translation id="4547672827276975204">Imposta automaticamente</translation>
+<translation id="4549791035683739768">Nel token di sicurezza non sono archiviate impronte</translation>
 <translation id="4551763574344810652">Premi <ph name="MODIFIER_KEY_DESCRIPTION" /> per annullare</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4554591392113183336">La versione dell'estensione esterna è pari o precedente a quella dell'estensione esistente.</translation>
@@ -2617,6 +2621,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4839303808932127586">Sal&amp;va video come...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 altro elemento}other{# altri elementi}}</translation>
 <translation id="4842976633412754305">Questa pagina sta tentando di caricare script da fonti non autenticate.</translation>
+<translation id="4843488774506045600">Accesso fornito da <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Altre tastiere</translation>
 <translation id="4846680374085650406">Stai seguendo il consiglio dell'amministratore per questa impostazione.</translation>
 <translation id="4848518990323155912">Attiva blocco della scheda SIM (è necessario che il PIN utilizzi i dati mobili)</translation>
@@ -3037,6 +3042,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="5466374726908360271">I&amp;ncolla e cerca "<ph name="SEARCH_TERMS" />"</translation>
 <translation id="5468173180030470402">Ricerca condivisioni file in corso</translation>
 <translation id="5471768120198416576">Ciao! Sono la voce della sintesi locale.</translation>
+<translation id="5472133193607270166">Se questa opzione è attiva, Sites non può usare la tua attività di navigazione su diversi siti per personalizzare gli annunci. Alcuni siti potrebbero non funzionare correttamente.</translation>
 <translation id="5473333559083690127">Inserisci ancora il nuovo PIN</translation>
 <translation id="5481941284378890518">Aggiungi stampanti nelle vicinanze</translation>
 <translation id="5483785310822538350">Revoca accesso a file e dispositivi</translation>
@@ -3068,6 +3074,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="5511823366942919280">Vuoi configurare questo dispositivo come dispositivo "Shark"?</translation>
 <translation id="5512653252560939721">Il certificato utente deve essere basato su hardware.</translation>
 <translation id="5517304475148761050">L'app richiede l'accesso al Play Store</translation>
+<translation id="5517412723934627386"><ph name="NETWORK_TYPE" />: <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Aggiunta della stampante al tuo account; potrebbe occorrere un istante...</translation>
 <translation id="5518219166343146486">Chiedi conferma quando un sito vuole leggere il testo e le immagini copiati negli appunti</translation>
 <translation id="5518584115117143805">Certificato crittografia email</translation>
@@ -3186,6 +3193,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="567643736130151854">Accedi e attiva la sincronizzazione per trovare i tuoi preferiti, le password e altre impostazioni su tutti i tuoi dispositivi</translation>
 <translation id="5677503058916217575">Lingua della pagina:</translation>
 <translation id="5677928146339483299">Bloccato</translation>
+<translation id="5678293144564424498">App messa in pausa</translation>
 <translation id="5678550637669481956">È stato concesso l'accesso in lettura e scrittura a <ph name="VOLUME_NAME" />.</translation>
 <translation id="5678955352098267522">Lettura dei dati su <ph name="WEBSITE_1" /></translation>
 <translation id="5684661240348539843">Identificatore asset</translation>
@@ -3452,6 +3460,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="6055392876709372977">PKCS #1 SHA-256 con crittografia RSA</translation>
 <translation id="6056710589053485679">Ricaricamento normale</translation>
 <translation id="6057381398996433816">A questo sito è stato impedito di usare i sensori di movimento e della luce.</translation>
+<translation id="6058567592298841668">Plugin Virtual Machine: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Gerarchia certificati</translation>
 <translation id="6059925163896151826">Dispositivi USB</translation>
 <translation id="6061882183774845124">Invia link ai tuoi dispositivi</translation>
@@ -4400,6 +4409,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="7476454130948140105">Livello della batteria troppo basso per eseguire l'aggiornamento (<ph name="BATTERY_PERCENT" />%)</translation>
 <translation id="7477793887173910789">Gestisci la tua musica, i tuoi video e altro ancora</translation>
 <translation id="7478485216301680444">Impossibile installare l'applicazione kiosk.</translation>
+<translation id="7479221278376295180">Panoramica dell'utilizzo dello spazio di archiviazione</translation>
 <translation id="7481312909269577407">Avanti</translation>
 <translation id="748138892655239008">Limitazioni di base certificato</translation>
 <translation id="7487067081878637334">Tecnologia</translation>
@@ -5375,6 +5385,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8845001906332463065">Richiedi assistenza</translation>
 <translation id="8846132060409673887">Lettura del produttore e del modello di questo computer</translation>
 <translation id="8846141544112579928">Ricerca tastiera in corso...</translation>
+<translation id="8847523528195140327">Esci alla chiusura del coperchio</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8850251000316748990">Visualizza altre...</translation>
 <translation id="885246833287407341">Argomenti funzione API</translation>
@@ -5437,6 +5448,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8930351635855238750">Le nuove impostazioni dei cookie verranno applicate dopo aver ricaricato la pagina</translation>
 <translation id="8931394284949551895">Nuovi dispositivi</translation>
 <translation id="893254996965966411">Salva le stampanti rilevate nel tuo profilo o aggiungi una nuova stampante.</translation>
+<translation id="8932894639908691771">Opzioni di Switch Access</translation>
 <translation id="8933960630081805351">Mo&amp;stra nel Finder</translation>
 <translation id="8934732568177537184">Continua</translation>
 <translation id="8938800817013097409">Dispositivo USB-C (porta posteriore destra)</translation>
@@ -5500,6 +5512,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="9023015617655685412">Aggiungi questa scheda ai preferiti…</translation>
 <translation id="9024127637873500333">&amp;Apri in un'altra scheda</translation>
 <translation id="9024158959543687197">Errore durante il montaggio della condivisione. Verifica l'URL condivisione file e riprova.</translation>
+<translation id="9024885274934357065">Il tuo dispositivo è bloccato con Smart Lock. Premi INVIO per sbloccarlo.</translation>
 <translation id="9026731007018893674">download</translation>
 <translation id="9026852570893462412">Questa procedura potrebbe richiedere alcuni minuti. Download della macchina virtuale in corso.</translation>
 <translation id="9027459031423301635">Apri link in un'altra &amp;scheda</translation>

@@ -14,5 +14,8 @@ const base::Feature kSharedClipboardUI{"SharedClipboardUI",
     defined(OS_CHROMEOS)
 const base::Feature kRemoteCopyReceiver{"RemoteCopyReceiver",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::FeatureParam<std::string> kRemoteCopyAllowedOrigins = {
+    &kRemoteCopyReceiver, "RemoteCopyAllowedOrigins", ""};
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)

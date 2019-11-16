@@ -39,7 +39,7 @@ void Symbol::DeriveNames() const {
     name_ = full_name_;
   } else if (IsDex()) {
     std::tuple<std::string_view, std::string_view, std::string_view>
-        parsed_names = ParseJava(full_name_, &size_info->owned_strings);
+        parsed_names = ParseJava(full_name_, &size_info_->owned_strings);
     template_name_ = std::get<1>(parsed_names);
     name_ = std::get<2>(parsed_names);
   } else if (IsStringLiteral()) {
@@ -47,7 +47,7 @@ void Symbol::DeriveNames() const {
     name_ = full_name_;
   } else if (IsNative()) {
     std::tuple<std::string_view, std::string_view, std::string_view>
-        parsed_names = ParseCpp(full_name_, &size_info->owned_strings);
+        parsed_names = ParseCpp(full_name_, &size_info_->owned_strings);
     template_name_ = std::get<1>(parsed_names);
     name_ = std::get<2>(parsed_names);
   } else {
@@ -299,10 +299,18 @@ DeltaSizeInfo::~DeltaSizeInfo() = default;
 DeltaSizeInfo::DeltaSizeInfo(const DeltaSizeInfo&) = default;
 DeltaSizeInfo& DeltaSizeInfo::operator=(const DeltaSizeInfo&) = default;
 
-void TreeNode::WriteIntoJson(Json::Value* out, int depth) {
+void TreeNode::WriteIntoJson(
+    Json::Value* out,
+    int depth,
+    std::function<bool(const TreeNode* const& l, const TreeNode* const& r)>
+        compare_func) {
   if (symbol) {
-    (*out)["idPath"] = std::string(symbol->IsDex() ? symbol->FullName()
-                                                   : symbol->TemplateName());
+    if (symbol->IsDex()) {
+      (*out)["idPath"] = std::string(symbol->FullName());
+    } else {
+      (*out)["idPath"] = std::string(symbol->TemplateName());
+      (*out)["fullName"] = std::string(symbol->FullName());
+    }
   } else {
     (*out)["idPath"] = std::string(this->id_path);
   }
@@ -324,13 +332,10 @@ void TreeNode::WriteIntoJson(Json::Value* out, int depth) {
     (*out)["children"] = Json::Value(Json::arrayValue);
     // Reorder children for output.
     // TODO: Support additional compare functions.
-    auto compare_func = [](const TreeNode* const& l,
-                           const TreeNode* const& r) -> bool {
-      return abs(l->size) > abs(r->size);
-    };
     std::sort(this->children.begin(), this->children.end(), compare_func);
     for (unsigned int i = 0; i < this->children.size(); i++) {
-      this->children[i]->WriteIntoJson(&(*out)["children"][i], depth - 1);
+      this->children[i]->WriteIntoJson(&(*out)["children"][i], depth - 1,
+                                       compare_func);
     }
   }
 }
@@ -374,4 +379,11 @@ SectionId NodeStats::ComputeBiggestSection() const {
   return ret;
 }
 
+int32_t NodeStats::SumCount() const {
+  int32_t count = 0;
+  for (auto& pair : child_stats) {
+    count += pair.second.count;
+  }
+  return count;
+}
 }  // namespace caspian

@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import './print_preview_vars_css.js';
+import '../strings.m.js';
+
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {isMac} from 'chrome://resources/js/cr.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {hasKeyModifiers} from 'chrome://resources/js/util.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
-import {NativeLayer} from '../native_layer.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 import {DarkModeBehavior} from '../dark_mode_behavior.js';
-import {areRangesEqual} from '../print_preview_utils.js';
 import {Coordinate2d} from '../data/coordinate2d.js';
 import {Destination} from '../data/destination.js';
 import {getPrinterTypeForDestination} from '../data/destination_match.js';
@@ -23,11 +25,12 @@ import {PrintableArea} from '../data/printable_area.js';
 import {ScalingType} from '../data/scaling.js';
 import {Size} from '../data/size.js';
 import {Error, State} from '../data/state.js';
+import {NativeLayer} from '../native_layer.js';
+import {areRangesEqual} from '../print_preview_utils.js';
+
 import {MARGIN_KEY_MAP} from './margin_control_container.js';
 import {PluginProxy} from './plugin_proxy.js';
-import './print_preview_vars_css.js';
 import {SettingsBehavior} from './settings_behavior.js';
-import '../strings.m.js';
 
 /**
  * @typedef {{
@@ -212,8 +215,8 @@ Polymer({
       return;
     }
 
-    this.previewState = this.previewState ==
-            PreviewAreaState.OPEN_IN_PREVIEW_LOADING ?
+    this.previewState =
+        this.previewState == PreviewAreaState.OPEN_IN_PREVIEW_LOADING ?
         PreviewAreaState.OPEN_IN_PREVIEW_LOADED :
         PreviewAreaState.DISPLAY_PREVIEW;
   },
@@ -324,8 +327,7 @@ Polymer({
   /** Set the preview state to display the "opening in preview" message. */
   setOpeningPdfInPreview: function() {
     assert(isMac);
-    this.previewState =
-        this.previewState == PreviewAreaState.LOADING ?
+    this.previewState = this.previewState == PreviewAreaState.LOADING ?
         PreviewAreaState.OPEN_IN_PREVIEW_LOADING :
         PreviewAreaState.OPEN_IN_PREVIEW_LOADED;
   },
@@ -648,13 +650,11 @@ Polymer({
 
     // Media size
     const newValue =
-        /** @type {!MediaSizeValue} */ (
-            this.getSettingValue('mediaSize'));
+        /** @type {!MediaSizeValue} */ (this.getSettingValue('mediaSize'));
     if (newValue.height_microns != lastTicket.mediaSize.height_microns ||
         newValue.width_microns != lastTicket.mediaSize.width_microns ||
         (this.destination.id !== lastTicket.deviceName &&
-         this.getSettingValue('margins') ===
-             MarginsType.MINIMUM)) {
+         this.getSettingValue('margins') === MarginsType.MINIMUM)) {
       return true;
     }
 
@@ -761,9 +761,8 @@ Polymer({
       deviceName: this.destination.id,
       dpiHorizontal: this.getDpiForTicket_('horizontal_dpi'),
       dpiVertical: this.getDpiForTicket_('vertical_dpi'),
-      duplex: this.getSettingValue('duplex') ?
-          DuplexMode.LONG_EDGE :
-          DuplexMode.SIMPLEX,
+      duplex: this.getSettingValue('duplex') ? DuplexMode.LONG_EDGE :
+                                               DuplexMode.SIMPLEX,
       printerType: getPrinterTypeForDestination(this.destination),
       rasterizePDF: this.getSettingValue('rasterize'),
     };
@@ -784,8 +783,7 @@ Polymer({
 
   /** @private */
   onStateOrErrorChange_: function() {
-    if ((this.state === State.ERROR ||
-         this.state === State.FATAL_ERROR) &&
+    if ((this.state === State.ERROR || this.state === State.FATAL_ERROR) &&
         this.getErrorMessage_() !== '') {
       this.previewState = PreviewAreaState.ERROR;
     }

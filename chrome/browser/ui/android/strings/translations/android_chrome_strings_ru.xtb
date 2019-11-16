@@ -12,6 +12,7 @@
 <translation id="107147699690128016">Если вы сделаете это, файл может открыться в другом приложении и нанести вред устройству.</translation>
 <translation id="1100066534610197918">Открыть в новой вкладке группы</translation>
 <translation id="1105960400813249514">Демонстрация экрана</translation>
+<translation id="1110022065703191351">Значки</translation>
 <translation id="1111673857033749125">Здесь появятся закладки, сохраненные на других устройствах.</translation>
 <translation id="1113597929977215864">Упрощенный просмотр</translation>
 <translation id="1124772482545689468">Пользователь</translation>
@@ -363,6 +364,7 @@
 <translation id="3730075448226062617">Чтобы Chrome получил доступ к микрофону, включите его в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" />: добавлена закладка</translation>
 <translation id="3744111561329211289">Фоновая синхронизация</translation>
+<translation id="3749259744154402564">Действие не поддерживается.</translation>
 <translation id="3771001275138982843">Не удалось скачать обновление.</translation>
 <translation id="3771033907050503522">Вкладки инкогнито</translation>
 <translation id="3773755127849930740">Чтобы разрешить подключение, <ph name="BEGIN_LINK" />включите Bluetooth<ph name="END_LINK" /></translation>
@@ -576,6 +578,7 @@
 <translation id="5327248766486351172">Название</translation>
 <translation id="5335288049665977812">Разрешить сайтам использовать JavaScript (рекомендуется)</translation>
 <translation id="5342314432463739672">Запросы разрешений</translation>
+<translation id="534295439873310000">Устройства с функцией NFC</translation>
 <translation id="5357811892247919462">Вкладка получена.</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{Открыта <ph name="OPEN_TABS_ONE" /> вкладка. Нажмите для переключения.}one{Открыта <ph name="OPEN_TABS_MANY" /> вкладка. Нажмите для переключения.}few{Открыто <ph name="OPEN_TABS_MANY" /> вкладки. Нажмите для переключения.}many{Открыто <ph name="OPEN_TABS_MANY" /> вкладок. Нажмите для переключения.}other{Открыто <ph name="OPEN_TABS_MANY" /> вкладки. Нажмите для переключения.}}</translation>
 <translation id="5391532827096253100">Подключение к сайту не защищено. Информация о сайте</translation>
@@ -632,6 +635,7 @@
 <translation id="5686790454216892815">Имя файла слишком длинное.</translation>
 <translation id="5689516760719285838">Геоданные</translation>
 <translation id="569536719314091526">Чтобы перевести эту страницу на какой-либо язык, нажмите кнопку "Ещё"</translation>
+<translation id="5710871682236653961">Запрашивать для сайтов разрешение на обмен информацией, когда вы нажимаете на устройства с функцией NFC (рекомендуется).</translation>
 <translation id="572328651809341494">Недавние вкладки</translation>
 <translation id="5726692708398506830">Увеличить масштаб страницы</translation>
 <translation id="5748802427693696783">Переключено на обычные вкладки</translation>
@@ -881,6 +885,7 @@
 <translation id="7559975015014302720">Упрощенный режим отключен</translation>
 <translation id="7562080006725997899">Очистить историю</translation>
 <translation id="756809126120519699">Данные Chrome удалены</translation>
+<translation id="7572498721684305250">Запретить сайтам обмен информацией, когда вы нажимаете на устройства с функцией NFC.</translation>
 <translation id="757524316907819857">Запретить сайтам воспроизводить защищенный контент</translation>
 <translation id="757855969265046257">{FILES,plural, =1{Скачан <ph name="FILES_DOWNLOADED_ONE" /> файл}one{Скачан <ph name="FILES_DOWNLOADED_MANY" /> файл}few{Скачано <ph name="FILES_DOWNLOADED_MANY" /> файла}many{Скачано <ph name="FILES_DOWNLOADED_MANY" /> файлов}other{Скачано <ph name="FILES_DOWNLOADED_MANY" /> файла}}</translation>
 <translation id="7588219262685291874">Использовать тёмную тему, когда включен режим энергосбережения</translation>

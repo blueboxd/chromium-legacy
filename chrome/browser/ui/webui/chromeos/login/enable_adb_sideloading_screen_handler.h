@@ -56,9 +56,6 @@ class EnableAdbSideloadingScreenHandler : public EnableAdbSideloadingScreenView,
   void Initialize() override;
 
  private:
-  // Callback for SessionManagerClient::OnQueryAdbSideload
-  void OnQueryAdbSideload(bool success, bool is_allowed);
-
   EnableAdbSideloadingScreen* screen_ = nullptr;
 
   // Keeps whether screen should be shown right after initialization.

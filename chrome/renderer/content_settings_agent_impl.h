@@ -111,8 +111,10 @@ class ContentSettingsAgentImpl
     return allow_running_insecure_content_;
   }
 
-  void SetContentSettingsManagerForTesting(
-      mojo::Remote<chrome::mojom::ContentSettingsManager> manager);
+ protected:
+  // Allow this to be overridden by tests.
+  virtual void BindContentSettingsManager(
+      mojo::Remote<chrome::mojom::ContentSettingsManager>* manager);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ContentSettingsAgentImplTest, WhitelistedSchemes);
@@ -165,8 +167,8 @@ class ContentSettingsAgentImpl
   bool AllowStorageAccess(
       chrome::mojom::ContentSettingsManager::StorageType storage_type);
 
-  // Ensures that |content_settings_manager_| is connected.
-  void EnsureContentSettingsManagerConnection();
+  // A getter for |content_settings_manager_| that ensures it is bound.
+  chrome::mojom::ContentSettingsManager& GetContentSettingsManager();
 
   mojo::Remote<chrome::mojom::ContentSettingsManager> content_settings_manager_;
 

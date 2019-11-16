@@ -1083,6 +1083,11 @@ void OverviewItem::OnItemBoundsAnimationStarted() {
 }
 
 void OverviewItem::OnItemBoundsAnimationEnded() {
+  // Do nothing if overview is shutting down. See crbug.com/1025267 for when it
+  // might happen.
+  if (!Shell::Get()->overview_controller()->InOverviewSession())
+    return;
+
   UpdateRoundedCornersAndShadow();
   OnDragAnimationCompleted();
 }

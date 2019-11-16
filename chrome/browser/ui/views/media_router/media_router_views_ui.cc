@@ -85,6 +85,12 @@ MediaSource GetSourceForRouteObserver(const std::vector<MediaSource>& sources) {
   return source_it != sources.end() ? *source_it : MediaSource(std::string());
 }
 
+void MaybeReportCastingSource(MediaCastMode cast_mode,
+                              const RouteRequestResult& result) {
+  if (result.result_code() == RouteRequestResult::OK)
+    MediaRouterMetrics::RecordMediaRouterCastingSource(cast_mode);
+}
+
 }  // namespace
 
 // Observes a WebContents and requests fullscreening of its first
@@ -340,13 +346,6 @@ bool MediaRouterViewsUI::CreateRoute(const MediaSink::Id& sink_id,
 
 void MediaRouterViewsUI::TerminateRoute(const MediaRoute::Id& route_id) {
   GetMediaRouter()->TerminateRoute(route_id);
-}
-
-void MediaRouterViewsUI::MaybeReportCastingSource(
-    MediaCastMode cast_mode,
-    const RouteRequestResult& result) {
-  if (result.result_code() == RouteRequestResult::OK)
-    MediaRouterMetrics::RecordMediaRouterCastingSource(cast_mode);
 }
 
 std::vector<MediaSinkWithCastModes> MediaRouterViewsUI::GetEnabledSinks()
@@ -626,8 +625,7 @@ base::Optional<RouteParameters> MediaRouterViewsUI::GetRouteParameters(
   // HandleCreateSessionRequestRouteResponse(), which closes the dialog and
   // destroys |this|.
   params.route_result_callbacks.push_back(
-      base::BindOnce(&MediaRouterViewsUI::MaybeReportCastingSource,
-                     weak_factory_.GetWeakPtr(), cast_mode));
+      base::BindOnce(&MaybeReportCastingSource, cast_mode));
 
   // There are 3 cases. In cases (1) and (3) the MediaRouterViewsUI will need to
   // be notified via OnRouteResponseReceived(). In case (2) the dialog will be
@@ -901,8 +899,7 @@ base::Optional<RouteParameters> MediaRouterViewsUI::GetLocalFileRouteParameters(
       GetPresentationRequestSourceName()));
 
   params.route_result_callbacks.push_back(
-      base::BindOnce(&MediaRouterViewsUI::MaybeReportCastingSource,
-                     weak_factory_.GetWeakPtr(), MediaCastMode::LOCAL_FILE));
+      base::BindOnce(&MaybeReportCastingSource, MediaCastMode::LOCAL_FILE));
 
   params.route_result_callbacks.push_back(
       base::BindOnce(&MediaRouterViewsUI::MaybeReportFileInformation,

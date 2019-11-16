@@ -20,7 +20,7 @@
 
 #if !defined(OS_ANDROID)
 #include "content/public/common/resource_usage_reporter.mojom.h"
-#include "net/proxy_resolution/proxy_resolver_v8.h"
+#include "services/proxy_resolver/proxy_resolver_v8.h"  // nogncheck (bug 12345)
 #endif
 
 namespace content {
@@ -40,11 +40,12 @@ class ResourceUsageReporterImpl : public mojom::ResourceUsageReporter {
  private:
   void GetUsageData(GetUsageDataCallback callback) override {
     mojom::ResourceUsageDataPtr data = mojom::ResourceUsageData::New();
-    size_t total_heap_size = net::ProxyResolverV8::GetTotalHeapSize();
+    size_t total_heap_size =
+        proxy_resolver::ProxyResolverV8::GetTotalHeapSize();
     if (total_heap_size) {
       data->reports_v8_stats = true;
       data->v8_bytes_allocated = total_heap_size;
-      data->v8_bytes_used = net::ProxyResolverV8::GetUsedHeapSize();
+      data->v8_bytes_used = proxy_resolver::ProxyResolverV8::GetUsedHeapSize();
     }
     std::move(callback).Run(std::move(data));
   }

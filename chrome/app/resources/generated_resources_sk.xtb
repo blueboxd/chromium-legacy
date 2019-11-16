@@ -254,6 +254,7 @@
 <translation id="1365180424462182382">Váš <ph name="BEGIN_LINK" />prehliadač spravuje<ph name="END_LINK" /> doména <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="1366177842110999534">Vo svojom zariadení <ph name="DEVICE_TYPE" /> používate linuxové nástroje, editory a prostredia IDE. &lt;a target="_blank" href="<ph name="URL" />"&gt;Ďalšie nástroje&lt;/a&gt;</translation>
 <translation id="1367951781824006909">Vybrať súbor</translation>
+<translation id="1369149969991017342">Ovládanie prepínačmi (ovládajte počítač len jedným či dvoma prepínačmi)</translation>
 <translation id="1372841398847029212">Synchronizovať do účtu</translation>
 <translation id="1374844444528092021">Certifikát vyžadovaný sieťou <ph name="NETWORK_NAME" /> nie je nainštalovaný alebo je neplatný. Nainštalujte nový certifikát a skúste sa pripojiť znova.</translation>
 <translation id="1375321115329958930">Uložené heslá</translation>
@@ -565,6 +566,7 @@
 <translation id="1794791083288629568">Odoslať spätnú väzbu, ktorá nám pomôže pri riešení tohto problému</translation>
 <translation id="1795214765651529549">Použiť klasický</translation>
 <translation id="1799071797295057738">Rozšírenie <ph name="EXTENSION_NAME" /> bolo automaticky deaktivované.</translation>
+<translation id="1802624026913571222">Po zavretí krytu prejsť do režimu spánku</translation>
 <translation id="1802687198411089702">Stránka nereaguje. Môžete na ňu počkať alebo rozhranie ukončiť.</translation>
 <translation id="1802931390041703523">Flash bol na tejto stránke zablokovaný</translation>
 <translation id="1803531841600994172">Jazyk, do ktorého chcete prekladať</translation>
@@ -666,6 +668,7 @@
 <translation id="1937774647013465102">S týmto zariadením, ktoré je <ph name="ARCHITECTURE_DEVICE" />, sa nedá importovať typ architektúry kontajnera <ph name="ARCHITECTURE_CONTAINER" />. Tento kontajner môžete skúsiť obnoviť do iného zariadenia, prípadne môžete získať prístup k súborom v tomto obraze kontajnera pomocou aplikácie Súbory.</translation>
 <translation id="1938351510777341717">Externý príkaz</translation>
 <translation id="1940546824932169984">Pripojené zariadenia</translation>
+<translation id="1942600407708803723">Po zavretí krytu vypnúť</translation>
 <translation id="1944921356641260203">Je k dispozícii aktualizácia</translation>
 <translation id="1946577776959096882">Zobraziť účty</translation>
 <translation id="1951012854035635156">Asistent</translation>
@@ -2438,6 +2441,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="4546308221697447294">Prehliadajte rýchlejšie pomocou prehliadača Google Chrome</translation>
 <translation id="4547659257713117923">Žiadne karty z iných zariadení</translation>
 <translation id="4547672827276975204">Nastaviť automaticky</translation>
+<translation id="4549791035683739768">V bezpečnostnom kľúči nie sú uložené žiadne odtlačky prstov</translation>
 <translation id="4551763574344810652">Stlačením skratky <ph name="MODIFIER_KEY_DESCRIPTION" /> vrátite akciu späť</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4554591392113183336">Verzia externého rozšírenia je rovnaká alebo nižšia ako existujúca verzia</translation>
@@ -2617,6 +2621,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="4839303808932127586">Uložiť &amp;video ako...</translation>
 <translation id="4840150926623932060">{NUM_DOWNLOAD,plural, =1{1 ďalšia položka}few{# ďalšie položky}many{# ďalšej položky}other{# ďalších položiek}}</translation>
 <translation id="4842976633412754305">Táto stránka sa snaží načítať skripty z neoverených zdrojov.</translation>
+<translation id="4843488774506045600">Prihlásenie poskytuje <ph name="EXTENSION_NAME" /></translation>
 <translation id="4844333629810439236">Ďalšie klávesnice</translation>
 <translation id="4846680374085650406">V prípade tohto nastavenia dodržiavate odporúčania správcu.</translation>
 <translation id="4848518990323155912">Povoliť uzamykanie SIM karty (vyžadovať kód PIN pri použití mobilných dát)</translation>
@@ -3037,6 +3042,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="5466374726908360271">Prilepiť a &amp;vyhľadať „<ph name="SEARCH_TERMS" />“</translation>
 <translation id="5468173180030470402">Hľadajú sa zdieľané úložiská</translation>
 <translation id="5471768120198416576">Dobrý deň, som hlas prevodu textu na reč.</translation>
+<translation id="5472133193607270166">Keď je táto možnosť zapnutá, weby nemôžu prispôsobovať reklamy na základe vašej aktivity prehliadania na rôznych stránkach. Niektoré weby nemusia fungovať správne.</translation>
 <translation id="5473333559083690127">Opätovné zadanie nového kódu PIN</translation>
 <translation id="5481941284378890518">Pridať tlačiarne v okolí</translation>
 <translation id="5483785310822538350">Odvolať prístup k súborom a zariadeniam</translation>
@@ -3068,6 +3074,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="5511823366942919280">Naozaj chcete toto zariadenie nastaviť ako zariadenie Shark?</translation>
 <translation id="5512653252560939721">Certifikát používateľa musí byť hardvérový.</translation>
 <translation id="5517304475148761050">Táto aplikácia vyžaduje prístup k Obchodu Play</translation>
+<translation id="5517412723934627386"><ph name="NETWORK_TYPE" /> – <ph name="NETWORK_DISPLAY_NAME" /></translation>
 <translation id="551752069230578406">Tlačiareň sa pridáva do vášho účtu. Môže to chvíľu trvať...</translation>
 <translation id="5518219166343146486">Opýtať sa, keď chce web získať prístup k textu a obrázkom skopírovaným do schránky</translation>
 <translation id="5518584115117143805">Certifikát na šifrovanie e-mailov</translation>
@@ -3186,6 +3193,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="567643736130151854">Prihláste sa a zapnite synchronizáciu. Získate tak svoje záložky, heslá a ďalšie položky vo všetkých zariadeniach</translation>
 <translation id="5677503058916217575">Jazyk stránky:</translation>
 <translation id="5677928146339483299">Blokované</translation>
+<translation id="5678293144564424498">Aplikácia bola pozastavená</translation>
 <translation id="5678550637669481956">Bol udelený prístup k médiu <ph name="VOLUME_NAME" /> s povolením čítať a zapisovať.</translation>
 <translation id="5678955352098267522">Čítať vaše údaje na: <ph name="WEBSITE_1" /></translation>
 <translation id="5684661240348539843">Identifikátor obsahu</translation>
@@ -3452,6 +3460,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="6055392876709372977">Štandard PKCS #1 SHA-256 so šifrovaním RSA</translation>
 <translation id="6056710589053485679">Opätovne načítať</translation>
 <translation id="6057381398996433816">Tomuto webu bolo zablokované používanie senzorov pohybu a svetla.</translation>
+<translation id="6058567592298841668">Doplnok virtuálneho počítača: <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="6059652578941944813">Hierarchia certifikátu</translation>
 <translation id="6059925163896151826">Zariadenia USB</translation>
 <translation id="6061882183774845124">Odoslať odkaz do vašich zariadení</translation>
@@ -4400,6 +4409,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="7476454130948140105">Batéria je príliš slabá na aktualizáciu (<ph name="BATTERY_PERCENT" /> %)</translation>
 <translation id="7477793887173910789">Ovládajte svoju hudbu, videá a ďalší obsah</translation>
 <translation id="7478485216301680444">Aplikáciu pre režim kiosku sa nepodarilo nainštalovať.</translation>
+<translation id="7479221278376295180">Prehľad využitia úložiska</translation>
 <translation id="7481312909269577407">Dopredu</translation>
 <translation id="748138892655239008">Základné obmedzenia certifikátu</translation>
 <translation id="7487067081878637334">Technológia</translation>
@@ -5375,6 +5385,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8845001906332463065">Získať pomoc</translation>
 <translation id="8846132060409673887">Prečítať informácie o výrobcovi a modeli tohto zariadenia</translation>
 <translation id="8846141544112579928">Hľadá sa klávesnica...</translation>
+<translation id="8847523528195140327">Pri zavretí krytu sa odhlásiť</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8850251000316748990">Zobraziť ďalšie…</translation>
 <translation id="885246833287407341">Argumenty funkcie rozhrania API</translation>
@@ -5437,6 +5448,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8930351635855238750">Nové nastavenia súborov cookie sa použijú po opätovnom načítaní stránky</translation>
 <translation id="8931394284949551895">Nové zariadenia</translation>
 <translation id="893254996965966411">Uložte rozpoznané tlačiarne do svojho profilu alebo pridajte novú.</translation>
+<translation id="8932894639908691771">Možnosti ovládania prepínačmi</translation>
 <translation id="8933960630081805351">&amp;Zobraziť v aplikácii Finder</translation>
 <translation id="8934732568177537184">Pokračovať</translation>
 <translation id="8938800817013097409">Zariadenie USB-C (pravý port vzadu)</translation>
@@ -5500,6 +5512,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="9023015617655685412">Pridať kartu medzi záložky…</translation>
 <translation id="9024127637873500333">&amp;Otvoriť na novej karte</translation>
 <translation id="9024158959543687197">Pri pripájaní zdieľaného úložiska sa vyskytla chyba. Skontrolujte jeho webovú adresu a skúste to znova.</translation>
+<translation id="9024885274934357065">Vaše zariadenie sa odomyká pomocou funkcie Smart Lock. Odomknete ho stlačením tlačidla Enter.</translation>
 <translation id="9026731007018893674">stiahnuť</translation>
 <translation id="9026852570893462412">Tento proces môže trvať niekoľko minút. Sťahuje sa virtuálny počítač.</translation>
 <translation id="9027459031423301635">Otvoriť odkaz na novej &amp;karte</translation>

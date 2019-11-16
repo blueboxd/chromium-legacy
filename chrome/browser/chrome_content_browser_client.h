@@ -152,7 +152,11 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                           const GURL& effective_site_url) override;
   const char* GetInitiatorSchemeBypassingDocumentBlocking() override;
   bool ShouldTreatURLSchemeAsFirstPartyWhenTopLevel(
-      base::StringPiece scheme) override;
+      base::StringPiece scheme,
+      bool is_embedded_origin_secure) override;
+  bool ShouldIgnoreSameSiteCookieRestrictionsWhenTopLevel(
+      base::StringPiece scheme,
+      bool is_embedded_origin_secure) override;
   mojo::PendingRemote<network::mojom::URLLoaderFactory>
   CreateURLLoaderFactoryForNetworkRequests(
       content::RenderProcessHost* process,

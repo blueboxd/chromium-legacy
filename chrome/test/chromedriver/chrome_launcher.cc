@@ -151,6 +151,9 @@ Status PrepareDesktopCommandLine(const Capabilities& capabilities,
     switches.SetUnparsedSwitch(common_switch);
   for (auto* desktop_switch : kDesktopSwitches)
     switches.SetUnparsedSwitch(desktop_switch);
+  if (capabilities.accept_insecure_certs) {
+    switches.SetSwitch("ignore-certificate-errors");
+  }
   for (const auto& excluded_switch : capabilities.exclude_switches) {
     switches.RemoveSwitch(excluded_switch);
   }
@@ -621,6 +624,9 @@ Status LaunchAndroidChrome(network::mojom::URLLoaderFactory* factory,
     switches.SetUnparsedSwitch(common_switch);
   for (auto* android_switch : kAndroidSwitches)
     switches.SetUnparsedSwitch(android_switch);
+  if (capabilities.accept_insecure_certs) {
+    switches.SetSwitch("ignore-certificate-errors");
+  }
   for (auto excluded_switch : capabilities.exclude_switches)
     switches.RemoveSwitch(excluded_switch);
   status = device->SetUp(

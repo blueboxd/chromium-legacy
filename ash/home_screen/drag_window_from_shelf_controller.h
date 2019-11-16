@@ -140,6 +140,10 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
   // original bounds after drag ends.
   void OnWindowRestoredToOrignalBounds(bool end_overview);
 
+  // Called to do proper initialization in overview for the dragged window. The
+  // function is supposed to be called with an active overview session.
+  void OnWindowDragStartedInOverview();
+
   aura::Window* window_ = nullptr;
   gfx::Point initial_location_in_screen_;
   gfx::Point previous_location_in_screen_;

@@ -86,13 +86,19 @@ if (is_android) {
   }
 }
 
-cast_shared_library("libcast_external_audio_pipeline_1.0") {
+source_set("dummy_external_audio_pipeline") {
   sources = [
     "external_audio_pipeline_dummy.cc",
   ]
 
   public_deps = [
     "//chromecast/public/media",
+  ]
+}
+
+cast_shared_library("libcast_external_audio_pipeline_1.0") {
+  public_deps = [
+    ":dummy_external_audio_pipeline",
   ]
 }
 

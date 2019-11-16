@@ -8,6 +8,7 @@
 
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -30,6 +31,10 @@ class AssistantContainerViewTest : public AshTestBase {
   ~AssistantContainerViewTest() override = default;
 
   void SetUp() override {
+    // Disable the launcher UI feature flag to test the container view.
+    feature_list_.InitAndDisableFeature(
+        app_list_features::kEnableAssistantLauncherUI);
+
     AshTestBase::SetUp();
 
     // Cache controller.
@@ -52,6 +57,7 @@ class AssistantContainerViewTest : public AshTestBase {
   AssistantUiController* ui_controller() { return ui_controller_; }
 
  private:
+  base::test::ScopedFeatureList feature_list_;
   AssistantController* controller_ = nullptr;
   AssistantUiController* ui_controller_ = nullptr;
 

@@ -14,51 +14,12 @@ namespace password_manager {
 
 namespace {
 
-// Returns all the characters from the start of |input| until the first '\n',
-// "\r\n" (exclusive) or the end of |input|. Cuts the returned part (inclusive
-// the line breaks) from |input|. Skips blocks of matching quotes. Examples:
-// old input -> returned value, new input
-// "ab\ncd" -> "ab", "cd"
-// "\r\n" -> "", ""
-// "abcd" -> "abcd", ""
-// "\r" -> "\r", ""
-// "a\"\n\"b" -> "a\"\n\"b", ""
-base::StringPiece ConsumeLine(base::StringPiece* input) {
-  DCHECK(input);
-  DCHECK(!input->empty());
-
-  bool inside_quotes = false;
-  bool last_char_was_CR = false;
-  for (size_t current = 0; current < input->size(); ++current) {
-    char c = (*input)[current];
-    switch (c) {
-      case '\n':
-        if (!inside_quotes) {
-          const size_t eol_start = last_char_was_CR ? current - 1 : current;
-          base::StringPiece ret = input->substr(0, eol_start);
-          *input = input->substr(current + 1);
-          return ret;
-        }
-        break;
-      case '"':
-        inside_quotes = !inside_quotes;
-        break;
-      default:
-        break;
-    }
-    last_char_was_CR = (c == '\r');
-  }
-
-  // The whole |*input| is one line.
-  return std::exchange(*input, base::StringPiece());
-}
-
 // Takes the |rest| of the CSV lines, returns the first one and stores the
 // remaining ones back in |rest|.
 base::StringPiece ExtractFirstRow(base::StringPiece* rest) {
   DCHECK(rest);
   if (!rest->empty())
-    return ConsumeLine(rest);
+    return ConsumeCSVLine(rest);
   return base::StringPiece();
 }
 
@@ -119,6 +80,36 @@ bool CSVPasswordIterator::operator==(const CSVPasswordIterator& other) const {
       // considered equal. Therefore the maps' addresses are checked instead of
       // their contents.
       map_ == other.map_;
+}
+
+base::StringPiece ConsumeCSVLine(base::StringPiece* input) {
+  DCHECK(input);
+  DCHECK(!input->empty());
+
+  bool inside_quotes = false;
+  bool last_char_was_CR = false;
+  for (size_t current = 0; current < input->size(); ++current) {
+    char c = (*input)[current];
+    switch (c) {
+      case '\n':
+        if (!inside_quotes) {
+          const size_t eol_start = last_char_was_CR ? current - 1 : current;
+          base::StringPiece ret = input->substr(0, eol_start);
+          *input = input->substr(current + 1);
+          return ret;
+        }
+        break;
+      case '"':
+        inside_quotes = !inside_quotes;
+        break;
+      default:
+        break;
+    }
+    last_char_was_CR = (c == '\r');
+  }
+
+  // The whole |*input| is one line.
+  return std::exchange(*input, base::StringPiece());
 }
 
 }  // namespace password_manager

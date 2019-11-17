@@ -733,8 +733,11 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   }
 
   if (url.ProtocolIsJavaScript()) {
-    frame_->GetDocument()->ProcessJavaScriptUrl(
-        url, request.ShouldCheckMainWorldContentSecurityPolicy());
+    if (!origin_document ||
+        origin_document->CanExecuteScripts(kAboutToExecuteScript)) {
+      frame_->GetDocument()->ProcessJavaScriptUrl(
+          url, request.ShouldCheckMainWorldContentSecurityPolicy());
+    }
     return;
   }
 

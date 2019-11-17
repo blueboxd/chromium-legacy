@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/test/bind_test_util.h"
@@ -12,27 +14,32 @@
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/portal/portal.h"
-#include "content/browser/portal/portal_created_observer.h"
-#include "content/browser/portal/portal_interceptor_for_testing.h"
 #include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_tap_gesture.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/frame.mojom-test-utils.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/hit_test_region_observer.h"
+#include "content/public/test/navigation_handle_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
+#include "content/test/portal/portal_activated_observer.h"
+#include "content/test/portal/portal_created_observer.h"
+#include "content/test/portal/portal_interceptor_for_testing.h"
+#include "content/test/test_render_frame_host_factory.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom.h"
 #include "url/url_constants.h"
@@ -1052,6 +1059,196 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
   RenderProcessHostKillWaiter kill_waiter(portal_frame->GetProcess());
   ExecuteScriptAsync(portal_frame,
                      "window.portalHost.postMessage('message', '*');");
+  EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
+}
+
+// Tests that activation early in navigation succeeds, cancelling the pending
+// navigation.
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, ActivateEarlyInNavigation) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
+
+  GURL url = embedded_test_server()->GetURL("a.com", "/title2.html");
+  Portal* portal = CreatePortalToUrl(web_contents_impl, url);
+  WebContents* portal_contents = portal->GetPortalContents();
+
+  // Have the outer page try to navigate away but stop it early in the request,
+  // where it is still possible to stop.
+  GURL destination =
+      embedded_test_server()->GetURL("portal.test", "/title3.html");
+  TestNavigationObserver navigation_observer(web_contents_impl);
+  NavigationHandleObserver handle_observer(web_contents_impl, destination);
+  TestNavigationManager navigation_manager(web_contents_impl, destination);
+  NavigationController::LoadURLParams params(destination);
+  params.transition_type = ui::PageTransitionFromInt(
+      ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+  web_contents_impl->GetController().LoadURLWithParams(params);
+  ASSERT_TRUE(navigation_manager.WaitForRequestStart());
+
+  // Then activate the portal. Since this is early in navigation, it should be
+  // aborted and the portal activation should succeed.
+  PortalActivatedObserver activated_observer(portal);
+  ExecuteScriptAsync(main_frame,
+                     "document.querySelector('portal').activate();");
+  EXPECT_EQ(blink::mojom::PortalActivateResult::kPredecessorWillUnload,
+            activated_observer.WaitForActivateResult());
+  EXPECT_EQ(portal_contents, shell()->web_contents());
+  navigation_observer.Wait();
+  EXPECT_EQ(handle_observer.net_error_code(), net::ERR_ABORTED);
+}
+
+// Tests that activation late in navigation is rejected (since it's too late to
+// stop the navigation).
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, ActivateLateInNavigation) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
+
+  GURL url = embedded_test_server()->GetURL("a.com", "/title2.html");
+  Portal* portal = CreatePortalToUrl(web_contents_impl, url);
+
+  // Have the outer page try to navigate away and reach the point where it's
+  // about to process the response (after which it will commit). It is too late
+  // to abort the navigation.
+  GURL destination =
+      embedded_test_server()->GetURL("portal.test", "/title3.html");
+  TestNavigationObserver navigation_observer(web_contents_impl);
+  TestNavigationManager navigation_manager(web_contents_impl, destination);
+  NavigationController::LoadURLParams params(destination);
+  params.transition_type = ui::PageTransitionFromInt(
+      ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+  web_contents_impl->GetController().LoadURLWithParams(params);
+  ASSERT_TRUE(navigation_manager.WaitForResponse());
+
+  // Then activate the portal. Since this is late in navigation, we expect the
+  // activation to fail. Since commit hasn't actually happened yet, though,
+  // there is time for the renderer to process the promise rejection.
+  PortalActivatedObserver activated_observer(portal);
+  EvalJsResult result = EvalJs(main_frame,
+                               "document.querySelector('portal').activate()"
+                               ".then(() => 'success', e => e.message)");
+  EXPECT_THAT(result.ExtractString(),
+              ::testing::HasSubstr("navigation is in progress"));
+  EXPECT_EQ(
+      blink::mojom::PortalActivateResult::kRejectedDueToPredecessorNavigation,
+      activated_observer.result());
+
+  // The navigation should commit properly thereafter.
+  navigation_manager.ResumeNavigation();
+  navigation_observer.Wait();
+  EXPECT_EQ(web_contents_impl, shell()->web_contents());
+  EXPECT_TRUE(navigation_observer.last_navigation_succeeded());
+  EXPECT_EQ(destination, navigation_observer.last_navigation_url());
+}
+
+namespace {
+
+class NavigationControlInterceptorBadPortalActivateResult
+    : public mojom::FrameNavigationControlInterceptorForTesting {
+ public:
+  explicit NavigationControlInterceptorBadPortalActivateResult(
+      RenderFrameHostImpl* frame_host)
+      : frame_host_(frame_host) {}
+
+  mojom::FrameNavigationControl* GetForwardingInterface() override {
+    if (!navigation_control_)
+      frame_host_->GetRemoteAssociatedInterfaces()->GetInterface(
+          &navigation_control_);
+    return navigation_control_.get();
+  }
+
+  void OnPortalActivated(
+      const base::UnguessableToken& portal_token,
+      mojo::PendingAssociatedRemote<blink::mojom::Portal> portal,
+      mojo::PendingAssociatedReceiver<blink::mojom::PortalClient> portal_client,
+      blink::TransferableMessage data,
+      OnPortalActivatedCallback callback) override {
+    GetForwardingInterface()->OnPortalActivated(
+        portal_token, std::move(portal), std::move(portal_client),
+        std::move(data),
+        base::BindOnce(
+            [](OnPortalActivatedCallback callback,
+               blink::mojom::PortalActivateResult) {
+              // Replace the true result with one that the renderer is not
+              // allowed to send.
+              std::move(callback).Run(blink::mojom::PortalActivateResult::
+                                          kRejectedDueToPredecessorNavigation);
+            },
+            std::move(callback)));
+  }
+
+ private:
+  RenderFrameHostImpl* frame_host_;
+  mojo::AssociatedRemote<mojom::FrameNavigationControl> navigation_control_;
+};
+
+class RenderFrameHostImplForNavigationControlInterceptor
+    : public RenderFrameHostImpl {
+ private:
+  using RenderFrameHostImpl::RenderFrameHostImpl;
+
+  mojom::FrameNavigationControl* GetNavigationControl() override {
+    return &interceptor_;
+  }
+
+  NavigationControlInterceptorBadPortalActivateResult interceptor_{this};
+
+  friend class RenderFrameHostFactoryForNavigationControlInterceptor;
+};
+
+class RenderFrameHostFactoryForNavigationControlInterceptor
+    : public TestRenderFrameHostFactory {
+ protected:
+  std::unique_ptr<RenderFrameHostImpl> CreateRenderFrameHost(
+      SiteInstance* site_instance,
+      scoped_refptr<RenderViewHostImpl> render_view_host,
+      RenderFrameHostDelegate* delegate,
+      FrameTree* frame_tree,
+      FrameTreeNode* frame_tree_node,
+      int32_t routing_id,
+      int32_t widget_routing_id,
+      bool renderer_initiated_creation) override {
+    return base::WrapUnique(
+        new RenderFrameHostImplForNavigationControlInterceptor(
+            site_instance, std::move(render_view_host), delegate, frame_tree,
+            frame_tree_node, routing_id, widget_routing_id,
+            renderer_initiated_creation));
+  }
+};
+
+}  // namespace
+
+// Tests that the browser filters the renderer's replies to the portal
+// activation event and terminates misbehaving renderers.
+IN_PROC_BROWSER_TEST_F(PortalBrowserTest, MisbehavingRendererActivated) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
+
+  // Arrange for a special kind of RenderFrameHost to be created which permits
+  // its NavigationControl messages to be intercepted.
+  RenderFrameHostFactoryForNavigationControlInterceptor scoped_rfh_factory;
+  GURL url = embedded_test_server()->GetURL("a.com", "/title2.html");
+  Portal* portal = CreatePortalToUrl(web_contents_impl, url);
+
+  // Then activate the portal. Due to the apparent misbehavior from the
+  // renderer, the caller should be informed that it was aborted due to a bug,
+  // and the portal's renderer (having been framed for the crime) should be
+  // killed.
+  PortalActivatedObserver activated_observer(portal);
+  RenderProcessHostKillWaiter kill_waiter(
+      portal->GetPortalContents()->GetMainFrame()->GetProcess());
+  ExecuteScriptAsync(main_frame,
+                     "document.querySelector('portal').activate();");
+  EXPECT_EQ(blink::mojom::PortalActivateResult::kAbortedDueToBug,
+            activated_observer.WaitForActivateResult());
   EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
 }
 

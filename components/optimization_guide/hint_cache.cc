@@ -150,11 +150,11 @@ const proto::Hint* HintCache::GetHintIfLoaded(const std::string& host) {
   return nullptr;
 }
 
-base::Time HintCache::FetchedHintsUpdateTime() const {
+base::Time HintCache::GetFetchedHintsUpdateTime() const {
   if (!optimization_guide_store_) {
     return base::Time();
   }
-  return optimization_guide_store_->FetchedHintsUpdateTime();
+  return optimization_guide_store_->GetFetchedHintsUpdateTime();
 }
 
 void HintCache::OnStoreInitialized(base::OnceClosure callback) {

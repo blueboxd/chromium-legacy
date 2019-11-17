@@ -93,7 +93,7 @@ class HintCache {
   // Returns the update time provided by |hint_store_|, which specifies when the
   // fetched hints within the store are ready to be updated. If |hint_store_| is
   // not initialized, base::Time() is returned.
-  base::Time FetchedHintsUpdateTime() const;
+  base::Time GetFetchedHintsUpdateTime() const;
 
   // Returns the hint data for |host| if found in memory, otherwise nullptr.
   const proto::Hint* GetHintIfLoaded(const std::string& host);

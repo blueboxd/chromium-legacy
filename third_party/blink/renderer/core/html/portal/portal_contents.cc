@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/html/portal/portal_contents.h"
 
+#include "base/compiler_specific.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/referrer.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -70,25 +71,50 @@ ScriptPromise PortalContents::Activate(ScriptState* script_state,
 
 void PortalContents::OnActivateResponse(
     mojom::blink::PortalActivateResult result) {
-  bool was_adopted = false;
+  bool should_destroy_contents = false;
   switch (result) {
     case mojom::blink::PortalActivateResult::kPredecessorWasAdopted:
-      was_adopted = true;
-      break;
+      GetDocument().GetPage()->SetInsidePortal(true);
+      FALLTHROUGH;
     case mojom::blink::PortalActivateResult::kPredecessorWillUnload:
+      activate_resolver_->Resolve();
+      should_destroy_contents = true;
       break;
-  }
 
-  if (was_adopted)
-    GetDocument().GetPage()->SetInsidePortal(true);
+    case mojom::blink::PortalActivateResult::
+        kRejectedDueToPredecessorNavigation: {
+      if (!GetDocument().IsContextDestroyed()) {
+        ScriptState* script_state = activate_resolver_->GetScriptState();
+        ScriptState::Scope scope(script_state);
+        // TODO(jbroman): It's slightly unfortunate to hard-code the string
+        // HTMLPortalElement here. Ideally this would be threaded through from
+        // there and carried with the ScriptPromiseResolver. See
+        // https://crbug.com/991544.
+        ExceptionState exception_state(script_state->GetIsolate(),
+                                       ExceptionState::kExecutionContext,
+                                       "HTMLPortalElement", "activate");
+        exception_state.ThrowDOMException(
+            DOMExceptionCode::kInvalidStateError,
+            "A top-level navigation is in progress.");
+        activate_resolver_->Reject(exception_state);
+      }
+      break;
+    }
+    case mojom::blink::PortalActivateResult::kAbortedDueToBug:
+      // This should never happen. Ignore this and wait for the frame to be
+      // discarded by the browser, if it hasn't already.
+      activate_resolver_->Detach();
+      return;
+  }
 
   DocumentPortals& document_portals = DocumentPortals::From(GetDocument());
   DCHECK_EQ(document_portals.GetActivatingPortalContents(), this);
   document_portals.ClearActivatingPortalContents();
 
-  activate_resolver_->Resolve();
   activate_resolver_ = nullptr;
-  Destroy();
+
+  if (should_destroy_contents)
+    Destroy();
 }
 
 void PortalContents::PostMessageToGuest(

@@ -52,9 +52,6 @@ class WPTTestAdapter(common.BaseIsolatedScriptArgsAdapter):
             "--binary-arg=--enable-blink-features=MojoJS,MojoJSTest",
             "--webdriver-binary=../../out/Release/chromedriver",
             "--headless",
-            # TODO(lpz): Consider removing --processes and compute automatically
-            # from multiprocessing.cpu_count()
-            "--processes=5",
             "--no-capture-stdio",
             "--no-manifest-download",
             "--no-pause-after-test",
@@ -75,8 +72,10 @@ class WPTTestAdapter(common.BaseIsolatedScriptArgsAdapter):
             # (crbug.com/1023835) The flags below are temporary to aid debugging
             "--log-mach=-",
             "--log-mach-verbose",
-            "--test-type=testharness",
-            "--test-type=reftest"
+            # See if multi-processing affects timeouts.
+            # TODO(lpz): Consider removing --processes and compute automatically
+            # from multiprocessing.cpu_count()
+            #"--processes=5",
         ])
         return rest_args
 

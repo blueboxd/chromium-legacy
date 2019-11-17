@@ -42,6 +42,10 @@ class OptimizationGuideStore {
                               std::unique_ptr<proto::Hint>)>;
   using PredictionModelLoadedCallback =
       base::OnceCallback<void(std::unique_ptr<proto::PredictionModel>)>;
+  using HostModelFeaturesLoadedCallback =
+      base::OnceCallback<void(std::unique_ptr<proto::HostModelFeatures>)>;
+  using AllHostModelFeaturesLoadedCallback = base::OnceCallback<void(
+      std::unique_ptr<std::vector<proto::HostModelFeatures>>)>;
   using EntryKey = std::string;
   using StoreEntryProtoDatabase =
       leveldb_proto::ProtoDatabase<proto::StoreEntry>;
@@ -158,7 +162,7 @@ class OptimizationGuideStore {
 
   // Returns the time that the fetched hints in the store can be updated. If
   // |this| is not available, base::Time() is returned.
-  base::Time FetchedHintsUpdateTime() const;
+  base::Time GetFetchedHintsUpdateTime() const;
 
   // Removes all fetched hints that have expired from the store.
   // |entry_keys_| is updated after the expired fetched hints are
@@ -172,7 +176,7 @@ class OptimizationGuideStore {
   // Optimization Guide Service so the store can update old prediction models.
   std::unique_ptr<StoreUpdateData> CreateUpdateDataForPredictionModels() const;
 
-  // Updates the prediciton models contained in the store. The callback is run
+  // Updates the prediction models contained in the store. The callback is run
   // asynchronously after the database stores the prediction models.
   void UpdatePredictionModels(
       std::unique_ptr<StoreUpdateData> prediction_models_update_data,
@@ -192,6 +196,49 @@ class OptimizationGuideStore {
   // synchronous or asynchronous.
   void LoadPredictionModel(const EntryKey& prediction_model_entry_key,
                            PredictionModelLoadedCallback callback);
+
+  // Creates and returns a StoreUpdateData object for host model features. This
+  // object is used to collect a batch of host model features in a format that
+  // is usable to update the store on a background thread. This is always
+  // created when host model features have been successfully fetched from the
+  // remote Optimization Guide Service so the store can update old host model
+  // features.
+  std::unique_ptr<StoreUpdateData> CreateUpdateDataForHostModelFeatures(
+      base::Time host_model_features_update_time,
+      base::Time expiry_time) const;
+
+  // Updates the host model features contained in the store. The callback is run
+  // asynchronously after the database stores the host model features.
+  void UpdateHostModelFeatures(
+      std::unique_ptr<StoreUpdateData> host_model_features_update_data,
+      base::OnceClosure callback);
+
+  // Finds the entry key for the host model features for |host| if it is known
+  // to the store. Returns true if an entry key is found and
+  // |out_host_model_features_entry_key| is populated with the matching key.
+  bool FindHostModelFeaturesEntryKey(
+      const std::string& host,
+      OptimizationGuideStore::EntryKey* out_host_model_features_entry_key)
+      const;
+
+  // Loads the host model features specified by |host_model_features_entry_key|.
+  // After the load finishes, the host model features data is passed to
+  // |callback|. In the case where the host model features cannot be loaded, the
+  // callback is run with a nullptr. Depending on the load result, the callback
+  // may be synchronous or asynchronous.
+  void LoadHostModelFeatures(const EntryKey& host_model_features_entry_key,
+                             HostModelFeaturesLoadedCallback callback);
+
+  // Loads all the host model features known to the store. After the load
+  // finishes, the host model features data is passed back to |callback|. In the
+  // case where the host model features cannot be loaded, the callback is run
+  // with a nullptr. Depending on the load result, the callback may be
+  // synchronous or asynchronous.
+  void LoadAllHostModelFeatures(AllHostModelFeaturesLoadedCallback callback);
+
+  // Returns the time that the host model features in the store can be updated.
+  // If |this| is not available, base::Time() is returned.
+  base::Time GetHostModelFeaturesUpdateTime() const;
 
  private:
   friend class OptimizationGuideStoreTest;
@@ -278,13 +325,13 @@ class OptimizationGuideStore {
   size_t GetEntryKeyCount() const;
 
   // Finds the most specific host suffix of the host name that the store has an
-  // hint with the provided prefix, |hint_entry_key_prefix|. |out_entry_key| is
-  // populated with the entry key for the corresponding hint. Returns true if a
-  // hint was successsfully found.
-  bool FindHintEntryKeyForHostWithPrefix(
+  // entry with the provided prefix, |entry_key_prefix|. |out_entry_key| is
+  // populated with the entry key for the corresponding hint. Returns true if
+  // an entry was successfully found.
+  bool FindEntryKeyForHostWithPrefix(
       const std::string& host,
       EntryKey* out_entry_key,
-      const EntryKeyPrefix& hint_entry_key_prefix) const;
+      const EntryKeyPrefix& entry_key_prefix) const;
 
   // Callback that identifies any expired hints from |fetched_entries| and
   // asynchronously removes them from the store.
@@ -350,6 +397,29 @@ class OptimizationGuideStore {
                              bool success,
                              std::unique_ptr<proto::StoreEntry> entry);
 
+  // Callback that runs after a host model features entry is loaded from the
+  // database. If there's currently an in-flight update, then the data could be
+  // invalidated, so loaded host model features data is discarded. Otherwise,
+  // the host model features are released into the callback, allowing the caller
+  // to own the host model features without copying it. Regardless of the
+  // success or failure of retrieving the key, the callback always runs (it
+  // simply runs with a nullptr on failure).
+  void OnLoadHostModelFeatures(HostModelFeaturesLoadedCallback callback,
+                               bool success,
+                               std::unique_ptr<proto::StoreEntry> entry);
+
+  // Callback that runs after all the host model features entries are loaded
+  // from the database. If there's currently an in-flight update, then the data
+  // could be invalidated, so loaded host model features data is discarded.
+  // Otherwise, the host model features are released into the callback, allowing
+  // the caller to own the host model features without copying it. Regardless of
+  // the success or failure of retrieving the key, the callback always runs (it
+  // simply runs with a nullptr on failure).
+  void OnLoadAllHostModelFeatures(
+      AllHostModelFeaturesLoadedCallback callback,
+      bool success,
+      std::unique_ptr<std::vector<proto::StoreEntry>> entry);
+
   // Proto database used by the store.
   std::unique_ptr<StoreEntryProtoDatabase> database_;
 
@@ -376,6 +446,10 @@ class OptimizationGuideStore {
   // The next update time for the fetched hints that are currently in the
   // store.
   base::Time fetched_update_time_;
+
+  // The next update time for the host model features that are currently in the
+  // store.
+  base::Time host_model_features_update_time_;
 
   // The keys of the entries available within the store.
   std::unique_ptr<EntryKeySet> entry_keys_;

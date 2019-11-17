@@ -204,4 +204,4 @@ class WPTMetadataBuilder(object):
         return "[%s]\n  disabled: wpt_metadata_builder.py\n" % test_name
 
     def _get_test_failed_string(self, test_name):
-        return "[%s]\n  expected: FAIL # wpt_metadata_builder.py\n" % test_name
+        return "[%s]\n  blink_expect_any_subtest_status: True # wpt_metadata_builder.py\n" % test_name

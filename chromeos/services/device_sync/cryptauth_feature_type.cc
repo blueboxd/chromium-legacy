@@ -4,7 +4,11 @@
 
 #include "chromeos/services/device_sync/cryptauth_feature_type.h"
 
+#include "base/base64url.h"
+#include "base/containers/flat_map.h"
 #include "base/no_destructor.h"
+#include "base/stl_util.h"
+#include "crypto/sha2.h"
 
 namespace chromeos {
 
@@ -34,6 +38,69 @@ const char kSmsConnectHostEnabledString[] = "SMS_CONNECT_HOST";
 const char kSmsConnectClientEnabledString[] = "SMS_CONNECT_CLIENT";
 
 }  // namespace
+
+const base::flat_set<CryptAuthFeatureType>& GetAllCryptAuthFeatureTypes() {
+  static const base::flat_set<CryptAuthFeatureType> feature_set{
+      CryptAuthFeatureType::kBetterTogetherHostSupported,
+      CryptAuthFeatureType::kBetterTogetherClientSupported,
+      CryptAuthFeatureType::kEasyUnlockHostSupported,
+      CryptAuthFeatureType::kEasyUnlockClientSupported,
+      CryptAuthFeatureType::kMagicTetherHostSupported,
+      CryptAuthFeatureType::kMagicTetherClientSupported,
+      CryptAuthFeatureType::kSmsConnectHostSupported,
+      CryptAuthFeatureType::kSmsConnectClientSupported,
+      CryptAuthFeatureType::kBetterTogetherHostEnabled,
+      CryptAuthFeatureType::kBetterTogetherClientEnabled,
+      CryptAuthFeatureType::kEasyUnlockHostEnabled,
+      CryptAuthFeatureType::kEasyUnlockClientEnabled,
+      CryptAuthFeatureType::kMagicTetherHostEnabled,
+      CryptAuthFeatureType::kMagicTetherClientEnabled,
+      CryptAuthFeatureType::kSmsConnectHostEnabled,
+      CryptAuthFeatureType::kSmsConnectClientEnabled};
+
+  return feature_set;
+}
+
+const base::flat_set<CryptAuthFeatureType>&
+GetSupportedCryptAuthFeatureTypes() {
+  static const base::flat_set<CryptAuthFeatureType> supported_set{
+      CryptAuthFeatureType::kBetterTogetherHostSupported,
+      CryptAuthFeatureType::kBetterTogetherClientSupported,
+      CryptAuthFeatureType::kEasyUnlockHostSupported,
+      CryptAuthFeatureType::kEasyUnlockClientSupported,
+      CryptAuthFeatureType::kMagicTetherHostSupported,
+      CryptAuthFeatureType::kMagicTetherClientSupported,
+      CryptAuthFeatureType::kSmsConnectHostSupported,
+      CryptAuthFeatureType::kSmsConnectClientSupported};
+
+  return supported_set;
+}
+
+const base::flat_set<CryptAuthFeatureType>& GetEnabledCryptAuthFeatureTypes() {
+  static const base::flat_set<CryptAuthFeatureType> enabled_set{
+      CryptAuthFeatureType::kBetterTogetherHostEnabled,
+      CryptAuthFeatureType::kBetterTogetherClientEnabled,
+      CryptAuthFeatureType::kEasyUnlockHostEnabled,
+      CryptAuthFeatureType::kEasyUnlockClientEnabled,
+      CryptAuthFeatureType::kMagicTetherHostEnabled,
+      CryptAuthFeatureType::kMagicTetherClientEnabled,
+      CryptAuthFeatureType::kSmsConnectHostEnabled,
+      CryptAuthFeatureType::kSmsConnectClientEnabled};
+
+  return enabled_set;
+}
+
+const base::flat_set<std::string>& GetAllCryptAuthFeatureTypeStrings() {
+  static const base::NoDestructor<base::flat_set<std::string>>
+      feature_string_set([] {
+        base::flat_set<std::string> feature_string_set;
+        for (CryptAuthFeatureType feature_type : GetAllCryptAuthFeatureTypes())
+          feature_string_set.insert(CryptAuthFeatureTypeToString(feature_type));
+
+        return feature_string_set;
+      }());
+  return *feature_string_set;
+}
 
 const char* CryptAuthFeatureTypeToString(CryptAuthFeatureType feature_type) {
   switch (feature_type) {
@@ -68,28 +135,6 @@ const char* CryptAuthFeatureTypeToString(CryptAuthFeatureType feature_type) {
     case CryptAuthFeatureType::kSmsConnectClientSupported:
       return kSmsConnectClientSupportedString;
     case CryptAuthFeatureType::kSmsConnectClientEnabled:
-      return kSmsConnectClientEnabledString;
-  }
-}
-
-const char* SoftwareFeatureToEnabledCryptAuthFeatureTypeString(
-    multidevice::SoftwareFeature software_feature) {
-  switch (software_feature) {
-    case multidevice::SoftwareFeature::kBetterTogetherHost:
-      return kBetterTogetherHostEnabledString;
-    case multidevice::SoftwareFeature::kBetterTogetherClient:
-      return kBetterTogetherClientEnabledString;
-    case multidevice::SoftwareFeature::kSmartLockHost:
-      return kEasyUnlockHostEnabledString;
-    case multidevice::SoftwareFeature::kSmartLockClient:
-      return kEasyUnlockClientEnabledString;
-    case multidevice::SoftwareFeature::kInstantTetheringHost:
-      return kMagicTetherHostEnabledString;
-    case multidevice::SoftwareFeature::kInstantTetheringClient:
-      return kMagicTetherClientEnabledString;
-    case multidevice::SoftwareFeature::kMessagesForWebHost:
-      return kSmsConnectHostEnabledString;
-    case multidevice::SoftwareFeature::kMessagesForWebClient:
       return kSmsConnectClientEnabledString;
   }
 }
@@ -132,94 +177,110 @@ base::Optional<CryptAuthFeatureType> CryptAuthFeatureTypeFromString(
   return base::nullopt;
 }
 
-const base::flat_set<std::string>& GetCryptAuthFeatureTypeStrings() {
-  static const base::NoDestructor<base::flat_set<std::string>> feature_set([] {
-    return base::flat_set<std::string>{kBetterTogetherHostSupportedString,
-                                       kBetterTogetherClientSupportedString,
-                                       kEasyUnlockHostSupportedString,
-                                       kEasyUnlockClientSupportedString,
-                                       kMagicTetherHostSupportedString,
-                                       kMagicTetherClientSupportedString,
-                                       kSmsConnectHostSupportedString,
-                                       kSmsConnectClientSupportedString,
-                                       kBetterTogetherHostEnabledString,
-                                       kBetterTogetherClientEnabledString,
-                                       kEasyUnlockHostEnabledString,
-                                       kEasyUnlockClientEnabledString,
-                                       kMagicTetherHostEnabledString,
-                                       kMagicTetherClientEnabledString,
-                                       kSmsConnectHostEnabledString,
-                                       kSmsConnectClientEnabledString};
-  }());
-  return *feature_set;
+// Computes the base64url-encoded, SHA-256 8-byte hash of the
+// CryptAuthFeatureType string.
+std::string CryptAuthFeatureTypeToGcmHash(CryptAuthFeatureType feature_type) {
+  std::string hash_8_bytes(8, 0);
+  crypto::SHA256HashString(CryptAuthFeatureTypeToString(feature_type),
+                           base::data(hash_8_bytes), 8u);
+
+  std::string hash_base64url;
+  base::Base64UrlEncode(hash_8_bytes, base::Base64UrlEncodePolicy::OMIT_PADDING,
+                        &hash_base64url);
+
+  return hash_base64url;
 }
 
-const base::flat_set<std::string>& GetSupportedCryptAuthFeatureTypeStrings() {
-  static const base::NoDestructor<base::flat_set<std::string>> supported_set(
-      [] {
-        return base::flat_set<std::string>{kBetterTogetherHostSupportedString,
-                                           kBetterTogetherClientSupportedString,
-                                           kEasyUnlockHostSupportedString,
-                                           kEasyUnlockClientSupportedString,
-                                           kMagicTetherHostSupportedString,
-                                           kMagicTetherClientSupportedString,
-                                           kSmsConnectHostSupportedString,
-                                           kSmsConnectClientSupportedString};
+base::Optional<CryptAuthFeatureType> CryptAuthFeatureTypeFromGcmHash(
+    const std::string& feature_type_hash) {
+  // The map from the feature type hash value that CryptAuth sends in GCM
+  // messages to the CryptAuthFeatureType enum.
+  static const base::NoDestructor<
+      base::flat_map<std::string, CryptAuthFeatureType>>
+      hash_to_feature_map([] {
+        base::flat_map<std::string, CryptAuthFeatureType> hash_to_feature_map;
+        for (const CryptAuthFeatureType& feature_type :
+             GetAllCryptAuthFeatureTypes()) {
+          hash_to_feature_map.insert_or_assign(
+              CryptAuthFeatureTypeToGcmHash(feature_type), feature_type);
+        }
+
+        return hash_to_feature_map;
       }());
-  return *supported_set;
+
+  auto it = hash_to_feature_map->find(feature_type_hash);
+
+  if (it == hash_to_feature_map->end())
+    return base::nullopt;
+
+  return it->second;
 }
 
-const base::flat_set<std::string>& GetEnabledCryptAuthFeatureTypeStrings() {
-  static const base::NoDestructor<base::flat_set<std::string>> enabled_set([] {
-    return base::flat_set<std::string>{
-        kBetterTogetherHostEnabledString, kBetterTogetherClientEnabledString,
-        kEasyUnlockHostEnabledString,     kEasyUnlockClientEnabledString,
-        kMagicTetherHostEnabledString,    kMagicTetherClientEnabledString,
-        kSmsConnectHostEnabledString,     kSmsConnectClientEnabledString};
-  }());
-  return *enabled_set;
+multidevice::SoftwareFeature CryptAuthFeatureTypeToSoftwareFeature(
+    CryptAuthFeatureType feature_type) {
+  switch (feature_type) {
+    case CryptAuthFeatureType::kBetterTogetherHostSupported:
+      FALLTHROUGH;
+    case CryptAuthFeatureType::kBetterTogetherHostEnabled:
+      return multidevice::SoftwareFeature::kBetterTogetherHost;
+
+    case CryptAuthFeatureType::kBetterTogetherClientSupported:
+      FALLTHROUGH;
+    case CryptAuthFeatureType::kBetterTogetherClientEnabled:
+      return multidevice::SoftwareFeature::kBetterTogetherClient;
+
+    case CryptAuthFeatureType::kEasyUnlockHostSupported:
+      FALLTHROUGH;
+    case CryptAuthFeatureType::kEasyUnlockHostEnabled:
+      return multidevice::SoftwareFeature::kSmartLockHost;
+
+    case CryptAuthFeatureType::kEasyUnlockClientSupported:
+      FALLTHROUGH;
+    case CryptAuthFeatureType::kEasyUnlockClientEnabled:
+      return multidevice::SoftwareFeature::kSmartLockClient;
+
+    case CryptAuthFeatureType::kMagicTetherHostSupported:
+      FALLTHROUGH;
+    case CryptAuthFeatureType::kMagicTetherHostEnabled:
+      return multidevice::SoftwareFeature::kInstantTetheringHost;
+
+    case CryptAuthFeatureType::kMagicTetherClientSupported:
+      FALLTHROUGH;
+    case CryptAuthFeatureType::kMagicTetherClientEnabled:
+      return multidevice::SoftwareFeature::kInstantTetheringClient;
+
+    case CryptAuthFeatureType::kSmsConnectHostSupported:
+      FALLTHROUGH;
+    case CryptAuthFeatureType::kSmsConnectHostEnabled:
+      return multidevice::SoftwareFeature::kMessagesForWebHost;
+
+    case CryptAuthFeatureType::kSmsConnectClientSupported:
+      FALLTHROUGH;
+    case CryptAuthFeatureType::kSmsConnectClientEnabled:;
+      return multidevice::SoftwareFeature::kMessagesForWebClient;
+  }
 }
 
-multidevice::SoftwareFeature CryptAuthFeatureTypeStringToSoftwareFeature(
-    const std::string& feature_type_string) {
-  if (feature_type_string == kBetterTogetherHostSupportedString ||
-      feature_type_string == kBetterTogetherHostEnabledString) {
-    return multidevice::SoftwareFeature::kBetterTogetherHost;
+CryptAuthFeatureType CryptAuthFeatureTypeFromSoftwareFeature(
+    multidevice::SoftwareFeature software_feature) {
+  switch (software_feature) {
+    case multidevice::SoftwareFeature::kBetterTogetherHost:
+      return CryptAuthFeatureType::kBetterTogetherHostEnabled;
+    case multidevice::SoftwareFeature::kBetterTogetherClient:
+      return CryptAuthFeatureType::kBetterTogetherClientEnabled;
+    case multidevice::SoftwareFeature::kSmartLockHost:
+      return CryptAuthFeatureType::kEasyUnlockHostEnabled;
+    case multidevice::SoftwareFeature::kSmartLockClient:
+      return CryptAuthFeatureType::kEasyUnlockClientEnabled;
+    case multidevice::SoftwareFeature::kInstantTetheringHost:
+      return CryptAuthFeatureType::kMagicTetherHostEnabled;
+    case multidevice::SoftwareFeature::kInstantTetheringClient:
+      return CryptAuthFeatureType::kMagicTetherClientEnabled;
+    case multidevice::SoftwareFeature::kMessagesForWebHost:
+      return CryptAuthFeatureType::kSmsConnectHostEnabled;
+    case multidevice::SoftwareFeature::kMessagesForWebClient:
+      return CryptAuthFeatureType::kSmsConnectClientEnabled;
   }
-
-  if (feature_type_string == kBetterTogetherClientSupportedString ||
-      feature_type_string == kBetterTogetherClientEnabledString) {
-    return multidevice::SoftwareFeature::kBetterTogetherClient;
-  }
-
-  if (feature_type_string == kEasyUnlockHostSupportedString ||
-      feature_type_string == kEasyUnlockHostEnabledString) {
-    return multidevice::SoftwareFeature::kSmartLockHost;
-  }
-
-  if (feature_type_string == kEasyUnlockClientSupportedString ||
-      feature_type_string == kEasyUnlockClientEnabledString) {
-    return multidevice::SoftwareFeature::kSmartLockClient;
-  }
-
-  if (feature_type_string == kMagicTetherHostSupportedString ||
-      feature_type_string == kMagicTetherHostEnabledString) {
-    return multidevice::SoftwareFeature::kInstantTetheringHost;
-  }
-
-  if (feature_type_string == kMagicTetherClientSupportedString ||
-      feature_type_string == kMagicTetherClientEnabledString) {
-    return multidevice::SoftwareFeature::kInstantTetheringClient;
-  }
-
-  if (feature_type_string == kSmsConnectHostSupportedString ||
-      feature_type_string == kSmsConnectHostEnabledString) {
-    return multidevice::SoftwareFeature::kMessagesForWebHost;
-  }
-
-  DCHECK(feature_type_string == kSmsConnectClientSupportedString ||
-         feature_type_string == kSmsConnectClientEnabledString);
-  return multidevice::SoftwareFeature::kMessagesForWebClient;
 }
 
 std::ostream& operator<<(std::ostream& stream,

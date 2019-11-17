@@ -502,7 +502,7 @@ TEST_F(HintCacheTest, StoreValidFetchedHints) {
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
   // Default update time for empty optimization guide store is base::Time().
-  EXPECT_EQ(hint_cache()->FetchedHintsUpdateTime(), base::Time());
+  EXPECT_EQ(hint_cache()->GetFetchedHintsUpdateTime(), base::Time());
 
   std::unique_ptr<proto::GetHintsResponse> get_hints_response =
       std::make_unique<proto::GetHintsResponse>();
@@ -518,7 +518,7 @@ TEST_F(HintCacheTest, StoreValidFetchedHints) {
   EXPECT_TRUE(are_fetched_hints_updated());
 
   // Next update time for hints should be updated.
-  EXPECT_EQ(hint_cache()->FetchedHintsUpdateTime(), stored_time);
+  EXPECT_EQ(hint_cache()->GetFetchedHintsUpdateTime(), stored_time);
 }
 
 TEST_F(HintCacheTest, ParseEmptyFetchedHints) {
@@ -532,7 +532,7 @@ TEST_F(HintCacheTest, ParseEmptyFetchedHints) {
   UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time);
   // Empty Fetched Hints causes the metadata entry to be updated.
   EXPECT_TRUE(are_fetched_hints_updated());
-  EXPECT_EQ(hint_cache()->FetchedHintsUpdateTime(), stored_time);
+  EXPECT_EQ(hint_cache()->GetFetchedHintsUpdateTime(), stored_time);
 }
 
 TEST_F(HintCacheTest, StoreValidFetchedHintsWithServerProvidedExpiryTime) {
@@ -542,7 +542,7 @@ TEST_F(HintCacheTest, StoreValidFetchedHintsWithServerProvidedExpiryTime) {
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
   // Default update time for empty optimization guide store is base::Time().
-  EXPECT_EQ(hint_cache()->FetchedHintsUpdateTime(), base::Time());
+  EXPECT_EQ(hint_cache()->GetFetchedHintsUpdateTime(), base::Time());
 
   std::unique_ptr<proto::GetHintsResponse> get_hints_response =
       std::make_unique<proto::GetHintsResponse>();
@@ -562,7 +562,7 @@ TEST_F(HintCacheTest, StoreValidFetchedHintsWithServerProvidedExpiryTime) {
   EXPECT_TRUE(are_fetched_hints_updated());
 
   // Next update time for hints should be updated.
-  EXPECT_EQ(hint_cache()->FetchedHintsUpdateTime(), stored_time);
+  EXPECT_EQ(hint_cache()->GetFetchedHintsUpdateTime(), stored_time);
 
   LoadHint("host.domain.org");
   // HISTOGRAM TEST!
@@ -577,7 +577,7 @@ TEST_F(HintCacheTest, StoreValidFetchedHintsWithDefaultExpiryTime) {
   CreateAndInitializeHintCache(kMemoryCacheSize);
 
   // Default update time for empty optimization guide store is base::Time().
-  EXPECT_EQ(hint_cache()->FetchedHintsUpdateTime(), base::Time());
+  EXPECT_EQ(hint_cache()->GetFetchedHintsUpdateTime(), base::Time());
 
   std::unique_ptr<proto::GetHintsResponse> get_hints_response =
       std::make_unique<proto::GetHintsResponse>();
@@ -593,7 +593,7 @@ TEST_F(HintCacheTest, StoreValidFetchedHintsWithDefaultExpiryTime) {
   EXPECT_TRUE(are_fetched_hints_updated());
 
   // Next update time for hints should be updated.
-  EXPECT_EQ(hint_cache()->FetchedHintsUpdateTime(), stored_time);
+  EXPECT_EQ(hint_cache()->GetFetchedHintsUpdateTime(), stored_time);
 
   LoadHint("host.domain.org");
   histogram_tester.ExpectTimeBucketCount(

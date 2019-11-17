@@ -236,6 +236,32 @@ void Portal::Activate(blink::TransferableMessage data,
     return;
   }
 
+  DCHECK(owner_render_frame_host_->IsCurrent())
+      << "The binding should have been closed when the portal's outer "
+         "FrameTreeNode was deleted due to swap out.";
+
+  // If a navigation in the main frame is occurring, stop it if possible and
+  // reject the activation if it's too late. There are a few cases here:
+  // - a different RenderFrameHost has been assigned to the FrameTreeNode
+  // - the same RenderFrameHost is being used, but it is committing a navigation
+  // - the FrameTreeNode holds a navigation request that can't turn back but has
+  //   not yet been handed off to a RenderFrameHost
+  FrameTreeNode* outer_root_node = owner_render_frame_host_->frame_tree_node();
+  NavigationRequest* outer_navigation = outer_root_node->navigation_request();
+
+  // WILL_PROCESS_RESPONSE is slightly early: it happens
+  // immediately before READY_TO_COMMIT (unless it's deferred), but
+  // WILL_PROCESS_RESPONSE is easier to hook for tests using a
+  // NavigationThrottle.
+  if (owner_render_frame_host_->HasPendingCommitNavigation() ||
+      (outer_navigation &&
+       outer_navigation->state() >= NavigationRequest::WILL_PROCESS_RESPONSE)) {
+    std::move(callback).Run(blink::mojom::PortalActivateResult::
+                                kRejectedDueToPredecessorNavigation);
+    return;
+  }
+  outer_root_node->StopLoading();
+
   WebContentsDelegate* delegate = outer_contents->GetDelegate();
   bool is_loading = portal_contents_impl_->IsLoading();
   std::unique_ptr<WebContents> portal_contents;

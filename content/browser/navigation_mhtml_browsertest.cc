@@ -316,8 +316,10 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest,
 
   auto console_delegate = std::make_unique<ConsoleObserverDelegate>(
       web_contents(),
-      "Blocked script execution in 'about:blank' because the document's frame "
-      "is sandboxed and the 'allow-scripts' permission is not set.");
+      base::StringPrintf(
+          "Blocked script execution in '%s' because the document's frame "
+          "is sandboxed and the 'allow-scripts' permission is not set.",
+          mhtml_url.spec().c_str()));
   web_contents()->SetDelegate(console_delegate.get());
 
   EXPECT_TRUE(NavigateToURL(shell(), mhtml_url));
@@ -342,8 +344,10 @@ IN_PROC_BROWSER_TEST_F(NavigationMhtmlBrowserTest, IframeJavascriptUrlFound) {
 
   auto console_delegate = std::make_unique<ConsoleObserverDelegate>(
       web_contents(),
-      "Blocked script execution in 'about:blank' because the document's frame "
-      "is sandboxed and the 'allow-scripts' permission is not set.");
+      base::StringPrintf(
+          "Blocked script execution in '%s' because the document's frame "
+          "is sandboxed and the 'allow-scripts' permission is not set.",
+          mhtml_url.spec().c_str()));
   web_contents()->SetDelegate(console_delegate.get());
 
   EXPECT_TRUE(NavigateToURL(shell(), mhtml_url));

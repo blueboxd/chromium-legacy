@@ -432,7 +432,7 @@ void OptimizationGuideHintsManager::ScheduleTopHostsHintsFetch() {
   DCHECK(!top_hosts_hints_fetch_timer_.IsRunning());
 
   const base::TimeDelta time_until_update_time =
-      hint_cache_->FetchedHintsUpdateTime() - clock_->Now();
+      hint_cache_->GetFetchedHintsUpdateTime() - clock_->Now();
   const base::TimeDelta time_until_retry =
       GetLastHintsFetchAttemptTime() + kFetchRetryDelay - clock_->Now();
   base::TimeDelta fetcher_delay;
@@ -537,7 +537,7 @@ void OptimizationGuideHintsManager::OnFetchedTopHostsHintsStored() {
 
   top_hosts_hints_fetch_timer_.Stop();
   top_hosts_hints_fetch_timer_.Start(
-      FROM_HERE, hint_cache_->FetchedHintsUpdateTime() - clock_->Now(), this,
+      FROM_HERE, hint_cache_->GetFetchedHintsUpdateTime() - clock_->Now(), this,
       &OptimizationGuideHintsManager::ScheduleTopHostsHintsFetch);
 }
 

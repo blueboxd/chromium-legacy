@@ -312,7 +312,7 @@ void PreviewsOptimizationGuideImpl::OnHintsFetched(
 void PreviewsOptimizationGuideImpl::OnFetchedHintsStored() {
   hints_fetch_timer_.Stop();
   hints_fetch_timer_.Start(
-      FROM_HERE, hint_cache_->FetchedHintsUpdateTime() - time_clock_->Now(),
+      FROM_HERE, hint_cache_->GetFetchedHintsUpdateTime() - time_clock_->Now(),
       this, &PreviewsOptimizationGuideImpl::ScheduleHintsFetch);
   // TODO(mcrouse): Purge hints now that new fetched hints have been stored.
 }
@@ -400,7 +400,7 @@ void PreviewsOptimizationGuideImpl::ScheduleHintsFetch() {
     return;
   }
   const base::TimeDelta time_until_update_time =
-      hint_cache_->FetchedHintsUpdateTime() - time_clock_->Now();
+      hint_cache_->GetFetchedHintsUpdateTime() - time_clock_->Now();
   const base::TimeDelta time_until_retry =
       GetLastHintsFetchAttemptTime() + kFetchRetryDelay - time_clock_->Now();
   base::TimeDelta fetcher_delay;

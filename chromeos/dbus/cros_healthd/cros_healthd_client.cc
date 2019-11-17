@@ -56,6 +56,7 @@ class CrosHealthdClientImpl : public CrosHealthdClient {
     base::ScopedFD fd =
         platform_channel.TakeRemoteEndpoint().TakePlatformHandle().TakeFD();
     writer.AppendFileDescriptor(fd.get());
+    writer.AppendBool(/*is_chrome=*/true);
     cros_healthd_service_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(

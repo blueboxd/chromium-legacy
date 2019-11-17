@@ -78,29 +78,28 @@ ConvertFeatureStatusesToSoftwareFeatureMap(
   base::flat_set<multidevice::SoftwareFeature> marked_enabled;
   for (const cryptauthv2::DeviceFeatureStatus::FeatureStatus& status :
        feature_statuses) {
+    base::Optional<CryptAuthFeatureType> feature_type =
+        CryptAuthFeatureTypeFromString(status.feature_type());
+
     // TODO(https://crbug.com/936273): Add metrics to track unknown feature type
     // occurrences.
-    if (!base::Contains(GetCryptAuthFeatureTypeStrings(),
-                        status.feature_type())) {
+    if (!feature_type) {
       PA_LOG(ERROR) << "Unknown feature type: " << status.feature_type();
       *did_non_fatal_error_occur = true;
       continue;
     }
 
-    multidevice::SoftwareFeature feature =
-        CryptAuthFeatureTypeStringToSoftwareFeature(status.feature_type());
-
-    if (base::Contains(GetSupportedCryptAuthFeatureTypeStrings(),
-                       status.feature_type()) &&
+    if (base::Contains(GetSupportedCryptAuthFeatureTypes(), *feature_type) &&
         status.enabled()) {
-      marked_supported.insert(feature);
+      marked_supported.insert(
+          CryptAuthFeatureTypeToSoftwareFeature(*feature_type));
       continue;
     }
 
-    if (base::Contains(GetEnabledCryptAuthFeatureTypeStrings(),
-                       status.feature_type()) &&
+    if (base::Contains(GetEnabledCryptAuthFeatureTypes(), *feature_type) &&
         status.enabled()) {
-      marked_enabled.insert(feature);
+      marked_enabled.insert(
+          CryptAuthFeatureTypeToSoftwareFeature(*feature_type));
       continue;
     }
   }
@@ -197,8 +196,9 @@ void CryptAuthFeatureStatusGetterImpl::OnAttemptStarted(
   cryptauthv2::BatchGetFeatureStatusesRequest request;
   request.mutable_context()->CopyFrom(request_context);
   *request.mutable_device_ids() = {device_ids.begin(), device_ids.end()};
-  *request.mutable_feature_types() = {GetCryptAuthFeatureTypeStrings().begin(),
-                                      GetCryptAuthFeatureTypeStrings().end()};
+  *request.mutable_feature_types() = {
+      GetAllCryptAuthFeatureTypeStrings().begin(),
+      GetAllCryptAuthFeatureTypeStrings().end()};
 
   start_get_feature_statuses_timestamp_ = base::TimeTicks::Now();
 

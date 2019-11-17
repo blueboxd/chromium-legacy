@@ -1276,9 +1276,14 @@ void RenderFrameHostImpl::OnPortalActivated(
               case blink::mojom::PortalActivateResult::kPredecessorWasAdopted:
                 // These values are acceptable from the renderer.
                 break;
-                // TODO(jbroman): Some future values may represent browser-side
-                // values which the renderer should not be able to forge. We
-                // should call mojo::ReportBadMessage here if so.
+              case blink::mojom::PortalActivateResult::
+                  kRejectedDueToPredecessorNavigation:
+              case blink::mojom::PortalActivateResult::kAbortedDueToBug:
+                // The renderer is misbehaving.
+                mojo::ReportBadMessage(
+                    "Unexpected PortalActivateResult from renderer");
+                result = blink::mojom::PortalActivateResult::kAbortedDueToBug;
+                break;
             }
             std::move(callback).Run(result);
           },

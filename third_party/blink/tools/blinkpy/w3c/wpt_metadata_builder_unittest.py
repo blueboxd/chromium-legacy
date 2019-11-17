@@ -141,7 +141,9 @@ class WPTMetadataBuilderTest(unittest.TestCase):
         metadata_builder = WPTMetadataBuilder(expectations, self.port)
         filename, contents = metadata_builder.get_metadata_filename_and_contents(test_name, 'FAIL')
         self.assertEqual(os.path.join("dir", "zzzz.html.ini"), filename)
-        self.assertEqual("[zzzz.html]\n  expected: FAIL # wpt_metadata_builder.py\n", contents)
+        self.assertEqual(
+            "[zzzz.html]\n  blink_expect_any_subtest_status: True # wpt_metadata_builder.py\n",
+            contents)
 
     def test_wpt_test_with_passing_baseline(self):
         """A WPT test with an all-pass baseline doesn't get metadata."""
@@ -172,4 +174,6 @@ class WPTMetadataBuilderTest(unittest.TestCase):
         # which in this case is the js file from the manifest.
         self.assertEqual(os.path.join("dir", "multiglob.https.any.js.ini"), filename)
         # The metadata contents contains the *test name*
-        self.assertEqual("[multiglob.https.any.window.html]\n  expected: FAIL # wpt_metadata_builder.py\n", contents)
+        self.assertEqual(
+            "[multiglob.https.any.window.html]\n  blink_expect_any_subtest_status: True # wpt_metadata_builder.py\n",
+            contents)

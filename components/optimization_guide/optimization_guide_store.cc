@@ -315,8 +315,8 @@ bool OptimizationGuideStore::FindHintEntryKey(
 
   // Search for kFetched hint entry keys first, fetched hints should be
   // fresher and preferred.
-  if (FindHintEntryKeyForHostWithPrefix(host, out_hint_entry_key,
-                                        GetFetchedHintEntryKeyPrefix())) {
+  if (FindEntryKeyForHostWithPrefix(host, out_hint_entry_key,
+                                    GetFetchedHintEntryKeyPrefix())) {
     return true;
   }
 
@@ -324,29 +324,29 @@ bool OptimizationGuideStore::FindHintEntryKey(
   DCHECK(!component_version_.has_value() ||
          component_hint_entry_key_prefix_ ==
              GetComponentHintEntryKeyPrefix(component_version_.value()));
-  if (FindHintEntryKeyForHostWithPrefix(host, out_hint_entry_key,
-                                        component_hint_entry_key_prefix_))
+  if (FindEntryKeyForHostWithPrefix(host, out_hint_entry_key,
+                                    component_hint_entry_key_prefix_))
     return true;
 
   return false;
 }
 
-bool OptimizationGuideStore::FindHintEntryKeyForHostWithPrefix(
+bool OptimizationGuideStore::FindEntryKeyForHostWithPrefix(
     const std::string& host,
-    EntryKey* out_hint_entry_key,
-    const EntryKeyPrefix& hint_entry_key_prefix) const {
+    EntryKey* out_entry_key,
+    const EntryKeyPrefix& entry_key_prefix) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(out_hint_entry_key);
+  DCHECK(out_entry_key);
 
   // Look for longest host name suffix that has a hint. No need to continue
   // lookups and substring work once get to a root domain like ".com" or
   // ".co.in" (MinHostSuffix length check is a heuristic for that).
   std::string host_suffix(host);
   while (host_suffix.length() >= kMinHostSuffix) {
-    // Attempt to find a hint entry key associated with the current host suffix.
-    *out_hint_entry_key = hint_entry_key_prefix + host_suffix;
+    // Attempt to find an entry key associated with the current host suffix.
+    *out_entry_key = entry_key_prefix + host_suffix;
     if (entry_keys_ &&
-        entry_keys_->find(*out_hint_entry_key) != entry_keys_->end()) {
+        entry_keys_->find(*out_entry_key) != entry_keys_->end()) {
       return true;
     }
 
@@ -374,12 +374,20 @@ void OptimizationGuideStore::LoadHint(const EntryKey& hint_entry_key,
                                      hint_entry_key, std::move(callback)));
 }
 
-base::Time OptimizationGuideStore::FetchedHintsUpdateTime() const {
+base::Time OptimizationGuideStore::GetFetchedHintsUpdateTime() const {
   // If the store is not available, the metadata entries have not been loaded
   // so there are no fetched hints.
   if (!IsAvailable())
     return base::Time();
   return fetched_update_time_;
+}
+
+base::Time OptimizationGuideStore::GetHostModelFeaturesUpdateTime() const {
+  // If the store is not available, the metadata entries have not been loaded
+  // so there are no host model features.
+  if (!IsAvailable())
+    return base::Time();
+  return host_model_features_update_time_;
 }
 
 // static
@@ -684,6 +692,25 @@ void OptimizationGuideStore::OnLoadMetadata(
     fetched_update_time_ = base::Time();
   }
 
+  auto host_model_features_entry = metadata_entries->find(
+      GetMetadataTypeEntryKey(MetadataType::kHostModelFeatures));
+  bool host_model_features_metadata_loaded = false;
+  host_model_features_update_time_ = base::Time();
+  if (host_model_features_entry != metadata_entries->end()) {
+    DCHECK(host_model_features_entry->second.has_update_time_secs());
+    host_model_features_update_time_ =
+        base::Time::FromDeltaSinceWindowsEpoch(base::TimeDelta::FromSeconds(
+            host_model_features_entry->second.update_time_secs()));
+    host_model_features_metadata_loaded = true;
+  }
+  // TODO(crbug/1001194): Metrics should be separated so that stores maintaining
+  // different information types only record metrics for the types of entries
+  // they store.
+  UMA_HISTOGRAM_BOOLEAN(
+      "OptimizationGuide.PredictionModelStore."
+      "HostModelFeaturesLoadMetadataResult",
+      host_model_features_metadata_loaded);
+
   UpdateStatus(Status::kAvailable);
   MaybeLoadEntryKeys(std::move(callback));
 }
@@ -886,6 +913,152 @@ void OptimizationGuideStore::OnLoadPredictionModel(
   std::unique_ptr<proto::PredictionModel> loaded_prediction_model(
       entry->release_prediction_model());
   std::move(callback).Run(std::move(loaded_prediction_model));
+}
+
+std::unique_ptr<StoreUpdateData>
+OptimizationGuideStore::CreateUpdateDataForHostModelFeatures(
+    base::Time host_model_features_update_time,
+    base::Time expiry_time) const {
+  // Create and returns a StoreUpdateData object. This object has host model
+  // features from the GetModelsResponse moved into and organizes them in a
+  // format usable by the store. The object will be stored with
+  // UpdateHostModelFeatures().
+  return StoreUpdateData::CreateHostModelFeaturesStoreUpdateData(
+      host_model_features_update_time, expiry_time);
+}
+
+void OptimizationGuideStore::UpdateHostModelFeatures(
+    std::unique_ptr<StoreUpdateData> host_model_features_update_data,
+    base::OnceClosure callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(host_model_features_update_data->update_time());
+
+  if (!IsAvailable()) {
+    std::move(callback).Run();
+    return;
+  }
+
+  host_model_features_update_time_ =
+      *host_model_features_update_data->update_time();
+
+  // TODO(crbug/1001194): Add protection/lock around setting
+  // |data_update_in_flight_|.
+  data_update_in_flight_ = true;
+
+  entry_keys_.reset();
+
+  // This will remove the host model features metadata entry and insert all the
+  // entries currently in |host_model_features_update_data|.
+  database_->UpdateEntriesWithRemoveFilter(
+      host_model_features_update_data->TakeUpdateEntries(),
+      base::BindRepeating(
+          &DatabasePrefixFilter,
+          GetMetadataTypeEntryKey(MetadataType::kHostModelFeatures)),
+      base::BindOnce(&OptimizationGuideStore::OnUpdateStore,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+bool OptimizationGuideStore::FindHostModelFeaturesEntryKey(
+    const std::string& host,
+    OptimizationGuideStore::EntryKey* out_host_model_features_entry_key) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!entry_keys_)
+    return false;
+
+  return FindEntryKeyForHostWithPrefix(host, out_host_model_features_entry_key,
+                                       GetHostModelFeaturesEntryKeyPrefix());
+}
+
+void OptimizationGuideStore::LoadAllHostModelFeatures(
+    AllHostModelFeaturesLoadedCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!IsAvailable()) {
+    std::move(callback).Run({});
+    return;
+  }
+
+  // Load all the host model features within the store.
+  database_->LoadEntriesWithFilter(
+      base::BindRepeating(&DatabasePrefixFilter,
+                          GetHostModelFeaturesEntryKeyPrefix()),
+      base::BindOnce(&OptimizationGuideStore::OnLoadAllHostModelFeatures,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void OptimizationGuideStore::LoadHostModelFeatures(
+    const EntryKey& host_model_features_entry_key,
+    HostModelFeaturesLoadedCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!IsAvailable()) {
+    std::move(callback).Run({});
+    return;
+  }
+
+  // Load all the host model features within the store.
+  database_->GetEntry(
+      host_model_features_entry_key,
+      base::BindOnce(&OptimizationGuideStore::OnLoadHostModelFeatures,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void OptimizationGuideStore::OnLoadHostModelFeatures(
+    HostModelFeaturesLoadedCallback callback,
+    bool success,
+    std::unique_ptr<proto::StoreEntry> entry) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // If either the request failed, the store was set to unavailable after the
+  // request was started, or there's an in-flight update, which means the entry
+  // is about to be invalidated, then the loaded host model features should not
+  // be considered valid. Reset the entry so that nothing is returned to the
+  // requester.
+  if (!success || !IsAvailable() || data_update_in_flight_) {
+    entry.reset();
+  }
+  if (!entry || !entry->has_host_model_features()) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
+  std::unique_ptr<proto::HostModelFeatures> loaded_host_model_features(
+      entry->release_host_model_features());
+  std::move(callback).Run(std::move(loaded_host_model_features));
+}
+
+void OptimizationGuideStore::OnLoadAllHostModelFeatures(
+    AllHostModelFeaturesLoadedCallback callback,
+    bool success,
+    std::unique_ptr<std::vector<proto::StoreEntry>> entries) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // If either the request failed, the store was set to unavailable after the
+  // request was started, or there's an in-flight update, which means the entry
+  // is about to be invalidated, then the loaded host model features should not
+  // be considered valid. Reset the entry so that nothing is returned to the
+  // requester.
+  if (!success || !IsAvailable() || data_update_in_flight_) {
+    entries.reset();
+  }
+
+  if (!entries || entries->size() == 0) {
+    std::unique_ptr<std::vector<proto::HostModelFeatures>>
+        loaded_host_model_features(nullptr);
+    std::move(callback).Run(std::move(loaded_host_model_features));
+    return;
+  }
+
+  std::unique_ptr<std::vector<proto::HostModelFeatures>>
+      loaded_host_model_features =
+          std::make_unique<std::vector<proto::HostModelFeatures>>();
+  for (auto& entry : *entries.get()) {
+    if (!entry.has_host_model_features())
+      continue;
+    loaded_host_model_features->emplace_back(entry.host_model_features());
+  }
+  std::move(callback).Run(std::move(loaded_host_model_features));
 }
 
 }  // namespace optimization_guide

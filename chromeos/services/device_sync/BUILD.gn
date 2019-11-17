@@ -259,6 +259,7 @@ source_set("unit_tests") {
     "cryptauth_enrollment_manager_impl_unittest.cc",
     "cryptauth_feature_status_getter_impl_unittest.cc",
     "cryptauth_feature_status_setter_impl_unittest.cc",
+    "cryptauth_feature_type_unittest.cc",
     "cryptauth_gcm_manager_impl_unittest.cc",
     "cryptauth_group_private_key_sharer_impl_unittest.cc",
     "cryptauth_key_bundle_unittest.cc",

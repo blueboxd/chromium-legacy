@@ -18,6 +18,15 @@ enum PortalActivateResult {
 
   // The predecessor was adopted by its successor.
   kPredecessorWasAdopted,
+
+  // The activation could not proceed since the predecessor main frame was
+  // navigating and the navigation could not be cancelled.
+  kRejectedDueToPredecessorNavigation,
+
+  // The activation was attempted but was aborted due to a logic error, such as
+  // a nonsensical reply from the other renderer. This should never happen; it
+  // is always an indication of a bug if it does.
+  kAbortedDueToBug,
 };
 
 // The Portal interface is used by the HTMLPortalElement in the outer renderer

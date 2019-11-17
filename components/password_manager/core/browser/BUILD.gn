@@ -316,6 +316,8 @@ static_library("csv") {
     "import/csv_password.h",
     "import/csv_password_iterator.cc",
     "import/csv_password_iterator.h",
+    "import/csv_password_sequence.cc",
+    "import/csv_password_sequence.h",
   ]
   deps = [
     ":affiliation",
@@ -330,13 +332,16 @@ source_set("csv_unittests") {
   sources = [
     "import/csv_field_parser_unittest.cc",
     "import/csv_password_iterator_unittest.cc",
+    "import/csv_password_sequence_unittest.cc",
     "import/csv_password_unittest.cc",
   ]
   deps = [
     ":csv",
     "//base",
+    "//components/autofill/core/common",
     "//testing/gmock",
     "//testing/gtest",
+    "//url",
   ]
 }
 

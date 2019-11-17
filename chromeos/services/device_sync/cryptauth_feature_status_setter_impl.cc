@@ -213,8 +213,8 @@ void CryptAuthFeatureStatusSetterImpl::ProcessRequestQueue() {
   cryptauthv2::DeviceFeatureStatus::FeatureStatus* feature_status =
       device_feature_status->add_feature_statuses();
   feature_status->set_feature_type(
-      SoftwareFeatureToEnabledCryptAuthFeatureTypeString(
-          pending_requests_.front().feature));
+      CryptAuthFeatureTypeToString(CryptAuthFeatureTypeFromSoftwareFeature(
+          pending_requests_.front().feature)));
 
   switch (pending_requests_.front().status_change) {
     case FeatureStatusChange::kEnableExclusively:

@@ -208,6 +208,19 @@ class VirtualKeyboardPrivateSetHitTestBoundsFunction
   ResponseAction Run() override;
 };
 
+class VirtualKeyboardPrivateSetAreaToRemainOnScreenFunction
+    : public VirtualKeyboardPrivateFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("virtualKeyboardPrivate.setAreaToRemainOnScreen",
+                             VIRTUALKEYBOARDPRIVATE_SETAREATOREMAINONSCREEN)
+
+ protected:
+  ~VirtualKeyboardPrivateSetAreaToRemainOnScreenFunction() override {}
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+};
+
 class VirtualKeyboardDelegate;
 
 class VirtualKeyboardAPI : public BrowserContextKeyedAPI {

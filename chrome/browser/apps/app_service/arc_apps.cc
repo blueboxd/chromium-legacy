@@ -417,22 +417,22 @@ void ArcApps::Uninstall(const std::string& app_id,
 }
 
 void ArcApps::PauseApp(const std::string& app_id) {
-  if (paused_apps.find(app_id) != paused_apps.end()) {
+  if (paused_apps_.find(app_id) != paused_apps_.end()) {
     return;
   }
 
-  paused_apps.insert(app_id);
+  paused_apps_.insert(app_id);
   SetIconEffect(app_id);
 
   // TODO(crbug.com/1011235): If the app is running, Stop the app.
 }
 
 void ArcApps::UnpauseApps(const std::string& app_id) {
-  if (paused_apps.find(app_id) == paused_apps.end()) {
+  if (paused_apps_.find(app_id) == paused_apps_.end()) {
     return;
   }
 
-  paused_apps.erase(app_id);
+  paused_apps_.erase(app_id);
   SetIconEffect(app_id);
 }
 
@@ -545,13 +545,20 @@ void ArcApps::OnAppStatesChanged(const std::string& app_id,
 }
 
 void ArcApps::OnAppRemoved(const std::string& app_id) {
-  paused_apps.erase(app_id);
+  paused_apps_.erase(app_id);
 
   apps::mojom::AppPtr app = apps::mojom::App::New();
   app->app_type = apps::mojom::AppType::kArc;
   app->app_id = app_id;
   app->readiness = apps::mojom::Readiness::kUninstalledByUser;
   Publish(std::move(app));
+
+  mojo::Remote<apps::mojom::AppService>& app_service =
+      apps::AppServiceProxyFactory::GetForProfile(profile_)->AppService();
+  if (!app_service.is_bound()) {
+    return;
+  }
+  app_service->RemovePreferredApp(apps::mojom::AppType::kArc, app_id);
 }
 
 void ArcApps::OnAppIconUpdated(const std::string& app_id,
@@ -783,7 +790,7 @@ void ArcApps::SetIconEffect(const std::string& app_id) {
   if (app_info->suspended) {
     icon_effects = static_cast<IconEffects>(icon_effects | IconEffects::kGray);
   }
-  if (paused_apps.find(app_id) != paused_apps.end()) {
+  if (paused_apps_.find(app_id) != paused_apps_.end()) {
     icon_effects =
         static_cast<IconEffects>(icon_effects | IconEffects::kPaused);
   }

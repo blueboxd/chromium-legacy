@@ -189,6 +189,11 @@ class KEYBOARD_EXPORT KeyboardUIController
   // the keyboard window.
   void SetHitTestBounds(const std::vector<gfx::Rect>& bounds_in_window);
 
+  // Sets the area of the keyboard window that should not move off screen. Any
+  // area outside of this can be moved off the user's screen. Note the bounds
+  // here are relative to the window's origin.
+  bool SetAreaToRemainOnScreen(const gfx::Rect& bounds_in_window);
+
   ContainerType GetActiveContainerType() const {
     return container_behavior_->GetType();
   }

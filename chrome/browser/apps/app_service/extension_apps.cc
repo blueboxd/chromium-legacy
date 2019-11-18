@@ -225,7 +225,8 @@ ExtensionApps::ExtensionApps(
     apps::InstanceRegistry* instance_registry)
     : profile_(profile),
       app_type_(app_type),
-      instance_registry_(instance_registry) {
+      instance_registry_(instance_registry),
+      app_service_(nullptr) {
   Initialize(app_service);
 }
 
@@ -280,6 +281,7 @@ void ExtensionApps::Initialize(
   app_window_registry_.Add(extensions::AppWindowRegistry::Get(profile_));
   content_settings_observer_.Add(
       HostContentSettingsMapFactory::GetForProfile(profile_));
+  app_service_ = app_service.get();
 }
 
 bool ExtensionApps::Accepts(const extensions::Extension* extension) {
@@ -551,22 +553,22 @@ void ExtensionApps::Uninstall(const std::string& app_id,
 }
 
 void ExtensionApps::PauseApp(const std::string& app_id) {
-  if (paused_apps.find(app_id) != paused_apps.end()) {
+  if (paused_apps_.find(app_id) != paused_apps_.end()) {
     return;
   }
 
-  paused_apps.insert(app_id);
+  paused_apps_.insert(app_id);
   SetIconEffect(app_id);
 
   // TODO(crbug.com/1011235): If the app is running, Stop the app.
 }
 
 void ExtensionApps::UnpauseApps(const std::string& app_id) {
-  if (paused_apps.find(app_id) == paused_apps.end()) {
+  if (paused_apps_.find(app_id) == paused_apps_.end()) {
     return;
   }
 
-  paused_apps.erase(app_id);
+  paused_apps_.erase(app_id);
   SetIconEffect(app_id);
 }
 
@@ -759,7 +761,7 @@ void ExtensionApps::OnExtensionUninstalled(
   }
 
   enable_flow_map_.erase(extension->id());
-  paused_apps.erase(extension->id());
+  paused_apps_.erase(extension->id());
 
   // Construct an App with only the information required to identify an
   // uninstallation.
@@ -770,6 +772,11 @@ void ExtensionApps::OnExtensionUninstalled(
 
   SetShowInFields(app, extension, profile_);
   Publish(std::move(app));
+
+  if (!app_service_) {
+    return;
+  }
+  app_service_->RemovePreferredApp(app_type_, extension->id());
 }
 
 void ExtensionApps::Publish(apps::mojom::AppPtr app) {
@@ -1060,7 +1067,7 @@ IconEffects ExtensionApps::GetIconEffects(
     icon_effects =
         static_cast<IconEffects>(icon_effects | IconEffects::kRoundCorners);
   }
-  if (paused_apps.find(extension->id()) != paused_apps.end()) {
+  if (paused_apps_.find(extension->id()) != paused_apps_.end()) {
     icon_effects =
         static_cast<IconEffects>(icon_effects | IconEffects::kPaused);
   }

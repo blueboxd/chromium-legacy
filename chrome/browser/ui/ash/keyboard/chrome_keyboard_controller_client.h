@@ -115,6 +115,7 @@ class ChromeKeyboardControllerClient
   void SetKeyboardLocked(bool locked);
   void SetOccludedBounds(const std::vector<gfx::Rect>& bounds);
   void SetHitTestBounds(const std::vector<gfx::Rect>& bounds);
+  bool SetAreaToRemainOnScreen(const gfx::Rect& bounds);
   void SetDraggableArea(const gfx::Rect& bounds);
 
   // Returns true if overscroll is enabled by the config or command line.

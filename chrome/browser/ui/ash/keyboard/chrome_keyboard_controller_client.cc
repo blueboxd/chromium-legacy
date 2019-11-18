@@ -218,6 +218,11 @@ void ChromeKeyboardControllerClient::SetHitTestBounds(
   keyboard_controller_->SetHitTestBounds(bounds);
 }
 
+bool ChromeKeyboardControllerClient::SetAreaToRemainOnScreen(
+    const gfx::Rect& bounds) {
+  return keyboard_controller_->SetAreaToRemainOnScreen(bounds);
+}
+
 void ChromeKeyboardControllerClient::SetDraggableArea(const gfx::Rect& bounds) {
   keyboard_controller_->SetDraggableArea(bounds);
 }

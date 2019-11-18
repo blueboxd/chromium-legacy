@@ -273,6 +273,18 @@
             "items": { "$ref": "Bounds" }
           }
         ]
+      },
+      {
+        "name": "setAreaToRemainOnScreen",
+        "type": "function",
+        "description": "Sets the area of the keyboard window that should not move off screen. Any area outside of this can be moved off the user's screen.",
+        "parameters": [
+          {
+            "name": "bounds",
+            "description": "The bounds of the area inside the keyboard window, relative to the window origin, that should not be moved off screen. Any area outside of this bounds can be moved off screen.",
+            "$ref": "Bounds"
+          }
+        ]
       }
     ],
     "events": [

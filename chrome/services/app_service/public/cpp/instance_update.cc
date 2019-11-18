@@ -34,6 +34,41 @@ void InstanceUpdate::Merge(Instance* state, const Instance* delta) {
   // updated.
 }
 
+// static
+bool InstanceUpdate::Equals(const Instance* state, const Instance* delta) {
+  if (delta == nullptr) {
+    return true;
+  }
+  if (state == nullptr) {
+    if (static_cast<InstanceState>(delta->State() &
+                                   InstanceState::kDestroyed) !=
+        InstanceState::kUnknown) {
+      return true;
+    }
+    return false;
+  }
+
+  if ((delta->AppId() != state->AppId()) ||
+      delta->Window() != state->Window()) {
+    LOG(ERROR) << "inconsistent (app_id, window): (" << delta->AppId() << ", "
+               << delta->Window() << ") vs (" << state->AppId() << ", "
+               << state->Window() << ") ";
+    DCHECK(false);
+    return false;
+  }
+  if (!delta->LaunchId().empty() && delta->LaunchId() != state->LaunchId()) {
+    return false;
+  }
+  if (delta->State() != InstanceState::kUnknown &&
+      (delta->State() != state->State() ||
+       delta->LastUpdatedTime() != state->LastUpdatedTime())) {
+    return false;
+  }
+  return true;
+  // When adding new fields to the Instance class, this function should also be
+  // updated.
+}
+
 InstanceUpdate::InstanceUpdate(Instance* state, Instance* delta)
     : state_(state), delta_(delta) {
   DCHECK(state_ || delta_);

@@ -36,16 +36,16 @@ class Instance;
 // An InstanceUpdate is read-only once constructed. All of its fields and
 // methods are const. The constructor caller must guarantee that the Instance
 // pointer remain valid for the lifetime of the AppUpdate.
-//
-// See the below two design docs for more details:
-// go/app-service-instance-registry-design-doc
-// go/appservice-for-per-app-time-limit-design-doc
 class InstanceUpdate {
  public:
   // Modifies |state| by copying over all of |delta|'s known fields: those
   // fields whose values aren't "unknown" or invalid. The |state| may not be
   // nullptr.
   static void Merge(Instance* state, const Instance* delta);
+
+  // Returns true if |state| exists and is equal to |delta|, or |delta| are
+  // nullptr. Return false otherwise.
+  static bool Equals(const Instance* state, const Instance* delta);
 
   // At most one of |state| or |delta| may be nullptr.
   InstanceUpdate(Instance* state, Instance* delta);

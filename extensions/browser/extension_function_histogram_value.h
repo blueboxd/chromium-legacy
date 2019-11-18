@@ -1474,6 +1474,7 @@ enum HistogramValue {
   AUTOTESTPRIVATE_MOUSEMOVE = 1411,
   WEBSTOREPRIVATE_GETEXTENSIONSTATUS = 1412,
   INPUTMETHODPRIVATE_SETSELECTIONRANGE = 1413,
+  VIRTUALKEYBOARDPRIVATE_SETAREATOREMAINONSCREEN = 1414,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

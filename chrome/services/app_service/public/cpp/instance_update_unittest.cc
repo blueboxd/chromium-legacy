@@ -106,6 +106,7 @@ TEST_F(InstanceUpdateTest, StateIsNonNull) {
   window.Init(ui::LAYER_NOT_DRAWN);
   std::unique_ptr<apps::Instance> state =
       std::make_unique<apps::Instance>(app_id, &window);
+  EXPECT_TRUE(apps::InstanceUpdate::Equals(state.get(), nullptr));
   TestInstanceUpdate(state.get(), nullptr);
 }
 
@@ -114,6 +115,7 @@ TEST_F(InstanceUpdateTest, DeltaIsNonNull) {
   window.Init(ui::LAYER_NOT_DRAWN);
   std::unique_ptr<apps::Instance> delta =
       std::make_unique<apps::Instance>(app_id, &window);
+  EXPECT_FALSE(apps::InstanceUpdate::Equals(nullptr, delta.get()));
   TestInstanceUpdate(nullptr, delta.get());
 }
 
@@ -124,5 +126,64 @@ TEST_F(InstanceUpdateTest, BothAreNonNull) {
       std::make_unique<apps::Instance>(app_id, &window);
   std::unique_ptr<apps::Instance> delta =
       std::make_unique<apps::Instance>(app_id, &window);
+  EXPECT_TRUE(apps::InstanceUpdate::Equals(state.get(), delta.get()));
   TestInstanceUpdate(state.get(), delta.get());
+}
+
+TEST_F(InstanceUpdateTest, LaunchIdIsUpdated) {
+  aura::Window window(nullptr);
+  window.Init(ui::LAYER_NOT_DRAWN);
+  std::unique_ptr<apps::Instance> state =
+      std::make_unique<apps::Instance>(app_id, &window);
+  std::unique_ptr<apps::Instance> delta =
+      std::make_unique<apps::Instance>(app_id, &window);
+  delta->SetLaunchId("abc");
+  EXPECT_FALSE(apps::InstanceUpdate::Equals(state.get(), delta.get()));
+}
+
+TEST_F(InstanceUpdateTest, LaunchIdIsNotUpdated) {
+  aura::Window window(nullptr);
+  window.Init(ui::LAYER_NOT_DRAWN);
+  std::unique_ptr<apps::Instance> state =
+      std::make_unique<apps::Instance>(app_id, &window);
+  state->SetLaunchId("abc");
+  std::unique_ptr<apps::Instance> delta =
+      std::make_unique<apps::Instance>(app_id, &window);
+  EXPECT_TRUE(apps::InstanceUpdate::Equals(state.get(), delta.get()));
+}
+
+TEST_F(InstanceUpdateTest, StateIsUpdated) {
+  aura::Window window(nullptr);
+  window.Init(ui::LAYER_NOT_DRAWN);
+  std::unique_ptr<apps::Instance> state =
+      std::make_unique<apps::Instance>(app_id, &window);
+  std::unique_ptr<apps::Instance> delta =
+      std::make_unique<apps::Instance>(app_id, &window);
+  delta->UpdateState(apps::InstanceState::kStarted, base::Time::Now());
+  EXPECT_FALSE(apps::InstanceUpdate::Equals(state.get(), delta.get()));
+}
+
+TEST_F(InstanceUpdateTest, StateIsNotUpdated) {
+  aura::Window window(nullptr);
+  window.Init(ui::LAYER_NOT_DRAWN);
+  std::unique_ptr<apps::Instance> state =
+      std::make_unique<apps::Instance>(app_id, &window);
+  state->UpdateState(apps::InstanceState::kStarted, base::Time::Now());
+  std::unique_ptr<apps::Instance> delta =
+      std::make_unique<apps::Instance>(app_id, &window);
+  EXPECT_TRUE(apps::InstanceUpdate::Equals(state.get(), delta.get()));
+}
+
+TEST_F(InstanceUpdateTest, BothLaunchAndStateIsUpdated) {
+  aura::Window window(nullptr);
+  window.Init(ui::LAYER_NOT_DRAWN);
+  std::unique_ptr<apps::Instance> state =
+      std::make_unique<apps::Instance>(app_id, &window);
+  state->SetLaunchId("aaa");
+  state->UpdateState(apps::InstanceState::kStarted, base::Time::Now());
+  std::unique_ptr<apps::Instance> delta =
+      std::make_unique<apps::Instance>(app_id, &window);
+  delta->SetLaunchId("bbb");
+  delta->UpdateState(apps::InstanceState::kRunning, base::Time::Now());
+  EXPECT_FALSE(apps::InstanceUpdate::Equals(state.get(), delta.get()));
 }

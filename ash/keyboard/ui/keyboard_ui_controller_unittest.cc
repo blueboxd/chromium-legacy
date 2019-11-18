@@ -740,6 +740,20 @@ TEST_F(KeyboardUIControllerTest, DontClearObserverList) {
   EXPECT_TRUE(IsKeyboardDisabled());
 }
 
+// Checks the area set in SetAreaToRemainOnScreen fit within the
+// bounds of the keyboard window.
+TEST_F(KeyboardUIControllerTest,
+       AreaToRemainOnScreenShouldBeContainedInWindow) {
+  ShowKeyboard();
+  aura::Window* keyboard_window = controller().GetKeyboardWindow();
+  keyboard_window->SetBounds(gfx::Rect(10, 10, 400, 600));
+
+  EXPECT_TRUE(controller().SetAreaToRemainOnScreen(gfx::Rect(0, 0, 100, 200)));
+  EXPECT_FALSE(controller().SetAreaToRemainOnScreen(gfx::Rect(0, 0, 450, 650)));
+  EXPECT_FALSE(
+      controller().SetAreaToRemainOnScreen(gfx::Rect(50, 50, 400, 600)));
+}
+
 class MockKeyboardControllerObserver : public ash::KeyboardControllerObserver {
  public:
   MockKeyboardControllerObserver() = default;

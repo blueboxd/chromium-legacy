@@ -92,6 +92,11 @@ class ASH_PUBLIC_EXPORT KeyboardController {
   // Sets the regions of the keyboard window where events should be handled.
   virtual void SetHitTestBounds(const std::vector<gfx::Rect>& bounds) = 0;
 
+  // Set the area of the keyboard window that should not move off screen. Any
+  // area outside of this bounds can be moved off the user's screen. Note the
+  // bounds here are relative to the keyboard window origin.
+  virtual bool SetAreaToRemainOnScreen(const gfx::Rect& bounds) = 0;
+
   // Sets the region of the keyboard window that can be used as a drag handle.
   virtual void SetDraggableArea(const gfx::Rect& bounds) = 0;
 

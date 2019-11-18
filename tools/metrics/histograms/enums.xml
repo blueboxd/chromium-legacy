@@ -21338,6 +21338,7 @@ Called by update_net_error_codes.py.-->
   <int value="1411" label="AUTOTESTPRIVATE_MOUSEMOVE"/>
   <int value="1412" label="WEBSTOREPRIVATE_GETEXTENSIONSTATUS"/>
   <int value="1413" label="INPUTMETHODPRIVATE_SETSELECTIONRANGE"/>
+  <int value="1414" label="VIRTUALKEYBOARDPRIVATE_SETAREATOREMAINONSCREEN"/>
 </enum>
 
 <enum name="ExtensionIconState">

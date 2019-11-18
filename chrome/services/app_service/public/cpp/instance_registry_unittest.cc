@@ -79,11 +79,9 @@ class InstanceRecursiveObserver : public apps::InstanceRegistry::Observer {
   ~InstanceRecursiveObserver() override = default;
 
   void PrepareForOnInstances(int expected_num_instances,
-                             apps::InstanceState expected_status_for_p,
                              std::vector<std::unique_ptr<apps::Instance>>*
                                  super_recursive_instances = nullptr) {
     expected_num_instances_ = expected_num_instances;
-    expected_status_for_p_ = expected_status_for_p;
     num_instances_seen_on_instance_update_ = 0;
 
     if (super_recursive_instances) {
@@ -100,12 +98,9 @@ class InstanceRecursiveObserver : public apps::InstanceRegistry::Observer {
   void OnInstanceUpdate(const apps::InstanceUpdate& outer) override {
     int num_instance = 0;
     instance_registry_->ForEachInstance(
-        [this, &outer, &num_instance](const apps::InstanceUpdate& inner) {
+        [&outer, &num_instance](const apps::InstanceUpdate& inner) {
           if (outer.Window() == inner.Window()) {
             ExpectEq(outer, inner);
-          }
-          if (inner.AppId() == "p") {
-            EXPECT_EQ(expected_status_for_p_, inner.State());
           }
           num_instance++;
         });
@@ -146,13 +141,13 @@ class InstanceRecursiveObserver : public apps::InstanceRegistry::Observer {
   static void ExpectEq(const apps::InstanceUpdate& outer,
                        const apps::InstanceUpdate& inner) {
     EXPECT_EQ(outer.AppId(), inner.AppId());
-    EXPECT_EQ(outer.StateIsNull(), inner.StateIsNull());
     EXPECT_EQ(outer.Window(), inner.Window());
+    EXPECT_EQ(outer.LaunchId(), inner.LaunchId());
     EXPECT_EQ(outer.State(), inner.State());
+    EXPECT_EQ(outer.LastUpdatedTime(), inner.LastUpdatedTime());
   }
 
   apps::InstanceRegistry* instance_registry_;
-  apps::InstanceState expected_status_for_p_;
   int expected_num_instances_;
   int num_instances_seen_on_instance_update_;
 
@@ -311,38 +306,185 @@ TEST_F(InstanceRegistryTest, Observer) {
   EXPECT_EQ(0u, updated_ids_.size());
 }
 
+TEST_F(InstanceRegistryTest, WholeProcessForOneWindow) {
+  std::vector<std::unique_ptr<apps::Instance>> deltas;
+  apps::InstanceRegistry instance_registry;
+  InstanceRecursiveObserver observer(&instance_registry);
+
+  apps::InstanceState instance_state = apps::InstanceState::kStarted;
+  deltas.clear();
+  aura::Window window(nullptr);
+  window.Init(ui::LAYER_NOT_DRAWN);
+  observer.PrepareForOnInstances(1);
+  deltas.push_back(MakeInstance("p", &window, instance_state));
+  instance_registry.OnInstances(std::move(deltas));
+  EXPECT_EQ(1, observer.NumInstancesSeenOnInstanceUpdate());
+
+  instance_state = static_cast<apps::InstanceState>(
+      instance_state | apps::InstanceState::kRunning |
+      apps::InstanceState::kActive | apps::InstanceState::kVisible);
+  observer.PrepareForOnInstances(1);
+  deltas.clear();
+  deltas.push_back(MakeInstance("p", &window, instance_state));
+  instance_registry.OnInstances(std::move(deltas));
+  EXPECT_EQ(1, observer.NumInstancesSeenOnInstanceUpdate());
+
+  apps::InstanceState state1 = static_cast<apps::InstanceState>(
+      apps::InstanceState::kStarted | apps::InstanceState::kRunning);
+  apps::InstanceState state2 = static_cast<apps::InstanceState>(
+      apps::InstanceState::kStarted | apps::InstanceState::kRunning);
+  apps::InstanceState state3 = static_cast<apps::InstanceState>(
+      apps::InstanceState::kStarted | apps::InstanceState::kRunning);
+  apps::InstanceState state4 = static_cast<apps::InstanceState>(
+      apps::InstanceState::kStarted | apps::InstanceState::kRunning |
+      apps::InstanceState::kActive | apps::InstanceState::kVisible);
+  apps::InstanceState state5 = static_cast<apps::InstanceState>(
+      apps::InstanceState::kStarted | apps::InstanceState::kRunning |
+      apps::InstanceState::kVisible);
+  apps::InstanceState state6 = apps::InstanceState::kDestroyed;
+  observer.PrepareForOnInstances(1);
+  deltas.clear();
+  deltas.push_back(MakeInstance("p", &window, state1));
+  deltas.push_back(MakeInstance("p", &window, state2));
+  deltas.push_back(MakeInstance("p", &window, state3));
+  deltas.push_back(MakeInstance("p", &window, state4));
+  deltas.push_back(MakeInstance("p", &window, state5));
+  deltas.push_back(MakeInstance("p", &window, state6));
+  instance_registry.OnInstances(std::move(deltas));
+  // OnInstanceUpdate is called for state1, because state1 is different with
+  // previous instance_state. state2 and state3 is not changed, so
+  // OnInstanceUpdate is not called. OnInstanceUpdate is called for state4,
+  // state5, and state6 separately, because they are different. So
+  // OnInstanceUpdate is called 4 times, for state1, state4, state5, and state6.
+  EXPECT_EQ(4, observer.NumInstancesSeenOnInstanceUpdate());
+
+  bool found_window = false;
+  EXPECT_FALSE(instance_registry.ForOneInstance(
+      &window, [&found_window](const apps::InstanceUpdate& update) {
+        found_window = true;
+      }));
+  EXPECT_FALSE(found_window);
+
+  observer.PrepareForOnInstances(1);
+  deltas.clear();
+  deltas.push_back(MakeInstance("p", &window, state5));
+  instance_registry.OnInstances(std::move(deltas));
+  EXPECT_EQ(1, observer.NumInstancesSeenOnInstanceUpdate());
+
+  found_window = false;
+  EXPECT_TRUE(instance_registry.ForOneInstance(
+      &window, [&found_window](const apps::InstanceUpdate& update) {
+        found_window = true;
+      }));
+  EXPECT_TRUE(found_window);
+}
+
 TEST_F(InstanceRegistryTest, Recursive) {
   std::vector<std::unique_ptr<apps::Instance>> deltas;
   apps::InstanceRegistry instance_registry;
   InstanceRecursiveObserver observer(&instance_registry);
 
-  observer.PrepareForOnInstances(2, apps::InstanceState::kRunning);
+  apps::InstanceState instance_state1 = static_cast<apps::InstanceState>(
+      apps::InstanceState::kStarted | apps::InstanceState::kRunning);
+  apps::InstanceState instance_state2 = static_cast<apps::InstanceState>(
+      apps::InstanceState::kStarted | apps::InstanceState::kRunning);
   deltas.clear();
   aura::Window window1(nullptr);
   window1.Init(ui::LAYER_NOT_DRAWN);
   aura::Window window2(nullptr);
   window2.Init(ui::LAYER_NOT_DRAWN);
-  deltas.push_back(MakeInstance("o", &window1, apps::InstanceState::kRunning));
-  deltas.push_back(MakeInstance("p", &window2, apps::InstanceState::kRunning));
+  observer.PrepareForOnInstances(-1);
+  deltas.push_back(MakeInstance("o", &window1, instance_state1));
+  deltas.push_back(MakeInstance("p", &window2, instance_state2));
   instance_registry.OnInstances(std::move(deltas));
   EXPECT_EQ(2, observer.NumInstancesSeenOnInstanceUpdate());
 
-  observer.PrepareForOnInstances(3, apps::InstanceState::kRunning);
+  apps::InstanceState instance_state3 = static_cast<apps::InstanceState>(
+      apps::InstanceState::kStarted | apps::InstanceState::kRunning);
+  apps::InstanceState instance_state4 = static_cast<apps::InstanceState>(
+      apps::InstanceState::kStarted | apps::InstanceState::kRunning);
+  std::vector<apps::InstanceState> latest_state;
+  latest_state.push_back(instance_state3);
+  latest_state.push_back(instance_state3);
   deltas.clear();
   aura::Window window3(nullptr);
   window3.Init(ui::LAYER_NOT_DRAWN);
-  deltas.push_back(MakeInstance("p", &window2, apps::InstanceState::kRunning));
-  deltas.push_back(MakeInstance("q", &window3, apps::InstanceState::kRunning));
+  aura::Window window4(nullptr);
+  window4.Init(ui::LAYER_NOT_DRAWN);
+  observer.PrepareForOnInstances(-1);
+  deltas.push_back(MakeInstance("p", &window2, instance_state3));
+  deltas.push_back(MakeInstance("q", &window3, instance_state4));
+  deltas.push_back(MakeInstance("p", &window4, instance_state3));
   instance_registry.OnInstances(std::move(deltas));
   EXPECT_EQ(2, observer.NumInstancesSeenOnInstanceUpdate());
 
-  observer.PrepareForOnInstances(3, apps::InstanceState::kActive);
+  apps::InstanceState instance_state5 = static_cast<apps::InstanceState>(
+      apps::InstanceState::kStarted | apps::InstanceState::kRunning);
+  apps::InstanceState instance_state6 = static_cast<apps::InstanceState>(
+      apps::InstanceState::kStarted | apps::InstanceState::kRunning);
+  apps::InstanceState instance_state7 = static_cast<apps::InstanceState>(
+      apps::InstanceState::kStarted | apps::InstanceState::kRunning |
+      apps::InstanceState::kActive);
+
+  observer.PrepareForOnInstances(4);
   deltas.clear();
-  deltas.push_back(MakeInstance("p", &window2, apps::InstanceState::kRunning));
-  deltas.push_back(MakeInstance("p", &window2, apps::InstanceState::kRunning));
-  deltas.push_back(MakeInstance("p", &window2, apps::InstanceState::kActive));
+  deltas.push_back(MakeInstance("p", &window2, instance_state5));
+  deltas.push_back(MakeInstance("p", &window2, instance_state6));
+  deltas.push_back(MakeInstance("p", &window2, instance_state7));
   instance_registry.OnInstances(std::move(deltas));
   EXPECT_EQ(1, observer.NumInstancesSeenOnInstanceUpdate());
+
+  apps::InstanceState instance_state8 =
+      static_cast<apps::InstanceState>(apps::InstanceState::kDestroyed);
+  observer.PrepareForOnInstances(-1);
+  deltas.clear();
+  deltas.push_back(MakeInstance("p", &window2, instance_state8));
+  deltas.push_back(MakeInstance("p", &window4, instance_state8));
+  deltas.push_back(MakeInstance("q", &window3, instance_state8));
+  deltas.push_back(MakeInstance("o", &window1, instance_state8));
+  instance_registry.OnInstances(std::move(deltas));
+  EXPECT_EQ(4, observer.NumInstancesSeenOnInstanceUpdate());
+
+  bool found_window = false;
+  EXPECT_FALSE(instance_registry.ForOneInstance(
+      &window2, [&found_window](const apps::InstanceUpdate& update) {
+        found_window = true;
+      }));
+  EXPECT_FALSE(found_window);
+
+  found_window = false;
+  EXPECT_FALSE(instance_registry.ForOneInstance(
+      &window4, [&found_window](const apps::InstanceUpdate& update) {
+        found_window = true;
+      }));
+  EXPECT_FALSE(found_window);
+
+  found_window = false;
+  EXPECT_FALSE(instance_registry.ForOneInstance(
+      &window3, [&found_window](const apps::InstanceUpdate& update) {
+        found_window = true;
+      }));
+  EXPECT_FALSE(found_window);
+
+  found_window = false;
+  EXPECT_FALSE(instance_registry.ForOneInstance(
+      &window1, [&found_window](const apps::InstanceUpdate& update) {
+        found_window = true;
+      }));
+  EXPECT_FALSE(found_window);
+
+  observer.PrepareForOnInstances(1);
+  deltas.clear();
+  deltas.push_back(MakeInstance("p", &window2, instance_state7));
+  instance_registry.OnInstances(std::move(deltas));
+  EXPECT_EQ(1, observer.NumInstancesSeenOnInstanceUpdate());
+
+  found_window = false;
+  EXPECT_TRUE(instance_registry.ForOneInstance(
+      &window2, [&found_window](const apps::InstanceUpdate& update) {
+        found_window = true;
+      }));
+  EXPECT_TRUE(found_window);
 }
 
 TEST_F(InstanceRegistryTest, SuperRecursive) {
@@ -377,12 +519,14 @@ TEST_F(InstanceRegistryTest, SuperRecursive) {
   window5.Init(ui::LAYER_NOT_DRAWN);
   super_recursive_apps.push_back(nullptr);
   super_recursive_apps.push_back(
-      MakeInstance("b", &window1, apps::InstanceState::kStarted));
+      MakeInstance("a", &window1, apps::InstanceState::kStarted));
   super_recursive_apps.push_back(nullptr);
   super_recursive_apps.push_back(nullptr);
   super_recursive_apps.push_back(MakeInstance("a", &window2));
   super_recursive_apps.push_back(nullptr);
   super_recursive_apps.push_back(MakeInstance("b", &window3));
+  super_recursive_apps.push_back(
+      MakeInstance("a", &window2, apps::InstanceState::kDestroyed));
   super_recursive_apps.push_back(
       MakeInstance("a", &window2, apps::InstanceState::kRunning));
   super_recursive_apps.push_back(
@@ -394,18 +538,18 @@ TEST_F(InstanceRegistryTest, SuperRecursive) {
   super_recursive_apps.push_back(
       MakeInstance("b", &window5, apps::InstanceState::kVisible));
 
-  observer.PrepareForOnInstances(-1, apps::InstanceState::kRunning,
-                                 &super_recursive_apps);
+  observer.PrepareForOnInstances(-1, &super_recursive_apps);
   deltas.clear();
   deltas.push_back(MakeInstance("a", &window2, apps::InstanceState::kActive));
   deltas.push_back(MakeInstance("b", &window3, apps::InstanceState::kActive));
   deltas.push_back(MakeInstance("c", &window4, apps::InstanceState::kActive));
   instance_registry.OnInstances(std::move(deltas));
+  EXPECT_EQ(10, observer.NumInstancesSeenOnInstanceUpdate());
 
   // After all of that, check that for each window, the last delta won.
   EXPECT_EQ(apps::InstanceState::kStarted,
             GetState(instance_registry, &window1));
-  EXPECT_EQ(apps::InstanceState::kRunning,
+  EXPECT_EQ(apps::InstanceState::kUnknown,
             GetState(instance_registry, &window2));
   EXPECT_EQ(apps::InstanceState::kRunning,
             GetState(instance_registry, &window3));

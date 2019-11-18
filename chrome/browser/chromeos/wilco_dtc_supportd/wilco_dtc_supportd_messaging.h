@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "content/public/browser/browser_context.h"
 
 namespace extensions {
 class NativeMessageHost;
@@ -33,7 +34,8 @@ extern const int kWilcoDtcSupportdUiMessageMaxSize;
 // This should be used when the communication is initiated by the extension
 // (i.e., not the daemon).
 std::unique_ptr<extensions::NativeMessageHost>
-CreateExtensionOwnedWilcoDtcSupportdMessageHost();
+CreateExtensionOwnedWilcoDtcSupportdMessageHost(
+    content::BrowserContext* browser_context);
 
 // Delivers the UI message |json_message| from the wilco_dtc_supportd daemon to
 // the extensions that are allowed to receive it. The delivery is done via

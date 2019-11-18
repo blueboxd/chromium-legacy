@@ -39,10 +39,20 @@ class FakePublisher : public apps::mojom::Publisher {
 
   void PublishMoreApps(std::vector<std::string> app_ids) {
     for (auto& subscriber : subscribers_) {
-      CallOnApps(subscriber.get(), app_ids);
+      CallOnApps(subscriber.get(), app_ids, /*uninstall=*/false);
     }
     for (const auto& app_id : app_ids) {
       known_app_ids_.push_back(app_id);
+    }
+  }
+
+  void UninstallApps(std::vector<std::string> app_ids, AppServiceImpl* impl) {
+    for (auto& subscriber : subscribers_) {
+      CallOnApps(subscriber.get(), app_ids, /*uninstall=*/true);
+    }
+    for (const auto& app_id : app_ids) {
+      known_app_ids_.push_back(app_id);
+      impl->RemovePreferredApp(app_type_, app_id);
     }
   }
 
@@ -53,7 +63,7 @@ class FakePublisher : public apps::mojom::Publisher {
                apps::mojom::ConnectOptionsPtr opts) override {
     mojo::Remote<apps::mojom::Subscriber> subscriber(
         std::move(subscriber_remote));
-    CallOnApps(subscriber.get(), known_app_ids_);
+    CallOnApps(subscriber.get(), known_app_ids_, /*uninstall=*/false);
     subscribers_.Add(std::move(subscriber));
   }
 
@@ -94,12 +104,16 @@ class FakePublisher : public apps::mojom::Publisher {
                          apps::mojom::IntentPtr intent) override {}
 
   void CallOnApps(apps::mojom::Subscriber* subscriber,
-                  std::vector<std::string>& app_ids) {
+                  std::vector<std::string>& app_ids,
+                  bool uninstall) {
     std::vector<apps::mojom::AppPtr> apps;
     for (const auto& app_id : app_ids) {
       auto app = apps::mojom::App::New();
       app->app_type = app_type_;
       app->app_id = app_id;
+      if (uninstall) {
+        app->readiness = apps::mojom::Readiness::kUninstalledByUser;
+      }
       apps.push_back(std::move(app));
     }
     subscriber->OnApps(std::move(apps));
@@ -133,6 +147,9 @@ class FakeSubscriber : public apps::mojom::Subscriber {
   void OnApps(std::vector<apps::mojom::AppPtr> deltas) override {
     for (const auto& delta : deltas) {
       app_ids_seen_.insert(delta->app_id);
+      if (delta->readiness == apps::mojom::Readiness::kUninstalledByUser) {
+        preferred_apps_.DeleteAppId(delta->app_id);
+      }
     }
   }
 
@@ -261,6 +278,7 @@ TEST_F(AppServiceImplTest, PreferredApps) {
   EXPECT_TRUE(impl.GetPreferredAppsForTesting().GetValue().DictEmpty());
 
   const char kAppId1[] = "abcdefg";
+  const char kAppId2[] = "aaaaaaa";
   GURL filter_url = GURL("https://www.google.com/abc");
   auto intent_filter = apps_util::CreateIntentFilterForUrlScope(filter_url);
 
@@ -278,8 +296,11 @@ TEST_F(AppServiceImplTest, PreferredApps) {
   EXPECT_EQ(sub1.PreferredApps().GetValue(),
             impl.GetPreferredAppsForTesting().GetValue());
 
+  FakePublisher pub0(&impl, apps::mojom::AppType::kArc,
+                     std::vector<std::string>{kAppId1, kAppId2});
+  base::RunLoop().RunUntilIdle();
+
   // Test sync preferred app to all subscribers.
-  const char kAppId2[] = "aaaaaaa";
   filter_url = GURL("https://www.abc.com/");
   intent_filter = apps_util::CreateIntentFilterForUrlScope(filter_url);
 
@@ -296,6 +317,13 @@ TEST_F(AppServiceImplTest, PreferredApps) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(kAppId2, sub0.PreferredApps().FindPreferredAppForUrl(filter_url));
   EXPECT_EQ(kAppId2, sub1.PreferredApps().FindPreferredAppForUrl(filter_url));
+
+  pub0.UninstallApps(std::vector<std::string>{kAppId2}, &impl);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(base::nullopt,
+            sub0.PreferredApps().FindPreferredAppForUrl(filter_url));
+  EXPECT_EQ(base::nullopt,
+            sub1.PreferredApps().FindPreferredAppForUrl(filter_url));
 }
 
 }  // namespace apps

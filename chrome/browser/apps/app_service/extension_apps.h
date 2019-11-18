@@ -210,9 +210,12 @@ class ExtensionApps : public apps::mojom::Publisher,
   using EnableFlowPtr = std::unique_ptr<ExtensionAppsEnableFlow>;
   std::map<std::string, EnableFlowPtr> enable_flow_map_;
 
-  std::set<std::string> paused_apps;
+  std::set<std::string> paused_apps_;
 
   ArcAppListPrefs* arc_prefs_ = nullptr;
+
+  // app_service_ is owned by the object that owns this object.
+  apps::mojom::AppService* app_service_;
 
   base::WeakPtrFactory<ExtensionApps> weak_factory_{this};
 

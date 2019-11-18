@@ -43,7 +43,8 @@ const char* const kEchoHostOrigins[] = {
 
 class EchoHost : public NativeMessageHost {
  public:
-  static std::unique_ptr<NativeMessageHost> Create() {
+  static std::unique_ptr<NativeMessageHost> Create(
+      content::BrowserContext* browser_context) {
     return std::unique_ptr<NativeMessageHost>(new EchoHost());
   }
 
@@ -90,10 +91,12 @@ struct BuiltInHost {
   const char* const name;
   const char* const* const allowed_origins;
   int allowed_origins_count;
-  std::unique_ptr<NativeMessageHost> (*create_function)();
+  std::unique_ptr<NativeMessageHost> (*create_function)(
+      content::BrowserContext*);
 };
 
-std::unique_ptr<NativeMessageHost> CreateIt2MeHost() {
+std::unique_ptr<NativeMessageHost> CreateIt2MeHost(
+    content::BrowserContext* browser_context) {
   return remoting::CreateIt2MeNativeMessagingHostForChromeOS(
       base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}),
       base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}),
@@ -157,7 +160,7 @@ std::unique_ptr<NativeMessageHost> NativeMessageHost::Create(
     std::string name(host.name);
     if (name == native_host_name) {
       if (MatchesSecurityOrigin(host, source_extension_id)) {
-        return (*host.create_function)();
+        return (*host.create_function)(browser_context);
       }
       *error = kForbiddenError;
       return nullptr;

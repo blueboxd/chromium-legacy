@@ -157,6 +157,8 @@ void AppServiceProxy::Initialize() {
                                   weak_ptr_factory_.GetWeakPtr(), profile_));
 #endif  // OS_CHROMEOS
   }
+
+  Observe(&cache_);
 }
 
 mojo::Remote<apps::mojom::AppService>& AppServiceProxy::AppService() {
@@ -490,6 +492,19 @@ void AppServiceProxy::UpdatePausedStatus(apps::mojom::AppType app_type,
                          : apps::mojom::OptionalBool::kFalse;
   apps.push_back(std::move(app));
   cache_.OnApps(std::move(apps));
+}
+
+void AppServiceProxy::OnAppUpdate(const apps::AppUpdate& update) {
+  if (!update.ReadinessChanged() ||
+      update.Readiness() != apps::mojom::Readiness::kUninstalledByUser) {
+    return;
+  }
+  preferred_apps_.DeleteAppId(update.AppId());
+}
+
+void AppServiceProxy::OnAppRegistryCacheWillBeDestroyed(
+    apps::AppRegistryCache* cache) {
+  Observe(nullptr);
 }
 
 }  // namespace apps

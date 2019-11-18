@@ -87,13 +87,21 @@ class TestContainerBehavior : public keyboard::ContainerBehavior {
     draggable_area_ = rect;
   }
 
+  void SetAreaToRemainOnScreen(const gfx::Rect& rect) override {
+    area_to_remain_on_screen_ = rect;
+  }
+
   const gfx::Rect& occluded_bounds() const { return occluded_bounds_; }
   const gfx::Rect& draggable_area() const { return draggable_area_; }
+  const gfx::Rect& area_to_remain_on_screen() const {
+    return area_to_remain_on_screen_;
+  }
 
  private:
   keyboard::ContainerType type_ = keyboard::ContainerType::kFullWidth;
   gfx::Rect occluded_bounds_;
   gfx::Rect draggable_area_;
+  gfx::Rect area_to_remain_on_screen_;
 };
 
 class KeyboardControllerImplTest : public AshTestBase {
@@ -322,6 +330,21 @@ TEST_F(KeyboardControllerImplTest, SetDraggableArea) {
   gfx::Rect bounds(10, 20, 30, 40);
   keyboard_ui_controller()->SetDraggableArea(bounds);
   EXPECT_EQ(bounds, behavior->draggable_area());
+}
+
+TEST_F(KeyboardControllerImplTest, SetAreaToRemainOnScreen) {
+  // Enable the keyboard.
+  keyboard_controller()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
+
+  // Override the container behavior.
+  auto scoped_behavior = std::make_unique<TestContainerBehavior>();
+  TestContainerBehavior* behavior = scoped_behavior.get();
+  keyboard_ui_controller()->set_container_behavior_for_test(
+      std::move(scoped_behavior));
+
+  gfx::Rect bounds(10, 20, 30, 40);
+  keyboard_ui_controller()->SetAreaToRemainOnScreen(bounds);
+  EXPECT_EQ(bounds, behavior->area_to_remain_on_screen());
 }
 
 TEST_F(KeyboardControllerImplTest, ChangingSessionRebuildsKeyboard) {

@@ -65,7 +65,7 @@ class ArcSupportMessageHostTest : public testing::Test {
 
   void SetUp() override {
     client_ = std::make_unique<TestClient>();
-    message_host_ = ArcSupportMessageHost::Create();
+    message_host_ = ArcSupportMessageHost::Create(nullptr);
     message_host_->Start(client_.get());
   }
 

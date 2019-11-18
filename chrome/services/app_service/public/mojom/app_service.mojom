@@ -92,6 +92,9 @@ interface AppService {
       string app_id,
       IntentFilter intent_filter,
       Intent intent);
+
+  // Remove all preference setting for an |app_id|.
+  RemovePreferredApp(AppType app_type, string app_id);
 };
 
 interface Publisher {

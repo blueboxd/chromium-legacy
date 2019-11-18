@@ -124,4 +124,9 @@ void ContainerFullWidthBehavior::SetDraggableArea(const gfx::Rect& rect) {
   // Allow extension to call this function but does nothing here.
 }
 
+void ContainerFullWidthBehavior::SetAreaToRemainOnScreen(
+    const gfx::Rect& bounds) {
+  // Allow extension to call this function but does nothing here.
+}
+
 }  //  namespace keyboard

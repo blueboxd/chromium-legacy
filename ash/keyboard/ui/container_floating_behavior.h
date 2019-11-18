@@ -49,6 +49,7 @@ class KEYBOARD_EXPORT ContainerFloatingBehavior : public ContainerBehavior {
       const gfx::Rect& visual_bounds_in_screen) const override;
   bool OccludedBoundsAffectWorkspaceLayout() const override;
   void SetDraggableArea(const gfx::Rect& rect) override;
+  void SetAreaToRemainOnScreen(const gfx::Rect& bounds) override;
 
   // Calculate the position of the keyboard for when it is being shown.
   gfx::Point GetPositionForShowingKeyboard(
@@ -78,6 +79,8 @@ class KEYBOARD_EXPORT ContainerFloatingBehavior : public ContainerBehavior {
   std::unique_ptr<const DragDescriptor> drag_descriptor_;
 
   gfx::Rect draggable_area_ = gfx::Rect();
+  gfx::Rect clip_bounds_ = gfx::Rect();
+  gfx::Rect area_to_remain_on_screen_;
 };
 
 }  // namespace keyboard

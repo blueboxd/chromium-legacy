@@ -83,10 +83,10 @@ class InstanceRegistry {
   // three app_id's ("a", "b", "c"). Now suppose OnInstances is called with two
   // updates (b1, c1), and when notified of b1, an observer calls OnInstances
   // again with (c2, d2). The c1 delta should be processed before the c2 delta,
-  // as it was sent first: c2 should be merged (with "newest wins" semantics)
-  // onto c1 and not vice versa. This means that processing c2 (scheduled by the
+  // as it was sent first, and both c1 and c2 will be updated to the observer
+  // following the sequence. This means that processing c2 (scheduled by the
   // second OnInstances call) should wait until the first OnInstances call has
-  // finished processing b1 (and then c1), which means that processing c2 is
+  // finished processing b1, and then c1, which means that processing c2 is
   // delayed until after the second OnInstances call returns.
   //
   // The caller presumably calls OnInstances(std::move(deltas)).
@@ -111,23 +111,7 @@ class InstanceRegistry {
 
     for (const auto& s_iter : states_) {
       apps::Instance* state = s_iter.second.get();
-
-      auto d_iter = deltas_in_progress_.find(s_iter.first);
-      apps::Instance* delta =
-          (d_iter != deltas_in_progress_.end()) ? d_iter->second : nullptr;
-
-      f(apps::InstanceUpdate(state, delta));
-    }
-
-    for (const auto& d_iter : deltas_in_progress_) {
-      apps::Instance* delta = d_iter.second;
-
-      auto s_iter = states_.find(d_iter.first);
-      if (s_iter != states_.end()) {
-        continue;
-      }
-
-      f(apps::InstanceUpdate(nullptr, delta));
+      f(apps::InstanceUpdate(state, nullptr));
     }
   }
 
@@ -147,13 +131,8 @@ class InstanceRegistry {
     auto s_iter = states_.find(window);
     apps::Instance* state =
         (s_iter != states_.end()) ? s_iter->second.get() : nullptr;
-
-    auto d_iter = deltas_in_progress_.find(window);
-    apps::Instance* delta =
-        (d_iter != deltas_in_progress_.end()) ? d_iter->second : nullptr;
-
-    if (state || delta) {
-      f(apps::InstanceUpdate(state, delta));
+    if (state) {
+      f(apps::InstanceUpdate(state, nullptr));
       return true;
     }
     return false;
@@ -164,26 +143,21 @@ class InstanceRegistry {
 
   base::ObserverList<Observer> observers_;
 
-  // Maps from window to the latest state: the "sum" of all previous deltas.
-  std::map<const aura::Window*, InstancePtr> states_;
-
-  // Track the deltas being processed or are about to be processed by
-  // OnInstances. They are separate to manage the "notification and merging
-  // might be delayed until after OnInstances returns" concern described above.
-  //
-  // OnInstances calls DoOnInstances zero or more times. If we're nested, so
-  // that there's multiple OnInstances call to this InstanceRegistry in the call
-  // stack, the deeper OnInstances call simply adds work to deltas_pending_ and
-  // returns without calling DoOnInstances. If we're not nested, OnInstances
-  // calls DoOnInstances one or more times; "more times" happens if
-  // DoOnInstances notifying observers leads to more OnInstances calls that
-  // enqueue deltas_pending_ work. The deltas_in_progress_ map (keyed by window)
-  // contains those deltas being considered by DoOnInstances.
+  // OnInstances calls DoOnInstances zero or more times. If we're nested,
+  // in_progress is true, so that there's multiple OnInstances call to this
+  // InstanceRegistry in the call stack, the deeper OnInstances call simply adds
+  // work to deltas_pending_ and returns without calling DoOnInstances. If we're
+  // not nested, in_progress is false, OnInstances calls DoOnInstances one or
+  // more times; "more times" happens if DoOnInstances notifying observers leads
+  // to more OnInstances calls that enqueue deltas_pending_ work.
   //
   // Nested OnInstances calls are expected to be rare (but still dealt with
   // sensibly). In the typical case, OnInstances should call DoOnInstances
   // exactly once, and deltas_pending_ will stay empty.
-  std::map<const aura::Window*, Instance*> deltas_in_progress_;
+  bool in_progress_ = false;
+
+  // Maps from window to the latest state: the "sum" of all previous deltas.
+  std::map<const aura::Window*, InstancePtr> states_;
   Instances deltas_pending_;
 
   SEQUENCE_CHECKER(my_sequence_checker_);

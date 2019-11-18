@@ -132,7 +132,7 @@ class ArcApps : public KeyedService,
 
   apps_util::IncrementingIconKeyFactory icon_key_factory_;
 
-  std::set<std::string> paused_apps;
+  std::set<std::string> paused_apps_;
 
   ScopedObserver<arc::ArcIntentHelperBridge, arc::ArcIntentHelperObserver>
       arc_intent_helper_observer_{this};

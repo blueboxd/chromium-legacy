@@ -991,6 +991,21 @@ void KeyboardUIController::SetHitTestBounds(
       std::make_unique<ShapedWindowTargeter>(bounds_in_window));
 }
 
+bool KeyboardUIController::SetAreaToRemainOnScreen(
+    const gfx::Rect& bounds_in_window) {
+  gfx::Rect window_bounds_in_screen = GetKeyboardWindow()->GetBoundsInScreen();
+  gfx::Rect bounds_in_screen =
+      gfx::Rect(window_bounds_in_screen.x() + bounds_in_window.x(),
+                window_bounds_in_screen.y() + bounds_in_window.y(),
+                bounds_in_window.width(), bounds_in_window.height());
+
+  if (!window_bounds_in_screen.Contains(bounds_in_screen))
+    return false;
+
+  container_behavior_->SetAreaToRemainOnScreen(bounds_in_window);
+  return true;
+}
+
 gfx::Rect KeyboardUIController::AdjustSetBoundsRequest(
     const gfx::Rect& display_bounds,
     const gfx::Rect& requested_bounds_in_screen) const {

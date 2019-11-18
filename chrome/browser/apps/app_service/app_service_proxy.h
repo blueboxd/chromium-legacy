@@ -46,11 +46,13 @@ struct PauseData {
 //
 // Singleton-ness means that //chrome/browser code (e.g UI code) can find *the*
 // proxy for a given Profile, and therefore share its caches.
+// Observe AppRegistryCache to delete the preferred app on app removed.
 //
 // See chrome/services/app_service/README.md.
 class AppServiceProxy : public KeyedService,
                         public apps::IconLoader,
-                        public apps::mojom::Subscriber {
+                        public apps::mojom::Subscriber,
+                        public apps::AppRegistryCache::Observer {
  public:
   using OnPauseDialogClosedCallback = base::OnceCallback<void()>;
 
@@ -227,6 +229,11 @@ class AppServiceProxy : public KeyedService,
   void UpdatePausedStatus(apps::mojom::AppType app_type,
                           const std::string& app_id,
                           bool paused);
+
+  // apps::AppRegistryCache::Observer overrides:
+  void OnAppUpdate(const apps::AppUpdate& update) override;
+  void OnAppRegistryCacheWillBeDestroyed(
+      apps::AppRegistryCache* cache) override;
 
   // This proxy privately owns its instance of the App Service. This should not
   // be exposed except through the Mojo interface connected to |app_service_|.

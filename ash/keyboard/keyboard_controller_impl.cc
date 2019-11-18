@@ -170,6 +170,10 @@ void KeyboardControllerImpl::SetHitTestBounds(
   keyboard_ui_controller_->SetHitTestBounds(bounds);
 }
 
+bool KeyboardControllerImpl::SetAreaToRemainOnScreen(const gfx::Rect& bounds) {
+  return keyboard_ui_controller_->SetAreaToRemainOnScreen(bounds);
+}
+
 void KeyboardControllerImpl::SetDraggableArea(const gfx::Rect& bounds) {
   keyboard_ui_controller_->SetDraggableArea(bounds);
 }

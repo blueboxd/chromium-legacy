@@ -296,4 +296,8 @@ void ContainerFloatingBehavior::SetDraggableArea(const gfx::Rect& rect) {
   draggable_area_ = rect;
 }
 
+void ContainerFloatingBehavior::SetAreaToRemainOnScreen(const gfx::Rect& rect) {
+  area_to_remain_on_screen_ = rect;
+}
+
 }  //  namespace keyboard

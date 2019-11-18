@@ -16,6 +16,7 @@ namespace base {
 namespace test {
 
 using TestCallback = base::RepeatingCallback<void(const bool& src, bool* dst)>;
+using TestOnceCallback = base::OnceCallback<void(const bool& src, bool* dst)>;
 
 void SetBool(const bool& src, bool* dst) {
   *dst = src;
@@ -78,6 +79,25 @@ TEST(GmockCallbackSupportTest, RunCallbackPassByValue) {
       .WillOnce(RunCallback<0>(src, &dst));
   src = false;
   check.Call(base::BindRepeating(&SetBool));
+  EXPECT_TRUE(dst);
+}
+
+TEST(GmockCallbackSupportTest, RunOnceClosure) {
+  MockFunction<void(base::OnceClosure)> check;
+  bool dst = false;
+  EXPECT_CALL(check, Call(IsNotNullCallback())).WillOnce(RunOnceCallback<0>());
+  check.Call(base::BindOnce(&SetBool, true, &dst));
+  EXPECT_TRUE(dst);
+}
+
+TEST(GmockCallbackSupportTest, RunOnceCallback) {
+  MockFunction<void(TestOnceCallback)> check;
+  bool dst = false;
+  bool src = true;
+  EXPECT_CALL(check, Call(IsNotNullCallback()))
+      .WillOnce(RunOnceCallback<0>(src, &dst));
+  src = false;
+  check.Call(base::BindOnce(&SetBool));
   EXPECT_TRUE(dst);
 }
 

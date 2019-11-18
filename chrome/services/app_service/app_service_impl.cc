@@ -219,6 +219,25 @@ void AppServiceImpl::AddPreferredApp(apps::mojom::AppType app_type,
                                   std::move(intent));
 }
 
+void AppServiceImpl::RemovePreferredApp(apps::mojom::AppType app_type,
+                                        const std::string& app_id) {
+  // TODO(crbug.com/853604): Solve the issue where user set preferred app
+  // before pref connected.
+  if (!preferred_apps_.IsInitialized()) {
+    return;
+  }
+
+  preferred_apps_.DeleteAppId(app_id);
+
+  if (!pref_service_) {
+    return;
+  }
+
+  DictionaryPrefUpdate update(pref_service_.get(), kAppServicePreferredApps);
+  DCHECK(PreferredApps::VerifyPreferredApps(update.Get()));
+  PreferredApps::DeleteAppId(app_id, update.Get());
+}
+
 PreferredApps& AppServiceImpl::GetPreferredAppsForTesting() {
   return preferred_apps_;
 }

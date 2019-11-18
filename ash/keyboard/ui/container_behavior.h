@@ -113,6 +113,11 @@ class KEYBOARD_EXPORT ContainerBehavior {
   // Sets floating keyboard drggable rect.
   virtual void SetDraggableArea(const gfx::Rect& rect) = 0;
 
+  // Sets the area of the keyboard window that should not move off screen. Any
+  // area outside of this can be moved off the user's screen. Note the bounds
+  // here are relative to the window's origin.
+  virtual void SetAreaToRemainOnScreen(const gfx::Rect& rect) = 0;
+
  protected:
   Delegate* delegate_;
 

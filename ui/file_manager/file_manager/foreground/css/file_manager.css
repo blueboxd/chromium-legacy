@@ -109,18 +109,6 @@ a:focus {
   flex-direction: column;
 }
 
-/* A vertical splitter between the directory tree and the file list. It is
-   actually a transparent area centered on the tree right border.*/
-div.splitter {
-  cursor: col-resize;
-  flex: none;
-  margin-inline-end: -3px;
-  margin-inline-start: -3px;
-  position: relative;
-  width: 6px;
-  z-index: 500;  /* Must be below the contextmenu (600). */
-}
-
 #directory-tree {
   bottom: 0;
   flex: none;
@@ -260,6 +248,17 @@ html[class*='col-resize'] #directory-tree .tree-row > .root-eject:hover {
 #directory-tree .root-item[disabled] {
   opacity: 0.5;
   pointer-events: none;
+}
+
+/* A vertical splitter between the directory tree and the file list. It is
+   a transparent area centered on the directory tree right border.*/
+div.splitter {
+  cursor: col-resize;
+  flex: none;
+  margin: 0 -3px;
+  position: relative;
+  width: 6px;
+  z-index: 500;  /* Must be below the contextmenu (600). */
 }
 
 /* Breadcrumbs and things under the title but above the list view. */

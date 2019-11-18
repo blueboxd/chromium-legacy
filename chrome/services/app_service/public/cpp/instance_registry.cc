@@ -58,7 +58,7 @@ void InstanceRegistry::RemoveObserver(Observer* observer) {
 void InstanceRegistry::OnInstances(const Instances& deltas) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
 
-  if (!deltas_in_progress_.empty()) {
+  if (in_progress_) {
     for (auto& delta : deltas) {
       deltas_pending_.push_back(delta.get()->Clone());
     }
@@ -73,46 +73,39 @@ void InstanceRegistry::OnInstances(const Instances& deltas) {
 }
 
 void InstanceRegistry::DoOnInstances(const Instances& deltas) {
-  // Merge any deltas elements that have the same window. If an observer's
-  // OnInstanceUpdate calls back into this InstanceRegistry, we can present a
-  // single delta for any given window.
-  for (auto& delta : deltas) {
-    auto d_iter = deltas_in_progress_.find(delta->Window());
-    if (d_iter != deltas_in_progress_.end()) {
-      InstanceUpdate::Merge(d_iter->second, delta.get());
-    } else {
-      deltas_in_progress_[delta->Window()] = delta.get();
-    }
-  }
+  in_progress_ = true;
 
-  // The remaining for loops range over the deltas_in_progress_ map, not the
-  // deltas vector, so that OninstanceUpdate is called only once per unique
-  // window. Notify the observers for every de-duplicated delta.
-  for (const auto& d_iter : deltas_in_progress_) {
-    auto s_iter = states_.find(d_iter.first);
+  // The remaining for loops range over the deltas vector, so that
+  // OninstanceUpdate is called for each updates, and notify the observers for
+  // every de-duplicated delta. Also update the states for every delta.
+  for (const auto& d_iter : deltas) {
+    auto s_iter = states_.find(d_iter->Window());
     Instance* state =
         (s_iter != states_.end()) ? s_iter->second.get() : nullptr;
-    Instance* delta = d_iter.second;
+    if (InstanceUpdate::Equals(state, d_iter.get())) {
+      continue;
+    }
+
+    std::unique_ptr<Instance> old_state = nullptr;
+    if (state) {
+      old_state = state->Clone();
+      InstanceUpdate::Merge(state, d_iter.get());
+    } else {
+      states_.insert(
+          std::make_pair(d_iter.get()->Window(), (d_iter.get()->Clone())));
+    }
 
     for (auto& obs : observers_) {
-      obs.OnInstanceUpdate(InstanceUpdate(state, delta));
+      obs.OnInstanceUpdate(InstanceUpdate(old_state.get(), d_iter.get()));
+    }
+
+    if (static_cast<InstanceState>(d_iter.get()->State() &
+                                   InstanceState::kDestroyed) !=
+        InstanceState::kUnknown) {
+      states_.erase(d_iter.get()->Window());
     }
   }
-
-  // Update the states for every de-duplicated delta.
-  for (const auto& d_iter : deltas_in_progress_) {
-    auto s_iter = states_.find(d_iter.first);
-    Instance* state =
-        (s_iter != states_.end()) ? s_iter->second.get() : nullptr;
-    Instance* delta = d_iter.second;
-
-    if (state) {
-      InstanceUpdate::Merge(state, delta);
-    } else {
-      states_.insert(std::make_pair(delta->Window(), (delta->Clone())));
-    }
-  }
-  deltas_in_progress_.clear();
+  in_progress_ = false;
 }
 
 }  // namespace apps

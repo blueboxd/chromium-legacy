@@ -357,7 +357,8 @@ void DeliverMessageToExtension(
 }  // namespace
 
 std::unique_ptr<extensions::NativeMessageHost>
-CreateExtensionOwnedWilcoDtcSupportdMessageHost() {
+CreateExtensionOwnedWilcoDtcSupportdMessageHost(
+    content::BrowserContext* browser_context) {
   return std::make_unique<WilcoDtcSupportdExtensionOwnedMessageHost>();
 }
 

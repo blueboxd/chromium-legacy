@@ -22,6 +22,7 @@ enum InstanceState {
   kRunning = 0x02,
   kActive = 0x04,
   kVisible = 0x08,
+  kDestroyed = 0x80,
 };
 
 // Instance is used to represent an App Instance, or a running app.

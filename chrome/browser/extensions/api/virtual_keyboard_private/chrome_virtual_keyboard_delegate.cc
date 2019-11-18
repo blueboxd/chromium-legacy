@@ -295,6 +295,15 @@ bool ChromeVirtualKeyboardDelegate::SetHitTestBounds(
   return true;
 }
 
+bool ChromeVirtualKeyboardDelegate::SetAreaToRemainOnScreen(
+    const gfx::Rect& bounds) {
+  auto* keyboard_client = ChromeKeyboardControllerClient::Get();
+  if (!keyboard_client->is_keyboard_enabled())
+    return false;
+
+  return keyboard_client->SetAreaToRemainOnScreen(bounds);
+}
+
 bool ChromeVirtualKeyboardDelegate::SetDraggableArea(
     const api::virtual_keyboard_private::Bounds& rect) {
   auto* keyboard_client = ChromeKeyboardControllerClient::Get();

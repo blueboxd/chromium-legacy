@@ -109,7 +109,7 @@ TEST(WilcoDtcSupportdMessagingOpenedByExtensionNoBridgeTest, Test) {
 
   // Create the message host.
   std::unique_ptr<extensions::NativeMessageHost> message_host =
-      CreateExtensionOwnedWilcoDtcSupportdMessageHost();
+      CreateExtensionOwnedWilcoDtcSupportdMessageHost(nullptr);
   StrictMock<MockNativeMessageHostClient> message_host_client;
 
   // The message host will close the channel during the OnMessage() call at the
@@ -169,7 +169,7 @@ class WilcoDtcSupportdMessagingOpenedByExtensionTest : public testing::Test {
 TEST_F(WilcoDtcSupportdMessagingOpenedByExtensionTest, NoMojoConnection) {
   // Create the message host.
   std::unique_ptr<extensions::NativeMessageHost> message_host =
-      CreateExtensionOwnedWilcoDtcSupportdMessageHost();
+      CreateExtensionOwnedWilcoDtcSupportdMessageHost(nullptr);
   StrictMock<MockNativeMessageHostClient> message_host_client;
   message_host->Start(&message_host_client);
 
@@ -189,7 +189,7 @@ class WilcoDtcSupportdMessagingOpenedByExtensionSingleHostTest
  protected:
   WilcoDtcSupportdMessagingOpenedByExtensionSingleHostTest() {
     wilco_dtc_supportd_bridge_wrapper()->EstablishFakeMojoConnection();
-    message_host_ = CreateExtensionOwnedWilcoDtcSupportdMessageHost();
+    message_host_ = CreateExtensionOwnedWilcoDtcSupportdMessageHost(nullptr);
     message_host_->Start(&message_host_client_);
   }
 

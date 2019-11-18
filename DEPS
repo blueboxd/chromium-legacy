@@ -243,7 +243,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '011e0230f209789791bb769e91ccdd868792b448',
+  'devtools_frontend_revision': 'aa133ed0962407c6ea731db3e83e2fc13b1013c6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -866,7 +866,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '8df26949b193ca73435b995f777692a2ae415ae1',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'fc2fd0f3b97c055121cbc04a22393f777c0daa80',
       'condition': 'checkout_linux',
   },
 

@@ -23,7 +23,8 @@ const char* const ArcSupportMessageHost::kHostOrigin[] = {
     "chrome-extension://cnbgggchhmkkdmeppjobngjoejnihlei/"};
 
 // static
-std::unique_ptr<extensions::NativeMessageHost> ArcSupportMessageHost::Create() {
+std::unique_ptr<extensions::NativeMessageHost> ArcSupportMessageHost::Create(
+    content::BrowserContext* browser_context) {
   return std::unique_ptr<NativeMessageHost>(new ArcSupportMessageHost());
 }
 

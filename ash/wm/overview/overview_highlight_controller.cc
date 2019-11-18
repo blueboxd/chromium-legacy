@@ -385,7 +385,7 @@ void OverviewHighlightController::UpdateFocusWidget(
   OverviewHighlightableView* previous_view = highlighted_view_;
   highlighted_view_ = view_to_be_highlighted;
 
-  // Perform accessiblity related tasks.
+  // Perform accessibility related tasks.
   highlighted_view_->GetView()->NotifyAccessibilityEvent(
       ax::mojom::Event::kSelection, true);
   // Note that both magnifiers are mutually exclusive. The overview "focus"

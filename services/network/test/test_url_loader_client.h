@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "mojo/public/c/system/data_pipe.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
@@ -24,7 +25,7 @@ namespace network {
 //
 // Example usage:
 //   TestURLLoaderClient client;
-//   factory_->CreateLoaderAndStart(..., client.CreateInterfacePtr(), ...);
+//   factory_->CreateLoaderAndStart(..., client.CreateRemote(), ...);
 //   client.RunUntilComplete();
 //   EXPECT_EQ(net::OK, client.completion_status().error_code);
 //   ...
@@ -80,8 +81,8 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   }
 
   void ClearHasReceivedRedirect();
-  // Creates an InterfacePtr, binds it to |*this| and returns it.
-  mojom::URLLoaderClientPtr CreateInterfacePtr();
+  // Creates an PendingRemote, binds it to |*this| and returns it.
+  mojo::PendingRemote<mojom::URLLoaderClient> CreateRemote();
 
   void Unbind();
 

@@ -10,6 +10,8 @@
     readonly attribute GPUAdapter adapter;
     [CallWith=ScriptState] readonly attribute Promise<GPUDeviceLostInfo> lost;
 
+    [SameObject] readonly attribute GPUQueue defaultQueue;
+
     GPUBuffer createBuffer(GPUBufferDescriptor descriptor);
     [CallWith=ScriptState, RaisesException] GPUMappedBuffer createBufferMapped(GPUBufferDescriptor descriptor);
     [CallWith=ScriptState, RaisesException] Promise<GPUMappedBuffer> createBufferMappedAsync(GPUBufferDescriptor descriptor);
@@ -26,7 +28,6 @@
 
     GPUCommandEncoder createCommandEncoder(optional GPUCommandEncoderDescriptor descriptor = {});
     GPURenderBundleEncoder createRenderBundleEncoder(GPURenderBundleEncoderDescriptor descriptor);
-    GPUQueue getQueue();
 
     void pushErrorScope(GPUErrorFilter filter);
     [CallWith=ScriptState] Promise<GPUError?> popErrorScope();

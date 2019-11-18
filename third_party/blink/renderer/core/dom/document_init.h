@@ -136,9 +136,8 @@ class CORE_EXPORT DocumentInit final {
   DocumentInit& WithSandboxFlags(WebSandboxFlags flags);
 
   DocumentInit& WithContentSecurityPolicy(ContentSecurityPolicy* policy);
-  ContentSecurityPolicy* GetContentSecurityPolicy() const {
-    return content_security_policy_;
-  }
+  DocumentInit& WithContentSecurityPolicyFromContextDoc();
+  ContentSecurityPolicy* GetContentSecurityPolicy() const;
 
   DocumentInit& WithFramePolicy(
       const base::Optional<FramePolicy>& frame_policy);
@@ -209,6 +208,7 @@ class CORE_EXPORT DocumentInit final {
 
   // Loader's CSP
   Member<ContentSecurityPolicy> content_security_policy_;
+  bool content_security_policy_from_context_doc_;
 
   network::mojom::IPAddressSpace ip_address_space_ =
       network::mojom::IPAddressSpace::kUnknown;

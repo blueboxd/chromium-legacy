@@ -98,7 +98,7 @@ bool FakeNetwork::HandleRequest(URLLoaderInterceptor::RequestParams* params) {
   response.headers->GetMimeType(&response.mime_type);
   response.network_accessed = response_info.network_accessed;
 
-  network::mojom::URLLoaderClientPtr& client = params->client;
+  mojo::Remote<network::mojom::URLLoaderClient>& client = params->client;
   client->OnReceiveResponse(response);
 
   uint32_t bytes_written = response_info.body.size();

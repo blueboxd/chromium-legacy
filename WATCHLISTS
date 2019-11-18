@@ -102,6 +102,12 @@
     'animation_worklet': {
       'filepath': 'third_party/blink/renderer/modules/animationworklet/',
     },
+    'app_service': {
+      'filepath': 'chrome/browser/apps/app_service/'\
+                  '|chrome/browser/ui/app_list/app_service/'\
+                  '|chrome/services/app_service/'\
+                  '|components/services/app_service/',
+    },
     'app_shortcuts': {
       'filepath': 'apps/app_shim/'\
                   '|chrome/common/mac/'
@@ -1989,17 +1995,20 @@
     'android_uma_settings': ['asvitkine+watch@chromium.org',
                              'gayane+watch@chromium.org'],
     'android_webapk': ['dominickn+watch-webapk@chromium.org',
-                       'mxcai+watch-webapk@chromium.org'],
+                       'mxcai+watch-webapk@chromium.org',
+                       'webapks-watchlist@chromium.org'],
     'android_webview': ['android-webview-reviews@chromium.org'],
     'android_webview_network_service': ['timvolodine@chromium.org'],
     'animation_worklet': ['yigu@chromium.org',
                           'majidvp@chromium.org'],
+    'app_service': ['dominickn+watch-app_service@chromium.org'],
     'app_shortcuts': ['dominickn+watch-app_shortcuts@chromium.org',
                       'loyso+watch@chromium.org',
                       'mgiuca+watch@chromium.org'],
     'apps': ['chromium-apps-reviews@chromium.org',
              'dominickn+watch-apps@chromium.org'],
-    'apps_intent_helper': ['mxcai+watch-intent-helper@chromium.org'],
+    'apps_intent_helper': ['dominickn+watch-intent_helper@chromium.org',
+                           'mxcai+watch-intent-helper@chromium.org'],
     'arc': ['elijahtaylor+arcwatch@chromium.org',
             'hidehiko+watch@chromium.org',
             'victorhsieh+watch@chromium.org',

@@ -7,6 +7,7 @@ import("//build/config/chromecast_build.gni")
 component("webrtc_component") {
   public_deps = [
     ":init_webrtc",
+    ":metrics",
     ":task_queue_factory",
     ":webrtc",
     "//third_party/webrtc/api:callfactory_api",
@@ -85,6 +86,16 @@ component("webrtc_component") {
     "//third_party/webrtc/stats:rtc_stats_test_utils",
     "//third_party/webrtc/system_wrappers",
   ]
+  if (is_chromecast || is_nacl) {
+    # For chromecast and NaCL, provide a default field trial implementation.
+    public_deps += [ "//third_party/webrtc/system_wrappers:field_trial" ]
+  } else {
+    # Other Chromium flavors get a custom implementation.
+    # See the default value of "rtc_exclude_field_trial_default"
+    # in https://cs.chromium.org/chromium/src/third_party/webrtc/webrtc.gni
+    # for how that is done.
+    public_deps += [ ":field_trial" ]
+  }
 }
 
 source_set("webrtc") {
@@ -98,22 +109,6 @@ source_set("webrtc") {
   deps = [
     "//third_party/webrtc/p2p:rtc_p2p",
   ]
-
-  # When Chromium is built for NACL or Chromecast, WebRTC provides a
-  # field_trial implementation so there is no need to depend on
-  # ":field_trial".
-  # This configuration happens here:
-  # https://cs.chromium.org/chromium/src/third_party/webrtc/webrtc.gni?l=44-51&rcl=95c56eebe0a2b31ad5752138d15b431124e17d36
-  if (!is_chromecast && !is_nacl) {
-    # When Chromium doesn't build for NaCL or Chromecast, WebRTC doesn't
-    # provide an implementation for field_trial and a custom one (that uses
-    # base/metrics/field_trial.h is provided).
-    deps += [
-      ":field_trial",
-      "//base",
-    ]
-  }
-
   configs += [ "//third_party/webrtc:common_config" ]
   public_configs = [ "//third_party/webrtc:common_inherited_config" ]
 }
@@ -142,7 +137,6 @@ source_set("init_webrtc") {
     ":libjingle_webrtc_common",
   ]
   deps = [
-    ":metrics",
     "//base",
     "//third_party/webrtc/rtc_base",
     "//third_party/webrtc/rtc_base/system:rtc_export",

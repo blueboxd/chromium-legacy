@@ -178,7 +178,7 @@ class AndroidStreamReaderURLLoaderTest : public ::testing::Test {
       network::TestURLLoaderClient* client,
       std::unique_ptr<InputStream> input_stream) {
     return new AndroidStreamReaderURLLoader(
-        request, client->CreateInterfacePtr(),
+        request, client->CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
         std::make_unique<TestResponseDelegate>(std::move(input_stream)));
   }
@@ -190,7 +190,7 @@ class AndroidStreamReaderURLLoaderTest : public ::testing::Test {
       std::unique_ptr<InputStream> input_stream,
       const std::string custom_mime_type) {
     return new AndroidStreamReaderURLLoader(
-        request, client->CreateInterfacePtr(),
+        request, client->CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
         std::make_unique<TestResponseDelegate>(std::move(input_stream),
                                                custom_mime_type));
@@ -206,7 +206,7 @@ class AndroidStreamReaderURLLoaderTest : public ::testing::Test {
       const std::string custom_header_name,
       const std::string custom_header_value) {
     return new AndroidStreamReaderURLLoader(
-        request, client->CreateInterfacePtr(),
+        request, client->CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
         std::make_unique<TestResponseDelegate>(
             std::move(input_stream), custom_status, custom_header_name,

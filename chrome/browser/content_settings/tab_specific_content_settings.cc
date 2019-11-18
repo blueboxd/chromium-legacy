@@ -754,11 +754,7 @@ void TabSpecificContentSettings::DidStartNavigation(
     return;
   }
 
-  // If we're displaying a network error page do not reset the content
-  // settings delegate's cookies so the user has a chance to modify cookie
-  // settings.
-  if (!navigation_handle->IsErrorPage())
-    ClearNavigationRelatedContentSettings();
+  ClearNavigationRelatedContentSettings();
   ClearGeolocationContentSettings();
   ClearMidiContentSettings();
   ClearPendingProtocolHandler();

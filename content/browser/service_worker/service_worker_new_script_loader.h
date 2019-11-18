@@ -9,7 +9,9 @@
 #include "content/browser/service_worker/service_worker_cache_writer.h"
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -77,7 +79,7 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader final
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& original_request,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       scoped_refptr<ServiceWorkerVersion> version,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
@@ -119,7 +121,7 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader final
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& original_request,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       scoped_refptr<ServiceWorkerVersion> version,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
@@ -189,7 +191,7 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader final
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
 
   // Used for responding with the fetched script to this loader's client.
-  network::mojom::URLLoaderClientPtr client_;
+  mojo::Remote<network::mojom::URLLoaderClient> client_;
   mojo::ScopedDataPipeProducerHandle client_producer_;
 
   // Represents the state of |network_loader_|.

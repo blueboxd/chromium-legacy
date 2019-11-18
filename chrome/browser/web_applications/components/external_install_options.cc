@@ -81,6 +81,8 @@ InstallManager::InstallParams ConvertExternalInstallOptionsToParams(
 
   params.user_display_mode = install_options.user_display_mode;
 
+  params.fallback_start_url = install_options.url;
+
   params.add_to_applications_menu = install_options.add_to_applications_menu;
   params.add_to_desktop = install_options.add_to_desktop;
   params.add_to_quick_launch_bar = install_options.add_to_quick_launch_bar;

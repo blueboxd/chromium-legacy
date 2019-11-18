@@ -114,6 +114,14 @@ void TestDeclineDialogCallback(
                                 false /*accept*/, std::move(web_app_info)));
 }
 
+WebAppInstallManager::InstallParams MakeParams(
+    web_app::DisplayMode display_mode = DisplayMode::kUndefined) {
+  WebAppInstallManager::InstallParams params;
+  params.fallback_start_url = GURL("https://example.com/fallback");
+  params.user_display_mode = display_mode;
+  return params;
+}
+
 }  // namespace
 
 class WebAppInstallTaskTest : public WebAppTest {
@@ -1134,8 +1142,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_GuestProfile) {
 
   base::RunLoop run_loop;
   install_task->InstallWebAppWithParams(
-      web_contents(), InstallManager::InstallParams{},
-      WebappInstallSource::EXTERNAL_DEFAULT,
+      web_contents(), MakeParams(), WebappInstallSource::EXTERNAL_DEFAULT,
       base::BindLambdaForTesting(
           [&](const AppId& app_id, InstallResultCode code) {
             EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
@@ -1149,9 +1156,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_DisplayMode) {
     CreateDataToRetrieve(GURL("https://example.com/"),
                          /*open_as_window*/ false);
 
-    InstallManager::InstallParams params;
-    params.user_display_mode = DisplayMode::kUndefined;
-    auto app_id = InstallWebAppWithParams(params);
+    auto app_id = InstallWebAppWithParams(MakeParams(DisplayMode::kUndefined));
 
     EXPECT_EQ(DisplayMode::kBrowser,
               registrar().GetAppById(app_id)->user_display_mode());
@@ -1159,9 +1164,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_DisplayMode) {
   {
     CreateDataToRetrieve(GURL("https://example.org/"), /*open_as_window*/ true);
 
-    InstallManager::InstallParams params;
-    params.user_display_mode = DisplayMode::kUndefined;
-    auto app_id = InstallWebAppWithParams(params);
+    auto app_id = InstallWebAppWithParams(MakeParams(DisplayMode::kUndefined));
 
     EXPECT_EQ(DisplayMode::kStandalone,
               registrar().GetAppById(app_id)->user_display_mode());
@@ -1169,9 +1172,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_DisplayMode) {
   {
     CreateDataToRetrieve(GURL("https://example.au/"), /*open_as_window*/ true);
 
-    InstallManager::InstallParams params;
-    params.user_display_mode = DisplayMode::kBrowser;
-    auto app_id = InstallWebAppWithParams(params);
+    auto app_id = InstallWebAppWithParams(MakeParams(DisplayMode::kBrowser));
 
     EXPECT_EQ(DisplayMode::kBrowser,
               registrar().GetAppById(app_id)->user_display_mode());
@@ -1180,9 +1181,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_DisplayMode) {
     CreateDataToRetrieve(GURL("https://example.app/"),
                          /*open_as_window*/ false);
 
-    InstallManager::InstallParams params;
-    params.user_display_mode = DisplayMode::kStandalone;
-    auto app_id = InstallWebAppWithParams(params);
+    auto app_id = InstallWebAppWithParams(MakeParams(DisplayMode::kStandalone));
 
     EXPECT_EQ(DisplayMode::kStandalone,
               registrar().GetAppById(app_id)->user_display_mode());

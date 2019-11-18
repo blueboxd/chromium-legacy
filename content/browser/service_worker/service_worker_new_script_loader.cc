@@ -51,7 +51,7 @@ ServiceWorkerNewScriptLoader::CreateAndStart(
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& original_request,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     scoped_refptr<ServiceWorkerVersion> version,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
@@ -67,7 +67,7 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& original_request,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     scoped_refptr<ServiceWorkerVersion> version,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
@@ -149,11 +149,10 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
   // JavaScript MIME type. Therefore, no sniffing is needed.
   options &= ~network::mojom::kURLLoadOptionSniffMimeType;
 
-  network::mojom::URLLoaderClientPtr network_client;
-  network_client_receiver_.Bind(mojo::MakeRequest(&network_client));
   loader_factory_->CreateLoaderAndStart(
       mojo::MakeRequest(&network_loader_), routing_id, request_id, options,
-      resource_request, std::move(network_client), traffic_annotation);
+      resource_request, network_client_receiver_.BindNewPipeAndPassRemote(),
+      traffic_annotation);
   DCHECK_EQ(LoaderState::kNotStarted, network_loader_state_);
   network_loader_state_ = LoaderState::kLoadingHeader;
 }

@@ -10,6 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
 #include "content/common/navigation_params.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/cert/x509_util.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/test/cert_test_util.h"
@@ -43,7 +44,7 @@ class NavigationBodyLoaderTest : public ::testing::Test,
     data_pipe_ = std::make_unique<mojo::DataPipe>(CreateDataPipeOptions());
     writer_ = std::move(data_pipe_->producer_handle);
     auto endpoints = network::mojom::URLLoaderClientEndpoints::New();
-    endpoints->url_loader_client = mojo::MakeRequest(&client_ptr_);
+    endpoints->url_loader_client = client_remote_.BindNewPipeAndPassReceiver();
     blink::WebNavigationParams navigation_params;
     auto common_params = CreateCommonNavigationParams();
     auto commit_params = CreateCommitNavigationParams();
@@ -69,7 +70,7 @@ class NavigationBodyLoaderTest : public ::testing::Test,
   }
 
   void Complete(int net_error) {
-    client_ptr_->OnComplete(network::URLLoaderCompletionStatus(net_error));
+    client_remote_->OnComplete(network::URLLoaderCompletionStatus(net_error));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -150,7 +151,7 @@ class NavigationBodyLoaderTest : public ::testing::Test,
 
   base::test::TaskEnvironment task_environment_;
   static const MojoWriteDataFlags kNone = MOJO_WRITE_DATA_FLAG_NONE;
-  network::mojom::URLLoaderClientPtr client_ptr_;
+  mojo::Remote<network::mojom::URLLoaderClient> client_remote_;
   std::unique_ptr<blink::WebNavigationBodyLoader> loader_;
   std::unique_ptr<mojo::DataPipe> data_pipe_;
   mojo::ScopedDataPipeProducerHandle writer_;

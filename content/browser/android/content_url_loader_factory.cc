@@ -21,7 +21,6 @@
 #include "content/public/browser/file_url_loader.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/resource_type.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -284,11 +283,11 @@ void ContentURLLoaderFactory::CreateLoaderAndStart(
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& request,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&ContentURLLoader::CreateAndStart, request,
-                                std::move(loader), client.PassInterface()));
+                                std::move(loader), std::move(client)));
 }
 
 void ContentURLLoaderFactory::Clone(

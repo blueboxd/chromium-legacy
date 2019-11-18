@@ -65,7 +65,8 @@ DocumentInit DocumentInit::CreateWithImportsController(
 
 DocumentInit::DocumentInit(HTMLImportsController* imports_controller)
     : imports_controller_(imports_controller),
-      create_new_registration_context_(false) {}
+      create_new_registration_context_(false),
+      content_security_policy_from_context_doc_(false) {}
 
 DocumentInit::DocumentInit(const DocumentInit&) = default;
 
@@ -273,6 +274,19 @@ DocumentInit& DocumentInit::WithContentSecurityPolicy(
     ContentSecurityPolicy* policy) {
   content_security_policy_ = policy;
   return *this;
+}
+
+DocumentInit& DocumentInit::WithContentSecurityPolicyFromContextDoc() {
+  content_security_policy_from_context_doc_ = true;
+  return *this;
+}
+
+ContentSecurityPolicy* DocumentInit::GetContentSecurityPolicy() const {
+  DCHECK(
+      !(content_security_policy_ && content_security_policy_from_context_doc_));
+  if (context_document_ && content_security_policy_from_context_doc_)
+    return context_document_->GetContentSecurityPolicy();
+  return content_security_policy_;
 }
 
 DocumentInit& DocumentInit::WithFramePolicy(

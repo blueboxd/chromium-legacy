@@ -42,6 +42,8 @@ class ExternalProtocolDialog : public views::DialogDelegateView,
   bool Accept() override;
   views::View* GetContentsView() override;
   ui::ModalType GetModalType() const override;
+  views::Widget* GetWidget() override;
+  const views::Widget* GetWidget() const override;
 
  private:
   friend class test::ExternalProtocolDialogTestApi;

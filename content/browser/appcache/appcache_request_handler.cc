@@ -597,8 +597,8 @@ bool AppCacheRequestHandler::MaybeCreateLoaderForResponse(
          bool* was_called,
          SingleRequestURLLoaderFactory::RequestHandler handler) {
         *was_called = true;
-        network::mojom::URLLoaderClientPtr client;
-        *client_receiver = mojo::MakeRequest(&client);
+        mojo::PendingRemote<network::mojom::URLLoaderClient> client;
+        *client_receiver = client.InitWithNewPipeAndPassReceiver();
         std::move(handler).Run(resource_request, mojo::MakeRequest(loader),
                                std::move(client));
       },

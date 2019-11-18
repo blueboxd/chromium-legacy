@@ -222,6 +222,13 @@ void ScriptExecutor::CollectUserData(
   delegate_->EnterState(AutofillAssistantState::PROMPT);
 }
 
+void ScriptExecutor::WriteUserData(
+    base::OnceCallback<void(const CollectUserDataOptions*,
+                            UserData*,
+                            UserData::FieldChange*)> write_callback) {
+  delegate_->WriteUserData(std::move(write_callback));
+}
+
 void ScriptExecutor::OnGetUserData(
     base::OnceCallback<void(std::unique_ptr<UserData>)> callback,
     std::unique_ptr<UserData> result) {

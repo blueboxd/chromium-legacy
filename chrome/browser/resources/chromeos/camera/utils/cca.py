@@ -131,7 +131,7 @@ def BuildMojomBindings(mojom_bindings):
   Run(generate_binding_lite_cmd)
 
 
-def BuildCCA(overlay=None):
+def BuildCCA(overlay=None, key=None):
   with open('BUILD.gn') as f:
     mojom_bindings = re.findall(r'root_gen_dir/(.*mojom-lite\.js)', f.read())
   mojo_files = ['mojo_bindings_lite.js'] + mojom_bindings
@@ -152,11 +152,14 @@ def BuildCCA(overlay=None):
     dir_util.copy_tree('utils/dev', 'build/camera')
 
     git_cmd = ['git', 'rev-parse', 'HEAD']
-    commit_hash = subprocess.check_output(git_cmd).decode().strip()[:8]
+    commit_hash = subprocess.check_output(git_cmd, text=True).strip()[:8]
     timestamp = time.strftime("%F %T")
+
     with open('src/manifest.json') as f:
       manifest = json.load(f)
     manifest['version_name'] = f'Dev {commit_hash} @ {timestamp}'
+    if key is not None:
+      manifest['key'] = key
     with open('build/camera/manifest.json', 'w') as f:
       json.dump(manifest, f, indent=2)
 
@@ -192,7 +195,13 @@ def Test(args):
 def Pack(args):
   assert os.path.exists(args.key), f'There is no key at {args.key}'
 
-  BuildCCA(overlay='dev')
+  pubkey = None
+  if shutil.which('openssl'):
+    openssl_cmd = ['openssl', 'rsa', '-in', args.key, '-pubout']
+    openssl_output = subprocess.check_output(
+        openssl_cmd, stderr=subprocess.DEVNULL, text=True)
+    pubkey = ''.join(openssl_output.splitlines()[1:-1])
+  BuildCCA(overlay='dev', key=pubkey)
 
   if os.path.exists('build/camera.crx'):
     os.remove('build/camera.crx')
@@ -254,6 +263,7 @@ def ParseArgs(args):
 def Main(args):
   cca_root = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
   assert os.path.basename(cca_root) == 'camera'
+  os.chdir(cca_root)
 
   args = ParseArgs(args)
 

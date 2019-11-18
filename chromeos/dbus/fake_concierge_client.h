@@ -236,6 +236,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
     disk_image_status_signals_ = disk_image_status_signals;
   }
 
+  void NotifyVmStarted(const vm_tools::concierge::VmStartedSignal& signal);
+  bool HasVmObservers() const;
+
  protected:
   void Init(dbus::Bus* bus) override {}
 

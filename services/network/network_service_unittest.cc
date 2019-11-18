@@ -911,7 +911,7 @@ class NetworkServiceTestWithService : public testing::Test {
 
     loader_factory->CreateLoaderAndStart(
         mojo::MakeRequest(&loader_), 1, 1, options, request,
-        client_->CreateInterfacePtr(),
+        client_->CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   }
 
@@ -1614,7 +1614,7 @@ class NetworkServiceNetworkDelegateTest : public NetworkServiceTest {
 
     loader_factory->CreateLoaderAndStart(
         mojo::MakeRequest(&loader_), 1, 1, options, request,
-        client_->CreateInterfacePtr(),
+        client_->CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   }
 

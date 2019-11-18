@@ -25,7 +25,7 @@ WorkerScriptLoader::WorkerScriptLoader(
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& resource_request,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     base::WeakPtr<ServiceWorkerNavigationHandle> service_worker_handle,
     base::WeakPtr<AppCacheHost> appcache_host,
     const BrowserContextGetter& browser_context_getter,
@@ -124,12 +124,12 @@ void WorkerScriptLoader::MaybeStartLoader(
 
   if (single_request_factory) {
     // The interceptor elected to handle the request. Use it.
-    network::mojom::URLLoaderClientPtr client;
-    url_loader_client_receiver_.Bind(mojo::MakeRequest(&client));
     url_loader_factory_ = std::move(single_request_factory);
     url_loader_factory_->CreateLoaderAndStart(
         mojo::MakeRequest(&url_loader_), routing_id_, request_id_, options_,
-        resource_request_, std::move(client), traffic_annotation_);
+        resource_request_,
+        url_loader_client_receiver_.BindNewPipeAndPassRemote(),
+        traffic_annotation_);
     // We continue in URLLoaderClient calls.
     return;
   }
@@ -149,13 +149,12 @@ void WorkerScriptLoader::LoadFromNetwork(bool reset_subresource_loader_params) {
   DCHECK(!completed_);
 
   default_loader_used_ = true;
-  network::mojom::URLLoaderClientPtr client;
   url_loader_client_receiver_.reset();
-  url_loader_client_receiver_.Bind(mojo::MakeRequest(&client));
   url_loader_factory_ = default_loader_factory_;
   url_loader_factory_->CreateLoaderAndStart(
       mojo::MakeRequest(&url_loader_), routing_id_, request_id_, options_,
-      resource_request_, std::move(client), traffic_annotation_);
+      resource_request_, url_loader_client_receiver_.BindNewPipeAndPassRemote(),
+      traffic_annotation_);
   // We continue in URLLoaderClient calls.
 }
 

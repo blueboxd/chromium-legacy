@@ -10,6 +10,8 @@
 #include <vector>
 
 #include "base/threading/thread_checker.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/http/http_byte_range.h"
 #include "services/network/public/cpp/net_adapters.h"
@@ -63,7 +65,7 @@ class AndroidStreamReaderURLLoader : public network::mojom::URLLoader {
 
   AndroidStreamReaderURLLoader(
       const network::ResourceRequest& resource_request,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       std::unique_ptr<ResponseDelegate> response_delegate);
   ~AndroidStreamReaderURLLoader() override;
@@ -112,7 +114,7 @@ class AndroidStreamReaderURLLoader : public network::mojom::URLLoader {
   net::HttpByteRange byte_range_;
   network::ResourceRequest resource_request_;
   network::mojom::URLResponseHeadPtr response_head_;
-  network::mojom::URLLoaderClientPtr client_;
+  mojo::Remote<network::mojom::URLLoaderClient> client_;
   const net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
   std::unique_ptr<ResponseDelegate> response_delegate_;
   scoped_refptr<InputStreamReaderWrapper> input_stream_reader_wrapper_;

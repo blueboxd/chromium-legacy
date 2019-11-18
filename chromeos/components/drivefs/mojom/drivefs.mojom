@@ -57,6 +57,16 @@ interface DriveFs {
 
   // Fetches the changelog(s) using the provided |options|.
   FetchChangeLog(array<FetchChangeLogOptions> options);
+
+  // Send a native message |request| to DriveFS. |request| is a DriveFS
+  // specific message that looks like "native_opener/v2/$command_id/$message",
+  // where $command_id is an integer and $message is the base64 encoding of a
+  // JSPB encoded proto message.
+  //
+  // |response| is only filled out if |error| is kOk, and returns a JSPB
+  // encoded proto message.
+  SendNativeMessageRequest(string request) => (
+      FileError error, string response);
 };
 
 // Implemented by Chrome, used from DriveFS.

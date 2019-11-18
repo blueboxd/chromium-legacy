@@ -14,6 +14,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
@@ -80,7 +81,7 @@ class CONTENT_EXPORT PrefetchURLLoaderService final
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& resource_request_in,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
       override;
   void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)

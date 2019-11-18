@@ -1012,6 +1012,10 @@ void CrostiniManager::StartTerminaVm(std::string name,
     return;
   }
 
+  for (auto& observer : vm_starting_observers_) {
+    observer.OnVmStarting();
+  }
+
   vm_tools::concierge::StartVmRequest request;
   request.set_name(std::move(name));
   request.set_start_termina(true);
@@ -1914,6 +1918,15 @@ void CrostiniManager::AddVmShutdownObserver(VmShutdownObserver* observer) {
 }
 void CrostiniManager::RemoveVmShutdownObserver(VmShutdownObserver* observer) {
   vm_shutdown_observers_.RemoveObserver(observer);
+}
+
+void CrostiniManager::AddVmStartingObserver(
+    chromeos::VmStartingObserver* observer) {
+  vm_starting_observers_.AddObserver(observer);
+}
+void CrostiniManager::RemoveVmStartingObserver(
+    chromeos::VmStartingObserver* observer) {
+  vm_starting_observers_.RemoveObserver(observer);
 }
 
 void CrostiniManager::OnCreateDiskImage(

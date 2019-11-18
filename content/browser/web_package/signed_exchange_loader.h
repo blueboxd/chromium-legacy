@@ -15,7 +15,9 @@
 #include "content/browser/web_package/signed_exchange_error.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/ssl/ssl_info.h"
 #include "net/url_request/redirect_info.h"
@@ -65,7 +67,7 @@ class CONTENT_EXPORT SignedExchangeLoader final
       const network::ResourceRequest& outer_request,
       const network::ResourceResponseHead& outer_response_head,
       mojo::ScopedDataPipeConsumerHandle outer_response_body,
-      network::mojom::URLLoaderClientPtr forwarding_client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> forwarding_client,
       network::mojom::URLLoaderClientEndpointsPtr endpoints,
       uint32_t url_loader_options,
       bool should_redirect_on_failure,
@@ -104,7 +106,8 @@ class CONTENT_EXPORT SignedExchangeLoader final
   void PauseReadingBodyFromNet() override;
   void ResumeReadingBodyFromNet() override;
 
-  void ConnectToClient(network::mojom::URLLoaderClientPtr client);
+  void ConnectToClient(
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client);
 
   const base::Optional<GURL>& fallback_url() const { return fallback_url_; }
 
@@ -147,7 +150,7 @@ class CONTENT_EXPORT SignedExchangeLoader final
   const network::ResourceResponseHead outer_response_head_;
 
   // This client is alive until OnHTTPExchangeFound() is called.
-  network::mojom::URLLoaderClientPtr forwarding_client_;
+  mojo::Remote<network::mojom::URLLoaderClient> forwarding_client_;
 
   // This |url_loader_| is the pointer of the network URL loader.
   network::mojom::URLLoaderPtr url_loader_;
@@ -156,7 +159,7 @@ class CONTENT_EXPORT SignedExchangeLoader final
       this};
 
   // This is pending until connected by ConnectToClient().
-  network::mojom::URLLoaderClientPtr client_;
+  mojo::Remote<network::mojom::URLLoaderClient> client_;
 
   // This pending receiver is used by ConnectToClient() to connect |client_|.
   mojo::PendingReceiver<network::mojom::URLLoaderClient>

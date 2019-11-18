@@ -24,9 +24,10 @@ class SingleRequestURLLoaderFactory::HandlerState
       : handler_(std::move(handler)),
         handler_task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
 
-  void HandleRequest(const network::ResourceRequest& resource_request,
-                     mojo::PendingReceiver<network::mojom::URLLoader> loader,
-                     network::mojom::URLLoaderClientPtr client) {
+  void HandleRequest(
+      const network::ResourceRequest& resource_request,
+      mojo::PendingReceiver<network::mojom::URLLoader> loader,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client) {
     if (!handler_task_runner_->RunsTasksInCurrentSequence()) {
       handler_task_runner_->PostTask(
           FROM_HERE,
@@ -87,7 +88,7 @@ void SingleRequestURLLoaderFactory::CreateLoaderAndStart(
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& request,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   state_->HandleRequest(request, std::move(loader), std::move(client));
 }

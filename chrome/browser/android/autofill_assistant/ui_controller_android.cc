@@ -285,7 +285,7 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
     OnDetailsChanged(ui_delegate->GetDetails());
     OnUserActionsChanged(ui_delegate_->GetUserActions());
     OnCollectUserDataOptionsChanged(ui_delegate->GetCollectUserDataOptions());
-    OnUserDataChanged(ui_delegate->GetUserData());
+    OnUserDataChanged(ui_delegate->GetUserData(), UserData::FieldChange::ALL);
 
     std::vector<RectF> area;
     ui_delegate->GetTouchableArea(&area);
@@ -966,7 +966,9 @@ void UiControllerAndroid::OnCollectUserDataOptionsChanged(
   Java_AssistantCollectUserDataModel_setVisible(env, jmodel, true);
 }
 
-void UiControllerAndroid::OnUserDataChanged(const UserData* state) {
+void UiControllerAndroid::OnUserDataChanged(
+    const UserData* state,
+    UserData::FieldChange field_change) {
   JNIEnv* env = AttachCurrentThread();
   auto jmodel = GetCollectUserDataModel();
   if (!state) {
@@ -975,8 +977,25 @@ void UiControllerAndroid::OnUserDataChanged(const UserData* state) {
 
   // TODO(crbug.com/806868): Add |setContactDetails|, |setShippingAddress| and
   // |setPaymentMethod|.
-  Java_AssistantCollectUserDataModel_setTermsStatus(
-      env, jmodel, state->terms_and_conditions);
+
+  if (field_change == UserData::FieldChange::ALL ||
+      field_change == UserData::FieldChange::TERMS_AND_CONDITIONS) {
+    Java_AssistantCollectUserDataModel_setTermsStatus(
+        env, jmodel, state->terms_and_conditions);
+  }
+
+  if (field_change == UserData::FieldChange::ALL ||
+      field_change == UserData::FieldChange::AVAILABLE_PROFILES) {
+    auto jlist =
+        Java_AssistantCollectUserDataModel_createAutofillProfileList(env);
+    for (const auto& profile : state->available_profiles) {
+      Java_AssistantCollectUserDataModel_addAutofillProfile(
+          env, jlist,
+          autofill::PersonalDataManagerAndroid::CreateJavaProfileFromNative(
+              env, *profile));
+    }
+    Java_AssistantCollectUserDataModel_setAutofillProfiles(env, jmodel, jlist);
+  }
 }
 
 // FormProto related methods.

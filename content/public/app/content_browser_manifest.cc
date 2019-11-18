@@ -219,7 +219,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "mojom.ProcessInternalsHandler",
                   "network.mojom.RestrictedCookieManager",
                   "blink.mojom.WebSocketConnector",
-                  "performance_manager.mojom.DocumentCoordinationUnit",
                   "viz.mojom.Gpu"})
           .RequireInterfaceFilterCapability_Deprecated(
               mojom::kRendererServiceName, "navigation:frame", "browser")

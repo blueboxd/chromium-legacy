@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/load_flags.h"
 #include "services/network/cors/cors_url_loader.h"
 #include "services/network/cors/preflight_controller.h"
@@ -94,10 +95,11 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
     int32_t request_id,
     uint32_t options,
     const ResourceRequest& resource_request,
-    mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   if (!IsSane(context_, resource_request, options)) {
-    client->OnComplete(URLLoaderCompletionStatus(net::ERR_INVALID_ARGUMENT));
+    mojo::Remote<mojom::URLLoaderClient>(std::move(client))
+        ->OnComplete(URLLoaderCompletionStatus(net::ERR_INVALID_ARGUMENT));
     return;
   }
 

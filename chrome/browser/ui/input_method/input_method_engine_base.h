@@ -175,6 +175,10 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
                              size_t number_of_chars,
                              std::string* error);
 
+  // Commit the text currently being composed to the composition.
+  // Fails if the context is not focused.
+  bool FinishComposingText(int context_id, std::string* error);
+
   // Send the sequence of key events.
   bool SendKeyEvents(int context_id, const std::vector<KeyboardEvent>& events);
 

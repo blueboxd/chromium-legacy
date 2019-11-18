@@ -9,7 +9,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "storage/browser/blob/mojo_blob_reader.h"
@@ -28,7 +30,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobURLLoader
   static void CreateAndStart(
       mojo::PendingReceiver<network::mojom::URLLoader> url_loader_receiver,
       const network::ResourceRequest& request,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       std::unique_ptr<BlobDataHandle> blob_handle);
   ~BlobURLLoader() override;
 
@@ -36,7 +38,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobURLLoader
   BlobURLLoader(
       mojo::PendingReceiver<network::mojom::URLLoader> url_loader_receiver,
       const network::ResourceRequest& request,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       std::unique_ptr<BlobDataHandle> blob_handle);
 
   void Start(const network::ResourceRequest& request);
@@ -61,7 +63,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobURLLoader
                         base::Optional<mojo_base::BigBuffer> metadata);
 
   mojo::Receiver<network::mojom::URLLoader> receiver_;
-  network::mojom::URLLoaderClientPtr client_;
+  mojo::Remote<network::mojom::URLLoaderClient> client_;
 
   bool byte_range_set_ = false;
   net::HttpByteRange byte_range_;

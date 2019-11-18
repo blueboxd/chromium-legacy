@@ -347,9 +347,7 @@ cca.views.Camera.prototype.startWithMode_ = async function(deviceId, mode) {
         await this.preview_.start(stream);
         this.facingMode_ = await this.options_.updateValues(stream);
         await this.modes_.updateModeSelectionUI(deviceId);
-        await this.modes_.updateMode(
-            mode, stream, deviceId,
-            captureR && [captureR.width, captureR.height]);
+        await this.modes_.updateMode(mode, stream, deviceId, captureR);
         cca.nav.close('warning', 'no-camera');
         return true;
       } catch (e) {

@@ -143,8 +143,8 @@ DOMArrayBuffer* FileReaderLoader::ArrayBufferResult() {
     return nullptr;
 
   if (!finished_loading_) {
-    return DOMArrayBuffer::Create(ArrayBuffer::Create(
-        raw_data_.Data(), static_cast<unsigned>(bytes_loaded_)));
+    return DOMArrayBuffer::Create(raw_data_.Data(),
+                                  SafeCast<size_t>(bytes_loaded_));
   }
 
   array_buffer_result_ = DOMArrayBuffer::Create(raw_data_);

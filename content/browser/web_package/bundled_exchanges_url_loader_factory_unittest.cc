@@ -81,7 +81,7 @@ class BundledExchangesURLLoaderFactoryTest : public testing::Test {
       loader_factory->CreateLoaderAndStart(
           loader.BindNewPipeAndPassReceiver(),
           /*routing_id=*/0, /*request_id=*/0, /*options=*/0, resource_request_,
-          test_client_.CreateInterfacePtr(),
+          test_client_.CreateRemote(),
           net::MutableNetworkTrafficAnnotationTag(
               TRAFFIC_ANNOTATION_FOR_TESTS));
 
@@ -89,7 +89,7 @@ class BundledExchangesURLLoaderFactoryTest : public testing::Test {
       loader_factory_->CreateLoaderAndStart(
           loader.BindNewPipeAndPassReceiver(),
           /*routing_id=*/0, /*request_id=*/0, /*options=*/0, resource_request_,
-          test_client_.CreateInterfacePtr(),
+          test_client_.CreateRemote(),
           net::MutableNetworkTrafficAnnotationTag(
               TRAFFIC_ANNOTATION_FOR_TESTS));
     }

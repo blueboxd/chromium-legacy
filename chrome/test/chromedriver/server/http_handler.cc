@@ -35,6 +35,7 @@
 #include "chrome/test/chromedriver/util.h"
 #include "chrome/test/chromedriver/webauthn_commands.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/server/http_server_request_info.h"
 #include "net/server/http_server_response_info.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -82,7 +83,7 @@ class WrapperURLLoaderFactory : public network::mojom::URLLoaderFactory {
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& request,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
       override {
     if (network_task_runner_->RunsTasksInCurrentSequence()) {

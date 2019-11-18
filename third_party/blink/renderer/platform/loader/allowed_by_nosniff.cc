@@ -98,7 +98,8 @@ bool AllowMimeTypeAsScript(const String& mime_type,
   if (mime_type_check_mode == MimeTypeCheck::kStrict) {
     return false;
   }
-  DCHECK_EQ(mime_type_check_mode, MimeTypeCheck::kLax);
+  DCHECK(mime_type_check_mode == MimeTypeCheck::kLaxForWorker ||
+         mime_type_check_mode == MimeTypeCheck::kLaxForElement);
 
   // Beyond this point we handle legacy MIME types, where it depends whether
   // we still wish to accept them (or log them using UseCounter, or add a
@@ -131,14 +132,17 @@ bool AllowedByNosniff::MimeTypeAsScript(UseCounter& use_counter,
                                         ConsoleLogger* console_logger,
                                         const ResourceResponse& response,
                                         MimeTypeCheck mime_type_check_mode) {
-  // The content type is really only meaningful for the http:-family & data
-  // schemes.
-  bool is_http_family_or_data =
-      response.CurrentRequestUrl().ProtocolIsInHTTPFamily() ||
-      response.CurrentRequestUrl().ProtocolIsData();
-  if (!is_http_family_or_data &&
+  // The content type is really only meaningful for `http:`-family schemes.
+  if (!response.CurrentRequestUrl().ProtocolIsInHTTPFamily() &&
       (response.CurrentRequestUrl().LastPathComponent().EndsWith(".js") ||
        response.CurrentRequestUrl().LastPathComponent().EndsWith(".mjs"))) {
+    return true;
+  }
+
+  // Exclude `data:`, `blob:` and `filesystem:` URLs from MIME checks.
+  if (response.CurrentRequestUrl().ProtocolIsData() ||
+      response.CurrentRequestUrl().ProtocolIs(url::kBlobScheme) ||
+      response.CurrentRequestUrl().ProtocolIs(url::kFileSystemScheme)) {
     return true;
   }
 
@@ -191,6 +195,11 @@ bool AllowedByNosniff::MimeTypeAsScript(UseCounter& use_counter,
         "Refused to execute script from '" +
             response.CurrentRequestUrl().ElidedString() +
             "' because its MIME type ('" + mime_type + "') is not executable.");
+  } else if (mime_type_check_mode == MimeTypeCheck::kLaxForWorker) {
+    bool strict_allow = AllowMimeTypeAsScript(mime_type, same_origin,
+                                              MimeTypeCheck::kStrict, counter);
+    if (!strict_allow)
+      use_counter.CountUse(WebFeature::kStrictMimeTypeChecksWouldBlockWorker);
   }
   return allow;
 }

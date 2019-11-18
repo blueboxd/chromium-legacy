@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/policy/browser_dm_token_storage.h"
+#include "components/policy/core/common/cloud/dm_token.h"
 #include "extensions/browser/extension_function.h"
 
 namespace policy {
@@ -43,9 +43,8 @@ class EnterpriseReportingPrivateUploadChromeDesktopReportFunction
 
   void SetCloudPolicyClientForTesting(
       std::unique_ptr<policy::CloudPolicyClient> client);
-  void SetRegistrationInfoForTesting(
-      const policy::BrowserDMTokenStorage::BrowserDMToken& dm_token,
-      const std::string& client_id);
+  void SetRegistrationInfoForTesting(const policy::DMToken& dm_token,
+                                     const std::string& client_id);
 
   // Used by tests that want to overrode the URLLoaderFactory used to simulate
   // network requests.
@@ -63,7 +62,7 @@ class EnterpriseReportingPrivateUploadChromeDesktopReportFunction
   void OnReportUploaded(bool status);
 
   std::unique_ptr<policy::CloudPolicyClient> cloud_policy_client_;
-  policy::BrowserDMTokenStorage::BrowserDMToken dm_token_;
+  policy::DMToken dm_token_;
   std::string client_id_;
 
   DISALLOW_COPY_AND_ASSIGN(

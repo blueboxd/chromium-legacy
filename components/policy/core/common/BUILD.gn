@@ -62,6 +62,8 @@ jumbo_source_set("internal") {
     "cloud/device_management_service.h",
     "cloud/dm_auth.cc",
     "cloud/dm_auth.h",
+    "cloud/dm_token.cc",
+    "cloud/dm_token.h",
     "cloud/dmserver_job_configurations.cc",
     "cloud/dmserver_job_configurations.h",
     "cloud/enterprise_metrics.cc",

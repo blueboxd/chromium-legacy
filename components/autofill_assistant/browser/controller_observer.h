@@ -51,8 +51,9 @@ class ControllerObserver : public base::CheckedObserver {
   virtual void OnCollectUserDataOptionsChanged(
       const CollectUserDataOptions* options) = 0;
 
-  // Updates the currently selected user data (e.g., contact information).
-  virtual void OnUserDataChanged(const UserData* state) = 0;
+  // Report that a field in |user_data| has changed.
+  virtual void OnUserDataChanged(const UserData* state,
+                                 UserData::FieldChange field_change) = 0;
 
   // Called when details have changed. Details will be null if they have been
   // cleared.

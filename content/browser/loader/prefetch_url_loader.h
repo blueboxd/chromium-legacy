@@ -15,7 +15,9 @@
 #include "base/unguessable_token.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -61,7 +63,7 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
       uint32_t options,
       int frame_tree_node_id,
       const network::ResourceRequest& resource_request,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
       URLLoaderThrottlesGetter url_loader_throttles_getter,
@@ -135,7 +137,7 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
   mojo::Receiver<network::mojom::URLLoaderClient> client_receiver_{this};
 
   // To be a URLLoader for the client.
-  network::mojom::URLLoaderClientPtr forwarding_client_;
+  mojo::Remote<network::mojom::URLLoaderClient> forwarding_client_;
 
   URLLoaderThrottlesGetter url_loader_throttles_getter_;
 

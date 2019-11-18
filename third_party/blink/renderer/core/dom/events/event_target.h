@@ -173,6 +173,7 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
   bool HasEventListeners() const override;
   bool HasEventListeners(const AtomicString& event_type) const;
   bool HasCapturingEventListeners(const AtomicString& event_type);
+  bool HasJSBasedEventListeners(const AtomicString& event_type) const;
   EventListenerVector* GetEventListeners(const AtomicString& event_type);
   Vector<AtomicString> EventTypes();
 
@@ -336,6 +337,15 @@ inline bool EventTarget::HasCapturingEventListeners(
   if (!d)
     return false;
   return d->event_listener_map.ContainsCapturing(event_type);
+}
+
+inline bool EventTarget::HasJSBasedEventListeners(
+    const AtomicString& event_type) const {
+  // TODO(rogerj): We should have const version of eventTargetData.
+  if (const EventTargetData* d =
+          const_cast<EventTarget*>(this)->GetEventTargetData())
+    return d->event_listener_map.ContainsJSBasedEventListeners(event_type);
+  return false;
 }
 
 }  // namespace blink

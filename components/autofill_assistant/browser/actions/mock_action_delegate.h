@@ -114,6 +114,10 @@ class MockActionDelegate : public ActionDelegate {
       CollectUserData,
       void(std::unique_ptr<CollectUserDataOptions> collect_user_data_options,
            std::unique_ptr<UserData> user_data));
+  MOCK_METHOD1(WriteUserData,
+               void(base::OnceCallback<void(const CollectUserDataOptions*,
+                                            UserData*,
+                                            UserData::FieldChange*)>));
 
   MOCK_METHOD1(OnGetFullCard,
                void(base::OnceCallback<void(const autofill::CreditCard& card,

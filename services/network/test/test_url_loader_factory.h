@@ -12,7 +12,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -33,7 +35,7 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
     PendingRequest(PendingRequest&& other);
     PendingRequest& operator=(PendingRequest&& other);
 
-    mojom::URLLoaderClientPtr client;
+    mojo::Remote<mojom::URLLoaderClient> client;
     ResourceRequest request;
     uint32_t options;
   };
@@ -147,7 +149,7 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
                             int32_t request_id,
                             uint32_t options,
                             const ResourceRequest& url_request,
-                            mojom::URLLoaderClientPtr client,
+                            mojo::PendingRemote<mojom::URLLoaderClient> client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
   void Clone(mojo::PendingReceiver<mojom::URLLoaderFactory> receiver) override;

@@ -97,7 +97,7 @@ class CONTENT_EXPORT ChildURLLoaderFactoryBundle
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& request,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
       override;
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override;

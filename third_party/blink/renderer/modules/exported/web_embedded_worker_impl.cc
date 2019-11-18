@@ -327,8 +327,8 @@ WebEmbeddedWorkerImpl::CreateFetchClientSettingsObjectData(
       passed_settings_object.referrer_policy,
       KURL::CreateIsolated(
           passed_settings_object.outgoing_referrer.GetString()),
-      https_state, AllowedByNosniff::MimeTypeCheck::kLax, address_space,
-      insecure_requests_policy,
+      https_state, AllowedByNosniff::MimeTypeCheck::kLaxForWorker,
+      address_space, insecure_requests_policy,
       FetchClientSettingsObject::InsecureNavigationsSet(),
       false /* mixed_autoupgrade_opt_out */);
 }

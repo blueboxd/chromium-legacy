@@ -22,6 +22,8 @@
 #include "components/dom_distiller/content/common/mojom/distillability_service.mojom.h"
 #include "components/dom_distiller/content/common/mojom/distiller_javascript_service.mojom.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
+#include "components/performance_manager/performance_manager_tab_helper.h"
+#include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -129,6 +131,25 @@ void BindPrerenderCanceler(
   prerender_contents->OnPrerenderCancelerReceiver(std::move(receiver));
 }
 
+void BindDocumentCoordinationUnit(
+    content::RenderFrameHost* host,
+    mojo::PendingReceiver<performance_manager::mojom::DocumentCoordinationUnit>
+        receiver) {
+  auto* content = content::WebContents::FromRenderFrameHost(host);
+  // |content| can be nullable if RenderFrameHost's delegate is not
+  // WebContents.
+  if (!content)
+    return;
+  auto* helper =
+      performance_manager::PerformanceManagerTabHelper::FromWebContents(
+          content);
+  // This condition is for testing-only. We should handle a bind request after
+  // PerformanceManagerTabHelper is attached to WebContents.
+  if (!helper)
+    return;
+  return helper->BindDocumentCoordinationUnit(host, std::move(receiver));
+}
+
 #if defined(OS_ANDROID)
 template <typename Interface>
 void ForwardToJavaWebContents(content::RenderFrameHost* frame_host,
@@ -197,6 +218,9 @@ void PopulateChromeFrameBinders(
 
   map->Add<mojom::PrerenderCanceler>(
       base::BindRepeating(&BindPrerenderCanceler));
+
+  map->Add<performance_manager::mojom::DocumentCoordinationUnit>(
+      base::BindRepeating(&BindDocumentCoordinationUnit));
 
 #if defined(OS_ANDROID)
   map->Add<blink::mojom::InstalledAppProvider>(base::BindRepeating(

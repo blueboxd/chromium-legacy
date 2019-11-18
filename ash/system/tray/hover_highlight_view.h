@@ -75,7 +75,7 @@ class HoverHighlightView : public ActionableView {
 
   // Changes the view's current accessibility state. This will fire an
   // accessibility event if needed.
-  void SetAccessiblityState(AccessibilityState accessibility_state);
+  void SetAccessibilityState(AccessibilityState accessibility_state);
 
   // Removes current children of the view so that it can be re-populated.
   void Reset();

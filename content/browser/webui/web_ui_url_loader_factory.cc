@@ -250,7 +250,7 @@ class WebUIURLLoaderFactory : public network::mojom::URLLoaderFactory,
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& request,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
       override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -259,7 +259,8 @@ class WebUIURLLoaderFactory : public network::mojom::URLLoaderFactory,
       DVLOG(1) << "Bad scheme: " << request.url.scheme();
       ReceivedBadMessage(render_frame_host_->GetProcess(),
                          bad_message::WEBUI_BAD_SCHEME_ACCESS);
-      client->OnComplete(network::URLLoaderCompletionStatus(net::ERR_FAILED));
+      mojo::Remote<network::mojom::URLLoaderClient>(std::move(client))
+          ->OnComplete(network::URLLoaderCompletionStatus(net::ERR_FAILED));
       return;
     }
 
@@ -274,7 +275,8 @@ class WebUIURLLoaderFactory : public network::mojom::URLLoaderFactory,
       DVLOG(1) << "Bad host: \"" << request.url.host() << '"';
       ReceivedBadMessage(render_frame_host_->GetProcess(),
                          bad_message::WEBUI_BAD_HOST_ACCESS);
-      client->OnComplete(network::URLLoaderCompletionStatus(net::ERR_FAILED));
+      mojo::Remote<network::mojom::URLLoaderClient>(std::move(client))
+          ->OnComplete(network::URLLoaderCompletionStatus(net::ERR_FAILED));
       return;
     }
 
@@ -282,7 +284,7 @@ class WebUIURLLoaderFactory : public network::mojom::URLLoaderFactory,
       base::PostTask(
           FROM_HERE, {BrowserThread::IO},
           base::BindOnce(&StartBlobInternalsURLLoader, request,
-                         client.PassInterface(),
+                         std::move(client),
                          base::Unretained(ChromeBlobStorageContext::GetFor(
                              GetStoragePartition()->browser_context()))));
       return;
@@ -302,7 +304,7 @@ class WebUIURLLoaderFactory : public network::mojom::URLLoaderFactory,
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &StartURLLoader, request, render_frame_host_->GetFrameTreeNodeId(),
-            client.PassInterface(),
+            std::move(client),
             GetStoragePartition()->browser_context()->GetResourceContext()));
   }
 

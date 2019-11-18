@@ -14,6 +14,7 @@
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
@@ -46,7 +47,7 @@ class CONTENT_EXPORT FileURLLoaderFactory
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& request,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
       override;
   void Clone(
@@ -55,7 +56,7 @@ class CONTENT_EXPORT FileURLLoaderFactory
   void CreateLoaderAndStartInternal(
       const network::ResourceRequest request,
       mojo::PendingReceiver<network::mojom::URLLoader> loader,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       bool cors_flag);
 
   const base::FilePath profile_path_;

@@ -14,6 +14,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -72,7 +73,7 @@ class URLLoaderInterceptor {
     int32_t request_id;
     uint32_t options;
     network::ResourceRequest url_request;
-    network::mojom::URLLoaderClientPtr client;
+    mojo::Remote<network::mojom::URLLoaderClient> client;
     net::MutableNetworkTrafficAnnotationTag traffic_annotation;
   };
   // Function signature for intercept method.
@@ -169,7 +170,7 @@ class URLLoaderInterceptor {
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& url_request,
-      network::mojom::URLLoaderClientPtr* client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient>* client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
 
   // Callback on UI thread whenever NavigationURLLoaderImpl needs a

@@ -72,8 +72,10 @@ class WebContentsLoadFinishedWaiter : public content::WebContentsObserver {
   ~WebContentsLoadFinishedWaiter() override = default;
 
   void Wait() {
-    if (!web_contents()->IsLoading())
+    if (!web_contents()->IsLoading() &&
+        web_contents()->GetLastCommittedURL() != GURL::EmptyGURL()) {
       return;
+    }
 
     run_loop_ = std::make_unique<base::RunLoop>();
     run_loop_->Run();
@@ -107,26 +109,23 @@ class EulaTest : public OobeBaseTest {
   EulaTest() = default;
   ~EulaTest() override = default;
 
+  void SetUpOnMainThread() override {
+    // Retrieve the URL from the embedded test server and override EULA URL.
+    fake_eula_url_ =
+        embedded_test_server()->base_url().Resolve(kFakeOnlineEulaPath).spec();
+    EulaScreenHandler::set_eula_url_for_testing(fake_eula_url_.c_str());
+
+    OobeBaseTest::SetUpOnMainThread();
+  }
+
   // OobeBaseTest:
   void RegisterAdditionalRequestHandlers() override {
     embedded_test_server()->RegisterRequestHandler(
         base::Bind(&EulaTest::HandleRequest, base::Unretained(this)));
   }
 
-  void OverrideOnlineEulaUrl() {
-    // Override with the embedded test server's base url. Otherwise, the load
-    // would not hit the embedded test server.
-    const GURL fake_eula_url =
-        embedded_test_server()->base_url().Resolve(kFakeOnlineEulaPath);
-    test::OobeJS().Evaluate(
-        base::StringPrintf("loadTimeData.overrideValues({eulaOnlineUrl: '%s'});"
-                           "Oobe.updateLocalizedContent();",
-                           fake_eula_url.spec().c_str()));
-  }
-
   void ShowEulaScreen() {
     LoginDisplayHost::default_host()->StartWizard(EulaView::kScreenId);
-    OverrideOnlineEulaUrl();
     OobeScreenWaiter(EulaView::kScreenId).Wait();
   }
 
@@ -154,6 +153,18 @@ class EulaTest : public OobeBaseTest {
                             kUniqueEulaWebviewName));
     EXPECT_EQ(1u, frame_set.size());
     return *frame_set.begin();
+  }
+
+  // Wait for the fallback offline page (loaded as data url) to be loaded.
+  void WaitForLocalWebviewLoad() {
+    content::WebContents* eula_contents = FindEulaContents();
+    ASSERT_TRUE(eula_contents);
+
+    while (!eula_contents->GetLastCommittedURL().SchemeIs("data")) {
+      // Pump messages to avoid busy loop so that renderer could do some work.
+      base::RunLoop().RunUntilIdle();
+      WebContentsLoadFinishedWaiter(eula_contents).Wait();
+    }
   }
 
   // Returns an Oobe JSChecker that sends 'click' events instead of 'tap'
@@ -228,7 +239,10 @@ class EulaTest : public OobeBaseTest {
     return std::move(http_response);
   }
 
-  bool allow_online_eula_ = false;
+  bool allow_online_eula_ = true;
+
+  // URL used for testing. Retrieved from the embedded server.
+  std::string fake_eula_url_;
 
   DISALLOW_COPY_AND_ASSIGN(EulaTest);
 };
@@ -247,19 +261,11 @@ IN_PROC_BROWSER_TEST_F(EulaTest, DISABLED_LoadOnline) {
 
 // Tests that offline version is shown when the online version is not
 // accessible.
-// Disable due to flaky crbug.com/1015948
-IN_PROC_BROWSER_TEST_F(EulaTest, DISABLED_LoadOffline) {
+IN_PROC_BROWSER_TEST_F(EulaTest, LoadOffline) {
   set_allow_online_eula(false);
   ShowEulaScreen();
 
-  content::WebContents* eula_contents = FindEulaContents();
-  ASSERT_TRUE(eula_contents);
-  // Wait for the fallback offline page (loaded as data url) to be loaded.
-  while (!eula_contents->GetLastCommittedURL().SchemeIs("data")) {
-    // Pump messages to avoid busy loop so that renderer could do some work.
-    base::RunLoop().RunUntilIdle();
-    WebContentsLoadFinishedWaiter(eula_contents).Wait();
-  }
+  WaitForLocalWebviewLoad();
 
   EXPECT_TRUE(test::GetWebViewContents({"oobe-eula-md", "crosEulaFrame"})
                   .find(kOfflineEULAWarning) != std::string::npos);

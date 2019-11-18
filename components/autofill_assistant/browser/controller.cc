@@ -22,6 +22,7 @@
 #include "components/autofill_assistant/browser/protocol_utils.h"
 #include "components/autofill_assistant/browser/service_impl.h"
 #include "components/autofill_assistant/browser/trigger_context.h"
+#include "components/autofill_assistant/browser/user_data.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -1001,7 +1002,8 @@ void Controller::SetDateTimeRangeStart(int year,
   SetDateTimeProto(&user_data_->date_time_range_start, year, month, day, hour,
                    minute, second);
   for (ControllerObserver& observer : observers_) {
-    observer.OnUserDataChanged(user_data_.get());
+    observer.OnUserDataChanged(user_data_.get(),
+                               UserData::FieldChange::DATE_TIME_RANGE_START);
   }
   UpdateCollectUserDataActions();
 }
@@ -1018,7 +1020,8 @@ void Controller::SetDateTimeRangeEnd(int year,
   SetDateTimeProto(&user_data_->date_time_range_end, year, month, day, hour,
                    minute, second);
   for (ControllerObserver& observer : observers_) {
-    observer.OnUserDataChanged(user_data_.get());
+    observer.OnUserDataChanged(user_data_.get(),
+                               UserData::FieldChange::DATE_TIME_RANGE_END);
   }
   UpdateCollectUserDataActions();
 }
@@ -1034,7 +1037,8 @@ void Controller::SetAdditionalValue(const std::string& client_memory_key,
   }
   it->second.assign(value);
   for (ControllerObserver& observer : observers_) {
-    observer.OnUserDataChanged(user_data_.get());
+    observer.OnUserDataChanged(user_data_.get(),
+                               UserData::FieldChange::ADDITIONAL_VALUES);
   }
   // It is currently not necessary to call |UpdateCollectUserDataActions|
   // because all additional values are optional.
@@ -1047,7 +1051,8 @@ void Controller::SetShippingAddress(
 
   user_data_->shipping_address = std::move(address);
   for (ControllerObserver& observer : observers_) {
-    observer.OnUserDataChanged(user_data_.get());
+    observer.OnUserDataChanged(user_data_.get(),
+                               UserData::FieldChange::SHIPPING_ADDRESS);
   }
   UpdateCollectUserDataActions();
 }
@@ -1059,7 +1064,8 @@ void Controller::SetContactInfo(
 
   user_data_->contact_profile = std::move(profile);
   for (ControllerObserver& observer : observers_) {
-    observer.OnUserDataChanged(user_data_.get());
+    observer.OnUserDataChanged(user_data_.get(),
+                               UserData::FieldChange::CONTACT_PROFILE);
   }
   UpdateCollectUserDataActions();
 }
@@ -1073,7 +1079,9 @@ void Controller::SetCreditCard(
   user_data_->billing_address = std::move(billing_profile);
   user_data_->card = std::move(card);
   for (ControllerObserver& observer : observers_) {
-    observer.OnUserDataChanged(user_data_.get());
+    observer.OnUserDataChanged(user_data_.get(), UserData::FieldChange::CARD);
+    observer.OnUserDataChanged(user_data_.get(),
+                               UserData::FieldChange::BILLING_ADDRESS);
   }
   UpdateCollectUserDataActions();
 }
@@ -1086,7 +1094,8 @@ void Controller::SetTermsAndConditions(
   user_data_->terms_and_conditions = terms_and_conditions;
   UpdateCollectUserDataActions();
   for (ControllerObserver& observer : observers_) {
-    observer.OnUserDataChanged(user_data_.get());
+    observer.OnUserDataChanged(user_data_.get(),
+                               UserData::FieldChange::TERMS_AND_CONDITIONS);
   }
 }
 
@@ -1097,7 +1106,8 @@ void Controller::SetLoginOption(std::string identifier) {
   user_data_->login_choice_identifier.assign(identifier);
   UpdateCollectUserDataActions();
   for (ControllerObserver& observer : observers_) {
-    observer.OnUserDataChanged(user_data_.get());
+    observer.OnUserDataChanged(user_data_.get(),
+                               UserData::FieldChange::LOGIN_CHOICE);
   }
 }
 
@@ -1421,7 +1431,22 @@ void Controller::SetCollectUserDataOptions(
   UpdateCollectUserDataActions();
   for (ControllerObserver& observer : observers_) {
     observer.OnCollectUserDataOptionsChanged(collect_user_data_options_.get());
-    observer.OnUserDataChanged(user_data_.get());
+    observer.OnUserDataChanged(user_data_.get(), UserData::FieldChange::ALL);
+  }
+}
+
+void Controller::WriteUserData(
+    base::OnceCallback<void(const CollectUserDataOptions*,
+                            UserData*,
+                            UserData::FieldChange*)> write_callback) {
+  UserData::FieldChange field_change = UserData::FieldChange::NONE;
+  std::move(write_callback)
+      .Run(collect_user_data_options_.get(), user_data_.get(), &field_change);
+  if (field_change == UserData::FieldChange::NONE) {
+    return;
+  }
+  for (ControllerObserver& observer : observers_) {
+    observer.OnUserDataChanged(user_data_.get(), field_change);
   }
 }
 

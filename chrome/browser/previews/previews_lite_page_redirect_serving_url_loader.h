@@ -16,7 +16,9 @@
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -37,10 +39,10 @@ using ResultCallback =
                             base::Optional<net::RedirectInfo> redirect_info,
                             scoped_refptr<network::ResourceResponse> response)>;
 
-using RequestHandler =
-    base::OnceCallback<void(const network::ResourceRequest& resource_request,
-                            mojo::PendingReceiver<network::mojom::URLLoader>,
-                            network::mojom::URLLoaderClientPtr)>;
+using RequestHandler = base::OnceCallback<void(
+    const network::ResourceRequest& resource_request,
+    mojo::PendingReceiver<network::mojom::URLLoader>,
+    mojo::PendingRemote<network::mojom::URLLoaderClient>)>;
 
 // This class attempts to fetch a LitePage from the LitePage server, and if
 // successful, calls a success callback. Otherwise, it calls fallback in the
@@ -109,7 +111,7 @@ class PreviewsLitePageRedirectServingURLLoader
   void SetUpForwardingClient(
       const network::ResourceRequest&,
       mojo::PendingReceiver<network::mojom::URLLoader> receiver,
-      network::mojom::URLLoaderClientPtr forwarding_client);
+      mojo::PendingRemote<network::mojom::URLLoaderClient> forwarding_client);
 
   // The network URLLoader that fetches the LitePage URL and its receiver.
   network::mojom::URLLoaderPtr network_url_loader_;
@@ -136,7 +138,7 @@ class PreviewsLitePageRedirectServingURLLoader
 
   // Forwarding client binding.
   mojo::Binding<network::mojom::URLLoader> binding_;
-  network::mojom::URLLoaderClientPtr forwarding_client_;
+  mojo::Remote<network::mojom::URLLoaderClient> forwarding_client_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

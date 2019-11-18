@@ -42,7 +42,6 @@ class DocumentSuggestionsServiceTest : public testing::Test {
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)),
         identity_test_env_(&test_url_loader_factory_, &prefs_),
-        field_trial_list_(nullptr),
         document_suggestions_service_(new DocumentSuggestionsService(
             identity_test_env_.identity_manager(),
             shared_url_loader_factory_)) {
@@ -64,7 +63,6 @@ class DocumentSuggestionsServiceTest : public testing::Test {
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
   sync_preferences::TestingPrefServiceSyncable prefs_;
   signin::IdentityTestEnvironment identity_test_env_;
-  base::FieldTrialList field_trial_list_;
   std::unique_ptr<DocumentSuggestionsService> document_suggestions_service_;
 
   DISALLOW_COPY_AND_ASSIGN(DocumentSuggestionsServiceTest);

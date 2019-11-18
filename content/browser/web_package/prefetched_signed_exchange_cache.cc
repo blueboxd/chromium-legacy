@@ -21,6 +21,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_util.h"
@@ -81,10 +82,11 @@ class MojoBlobReaderDelegate : public storage::MojoBlobReader::Delegate {
 // exchange's outer URL request.
 class RedirectResponseURLLoader : public network::mojom::URLLoader {
  public:
-  RedirectResponseURLLoader(const network::ResourceRequest& url_request,
-                            const GURL& inner_url,
-                            const network::ResourceResponseHead& outer_response,
-                            network::mojom::URLLoaderClientPtr client)
+  RedirectResponseURLLoader(
+      const network::ResourceRequest& url_request,
+      const GURL& inner_url,
+      const network::ResourceResponseHead& outer_response,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client)
       : client_(std::move(client)) {
     network::ResourceResponseHead response_head =
         signed_exchange_utils::CreateRedirectResponseHead(
@@ -119,7 +121,7 @@ class RedirectResponseURLLoader : public network::mojom::URLLoader {
     // network.
   }
 
-  network::mojom::URLLoaderClientPtr client_;
+  mojo::Remote<network::mojom::URLLoaderClient> client_;
 
   DISALLOW_COPY_AND_ASSIGN(RedirectResponseURLLoader);
 };
@@ -133,7 +135,7 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
       const url::Origin& request_initiator_site_lock,
       std::unique_ptr<const storage::BlobDataHandle> blob_data_handle,
       const network::URLLoaderCompletionStatus& completion_status,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       bool is_navigation_request)
       : response_(inner_response),
         blob_data_handle_(std::move(blob_data_handle)),
@@ -317,7 +319,7 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
   network::ResourceResponseHead response_;
   std::unique_ptr<const storage::BlobDataHandle> blob_data_handle_;
   const network::URLLoaderCompletionStatus completion_status_;
-  network::mojom::URLLoaderClientPtr client_;
+  mojo::Remote<network::mojom::URLLoaderClient> client_;
   std::unique_ptr<CrossOriginReadBlockingChecker> corb_checker_;
 
   base::WeakPtrFactory<InnerResponseURLLoader> weak_factory_{this};
@@ -350,7 +352,7 @@ class SubresourceSignedExchangeURLLoaderFactory
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& request,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
       override {
     DCHECK_EQ(request.url, entry_->inner_url());
@@ -441,7 +443,7 @@ class PrefetchedNavigationLoaderInterceptor
   void StartRedirectResponse(
       const network::ResourceRequest& resource_request,
       mojo::PendingReceiver<network::mojom::URLLoader> receiver,
-      network::mojom::URLLoaderClientPtr client) {
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client) {
     mojo::MakeSelfOwnedReceiver(
         std::make_unique<RedirectResponseURLLoader>(
             resource_request, exchange_->inner_url(),
@@ -452,7 +454,7 @@ class PrefetchedNavigationLoaderInterceptor
   void StartInnerResponse(
       const network::ResourceRequest& resource_request,
       mojo::PendingReceiver<network::mojom::URLLoader> receiver,
-      network::mojom::URLLoaderClientPtr client) {
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client) {
     mojo::MakeSelfOwnedReceiver(
         std::make_unique<InnerResponseURLLoader>(
             resource_request, *exchange_->inner_response(),

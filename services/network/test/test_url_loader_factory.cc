@@ -81,7 +81,7 @@ bool TestURLLoaderFactory::IsPending(const std::string& url,
     if (candidate.request.url == url) {
       if (request_out)
         *request_out = &candidate.request;
-      return !candidate.client.encountered_error();
+      return candidate.client.is_connected();
     }
   }
   return false;
@@ -91,7 +91,7 @@ int TestURLLoaderFactory::NumPending() {
   int pending = 0;
   base::RunLoop().RunUntilIdle();
   for (const auto& candidate : pending_requests_) {
-    if (!candidate.client.encountered_error())
+    if (candidate.client.is_connected())
       ++pending;
   }
   return pending;
@@ -120,16 +120,17 @@ void TestURLLoaderFactory::CreateLoaderAndStart(
     int32_t request_id,
     uint32_t options,
     const ResourceRequest& url_request,
-    mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   if (interceptor_)
     interceptor_.Run(url_request);
 
-  if (CreateLoaderAndStartInternal(url_request.url, client.get()))
+  mojo::Remote<mojom::URLLoaderClient> client_remote(std::move(client));
+  if (CreateLoaderAndStartInternal(url_request.url, client_remote.get()))
     return;
 
   PendingRequest pending_request;
-  pending_request.client = std::move(client);
+  pending_request.client = std::move(client_remote);
   pending_request.request = url_request;
   pending_request.options = options;
   pending_requests_.push_back(std::move(pending_request));
@@ -183,7 +184,7 @@ bool TestURLLoaderFactory::SimulateResponseForPendingRequest(
        reverse ? i >= 0 : i < static_cast<int>(pending_requests_.size());
        reverse ? --i : ++i) {
     // Skip already cancelled.
-    if (pending_requests_[i].client.encountered_error())
+    if (!pending_requests_[i].client.is_connected())
       continue;
 
     if (pending_requests_[i].request.url == url ||

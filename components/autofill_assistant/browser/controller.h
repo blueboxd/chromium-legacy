@@ -134,6 +134,9 @@ class Controller : public ScriptExecutorDelegate,
   void SetCollectUserDataOptions(
       std::unique_ptr<CollectUserDataOptions> options,
       std::unique_ptr<UserData> information) override;
+  void WriteUserData(base::OnceCallback<void(const CollectUserDataOptions*,
+                                             UserData*,
+                                             UserData::FieldChange*)>) override;
   void OnScriptError(const std::string& error_message,
                      Metrics::DropOutReason reason);
 

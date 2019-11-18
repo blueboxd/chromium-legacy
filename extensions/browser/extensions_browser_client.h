@@ -19,6 +19,7 @@
 #include "extensions/common/extension_id.h"
 #include "extensions/common/view_type.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/url_loader.mojom-forward.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "ui/base/page_transition_types.h"
@@ -158,7 +159,7 @@ class ExtensionsBrowserClient {
       const base::FilePath& resource_relative_path,
       int resource_id,
       const std::string& content_security_policy,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       bool send_cors_header) = 0;
 
   // Returns true if the embedder wants to allow a chrome-extension:// resource

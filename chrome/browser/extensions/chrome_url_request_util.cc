@@ -22,7 +22,6 @@
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/url_request_util.h"
 #include "extensions/common/file_util.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/completion_once_callback.h"
@@ -88,7 +87,7 @@ class ResourceBundleFileLoader : public network::mojom::URLLoader {
       int resource_id,
       const std::string& content_security_policy,
       bool send_cors_header) {
-    // Owns itself. Will live as long as its URLLoader and URLLoaderClientPtr
+    // Owns itself. Will live as long as its URLLoader and URLLoaderClient
     // bindings are alive - essentially until either the client gives up or all
     // file data has been sent to it.
     auto* bundle_loader =
@@ -280,13 +279,12 @@ void LoadResourceFromResourceBundle(
     const base::FilePath& resource_relative_path,
     int resource_id,
     const std::string& content_security_policy,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     bool send_cors_header) {
   DCHECK(!resource_relative_path.empty());
   ResourceBundleFileLoader::CreateAndStart(
-      request, std::move(loader), client.PassInterface(),
-      resource_relative_path, resource_id, content_security_policy,
-      send_cors_header);
+      request, std::move(loader), std::move(client), resource_relative_path,
+      resource_id, content_security_policy, send_cors_header);
 }
 
 }  // namespace chrome_url_request_util

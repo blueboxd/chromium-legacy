@@ -107,10 +107,10 @@ class MockDelegate : public blink::URLLoaderThrottle::Delegate {
     is_intercepted_ = true;
 
     destination_loader_ptr_ = std::move(new_loader);
-    ASSERT_TRUE(mojo::FusePipes(
-        std::move(new_client_receiver),
-        mojo::PendingRemote<network::mojom::URLLoaderClient>(
-            destination_loader_client_.CreateInterfacePtr().PassInterface())));
+    ASSERT_TRUE(
+        mojo::FusePipes(std::move(new_client_receiver),
+                        mojo::PendingRemote<network::mojom::URLLoaderClient>(
+                            destination_loader_client_.CreateRemote())));
 
     mojo::PendingRemote<network::mojom::URLLoader> pending_remote;
     pending_receiver_ = pending_remote.InitWithNewPipeAndPassReceiver();

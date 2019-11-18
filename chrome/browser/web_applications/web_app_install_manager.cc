@@ -355,6 +355,7 @@ content::WebContents* WebAppInstallManager::EnsureWebContentsCreated() {
 
   // Load about:blank so that the process actually starts.
   url_loader_->LoadUrl(GURL("about:blank"), web_contents_.get(),
+                       WebAppUrlLoader::UrlComparison::kExact,
                        base::BindOnce(&WebAppInstallManager::OnWebContentsReady,
                                       weak_ptr_factory_.GetWeakPtr()));
 

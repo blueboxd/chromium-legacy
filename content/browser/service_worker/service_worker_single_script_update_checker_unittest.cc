@@ -16,6 +16,7 @@
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_util.h"
@@ -470,7 +471,7 @@ TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
   ASSERT_EQ(1u, loader_factory->pending_requests()->size());
 
   // |client| simulates sending the data from the network to the update checker.
-  network::mojom::URLLoaderClientPtr client =
+  mojo::Remote<network::mojom::URLLoaderClient> client =
       std::move(loader_factory->GetPendingRequest(0)->client);
 
   // Simulate sending the response head.

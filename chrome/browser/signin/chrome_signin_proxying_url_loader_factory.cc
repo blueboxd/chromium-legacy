@@ -19,7 +19,6 @@
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/buildflags/buildflags.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/net_errors.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -88,7 +87,7 @@ class ProxyingURLLoaderFactory::InProgressRequest
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& request,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
 
   ~InProgressRequest() override {
@@ -168,7 +167,7 @@ class ProxyingURLLoaderFactory::InProgressRequest
 
   // Messages received by |client_receiver_| are forwarded to |target_client_|.
   mojo::Receiver<network::mojom::URLLoaderClient> client_receiver_{this};
-  network::mojom::URLLoaderClientPtr target_client_;
+  mojo::Remote<network::mojom::URLLoaderClient> target_client_;
 
   // Messages received by |loader_receiver_| are forwarded to |target_loader_|.
   mojo::Receiver<network::mojom::URLLoader> loader_receiver_;
@@ -302,7 +301,7 @@ ProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& request,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
     : factory_(factory),
       request_url_(request.url),
@@ -312,8 +311,8 @@ ProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
       is_main_frame_(request.is_main_frame),
       target_client_(std::move(client)),
       loader_receiver_(this, std::move(loader_receiver)) {
-  network::mojom::URLLoaderClientPtr proxy_client;
-  client_receiver_.Bind(mojo::MakeRequest(&proxy_client));
+  mojo::PendingRemote<network::mojom::URLLoaderClient> proxy_client =
+      client_receiver_.BindNewPipeAndPassRemote();
 
   net::HttpRequestHeaders modified_headers;
   std::vector<std::string> removed_headers;
@@ -480,7 +479,7 @@ void ProxyingURLLoaderFactory::CreateLoaderAndStart(
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& request,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   requests_.insert(std::make_unique<InProgressRequest>(
       this, std::move(loader_receiver), routing_id, request_id, options,

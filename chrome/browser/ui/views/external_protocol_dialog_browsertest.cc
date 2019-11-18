@@ -9,6 +9,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/external_protocol_dialog.h"
@@ -195,4 +196,15 @@ IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest,
 // run.
 IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest, InvokeUi_default) {
   ShowAndVerifyUi();
+}
+
+// Tests that keyboard focus works when the dialog is shown. Regression test for
+// https://crbug.com/1025343.
+IN_PROC_BROWSER_TEST_F(ExternalProtocolDialogBrowserTest, TestFocus) {
+  ShowUi(std::string());
+  gfx::NativeWindow window = browser()->window()->GetNativeWindow();
+  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
+  const views::FocusManager* focus_manager = widget->GetFocusManager();
+  const views::View* focused_view = focus_manager->GetFocusedView();
+  EXPECT_TRUE(focused_view);
 }

@@ -15,7 +15,9 @@
 #include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -69,7 +71,7 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& resource_request,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       base::WeakPtr<ServiceWorkerNavigationHandle> service_worker_handle,
       base::WeakPtr<AppCacheHost> appcache_host,
       const BrowserContextGetter& browser_context_getter,
@@ -142,7 +144,7 @@ class WorkerScriptLoader : public network::mojom::URLLoader,
   const int32_t request_id_;
   const uint32_t options_;
   network::ResourceRequest resource_request_;
-  network::mojom::URLLoaderClientPtr client_;
+  mojo::Remote<network::mojom::URLLoaderClient> client_;
   base::WeakPtr<ServiceWorkerNavigationHandle> service_worker_handle_;
   BrowserContextGetter browser_context_getter_;
   scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory_;

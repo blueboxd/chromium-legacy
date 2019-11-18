@@ -1178,17 +1178,13 @@ LayoutObject* LayoutObject::ContainerForFixedPosition(
 
 LayoutBlock* LayoutObject::FindNonAnonymousContainingBlock(
     LayoutObject* container,
-    LayoutObject::AncestorSkipInfo* skip_info) const {
+    AncestorSkipInfo* skip_info) {
   // For inlines, we return the nearest non-anonymous enclosing
   // block. We don't try to return the inline itself. This allows us to avoid
   // having a positioned objects list in all LayoutInlines and lets us return a
   // strongly-typed LayoutBlock* result from this method. The
   // LayoutObject::Container() method can actually be used to obtain the inline
   // directly.
-  if (container && container->IsInline() && !container->IsAtomicInlineLevel()) {
-    container = container->ContainingBlock(skip_info);
-  }
-
   if (container && !container->IsLayoutBlock())
     container = container->ContainingBlock(skip_info);
 

@@ -38,61 +38,28 @@ void OnHardwarePlatformInfo(base::OnceClosure quit_closure,
   *out = info.serial_number;
   std::move(quit_closure).Run();
 }
-}  // namespace
 
-using BrowserDMToken = BrowserDMTokenStorage::BrowserDMToken;
+DMToken CreateValidToken(const std::string& dm_token) {
+  DCHECK_NE(dm_token, kInvalidTokenValue);
+  DCHECK(!dm_token.empty());
+  return DMToken(DMToken::Status::kValid, dm_token);
+}
+
+DMToken CreateInvalidToken() {
+  return DMToken(DMToken::Status::kInvalid, "");
+}
+
+DMToken CreateEmptyToken() {
+  return DMToken(DMToken::Status::kEmpty, "");
+}
+
+}  // namespace
 
 // static
 BrowserDMTokenStorage* BrowserDMTokenStorage::storage_for_testing_ = nullptr;
 
-BrowserDMToken BrowserDMToken::CreateValidToken(const std::string& dm_token) {
-  DCHECK_NE(dm_token, kInvalidTokenValue);
-  DCHECK(!dm_token.empty());
-  return BrowserDMToken(Status::kValid, dm_token);
-}
-
-BrowserDMToken BrowserDMToken::CreateInvalidToken() {
-  return BrowserDMToken(Status::kInvalid, "");
-}
-
-BrowserDMToken BrowserDMToken::CreateEmptyToken() {
-  return BrowserDMToken(Status::kEmpty, "");
-}
-
-BrowserDMToken::BrowserDMToken(const BrowserDMToken& other) = default;
-
-BrowserDMToken::BrowserDMToken(BrowserDMToken&& other) = default;
-
-BrowserDMToken& BrowserDMToken::operator=(const BrowserDMToken& other) =
-    default;
-
-BrowserDMToken& BrowserDMToken::operator=(BrowserDMToken&& other) = default;
-
-BrowserDMToken::~BrowserDMToken() = default;
-
-const std::string& BrowserDMToken::value() const {
-  // TODO(domfc): Uncomment DCHECK(is_valid()) after migrating code.
-  // DCHECK(is_valid());
-  return value_;
-}
-
-bool BrowserDMToken::is_valid() const {
-  return status_ == Status::kValid;
-}
-
-bool BrowserDMToken::is_invalid() const {
-  return status_ == Status::kInvalid;
-}
-
-bool BrowserDMToken::is_empty() const {
-  return status_ == Status::kEmpty;
-}
-
-BrowserDMToken::BrowserDMToken(Status status, const base::StringPiece value)
-    : status_(status), value_(value) {}
-
 BrowserDMTokenStorage::BrowserDMTokenStorage()
-    : is_initialized_(false), dm_token_(BrowserDMToken::CreateEmptyToken()) {
+    : is_initialized_(false), dm_token_(CreateEmptyToken()) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 
   // We don't call InitIfNeeded() here so that the global instance can be
@@ -138,13 +105,13 @@ void BrowserDMTokenStorage::StoreDMToken(const std::string& dm_token,
   store_callback_ = std::move(callback);
 
   if (dm_token.empty()) {
-    dm_token_ = BrowserDMToken::CreateEmptyToken();
+    dm_token_ = CreateEmptyToken();
     SaveDMToken("");
   } else if (dm_token == kInvalidTokenValue) {
-    dm_token_ = BrowserDMToken::CreateInvalidToken();
+    dm_token_ = CreateInvalidToken();
     SaveDMToken(kInvalidTokenValue);
   } else {
-    dm_token_ = BrowserDMToken::CreateValidToken(dm_token);
+    dm_token_ = CreateValidToken(dm_token);
     SaveDMToken(dm_token_.value());
   }
 }
@@ -153,7 +120,7 @@ std::string BrowserDMTokenStorage::RetrieveDMToken() {
   return RetrieveBrowserDMToken().value();
 }
 
-BrowserDMToken BrowserDMTokenStorage::RetrieveBrowserDMToken() {
+DMToken BrowserDMTokenStorage::RetrieveBrowserDMToken() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!store_callback_);
 
@@ -194,21 +161,16 @@ void BrowserDMTokenStorage::InitIfNeeded() {
   DVLOG(1) << "Enrollment token = " << enrollment_token_;
 
   std::string init_dm_token = InitDMToken();
-  if (init_dm_token.empty())
-    dm_token_ = BrowserDMToken::CreateEmptyToken();
-  else if (init_dm_token == kInvalidTokenValue)
-    dm_token_ = BrowserDMToken::CreateInvalidToken();
-  else
-    dm_token_ = BrowserDMToken::CreateValidToken(init_dm_token);
-
-  if (dm_token_.is_valid())
-    DVLOG(1) << "DM Token = " << dm_token_.value();
-  else if (dm_token_.is_empty())
+  if (init_dm_token.empty()) {
+    dm_token_ = CreateEmptyToken();
     DVLOG(1) << "DM Token = empty";
-  else if (dm_token_.is_invalid())
+  } else if (init_dm_token == kInvalidTokenValue) {
+    dm_token_ = CreateInvalidToken();
     DVLOG(1) << "DM Token = invalid";
-  else
-    DVLOG(1) << "DM Token = unknown status";
+  } else {
+    dm_token_ = CreateValidToken(init_dm_token);
+    DVLOG(1) << "DM Token = " << dm_token_.value();
+  }
 
   should_display_error_message_on_failure_ = InitEnrollmentErrorOption();
 }

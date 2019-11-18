@@ -723,5 +723,46 @@ TEST_F(ArcVmClientAdapterTest, ExpandPropertyFilesForTesting_NoSource) {
                                              base::FilePath("/nonexistent")));
 }
 
+TEST_F(ArcVmClientAdapterTest, IsSystemImageExtFormatForTesting_FileMissing) {
+  EXPECT_FALSE(
+      IsSystemImageExtFormatForTesting(base::FilePath("/nonexistent")));
+}
+
+TEST_F(ArcVmClientAdapterTest,
+       IsSystemImageExtFormatForTesting_FileSizeTooSmall) {
+  base::FilePath file;
+  ASSERT_TRUE(base::CreateTemporaryFile(&file));
+  char data[100];
+  memset(data, 0, sizeof(data));
+  base::WriteFile(file, data, sizeof(data));
+
+  EXPECT_FALSE(IsSystemImageExtFormatForTesting(file));
+}
+
+TEST_F(ArcVmClientAdapterTest,
+       IsSystemImageExtFormatForTesting_MagicNumberDoesNotMatch) {
+  base::FilePath file;
+  ASSERT_TRUE(base::CreateTemporaryFile(&file));
+  char data[2048];
+  memset(data, 0, sizeof(data));
+  base::WriteFile(file, data, sizeof(data));
+
+  EXPECT_FALSE(IsSystemImageExtFormatForTesting(file));
+}
+
+TEST_F(ArcVmClientAdapterTest,
+       IsSystemImageExtFormatForTesting_MagicNumberMatches) {
+  base::FilePath file;
+  ASSERT_TRUE(base::CreateTemporaryFile(&file));
+  char data[2048];
+  memset(data, 0, sizeof(data));
+  // Magic signature (0xEF53) is in little-endian order.
+  data[0x400 + 0x38] = 0x53;
+  data[0x400 + 0x39] = 0xEF;
+  base::WriteFile(file, data, sizeof(data));
+
+  EXPECT_TRUE(IsSystemImageExtFormatForTesting(file));
+}
+
 }  // namespace
 }  // namespace arc

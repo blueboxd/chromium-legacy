@@ -85,7 +85,7 @@ class CrossThreadSharedURLLoaderFactory : public SharedURLLoaderFactory {
                             int32_t request_id,
                             uint32_t options,
                             const ResourceRequest& request,
-                            mojom::URLLoaderClientPtr client,
+                            mojo::PendingRemote<mojom::URLLoaderClient> client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override;
   void Clone(mojo::PendingReceiver<mojom::URLLoaderFactory> receiver) override;
@@ -118,7 +118,7 @@ void CrossThreadSharedURLLoaderFactory::CreateLoaderAndStart(
     int32_t request_id,
     uint32_t options,
     const ResourceRequest& request,
-    mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::SequencedTaskRunner* runner = state_->task_runner();
@@ -131,7 +131,7 @@ void CrossThreadSharedURLLoaderFactory::CreateLoaderAndStart(
         FROM_HERE,
         base::BindOnce(&State::CreateLoaderAndStart, state_, std::move(loader),
                        routing_id, request_id, options, request,
-                       client.PassInterface(), traffic_annotation));
+                       std::move(client), traffic_annotation));
   }
 }
 
@@ -196,9 +196,9 @@ void CrossThreadSharedURLLoaderFactoryInfo::State::CreateLoaderAndStart(
     mojo::PendingRemote<mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base_factory_->CreateLoaderAndStart(
-      std::move(loader), routing_id, request_id, options, request,
-      mojom::URLLoaderClientPtr(std::move(client)), traffic_annotation);
+  base_factory_->CreateLoaderAndStart(std::move(loader), routing_id, request_id,
+                                      options, request, std::move(client),
+                                      traffic_annotation);
 }
 
 void CrossThreadSharedURLLoaderFactoryInfo::State::Clone(

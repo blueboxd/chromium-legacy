@@ -79,7 +79,7 @@ class CorsURLLoaderFactoryTest : public testing::Test {
     cors_url_loader_factory_->CreateLoaderAndStart(
         mojo::MakeRequest(&url_loader_), kRouteId, kRequestId,
         mojom::kURLLoadOptionNone, request,
-        test_cors_loader_client_.CreateInterfacePtr(),
+        test_cors_loader_client_.CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   }
 

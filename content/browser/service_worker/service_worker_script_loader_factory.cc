@@ -17,6 +17,7 @@
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_updated_script_loader.h"
 #include "content/browser/service_worker/service_worker_version.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -47,10 +48,11 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& resource_request,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   if (!CheckIfScriptRequestIsValid(resource_request)) {
-    client->OnComplete(network::URLLoaderCompletionStatus(net::ERR_ABORTED));
+    mojo::Remote<network::mojom::URLLoaderClient>(std::move(client))
+        ->OnComplete(network::URLLoaderCompletionStatus(net::ERR_ABORTED));
     return;
   }
 
@@ -97,7 +99,8 @@ void ServiceWorkerScriptLoaderFactory::CreateLoaderAndStart(
 
   // Case B:
   if (ServiceWorkerVersion::IsInstalled(version->status())) {
-    client->OnComplete(network::URLLoaderCompletionStatus(net::ERR_FAILED));
+    mojo::Remote<network::mojom::URLLoaderClient>(std::move(client))
+        ->OnComplete(network::URLLoaderCompletionStatus(net::ERR_FAILED));
     return;
   }
 
@@ -226,7 +229,7 @@ void ServiceWorkerScriptLoaderFactory::OnCopyScriptFinished(
     mojo::PendingReceiver<network::mojom::URLLoader> receiver,
     uint32_t options,
     const network::ResourceRequest& resource_request,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     int64_t new_resource_id,
     net::Error error) {
   int64_t resource_size = cache_writer_->bytes_written();
@@ -239,7 +242,8 @@ void ServiceWorkerScriptLoaderFactory::OnCopyScriptFinished(
         resource_request.url, resource_size, error,
         ServiceWorkerConsts::kServiceWorkerCopyScriptError);
 
-    client->OnComplete(network::URLLoaderCompletionStatus(error));
+    mojo::Remote<network::mojom::URLLoaderClient>(std::move(client))
+        ->OnComplete(network::URLLoaderCompletionStatus(error));
     return;
   }
 

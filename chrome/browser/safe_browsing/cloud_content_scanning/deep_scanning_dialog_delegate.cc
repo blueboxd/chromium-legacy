@@ -34,8 +34,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_types.h"
 
-using BrowserDMToken = policy::BrowserDMTokenStorage::BrowserDMToken;
-
 namespace safe_browsing {
 
 const base::Feature kDeepScanningOfUploads{"SafeBrowsingDeepScanningOfUploads",
@@ -47,8 +45,9 @@ const base::Feature kDeepScanningOfUploadsUI{
 
 namespace {
 
-BrowserDMToken* GetDMTokenForTestingStorage() {
-  static BrowserDMToken dm_token_storage = BrowserDMToken::CreateEmptyToken();
+policy::DMToken* GetDMTokenForTestingStorage() {
+  static policy::DMToken dm_token_storage =
+      policy::DMToken::CreateEmptyTokenForTesting();
   return &dm_token_storage;
 }
 
@@ -400,7 +399,7 @@ void DeepScanningDialogDelegate::SetFactoryForTesting(Factory factory) {
 
 // static
 void DeepScanningDialogDelegate::SetDMTokenForTesting(
-    const BrowserDMToken& dm_token) {
+    const policy::DMToken& dm_token) {
   *GetDMTokenForTestingStorage() = dm_token;
 }
 
@@ -476,8 +475,8 @@ void DeepScanningDialogDelegate::FileRequestCallback(
 }
 
 // static
-BrowserDMToken DeepScanningDialogDelegate::GetDMToken() {
-  BrowserDMToken* dm_token = GetDMTokenForTestingStorage();
+policy::DMToken DeepScanningDialogDelegate::GetDMToken() {
+  policy::DMToken dm_token = *GetDMTokenForTestingStorage();
 
 #if !defined(OS_CHROMEOS)
   // This is not compiled on chromeos because
@@ -485,13 +484,13 @@ BrowserDMToken DeepScanningDialogDelegate::GetDMToken() {
   // policy::BrowserDMTokenStorage::Get()->RetrieveDMToken() does not return a
   // valid token either.  Once these are fixed the #if !defined can be removed.
 
-  if (dm_token->is_empty() &&
+  if (dm_token.is_empty() &&
       policy::ChromeBrowserCloudManagementController::IsEnabled()) {
-    return policy::BrowserDMTokenStorage::Get()->RetrieveBrowserDMToken();
+    dm_token = policy::BrowserDMTokenStorage::Get()->RetrieveBrowserDMToken();
   }
 #endif
 
-  return *dm_token;
+  return dm_token;
 }
 
 bool DeepScanningDialogDelegate::UploadData() {

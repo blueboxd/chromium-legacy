@@ -21,7 +21,6 @@
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/url_loader_interceptor.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/load_flags.h"
 #include "net/base/test_completion_callback.h"
@@ -105,7 +104,7 @@ class MockNetwork {
       response_head.cert_status = net::CERT_STATUS_DATE_INVALID;
     }
 
-    network::mojom::URLLoaderClientPtr& client = params->client;
+    mojo::Remote<network::mojom::URLLoaderClient>& client = params->client;
     if (response_head.headers->response_code() == 307) {
       client->OnReceiveRedirect(net::RedirectInfo(), response_head);
       return true;
@@ -231,9 +230,8 @@ class ServiceWorkerNewScriptLoaderTest : public testing::Test {
 
     *out_client = std::make_unique<network::TestURLLoaderClient>();
     *out_loader = ServiceWorkerNewScriptLoader::CreateAndStart(
-        routing_id, request_id, options, request,
-        (*out_client)->CreateInterfacePtr(), version_,
-        helper_->url_loader_factory_getter()->GetNetworkFactory(),
+        routing_id, request_id, options, request, (*out_client)->CreateRemote(),
+        version_, helper_->url_loader_factory_getter()->GetNetworkFactory(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   }
 

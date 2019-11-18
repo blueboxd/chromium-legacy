@@ -105,7 +105,7 @@ IN_PROC_BROWSER_TEST_F(StoragePartititionImplBrowsertest, NetworkContext) {
   network::mojom::URLLoaderPtr loader;
   loader_factory->CreateLoaderAndStart(
       mojo::MakeRequest(&loader), 2, 1, network::mojom::kURLLoadOptionNone,
-      request, client.CreateInterfacePtr(),
+      request, client.CreateRemote(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   // Just wait until headers are received - if the right headers are received,

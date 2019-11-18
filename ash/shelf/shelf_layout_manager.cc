@@ -462,22 +462,6 @@ gfx::Rect ShelfLayoutManager::GetIdealBounds() const {
                 rect.height()));
 }
 
-gfx::Rect ShelfLayoutManager::GetIdealBoundsForWorkAreaCalculation() const {
-  if (!IsTabletModeEnabled() || !chromeos::switches::ShouldShowShelfHotseat())
-    return GetIdealBounds();
-
-  // For the work-area calculation in tablet mode, always use in-app shelf
-  // bounds, because when the shelf is not in-app the UI is either showing
-  // AppList or Overview, and updating the WorkArea with the new Shelf size
-  // would cause unnecessary work.
-  aura::Window* shelf_window = shelf_widget_->GetNativeWindow();
-  gfx::Rect rect(screen_util::GetDisplayBoundsInParent(shelf_window));
-  const int in_app_shelf_size = ShelfConfig::Get()->in_app_shelf_size();
-  rect.set_y(rect.bottom() - in_app_shelf_size);
-  rect.set_height(in_app_shelf_size);
-  return rect;
-}
-
 void ShelfLayoutManager::UpdateVisibilityState() {
   // Bail out early after shelf is destroyed or visibility update is suspended.
   aura::Window* shelf_window = shelf_widget_->GetNativeWindow();
@@ -1619,12 +1603,7 @@ void ShelfLayoutManager::CalculateTargetBounds(
     UpdateTargetBoundsForGesture(hotseat_target_state);
 
   target_bounds_.shelf_insets = SelectValueForShelfAlignment(
-      gfx::Insets(0, 0,
-                  GetShelfInset(state.visibility_state,
-                                IsHotseatEnabled()
-                                    ? ShelfConfig::Get()->in_app_shelf_size()
-                                    : shelf_height),
-                  0),
+      gfx::Insets(0, 0, GetShelfInset(state.visibility_state, shelf_height), 0),
       gfx::Insets(0, GetShelfInset(state.visibility_state, shelf_width), 0, 0),
       gfx::Insets(0, 0, 0, GetShelfInset(state.visibility_state, shelf_width)));
 
@@ -1662,16 +1641,9 @@ void ShelfLayoutManager::CalculateTargetBounds(
 void ShelfLayoutManager::CalculateTargetBoundsAndUpdateWorkArea(
     HotseatState hotseat_target_state) {
   CalculateTargetBounds(state_, hotseat_target_state);
-  gfx::Rect shelf_bounds_for_workarea_calculation = target_bounds_.shelf_bounds;
-  // When the hotseat is enabled, only use the in-app shelf bounds when
-  // calculating the work area. This prevents windows resizing unnecesarily.
-  if (IsHotseatEnabled()) {
-    shelf_bounds_for_workarea_calculation =
-        GetIdealBoundsForWorkAreaCalculation();
-  }
   if (!suspend_work_area_update_) {
     WorkAreaInsets::ForWindow(shelf_widget_->GetNativeWindow())
-        ->SetShelfBoundsAndInsets(shelf_bounds_for_workarea_calculation,
+        ->SetShelfBoundsAndInsets(target_bounds_.shelf_bounds,
                                   target_bounds_.shelf_insets);
     for (auto& observer : observers_)
       observer.OnWorkAreaInsetsChanged();

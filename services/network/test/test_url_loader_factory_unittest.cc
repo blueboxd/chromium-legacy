@@ -32,8 +32,7 @@ class TestURLLoaderFactoryTest : public testing::Test {
     request.load_flags = load_flags;
     request.report_raw_headers = report_raw_headers;
     factory_.CreateLoaderAndStart(
-        mojo::MakeRequest(&loader_), 0, 0, 0, request,
-        client->CreateInterfacePtr(),
+        mojo::MakeRequest(&loader_), 0, 0, 0, request, client->CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   }
 

@@ -509,7 +509,7 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
     *out_loader_client = std::make_unique<network::TestURLLoaderClient>();
     loader_factory->CreateLoaderAndStart(
         mojo::MakeRequest(out_loader), 0, 0, network::mojom::kURLLoadOptionNone,
-        request, (*out_loader_client)->CreateInterfacePtr(),
+        request, (*out_loader_client)->CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   }
 

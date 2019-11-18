@@ -20,6 +20,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/extensions/arc_support_message_host.h"
+#include "chrome/browser/chromeos/drive/drivefs_native_message_host.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_messaging.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -132,6 +133,10 @@ static const BuiltInHost kBuiltInHost[] = {
      chromeos::kWilcoDtcSupportdHostOrigins,
      chromeos::kWilcoDtcSupportdHostOriginsSize,
      &chromeos::CreateExtensionOwnedWilcoDtcSupportdMessageHost},
+    {drive::kDriveFsNativeMessageHostName,
+     drive::kDriveFsNativeMessageHostOrigins,
+     drive::kDriveFsNativeMessageHostOriginsSize,
+     &drive::CreateDriveFsNativeMessageHost},
 };
 
 bool MatchesSecurityOrigin(const BuiltInHost& host,

@@ -3763,10 +3763,10 @@ jumbo_static_library("ui") {
       "views/crostini/crostini_installer_view.h",
       "views/crostini/crostini_uninstaller_view.cc",
       "views/crostini/crostini_uninstaller_view.h",
+      "views/crostini/crostini_update_component_view.cc",
+      "views/crostini/crostini_update_component_view.h",
       "views/crostini/crostini_upgrade_container_view.cc",
       "views/crostini/crostini_upgrade_container_view.h",
-      "views/crostini/crostini_upgrade_view.cc",
-      "views/crostini/crostini_upgrade_view.h",
       "views/plugin_vm/plugin_vm_launcher_view.cc",
       "views/plugin_vm/plugin_vm_launcher_view.h",
     ]

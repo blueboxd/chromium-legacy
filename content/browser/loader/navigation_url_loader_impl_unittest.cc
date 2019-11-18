@@ -33,7 +33,6 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/test_navigation_url_loader_delegate.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/load_flags.h"
 #include "net/base/mock_network_change_notifier.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -82,9 +81,10 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
                        base::Unretained(this))));
   }
 
-  void StartLoader(const network::ResourceRequest& resource_request,
-                   mojo::PendingReceiver<network::mojom::URLLoader> receiver,
-                   network::mojom::URLLoaderClientPtr client) {
+  void StartLoader(
+      const network::ResourceRequest& resource_request,
+      mojo::PendingReceiver<network::mojom::URLLoader> receiver,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client) {
     *most_recent_resource_request_ = resource_request;
     static network::mojom::URLLoaderFactoryParams params;
     params.process_id = network::mojom::kBrowserProcessId;

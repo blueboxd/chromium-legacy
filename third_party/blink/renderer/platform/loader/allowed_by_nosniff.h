@@ -15,7 +15,7 @@ class ResourceResponse;
 
 class PLATFORM_EXPORT AllowedByNosniff final {
  public:
-  enum class MimeTypeCheck { kStrict, kLax };
+  enum class MimeTypeCheck { kStrict, kLaxForElement, kLaxForWorker };
 
   static bool MimeTypeAsScript(UseCounter&,
                                ConsoleLogger*,

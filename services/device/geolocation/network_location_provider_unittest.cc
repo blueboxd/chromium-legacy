@@ -243,7 +243,7 @@ class GeolocationNetworkProviderTest : public testing::Test {
     ASSERT_EQ(1, test_url_loader_factory_.NumPending());
     const network::TestURLLoaderFactory::PendingRequest& pending_request =
         test_url_loader_factory_.pending_requests()->back();
-    EXPECT_FALSE(pending_request.client.encountered_error());
+    EXPECT_TRUE(pending_request.client.is_connected());
     std::string upload_data = network::GetUploadData(pending_request.request);
     ASSERT_FALSE(upload_data.empty());
 

@@ -23,6 +23,7 @@
 namespace web_app {
 
 using Result = WebAppUrlLoader::Result;
+using UrlComparison = WebAppUrlLoader::UrlComparison;
 
 // Returns a redirect response to |dest| URL.
 std::unique_ptr<net::test_server::HttpResponse> HandleServerRedirect(
@@ -69,11 +70,13 @@ class WebAppUrlLoaderTest : public InProcessBrowserTest {
     web_contents_.reset();
   }
 
-  Result LoadUrlAndWait(WebAppUrlLoader* loader, const std::string& path) {
+  Result LoadUrlAndWait(WebAppUrlLoader* loader,
+                        UrlComparison url_comparison,
+                        const std::string& path) {
     base::Optional<Result> result;
     base::RunLoop run_loop;
     loader->LoadUrl(embedded_test_server()->GetURL(path), web_contents(),
-                    base::BindLambdaForTesting([&](Result r) {
+                    url_comparison, base::BindLambdaForTesting([&](Result r) {
                       result = r;
                       run_loop.Quit();
                     }));
@@ -109,25 +112,59 @@ class WebAppUrlLoaderTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, Loaded) {
   ASSERT_TRUE(embedded_test_server()->Start());
   WebAppUrlLoader loader;
-  EXPECT_EQ(Result::kUrlLoaded, LoadUrlAndWait(&loader, "/simple.html"));
+  EXPECT_EQ(Result::kUrlLoaded,
+            LoadUrlAndWait(&loader, UrlComparison::kExact, "/simple.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, LoadedWithParamChange) {
+IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, LoadedWithParamChangeIgnored) {
   SetupRedirect("/test-redirect", "/test-redirect?param=stuff");
   ASSERT_TRUE(embedded_test_server()->Start());
   WebAppUrlLoader loader;
 
-  EXPECT_EQ(Result::kUrlLoaded, LoadUrlAndWait(&loader, "/test-redirect"));
+  EXPECT_EQ(Result::kUrlLoaded,
+            LoadUrlAndWait(&loader, UrlComparison::kIgnoreQueryParamsAndRef,
+                           "/test-redirect"));
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, LoadedWithParamAndRefChange) {
+IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest,
+                       LoadedWithParamAndRefChangeIgnored) {
   // Note we cannot test the ref change in isolation as it is not sent to the
   // server, so we cannot check it in the request handler.
   SetupRedirect("/test-redirect", "/test-redirect?param=foo#ref");
   ASSERT_TRUE(embedded_test_server()->Start());
   WebAppUrlLoader loader;
 
-  EXPECT_EQ(Result::kUrlLoaded, LoadUrlAndWait(&loader, "/test-redirect"));
+  EXPECT_EQ(Result::kUrlLoaded,
+            LoadUrlAndWait(&loader, UrlComparison::kIgnoreQueryParamsAndRef,
+                           "/test-redirect"));
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, LoadedWithPathChangeIgnored) {
+  SetupRedirect("/test-redirect", "/test-redirect-new-path");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WebAppUrlLoader loader;
+
+  EXPECT_EQ(
+      Result::kUrlLoaded,
+      LoadUrlAndWait(&loader, UrlComparison::kSameOrigin, "/test-redirect"));
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, RedirectWithRefChange) {
+  SetupRedirect("/test-redirect", "/test-redirect#ref");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WebAppUrlLoader loader;
+
+  EXPECT_EQ(Result::kRedirectedUrlLoaded,
+            LoadUrlAndWait(&loader, UrlComparison::kExact, "/test-redirect"));
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, RedirectWithParamChange) {
+  SetupRedirect("/test-redirect", "/test-redirect?param=stuff");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WebAppUrlLoader loader;
+
+  EXPECT_EQ(Result::kRedirectedUrlLoaded,
+            LoadUrlAndWait(&loader, UrlComparison::kExact, "/test-redirect"));
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, RedirectWithPathChange) {
@@ -136,7 +173,8 @@ IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, RedirectWithPathChange) {
   WebAppUrlLoader loader;
 
   EXPECT_EQ(Result::kRedirectedUrlLoaded,
-            LoadUrlAndWait(&loader, "/test-redirect"));
+            LoadUrlAndWait(&loader, UrlComparison::kIgnoreQueryParamsAndRef,
+                           "/test-redirect"));
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, 302FoundRedirect) {
@@ -144,9 +182,9 @@ IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, 302FoundRedirect) {
   WebAppUrlLoader loader;
 
   const GURL final_url = embedded_test_server()->GetURL("/simple.html");
-  EXPECT_EQ(
-      Result::kRedirectedUrlLoaded,
-      LoadUrlAndWait(&loader, "/server-redirect-302?" + final_url.spec()));
+  EXPECT_EQ(Result::kRedirectedUrlLoaded,
+            LoadUrlAndWait(&loader, UrlComparison::kIgnoreQueryParamsAndRef,
+                           "/server-redirect-302?" + final_url.spec()));
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, Hung) {
@@ -158,6 +196,7 @@ IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, Hung) {
   base::Optional<Result> result;
 
   loader.LoadUrl(embedded_test_server()->GetURL("/hung"), web_contents(),
+                 UrlComparison::kExact,
                  base::BindLambdaForTesting([&](Result r) { result = r; }));
 
   // Run all pending tasks. The URL should still be loading.
@@ -181,6 +220,7 @@ IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, WebContentsDestroyed) {
 
   base::RunLoop run_loop;
   loader.LoadUrl(embedded_test_server()->GetURL("/hung"), web_contents(),
+                 UrlComparison::kExact,
                  base::BindLambdaForTesting([&](Result r) {
                    result = r;
                    run_loop.Quit();
@@ -218,12 +258,14 @@ IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, MultipleLoadUrlCalls) {
       base::BarrierClosure(2, run_loop.QuitClosure());
 
   loader.LoadUrl(embedded_test_server()->GetURL("/title1.html"),
-                 web_contents1.get(), base::BindLambdaForTesting([&](Result r) {
+                 web_contents1.get(), UrlComparison::kExact,
+                 base::BindLambdaForTesting([&](Result r) {
                    title1_result = r;
                    barrier_closure.Run();
                  }));
   loader.LoadUrl(embedded_test_server()->GetURL("/title2.html"),
-                 web_contents2.get(), base::BindLambdaForTesting([&](Result r) {
+                 web_contents2.get(), UrlComparison::kExact,
+                 base::BindLambdaForTesting([&](Result r) {
                    title2_result = r;
                    barrier_closure.Run();
                  }));

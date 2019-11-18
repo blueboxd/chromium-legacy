@@ -121,6 +121,10 @@ void PluginVmManager::LaunchPluginVm() {
     return;
   }
 
+  for (auto& observer : vm_starting_observers_) {
+    observer.OnVmStarting();
+  }
+
   // Show a spinner for the first launch (state UNKNOWN) or if we will have to
   // wait before starting the VM.
   if (vm_state_ == vm_tools::plugin_dispatcher::VmState::VM_STATE_UNKNOWN ||
@@ -142,6 +146,15 @@ void PluginVmManager::LaunchPluginVm() {
       ->StartPluginVmDispatcher(
           owner_id_, base::BindOnce(&PluginVmManager::OnStartPluginVmDispatcher,
                                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PluginVmManager::AddVmStartingObserver(
+    chromeos::VmStartingObserver* observer) {
+  vm_starting_observers_.AddObserver(observer);
+}
+void PluginVmManager::RemoveVmStartingObserver(
+    chromeos::VmStartingObserver* observer) {
+  vm_starting_observers_.RemoveObserver(observer);
 }
 
 void PluginVmManager::StopPluginVm(const std::string& name) {

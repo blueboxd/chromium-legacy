@@ -18,7 +18,9 @@
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
@@ -51,7 +53,7 @@ class CONTENT_EXPORT AppCacheURLLoaderJob : public AppCacheJob,
   void Start(base::OnceClosure continuation,
              const network::ResourceRequest& resource_request,
              mojo::PendingReceiver<network::mojom::URLLoader> receiver,
-             network::mojom::URLLoaderClientPtr client);
+             mojo::PendingRemote<network::mojom::URLLoaderClient> client);
 
   // AppCacheJob overrides.
   bool IsStarted() const override;
@@ -117,9 +119,9 @@ class CONTENT_EXPORT AppCacheURLLoaderJob : public AppCacheJob,
   // Receiver of the URLLoaderClient with us.
   mojo::Receiver<network::mojom::URLLoader> receiver_{this};
 
-  // The URLLoaderClient pointer. We call this interface with notifications
+  // The URLLoaderClient remote. We call this interface with notifications
   // about the URL load
-  network::mojom::URLLoaderClientPtr client_;
+  mojo::Remote<network::mojom::URLLoaderClient> client_;
 
   // The data pipe used to transfer AppCache data to the client.
   mojo::DataPipe data_pipe_;

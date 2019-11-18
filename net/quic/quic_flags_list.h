@@ -366,28 +366,3 @@ QUIC_FLAG(
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_on_packet_numbers_skipped,
           false)
-
-// The default minimum duration for BBRv2-native probes, in milliseconds.
-QUIC_FLAG(int32_t, FLAGS_quic_bbr2_default_probe_bw_base_duration_ms, 2000)
-
-// The default upper bound of the random amount of BBRv2-native
-// probes, in milliseconds.
-QUIC_FLAG(int32_t, FLAGS_quic_bbr2_default_probe_bw_max_rand_duration_ms, 1000)
-
-// The default period for entering PROBE_RTT, in milliseconds.
-QUIC_FLAG(int32_t, FLAGS_quic_bbr2_default_probe_rtt_period_ms, 10000)
-
-// The default loss threshold for QUIC BBRv2, should be a value
-// between 0 and 1.
-QUIC_FLAG(double, FLAGS_quic_bbr2_default_loss_threshold, 0.3)
-
-// The default minimum number of loss marking events to exit STARTUP.
-QUIC_FLAG(int32_t, FLAGS_quic_bbr2_default_startup_full_loss_count, 8)
-
-// The default fraction of unutilized headroom to try to leave in path
-// upon high loss.
-QUIC_FLAG(double, FLAGS_quic_bbr2_default_inflight_hi_headroom, 0.01)
-
-// If true, for QUIC BBRv2: 1) don't grow inflight_hi unless it's fully used,
-// and 2) cap inflight_lo in PROBE_CRUISE.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr2_fix_inflight_bounds, false)

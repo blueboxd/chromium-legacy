@@ -15,6 +15,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_thread.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
@@ -147,7 +148,8 @@ class CertificateReportingServiceTestHelper
   friend class base::RefCounted<CertificateReportingServiceTestHelper>;
   ~CertificateReportingServiceTestHelper() override;
 
-  void SendResponse(network::mojom::URLLoaderClientPtr client, bool fail);
+  void SendResponse(mojo::PendingRemote<network::mojom::URLLoaderClient> client,
+                    bool fail);
 
   // network::SharedURLLoaderFactory
   void CreateLoaderAndStart(
@@ -156,7 +158,7 @@ class CertificateReportingServiceTestHelper
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& url_request,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
       override;
   void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
@@ -165,7 +167,7 @@ class CertificateReportingServiceTestHelper
 
   ReportSendingResult expected_report_result_;
 
-  network::mojom::URLLoaderClientPtr delayed_client_;
+  mojo::PendingRemote<network::mojom::URLLoaderClient> delayed_client_;
   std::string delayed_report_;
   ReportSendingResult delayed_result_;
 

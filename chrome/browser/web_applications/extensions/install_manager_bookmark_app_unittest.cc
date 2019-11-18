@@ -271,6 +271,7 @@ class InstallManagerBookmarkAppTest : public ExtensionServiceTestBase {
           web_app::InstallManager::InstallParams{}) {
     base::RunLoop run_loop;
     web_app::AppId app_id;
+    install_params.fallback_start_url = GURL("https://example.com/fallback");
 
     auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile());
 

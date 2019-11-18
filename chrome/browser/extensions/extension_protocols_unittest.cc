@@ -267,8 +267,7 @@ class ExtensionProtocolsTestBase : public testing::Test {
     loader_factory_->CreateLoaderAndStart(
         mojo::MakeRequest(&loader), kRoutingId, kRequestId,
         network::mojom::kURLLoadOptionNone,
-        CreateResourceRequest("GET", resource_type, url),
-        client.CreateInterfacePtr(),
+        CreateResourceRequest("GET", resource_type, url), client.CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
     if (power_monitor_source_) {

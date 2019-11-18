@@ -16,6 +16,7 @@
 #include "components/autofill_assistant/browser/info_box.h"
 #include "components/autofill_assistant/browser/selector.h"
 #include "components/autofill_assistant/browser/top_padding.h"
+#include "components/autofill_assistant/browser/user_data.h"
 #include "components/autofill_assistant/browser/viewport_mode.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 #include "third_party/icu/source/common/unicode/umachine.h"
@@ -113,6 +114,13 @@ class ActionDelegate {
   virtual void CollectUserData(
       std::unique_ptr<CollectUserDataOptions> collect_user_data_options,
       std::unique_ptr<UserData> user_data) = 0;
+
+  // Executes |write_callback| on the currently stored user_data and
+  // user_data_options.
+  virtual void WriteUserData(
+      base::OnceCallback<void(const CollectUserDataOptions*,
+                              UserData*,
+                              UserData::FieldChange*)> write_callback) = 0;
 
   using GetFullCardCallback =
       base::OnceCallback<void(std::unique_ptr<autofill::CreditCard> card,

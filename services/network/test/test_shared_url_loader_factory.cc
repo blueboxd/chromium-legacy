@@ -37,7 +37,7 @@ void TestSharedURLLoaderFactory::CreateLoaderAndStart(
     int32_t request_id,
     uint32_t options,
     const ResourceRequest& request,
-    mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   url_loader_factory_->CreateLoaderAndStart(
       std::move(loader), routing_id, request_id, options, std::move(request),

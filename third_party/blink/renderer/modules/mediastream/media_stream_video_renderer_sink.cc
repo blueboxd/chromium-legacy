@@ -83,6 +83,9 @@ class MediaStreamVideoRendererSink::FrameDeliverer {
         media::VideoFrame::CreateBlackFrame(
             state_ == STOPPED ? gfx::Size(kMinFrameSize, kMinFrameSize)
                               : frame_size_);
+    if (!video_frame)
+      return;
+
     video_frame->metadata()->SetBoolean(
         media::VideoFrameMetadata::END_OF_STREAM, true);
     video_frame->metadata()->SetTimeTicks(

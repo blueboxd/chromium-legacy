@@ -52,6 +52,7 @@
 #include "chrome/browser/chromeos/dbus/drive_file_stream_service_provider.h"
 #include "chrome/browser/chromeos/dbus/kiosk_info_service_provider.h"
 #include "chrome/browser/chromeos/dbus/libvda_service_provider.h"
+#include "chrome/browser/chromeos/dbus/lock_to_single_user_service_provider.h"
 #include "chrome/browser/chromeos/dbus/machine_learning_decision_service_provider.h"
 #include "chrome/browser/chromeos/dbus/metrics_event_service_provider.h"
 #include "chrome/browser/chromeos/dbus/plugin_vm_service_provider.h"
@@ -321,6 +322,11 @@ class DBusServices {
                                 dbus::ObjectPath(smbfs::kSmbFsServicePath),
                                 CrosDBusService::CreateServiceProviderList(
                                     std::make_unique<SmbFsServiceProvider>()));
+    lock_to_single_user_service_ = CrosDBusService::Create(
+        system_bus, lock_to_single_user::kLockToSingleUserServiceName,
+        dbus::ObjectPath(lock_to_single_user::kLockToSingleUserServicePath),
+        CrosDBusService::CreateServiceProviderList(
+            std::make_unique<LockToSingleUserServiceProvider>()));
 
     if (arc::IsArcVmEnabled()) {
       libvda_service_ = CrosDBusService::Create(
@@ -383,6 +389,7 @@ class DBusServices {
     vm_applications_service_.reset();
     drive_file_stream_service_.reset();
     cryptohome_key_delegate_service_.reset();
+    lock_to_single_user_service_.reset();
     ProcessDataCollector::Shutdown();
     PowerDataCollector::Shutdown();
     PowerPolicyController::Shutdown();
@@ -409,6 +416,7 @@ class DBusServices {
   std::unique_ptr<CrosDBusService> libvda_service_;
   std::unique_ptr<CrosDBusService> machine_learning_decision_service_;
   std::unique_ptr<CrosDBusService> smb_fs_service_;
+  std::unique_ptr<CrosDBusService> lock_to_single_user_service_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusServices);
 };

@@ -12,7 +12,7 @@ import urllib
 
 from core.services import request
 
-SERVICE_URL = 'https://chromeperf.appspot.com/api'
+SERVICE_URL = 'https://chromeperf.appspot.com'
 
 
 def Request(endpoint, **kwargs):
@@ -32,7 +32,7 @@ def Describe(test_suite):
   Returns:
     A dict with information about: bots, caseTags, cases, and measurements.
   """
-  return Request('/describe', params={'test_suite': test_suite})
+  return Request('/api/describe', params={'test_suite': test_suite})
 
 
 def Timeseries2(**kwargs):
@@ -59,7 +59,7 @@ def Timeseries2(**kwargs):
     if col not in kwargs:
       raise TypeError('Missing required argument: %s' % col)
   try:
-    return Request('/timeseries2', params=kwargs)
+    return Request('/api/timeseries2', params=kwargs)
   except request.ClientError as exc:
     if exc.response.status == 404:
       raise KeyError('Timeseries not found')
@@ -82,8 +82,8 @@ def Timeseries(test_path, days=30):
     KeyError if the test_path is not found.
   """
   try:
-    return Request(
-        '/timeseries/%s' % urllib.quote(test_path), params={'num_days': days})
+    return Request('/api/timeseries/%s' % urllib.quote(test_path),
+                   params={'num_days': days})
   except request.ClientError as exc:
     if 'Invalid test_path' in exc.json['error']:
       raise KeyError(test_path)
@@ -105,12 +105,31 @@ def ListTestPaths(test_suite, sheriff):
     A list of test paths. Ex. ['TestPath1', 'TestPath2']
   """
   return Request(
-      '/list_timeseries/%s' % test_suite, params={'sheriff': sheriff})
+      '/api/list_timeseries/%s' % test_suite, params={'sheriff': sheriff})
+
+
+def MatchTestPaths(pattern, only_with_rows=False):
+  """Lists test paths matching a given pattern.
+
+  The exact semantics of these patterns is defined by the implementation of
+  the dashboard.common.utils.TestMatchesPattern function.
+
+  Args:
+    pattern: String with glob-like pattern notation to match.
+    only_with_rows: Only match test paths which have data points.
+
+  Returns:
+    A list of test paths. Ex. ['TestPath1', 'TestPath2']
+  """
+  params = {'type': 'pattern', 'p': pattern}
+  if only_with_rows:
+    params['has_rows'] = '1'
+  return Request('/list_tests', params=params)
 
 
 def Bugs(bug_id):
   """Get all the information about a given bug id."""
-  return Request('/bugs/%d' % bug_id)
+  return Request('/api/bugs/%d' % bug_id)
 
 
 def IterAlerts(**kwargs):
@@ -132,7 +151,7 @@ def IterAlerts(**kwargs):
   """
   kwargs.setdefault('limit', 1000)
   while True:
-    response = Request('/alerts', params=kwargs)
+    response = Request('/api/alerts', params=kwargs)
     yield response
     if 'next_cursor' in response:
       kwargs['cursor'] = response['next_cursor']

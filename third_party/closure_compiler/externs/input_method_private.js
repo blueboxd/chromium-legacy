@@ -163,10 +163,13 @@ chrome.inputMethodPrivate.setXkbLayout = function(xkb_name, callback) {};
 
 /**
  * Commits the text currently being composed without moving the selected text
- * range
+ * range. This is a no-op if the context is incorrect.
+ * @param {{
+ *   contextID: number
+ * }} parameters
  * @param {function():void=} callback Called when the operation completes.
  */
-chrome.inputMethodPrivate.finishComposingText = function(callback) {};
+chrome.inputMethodPrivate.finishComposingText = function(parameters, callback) {};
 
 /**
  * Sets the selection range

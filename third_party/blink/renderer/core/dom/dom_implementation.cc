@@ -208,7 +208,7 @@ Document* DOMImplementation::createHTMLDocument(const String& title) {
           .WithContextDocument(document_->ContextDocument())
           .WithOwnerDocument(document_->ContextDocument())
           .WithRegistrationContext(document_->RegistrationContext())
-          .WithContentSecurityPolicy(document_->GetContentSecurityPolicy());
+          .WithContentSecurityPolicyFromContextDoc();
   auto* d = MakeGarbageCollected<HTMLDocument>(init);
   d->open();
   d->write("<!doctype html><html><head></head><body></body></html>");
@@ -220,8 +220,6 @@ Document* DOMImplementation::createHTMLDocument(const String& title) {
     title_element->AppendChild(d->createTextNode(title), ASSERT_NO_EXCEPTION);
   }
   d->SetContextFeatures(document_->GetContextFeatures());
-  if (document_->TrustedTypesRequiredByPolicy())
-    d->SetRequireTrustedTypes();
   return d;
 }
 

@@ -416,4 +416,10 @@ void FakeDriveFs::FetchAllChangeLogs() {}
 void FakeDriveFs::FetchChangeLog(
     std::vector<mojom::FetchChangeLogOptionsPtr> options) {}
 
+void FakeDriveFs::SendNativeMessageRequest(
+    const std::string& request,
+    SendNativeMessageRequestCallback callback) {
+  std::move(callback).Run(drive::FILE_ERROR_SERVICE_UNAVAILABLE, "");
+}
+
 }  // namespace drivefs

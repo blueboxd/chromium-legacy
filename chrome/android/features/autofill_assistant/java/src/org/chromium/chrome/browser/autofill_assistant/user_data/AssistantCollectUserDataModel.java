@@ -371,4 +371,20 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     private void setDefaultEmail(String email) {
         set(DEFAULT_EMAIL, email);
     }
+
+    @CalledByNative
+    private static List<PersonalDataManager.AutofillProfile> createAutofillProfileList() {
+        return new ArrayList<>();
+    }
+
+    @CalledByNative
+    private static void addAutofillProfile(List<PersonalDataManager.AutofillProfile> profiles,
+            PersonalDataManager.AutofillProfile profile) {
+        profiles.add(profile);
+    }
+
+    @CalledByNative
+    private void setAutofillProfiles(List<PersonalDataManager.AutofillProfile> profiles) {
+        set(AVAILABLE_PROFILES, profiles);
+    }
 }

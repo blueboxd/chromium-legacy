@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/navigation_subresource_loader_params.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace network {
@@ -60,7 +61,7 @@ class CONTENT_EXPORT WorkerScriptLoaderFactory
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& resource_request,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
       override;
   void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)

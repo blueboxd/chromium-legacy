@@ -52,6 +52,9 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   void SetCollectUserDataOptions(
       std::unique_ptr<CollectUserDataOptions> options,
       std::unique_ptr<UserData> information) override;
+  void WriteUserData(base::OnceCallback<void(const CollectUserDataOptions*,
+                                             UserData*,
+                                             UserData::FieldChange*)>) override;
   void SetViewportMode(ViewportMode mode) override;
   ViewportMode GetViewportMode() override;
   void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) override;

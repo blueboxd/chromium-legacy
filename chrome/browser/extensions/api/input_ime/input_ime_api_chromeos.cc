@@ -50,6 +50,8 @@ namespace OnScreenProjectionChanged =
     extensions::api::input_method_private::OnScreenProjectionChanged;
 namespace SetSelectionRange =
     extensions::api::input_method_private::SetSelectionRange;
+namespace FinishComposingText =
+    extensions::api::input_method_private::FinishComposingText;
 using ui::IMEEngineHandlerInterface;
 using input_method::InputMethodEngineBase;
 using chromeos::InputMethodEngine;
@@ -719,10 +721,13 @@ InputMethodPrivateFinishComposingTextFunction::Run() {
       Profile::FromBrowserContext(browser_context()), extension_id());
   if (!engine)
     return RespondNow(Error(kInputImeApiChromeOSErrorEngineNotAvailable));
-
-  engine->ConfirmCompositionText(/* reset_engine */ false,
-                                 /* keep_selection */ true);
-  return RespondNow(NoArguments());
+  std::unique_ptr<FinishComposingText::Params> parent_params(
+      FinishComposingText::Params::Create(*args_));
+  const FinishComposingText::Params::Parameters& params =
+      parent_params->parameters;
+  std::string error;
+  engine->FinishComposingText(params.context_id, &error);
+  return RespondNow(error.empty() ? NoArguments() : Error(error));
 }
 
 ExtensionFunction::ResponseAction

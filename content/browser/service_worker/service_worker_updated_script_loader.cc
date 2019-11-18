@@ -104,7 +104,8 @@ void ServiceWorkerUpdatedScriptLoader::ThrottlingURLLoaderCoreWrapper::
           resource_request, browser_context, std::move(wc_getter),
           /*navigation_ui_data=*/nullptr, RenderFrameHost::kNoFrameTreeNodeId);
 
-  network::mojom::URLLoaderClientPtr client(std::move(client_remote));
+  mojo::Remote<network::mojom::URLLoaderClient> client(
+      std::move(client_remote));
   auto loader = blink::ThrottlingURLLoader::CreateLoaderAndStart(
       network::SharedURLLoaderFactory::Create(std::move(loader_factory_info)),
       std::move(throttles), routing_id, request_id, options, &resource_request,
@@ -167,7 +168,7 @@ std::unique_ptr<ServiceWorkerUpdatedScriptLoader>
 ServiceWorkerUpdatedScriptLoader::CreateAndStart(
     uint32_t options,
     const network::ResourceRequest& original_request,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     scoped_refptr<ServiceWorkerVersion> version) {
   DCHECK(blink::ServiceWorkerUtils::IsImportedScriptUpdateCheckEnabled());
   return base::WrapUnique(new ServiceWorkerUpdatedScriptLoader(
@@ -177,7 +178,7 @@ ServiceWorkerUpdatedScriptLoader::CreateAndStart(
 ServiceWorkerUpdatedScriptLoader::ServiceWorkerUpdatedScriptLoader(
     uint32_t options,
     const network::ResourceRequest& original_request,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     scoped_refptr<ServiceWorkerVersion> version)
     : request_url_(original_request.url),
       resource_type_(static_cast<ResourceType>(original_request.resource_type)),

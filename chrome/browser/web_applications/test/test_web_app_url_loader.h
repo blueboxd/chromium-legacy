@@ -32,6 +32,7 @@ class TestWebAppUrlLoader : public WebAppUrlLoader {
   // WebAppUrlLoader
   void LoadUrl(const GURL& url,
                content::WebContents* web_contents,
+               UrlComparison url_comparison,
                ResultCallback callback) override;
 
  private:

@@ -762,7 +762,8 @@ scoped_refptr<VideoFrame> VideoFrame::CreateColorFrame(
     base::TimeDelta timestamp) {
   scoped_refptr<VideoFrame> frame =
       CreateFrame(PIXEL_FORMAT_I420, size, gfx::Rect(size), size, timestamp);
-  FillYUV(frame.get(), y, u, v);
+  if (frame)
+    FillYUV(frame.get(), y, u, v);
   return frame;
 }
 

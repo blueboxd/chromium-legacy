@@ -34,7 +34,7 @@ PrefetchURLLoader::PrefetchURLLoader(
     uint32_t options,
     int frame_tree_node_id,
     const network::ResourceRequest& resource_request,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
     URLLoaderThrottlesGetter url_loader_throttles_getter,
@@ -77,13 +77,12 @@ PrefetchURLLoader::PrefetchURLLoader(
     }
   }
 
-  network::mojom::URLLoaderClientPtr network_client;
-  client_receiver_.Bind(mojo::MakeRequest(&network_client));
-  client_receiver_.set_disconnect_handler(base::BindOnce(
-      &PrefetchURLLoader::OnNetworkConnectionError, base::Unretained(this)));
   network_loader_factory_->CreateLoaderAndStart(
       mojo::MakeRequest(&loader_), routing_id, request_id, options,
-      resource_request_, std::move(network_client), traffic_annotation);
+      resource_request_, client_receiver_.BindNewPipeAndPassRemote(),
+      traffic_annotation);
+  client_receiver_.set_disconnect_handler(base::BindOnce(
+      &PrefetchURLLoader::OnNetworkConnectionError, base::Unretained(this)));
 }
 
 PrefetchURLLoader::~PrefetchURLLoader() = default;

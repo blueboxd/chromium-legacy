@@ -86,7 +86,7 @@ CorsURLLoader::CorsURLLoader(
     uint32_t options,
     DeleteCallback delete_callback,
     const ResourceRequest& resource_request,
-    mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     mojom::URLLoaderFactory* network_loader_factory,
     const OriginAccessList* origin_access_list,
@@ -489,15 +489,14 @@ void CorsURLLoader::StartNetworkRequest(
           ? mojom::CredentialsMode::kInclude
           : mojom::CredentialsMode::kOmit;
 
-  mojom::URLLoaderClientPtr network_client;
-  network_client_receiver_.Bind(mojo::MakeRequest(&network_client));
   // Binding |this| as an unretained pointer is safe because
   // |network_client_receiver_| shares this object's lifetime.
-  network_client_receiver_.set_disconnect_handler(
-      base::BindOnce(&CorsURLLoader::OnMojoDisconnect, base::Unretained(this)));
   network_loader_factory_->CreateLoaderAndStart(
       mojo::MakeRequest(&network_loader_), routing_id_, request_id_, options_,
-      request_, std::move(network_client), traffic_annotation_);
+      request_, network_client_receiver_.BindNewPipeAndPassRemote(),
+      traffic_annotation_);
+  network_client_receiver_.set_disconnect_handler(
+      base::BindOnce(&CorsURLLoader::OnMojoDisconnect, base::Unretained(this)));
 
   request_.credentials_mode = original_credentials_mode;
 }

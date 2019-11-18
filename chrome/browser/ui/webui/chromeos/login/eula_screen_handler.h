@@ -62,11 +62,19 @@ class EulaScreenHandler : public EulaView, public BaseScreenHandler {
   void GetAdditionalParameters(base::DictionaryValue* dict) override;
   void Initialize() override;
 
+  static void set_eula_url_for_testing(const char* eula_test_url) {
+    eula_url_for_testing_ = eula_test_url;
+  }
+
  private:
   // JS messages handlers.
   void HandleOnLearnMore();
   void HandleOnInstallationSettingsPopupOpened();
   void HandleUsageStatsEnabled(bool enabled);
+
+  // Determines the online URL to use.
+  std::string GetEulaOnlineUrl();
+  static const char* eula_url_for_testing_;
 
   void UpdateLocalizedValues(::login::SecureModuleUsed secure_module_used);
 

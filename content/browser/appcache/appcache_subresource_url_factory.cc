@@ -22,6 +22,7 @@
 #include "content/public/common/content_client.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/request_mode.h"
@@ -52,7 +53,7 @@ class SubresourceLoader : public network::mojom::URLLoader,
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& request,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& annotation,
       base::WeakPtr<AppCacheHost> appcache_host,
       scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory)
@@ -113,19 +114,16 @@ class SubresourceLoader : public network::mojom::URLLoader,
     local_client_receiver_.reset();
     network_loader_ = nullptr;
 
-    network::mojom::URLLoaderClientPtr client_ptr;
-    local_client_receiver_.Bind(mojo::MakeRequest(&client_ptr));
     std::move(handler).Run(request_, mojo::MakeRequest(&appcache_loader_),
-                           std::move(client_ptr));
+                           local_client_receiver_.BindNewPipeAndPassRemote());
   }
 
   void CreateAndStartNetworkLoader() {
     DCHECK(!appcache_loader_);
-    network::mojom::URLLoaderClientPtr client_ptr;
-    local_client_receiver_.Bind(mojo::MakeRequest(&client_ptr));
     network_loader_factory_->CreateLoaderAndStart(
         mojo::MakeRequest(&network_loader_), routing_id_, request_id_, options_,
-        request_, std::move(client_ptr), traffic_annotation_);
+        request_, local_client_receiver_.BindNewPipeAndPassRemote(),
+        traffic_annotation_);
     if (has_set_priority_)
       network_loader_->SetPriority(priority_, intra_priority_value_);
     if (has_paused_reading_)
@@ -287,9 +285,9 @@ class SubresourceLoader : public network::mojom::URLLoader,
       remote_client_->OnComplete(status);
   }
 
-  // The receiver and client pointer associated with the renderer.
+  // The receiver and remote client associated with the renderer.
   mojo::Receiver<network::mojom::URLLoader> remote_receiver_;
-  network::mojom::URLLoaderClientPtr remote_client_;
+  mojo::Remote<network::mojom::URLLoaderClient> remote_client_;
 
   network::ResourceRequest request_;
   int32_t routing_id_;
@@ -366,7 +364,7 @@ void AppCacheSubresourceURLFactory::CreateLoaderAndStart(
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& request,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 

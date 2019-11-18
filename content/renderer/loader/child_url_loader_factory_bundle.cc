@@ -25,7 +25,7 @@ class URLLoaderRelay : public network::mojom::URLLoaderClient,
   URLLoaderRelay(
       network::mojom::URLLoaderPtr loader_sink,
       mojo::PendingReceiver<network::mojom::URLLoaderClient> client_source,
-      network::mojom::URLLoaderClientPtr client_sink)
+      mojo::Remote<network::mojom::URLLoaderClient> client_sink)
       : loader_sink_(std::move(loader_sink)),
         client_source_receiver_(this, std::move(client_source)),
         client_sink_(std::move(client_sink)) {}
@@ -95,7 +95,7 @@ class URLLoaderRelay : public network::mojom::URLLoaderClient,
  private:
   network::mojom::URLLoaderPtr loader_sink_;
   mojo::Receiver<network::mojom::URLLoaderClient> client_source_receiver_;
-  network::mojom::URLLoaderClientPtr client_sink_;
+  mojo::Remote<network::mojom::URLLoaderClient> client_sink_;
 };
 
 template <typename TKey>
@@ -203,7 +203,7 @@ void ChildURLLoaderFactoryBundle::CreateLoaderAndStart(
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& request,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   auto override_iter = subresource_overrides_.find(request.url);
   if (override_iter != subresource_overrides_.end()) {
@@ -211,13 +211,15 @@ void ChildURLLoaderFactoryBundle::CreateLoaderAndStart(
         std::move(override_iter->second);
     subresource_overrides_.erase(override_iter);
 
-    client->OnReceiveResponse(std::move(transferrable_loader->head));
+    mojo::Remote<network::mojom::URLLoaderClient> client_remote(
+        std::move(client));
+    client_remote->OnReceiveResponse(std::move(transferrable_loader->head));
     mojo::MakeSelfOwnedReceiver(
         std::make_unique<URLLoaderRelay>(
             network::mojom::URLLoaderPtr(
                 std::move(transferrable_loader->url_loader)),
             std::move(transferrable_loader->url_loader_client),
-            std::move(client)),
+            std::move(client_remote)),
         std::move(loader));
 
     return;

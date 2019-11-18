@@ -122,6 +122,9 @@ class ScriptExecutor : public ActionDelegate,
   void CollectUserData(
       std::unique_ptr<CollectUserDataOptions> collect_user_data_options,
       std::unique_ptr<UserData> user_data) override;
+  void WriteUserData(base::OnceCallback<void(const CollectUserDataOptions*,
+                                             UserData*,
+                                             UserData::FieldChange*)>) override;
   void GetFullCard(GetFullCardCallback callback) override;
   void Prompt(std::unique_ptr<std::vector<UserAction>> user_actions) override;
   void CancelPrompt() override;

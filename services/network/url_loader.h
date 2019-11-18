@@ -18,6 +18,7 @@
 #include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -76,7 +77,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       mojo::PendingReceiver<mojom::URLLoader> url_loader_receiver,
       int32_t options,
       const ResourceRequest& request,
-      mojom::URLLoaderClientPtr url_loader_client,
+      mojo::PendingRemote<mojom::URLLoaderClient> url_loader_client,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       const mojom::URLLoaderFactoryParams* factory_params,
       uint32_t request_id,
@@ -273,7 +274,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       auth_challenge_responder_receiver_{this};
   mojo::Receiver<mojom::ClientCertificateResponder>
       client_cert_responder_receiver_{this};
-  mojom::URLLoaderClientPtr url_loader_client_;
+  mojo::Remote<mojom::URLLoaderClient> url_loader_client_;
   int64_t total_written_bytes_ = 0;
 
   mojo::ScopedDataPipeProducerHandle response_body_stream_;

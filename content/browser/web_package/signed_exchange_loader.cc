@@ -60,7 +60,7 @@ SignedExchangeLoader::SignedExchangeLoader(
     const network::ResourceRequest& outer_request,
     const network::ResourceResponseHead& outer_response_head,
     mojo::ScopedDataPipeConsumerHandle outer_response_body,
-    network::mojom::URLLoaderClientPtr forwarding_client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> forwarding_client,
     network::mojom::URLLoaderClientEndpointsPtr endpoints,
     uint32_t url_loader_options,
     bool should_redirect_on_failure,
@@ -105,7 +105,7 @@ SignedExchangeLoader::SignedExchangeLoader(
   url_loader_client_receiver_.Bind(std::move(endpoints->url_loader_client));
 
   // |client_| will be bound with a forwarding client by ConnectToClient().
-  pending_client_receiver_ = mojo::MakeRequest(&client_);
+  pending_client_receiver_ = client_.BindNewPipeAndPassReceiver();
 }
 
 SignedExchangeLoader::~SignedExchangeLoader() = default;
@@ -204,11 +204,9 @@ void SignedExchangeLoader::ResumeReadingBodyFromNet() {
 }
 
 void SignedExchangeLoader::ConnectToClient(
-    network::mojom::URLLoaderClientPtr client) {
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client) {
   DCHECK(pending_client_receiver_.is_valid());
-  mojo::FusePipes(std::move(pending_client_receiver_),
-                  mojo::PendingRemote<network::mojom::URLLoaderClient>(
-                      client.PassInterface()));
+  mojo::FusePipes(std::move(pending_client_receiver_), std::move(client));
 }
 
 base::Optional<net::SHA256HashValue>

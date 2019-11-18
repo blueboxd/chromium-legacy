@@ -98,6 +98,10 @@ class FakeDriveFs : public drivefs::mojom::DriveFs,
   void FetchChangeLog(
       std::vector<mojom::FetchChangeLogOptionsPtr> options) override;
 
+  void SendNativeMessageRequest(
+      const std::string& request,
+      SendNativeMessageRequestCallback callback) override;
+
   const base::FilePath mount_path_;
 
   std::map<base::FilePath, FileMetadata> metadata_;

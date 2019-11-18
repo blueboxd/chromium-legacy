@@ -67,6 +67,21 @@ struct UserData {
   UserData();
   ~UserData();
 
+  enum class FieldChange {
+    NONE,
+    ALL,
+    CONTACT_PROFILE,
+    CARD,
+    SHIPPING_ADDRESS,
+    BILLING_ADDRESS,
+    LOGIN_CHOICE,
+    TERMS_AND_CONDITIONS,
+    DATE_TIME_RANGE_START,
+    DATE_TIME_RANGE_END,
+    ADDITIONAL_VALUES,
+    AVAILABLE_PROFILES,
+  };
+
   bool succeed = false;
   std::unique_ptr<autofill::AutofillProfile> contact_profile;
   std::unique_ptr<autofill::CreditCard> card;
@@ -79,6 +94,8 @@ struct UserData {
 
   // A set of additional key/value pairs to be stored in client_memory.
   std::map<std::string, std::string> additional_values_to_store;
+
+  std::vector<std::unique_ptr<autofill::AutofillProfile>> available_profiles;
 };
 
 // Struct for holding the payment request options.

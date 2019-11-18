@@ -4,7 +4,6 @@
 
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 
-#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 
 namespace network {
@@ -28,7 +27,7 @@ void WeakWrapperSharedURLLoaderFactory::CreateLoaderAndStart(
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& request,
-    mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   if (!factory())
     return;

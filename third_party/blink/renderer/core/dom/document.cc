@@ -8170,12 +8170,9 @@ BrowserInterfaceBrokerProxy& Document::GetBrowserInterfaceBroker() {
 }
 
 DocumentResourceCoordinator* Document::GetResourceCoordinator() {
-  if (!resource_coordinator_) {
-    auto* interface_provider = GetInterfaceProvider();
-    if (interface_provider) {
-      resource_coordinator_ =
-          DocumentResourceCoordinator::MaybeCreate(interface_provider);
-    }
+  if (!resource_coordinator_ && GetFrame()) {
+    resource_coordinator_ =
+        DocumentResourceCoordinator::MaybeCreate(GetBrowserInterfaceBroker());
   }
   return resource_coordinator_.get();
 }
@@ -8629,8 +8626,24 @@ void Document::SetShowBeforeUnloadDialog(bool show_dialog) {
       show_dialog);
 }
 
+const Document* DocumentForTrustedTypes(const Document* doc) {
+  // The Trusted Type factory & friends are stored on the window. For
+  // programmatically created docs (like createHTMLDocument) let's use the one
+  // from the context document.
+  DCHECK(doc);
+  while (doc->ContextDocument() && !doc->ExecutingWindow())
+    doc = doc->ContextDocument();
+  return doc;
+}
+
 TrustedTypePolicyFactory* Document::GetTrustedTypes() const {
-  return ExecutingWindow() ? ExecutingWindow()->trustedTypes() : nullptr;
+  const Document* doc = DocumentForTrustedTypes(this);
+  return doc->ExecutingWindow() ? doc->ExecutingWindow()->trustedTypes()
+                                : nullptr;
+}
+
+bool Document::RequireTrustedTypes() const {
+  return DocumentForTrustedTypes(this)->ExecutionContext::RequireTrustedTypes();
 }
 
 void Document::ColorSchemeChanged() {

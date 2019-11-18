@@ -90,8 +90,8 @@ bool SignedExchangeRequestHandler::MaybeCreateLoaderForResponse(
     return false;
   }
 
-  network::mojom::URLLoaderClientPtr client;
-  *client_receiver = mojo::MakeRequest(&client);
+  mojo::PendingRemote<network::mojom::URLLoaderClient> client;
+  *client_receiver = client.InitWithNewPipeAndPassReceiver();
 
   // This lets the SignedExchangeLoader directly returns an artificial redirect
   // to the downstream client without going through blink::ThrottlingURLLoader,
@@ -117,7 +117,7 @@ bool SignedExchangeRequestHandler::MaybeCreateLoaderForResponse(
 void SignedExchangeRequestHandler::StartResponse(
     const network::ResourceRequest& resource_request,
     mojo::PendingReceiver<network::mojom::URLLoader> receiver,
-    network::mojom::URLLoaderClientPtr client) {
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client) {
   signed_exchange_loader_->ConnectToClient(std::move(client));
   mojo::MakeSelfOwnedReceiver(std::move(signed_exchange_loader_),
                               std::move(receiver));

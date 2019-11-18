@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
@@ -21,16 +21,16 @@ using performance_manager::mojom::InterventionPolicy;
 // static
 std::unique_ptr<DocumentResourceCoordinator>
 DocumentResourceCoordinator::MaybeCreate(
-    service_manager::InterfaceProvider* interface_provider) {
+    const BrowserInterfaceBrokerProxy& interface_broker) {
   if (!RuntimeEnabledFeatures::PerformanceManagerInstrumentationEnabled())
     return nullptr;
 
-  return base::WrapUnique(new DocumentResourceCoordinator(interface_provider));
+  return base::WrapUnique(new DocumentResourceCoordinator(interface_broker));
 }
 
 DocumentResourceCoordinator::DocumentResourceCoordinator(
-    service_manager::InterfaceProvider* interface_provider) {
-  interface_provider->GetInterface(service_.BindNewPipeAndPassReceiver());
+    const BrowserInterfaceBrokerProxy& interface_broker) {
+  interface_broker.GetInterface(service_.BindNewPipeAndPassReceiver());
   DCHECK(service_);
 }
 

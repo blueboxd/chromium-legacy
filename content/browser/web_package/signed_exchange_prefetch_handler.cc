@@ -11,6 +11,7 @@
 #include "content/browser/web_package/signed_exchange_prefetch_metric_recorder.h"
 #include "content/browser/web_package/signed_exchange_reporter.h"
 #include "content/public/common/content_features.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -36,8 +37,6 @@ SignedExchangePrefetchHandler::SignedExchangePrefetchHandler(
       network::mojom::URLLoaderClientEndpoints::New(
           std::move(network_loader).PassInterface(),
           std::move(network_client_receiver));
-  network::mojom::URLLoaderClientPtr client;
-  loader_client_receiver_.Bind(MakeRequest(&client));
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
       std::move(network_loader_factory);
 
@@ -49,8 +48,8 @@ SignedExchangePrefetchHandler::SignedExchangePrefetchHandler(
 
   signed_exchange_loader_ = std::make_unique<SignedExchangeLoader>(
       resource_request, response_head, std::move(response_body),
-      std::move(client), std::move(endpoints), url_loader_options,
-      false /* should_redirect_to_fallback */,
+      loader_client_receiver_.BindNewPipeAndPassRemote(), std::move(endpoints),
+      url_loader_options, false /* should_redirect_to_fallback */,
       std::make_unique<SignedExchangeDevToolsProxy>(
           resource_request.url, response_head, frame_tree_node_id,
           base::nullopt /* devtools_navigation_token */,
@@ -68,8 +67,8 @@ mojo::PendingReceiver<network::mojom::URLLoaderClient>
 SignedExchangePrefetchHandler::FollowRedirect(
     mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver) {
   DCHECK(signed_exchange_loader_);
-  network::mojom::URLLoaderClientPtr client;
-  auto pending_receiver = mojo::MakeRequest(&client);
+  mojo::PendingRemote<network::mojom::URLLoaderClient> client;
+  auto pending_receiver = client.InitWithNewPipeAndPassReceiver();
   signed_exchange_loader_->ConnectToClient(std::move(client));
   mojo::MakeSelfOwnedReceiver(std::move(signed_exchange_loader_),
                               std::move(loader_receiver));

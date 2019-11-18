@@ -831,7 +831,7 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
                   first = false;
                   // Need to leak the client pipe, or else the renderer will
                   // get a disconnect error and load the error page.
-                  (void)params->client.PassInterface().PassHandle().release();
+                  (void)params->client.Unbind().PassPipe().release();
                   closure.Run();
                   return true;
                 }

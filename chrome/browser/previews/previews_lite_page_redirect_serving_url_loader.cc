@@ -214,19 +214,17 @@ void PreviewsLitePageRedirectServingURLLoader::StartNetworkRequest(
     int frame_tree_node_id) {
   frame_tree_node_id_ = frame_tree_node_id;
   previews_url_ = request.url;
-  network::mojom::URLLoaderClientPtr client;
-
-  url_loader_receiver_.Bind(mojo::MakeRequest(&client),
-                            base::ThreadTaskRunnerHandle::Get());
-  url_loader_receiver_.set_disconnect_handler(base::BindOnce(
-      &PreviewsLitePageRedirectServingURLLoader::OnMojoDisconnect,
-      base::Unretained(this)));
 
   // Create a network service URL loader with passed in params.
   network_loader_factory->CreateLoaderAndStart(
       mojo::MakeRequest(&network_url_loader_), frame_tree_node_id_, 0,
-      network::mojom::kURLLoadOptionNone, request, std::move(client),
+      network::mojom::kURLLoadOptionNone, request,
+      url_loader_receiver_.BindNewPipeAndPassRemote(
+          base::ThreadTaskRunnerHandle::Get()),
       net::MutableNetworkTrafficAnnotationTag(kPreviewsTrafficAnnotation));
+  url_loader_receiver_.set_disconnect_handler(base::BindOnce(
+      &PreviewsLitePageRedirectServingURLLoader::OnMojoDisconnect,
+      base::Unretained(this)));
 
   timeout_timer_.Start(
       FROM_HERE, previews::params::LitePagePreviewsNavigationTimeoutDuration(),
@@ -267,14 +265,14 @@ PreviewsLitePageRedirectServingURLLoader::ServingResponseHandler() {
 void PreviewsLitePageRedirectServingURLLoader::SetUpForwardingClient(
     const network::ResourceRequest& /* resource_request */,
     mojo::PendingReceiver<network::mojom::URLLoader> receiver,
-    network::mojom::URLLoaderClientPtr forwarding_client) {
+    mojo::PendingRemote<network::mojom::URLLoaderClient> forwarding_client) {
   // Bind to the content/ navigation code.
   DCHECK(!binding_.is_bound());
   binding_.Bind(std::move(receiver));
   binding_.set_connection_error_handler(base::BindOnce(
       &PreviewsLitePageRedirectServingURLLoader::OnMojoDisconnect,
       weak_ptr_factory_.GetWeakPtr()));
-  forwarding_client_ = std::move(forwarding_client);
+  forwarding_client_.Bind(std::move(forwarding_client));
 
   // If there was an URLLoader error between handing off this handler and
   // running it, don't handle the request.

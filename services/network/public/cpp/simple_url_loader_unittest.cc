@@ -1745,7 +1745,7 @@ class MockURLLoader : public network::mojom::URLLoader {
   MockURLLoader(
       base::test::TaskEnvironment* task_environment,
       mojo::PendingReceiver<network::mojom::URLLoader> url_loader_receiver,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       std::vector<TestLoaderEvent> test_events,
       scoped_refptr<network::ResourceRequestBody> request_body)
       : task_environment_(task_environment),
@@ -1984,7 +1984,7 @@ class MockURLLoader : public network::mojom::URLLoader {
 
   std::unique_ptr<net::URLRequest> url_request_;
   mojo::Receiver<network::mojom::URLLoader> receiver_;
-  network::mojom::URLLoaderClientPtr client_;
+  mojo::Remote<network::mojom::URLLoaderClient> client_;
 
   std::vector<TestLoaderEvent> test_events_;
 
@@ -2015,7 +2015,7 @@ class MockURLLoaderFactory : public network::mojom::URLLoaderFactory {
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& url_request,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
       override {
     ASSERT_FALSE(test_events_.empty());

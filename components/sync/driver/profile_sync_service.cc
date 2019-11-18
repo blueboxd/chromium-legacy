@@ -500,8 +500,11 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
   }
   params.sync_manager_factory =
       std::make_unique<SyncManagerFactory>(network_connection_tracker_);
-  params.enable_local_sync_backend = sync_prefs_.IsLocalSyncEnabled();
-  params.local_sync_backend_folder = sync_client_->GetLocalSyncBackendFolder();
+  if (sync_prefs_.IsLocalSyncEnabled()) {
+    params.enable_local_sync_backend = true;
+    params.local_sync_backend_folder =
+        sync_client_->GetLocalSyncBackendFolder();
+  }
   params.restored_key_for_bootstrapping =
       sync_prefs_.GetEncryptionBootstrapToken();
   params.restored_keystore_key_for_bootstrapping =

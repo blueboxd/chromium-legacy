@@ -5,8 +5,8 @@
 // https://gpuweb.github.io/gpuweb/
 
 dictionary GPUVertexAttributeDescriptor {
-    GPUBufferSize offset = 0;
     required GPUVertexFormat format;
+    required GPUBufferSize offset;
     required unsigned long shaderLocation;
 };
 

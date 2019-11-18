@@ -146,7 +146,7 @@ class FakeURLLoaderFactory final : public network::mojom::URLLoaderFactory {
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& url_request,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
       override {
     // Does nothing, but just record the request and hold the client (to avoid
@@ -170,7 +170,7 @@ class FakeURLLoaderFactory final : public network::mojom::URLLoaderFactory {
 
  private:
   mojo::ReceiverSet<network::mojom::URLLoaderFactory> receivers_;
-  std::vector<network::mojom::URLLoaderClientPtr> clients_;
+  std::vector<mojo::PendingRemote<network::mojom::URLLoaderClient>> clients_;
   base::OnceClosure start_loader_callback_;
   GURL last_url_;
 
@@ -292,7 +292,7 @@ class ServiceWorkerProviderContextTest : public testing::Test {
     network::TestURLLoaderClient loader_client;
     factory->CreateLoaderAndStart(
         mojo::MakeRequest(&loader), 0, 0, network::mojom::kURLLoadOptionNone,
-        request, loader_client.CreateInterfacePtr(),
+        request, loader_client.CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   }
 
@@ -825,7 +825,7 @@ TEST_F(ServiceWorkerProviderContextTest,
   network::TestURLLoaderClient loader_client;
   wrapped_loader_factory->CreateLoaderAndStart(
       mojo::MakeRequest(&loader), 0, 0, network::mojom::kURLLoadOptionNone,
-      request, loader_client.CreateInterfacePtr(),
+      request, loader_client.CreateRemote(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 }
 

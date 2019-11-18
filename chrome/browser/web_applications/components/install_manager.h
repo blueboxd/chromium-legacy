@@ -102,6 +102,9 @@ class InstallManager {
   struct InstallParams {
     DisplayMode user_display_mode = DisplayMode::kUndefined;
 
+    // URL to be used as start_url if manifest is unavailable.
+    GURL fallback_start_url;
+
     bool add_to_applications_menu = true;
     bool add_to_desktop = true;
     bool add_to_quick_launch_bar = true;

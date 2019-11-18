@@ -448,8 +448,7 @@ void ThrottlingURLLoader::StartNow() {
   start_info_->url_loader_factory->CreateLoaderAndStart(
       url_loader_.BindNewPipeAndPassReceiver(), start_info_->routing_id,
       start_info_->request_id, start_info_->options, start_info_->url_request,
-      network::mojom::URLLoaderClientPtr(
-          client_receiver_.BindNewPipeAndPassRemote(start_info_->task_runner)),
+      client_receiver_.BindNewPipeAndPassRemote(start_info_->task_runner),
       net::MutableNetworkTrafficAnnotationTag(traffic_annotation_));
 
   // TODO(https://crbug.com/919736): Remove this call.

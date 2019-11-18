@@ -5,6 +5,7 @@
 #include "content/test/fake_network_url_loader_factory.h"
 
 #include "base/strings/string_util.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -91,9 +92,11 @@ void FakeNetworkURLLoaderFactory::CreateLoaderAndStart(
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& url_request,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   const ResponseInfo& response_info = FindResponseInfo(url_request.url);
+  mojo::Remote<network::mojom::URLLoaderClient> client_remote(
+      std::move(client));
 
   net::HttpResponseInfo info;
   info.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
@@ -102,7 +105,7 @@ void FakeNetworkURLLoaderFactory::CreateLoaderAndStart(
   response.headers = info.headers;
   response.headers->GetMimeType(&response.mime_type);
   response.network_accessed = response_info.network_accessed;
-  client->OnReceiveResponse(response);
+  client_remote->OnReceiveResponse(response);
 
   uint32_t bytes_written = response_info.body.size();
   mojo::ScopedDataPipeProducerHandle producer_handle;
@@ -111,11 +114,11 @@ void FakeNetworkURLLoaderFactory::CreateLoaderAndStart(
            mojo::CreateDataPipe(nullptr, &producer_handle, &consumer_handle));
   producer_handle->WriteData(response_info.body.data(), &bytes_written,
                              MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
-  client->OnStartLoadingResponseBody(std::move(consumer_handle));
+  client_remote->OnStartLoadingResponseBody(std::move(consumer_handle));
 
   network::URLLoaderCompletionStatus status;
   status.error_code = response_info.error_code;
-  client->OnComplete(status);
+  client_remote->OnComplete(status);
 }
 
 void FakeNetworkURLLoaderFactory::Clone(

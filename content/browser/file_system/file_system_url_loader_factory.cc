@@ -611,7 +611,7 @@ class FileSystemURLLoaderFactory : public network::mojom::URLLoaderFactory {
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& request,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
       override {
     DVLOG(1) << "CreateLoaderAndStart: " << request.url;
@@ -623,13 +623,13 @@ class FileSystemURLLoaderFactory : public network::mojom::URLLoaderFactory {
     // will redirect to FileSystemDirectoryURLLoader.
     if (!path.empty() && path.back() == '/') {
       FileSystemDirectoryURLLoader::CreateAndStart(request, std::move(loader),
-                                                   client.PassInterface(),
-                                                   params_, io_task_runner_);
+                                                   std::move(client), params_,
+                                                   io_task_runner_);
       return;
     }
 
     FileSystemFileURLLoader::CreateAndStart(request, std::move(loader),
-                                            client.PassInterface(), params_,
+                                            std::move(client), params_,
                                             io_task_runner_);
   }
 

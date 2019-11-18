@@ -209,7 +209,6 @@ class NavigationManager {
       return;
     }
     this.moveToValidNode_();
-    this.group_.refresh();
   }
 
   // -------------------------------------------------------
@@ -261,7 +260,6 @@ class NavigationManager {
       this.group_ = this.groupStack_.pop();
     } while (!this.group_.isValid() && this.groupStack_.length);
 
-    this.group_.refresh();
     this.setNode_(this.group_.firstChild);
   }
 

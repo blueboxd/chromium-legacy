@@ -2747,5 +2747,40 @@ class CheckFuzzTargetsTest(unittest.TestCase):
     self.assertEqual(results[0].items, ['fuzzer.cc'])
 
 
+class SetNoParentTest(unittest.TestCase):
+  def testSetNoParentMissing(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('goat/OWNERS',
+                       [
+                         'set noparent',
+                         'jochen@chromium.org',
+                         'per-file *.json=set noparent',
+                         'per-file *.json=jochen@chromium.org',
+                       ])
+    ]
+    mock_output_api = MockOutputApi()
+    errors = PRESUBMIT._CheckSetNoParent(mock_input_api, mock_output_api)
+    self.assertEqual(1, len(errors))
+    self.assertTrue('goat/OWNERS:1' in errors[0].long_text)
+    self.assertTrue('goat/OWNERS:3' in errors[0].long_text)
+
+
+  def testSetNoParentWithCorrectRule(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('goat/OWNERS',
+                       [
+                         'set noparent',
+                         'file://ipc/SECURITY_OWNERS',
+                         'per-file *.json=set noparent',
+                         'per-file *.json=file://ipc/SECURITY_OWNERS',
+                       ])
+    ]
+    mock_output_api = MockOutputApi()
+    errors = PRESUBMIT._CheckSetNoParent(mock_input_api, mock_output_api)
+    self.assertEqual([], errors)
+
+
 if __name__ == '__main__':
   unittest.main()

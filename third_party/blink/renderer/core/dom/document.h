@@ -1577,6 +1577,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void SetShowBeforeUnloadDialog(bool show_dialog);
 
   TrustedTypePolicyFactory* GetTrustedTypes() const override;
+  bool RequireTrustedTypes() const override;
 
   void ColorSchemeChanged();
 

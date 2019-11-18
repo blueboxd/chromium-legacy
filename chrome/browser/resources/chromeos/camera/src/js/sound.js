@@ -17,7 +17,7 @@ cca.sound = cca.sound || {};
 /**
  * Plays a sound.
  * @param {string} selector Selector of the sound.
- * @return {Promise} Promise for waiting finishing playing or canceling wait.
+ * @return {!Promise} Promise for waiting finishing playing or canceling wait.
  */
 cca.sound.play = function(selector) {
   // Use a timeout to wait for sound finishing playing instead of end-event

@@ -28,7 +28,6 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/http_util.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "services/network/public/cpp/features.h"
@@ -113,7 +112,7 @@ class URLLoaderInterceptor::IOState
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& url_request,
-      network::mojom::URLLoaderClientPtr* client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient>* client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
     RequestParams params;
     params.process_id = 0;
@@ -122,14 +121,14 @@ class URLLoaderInterceptor::IOState
     params.request_id = request_id;
     params.options = options;
     params.url_request = url_request;
-    params.client = std::move(*client);
+    params.client.Bind(std::move(*client));
     params.traffic_annotation = traffic_annotation;
 
     if (Intercept(&params))
       return true;
 
     *receiver = std::move(params.receiver);
-    *client = std::move(params.client);
+    *client = params.client.Unbind();
     return false;
   }
 
@@ -190,12 +189,11 @@ class URLLoaderClientInterceptor : public network::mojom::URLLoaderClient {
       : original_client_(std::move(params.client)),
         completion_status_callback_(std::move(completion_status_callback)),
         request_url_(params.url_request.url) {
-    network::mojom::URLLoaderClientPtr delegating_client;
-    delegating_client_receiver_.Bind(mojo::MakeRequest(&delegating_client));
     factory_getter.Run()->CreateLoaderAndStart(
         std::move(params.receiver), params.routing_id, params.request_id,
         params.options, std::move(params.url_request),
-        std::move(delegating_client), params.traffic_annotation);
+        delegating_client_receiver_.BindNewPipeAndPassRemote(),
+        params.traffic_annotation);
   }
 
   void OnReceiveResponse(network::mojom::URLResponseHeadPtr head) override {
@@ -234,7 +232,7 @@ class URLLoaderClientInterceptor : public network::mojom::URLLoaderClient {
   }
 
  private:
-  network::mojom::URLLoaderClientPtr original_client_;
+  mojo::Remote<network::mojom::URLLoaderClient> original_client_;
   mojo::Receiver<network::mojom::URLLoaderClient> delegating_client_receiver_{
       this};
   URLLoaderInterceptor::URLLoaderCompletionStatusCallback
@@ -278,7 +276,7 @@ class URLLoaderInterceptor::Interceptor
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& url_request,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
       override {
     RequestParams params;
@@ -288,7 +286,7 @@ class URLLoaderInterceptor::Interceptor
     params.request_id = request_id;
     params.options = options;
     params.url_request = std::move(url_request);
-    params.client = std::move(client);
+    params.client.Bind(std::move(client));
     params.traffic_annotation = traffic_annotation;
 
     if (parent_->Intercept(&params))

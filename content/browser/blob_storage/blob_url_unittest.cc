@@ -210,7 +210,7 @@ class BlobURLTest : public testing::Test {
     network::TestURLLoaderClient url_loader_client;
     url_loader_factory->CreateLoaderAndStart(
         MakeRequest(&url_loader), 0, 0, network::mojom::kURLLoadOptionNone,
-        request, url_loader_client.CreateInterfacePtr(),
+        request, url_loader_client.CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
     url_loader_client.RunUntilComplete();
 

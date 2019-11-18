@@ -24,6 +24,7 @@
 #include "extensions/common/extension_paths.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/value_builder.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/zlib/google/zip.h"
 
@@ -718,9 +719,8 @@ class ContentVerifyJobWithHashFetchUnittest : public ContentVerifyJobUnittest {
     DCHECK(verified_contents_);
     if (!client_ || !ready_to_respond_)
       return;
-    network::mojom::URLLoaderClientPtr client = std::move(*client_);
     content::URLLoaderInterceptor::WriteResponse(
-        std::string(), *verified_contents_, client.get());
+        std::string(), *verified_contents_, client_.get());
   }
 
   void ForceHashFetchOnNextResourceLoad(const Extension& extension) {
@@ -763,7 +763,7 @@ class ContentVerifyJobWithHashFetchUnittest : public ContentVerifyJobUnittest {
 
   // Used to serve potentially delayed response to verified_contents.json.
   content::URLLoaderInterceptor hash_fetch_interceptor_;
-  base::Optional<network::mojom::URLLoaderClientPtr> client_;
+  mojo::Remote<network::mojom::URLLoaderClient> client_;
 
   // Whether or not |client_| can respond to hash fetch request.
   bool ready_to_respond_ = false;

@@ -22,7 +22,6 @@
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -74,12 +73,12 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
     for (const auto& header : extra_headers)
       response->headers->AddHeader(header);
 
-    client_ptr_->OnReceiveResponse(std::move(response));
+    client_remote_->OnReceiveResponse(std::move(response));
   }
 
   void NotifyClientOnComplete(int error_code) {
-    DCHECK(client_ptr_);
-    client_ptr_->OnComplete(URLLoaderCompletionStatus(error_code));
+    DCHECK(client_remote_);
+    client_remote_->OnComplete(URLLoaderCompletionStatus(error_code));
   }
 
   void NotifyClientOnReceiveRedirect(
@@ -91,10 +90,10 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
     for (const auto& header : extra_headers)
       response->headers->AddHeader(header);
 
-    client_ptr_->OnReceiveRedirect(redirect_info, std::move(response));
+    client_remote_->OnReceiveRedirect(redirect_info, std::move(response));
   }
 
-  bool IsCreateLoaderAndStartCalled() { return !!client_ptr_; }
+  bool IsCreateLoaderAndStartCalled() { return !!client_remote_; }
 
   void SetOnCreateLoaderAndStart(const base::RepeatingClosure& closure) {
     on_create_loader_and_start_ = closure;
@@ -111,13 +110,14 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
                             int32_t request_id,
                             uint32_t options,
                             const ResourceRequest& resource_request,
-                            mojom::URLLoaderClientPtr client,
+                            mojo::PendingRemote<mojom::URLLoaderClient> client,
                             const net::MutableNetworkTrafficAnnotationTag&
                                 traffic_annotation) override {
     ++num_created_loaders_;
     DCHECK(client);
     request_ = resource_request;
-    client_ptr_ = std::move(client);
+    client_remote_.reset();
+    client_remote_.Bind(std::move(client));
 
     if (on_create_loader_and_start_)
       on_create_loader_and_start_.Run();
@@ -127,7 +127,7 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
     NOTREACHED();
   }
 
-  mojom::URLLoaderClientPtr client_ptr_;
+  mojo::Remote<mojom::URLLoaderClient> client_remote_;
 
   ResourceRequest request_;
 
@@ -190,7 +190,7 @@ class CorsURLLoaderTest : public testing::Test {
     cors_url_loader_factory_->CreateLoaderAndStart(
         mojo::MakeRequest(&url_loader_), 0 /* routing_id */, 0 /* request_id */,
         mojom::kURLLoadOptionNone, request,
-        test_cors_loader_client_->CreateInterfacePtr(),
+        test_cors_loader_client_->CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   }
 

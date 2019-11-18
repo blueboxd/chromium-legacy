@@ -463,7 +463,7 @@ class FileSystemURLLoaderFactoryTest
     auto client = std::make_unique<network::TestURLLoaderClient>();
     factory->CreateLoaderAndStart(
         mojo::MakeRequest(&loader_), 0, 0, network::mojom::kURLLoadOptionNone,
-        request, client->CreateInterfacePtr(),
+        request, client->CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
     return client;

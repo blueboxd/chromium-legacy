@@ -9,8 +9,10 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/optional.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_metrics_util.h"
+#include "chrome/browser/chromeos/vm_starting_observer.h"
 #include "chromeos/dbus/concierge/service.pb.h"
 #include "chromeos/dbus/vm_plugin_dispatcher/vm_plugin_dispatcher.pb.h"
 #include "chromeos/dbus/vm_plugin_dispatcher_client.h"
@@ -22,6 +24,7 @@ namespace plugin_vm {
 
 // The PluginVmManager is responsible for connecting to the D-Bus services to
 // manage the Plugin Vm.
+
 class PluginVmManager : public KeyedService,
                         public chromeos::VmPluginDispatcherClient::Observer {
  public:
@@ -41,6 +44,10 @@ class PluginVmManager : public KeyedService,
       const vm_tools::plugin_dispatcher::VmStateChangedSignal& signal) override;
 
   vm_tools::plugin_dispatcher::VmState vm_state() const { return vm_state_; }
+
+  // Add/remove vm starting observers.
+  void AddVmStartingObserver(chromeos::VmStartingObserver* observer);
+  void RemoveVmStartingObserver(chromeos::VmStartingObserver* observer);
 
  private:
   // The flow to launch a Plugin Vm. We'll probably want to add additional
@@ -73,6 +80,8 @@ class PluginVmManager : public KeyedService,
   // We can't immediately start the VM when it is in states like suspending, so
   // delay until an in progress operation finishes.
   bool pending_start_vm_ = false;
+
+  base::ObserverList<chromeos::VmStartingObserver> vm_starting_observers_;
 
   base::WeakPtrFactory<PluginVmManager> weak_ptr_factory_{this};
 

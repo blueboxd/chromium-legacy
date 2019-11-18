@@ -37,6 +37,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_util.h"
 #include "net/log/net_log.h"
@@ -86,8 +87,9 @@ void NotifyNavigationPreloadCompletedOnUI(
 class DelegatingURLLoaderClient final : public network::mojom::URLLoaderClient {
  public:
   using WorkerId = std::pair<int, int>;
-  explicit DelegatingURLLoaderClient(network::mojom::URLLoaderClientPtr client,
-                                     const network::ResourceRequest& request)
+  explicit DelegatingURLLoaderClient(
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
+      const network::ResourceRequest& request)
       : client_(std::move(client)),
         url_(request.url),
         devtools_enabled_(request.report_raw_headers) {
@@ -176,8 +178,8 @@ class DelegatingURLLoaderClient final : public network::mojom::URLLoaderClient {
         base::BindOnce(&NotifyNavigationPreloadCompletedOnUI, status));
   }
 
-  void Bind(network::mojom::URLLoaderClientPtr* ptr_info) {
-    receiver_.Bind(mojo::MakeRequest(ptr_info));
+  void Bind(mojo::PendingRemote<network::mojom::URLLoaderClient>* remote) {
+    receiver_.Bind(remote->InitWithNewPipeAndPassReceiver());
   }
 
  private:
@@ -198,7 +200,7 @@ class DelegatingURLLoaderClient final : public network::mojom::URLLoaderClient {
   }
 
   mojo::Receiver<network::mojom::URLLoaderClient> receiver_{this};
-  network::mojom::URLLoaderClientPtr client_;
+  mojo::Remote<network::mojom::URLLoaderClient> client_;
   bool completed_ = false;
   const GURL url_;
   const bool devtools_enabled_;
@@ -693,9 +695,9 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
 
   // Create the DelegatingURLLoaderClient, which becomes the
   // URLLoaderClient for the navigation preload network request.
-  network::mojom::URLLoaderClientPtr inner_url_loader_client;
+  mojo::PendingRemote<network::mojom::URLLoaderClient> inner_url_loader_client;
   preload_handle_->url_loader_client_receiver =
-      mojo::MakeRequest(&inner_url_loader_client);
+      inner_url_loader_client.InitWithNewPipeAndPassReceiver();
   auto url_loader_client = std::make_unique<DelegatingURLLoaderClient>(
       std::move(inner_url_loader_client), resource_request);
 
@@ -705,7 +707,8 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
 
   // Start the network request for the URL using the network factory.
   // TODO(falken): What to do about routing_id.
-  network::mojom::URLLoaderClientPtr url_loader_client_to_pass;
+  mojo::PendingRemote<network::mojom::URLLoaderClient>
+      url_loader_client_to_pass;
   url_loader_client->Bind(&url_loader_client_to_pass);
   network::mojom::URLLoaderPtr url_loader;
 

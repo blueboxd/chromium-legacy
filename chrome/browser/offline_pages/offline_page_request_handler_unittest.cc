@@ -43,6 +43,7 @@
 #include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/test/browser_task_environment.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "net/base/filename_util.h"
@@ -188,12 +189,12 @@ class TestURLLoaderClient : public network::mojom::URLLoaderClient {
     observer_->OnComplete();
   }
 
-  network::mojom::URLLoaderClientPtr CreateInterfacePtr() {
-    network::mojom::URLLoaderClientPtr client_ptr;
-    receiver_.Bind(mojo::MakeRequest(&client_ptr));
+  mojo::PendingRemote<network::mojom::URLLoaderClient> CreateRemote() {
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client_remote =
+        receiver_.BindNewPipeAndPassRemote();
     receiver_.set_disconnect_handler(base::BindOnce(
         &TestURLLoaderClient::OnMojoDisconnect, base::Unretained(this)));
-    return client_ptr;
+    return client_remote;
   }
 
   mojo::DataPipeConsumerHandle response_body() { return response_body_.get(); }
@@ -1016,11 +1017,11 @@ void OfflinePageURLLoaderBuilder::MaybeStartLoader(
 
   // OfflinePageURLLoader decides to handle the request as offline page. Since
   // now, OfflinePageURLLoader will own itself and live as long as its URLLoader
-  // and URLLoaderClientPtr are alive.
+  // and URLLoaderClient are alive.
   url_loader_.release();
 
   std::move(request_handler)
-      .Run(request, mojo::MakeRequest(&loader_), client_->CreateInterfacePtr());
+      .Run(request, mojo::MakeRequest(&loader_), client_->CreateRemote());
 }
 
 void OfflinePageURLLoaderBuilder::ReadBody() {

@@ -71,7 +71,7 @@ WebRequestProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
     const network::ResourceRequest& request,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
-    network::mojom::URLLoaderClientPtr client)
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client)
     : factory_(factory),
       request_(request),
       original_initiator_(request.request_initiator),
@@ -88,7 +88,7 @@ WebRequestProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
           ExtensionWebRequestEventRouter::GetInstance()
               ->HasAnyExtraHeadersListener(factory_->browser_context_)) {
   // If there is a client error, clean up the request.
-  target_client_.set_connection_error_handler(base::BindOnce(
+  target_client_.set_disconnect_handler(base::BindOnce(
       &WebRequestProxyingURLLoaderFactory::InProgressRequest::OnRequestError,
       weak_factory_.GetWeakPtr(),
       network::URLLoaderCompletionStatus(net::ERR_ABORTED)));
@@ -593,8 +593,6 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
   if (!target_loader_.is_bound() && factory_->target_factory_.is_bound()) {
     // No extensions have cancelled us up to this point, so it's now OK to
     // initiate the real network request.
-    network::mojom::URLLoaderClientPtr proxied_client;
-    proxied_client_receiver_.Bind(mojo::MakeRequest(&proxied_client));
     uint32_t options = options_;
     // Even if this request does not use the header client, future redirects
     // might, so we need to set the option on the loader.
@@ -603,7 +601,8 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     factory_->target_factory_->CreateLoaderAndStart(
         mojo::MakeRequest(&target_loader_), info_->routing_id,
         network_service_request_id_, options, request_,
-        std::move(proxied_client), traffic_annotation_);
+        proxied_client_receiver_.BindNewPipeAndPassRemote(),
+        traffic_annotation_);
   }
 
   // From here the lifecycle of this request is driven by subsequent events on
@@ -1000,7 +999,7 @@ void WebRequestProxyingURLLoaderFactory::CreateLoaderAndStart(
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& request,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 

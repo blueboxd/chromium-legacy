@@ -439,8 +439,10 @@ Output.RULES = {
     date: {enter: `$nameFromNode $role $state $restriction $description`},
     dialog: {enter: `$nameFromNode $role $description`},
     genericContainer: {
-      enter: `$nameFromNode $description $state`,
-      speak: `$nameOrTextContent $description $state`
+      enter: `$nameFromNode $description $state
+          $if($selected, @aria_selected_true)`,
+      speak: `$nameOrTextContent $description $state
+          $if($selected, @aria_selected_true)`
     },
     embeddedObject: {speak: `$name`},
     grid: {
@@ -457,11 +459,11 @@ Output.RULES = {
       enter: `!relativePitch(hierarchicalLevel)
           $nameFromNode=
           $if($hierarchicalLevel, @tag_h+$hierarchicalLevel, $role) $state
-          $description`,
+          $description $if($selected, @aria_selected_true)`,
       speak: `!relativePitch(hierarchicalLevel)
           $nameOrDescendants=
           $if($hierarchicalLevel, @tag_h+$hierarchicalLevel, $role) $state
-          $restriction $description`
+          $restriction $description $if($selected, @aria_selected_true)`
     },
     image: {
       speak: `$if($name, $name,

@@ -1582,6 +1582,10 @@
       status: "stable"
     },
     {
+      name: "StrictMimeTypesForWorkers",
+      status: "experimental"
+    },
+    {
       name: "SurfaceEmbeddingFeatures",
       status: "stable",
     },

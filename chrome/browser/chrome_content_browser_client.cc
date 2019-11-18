@@ -4384,13 +4384,14 @@ class FileURLLoaderFactory : public network::mojom::URLLoaderFactory {
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& request,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
       override {
     if (!content::ChildProcessSecurityPolicy::GetInstance()->CanRequestURL(
             child_id_, request.url)) {
-      client->OnComplete(
-          network::URLLoaderCompletionStatus(net::ERR_ACCESS_DENIED));
+      mojo::Remote<network::mojom::URLLoaderClient>(std::move(client))
+          ->OnComplete(
+              network::URLLoaderCompletionStatus(net::ERR_ACCESS_DENIED));
       return;
     }
     content::CreateFileURLLoader(request, std::move(loader), std::move(client),

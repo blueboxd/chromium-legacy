@@ -14,6 +14,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/http_response_headers.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/test/test_utils.h"
@@ -279,10 +280,12 @@ void CertificateReportingServiceTestHelper::ExpectNoRequests(
 }
 
 void CertificateReportingServiceTestHelper::SendResponse(
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     bool fail) {
+  mojo::Remote<network::mojom::URLLoaderClient> client_remote(
+      std::move(client));
   if (fail) {
-    client->OnComplete(
+    client_remote->OnComplete(
         network::URLLoaderCompletionStatus(net::ERR_SSL_PROTOCOL_ERROR));
     return;
   }
@@ -291,8 +294,8 @@ void CertificateReportingServiceTestHelper::SendResponse(
   head.headers = new net::HttpResponseHeaders(
       "HTTP/1.1 200 OK\nContent-type: text/html\n\n");
   head.mime_type = "text/html";
-  client->OnReceiveResponse(head);
-  client->OnComplete(network::URLLoaderCompletionStatus());
+  client_remote->OnReceiveResponse(head);
+  client_remote->OnComplete(network::URLLoaderCompletionStatus());
 }
 
 void CertificateReportingServiceTestHelper::CreateLoaderAndStart(
@@ -301,7 +304,7 @@ void CertificateReportingServiceTestHelper::CreateLoaderAndStart(
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& url_request,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   const std::string serialized_report =
       GetReportContents(url_request, server_private_key_);

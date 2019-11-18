@@ -18,6 +18,7 @@
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/kiosk/kiosk_delegate.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace base {
 class CommandLine;
@@ -77,7 +78,7 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
       const base::FilePath& resource_relative_path,
       int resource_id,
       const std::string& content_security_policy,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       bool send_cors_header) override;
   bool AllowCrossRendererResourceLoad(const GURL& url,
                                       content::ResourceType resource_type,

@@ -474,20 +474,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   //   object.
   enum class ClientPhase { kInitial, kResponseCommitted, kExecutionReady };
 
-  friend class LinkHeaderServiceWorkerTest;
   friend class ServiceWorkerProviderHostTest;
-  friend class ServiceWorkerWriteToCacheJobTest;
   friend class service_worker_object_host_unittest::ServiceWorkerObjectHostTest;
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerWriteToCacheJobTest, Update_SameScript);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerWriteToCacheJobTest,
-                           Update_SameSizeScript);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerWriteToCacheJobTest,
-                           Update_TruncatedScript);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerWriteToCacheJobTest,
-                           Update_ElongatedScript);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerWriteToCacheJobTest,
-                           Update_EmptyScript);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProviderHostTest, ContextSecurity);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerJobTest, Unregister);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerJobTest, RegisterDuplicateScript);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerUpdateJobTest,

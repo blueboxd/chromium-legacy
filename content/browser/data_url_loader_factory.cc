@@ -5,6 +5,7 @@
 #include "content/browser/data_url_loader_factory.h"
 
 #include "base/memory/ref_counted.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "mojo/public/cpp/system/string_data_source.h"
 #include "net/base/data_url.h"
@@ -17,7 +18,7 @@ namespace content {
 
 namespace {
 struct WriteData {
-  network::mojom::URLLoaderClientPtr client;
+  mojo::Remote<network::mojom::URLLoaderClient> client;
   std::string data;
   std::unique_ptr<mojo::DataPipeProducer> producer;
 };
@@ -48,7 +49,7 @@ void DataURLLoaderFactory::CreateLoaderAndStart(
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& request,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   const GURL* url = nullptr;
   if (!url_.is_empty() && request.url.is_empty()) {
@@ -65,25 +66,27 @@ void DataURLLoaderFactory::CreateLoaderAndStart(
                                   &response.charset, &data, &response.headers);
   url_ = GURL();  // Don't need it anymore.
 
+  mojo::Remote<network::mojom::URLLoaderClient> client_remote(
+      std::move(client));
   if (result != net::OK) {
-    client->OnComplete(network::URLLoaderCompletionStatus(result));
+    client_remote->OnComplete(network::URLLoaderCompletionStatus(result));
     return;
   }
 
-  client->OnReceiveResponse(response);
+  client_remote->OnReceiveResponse(response);
 
   mojo::ScopedDataPipeProducerHandle producer;
   mojo::ScopedDataPipeConsumerHandle consumer;
   if (CreateDataPipe(nullptr, &producer, &consumer) != MOJO_RESULT_OK) {
-    client->OnComplete(
+    client_remote->OnComplete(
         network::URLLoaderCompletionStatus(net::ERR_INSUFFICIENT_RESOURCES));
     return;
   }
 
-  client->OnStartLoadingResponseBody(std::move(consumer));
+  client_remote->OnStartLoadingResponseBody(std::move(consumer));
 
   auto write_data = std::make_unique<WriteData>();
-  write_data->client = std::move(client);
+  write_data->client = std::move(client_remote);
   write_data->data = std::move(data);
   write_data->producer =
       std::make_unique<mojo::DataPipeProducer>(std::move(producer));

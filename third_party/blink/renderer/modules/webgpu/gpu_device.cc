@@ -114,6 +114,10 @@ ScriptPromise GPUDevice::lost(ScriptState* script_state) {
   return lost_property_->Promise(script_state->World());
 }
 
+GPUQueue* GPUDevice::defaultQueue() {
+  return queue_;
+}
+
 GPUBuffer* GPUDevice::createBuffer(const GPUBufferDescriptor* descriptor) {
   return GPUBuffer::Create(this, descriptor);
 }
@@ -221,10 +225,6 @@ GPUCommandEncoder* GPUDevice::createCommandEncoder(
 GPURenderBundleEncoder* GPUDevice::createRenderBundleEncoder(
     const GPURenderBundleEncoderDescriptor* descriptor) {
   return GPURenderBundleEncoder::Create(this, descriptor);
-}
-
-GPUQueue* GPUDevice::getQueue() {
-  return queue_;
 }
 
 void GPUDevice::pushErrorScope(const WTF::String& filter) {

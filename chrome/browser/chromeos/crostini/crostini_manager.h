@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_installer_types.mojom.h"
 #include "chrome/browser/chromeos/crostini/crostini_simple_types.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/vm_starting_observer.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "chrome/browser/ui/browser.h"
 #include "chromeos/dbus/cicerone/cicerone_service.pb.h"
@@ -471,6 +472,10 @@ class CrostiniManager : public KeyedService,
   void AddVmShutdownObserver(VmShutdownObserver* observer);
   void RemoveVmShutdownObserver(VmShutdownObserver* observer);
 
+  // Add/remove vm starting observers.
+  void AddVmStartingObserver(chromeos::VmStartingObserver* observer);
+  void RemoveVmStartingObserver(chromeos::VmStartingObserver* observer);
+
   // ConciergeClient::VmObserver:
   void OnVmStarted(const vm_tools::concierge::VmStartedSignal& signal) override;
   void OnVmStopped(const vm_tools::concierge::VmStoppedSignal& signal) override;
@@ -835,6 +840,7 @@ class CrostiniManager : public KeyedService,
       upgrade_container_progress_observers_;
 
   base::ObserverList<VmShutdownObserver> vm_shutdown_observers_;
+  base::ObserverList<chromeos::VmStartingObserver> vm_starting_observers_;
 
   // Only one restarter flow is actually running for a given container, other
   // restarters will just have their callback called when the running restarter

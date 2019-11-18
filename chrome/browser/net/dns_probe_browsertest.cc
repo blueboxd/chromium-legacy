@@ -146,7 +146,7 @@ class DelayedURLLoader : public network::mojom::URLLoader,
                          public DelayableRequest {
  public:
   DelayedURLLoader(mojo::PendingReceiver<network::mojom::URLLoader> receiver,
-                   network::mojom::URLLoaderClientPtr client,
+                   mojo::Remote<network::mojom::URLLoaderClient> client,
                    int net_error,
                    bool should_delay,
                    DestructionCallback destruction_callback)
@@ -195,7 +195,7 @@ class DelayedURLLoader : public network::mojom::URLLoader,
   void ResumeReadingBodyFromNet() override {}
 
   mojo::Receiver<network::mojom::URLLoader> receiver_;
-  network::mojom::URLLoaderClientPtr client_;
+  mojo::Remote<network::mojom::URLLoaderClient> client_;
   int net_error_;
   bool should_delay_;
   DestructionCallback destruction_callback_;

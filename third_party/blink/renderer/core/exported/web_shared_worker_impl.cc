@@ -180,7 +180,8 @@ void WebSharedWorkerImpl::StartWorkerContext(
           network::mojom::ReferrerPolicy::kDefault,
           /*outgoing_referrer=*/String(),
           CalculateHttpsState(starter_origin.get()),
-          AllowedByNosniff::MimeTypeCheck::kLax, creation_address_space,
+          AllowedByNosniff::MimeTypeCheck::kLaxForWorker,
+          creation_address_space,
           /*insecure_request_policy=*/kBlockAllMixedContent,
           FetchClientSettingsObject::InsecureNavigationsSet(),
           /*mixed_autoupgrade_opt_out=*/false);

@@ -134,7 +134,8 @@ views::Widget* ShowCrostiniForceCloseDialog(
     base::OnceClosure force_close_callback);
 // Shows the Crostini Termina Upgrade dialog (for blocking crostini start until
 // Termina version matches).
-void ShowCrostiniUpgradeView(Profile* profile, CrostiniUISurface ui_surface);
+void ShowCrostiniUpdateComponentView(Profile* profile,
+                                     CrostiniUISurface ui_surface);
 
 // Shows the Crostini Container Upgrade dialog (for running upgrades in the
 // container).

@@ -19,6 +19,7 @@
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_attach_helper.h"
 #include "extensions/common/extension.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
@@ -58,9 +59,9 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
 
   network::mojom::URLLoaderPtr dummy_new_loader;
   mojo::MakeRequest(&dummy_new_loader);
-  network::mojom::URLLoaderClientPtr new_client;
+  mojo::Remote<network::mojom::URLLoaderClient> new_client;
   mojo::PendingReceiver<network::mojom::URLLoaderClient> new_client_receiver =
-      mojo::MakeRequest(&new_client);
+      new_client.BindNewPipeAndPassReceiver();
 
   uint32_t data_pipe_size = 64U;
   // Provide the MimeHandlerView code a chance to override the payload. This is

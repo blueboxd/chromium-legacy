@@ -1704,10 +1704,7 @@ TEST_P(HotseatDisabledOverviewSessionTest,
   // account.
   const int bounds_left = 200 + 4;
   int expected_x = bounds_left + (400 - (bounds_left)) / 2;
-  int workarea_bottom_inset = ShelfConfig::Get()->shelf_size();
-  if (chromeos::switches::ShouldShowShelfHotseat())
-    workarea_bottom_inset = ShelfConfig::Get()->in_app_shelf_size();
-  const int expected_y = (300 - workarea_bottom_inset) / 2;
+  const int expected_y = (300 - ShelfConfig::Get()->shelf_size()) / 2;
   EXPECT_EQ(gfx::Point(expected_x, expected_y),
             no_windows_widget->GetWindowBoundsInScreen().CenterPoint());
 

@@ -15,6 +15,8 @@
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_response.h"
@@ -96,13 +98,13 @@ class PreviewsLitePageRedirectURLLoader : public network::mojom::URLLoader,
   void StartHandlingRedirectToModifiedRequest(
       const network::ResourceRequest& resource_request,
       mojo::PendingReceiver<network::mojom::URLLoader> receiver,
-      network::mojom::URLLoaderClientPtr client);
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client);
 
   // Helper method for setting up and serving |redirect_info| to |client|.
   void StartHandlingRedirect(
       const network::ResourceRequest& /* resource_request */,
       mojo::PendingReceiver<network::mojom::URLLoader> receiver,
-      network::mojom::URLLoaderClientPtr client);
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client);
 
   // Helper method to create redirect information to |redirect_url| and modify
   // |redirect_info_| and |modified_resource_request_|.
@@ -147,7 +149,7 @@ class PreviewsLitePageRedirectURLLoader : public network::mojom::URLLoader,
   mojo::Binding<network::mojom::URLLoader> binding_;
 
   // The owning client. Used for serving redirects.
-  network::mojom::URLLoaderClientPtr client_;
+  mojo::Remote<network::mojom::URLLoaderClient> client_;
 
   // A reference to the profile's prefs. May be null.
   PrefService* pref_service_;

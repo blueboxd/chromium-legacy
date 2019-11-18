@@ -267,7 +267,7 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
       std::unique_ptr<CreateLoaderParameters> create_loader_params,
       bool is_download,
       mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory,
       mojo::PendingRemote<network::mojom::CookieManager> cookie_manager);
 
@@ -377,7 +377,7 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   mojo::Receiver<network::mojom::URLLoaderClient> client_receiver_{this};
   mojo::Receiver<network::mojom::URLLoader> loader_receiver_{this};
 
-  network::mojom::URLLoaderClientPtr client_;
+  mojo::Remote<network::mojom::URLLoaderClient> client_;
   network::mojom::URLLoaderPtr loader_;
   mojo::Remote<network::mojom::URLLoaderFactory> target_factory_;
   mojo::Remote<network::mojom::CookieManager> cookie_manager_;
@@ -423,7 +423,7 @@ void DevToolsURLLoaderInterceptor::CreateJob(
     const base::Optional<std::string>& renderer_request_id,
     std::unique_ptr<CreateLoaderParameters> create_params,
     mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory,
     mojo::PendingRemote<network::mojom::CookieManager> cookie_manager) {
   DCHECK(!frame_token.is_empty());
@@ -472,7 +472,7 @@ class DevToolsURLLoaderFactoryProxy : public network::mojom::URLLoaderFactory {
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& request,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
       override;
   void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
@@ -531,7 +531,7 @@ void DevToolsURLLoaderFactoryProxy::CreateLoaderAndStart(
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& request,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -664,7 +664,7 @@ InterceptionJob::InterceptionJob(
     std::unique_ptr<CreateLoaderParameters> create_loader_params,
     bool is_download,
     mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory,
     mojo::PendingRemote<network::mojom::CookieManager> cookie_manager)
     : id_prefix_(id),
@@ -1172,16 +1172,14 @@ void InterceptionJob::StartRequest() {
 
   state_ = State::kRequestSent;
 
-  network::mojom::URLLoaderClientPtr loader_client;
-  client_receiver_.Bind(MakeRequest(&loader_client));
-  client_receiver_.set_disconnect_handler(
-      base::BindOnce(&InterceptionJob::Shutdown, base::Unretained(this)));
-
   target_factory_->CreateLoaderAndStart(
       MakeRequest(&loader_), create_loader_params_->routing_id,
       create_loader_params_->request_id, create_loader_params_->options,
-      create_loader_params_->request, std::move(loader_client),
+      create_loader_params_->request,
+      client_receiver_.BindNewPipeAndPassRemote(),
       create_loader_params_->traffic_annotation);
+  client_receiver_.set_disconnect_handler(
+      base::BindOnce(&InterceptionJob::Shutdown, base::Unretained(this)));
 
   if (priority_)
     loader_->SetPriority(priority_->first, priority_->second);
@@ -1481,7 +1479,7 @@ void DevToolsURLLoaderFactoryAdapter::CreateLoaderAndStart(
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& request,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   factory_->CreateLoaderAndStart(std::move(loader), routing_id, request_id,
                                  options, request, std::move(client),

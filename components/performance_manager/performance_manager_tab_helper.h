@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "components/performance_manager/public/mojom/coordination_unit.mojom-forward.h"
 #include "components/performance_manager/web_contents_proxy_impl.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -56,14 +57,14 @@ class PerformanceManagerTabHelper
   void WebContentsDestroyed() override;
   void DidUpdateFaviconURL(
       const std::vector<content::FaviconURL>& candidates) override;
-  void OnInterfaceRequestFromFrame(
-      content::RenderFrameHost* render_frame_host,
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle* interface_pipe) override;
 
   // WebContentsProxyImpl overrides.
   content::WebContents* GetWebContents() const override;
   int64_t LastNavigationId() const override;
+
+  void BindDocumentCoordinationUnit(
+      content::RenderFrameHost* render_frame_host,
+      mojo::PendingReceiver<mojom::DocumentCoordinationUnit> receiver);
 
   void SetUkmSourceIdForTesting(ukm::SourceId id) { ukm_source_id_ = id; }
 

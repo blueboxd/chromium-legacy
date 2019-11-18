@@ -13,6 +13,7 @@
 #include "content/common/content_export.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -49,7 +50,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& resource_request,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
       scoped_refptr<network::SharedURLLoaderFactory> fallback_factory,
@@ -147,7 +148,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   base::Optional<net::RedirectInfo> redirect_info_;
   int redirect_limit_;
 
-  network::mojom::URLLoaderClientPtr url_loader_client_;
+  mojo::Remote<network::mojom::URLLoaderClient> url_loader_client_;
   mojo::Binding<network::mojom::URLLoader> url_loader_binding_;
 
   // For handling FetchEvent response.
@@ -229,7 +230,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoaderFactory
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& resource_request,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
       override;
   void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)

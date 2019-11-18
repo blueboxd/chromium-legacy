@@ -59,7 +59,7 @@ class InstanceUpdate {
 
   const std::string& AppId() const;
 
-  const aura::Window* Window() const;
+  aura::Window* Window() const;
 
   const std::string& LaunchId() const;
   bool LaunchIdChanged() const;

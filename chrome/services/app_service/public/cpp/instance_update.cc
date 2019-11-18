@@ -86,7 +86,7 @@ const std::string& InstanceUpdate::AppId() const {
   return delta_ ? delta_->AppId() : state_->AppId();
 }
 
-const aura::Window* InstanceUpdate::Window() const {
+aura::Window* InstanceUpdate::Window() const {
   return delta_ ? delta_->Window() : state_->Window();
 }
 

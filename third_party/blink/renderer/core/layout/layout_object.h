@@ -2662,9 +2662,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
 
   // Returns |container|'s containing block.
-  LayoutBlock* FindNonAnonymousContainingBlock(
+  static LayoutBlock* FindNonAnonymousContainingBlock(
       LayoutObject* container,
-      LayoutObject::AncestorSkipInfo* = nullptr) const;
+      AncestorSkipInfo* = nullptr);
   // Returns ContainerForAbsolutePosition() if it's a LayoutBlock, or the
   // containing LayoutBlock of it.
   LayoutBlock* ContainingBlockForAbsolutePosition(

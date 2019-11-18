@@ -171,7 +171,7 @@ void OverviewSession::Init(const WindowList& windows,
   UpdateNoWindowsWidget();
 
   // Create the widget that will receive focus while in overview mode for
-  // accessiblity purposes.
+  // accessibility purposes.
   overview_focus_widget_ = std::make_unique<views::Widget>();
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;

@@ -1140,10 +1140,7 @@ TEST_F(PeopleHandlerTest, DashboardClearWhileSettingsOpen_ConfirmLater) {
 }
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-class PeopleHandlerDiceUnifiedConsentTest
-    : public ::testing::TestWithParam<bool> {};
-
-TEST_P(PeopleHandlerDiceUnifiedConsentTest, StoredAccountsList) {
+TEST(PeopleHandlerDiceUnifiedConsentTest, StoredAccountsList) {
   ScopedTestingLocalState local_state(TestingBrowserProcess::GetGlobal());
 
   // Do not be in first run, so that the profiles are not created as "new
@@ -1156,19 +1153,12 @@ TEST_P(PeopleHandlerDiceUnifiedConsentTest, StoredAccountsList) {
 
   content::BrowserTaskEnvironment task_environment;
 
-  // Decode test parameters.
-  bool dice_enabled = GetParam();
-  ScopedAccountConsistency dice(
-      dice_enabled ? signin::AccountConsistencyMethod::kDice
-                   : signin::AccountConsistencyMethod::kDiceMigration);
-
   // Setup the profile.
   std::unique_ptr<TestingProfile> profile =
       IdentityTestEnvironmentProfileAdaptor::
           CreateProfileForIdentityTestEnvironment();
-  ASSERT_EQ(
-      dice_enabled,
-      AccountConsistencyModeManager::IsDiceEnabledForProfile(profile.get()));
+  ASSERT_EQ(true, AccountConsistencyModeManager::IsDiceEnabledForProfile(
+                      profile.get()));
 
   auto identity_test_env_adaptor =
       std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile.get());
@@ -1184,22 +1174,13 @@ TEST_P(PeopleHandlerDiceUnifiedConsentTest, StoredAccountsList) {
   ASSERT_TRUE(accounts.is_list());
   base::span<const base::Value> accounts_list = accounts.GetList();
 
-  if (dice_enabled) {
-    ASSERT_EQ(2u, accounts_list.size());
-    ASSERT_TRUE(accounts_list[0].FindKey("email"));
-    ASSERT_TRUE(accounts_list[1].FindKey("email"));
-    EXPECT_EQ("a@gmail.com", accounts_list[0].FindKey("email")->GetString());
-    EXPECT_EQ("b@gmail.com", accounts_list[1].FindKey("email")->GetString());
-  } else {
-    ASSERT_EQ(1u, accounts_list.size());
-    ASSERT_TRUE(accounts_list[0].FindKey("email"));
-    EXPECT_EQ("a@gmail.com", accounts_list[0].FindKey("email")->GetString());
-  }
+  ASSERT_EQ(2u, accounts_list.size());
+  ASSERT_TRUE(accounts_list[0].FindKey("email"));
+  ASSERT_TRUE(accounts_list[1].FindKey("email"));
+  EXPECT_EQ("a@gmail.com", accounts_list[0].FindKey("email")->GetString());
+  EXPECT_EQ("b@gmail.com", accounts_list[1].FindKey("email")->GetString());
 }
 
-INSTANTIATE_TEST_SUITE_P(Test,
-                         PeopleHandlerDiceUnifiedConsentTest,
-                         ::testing::Bool());
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 }  // namespace settings

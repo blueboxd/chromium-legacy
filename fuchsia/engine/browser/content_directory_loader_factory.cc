@@ -23,7 +23,6 @@
 #include "base/task/task_traits.h"
 #include "fuchsia/engine/common/web_engine_content_client.h"
 #include "fuchsia/engine/switches.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
@@ -380,19 +379,20 @@ void ContentDirectoryLoaderFactory::CreateLoaderAndStart(
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& request,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   if (!request.url.SchemeIs(
           WebEngineContentClient::kFuchsiaContentDirectoryScheme) ||
       !request.url.is_valid()) {
-    client->OnComplete(
-        network::URLLoaderCompletionStatus(net::ERR_INVALID_URL));
+    mojo::Remote<network::mojom::URLLoaderClient>(std::move(client))
+        ->OnComplete(network::URLLoaderCompletionStatus(net::ERR_INVALID_URL));
     return;
   }
 
   if (request.method != "GET") {
-    client->OnComplete(
-        network::URLLoaderCompletionStatus(net::ERR_METHOD_NOT_SUPPORTED));
+    mojo::Remote<network::mojom::URLLoaderClient>(std::move(client))
+        ->OnComplete(
+            network::URLLoaderCompletionStatus(net::ERR_METHOD_NOT_SUPPORTED));
     return;
   }
 
@@ -407,7 +407,8 @@ void ContentDirectoryLoaderFactory::CreateLoaderAndStart(
                                                  base::FilePath(requested_path),
                                                  file_handle.NewRequest());
   if (open_result != net::OK) {
-    client->OnComplete(network::URLLoaderCompletionStatus(open_result));
+    mojo::Remote<network::mojom::URLLoaderClient>(std::move(client))
+        ->OnComplete(network::URLLoaderCompletionStatus(open_result));
     return;
   }
   DCHECK(file_handle);
@@ -421,7 +422,8 @@ void ContentDirectoryLoaderFactory::CreateLoaderAndStart(
       base::FilePath(requested_path.as_string() + "._metadata"),
       metadata_handle.NewRequest());
   if (open_result != net::OK) {
-    client->OnComplete(network::URLLoaderCompletionStatus(open_result));
+    mojo::Remote<network::mojom::URLLoaderClient>(std::move(client))
+        ->OnComplete(network::URLLoaderCompletionStatus(open_result));
     return;
   }
 
@@ -429,7 +431,7 @@ void ContentDirectoryLoaderFactory::CreateLoaderAndStart(
   task_runner_->PostTask(FROM_HERE,
                          base::Bind(&ContentDirectoryURLLoader::CreateAndStart,
                                     base::Passed(std::move(loader)), request,
-                                    base::Passed(client.PassInterface()),
+                                    base::Passed(std::move(client)),
                                     base::Passed(std::move(file_handle)),
                                     base::Passed(std::move(metadata_handle))));
 }

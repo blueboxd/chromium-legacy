@@ -1507,10 +1507,6 @@ void SimpleURLLoaderImpl::StartRequest(
   if (on_upload_progress_callback_)
     resource_request_->enable_upload_progress = true;
 
-  mojom::URLLoaderClientPtr client_ptr;
-  client_receiver_.Bind(mojo::MakeRequest(&client_ptr));
-  client_receiver_.set_disconnect_handler(base::BindOnce(
-      &SimpleURLLoaderImpl::OnMojoDisconnect, base::Unretained(this)));
   // Data elements that use pipes aren't reuseable, currently (Since the IPC
   // code doesn't call the Clone() method), so need to create another one, if
   // uploading a string via a data pipe.
@@ -1521,8 +1517,11 @@ void SimpleURLLoaderImpl::StartRequest(
   }
   url_loader_factory->CreateLoaderAndStart(
       mojo::MakeRequest(&url_loader_), 0 /* routing_id */, 0 /* request_id */,
-      url_loader_factory_options_, *resource_request_, std::move(client_ptr),
+      url_loader_factory_options_, *resource_request_,
+      client_receiver_.BindNewPipeAndPassRemote(),
       net::MutableNetworkTrafficAnnotationTag(annotation_tag_));
+  client_receiver_.set_disconnect_handler(base::BindOnce(
+      &SimpleURLLoaderImpl::OnMojoDisconnect, base::Unretained(this)));
 
   // Note that this ends up restarting the timer on each retry.
   if (!timeout_duration_.is_zero()) {

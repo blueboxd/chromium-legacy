@@ -19,6 +19,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/system/sys_info.h"
+#include "components/policy/core/common/cloud/dm_token.h"
 
 namespace policy {
 
@@ -31,44 +32,6 @@ namespace policy {
 // called.
 class BrowserDMTokenStorage {
  public:
-  // Represents the browser's DM token with its status, which can be:
-  // kValid:
-  //    A valid token to be used to make requests. Its value cannot be empty or
-  //    equal to |kInvalidTokenValue|.
-  // kInvalid:
-  //    The token explicitly marks this browser as unenrolled. The browser
-  //    should not sync policies or try to get a new DM token if it is set to
-  //    this value.
-  // kEmpty:
-  //    The token is empty. The browser will try to get a valid token if an
-  //    enrollment token is present.
-  class BrowserDMToken {
-   public:
-    static BrowserDMToken CreateValidToken(const std::string& value);
-    static BrowserDMToken CreateInvalidToken();
-    static BrowserDMToken CreateEmptyToken();
-
-    BrowserDMToken(const BrowserDMToken& other);
-    BrowserDMToken(BrowserDMToken&& other);
-
-    BrowserDMToken& operator=(const BrowserDMToken& other);
-    BrowserDMToken& operator=(BrowserDMToken&& other);
-    ~BrowserDMToken();
-
-    const std::string& value() const;
-
-    bool is_valid() const;
-    bool is_invalid() const;
-    bool is_empty() const;
-
-   private:
-    enum class Status { kValid, kInvalid, kEmpty };
-
-    BrowserDMToken(Status status, const base::StringPiece value);
-
-    Status status_;
-    std::string value_;
-  };
   using StoreCallback = base::OnceCallback<void(bool success)>;
 
   // Returns the global singleton object. Must be called from the UI thread.
@@ -90,7 +53,7 @@ class BrowserDMTokenStorage {
   //              are different because you cannot overload functions that only
   //              differ in their return type.
   std::string RetrieveDMToken();
-  BrowserDMToken RetrieveBrowserDMToken();
+  DMToken RetrieveBrowserDMToken();
   // Must be called after the DM token is saved, to ensure that the callback is
   // invoked.
   void OnDMTokenStored(bool success);
@@ -145,7 +108,7 @@ class BrowserDMTokenStorage {
   std::string client_id_;
   base::Optional<std::string> serial_number_;
   std::string enrollment_token_;
-  BrowserDMToken dm_token_;
+  DMToken dm_token_;
   bool should_display_error_message_on_failure_;
 
   SEQUENCE_CHECKER(sequence_checker_);

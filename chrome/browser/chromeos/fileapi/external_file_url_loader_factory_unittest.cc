@@ -99,7 +99,7 @@ class ExternalFileURLLoaderFactoryTest : public testing::Test {
     url_loader_factory_->CreateLoaderAndStart(
         mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
         network::mojom::kURLLoadOptionNone, resource_request,
-        client->CreateInterfacePtr(),
+        client->CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
     return loader;
   }

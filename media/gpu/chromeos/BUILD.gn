@@ -53,6 +53,8 @@ source_set("common") {
     "image_processor.cc",
     "image_processor.h",
     "image_processor_factory.h",
+    "image_processor_with_pool.cc",
+    "image_processor_with_pool.h",
     "libyuv_image_processor.cc",
     "libyuv_image_processor.h",
     "mailbox_video_frame_converter.cc",

@@ -111,6 +111,9 @@ bool ManifestUpdateTask::IsUpdateNeeded(
   if (web_application_info.theme_color != registrar_.GetAppThemeColor(app_id_))
     return true;
 
+  if (web_application_info.scope != registrar_.GetAppScope(app_id_))
+    return true;
+
   // TODO(crbug.com/926083): Check more manifest fields.
   return false;
 }

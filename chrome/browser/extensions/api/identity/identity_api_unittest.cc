@@ -15,30 +15,15 @@
 namespace extensions {
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-// Tests that all accounts in extensions is only enabled when Dice is enabled.
+// Tests that all accounts in extensions is enabled when Dice is enabled.
 TEST(IdentityApiTest, DiceAllAccountsExtensions) {
   content::BrowserTaskEnvironment task_environment;
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(kExtensionsAllAccountsFeature);
-
-  {
-    ScopedAccountConsistencyDice scoped_dice;
-    TestingProfile profile;
-    IdentityAPI api(&profile);
-    EXPECT_FALSE(api.AreExtensionsRestrictedToPrimaryAccount());
-    api.Shutdown();
-  }
-
-  {
-    ScopedAccountConsistencyDiceMigration scoped_dice_migration;
-    TestingProfile::Builder profile_builder;
-    // The profile is not a new profile to prevent automatic migration.
-    profile_builder.OverrideIsNewProfile(false);
-    std::unique_ptr<TestingProfile> profile = profile_builder.Build();
-    IdentityAPI api(profile.get());
-    EXPECT_TRUE(api.AreExtensionsRestrictedToPrimaryAccount());
-    api.Shutdown();
-  }
+  TestingProfile profile;
+  IdentityAPI api(&profile);
+  EXPECT_FALSE(api.AreExtensionsRestrictedToPrimaryAccount());
+  api.Shutdown();
 }
 #endif
 

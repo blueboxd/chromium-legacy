@@ -327,13 +327,9 @@ void PerformanceManagerTabHelper::DidUpdateFaviconURL(
   PostToGraph(FROM_HERE, &PageNodeImpl::OnFaviconUpdated, page_node_.get());
 }
 
-void PerformanceManagerTabHelper::OnInterfaceRequestFromFrame(
+void PerformanceManagerTabHelper::BindDocumentCoordinationUnit(
     content::RenderFrameHost* render_frame_host,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle* interface_pipe) {
-  if (interface_name != mojom::DocumentCoordinationUnit::Name_)
-    return;
-
+    mojo::PendingReceiver<mojom::DocumentCoordinationUnit> receiver) {
   // TODO(https://crbug.com/987445): Why else than due to speculative render
   //     frame hosts would this happen? Is there a race between the RFH creation
   //     notification and the mojo interface request?
@@ -354,8 +350,7 @@ void PerformanceManagerTabHelper::OnInterfaceRequestFromFrame(
   }
 
   PostToGraph(FROM_HERE, &FrameNodeImpl::Bind, it->second.get(),
-              mojo::PendingReceiver<mojom::DocumentCoordinationUnit>(
-                  std::move(*interface_pipe)));
+              std::move(receiver));
 }
 
 content::WebContents* PerformanceManagerTabHelper::GetWebContents() const {

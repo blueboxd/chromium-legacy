@@ -8,6 +8,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/safe_browsing/db/v4_test_util.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
@@ -25,7 +26,7 @@ class DummySharedURLLoaderFactory : public network::SharedURLLoaderFactory {
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& request,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
       override {
     // Ensure the client pipe doesn't get closed to avoid SimpleURLLoader seeing
@@ -48,7 +49,7 @@ class DummySharedURLLoaderFactory : public network::SharedURLLoaderFactory {
   friend class base::RefCounted<DummySharedURLLoaderFactory>;
   ~DummySharedURLLoaderFactory() override = default;
 
-  std::vector<network::mojom::URLLoaderClientPtr> clients_;
+  std::vector<mojo::PendingRemote<network::mojom::URLLoaderClient>> clients_;
 };
 
 }  // namespace

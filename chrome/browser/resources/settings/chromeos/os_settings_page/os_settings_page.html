@@ -34,7 +34,7 @@
 
       .banner {
         align-items: center;
-        background-color: var(--cr-card-background-color);
+        background-color: var(--cros-default-bg-color);
         border: var(--cr-hairline);
         border-radius: var(--cr-card-border-radius);
         display: flex;
@@ -62,7 +62,7 @@
       }
 
       #browserSettingsBanner {
-        color: var(--cr-secondary-text-color);
+        color: var(--cros-default-text-color-secondary);
         font-weight: 500;
       }
 
@@ -71,14 +71,12 @@
       }
 
       #openInNewBrowserSettingsIcon {
-        fill: var(--cr-link-color);
+        fill: var(--cros-link-color);
         margin-inline-start: 0;
       }
 
       #secondaryUserIcon {
-        /* TODO(stevenjb): Replace this with the correct variable or color once
-         * established by UX, see crbug.com/687749. */
-        background-color : rgb(210, 210, 212);
+        background-color : var(--cros-user-icon-color-secondary);
         background-image: url(chrome://theme/IDR_SECONDARY_USER_SETTINGS);
         background-position: center;
         background-repeat: no-repeat;
@@ -89,7 +87,7 @@
 
       #toggleContainer {
         align-items: center;
-        color: var(--cr-primary-text-color);
+        color: var(--cros-default-text-color);
         display: flex;
         font: inherit;
         justify-content: center;

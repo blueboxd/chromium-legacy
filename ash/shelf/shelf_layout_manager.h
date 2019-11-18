@@ -104,10 +104,6 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   // Returns the ideal bounds of the shelf assuming it is visible.
   gfx::Rect GetIdealBounds() const;
 
-  // Returns the ideal bounds of the shelf, but always returns in-app shelf
-  // bounds in tablet mode.
-  gfx::Rect GetIdealBoundsForWorkAreaCalculation() const;
-
   // Stops any animations, sets the bounds of the shelf and status widgets, and
   // changes the work area
   void LayoutShelf();

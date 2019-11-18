@@ -46,7 +46,8 @@ Document* DOMParser::parseFromStringInternal(const String& str,
       type,
       DocumentInit::Create()
           .WithContextDocument(context_document_)
-          .WithOwnerDocument(context_document_),
+          .WithOwnerDocument(context_document_)
+          .WithContentSecurityPolicyFromContextDoc(),
       false);
   doc->SetContent(str);
   doc->SetMimeType(AtomicString(type));

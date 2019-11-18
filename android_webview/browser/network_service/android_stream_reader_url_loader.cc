@@ -101,7 +101,7 @@ class InputStreamReaderWrapper
 
 AndroidStreamReaderURLLoader::AndroidStreamReaderURLLoader(
     const network::ResourceRequest& resource_request,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     std::unique_ptr<ResponseDelegate> response_delegate)
     : resource_request_(resource_request),
@@ -114,7 +114,7 @@ AndroidStreamReaderURLLoader::AndroidStreamReaderURLLoader(
                                base::SequencedTaskRunnerHandle::Get()) {
   DCHECK(response_delegate_);
   // If there is a client error, clean up the request.
-  client_.set_connection_error_handler(
+  client_.set_disconnect_handler(
       base::BindOnce(&AndroidStreamReaderURLLoader::RequestComplete,
                      weak_factory_.GetWeakPtr(), net::ERR_ABORTED));
 }

@@ -41,13 +41,12 @@ constexpr char kTestQueryPatternUrl[] = "*?q=5678";
 
 class ScopedSetDMToken {
  public:
-  explicit ScopedSetDMToken(
-      const policy::BrowserDMTokenStorage::BrowserDMToken& dm_token) {
+  explicit ScopedSetDMToken(const policy::DMToken& dm_token) {
     DeepScanningDialogDelegate::SetDMTokenForTesting(dm_token);
   }
   ~ScopedSetDMToken() {
     DeepScanningDialogDelegate::SetDMTokenForTesting(
-        policy::BrowserDMTokenStorage::BrowserDMToken::CreateEmptyToken());
+        policy::DMToken::CreateEmptyTokenForTesting());
   }
 };
 
@@ -110,7 +109,7 @@ using DeepScanningDialogDelegateIsEnabledTest = BaseTest;
 TEST_F(DeepScanningDialogDelegateIsEnabledTest, NoFeatureNoDMTokenNoPref) {
   DisableFeature(kDeepScanningOfUploads);
   ScopedSetDMToken scoped_dm_token(
-      policy::BrowserDMTokenStorage::BrowserDMToken::CreateInvalidToken());
+      policy::DMToken::CreateInvalidTokenForTesting());
 
   DeepScanningDialogDelegate::Data data;
   EXPECT_FALSE(DeepScanningDialogDelegate::IsEnabled(profile(), GURL(), &data));
@@ -121,7 +120,7 @@ TEST_F(DeepScanningDialogDelegateIsEnabledTest, NoFeatureNoDMTokenNoPref) {
 TEST_F(DeepScanningDialogDelegateIsEnabledTest, NoDMTokenNoPref) {
   EnableFeature(kDeepScanningOfUploads);
   ScopedSetDMToken scoped_dm_token(
-      policy::BrowserDMTokenStorage::BrowserDMToken::CreateInvalidToken());
+      policy::DMToken::CreateInvalidTokenForTesting());
 
   DeepScanningDialogDelegate::Data data;
   EXPECT_FALSE(DeepScanningDialogDelegate::IsEnabled(profile(), GURL(), &data));
@@ -134,7 +133,7 @@ TEST_F(DeepScanningDialogDelegateIsEnabledTest, NoDMToken) {
   SetDlpPolicy(CHECK_UPLOADS_AND_DOWNLOADS);
   SetMalwarePolicy(SEND_UPLOADS_AND_DOWNLOADS);
   ScopedSetDMToken scoped_dm_token(
-      policy::BrowserDMTokenStorage::BrowserDMToken::CreateInvalidToken());
+      policy::DMToken::CreateInvalidTokenForTesting());
 
   DeepScanningDialogDelegate::Data data;
   EXPECT_FALSE(DeepScanningDialogDelegate::IsEnabled(profile(), GURL(), &data));
@@ -145,8 +144,7 @@ TEST_F(DeepScanningDialogDelegateIsEnabledTest, NoDMToken) {
 TEST_F(DeepScanningDialogDelegateIsEnabledTest, NoFeatureNoPref) {
   DisableFeature(kDeepScanningOfUploads);
   ScopedSetDMToken scoped_dm_token(
-      policy::BrowserDMTokenStorage::BrowserDMToken::CreateValidToken(
-          kDmToken));
+      policy::DMToken::CreateValidTokenForTesting(kDmToken));
 
   DeepScanningDialogDelegate::Data data;
   EXPECT_FALSE(DeepScanningDialogDelegate::IsEnabled(profile(), GURL(), &data));
@@ -159,7 +157,7 @@ TEST_F(DeepScanningDialogDelegateIsEnabledTest, NoFeatureNoDMToken) {
   SetDlpPolicy(CHECK_UPLOADS_AND_DOWNLOADS);
   SetMalwarePolicy(SEND_UPLOADS_AND_DOWNLOADS);
   ScopedSetDMToken scoped_dm_token(
-      policy::BrowserDMTokenStorage::BrowserDMToken::CreateInvalidToken());
+      policy::DMToken::CreateInvalidTokenForTesting());
 
   DeepScanningDialogDelegate::Data data;
   EXPECT_FALSE(DeepScanningDialogDelegate::IsEnabled(profile(), GURL(), &data));
@@ -170,8 +168,7 @@ TEST_F(DeepScanningDialogDelegateIsEnabledTest, NoFeatureNoDMToken) {
 TEST_F(DeepScanningDialogDelegateIsEnabledTest, NoFeature) {
   DisableFeature(kDeepScanningOfUploads);
   ScopedSetDMToken scoped_dm_token(
-      policy::BrowserDMTokenStorage::BrowserDMToken::CreateValidToken(
-          kDmToken));
+      policy::DMToken::CreateValidTokenForTesting(kDmToken));
   SetDlpPolicy(CHECK_UPLOADS_AND_DOWNLOADS);
   SetMalwarePolicy(SEND_UPLOADS_AND_DOWNLOADS);
 
@@ -184,8 +181,7 @@ TEST_F(DeepScanningDialogDelegateIsEnabledTest, NoFeature) {
 TEST_F(DeepScanningDialogDelegateIsEnabledTest, DlpNoPref) {
   EnableFeature(kDeepScanningOfUploads);
   ScopedSetDMToken scoped_dm_token(
-      policy::BrowserDMTokenStorage::BrowserDMToken::CreateValidToken(
-          kDmToken));
+      policy::DMToken::CreateValidTokenForTesting(kDmToken));
 
   DeepScanningDialogDelegate::Data data;
   EXPECT_FALSE(DeepScanningDialogDelegate::IsEnabled(profile(), GURL(), &data));
@@ -196,8 +192,7 @@ TEST_F(DeepScanningDialogDelegateIsEnabledTest, DlpNoPref) {
 TEST_F(DeepScanningDialogDelegateIsEnabledTest, DlpNoPref2) {
   EnableFeature(kDeepScanningOfUploads);
   ScopedSetDMToken scoped_dm_token(
-      policy::BrowserDMTokenStorage::BrowserDMToken::CreateValidToken(
-          kDmToken));
+      policy::DMToken::CreateValidTokenForTesting(kDmToken));
   SetDlpPolicy(CHECK_NONE);
 
   DeepScanningDialogDelegate::Data data;
@@ -209,8 +204,7 @@ TEST_F(DeepScanningDialogDelegateIsEnabledTest, DlpNoPref2) {
 TEST_F(DeepScanningDialogDelegateIsEnabledTest, DlpNoPref3) {
   EnableFeature(kDeepScanningOfUploads);
   ScopedSetDMToken scoped_dm_token(
-      policy::BrowserDMTokenStorage::BrowserDMToken::CreateValidToken(
-          kDmToken));
+      policy::DMToken::CreateValidTokenForTesting(kDmToken));
   SetDlpPolicy(CHECK_DOWNLOADS);
 
   DeepScanningDialogDelegate::Data data;
@@ -222,8 +216,7 @@ TEST_F(DeepScanningDialogDelegateIsEnabledTest, DlpNoPref3) {
 TEST_F(DeepScanningDialogDelegateIsEnabledTest, DlpEnabled) {
   EnableFeature(kDeepScanningOfUploads);
   ScopedSetDMToken scoped_dm_token(
-      policy::BrowserDMTokenStorage::BrowserDMToken::CreateValidToken(
-          kDmToken));
+      policy::DMToken::CreateValidTokenForTesting(kDmToken));
   SetDlpPolicy(CHECK_UPLOADS);
 
   DeepScanningDialogDelegate::Data data;
@@ -235,8 +228,7 @@ TEST_F(DeepScanningDialogDelegateIsEnabledTest, DlpEnabled) {
 TEST_F(DeepScanningDialogDelegateIsEnabledTest, DlpEnabled2) {
   EnableFeature(kDeepScanningOfUploads);
   ScopedSetDMToken scoped_dm_token(
-      policy::BrowserDMTokenStorage::BrowserDMToken::CreateValidToken(
-          kDmToken));
+      policy::DMToken::CreateValidTokenForTesting(kDmToken));
   SetDlpPolicy(CHECK_UPLOADS_AND_DOWNLOADS);
 
   DeepScanningDialogDelegate::Data data;
@@ -249,8 +241,7 @@ TEST_F(DeepScanningDialogDelegateIsEnabledTest, DlpDisabledByList) {
   GURL url(kTestUrl);
   EnableFeature(kDeepScanningOfUploads);
   ScopedSetDMToken scoped_dm_token(
-      policy::BrowserDMTokenStorage::BrowserDMToken::CreateValidToken(
-          kDmToken));
+      policy::DMToken::CreateValidTokenForTesting(kDmToken));
   SetDlpPolicy(CHECK_UPLOADS);
   AddUrlToList(prefs::kURLsToNotCheckComplianceOfUploadedContent, url);
 
@@ -263,8 +254,7 @@ TEST_F(DeepScanningDialogDelegateIsEnabledTest, DlpDisabledByList) {
 TEST_F(DeepScanningDialogDelegateIsEnabledTest, DlpDisabledByListWithPatterns) {
   EnableFeature(kDeepScanningOfUploads);
   ScopedSetDMToken scoped_dm_token(
-      policy::BrowserDMTokenStorage::BrowserDMToken::CreateValidToken(
-          kDmToken));
+      policy::DMToken::CreateValidTokenForTesting(kDmToken));
   SetDlpPolicy(CHECK_UPLOADS);
   AddUrlToList(prefs::kURLsToNotCheckComplianceOfUploadedContent, kTestUrl);
   AddUrlToList(prefs::kURLsToNotCheckComplianceOfUploadedContent,
@@ -351,8 +341,7 @@ TEST_F(DeepScanningDialogDelegateIsEnabledTest, DlpDisabledByListWithPatterns) {
 TEST_F(DeepScanningDialogDelegateIsEnabledTest, MalwareNoPref) {
   EnableFeature(kDeepScanningOfUploads);
   ScopedSetDMToken scoped_dm_token(
-      policy::BrowserDMTokenStorage::BrowserDMToken::CreateValidToken(
-          kDmToken));
+      policy::DMToken::CreateValidTokenForTesting(kDmToken));
 
   DeepScanningDialogDelegate::Data data;
   EXPECT_FALSE(DeepScanningDialogDelegate::IsEnabled(profile(), GURL(), &data));
@@ -363,8 +352,7 @@ TEST_F(DeepScanningDialogDelegateIsEnabledTest, MalwareNoPref) {
 TEST_F(DeepScanningDialogDelegateIsEnabledTest, MalwareNoPref2) {
   EnableFeature(kDeepScanningOfUploads);
   ScopedSetDMToken scoped_dm_token(
-      policy::BrowserDMTokenStorage::BrowserDMToken::CreateValidToken(
-          kDmToken));
+      policy::DMToken::CreateValidTokenForTesting(kDmToken));
   SetMalwarePolicy(DO_NOT_SCAN);
 
   DeepScanningDialogDelegate::Data data;
@@ -376,8 +364,7 @@ TEST_F(DeepScanningDialogDelegateIsEnabledTest, MalwareNoPref2) {
 TEST_F(DeepScanningDialogDelegateIsEnabledTest, MalwareNoPref4) {
   EnableFeature(kDeepScanningOfUploads);
   ScopedSetDMToken scoped_dm_token(
-      policy::BrowserDMTokenStorage::BrowserDMToken::CreateValidToken(
-          kDmToken));
+      policy::DMToken::CreateValidTokenForTesting(kDmToken));
   SetMalwarePolicy(SEND_DOWNLOADS);
 
   DeepScanningDialogDelegate::Data data;
@@ -389,8 +376,7 @@ TEST_F(DeepScanningDialogDelegateIsEnabledTest, MalwareNoPref4) {
 TEST_F(DeepScanningDialogDelegateIsEnabledTest, MalwareNoList) {
   EnableFeature(kDeepScanningOfUploads);
   ScopedSetDMToken scoped_dm_token(
-      policy::BrowserDMTokenStorage::BrowserDMToken::CreateValidToken(
-          kDmToken));
+      policy::DMToken::CreateValidTokenForTesting(kDmToken));
   SetMalwarePolicy(SEND_UPLOADS);
 
   DeepScanningDialogDelegate::Data data;
@@ -402,8 +388,7 @@ TEST_F(DeepScanningDialogDelegateIsEnabledTest, MalwareNoList) {
 TEST_F(DeepScanningDialogDelegateIsEnabledTest, MalwareNoList2) {
   EnableFeature(kDeepScanningOfUploads);
   ScopedSetDMToken scoped_dm_token(
-      policy::BrowserDMTokenStorage::BrowserDMToken::CreateValidToken(
-          kDmToken));
+      policy::DMToken::CreateValidTokenForTesting(kDmToken));
   SetMalwarePolicy(SEND_UPLOADS_AND_DOWNLOADS);
 
   DeepScanningDialogDelegate::Data data;
@@ -416,8 +401,7 @@ TEST_F(DeepScanningDialogDelegateIsEnabledTest, MalwareEnabled) {
   GURL url(kTestUrl);
   EnableFeature(kDeepScanningOfUploads);
   ScopedSetDMToken scoped_dm_token(
-      policy::BrowserDMTokenStorage::BrowserDMToken::CreateValidToken(
-          kDmToken));
+      policy::DMToken::CreateValidTokenForTesting(kDmToken));
   SetMalwarePolicy(SEND_UPLOADS_AND_DOWNLOADS);
   AddUrlToList(prefs::kURLsToCheckForMalwareOfUploadedContent, url);
 
@@ -431,8 +415,7 @@ TEST_F(DeepScanningDialogDelegateIsEnabledTest, NoScanInIncognito) {
   GURL url(kTestUrl);
   EnableFeature(kDeepScanningOfUploads);
   ScopedSetDMToken scoped_dm_token(
-      policy::BrowserDMTokenStorage::BrowserDMToken::CreateValidToken(
-          kDmToken));
+      policy::DMToken::CreateValidTokenForTesting(kDmToken));
   SetDlpPolicy(CHECK_UPLOADS_AND_DOWNLOADS);
   SetMalwarePolicy(SEND_UPLOADS_AND_DOWNLOADS);
   AddUrlToList(prefs::kURLsToCheckForMalwareOfUploadedContent, url);
@@ -448,8 +431,7 @@ TEST_F(DeepScanningDialogDelegateIsEnabledTest, NoScanInIncognito) {
 TEST_F(DeepScanningDialogDelegateIsEnabledTest, MalwareEnabledWithPatterns) {
   EnableFeature(kDeepScanningOfUploads);
   ScopedSetDMToken scoped_dm_token(
-      policy::BrowserDMTokenStorage::BrowserDMToken::CreateValidToken(
-          kDmToken));
+      policy::DMToken::CreateValidTokenForTesting(kDmToken));
   SetMalwarePolicy(SEND_UPLOADS_AND_DOWNLOADS);
   AddUrlToList(prefs::kURLsToCheckForMalwareOfUploadedContent, kTestUrl);
   AddUrlToList(prefs::kURLsToCheckForMalwareOfUploadedContent,
@@ -574,8 +556,7 @@ class DeepScanningDialogDelegateAuditOnlyTest : public BaseTest {
   base::RunLoop run_loop_;
   std::unique_ptr<content::WebContents> web_contents_;
   ScopedSetDMToken scoped_dm_token_{
-      policy::BrowserDMTokenStorage::BrowserDMToken::CreateValidToken(
-          kDmToken)};
+      policy::DMToken::CreateValidTokenForTesting(kDmToken)};
 
   // Paths in this map will be consider to have failed deep scan checks.
   // The actual failure response is given for each path.

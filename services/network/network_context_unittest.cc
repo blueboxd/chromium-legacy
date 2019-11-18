@@ -221,7 +221,7 @@ std::unique_ptr<TestURLLoaderClient> FetchRequest(
   mojom::URLLoaderPtr loader;
   loader_factory->CreateLoaderAndStart(
       mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-      url_loader_options, request, client->CreateInterfacePtr(),
+      url_loader_options, request, client->CreateRemote(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   client->RunUntilComplete();
@@ -245,7 +245,7 @@ std::unique_ptr<TestURLLoaderClient> FetchRedirectedRequest(
   mojom::URLLoaderPtr loader;
   loader_factory->CreateLoaderAndStart(
       mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-      0 /* options */, request, client->CreateInterfacePtr(),
+      0 /* options */, request, client->CreateRemote(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   while (redirect_counts > 0) {
@@ -484,7 +484,7 @@ TEST_F(NetworkContextTest, DestroyContextWithLiveRequest) {
   TestURLLoaderClient client;
   loader_factory->CreateLoaderAndStart(
       mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-      0 /* options */, request, client.CreateInterfacePtr(),
+      0 /* options */, request, client.CreateRemote(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   client.RunUntilResponseReceived();
@@ -1145,7 +1145,7 @@ TEST_F(NetworkContextTest, CertReporting) {
     TestURLLoaderClient client;
     loader_factory->CreateLoaderAndStart(
         mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-        0 /* options */, request, client.CreateInterfacePtr(),
+        0 /* options */, request, client.CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
     client.RunUntilComplete();
@@ -1209,7 +1209,7 @@ TEST_F(NetworkContextTest, Referrers) {
       TestURLLoaderClient client;
       loader_factory->CreateLoaderAndStart(
           mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-          0 /* options */, request, client.CreateInterfacePtr(),
+          0 /* options */, request, client.CreateRemote(),
           net::MutableNetworkTrafficAnnotationTag(
               TRAFFIC_ANNOTATION_FOR_TESTS));
 
@@ -3849,7 +3849,7 @@ TEST_F(NetworkContextTest, TrustedParams) {
     TestURLLoaderClient client;
     loader_factory->CreateLoaderAndStart(
         mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-        0 /* options */, request, client.CreateInterfacePtr(),
+        0 /* options */, request, client.CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
     client.RunUntilComplete();
@@ -3908,7 +3908,7 @@ TEST_F(NetworkContextTest, TrustedParams_DisableSecureDns) {
     TestURLLoaderClient client;
     loader_factory->CreateLoaderAndStart(
         mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-        0 /* options */, request, client.CreateInterfacePtr(),
+        0 /* options */, request, client.CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
     client.RunUntilComplete();
@@ -4338,7 +4338,7 @@ TEST_F(NetworkContextTest, ProxyErrorClientNotifiedOfProxyConnection) {
   TestURLLoaderClient client;
   loader_factory->CreateLoaderAndStart(
       mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-      0 /* options */, request, client.CreateInterfacePtr(),
+      0 /* options */, request, client.CreateRemote(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   // Confirm the the resource request failed due to an unreachable proxy.
@@ -4393,7 +4393,7 @@ TEST_F(NetworkContextTest, ProxyErrorClientNotNotifiedOfUnreachableError) {
   TestURLLoaderClient client;
   loader_factory->CreateLoaderAndStart(
       mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-      0 /* options */, request, client.CreateInterfacePtr(),
+      0 /* options */, request, client.CreateRemote(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   // Confirm the the resource request failed.
@@ -4533,7 +4533,7 @@ TEST_F(NetworkContextTest, ProxyErrorClientNotifiedOfPacError) {
   TestURLLoaderClient client;
   loader_factory->CreateLoaderAndStart(
       mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-      0 /* options */, request, client.CreateInterfacePtr(),
+      0 /* options */, request, client.CreateRemote(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   // Confirm the the resource request failed.
@@ -4614,7 +4614,7 @@ TEST_F(NetworkContextTest, EnsureProperProxyServerIsUsed) {
     TestURLLoaderClient client;
     loader_factory->CreateLoaderAndStart(
         mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-        0 /* options */, request, client.CreateInterfacePtr(),
+        0 /* options */, request, client.CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
     client.RunUntilComplete();
@@ -4730,8 +4730,7 @@ TEST_F(NetworkContextTest, HeaderClientModifiesHeaders) {
     TestURLLoaderClient client;
     loader_factory->CreateLoaderAndStart(
         mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-        mojom::kURLLoadOptionUseHeaderClient, request,
-        client.CreateInterfacePtr(),
+        mojom::kURLLoadOptionUseHeaderClient, request, client.CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
     client.RunUntilComplete();
@@ -4754,7 +4753,7 @@ TEST_F(NetworkContextTest, HeaderClientModifiesHeaders) {
     TestURLLoaderClient client;
     loader_factory->CreateLoaderAndStart(
         mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-        0 /* options */, request, client.CreateInterfacePtr(),
+        0 /* options */, request, client.CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
     client.RunUntilComplete();
@@ -4798,8 +4797,7 @@ TEST_F(NetworkContextTest, HeaderClientFailsRequest) {
     TestURLLoaderClient client;
     loader_factory->CreateLoaderAndStart(
         mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-        mojom::kURLLoadOptionUseHeaderClient, request,
-        client.CreateInterfacePtr(),
+        mojom::kURLLoadOptionUseHeaderClient, request, client.CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
     client.RunUntilComplete();
@@ -4814,8 +4812,7 @@ TEST_F(NetworkContextTest, HeaderClientFailsRequest) {
     TestURLLoaderClient client;
     loader_factory->CreateLoaderAndStart(
         mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-        mojom::kURLLoadOptionUseHeaderClient, request,
-        client.CreateInterfacePtr(),
+        mojom::kURLLoadOptionUseHeaderClient, request, client.CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
     client.RunUntilComplete();
@@ -4949,8 +4946,7 @@ TEST_F(NetworkContextTest, HangingHeaderClientModifiesHeadersAsynchronously) {
   TestURLLoaderClient client;
   loader_factory->CreateLoaderAndStart(
       mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-      mojom::kURLLoadOptionUseHeaderClient, request,
-      client.CreateInterfacePtr(),
+      mojom::kURLLoadOptionUseHeaderClient, request, client.CreateRemote(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   header_client.WaitForOnBeforeSendHeaders();
@@ -5000,8 +4996,7 @@ TEST_F(NetworkContextTest, HangingHeaderClientAbortDuringOnBeforeSendHeaders) {
   TestURLLoaderClient client;
   loader_factory->CreateLoaderAndStart(
       mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-      mojom::kURLLoadOptionUseHeaderClient, request,
-      client.CreateInterfacePtr(),
+      mojom::kURLLoadOptionUseHeaderClient, request, client.CreateRemote(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   header_client.WaitForOnBeforeSendHeaders();
@@ -5050,8 +5045,7 @@ TEST_F(NetworkContextTest, HangingHeaderClientAbortDuringOnHeadersReceived) {
   TestURLLoaderClient client;
   loader_factory->CreateLoaderAndStart(
       mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-      mojom::kURLLoadOptionUseHeaderClient, request,
-      client.CreateInterfacePtr(),
+      mojom::kURLLoadOptionUseHeaderClient, request, client.CreateRemote(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   header_client.WaitForOnBeforeSendHeaders();
@@ -5627,7 +5621,7 @@ TEST_F(NetworkContextTest, MaximumCount) {
   mojom::URLLoaderPtr loader1;
   loader_factory->CreateLoaderAndStart(
       mojo::MakeRequest(&loader1), 0 /* routing_id */, 0 /* request_id */,
-      0 /* options */, request, client1->CreateInterfacePtr(),
+      0 /* options */, request, client1->CreateRemote(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   request.url = test_server.GetURL(kPath2);
@@ -5635,7 +5629,7 @@ TEST_F(NetworkContextTest, MaximumCount) {
   mojom::URLLoaderPtr loader2;
   loader_factory->CreateLoaderAndStart(
       mojo::MakeRequest(&loader2), 0 /* routing_id */, 0 /* request_id */,
-      0 /* options */, request, client2->CreateInterfacePtr(),
+      0 /* options */, request, client2->CreateRemote(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   // A third request should fail, since the first two are outstanding and the
@@ -5645,7 +5639,7 @@ TEST_F(NetworkContextTest, MaximumCount) {
   mojom::URLLoaderPtr loader3;
   loader_factory->CreateLoaderAndStart(
       mojo::MakeRequest(&loader3), 0 /* routing_id */, 0 /* request_id */,
-      0 /* options */, request, client3->CreateInterfacePtr(),
+      0 /* options */, request, client3->CreateRemote(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   client3->RunUntilComplete();
@@ -5663,7 +5657,7 @@ TEST_F(NetworkContextTest, MaximumCount) {
   client3 = std::make_unique<TestURLLoaderClient>();
   loader_factory->CreateLoaderAndStart(
       mojo::MakeRequest(&loader3), 0 /* routing_id */, 0 /* request_id */,
-      0 /* options */, request, client3->CreateInterfacePtr(),
+      0 /* options */, request, client3->CreateRemote(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   client3->RunUntilComplete();
@@ -6290,7 +6284,7 @@ class NetworkContextSplitCacheTest : public NetworkContextTest {
     mojom::URLLoaderPtr loader;
     loader_factory->CreateLoaderAndStart(
         mojo::MakeRequest(&loader), 0 /* routing_id */, 0 /* request_id */,
-        mojom::kURLLoadOptionNone, request, client->CreateInterfacePtr(),
+        mojom::kURLLoadOptionNone, request, client->CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
     if (expect_redirect) {

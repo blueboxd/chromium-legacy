@@ -10,7 +10,7 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -40,7 +40,6 @@ class TestURLLoaderFactory : public network::mojom::URLLoaderFactory,
   mojo::Remote<network::mojom::URLLoaderFactory>& factory_remote() {
     return factory_remote_;
   }
-  network::mojom::URLLoaderClientPtr& client_ptr() { return client_ptr_; }
   mojo::Receiver<network::mojom::URLLoader>& url_loader_receiver() {
     return url_loader_receiver_;
   }
@@ -69,23 +68,23 @@ class TestURLLoaderFactory : public network::mojom::URLLoaderFactory,
   }
 
   void NotifyClientOnReceiveResponse() {
-    client_ptr_->OnReceiveResponse(network::mojom::URLResponseHead::New());
+    client_remote_->OnReceiveResponse(network::mojom::URLResponseHead::New());
   }
 
   void NotifyClientOnReceiveRedirect() {
     net::RedirectInfo info;
     info.new_url = redirect_url;
-    client_ptr_->OnReceiveRedirect(info,
-                                   network::mojom::URLResponseHead::New());
+    client_remote_->OnReceiveRedirect(info,
+                                      network::mojom::URLResponseHead::New());
   }
 
   void NotifyClientOnComplete(int error_code) {
     network::URLLoaderCompletionStatus data;
     data.error_code = error_code;
-    client_ptr_->OnComplete(data);
+    client_remote_->OnComplete(data);
   }
 
-  void CloseClientPipe() { client_ptr_.reset(); }
+  void CloseClientPipe() { client_remote_.reset(); }
 
   using OnCreateLoaderAndStartCallback = base::RepeatingCallback<void(
       const network::ResourceRequest& url_request)>;
@@ -102,15 +101,15 @@ class TestURLLoaderFactory : public network::mojom::URLLoaderFactory,
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& url_request,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
       override {
     create_loader_and_start_called_++;
 
     url_loader_receiver_.reset();
-
     url_loader_receiver_.Bind(std::move(receiver));
-    client_ptr_ = std::move(client);
+    client_remote_.reset();
+    client_remote_.Bind(std::move(client));
 
     if (on_create_loader_and_start_callback_)
       on_create_loader_and_start_callback_.Run(url_request);
@@ -149,7 +148,7 @@ class TestURLLoaderFactory : public network::mojom::URLLoaderFactory,
   mojo::Receiver<network::mojom::URLLoaderFactory> receiver_{this};
   mojo::Receiver<network::mojom::URLLoader> url_loader_receiver_{this};
   mojo::Remote<network::mojom::URLLoaderFactory> factory_remote_;
-  network::mojom::URLLoaderClientPtr client_ptr_;
+  mojo::Remote<network::mojom::URLLoaderClient> client_remote_;
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory> shared_factory_;
   OnCreateLoaderAndStartCallback on_create_loader_and_start_callback_;
   DISALLOW_COPY_AND_ASSIGN(TestURLLoaderFactory);

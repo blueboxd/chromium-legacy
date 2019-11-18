@@ -73,7 +73,7 @@ class SafeBrowsingNetworkContext::SharedURLLoaderFactory
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& request,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
       override {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));

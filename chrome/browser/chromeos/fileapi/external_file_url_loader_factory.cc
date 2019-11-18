@@ -24,7 +24,6 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/api/file_handlers/mime_util.h"
 #include "mojo/public/c/system/types.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
@@ -352,7 +351,7 @@ void ExternalFileURLLoaderFactory::CreateLoaderAndStart(
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& request,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   if (render_process_host_id_ != content::ChildProcessHost::kInvalidUniqueID &&
       !content::ChildProcessSecurityPolicy::GetInstance()->CanRequestURL(
@@ -365,7 +364,7 @@ void ExternalFileURLLoaderFactory::CreateLoaderAndStart(
   base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&ExternalFileURLLoader::CreateAndStart, profile_id_,
-                     request, std::move(loader), client.PassInterface()));
+                     request, std::move(loader), std::move(client)));
 }
 
 void ExternalFileURLLoaderFactory::Clone(

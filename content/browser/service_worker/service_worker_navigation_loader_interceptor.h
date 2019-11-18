@@ -16,6 +16,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 
 namespace content {
@@ -83,7 +84,7 @@ class ServiceWorkerNavigationLoaderInterceptor final
       SingleRequestURLLoaderFactory::RequestHandler handler_on_core_thread,
       const network::ResourceRequest& resource_request,
       mojo::PendingReceiver<network::mojom::URLLoader> receiver,
-      network::mojom::URLLoaderClientPtr client);
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client);
 
   // For navigations, |handle_| outlives |this|. It's owned by
   // NavigationRequest which outlives NavigationURLLoaderImpl which owns |this|.

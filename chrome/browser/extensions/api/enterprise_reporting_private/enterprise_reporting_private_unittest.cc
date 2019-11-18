@@ -45,13 +45,10 @@ class EnterpriseReportingPrivateUploadChromeDesktopReportTest
     function->SetCloudPolicyClientForTesting(std::move(client));
     if (dm_token.empty()) {
       function->SetRegistrationInfoForTesting(
-          policy::BrowserDMTokenStorage::BrowserDMToken::CreateEmptyToken(),
-          kFakeClientId);
+          policy::DMToken::CreateEmptyTokenForTesting(), kFakeClientId);
     } else {
       function->SetRegistrationInfoForTesting(
-          policy::BrowserDMTokenStorage::BrowserDMToken::CreateValidToken(
-              dm_token),
-          kFakeClientId);
+          policy::DMToken::CreateValidTokenForTesting(dm_token), kFakeClientId);
     }
     return function;
   }

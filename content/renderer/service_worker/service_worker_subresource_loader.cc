@@ -22,8 +22,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/redirect_util.h"
 #include "net/url_request/url_request.h"
@@ -65,7 +64,7 @@ class HeaderRewritingURLLoaderClient : public network::mojom::URLLoaderClient {
           network::mojom::URLResponseHeadPtr)>;
 
   HeaderRewritingURLLoaderClient(
-      network::mojom::URLLoaderClientPtr url_loader_client,
+      mojo::Remote<network::mojom::URLLoaderClient> url_loader_client,
       RewriteHeaderCallback rewrite_header_callback)
       : url_loader_client_(std::move(url_loader_client)),
         rewrite_header_callback_(rewrite_header_callback) {}
@@ -117,7 +116,7 @@ class HeaderRewritingURLLoaderClient : public network::mojom::URLLoaderClient {
     url_loader_client_->OnComplete(status);
   }
 
-  network::mojom::URLLoaderClientPtr url_loader_client_;
+  mojo::Remote<network::mojom::URLLoaderClient> url_loader_client_;
   RewriteHeaderCallback rewrite_header_callback_;
 };
 }  // namespace
@@ -157,7 +156,7 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& resource_request,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
     scoped_refptr<network::SharedURLLoaderFactory> fallback_factory,
@@ -243,8 +242,7 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
       // created.
       fallback_factory_->CreateLoaderAndStart(
           url_loader_binding_.Unbind(), routing_id_, request_id_, options_,
-          resource_request_, std::move(url_loader_client_),
-          traffic_annotation_);
+          resource_request_, url_loader_client_.Unbind(), traffic_annotation_);
       delete this;
       return;
     }
@@ -416,13 +414,14 @@ void ServiceWorkerSubresourceLoader::OnFallback(
       TRACE_EVENT_FLAG_FLOW_IN);
 
   // Hand over to the network loader.
-  network::mojom::URLLoaderClientPtr client;
+  mojo::PendingRemote<network::mojom::URLLoaderClient> client;
   auto client_impl = std::make_unique<HeaderRewritingURLLoaderClient>(
       std::move(url_loader_client_),
       base::BindRepeating(&RewriteServiceWorkerTime,
                           response_head_->service_worker_start_time,
                           response_head_->service_worker_ready_time));
-  mojo::MakeStrongBinding(std::move(client_impl), mojo::MakeRequest(&client));
+  mojo::MakeSelfOwnedReceiver(std::move(client_impl),
+                              client.InitWithNewPipeAndPassReceiver());
 
   fallback_factory_->CreateLoaderAndStart(
       url_loader_binding_.Unbind(), routing_id_, request_id_, options_,
@@ -822,7 +821,7 @@ void ServiceWorkerSubresourceLoaderFactory::CreateLoaderAndStart(
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& resource_request,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   // This loader destructs itself, as we want to transparently switch to the
   // network loader when fallback happens. When that happens the loader unbinds

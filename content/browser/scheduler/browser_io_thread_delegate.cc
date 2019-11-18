@@ -105,6 +105,7 @@ void BrowserIOThreadDelegate::BindToCurrentThread(
       base::MessagePump::Create(base::MessagePumpType::IO));
   sequence_manager_->SetTimerSlack(timer_slack);
   sequence_manager_->SetDefaultTaskRunner(GetDefaultTaskRunner());
+  sequence_manager_->EnableCrashKeys("io_scheduler_async_stack");
 
   if (task_executor_) {
     base::SetTaskExecutorForCurrentThread(task_executor_);

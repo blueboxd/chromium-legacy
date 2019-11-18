@@ -264,6 +264,16 @@ void FakeConciergeClient::StartArcVm(
       FROM_HERE, base::BindOnce(std::move(callback), start_vm_response_));
 }
 
+void FakeConciergeClient::NotifyVmStarted(
+    const vm_tools::concierge::VmStartedSignal& signal) {
+  for (auto& observer : vm_observer_list_)
+    observer.OnVmStarted(signal);
+}
+
+bool FakeConciergeClient::HasVmObservers() const {
+  return vm_observer_list_.might_have_observers();
+}
+
 void FakeConciergeClient::InitializeProtoResponses() {
   create_disk_image_response_.emplace();
   create_disk_image_response_->set_status(

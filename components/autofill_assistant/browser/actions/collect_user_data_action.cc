@@ -11,11 +11,13 @@
 #include "base/android/locale_utils.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/i18n/case_conversion.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/geo/address_i18n.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/client_memory.h"
@@ -35,6 +37,8 @@ namespace {
 using autofill_assistant::CollectUserDataOptions;
 using autofill_assistant::DateTimeProto;
 using autofill_assistant::TermsAndConditionsState;
+using autofill_assistant::UserData;
+
 bool IsCompleteContact(
     const autofill::AutofillProfile* profile,
     const CollectUserDataOptions& collect_user_data_options) {
@@ -210,6 +214,50 @@ bool IsValidUserFormSection(
       return false;
   }
   return true;
+}
+
+base::string16 GetProfileFullName(const autofill::AutofillProfile& profile) {
+  return profile.GetInfo(
+      autofill::AutofillType(autofill::ServerFieldType::NAME_FULL),
+      base::android::GetDefaultLocaleString());
+}
+
+int CountCompleteFields(const CollectUserDataOptions& options,
+                        const autofill::AutofillProfile& profile) {
+  int completed_fields = 0;
+  if (options.request_payer_name && !GetProfileFullName(profile).empty()) {
+    ++completed_fields;
+  }
+  if (options.request_shipping &&
+      !profile
+           .GetRawInfo(autofill::ServerFieldType::ADDRESS_HOME_STREET_ADDRESS)
+           .empty()) {
+    ++completed_fields;
+  }
+  if (options.request_payer_email &&
+      !profile.GetRawInfo(autofill::ServerFieldType::EMAIL_ADDRESS).empty()) {
+    ++completed_fields;
+  }
+  if (options.request_payer_phone &&
+      !profile.GetRawInfo(autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER)
+           .empty()) {
+    ++completed_fields;
+  }
+  return completed_fields;
+}
+
+// Helper function that compares instances of AutofillProfile by completeness
+// in regards to the current options.
+int CompletenessCompare(const CollectUserDataOptions& options,
+                        const autofill::AutofillProfile& a,
+                        const autofill::AutofillProfile& b) {
+  int result =
+      CountCompleteFields(options, a) - CountCompleteFields(options, b);
+  if (result == 0) {
+    return base::i18n::ToLower(GetProfileFullName(a))
+        .compare(base::i18n::ToLower(GetProfileFullName(b)));
+  }
+  return result;
 }
 
 }  // namespace
@@ -402,12 +450,16 @@ void CollectUserDataAction::ShowToUser(
     }
   }
 
+  // Add available profiles and start listening.
+  delegate_->GetPersonalDataManager()->AddObserver(this);
+  UpdatePersonalDataManagerFields(collect_user_data_options.get(),
+                                  user_data.get());
+
   // Gather info for UMA histograms.
   if (!shown_to_user_) {
     shown_to_user_ = true;
     initially_prefilled = CheckInitialAutofillDataComplete(
         delegate_->GetPersonalDataManager(), *collect_user_data_options);
-    delegate_->GetPersonalDataManager()->AddObserver(this);
   }
 
   if (collect_user_data.has_prompt()) {
@@ -764,9 +816,41 @@ bool CollectUserDataAction::IsUserDataComplete(
                               user_data.date_time_range_end, options);
 }
 
+void CollectUserDataAction::UpdatePersonalDataManagerFields(
+    const CollectUserDataOptions* collect_user_data_options,
+    UserData* user_data,
+    UserData::FieldChange* field_change) {
+  if (collect_user_data_options == nullptr || user_data == nullptr) {
+    return;
+  }
+
+  user_data->available_profiles.clear();
+  for (auto* profile :
+       delegate_->GetPersonalDataManager()->GetProfilesToSuggest()) {
+    user_data->available_profiles.emplace_back(
+        std::make_unique<autofill::AutofillProfile>(*profile));
+  }
+
+  std::sort(user_data->available_profiles.begin(),
+            user_data->available_profiles.end(),
+            [&collect_user_data_options](
+                const std::unique_ptr<autofill::AutofillProfile>& a,
+                const std::unique_ptr<autofill::AutofillProfile>& b) {
+              return CompletenessCompare(*collect_user_data_options, *a.get(),
+                                         *b.get());
+            });
+
+  if (field_change != nullptr) {
+    *field_change = UserData::FieldChange::AVAILABLE_PROFILES;
+  }
+}
+
 void CollectUserDataAction::OnPersonalDataChanged() {
   personal_data_changed_ = true;
-  delegate_->GetPersonalDataManager()->RemoveObserver(this);
+
+  delegate_->WriteUserData(
+      base::BindOnce(&CollectUserDataAction::UpdatePersonalDataManagerFields,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 }  // namespace autofill_assistant

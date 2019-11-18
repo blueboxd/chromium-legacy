@@ -245,8 +245,18 @@
       }, {
         "name": "finishComposingText",
         "type": "function",
-        "description": "Commits the text currently being composed without moving the selected text range",
+        "description": "Commits the text currently being composed without moving the selected text range. This is a no-op if the context is incorrect.",
         "parameters": [
+          {
+            "name": "parameters",
+            "type": "object",
+            "properties": {
+              "contextID": {
+                "description": "ID of the context where we want to finish composing.",
+                "type": "integer"
+              }
+            }
+          },
           {
             "type": "function",
             "name": "callback",
@@ -265,7 +275,7 @@
             "type": "object",
             "properties": {
               "contextID": {
-                "description": "ID of the context where we want to set the selection",
+                "description": "ID of the context where we want to set the selection.",
                 "type": "integer"
               },
               "selectionStart": {

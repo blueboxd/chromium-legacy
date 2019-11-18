@@ -48,6 +48,9 @@
         "browse:news:cricbuzz": {
             "DEFAULT": "system_health_mobile_055.wprgo"
         },
+        "browse:news:cricbuzz:2019": {
+            "DEFAULT": "system_health_mobile_af81eb9b2d.wprgo"
+        },
         "browse:news:flipboard": {
             "DEFAULT": "system_health_mobile_025.wprgo"
         },

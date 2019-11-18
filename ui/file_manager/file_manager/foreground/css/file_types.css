@@ -480,16 +480,8 @@
       url(../images/volumes/2x/hard_drive.png) 2x);
 }
 
-tree .tree-item[selected] > .tree-row >
 .tree-row[selected] [volume-type-icon='removable'][volume-subtype='unknown'],
 .tree-item .tree-item[selected] [volume-type-icon='removable'] {
-  background-image: -webkit-image-set(
-      url(../images/volumes/hard_drive_active.png) 1x,
-      url(../images/volumes/2x/hard_drive_active.png) 2x);
-}
-
-tree .tree-item > .tree-item > .tree-row >
-[volume-type-icon='removable'] {
   background-image: -webkit-image-set(
       url(../images/volumes/hard_drive_active.png) 1x,
       url(../images/volumes/2x/hard_drive_active.png) 2x);

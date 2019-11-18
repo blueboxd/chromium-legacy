@@ -104,8 +104,7 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
         }
         // Only handle and perform the action if it is known to the controller.
         if (isActionAvailable(actionId) || ONBOARDING_ACTION.equals(actionId)) {
-            arguments.putString("name", actionId);
-            performAction(arguments, callback);
+            performAction(actionId, arguments, callback);
             return true;
         }
         return false;
@@ -151,7 +150,7 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
         });
     }
 
-    private void performAction(Bundle arguments, Callback<Bundle> bundleCallback) {
+    private void performAction(String actionId, Bundle arguments, Callback<Bundle> bundleCallback) {
         Callback<Boolean> booleanCallback = (result) -> {
             Bundle bundle = new Bundle();
             bundle.putBoolean(AA_ACTION_RESULT, result);
@@ -163,9 +162,6 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
             return;
         }
 
-        String name = arguments.getString(ACTION_NAME, "");
-        arguments.remove(ACTION_NAME);
-
         String experimentIds = arguments.getString(EXPERIMENT_IDS, "");
         arguments.remove(EXPERIMENT_IDS);
 
@@ -174,7 +170,7 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
                 booleanCallback.onResult(false);
                 return;
             }
-            if (ONBOARDING_ACTION.equals(name)) {
+            if (ONBOARDING_ACTION.equals(actionId)) {
                 delegate.performOnboarding(experimentIds, booleanCallback);
                 return;
             }
@@ -182,7 +178,7 @@ public class AutofillAssistantDirectActionHandler implements DirectActionHandler
             Callback<Boolean> successCallback = (success) -> {
                 booleanCallback.onResult(success && !delegate.getActions().isEmpty());
             };
-            delegate.performAction(name, experimentIds, arguments, successCallback);
+            delegate.performAction(actionId, experimentIds, arguments, successCallback);
         });
     }
 

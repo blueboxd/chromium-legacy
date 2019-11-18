@@ -24,7 +24,7 @@ using FinishedReason = ServiceWorkerInstalledScriptReader::FinishedReason;
 
 ServiceWorkerInstalledScriptLoader::ServiceWorkerInstalledScriptLoader(
     uint32_t options,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     std::unique_ptr<ServiceWorkerResponseReader> response_reader,
     scoped_refptr<ServiceWorkerVersion>
         version_for_main_script_http_response_info,

@@ -136,7 +136,7 @@ class ServiceWorkerUpdatedScriptLoaderTest : public testing::Test {
 
     *out_client = std::make_unique<network::TestURLLoaderClient>();
     *out_loader = ServiceWorkerUpdatedScriptLoader::CreateAndStart(
-        options, request, (*out_client)->CreateInterfacePtr(), version_);
+        options, request, (*out_client)->CreateRemote(), version_);
   }
 
   int64_t LookupResourceId(const GURL& url) {

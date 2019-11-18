@@ -106,6 +106,7 @@ void WebAppInstallTask::LoadWebAppAndCheckInstallability(
 
   url_loader->LoadUrl(
       url, web_contents_ptr,
+      WebAppUrlLoader::UrlComparison::kIgnoreQueryParamsAndRef,
       base::BindOnce(
           &WebAppInstallTask::
               OnWebAppUrlLoadedCheckInstallabilityAndRetrieveManifest,
@@ -170,6 +171,7 @@ void WebAppInstallTask::LoadAndInstallWebAppFromManifestWithFallback(
 
   url_loader->LoadUrl(
       launch_url, contents,
+      WebAppUrlLoader::UrlComparison::kIgnoreQueryParamsAndRef,
       base::BindOnce(&WebAppInstallTask::OnWebAppUrlLoadedGetWebApplicationInfo,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -285,6 +287,7 @@ void WebAppInstallTask::LoadAndRetrieveWebApplicationInfoWithIcons(
   DCHECK(url_loader);
   url_loader->LoadUrl(
       app_url, web_contents(),
+      WebAppUrlLoader::UrlComparison::kIgnoreQueryParamsAndRef,
       base::BindOnce(&WebAppInstallTask::OnWebAppUrlLoadedGetWebApplicationInfo,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -416,8 +419,13 @@ void WebAppInstallTask::OnGetWebApplicationInfo(
   }
 
   bool bypass_service_worker_check = false;
-  if (install_params_)
+  if (install_params_) {
     bypass_service_worker_check = install_params_->bypass_service_worker_check;
+    // Set app_url to fallback_start_url as web_contents may have been
+    // redirected. Will be overridden by manifest values if present.
+    DCHECK(install_params_->fallback_start_url.is_valid());
+    web_app_info->app_url = install_params_->fallback_start_url;
+  }
 
   data_retriever_->CheckInstallabilityAndRetrieveManifest(
       web_contents(), bypass_service_worker_check,

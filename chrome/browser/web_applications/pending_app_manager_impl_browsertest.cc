@@ -25,12 +25,19 @@
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_constants.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace web_app {
 
 class PendingAppManagerImplBrowserTest : public InProcessBrowserTest {
  protected:
+  void SetUpOnMainThread() override {
+    InProcessBrowserTest::SetUpOnMainThread();
+    // Allow different origins to be handled by the embedded_test_server.
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
+
   AppRegistrar& registrar() {
     return WebAppProviderBase::GetProviderBase(browser()->profile())
         ->registrar();
@@ -88,15 +95,63 @@ IN_PROC_BROWSER_TEST_F(PendingAppManagerImplBrowserTest, InstallSucceeds) {
   EXPECT_EQ("Manifest test app", registrar().GetAppShortName(app_id.value()));
 }
 
+// If install URL redirects, install should still succeed.
+IN_PROC_BROWSER_TEST_F(PendingAppManagerImplBrowserTest,
+                       InstallSucceedsWithRedirect) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL start_url =
+      embedded_test_server()->GetURL("/banners/manifest_test_page.html");
+  GURL install_url =
+      embedded_test_server()->GetURL("/server-redirect?" + start_url.spec());
+  InstallApp(CreateInstallOptions(install_url));
+  EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result_code_.value());
+  base::Optional<AppId> app_id =
+      ExternallyInstalledWebAppPrefs(browser()->profile()->GetPrefs())
+          .LookupAppId(install_url);
+  EXPECT_TRUE(app_id.has_value());
+  EXPECT_EQ("Manifest test app", registrar().GetAppShortName(app_id.value()));
+  // Same AppID should be in the registrar using start_url from the manifest.
+  EXPECT_TRUE(registrar().IsLocallyInstalled(start_url));
+  base::Optional<AppId> opt_app_id =
+      registrar().FindAppWithUrlInScope(start_url);
+  EXPECT_TRUE(opt_app_id.has_value());
+  EXPECT_EQ(*opt_app_id, app_id);
+}
+
+// If install URL redirects, install should still succeed.
+IN_PROC_BROWSER_TEST_F(PendingAppManagerImplBrowserTest,
+                       InstallSucceedsWithRedirectNoManifest) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL final_url =
+      embedded_test_server()->GetURL("/banners/no_manifest_test_page.html");
+  GURL install_url =
+      embedded_test_server()->GetURL("/server-redirect?" + final_url.spec());
+  InstallApp(CreateInstallOptions(install_url));
+  EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result_code_.value());
+  base::Optional<AppId> app_id =
+      ExternallyInstalledWebAppPrefs(browser()->profile()->GetPrefs())
+          .LookupAppId(install_url);
+  EXPECT_TRUE(app_id.has_value());
+  EXPECT_EQ("Web app banner test page",
+            registrar().GetAppShortName(app_id.value()));
+  // Same AppID should be in the registrar using install_url.
+  EXPECT_TRUE(registrar().IsLocallyInstalled(install_url));
+  base::Optional<AppId> opt_app_id =
+      registrar().FindAppWithUrlInScope(install_url);
+  ASSERT_TRUE(opt_app_id.has_value());
+  EXPECT_EQ(*opt_app_id, app_id);
+  EXPECT_EQ(registrar().GetAppLaunchURL(*opt_app_id), install_url);
+}
+
 // Installing a placeholder app with shortcuts should succeed.
 IN_PROC_BROWSER_TEST_F(PendingAppManagerImplBrowserTest,
                        PlaceholderInstallSucceedsWithShortcuts) {
   ASSERT_TRUE(embedded_test_server()->Start());
   shortcut_manager().SuppressShortcutsForTesting();
 
-  GURL final_url =
-      embedded_test_server()->GetURL("/banners/manifest_test_page.html");
-  // Add a redirect, so a placeholder is installed.
+  GURL final_url = embedded_test_server()->GetURL(
+      "other.origin.com", "/banners/manifest_test_page.html");
+  // Add a redirect to a different origin, so a placeholder is installed.
   GURL url(
       embedded_test_server()->GetURL("/server-redirect?" + final_url.spec()));
 

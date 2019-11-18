@@ -1,6 +1,6 @@
 <link rel="import" href="shared_vars.html">
-<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 
 <!-- Common styles for App Management. -->
 <dom-module id="app-management-shared-css">
@@ -8,7 +8,7 @@
     <style include="cr-shared-style">
       .card-container {
         @apply --cr-card-elevation;
-        background-color: #fff;
+        background-color: var(--cros-default-bg-color);
         border-radius: var(--cr-card-border-radius);
         display: flex;
         flex-direction: column;

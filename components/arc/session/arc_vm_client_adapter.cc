@@ -4,6 +4,7 @@
 
 #include "components/arc/session/arc_vm_client_adapter.h"
 
+#include <linux/magic.h>
 #include <sys/statvfs.h>
 #include <time.h>
 
@@ -13,6 +14,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/span.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -32,6 +34,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -72,6 +75,9 @@ class FileSystemStatus {
 
   bool is_android_debuggable() const { return is_android_debuggable_; }
   bool is_host_rootfs_writable() const { return is_host_rootfs_writable_; }
+  bool is_system_image_ext_format() const {
+    return is_system_image_ext_format_;
+  }
   const base::FilePath& system_image_path() const { return system_image_path_; }
   const base::FilePath& vendor_image_path() const { return vendor_image_path_; }
   const base::FilePath& guest_kernel_path() const { return guest_kernel_path_; }
@@ -88,6 +94,9 @@ class FileSystemStatus {
                                             const base::FilePath& dest_path) {
     return ExpandPropertyFiles(source_path, dest_path);
   }
+  static bool IsSystemImageExtFormatForTesting(const base::FilePath& path) {
+    return IsSystemImageExtFormat(path);
+  }
 
  private:
   FileSystemStatus()
@@ -100,7 +109,9 @@ class FileSystemStatus {
         fstab_path_(SelectDlcOrBuiltin(base::FilePath(kFstab))),
         property_files_expanded_(
             ExpandPropertyFiles(base::FilePath(kPropertyFilesPath),
-                                base::FilePath(kGeneratedPropertyFilesPath))) {}
+                                base::FilePath(kGeneratedPropertyFilesPath))),
+        is_system_image_ext_format_(
+            IsSystemImageExtFormat(system_image_path_)) {}
 
   // Parse a JSON file which is like the following and returns a result:
   //   {
@@ -176,6 +187,30 @@ class FileSystemStatus {
     return true;
   }
 
+  // https://ext4.wiki.kernel.org/index.php/Ext4_Disk_Layout
+  // Super block starts from block 0, offset 0x400.
+  // 0x38: Magic signature (Len=16, value=0xEF53) in little-endian order.
+  static bool IsSystemImageExtFormat(const base::FilePath& path) {
+    base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+    if (!file.IsValid()) {
+      PLOG(ERROR) << "Cannot open system image file: " << path.value();
+      return false;
+    }
+
+    uint8_t buf[2];
+    if (!file.ReadAndCheck(0x400 + 0x38, base::make_span(buf, sizeof(buf)))) {
+      PLOG(ERROR) << "File read error on system image file: " << path.value();
+      return false;
+    }
+
+    uint16_t magic_le = *reinterpret_cast<uint16_t*>(buf);
+#if defined(ARCH_CPU_LITTLE_ENDIAN)
+    return magic_le == EXT4_SUPER_MAGIC;
+#else
+#error Unsupported platform
+#endif
+  }
+
   bool is_android_debuggable_;
   bool is_host_rootfs_writable_;
   base::FilePath system_image_path_;
@@ -183,6 +218,7 @@ class FileSystemStatus {
   base::FilePath guest_kernel_path_;
   base::FilePath fstab_path_;
   bool property_files_expanded_;
+  bool is_system_image_ext_format_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemStatus);
 };
@@ -322,6 +358,8 @@ vm_tools::concierge::StartArcVmRequest CreateStartArcVmRequest(
 
   // Add / as /dev/vda.
   vm->set_rootfs(file_system_status.system_image_path().value());
+  request.set_rootfs_writable(file_system_status.is_host_rootfs_writable() &&
+                              file_system_status.is_system_image_ext_format());
 
   // Add /data as /dev/vdb.
   vm_tools::concierge::DiskImage* disk_image = request.add_disks();
@@ -706,6 +744,10 @@ bool ExpandPropertyFilesForTesting(const base::FilePath& source_path,
                                    const base::FilePath& dest_path) {
   return FileSystemStatus::ExpandPropertyFilesForTesting(source_path,
                                                          dest_path);
+}
+
+bool IsSystemImageExtFormatForTesting(const base::FilePath& path) {
+  return FileSystemStatus::IsSystemImageExtFormatForTesting(path);
 }
 
 }  // namespace arc

@@ -3073,6 +3073,71 @@ def _CheckIpcOwners(input_api, output_api):
   return results
 
 
+def _CheckSetNoParent(input_api, output_api):
+  """Checks that set noparent is only used together with an OWNERS file in
+     //build/OWNERS.setnoparent (see also
+     //docs/code_reviews.md#owners-files-details)
+  """
+  errors = []
+
+  allowed_owners_files_file = 'build/OWNERS.setnoparent'
+  allowed_owners_files = set()
+  with open(allowed_owners_files_file, 'r') as f:
+    for line in f:
+      line = line.strip()
+      if not line or line.startswith('#'):
+        continue
+      allowed_owners_files.add(line)
+
+  per_file_pattern = input_api.re.compile('per-file (.+)=(.+)')
+
+  for f in input_api.AffectedFiles(include_deletes=False):
+    if not f.LocalPath().endswith('OWNERS'):
+      continue
+
+    found_owners_files = set()
+    found_set_noparent_lines = dict()
+
+    # Parse the OWNERS file.
+    for lineno, line in enumerate(f.NewContents(), 1):
+      line = line.strip()
+      if line.startswith('set noparent'):
+        found_set_noparent_lines[''] = lineno
+      if line.startswith('file://'):
+        if line in allowed_owners_files:
+          found_owners_files.add('')
+      if line.startswith('per-file'):
+        match = per_file_pattern.match(line)
+        if match:
+          glob = match.group(1).strip()
+          directive = match.group(2).strip()
+          if directive == 'set noparent':
+            found_set_noparent_lines[glob] = lineno
+          if directive.startswith('file://'):
+            if directive in allowed_owners_files:
+              found_owners_files.add(glob)
+
+    # Check that every set noparent line has a corresponding file:// line
+    # listed in build/OWNERS.setnoparent.
+    for set_noparent_line in found_set_noparent_lines:
+      if set_noparent_line in found_owners_files:
+        continue
+      errors.append('  %s:%d' % (f.LocalPath(),
+                                 found_set_noparent_lines[set_noparent_line]))
+
+  results = []
+  if errors:
+    if input_api.is_committing:
+      output = output_api.PresubmitError
+    else:
+      output = output_api.PresubmitPromptWarning
+    results.append(output(
+        'Found the following "set noparent" restrictions in OWNERS files that '
+        'do not include owners from build/OWNERS.setnoparent:',
+        long_text='\n\n'.join(errors)))
+  return results
+
+
 def _CheckUselessForwardDeclarations(input_api, output_api):
   """Checks that added or removed lines in non third party affected
      header files do not lead to new useless class or struct forward
@@ -4192,6 +4257,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckPydepsNeedsUpdating(input_api, output_api))
   results.extend(_CheckJavaStyle(input_api, output_api))
   results.extend(_CheckIpcOwners(input_api, output_api))
+  results.extend(_CheckSetNoParent(input_api, output_api))
   results.extend(_CheckUselessForwardDeclarations(input_api, output_api))
   results.extend(_CheckForRelativeIncludes(input_api, output_api))
   results.extend(_CheckForCcIncludes(input_api, output_api))

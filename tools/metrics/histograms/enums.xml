@@ -25483,6 +25483,7 @@ Called by update_net_error_codes.py.-->
   <int value="3087" label="FetchBodyStreamOutsideServiceWorker"/>
   <int value="3088" label="GetComputedStyleOutsideFlatTree"/>
   <int value="3089" label="ARIADescriptionAttribute"/>
+  <int value="3090" label="StrictMimeTypeChecksWouldBlockWorker"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -35583,6 +35584,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="0" label="Success"/>
   <int value="1" label="No response"/>
   <int value="2" label="Failed to lock"/>
+  <int value="3" label="Unexpected lock state"/>
 </enum>
 
 <enum name="LoginConsumerWhitelist">
@@ -57056,9 +57058,6 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Window close">The last browser window was closed.</int>
   <int value="2" label="Browser exit">User clicked on the Exit menu item.</int>
   <int value="3" label="End session">OS is logging off or shutting down.</int>
-  <int value="4" label="Silent exit relaunch">
-    Exit without onbeforeunload or in-progress download prompts.
-  </int>
 </enum>
 
 <enum name="SideloadUIEvents">

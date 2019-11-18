@@ -18,7 +18,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -58,7 +57,7 @@ class WebRequestProxyingURLLoaderFactory
         const network::ResourceRequest& request,
         const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
         mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
-        network::mojom::URLLoaderClientPtr client);
+        mojo::PendingRemote<network::mojom::URLLoaderClient> client);
     // For CORS preflights
     InProgressRequest(WebRequestProxyingURLLoaderFactory* factory,
                       uint64_t request_id,
@@ -141,7 +140,7 @@ class WebRequestProxyingURLLoaderFactory
     const uint32_t options_ = 0;
     const net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
     mojo::Receiver<network::mojom::URLLoader> proxied_loader_receiver_;
-    network::mojom::URLLoaderClientPtr target_client_;
+    mojo::Remote<network::mojom::URLLoaderClient> target_client_;
 
     base::Optional<WebRequestInfo> info_;
 
@@ -233,7 +232,7 @@ class WebRequestProxyingURLLoaderFactory
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& request,
-      network::mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
       override;
   void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory>

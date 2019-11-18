@@ -288,9 +288,10 @@ void UnknownSchemeCallback(
     bool handled_externally,
     const network::ResourceRequest& /* resource_request */,
     mojo::PendingReceiver<network::mojom::URLLoader> receiver,
-    network::mojom::URLLoaderClientPtr client) {
-  client->OnComplete(network::URLLoaderCompletionStatus(
-      handled_externally ? net::ERR_ABORTED : net::ERR_UNKNOWN_URL_SCHEME));
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client) {
+  mojo::Remote<network::mojom::URLLoaderClient>(std::move(client))
+      ->OnComplete(network::URLLoaderCompletionStatus(
+          handled_externally ? net::ERR_ABORTED : net::ERR_UNKNOWN_URL_SCHEME));
 }
 
 }  // namespace

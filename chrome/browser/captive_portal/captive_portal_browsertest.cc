@@ -842,8 +842,8 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
         ->GetURLLoaderFactoryForBrowserProcess()
         ->CreateLoaderAndStart(std::move(job.receiver), job.routing_id,
                                job.request_id, job.options,
-                               std::move(job.url_request),
-                               std::move(job.client), job.traffic_annotation);
+                               std::move(job.url_request), job.client.Unbind(),
+                               job.traffic_annotation);
   }
 
   // Abandon all active kMockHttps* requests.  |expected_num_jobs|
@@ -859,7 +859,7 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
     EXPECT_EQ(expected_num_jobs,
               static_cast<int>(ongoing_mock_requests_.size()));
     for (auto& job : ongoing_mock_requests_)
-      ignore_result(job.client.PassInterface().PassHandle().release());
+      ignore_result(job.client.Unbind().PassPipe().release());
     ongoing_mock_requests_.clear();
   }
 

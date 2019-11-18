@@ -12,7 +12,6 @@
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "base/task/post_task.h"
-#include "base/util/type_safety/strong_alias.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -121,38 +120,6 @@ bool SetLocaleForNextStart(PrefService* local_state) {
 bool g_send_stop_request_to_session_manager = false;
 #endif
 
-#if !defined(OS_ANDROID)
-using IgnoreUnloadHandlers =
-    util::StrongAlias<class IgnoreUnloadHandlersTag, bool>;
-
-void AttemptRestartInternal(IgnoreUnloadHandlers ignore_unload_handlers) {
-  // TODO(beng): Can this use ProfileManager::GetLoadedProfiles instead?
-  for (auto* browser : *BrowserList::GetInstance())
-    content::BrowserContext::SaveSessionState(browser->profile());
-
-  PrefService* pref_service = g_browser_process->local_state();
-  pref_service->SetBoolean(prefs::kWasRestarted, true);
-
-#if defined(OS_CHROMEOS)
-  chromeos::BootTimesRecorder::Get()->set_restart_requested();
-
-  DCHECK(!g_send_stop_request_to_session_manager);
-  // Make sure we don't send stop request to the session manager.
-  g_send_stop_request_to_session_manager = false;
-  // Run exit process in clean stack.
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&ExitIgnoreUnloadHandlers));
-#else
-  // Set the flag to restore state after the restart.
-  pref_service->SetBoolean(prefs::kRestartLastSessionOnShutdown, true);
-  if (ignore_unload_handlers)
-    ExitIgnoreUnloadHandlers();
-  else
-    AttemptExit();
-#endif
-}
-#endif  // !defined(OS_ANDROID)
-
 }  // namespace
 
 #if !defined(OS_ANDROID)
@@ -257,7 +224,27 @@ void AttemptUserExit() {
 // The Android implementation is in application_lifetime_android.cc
 #if !defined(OS_ANDROID)
 void AttemptRestart() {
-  AttemptRestartInternal(IgnoreUnloadHandlers(false));
+  // TODO(beng): Can this use ProfileManager::GetLoadedProfiles instead?
+  for (auto* browser : *BrowserList::GetInstance())
+    content::BrowserContext::SaveSessionState(browser->profile());
+
+  PrefService* pref_service = g_browser_process->local_state();
+  pref_service->SetBoolean(prefs::kWasRestarted, true);
+
+#if defined(OS_CHROMEOS)
+  chromeos::BootTimesRecorder::Get()->set_restart_requested();
+
+  DCHECK(!g_send_stop_request_to_session_manager);
+  // Make sure we don't send stop request to the session manager.
+  g_send_stop_request_to_session_manager = false;
+  // Run exit process in clean stack.
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&ExitIgnoreUnloadHandlers));
+#else
+  // Set the flag to restore state after the restart.
+  pref_service->SetBoolean(prefs::kRestartLastSessionOnShutdown, true);
+  AttemptExit();
+#endif
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -269,17 +256,6 @@ void AttemptRelaunch() {
 #endif
   AttemptRestart();
 }
-
-#if !defined(OS_ANDROID)
-void RelaunchIgnoreUnloadHandlers() {
-#if defined(OS_CHROMEOS)
-  chromeos::PowerManagerClient::Get()->RequestRestart(
-      power_manager::REQUEST_RESTART_OTHER, "Chrome relaunch");
-  // If running the Chrome OS build, but we're not on the device, fall through.
-#endif
-  AttemptRestartInternal(IgnoreUnloadHandlers(true));
-}
-#endif
 
 void AttemptExit() {
 #if defined(OS_CHROMEOS)
@@ -305,7 +281,6 @@ void ExitIgnoreUnloadHandlers() {
   // We always mark exit cleanly.
   MarkAsCleanShutdown();
 
-#if defined(OS_CHROMEOS)
   // On ChromeOS ExitIgnoreUnloadHandlers() is used to handle SIGTERM.
   // In this case, AreAllBrowsersCloseable()
   // can be false in following cases. a) power-off b) signout from
@@ -313,12 +288,7 @@ void ExitIgnoreUnloadHandlers() {
   browser_shutdown::OnShutdownStarting(
       AreAllBrowsersCloseable() ? browser_shutdown::ShutdownType::kBrowserExit
                                 : browser_shutdown::ShutdownType::kEndSession);
-#else   // defined(OS_CHROMEOS)
-  // For desktop browsers, always perform a silent exit.
-  browser_shutdown::OnShutdownStarting(
-      browser_shutdown::ShutdownType::kSilentExit);
-#endif  // defined(OS_CHROMEOS)
-#endif  // !defined(OS_ANDROID)
+#endif
   AttemptExitInternal(true);
 }
 

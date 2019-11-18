@@ -101,7 +101,7 @@ void URLLoaderFactoryBundle::CreateLoaderAndStart(
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& request,
-    network::mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   network::mojom::URLLoaderFactory* factory_ptr = GetFactory(request);
   factory_ptr->CreateLoaderAndStart(std::move(loader), routing_id, request_id,

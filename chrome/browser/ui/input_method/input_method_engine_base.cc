@@ -309,6 +309,16 @@ bool InputMethodEngineBase::CommitText(int context_id,
   return true;
 }
 
+bool InputMethodEngineBase::FinishComposingText(int context_id,
+                                                std::string* error) {
+  if (context_id != context_id_ || context_id_ == -1) {
+    *error = kErrorWrongContext;
+    return false;
+  }
+  ConfirmCompositionText(/* reset_engine */ false, /* keep_selection */ true);
+  return true;
+}
+
 bool InputMethodEngineBase::DeleteSurroundingText(int context_id,
                                                   int offset,
                                                   size_t number_of_chars,

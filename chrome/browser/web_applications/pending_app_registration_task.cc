@@ -86,7 +86,9 @@ void PendingAppRegistrationTask::OnDidCheckHasServiceWorker(
 
   // No action is needed when the URL loads.
   // We wait for OnRegistrationCompleted (or registration timeout).
-  url_loader_->LoadUrl(launch_url(), web_contents_, base::DoNothing());
+  url_loader_->LoadUrl(launch_url(), web_contents_,
+                       WebAppUrlLoader::UrlComparison::kExact,
+                       base::DoNothing());
 }
 
 void PendingAppRegistrationTask::OnRegistrationTimeout() {

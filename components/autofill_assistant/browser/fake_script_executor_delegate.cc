@@ -109,6 +109,20 @@ void FakeScriptExecutorDelegate::SetCollectUserDataOptions(
   payment_request_info_ = std::move(information);
 }
 
+void FakeScriptExecutorDelegate::WriteUserData(
+    base::OnceCallback<void(const CollectUserDataOptions*,
+                            UserData*,
+                            UserData::FieldChange*)> write_callback) {
+  if (payment_request_options_ == nullptr || payment_request_info_ == nullptr) {
+    return;
+  }
+
+  UserData::FieldChange field_change = UserData::FieldChange::NONE;
+  std::move(write_callback)
+      .Run(payment_request_options_.get(), payment_request_info_.get(),
+           &field_change);
+}
+
 void FakeScriptExecutorDelegate::SetViewportMode(ViewportMode mode) {
   viewport_mode_ = mode;
 }

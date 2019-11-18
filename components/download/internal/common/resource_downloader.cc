@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "components/download/public/common/stream_handle_input_stream.h"
 #include "components/download/public/common/url_loader_factory_provider.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
@@ -163,10 +164,11 @@ void ResourceDownloader::Start(
       download_url_parameters->download_source(),
       std::vector<GURL>(1, resource_request_->url), is_background_mode);
 
-  network::mojom::URLLoaderClientPtr url_loader_client_ptr;
+  mojo::PendingRemote<network::mojom::URLLoaderClient> url_loader_client_remote;
   url_loader_client_receiver_ =
       std::make_unique<mojo::Receiver<network::mojom::URLLoaderClient>>(
-          url_loader_client_.get(), mojo::MakeRequest(&url_loader_client_ptr));
+          url_loader_client_.get(),
+          url_loader_client_remote.InitWithNewPipeAndPassReceiver());
 
   // Set up the URLLoader
   url_loader_factory_->CreateLoaderAndStart(
@@ -174,7 +176,7 @@ void ResourceDownloader::Start(
       0,  // routing_id
       0,  // request_id
       network::mojom::kURLLoadOptionSendSSLInfoWithResponse,
-      *(resource_request_.get()), std::move(url_loader_client_ptr),
+      *(resource_request_.get()), std::move(url_loader_client_remote),
       net::MutableNetworkTrafficAnnotationTag(
           download_url_parameters->GetNetworkTrafficAnnotation()));
   url_loader_->SetPriority(net::RequestPriority::IDLE,

@@ -162,6 +162,17 @@ ffmpeg -i bear-av1.mp4 -i bear-opus.mp4 -c copy -strict -2 \
 **Note**: "-strict -2" was required because the current ffmpeg version
 has support for OPUS in MP4 as experimental.
 
+#### av1-svc-L2T2.ivf
+AV1 data that has spatial and temporal layers.
+This is the same as av1-1-b8-22-svc-L2T2.ivf in
+[libaom test vectors]:https://aomedia.googlesource.com/aom/+/master/test/test_vectors.cc
+
+#### av1-show_existing_frame.ivf
+AV1 data that contains frames with `show_existing_frame=1`.
+This is the same as 00000592.ivf in
+https://people.xiph.org/~tterribe/av1/samples-all/
+
+
 ### Alpha Channel
 
 #### bear-vp8a.webm

@@ -17,6 +17,7 @@
 #include "content/browser/web_package/signed_exchange_error.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace network {
@@ -109,7 +110,7 @@ class CONTENT_EXPORT SignedExchangeCertFetcher
 
   void OnDataURLRequest(const network::ResourceRequest& resource_request,
                         mojo::PendingReceiver<network::mojom::URLLoader>,
-                        network::mojom::URLLoaderClientPtr);
+                        mojo::PendingRemote<network::mojom::URLLoaderClient>);
 
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
   std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles_;

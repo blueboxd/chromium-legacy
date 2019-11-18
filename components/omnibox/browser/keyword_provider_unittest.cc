@@ -23,7 +23,6 @@
 #include "components/search_engines/search_engines_switches.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/variations/entropy_provider.h"
 #include "components/variations/variations_associated_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -64,11 +63,6 @@ class KeywordProviderTest : public testing::Test {
   };
 
   KeywordProviderTest() : kw_provider_(nullptr) {
-    // Destroy the existing FieldTrialList before creating a new one to avoid
-    // a DCHECK.
-    field_trial_list_.reset();
-    field_trial_list_.reset(new base::FieldTrialList(
-        std::make_unique<variations::SHA1EntropyProvider>("foo")));
     variations::testing::ClearAllVariationParams();
   }
   ~KeywordProviderTest() override {}
@@ -90,7 +84,6 @@ class KeywordProviderTest : public testing::Test {
   static const TemplateURLService::Initializer kTestData[];
 
   base::test::TaskEnvironment task_environment_;
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
   scoped_refptr<KeywordProvider> kw_provider_;
   std::unique_ptr<MockAutocompleteProviderClient> client_;
 };

@@ -113,18 +113,18 @@ class SignedExchangeLoaderTest : public testing::TestWithParam<bool> {
         int32_t request_id,
         uint32_t options,
         const network::ResourceRequest& url_request,
-        network::mojom::URLLoaderClientPtr client,
+        mojo::PendingRemote<network::mojom::URLLoaderClient> client,
         const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
         override {
       ASSERT_FALSE(bool{ping_loader_});
       ping_loader_ = std::make_unique<MockURLLoader>(std::move(receiver));
-      ping_loader_client_ = std::move(client);
+      ping_loader_client_.Bind(std::move(client));
     }
     void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)
         override {}
 
     std::unique_ptr<MockURLLoader> ping_loader_;
-    network::mojom::URLLoaderClientPtr ping_loader_client_;
+    mojo::Remote<network::mojom::URLLoaderClient> ping_loader_client_;
   };
 
   network::mojom::URLLoaderClient* ping_loader_client() {
@@ -152,14 +152,15 @@ class SignedExchangeLoaderTest : public testing::TestWithParam<bool> {
 
 TEST_P(SignedExchangeLoaderTest, Simple) {
   network::mojom::URLLoaderPtr loader;
-  network::mojom::URLLoaderClientPtr loader_client;
+  mojo::Remote<network::mojom::URLLoaderClient> loader_client;
   MockURLLoader mock_loader(mojo::MakeRequest(&loader));
   network::mojom::URLLoaderClientEndpointsPtr endpoints =
       network::mojom::URLLoaderClientEndpoints::New(
-          std::move(loader).PassInterface(), mojo::MakeRequest(&loader_client));
+          std::move(loader).PassInterface(),
+          loader_client.BindNewPipeAndPassReceiver());
 
-  network::mojom::URLLoaderClientPtr client;
-  MockURLLoaderClient mock_client(mojo::MakeRequest(&client));
+  mojo::PendingRemote<network::mojom::URLLoaderClient> client;
+  MockURLLoaderClient mock_client(client.InitWithNewPipeAndPassReceiver());
 
   network::ResourceRequest resource_request;
   resource_request.url = GURL("https://example.com/test.sxg");
@@ -224,9 +225,9 @@ TEST_P(SignedExchangeLoaderTest, Simple) {
   loader_client->OnComplete(network::URLLoaderCompletionStatus(net::OK));
   base::RunLoop().RunUntilIdle();
 
-  network::mojom::URLLoaderClientPtr client_after_redirect;
+  mojo::PendingRemote<network::mojom::URLLoaderClient> client_after_redirect;
   MockURLLoaderClient mock_client_after_redirect(
-      mojo::MakeRequest(&client_after_redirect));
+      client_after_redirect.InitWithNewPipeAndPassReceiver());
   EXPECT_CALL(mock_client_after_redirect, OnReceiveResponse(_));
 
   if (!base::FeatureList::IsEnabled(

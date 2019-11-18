@@ -53,9 +53,7 @@ EnterpriseReportingPrivateUploadChromeDesktopReportFunction::
 
 EnterpriseReportingPrivateUploadChromeDesktopReportFunction::
     EnterpriseReportingPrivateUploadChromeDesktopReportFunction(
-        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : dm_token_(
-          policy::BrowserDMTokenStorage::BrowserDMToken::CreateEmptyToken()) {
+        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   policy::DeviceManagementService* device_management_service =
       g_browser_process->browser_policy_connector()
           ->device_management_service();
@@ -127,9 +125,8 @@ void EnterpriseReportingPrivateUploadChromeDesktopReportFunction::
 }
 
 void EnterpriseReportingPrivateUploadChromeDesktopReportFunction::
-    SetRegistrationInfoForTesting(
-        const policy::BrowserDMTokenStorage::BrowserDMToken& dm_token,
-        const std::string& client_id) {
+    SetRegistrationInfoForTesting(const policy::DMToken& dm_token,
+                                  const std::string& client_id) {
   dm_token_ = dm_token;
   client_id_ = client_id;
 }

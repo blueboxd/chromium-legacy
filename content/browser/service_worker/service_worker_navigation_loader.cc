@@ -24,8 +24,6 @@
 #include "content/common/service_worker/service_worker_loader_helpers.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 
@@ -116,7 +114,7 @@ ServiceWorkerNavigationLoader::AsWeakPtr() {
 void ServiceWorkerNavigationLoader::StartRequest(
     const network::ResourceRequest& resource_request,
     mojo::PendingReceiver<network::mojom::URLLoader> receiver,
-    network::mojom::URLLoaderClientPtr client) {
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client) {
   TRACE_EVENT_WITH_FLOW1("ServiceWorker",
                          "ServiceWorkerNavigationLoader::StartRequest", this,
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
@@ -137,7 +135,7 @@ void ServiceWorkerNavigationLoader::StartRequest(
   receiver_.set_disconnect_handler(
       base::BindOnce(&ServiceWorkerNavigationLoader::OnConnectionClosed,
                      base::Unretained(this)));
-  url_loader_client_ = std::move(client);
+  url_loader_client_.Bind(std::move(client));
 
   TransitionToStatus(Status::kStarted);
 

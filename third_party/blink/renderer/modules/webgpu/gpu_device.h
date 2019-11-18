@@ -70,6 +70,8 @@ class GPUDevice final : public EventTargetWithInlineData,
   GPUAdapter* adapter() const;
   ScriptPromise lost(ScriptState* script_state);
 
+  GPUQueue* defaultQueue();
+
   GPUBuffer* createBuffer(const GPUBufferDescriptor* descriptor);
   HeapVector<ScriptValue> createBufferMapped(
       ScriptState* script_state,
@@ -100,8 +102,6 @@ class GPUDevice final : public EventTargetWithInlineData,
       const GPUCommandEncoderDescriptor* descriptor);
   GPURenderBundleEncoder* createRenderBundleEncoder(
       const GPURenderBundleEncoderDescriptor* descriptor);
-
-  GPUQueue* getQueue();
 
   void pushErrorScope(const WTF::String& filter);
   ScriptPromise popErrorScope(ScriptState* script_state);

@@ -98,12 +98,13 @@ void TestURLLoaderClient::ClearHasReceivedRedirect() {
   has_received_redirect_ = false;
 }
 
-mojom::URLLoaderClientPtr TestURLLoaderClient::CreateInterfacePtr() {
-  mojom::URLLoaderClientPtr client_ptr;
-  receiver_.Bind(mojo::MakeRequest(&client_ptr));
+mojo::PendingRemote<mojom::URLLoaderClient>
+TestURLLoaderClient::CreateRemote() {
+  mojo::PendingRemote<mojom::URLLoaderClient> client_remote;
+  receiver_.Bind(client_remote.InitWithNewPipeAndPassReceiver());
   receiver_.set_disconnect_handler(base::BindOnce(
       &TestURLLoaderClient::OnMojoDisconnect, base::Unretained(this)));
-  return client_ptr;
+  return client_remote;
 }
 
 void TestURLLoaderClient::Unbind() {

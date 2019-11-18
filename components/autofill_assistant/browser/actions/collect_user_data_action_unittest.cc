@@ -58,6 +58,7 @@ using ::testing::Eq;
 using ::testing::Invoke;
 using ::testing::Property;
 using ::testing::Return;
+using ::testing::SizeIs;
 
 void SetRequiredTermsFields(CollectUserDataProto* data,
                             bool request_terms_and_conditions = false) {
@@ -914,6 +915,124 @@ TEST_F(CollectUserDataActionTest, InvalidBasicCardNetworks) {
   EXPECT_CALL(
       callback_,
       Run(Pointee(Property(&ProcessedActionProto::status, INVALID_ACTION))));
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+}
+
+TEST_F(CollectUserDataActionTest, SortsCompleteProfilesAlphabetically) {
+  ON_CALL(mock_personal_data_manager_, IsAutofillProfileEnabled)
+      .WillByDefault(Return(true));
+
+  autofill::AutofillProfile profile_a;
+  autofill::test::SetProfileInfo(&profile_a, "Adam", "", "West",
+                                 "adam.west@gmail.com", "", "", "", "", "", "",
+                                 "", "");
+
+  autofill::AutofillProfile profile_b;
+  autofill::test::SetProfileInfo(&profile_b, "Berta", "", "West",
+                                 "berta.west@gmail.com", "", "", "", "", "", "",
+                                 "", "");
+
+  autofill::AutofillProfile profile_unicode;
+  autofill::test::SetProfileInfo(&profile_unicode,
+                                 "\xC3\x85"
+                                 "dam",
+                                 "", "West", "aedam.west@gmail.com", "", "", "",
+                                 "", "", "", "", "");
+
+  // Specify profiles in reverse order to force sorting.
+  std::vector<autofill::AutofillProfile*> profiles(
+      {&profile_unicode, &profile_b, &profile_a});
+  ON_CALL(mock_personal_data_manager_, GetProfiles)
+      .WillByDefault(Return(profiles));
+
+  ON_CALL(mock_action_delegate_, CollectUserData(_, _))
+      .WillByDefault(Invoke(
+          [=](std::unique_ptr<CollectUserDataOptions> collect_user_data_options,
+              std::unique_ptr<UserData> user_data) {
+            user_data->succeed = true;
+
+            user_data->contact_profile =
+                std::make_unique<autofill::AutofillProfile>(profile_a);
+
+            EXPECT_THAT(user_data->available_profiles, SizeIs(profiles.size()));
+            EXPECT_EQ(user_data->available_profiles[0]->Compare(profile_a), 0);
+            EXPECT_EQ(user_data->available_profiles[1]->Compare(profile_b), 0);
+            EXPECT_EQ(
+                user_data->available_profiles[2]->Compare(profile_unicode), 0);
+
+            std::move(collect_user_data_options->confirm_callback)
+                .Run(std::move(user_data));
+          }));
+
+  ActionProto action_proto;
+  auto* user_data = action_proto.mutable_collect_user_data();
+  SetRequiredTermsFields(user_data);
+  auto* contact_details = user_data->mutable_contact_details();
+  contact_details->set_request_payer_name(true);
+  contact_details->set_request_payer_email(true);
+
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+}
+
+TEST_F(CollectUserDataActionTest, SortsProfilesByCompleteness) {
+  ON_CALL(mock_personal_data_manager_, IsAutofillProfileEnabled)
+      .WillByDefault(Return(true));
+
+  autofill::AutofillProfile profile_complete;
+  autofill::test::SetProfileInfo(
+      &profile_complete, "Berta", "", "West", "berta.west@gmail.com", "",
+      "Baker Street 221b", "", "London", "", "WC2N 5DU", "UK", "+44");
+
+  autofill::AutofillProfile profile_incomplete;
+  autofill::test::SetProfileInfo(&profile_incomplete, "Adam", "", "West",
+                                 "adam.west@gmail.com", "", "", "", "", "", "",
+                                 "", "+41");
+
+  // Specify profiles in reverse order to force sorting.
+  std::vector<autofill::AutofillProfile*> profiles(
+      {&profile_incomplete, &profile_complete});
+  ON_CALL(mock_personal_data_manager_, GetProfiles)
+      .WillByDefault(Return(profiles));
+
+  ON_CALL(mock_action_delegate_, CollectUserData(_, _))
+      .WillByDefault(Invoke(
+          [=](std::unique_ptr<CollectUserDataOptions> collect_user_data_options,
+              std::unique_ptr<UserData> user_data) {
+            user_data->succeed = true;
+
+            user_data->contact_profile =
+                std::make_unique<autofill::AutofillProfile>(profile_complete);
+            user_data->shipping_address =
+                std::make_unique<autofill::AutofillProfile>(profile_complete);
+
+            EXPECT_THAT(user_data->available_profiles, SizeIs(2));
+            EXPECT_EQ(
+                user_data->available_profiles[0]->Compare(profile_complete), 0);
+            EXPECT_EQ(
+                user_data->available_profiles[1]->Compare(profile_incomplete),
+                0);
+
+            std::move(collect_user_data_options->confirm_callback)
+                .Run(std::move(user_data));
+          }));
+
+  ActionProto action_proto;
+  auto* user_data = action_proto.mutable_collect_user_data();
+  SetRequiredTermsFields(user_data);
+  user_data->set_shipping_address_name("Address");
+  auto* contact_details = user_data->mutable_contact_details();
+  contact_details->set_request_payer_name(true);
+  contact_details->set_request_payer_email(true);
+  contact_details->set_request_payer_phone(true);
+
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
   CollectUserDataAction action(&mock_action_delegate_, action_proto);
   action.ProcessAction(callback_.Get());
 }

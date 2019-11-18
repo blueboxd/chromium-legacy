@@ -17,6 +17,7 @@
 #include "content/browser/service_worker/service_worker_fetch_dispatcher.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -57,7 +58,7 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
   //    it turns out we need to fallback to network, it calls
   //    |fallback_callback|.
   // 5. Otherwise if the SW returned a stream or blob as a response
-  //    this job passes the response to the network::mojom::URLLoaderClientPtr
+  //    this job passes the response to the network::mojom::URLLoaderClient
   //    connected to NavigationURLLoaderImpl (for resource loading for
   //    navigation), that was given to StartRequest. This forwards the
   //    blob/stream data pipe to the NavigationURLLoader.
@@ -73,9 +74,10 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
 
   // Passed as the RequestHandler for
   // NavigationLoaderInterceptor::MaybeCreateLoader.
-  void StartRequest(const network::ResourceRequest& resource_request,
-                    mojo::PendingReceiver<network::mojom::URLLoader> receiver,
-                    network::mojom::URLLoaderClientPtr client);
+  void StartRequest(
+      const network::ResourceRequest& resource_request,
+      mojo::PendingReceiver<network::mojom::URLLoader> receiver,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client);
 
   // The navigation request that was holding this job is
   // going away. Calling this internally calls |DeleteIfNeeded()|
@@ -174,7 +176,7 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
       network::mojom::FetchResponseSource::kUnspecified;
 
   // Pointer to the URLLoaderClient (i.e. NavigationURLLoader).
-  network::mojom::URLLoaderClientPtr url_loader_client_;
+  mojo::Remote<network::mojom::URLLoaderClient> url_loader_client_;
   mojo::Receiver<network::mojom::URLLoader> receiver_{this};
 
   Status status_ = Status::kNotStarted;

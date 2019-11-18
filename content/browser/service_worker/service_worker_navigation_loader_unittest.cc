@@ -410,7 +410,7 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
 
     // Load |request.url|.
     loader_->StartRequest(*request, mojo::MakeRequest(&loader_ptr_),
-                          client_.CreateInterfacePtr());
+                          client_.CreateRemote());
   }
 
   // The |fallback_callback| passed to the ServiceWorkerNavigationLoader in

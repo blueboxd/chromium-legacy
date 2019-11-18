@@ -29,8 +29,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/http/http_status_code.h"
 
-using BrowserDMToken = policy::BrowserDMTokenStorage::BrowserDMToken;
-
 namespace safe_browsing {
 namespace {
 
@@ -40,19 +38,14 @@ const int kScanningTimeoutSeconds = 5 * 60;           // 5 minutes
 // here.
 const char kSbBinaryUploadUrl[] = "";
 
-const char** GetTestingDMTokenStorage() {
-  static const char* dm_token = "";
+policy::DMToken* GetTestingDMTokenStorage() {
+  static policy::DMToken dm_token =
+      policy::DMToken::CreateEmptyTokenForTesting();
   return &dm_token;
 }
 
-BrowserDMToken GetTestingDMToken() {
-  const char* dm_token = *GetTestingDMTokenStorage();
-  return dm_token && dm_token[0] ? BrowserDMToken::CreateValidToken(dm_token)
-                                 : BrowserDMToken::CreateEmptyToken();
-}
-
-policy::BrowserDMTokenStorage::BrowserDMToken GetDMToken() {
-  auto dm_token = GetTestingDMToken();
+policy::DMToken GetDMToken() {
+  policy::DMToken dm_token = *GetTestingDMTokenStorage();
 
 #if !defined(OS_CHROMEOS)
   // This is not compiled on chromeos because

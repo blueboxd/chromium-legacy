@@ -123,13 +123,13 @@ void AppCacheURLLoaderJob::Start(
     base::OnceClosure continuation,
     const network::ResourceRequest& /* resource_request */,
     mojo::PendingReceiver<network::mojom::URLLoader> receiver,
-    network::mojom::URLLoaderClientPtr client) {
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client) {
   // TODO(crbug.com/876531): Figure out how AppCache interception should
   // interact with URLLoaderThrottles. It might be incorrect to ignore
   // |resource_request| here, since it's the current request after throttles.
   DCHECK(!receiver_.is_bound());
   receiver_.Bind(std::move(receiver));
-  client_ = std::move(client);
+  client_.Bind(std::move(client));
   receiver_.set_disconnect_handler(
       base::BindOnce(&AppCacheURLLoaderJob::DeleteSoon, GetDerivedWeakPtr()));
   if (continuation)

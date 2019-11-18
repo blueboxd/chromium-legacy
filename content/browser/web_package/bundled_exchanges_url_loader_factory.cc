@@ -14,8 +14,6 @@
 #include "content/browser/web_package/bundled_exchanges_reader.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
@@ -215,14 +213,14 @@ void BundledExchangesURLLoaderFactory::CreateLoaderAndStart(
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& resource_request,
-    network::mojom::URLLoaderClientPtr loader_client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> loader_client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   if (base::EqualsCaseInsensitiveASCII(resource_request.method,
                                        net::HttpRequestHeaders::kGetMethod) &&
       reader_->HasEntry(resource_request.url)) {
     auto loader = std::make_unique<EntryLoader>(
-        weak_factory_.GetWeakPtr(), loader_client.PassInterface(),
-        resource_request, frame_tree_node_id_);
+        weak_factory_.GetWeakPtr(), std::move(loader_client), resource_request,
+        frame_tree_node_id_);
     std::unique_ptr<network::mojom::URLLoader> url_loader = std::move(loader);
     mojo::MakeSelfOwnedReceiver(
         std::move(url_loader), mojo::PendingReceiver<network::mojom::URLLoader>(
@@ -232,8 +230,8 @@ void BundledExchangesURLLoaderFactory::CreateLoaderAndStart(
         std::move(loader_receiver), routing_id, request_id, options,
         resource_request, std::move(loader_client), traffic_annotation);
   } else {
-    loader_client->OnComplete(
-        network::URLLoaderCompletionStatus(net::ERR_FAILED));
+    mojo::Remote<network::mojom::URLLoaderClient>(std::move(loader_client))
+        ->OnComplete(network::URLLoaderCompletionStatus(net::ERR_FAILED));
   }
 }
 

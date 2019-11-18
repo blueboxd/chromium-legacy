@@ -73,6 +73,12 @@ class CollectUserDataAction : public Action,
       autofill::PersonalDataManager* personal_data_manager,
       const CollectUserDataOptions& collect_user_data_options);
 
+  // Update user data with the new state from personal data manager.
+  void UpdatePersonalDataManagerFields(
+      const CollectUserDataOptions* collect_user_data_options,
+      UserData* user_data,
+      UserData::FieldChange* field_change = nullptr);
+
   bool shown_to_user_ = false;
   bool initially_prefilled = false;
   bool personal_data_changed_ = false;

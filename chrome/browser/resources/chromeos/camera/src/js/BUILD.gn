@@ -21,6 +21,7 @@ js_type_check("compile_resources") {
     ":intent",
     ":metrics",
     ":nav",
+    ":sound",
     ":state",
     ":toast",
     ":tooltip",
@@ -39,6 +40,9 @@ js_library("metrics") {
   deps = [
     "externs:chrome_platform_analytics",
   ]
+}
+
+js_library("sound") {
 }
 
 js_library("type") {

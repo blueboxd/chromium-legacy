@@ -154,6 +154,7 @@ class ManifestUpdateManagerBrowserTest : public InProcessBrowserTest {
     AppId app_id;
     base::RunLoop run_loop;
     InstallManager::InstallParams params;
+    params.fallback_start_url = http_server_.GetURL("/fallback-url");
     params.add_to_applications_menu = false;
     params.add_to_desktop = false;
     params.add_to_quick_launch_bar = false;
@@ -210,14 +211,15 @@ class ManifestUpdateManagerBrowserTest : public InProcessBrowserTest {
     return *WebAppProviderBase::GetProviderBase(browser()->profile());
   }
 
+ protected:
   net::EmbeddedTestServer::HandleRequestCallback request_override_;
 
   base::HistogramTester histogram_tester_;
 
+  net::EmbeddedTestServer http_server_;
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  net::EmbeddedTestServer http_server_;
 
   DISALLOW_COPY_AND_ASSIGN(ManifestUpdateManagerBrowserTest);
 };
@@ -467,13 +469,14 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
         auto http_response =
             std::make_unique<net::test_server::BasicHttpResponse>();
         http_response->set_code(net::HTTP_TEMPORARY_REDIRECT);
-        http_response->AddCustomHeader("Location", "/defaultresponse");
+        http_response->AddCustomHeader(
+            "Location", "http://other-origin.com/defaultresponse");
         http_response->set_content("redirect page");
         return std::move(http_response);
       });
 
-  // Install via PendingAppManager, the redirect should cause it to install a
-  // placeholder app.
+  // Install via PendingAppManager, the redirect to a different origin should
+  // cause it to install a placeholder app.
   AppId app_id = InstallPolicyApp();
   EXPECT_TRUE(GetProvider().registrar().IsPlaceholderApp(app_id));
 
@@ -597,6 +600,29 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
   // after updating.
   EXPECT_FALSE(
       GetProvider().install_finalizer().CanUserUninstallFromSync(app_id));
+}
+
+IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
+                       CheckFindsScopeChange) {
+  constexpr char kManifestTemplate[] = R"(
+    {
+      "name": "Test app name",
+      "start_url": ".",
+      "scope": "$1",
+      "display": "standalone",
+      "icons": $2
+    }
+  )";
+  OverrideManifest(kManifestTemplate, {"/banners/", kInstallableIconList});
+  AppId app_id = InstallWebApp();
+
+  OverrideManifest(kManifestTemplate, {"/", kInstallableIconList});
+  EXPECT_EQ(GetResultAfterPageLoad(GetAppURL(), &app_id),
+            ManifestUpdateResult::kAppUpdated);
+  histogram_tester_.ExpectBucketCount(kUpdateHistogramName,
+                                      ManifestUpdateResult::kAppUpdated, 1);
+  EXPECT_EQ(GetProvider().registrar().GetAppScope(app_id),
+            http_server_.GetURL("/"));
 }
 
 }  // namespace web_app

@@ -9,7 +9,9 @@
 #include "base/optional.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/cors/preflight_controller.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
@@ -43,7 +45,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
       uint32_t options,
       DeleteCallback delete_callback,
       const ResourceRequest& resource_request,
-      mojom::URLLoaderClientPtr client,
+      mojo::PendingRemote<mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       mojom::URLLoaderFactory* network_loader_factory,
       const OriginAccessList* origin_access_list,
@@ -132,7 +134,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
   ResourceRequest request_;
 
   // To be a URLLoader for the client.
-  mojom::URLLoaderClientPtr forwarding_client_;
+  mojo::Remote<mojom::URLLoaderClient> forwarding_client_;
 
   // The last response URL, that is usually the requested URL, but can be
   // different if redirects happen.

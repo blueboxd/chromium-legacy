@@ -65,13 +65,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest, UsernameChanged) {
 
   // Change username and submit. This should add the characters "orary" to the
   // already autofilled username.
-  FillElementWithValue("username_field", "orary");
-
-  // Move the focus out of the inputs before waiting because WaitForElementValue
-  // uses "onchange" event. The event is triggered only when the control looses
-  // focus.
-  chrome::FocusLocationBar(browser());
-  WaitForElementValue("username_field", "temporary");
+  FillElementWithValue("username_field", "orary", "temporary");
 
   NavigationObserver navigation_observer(WebContents());
   BubbleObserver prompt_observer(WebContents());
@@ -170,6 +164,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
 
   NavigateToFile("/password/password_form.html");
 
+  SimulateUserDeletingFieldContent("password_field");
   FillElementWithValue("password_field", "123");
   BubbleObserver prompt_observer(WebContents());
   prompt_observer.WaitForFallbackForSaving();

@@ -975,7 +975,14 @@ class BrowseCricBuzzMobileStory(_ArticleBrowsingStory):
   ITEMS_TO_VISIT = 3
   ITEM_SELECTOR = '.list-content'
 
+class BrowseCricBuzzMobileStory2019(_ArticleBrowsingStory):
+  NAME = 'browse:news:cricbuzz:2019'
+  URL = 'http://m.cricbuzz.com'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2019]
 
+  ITEMS_TO_VISIT = 3
+  ITEM_SELECTOR = '.list-content'
 
 ##############################################################################
 # Maps browsing stories.

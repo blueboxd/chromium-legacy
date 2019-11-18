@@ -267,7 +267,7 @@ IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest, InterceptBrowser) {
                       ->GetURLLoaderFactoryForBrowserProcess()
                       .get();
   factory->CreateLoaderAndStart(
-      mojo::MakeRequest(&loader), 0, 0, 0, request, client.CreateInterfacePtr(),
+      mojo::MakeRequest(&loader), 0, 0, 0, request, client.CreateRemote(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   client.RunUntilComplete();
   EXPECT_EQ(net::ERR_FAILED, client.completion_status().error_code);

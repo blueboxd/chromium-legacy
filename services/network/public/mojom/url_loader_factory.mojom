@@ -44,7 +44,7 @@ interface URLLoaderFactory {
                        int32 request_id,
                        uint32 options,
                        URLRequest request,
-                       URLLoaderClient client,
+                       pending_remote<URLLoaderClient> client,
                        MutableNetworkTrafficAnnotationTag traffic_annotation);
 
   // Connects a new pipe to this instance of the URLLoaderFactory interface.

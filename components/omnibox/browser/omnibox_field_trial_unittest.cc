@@ -17,7 +17,6 @@
 #include "build/build_config.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/search/search.h"
-#include "components/variations/entropy_provider.h"
 #include "components/variations/variations_associated_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
@@ -31,12 +30,18 @@ class OmniboxFieldTrialTest : public testing::Test {
   }
 
   void ResetFieldTrialList() {
-    // Destroy the existing FieldTrialList before creating a new one to avoid
-    // a DCHECK.
-    field_trial_list_.reset();
-    field_trial_list_.reset(new base::FieldTrialList(
-        std::make_unique<variations::SHA1EntropyProvider>("foo")));
+    scoped_feature_list_.Reset();
     variations::testing::ClearAllVariationParams();
+    scoped_feature_list_.Init();
+  }
+
+  void ResetAndEnableFeatureWithParameters(
+      const base::Feature& feature,
+      const base::FieldTrialParams& feature_parameters) {
+    scoped_feature_list_.Reset();
+    variations::testing::ClearAllVariationParams();
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(feature,
+                                                            feature_parameters);
   }
 
   // Creates and activates a field trial.
@@ -73,7 +78,7 @@ class OmniboxFieldTrialTest : public testing::Test {
       int expected_delay_ms);
 
  private:
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxFieldTrialTest);
 };
@@ -210,8 +215,7 @@ TEST_F(OmniboxFieldTrialTest, GetDemotionsByTypeWithFallback) {
 
 TEST_F(OmniboxFieldTrialTest, GetProviderMaxMatches) {
   {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeatureWithParameters(
+    ResetAndEnableFeatureWithParameters(
         omnibox::kUIExperimentMaxAutocompleteMatches,
         {{OmniboxFieldTrial::kUIMaxAutocompleteMatchesByProviderParam,
           "1:50,2:0"}});
@@ -223,8 +227,7 @@ TEST_F(OmniboxFieldTrialTest, GetProviderMaxMatches) {
                        AutocompleteProvider::Type::TYPE_HISTORY_QUICK));
   }
   {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeatureWithParameters(
+    ResetAndEnableFeatureWithParameters(
         omnibox::kUIExperimentMaxAutocompleteMatches,
         {{OmniboxFieldTrial::kUIMaxAutocompleteMatchesByProviderParam,
           "1:60,*:61,2:62"}});
@@ -236,6 +239,7 @@ TEST_F(OmniboxFieldTrialTest, GetProviderMaxMatches) {
                         AutocompleteProvider::Type::TYPE_HISTORY_QUICK));
   }
   {
+    ResetFieldTrialList();
     ASSERT_EQ(3ul, OmniboxFieldTrial::GetProviderMaxMatches(
                        AutocompleteProvider::Type::TYPE_BOOKMARK));
     ASSERT_EQ(3ul, OmniboxFieldTrial::GetProviderMaxMatches(

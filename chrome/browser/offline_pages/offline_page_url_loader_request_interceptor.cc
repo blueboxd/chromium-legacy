@@ -35,7 +35,7 @@ void OfflinePageURLLoaderRequestInterceptor::OnRequestHandled(
     content::URLLoaderRequestInterceptor::RequestHandler handler) {
   // OfflinePageURLLoader decides to handle the request as offline page. Since
   // now, OfflinePageURLLoader will own itself and live as long as its URLLoader
-  // and URLLoaderClientPtr are alive.
+  // and URLLoaderClient are alive.
   url_loader_.release();
 
   std::move(callback).Run(std::move(handler));

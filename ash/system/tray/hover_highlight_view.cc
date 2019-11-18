@@ -153,7 +153,7 @@ void HoverHighlightView::SetExpandable(bool expandable) {
   }
 }
 
-void HoverHighlightView::SetAccessiblityState(
+void HoverHighlightView::SetAccessibilityState(
     AccessibilityState accessibility_state) {
   accessibility_state_ = accessibility_state;
   if (accessibility_state_ != AccessibilityState::DEFAULT)

@@ -132,11 +132,10 @@ cca.device.ConstraintsPreferrer = class {
    * settings.
    * @param {string} deviceId Device id of video device to be updated.
    * @param {!MediaStream} stream Currently active preview stream.
-   * @param {number} width Width of resolution to be updated to.
-   * @param {number} height Height of resolution to be updated to.
+   * @param {!Resolution} resolution Resolution to be updated to.
    * @abstract
    */
-  updateValues(deviceId, stream, width, height) {}
+  updateValues(deviceId, stream, resolution) {}
 
   /**
    * Gets all available candidates for capturing under this controller and its
@@ -332,9 +331,9 @@ cca.device.VideoConstraintsPreferrer =
   /**
    * @override
    */
-  updateValues(deviceId, stream, width, height) {
+  updateValues(deviceId, stream, resolution) {
     this.deviceId_ = deviceId;
-    this.resolution_ = new Resolution(width, height);
+    this.resolution_ = resolution;
     this.prefResolution_[deviceId] = this.resolution_;
     this.saveResolutionPreference_('deviceVideoResolution');
     this.preferredResolutionChangeListener_(deviceId, this.resolution_);
@@ -487,8 +486,7 @@ cca.device.PhotoConstraintsPreferrer =
   /**
    * @override
    */
-  updateValues(deviceId, stream, width, height) {
-    const resolution = new Resolution(width, height);
+  updateValues(deviceId, stream, resolution) {
     this.deviceId_ = deviceId;
     this.prefResolution_[deviceId] = resolution;
     this.saveResolutionPreference_('devicePhotoResolution');

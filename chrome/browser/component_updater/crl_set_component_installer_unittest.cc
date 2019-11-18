@@ -67,7 +67,7 @@ class CRLSetComponentInstallerTest : public PlatformTest {
         mojo::MakeRequest(&loader_), 1, 1,
         network::mojom::kURLLoadOptionSendSSLInfoWithResponse |
             network::mojom::kURLLoadOptionSendSSLInfoForCertificateError,
-        request, client_->CreateInterfacePtr(),
+        request, client_->CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
     client_->RunUntilComplete();
   }

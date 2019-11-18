@@ -36,15 +36,9 @@
       }
 
       .explain-selected {
-        color: var(--google-green-refresh-700);
+        color: var(--cros-success-color);
         font-weight: initial;
         margin-top: 4px;
-      }
-
-      @media (prefers-color-scheme: dark) {
-        .explain-selected {
-          color: var(--google-green-refresh-300);
-        }
       }
 
       cr-action-menu.complex .dropdown-item {
@@ -93,20 +87,13 @@
       }
 
       .name-with-error-list div {
-        /* TODO(dbeam): does this need to differ from --settings-error-color? */
-        color: var(--google-red-500);
+        color: var(--cros-error-color);
         margin-top: 8px;
-      }
-
-      @media (prefers-color-scheme: dark) {
-        .name-with-error-list div {
-          color: var(--settings-error-color);
-        }
       }
 
       iron-icon[icon='cr:error'] {
         @apply --cr-icon-height-width;
-        --iron-icon-fill-color: var(--settings-error-color);
+        --iron-icon-fill-color: var(--cros-error-color);
         margin-inline-end: 8px;
       }
 

@@ -285,7 +285,7 @@ void PreviewsLitePageRedirectURLLoader::OnLitePageFallback() {
 void PreviewsLitePageRedirectURLLoader::StartHandlingRedirectToModifiedRequest(
     const network::ResourceRequest& resource_request,
     mojo::PendingReceiver<network::mojom::URLLoader> receiver,
-    network::mojom::URLLoaderClientPtr client) {
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   response_head_.request_start = base::TimeTicks::Now();
   response_head_.response_start = response_head_.request_start;
@@ -307,14 +307,14 @@ void PreviewsLitePageRedirectURLLoader::StartHandlingRedirectToModifiedRequest(
 void PreviewsLitePageRedirectURLLoader::StartHandlingRedirect(
     const network::ResourceRequest& /* resource_request */,
     mojo::PendingReceiver<network::mojom::URLLoader> receiver,
-    network::mojom::URLLoaderClientPtr client) {
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!binding_.is_bound());
   binding_.Bind(std::move(receiver));
   binding_.set_connection_error_handler(
       base::BindOnce(&PreviewsLitePageRedirectURLLoader::OnConnectionClosed,
                      weak_ptr_factory_.GetWeakPtr()));
-  client_ = std::move(client);
+  client_.Bind(std::move(client));
 
   mojo::DataPipe pipe(kRedirectDefaultAllocationSize);
   if (!pipe.consumer_handle.is_valid()) {

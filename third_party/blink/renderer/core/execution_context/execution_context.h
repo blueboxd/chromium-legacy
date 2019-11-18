@@ -291,6 +291,7 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   }
 
   virtual TrustedTypePolicyFactory* GetTrustedTypes() const { return nullptr; }
+  virtual bool RequireTrustedTypes() const;
 
   // FeaturePolicyParserDelegate override
   bool FeatureEnabled(OriginTrialFeature) const override;
@@ -298,7 +299,6 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   bool FeaturePolicyFeatureObserved(
       mojom::FeaturePolicyFeature feature) override;
 
-  bool RequireTrustedTypes() const;
 
  protected:
   ExecutionContext(v8::Isolate* isolate,

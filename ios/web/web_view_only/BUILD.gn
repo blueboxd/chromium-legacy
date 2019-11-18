@@ -37,7 +37,11 @@ source_set("unittests") {
     "//base",
     "//ios/web/public/web_view_only",
     "//ios/web/test:test_support",
-    "//third_party/webrtc/rtc_base",
+
+    # Even if this target doesn't depend on WebRTC, this dependency
+    # is needed in order to workaround a dependency issue among
+    # mojom components.
+    "//third_party/webrtc_overrides:webrtc_component",
   ]
 
   visibility = [

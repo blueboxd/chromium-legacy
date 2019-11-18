@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.autofill_assistant.user_data;
 
 import android.app.Activity;
-import android.text.TextUtils;
 import android.view.View;
 
 import org.chromium.base.task.PostTask;
@@ -29,7 +28,6 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,51 +40,6 @@ import java.util.Map;
 class AssistantCollectUserDataBinder
         implements PropertyModelChangeProcessor.ViewBinder<AssistantCollectUserDataModel,
                 AssistantCollectUserDataBinder.ViewHolder, PropertyKey> {
-    /**
-     * Helper class that compares instances of {@link PersonalDataManager.AutofillProfile} by
-     * completeness in regards to the current state of the given {@link
-     * AssistantCollectUserDataModel}.
-     */
-    class CompletenessComparator implements Comparator<PersonalDataManager.AutofillProfile> {
-        final boolean mRequestName;
-        final boolean mRequestShipping;
-        final boolean mRequestEmail;
-        final boolean mRequestPhone;
-        CompletenessComparator(AssistantCollectUserDataModel model) {
-            mRequestName = model.get(AssistantCollectUserDataModel.REQUEST_NAME);
-            mRequestShipping = model.get(AssistantCollectUserDataModel.REQUEST_SHIPPING_ADDRESS);
-            mRequestEmail = model.get(AssistantCollectUserDataModel.REQUEST_EMAIL);
-            mRequestPhone = model.get(AssistantCollectUserDataModel.REQUEST_PHONE);
-        }
-
-        @Override
-        public int compare(
-                PersonalDataManager.AutofillProfile a, PersonalDataManager.AutofillProfile b) {
-            int result = countCompleteFields(a) - countCompleteFields(b);
-            // Fallback, compare by name alphabetically.
-            if (result == 0) {
-                return a.getFullName().compareTo(b.getFullName());
-            }
-            return result;
-        }
-
-        private int countCompleteFields(PersonalDataManager.AutofillProfile profile) {
-            int completeFields = 0;
-            if (mRequestName && !TextUtils.isEmpty((profile.getFullName()))) {
-                completeFields++;
-            }
-            if (mRequestShipping && !TextUtils.isEmpty(profile.getStreetAddress())) {
-                completeFields++;
-            }
-            if (mRequestEmail && !TextUtils.isEmpty(profile.getEmailAddress())) {
-                completeFields++;
-            }
-            if (mRequestPhone && !TextUtils.isEmpty(profile.getPhoneNumber())) {
-                completeFields++;
-            }
-            return completeFields;
-        }
-    }
 
     /**
      * A wrapper class that holds the different views of the CollectUserData request.
@@ -415,12 +368,10 @@ class AssistantCollectUserDataBinder
                 model.get(AssistantCollectUserDataModel.VISIBLE) ? View.VISIBLE : View.GONE;
         if (view.mRootView.getVisibility() != visibility) {
             if (visibility == View.VISIBLE) {
-                // Update available profiles and credit cards before PR is made visible.
-                updateAvailableProfiles(model, view);
+                // Update credit cards before PR is made visible.
                 updateAvailablePaymentMethods(model);
 
                 view.startListenToPersonalDataManager(() -> {
-                    AssistantCollectUserDataBinder.this.updateAvailableProfiles(model, view);
                     AssistantCollectUserDataBinder.this.updateAvailablePaymentMethods(model);
                 });
             } else {
@@ -460,17 +411,6 @@ class AssistantCollectUserDataBinder
             return true;
         }
         return false;
-    }
-
-    // TODO(crbug.com/806868): Move this logic to native.
-    private void updateAvailableProfiles(AssistantCollectUserDataModel model, ViewHolder view) {
-        List<PersonalDataManager.AutofillProfile> autofillProfiles =
-                PersonalDataManager.getInstance().getProfilesToSuggest(
-                        /* includeNameInLabel= */ false);
-
-        // Suggest complete profiles first.
-        Collections.sort(autofillProfiles, new CompletenessComparator(model));
-        model.set(AssistantCollectUserDataModel.AVAILABLE_PROFILES, autofillProfiles);
     }
 
     /**

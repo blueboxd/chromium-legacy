@@ -326,7 +326,7 @@ URLLoader::URLLoader(
     mojo::PendingReceiver<mojom::URLLoader> url_loader_receiver,
     int32_t options,
     const ResourceRequest& request,
-    mojom::URLLoaderClientPtr url_loader_client,
+    mojo::PendingRemote<mojom::URLLoaderClient> url_loader_client,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     const mojom::URLLoaderFactoryParams* factory_params,
     uint32_t request_id,
@@ -1583,7 +1583,7 @@ URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb() {
     receiver_.set_disconnect_handler(
         base::BindOnce(&URLLoader::OnMojoDisconnect, base::Unretained(this)));
     EmptyURLLoaderClient::DrainURLRequest(
-        mojo::MakeRequest(&url_loader_client_), std::move(self_ptr));
+        url_loader_client_.BindNewPipeAndPassReceiver(), std::move(self_ptr));
 
     // Ask the caller to continue processing the request.
     return kContinueRequest;

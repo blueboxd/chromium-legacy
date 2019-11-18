@@ -219,6 +219,7 @@ void PendingAppManagerImpl::StartInstallationTask(
 
   url_loader_->LoadUrl(current_install_->task->install_options().url,
                        web_contents_.get(),
+                       WebAppUrlLoader::UrlComparison::kSameOrigin,
                        base::BindOnce(&PendingAppManagerImpl::OnUrlLoaded,
                                       weak_ptr_factory_.GetWeakPtr()));
 }

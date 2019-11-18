@@ -88,7 +88,7 @@ void URLLoaderFactory::CreateLoaderAndStart(
     int32_t request_id,
     uint32_t options,
     const ResourceRequest& url_request,
-    mojom::URLLoaderClientPtr client,
+    mojo::PendingRemote<mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   // Requests with |trusted_params| when params_->is_trusted is not set should
   // have been rejected at the CorsURLLoader layer.
@@ -185,7 +185,7 @@ void URLLoaderFactory::CreateLoaderAndStart(
     status.error_code = net::ERR_INSUFFICIENT_RESOURCES;
     status.exists_in_cache = false;
     status.completion_time = base::TimeTicks::Now();
-    client->OnComplete(status);
+    mojo::Remote<mojom::URLLoaderClient>(std::move(client))->OnComplete(status);
     return;
   }
 

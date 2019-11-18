@@ -53,9 +53,6 @@ void AppCacheUpdateJob::UpdateURLLoaderRequest::Start() {
   if (AppCacheRequestHandler::IsRunningInTests())
     return;
 
-  network::mojom::URLLoaderClientPtr client;
-  client_receiver_.Bind(mojo::MakeRequest(&client));
-
   // The partition has shutdown, return without making the request.
   if (!partition_)
     return;
@@ -63,7 +60,7 @@ void AppCacheUpdateJob::UpdateURLLoaderRequest::Start() {
       ->CreateLoaderAndStart(
           mojo::MakeRequest(&url_loader_), -1, -1,
           network::mojom::kURLLoadOptionSendSSLInfoWithResponse, request_,
-          std::move(client),
+          client_receiver_.BindNewPipeAndPassRemote(),
           net::MutableNetworkTrafficAnnotationTag(kAppCacheTrafficAnnotation));
 }
 

@@ -70,6 +70,10 @@ class ScriptExecutorDelegate {
   virtual void SetCollectUserDataOptions(
       std::unique_ptr<CollectUserDataOptions> collect_user_data_options,
       std::unique_ptr<UserData> user_data) = 0;
+  virtual void WriteUserData(
+      base::OnceCallback<void(const CollectUserDataOptions*,
+                              UserData*,
+                              UserData::FieldChange*)> write_callback) = 0;
   virtual void SetProgress(int progress) = 0;
   virtual void SetProgressVisible(bool visible) = 0;
   virtual void SetUserActions(

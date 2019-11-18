@@ -49,9 +49,10 @@ BrowserCloseManager::~BrowserCloseManager() {
 }
 
 void BrowserCloseManager::StartClosingBrowsers() {
-  // If the session is ending or a silent exit was requested, skip straight to
-  // closing the browsers without waiting for beforeunload dialogs.
-  if (browser_shutdown::ShouldIgnoreUnloadHandlers()) {
+  // If the session is ending, skip straight to closing the browsers. There's no
+  // time to wait for beforeunload dialogs.
+  if (browser_shutdown::GetShutdownType() ==
+      browser_shutdown::ShutdownType::kEndSession) {
     // Tell everyone that we are shutting down.
     browser_shutdown::SetTryingToQuit(true);
     CloseBrowsers();
@@ -162,11 +163,12 @@ void BrowserCloseManager::CloseBrowsers() {
             BrowserList::GetInstance()->end(),
             std::back_inserter(browser_list_copy));
 
-  bool ignore_unload_handlers = browser_shutdown::ShouldIgnoreUnloadHandlers();
+  bool session_ending = browser_shutdown::GetShutdownType() ==
+                        browser_shutdown::ShutdownType::kEndSession;
 
   for (auto* browser : browser_list_copy) {
     browser->window()->Close();
-    if (ignore_unload_handlers) {
+    if (session_ending) {
       // This path is hit during logoff/power-down. In this case we won't get
       // a final message and so we force the browser to be deleted.
       // Close doesn't immediately destroy the browser

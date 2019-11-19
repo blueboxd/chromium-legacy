@@ -177,15 +177,40 @@ def make_v8_to_blink_value(blink_var_name, v8_value_expr, idl_type):
     assert isinstance(v8_value_expr, str)
     assert isinstance(idl_type, web_idl.IdlType)
 
-    pattern = "NativeValueTraits<{_1}>::NativeValue({_2})"
-    _1 = native_value_tag(idl_type)
-    _2 = ["${isolate}", v8_value_expr, "${exception_state}"]
-    blink_value = _format(pattern, _1=_1, _2=", ".join(_2))
-
-    pattern = "const auto& ${{{_1}}} = {_2};"
+    pattern = (
+        "const auto& ${{{_1}}} = NativeValueTraits<{_2}>::NativeValue({_3});")
     _1 = blink_var_name
-    _2 = blink_value
-    text = _format(pattern, _1=_1, _2=_2)
+    _2 = native_value_tag(idl_type)
+    _3 = ["${isolate}", v8_value_expr, "${exception_state}"]
+    text = _format(pattern, _1=_1, _2=_2, _3=", ".join(_3))
+
+    def create_definition(symbol_node):
+        return SymbolDefinitionNode(symbol_node, [
+            TextNode(text),
+            UnlikelyExitNode(
+                cond=TextNode("${exception_state}.HadException()"),
+                body=SymbolScopeNode([TextNode("return;")])),
+        ])
+
+    return SymbolNode(blink_var_name, definition_constructor=create_definition)
+
+
+def make_v8_to_blink_value_variadic(blink_var_name, v8_array,
+                                    v8_array_start_index, idl_type):
+    """
+    Returns a SymbolNode whose definition converts an array of v8::Value
+    (variadic arguments) to a Blink value.
+    """
+    assert isinstance(blink_var_name, str)
+    assert isinstance(v8_array, str)
+    assert isinstance(v8_array_start_index, (int, long))
+    assert isinstance(idl_type, web_idl.IdlType)
+
+    pattern = "const auto& ${{{_1}}} = ToImplArguments<{_2}>({_3});"
+    _1 = blink_var_name
+    _2 = native_value_tag(idl_type.element_type)
+    _3 = [v8_array, str(v8_array_start_index), "${exception_state}"]
+    text = _format(pattern, _1=_1, _2=_2, _3=", ".join(_3))
 
     def create_definition(symbol_node):
         return SymbolDefinitionNode(symbol_node, [

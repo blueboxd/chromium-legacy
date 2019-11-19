@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_FORM_ELEMENT_OBSERVER_IMPL_H_
 
 #include "base/macros.h"
+#include "base/util/type_safety/pass_key.h"
 #include "third_party/blink/public/web/modules/autofill/web_form_element_observer.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
@@ -20,7 +21,9 @@ class CORE_EXPORT WebFormElementObserverImpl final
     : public GarbageCollected<WebFormElementObserverImpl>,
       public WebFormElementObserver {
  public:
-  WebFormElementObserverImpl(HTMLElement&, base::OnceClosure);
+  WebFormElementObserverImpl(util::PassKey<WebFormElementObserver>,
+                             HTMLElement&,
+                             base::OnceClosure);
   ~WebFormElementObserverImpl() override;
 
   // WebFormElementObserver implementation.

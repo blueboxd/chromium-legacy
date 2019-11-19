@@ -111,14 +111,8 @@ class CONTENT_EXPORT SharedWorkerHost
                          base::OnceCallback<void(bool)> callback);
   void AllowWebLocks(const GURL& url, base::OnceCallback<void(bool)> callback);
 
-  void BindVideoDecodePerfHistory(
-      mojo::PendingReceiver<media::mojom::VideoDecodePerfHistory> receiver);
   void CreateAppCacheBackend(
       mojo::PendingReceiver<blink::mojom::AppCacheBackend> receiver);
-  void CreatePaymentManager(
-      mojo::PendingReceiver<payments::mojom::PaymentManager> receiver);
-  void CreateIDBFactory(
-      mojo::PendingReceiver<blink::mojom::IDBFactory> receiver);
   void CreateQuicTransportConnector(
       mojo::PendingReceiver<blink::mojom::QuicTransportConnector> receiver);
 

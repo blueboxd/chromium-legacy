@@ -38,7 +38,7 @@ TEST_F(WebViewWebClientTest, WKWebViewEarlyPageScriptAutofillController) {
 
   web::ScopedTestingWebClient web_client(std::make_unique<WebViewWebClient>());
   NSString* script =
-      web_client.Get()->GetDocumentStartScriptForMainFrame(GetBrowserState());
+      web_client.Get()->GetDocumentStartScriptForAllFrames(GetBrowserState());
   web::test::ExecuteJavaScript(web_view, script);
   EXPECT_NSEQ(@"object", web::test::ExecuteJavaScript(
                              web_view, @"typeof __gCrWeb.autofill"));

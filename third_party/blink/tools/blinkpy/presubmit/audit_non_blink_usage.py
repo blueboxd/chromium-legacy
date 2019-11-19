@@ -768,9 +768,11 @@ _CONFIG = [
         'allowed': [
             'base::AutoLock',
             'base::Erase',
+            'base::Lock',
             'base::StringPrintf',
             'media::.+',
             'rtc::scoped_refptr',
+            'webrtc::AudioDeviceModule',
             'webrtc::AudioSourceInterface',
             'webrtc::AudioTransport',
             'webrtc::kAdmMaxDeviceNameSize',

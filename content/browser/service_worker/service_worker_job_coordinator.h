@@ -40,6 +40,8 @@ class CONTENT_EXPORT ServiceWorkerJobCoordinator {
   void Update(ServiceWorkerRegistration* registration,
               bool force_bypass_cache,
               bool skip_script_comparison,
+              blink::mojom::FetchClientSettingsObjectPtr
+                  outside_fetch_client_settings_object,
               ServiceWorkerRegisterJob::RegistrationCallback callback);
 
   // Calls ServiceWorkerRegisterJobBase::Abort() on the specified jobs (all jobs

@@ -122,7 +122,7 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
       const base::FilePath& relative_path,
       const std::string* root) const;
 
-  const ComputedHashes::Reader& computed_hashes() const;
+  const ComputedHashes& computed_hashes() const;
 
   // Returns whether or not computed_hashes.json (and, if needed,
   // verified_contents.json too) was read correctly and is ready to use.
@@ -158,8 +158,8 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
   ContentHash(const ExtensionId& id,
               const base::FilePath& root,
               ContentVerifierDelegate::VerifierSourceType source_type,
-              std::unique_ptr<VerifiedContents> verified_contents,
-              std::unique_ptr<ComputedHashes::Reader> computed_hashes);
+              std::unique_ptr<const VerifiedContents> verified_contents,
+              std::unique_ptr<const ComputedHashes> computed_hashes);
   ~ContentHash();
 
   // Step 1/2: verified_contents.json.
@@ -234,8 +234,8 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
 
   // TODO(lazyboy): Avoid dynamic allocations here, |this| already supports
   // move.
-  std::unique_ptr<VerifiedContents> verified_contents_;
-  std::unique_ptr<ComputedHashes::Reader> computed_hashes_;
+  std::unique_ptr<const VerifiedContents> verified_contents_;
+  std::unique_ptr<const ComputedHashes> computed_hashes_;
 
   // Paths that were found to have a mismatching hash.
   std::set<base::FilePath> hash_mismatch_unix_paths_;

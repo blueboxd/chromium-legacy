@@ -45,6 +45,7 @@ import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.webapps.WebDisplayMode;
+import org.chromium.chrome.browser.webapps.WebappScopePolicy;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.ui.mojom.WindowOpenDisposition;
@@ -64,16 +65,19 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
         private static final String TAG = "customtabs";
         private final String mClientPackageName;
         private final ExternalAuthUtils mExternalAuthUtils;
+        private ExternalIntentsPolicyProvider mExternalIntentsPolicyProvider;
         private boolean mHasActivityStarted;
 
         /**
          * Constructs a new instance of {@link CustomTabNavigationDelegate}.
          */
         CustomTabNavigationDelegate(Tab tab, String clientPackageName,
-                ExternalAuthUtils authUtils) {
+                ExternalAuthUtils authUtils,
+                ExternalIntentsPolicyProvider externalIntentsPolicyProvider) {
             super(tab);
             mClientPackageName = clientPackageName;
             mExternalAuthUtils = authUtils;
+            mExternalIntentsPolicyProvider = externalIntentsPolicyProvider;
         }
 
         @Override
@@ -84,6 +88,9 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
 
         @Override
         public boolean startActivityIfNeeded(Intent intent, boolean proxy) {
+            // Note: This method will not be called if applyWebappScopePolicyForUrl returns
+            // IGNORE_EXTERNAL_INTENT_REQUESTS.
+
             boolean isExternalProtocol = !UrlUtilities.isAcceptedScheme(intent.toUri(0));
             boolean hasDefaultHandler = hasDefaultHandler(intent);
             try {
@@ -155,6 +162,13 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
         @Override
         public boolean isOnCustomTab() {
             return true;
+        }
+
+        @Override
+        public int applyWebappScopePolicyForUrl(String url) {
+            return mExternalIntentsPolicyProvider.shouldIgnoreExternalIntentHandlers(url)
+                    ? WebappScopePolicy.NavigationDirective.IGNORE_EXTERNAL_INTENT_REQUESTS
+                    : WebappScopePolicy.NavigationDirective.NORMAL_BEHAVIOR;
         }
     }
 
@@ -257,6 +271,7 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
     private final ExternalAuthUtils mExternalAuthUtils;
     private final MultiWindowUtils mMultiWindowUtils;
     private final PendingIntent mFocusIntent;
+    private ExternalIntentsPolicyProvider mExternalIntentsPolicyProvider;
     private final ShareDelegate mShareDelegate;
 
     private ExternalNavigationDelegateImpl mNavigationDelegate;
@@ -278,6 +293,7 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
             boolean shouldEnableEmbeddedMediaExperience,
             BrowserControlsVisibilityDelegate visibilityDelegate, ExternalAuthUtils authUtils,
             MultiWindowUtils multiWindowUtils, @Nullable PendingIntent focusIntent,
+            ExternalIntentsPolicyProvider externalIntentsPolicyProvider,
             ShareDelegate shareDelegate) {
         mActivity = activity;
         mShouldHideBrowserControls = shouldHideBrowserControls;
@@ -288,6 +304,7 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
         mExternalAuthUtils = authUtils;
         mMultiWindowUtils = multiWindowUtils;
         mFocusIntent = focusIntent;
+        mExternalIntentsPolicyProvider = externalIntentsPolicyProvider;
         mShareDelegate = shareDelegate;
     }
 
@@ -295,14 +312,15 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
     public CustomTabDelegateFactory(ChromeActivity activity,
             CustomTabIntentDataProvider intentDataProvider,
             CustomTabBrowserControlsVisibilityDelegate visibilityDelegate,
-            ExternalAuthUtils authUtils, MultiWindowUtils multiWindowUtils) {
+            ExternalAuthUtils authUtils, MultiWindowUtils multiWindowUtils,
+            ExternalIntentsPolicyProvider externalIntentsPolicyProvider) {
         // Don't show an app install banner for the user of a Trusted Web Activity - they've already
         // got an app installed!
         this(activity, intentDataProvider.shouldEnableUrlBarHiding(),
                 intentDataProvider.isOpenedByChrome(), intentDataProvider.isTrustedWebActivity(),
                 intentDataProvider.shouldEnableEmbeddedMediaExperience(), visibilityDelegate,
                 authUtils, multiWindowUtils, intentDataProvider.getFocusIntent(),
-                activity.getShareDelegate());
+                externalIntentsPolicyProvider, activity.getShareDelegate());
     }
 
     /**
@@ -311,7 +329,7 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
      */
     static CustomTabDelegateFactory createDummy() {
         return new CustomTabDelegateFactory(
-                null, false, false, false, false, null, null, null, null, null);
+                null, false, false, false, false, null, null, null, null, null, null);
     }
 
     @Override
@@ -343,8 +361,9 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
         if (mIsOpenedByChrome) {
             mNavigationDelegate = new ExternalNavigationDelegateImpl(tab);
         } else {
-            mNavigationDelegate = new CustomTabNavigationDelegate(
-                    tab, TabAssociatedApp.getAppId(tab), mExternalAuthUtils);
+            mNavigationDelegate = new CustomTabNavigationDelegate(tab,
+                    TabAssociatedApp.getAppId(tab), mExternalAuthUtils,
+                    mExternalIntentsPolicyProvider);
         }
         return new ExternalNavigationHandler(mNavigationDelegate);
     }

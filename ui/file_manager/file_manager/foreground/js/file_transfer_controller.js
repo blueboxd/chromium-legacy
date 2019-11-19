@@ -546,7 +546,16 @@ class FileTransferController {
                     this.volumeManager_.getLocationInfo(destinationEntry);
                 const destinationName = util.getEntryLabel(
                     destinationLocationInfo, destinationEntry);
-                item.destinationMessage = destinationName;
+                // Root of removable volumes can result in an empty string,
+                // so use the filesystem name in that case.
+                if (destinationName === '') {
+                  if (destinationLocationInfo) {
+                    item.destinationMessage =
+                        util.getRootTypeLabel(destinationLocationInfo);
+                  }
+                } else {
+                  item.destinationMessage = destinationName;
+                }
                 this.progressCenter_.updateItem(item);
 
                 // Start the pasting operation.

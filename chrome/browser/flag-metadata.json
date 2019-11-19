@@ -259,13 +259,13 @@
   },
   {
     "name": "autofill-assistant-chrome-entry",
-    "owners": [ "gogerald", "wuandy" ],
-    "expiry_milestone": 79
+    "owners": [ "//components/autofill_assistant/OWNERS" ],
+    "expiry_milestone": 90
   },
   {
     "name": "autofill-assistant-direct-actions",
     "owners": [ "//components/autofill_assistant/OWNERS" ],
-    "expiry_milestone": 81
+    "expiry_milestone": 90
   },
   {
     "name": "autofill-cache-query-responses",
@@ -3569,7 +3569,7 @@
   {
     "name": "use-multilogin-endpoint",
     "owners": [ "droger", "msarda" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 85
   },
   {
     "name": "use-new-accept-language-header",

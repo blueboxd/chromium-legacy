@@ -48,6 +48,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "security_interstitial_tab_helper_unittest.cc",
+    "ssl_error_navigation_throttle_unittest.cc",
   ]
 
   deps = [

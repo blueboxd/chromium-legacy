@@ -279,13 +279,16 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
   // It is necessary to call |checkIfSuggestionsAvailableForForm| before
   // |retrieveSuggestionsForForm| because the former actually queries the db,
   // while the latter merely returns them.
+  NSString* mainFrameID =
+      base::SysUTF8ToNSString(web::GetMainWebFrameId(_webState));
+  BOOL isMainFrame = [frameID isEqualToString:mainFrameID];
   [_autofillAgent checkIfSuggestionsAvailableForForm:formName
                                      fieldIdentifier:fieldIdentifier
                                            fieldType:fieldType
                                                 type:nil
                                           typedValue:nil
                                              frameID:frameID
-                                         isMainFrame:YES
+                                         isMainFrame:isMainFrame
                                       hasUserGesture:YES
                                             webState:_webState
                                    completionHandler:availableHandler];

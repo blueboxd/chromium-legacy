@@ -28,7 +28,7 @@
 #include "media/webrtc/helpers.h"
 #include "media/webrtc/webrtc_switches.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_impl.h"
+#include "third_party/blink/renderer/modules/webrtc/webrtc_audio_device_impl.h"
 #include "third_party/blink/renderer/platform/mediastream/aec_dump_agent_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_pool.h"

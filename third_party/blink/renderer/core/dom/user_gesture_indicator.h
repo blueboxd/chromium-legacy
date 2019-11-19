@@ -56,9 +56,6 @@ class CORE_EXPORT UserGestureIndicator final {
   // This method is for testing only.
   static UserGestureToken* CurrentTokenForTest();
 
-  // This method is safe to call from any thread.
-  static UserGestureToken* CurrentTokenThreadSafe();
-
   explicit UserGestureIndicator(scoped_refptr<UserGestureToken>);
 
   // Constructs a UserGestureIndicator with a new UserGestureToken of the given

@@ -172,6 +172,7 @@ public class AutofillAssistantUiTest {
                                 AssistantDetailsModel.DETAILS,
                                 new AssistantDetails(movieTitle, /* titleMaxLines = */ 1,
                                         /* imageUrl = */ "",
+                                        /* imageAccessibilityHint = */ "",
                                         /* imageClickthroughData = */ null,
                                         /* showImage = */ false,
                                         /* totalPriceLabel = */ "",

@@ -183,6 +183,7 @@ Bug(none) external/wpt/svg/render/reftests/blending-001.svg [ Failure ]
 Bug(none) external/wpt/svg/render/reftests/blending-002.svg [ Failure ]
 
 # Invisible subpixel or invisible color differences that look benign, but we can't rebaseline ref tests.
+Bug(none) compositing/overflow/ancestor-with-clip-path.html [ Failure ]
 Bug(none) fast/multicol/mixed-opacity-fixed-test.html [ Failure ]
 Bug(none) fast/multicol/mixed-positioning-stacking-order.html [ Failure ]
 Bug(none) fullscreen/rendering/backdrop-object.html [ Failure ]

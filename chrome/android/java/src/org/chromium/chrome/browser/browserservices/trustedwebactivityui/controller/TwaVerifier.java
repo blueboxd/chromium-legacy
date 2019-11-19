@@ -20,6 +20,7 @@ import java.util.Set;
 
 import javax.inject.Inject;
 
+import androidx.annotation.Nullable;
 import androidx.browser.customtabs.CustomTabsService;
 
 /**
@@ -33,8 +34,18 @@ public class TwaVerifier implements Verifier, Destroyable {
     private final CustomTabIntentDataProvider mIntentDataProvider;
     private final OriginVerifier mOriginVerifier;
 
-    // These origins need to be verified via OriginVerifier#start, bypassing cache.
-    private Set<Origin> mOriginsPendingVerification;
+    /**
+     * Origins that we have yet to call OriginVerifier#start on.
+     *
+     * This value will be {@code null} until {@link #getPendingOrigins} is called (you can just use
+     * getPendingOrigins to get a ensured non-null value).
+     */
+    @Nullable private Set<Origin> mPendingOrigins;
+
+    /**
+     * All the origins that have been successfully verified.
+     */
+    private Set<Origin> mVerifiedOrigins = new HashSet<>();
 
     @Inject
     public TwaVerifier(
@@ -65,12 +76,13 @@ public class TwaVerifier implements Verifier, Destroyable {
         Origin origin = Origin.create(url);
         if (origin == null) return Promise.fulfilled(false);
 
-        collectTrustedOriginsIfNeeded();
         Promise<Boolean> promise = new Promise<>();
-        if (mOriginsPendingVerification.contains(origin)) {
+        if (getPendingOrigins().contains(origin)) {
 
             mOriginVerifier.start((packageName, unused, verified, online) -> {
-                mOriginsPendingVerification.remove(origin);
+                getPendingOrigins().remove(origin);
+                if (verified) mVerifiedOrigins.add(origin);
+
                 promise.fulfill(verified);
             }, origin);
 
@@ -89,27 +101,43 @@ public class TwaVerifier implements Verifier, Destroyable {
     }
 
     @Override
-    public boolean wasPreviouslyVerified(String url) {
-        return mOriginVerifier.wasPreviouslyVerified(Origin.createOrThrow(url));
+    public boolean shouldIgnoreExternalIntentHandlers(String url) {
+        Origin origin = Origin.create(url);
+        if (origin == null) return false;
+
+        return getPendingOrigins().contains(origin) || mVerifiedOrigins.contains(origin);
     }
 
-    private void collectTrustedOriginsIfNeeded() {
-        if (mOriginsPendingVerification != null) return;
+    @Override
+    public boolean wasPreviouslyVerified(String url) {
+        Origin origin = Origin.create(url);
+        if (origin == null) return false;
+        return mOriginVerifier.wasPreviouslyVerified(origin);
+    }
 
-        mOriginsPendingVerification = new HashSet<>();
+    private Set<Origin> getPendingOrigins() {
+        // mPendingOrigins isn't populated in the constructor because
+        // mIntentDataProvider.getUrlToLoad requires native to be loaded.
 
-        Origin initialOrigin = Origin.create(mIntentDataProvider.getUrlToLoad());
-        if (initialOrigin != null) mOriginsPendingVerification.add(initialOrigin);
+        if (mPendingOrigins == null) {
+            mPendingOrigins = new HashSet<>();
 
-        List<String> additionalOrigins =
-                mIntentDataProvider.getTrustedWebActivityAdditionalOrigins();
-        if (additionalOrigins != null) {
-            for (String originAsString : additionalOrigins) {
-                Origin origin = Origin.create(originAsString);
-                if (origin == null) continue;
+            Origin initialOrigin = Origin.create(mIntentDataProvider.getUrlToLoad());
+            if (initialOrigin != null) mPendingOrigins.add(initialOrigin);
 
-                mOriginsPendingVerification.add(origin);
+            List<String> additionalOrigins =
+                    mIntentDataProvider.getTrustedWebActivityAdditionalOrigins();
+
+            if (additionalOrigins != null) {
+                for (String originAsString : additionalOrigins) {
+                    Origin origin = Origin.create(originAsString);
+                    if (origin == null) continue;
+
+                    mPendingOrigins.add(origin);
+                }
             }
         }
+
+        return mPendingOrigins;
     }
 }

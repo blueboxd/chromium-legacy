@@ -412,24 +412,6 @@ void DedicatedWorkerHost::CreateNestedDedicatedWorker(
                                    origin_, std::move(receiver));
 }
 
-void DedicatedWorkerHost::BindFileSystemManager(
-    mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RenderProcessHost* worker_process_host = GetProcessHost();
-  if (!worker_process_host)
-    return;
-  worker_process_host->BindFileSystemManager(GetOrigin(), std::move(receiver));
-}
-
-void DedicatedWorkerHost::BindVideoDecodePerfHistory(
-    mojo::PendingReceiver<media::mojom::VideoDecodePerfHistory> receiver) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RenderProcessHost* worker_process_host = GetProcessHost();
-  if (!worker_process_host)
-    return;
-  worker_process_host->BindVideoDecodePerfHistory(std::move(receiver));
-}
-
 void DedicatedWorkerHost::CreateIdleManager(
     mojo::PendingReceiver<blink::mojom::IdleManager> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -449,26 +431,6 @@ void DedicatedWorkerHost::CreateIdleManager(
       ancestor_render_frame_host->GetProcess()->GetStoragePartition())
       ->GetIdleManager()
       ->CreateService(std::move(receiver));
-}
-
-void DedicatedWorkerHost::CreatePaymentManager(
-    mojo::PendingReceiver<payments::mojom::PaymentManager> receiver) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RenderProcessHost* worker_process_host = GetProcessHost();
-  if (!worker_process_host)
-    return;
-  worker_process_host->CreatePaymentManagerForOrigin(GetOrigin(),
-                                                     std::move(receiver));
-}
-
-void DedicatedWorkerHost::CreateIDBFactory(
-    mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RenderProcessHost* worker_process_host = GetProcessHost();
-  if (!worker_process_host)
-    return;
-  worker_process_host->BindIndexedDB(MSG_ROUTING_NONE, GetOrigin(),
-                                     std::move(receiver));
 }
 
 void DedicatedWorkerHost::BindSmsReceiverReceiver(

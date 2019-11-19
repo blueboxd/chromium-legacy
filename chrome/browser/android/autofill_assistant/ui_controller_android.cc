@@ -1150,6 +1150,8 @@ void UiControllerAndroid::OnDetailsChanged(const Details* details) {
       env, base::android::ConvertUTF8ToJavaString(env, details->title()),
       details->titleMaxLines(),
       base::android::ConvertUTF8ToJavaString(env, details->imageUrl()),
+      base::android::ConvertUTF8ToJavaString(env,
+                                             details->imageAccessibilityHint()),
       details->imageAllowClickthrough(),
       base::android::ConvertUTF8ToJavaString(env, details->imageDescription()),
       base::android::ConvertUTF8ToJavaString(env, details->imagePositiveText()),

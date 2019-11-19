@@ -174,9 +174,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
   prompt_observer.WaitForManagementState();
 }
 
-// Flaky. https://crbug.com/1013743
 IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
-                       DISABLED_PromptForXHRWithoutOnSubmit) {
+                       PromptForXHRWithoutOnSubmit) {
   NavigateToFile("/password/password_xhr_submit.html");
 
   // Verify that if XHR navigation occurs and the form is properly filled out,
@@ -206,9 +205,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
   EXPECT_TRUE(BubbleObserver(WebContents()).IsSavePromptShownAutomatically());
 }
 
-// Disabled for flakiness crbug.com/849582.
 IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
-                       DISABLED_PromptForFetchWithoutOnSubmit) {
+                       PromptForFetchWithoutOnSubmit) {
   NavigateToFile("/password/password_fetch_submit.html");
 
   // Verify that if Fetch navigation occurs and the form is properly filled out,
@@ -222,9 +220,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
   EXPECT_TRUE(BubbleObserver(WebContents()).IsSavePromptShownAutomatically());
 }
 
-// Flaky. https://crbug.com/1013743
 IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
-                       DISABLED_PromptForFetchWithNewPasswordsWithoutOnSubmit) {
+                       PromptForFetchWithNewPasswordsWithoutOnSubmit) {
   NavigateToFile("/password/password_fetch_submit.html");
 
   // Verify that if Fetch navigation occurs and the form is properly filled out,
@@ -240,48 +237,43 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
   EXPECT_TRUE(BubbleObserver(WebContents()).IsSavePromptShownAutomatically());
 }
 
-// Disabled for flakiness crbug.com/849582.
 IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
-                       DISABLED_AutofillPasswordFormWithoutUsernameField) {
+                       AutofillPasswordFormWithoutUsernameField) {
   std::string submit = "document.getElementById('submit-button').click();";
   VerifyPasswordIsSavedAndFilled("/password/form_with_only_password_field.html",
                                  std::string(), "password", submit);
 }
 
-// Disabled for flakiness crbug.com/849582.
 // Tests that if a site embeds the login and signup forms into one <form>, the
 // login form still gets autofilled.
 IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
-                       DISABLED_AutofillLoginSignupForm) {
+                       AutofillLoginSignupForm) {
   std::string submit = "document.getElementById('submit').click();";
   VerifyPasswordIsSavedAndFilled("/password/login_signup_form.html", "username",
                                  "password", submit);
 }
 
-// Disabled for flakiness crbug.com/849582.
 // Tests that password suggestions still work if the fields have the
 // "autocomplete" attribute set to off.
 IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
-                       DISABLED_AutofillPasswordFormWithAutocompleteOff) {
+                       AutofillPasswordFormWithAutocompleteOff) {
   std::string submit = "document.getElementById('submit').click();";
   VerifyPasswordIsSavedAndFilled(
       "/password/password_autocomplete_off_test.html", "username", "password",
       submit);
 }
 
-// Disabled for flakiness crbug.com/849582.
 IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
-                       DISABLED_AutofillPasswordNoFormElement) {
+                       AutofillPasswordNoFormElement) {
   VerifyPasswordIsSavedAndFilled("/password/no_form_element.html",
                                  "username_field", "password_field",
                                  "send_xhr();");
 }
 
-// Disabled for flakiness crbug.com/849582.
 // Check that we can fill in cases where <base href> is set and the action of
 // the form is not set. Regression test for https://crbug.com/360230.
 IN_PROC_BROWSER_TEST_F(PasswordManagerInteractiveTest,
-                       DISABLED_AutofillBaseTagWithNoActionTest) {
+                       AutofillBaseTagWithNoActionTest) {
   std::string submit = "document.getElementById('submit_button').click();";
   VerifyPasswordIsSavedAndFilled("/password/password_xhr_submit.html",
                                  "username_field", "password_field", submit);

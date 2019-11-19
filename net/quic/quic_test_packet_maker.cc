@@ -585,7 +585,7 @@ QuicTestPacketMaker::MakeConnectionClosePacket(
   quic::QuicConnectionCloseFrame close(version_.transport_version, quic_error,
                                        quic_error_details,
                                        /*transport_close_frame_type=*/0);
-  DVLOG(1) << "Adding frame: " << close;
+
   return MakePacket(header_, quic::QuicFrame(&close));
 }
 
@@ -1205,8 +1205,6 @@ void QuicTestPacketMaker::InitializeHeader(uint64_t packet_number,
   header_.long_packet_type = long_header_type_;
   header_.packet_number_length = GetPacketNumberLength();
   header_.packet_number = quic::QuicPacketNumber(packet_number);
-  header_.retry_token_length_length = quic::VARIABLE_LENGTH_INTEGER_LENGTH_0;
-  header_.length_length = quic::VARIABLE_LENGTH_INTEGER_LENGTH_0;
   if (quic::QuicVersionHasLongHeaderLengths(version_.transport_version) &&
       header_.version_flag) {
     if (long_header_type_ == quic::INITIAL) {

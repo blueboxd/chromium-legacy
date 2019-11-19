@@ -146,7 +146,7 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
     formatter->SetPropertyFilters(property_filters_);
     formatter->SetNodeFilters(node_filters_);
     base::string16 actual_contents_utf16;
-    formatter->FormatAccessibilityTree(
+    formatter->FormatAccessibilityTreeForTesting(
         GetRootAccessibilityNode(shell()->web_contents()),
         &actual_contents_utf16);
     std::string actual_contents = base::UTF16ToUTF8(actual_contents_utf16);

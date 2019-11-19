@@ -915,13 +915,23 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   //////////////////////////////////////////////////////////////////////////////
   // DATA_TYPE_CACHE
   if (remove_mask & content::BrowsingDataRemover::DATA_TYPE_CACHE) {
-    // Tell the renderers to clear their cache.
+    // Tell the renderers associated with |profile_| to clear their cache.
     // TODO(crbug.com/668114): Renderer cache is a platform concept, and should
     // live in BrowsingDataRemoverImpl. However, WebCacheManager itself is
     // a component with dependency on content/browser. Untangle these
     // dependencies or reimplement the relevant part of WebCacheManager
     // in content/browser.
-    web_cache::WebCacheManager::GetInstance()->ClearCache();
+    // TODO(crbug.com/1022757): add a test for this.
+    for (content::RenderProcessHost::iterator iter =
+             content::RenderProcessHost::AllHostsIterator();
+         !iter.IsAtEnd(); iter.Advance()) {
+      content::RenderProcessHost* render_process_host = iter.GetCurrentValue();
+      if (render_process_host->GetBrowserContext() == profile_ &&
+          render_process_host->IsInitializedAndNotDead()) {
+        web_cache::WebCacheManager::GetInstance()->ClearCacheForProcess(
+            render_process_host->GetID());
+      }
+    }
 
 #if BUILDFLAG(ENABLE_NACL)
     base::PostTask(

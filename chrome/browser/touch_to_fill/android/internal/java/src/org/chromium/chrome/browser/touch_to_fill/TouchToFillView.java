@@ -85,7 +85,7 @@ class TouchToFillView implements BottomSheetContent {
         if (isVisible) {
             mBottomSheetController.addObserver(mBottomSheetObserver);
             mBottomSheetController.requestShowContent(this, true);
-        } else if (mBottomSheetController.isSheetOpen()) {
+        } else {
             mBottomSheetController.hideContent(this, true);
         }
     }
@@ -147,8 +147,8 @@ class TouchToFillView implements BottomSheetContent {
     @Override
     public float getHalfHeightRatio() {
         return Math.min(mContext.getResources().getDimensionPixelSize(getDesiredSheetHeight()),
-                       (int) mBottomSheetController.getContainerHeight())
-                / mBottomSheetController.getContainerHeight();
+                       mBottomSheetController.getContainerHeight())
+                / (float) mBottomSheetController.getContainerHeight();
     }
 
     @Override

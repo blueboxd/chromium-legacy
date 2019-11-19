@@ -68,18 +68,18 @@ static inline double MultiplyZeroAlwaysGivesZero(AnimationTimeDelta x,
 
 // https://drafts.csswg.org/web-animations-1/#animation-effect-phases-and-states
 static inline Timing::Phase CalculatePhase(double active_duration,
-                                           double local_time,
+                                           base::Optional<double> local_time,
                                            Timing::AnimationDirection direction,
                                            const Timing& specified) {
   DCHECK_GE(active_duration, 0);
-  if (IsNull(local_time))
+  if (!local_time)
     return Timing::kPhaseNone;
   double end_time = std::max(
       specified.start_delay + active_duration + specified.end_delay, 0.0);
   double before_active_boundary_time =
       std::max(std::min(specified.start_delay, end_time), 0.0);
-  if (local_time < before_active_boundary_time ||
-      (local_time == before_active_boundary_time &&
+  if (local_time.value() < before_active_boundary_time ||
+      (local_time.value() == before_active_boundary_time &&
        direction == Timing::AnimationDirection::kBackwards)) {
     return Timing::kPhaseBefore;
   }
@@ -97,7 +97,7 @@ static inline Timing::Phase CalculatePhase(double active_duration,
 static inline base::Optional<AnimationTimeDelta> CalculateActiveTime(
     double active_duration,
     Timing::FillMode fill_mode,
-    double local_time,
+    base::Optional<double> local_time,
     Timing::Phase phase,
     const Timing& specified) {
   DCHECK_GE(active_duration, 0);
@@ -106,23 +106,26 @@ static inline base::Optional<AnimationTimeDelta> CalculateActiveTime(
     case Timing::kPhaseBefore:
       if (fill_mode == Timing::FillMode::BACKWARDS ||
           fill_mode == Timing::FillMode::BOTH) {
+        DCHECK(local_time.has_value());
         return AnimationTimeDelta::FromSecondsD(
-            std::max(local_time - specified.start_delay, 0.0));
+            std::max(local_time.value() - specified.start_delay, 0.0));
       }
       return base::nullopt;
     case Timing::kPhaseActive:
-      return AnimationTimeDelta::FromSecondsD(local_time -
+      DCHECK(local_time.has_value());
+      return AnimationTimeDelta::FromSecondsD(local_time.value() -
                                               specified.start_delay);
     case Timing::kPhaseAfter:
       if (fill_mode == Timing::FillMode::FORWARDS ||
           fill_mode == Timing::FillMode::BOTH) {
+        DCHECK(local_time.has_value());
         return AnimationTimeDelta::FromSecondsD(std::max(
-            0.0,
-            std::min(active_duration, local_time - specified.start_delay)));
+            0.0, std::min(active_duration,
+                          local_time.value() - specified.start_delay)));
       }
       return base::nullopt;
     case Timing::kPhaseNone:
-      DCHECK(IsNull(local_time));
+      DCHECK(!local_time.has_value());
       return base::nullopt;
     default:
       NOTREACHED();

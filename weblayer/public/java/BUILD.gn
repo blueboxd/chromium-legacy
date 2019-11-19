@@ -29,7 +29,6 @@ android_library("java") {
     "org/chromium/weblayer/DownloadCallback.java",
     "org/chromium/weblayer/ErrorPageCallback.java",
     "org/chromium/weblayer/FullscreenCallback.java",
-    "org/chromium/weblayer/ListenableFuture.java",
     "org/chromium/weblayer/ListenableResult.java",
     "org/chromium/weblayer/LoadError.java",
     "org/chromium/weblayer/NavigationCallback.java",

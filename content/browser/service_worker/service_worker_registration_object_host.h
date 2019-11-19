@@ -59,7 +59,9 @@ class CONTENT_EXPORT ServiceWorkerRegistrationObjectHost
   void OnUpdateFound(ServiceWorkerRegistration* registration) override;
 
   // Implements blink::mojom::ServiceWorkerRegistrationObjectHost.
-  void Update(UpdateCallback callback) override;
+  void Update(blink::mojom::FetchClientSettingsObjectPtr
+                  outside_fetch_client_settings_object,
+              UpdateCallback callback) override;
   void Unregister(UnregisterCallback callback) override;
   void EnableNavigationPreload(
       bool enable,

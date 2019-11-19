@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.browserservices.trustedwebactivityui.view.Tru
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabStatusBarColorProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
+import org.chromium.chrome.browser.customtabs.ExternalIntentsPolicyProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.features.ImmersiveModeController;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
@@ -56,6 +57,7 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
             CurrentPageVerifier currentPageVerifier,
             Verifier verifier,
             CustomTabActivityNavigationController navigationController,
+            ExternalIntentsPolicyProvider externalIntentsPolicyProvider,
             Lazy<TwaSplashController> splashController,
             CustomTabIntentDataProvider intentDataProvider,
             TrustedWebActivityUmaRecorder umaRecorder,
@@ -77,6 +79,9 @@ public class TrustedWebActivityCoordinator implements InflationObserver {
 
         navigationController.setLandingPageOnCloseCriterion(
                 verifier::wasPreviouslyVerified);
+        externalIntentsPolicyProvider.setPolicyCriteria(
+                verifier::shouldIgnoreExternalIntentHandlers);
+
         initSplashScreen(splashController, intentDataProvider, umaRecorder);
 
         currentPageVerifier.addVerificationObserver(this::onVerificationUpdate);

@@ -109,6 +109,7 @@ WebFormElementObserver* WebFormElementObserver::Create(
     WebFormElement& element,
     base::OnceClosure callback) {
   return MakeGarbageCollected<WebFormElementObserverImpl>(
+      util::PassKey<WebFormElementObserver>(),
       *element.Unwrap<HTMLFormElement>(), std::move(callback));
 }
 
@@ -116,10 +117,12 @@ WebFormElementObserver* WebFormElementObserver::Create(
     WebFormControlElement& element,
     base::OnceClosure callback) {
   return MakeGarbageCollected<WebFormElementObserverImpl>(
-      *element.Unwrap<HTMLElement>(), std::move(callback));
+      util::PassKey<WebFormElementObserver>(), *element.Unwrap<HTMLElement>(),
+      std::move(callback));
 }
 
 WebFormElementObserverImpl::WebFormElementObserverImpl(
+    util::PassKey<WebFormElementObserver>,
     HTMLElement& element,
     base::OnceClosure callback)
     : self_keep_alive_(PERSISTENT_FROM_HERE, this) {

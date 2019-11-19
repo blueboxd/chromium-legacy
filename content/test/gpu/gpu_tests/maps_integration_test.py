@@ -86,8 +86,6 @@ class MapsIntegrationTest(
             { timeout : 10000 })''')
     action_runner.WaitForJavaScriptCondition('window.testCompleted', timeout=30)
 
-    if not tab.screenshot_supported:
-      self.fail('Browser does not support screenshot capture')
     screenshot = tab.Screenshot(5)
     if screenshot is None:
       self.fail('Could not capture screenshot')

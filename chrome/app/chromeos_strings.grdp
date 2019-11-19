@@ -3234,6 +3234,18 @@
   <message name="IDS_PRINT_JOB_DOOR_OPEN_NOTIFICATION_TITLE" desc="Title of the error printing notification.">
     Printer door open
   </message>
+  <message name="IDS_PRINT_JOB_PRINTER_UNREACHABLE_NOTIFICATION_TITLE" desc="Title of the error printing notification.">
+    Can’t connect to printer
+  </message>
+  <message name="IDS_PRINT_JOB_TRAY_MISSING_NOTIFICATION_TITLE" desc="Title of the error printing notification.">
+    A paper tray is missing
+  </message>
+  <message name="IDS_PRINT_JOB_OUTPUT_FULL_NOTIFICATION_TITLE" desc="Title of the error printing notification.">
+    Output tray is full
+  </message>
+  <message name="IDS_PRINT_JOB_STOPPED_NOTIFICATION_TITLE" desc="Title of the error printing notification.">
+    Printer has stopped
+  </message>
   <message name="IDS_PRINT_JOB_NOTIFICATION_MESSAGE" desc="Message of the print job notification.">
     <ph name="PAGE_NUMBER">$1<ex>5</ex></ph> pages to <ph name="PRINTER_NAME">$2<ex>printer</ex></ph>
   </message>

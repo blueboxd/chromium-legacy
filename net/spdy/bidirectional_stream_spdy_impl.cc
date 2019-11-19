@@ -282,6 +282,10 @@ void BidirectionalStreamSpdyImpl::OnClose(int status) {
     OnDataSent();
 }
 
+bool BidirectionalStreamSpdyImpl::CanGreaseFrameType() const {
+  return false;
+}
+
 NetLogSource BidirectionalStreamSpdyImpl::source_dependency() const {
   return source_dependency_;
 }

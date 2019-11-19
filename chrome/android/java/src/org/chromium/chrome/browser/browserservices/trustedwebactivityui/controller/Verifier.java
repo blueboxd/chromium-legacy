@@ -56,4 +56,13 @@ public interface Verifier {
      */
     @Nullable
     String getVerifiedScope(String url);
+
+    /**
+     * Whether a navigation to the given URL should stay within Chrome even if there are other apps
+     * on the user's device that can handle them.
+     *
+     * When in a TWA/WebAPK/etc we are already in an Android app specialized for the verified
+     * origin, don't allow other apps to steal a navigation to the verified origin.
+     */
+    boolean shouldIgnoreExternalIntentHandlers(String url);
 }

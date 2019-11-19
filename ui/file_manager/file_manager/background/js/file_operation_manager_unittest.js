@@ -147,6 +147,14 @@ class FakeVolumeManager {
   getVolumeInfo(entry) {
     return {volumeId: entry.filesystem.name};
   }
+  /**
+   * Return fake location info.
+   * @param {!Entry} entry
+   * @return {?EntryLocation}
+   */
+  getLocationInfo(entry) {
+    return null;
+  }
 }
 
 /**
@@ -738,6 +746,9 @@ function testCopyFails(callback) {
     /* Mocking volume manager. */
     getVolumeInfo: function() {
       // Returns null to indicate that the volume is not available.
+      return null;
+    },
+    getLocationInfo: function() {
       return null;
     }
   };

@@ -11521,6 +11521,7 @@ Called by update_net_error_codes.py.-->
   <int value="529697949" label="CPP_EH_EXCEPTION"/>
   <int value="533692099" label="STATUS_GUARD_PAGE_VIOLATION"/>
   <int value="536870904" label="Out of Memory"/>
+  <int value="1066598274" label="DelayLoad_ModuleNotFound"/>
   <int value="1073740760" label="STATUS_INVALID_IMAGE_HASH"/>
   <int value="1073740791" label="STATUS_STACK_BUFFER_OVERRUN"/>
   <int value="1073740940" label="STATUS_HEAP_CORRUPTION"/>

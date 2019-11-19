@@ -40,6 +40,10 @@ void ClosingDelegate::OnClose(int status) {
   // The |stream_| may still be alive (if it is our delegate).
 }
 
+bool ClosingDelegate::CanGreaseFrameType() const {
+  return false;
+}
+
 NetLogSource ClosingDelegate::source_dependency() const {
   return NetLogSource();
 }
@@ -81,6 +85,10 @@ void StreamDelegateBase::OnClose(int status) {
   stream_id_ = stream_->stream_id();
   stream_.reset();
   callback_.callback().Run(status);
+}
+
+bool StreamDelegateBase::CanGreaseFrameType() const {
+  return false;
 }
 
 NetLogSource StreamDelegateBase::source_dependency() const {

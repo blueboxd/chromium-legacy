@@ -1284,7 +1284,7 @@
         },
         "*": {
           "installation_mode": "blocked",
-          "blocked_permissions": ["downloads", "bookmarks"],
+          "blocked_permissions": ["downloads", "bookmarks", "u2fDevices"],
           "install_sources": ["http://company-intranet/chromeapps"],
           "allowed_types": ["hosted_app"]
         }

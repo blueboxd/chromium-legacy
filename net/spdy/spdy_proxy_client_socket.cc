@@ -521,6 +521,10 @@ void SpdyProxyClientSocket::OnClose(int status)  {
     std::move(write_callback).Run(ERR_CONNECTION_CLOSED);
 }
 
+bool SpdyProxyClientSocket::CanGreaseFrameType() const {
+  return false;
+}
+
 NetLogSource SpdyProxyClientSocket::source_dependency() const {
   return source_dependency_;
 }

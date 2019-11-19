@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
-#include "third_party/blink/public/web/modules/peerconnection/peer_connection_dependency_factory.h"
+#include "third_party/blink/renderer/modules/peerconnection/peer_connection_dependency_factory.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
 #include "third_party/webrtc/rtc_base/rtc_certificate.h"

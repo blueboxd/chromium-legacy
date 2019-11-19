@@ -60,8 +60,8 @@ WebRemoteFrame* WebRemoteFrame::Create(
     WebRemoteFrameClient* client,
     InterfaceRegistry* interface_registry,
     AssociatedInterfaceProvider* associated_interface_provider) {
-  return WebRemoteFrameImpl::Create(scope, client, interface_registry,
-                                    associated_interface_provider);
+  return MakeGarbageCollected<WebRemoteFrameImpl>(
+      scope, client, interface_registry, associated_interface_provider);
 }
 
 WebRemoteFrame* WebRemoteFrame::CreateMainFrame(
@@ -84,16 +84,6 @@ WebRemoteFrame* WebRemoteFrame::CreateForPortal(
   return WebRemoteFrameImpl::CreateForPortal(scope, client, interface_registry,
                                              associated_interface_provider,
                                              portal_element);
-}
-
-WebRemoteFrameImpl* WebRemoteFrameImpl::Create(
-    WebTreeScopeType scope,
-    WebRemoteFrameClient* client,
-    InterfaceRegistry* interface_registry,
-    AssociatedInterfaceProvider* associated_interface_provider) {
-  WebRemoteFrameImpl* frame = MakeGarbageCollected<WebRemoteFrameImpl>(
-      scope, client, interface_registry, associated_interface_provider);
-  return frame;
 }
 
 WebRemoteFrameImpl* WebRemoteFrameImpl::CreateMainFrame(
@@ -127,7 +117,7 @@ WebRemoteFrameImpl* WebRemoteFrameImpl::CreateForPortal(
     InterfaceRegistry* interface_registry,
     AssociatedInterfaceProvider* associated_interface_provider,
     const WebElement& portal_element) {
-  WebRemoteFrameImpl* frame = MakeGarbageCollected<WebRemoteFrameImpl>(
+  auto* frame = MakeGarbageCollected<WebRemoteFrameImpl>(
       scope, client, interface_registry, associated_interface_provider);
 
   Element* element = portal_element;
@@ -195,8 +185,8 @@ WebLocalFrame* WebRemoteFrameImpl::CreateLocalChild(
     const WebFrameOwnerProperties& frame_owner_properties,
     FrameOwnerElementType frame_owner_element_type,
     WebFrame* opener) {
-  auto* child = MakeGarbageCollected<WebLocalFrameImpl>(scope, client,
-                                                        interface_registry);
+  auto* child = MakeGarbageCollected<WebLocalFrameImpl>(
+      util::PassKey<WebRemoteFrameImpl>(), scope, client, interface_registry);
   child->SetOpener(opener);
   InsertAfter(child, previous_sibling);
   auto* owner = MakeGarbageCollected<RemoteFrameOwner>(
@@ -230,7 +220,7 @@ WebRemoteFrame* WebRemoteFrameImpl::CreateRemoteChild(
     blink::InterfaceRegistry* interface_registry,
     AssociatedInterfaceProvider* associated_interface_provider,
     WebFrame* opener) {
-  WebRemoteFrameImpl* child = WebRemoteFrameImpl::Create(
+  auto* child = MakeGarbageCollected<WebRemoteFrameImpl>(
       scope, client, interface_registry, associated_interface_provider);
   child->SetOpener(opener);
   AppendChild(child);

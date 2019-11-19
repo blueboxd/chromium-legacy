@@ -109,6 +109,10 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       case NativeTheme::kColorId_SeparatorColor:
         return SkColorSetA(gfx::kGoogleGrey800, 0xCC);
 
+      // TabbedPane
+      case NativeTheme::kColorId_TabTitleColorActive:
+        return gfx::kGoogleBlue300;
+
       // Table
       case NativeTheme::kColorId_TableBackground:
         return color_utils::AlphaBlend(SK_ColorWHITE, gfx::kGoogleGrey900,
@@ -262,11 +266,21 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
 
     // TabbedPane
     case NativeTheme::kColorId_TabTitleColorActive:
-      return SkColorSetRGB(0x42, 0x85, 0xF4);
-    case NativeTheme::kColorId_TabTitleColorInactive:
-      return SkColorSetRGB(0x75, 0x75, 0x75);
-    case NativeTheme::kColorId_TabBottomBorder:
-      return SkColorSetA(SK_ColorBLACK, 0x1E);
+      return gfx::kGoogleBlue600;
+    case NativeTheme::kColorId_TabTitleColorInactive: {
+      const SkColor bg = base_theme->GetSystemColor(
+          NativeTheme::kColorId_DialogBackground, color_scheme);
+      const SkColor fg = base_theme->GetSystemColor(
+          NativeTheme::kColorId_LabelEnabledColor, color_scheme);
+      return color_utils::BlendForMinContrast(gfx::kGoogleGrey600, bg, fg)
+          .color;
+    }
+    case NativeTheme::kColorId_TabBottomBorder: {
+      const SkColor bg = base_theme->GetSystemColor(
+          NativeTheme::kColorId_DialogBackground, color_scheme);
+      return color_utils::BlendForMinContrast(bg, bg, base::nullopt, 1.67f)
+          .color;
+    }
 
     // Textfield
     case NativeTheme::kColorId_TextfieldDefaultColor:
@@ -288,10 +302,16 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       return kTextSelectionBackgroundFocused;
 
     // Tooltip
-    case NativeTheme::kColorId_TooltipBackground:
-      return SkColorSetA(SK_ColorBLACK, 0xCC);
-    case NativeTheme::kColorId_TooltipText:
-      return SkColorSetA(SK_ColorWHITE, 0xDE);
+    case NativeTheme::kColorId_TooltipBackground: {
+      const SkColor bg = base_theme->GetSystemColor(
+          NativeTheme::kColorId_WindowBackground, color_scheme);
+      return SkColorSetA(color_utils::GetColorWithMaxContrast(bg), 0xE9);
+    }
+    case NativeTheme::kColorId_TooltipText: {
+      const SkColor bg = base_theme->GetSystemColor(
+          NativeTheme::kColorId_TooltipBackground, color_scheme);
+      return SkColorSetA(color_utils::GetColorWithMaxContrast(bg), 0xDE);
+    }
 
     // Tree
     case NativeTheme::kColorId_TreeBackground:

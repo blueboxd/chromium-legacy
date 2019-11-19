@@ -6,8 +6,8 @@ This document describes how files under `platform/loader/` are organized.
 
 Contains Cross-Origin Resource Sharing (CORS) related files. Some functions
 in this directory will be removed once CORS support is moved to
-//services/network. Please contact {kinuko,tyoshino,toyoshim}@chromium.org when
-you need to depend on this directory from new code.
+//services/network. Please contact {kinuko,toyoshim}@chromium.org when you need
+to depend on this directory from new code.
 
 ## fetch
 

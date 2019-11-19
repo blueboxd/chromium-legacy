@@ -5,6 +5,7 @@
 module blink.mojom;
 
 import "third_party/blink/public/mojom/script/script_type.mojom";
+import "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom";
 import "third_party/blink/public/mojom/service_worker/navigation_preload_state.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_object.mojom";
@@ -68,7 +69,8 @@ interface ServiceWorkerRegistrationObjectHost {
   // Corresponds to ServiceWorkerRegistration#update().
   // On success, |error| is kNone without |error_msg| set.
   // Otherwise, |error| and |error_msg| describe the failure.
-  Update() => (ServiceWorkerErrorType error, string? error_msg);
+  Update(FetchClientSettingsObject outside_fetch_client_settings_object)
+    => (ServiceWorkerErrorType error, string? error_msg);
 
   // Corresponds to ServiceWorkerRegistration#unregister().
   // On success, |error| is kNone without |error_msg| set.

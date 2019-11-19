@@ -648,10 +648,8 @@ cca.util.ScrollTracker.prototype.probe_ = function() {
   var scrollLeft = this.scroller_.scrollLeft;
   var scrollTop = this.scroller_.scrollTop;
 
-  var scrollChanged =
-      scrollLeft !== this.lastScrollPosition_[0] ||
-      scrollTop !== this.lastScrollPosition_[1] ||
-      this.scroller_.animating;
+  var scrollChanged = scrollLeft !== this.lastScrollPosition_[0] ||
+      scrollTop !== this.lastScrollPosition_[1] || this.scroller_.animating;
 
   if (scrollChanged) {
     if (!this.scrolling_) {
@@ -966,4 +964,14 @@ cca.util.scalePicture = function(url, isVideo, width, height = undefined) {
           }, 'image/jpeg');
         });
       });
+};
+
+/**
+ * Toggle checked value of element.
+ * @param {!HTMLInputElement} element
+ * @param {boolean} checked
+ */
+cca.util.toggleChecked = function(element, checked) {
+  element.checked = checked;
+  element.dispatchEvent(new Event('change'));
 };

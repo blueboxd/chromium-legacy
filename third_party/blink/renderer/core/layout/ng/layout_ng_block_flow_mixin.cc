@@ -277,6 +277,14 @@ void LayoutNGBlockFlowMixin<Base>::SetPaintFragment(
 
 template <typename Base>
 void LayoutNGBlockFlowMixin<Base>::Paint(const PaintInfo& paint_info) const {
+  // Avoid painting dirty objects because descendants maybe already destroyed.
+  if (UNLIKELY(Base::NeedsLayout() &&
+               !Base::LayoutBlockedByDisplayLock(
+                   DisplayLockLifecycleTarget::kChildren))) {
+    NOTREACHED();
+    return;
+  }
+
   if (UNLIKELY(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())) {
     if (const NGPhysicalBoxFragment* fragment = CurrentFragment()) {
       if (fragment->HasItems()) {

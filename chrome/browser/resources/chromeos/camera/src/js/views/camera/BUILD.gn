@@ -14,6 +14,7 @@ js_type_check("compile_resources") {
   deps = [
     ":layout",
     ":modes",
+    ":options",
     ":recordtime",
     ":review_result",
   ]
@@ -30,16 +31,26 @@ js_library("modes") {
   deps = [
     ":recordtime",
     "../..:sound",
-    "../..:type",
     "../..:toast",
+    "../..:type",
     "../..:type",
     "../..:util",
     "../../device:constraints_preferrer",
-    "../../models:video_saver",
-    "../../models:filesystem",
     "../../models:filenamer",
+    "../../models:filesystem",
+    "../../models:video_saver",
     "../../mojo:image_capture",
     "//media/capture/video/chromeos/mojom:cros_camera_js_library_for_compile",
+  ]
+}
+
+js_library("options") {
+  deps = [
+    "../..:nav",
+    "../..:type",
+    "../..:util",
+    "../../device:device_info_updater",
+    "//components/chromeos_camera/common:camera_app_helper_js_library_for_compile",
   ]
 }
 

@@ -422,10 +422,13 @@ void ServiceWorkerContextCore::UpdateServiceWorker(
     ServiceWorkerRegistration* registration,
     bool force_bypass_cache,
     bool skip_script_comparison,
+    blink::mojom::FetchClientSettingsObjectPtr
+        outside_fetch_client_settings_object,
     UpdateCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   job_coordinator_->Update(
       registration, force_bypass_cache, skip_script_comparison,
+      std::move(outside_fetch_client_settings_object),
       base::BindOnce(&ServiceWorkerContextCore::UpdateComplete, AsWeakPtr(),
                      std::move(callback)));
 }

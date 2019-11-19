@@ -43,6 +43,7 @@
 #include "chrome/browser/ui/apps/app_info_dialog.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
+#include "chrome/browser/ui/ash/launcher/app_service_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/app_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
@@ -254,6 +255,15 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
   if (SessionControllerClientImpl::IsMultiProfileAvailable()) {
     user_switch_observer_.reset(
         new ChromeLauncherControllerUserSwitchObserver(this));
+  }
+
+  bool app_service_enabled =
+      base::FeatureList::IsEnabled(features::kAppServiceInstanceRegistry);
+
+  if (app_service_enabled) {
+    app_window_controllers_.push_back(
+        std::make_unique<AppServiceAppWindowLauncherController>(this));
+    return;
   }
 
   std::unique_ptr<AppWindowLauncherController> extension_app_window_controller;

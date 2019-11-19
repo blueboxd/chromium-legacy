@@ -127,7 +127,7 @@ class FaviconServiceImpl : public FaviconService {
   void ClearUnableToDownloadFavicons() override;
 
  private:
-  typedef uint32_t MissingFaviconURLHash;
+  using MissingFaviconURLHash = size_t;
 
   // Helper function for GetFaviconImageForPageURL(), GetRawFaviconForPageURL()
   // and GetFaviconForPageURL().

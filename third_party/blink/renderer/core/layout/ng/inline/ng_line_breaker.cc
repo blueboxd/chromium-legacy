@@ -1427,15 +1427,18 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
 
   // TODO(ikilpatrick): Add support for float break tokens inside an inline
   // layout context.
-  NGUnpositionedFloat unpositioned_float(
-      NGBlockNode(ToLayoutBox(item.GetLayoutObject())),
-      /* break_token */ nullptr);
-
-  LayoutUnit inline_margin_size =
-      ComputeMarginBoxInlineSizeForUnpositionedFloat(
-          constraint_space_, node_.Style(), &unpositioned_float);
 
   LayoutUnit bfc_block_offset = line_opportunity_.bfc_block_offset;
+  NGUnpositionedFloat unpositioned_float(
+      NGBlockNode(ToLayoutBox(item.GetLayoutObject())),
+      /* break_token */ nullptr, constraint_space_.AvailableSize(),
+      constraint_space_.PercentageResolutionSize(),
+      constraint_space_.ReplacedPercentageResolutionSize(),
+      {constraint_space_.BfcOffset().line_offset, bfc_block_offset},
+      constraint_space_, node_.Style());
+
+  LayoutUnit inline_margin_size =
+      ComputeMarginBoxInlineSizeForUnpositionedFloat(&unpositioned_float);
 
   LayoutUnit used_size = position_ + inline_margin_size +
                          ComputeFloatAncestorInlineEndSize(
@@ -1468,14 +1471,8 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
   if (HasUnpositionedFloats(line_info->Results()) || float_after_line) {
     item_result->has_unpositioned_floats = true;
   } else {
-    NGPositionedFloat positioned_float = PositionFloat(
-        constraint_space_.AvailableSize(),
-        constraint_space_.PercentageResolutionSize(),
-        constraint_space_.ReplacedPercentageResolutionSize(),
-        {constraint_space_.BfcOffset().line_offset, bfc_block_offset},
-        &unpositioned_float, constraint_space_, node_.Style(),
-        exclusion_space_);
-
+    NGPositionedFloat positioned_float =
+        PositionFloat(&unpositioned_float, exclusion_space_);
     item_result->positioned_float = positioned_float;
 
     NGLayoutOpportunity opportunity = exclusion_space_->FindLayoutOpportunity(

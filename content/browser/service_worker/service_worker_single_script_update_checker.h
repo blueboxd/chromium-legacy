@@ -100,6 +100,7 @@ class CONTENT_EXPORT ServiceWorkerSingleScriptUpdateChecker
   // imported.
   ServiceWorkerSingleScriptUpdateChecker(
       const GURL& script_url,
+      const GURL& referrer,
       bool is_main_script,
       const GURL& main_script_url,
       const GURL& scope,

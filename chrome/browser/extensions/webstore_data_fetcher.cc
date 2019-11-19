@@ -77,8 +77,8 @@ void WebstoreDataFetcher::Start(
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = webstore_data_url;
-  resource_request->load_flags =
-      net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DISABLE_CACHE;
+  resource_request->load_flags = net::LOAD_DISABLE_CACHE;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request->referrer = referrer_url_;
   resource_request->method = "GET";
   simple_url_loader_ = network::SimpleURLLoader::Create(

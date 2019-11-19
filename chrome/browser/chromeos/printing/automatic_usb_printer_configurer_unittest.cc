@@ -12,6 +12,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/chromeos/printing/printers_map.h"
+#include "chrome/browser/chromeos/printing/test_printer_configurer.h"
 #include "chrome/browser/chromeos/printing/usb_printer_notification_controller.h"
 #include "chrome/common/chrome_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -110,30 +111,6 @@ class FakePrinterInstallationManager : public PrinterInstallationManager {
   base::flat_set<std::string> installed_printers_;
 };
 
-class FakePrinterConfigurer : public PrinterConfigurer {
- public:
-  FakePrinterConfigurer() = default;
-
-  // PrinterConfigurer overrides
-  void SetUpPrinter(const Printer& printer,
-                    PrinterSetupCallback callback) override {
-    MarkConfigured(printer.id());
-    std::move(callback).Run(PrinterSetupResult::kSuccess);
-  }
-
-  // Manipulation functions
-  bool IsConfigured(const std::string& printer_id) const {
-    return configured_printers_.contains(printer_id);
-  }
-
-  void MarkConfigured(const std::string& printer_id) {
-    configured_printers_.insert(printer_id);
-  }
-
- private:
-  base::flat_set<std::string> configured_printers_;
-};
-
 class FakeUsbPrinterNotificationController
     : public UsbPrinterNotificationController {
  public:
@@ -171,7 +148,7 @@ class AutomaticUsbPrinterConfigurerTest : public testing::Test {
         features::kStreamlinedUsbPrinterSetup);
     fake_installation_manager_ =
         std::make_unique<FakePrinterInstallationManager>();
-    auto printer_configurer = std::make_unique<FakePrinterConfigurer>();
+    auto printer_configurer = std::make_unique<TestPrinterConfigurer>();
     fake_printer_configurer_ = printer_configurer.get();
     fake_notification_controller_ =
         std::make_unique<FakeUsbPrinterNotificationController>();
@@ -189,7 +166,7 @@ class AutomaticUsbPrinterConfigurerTest : public testing::Test {
 
  protected:
   FakeObservablePrintersManager fake_observable_printers_manager_;
-  FakePrinterConfigurer* fake_printer_configurer_;  // not owned.
+  TestPrinterConfigurer* fake_printer_configurer_;  // not owned.
   std::unique_ptr<FakePrinterInstallationManager> fake_installation_manager_;
   std::unique_ptr<FakeUsbPrinterNotificationController>
       fake_notification_controller_;

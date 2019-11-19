@@ -542,9 +542,6 @@ std::unique_ptr<api::tabs::MutedInfo> ExtensionTabUtil::CreateMutedInfo(
     case TabMutedReason::CONTEXT_MENU:
       info->reason = api::tabs::MUTED_INFO_REASON_USER;
       break;
-    case TabMutedReason::MEDIA_CAPTURE:
-      info->reason = api::tabs::MUTED_INFO_REASON_CAPTURE;
-      break;
     case TabMutedReason::EXTENSION:
       info->reason = api::tabs::MUTED_INFO_REASON_EXTENSION;
       info->extension_id = std::make_unique<std::string>(

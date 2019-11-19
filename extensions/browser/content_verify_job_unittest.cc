@@ -71,17 +71,18 @@ void WriteComputedHashes(
     const base::FilePath& extension_root,
     const std::map<base::FilePath, std::string>& contents) {
   int block_size = extension_misc::kContentVerificationDefaultBlockSize;
-  ComputedHashes::Writer computed_hashes_writer;
+  ComputedHashes::Data computed_hashes_data;
 
   for (const auto& resource : contents) {
     std::vector<std::string> hashes =
         ComputedHashes::GetHashesForContent(resource.second, block_size);
-    computed_hashes_writer.AddHashes(resource.first, block_size, hashes);
+    computed_hashes_data.AddHashes(resource.first, block_size, hashes);
   }
 
   base::CreateDirectory(extension_root.Append(kMetadataFolder));
-  ASSERT_TRUE(computed_hashes_writer.WriteToFile(
-      file_util::GetComputedHashesPath(extension_root)));
+  ASSERT_TRUE(
+      ComputedHashes(std::move(computed_hashes_data))
+          .WriteToFile(file_util::GetComputedHashesPath(extension_root)));
 }
 
 }  // namespace
@@ -357,16 +358,17 @@ void WriteIncorrectComputedHashes(const base::FilePath& extension_path,
                    false /* recursive */);
 
   int block_size = extension_misc::kContentVerificationDefaultBlockSize;
-  ComputedHashes::Writer incorrect_computed_hashes_writer;
+  ComputedHashes::Data incorrect_computed_hashes_data;
 
   // Write a valid computed_hashes.json with incorrect hash for |resource_path|.
   const std::string kFakeContents = "fake contents";
   std::vector<std::string> hashes =
       ComputedHashes::GetHashesForContent(kFakeContents, block_size);
-  incorrect_computed_hashes_writer.AddHashes(resource_path, block_size, hashes);
+  incorrect_computed_hashes_data.AddHashes(resource_path, block_size, hashes);
 
-  ASSERT_TRUE(incorrect_computed_hashes_writer.WriteToFile(
-      file_util::GetComputedHashesPath(extension_path)));
+  ASSERT_TRUE(
+      ComputedHashes(std::move(incorrect_computed_hashes_data))
+          .WriteToFile(file_util::GetComputedHashesPath(extension_path)));
 }
 
 void WriteEmptyComputedHashes(const base::FilePath& extension_path) {
@@ -379,10 +381,11 @@ void WriteEmptyComputedHashes(const base::FilePath& extension_path) {
   base::DeleteFile(file_util::GetComputedHashesPath(extension_path),
                    false /* recursive */);
 
-  ComputedHashes::Writer incorrect_computed_hashes_writer;
+  ComputedHashes::Data incorrect_computed_hashes_data;
 
-  ASSERT_TRUE(incorrect_computed_hashes_writer.WriteToFile(
-      file_util::GetComputedHashesPath(extension_path)));
+  ASSERT_TRUE(
+      ComputedHashes(std::move(incorrect_computed_hashes_data))
+          .WriteToFile(file_util::GetComputedHashesPath(extension_path)));
 }
 
 }  // namespace

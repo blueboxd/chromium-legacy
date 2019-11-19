@@ -39,6 +39,8 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/test_data_directory.h"
 #include "services/device/public/cpp/test/fake_sensor_and_provider.h"
 #include "services/device/public/cpp/test/scoped_geolocation_overrider.h"
 #include "services/device/public/mojom/constants.mojom.h"
@@ -2376,6 +2378,43 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, FetchWhileStoring) {
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   delete_observer_rfh_a.WaitUntilDeleted();
+}
+
+// Disabled on Android, since we have problems starting up the websocket test
+// server in the host
+#if defined(OS_ANDROID)
+#define MAYBE_WebSocketNotCached DISABLED_WebSocketNotCached
+#else
+#define MAYBE_WebSocketNotCached WebSocketNotCached
+#endif
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, MAYBE_WebSocketNotCached) {
+  net::SpawnedTestServer ws_server(net::SpawnedTestServer::TYPE_WS,
+                                   net::GetWebSocketTestDataDirectory());
+  ASSERT_TRUE(ws_server.Start());
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  ASSERT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+
+  // Open a WebSocket.
+  const char script[] = R"(
+      new Promise(resolve => {
+        const socket = new WebSocket($1);
+        socket.addEventListener('open', () => resolve());
+      });)";
+  ASSERT_TRUE(ExecJs(
+      rfh_a, JsReplace(script, ws_server.GetURL("echo-with-no-extension"))));
+
+  // 2) Navigate to B.
+  ASSERT_TRUE(NavigateToURL(shell(), url_b));
+
+  EXPECT_TRUE(delete_observer_rfh_a.deleted());
 }
 
 // Only HTTP/HTTPS main document can enter the BackForwardCache.

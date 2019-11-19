@@ -172,8 +172,8 @@ class CameraDeviceDelegateTest : public ::testing::Test {
     cros::mojom::CameraMetadataPtr static_metadata =
         cros::mojom::CameraMetadata::New();
 
-    static_metadata->entry_count = 3;
-    static_metadata->entry_capacity = 3;
+    static_metadata->entry_count = 4;
+    static_metadata->entry_capacity = 4;
     static_metadata->entries =
         std::vector<cros::mojom::CameraMetadataEntryPtr>();
 

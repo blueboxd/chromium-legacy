@@ -26,5 +26,5 @@ dictionary NotificationOptions {
     boolean requireInteraction = false;
     any data = null;
     sequence<NotificationAction> actions = [];
-    [RuntimeEnabled=NotificationTriggers] TimestampTrigger showTrigger = null;
+    [RuntimeEnabled=NotificationTriggers] TimestampTrigger showTrigger;
 };

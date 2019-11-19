@@ -5868,3 +5868,8 @@ crbug.com/1025437 virtual/not-site-per-process/http/tests/devtools/debugger/fetc
 
 # Sheriff 2019-11-18
 crbug.com/1025944 [ Linux ] external/wpt/pointerevents/pointerlock/pointerevent_pointermove_on_chorded_mouse_button_when_locked.html [ Pass Failure ]
+
+# Sheriff 2019-11-19
+crbug.com/1025582 external/wpt/webdriver/tests/perform_actions/validity.py>>test_pause_positive_integer[pointer] [ Failure Pass ]
+crbug.com/1025582 external/wpt/webdriver/tests/perform_actions/validity.py>>test_pause_positive_integer[key] [ Failure Pass ]
+crbug.com/1025582 external/wpt/webdriver/tests/perform_actions/validity.py>>test_pause_positive_integer[none] [ Failure Pass ]

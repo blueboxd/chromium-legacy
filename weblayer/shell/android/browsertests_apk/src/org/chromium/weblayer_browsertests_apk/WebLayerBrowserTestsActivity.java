@@ -48,7 +48,7 @@ public class WebLayerBrowserTestsActivity extends NativeBrowserTestActivity {
                 });
 
         try {
-            WebLayer.create(getApplication()).addCallback((WebLayer webLayer) -> {
+            WebLayer.loadAsync(getApplication(), webLayer -> {
                 mWebLayer = webLayer;
                 createShell();
             });

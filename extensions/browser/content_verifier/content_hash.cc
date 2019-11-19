@@ -138,7 +138,7 @@ ContentHash::TreeHashVerificationResult ContentHash::VerifyTreeHashRoot(
   return TreeHashVerificationResult::SUCCESS;
 }
 
-const ComputedHashes::Reader& ContentHash::computed_hashes() const {
+const ComputedHashes& ContentHash::computed_hashes() const {
   DCHECK(succeeded_ && computed_hashes_);
   return *computed_hashes_;
 }
@@ -155,8 +155,8 @@ ContentHash::ContentHash(
     const ExtensionId& id,
     const base::FilePath& root,
     ContentVerifierDelegate::VerifierSourceType source_type,
-    std::unique_ptr<VerifiedContents> verified_contents,
-    std::unique_ptr<ComputedHashes::Reader> computed_hashes)
+    std::unique_ptr<const VerifiedContents> verified_contents,
+    std::unique_ptr<const ComputedHashes> computed_hashes)
     : extension_id_(id),
       extension_root_(root),
       source_type_(source_type),
@@ -374,7 +374,7 @@ bool ContentHash::CreateHashes(const base::FilePath& hashes_file,
 
   // Now iterate over all the paths in sorted order and compute the block hashes
   // for each one.
-  ComputedHashes::Writer writer;
+  ComputedHashes::Data computed_hashes_data;
   for (auto i = paths.begin(); i != paths.end(); ++i) {
     if (is_cancelled && is_cancelled.Run())
       return false;
@@ -387,9 +387,11 @@ bool ContentHash::CreateHashes(const base::FilePath& hashes_file,
     base::Optional<std::vector<std::string>> hashes =
         ComputeAndCheckResourceHash(full_path, relative_unix_path);
     if (hashes)
-      writer.AddHashes(relative_unix_path, block_size_, *hashes);
+      computed_hashes_data.AddHashes(relative_unix_path, block_size_,
+                                     std::move(hashes.value()));
   }
-  bool result = writer.WriteToFile(hashes_file);
+  bool result =
+      ComputedHashes(std::move(computed_hashes_data)).WriteToFile(hashes_file);
   UMA_HISTOGRAM_TIMES("ExtensionContentHashFetcher.CreateHashesTime",
                       timer.Elapsed());
 
@@ -428,15 +430,17 @@ void ContentHash::BuildComputedHashes(bool attempted_fetching_verified_contents,
   if (!will_create) {
     // Note: Tolerate for existing implementation.
     // Try to read and initialize the file first. On failure, continue creating.
-    auto computed_hashes = std::make_unique<ComputedHashes::Reader>();
-    if (!computed_hashes->InitFromFile(computed_hashes_path)) {
+    base::Optional<ComputedHashes> computed_hashes =
+        ComputedHashes::CreateFromFile(computed_hashes_path);
+    if (!computed_hashes) {
       // TODO(lazyboy): Also create computed_hashes.json in this case. See the
       // comment above about |will_create|.
       // will_create = true;
     } else {
       // Read successful.
       succeeded_ = true;
-      computed_hashes_ = std::move(computed_hashes);
+      computed_hashes_ =
+          std::make_unique<ComputedHashes>(std::move(computed_hashes.value()));
       return;
     }
   }
@@ -450,13 +454,15 @@ void ContentHash::BuildComputedHashes(bool attempted_fetching_verified_contents,
   if (!base::PathExists(computed_hashes_path))
     return;
 
-  auto computed_hashes = std::make_unique<ComputedHashes::Reader>();
-  if (!computed_hashes->InitFromFile(computed_hashes_path))
+  base::Optional<ComputedHashes> computed_hashes =
+      ComputedHashes::CreateFromFile(computed_hashes_path);
+  if (!computed_hashes)
     return;
 
   // Read successful.
   succeeded_ = true;
-  computed_hashes_ = std::move(computed_hashes);
+  computed_hashes_ =
+      std::make_unique<ComputedHashes>(std::move(computed_hashes.value()));
 }
 
 }  // namespace extensions

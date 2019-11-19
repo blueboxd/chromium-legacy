@@ -78,7 +78,7 @@ TEST(AnimationTimingCalculationsTest, ActiveTime) {
                                    Timing::kPhaseAfter, timing));
 
   // None
-  EXPECT_FALSE(CalculateActiveTime(32, Timing::FillMode::NONE, NullValue(),
+  EXPECT_FALSE(CalculateActiveTime(32, Timing::FillMode::NONE, base::nullopt,
                                    Timing::kPhaseNone, timing));
 }
 

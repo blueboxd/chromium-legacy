@@ -60,6 +60,18 @@ PdfAccessibilityImageInfo::PdfAccessibilityImageInfo(
 
 PdfAccessibilityImageInfo::~PdfAccessibilityImageInfo() = default;
 
+PdfAccessibilityHighlightInfo::PdfAccessibilityHighlightInfo() = default;
+
+PdfAccessibilityHighlightInfo::~PdfAccessibilityHighlightInfo() = default;
+
+PdfAccessibilityHighlightInfo::PdfAccessibilityHighlightInfo(
+    const PP_PrivateAccessibilityHighlightInfo& highlight)
+    : note_text(std::string(highlight.note_text, highlight.note_text_length)),
+      index_in_page(highlight.index_in_page),
+      text_run_index(highlight.text_run_index),
+      text_run_count(highlight.text_run_count),
+      bounds(highlight.bounds) {}
+
 PdfAccessibilityPageObjects::PdfAccessibilityPageObjects() = default;
 
 PdfAccessibilityPageObjects::PdfAccessibilityPageObjects(
@@ -72,6 +84,11 @@ PdfAccessibilityPageObjects::PdfAccessibilityPageObjects(
   images.reserve(page_objects.image_count);
   for (size_t i = 0; i < page_objects.image_count; i++) {
     images.emplace_back(page_objects.images[i]);
+  }
+
+  highlights.reserve(page_objects.highlight_count);
+  for (size_t i = 0; i < page_objects.highlight_count; i++) {
+    highlights.emplace_back(page_objects.highlights[i]);
   }
 }
 

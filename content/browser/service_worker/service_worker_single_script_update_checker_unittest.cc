@@ -122,9 +122,9 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
       network::TestURLLoaderFactory* loader_factory,
       base::Optional<CheckResult>* out_check_result) {
     return std::make_unique<ServiceWorkerSingleScriptUpdateChecker>(
-        GURL(url), url == main_script_url, GURL(main_script_url), scope,
-        force_bypass_cache, update_via_cache, time_since_last_check,
-        net::HttpRequestHeaders(),
+        GURL(url), GURL(main_script_url), url == main_script_url,
+        GURL(main_script_url), scope, force_bypass_cache, update_via_cache,
+        time_since_last_check, net::HttpRequestHeaders(),
         base::BindRepeating([](BrowserContext* context) { return context; },
                             browser_context_.get()),
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(

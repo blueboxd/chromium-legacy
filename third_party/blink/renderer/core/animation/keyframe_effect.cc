@@ -477,7 +477,7 @@ void KeyframeEffect::DetachTarget(Animation* animation) {
 
 AnimationTimeDelta KeyframeEffect::CalculateTimeToEffectChange(
     bool forwards,
-    double local_time,
+    base::Optional<double> local_time,
     double time_to_next_iteration) const {
   const double start_time = SpecifiedTiming().start_delay;
   const double end_time_minus_end_delay =
@@ -486,18 +486,20 @@ AnimationTimeDelta KeyframeEffect::CalculateTimeToEffectChange(
       end_time_minus_end_delay + SpecifiedTiming().end_delay;
   const double after_time = std::min(end_time_minus_end_delay, end_time);
 
-  switch (GetPhase()) {
+  Timing::Phase phase = GetPhase();
+  DCHECK(local_time || phase == Timing::kPhaseNone);
+  switch (phase) {
     case Timing::kPhaseNone:
       return AnimationTimeDelta::Max();
     case Timing::kPhaseBefore:
-      DCHECK_GE(start_time, local_time);
-      return forwards
-                 ? AnimationTimeDelta::FromSecondsD(start_time - local_time)
-                 : AnimationTimeDelta::Max();
+      DCHECK_GE(start_time, local_time.value());
+      return forwards ? AnimationTimeDelta::FromSecondsD(start_time -
+                                                         local_time.value())
+                      : AnimationTimeDelta::Max();
     case Timing::kPhaseActive:
       if (forwards) {
         // Need service to apply fill / fire events.
-        const double time_to_end = after_time - local_time;
+        const double time_to_end = after_time - local_time.value();
         if (RequiresIterationEvents()) {
           return AnimationTimeDelta::FromSecondsD(
               std::min(time_to_end, time_to_next_iteration));
@@ -506,16 +508,16 @@ AnimationTimeDelta KeyframeEffect::CalculateTimeToEffectChange(
       }
       return {};
     case Timing::kPhaseAfter:
-      DCHECK_GE(local_time, after_time);
+      DCHECK_GE(local_time.value(), after_time);
       if (forwards) {
         // If an animation has a positive-valued end delay, we need an
         // additional tick at the end time to ensure that the finished event is
         // delivered.
-        return end_time > local_time
-                   ? AnimationTimeDelta::FromSecondsD(end_time - local_time)
-                   : AnimationTimeDelta::Max();
+        return end_time > local_time ? AnimationTimeDelta::FromSecondsD(
+                                           end_time - local_time.value())
+                                     : AnimationTimeDelta::Max();
       }
-      return AnimationTimeDelta::FromSecondsD(local_time - after_time);
+      return AnimationTimeDelta::FromSecondsD(local_time.value() - after_time);
     default:
       NOTREACHED();
       return AnimationTimeDelta::Max();

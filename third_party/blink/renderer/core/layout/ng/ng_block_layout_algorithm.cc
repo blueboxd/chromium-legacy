@@ -979,7 +979,19 @@ void NGBlockLayoutAlgorithm::HandleFloat(
   DCHECK(!IsResumingLayout(child_break_token) ||
          container_builder_.BfcBlockOffset());
 
-  NGUnpositionedFloat unpositioned_float(child, child_break_token);
+  // If we don't have a BFC block-offset yet, the "expected" BFC block-offset
+  // is used to optimistically place floats.
+  NGBfcOffset origin_bfc_offset = {
+      ConstraintSpace().BfcOffset().line_offset +
+          border_scrollbar_padding_.LineLeft(ConstraintSpace().Direction()),
+      container_builder_.BfcBlockOffset()
+          ? NextBorderEdge(previous_inflow_position)
+          : ConstraintSpace().ExpectedBfcBlockOffset()};
+
+  NGUnpositionedFloat unpositioned_float(
+      child, child_break_token, child_available_size_, child_percentage_size_,
+      replaced_child_percentage_size_, origin_bfc_offset, ConstraintSpace(),
+      Style());
 
   if (!container_builder_.BfcBlockOffset()) {
     container_builder_.AddAdjoiningObjectTypes(
@@ -993,19 +1005,8 @@ void NGBlockLayoutAlgorithm::HandleFloat(
       abort_when_bfc_block_offset_updated_ = true;
   }
 
-  // If we don't have a BFC block-offset yet, the "expected" BFC block-offset
-  // is used to optimistically place floats.
-  NGBfcOffset origin_bfc_offset = {
-      ConstraintSpace().BfcOffset().line_offset +
-          border_scrollbar_padding_.LineLeft(ConstraintSpace().Direction()),
-      container_builder_.BfcBlockOffset()
-          ? NextBorderEdge(previous_inflow_position)
-          : ConstraintSpace().ExpectedBfcBlockOffset()};
-
-  NGPositionedFloat positioned_float = PositionFloat(
-      child_available_size_, child_percentage_size_,
-      replaced_child_percentage_size_, origin_bfc_offset, &unpositioned_float,
-      ConstraintSpace(), Style(), &exclusion_space_);
+  NGPositionedFloat positioned_float =
+      PositionFloat(&unpositioned_float, &exclusion_space_);
 
   const auto& physical_fragment =
       positioned_float.layout_result->PhysicalFragment();

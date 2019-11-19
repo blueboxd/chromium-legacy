@@ -61,8 +61,4 @@ bool WebUserGestureIndicator::ProcessedUserGestureSinceLoad(
   return To<WebLocalFrameImpl>(frame)->GetFrame()->HasBeenActivated();
 }
 
-WebUserGestureToken WebUserGestureIndicator::CurrentUserGestureToken() {
-  return WebUserGestureToken(UserGestureIndicator::CurrentTokenThreadSafe());
-}
-
 }  // namespace blink

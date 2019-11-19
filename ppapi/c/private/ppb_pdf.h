@@ -149,7 +149,29 @@ struct PP_PrivateAccessibilityImageInfo {
   struct PP_FloatRect bounds;
 };
 
-// Holds links and images within a PDF page so that IPC messages
+// This holds text highlight information provided by the PDF and will be
+// used in accessibility to expose it. Text highlights can have an associated
+// popup note, the data of which is also captured here.
+// Needs to stay in sync with C++ versions (PdfAccessibilityHighlightInfo and
+// PrivateAccessibilityHighlightInfo).
+struct PP_PrivateAccessibilityHighlightInfo {
+  // Represents the text of the associated popup note, if present.
+  const char* note_text;
+  uint32_t note_text_length;
+  // Index of the highlight in the page annotation list. Used to identify the
+  // annotation on which action needs to be performed.
+  uint32_t index_in_page;
+  // Highlights are annotations over existing page text.  |text_run_index|
+  // denotes the index of the text run where the highlight starts and
+  // |text_run_count| denotes the number of text runs which the highlight spans
+  // across.
+  uint32_t text_run_index;
+  uint32_t text_run_count;
+  // Bounding box of the highlight.
+  struct PP_FloatRect bounds;
+};
+
+// Holds links, images and highlights within a PDF page so that IPC messages
 // passing accessibility objects do not have too many parameters.
 // Needs to stay in sync with C++ versions (PdfAccessibilityPageObjects and
 // PrivateAccessibilityPageObjects).
@@ -158,6 +180,8 @@ struct PP_PrivateAccessibilityPageObjects {
   uint32_t link_count;
   struct PP_PrivateAccessibilityImageInfo* images;
   uint32_t image_count;
+  struct PP_PrivateAccessibilityHighlightInfo* highlights;
+  uint32_t highlight_count;
 };
 
 struct PPB_PDF {

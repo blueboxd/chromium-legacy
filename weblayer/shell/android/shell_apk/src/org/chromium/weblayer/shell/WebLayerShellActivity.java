@@ -114,8 +114,8 @@ public class WebLayerShellActivity extends FragmentActivity {
             // If activity is re-created during process restart, FragmentManager attaches
             // BrowserFragment immediately, resulting in synchronous init. By the time this line
             // executes, the synchronous init has already happened.
-            WebLayer.create(getApplication())
-                    .addCallback(webLayer -> onWebLayerReady(webLayer, savedInstanceState));
+            WebLayer.loadAsync(getApplication(),
+                    webLayer -> onWebLayerReady(webLayer, savedInstanceState));
         } catch (UnsupportedVersionException e) {
             throw new RuntimeException("Failed to initialize WebLayer", e);
         }

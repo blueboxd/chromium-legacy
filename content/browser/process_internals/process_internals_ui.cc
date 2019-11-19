@@ -21,8 +21,6 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/url_constants.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/system/message_pipe.h"
 
 namespace content {
 
@@ -43,10 +41,6 @@ ProcessInternalsUI::ProcessInternalsUI(WebUI* web_ui)
   source->SetDefaultResource(IDR_PROCESS_INTERNALS_HTML);
 
   WebUIDataSource::Add(web_contents()->GetBrowserContext(), source);
-
-  AddHandlerToRegistry(
-      base::BindRepeating(&ProcessInternalsUI::BindProcessInternalsHandler,
-                          base::Unretained(this)));
 }
 
 ProcessInternalsUI::~ProcessInternalsUI() = default;
@@ -63,21 +57,6 @@ void ProcessInternalsUI::BindProcessInternalsHandler(
   ui_handler_ = std::make_unique<ProcessInternalsHandlerImpl>(
       render_frame_host->GetSiteInstance()->GetBrowserContext(),
       std::move(receiver));
-}
-
-void ProcessInternalsUI::OnInterfaceRequestFromFrame(
-    RenderFrameHost* render_frame_host,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle* interface_pipe) {
-  // This should not be requested by subframes, so terminate the renderer if
-  // it issues such a request.
-  if (render_frame_host->GetParent()) {
-    render_frame_host->GetProcess()->ShutdownForBadMessage(
-        content::RenderProcessHost::CrashReportMode::GENERATE_CRASH_DUMP);
-    return;
-  }
-
-  registry_.TryBindInterface(interface_name, interface_pipe, render_frame_host);
 }
 
 }  // namespace content

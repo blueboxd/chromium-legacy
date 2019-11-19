@@ -54,17 +54,18 @@ class TestExtensionBuilder {
 
   void WriteComputedHashes() {
     int block_size = extension_misc::kContentVerificationDefaultBlockSize;
-    ComputedHashes::Writer computed_hashes_writer;
+    ComputedHashes::Data computed_hashes_data;
 
     for (const auto& resource : extension_resources_) {
       std::vector<std::string> hashes =
           ComputedHashes::GetHashesForContent(resource.contents, block_size);
-      computed_hashes_writer.AddHashes(resource.relative_path, block_size,
-                                       hashes);
+      computed_hashes_data.AddHashes(resource.relative_path, block_size,
+                                     hashes);
     }
 
-    ASSERT_TRUE(computed_hashes_writer.WriteToFile(
-        file_util::GetComputedHashesPath(extension_dir_.UnpackedPath())));
+    ASSERT_TRUE(ComputedHashes(std::move(computed_hashes_data))
+                    .WriteToFile(file_util::GetComputedHashesPath(
+                        extension_dir_.UnpackedPath())));
   }
 
   void WriteVerifiedContents() {

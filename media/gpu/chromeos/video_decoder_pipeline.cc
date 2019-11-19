@@ -15,6 +15,13 @@
 
 namespace media {
 
+DecoderInterface::DecoderInterface(
+    scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
+    base::WeakPtr<DecoderInterface::Client> client)
+    : decoder_task_runner_(std::move(decoder_task_runner)),
+      client_(std::move(client)) {}
+DecoderInterface::~DecoderInterface() = default;
+
 // static
 std::unique_ptr<VideoDecoder> VideoDecoderPipeline::Create(
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
@@ -84,8 +91,8 @@ void VideoDecoderPipeline::Destroy() {
   client_weak_this_factory_.InvalidateWeakPtrs();
 
   decoder_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&VideoDecoderPipeline::DestroyTask,
-                                base::Unretained(this)));
+      FROM_HERE,
+      base::BindOnce(&VideoDecoderPipeline::DestroyTask, decoder_weak_this_));
 }
 
 void VideoDecoderPipeline::DestroyTask() {
@@ -211,10 +218,7 @@ void VideoDecoderPipeline::CreateAndInitializeVD(
 
   used_create_vd_func_ = create_vd_funcs.front();
   create_vd_funcs.pop();
-  decoder_ = used_create_vd_func_(
-      decoder_task_runner_,
-      base::BindRepeating(&VideoDecoderPipeline::GetVideoFramePool,
-                          base::Unretained(this)));
+  decoder_ = used_create_vd_func_(decoder_task_runner_, decoder_weak_this_);
   if (!decoder_) {
     DVLOGF(2) << "Failed to create VideoDecoder.";
     used_create_vd_func_ = nullptr;
@@ -265,6 +269,7 @@ void VideoDecoderPipeline::ResetTask(base::OnceClosure closure) {
   DCHECK(!client_reset_cb_);
   DVLOGF(3);
 
+  need_notify_decoder_flushed_ = false;
   client_reset_cb_ = std::move(closure);
   decoder_->Reset(
       base::BindOnce(&VideoDecoderPipeline::OnResetDone, decoder_weak_this_));
@@ -359,6 +364,14 @@ void VideoDecoderPipeline::OnFrameConverted(scoped_refptr<VideoFrame> frame) {
 
   // After outputting a frame, flush might be completed.
   CallFlushCbIfNeeded(DecodeStatus::OK);
+  CallOnPipelineFlushedIfNeeded();
+}
+
+bool VideoDecoderPipeline::HasPendingFrames() const {
+  DVLOGF(3);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+
+  return frame_converter_->HasPendingFrames();
 }
 
 void VideoDecoderPipeline::OnError(const std::string& msg) {
@@ -377,11 +390,30 @@ void VideoDecoderPipeline::CallFlushCbIfNeeded(DecodeStatus status) {
     return;
 
   // Flush is not completed yet.
-  if (status == DecodeStatus::OK && frame_converter_->HasPendingFrames())
+  if (status == DecodeStatus::OK && HasPendingFrames())
     return;
 
   client_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(std::move(client_flush_cb_), status));
+}
+
+void VideoDecoderPipeline::PrepareChangeResolution() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  DVLOGF(3);
+  DCHECK(!need_notify_decoder_flushed_);
+
+  need_notify_decoder_flushed_ = true;
+  CallOnPipelineFlushedIfNeeded();
+}
+
+void VideoDecoderPipeline::CallOnPipelineFlushedIfNeeded() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
+  DVLOGF(3);
+
+  if (need_notify_decoder_flushed_ && !HasPendingFrames()) {
+    need_notify_decoder_flushed_ = false;
+    decoder_->OnPipelineFlushed();
+  }
 }
 
 DmabufVideoFramePool* VideoDecoderPipeline::GetVideoFramePool() const {

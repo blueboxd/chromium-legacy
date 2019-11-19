@@ -38,23 +38,22 @@ class VaapiWrapper;
 class VideoFrame;
 class VASurface;
 
-class VaapiVideoDecoder : public VideoDecoderPipeline::DecoderInterface,
+class VaapiVideoDecoder : public DecoderInterface,
                           public DecodeSurfaceHandler<VASurface> {
  public:
-  using GetFramePoolCB = base::RepeatingCallback<DmabufVideoFramePool*()>;
-
-  static std::unique_ptr<VideoDecoderPipeline::DecoderInterface> Create(
+  static std::unique_ptr<DecoderInterface> Create(
       scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
-      GetFramePoolCB get_pool);
+      base::WeakPtr<DecoderInterface::Client> client);
 
   static SupportedVideoDecoderConfigs GetSupportedConfigs();
 
-  // VideoDecoderPipeline::DecoderInterface implementation.
+  // DecoderInterface implementation.
   void Initialize(const VideoDecoderConfig& config,
                   InitCB init_cb,
                   const OutputCB& output_cb) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb) override;
   void Reset(base::OnceClosure reset_cb) override;
+  void OnPipelineFlushed() override;
 
   // DecodeSurfaceHandler<VASurface> implementation.
   scoped_refptr<VASurface> CreateSurface() override;
@@ -89,7 +88,7 @@ class VaapiVideoDecoder : public VideoDecoderPipeline::DecoderInterface,
 
   VaapiVideoDecoder(
       scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
-      GetFramePoolCB get_pool);
+      base::WeakPtr<DecoderInterface::Client> client);
   ~VaapiVideoDecoder() override;
 
   // Schedule the next decode task in the queue to be executed.
@@ -104,10 +103,6 @@ class VaapiVideoDecoder : public VideoDecoderPipeline::DecoderInterface,
   void OutputFrameTask(scoped_refptr<VideoFrame> video_frame,
                        const gfx::Rect& visible_rect,
                        base::TimeDelta timestamp);
-  // Called when a different output frame resolution is requested on the decoder
-  // thread. This happens when either decoding just started or a resolution
-  // change occurred in the video stream.
-  void ChangeFrameResolutionTask();
   // Release the video frame associated with the specified |surface_id| on the
   // decoder thread. This is called when the last reference to the associated
   // VASurface has been released, which happens when the decoder outputted the
@@ -144,7 +139,6 @@ class VaapiVideoDecoder : public VideoDecoderPipeline::DecoderInterface,
   double pixel_aspect_ratio_ = 0.0;
 
   // Video frame pool used to allocate and recycle video frames.
-  GetFramePoolCB get_pool_cb_;
   DmabufVideoFramePool* frame_pool_ = nullptr;
 
   // The time at which each buffer decode operation started. Not each decode
@@ -166,8 +160,6 @@ class VaapiVideoDecoder : public VideoDecoderPipeline::DecoderInterface,
   // Platform and codec specific video decoder.
   std::unique_ptr<AcceleratedVideoDecoder> decoder_;
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
-
-  const scoped_refptr<base::SequencedTaskRunner> decoder_task_runner_;
 
   SEQUENCE_CHECKER(decoder_sequence_checker_);
 

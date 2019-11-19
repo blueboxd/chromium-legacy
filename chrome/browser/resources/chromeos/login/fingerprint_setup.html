@@ -26,7 +26,7 @@
       <div slot="subtitle">
           [[i18nDynamic(locale, 'setupFingerprintScreenDescription')]]
       </div>
-      <div slot="footer" class="layout vertical center">
+      <div slot="footer" class="flex layout vertical center center-justified">
         <div id="fingerprintUnlockIcon"></div>
       </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
@@ -57,7 +57,7 @@
       <div slot="subtitle">
           [[i18nDynamic(locale, 'setupFingerprintScreenDescription')]]
       </div>
-      <div slot="footer" class="layout vertical center">
+      <div slot="footer" class="flex layout vertical center center-justified">
         <div id="sensorLocationContainer">
           <template is="dom-if" if="[[shouldUseLottieAnimation_]]">
             <cr-lottie id="scannerLocationLottie"
@@ -99,7 +99,7 @@
       <div slot="subtitle" hidden="[[!isProblemOther_(scanResult_)]]">
         [[i18nDynamic(locale, 'setupFingerprintScanTryAgain')]]
       </div>
-      <div slot="footer" class="layout vertical center">
+      <div slot="footer" class="flex layout vertical center center-justified">
         <cr-fingerprint-progress-arc id="arc">
         </cr-fingerprint-progress-arc>
       </div>

@@ -61,17 +61,22 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
       skip_script_comparison_(false),
       promise_resolved_status_(blink::ServiceWorkerStatusCode::kOk) {
   DCHECK(context_);
+  DCHECK(outside_fetch_client_settings_object_);
 }
 
 ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
     ServiceWorkerContextCore* context,
     ServiceWorkerRegistration* registration,
     bool force_bypass_cache,
-    bool skip_script_comparison)
+    bool skip_script_comparison,
+    blink::mojom::FetchClientSettingsObjectPtr
+        outside_fetch_client_settings_object)
     : context_(context),
       job_type_(UPDATE_JOB),
       scope_(registration->scope()),
       update_via_cache_(registration->update_via_cache()),
+      outside_fetch_client_settings_object_(
+          std::move(outside_fetch_client_settings_object)),
       phase_(INITIAL),
       is_shutting_down_(false),
       is_promise_resolved_(false),
@@ -80,6 +85,7 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
       skip_script_comparison_(skip_script_comparison),
       promise_resolved_status_(blink::ServiceWorkerStatusCode::kOk) {
   DCHECK(context_);
+  DCHECK(outside_fetch_client_settings_object_);
   internal_.registration = registration;
 }
 
@@ -299,6 +305,10 @@ void ServiceWorkerRegisterJob::ContinueWithUpdate(
   script_url_ = registration()->GetNewestVersion()->script_url();
   worker_script_type_ = registration()->GetNewestVersion()->script_type();
 
+  // If the outgoing referrer is not set, use |script_url_| as referrer.
+  if (outside_fetch_client_settings_object_->outgoing_referrer.is_empty())
+    outside_fetch_client_settings_object_->outgoing_referrer = script_url_;
+
   // TODO(michaeln): If the last update check was less than 24 hours
   // ago, depending on the freshness of the cached worker script we
   // may be able to complete the update job right here.
@@ -352,8 +362,9 @@ void ServiceWorkerRegisterJob::TriggerUpdateCheckInBrowser(
             ServiceWorkerConsts::kInvalidServiceWorkerResourceId);
 
   update_checker_ = std::make_unique<ServiceWorkerUpdateChecker>(
-      std::move(resources), script_url_, script_resource_id, version_to_update,
-      std::move(loader_factory), force_bypass_cache_,
+      std::move(resources), script_url_, script_resource_id,
+      outside_fetch_client_settings_object_->outgoing_referrer,
+      version_to_update, std::move(loader_factory), force_bypass_cache_,
       registration()->update_via_cache(), time_since_last_check, context_);
   update_checker_->Start(
       base::BindOnce(&ServiceWorkerRegisterJob::OnUpdateCheckFinished,

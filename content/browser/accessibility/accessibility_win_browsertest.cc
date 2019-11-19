@@ -142,7 +142,7 @@ base::string16 AccessibilityWinBrowserTest::PrintAXTree() const {
       L"*", AccessibilityTreeFormatter::PropertyFilter::ALLOW)});
 
   base::string16 str;
-  formatter->FormatAccessibilityTree(
+  formatter->FormatAccessibilityTreeForTesting(
       GetRootAccessibilityNode(shell()->web_contents()), &str);
   return str;
 }

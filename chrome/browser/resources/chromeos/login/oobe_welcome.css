@@ -10,7 +10,7 @@
 /************* Language Screen **************/
 #languageScreen .language-selection-entry {
   border-top: var(--oobe-dialog-list-item-border);
-  min-height: 64px;
+  min-height: 60px;
 }
 
 #languageScreen .language-selection-entry:last-of-type {

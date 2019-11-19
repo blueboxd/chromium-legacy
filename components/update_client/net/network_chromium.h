@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/update_client/network.h"
@@ -17,11 +18,13 @@ class SharedURLLoaderFactory;
 
 namespace update_client {
 
+using SendCookiesPredicate = base::RepeatingCallback<bool(const GURL& url)>;
+
 class NetworkFetcherChromiumFactory : public NetworkFetcherFactory {
  public:
-  explicit NetworkFetcherChromiumFactory(
-      scoped_refptr<network::SharedURLLoaderFactory>
-          shared_url_network_factory);
+  NetworkFetcherChromiumFactory(
+      scoped_refptr<network::SharedURLLoaderFactory> shared_url_network_factory,
+      SendCookiesPredicate cookie_predicate);
 
   std::unique_ptr<NetworkFetcher> Create() const override;
 
@@ -30,6 +33,7 @@ class NetworkFetcherChromiumFactory : public NetworkFetcherFactory {
 
  private:
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_network_factory_;
+  SendCookiesPredicate cookie_predicate_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkFetcherChromiumFactory);
 };

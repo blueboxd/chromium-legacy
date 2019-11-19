@@ -91,66 +91,6 @@ void GetInterfaceImpl(const std::string& interface_name,
                       origin);
 }
 
-void BindVideoDecodePerfHistoryImpl(
-    int process_id,
-    mojo::PendingReceiver<media::mojom::VideoDecodePerfHistory> receiver) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto* process = RenderProcessHost::FromID(process_id);
-  if (!process)
-    return;
-
-  process->GetBrowserContext()->GetVideoDecodePerfHistory()->BindReceiver(
-      std::move(receiver));
-}
-
-void CreateLockManagerImpl(
-    const url::Origin& origin,
-    int process_id,
-    mojo::PendingReceiver<blink::mojom::LockManager> receiver) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto* process = RenderProcessHost::FromID(process_id);
-  if (!process)
-    return;
-
-  process->CreateLockManager(MSG_ROUTING_NONE, origin, std::move(receiver));
-}
-
-void CreateIDBFactoryImpl(
-    const url::Origin& origin,
-    int process_id,
-    mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto* process = RenderProcessHost::FromID(process_id);
-  if (!process)
-    return;
-
-  process->BindIndexedDB(MSG_ROUTING_NONE, origin, std::move(receiver));
-}
-
-void CreatePermissionServiceImpl(
-    const url::Origin& origin,
-    int process_id,
-    mojo::PendingReceiver<blink::mojom::PermissionService> receiver) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto* process = RenderProcessHost::FromID(process_id);
-  if (!process)
-    return;
-
-  process->CreatePermissionService(origin, std::move(receiver));
-}
-
-void CreatePaymentManagerImpl(
-    const url::Origin& origin,
-    int process_id,
-    mojo::PendingReceiver<payments::mojom::PaymentManager> receiver) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto* process = RenderProcessHost::FromID(process_id);
-  if (!process)
-    return;
-
-  process->CreatePaymentManagerForOrigin(origin, std::move(receiver));
-}
-
 void CreateQuicTransportConnectorImpl(
     int process_id,
     const url::Origin& origin,
@@ -1535,60 +1475,6 @@ bool ServiceWorkerProviderHost::is_response_committed() const {
 bool ServiceWorkerProviderHost::is_execution_ready() const {
   DCHECK(IsProviderForClient());
   return client_phase_ == ClientPhase::kExecutionReady;
-}
-
-void ServiceWorkerProviderHost::CreateLockManager(
-    mojo::PendingReceiver<blink::mojom::LockManager> receiver) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  DCHECK(IsProviderForServiceWorker());
-  RunOrPostTaskOnThread(
-      FROM_HERE, BrowserThread::UI,
-      base::BindOnce(&CreateLockManagerImpl,
-                     running_hosted_version_->script_origin(),
-                     render_process_id_, std::move(receiver)));
-}
-
-void ServiceWorkerProviderHost::CreateIDBFactory(
-    mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  DCHECK(IsProviderForServiceWorker());
-  RunOrPostTaskOnThread(
-      FROM_HERE, BrowserThread::UI,
-      base::BindOnce(&CreateIDBFactoryImpl,
-                     running_hosted_version_->script_origin(),
-                     render_process_id_, std::move(receiver)));
-}
-
-void ServiceWorkerProviderHost::BindVideoDecodePerfHistory(
-    mojo::PendingReceiver<media::mojom::VideoDecodePerfHistory> receiver) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  DCHECK(IsProviderForServiceWorker());
-  RunOrPostTaskOnThread(
-      FROM_HERE, BrowserThread::UI,
-      base::BindOnce(&BindVideoDecodePerfHistoryImpl, render_process_id_,
-                     std::move(receiver)));
-}
-
-void ServiceWorkerProviderHost::CreatePermissionService(
-    mojo::PendingReceiver<blink::mojom::PermissionService> receiver) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  DCHECK(IsProviderForServiceWorker());
-  RunOrPostTaskOnThread(
-      FROM_HERE, BrowserThread::UI,
-      base::BindOnce(&CreatePermissionServiceImpl,
-                     running_hosted_version_->script_origin(),
-                     render_process_id_, std::move(receiver)));
-}
-
-void ServiceWorkerProviderHost::CreatePaymentManager(
-    mojo::PendingReceiver<payments::mojom::PaymentManager> receiver) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  DCHECK(IsProviderForServiceWorker());
-  RunOrPostTaskOnThread(
-      FROM_HERE, BrowserThread::UI,
-      base::BindOnce(&CreatePaymentManagerImpl,
-                     running_hosted_version_->script_origin(),
-                     render_process_id_, std::move(receiver)));
 }
 
 void ServiceWorkerProviderHost::CreateQuicTransportConnector(

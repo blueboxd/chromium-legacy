@@ -88,7 +88,7 @@ void AnimationEffect::UpdateInheritedTime(base::Optional<double> inherited_time,
   needs_update_ = false;
   last_update_time_ = inherited_time;
 
-  const double local_time = inherited_time.value_or(NullValue());
+  const base::Optional<double> local_time = inherited_time;
   if (needs_update) {
     Timing::CalculatedTiming calculated = SpecifiedTiming().CalculateTimings(
         local_time, direction, IsKeyframeEffect(), playback_rate);

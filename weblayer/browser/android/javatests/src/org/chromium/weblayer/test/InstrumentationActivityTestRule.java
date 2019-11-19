@@ -29,6 +29,7 @@ import org.chromium.weblayer.WebLayer;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
 import java.lang.reflect.Field;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -65,8 +66,7 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
     public WebLayer getWebLayer() {
         return TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
             return WebLayer
-                    .create(InstrumentationRegistry.getTargetContext().getApplicationContext())
-                    .get();
+                    .loadSync(InstrumentationRegistry.getTargetContext().getApplicationContext());
         });
     }
 
@@ -92,8 +92,12 @@ public class InstrumentationActivityTestRule extends ActivityTestRule<Instrument
     public InstrumentationActivity launchShellWithUrl(String url, Bundle extras) {
         InstrumentationActivity activity = launchShell(extras);
         Assert.assertNotNull(activity);
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { activity.createWebLayer(activity.getApplication(), null).get(); });
+        try {
+            TestThreadUtils.runOnUiThreadBlocking(() ->
+                    activity.loadWebLayerSync(activity.getApplicationContext()));
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        }
         if (url != null) navigateAndWait(url);
         return activity;
     }

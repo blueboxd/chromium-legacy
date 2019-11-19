@@ -103,6 +103,7 @@ class NET_EXPORT_PRIVATE SpdyProxyClientSocket : public ProxyClientSocket,
   void OnDataSent() override;
   void OnTrailers(const spdy::SpdyHeaderBlock& trailers) override;
   void OnClose(int status) override;
+  bool CanGreaseFrameType() const override;
   NetLogSource source_dependency() const override;
 
  private:

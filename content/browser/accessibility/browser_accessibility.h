@@ -80,6 +80,11 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // caller.
   static BrowserAccessibility* Create();
 
+  // Returns |delegate| as a BrowserAccessibility object, if |delegate| is
+  // non-null and an object in the BrowserAccessibility class hierarchy.
+  static BrowserAccessibility* FromAXPlatformNodeDelegate(
+      ui::AXPlatformNodeDelegate* delegate);
+
   ~BrowserAccessibility() override;
 
   // Called only once, immediately after construction. The constructor doesn't
@@ -567,10 +572,10 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   BrowserAccessibility();
 
   // The manager of this tree of accessibility objects.
-  BrowserAccessibilityManager* manager_;
+  BrowserAccessibilityManager* manager_ = nullptr;
 
   // The underlying node.
-  ui::AXNode* node_;
+  ui::AXNode* node_ = nullptr;
 
   // Protected so that it can't be called directly on a BrowserAccessibility
   // where it could be confused with an id that comes from the node data,

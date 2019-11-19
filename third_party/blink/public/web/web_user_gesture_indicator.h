@@ -37,7 +37,6 @@
 namespace blink {
 
 class WebLocalFrame;
-class WebUserGestureToken;
 
 class WebUserGestureIndicator {
  public:
@@ -55,11 +54,6 @@ class WebUserGestureIndicator {
   // Returns true if a user gesture was processed on the provided frame since
   // the time the frame was loaded.
   BLINK_EXPORT static bool ProcessedUserGestureSinceLoad(WebLocalFrame*);
-
-  // Returns a token for the currently active user gesture. It can be used to
-  // continue processing the user gesture later on using a
-  // WebScopedUserGesture.
-  BLINK_EXPORT static WebUserGestureToken CurrentUserGestureToken();
 };
 
 }  // namespace blink

@@ -98,6 +98,7 @@ TEST_F(DetailsTest, UpdateFromParametersUpdateFromDetails) {
   parameters["DETAILS_DESCRIPTION_LINE_2"] = "line2";
   parameters["DETAILS_DESCRIPTION_LINE_3"] = "Est. total";
   parameters["DETAILS_IMAGE_URL"] = "image";
+  parameters["DETAILS_IMAGE_ACCESSIBILITY_HINT"] = "hint";
   parameters["DETAILS_IMAGE_CLICKTHROUGH_URL"] = "clickthrough";
   parameters["DETAILS_TOTAL_PRICE_LABEL"] = "total";
   parameters["DETAILS_TOTAL_PRICE"] = "12";
@@ -114,6 +115,7 @@ TEST_F(DetailsTest, UpdateFromParametersUpdateFromDetails) {
   EXPECT_THAT(details.priceAttribution(), Eq("Est. total"));
   EXPECT_THAT(details.imageUrl(),
               Eq("image"));  // Overwrites show_image_placeholder
+  EXPECT_THAT(details.imageAccessibilityHint(), Eq("hint"));
   EXPECT_TRUE(details.imageAllowClickthrough());
   EXPECT_THAT(details.imageClickthroughUrl(), Eq("clickthrough"));
   EXPECT_THAT(details.totalPriceLabel(), Eq("total"));
@@ -359,6 +361,14 @@ TEST_F(DetailsTest, GetImageUrl) {
   proto.mutable_details()->set_image_url("url");
   EXPECT_TRUE(Details::UpdateFromProto(proto, &details));
   EXPECT_THAT(details.imageUrl(), Eq("url"));
+}
+
+TEST_F(DetailsTest, GetImageAccessibilityHint) {
+  Details details;
+  ShowDetailsProto proto;
+  proto.mutable_details()->set_image_accessibility_hint("hint");
+  EXPECT_TRUE(Details::UpdateFromProto(proto, &details));
+  EXPECT_THAT(details.imageAccessibilityHint(), Eq("hint"));
 }
 
 TEST_F(DetailsTest, GetClickthroughData) {

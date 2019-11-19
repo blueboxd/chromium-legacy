@@ -8,11 +8,21 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/html/forms/date_time_chooser_client.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
-class ExternalDateTimeChooserTest : public testing::Test {};
+class ExternalDateTimeChooserTest : public testing::Test {
+ protected:
+  void SetUp() final {
+    dummy_page_holder_ = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  }
+  Document& GetDocument() { return dummy_page_holder_->GetDocument(); }
+
+ private:
+  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
+};
 
 class TestDateTimeChooserClient final
     : public GarbageCollected<TestDateTimeChooserClient>,
@@ -57,6 +67,43 @@ TEST_F(ExternalDateTimeChooserTest, EndChooserShouldNotCrash) {
   auto* external_date_time_chooser = ExternalDateTimeChooser::Create(client);
   client->SetDateTimeChooser(external_date_time_chooser);
   external_date_time_chooser->ResponseHandler(true, 0);
+}
+
+// This is a regression test for crbug.com/1022302. When the label and the value
+// are the same in an option element,
+// HTMLInputElement::SetupDateTimeChooserParameters had set a null value. This
+// caused a crash because Mojo message pipe couldn't get a null pointer at the
+// receiving side.
+TEST_F(ExternalDateTimeChooserTest,
+       OpenDateTimeChooserShouldNotCrashWhenLabelAndValueIsTheSame) {
+  ScopedInputMultipleFieldsUIForTest input_multiple_fields_ui(false);
+  GetDocument().documentElement()->SetInnerHTMLFromString(R"HTML(
+      <input id=test type="date" list="src" />
+        <datalist id="src">
+          <option value='2019-12-31'>Hint</option>
+          <option value='2019-12-30'/>
+          <option>2019-12-29</option> // This has the same value in label and
+                                      // value attribute.
+        </datalist>
+      )HTML");
+  GetDocument().View()->UpdateAllLifecyclePhases(
+      DocumentLifecycle::LifecycleUpdateReason::kTest);
+  GetDocument().View()->RunPostLifecycleSteps();
+  HTMLInputElement* input =
+      ToHTMLInputElement(GetDocument().getElementById("test"));
+  ASSERT_TRUE(input);
+
+  DateTimeChooserParameters params;
+  bool success = input->SetupDateTimeChooserParameters(params);
+  EXPECT_TRUE(success);
+
+  auto* client = MakeGarbageCollected<TestDateTimeChooserClient>(
+      GetDocument().documentElement());
+  auto* external_date_time_chooser = ExternalDateTimeChooser::Create(client);
+  client->SetDateTimeChooser(external_date_time_chooser);
+  external_date_time_chooser->OpenDateTimeChooser(GetDocument().GetFrame(),
+                                                  params);
+  // Crash should not happen after calling OpenDateTimeChooser().
 }
 
 }  // namespace blink

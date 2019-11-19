@@ -444,11 +444,6 @@ CORE_EXPORT v8::Local<v8::Object> GetEsIteratorWithMethod(
     v8::Local<v8::Object>,
     ExceptionState&);
 
-// Gets an iterator from an Object.
-CORE_EXPORT v8::Local<v8::Object> GetEsIterator(v8::Isolate*,
-                                                v8::Local<v8::Object>,
-                                                ExceptionState&);
-
 // Validates that the passed object is a sequence type per the WebIDL spec: it
 // has a callable @iterator.
 // https://heycam.github.io/webidl/#es-sequence

@@ -91,6 +91,37 @@ class FileOperationManagerImpl {
   }
 
   /**
+   * Fetches the root label of a volume from the volume manager.
+   * @param {!Entry} entry The directory entry to get the volume label.
+   * @return {string} identifying label for the volume.
+   */
+  getVolumeLabel_(entry) {
+    const destinationLocationInfo = this.volumeManager_.getLocationInfo(entry);
+    if (destinationLocationInfo) {
+      return util.getRootTypeLabel(destinationLocationInfo);
+    }
+    return '';
+  }
+
+  /**
+   * Returns status information for a running task.
+   * @param {fileOperationUtil.Task} task The task we use to retrieve status
+   *     from.
+   * @return {Object} Status object with optional volume information.
+   */
+  getTaskStatus(task) {
+    let status = task.getStatus();
+    // If there's no target directory name, use the volume name for UI display.
+    if (status['targetDirEntryName'] === '' && task.targetDirEntry) {
+      const entry = /** {Entry} */ (task.targetDirEntry);
+      if (this.volumeManager_) {
+        status['targetDirEntryName'] = this.getVolumeLabel_(entry);
+      }
+    }
+    return status;
+  }
+
+  /**
    * Requests the specified task to be canceled.
    * @param {string} taskId ID of task to be canceled.
    */
@@ -105,8 +136,8 @@ class FileOperationManagerImpl {
       }
       task.requestCancel();
       this.eventRouter_.sendProgressEvent(
-          fileOperationUtil.EventRouter.EventType.CANCELED, task.getStatus(),
-          task.taskId);
+          fileOperationUtil.EventRouter.EventType.CANCELED,
+          this.getTaskStatus(task), task.taskId);
       this.pendingCopyTasks_.splice(i, 1);
     }
 
@@ -240,7 +271,7 @@ class FileOperationManagerImpl {
     }
 
     this.eventRouter_.sendProgressEvent(
-        fileOperationUtil.EventRouter.EventType.BEGIN, task.getStatus(),
+        fileOperationUtil.EventRouter.EventType.BEGIN, this.getTaskStatus(task),
         task.taskId);
 
     task.initialize(() => {
@@ -287,8 +318,8 @@ class FileOperationManagerImpl {
           /** @type {!DirectoryEntry} */ (task.targetDirEntry));
       if (volumeInfo === null) {
         this.eventRouter_.sendProgressEvent(
-            fileOperationUtil.EventRouter.EventType.ERROR, task.getStatus(),
-            task.taskId,
+            fileOperationUtil.EventRouter.EventType.ERROR,
+            this.getTaskStatus(task), task.taskId,
             new fileOperationUtil.Error(
                 util.FileOperationErrorType.FILESYSTEM_ERROR,
                 util.createDOMError(util.FileError.NOT_FOUND_ERR)));
@@ -314,8 +345,8 @@ class FileOperationManagerImpl {
 
     const onTaskProgress = function(task) {
       this.eventRouter_.sendProgressEvent(
-          fileOperationUtil.EventRouter.EventType.PROGRESS, task.getStatus(),
-          task.taskId);
+          fileOperationUtil.EventRouter.EventType.PROGRESS,
+          this.getTaskStatus(task), task.taskId);
     }.bind(this, nextTask);
 
     const onEntryChanged = (kind, entry) => {
@@ -332,7 +363,7 @@ class FileOperationManagerImpl {
           fileOperationUtil.EventRouter.EventType.CANCELED :
           fileOperationUtil.EventRouter.EventType.ERROR;
       this.eventRouter_.sendProgressEvent(
-          reason, task.getStatus(), task.taskId, err);
+          reason, this.getTaskStatus(task), task.taskId, err);
       this.serviceAllTasks_();
     }.bind(this, nextTaskVolumeId);
 
@@ -341,8 +372,8 @@ class FileOperationManagerImpl {
       delete this.runningCopyTasks_[volumeId];
 
       this.eventRouter_.sendProgressEvent(
-          fileOperationUtil.EventRouter.EventType.SUCCESS, task.getStatus(),
-          task.taskId);
+          fileOperationUtil.EventRouter.EventType.SUCCESS,
+          this.getTaskStatus(task), task.taskId);
       this.serviceAllTasks_();
     }.bind(this, nextTaskVolumeId);
 
@@ -350,8 +381,8 @@ class FileOperationManagerImpl {
     this.runningCopyTasks_[nextTaskVolumeId] = nextTask;
 
     this.eventRouter_.sendProgressEvent(
-        fileOperationUtil.EventRouter.EventType.PROGRESS, nextTask.getStatus(),
-        nextTask.taskId);
+        fileOperationUtil.EventRouter.EventType.PROGRESS,
+        this.getTaskStatus(nextTask), nextTask.taskId);
     nextTask.run(onEntryChanged, onTaskProgress, onTaskSuccess, onTaskError);
   }
 
@@ -480,8 +511,8 @@ class FileOperationManagerImpl {
     const zipTask = new fileOperationUtil.ZipTask(
         this.generateTaskId(), selectionEntries, dirEntry, dirEntry);
     this.eventRouter_.sendProgressEvent(
-        fileOperationUtil.EventRouter.EventType.BEGIN, zipTask.getStatus(),
-        zipTask.taskId);
+        fileOperationUtil.EventRouter.EventType.BEGIN,
+        this.getTaskStatus(zipTask), zipTask.taskId);
     zipTask.initialize(() => {
       this.pendingCopyTasks_.push(zipTask);
       this.serviceAllTasks_();

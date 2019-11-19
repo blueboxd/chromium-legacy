@@ -274,8 +274,7 @@ void ChromeNewWindowClient::OpenFileManager() {
 
 void ChromeNewWindowClient::OpenCrosh() {
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  GURL crosh_url =
-      extensions::TerminalExtensionHelper::GetCroshExtensionURL(profile);
+  GURL crosh_url = extensions::TerminalExtensionHelper::GetCroshURL(profile);
   if (!crosh_url.is_valid())
     return;
   chrome::ScopedTabbedBrowserDisplayer displayer(profile);

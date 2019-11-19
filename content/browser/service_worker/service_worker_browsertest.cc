@@ -935,7 +935,8 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     ASSERT_TRUE(registration);
     wrapper()->context()->UpdateServiceWorker(
         registration, false /* force_bypass_cache */,
-        false /* skip_script_comparison */, std::move(callback));
+        false /* skip_script_comparison */,
+        blink::mojom::FetchClientSettingsObject::New(), std::move(callback));
   }
 
   void ReceiveUpdateResultOnCoreThread(

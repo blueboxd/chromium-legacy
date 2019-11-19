@@ -75,10 +75,12 @@ v8::Local<v8::Object> DOMArrayBuffer::Wrap(
 
   const WrapperTypeInfo* wrapper_type_info = this->GetWrapperTypeInfo();
 
-  v8::Local<v8::Object> wrapper;
+  v8::Local<v8::ArrayBuffer> wrapper;
   {
     v8::Context::Scope context_scope(creation_context->CreationContext());
-    wrapper = v8::ArrayBuffer::New(isolate, Data(), ByteLengthAsSizeT());
+    wrapper =
+        v8::ArrayBuffer::New(isolate, Buffer()->Content()->BackingStore());
+    wrapper->Externalize(Buffer()->Content()->BackingStore());
   }
 
   return AssociateWithWrapper(isolate, wrapper_type_info, wrapper);

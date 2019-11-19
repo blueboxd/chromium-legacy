@@ -257,8 +257,9 @@ if (ios_web_view_enable_autofill) {
 }
 
 ios_web_view_deps = [
-  ":web_view_bundle",
+  ":web_view_all_frames",
   ":web_view_buildflags",
+  ":web_view_main_frame",
   ":web_view_resources",
   "//base",
   "//components/autofill/core/browser",
@@ -473,16 +474,23 @@ test("ios_web_view_inttests") {
   assert_no_deps = ios_assert_no_deps
 }
 
-js_compile_bundle("web_view_bundle") {
-  closure_entry_point = "__crWeb.webViewBundle"
+js_compile_bundle("web_view_all_frames") {
+  closure_entry_point = "__crWeb.webViewAllFrames"
   sources = [
     "//components/autofill/ios/browser/resources/autofill_controller.js",
     "//components/autofill/ios/browser/resources/suggestion_controller.js",
     "//components/autofill/ios/form_util/resources/fill.js",
     "//components/autofill/ios/form_util/resources/form.js",
     "//components/autofill/ios/form_util/resources/form_handlers.js",
+    "resources/web_view_all_frames.js",
+  ]
+}
+
+js_compile_bundle("web_view_main_frame") {
+  closure_entry_point = "__crWeb.webViewMainFrame"
+  sources = [
     "//components/password_manager/ios/resources/password_controller.js",
-    "resources/web_view_bundle.js",
+    "resources/web_view_main_frame.js",
   ]
 }
 

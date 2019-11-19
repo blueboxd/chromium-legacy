@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_not_impl.h"
+#include "third_party/blink/renderer/modules/webrtc/webrtc_audio_device_not_impl.h"
 
 #include "build/build_config.h"
 

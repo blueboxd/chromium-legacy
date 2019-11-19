@@ -109,12 +109,9 @@ void PasswordManagerInteractiveTestBase::VerifyPasswordIsSavedAndFilled(
   NavigationObserver observer(WebContents());
   const char kUsername[] = "user";
   const char kPassword[] = "123";
-  if (!username_id.empty()) {
+  if (!username_id.empty())
     FillElementWithValue(username_id, kUsername);
-    CheckElementValue(username_id, kUsername);
-  }
   FillElementWithValue(password_id, kPassword);
-  CheckElementValue(password_id, kPassword);
   ASSERT_TRUE(content::ExecuteScript(RenderFrameHost(), submission_script));
   observer.Wait();
   WaitForPasswordStore();

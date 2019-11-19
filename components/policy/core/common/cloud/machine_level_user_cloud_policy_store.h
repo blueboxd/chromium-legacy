@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
+#include "components/policy/core/common/cloud/dm_token.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_store.h"
 
 namespace policy {
@@ -21,7 +22,7 @@ class POLICY_EXPORT MachineLevelUserCloudPolicyStore
     : public DesktopCloudPolicyStore {
  public:
   MachineLevelUserCloudPolicyStore(
-      const std::string& machine_dm_token,
+      const DMToken& machine_dm_token,
       const std::string& machine_client_id,
       const base::FilePath& policy_path,
       const base::FilePath& key_path,
@@ -30,7 +31,7 @@ class POLICY_EXPORT MachineLevelUserCloudPolicyStore
   ~MachineLevelUserCloudPolicyStore() override;
 
   static std::unique_ptr<MachineLevelUserCloudPolicyStore> Create(
-      const std::string& machine_dm_token,
+      const DMToken& machine_dm_token,
       const std::string& machine_client_id,
       const base::FilePath& policy_dir,
       bool cloud_policy_has_priority,
@@ -47,7 +48,7 @@ class POLICY_EXPORT MachineLevelUserCloudPolicyStore
 
   // Setup global |dm_token| and |client_id| in store for the validation purpose
   // before policy refresh.
-  void SetupRegistration(const std::string& machine_dm_token,
+  void SetupRegistration(const DMToken& machine_dm_token,
                          const std::string& machine_client_id);
 
   // No DM token can be fetched from server or read from disk. Finish
@@ -62,7 +63,7 @@ class POLICY_EXPORT MachineLevelUserCloudPolicyStore
       bool validate_in_background,
       const UserCloudPolicyValidator::CompletionCallback& callback) override;
 
-  std::string machine_dm_token_;
+  DMToken machine_dm_token_;
   std::string machine_client_id_;
 
   DISALLOW_COPY_AND_ASSIGN(MachineLevelUserCloudPolicyStore);

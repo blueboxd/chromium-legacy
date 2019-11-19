@@ -69,6 +69,10 @@ class EmbeddedTestServer;
 using test_server::EmbeddedTestServer;
 }
 
+namespace ui {
+class AXPlatformNodeDelegate;
+}
+
 #if defined(OS_WIN)
 namespace Microsoft {
 namespace WRL {
@@ -89,7 +93,6 @@ typedef int PROPERTYID;
 
 namespace content {
 
-class BrowserAccessibility;
 class BrowserContext;
 struct FrameVisualProperties;
 class FrameTreeNode;
@@ -909,7 +912,7 @@ void WaitForAccessibilityTreeToContainNodeWithName(WebContents* web_contents,
 ui::AXTreeUpdate GetAccessibilityTreeSnapshot(WebContents* web_contents);
 
 // Returns the root accessibility node for the given WebContents.
-BrowserAccessibility* GetRootAccessibilityNode(WebContents* web_contents);
+ui::AXPlatformNodeDelegate* GetRootAccessibilityNode(WebContents* web_contents);
 
 // Finds an accessibility node matching the given criteria.
 struct FindAccessibilityNodeCriteria {
@@ -918,18 +921,18 @@ struct FindAccessibilityNodeCriteria {
   base::Optional<ax::mojom::Role> role;
   base::Optional<std::string> name;
 };
-BrowserAccessibility* FindAccessibilityNode(
+ui::AXPlatformNodeDelegate* FindAccessibilityNode(
     WebContents* web_contents,
     const FindAccessibilityNodeCriteria& criteria);
-BrowserAccessibility* FindAccessibilityNodeInSubtree(
-    BrowserAccessibility* node,
+ui::AXPlatformNodeDelegate* FindAccessibilityNodeInSubtree(
+    ui::AXPlatformNodeDelegate* node,
     const FindAccessibilityNodeCriteria& criteria);
 
 #if defined(OS_WIN)
 // Retrieve the specified interface from an accessibility node.
 template <typename T>
 Microsoft::WRL::ComPtr<T> QueryInterfaceFromNode(
-    BrowserAccessibility* browser_accessibility);
+    ui::AXPlatformNodeDelegate* node);
 
 // Call GetPropertyValue with the given UIA property id with variant type
 // VT_ARRAY | VT_UNKNOWN  on the target browser accessibility node to retrieve
@@ -937,7 +940,7 @@ Microsoft::WRL::ComPtr<T> QueryInterfaceFromNode(
 // automation elements with the expected names.
 void UiaGetPropertyValueVtArrayVtUnknownValidate(
     PROPERTYID property_id,
-    BrowserAccessibility* target_browser_accessibility,
+    ui::AXPlatformNodeDelegate* target_node,
     const std::vector<std::string>& expected_names);
 #endif
 

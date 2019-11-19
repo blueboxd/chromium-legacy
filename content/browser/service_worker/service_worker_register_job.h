@@ -62,7 +62,9 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
       ServiceWorkerContextCore* context,
       ServiceWorkerRegistration* registration,
       bool force_bypass_cache,
-      bool skip_script_comparison);
+      bool skip_script_comparison,
+      blink::mojom::FetchClientSettingsObjectPtr
+          outside_fetch_client_settings_object);
   ~ServiceWorkerRegisterJob() override;
 
   // Registers a callback to be called when the promise would resolve (whether

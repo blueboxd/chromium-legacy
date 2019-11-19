@@ -77,9 +77,9 @@ class TypedArrayBase : public ArrayBufferView {
   template <class Subclass>
   static scoped_refptr<Subclass> Create(const T* array, unsigned length) {
     scoped_refptr<Subclass> a = Create<Subclass>(length);
-    if (a)
-      for (unsigned i = 0; i < length; ++i)
-        a->Set(i, array[i]);
+    if (a) {
+      std::memcpy(a->Data(), array, a->ByteLength());
+    }
     return a;
   }
 

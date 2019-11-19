@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/bind_helpers.h"
+#include "base/callback_forward.h"
 #include "base/containers/mru_cache.h"
 #include "base/containers/queue.h"
 #include "base/memory/scoped_refptr.h"
@@ -37,33 +38,32 @@ namespace media {
 class DmabufVideoFramePool;
 
 class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder
-    : public VideoDecoderPipeline::DecoderInterface,
+    : public DecoderInterface,
       public V4L2VideoDecoderBackend::Client {
  public:
-  using GetFramePoolCB = base::RepeatingCallback<DmabufVideoFramePool*()>;
-
   // Create V4L2SliceVideoDecoder instance. The success of the creation doesn't
   // ensure V4L2SliceVideoDecoder is available on the device. It will be
   // determined in Initialize().
-  static std::unique_ptr<VideoDecoderPipeline::DecoderInterface> Create(
+  static std::unique_ptr<DecoderInterface> Create(
       scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
-      GetFramePoolCB get_pool_cb);
+      base::WeakPtr<DecoderInterface::Client> client);
 
   static SupportedVideoDecoderConfigs GetSupportedConfigs();
 
-  // VideoDecoderPipeline::DecoderInterface implementation.
+  // DecoderInterface implementation.
   void Initialize(const VideoDecoderConfig& config,
                   InitCB init_cb,
                   const OutputCB& output_cb) override;
   void Reset(base::OnceClosure closure) override;
   void Decode(scoped_refptr<DecoderBuffer> buffer, DecodeCB decode_cb) override;
+  void OnPipelineFlushed() override;
 
   // V4L2VideoDecoderBackend::Client implementation
   void OnBackendError() override;
   bool IsDecoding() const override;
   void InitiateFlush() override;
   void CompleteFlush() override;
-  bool ChangeResolution(gfx::Size pic_size,
+  void ChangeResolution(gfx::Size pic_size,
                         gfx::Rect visible_rect,
                         size_t num_output_frames) override;
   void OutputFrame(scoped_refptr<VideoFrame> frame,
@@ -75,8 +75,9 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder
 
   V4L2SliceVideoDecoder(
       scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
-      scoped_refptr<V4L2Device> device,
-      GetFramePoolCB get_pool_cb);
+      base::WeakPtr<DecoderInterface::Client> client,
+      scoped_refptr<V4L2Device> device);
+
   ~V4L2SliceVideoDecoder() override;
 
   enum class State {
@@ -139,6 +140,12 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder
   // Try to dequeue input and output buffers from device.
   void ServiceDeviceTask(bool event);
 
+  // After the pipeline finished flushing frames, reconfigure the resolution
+  // setting of V4L2 device and the frame pool.
+  void ContinueChangeResolution(const gfx::Size& pic_size,
+                                const gfx::Rect& visible_rect,
+                                const size_t num_output_frames);
+
   // Change the state and check the state transition is valid.
   void SetState(State new_state);
 
@@ -149,12 +156,10 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder
   // V4L2 device in use.
   scoped_refptr<V4L2Device> device_;
   // VideoFrame manager used to allocate and recycle video frame.
-  GetFramePoolCB get_pool_cb_;
   DmabufVideoFramePool* frame_pool_ = nullptr;
 
-  // Decoder task runner. All public methods of
-  // VideoDecoderPipeline::DecoderInterface are executed at this task runner.
-  const scoped_refptr<base::SequencedTaskRunner> decoder_task_runner_;
+  // Callback to change resolution, called after the pipeline is flushed.
+  base::OnceClosure continue_change_resolution_cb_;
 
   // State of the instance.
   State state_ = State::kUninitialized;

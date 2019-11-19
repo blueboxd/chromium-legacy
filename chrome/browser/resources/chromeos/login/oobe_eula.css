@@ -9,13 +9,9 @@ a {
 }
 
 #crosEulaFrame {
-  /* Works around the problem that webview height is not calculated
-   * correctly in flex layout. 207px is derived from en-US locale under
-   * the default 640px height of #eulaDialog. */
-  height: 207px;
+  min-height: 200px;
 }
 
-#crosEulaFrame,
 #installationSettings,
 #logging {
   font-size: 13px;

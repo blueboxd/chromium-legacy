@@ -502,55 +502,30 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void LockToOrigin(const IsolationContext& isolation_context,
                             const GURL& lock_url) = 0;
 
-  // Binds |receiver| to the CacheStorageDispatcherHost instance. The binding is
-  // sent to the IO thread. This is for internal use only, and is only exposed
-  // here to support MockRenderProcessHost usage in tests.
+  // The following several methods are for internal use only, and are only
+  // exposed here to support MockRenderProcessHost usage in tests.
   virtual void BindCacheStorage(
       mojo::PendingReceiver<blink::mojom::CacheStorage> receiver,
       const url::Origin& origin) = 0;
-
-  // Binds |receiver| to the FileSystemManager instance. The receiver is sent to
-  // the IO thread. This is for internal use only, and is only exposed here to
-  // support MockRenderProcessHost usage in tests.
   virtual void BindFileSystemManager(
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver) = 0;
 
-  // Binds |receiver| to the IndexedDBDispatcherHost instance. The receiver is
-  // sent to the IO thread. This is for internal use only, and is only exposed
-  // here to support MockRenderProcessHost usage in tests.
-  //
   // |render_frame_id| is the frame associated with |receiver|, or
   // MSG_ROUTING_NONE if |receiver| is associated with a worker.
   virtual void BindIndexedDB(
       int render_frame_id,
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) = 0;
-
-  // Binds |receiver| to the VideoDecodePerfHistory instance.  This is for
-  // internal use only, and is only exposed here to support
-  // MockRenderProcessHost usage in tests.
   virtual void BindVideoDecodePerfHistory(
       mojo::PendingReceiver<media::mojom::VideoDecodePerfHistory> receiver) = 0;
-
-  // Binds |receiver| to an instance of LockManager. This is for internal use
-  // only, and is only exposed here to support MockRenderProcessHost usage in
-  // tests.
   virtual void CreateLockManager(
       int render_frame_id,
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::LockManager> receiver) = 0;
-
-  // Binds |receiver| to an instance of PermissionService. This is for internal
-  // use only, and is only exposed here to support MockRenderProcessHost usage
-  // in tests.
   virtual void CreatePermissionService(
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::PermissionService> receiver) = 0;
-
-  // Binds |receiver| to an instance of PaymentManager. This is for internal
-  // use only, and is only exposed here to support MockRenderProcessHost usage
-  // in tests.
   virtual void CreatePaymentManagerForOrigin(
       const url::Origin& origin,
       mojo::PendingReceiver<payments::mojom::PaymentManager> receiver) = 0;

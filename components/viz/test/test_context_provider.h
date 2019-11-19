@@ -94,6 +94,8 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
   bool CheckSharedImageExists(const gpu::Mailbox& mailbox) const;
 
  private:
+  mutable base::Lock lock_;
+
   uint64_t release_id_ = 0;
   gfx::Size most_recent_size_;
   gpu::SyncToken most_recent_generated_token_;

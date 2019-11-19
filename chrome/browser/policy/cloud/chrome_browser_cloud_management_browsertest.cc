@@ -24,6 +24,7 @@
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/net/system_network_context_manager.h"
+#include "chrome/browser/policy/browser_dm_token_storage.h"
 #include "chrome/browser/policy/chrome_browser_cloud_management_controller.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/fake_browser_dm_token_storage.h"
@@ -384,10 +385,12 @@ class MachineLevelUserCloudPolicyManagerTest : public InProcessBrowserTest {
     CloudPolicyStoreObserverStub observer;
 
     base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-
+    auto browser_dm_token = dm_token.empty()
+                                ? DMToken::CreateEmptyTokenForTesting()
+                                : DMToken::CreateValidTokenForTesting(dm_token);
     std::unique_ptr<MachineLevelUserCloudPolicyStore> policy_store =
         MachineLevelUserCloudPolicyStore::Create(
-            dm_token, client_id, user_data_dir,
+            browser_dm_token, client_id, user_data_dir,
             /*cloud_policy_overrides=*/false,
             base::CreateSequencedTaskRunner({base::ThreadPool(),
                                              base::MayBlock(),

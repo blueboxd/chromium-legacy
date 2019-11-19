@@ -159,12 +159,15 @@ select:-internal-list-box option:hover {
 }
 
 /* option selected */
-select:-internal-list-box:focus option:checked,
-select:-internal-list-box:focus option:checked:hover,
 select:-internal-list-box option:checked,
 select:-internal-list-box option:checked:hover {
   background-color: #cecece !important;
   color: #101010 !important;
+}
+
+select:-internal-list-box:focus option:checked:hover {
+  background-color: -internal-active-list-box-selection !important;
+  color: -internal-active-list-box-selection-text !important;
 }
 
 /* option disabled */

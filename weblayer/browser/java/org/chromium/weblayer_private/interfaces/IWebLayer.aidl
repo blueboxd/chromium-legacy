@@ -14,15 +14,19 @@ import org.chromium.weblayer_private.interfaces.IRemoteFragmentClient;
 interface IWebLayer {
   // Initializes WebLayer and starts loading.
   //
-  // It is expected that this method is called before anything else.
+  // It is expected that either loadAsync or loadSync is called before anything else.
   //
   // @param appContext     A Context that refers to the Application using WebLayer.
   // @param loadedCallback A ValueCallback that will be called when load completes.
-  void initAndLoadAsync(in IObjectWrapper appContext,
-                        in IObjectWrapper loadedCallback) = 1;
+  void loadAsync(in IObjectWrapper appContext,
+                 in IObjectWrapper loadedCallback) = 1;
 
-  // Blocks until loading has completed.
-  void loadSync() = 2;
+  // Initializes WebLayer, starts loading and blocks until loading has completed.
+  //
+  // It is expected that either loadAsync or loadSync is called before anything else.
+  //
+  // @param appContext A Context that refers to the Application using WebLayer.
+  void loadSync(in IObjectWrapper appContext) = 2;
 
   // Creates the WebLayer counterpart to a BrowserFragment - a BrowserFragmentImpl
   //

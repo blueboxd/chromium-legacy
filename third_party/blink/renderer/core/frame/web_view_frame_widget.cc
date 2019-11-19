@@ -9,7 +9,8 @@
 
 namespace blink {
 
-WebViewFrameWidget::WebViewFrameWidget(WebWidgetClient& client,
+WebViewFrameWidget::WebViewFrameWidget(util::PassKey<WebFrameWidget>,
+                                       WebWidgetClient& client,
                                        WebViewImpl& web_view)
     : WebFrameWidgetBase(client),
       web_view_(&web_view),

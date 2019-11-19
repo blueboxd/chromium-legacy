@@ -811,15 +811,17 @@ class ServiceWorkerRegistrationObjectHostTest
       std::string* out_error_msg) {
     blink::mojom::ServiceWorkerErrorType out_error =
         blink::mojom::ServiceWorkerErrorType::kUnknown;
-    registration_host->Update(base::BindLambdaForTesting(
-        [&out_error, &out_error_msg](
-            blink::mojom::ServiceWorkerErrorType error,
-            const base::Optional<std::string>& error_msg) {
-          out_error = error;
-          if (out_error_msg) {
-            *out_error_msg = error_msg ? *error_msg : "";
-          }
-        }));
+    registration_host->Update(
+        blink::mojom::FetchClientSettingsObject::New(),
+        base::BindLambdaForTesting(
+            [&out_error, &out_error_msg](
+                blink::mojom::ServiceWorkerErrorType error,
+                const base::Optional<std::string>& error_msg) {
+              out_error = error;
+              if (out_error_msg) {
+                *out_error_msg = error_msg ? *error_msg : "";
+              }
+            }));
     base::RunLoop().RunUntilIdle();
     return out_error;
   }

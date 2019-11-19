@@ -49,7 +49,8 @@ TestConfigurator::TestConfigurator()
               &test_url_loader_factory_)),
       network_fetcher_factory_(
           base::MakeRefCounted<NetworkFetcherChromiumFactory>(
-              test_shared_loader_factory_)) {}
+              test_shared_loader_factory_,
+              base::BindRepeating([](const GURL& url) { return false; }))) {}
 
 TestConfigurator::~TestConfigurator() {
 }

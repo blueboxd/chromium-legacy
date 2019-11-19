@@ -72,6 +72,7 @@ class NET_EXPORT_PRIVATE BidirectionalStreamSpdyImpl
   void OnDataSent() override;
   void OnTrailers(const spdy::SpdyHeaderBlock& trailers) override;
   void OnClose(int status) override;
+  bool CanGreaseFrameType() const override;
   NetLogSource source_dependency() const override;
 
  private:

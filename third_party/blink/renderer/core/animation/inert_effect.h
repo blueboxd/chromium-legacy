@@ -59,7 +59,7 @@ class CORE_EXPORT InertEffect final : public AnimationEffect {
   void UpdateChildrenAndEffects() const override {}
   AnimationTimeDelta CalculateTimeToEffectChange(
       bool forwards,
-      double inherited_time,
+      base::Optional<double> inherited_time,
       double time_to_next_iteration) const override;
 
  private:

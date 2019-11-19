@@ -28,7 +28,7 @@ class RequestTimer;
 // all pending uploads if the report policy is turned off.
 class ReportScheduler : public ProfileManagerObserver {
  public:
-  ReportScheduler(std::unique_ptr<policy::CloudPolicyClient> client,
+  ReportScheduler(policy::CloudPolicyClient* client,
                   std::unique_ptr<RequestTimer> request_timer,
                   std::unique_ptr<ReportGenerator> report_generator);
 
@@ -68,7 +68,7 @@ class ReportScheduler : public ProfileManagerObserver {
   // Policy value watcher
   PrefChangeRegistrar pref_change_registrar_;
 
-  std::unique_ptr<policy::CloudPolicyClient> cloud_policy_client_;
+  policy::CloudPolicyClient* cloud_policy_client_;
 
   std::unique_ptr<RequestTimer> request_timer_;
 

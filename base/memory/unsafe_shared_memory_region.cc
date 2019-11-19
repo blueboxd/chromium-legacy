@@ -6,8 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/shared_memory.h"
-
 namespace base {
 
 UnsafeSharedMemoryRegion::CreateFunction*
@@ -22,20 +20,6 @@ UnsafeSharedMemoryRegion UnsafeSharedMemoryRegion::Create(size_t size) {
       subtle::PlatformSharedMemoryRegion::CreateUnsafe(size);
 
   return UnsafeSharedMemoryRegion(std::move(handle));
-}
-
-// static
-UnsafeSharedMemoryRegion UnsafeSharedMemoryRegion::CreateFromHandle(
-    const SharedMemoryHandle& handle) {
-  if (!handle.IsValid())
-    return UnsafeSharedMemoryRegion();
-  auto platform_region =
-      subtle::PlatformSharedMemoryRegion::TakeFromSharedMemoryHandle(
-          handle, subtle::PlatformSharedMemoryRegion::Mode::kUnsafe);
-  if (!platform_region.IsValid()) {
-    return UnsafeSharedMemoryRegion();
-  }
-  return Deserialize(std::move(platform_region));
 }
 
 // static

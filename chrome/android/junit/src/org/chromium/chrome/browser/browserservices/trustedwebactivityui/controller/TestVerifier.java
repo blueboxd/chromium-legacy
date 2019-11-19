@@ -56,4 +56,9 @@ class TestVerifier implements Verifier {
     public String getVerifiedScope(String url) {
         return Origin.createOrThrow(url).toString();
     }
+
+    @Override
+    public boolean shouldIgnoreExternalIntentHandlers(String url) {
+        throw new UnsupportedOperationException();
+    }
 }

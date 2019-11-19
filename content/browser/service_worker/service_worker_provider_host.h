@@ -24,6 +24,7 @@
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/resource_type.h"
 #include "media/mojo/mojom/video_decode_perf_history.mojom.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
@@ -162,6 +163,11 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
           client_remote);
 
   ~ServiceWorkerProviderHost() override;
+
+  // May return nullptr.
+  RenderProcessHost* GetProcessHost() {
+    return RenderProcessHost::FromID(render_process_id_);
+  }
 
   const std::string& client_uuid() const { return client_uuid_; }
   const base::UnguessableToken& fetch_request_window_id() const {
@@ -437,18 +443,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // https://html.spec.whatwg.org/multipage/webappapis.html#concept-environment-execution-ready-flag
   bool is_execution_ready() const;
 
-  // For service worker execution contexts. Forwards |receiver| to the process
-  // host on the UI thread.
-  void CreateLockManager(
-      mojo::PendingReceiver<blink::mojom::LockManager> receiver);
-  void CreateIDBFactory(
-      mojo::PendingReceiver<blink::mojom::IDBFactory> receiver);
-  void BindVideoDecodePerfHistory(
-      mojo::PendingReceiver<media::mojom::VideoDecodePerfHistory> receiver);
-  void CreatePermissionService(
-      mojo::PendingReceiver<blink::mojom::PermissionService> receiver);
-  void CreatePaymentManager(
-      mojo::PendingReceiver<payments::mojom::PaymentManager> receiver);
+  // For service worker execution contexts.
   void CreateQuicTransportConnector(
       mojo::PendingReceiver<blink::mojom::QuicTransportConnector> receiver);
 

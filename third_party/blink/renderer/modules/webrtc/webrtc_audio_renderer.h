@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_WEBRTC_WEBRTC_AUDIO_RENDERER_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_WEBRTC_WEBRTC_AUDIO_RENDERER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBRTC_WEBRTC_AUDIO_RENDERER_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBRTC_WEBRTC_AUDIO_RENDERER_H_
 
 #include <stdint.h>
 
@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
@@ -25,8 +25,8 @@
 #include "media/base/channel_layout.h"
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_renderer.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_source.h"
-#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace webrtc {
 class AudioSourceInterface;
@@ -39,7 +39,7 @@ class WebRtcAudioRendererSource;
 
 // This renderer handles calls from the pipeline and WebRtc ADM. It is used
 // for connecting WebRtc MediaStream with the audio pipeline.
-class BLINK_MODULES_EXPORT WebRtcAudioRenderer
+class MODULES_EXPORT WebRtcAudioRenderer
     : public media::AudioRendererSink::RenderCallback,
       public blink::WebMediaStreamAudioRenderer {
  public:
@@ -275,4 +275,4 @@ class BLINK_MODULES_EXPORT WebRtcAudioRenderer
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_WEBRTC_WEBRTC_AUDIO_RENDERER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBRTC_WEBRTC_AUDIO_RENDERER_H_

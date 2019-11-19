@@ -153,11 +153,6 @@ def MakeHistogramSetWithDiagnostics(histograms_file,
   if max_bytes:
     add_diagnostics_args.extend(['--max_bytes', max_bytes])
 
-  stdio_url = _MakeStdioUrl(test_name, buildername, buildnumber)
-  if stdio_url:
-    add_diagnostics_args.extend(['--log_urls_k', 'Buildbot stdio'])
-    add_diagnostics_args.extend(['--log_urls_v', stdio_url])
-
   build_status_url = _MakeBuildStatusUrl(
       project, buildbucket, buildername, buildnumber)
   if build_status_url:
@@ -183,10 +178,8 @@ def MakeHistogramSetWithDiagnostics(histograms_file,
   subprocess.check_call(cmd)
 
 
-def MakeListOfPoints(charts, bot, test_name, buildername,
-                     buildnumber, supplemental_columns,
-                     perf_dashboard_machine_group,
-                     revisions_dict=None):
+def MakeListOfPoints(charts, bot, test_name, supplemental_columns,
+                     perf_dashboard_machine_group, revisions_dict=None):
   """Constructs a list of point dictionaries to send.
 
   The format output by this function is the original format for sending data
@@ -197,8 +190,6 @@ def MakeListOfPoints(charts, bot, test_name, buildername,
         log processor classes (see process_log_utils.GraphingLogProcessor).
     bot: A string which comes from perf_id, e.g. linux-release.
     test_name: A test suite name, e.g. sunspider.
-    buildername: Builder name (for stdio links).
-    buildnumber: Build number (for stdio links).
     supplemental_columns: A dictionary of extra data to send with a point.
     perf_dashboard_machine_group: Builder's perf machine group.
 
@@ -227,8 +218,6 @@ def MakeListOfPoints(charts, bot, test_name, buildername,
       # Add the supplemental_columns values that were passed in after the
       # calculated revision column values so that these can be overwritten.
       result['supplemental_columns'].update(revision_columns)
-      result['supplemental_columns'].update(
-          _GetStdioUriColumn(test_name, buildername, buildnumber))
       result['supplemental_columns'].update(supplemental_columns)
 
       result['value'] = trace_values[0]
@@ -245,8 +234,8 @@ def MakeListOfPoints(charts, bot, test_name, buildername,
   return results
 
 
-def MakeDashboardJsonV1(chart_json, revision_dict, test_name, bot, buildername,
-                        buildnumber, supplemental_dict, is_ref,
+def MakeDashboardJsonV1(chart_json, revision_dict, test_name, bot,
+                        supplemental_dict, is_ref,
                         perf_dashboard_machine_group):
   """Generates Dashboard JSON in the new Telemetry format.
 
@@ -258,8 +247,6 @@ def MakeDashboardJsonV1(chart_json, revision_dict, test_name, bot, buildername,
         which determines the point ID.
     test_name: A test suite name, e.g. sunspider.
     bot: A string which comes from perf_id, e.g. linux-release.
-    buildername: Builder name (for stdio links).
-    buildnumber: Build number (for stdio links).
     supplemental_dict: A dictionary of extra data to send with a point;
         this includes revisions and annotation data.
     is_ref: True if this is a reference build, False otherwise.
@@ -281,9 +268,6 @@ def MakeDashboardJsonV1(chart_json, revision_dict, test_name, bot, buildername,
     if key.startswith('a_'):
       supplemental[key.replace('a_', '', 1)] = supplemental_dict[key]
 
-  supplemental.update(
-      _GetStdioUriColumn(test_name, buildername, buildnumber))
-
   # TODO(sullivan): The android recipe sends "test_name.reference"
   # while the desktop one just sends "test_name" for ref builds. Need
   # to figure out why.
@@ -303,19 +287,6 @@ def MakeDashboardJsonV1(chart_json, revision_dict, test_name, bot, buildername,
   return fields
 
 
-def _MakeStdioUrl(test_name, buildername, buildnumber):
-  """Returns a string url pointing to buildbot stdio log."""
-  # TODO(780914): Link to logdog instead of buildbot.
-  if not buildername or not buildnumber:
-    return ''
-
-  return '%sbuilders/%s/builds/%s/steps/%s/logs/stdio' % (
-      _GetBuildBotUrl(),
-      urllib.quote(buildername),
-      urllib.quote(str(buildnumber)),
-      urllib.quote(test_name))
-
-
 def _MakeBuildStatusUrl(project, buildbucket, buildername, buildnumber):
   # Note: this construction only works for LUCI but it's ok because we are
   # converting all perf bots to LUCI (crbug.com/803137).
@@ -326,25 +297,6 @@ def _MakeBuildStatusUrl(project, buildbucket, buildername, buildnumber):
       urllib.quote(buildbucket),
       urllib.quote(buildername),
       urllib.quote(str(buildnumber)))
-
-
-def _GetStdioUriColumn(test_name, buildername, buildnumber):
-  """Gets a supplemental column containing buildbot stdio link."""
-  url = _MakeStdioUrl(test_name, buildername, buildnumber)
-  if not url:
-    return {}
-  return _CreateLinkColumn('stdio_uri', 'Buildbot stdio', url)
-
-
-def _CreateLinkColumn(name, label, url):
-  """Returns a column containing markdown link to show on dashboard."""
-  return {'a_' + name: '[%s](%s)' % (label, url)}
-
-
-def _GetBuildBotUrl():
-  """Gets the buildbot URL which contains hostname and master name."""
-  return os.environ.get('BUILDBOT_BUILDBOTURL',
-                        'http://build.chromium.org/p/chromium/')
 
 
 def _GetTimestamp():

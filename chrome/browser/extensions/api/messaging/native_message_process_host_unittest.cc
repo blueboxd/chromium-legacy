@@ -325,7 +325,14 @@ TEST_F(NativeMessagingTest, EchoConnect) {
 
 // Test send message with a real client. The args passed when launching the
 // native messaging host should contain reconnect args.
-TEST_F(NativeMessagingTest, ReconnectArgs) {
+//
+// TODO(crbug.com/1026121): Fix it. This test is flaky on Win7 bots.
+#if defined(OS_WIN)
+#define MAYBE_ReconnectArgs DISABLED_ReconnectArgs
+#else
+#define MAYBE_ReconnectArgs ReconnectArgs
+#endif
+TEST_F(NativeMessagingTest, MAYBE_ReconnectArgs) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kOnConnectNative);
   ScopedAllowNativeAppConnectionForTest allow_native_app_connection(true);

@@ -41,6 +41,8 @@ void ExecuteUpdate(base::WeakPtr<ServiceWorkerContextCore> context,
                    int64_t registration_id,
                    bool force_bypass_cache,
                    bool skip_script_comparison,
+                   blink::mojom::FetchClientSettingsObjectPtr
+                       outside_fetch_client_settings_object,
                    ServiceWorkerContextCore::UpdateCallback callback,
                    blink::ServiceWorkerStatusCode status) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
@@ -72,8 +74,9 @@ void ExecuteUpdate(base::WeakPtr<ServiceWorkerContextCore> context,
     return;
   }
 
-  context->UpdateServiceWorker(registration, force_bypass_cache,
-                               skip_script_comparison, std::move(callback));
+  context->UpdateServiceWorker(
+      registration, force_bypass_cache, skip_script_comparison,
+      std::move(outside_fetch_client_settings_object), std::move(callback));
 }
 
 }  // anonymous namespace
@@ -147,7 +150,10 @@ void ServiceWorkerRegistrationObjectHost::OnUpdateFound(
   remote_registration_->UpdateFound();
 }
 
-void ServiceWorkerRegistrationObjectHost::Update(UpdateCallback callback) {
+void ServiceWorkerRegistrationObjectHost::Update(
+    blink::mojom::FetchClientSettingsObjectPtr
+        outside_fetch_client_settings_object,
+    UpdateCallback callback) {
   // Run steps according to section 3.2.7:
   // https://w3c.github.io/ServiceWorker/#service-worker-registration-update
 
@@ -198,6 +204,7 @@ void ServiceWorkerRegistrationObjectHost::Update(UpdateCallback callback) {
       base::BindOnce(
           &ExecuteUpdate, context_, registration->id(),
           false /* force_bypass_cache */, false /* skip_script_comparison */,
+          std::move(outside_fetch_client_settings_object),
           base::BindOnce(&ServiceWorkerRegistrationObjectHost::UpdateComplete,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback))));
 }

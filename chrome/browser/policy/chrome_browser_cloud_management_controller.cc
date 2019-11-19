@@ -30,6 +30,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "components/policy/core/common/cloud/chrome_browser_cloud_management_metrics.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
+#include "components/policy/core/common/cloud/dm_token.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_store.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
@@ -109,15 +110,27 @@ ChromeBrowserCloudManagementController::CreatePolicyManager(
 
   std::string enrollment_token =
       BrowserDMTokenStorage::Get()->RetrieveEnrollmentToken();
-  std::string dm_token = BrowserDMTokenStorage::Get()->RetrieveDMToken();
+  DMToken dm_token = BrowserDMTokenStorage::Get()->RetrieveBrowserDMToken();
   std::string client_id = BrowserDMTokenStorage::Get()->RetrieveClientId();
 
-  VLOG(1) << "DM token = " << (dm_token.empty() ? "none" : "from persistence");
+  if (dm_token.is_empty())
+    VLOG(1) << "DM token = none";
+  else if (dm_token.is_invalid())
+    VLOG(1) << "DM token = invalid";
+  else if (dm_token.is_valid())
+    VLOG(1) << "DM token = from persistence";
+  else
+    VLOG(1) << "DM token = unknown status";
+
   VLOG(1) << "Enrollment token = " << enrollment_token;
   VLOG(1) << "Client ID = " << client_id;
 
-  if (enrollment_token.empty() && dm_token.empty())
+  // Don't create the policy manager if the DM token is explicitly invalid or if
+  // both tokens are empty.
+  if (dm_token.is_invalid() ||
+      (enrollment_token.empty() && dm_token.is_empty())) {
     return nullptr;
+  }
 
   base::FilePath user_data_dir;
   if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
@@ -172,16 +185,21 @@ void ChromeBrowserCloudManagementController::Init(
 
   if (!policy_manager)
     return;
-  // If there exists an enrollment token, then there are two states:
-  //   1/ There also exists a DM token.  This machine is already registered, so
-  //      the next step is to fetch policies.
+  // If there exists an enrollment token, then there are three states:
+  //   1/ There also exists a valid DM token.  This machine is already
+  //      registered, so the next step is to fetch policies.
   //   2/ There is no DM token.  In this case the machine is not already
   //      registered and needs to request a DM token.
+  //   3/ The also exists an invalid DM token.  Do not fetch policies or try to
+  //      request a DM token in that case.
   std::string enrollment_token;
   std::string client_id;
-  std::string dm_token = BrowserDMTokenStorage::Get()->RetrieveDMToken();
+  auto dm_token = BrowserDMTokenStorage::Get()->RetrieveBrowserDMToken();
 
-  if (!dm_token.empty()) {
+  if (dm_token.is_invalid())
+    return;
+
+  if (dm_token.is_valid()) {
     policy_fetcher_ = std::make_unique<MachineLevelUserCloudPolicyFetcher>(
         policy_manager, local_state, device_management_service,
         url_loader_factory);
@@ -201,7 +219,7 @@ void ChromeBrowserCloudManagementController::Init(
       policy_manager, local_state, device_management_service,
       url_loader_factory);
 
-  if (dm_token.empty()) {
+  if (dm_token.is_empty()) {
     cloud_management_register_watcher_ =
         std::make_unique<ChromeBrowserCloudManagementRegisterWatcher>(this);
 
@@ -329,7 +347,8 @@ void ChromeBrowserCloudManagementController::
 
   // Start fetching policies.
   VLOG(1) << "Fetch policy after enrollment.";
-  policy_fetcher_->SetupRegistrationAndFetchPolicy(dm_token, client_id);
+  policy_fetcher_->SetupRegistrationAndFetchPolicy(
+      BrowserDMTokenStorage::Get()->RetrieveBrowserDMToken(), client_id);
   if (report_scheduler_) {
     report_scheduler_->OnDMTokenUpdated();
   }
@@ -350,7 +369,7 @@ void ChromeBrowserCloudManagementController::CreateReportScheduler() {
   if (!base::FeatureList::IsEnabled(features::kEnterpriseReportingInBrowser))
     return;
 
-  auto policy_client = std::make_unique<CloudPolicyClient>(
+  cloud_policy_client_ = std::make_unique<policy::CloudPolicyClient>(
       std::string() /* machine_id */, std::string() /* machine_model */,
       std::string() /* brand_code */, std::string() /* ethernet_mac_address */,
       std::string() /* dock_mac_address */,
@@ -363,7 +382,7 @@ void ChromeBrowserCloudManagementController::CreateReportScheduler() {
   auto timer = std::make_unique<enterprise_reporting::RequestTimer>();
   auto generator = std::make_unique<enterprise_reporting::ReportGenerator>();
   report_scheduler_ = std::make_unique<enterprise_reporting::ReportScheduler>(
-      std::move(policy_client), std::move(timer), std::move(generator));
+      cloud_policy_client_.get(), std::move(timer), std::move(generator));
 }
 
 }  // namespace policy

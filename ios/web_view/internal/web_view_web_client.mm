@@ -79,6 +79,11 @@ base::RefCountedMemory* WebViewWebClient::GetDataResourceBytes(
       resource_id);
 }
 
+NSString* WebViewWebClient::GetDocumentStartScriptForAllFrames(
+    web::BrowserState* browser_state) const {
+  return GetPageScript(@"web_view_all_frames");
+}
+
 NSString* WebViewWebClient::GetDocumentStartScriptForMainFrame(
     web::BrowserState* browser_state) const {
   NSMutableArray* scripts = [NSMutableArray array];
@@ -87,7 +92,7 @@ NSString* WebViewWebClient::GetDocumentStartScriptForMainFrame(
       WebViewEarlyPageScriptProvider::FromBrowserState(browser_state);
   [scripts addObject:provider.GetScript()];
 
-  [scripts addObject:GetPageScript(@"web_view_bundle")];
+  [scripts addObject:GetPageScript(@"web_view_main_frame")];
 
   return [scripts componentsJoinedByString:@";"];
 }

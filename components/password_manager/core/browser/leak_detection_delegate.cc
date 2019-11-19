@@ -119,7 +119,7 @@ void LeakDetectionDelegate::OnError(LeakDetectionError error) {
         logger.LogMessage(Logger::STRING_LEAK_DETECTION_TOKEN_REQUEST_ERROR);
         break;
       case LeakDetectionError::kHashingFailure:
-        logger.LogMessage(Logger::STRING_LEAK_DETECTION_TOKEN_REQUEST_ERROR);
+        logger.LogMessage(Logger::STRING_LEAK_DETECTION_HASH_ERROR);
         break;
       case LeakDetectionError::kInvalidServerResponse:
         logger.LogMessage(

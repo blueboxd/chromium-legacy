@@ -12,60 +12,74 @@
 #include <string>
 #include <vector>
 
+#include "base/optional.h"
 
 namespace base {
 class FilePath;
-class ListValue;
 }
 
 namespace extensions {
 
-// A pair of classes for serialization of a set of SHA256 block hashes computed
-// over the files inside an extension.
+// A class for storage and serialization of a set of SHA256 block hashes
+// computed over the files inside an extension.
 class ComputedHashes {
  public:
-  class Reader {
+  using HashInfo = std::pair<int, std::vector<std::string>>;
+
+  // While |ComputedHashes| itself is a read-only view for the hashes, this is a
+  // subclass for modifying (eg. while computing hashes for the first time).
+  class Data {
    public:
-    Reader();
-    ~Reader();
-    bool InitFromFile(const base::FilePath& path);
+    Data();
+    ~Data();
+    Data(const Data&) = delete;
+    Data& operator=(const Data&) = delete;
+    Data(Data&&);
+    Data& operator=(Data&&);
 
-    // The block size and hashes for |relative_path| will be copied into the
-    // out parameters.
-    bool GetHashes(const base::FilePath& relative_path,
-                   int* block_size,
-                   std::vector<std::string>* hashes) const;
-
-   private:
-    typedef std::pair<int, std::vector<std::string> > HashInfo;
-
-    // This maps a relative path to a pair of (block size, hashes)
-    std::map<base::FilePath, HashInfo> data_;
-  };
-
-  class Writer {
-   public:
-    Writer();
-    ~Writer();
-
-    // Adds hashes for |relative_path|. Should not be called more than once
-    // for a given |relative_path|.
+    // Adds hashes for |relative_path|. Should not be called more than once for
+    // a given |relative_path|.
     void AddHashes(const base::FilePath& relative_path,
                    int block_size,
-                   const std::vector<std::string>& hashes);
-
-    bool WriteToFile(const base::FilePath& path);
+                   std::vector<std::string> hashes);
 
    private:
-    // Each element of this list contains the path and block hashes for one
-    // file.
-    std::unique_ptr<base::ListValue> file_list_;
+    // Map of relative path to hash info (block size, hashes).
+    std::map<base::FilePath, HashInfo> data_;
+
+    friend class ComputedHashes;
   };
+
+  explicit ComputedHashes(Data&& data);
+  ComputedHashes(const ComputedHashes&) = delete;
+  ComputedHashes& operator=(const ComputedHashes&) = delete;
+  ComputedHashes(ComputedHashes&&);
+  ComputedHashes& operator=(ComputedHashes&&);
+  ~ComputedHashes();
+
+  // Reads computed hashes from the computed_hashes.json file, returns nullopt
+  // upon any failure.
+  static base::Optional<ComputedHashes> CreateFromFile(
+      const base::FilePath& path);
+
+  // Saves computed hashes to given file, returns false upon any failure (and
+  // true on success).
+  bool WriteToFile(const base::FilePath& path) const;
+
+  // Gets hash info for |relative_path|. The block size and hashes for
+  // |relative_path| will be copied into the out parameters. Returns false if
+  // resource was not found (and true on success).
+  bool GetHashes(const base::FilePath& relative_path,
+                 int* block_size,
+                 std::vector<std::string>* hashes) const;
 
   // Returns the SHA256 hash of each |block_size| chunk in |contents|.
   static std::vector<std::string> GetHashesForContent(
       const std::string& contents,
       size_t block_size);
+
+ private:
+  Data data_;
 };
 
 }  // namespace extensions

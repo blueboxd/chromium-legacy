@@ -231,7 +231,7 @@ function loadIsolatedOriginInfo() {
 
 document.addEventListener('DOMContentLoaded', function() {
   // Setup Mojo interface to the backend.
-  pageHandler = mojom.ProcessInternalsHandler.getRemote();
+  pageHandler = mojom.ProcessInternalsHandler.getRemote(true);
 
   // Get the Site Isolation mode and populate it.
   pageHandler.getIsolationMode().then((response) => {

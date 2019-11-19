@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/printing/test_cups_printers_manager.h"
+#include "chrome/browser/chromeos/printing/test_printer_configurer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -75,14 +76,6 @@ Printer CreateEnterprisePrinter(const std::string& id,
   return printer;
 }
 
-class TestPrinterConfigurer : public chromeos::StubPrinterConfigurer {
- public:
-  void SetUpPrinter(const Printer& printer,
-                    PrinterSetupCallback callback) override {
-    std::move(callback).Run(PrinterSetupResult::kSuccess);
-  }
-};
-
 // Converts JSON string to base::ListValue object.
 // On failure, returns NULL and fills |*error| string.
 std::unique_ptr<base::ListValue> GetJSONAsListValue(const std::string& json,
@@ -106,7 +99,7 @@ class LocalPrinterHandlerChromeosTest : public testing::Test {
     PrintBackend::SetPrintBackendForTesting(test_backend_.get());
     local_printer_handler_ = LocalPrinterHandlerChromeos::CreateForTesting(
         &profile_, nullptr, &printers_manager_,
-        std::make_unique<TestPrinterConfigurer>());
+        std::make_unique<chromeos::TestPrinterConfigurer>());
   }
 
  protected:

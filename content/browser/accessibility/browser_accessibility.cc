@@ -35,17 +35,24 @@ BrowserAccessibility* BrowserAccessibility::Create() {
 }
 #endif
 
-BrowserAccessibility::BrowserAccessibility()
-    : manager_(nullptr), node_(nullptr) {}
+// static
+BrowserAccessibility* BrowserAccessibility::FromAXPlatformNodeDelegate(
+    ui::AXPlatformNodeDelegate* delegate) {
+  if (!delegate || !delegate->IsWebContent())
+    return nullptr;
+  return static_cast<BrowserAccessibility*>(delegate);
+}
 
-BrowserAccessibility::~BrowserAccessibility() {}
+BrowserAccessibility::BrowserAccessibility() = default;
+
+BrowserAccessibility::~BrowserAccessibility() = default;
 
 namespace {
 
 const BrowserAccessibility* GetTextContainerForPlainTextField(
     const BrowserAccessibility& text_field) {
   DCHECK(text_field.IsPlainTextField());
-  DCHECK(text_field.InternalChildCount() == 1);
+  DCHECK_EQ(1u, text_field.InternalChildCount());
   // Text fields wrap their static text and inline text boxes in generic
   // containers, and some, like input type=search, wrap the wrapper as well.
   // Structure is like this:
@@ -57,7 +64,7 @@ const BrowserAccessibility* GetTextContainerForPlainTextField(
   // This method will return the lowest generic container.
   const BrowserAccessibility* child = text_field.InternalGetFirstChild();
   DCHECK_EQ(child->GetRole(), ax::mojom::Role::kGenericContainer);
-  DCHECK(child->InternalChildCount() <= 1);
+  DCHECK_LE(child->InternalChildCount(), 1u);
   if (child->InternalChildCount() == 1) {
     const BrowserAccessibility* grand_child = child->InternalGetFirstChild();
     if (grand_child->GetRole() == ax::mojom::Role::kGenericContainer) {

@@ -323,6 +323,9 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithRegistration(
     context_->UpdateServiceWorker(
         registration.get(), true /* force_bypass_cache */,
         true /* skip_script_comparison */,
+        // Passing an empty outside fetch client settings object as there is no
+        // associated execution context.
+        blink::mojom::FetchClientSettingsObject::New(),
         base::BindOnce(
             &ServiceWorkerControlleeRequestHandler::DidUpdateRegistration,
             weak_factory_.GetWeakPtr(), registration));

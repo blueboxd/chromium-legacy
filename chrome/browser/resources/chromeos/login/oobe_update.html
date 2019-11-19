@@ -40,7 +40,7 @@
       <paper-progress slot="progress" id="checking-progress"
           hidden="[[!checkingForUpdate]]">
       </paper-progress>
-      <div slot="footer" class="flex layout vertical end-justified center">
+      <div slot="footer" class="flex layout vertical center-justified center">
         <img class="update-illustration"
             srcset="images/1x/updating_1x.svg 1x,
                     images/2x/updating_2x.svg 2x">
@@ -56,7 +56,7 @@
       <div slot="subtitle" class="update-subtitle">
           [[i18nDynamic(locale, 'updateOverCellularPromptMessage')]]
       </div>
-      <div slot="footer" class="flex layout vertical end-justified center">
+      <div slot="footer" class="flex layout vertical center-justified center">
         <img class="update-illustration"
             srcset="images/1x/updating_1x.svg 1x,
                     images/2x/updating_2x.svg 2x">
@@ -99,8 +99,7 @@
                                                      updateCompleted)]]">
           [[progressMessage]]
         </div>
-        <div class="flex"></div>
-        <div class="layout vertical end-justified center">
+        <div class="flex layout vertical center-justified center">
           <img class="update-illustration"
               srcset="images/1x/updating_1x.svg 1x,
                       images/2x/updating_2x.svg 2x">

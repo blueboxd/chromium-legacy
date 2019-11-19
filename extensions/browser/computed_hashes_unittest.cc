@@ -38,23 +38,27 @@ struct HashInfo {
 
 testing::AssertionResult WriteThenReadComputedHashes(
     const std::vector<HashInfo>& hash_infos,
-    extensions::ComputedHashes::Reader* reader) {
+    extensions::ComputedHashes* result) {
   base::ScopedTempDir scoped_dir;
   if (!scoped_dir.CreateUniqueTempDir())
     return testing::AssertionFailure() << "Failed to create temp dir.";
 
   base::FilePath computed_hashes_path =
       scoped_dir.GetPath().AppendASCII("computed_hashes.json");
-  extensions::ComputedHashes::Writer writer;
+  extensions::ComputedHashes::Data computed_hashes_data;
   for (const auto& info : hash_infos)
-    writer.AddHashes(info.path, info.block_size, info.hashes);
+    computed_hashes_data.AddHashes(info.path, info.block_size, info.hashes);
 
-  if (!writer.WriteToFile(computed_hashes_path)) {
+  if (!extensions::ComputedHashes(std::move(computed_hashes_data))
+           .WriteToFile(computed_hashes_path)) {
     return testing::AssertionFailure()
            << "Failed to write computed_hashes.json";
   }
-  if (!reader->InitFromFile(computed_hashes_path))
+  base::Optional<extensions::ComputedHashes> computed_hashes =
+      extensions::ComputedHashes::CreateFromFile(computed_hashes_path);
+  if (!computed_hashes)
     return testing::AssertionFailure() << "Failed to read computed_hashes.json";
+  *result = std::move(computed_hashes.value());
 
   return testing::AssertionSuccess();
 }
@@ -76,19 +80,20 @@ TEST(ComputedHashesTest, ComputedHashes) {
   const int kBlockSize1 = 4096;
   const int kBlockSize2 = 2048;
 
-  ComputedHashes::Reader reader;
+  ComputedHashes computed_hashes{ComputedHashes::Data()};
   ASSERT_TRUE(WriteThenReadComputedHashes(
-      {{path1, kBlockSize1, hashes1}, {path2, kBlockSize2, hashes2}}, &reader));
+      {{path1, kBlockSize1, hashes1}, {path2, kBlockSize2, hashes2}},
+      &computed_hashes));
 
   // After reading hashes back assert that we got what we wrote.
   std::vector<std::string> read_hashes1;
   std::vector<std::string> read_hashes2;
 
   int block_size = 0;
-  EXPECT_TRUE(reader.GetHashes(path1, &block_size, &read_hashes1));
+  EXPECT_TRUE(computed_hashes.GetHashes(path1, &block_size, &read_hashes1));
   EXPECT_EQ(block_size, 4096);
   block_size = 0;
-  EXPECT_TRUE(reader.GetHashes(path2, &block_size, &read_hashes2));
+  EXPECT_TRUE(computed_hashes.GetHashes(path2, &block_size, &read_hashes2));
   EXPECT_EQ(block_size, 2048);
 
   EXPECT_EQ(hashes1, read_hashes1);
@@ -97,8 +102,8 @@ TEST(ComputedHashesTest, ComputedHashes) {
   // Make sure we can lookup hashes for a file using incorrect case
   base::FilePath path1_badcase(FILE_PATH_LITERAL("FoO.txt"));
   std::vector<std::string> read_hashes1_badcase;
-  EXPECT_TRUE(
-      reader.GetHashes(path1_badcase, &block_size, &read_hashes1_badcase));
+  EXPECT_TRUE(computed_hashes.GetHashes(path1_badcase, &block_size,
+                                        &read_hashes1_badcase));
   EXPECT_EQ(block_size, 4096);
   EXPECT_EQ(hashes1, read_hashes1_badcase);
 
@@ -107,7 +112,8 @@ TEST(ComputedHashesTest, ComputedHashes) {
   base::FilePath path2_fwd_slashes =
       base::FilePath::FromUTF8Unsafe("foo/bar.txt");
   block_size = 0;
-  EXPECT_TRUE(reader.GetHashes(path2_fwd_slashes, &block_size, &read_hashes2));
+  EXPECT_TRUE(
+      computed_hashes.GetHashes(path2_fwd_slashes, &block_size, &read_hashes2));
   EXPECT_EQ(hashes2, read_hashes2);
 }
 
@@ -155,12 +161,12 @@ TEST(ComputedHashesTest, GetHashesForContent) {
 }
 
 // Tests that dot/space path suffixes are treated correctly in
-// ComputedHashes::Reader.
+// ComputedHashes::InitFromFile.
 //
 // Regression test for https://crbug.com/696208.
 TEST(ComputedHashesTest, DotSpaceSuffix) {
   const std::string hash_value = crypto::SHA256HashString("test");
-  ComputedHashes::Reader reader;
+  ComputedHashes computed_hashes{ComputedHashes::Data()};
   // Add hashes for "foo.html" to computed_hashes.json.
   ASSERT_TRUE(WriteThenReadComputedHashes(
       {
@@ -168,7 +174,7 @@ TEST(ComputedHashesTest, DotSpaceSuffix) {
            extension_misc::kContentVerificationDefaultBlockSize,
            {hash_value}},
       },
-      &reader));
+      &computed_hashes));
   std::vector<std::string> read_hashes;
 
   struct TestCase {
@@ -202,9 +208,10 @@ TEST(ComputedHashesTest, DotSpaceSuffix) {
     SCOPED_TRACE(test_case.ToString());
     int block_size = 0;
     std::vector<std::string> read_hashes;
-    EXPECT_EQ(test_case.expect_hash,
-              reader.GetHashes(base::FilePath().AppendASCII(test_case.path),
-                               &block_size, &read_hashes));
+    EXPECT_EQ(
+        test_case.expect_hash,
+        computed_hashes.GetHashes(base::FilePath().AppendASCII(test_case.path),
+                                  &block_size, &read_hashes));
 
     if (test_case.expect_hash) {
       EXPECT_EQ(block_size,

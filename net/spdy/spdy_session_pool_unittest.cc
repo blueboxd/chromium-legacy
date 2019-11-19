@@ -191,6 +191,8 @@ class SessionOpeningDelegate : public SpdyStream::Delegate {
     ignore_result(CreateFakeSpdySession(spdy_session_pool_, key_));
   }
 
+  bool CanGreaseFrameType() const override { return false; }
+
   NetLogSource source_dependency() const override { return NetLogSource(); }
 
  private:

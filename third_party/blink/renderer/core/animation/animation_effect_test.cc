@@ -95,15 +95,17 @@ class TestAnimationEffect : public AnimationEffect {
   }
   AnimationTimeDelta CalculateTimeToEffectChange(
       bool forwards,
-      double local_time,
+      base::Optional<double> local_time,
       double time_to_next_iteration) const override {
+    DCHECK(!local_time || !IsNull(local_time.value()));
     local_time_ = local_time;
     time_to_next_iteration_ = time_to_next_iteration;
     return AnimationTimeDelta::FromSecondsD(-1);
   }
   double TakeLocalTime() {
-    const double result = local_time_;
-    local_time_ = NullValue();
+    DCHECK(local_time_);
+    const double result = local_time_.value();
+    local_time_.reset();
     return result;
   }
 
@@ -120,7 +122,7 @@ class TestAnimationEffect : public AnimationEffect {
 
  private:
   Member<TestAnimationEffectEventDelegate> event_delegate_;
-  mutable double local_time_;
+  mutable base::Optional<double> local_time_;
   mutable double time_to_next_iteration_;
 };
 

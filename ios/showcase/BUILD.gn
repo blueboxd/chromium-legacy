@@ -80,6 +80,7 @@ ios_eg2_test("ios_showcase_eg2tests_module") {
   deps = [
     "//ios/showcase/badges:eg2_tests",
     "//ios/showcase/content_suggestions:eg2_tests",
+    "//ios/showcase/core:eg2_tests",
     "//ios/showcase/infobars:eg2_tests",
   ]
   bundle_deps = [ "//ios/showcase/core/resources" ]

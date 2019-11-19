@@ -124,7 +124,8 @@ void CrxDownloaderTest::SetUp() {
   // Do not use the background downloader in these tests.
   crx_downloader_ = CrxDownloader::Create(
       false, base::MakeRefCounted<NetworkFetcherChromiumFactory>(
-                 test_shared_url_loader_factory_));
+                 test_shared_url_loader_factory_,
+                 base::BindRepeating([](const GURL& url) { return false; })));
   crx_downloader_->set_progress_callback(progress_callback_);
 
   test_url_loader_factory_.SetInterceptor(base::BindLambdaForTesting(

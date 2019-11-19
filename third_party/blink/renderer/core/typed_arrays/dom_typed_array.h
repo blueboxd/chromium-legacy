@@ -60,6 +60,12 @@ class DOMTypedArray final : public DOMArrayBufferView {
     return buffer ? Create(std::move(buffer), 0, length) : nullptr;
   }
 
+  static ThisType* CreateUninitializedOrNull(unsigned length) {
+    scoped_refptr<ArrayBuffer> buffer =
+        ArrayBuffer::CreateOrNull(length, sizeof(ValueType));
+    return buffer ? Create(std::move(buffer), 0, length) : nullptr;
+  }
+
   explicit DOMTypedArray(scoped_refptr<TypedArray> buffer_view)
       : DOMArrayBufferView(std::move(buffer_view)) {}
   DOMTypedArray(scoped_refptr<TypedArray> buffer_view,

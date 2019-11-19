@@ -471,8 +471,8 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, FallbackWithOfflineHeader) {
   context()->storage()->StoreRegistration(registration_.get(), version_.get(),
                                           base::DoNothing());
   base::RunLoop().RunUntilIdle();
-  version_ = NULL;
-  registration_ = NULL;
+  version_.reset();
+  registration_.reset();
 
   ServiceWorkerRequestTestResources test_resources(
       this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);
@@ -492,8 +492,8 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, FallbackWithNoOfflineHeader) {
   context()->storage()->StoreRegistration(registration_.get(), version_.get(),
                                           base::DoNothing());
   base::RunLoop().RunUntilIdle();
-  version_ = NULL;
-  registration_ = NULL;
+  version_.reset();
+  registration_.reset();
 
   ServiceWorkerRequestTestResources test_resources(
       this, GURL("https://host/scope/doc"), ResourceType::kMainFrame);

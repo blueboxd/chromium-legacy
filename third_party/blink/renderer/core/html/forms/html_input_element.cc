@@ -1921,7 +1921,7 @@ bool HTMLInputElement::SetupDateTimeChooserParameters(
         continue;
       suggestion->localized_value = LocalizeValue(option->value());
       suggestion->label =
-          option->value() == option->label() ? String() : option->label();
+          option->value() == option->label() ? String("") : option->label();
       parameters.suggestions.push_back(std::move(suggestion));
     }
   }

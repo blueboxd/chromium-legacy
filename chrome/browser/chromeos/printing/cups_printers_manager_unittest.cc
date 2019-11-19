@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/printing/printers_map.h"
 #include "chrome/browser/chromeos/printing/server_printers_provider.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager.h"
+#include "chrome/browser/chromeos/printing/test_printer_configurer.h"
 #include "chrome/browser/chromeos/printing/usb_printer_detector.h"
 #include "chrome/browser/chromeos/printing/usb_printer_notification_controller.h"
 #include "chrome/common/chrome_features.h"
@@ -274,30 +275,6 @@ void ExpectPrinterIdsAre(const std::vector<Printer>& printers,
   EXPECT_EQ(sorted_ids, found_ids);
 }
 
-class FakePrinterConfigurer : public PrinterConfigurer {
- public:
-  FakePrinterConfigurer() = default;
-
-  // PrinterConfigurer overrides
-  void SetUpPrinter(const Printer& printer,
-                    PrinterSetupCallback callback) override {
-    MarkConfigured(printer.id());
-    std::move(callback).Run(PrinterSetupResult::kSuccess);
-  }
-
-  // Manipulation functions
-  bool IsConfigured(const std::string& printer_id) const {
-    return configured_.contains(printer_id);
-  }
-
-  void MarkConfigured(const std::string& printer_id) {
-    configured_.insert(printer_id);
-  }
-
- private:
-  base::flat_set<std::string> configured_;
-};
-
 class FakeUsbPrinterNotificationController
     : public UsbPrinterNotificationController {
  public:
@@ -360,7 +337,7 @@ class CupsPrintersManagerTest : public testing::Test,
     zeroconf_detector_ = zeroconf_detector.get();
     auto usb_detector = std::make_unique<FakePrinterDetector>();
     usb_detector_ = usb_detector.get();
-    auto printer_configurer = std::make_unique<FakePrinterConfigurer>();
+    auto printer_configurer = std::make_unique<TestPrinterConfigurer>();
     printer_configurer_ = printer_configurer.get();
     auto usb_notif_controller =
         std::make_unique<FakeUsbPrinterNotificationController>();
@@ -414,7 +391,7 @@ class CupsPrintersManagerTest : public testing::Test,
   FakeSyncedPrintersManager synced_printers_manager_;
   FakePrinterDetector* usb_detector_;          // Not owned.
   FakePrinterDetector* zeroconf_detector_;     // Not owned.
-  FakePrinterConfigurer* printer_configurer_;  // Not owned.
+  TestPrinterConfigurer* printer_configurer_;  // Not owned.
   FakeUsbPrinterNotificationController* usb_notif_controller_;  // Not owned.
   FakeServerPrintersProvider* server_printers_provider_;        // Not owned.
   scoped_refptr<FakePpdProvider> ppd_provider_;

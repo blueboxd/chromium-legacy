@@ -110,10 +110,10 @@ void ThreatDetailsCacheCollector::OpenEntry() {
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = GURL(resources_it_->first);
-  // Only from cache, and don't save cookies.
-  resource_request->load_flags = net::LOAD_ONLY_FROM_CACHE |
-                                 net::LOAD_SKIP_CACHE_VALIDATION |
-                                 net::LOAD_DO_NOT_SAVE_COOKIES;
+  // Only from cache, and don't use cookies.
+  resource_request->load_flags =
+      net::LOAD_ONLY_FROM_CACHE | net::LOAD_SKIP_CACHE_VALIDATION;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   current_load_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                    traffic_annotation);
   current_load_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(

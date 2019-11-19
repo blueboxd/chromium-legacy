@@ -215,7 +215,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "media.mojom.MediaMetricsProvider",
                   "media.mojom.RemoterFactory",
                   "media.mojom.Renderer",
-                  "mojom.ProcessInternalsHandler",
                   "network.mojom.RestrictedCookieManager",
                   "blink.mojom.WebSocketConnector",
                   "viz.mojom.Gpu"})

@@ -766,11 +766,45 @@ void GetMinimumIncrement(AtkValue* atk_value, GValue* value) {
                                  value);
 }
 
+gboolean SetCurrentValue(AtkValue* atk_value, const GValue* value) {
+  g_return_val_if_fail(ATK_VALUE(atk_value), FALSE);
+
+  AtkObject* atk_object = ATK_OBJECT(atk_value);
+  AXPlatformNodeAuraLinux* obj = AtkObjectToAXPlatformNodeAuraLinux(atk_object);
+  if (!obj)
+    return FALSE;
+
+  std::string new_value;
+  switch (G_VALUE_TYPE(value)) {
+    case G_TYPE_FLOAT:
+      new_value = base::NumberToString(g_value_get_float(value));
+      break;
+    case G_TYPE_INT:
+      new_value = base::NumberToString(g_value_get_int(value));
+      break;
+    case G_TYPE_INT64:
+      new_value = base::NumberToString(g_value_get_int64(value));
+      break;
+    case G_TYPE_STRING:
+      new_value = g_value_get_string(value);
+      break;
+    default:
+      return FALSE;
+  }
+
+  AXActionData data;
+  data.action = ax::mojom::Action::kSetValue;
+  data.value = new_value;
+  obj->GetDelegate()->AccessibilityPerformAction(data);
+  return TRUE;
+}
+
 void Init(AtkValueIface* iface) {
   iface->get_current_value = GetCurrentValue;
   iface->get_maximum_value = GetMaximumValue;
   iface->get_minimum_value = GetMinimumValue;
   iface->get_minimum_increment = GetMinimumIncrement;
+  iface->set_current_value = SetCurrentValue;
 }
 
 const GInterfaceInfo Info = {reinterpret_cast<GInterfaceInitFunc>(Init),
@@ -3429,10 +3463,8 @@ void AXPlatformNodeAuraLinux::OnValueChanged() {
   // If this is a non-web-content text entry, then we need to trigger text
   // change signals when the value changes. This is handled by browser
   // accessibility for web content.
-  if (IsPlainTextField() || !GetDelegate()->IsWebContent()) {
+  if (IsPlainTextField() && !GetDelegate()->IsWebContent())
     UpdateHypertext();
-    return;
-  }
 
   if (!IsRangeValueSupported(GetData()))
     return;

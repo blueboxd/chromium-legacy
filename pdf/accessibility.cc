@@ -191,6 +191,7 @@ bool GetAccessibilityInfo(
                            &page_objects->links);
   GetAccessibilityImageInfo(engine, page_index, page_info->text_run_count,
                             &page_objects->images);
+  // TODO(crbug.com/1008775): Populate highlights
   return true;
 }
 

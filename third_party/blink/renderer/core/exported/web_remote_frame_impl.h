@@ -31,10 +31,6 @@ class CORE_EXPORT WebRemoteFrameImpl final
     : public GarbageCollected<WebRemoteFrameImpl>,
       public WebRemoteFrame {
  public:
-  static WebRemoteFrameImpl* Create(WebTreeScopeType,
-                                    WebRemoteFrameClient*,
-                                    InterfaceRegistry*,
-                                    AssociatedInterfaceProvider*);
   static WebRemoteFrameImpl* CreateMainFrame(WebView*,
                                              WebRemoteFrameClient*,
                                              InterfaceRegistry*,

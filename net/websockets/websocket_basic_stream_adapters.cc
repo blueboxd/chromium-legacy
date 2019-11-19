@@ -182,6 +182,10 @@ void WebSocketSpdyStreamAdapter::OnClose(int status) {
   }
 }
 
+bool WebSocketSpdyStreamAdapter::CanGreaseFrameType() const {
+  return false;
+}
+
 NetLogSource WebSocketSpdyStreamAdapter::source_dependency() const {
   return net_log_.source();
 }

@@ -107,6 +107,10 @@ class NET_EXPORT_PRIVATE SpdyStream {
     // handle it gracefully.
     virtual void OnClose(int status) = 0;
 
+    // Returns whether it is allowed to send greased (reserved type) frames on
+    // the HTTP/2 stream.
+    virtual bool CanGreaseFrameType() const = 0;
+
     virtual NetLogSource source_dependency() const = 0;
 
    protected:

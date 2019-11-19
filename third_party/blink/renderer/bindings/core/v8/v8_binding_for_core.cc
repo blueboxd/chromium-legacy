@@ -867,23 +867,6 @@ v8::Local<v8::Object> GetEsIteratorWithMethod(
   return iterator.As<v8::Object>();
 }
 
-v8::Local<v8::Object> GetEsIterator(v8::Isolate* isolate,
-                                    v8::Local<v8::Object> object,
-                                    ExceptionState& exception_state) {
-  v8::Local<v8::Function> iterator_getter =
-      GetEsIteratorMethod(isolate, object, exception_state);
-  if (exception_state.HadException())
-    return v8::Local<v8::Object>();
-
-  if (iterator_getter.IsEmpty()) {
-    exception_state.ThrowTypeError("Iterator getter is not callable.");
-    return v8::Local<v8::Object>();
-  }
-
-  return GetEsIteratorWithMethod(isolate, iterator_getter, object,
-                                 exception_state);
-}
-
 bool HasCallableIteratorSymbol(v8::Isolate* isolate,
                                v8::Local<v8::Value> value,
                                ExceptionState& exception_state) {

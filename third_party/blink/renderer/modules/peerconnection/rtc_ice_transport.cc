@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_transport.h"
 
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/web/modules/peerconnection/peer_connection_dependency_factory.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -14,6 +13,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_adapter_cross_thread_factory.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_adapter_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_proxy.h"
+#include "third_party/blink/renderer/modules/peerconnection/peer_connection_dependency_factory.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_error_util.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_candidate.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_gather_options.h"

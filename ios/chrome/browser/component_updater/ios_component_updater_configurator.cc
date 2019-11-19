@@ -152,7 +152,9 @@ IOSConfigurator::GetNetworkFetcherFactory() {
   if (!network_fetcher_factory_) {
     network_fetcher_factory_ =
         base::MakeRefCounted<update_client::NetworkFetcherChromiumFactory>(
-            GetApplicationContext()->GetSharedURLLoaderFactory());
+            GetApplicationContext()->GetSharedURLLoaderFactory(),
+            // Never send cookies for component update downloads.
+            base::BindRepeating([](const GURL& url) { return false; }));
   }
   return network_fetcher_factory_;
 }

@@ -134,7 +134,7 @@ DumpAccessibilityTestBase::DumpUnfilteredAccessibilityTreeAsString() {
   formatter->SetPropertyFilters(property_filters);
   formatter->set_show_ids(true);
   base::string16 ax_tree_dump;
-  formatter->FormatAccessibilityTree(
+  formatter->FormatAccessibilityTreeForTesting(
       GetRootAccessibilityNode(shell()->web_contents()), &ax_tree_dump);
   return ax_tree_dump;
 }

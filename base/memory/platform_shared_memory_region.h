@@ -10,7 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/shared_memory_handle.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 
@@ -189,15 +188,6 @@ class BASE_EXPORT PlatformSharedMemoryRegion {
                                          size_t size,
                                          const UnguessableToken& guid);
 #endif
-
-  // As Take, above, but from a SharedMemoryHandle. This takes ownership of the
-  // handle. |mode| must be kUnsafe or kReadOnly; the latter must be used with a
-  // handle created with SharedMemoryHandle::GetReadOnlyHandle().
-  // TODO(crbug.com/795291): this should only be used while transitioning from
-  // the old shared memory API, and should be removed when done.
-  static PlatformSharedMemoryRegion TakeFromSharedMemoryHandle(
-      const SharedMemoryHandle& handle,
-      Mode mode);
 
   // Default constructor initializes an invalid instance, i.e. an instance that
   // doesn't wrap any valid platform handle.

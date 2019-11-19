@@ -12,6 +12,7 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -46,7 +47,8 @@ const net::NetworkTrafficAnnotationTag traffic_annotation =
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: NO
+          cookies_allowed: YES
+          cookies_store: "user"
           setting: "This feature cannot be disabled."
           chrome_policy {
             ComponentUpdatesEnabled {
@@ -92,8 +94,10 @@ int64_t GetInt64Header(const network::SimpleURLLoader* simple_url_loader,
 namespace update_client {
 
 NetworkFetcherImpl::NetworkFetcherImpl(
-    scoped_refptr<network::SharedURLLoaderFactory> shared_url_network_factory)
-    : shared_url_network_factory_(shared_url_network_factory) {}
+    scoped_refptr<network::SharedURLLoaderFactory> shared_url_network_factory,
+    SendCookiesPredicate cookie_predicate)
+    : shared_url_network_factory_(shared_url_network_factory),
+      cookie_predicate_(cookie_predicate) {}
 NetworkFetcherImpl::~NetworkFetcherImpl() = default;
 
 void NetworkFetcherImpl::PostRequest(
@@ -150,7 +154,8 @@ void NetworkFetcherImpl::DownloadToFile(
   resource_request->url = url;
   resource_request->method = "GET";
   resource_request->load_flags = net::LOAD_DISABLE_CACHE;
-  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
+  if (!cookie_predicate_.Run(url) || !network::IsUrlPotentiallyTrustworthy(url))
+    resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   simple_url_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
   simple_url_loader_->SetRetryOptions(
@@ -193,13 +198,16 @@ void NetworkFetcherImpl::OnProgressCallback(ProgressCallback progress_callback,
 }
 
 NetworkFetcherChromiumFactory::NetworkFetcherChromiumFactory(
-    scoped_refptr<network::SharedURLLoaderFactory> shared_url_network_factory)
-    : shared_url_network_factory_(shared_url_network_factory) {}
+    scoped_refptr<network::SharedURLLoaderFactory> shared_url_network_factory,
+    SendCookiesPredicate cookie_predicate)
+    : shared_url_network_factory_(shared_url_network_factory),
+      cookie_predicate_(cookie_predicate) {}
 
 NetworkFetcherChromiumFactory::~NetworkFetcherChromiumFactory() = default;
 
 std::unique_ptr<NetworkFetcher> NetworkFetcherChromiumFactory::Create() const {
-  return std::make_unique<NetworkFetcherImpl>(shared_url_network_factory_);
+  return std::make_unique<NetworkFetcherImpl>(shared_url_network_factory_,
+                                              cookie_predicate_);
 }
 
 }  // namespace update_client

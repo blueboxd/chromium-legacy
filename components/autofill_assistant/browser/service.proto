@@ -1465,6 +1465,9 @@ message DetailsProto {
     // When set to true shows placeholder in place of an image.
     bool show_image_placeholder = 10;
   }
+  // Specifies the hint for accessibility. If set to empty, the image will not
+  // be announced by accessibility.
+  optional string image_accessibility_hint = 14;
 
   // Specifies what happens when user tap on the image in the details section.
   message ImageClickthroughData {

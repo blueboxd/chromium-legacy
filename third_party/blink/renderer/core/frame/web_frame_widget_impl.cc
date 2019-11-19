@@ -41,6 +41,7 @@
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
 #include "third_party/blink/public/web/web_element.h"
+#include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_range.h"
 #include "third_party/blink/public/web/web_widget_client.h"
@@ -82,6 +83,7 @@
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/keyboard_codes.h"
 
 namespace blink {
@@ -120,8 +122,8 @@ WebFrameWidget* WebFrameWidget::CreateForMainFrame(WebWidgetClient* client,
   // Note: this isn't a leak, as the object has a self-reference that the
   // caller needs to release by calling Close().
   // TODO(dcheng): Remove the special bridge class for main frame widgets.
-  WebFrameWidgetBase* widget =
-      MakeGarbageCollected<WebViewFrameWidget>(*client, web_view_impl);
+  auto* widget = MakeGarbageCollected<WebViewFrameWidget>(
+      util::PassKey<WebFrameWidget>(), *client, web_view_impl);
   widget->BindLocalRoot(*main_frame);
   return widget;
 }
@@ -138,12 +140,14 @@ WebFrameWidget* WebFrameWidget::CreateForChildLocalRoot(
 
   // Note: this isn't a leak, as the object has a self-reference that the
   // caller needs to release by calling Close().
-  auto* widget = MakeGarbageCollected<WebFrameWidgetImpl>(*client);
+  auto* widget = MakeGarbageCollected<WebFrameWidgetImpl>(
+      util::PassKey<WebFrameWidget>(), *client);
   widget->BindLocalRoot(*local_root);
   return widget;
 }
 
-WebFrameWidgetImpl::WebFrameWidgetImpl(WebWidgetClient& client)
+WebFrameWidgetImpl::WebFrameWidgetImpl(util::PassKey<WebFrameWidget>,
+                                       WebWidgetClient& client)
     : WebFrameWidgetBase(client),
       self_keep_alive_(PERSISTENT_FROM_HERE, this) {}
 

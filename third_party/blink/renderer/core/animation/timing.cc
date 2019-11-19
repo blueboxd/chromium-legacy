@@ -114,11 +114,10 @@ ComputedEffectTiming* Timing::getComputedTiming(
   computed_timing->setEndTime(EndTimeInternal() * 1000);
   computed_timing->setActiveDuration(ActiveDuration() * 1000);
 
-  if (IsNull(calculated_timing.local_time)) {
+  if (calculated_timing.local_time)
+    computed_timing->setLocalTime(calculated_timing.local_time.value() * 1000);
+  else
     computed_timing->setLocalTimeToNull();
-  } else {
-    computed_timing->setLocalTime(calculated_timing.local_time * 1000);
-  }
 
   if (calculated_timing.is_in_effect) {
     DCHECK(calculated_timing.current_iteration);
@@ -153,7 +152,7 @@ ComputedEffectTiming* Timing::getComputedTiming(
 }
 
 Timing::CalculatedTiming Timing::CalculateTimings(
-    double local_time,
+    base::Optional<double> local_time,
     AnimationDirection animation_direction,
     bool is_keyframe_effect,
     base::Optional<double> playback_rate) const {

@@ -6739,4 +6739,17 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollPropertyHierarchy) {
   EXPECT_EQ(middle_properties->Effect(), &relative_fragment.PreEffect());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, CompositedInline) {
+  SetBodyInnerHTML(R"HTML(
+    <span id="span" style="will-change: transform; position: relative">
+      SPAN
+    </span>
+  )HTML");
+
+  auto* properties = PaintPropertiesForElement("span");
+  ASSERT_TRUE(properties);
+  ASSERT_TRUE(properties->Transform());
+  EXPECT_TRUE(properties->Transform()->HasDirectCompositingReasons());
+}
+
 }  // namespace blink

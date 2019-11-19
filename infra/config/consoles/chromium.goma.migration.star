@@ -792,6 +792,16 @@ luci.console_view(
             short_name = 'dbg',
         ),
         luci.console_view_entry(
+            builder = 'ci/android-marshmallow-x86-fyi-rel',
+            category = 'week16b',
+            short_name = 'marsh',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/Android FYI 64 Perf (Pixel 2)',
+            category = 'week16b',
+            short_name = 'pxl2',
+        ),
+        luci.console_view_entry(
             builder = 'ci/Win ASan Release',
             category = 'win|week1|asan',
         ),

@@ -226,7 +226,6 @@ MockVolumeManager.prototype.getVolumeInfo =
 MockVolumeManager.prototype.getDefaultDisplayRoot =
     VolumeManagerImpl.prototype.getDefaultDisplayRoot;
 
-
 /** @override */
 MockVolumeManager.prototype.findByDevicePath =
     VolumeManagerImpl.prototype.findByDevicePath;

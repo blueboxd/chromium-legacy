@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_impl.h"
+#include "third_party/blink/renderer/modules/webrtc/webrtc_audio_device_impl.h"
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -11,8 +11,8 @@
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/sample_rates.h"
-#include "third_party/blink/public/web/modules/webrtc/webrtc_audio_renderer.h"
 #include "third_party/blink/renderer/modules/mediastream/processed_local_audio_source.h"
+#include "third_party/blink/renderer/modules/webrtc/webrtc_audio_renderer.h"
 
 using media::AudioParameters;
 using media::ChannelLayout;

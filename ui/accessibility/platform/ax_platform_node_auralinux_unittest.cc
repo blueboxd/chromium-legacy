@@ -1001,6 +1001,57 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkValueGetMinimumIncrement) {
   g_object_unref(root_obj);
 }
 
+TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkValueChangedSignal) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kSlider;
+  root.AddFloatAttribute(ax::mojom::FloatAttribute::kMaxValueForRange, 5.0);
+  Init(root);
+
+  AtkObject* root_object(GetRootAtkObject());
+  ASSERT_TRUE(ATK_IS_OBJECT(root_object));
+  ASSERT_TRUE(ATK_IS_VALUE(root_object));
+  g_object_ref(root_object);
+
+  bool saw_value_change = false;
+  g_signal_connect(
+      root_object, "property-change::accessible-value",
+      G_CALLBACK(+[](AtkObject*, void* property, bool* saw_value_change) {
+        *saw_value_change = true;
+      }),
+      &saw_value_change);
+
+  GValue new_value = G_VALUE_INIT;
+  g_value_init(&new_value, G_TYPE_FLOAT);
+
+  g_value_set_float(&new_value, 24.0);
+  ASSERT_TRUE(atk_value_set_current_value(ATK_VALUE(root_object), &new_value));
+  GetRootPlatformNode()->NotifyAccessibilityEvent(
+      ax::mojom::Event::kValueChanged);
+
+  GValue current_value = G_VALUE_INIT;
+  atk_value_get_current_value(ATK_VALUE(root_object), &current_value);
+  EXPECT_EQ(G_TYPE_FLOAT, G_VALUE_TYPE(&current_value));
+  EXPECT_EQ(24.0, g_value_get_float(&current_value));
+  EXPECT_TRUE(saw_value_change);
+
+  saw_value_change = false;
+  g_value_set_float(&new_value, 100.0);
+  ASSERT_TRUE(atk_value_set_current_value(ATK_VALUE(root_object), &new_value));
+  GetRootPlatformNode()->NotifyAccessibilityEvent(
+      ax::mojom::Event::kValueChanged);
+
+  g_value_unset(&current_value);
+  atk_value_get_current_value(ATK_VALUE(root_object), &current_value);
+  EXPECT_EQ(G_TYPE_FLOAT, G_VALUE_TYPE(&current_value));
+  EXPECT_EQ(100.0, g_value_get_float(&current_value));
+  EXPECT_TRUE(saw_value_change);
+
+  g_value_unset(&current_value);
+  g_value_unset(&new_value);
+  g_object_unref(root_object);
+}
+
 //
 // AtkHyperlinkImpl interface
 //

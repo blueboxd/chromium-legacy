@@ -45,6 +45,7 @@ class V4L2StatelessVideoDecoderBackend : public V4L2VideoDecoderBackend,
                          int32_t bitstream_id) override;
   void OnOutputBufferDequeued(V4L2ReadableBufferRef buffer) override;
   void OnStreamStopped() override;
+  void OnChangeResolutionDone(bool success) override;
   void ClearPendingRequests(DecodeStatus status) override;
 
   // V4L2DecodeSurfaceHandler implementation.
@@ -115,7 +116,7 @@ class V4L2StatelessVideoDecoderBackend : public V4L2VideoDecoderBackend,
   // dequeued from the V4L2 device.
   void PumpOutputSurfaces();
   // Setup the format of V4L2 output buffer, and allocate new buffer set.
-  bool ChangeResolution();
+  void ChangeResolution();
 
   // Check whether request api is supported or not.
   bool CheckRequestAPISupport();

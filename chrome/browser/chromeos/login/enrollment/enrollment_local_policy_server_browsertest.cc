@@ -637,8 +637,8 @@ class EnrollmentRecoveryTest : public EnrollmentLocalPolicyServerBase {
   DISALLOW_COPY_AND_ASSIGN(EnrollmentRecoveryTest);
 };
 
-// Consistently timing out on Linux. http://crbug.com/1025220
-#if defined(OS_LINUX)
+// TODO(https://crbug.com/995784): Slow on MSAN and debug builds.
+#if defined(MEMORY_SANITIZER) || !defined(NDEBUG)
 #define MAYBE_Success DISABLED_Success
 #else
 #define MAYBE_Success Success
@@ -668,8 +668,13 @@ IN_PROC_BROWSER_TEST_F(EnrollmentRecoveryTest, MAYBE_Success) {
           .empty());
 }
 
-// TODO(1024176): Consistently timing out.
-IN_PROC_BROWSER_TEST_F(EnrollmentRecoveryTest, DISABLED_DifferentDomain) {
+// TODO(https://crbug.com/995784): Slow on MSAN and debug builds.
+#if defined(MEMORY_SANITIZER) || !defined(NDEBUG)
+#define MAYBE_DifferentDomain DISABLED_DifferentDomain
+#else
+#define MAYBE_DifferentDomain DifferentDomain
+#endif
+IN_PROC_BROWSER_TEST_F(EnrollmentRecoveryTest, MAYBE_DifferentDomain) {
   test::SkipToEnrollmentOnRecovery();
 
   ASSERT_TRUE(StartupUtils::IsDeviceRegistered());

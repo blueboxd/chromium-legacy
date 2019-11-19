@@ -193,6 +193,10 @@ base::Value Details::GetDebugContext() const {
   if (!proto_.image_url().empty())
     dict.SetKey("image_url", base::Value(proto_.image_url()));
 
+  if (!proto_.image_accessibility_hint().empty())
+    dict.SetKey("image_accessibility_hint",
+                base::Value(proto_.image_accessibility_hint()));
+
   if (!proto_.total_price().empty())
     dict.SetKey("total_price", base::Value(proto_.total_price()));
 
@@ -311,6 +315,13 @@ bool Details::MaybeUpdateFromDetailsParameters(const TriggerContext& context) {
     details_updated = true;
   }
 
+  base::Optional<std::string> image_accessibility_hint =
+      context.GetParameter("DETAILS_IMAGE_ACCESSIBILITY_HINT");
+  if (image_accessibility_hint) {
+    proto_.set_image_accessibility_hint(image_accessibility_hint.value());
+    details_updated = true;
+  }
+
   base::Optional<std::string> image_clickthrough_url =
       context.GetParameter("DETAILS_IMAGE_CLICKTHROUGH_URL");
   if (image_clickthrough_url) {
@@ -352,6 +363,10 @@ int Details::titleMaxLines() const {
 
 const std::string Details::imageUrl() const {
   return proto_.image_url();
+}
+
+const std::string Details::imageAccessibilityHint() const {
+  return proto_.image_accessibility_hint();
 }
 
 bool Details::imageAllowClickthrough() const {

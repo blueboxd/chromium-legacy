@@ -541,7 +541,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("transferDragAndHover"),
                       TestCase("transferFromDownloadsToDownloads"),
                       TestCase("transferDeletedFile"),
-                      TestCase("transferInfoIsRemembered")));
+                      TestCase("transferInfoIsRemembered"),
+                      TestCase("transferToUsbHasDestinationText")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     RestorePrefs, /* restore_prefs.js */

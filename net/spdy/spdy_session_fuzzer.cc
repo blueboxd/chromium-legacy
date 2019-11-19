@@ -39,8 +39,8 @@ class FuzzerDelegate : public net::SpdyStream::Delegate {
   void OnDataReceived(std::unique_ptr<net::SpdyBuffer> buffer) override {}
   void OnDataSent() override {}
   void OnTrailers(const spdy::SpdyHeaderBlock& trailers) override {}
-
   void OnClose(int status) override { done_closure_.Run(); }
+  bool CanGreaseFrameType() const override { return false; }
 
   net::NetLogSource source_dependency() const override {
     return net::NetLogSource();

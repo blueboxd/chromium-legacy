@@ -117,7 +117,6 @@ class ExtentStorage {
  public:
   constexpr explicit ExtentStorage(size_t size) noexcept {}
   constexpr size_t size() const noexcept { return Extent; }
-  constexpr void swap(ExtentStorage& other) noexcept {}
 };
 
 // Specialization of ExtentStorage for dynamic extents, which do require
@@ -126,12 +125,6 @@ template <>
 struct ExtentStorage<dynamic_extent> {
   constexpr explicit ExtentStorage(size_t size) noexcept : size_(size) {}
   constexpr size_t size() const noexcept { return size_; }
-  constexpr void swap(ExtentStorage& other) noexcept {
-    // Note: Can't use std::swap here, as it's not constexpr prior to C++20.
-    size_t size = size_;
-    size_ = other.size_;
-    other.size_ = size;
-  }
 
  private:
   size_t size_;
@@ -229,7 +222,7 @@ class span : public internal::ExtentStorage<Extent> {
  public:
   using element_type = T;
   using value_type = std::remove_cv_t<T>;
-  using index_type = size_t;
+  using size_type = size_t;
   using difference_type = ptrdiff_t;
   using pointer = T*;
   using reference = T&;
@@ -237,7 +230,7 @@ class span : public internal::ExtentStorage<Extent> {
   using const_iterator = CheckedContiguousConstIterator<T>;
   using reverse_iterator = std::reverse_iterator<iterator>;
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
-  static constexpr index_type extent = Extent;
+  static constexpr size_t extent = Extent;
 
   // [span.cons], span constructors, copy, assignment, and destructor
   constexpr span() noexcept : ExtentStorage(0), data_(nullptr) {
@@ -423,15 +416,6 @@ class span : public internal::ExtentStorage<Extent> {
     return const_reverse_iterator(cbegin());
   }
 
-  constexpr void swap(span& other) noexcept {
-    // Note: Can't use std::swap here, as it's not constexpr prior to C++20.
-    T* data = data_;
-    data_ = other.data_;
-    other.data_ = data;
-
-    ExtentStorage::swap(other);
-  }
-
  private:
   T* data_;
 };
@@ -454,11 +438,6 @@ template <typename T,
 span<uint8_t, (X == dynamic_extent ? dynamic_extent : sizeof(T) * X)>
 as_writable_bytes(span<T, X> s) noexcept {
   return {reinterpret_cast<uint8_t*>(s.data()), s.size_bytes()};
-}
-
-template <typename T, size_t X>
-constexpr void swap(span<T, X>& lhs, span<T, X>& rhs) noexcept {
-  lhs.swap(rhs);
 }
 
 // Type-deducing helpers for constructing a span.

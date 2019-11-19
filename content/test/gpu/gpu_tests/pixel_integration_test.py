@@ -109,8 +109,6 @@ class PixelIntegrationTest(
       # Actually run the test and capture the screenshot.
       if not tab.EvaluateJavaScript('domAutomationController._succeeded'):
         self.fail('page indicated test failure')
-      if not tab.screenshot_supported:
-        self.fail('Browser does not support screenshot capture')
       screenshot = tab.Screenshot(5)
       if screenshot is None:
         self.fail('Could not capture screenshot')

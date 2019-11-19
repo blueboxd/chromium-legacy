@@ -58,7 +58,7 @@ bool IsReportingEnabled() {
 }  // namespace
 
 ReportScheduler::ReportScheduler(
-    std::unique_ptr<policy::CloudPolicyClient> client,
+    policy::CloudPolicyClient* client,
     std::unique_ptr<RequestTimer> request_timer,
     std::unique_ptr<ReportGenerator> report_generator)
     : cloud_policy_client_(std::move(client)),
@@ -144,8 +144,8 @@ void ReportScheduler::OnReportGenerated(ReportGenerator::Requests requests) {
   }
   VLOG(1) << "Uploading enterprise report.";
   if (!report_uploader_) {
-    report_uploader_ = std::make_unique<ReportUploader>(
-        cloud_policy_client_.get(), kMaximumRetry);
+    report_uploader_ =
+        std::make_unique<ReportUploader>(cloud_policy_client_, kMaximumRetry);
   }
   report_uploader_->SetRequestAndUpload(
       std::move(requests), base::BindOnce(&ReportScheduler::OnReportUploaded,

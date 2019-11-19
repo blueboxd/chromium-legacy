@@ -20,8 +20,7 @@ GURL GenerateVshInCroshUrl(Profile* profile,
                            const std::string& container_name,
                            const std::vector<std::string>& terminal_args) {
   std::string vsh_crosh =
-      extensions::TerminalExtensionHelper::GetCroshExtensionURL(profile)
-          .spec() +
+      extensions::TerminalExtensionHelper::GetCroshURL(profile).spec() +
       "?command=vmshell";
   std::string vm_name_param = net::EscapeQueryParamValue(
       base::StringPrintf("--vm_name=%s", vm_name.c_str()), false);

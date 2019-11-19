@@ -28,10 +28,6 @@ class Screenshot(legacy_page_test.LegacyPageTest):
     self._dc_threshold = dc_threshold
 
   def ValidateAndMeasurePage(self, page, tab, results):
-    if not tab.screenshot_supported:
-      raise legacy_page_test.MeasurementFailure(
-        "Screenshotting not supported on this platform")
-
     try:
       tab.WaitForDocumentReadyStateToBeComplete()
     except py_utils.TimeoutException:

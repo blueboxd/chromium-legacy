@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_WEBRTC_WEBRTC_AUDIO_DEVICE_NOT_IMPL_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_WEBRTC_WEBRTC_AUDIO_DEVICE_NOT_IMPL_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBRTC_WEBRTC_AUDIO_DEVICE_NOT_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBRTC_WEBRTC_AUDIO_DEVICE_NOT_IMPL_H_
 
 #include <stdint.h>
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/webrtc/modules/audio_device/include/audio_device.h"
 
 namespace blink {
@@ -20,10 +20,7 @@ namespace blink {
 // this class. The main purpose of breaking out non-implemented methods into
 // a separate unit is to make WebRtcAudioDeviceImpl more readable and easier
 // to maintain.
-//
-// TODO(crbug.com/704136): Move this class out of the Blink exposed API
-// when all users of it have been Onion souped.
-class BLINK_MODULES_EXPORT WebRtcAudioDeviceNotImpl
+class MODULES_EXPORT WebRtcAudioDeviceNotImpl
     : public webrtc::AudioDeviceModule {
  public:
   WebRtcAudioDeviceNotImpl();
@@ -89,4 +86,4 @@ class BLINK_MODULES_EXPORT WebRtcAudioDeviceNotImpl
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_WEBRTC_WEBRTC_AUDIO_DEVICE_NOT_IMPL_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBRTC_WEBRTC_AUDIO_DEVICE_NOT_IMPL_H_

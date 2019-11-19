@@ -2026,7 +2026,8 @@ ui::AXTreeUpdate GetAccessibilityTreeSnapshot(WebContents* web_contents) {
   return manager->SnapshotAXTreeForTesting();
 }
 
-BrowserAccessibility* GetRootAccessibilityNode(WebContents* web_contents) {
+ui::AXPlatformNodeDelegate* GetRootAccessibilityNode(
+    WebContents* web_contents) {
   WebContentsImpl* web_contents_impl =
       static_cast<WebContentsImpl*>(web_contents);
   BrowserAccessibilityManager* manager =
@@ -2038,27 +2039,30 @@ FindAccessibilityNodeCriteria::FindAccessibilityNodeCriteria() = default;
 
 FindAccessibilityNodeCriteria::~FindAccessibilityNodeCriteria() = default;
 
-BrowserAccessibility* FindAccessibilityNode(
+ui::AXPlatformNodeDelegate* FindAccessibilityNode(
     WebContents* web_contents,
     const FindAccessibilityNodeCriteria& criteria) {
-  BrowserAccessibility* root = GetRootAccessibilityNode(web_contents);
+  ui::AXPlatformNodeDelegate* root = GetRootAccessibilityNode(web_contents);
   CHECK(root);
   return FindAccessibilityNodeInSubtree(root, criteria);
 }
 
-BrowserAccessibility* FindAccessibilityNodeInSubtree(
-    BrowserAccessibility* node,
+ui::AXPlatformNodeDelegate* FindAccessibilityNodeInSubtree(
+    ui::AXPlatformNodeDelegate* node,
     const FindAccessibilityNodeCriteria& criteria) {
+  auto* node_internal = BrowserAccessibility::FromAXPlatformNodeDelegate(node);
+  DCHECK(node_internal);
   if ((!criteria.name ||
-       node->GetStringAttribute(ax::mojom::StringAttribute::kName) ==
+       node_internal->GetStringAttribute(ax::mojom::StringAttribute::kName) ==
            criteria.name.value()) &&
-      (!criteria.role || node->GetRole() == criteria.role.value())) {
+      (!criteria.role || node_internal->GetRole() == criteria.role.value())) {
     return node;
   }
 
-  for (unsigned int i = 0; i < node->PlatformChildCount(); ++i) {
-    BrowserAccessibility* result =
-        FindAccessibilityNodeInSubtree(node->PlatformGetChild(i), criteria);
+  for (unsigned int i = 0; i < node_internal->PlatformChildCount(); ++i) {
+    BrowserAccessibility* child = node_internal->PlatformGetChild(i);
+    ui::AXPlatformNodeDelegate* result =
+        FindAccessibilityNodeInSubtree(child, criteria);
     if (result)
       return result;
   }
@@ -2068,24 +2072,22 @@ BrowserAccessibility* FindAccessibilityNodeInSubtree(
 #if defined(OS_WIN)
 template <typename T>
 Microsoft::WRL::ComPtr<T> QueryInterfaceFromNode(
-    BrowserAccessibility* browser_accessibility) {
+    ui::AXPlatformNodeDelegate* node) {
   Microsoft::WRL::ComPtr<T> result;
   EXPECT_HRESULT_SUCCEEDED(
-      browser_accessibility->GetNativeViewAccessible()->QueryInterface(
-          __uuidof(T), &result));
+      node->GetNativeViewAccessible()->QueryInterface(__uuidof(T), &result));
   return result;
 }
 
 void UiaGetPropertyValueVtArrayVtUnknownValidate(
     PROPERTYID property_id,
-    BrowserAccessibility* target_browser_accessibility,
+    ui::AXPlatformNodeDelegate* target_node,
     const std::vector<std::string>& expected_names) {
-  ASSERT_NE(nullptr, target_browser_accessibility);
+  ASSERT_TRUE(target_node);
 
   base::win::ScopedVariant result_variant;
   Microsoft::WRL::ComPtr<IRawElementProviderSimple> node_provider =
-      QueryInterfaceFromNode<IRawElementProviderSimple>(
-          target_browser_accessibility);
+      QueryInterfaceFromNode<IRawElementProviderSimple>(target_node);
 
   node_provider->GetPropertyValue(property_id, result_variant.Receive());
   ASSERT_EQ(VT_ARRAY | VT_UNKNOWN, result_variant.type());
@@ -3158,7 +3160,7 @@ namespace {
 // exposing them in the header.
 class EvictionStateWaiter : public DelegatedFrameHost::Observer {
  public:
-  EvictionStateWaiter(DelegatedFrameHost* delegated_frame_host)
+  explicit EvictionStateWaiter(DelegatedFrameHost* delegated_frame_host)
       : delegated_frame_host_(delegated_frame_host) {
     delegated_frame_host_->AddObserverForTesting(this);
   }

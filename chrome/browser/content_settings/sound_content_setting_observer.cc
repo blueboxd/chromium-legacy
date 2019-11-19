@@ -132,10 +132,6 @@ void SoundContentSettingObserver::MuteOrUnmuteIfNecessary() {
 
   TabMutedReason reason = chrome::GetTabAudioMutedReason(web_contents());
 
-  // Do not unmute if we're muted due to media capture.
-  if (!mute && reason == TabMutedReason::MEDIA_CAPTURE)
-    return;
-
   // Do not override the decisions of an extension.
   if (reason == TabMutedReason::EXTENSION)
     return;

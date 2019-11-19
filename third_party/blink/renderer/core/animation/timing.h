@@ -144,7 +144,7 @@ struct CORE_EXPORT Timing {
     bool is_current = false;
     bool is_in_effect = false;
     bool is_in_play = false;
-    double local_time = NullValue();
+    base::Optional<double> local_time;
     AnimationTimeDelta time_to_forwards_effect_change =
         AnimationTimeDelta::Max();
     AnimationTimeDelta time_to_reverse_effect_change =
@@ -152,7 +152,7 @@ struct CORE_EXPORT Timing {
     double time_to_next_iteration = std::numeric_limits<double>::infinity();
   };
 
-  CalculatedTiming CalculateTimings(double local_time,
+  CalculatedTiming CalculateTimings(base::Optional<double> local_time,
                                     AnimationDirection animation_direction,
                                     bool is_keyframe_effect,
                                     base::Optional<double> playback_rate) const;

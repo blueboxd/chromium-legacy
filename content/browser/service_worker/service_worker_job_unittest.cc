@@ -196,8 +196,11 @@ scoped_refptr<ServiceWorkerRegistration> ServiceWorkerJobTest::RunRegisterJob(
     blink::ServiceWorkerStatusCode expected_status) {
   scoped_refptr<ServiceWorkerRegistration> registration;
   base::RunLoop run_loop;
+  auto outside_fetch_client_settings_object =
+      blink::mojom::FetchClientSettingsObject::New();
+  outside_fetch_client_settings_object->outgoing_referrer = script_url;
   job_coordinator()->Register(
-      script_url, options, blink::mojom::FetchClientSettingsObject::New(),
+      script_url, options, std::move(outside_fetch_client_settings_object),
       SaveRegistration(expected_status, &registration, run_loop.QuitClosure()));
   run_loop.Run();
   return registration;

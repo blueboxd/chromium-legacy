@@ -36,6 +36,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
+#include "base/util/type_safety/pass_key.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_size.h"
@@ -61,6 +62,7 @@ class Element;
 class HTMLPlugInElement;
 class LocalFrame;
 class PaintLayerCompositor;
+class WebFrameWidget;
 class WebMouseEvent;
 class WebMouseWheelEvent;
 class WebFrameWidgetImpl;
@@ -68,7 +70,7 @@ class WebFrameWidgetImpl;
 class WebFrameWidgetImpl final : public WebFrameWidgetBase,
                                  public PageWidgetEventHandler {
  public:
-  explicit WebFrameWidgetImpl(WebWidgetClient&);
+  explicit WebFrameWidgetImpl(util::PassKey<WebFrameWidget>, WebWidgetClient&);
   ~WebFrameWidgetImpl() override;
 
   // WebWidget functions:

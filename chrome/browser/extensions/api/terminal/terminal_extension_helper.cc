@@ -9,6 +9,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chrome/common/webui_url_constants.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 
@@ -23,14 +24,14 @@ const char kCroshExtensionEntryPoint[] = "/html/crosh.html";
 const Extension* TerminalExtensionHelper::GetTerminalExtension(
     Profile* profile) {
   // Search order for terminal extensions.
-  // We prefer hterm-dev, then hterm, then the builtin crosh extension.
+  // We prefer nassh-dev, then nassh, then the builtin crosh extension.
   static const char* const kPossibleAppIds[] = {
     extension_misc::kHTermDevAppId,
     extension_misc::kHTermAppId,
     extension_misc::kCroshBuiltinAppId,
   };
 
-  // The hterm-dev should be first in the list.
+  // The nassh-dev should be first in the list.
   DCHECK_EQ(kPossibleAppIds[0], extension_misc::kHTermDevAppId);
 
   const ExtensionSet& extensions =
@@ -45,11 +46,14 @@ const Extension* TerminalExtensionHelper::GetTerminalExtension(
   return nullptr;
 }
 
-GURL TerminalExtensionHelper::GetCroshExtensionURL(Profile* profile) {
-  GURL url;
+GURL TerminalExtensionHelper::GetCroshURL(Profile* profile) {
+  // chrome://terminal by default.
+  GURL url(chrome::kChromeUITerminalURL);
   const extensions::Extension* extension = GetTerminalExtension(profile);
-  if (extension)
+  // Allow nassh-dev or nassh to override, but not crosh-buitin.
+  if (extension && extension->id() != extension_misc::kCroshBuiltinAppId) {
     url = extension->GetResourceURL(kCroshExtensionEntryPoint);
+  }
   return url;
 }
 

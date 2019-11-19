@@ -207,15 +207,9 @@ std::string QuicPacketPrinter::PrintWrite(const std::string& data) {
     framer.InstallDecrypter(
         quic::ENCRYPTION_FORWARD_SECURE,
         std::make_unique<quic::NullDecrypter>(quic::Perspective::IS_SERVER));
-    framer.InstallDecrypter(
-        quic::ENCRYPTION_ZERO_RTT,
-        std::make_unique<quic::NullDecrypter>(quic::Perspective::IS_SERVER));
   } else {
     framer.SetDecrypter(
         quic::ENCRYPTION_FORWARD_SECURE,
-        std::make_unique<quic::NullDecrypter>(quic::Perspective::IS_SERVER));
-    framer.SetDecrypter(
-        quic::ENCRYPTION_ZERO_RTT,
         std::make_unique<quic::NullDecrypter>(quic::Perspective::IS_SERVER));
   }
 

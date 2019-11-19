@@ -198,17 +198,6 @@ TEST_F(SoundContentSettingObserverTest, DontUnmuteWhenMutedByExtension) {
   EXPECT_TRUE(web_contents()->IsAudioMuted());
 }
 
-TEST_F(SoundContentSettingObserverTest, DontUnmuteWhenMutedForMediaCapture) {
-  EXPECT_FALSE(web_contents()->IsAudioMuted());
-
-  SetMuteStateForReason(true, TabMutedReason::MEDIA_CAPTURE);
-  EXPECT_TRUE(web_contents()->IsAudioMuted());
-
-  // Navigating to a new URL should not unmute the tab muted for media capture.
-  NavigateAndCommit(GURL(kURL2));
-  EXPECT_TRUE(web_contents()->IsAudioMuted());
-}
-
 TEST_F(SoundContentSettingObserverTest, DontUnmuteChromeTabWhenMuted) {
   NavigateAndCommit(GURL(kChromeURL));
   EXPECT_FALSE(web_contents()->IsAudioMuted());

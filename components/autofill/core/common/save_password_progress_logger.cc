@@ -430,12 +430,14 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "Show onboarding experience and offer to save password";
     case STRING_LEAK_DETECTION_FINISHED:
       return "Leak detection finished with result";
+    case STRING_LEAK_DETECTION_HASH_ERROR:
+      return "Leak detection failed: hashing/encryption error";
+    case STRING_LEAK_DETECTION_INVALID_SERVER_RESPONSE_ERROR:
+      return "Leak detection failed: invalid server response";
     case STRING_LEAK_DETECTION_SIGNED_OUT_ERROR:
       return "Leak detection failed: signed out";
     case STRING_LEAK_DETECTION_TOKEN_REQUEST_ERROR:
       return "Leak detection failed: can't get a token";
-    case STRING_LEAK_DETECTION_INVALID_SERVER_RESPONSE_ERROR:
-      return "Leak detection failed: invalid server response";
     case SavePasswordProgressLogger::
         STRING_PASSWORD_REQUIREMENTS_VOTE_FOR_LOWERCASE:
       return "Uploading password requirements vote for using lowercase letters";

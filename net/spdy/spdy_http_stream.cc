@@ -500,6 +500,10 @@ void SpdyHttpStream::OnClose(int status) {
   }
 }
 
+bool SpdyHttpStream::CanGreaseFrameType() const {
+  return true;
+}
+
 NetLogSource SpdyHttpStream::source_dependency() const {
   return source_dependency_;
 }

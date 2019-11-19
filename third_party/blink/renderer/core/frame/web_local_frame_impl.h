@@ -36,6 +36,7 @@
 #include <utility>
 
 #include "base/single_thread_task_runner.h"
+#include "base/util/type_safety/pass_key.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink-forward.h"
@@ -76,6 +77,7 @@ class WebLocalFrameClient;
 class WebFrameWidgetBase;
 class WebNode;
 class WebPerformance;
+class WebRemoteFrameImpl;
 class WebScriptExecutionCallback;
 class WebSpellCheckPanelHostClient;
 class WebView;
@@ -365,7 +367,12 @@ class CORE_EXPORT WebLocalFrameImpl final
                                               WebFrame*,
                                               const FramePolicy&);
 
-  WebLocalFrameImpl(WebTreeScopeType,
+  WebLocalFrameImpl(util::PassKey<WebLocalFrameImpl>,
+                    WebTreeScopeType,
+                    WebLocalFrameClient*,
+                    blink::InterfaceRegistry*);
+  WebLocalFrameImpl(util::PassKey<WebRemoteFrameImpl>,
+                    WebTreeScopeType,
                     WebLocalFrameClient*,
                     blink::InterfaceRegistry*);
   ~WebLocalFrameImpl() override;

@@ -24,7 +24,8 @@ def main():
       '--bucket', 'chromium-doclava',
       '--extract',
       '-s',
-      os.path.join('src', 'buildtools', 'android', 'doclava.tar.gz.sha1')])
+      os.path.join(os.path.dirname(__file__), '..', '..', 'buildtools',
+                   'android', 'doclava.tar.gz.sha1')])
   return 0
 
 if __name__ == '__main__':

@@ -384,6 +384,7 @@ android_fyi_builder(
 
 android_fyi_builder(
     name = 'android-marshmallow-x86-fyi-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_fyi_builder(
@@ -1479,6 +1480,7 @@ gpu_fyi_linux_builder(
 gpu_fyi_linux_builder(
     name = 'Android FYI 64 Perf (Pixel 2)',
     cores = 2,
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_fyi_linux_builder(
@@ -2026,6 +2028,7 @@ linux_builder(
 
 linux_builder(
     name = 'linux-gcc-rel',
+    goma_backend = None,
 )
 
 linux_builder(

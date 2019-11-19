@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_PEER_CONNECTION_DEPENDENCY_FACTORY_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_PEER_CONNECTION_DEPENDENCY_FACTORY_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_PEER_CONNECTION_DEPENDENCY_FACTORY_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_PEER_CONNECTION_DEPENDENCY_FACTORY_H_
 
 #include <string>
 
@@ -12,7 +12,7 @@
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
-#include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/p2p/stunprober/stun_prober.h"
 
@@ -45,7 +45,7 @@ class WebRTCPeerConnectionHandlerClient;
 class WebRtcAudioDeviceImpl;
 
 // Object factory for RTC PeerConnections.
-class BLINK_MODULES_EXPORT PeerConnectionDependencyFactory
+class MODULES_EXPORT PeerConnectionDependencyFactory
     : base::MessageLoopCurrent::DestructionObserver {
  public:
   // TODO(crbug.com/787254): Make this constructor private, when
@@ -188,4 +188,4 @@ class BLINK_MODULES_EXPORT PeerConnectionDependencyFactory
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_PEERCONNECTION_PEER_CONNECTION_DEPENDENCY_FACTORY_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_PEER_CONNECTION_DEPENDENCY_FACTORY_H_

@@ -867,7 +867,8 @@ void SpdyStream::QueueNextDataFrame() {
         &SpdyStream::OnWriteBufferConsumed, GetWeakPtr(), payload_size));
   }
 
-  if (session_->GreasedFramesEnabled()) {
+  if (session_->GreasedFramesEnabled() && delegate_ &&
+      delegate_->CanGreaseFrameType()) {
     session_->EnqueueGreasedFrame(GetWeakPtr());
   }
 

@@ -26,6 +26,7 @@ class ReportScheduler;
 
 namespace policy {
 class ChromeBrowserCloudManagementRegistrar;
+class CloudPolicyClient;
 class ConfigurationPolicyProvider;
 class MachineLevelUserCloudPolicyManager;
 class MachineLevelUserCloudPolicyFetcher;
@@ -116,6 +117,8 @@ class ChromeBrowserCloudManagementController {
   base::Time enrollment_start_time_;
 
   std::unique_ptr<enterprise_reporting::ReportScheduler> report_scheduler_;
+
+  std::unique_ptr<policy::CloudPolicyClient> cloud_policy_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserCloudManagementController);
 };

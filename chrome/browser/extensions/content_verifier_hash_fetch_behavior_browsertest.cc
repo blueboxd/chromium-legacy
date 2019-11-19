@@ -239,9 +239,8 @@ class ContentVerifierHashTest
 
   bool HasValidComputedHashes() {
     base::ScopedAllowBlockingForTesting allow_blocking;
-    ComputedHashes::Reader reader;
-    return reader.InitFromFile(
-        file_util::GetComputedHashesPath(info_->extension_root));
+    return ComputedHashes::CreateFromFile(file_util::GetComputedHashesPath(
+               info_->extension_root)) != base::nullopt;
   }
 
   bool HasValidVerifiedContents() {

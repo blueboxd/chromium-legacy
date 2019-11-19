@@ -1693,8 +1693,9 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateMainFrame(
     const WebString& name,
     WebSandboxFlags sandbox_flags,
     const FeaturePolicy::FeatureState& opener_feature_state) {
-  WebLocalFrameImpl* frame = MakeGarbageCollected<WebLocalFrameImpl>(
-      WebTreeScopeType::kDocument, client, interface_registry);
+  auto* frame = MakeGarbageCollected<WebLocalFrameImpl>(
+      util::PassKey<WebLocalFrameImpl>(), WebTreeScopeType::kDocument, client,
+      interface_registry);
   frame->SetOpener(opener);
   Page& page = *static_cast<WebViewImpl*>(web_view)->GetPage();
   DCHECK(!page.MainFrame());
@@ -1712,6 +1713,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
     const FramePolicy& frame_policy) {
   DCHECK(client);
   auto* web_frame = MakeGarbageCollected<WebLocalFrameImpl>(
+      util::PassKey<WebLocalFrameImpl>(),
       previous_web_frame->InShadowTree() ? WebTreeScopeType::kShadow
                                          : WebTreeScopeType::kDocument,
       client, interface_registry);
@@ -1760,13 +1762,14 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateLocalChild(
     WebTreeScopeType scope,
     WebLocalFrameClient* client,
     blink::InterfaceRegistry* interface_registry) {
-  WebLocalFrameImpl* frame = MakeGarbageCollected<WebLocalFrameImpl>(
-      scope, client, interface_registry);
+  auto* frame = MakeGarbageCollected<WebLocalFrameImpl>(
+      util::PassKey<WebLocalFrameImpl>(), scope, client, interface_registry);
   AppendChild(frame);
   return frame;
 }
 
 WebLocalFrameImpl::WebLocalFrameImpl(
+    util::PassKey<WebLocalFrameImpl>,
     WebTreeScopeType scope,
     WebLocalFrameClient* client,
     blink::InterfaceRegistry* interface_registry)
@@ -1784,6 +1787,16 @@ WebLocalFrameImpl::WebLocalFrameImpl(
   g_frame_count++;
   client_->BindToFrame(this);
 }
+
+WebLocalFrameImpl::WebLocalFrameImpl(
+    util::PassKey<WebRemoteFrameImpl>,
+    WebTreeScopeType scope,
+    WebLocalFrameClient* client,
+    blink::InterfaceRegistry* interface_registry)
+    : WebLocalFrameImpl(util::PassKey<WebLocalFrameImpl>(),
+                        scope,
+                        client,
+                        interface_registry) {}
 
 WebLocalFrameImpl::~WebLocalFrameImpl() {
   // The widget for the frame, if any, must have already been closed.

@@ -750,9 +750,6 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
           state.rendering_context_id =
               PtrHash<const LayoutObject>::GetHash(&object_);
         }
-        state.direct_compositing_reasons =
-            full_context_.direct_compositing_reasons &
-            CompositingReasonsForTransformProperty();
         // TODO(flackr): This only needs to consider composited transform
         // animations. This is currently a cyclic dependency but we could
         // calculate most of the compositable animation reasons up front to
@@ -762,9 +759,11 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
                 object_, full_context_.direct_compositing_reasons);
       }
 
+      state.direct_compositing_reasons =
+          full_context_.direct_compositing_reasons &
+          CompositingReasonsForTransformProperty();
       state.flags.flattens_inherited_transform =
           context_.current.should_flatten_inherited_transform;
-
       state.backface_visibility =
           object_.HasHiddenBackface()
               ? TransformPaintPropertyNode::BackfaceVisibility::kHidden

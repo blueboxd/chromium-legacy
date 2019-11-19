@@ -176,7 +176,13 @@ ChromeUpdateClientConfig::GetNetworkFetcherFactory() {
     network_fetcher_factory_ =
         base::MakeRefCounted<update_client::NetworkFetcherChromiumFactory>(
             content::BrowserContext::GetDefaultStoragePartition(context_)
-                ->GetURLLoaderFactoryForBrowserProcess());
+                ->GetURLLoaderFactoryForBrowserProcess(),
+            // Only extension updates that require authentication are served
+            // from chrome.google.com, so send cookies if and only if that is
+            // the download domain.
+            base::BindRepeating([](const GURL& url) {
+              return url.DomainIs("chrome.google.com");
+            }));
   }
   return network_fetcher_factory_;
 }

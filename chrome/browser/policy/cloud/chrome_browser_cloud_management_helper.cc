@@ -119,10 +119,10 @@ MachineLevelUserCloudPolicyFetcher::~MachineLevelUserCloudPolicyFetcher() {
 }
 
 void MachineLevelUserCloudPolicyFetcher::SetupRegistrationAndFetchPolicy(
-    const std::string& dm_token,
+    const DMToken& dm_token,
     const std::string& client_id) {
   policy_manager_->core()->client()->SetupRegistration(
-      dm_token, client_id, std::vector<std::string>());
+      dm_token.value(), client_id, std::vector<std::string>());
   policy_manager_->store()->SetupRegistration(dm_token, client_id);
   DCHECK(policy_manager_->IsClientRegistered());
 
@@ -167,7 +167,7 @@ void MachineLevelUserCloudPolicyFetcher::TryToFetchPolicy() {
   auto dm_token = BrowserDMTokenStorage::Get()->RetrieveBrowserDMToken();
   std::string client_id = BrowserDMTokenStorage::Get()->RetrieveClientId();
   if (dm_token.is_valid() && !client_id.empty())
-    SetupRegistrationAndFetchPolicy(dm_token.value(), client_id);
+    SetupRegistrationAndFetchPolicy(dm_token, client_id);
 }
 
 }  // namespace policy

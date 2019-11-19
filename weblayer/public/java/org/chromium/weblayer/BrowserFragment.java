@@ -25,8 +25,6 @@ import org.chromium.weblayer_private.interfaces.IRemoteFragment;
 import org.chromium.weblayer_private.interfaces.IRemoteFragmentClient;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 
-import java.util.concurrent.Future;
-
 /**
  * WebLayer's fragment implementation.
  *
@@ -41,7 +39,8 @@ import java.util.concurrent.Future;
  *
  * Attaching a BrowserFragment to an Activity requires WebLayer to be initialized, so
  * BrowserFragment will block the thread in onAttach until it's done. To prevent this,
- * asynchronously "pre-warm" WebLayer using {@link WebLayer#create} prior to using BrowserFragments.
+ * asynchronously "pre-warm" WebLayer using {@link WebLayer#loadAsync} prior to using
+ * BrowserFragments.
  *
  * Unfortunately, when the system restores the BrowserFragment after killing the process, it
  * attaches the fragment immediately on activity's onCreate event, so there is currently no way to
@@ -227,8 +226,7 @@ public final class BrowserFragment extends Fragment {
             throw new RuntimeException("BrowserFragment was created without arguments.");
         }
         try {
-            Future<WebLayer> future = WebLayer.create(appContext);
-            mWebLayer = future.get();
+            mWebLayer = WebLayer.loadSync(appContext);
             mImpl = mWebLayer.connectFragment(mClientImpl, args);
             mRemoteFragment = mImpl.asRemoteFragment();
         } catch (Exception e) {

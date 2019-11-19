@@ -95,6 +95,10 @@ class CORE_EXPORT ArrayBufferContents {
   }
   bool IsValid() const { return backing_store_ && backing_store_->Data(); }
 
+  std::shared_ptr<v8::BackingStore> BackingStore() const {
+    return backing_store_;
+  }
+
   void Transfer(ArrayBufferContents& other);
   void ShareWith(ArrayBufferContents& other);
   void ShareNonSharedForInternalUse(ArrayBufferContents& other);

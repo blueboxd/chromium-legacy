@@ -3283,7 +3283,6 @@ test("unit_tests") {
     "../browser/ssl/ssl_config_service_manager_pref_unittest.cc",
     "../browser/ssl/ssl_error_assistant_unittest.cc",
     "../browser/ssl/ssl_error_handler_unittest.cc",
-    "../browser/ssl/ssl_error_navigation_throttle_unittest.cc",
     "../browser/ssl/tls_deprecation_config_unittest.cc",
     "../browser/ssl/typed_navigation_timing_throttle_unittest.cc",
     "../browser/status_icons/status_icon_menu_model_unittest.cc",

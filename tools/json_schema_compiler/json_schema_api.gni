@@ -61,6 +61,14 @@ compiler_sources = [
 #   A string to prepend to generated bundle class names, so that multiple
 #   bundle rules can be used without conflicting.  Only used with one of
 #   the cpp-bundle generators.
+#
+# root [optional]
+#   base directory of the source json file(s)
+#   defaults to "//"
+#
+# target_prefix [optional]
+#   subdir below root_gen_dir that is the base directory for the generated
+#   output files, defaults to empty string (no subdir)
 template("generated_json_strings") {
   assert(defined(invoker.sources),
          "\"sources\" must be defined for the $target_name template.")
@@ -68,18 +76,32 @@ template("generated_json_strings") {
          "\"root_namespace\" must be defined for the $target_name template.")
   assert(defined(invoker.bundle_name),
          "\"bundle_name\" must be defined for bundles")
+  assert(!defined(invoker.root) || defined(invoker.target_prefix),
+         "\"target_prefix\" is required when \"root\" is specified")
 
   schema_include_rules = ""
   if (defined(invoker.schema_include_rules)) {
     schema_include_rules = invoker.schema_include_rules
   }
 
+  include_dir = root_gen_dir
+  destdir = rebase_path(root_gen_dir, root_build_dir)
+  if (defined(invoker.target_prefix)) {
+    destdir += "/${invoker.target_prefix}"
+    include_dir += "/${invoker.target_prefix}"
+  }
+
   generated_config_name = target_name + "_generated_config"
   config(generated_config_name) {
-    include_dirs = [ root_gen_dir ]
+    include_dirs = [ include_dir ]
   }
 
   root_namespace = invoker.root_namespace
+  if (defined(invoker.root)) { 
+    root_folder = invoker.root
+  } else {
+    root_folder = "//"
+  }
 
   # Save the target_name, since other targets (like the action() and
   # action_foreach() below) need to reference them, but would have their own
@@ -96,8 +118,8 @@ template("generated_json_strings") {
       "$target_gen_dir/generated_schemas.h",
     ]
     args = [
-             "--root=" + rebase_path("//", root_build_dir),
-             "--destdir=" + rebase_path(root_gen_dir, root_build_dir),
+             "--root=" + rebase_path(root_folder, root_build_dir),
+             "--destdir=$destdir",
              "--namespace=$root_namespace",
              "--bundle-name=" + invoker.bundle_name,
              "--generator=cpp-bundle-schema",
@@ -148,6 +170,14 @@ template("generated_json_strings") {
 #   used as the root path when looking for {schema}/{schema}_api.h headers
 #   when generating API registration bundles. Such headers, if found, are
 #   automatically included by the generated code.
+#
+# root [optional]
+#   base directory of the source json file(s)
+#   defaults to "//"
+#
+# target_prefix [optional]
+#   subdir below root_gen_dir that is the base directory for the generated
+#   output files, defaults to empty string (no subdir)
 template("function_registration") {
   assert(defined(invoker.sources),
          "\"sources\" must be defined for the $target_name template.")
@@ -157,15 +187,24 @@ template("function_registration") {
          "\"bundle_name\" must be defined for bundle registrations")
   assert(defined(invoker.impl_dir),
          "\"impl_dir\" must be defined for the $target_name template.")
+  assert(!defined(invoker.root) || defined(invoker.target_prefix),
+         "\"target_prefix\" is required when \"root\" is specified")
 
   schema_include_rules = ""
   if (defined(invoker.schema_include_rules)) {
     schema_include_rules = invoker.schema_include_rules
   }
 
+  include_dir = root_gen_dir
+  destdir = rebase_path(root_gen_dir, root_build_dir)
+  if (defined(invoker.target_prefix)) {
+    destdir += "/${invoker.target_prefix}"
+    include_dir += "/${invoker.target_prefix}"
+  }
+
   generated_config_name = target_name + "_generated_config"
   config(generated_config_name) {
-    include_dirs = [ root_gen_dir ]
+    include_dirs = [ include_dir ]
   }
 
   root_namespace = invoker.root_namespace
@@ -175,8 +214,14 @@ template("function_registration") {
   # target_name variable.
   root_target_name = target_name
 
+  if (defined(invoker.root)) {
+    root_folder = invoker.root
+  } else {
+    root_folder = "//"
+  }
+
   # Child directory inside the generated file tree.
-  gen_child_dir = rebase_path(invoker.impl_dir, "//")
+  gen_child_dir = get_path_info(invoker.impl_dir+"/", "gen_dir")
 
   bundle_generator_registration_name =
       target_name + "_bundle_generator_registration"
@@ -185,16 +230,16 @@ template("function_registration") {
     script = compiler_script
     inputs = compiler_sources + invoker.sources
     outputs = [
-      "$root_gen_dir/$gen_child_dir/generated_api_registration.cc",
-      "$root_gen_dir/$gen_child_dir/generated_api_registration.h",
+      "$gen_child_dir/generated_api_registration.cc",
+      "$gen_child_dir/generated_api_registration.h",
     ]
     args = [
-             "--root=" + rebase_path("//", root_build_dir),
-             "--destdir=" + rebase_path(root_gen_dir, root_build_dir),
+             "--root=" + rebase_path(root_folder, root_build_dir),
+             "--destdir=$destdir",
              "--namespace=$root_namespace",
              "--bundle-name=" + invoker.bundle_name,
              "--generator=cpp-bundle-registration",
-             "--impl-dir=$gen_child_dir",
+             "--impl-dir=" + rebase_path(invoker.impl_dir, root_folder),
              "--include-rules=$schema_include_rules",
            ] + rebase_path(invoker.sources, root_build_dir)
   }
@@ -225,20 +270,43 @@ template("function_registration") {
 }
 
 # Generates the C++ types for the given APIs.
+#
+# root [optional]
+#   base directory of the source json file(s)
+#   defaults to "//"
+#
+# target_prefix [optional]
+#   subdir below root_gen_dir that is the base directory for the generated
+#   output files, defaults to empty string (no subdir)
 template("generated_types") {
   assert(defined(invoker.sources),
          "\"sources\" must be defined for the $target_name template.")
   assert(defined(invoker.root_namespace),
          "\"root_namespace\" must be defined for the $target_name template.")
+  assert(!defined(invoker.root) || defined(invoker.target_prefix),
+         "\"target_prefix\" is required when \"root\" is specified")
 
   schema_include_rules = ""
   if (defined(invoker.schema_include_rules)) {
     schema_include_rules = invoker.schema_include_rules
   }
 
+  include_dir = root_gen_dir
+  destdir = rebase_path(root_gen_dir, root_build_dir)
+  if (defined(invoker.target_prefix)) {
+    destdir += "/${invoker.target_prefix}"
+    include_dir += "/${invoker.target_prefix}"
+  }
+
   generated_config_name = target_name + "_generated_config"
   config(generated_config_name) {
-    include_dirs = [ root_gen_dir ]
+    include_dirs = [ include_dir ]
+  }
+
+  if (defined(invoker.root)) {
+    root_folder = invoker.root
+  } else {
+    root_folder = "//"
   }
 
   root_namespace = invoker.root_namespace
@@ -260,8 +328,8 @@ template("generated_types") {
     ]
     args = [
       "{{source}}",
-      "--root=" + rebase_path("//", root_build_dir),
-      "--destdir=" + rebase_path(root_gen_dir, root_build_dir),
+      "--root=" + rebase_path(root_folder, root_build_dir),
+      "--destdir=$destdir",
       "--namespace=$root_namespace",
       "--generator=cpp",
       "--include-rules=$schema_include_rules",

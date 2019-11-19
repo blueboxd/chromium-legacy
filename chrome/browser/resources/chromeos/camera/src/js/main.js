@@ -116,39 +116,34 @@ cca.App.prototype.setupToggles_ = function() {
         (event) => cca.util.getShortcutIdentifier(event) === 'Enter' &&
             element.click());
 
-    var css = element.getAttribute('data-state');
-    var key = element.getAttribute('data-key');
-    var payload = () => {
-      var keys = {};
-      keys[key] = element.checked;
-      return keys;
+    const payload = (element) => ({[element.dataset.key]: element.checked});
+    const save = (element) => {
+      if (element.dataset.key !== undefined) {
+        cca.proxy.browserProxy.localStorageSet(payload(element));
+      }
     };
     element.addEventListener('change', (event) => {
-      if (css) {
-        cca.state.set(css, element.checked);
+      if (element.dataset.state !== undefined) {
+        cca.state.set(element.dataset.state, element.checked);
       }
       if (event.isTrusted) {
-        element.save();
+        save(element);
         if (element.type === 'radio' && element.checked) {
           // Handle unchecked grouped sibling radios.
-          var grouped = `input[type=radio][name=${element.name}]:not(:checked)`;
+          const grouped =
+              `input[type=radio][name=${element.name}]:not(:checked)`;
           document.querySelectorAll(grouped).forEach(
               (radio) =>
-                  radio.dispatchEvent(new Event('change')) && radio.save());
+                  radio.dispatchEvent(new Event('change')) && save(radio));
         }
       }
     });
-    element.toggleChecked = (checked) => {
-      element.checked = checked;
-      element.dispatchEvent(new Event('change'));  // Trigger toggling css.
-    };
-    element.save = () => {
-      return key && cca.proxy.browserProxy.localStorageSet(payload());
-    };
-    if (key) {
+    if (element.dataset.key !== undefined) {
       // Restore the previously saved state on startup.
       cca.proxy.browserProxy.localStorageGet(
-          payload(), (values) => element.toggleChecked(values[key]));
+          payload(element),
+          (values) =>
+              cca.util.toggleChecked(element, values[element.dataset.key]));
     }
   });
 };

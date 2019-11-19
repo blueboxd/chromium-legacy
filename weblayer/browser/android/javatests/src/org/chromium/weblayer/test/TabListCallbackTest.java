@@ -4,7 +4,6 @@
 
 package org.chromium.weblayer.test;
 
-import android.os.Bundle;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
@@ -106,7 +105,7 @@ public class TabListCallbackTest {
     public void testMoveToDifferentFragment() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Browser browser2 =
-                    Browser.fromFragment(mActivity.createBrowserFragment(0, new Bundle()));
+                    Browser.fromFragment(mActivity.createBrowserFragment(0));
             Browser browser1 = mActivity.getBrowser();
             TabListCallbackImpl callback1 = new TabListCallbackImpl();
             browser1.registerTabListCallback(callback1);

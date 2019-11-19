@@ -63,13 +63,11 @@ VaapiVideoDecoder::DecodeTask::~DecodeTask() = default;
 VaapiVideoDecoder::DecodeTask::DecodeTask(DecodeTask&&) = default;
 
 // static
-std::unique_ptr<VideoDecoderPipeline::DecoderInterface>
-VaapiVideoDecoder::Create(
+std::unique_ptr<DecoderInterface> VaapiVideoDecoder::Create(
     scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
-    GetFramePoolCB get_pool_cb) {
-  return base::WrapUnique<VideoDecoderPipeline::DecoderInterface>(
-      new VaapiVideoDecoder(std::move(decoder_task_runner),
-                            std::move(get_pool_cb)));
+    base::WeakPtr<DecoderInterface::Client> client) {
+  return base::WrapUnique<DecoderInterface>(
+      new VaapiVideoDecoder(std::move(decoder_task_runner), std::move(client)));
 }
 
 // static
@@ -80,10 +78,9 @@ SupportedVideoDecoderConfigs VaapiVideoDecoder::GetSupportedConfigs() {
 
 VaapiVideoDecoder::VaapiVideoDecoder(
     scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
-    GetFramePoolCB get_pool_cb)
-    : get_pool_cb_(std::move(get_pool_cb)),
+    base::WeakPtr<DecoderInterface::Client> client)
+    : DecoderInterface(std::move(decoder_task_runner), std::move(client)),
       buffer_id_to_timestamp_(kTimestampCacheSize),
-      decoder_task_runner_(std::move(decoder_task_runner)),
       weak_this_factory_(this) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   VLOGF(2);
@@ -123,7 +120,7 @@ void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   // We expect the decoder to have released all output buffers (by the client
   // triggering a flush or reset), even if the
-  // VideoDecoderPipeline::DecoderInterface API doesn't explicitly specify this.
+  // DecoderInterface API doesn't explicitly specify this.
   DCHECK(output_frames_.empty());
 
   if (state_ != State::kUninitialized) {
@@ -166,7 +163,8 @@ void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
   }
 
   // Get and initialize the frame pool.
-  frame_pool_ = get_pool_cb_.Run();
+  DCHECK(client_);
+  frame_pool_ = client_->GetVideoFramePool();
 
   pixel_aspect_ratio_ = config.GetPixelAspectRatio();
   profile_ = profile;
@@ -258,7 +256,10 @@ void VaapiVideoDecoder::HandleDecodeTask() {
     case AcceleratedVideoDecoder::kAllocateNewSurfaces:
       // A new set of output buffers is requested. We either didn't have any
       // output buffers yet or encountered a resolution change.
-      ChangeFrameResolutionTask();
+      // After the pipeline flushes all frames, OnPipelineFlushed() will be
+      // called and we can start changing resolution.
+      DCHECK(client_);
+      client_->PrepareChangeResolution();
       break;
     case AcceleratedVideoDecoder::kRanOutOfSurfaces:
       // No more surfaces to decode into available, wait until client returns
@@ -397,7 +398,7 @@ void VaapiVideoDecoder::OutputFrameTask(scoped_refptr<VideoFrame> video_frame,
   output_cb_.Run(std::move(video_frame));
 }
 
-void VaapiVideoDecoder::ChangeFrameResolutionTask() {
+void VaapiVideoDecoder::OnPipelineFlushed() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DCHECK(state_ == State::kDecoding);
   DCHECK(output_frames_.empty());

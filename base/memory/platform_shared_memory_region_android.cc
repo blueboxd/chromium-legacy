@@ -60,20 +60,6 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Take(
   return PlatformSharedMemoryRegion(std::move(fd), mode, size, guid);
 }
 
-// static
-PlatformSharedMemoryRegion
-PlatformSharedMemoryRegion::TakeFromSharedMemoryHandle(
-    const SharedMemoryHandle& handle,
-    Mode mode) {
-  CHECK((mode == Mode::kReadOnly && handle.IsReadOnly()) ||
-        (mode == Mode::kUnsafe && !handle.IsReadOnly()));
-  if (!handle.IsValid())
-    return {};
-
-  return Take(ScopedFD(handle.GetHandle()), mode, handle.GetSize(),
-              handle.GetGUID());
-}
-
 int PlatformSharedMemoryRegion::GetPlatformHandle() const {
   return handle_.get();
 }

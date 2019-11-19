@@ -82,6 +82,7 @@ ServiceWorkerUpdateChecker::ServiceWorkerUpdateChecker(
     std::vector<ServiceWorkerDatabase::ResourceRecord> scripts_to_compare,
     const GURL& main_script_url,
     int64_t main_script_resource_id,
+    const GURL& referrer,
     scoped_refptr<ServiceWorkerVersion> version_to_update,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
     bool force_bypass_cache,
@@ -90,6 +91,7 @@ ServiceWorkerUpdateChecker::ServiceWorkerUpdateChecker(
     ServiceWorkerContextCore* context)
     : main_script_url_(main_script_url),
       main_script_resource_id_(main_script_resource_id),
+      referrer_(referrer),
       scripts_to_compare_(std::move(scripts_to_compare)),
       version_to_update_(std::move(version_to_update)),
       loader_factory_(std::move(loader_factory)),
@@ -98,6 +100,7 @@ ServiceWorkerUpdateChecker::ServiceWorkerUpdateChecker(
       time_since_last_check_(time_since_last_check),
       context_(context) {
   DCHECK(context_);
+  DCHECK(referrer.is_valid());
 }
 
 ServiceWorkerUpdateChecker::~ServiceWorkerUpdateChecker() = default;
@@ -252,10 +255,11 @@ void ServiceWorkerUpdateChecker::CheckOneScript(const GURL& url,
 
   auto writer = storage->CreateResponseWriter(storage->NewResourceId());
   running_checker_ = std::make_unique<ServiceWorkerSingleScriptUpdateChecker>(
-      url, is_main_script, main_script_url_, version_to_update_->scope(),
-      force_bypass_cache_, update_via_cache_, time_since_last_check_,
-      default_headers_, browser_context_getter_, loader_factory_,
-      std::move(compare_reader), std::move(copy_reader), std::move(writer),
+      url, referrer_, is_main_script, main_script_url_,
+      version_to_update_->scope(), force_bypass_cache_, update_via_cache_,
+      time_since_last_check_, default_headers_, browser_context_getter_,
+      loader_factory_, std::move(compare_reader), std::move(copy_reader),
+      std::move(writer),
       base::BindOnce(&ServiceWorkerUpdateChecker::OnOneUpdateCheckFinished,
                      weak_factory_.GetWeakPtr(), resource_id));
 }

@@ -55,6 +55,18 @@ base::string16 GetNotificationTitleForError(
     case PrinterErrorCode::DOOR_OPEN:
       return l10n_util::GetStringUTF16(
           IDS_PRINT_JOB_DOOR_OPEN_NOTIFICATION_TITLE);
+    case PrinterErrorCode::PRINTER_UNREACHABLE:
+      return l10n_util::GetStringUTF16(
+          IDS_PRINT_JOB_PRINTER_UNREACHABLE_NOTIFICATION_TITLE);
+    case PrinterErrorCode::TRAY_MISSING:
+      return l10n_util::GetStringUTF16(
+          IDS_PRINT_JOB_TRAY_MISSING_NOTIFICATION_TITLE);
+    case PrinterErrorCode::OUTPUT_FULL:
+      return l10n_util::GetStringUTF16(
+          IDS_PRINT_JOB_OUTPUT_FULL_NOTIFICATION_TITLE);
+    case PrinterErrorCode::STOPPED:
+      return l10n_util::GetStringUTF16(
+          IDS_PRINT_JOB_STOPPED_NOTIFICATION_TITLE);
     default:
       return l10n_util::GetStringUTF16(IDS_PRINT_JOB_ERROR_NOTIFICATION_TITLE);
   }

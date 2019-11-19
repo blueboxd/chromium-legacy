@@ -145,24 +145,9 @@ bool AudioBuffer::CreatedSuccessfully(
 DOMFloat32Array* AudioBuffer::CreateFloat32ArrayOrNull(
     uint32_t length,
     InitializationPolicy policy) {
-  scoped_refptr<Float32Array> buffer;
-
-  switch (policy) {
-    case kZeroInitialize:
-      buffer = Float32Array::CreateOrNull(length);
-      break;
-    case kDontInitialize:
-      buffer = Float32Array::CreateUninitializedOrNull(length);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-
-  if (!buffer) {
-    return nullptr;
-  }
-  return DOMFloat32Array::Create(std::move(buffer));
+  return policy == kZeroInitialize
+             ? DOMFloat32Array::CreateOrNull(length)
+             : DOMFloat32Array::CreateUninitializedOrNull(length);
 }
 
 AudioBuffer::AudioBuffer(unsigned number_of_channels,

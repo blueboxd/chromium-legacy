@@ -131,6 +131,20 @@ class AutofillAssistantUiTestUtil {
         };
     }
 
+    public static Matcher<View> isImportantForAccessibility(int mode) {
+        return new TypeSafeMatcher<View>() {
+            @Override
+            protected boolean matchesSafely(View item) {
+                return mode == item.getImportantForAccessibility();
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendText("important for Accessibility set to " + mode);
+            }
+        };
+    }
+
     public static ViewAction openTextLink(String textLink) {
         return new ViewAction() {
             @Override

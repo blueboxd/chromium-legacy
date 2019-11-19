@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_WEBRTC_WEBRTC_AUDIO_DEVICE_IMPL_H_
-#define THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_WEBRTC_WEBRTC_AUDIO_DEVICE_IMPL_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBRTC_WEBRTC_AUDIO_DEVICE_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBRTC_WEBRTC_AUDIO_DEVICE_IMPL_H_
 
 #include <stdint.h>
 
@@ -13,12 +13,12 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/unguessable_token.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_source.h"
-#include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_not_impl.h"
+#include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/webrtc/webrtc_audio_device_not_impl.h"
 
 // A WebRtcAudioDeviceImpl instance implements the abstract interface
 // webrtc::AudioDeviceModule which makes it possible for a user (e.g. webrtc::
@@ -49,10 +49,7 @@ class ProcessedLocalAudioSource;
 // Note that this class inherits from webrtc::AudioDeviceModule but due to
 // the high number of non-implemented methods, we move the cruft over to the
 // WebRtcAudioDeviceNotImpl.
-//
-// TODO(crbug.com/704136): Move this class out of the Blink exposed API
-// when all users of it have been Onion souped.
-class BLINK_MODULES_EXPORT WebRtcAudioDeviceImpl
+class MODULES_EXPORT WebRtcAudioDeviceImpl
     : public WebRtcAudioDeviceNotImpl,
       public blink::WebRtcAudioRendererSource,
       public blink::WebRtcPlayoutDataSource {
@@ -204,4 +201,4 @@ class BLINK_MODULES_EXPORT WebRtcAudioDeviceImpl
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_MODULES_WEBRTC_WEBRTC_AUDIO_DEVICE_IMPL_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBRTC_WEBRTC_AUDIO_DEVICE_IMPL_H_

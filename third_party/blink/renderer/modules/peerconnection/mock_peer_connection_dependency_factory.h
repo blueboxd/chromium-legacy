@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "third_party/blink/public/web/modules/peerconnection/peer_connection_dependency_factory.h"
+#include "third_party/blink/renderer/modules/peerconnection/peer_connection_dependency_factory.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
 namespace base {

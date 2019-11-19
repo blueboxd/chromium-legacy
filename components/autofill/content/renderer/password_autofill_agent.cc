@@ -1263,8 +1263,18 @@ void PasswordAutofillAgent::TouchToFillClosed(bool show_virtual_keyboard) {
   if (!password_element.IsNull())
     password_element.SetAutofillState(password_autofill_state_);
 
-  if (show_virtual_keyboard)
+  if (show_virtual_keyboard) {
     render_frame()->ShowVirtualKeyboard();
+
+    // Since Touch To Fill suppresses the Autofill popup, re-trigger the
+    // suggestions in case the virtual keyboard should be shown. This is limited
+    // to the keyboard accessory, as otherwise it would result in a flickering
+    // of the popup, due to showing the keyboard at the same time.
+    if (IsKeyboardAccessoryEnabled()) {
+      ShowSuggestions(focused_input_element_, /*show_all=*/false,
+                      /*generation_popup_showing=*/false);
+    }
+  }
 }
 
 void PasswordAutofillAgent::AnnotateFieldsWithParsingResult(

@@ -113,6 +113,7 @@ uint64_t GetDisallowedFeatures(RenderFrameHostImpl* rfh) {
   // TODO(https://crbug.com/1015784): Finalize disallowed feature list, and test
   // for each disallowed feature.
   constexpr uint64_t kAlwaysDisallowedFeatures =
+      FeatureToBit(WebSchedulerTrackedFeature::kWebSocket) |
       FeatureToBit(WebSchedulerTrackedFeature::kWebRTC) |
       FeatureToBit(WebSchedulerTrackedFeature::kContainsPlugins) |
       FeatureToBit(WebSchedulerTrackedFeature::kDedicatedWorkerOrWorklet) |

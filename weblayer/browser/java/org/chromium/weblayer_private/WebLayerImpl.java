@@ -60,6 +60,8 @@ public final class WebLayerImpl extends IWebLayer.Stub {
 
     private final ProfileManager mProfileManager = new ProfileManager();
 
+    private boolean mInited;
+
     private static class FileProviderHelper implements ContentUriUtils.FileProviderUtil {
         // Keep this variable in sync with the value defined in AndroidManifest.xml.
         private static final String API_AUTHORITY_SUFFIX =
@@ -89,8 +91,42 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     }
 
     @Override
-    public void initAndLoadAsync(
+    public void loadAsync(
             IObjectWrapper appContextWrapper, IObjectWrapper loadedCallbackWrapper) {
+        init(appContextWrapper);
+
+        final ValueCallback<Boolean> loadedCallback = (ValueCallback<Boolean>) ObjectWrapper.unwrap(
+                loadedCallbackWrapper, ValueCallback.class);
+        BrowserStartupController.get(LibraryProcessType.PROCESS_WEBLAYER)
+                .startBrowserProcessesAsync(/* startGpu */ false,
+                        /* startServiceManagerOnly */ false,
+                        new BrowserStartupController.StartupCallback() {
+                            @Override
+                            public void onSuccess() {
+                                loadedCallback.onReceiveValue(true);
+                            }
+                            @Override
+                            public void onFailure() {
+                                loadedCallback.onReceiveValue(false);
+                            }
+                        });
+    }
+
+    @Override
+    public void loadSync(IObjectWrapper appContextWrapper) {
+        init(appContextWrapper);
+
+        BrowserStartupController.get(LibraryProcessType.PROCESS_WEBLAYER)
+                .startBrowserProcessesSync(
+                        /* singleProcess*/ false);
+    }
+
+    private void init(IObjectWrapper appContextWrapper) {
+        if (mInited) {
+            return;
+        }
+        mInited = true;
+
         // Wrap the app context so that it can be used to load WebLayer implementation classes.
         Context appContext = ClassLoaderContextWrapperFactory.get(
                 ObjectWrapper.unwrap(appContextWrapper, Context.class));
@@ -128,29 +164,6 @@ public final class WebLayerImpl extends IWebLayer.Stub {
             LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_WEBLAYER);
         }
         GmsBridge.getInstance().setSafeBrowsingHandler();
-
-        final ValueCallback<Boolean> loadedCallback = (ValueCallback<Boolean>) ObjectWrapper.unwrap(
-                loadedCallbackWrapper, ValueCallback.class);
-        BrowserStartupController.get(LibraryProcessType.PROCESS_WEBLAYER)
-                .startBrowserProcessesAsync(/* startGpu */ false,
-                        /* startServiceManagerOnly */ false,
-                        new BrowserStartupController.StartupCallback() {
-                            @Override
-                            public void onSuccess() {
-                                loadedCallback.onReceiveValue(true);
-                            }
-                            @Override
-                            public void onFailure() {
-                                loadedCallback.onReceiveValue(false);
-                            }
-                        });
-    }
-
-    @Override
-    public void loadSync() {
-        BrowserStartupController.get(LibraryProcessType.PROCESS_WEBLAYER)
-                .startBrowserProcessesSync(
-                        /* singleProcess*/ false);
     }
 
     @Override

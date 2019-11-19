@@ -36,11 +36,11 @@ std::unique_ptr<const ContentHashReader> ContentHashReader::Create(
 
   hash_reader->has_content_hashes_ = true;
 
-  const ComputedHashes::Reader& reader = content_hash->computed_hashes();
+  const ComputedHashes& computed_hashes = content_hash->computed_hashes();
   base::Optional<std::string> root;
 
-  if (reader.GetHashes(relative_path, &hash_reader->block_size_,
-                       &hash_reader->hashes_) &&
+  if (computed_hashes.GetHashes(relative_path, &hash_reader->block_size_,
+                                &hash_reader->hashes_) &&
       hash_reader->block_size_ % crypto::kSHA256Length == 0) {
     root = ComputeTreeHashRoot(
         hash_reader->hashes_, hash_reader->block_size_ / crypto::kSHA256Length);

@@ -172,11 +172,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '684929ceb1a659618e9b7f5e0dd39e5c93e1479b',
+  'skia_revision': 'c5e528e15b1f2270714c5c19b4ba3fe922f64881',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'e1eb815647f334a8cf970439343a8febfa9f6d11',
+  'v8_revision': '6ee4df806768fe08287750b9d87e5dec3f1d52a3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -184,7 +184,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'e4b3136913c68b05a84766e8048b28737e9961ee',
+  'angle_revision': '24d7e23ea4b50f76adbc5e41060c9abbffbbe451',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -235,7 +235,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '7239003d4ed39a95d646aa363568c86a652406b4',
+  'catapult_revision': '4c9781e07607bd1ddec3f060bf9e2e424290ab7f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -243,7 +243,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '9708a7d8f867a13aab9a5d47ae785fce5df0310d',
+  'devtools_frontend_revision': '215d5c5ea8c6f4a908647ca9434b8f4b61dac195',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -291,7 +291,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spv_tools_revision': 'c3f22f7cba60e55d178b8184851d17697a996143',
+  'spv_tools_revision': '57b4cb40b21dc9961145f71c293ed60310b80251',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -866,7 +866,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '52a99a31f2287df53fa21677874bdaff0c7bba1d',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '8901e91a8b987bea456e9596b9c7c1c7e3f7800e',
       'condition': 'checkout_linux',
   },
 
@@ -1502,7 +1502,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'dd55f3ca8f2ea716ca917a4aaf36f0729fe902b1',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'aa3f5da8dc014b7ae426396c944217a1cd25b3ae',
+    Var('webrtc_git') + '/src.git' + '@' + '0197887d71f86ce91e93c67a4aaf27382d106a0b',
 
   # Wuffs' canonical repository is at github.com/google/wuffs, but we use
   # Skia's mirror of Wuffs, the same as in upstream Skia's DEPS file.
@@ -1569,7 +1569,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@71859b6a1837891fd0b92fee6291cb77ff4bd0d2',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@014de36791613122dd81bf8545a447233f6219dd',
     'condition': 'checkout_src_internal',
   },
 

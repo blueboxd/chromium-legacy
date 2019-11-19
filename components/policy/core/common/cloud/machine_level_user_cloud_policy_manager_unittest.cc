@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
+#include "components/policy/core/common/cloud/dm_token.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_store.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -22,11 +23,11 @@ class MockMachineLevelUserCloudPolicyStore
  public:
   MockMachineLevelUserCloudPolicyStore()
       : MachineLevelUserCloudPolicyStore(
-            std::string(),
+            DMToken::CreateEmptyTokenForTesting(),
             std::string(),
             base::FilePath(),
             base::FilePath(),
-            /* cloud_policy_has_priority= */false,
+            /* cloud_policy_has_priority= */ false,
             scoped_refptr<base::SequencedTaskRunner>()) {}
 
   MOCK_METHOD0(LoadImmediately, void(void));

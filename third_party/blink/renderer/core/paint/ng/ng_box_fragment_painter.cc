@@ -464,8 +464,10 @@ void NGBoxFragmentPainter::PaintBlockFlowContents(
   // When the layout-tree gets into a bad state, we can end up trying to paint
   // a fragment with inline children, without a paint fragment. See:
   // http://crbug.com/1022545
-  if (!paint_fragment_)
+  if (!paint_fragment_) {
+    NOTREACHED();
     return;
+  }
 
   // Check if there were contents to be painted and return early if none.
   // The union of |ContentsInkOverflow()| and |LocalRect()| covers the rect to

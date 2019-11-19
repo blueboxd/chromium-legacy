@@ -91,6 +91,7 @@ class ServiceWorkerSingleScriptUpdateChecker::WrappedIOBuffer
 
 ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
     const GURL& script_url,
+    const GURL& referrer,
     bool is_main_script,
     const GURL& main_script_url,
     const GURL& scope,
@@ -128,6 +129,7 @@ ServiceWorkerSingleScriptUpdateChecker::ServiceWorkerSingleScriptUpdateChecker(
   resource_request.site_for_cookies = main_script_url;
   resource_request.do_not_prompt_for_login = true;
   resource_request.headers = default_headers;
+  resource_request.referrer = referrer;
 
   // ResourceRequest::request_initiator is the request's origin in the spec.
   // https://fetch.spec.whatwg.org/#concept-request-origin

@@ -932,13 +932,26 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       // Call CancelWithError instead of OnComplete so that if there is an
       // intercepting URLLoaderFactory (created through the embedder's
       // ContentBrowserClient::WillCreateURLLoaderFactory) it gets notified.
-      url_loader_->CancelWithError(
-          net::ERR_UNSAFE_REDIRECT,
-          base::StringPiece(base::NumberToString(net::ERR_UNSAFE_REDIRECT)));
+      if (url_loader_) {
+        url_loader_->CancelWithError(
+            net::ERR_UNSAFE_REDIRECT,
+            base::StringPiece(base::NumberToString(net::ERR_UNSAFE_REDIRECT)));
+      } else {
+        OnComplete(
+            network::URLLoaderCompletionStatus(net::ERR_UNSAFE_REDIRECT));
+      }
       return;
     }
 
-    if (--redirect_limit_ == 0) {
+    // Only decrement the redirect_limit_ when url_loader_ is there.
+    // It can be nullptr e.g. when SignedExchangeRequestHandler takes
+    // over and invokes a fake redirect (via MaybeCreateLoaderForResponse
+    // and SignedExchangeLoader::OnHTTPExchangeFound), crbug.com/994439.
+    if (url_loader_)
+      redirect_limit_--;
+
+    if (redirect_limit_ == 0) {
+      DCHECK(url_loader_);
       // Call CancelWithError instead of OnComplete so that if there is an
       // intercepting URLLoaderFactory it gets notified.
       url_loader_->CancelWithError(

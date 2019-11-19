@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/policy/core/common/cloud/dm_token.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 
 namespace policy {
@@ -20,7 +21,7 @@ const base::FilePath::CharType kKeyCache[] =
 }  // namespace
 
 MachineLevelUserCloudPolicyStore::MachineLevelUserCloudPolicyStore(
-    const std::string& machine_dm_token,
+    const DMToken& machine_dm_token,
     const std::string& machine_client_id,
     const base::FilePath& policy_path,
     const base::FilePath& key_path,
@@ -41,7 +42,7 @@ MachineLevelUserCloudPolicyStore::~MachineLevelUserCloudPolicyStore() {}
 // static
 std::unique_ptr<MachineLevelUserCloudPolicyStore>
 MachineLevelUserCloudPolicyStore::Create(
-    const std::string& machine_dm_token,
+    const DMToken& machine_dm_token,
     const std::string& machine_client_id,
     const base::FilePath& policy_dir,
     bool cloud_policy_has_priority,
@@ -56,7 +57,7 @@ MachineLevelUserCloudPolicyStore::Create(
 void MachineLevelUserCloudPolicyStore::LoadImmediately() {
   // There is no global dm token, stop loading the policy cache. The policy will
   // be fetched in the end of enrollment process.
-  if (machine_dm_token_.empty()) {
+  if (!machine_dm_token_.is_valid()) {
     VLOG(1) << "LoadImmediately ignored, no DM token present.";
     return;
   }
@@ -67,7 +68,7 @@ void MachineLevelUserCloudPolicyStore::LoadImmediately() {
 void MachineLevelUserCloudPolicyStore::Load() {
   // There is no global dm token, stop loading the policy cache. The policy will
   // be fetched in the end of enrollment process.
-  if (machine_dm_token_.empty()) {
+  if (!machine_dm_token_.is_valid()) {
     VLOG(1) << "Load ignored, no DM token present.";
     return;
   }
@@ -83,7 +84,7 @@ MachineLevelUserCloudPolicyStore::CreateValidator(
       std::move(policy), background_task_runner());
   validator->ValidatePolicyType(
       dm_protocol::kChromeMachineLevelUserCloudPolicyType);
-  validator->ValidateDMToken(machine_dm_token_,
+  validator->ValidateDMToken(machine_dm_token_.value(),
                              CloudPolicyValidatorBase::DM_TOKEN_REQUIRED);
   validator->ValidateDeviceId(machine_client_id_,
                               CloudPolicyValidatorBase::DEVICE_ID_REQUIRED);
@@ -96,7 +97,7 @@ MachineLevelUserCloudPolicyStore::CreateValidator(
 }
 
 void MachineLevelUserCloudPolicyStore::SetupRegistration(
-    const std::string& machine_dm_token,
+    const DMToken& machine_dm_token,
     const std::string& machine_client_id) {
   machine_dm_token_ = machine_dm_token;
   machine_client_id_ = machine_client_id;

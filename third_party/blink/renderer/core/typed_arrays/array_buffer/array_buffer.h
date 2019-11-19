@@ -90,7 +90,7 @@ class CORE_EXPORT ArrayBuffer : public RefCounted<ArrayBuffer> {
   bool ShareNonSharedForInternalUse(ArrayBufferContents&);
   bool IsDetached() const { return is_detached_; }
   bool IsShared() const { return contents_.IsShared(); }
-
+  ArrayBufferContents* Content() { return &contents_; }
   ~ArrayBuffer() = default;
 
  protected:

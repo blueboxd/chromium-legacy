@@ -933,44 +933,6 @@ TEST(SpanTest, Back) {
                 "span.back() does not refer to the same element as kArray[4]");
 }
 
-TEST(SpanTest, Swap) {
-  {
-    static int kArray1[] = {1, 1};
-    static int kArray2[] = {1, 2};
-    span<const int, 2> static_span1(kArray1);
-    span<const int, 2> static_span2(kArray2);
-
-    EXPECT_EQ(kArray1, static_span1.data());
-    EXPECT_EQ(kArray2, static_span2.data());
-
-    swap(static_span1, static_span2);
-
-    EXPECT_EQ(kArray2, static_span1.data());
-    EXPECT_EQ(kArray1, static_span2.data());
-  }
-
-  {
-    static int kArray1[] = {1};
-    static int kArray2[] = {1, 2};
-    span<const int> dynamic_span1(kArray1);
-    span<const int> dynamic_span2(kArray2);
-
-    EXPECT_EQ(kArray1, dynamic_span1.data());
-    EXPECT_EQ(1u, dynamic_span1.size());
-
-    EXPECT_EQ(kArray2, dynamic_span2.data());
-    EXPECT_EQ(2u, dynamic_span2.size());
-
-    swap(dynamic_span1, dynamic_span2);
-
-    EXPECT_EQ(kArray2, dynamic_span1.data());
-    EXPECT_EQ(2u, dynamic_span1.size());
-
-    EXPECT_EQ(kArray1, dynamic_span2.data());
-    EXPECT_EQ(1u, dynamic_span2.size());
-  }
-}
-
 TEST(SpanTest, Iterator) {
   static constexpr int kArray[] = {1, 6, 1, 8, 0};
   constexpr span<const int> span(kArray);

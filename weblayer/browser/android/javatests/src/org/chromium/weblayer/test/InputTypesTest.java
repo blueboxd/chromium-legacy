@@ -124,9 +124,12 @@ public class InputTypesTest {
 
     @Before
     public void setUp() throws Exception {
-        InstrumentationActivity activity = mActivityTestRule.launchShell(new Bundle());
+        Bundle extras = new Bundle();
+        // We need to override the context with which to create WebLayer.
+        extras.putBoolean(InstrumentationActivity.EXTRA_CREATE_WEBLAYER, false);
+        InstrumentationActivity activity = mActivityTestRule.launchShell(extras);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            activity.createWebLayer(
+            activity.loadWebLayerSync(
                             new InMemorySharedPreferencesContext(activity.getApplication()) {
                                 @Override
                                 public int checkPermission(String permission, int pid, int uid) {
@@ -135,9 +138,7 @@ public class InputTypesTest {
                                     }
                                     return getBaseContext().checkPermission(permission, pid, uid);
                                 }
-                            },
-                            null)
-                    .get();
+                            });
         });
         mActivityTestRule.navigateAndWait(mActivityTestRule.getTestDataURL("input_types.html"));
         mTempFile = File.createTempFile("file", null);

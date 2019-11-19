@@ -31,7 +31,8 @@ import org.chromium.weblayer_private.interfaces.WebLayerVersion;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * WebLayer is responsible for initializing state necessary to use any of the classes in web layer.
@@ -43,16 +44,26 @@ public final class WebLayer {
     // load the code. Do not set this in production APKs!
     private static final String PACKAGE_MANIFEST_KEY = "org.chromium.weblayer.WebLayerPackage";
 
-    private static ListenableFuture<WebLayer> sFuture;
+    @Nullable
+    private static WebLayerLoader sLoader;
 
+    @NonNull
     private final IWebLayer mImpl;
 
     /**
      * Loads the WebLayer implementation and returns the IWebLayer. This does *not* trigger the
      * implementation to start.
      */
-    private static IWebLayer connectToWebLayerImplementation(ClassLoader remoteClassLoader)
+    private static IWebLayer connectToWebLayerImplementation(@NonNull Context appContext)
             throws UnsupportedVersionException {
+        // Just in case the app passed an Activity context.
+        appContext = appContext.getApplicationContext();
+        ClassLoader remoteClassLoader;
+        try {
+            remoteClassLoader = createRemoteClassLoader(appContext);
+        } catch (Exception e) {
+            throw new AndroidRuntimeException(e);
+        }
         try {
             Class webLayerClass =
                     remoteClassLoader.loadClass("org.chromium.weblayer_private.WebLayerImpl");
@@ -74,79 +85,102 @@ public final class WebLayer {
 
     /**
      * Asynchronously creates and initializes WebLayer. Calling this more than once returns the same
-     * object.
+     * object. Both this method and {@link #loadSync} yield the same instance of {@link WebLayer}.
      *
      * @param appContext The hosting application's Context.
-     * @return a ListenableFuture whose value will contain the WebLayer once initialization
-     * completes
+     * @param callback {@link Callback} which will receive the WebLayer instance.
      */
-    @NonNull
-    public static ListenableFuture<WebLayer> create(@NonNull Context appContext)
-            throws UnsupportedVersionException {
+    public static void loadAsync(@NonNull Context appContext,
+            @NonNull Callback<WebLayer> callback) throws UnsupportedVersionException {
         ThreadCheck.ensureOnUiThread();
-        if (sFuture == null) {
-            try {
-                // Just in case the app passed an Activity context.
-                appContext = appContext.getApplicationContext();
-                ClassLoader remoteClassLoader = createRemoteClassLoader(appContext);
-                IWebLayer iWebLayer = connectToWebLayerImplementation(remoteClassLoader);
-                sFuture = new WebLayerLoadFuture(iWebLayer, appContext);
-            } catch (Exception e) {
-                throw new AndroidRuntimeException(e);
-            }
-        }
-        return sFuture;
+        if (sLoader == null) sLoader = new WebLayerLoader();
+        sLoader.loadAsync(appContext, callback);
     }
 
     /**
-     * Future that creates WebLayer once the implementation has completed startup.
+     * Synchronously creates and initializes WebLayer.
+     * Both this method and {@link #loadAsync} yield the same instance of {@link WebLayer}.
+     * It is safe to call this method after {@link #loadAsync} to block until the ongoing load
+     * finishes (or immediately return its result if already finished).
+     *
+     * @param appContext The hosting application's Context.
+     * @return a {@link WebLayer} instance.
      */
-    private static final class WebLayerLoadFuture extends ListenableFuture<WebLayer> {
-        private final IWebLayer mIWebLayer;
+    @NonNull
+    public static WebLayer loadSync(@NonNull Context appContext)
+            throws UnsupportedVersionException {
+        ThreadCheck.ensureOnUiThread();
+        if (sLoader == null) sLoader = new WebLayerLoader();
+        return sLoader.loadSync(appContext);
+    }
 
-        WebLayerLoadFuture(IWebLayer iWebLayer, Context appContext) {
-            mIWebLayer = iWebLayer;
-            ValueCallback<Boolean> loadCallback = new ValueCallback<Boolean>() {
-                @Override
-                public void onReceiveValue(Boolean result) {
-                    // TODO: figure out when |result| is false and what to do in such a scenario.
-                    assert result;
-                    supplyResult(new WebLayer(mIWebLayer));
-                }
-            };
+    /**
+     * Encapsulates the state of WebLayer loading and initialization.
+     */
+    private static final class WebLayerLoader {
+        @NonNull
+        private final List<Callback<WebLayer>> mCallbacks = new ArrayList<>();
+        @Nullable
+        private IWebLayer mIWebLayer;
+        @Nullable
+        private WebLayer mWebLayer;
+
+        public void loadAsync(@NonNull Context appContext, @NonNull Callback<WebLayer> callback)
+                throws UnsupportedVersionException {
+            if (mWebLayer != null) {
+                callback.onResult(mWebLayer);
+                return;
+            }
+            mCallbacks.add(callback);
+            if (mIWebLayer != null) {
+                return;  // Already loading.
+            }
             try {
-                iWebLayer.initAndLoadAsync(
-                        ObjectWrapper.wrap(appContext), ObjectWrapper.wrap(loadCallback));
+                getIWebLayer(appContext).loadAsync(ObjectWrapper.wrap(appContext),
+                        ObjectWrapper.wrap((ValueCallback<Boolean>) result -> {
+                            // TODO: figure out when |result| is false and what to do in such a
+                            // scenario.
+                            assert result;
+                            onWebLayerReady();
+                        }));
             } catch (RemoteException e) {
                 throw new APICallException(e);
             }
         }
 
-        @Override
-        public boolean cancel(boolean mayInterruptIfRunning) {
-            // Loading can not be canceled.
-            return false;
-        }
-
-        @Override
-        public WebLayer get(long timeout, TimeUnit unit) {
-            // Arbitrary timeouts are not supported.
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        /* package */ void onLoad() {
-            ThreadCheck.ensureOnUiThread();
+        @NonNull
+        public WebLayer loadSync(@NonNull Context appContext) throws UnsupportedVersionException {
+            if (mWebLayer != null) {
+                return mWebLayer;
+            }
             try {
-                mIWebLayer.loadSync();
+                getIWebLayer(appContext).loadSync(ObjectWrapper.wrap(appContext));
+                onWebLayerReady();
+                return mWebLayer;
             } catch (RemoteException e) {
                 throw new APICallException(e);
             }
         }
 
-        @Override
-        public boolean isCancelled() {
-            return false;
+        @NonNull
+        private IWebLayer getIWebLayer(@NonNull Context appContext)
+                throws UnsupportedVersionException {
+            if (mIWebLayer == null) {
+                mIWebLayer = connectToWebLayerImplementation(appContext);
+            }
+            return mIWebLayer;
+        }
+
+        private void onWebLayerReady() {
+            if (mWebLayer != null) {
+                return;
+            }
+            assert mIWebLayer != null;
+            mWebLayer = new WebLayer(mIWebLayer);
+            for (Callback<WebLayer> callback : mCallbacks) {
+                callback.onResult(mWebLayer);
+            }
+            mCallbacks.clear();
         }
     }
 

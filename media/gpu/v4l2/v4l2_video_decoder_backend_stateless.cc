@@ -475,11 +475,7 @@ void V4L2StatelessVideoDecoderBackend::PumpOutputSurfaces() {
 
       case OutputRequest::kChangeResolutionFence:
         DCHECK(output_request_queue_.empty());
-        if (!ChangeResolution()) {
-          client_->OnBackendError();
-          return;
-        }
-        resume_decode = true;
+        ChangeResolution();
         break;
 
       case OutputRequest::kSurface:
@@ -501,7 +497,7 @@ void V4L2StatelessVideoDecoderBackend::PumpOutputSurfaces() {
   }
 }
 
-bool V4L2StatelessVideoDecoderBackend::ChangeResolution() {
+void V4L2StatelessVideoDecoderBackend::ChangeResolution() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // We change resolution after outputting all pending surfaces, there should
   // be no V4L2DecodeSurface left.
@@ -514,7 +510,19 @@ bool V4L2StatelessVideoDecoderBackend::ChangeResolution() {
 
   size_t num_output_frames = avd_->GetRequiredNumOfPictures();
   gfx::Rect visible_rect = avd_->GetVisibleRect();
-  return client_->ChangeResolution(pic_size, visible_rect, num_output_frames);
+  client_->ChangeResolution(pic_size, visible_rect, num_output_frames);
+}
+
+void V4L2StatelessVideoDecoderBackend::OnChangeResolutionDone(bool success) {
+  if (!success) {
+    client_->OnBackendError();
+    return;
+  }
+
+  client_->CompleteFlush();
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&V4L2StatelessVideoDecoderBackend::DoDecodeWork,
+                                weak_this_));
 }
 
 void V4L2StatelessVideoDecoderBackend::OnStreamStopped() {

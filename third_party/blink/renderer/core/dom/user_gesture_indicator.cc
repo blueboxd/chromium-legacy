@@ -85,9 +85,4 @@ UserGestureToken* UserGestureIndicator::CurrentTokenForTest() {
   return root_token_;
 }
 
-// static
-UserGestureToken* UserGestureIndicator::CurrentTokenThreadSafe() {
-  return IsMainThread() ? root_token_ : nullptr;
-}
-
 }  // namespace blink

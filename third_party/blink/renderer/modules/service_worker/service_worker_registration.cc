@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -17,8 +18,12 @@
 #include "third_party/blink/renderer/modules/service_worker/navigation_preload_state.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_container.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_error.h"
+#include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
 
 namespace blink {
 
@@ -256,8 +261,27 @@ ScriptPromise ServiceWorkerRegistration::update(ScriptState* script_state) {
                           "Failed to update a ServiceWorkerRegistration: No "
                           "associated provider is available."));
   }
+
+  // The fetcher is lazily loaded in a worker global scope.
+  auto* execution_context = ExecutionContext::From(script_state);
+  if (auto* global_scope = DynamicTo<WorkerGlobalScope>(execution_context))
+    global_scope->EnsureFetcher();
+
+  const FetchClientSettingsObject& settings_object =
+      execution_context->Fetcher()
+          ->GetProperties()
+          .GetFetchClientSettingsObject();
+  auto mojom_settings_object = mojom::blink::FetchClientSettingsObject::New(
+      settings_object.GetReferrerPolicy(),
+      KURL(settings_object.GetOutgoingReferrer()),
+      settings_object.GetInsecureRequestsPolicy() &
+              blink::kUpgradeInsecureRequests
+          ? blink::mojom::InsecureRequestsPolicy::kUpgrade
+          : blink::mojom::InsecureRequestsPolicy::kDoNotUpgrade);
+
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   host_->Update(
+      std::move(mojom_settings_object),
       WTF::Bind(&DidUpdate, WrapPersistent(resolver), WrapPersistent(this)));
   return resolver->Promise();
 }

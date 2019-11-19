@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_iterator.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -474,50 +475,51 @@ struct NativeValueTraits<IDLSequence<T>>
                                   v8::Local<v8::Object> v8_object,
                                   ExceptionState& exception_state,
                                   ImplType& result) {
-    v8::TryCatch block(isolate);
+    // https://heycam.github.io/webidl/#es-sequence
+    // 2. Let method be ? GetMethod(V, @@iterator).
+    // 3. If method is undefined, throw a TypeError.
+    // 4. Return the result of creating a sequence from V and method.
+    const v8::Local<v8::Function> iterator_method =
+        GetEsIteratorMethod(isolate, v8_object, exception_state);
+    if (exception_state.HadException())
+      return;
+    if (iterator_method.IsEmpty()) {
+      exception_state.ThrowTypeError("Iterator getter is not callable.");
+      return;
+    }
 
-    v8::Local<v8::Object> iterator =
-        GetEsIterator(isolate, v8_object, exception_state);
+    // https://heycam.github.io/webidl/#create-sequence-from-iterable
+    // To create an IDL value of type sequence<T> given an iterable iterable
+    // and an iterator getter method, perform the following steps:
+    // 1. Let iter be ? GetIterator(iterable, sync, method).
+    const v8::Local<v8::Object> iterator = GetEsIteratorWithMethod(
+        isolate, iterator_method, v8_object, exception_state);
     if (exception_state.HadException())
       return;
 
-    v8::Local<v8::String> next_key = V8AtomicString(isolate, "next");
-    v8::Local<v8::String> value_key = V8AtomicString(isolate, "value");
-    v8::Local<v8::String> done_key = V8AtomicString(isolate, "done");
-    v8::Local<v8::Context> context = isolate->GetCurrentContext();
-    while (true) {
-      v8::Local<v8::Value> next;
-      if (!iterator->Get(context, next_key).ToLocal(&next)) {
-        exception_state.RethrowV8Exception(block.Exception());
+    // 2. Initialize i to be 0.
+    // 3. Repeat:
+    ExecutionContext* execution_context =
+        ToExecutionContext(isolate->GetCurrentContext());
+    ScriptIterator script_iterator(iterator, isolate);
+    while (script_iterator.Next(execution_context, exception_state)) {
+      // 3.1. Let next be ? IteratorStep(iter).
+      // 3.2. If next is false, then return an IDL sequence value of type
+      //      sequence<T> of length i, where the value of the element at index
+      //      j is Sj.
+      // 3.3. Let nextItem be ? IteratorValue(next).
+      if (exception_state.HadException())
         return;
-      }
-      if (!next->IsFunction()) {
-        exception_state.ThrowTypeError("Iterator.next should be callable.");
-        return;
-      }
-      v8::Local<v8::Value> next_result;
-      if (!V8ScriptRunner::CallFunction(next.As<v8::Function>(),
-                                        ToExecutionContext(context), iterator,
-                                        0, nullptr, isolate)
-               .ToLocal(&next_result)) {
-        exception_state.RethrowV8Exception(block.Exception());
-        return;
-      }
-      if (!next_result->IsObject()) {
-        exception_state.ThrowTypeError(
-            "Iterator.next() did not return an object.");
-        return;
-      }
-      v8::Local<v8::Object> result_object = next_result.As<v8::Object>();
-      v8::Local<v8::Value> element;
-      v8::Local<v8::Value> done;
-      if (!result_object->Get(context, value_key).ToLocal(&element) ||
-          !result_object->Get(context, done_key).ToLocal(&done)) {
-        exception_state.RethrowV8Exception(block.Exception());
-        return;
-      }
-      if (done->BooleanValue(isolate))
-        break;
+
+      // The value should already be non-empty, as guaranteed by the call to
+      // Next() and the |exception_state| check above.
+      v8::Local<v8::Value> element =
+          script_iterator.GetValue().ToLocalChecked();
+      DCHECK(!element.IsEmpty());
+
+      // 3.4. Initialize Si to the result of converting nextItem to an IDL
+      //      value of type T.
+      // 3.5. Set i to i + 1.
       result.push_back(
           NativeValueTraits<T>::NativeValue(isolate, element, exception_state));
       if (exception_state.HadException())

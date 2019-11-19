@@ -8,6 +8,7 @@ from . import name_style
 from .blink_v8_bridge import blink_class_name
 from .blink_v8_bridge import blink_type_info
 from .blink_v8_bridge import make_v8_to_blink_value
+from .blink_v8_bridge import make_v8_to_blink_value_variadic
 from .code_node import CodeNode
 from .code_node import FunctionDefinitionNode
 from .code_node import SymbolDefinitionNode
@@ -45,7 +46,9 @@ def bind_blink_api_arguments(code_node, cg_context):
     for index, argument in enumerate(cg_context.function_like.arguments, 1):
         name = name_style.arg_f("arg{}_{}", index, argument.identifier)
         if argument.is_variadic:
-            assert False, "Variadic arguments are not yet supported"
+            code_node.register_code_symbol(
+                make_v8_to_blink_value_variadic(name, "${info}", index - 1,
+                                                argument.idl_type))
         else:
             v8_value = "${{info}}[{}]".format(argument.index)
             code_node.register_code_symbol(
@@ -578,7 +581,7 @@ def generate_interfaces(web_idl_database, output_dirs):
     filename = "v8_example_interface.cc"
     filepath = os.path.join(output_dirs['core'], filename)
 
-    interface = web_idl_database.find("CSS")
+    interface = web_idl_database.find("Element")
 
     cg_context = CodeGenContext(interface=interface)
 

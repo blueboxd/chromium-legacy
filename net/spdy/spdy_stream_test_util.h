@@ -37,6 +37,7 @@ class ClosingDelegate : public SpdyStream::Delegate {
   void OnDataSent() override;
   void OnTrailers(const spdy::SpdyHeaderBlock& trailers) override;
   void OnClose(int status) override;
+  bool CanGreaseFrameType() const override;
   NetLogSource source_dependency() const override;
 
   // Returns whether or not the stream is closed.
@@ -61,6 +62,7 @@ class StreamDelegateBase : public SpdyStream::Delegate {
   void OnDataSent() override;
   void OnTrailers(const spdy::SpdyHeaderBlock& trailers) override;
   void OnClose(int status) override;
+  bool CanGreaseFrameType() const override;
   NetLogSource source_dependency() const override;
 
   // Waits for the stream to be closed and returns the status passed

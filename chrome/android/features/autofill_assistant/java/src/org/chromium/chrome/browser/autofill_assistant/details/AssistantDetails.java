@@ -15,6 +15,7 @@ public class AssistantDetails {
     private final String mTitle;
     private final int mTitleMaxLines;
     private final String mImageUrl;
+    private final String mImageAccessibilityHint;
     private final ImageClickthroughData mImageClickthroughData;
     private final boolean mShowImagePlaceholder;
     private final String mDescriptionLine1;
@@ -42,15 +43,17 @@ public class AssistantDetails {
     private final String mTotalPriceLabel;
 
     public AssistantDetails(String title, int titleMaxLines, String imageUrl,
-            ImageClickthroughData imageClickthroughData, boolean showImagePlaceholder,
-            String totalPriceLabel, String totalPrice, String descriptionLine1,
-            String descriptionLine2, String descriptionLine3, String priceAttribution,
-            boolean userApprovalRequired, boolean highlightTitle, boolean highlightLine1,
-            boolean highlightLine2, boolean highlightLine3, boolean animatePlaceholders) {
+            String imageAccessibilityHint, ImageClickthroughData imageClickthroughData,
+            boolean showImagePlaceholder, String totalPriceLabel, String totalPrice,
+            String descriptionLine1, String descriptionLine2, String descriptionLine3,
+            String priceAttribution, boolean userApprovalRequired, boolean highlightTitle,
+            boolean highlightLine1, boolean highlightLine2, boolean highlightLine3,
+            boolean animatePlaceholders) {
         this.mTotalPriceLabel = totalPriceLabel;
         this.mTitle = title;
         this.mTitleMaxLines = titleMaxLines;
         this.mImageUrl = imageUrl;
+        this.mImageAccessibilityHint = imageAccessibilityHint;
         this.mImageClickthroughData = imageClickthroughData;
         this.mShowImagePlaceholder = showImagePlaceholder;
         this.mTotalPrice = totalPrice;
@@ -77,6 +80,10 @@ public class AssistantDetails {
 
     String getImageUrl() {
         return mImageUrl;
+    }
+
+    String getImageAccessibilityHint() {
+        return mImageAccessibilityHint;
     }
 
     boolean hasImageClickthroughData() {
@@ -144,14 +151,15 @@ public class AssistantDetails {
      */
     @CalledByNative
     private static AssistantDetails create(String title, int titleMaxLines, String imageUrl,
-            boolean allowImageClickthrough, String imageClickthroughDesc,
-            String imageClickthroughPostiveText, String imageClickthroughNegativeText,
-            String imageClickthroughUrl, boolean showImagePlaceholder, String totalPriceLabel,
-            String totalPrice, String descriptionLine1, String descriptionLine2,
-            String descriptionLine3, String priceAttribution, boolean userApprovalRequired,
-            boolean highlightTitle, boolean highlightLine1, boolean highlightLine2,
-            boolean highlightLine3, boolean animatePlaceholders) {
-        return new AssistantDetails(title, titleMaxLines, imageUrl,
+            String imageAccessibilityHint, boolean allowImageClickthrough,
+            String imageClickthroughDesc, String imageClickthroughPostiveText,
+            String imageClickthroughNegativeText, String imageClickthroughUrl,
+            boolean showImagePlaceholder, String totalPriceLabel, String totalPrice,
+            String descriptionLine1, String descriptionLine2, String descriptionLine3,
+            String priceAttribution, boolean userApprovalRequired, boolean highlightTitle,
+            boolean highlightLine1, boolean highlightLine2, boolean highlightLine3,
+            boolean animatePlaceholders) {
+        return new AssistantDetails(title, titleMaxLines, imageUrl, imageAccessibilityHint,
                 new ImageClickthroughData(allowImageClickthrough, imageClickthroughDesc,
                         imageClickthroughPostiveText, imageClickthroughNegativeText,
                         imageClickthroughUrl),

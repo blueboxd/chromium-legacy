@@ -99,12 +99,14 @@ public class UiUtils {
          * @param includeEmails Whether to include emails of the contacts shared.
          * @param includeTel Whether to include telephone numbers of the contacts shared.
          * @param includeAddresses Whether to include addresses of the contacts shared.
+         * @param includeIcons Whether to include addresses of the contacts shared.
          * @param formattedOrigin The origin the data will be shared with, formatted for display
          *                        with the scheme omitted.
          */
         void showContactsPicker(Context context, ContactsPickerListener listener,
                 boolean allowMultiple, boolean includeNames, boolean includeEmails,
-                boolean includeTel, boolean includeAddresses, String formattedOrigin);
+                boolean includeTel, boolean includeAddresses, boolean includeIcons,
+                String formattedOrigin);
 
         /**
          * Called when the contacts picker dialog has been dismissed.
@@ -158,14 +160,15 @@ public class UiUtils {
      * @param includeEmails Whether to include emails in the contact data returned.
      * @param includeTel Whether to include telephone numbers in the contact data returned.
      * @param includeAddresses Whether to include addresses of the contacts shared.
+     * @param includeIcons Whether to include icons of the contacts shared.
      * @param formattedOrigin The origin the data will be shared with.
      */
     public static boolean showContactsPicker(Context context, ContactsPickerListener listener,
             boolean allowMultiple, boolean includeNames, boolean includeEmails, boolean includeTel,
-            boolean includeAddresses, String formattedOrigin) {
+            boolean includeAddresses, boolean includeIcons, String formattedOrigin) {
         if (sContactsPickerDelegate == null) return false;
         sContactsPickerDelegate.showContactsPicker(context, listener, allowMultiple, includeNames,
-                includeEmails, includeTel, includeAddresses, formattedOrigin);
+                includeEmails, includeTel, includeAddresses, includeIcons, formattedOrigin);
         return true;
     }
 

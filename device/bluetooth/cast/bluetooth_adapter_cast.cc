@@ -180,6 +180,11 @@ BluetoothLocalGattService* BluetoothAdapterCast::GetGattService(
   return nullptr;
 }
 
+base::WeakPtr<BluetoothAdapter> BluetoothAdapterCast::GetWeakPtr() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return weak_factory_.GetWeakPtr();
+}
+
 bool BluetoothAdapterCast::SetPoweredImpl(bool powered) {
   NOTREACHED() << "This method is not invoked when SetPowered() is overridden.";
   return true;
@@ -245,11 +250,6 @@ void BluetoothAdapterCast::RemovePairingDelegateInternal(
     BluetoothDevice::PairingDelegate* pairing_delegate) {
   // TODO(slan): Implement this or properly stub.
   NOTIMPLEMENTED();
-}
-
-base::WeakPtr<BluetoothAdapterCast> BluetoothAdapterCast::GetWeakPtr() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return weak_factory_.GetWeakPtr();
 }
 
 void BluetoothAdapterCast::OnConnectChanged(

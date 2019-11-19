@@ -2172,7 +2172,14 @@ void Element::setAttribute(const AtomicString& local_name,
   wtf_size_t index;
   QualifiedName q_name = QualifiedName::Null();
   std::tie(index, q_name) = LookupAttributeQNameInternal(local_name);
-  SetAttributeInternal(index, q_name, value,
+
+  String trusted_value = GetStringFromSpecificTrustedType(
+      value, ExpectedTrustedTypeForAttribute(q_name), &GetDocument(),
+      exception_state);
+  if (exception_state.HadException())
+    return;
+
+  SetAttributeInternal(index, q_name, AtomicString(trusted_value),
                        kNotInSynchronizationOfLazyAttribute);
 }
 
@@ -2188,6 +2195,24 @@ void Element::setAttribute(const QualifiedName& name,
                          ? GetElementData()->Attributes().FindIndex(name)
                          : kNotFound;
   SetAttributeInternal(index, name, value,
+                       kNotInSynchronizationOfLazyAttribute);
+}
+
+void Element::setAttribute(const QualifiedName& name,
+                           const AtomicString& value,
+                           ExceptionState& exception_state) {
+  SynchronizeAttribute(name);
+  wtf_size_t index = GetElementData()
+                         ? GetElementData()->Attributes().FindIndex(name)
+                         : kNotFound;
+
+  String trusted_value = GetStringFromSpecificTrustedType(
+      value, ExpectedTrustedTypeForAttribute(name), &GetDocument(),
+      exception_state);
+  if (exception_state.HadException())
+    return;
+
+  SetAttributeInternal(index, name, AtomicString(trusted_value),
                        kNotInSynchronizationOfLazyAttribute);
 }
 
@@ -3801,6 +3826,13 @@ Attr* Element::setAttributeNode(Attr* attr_node,
   SynchronizeAllAttributes();
   const UniqueElementData& element_data = EnsureUniqueElementData();
 
+  String value = GetStringFromSpecificTrustedType(
+      attr_node->value(),
+      ExpectedTrustedTypeForAttribute(attr_node->GetQualifiedName()),
+      &GetDocument(), exception_state);
+  if (exception_state.HadException())
+    return nullptr;
+
   AttributeCollection attributes = element_data.Attributes();
   wtf_size_t index = attributes.FindIndex(attr_node->GetQualifiedName());
   AtomicString local_name;
@@ -3826,7 +3858,8 @@ Attr* Element::setAttributeNode(Attr* attr_node,
     }
   }
 
-  SetAttributeInternal(index, attr_node->GetQualifiedName(), attr_node->value(),
+  SetAttributeInternal(index, attr_node->GetQualifiedName(),
+                       AtomicString(value),
                        kNotInSynchronizationOfLazyAttribute);
 
   attr_node->AttachToElement(this, local_name);

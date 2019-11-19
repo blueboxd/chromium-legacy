@@ -942,16 +942,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessInternalsHitTestBrowserTest,
   rwhv_root->OnScrollEvent(&scroll_event);
   ack_observer.Wait();
 
-  // Check compositor layers.
-  EXPECT_TRUE(
-      ExecuteScriptAndExtractString(nested_iframe_node->current_frame_host(),
-                                    "window.domAutomationController.send("
-                                    "window.internals.layerTreeAsText(document,"
-                                    " internals.OUTPUT_AS_LAYER_TREE));",
-                                    &str));
-  // We expect the nested OOPIF to not have any compositor layers.
-  EXPECT_EQ(std::string(), str);
-
   // Verify the div scrolled.
   double div_scroll_top = div_scroll_top_start;
   EXPECT_TRUE(ExecuteScriptAndExtractDouble(

@@ -58,6 +58,8 @@ class ASH_EXPORT HotseatWidget : public views::Widget,
   // Sets the focus cycler and adds the hotseat to the cycle.
   void SetFocusCycler(FocusCycler* focus_cycler);
 
+  bool IsShowingShelfMenu() const;
+
   ShelfView* GetShelfView();
   const ShelfView* GetShelfView() const;
 

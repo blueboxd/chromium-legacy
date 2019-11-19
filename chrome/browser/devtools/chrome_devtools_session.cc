@@ -14,7 +14,7 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_agent_host_client.h"
 #include "content/public/browser/devtools_manager_delegate.h"
-#include "third_party/inspector_protocol/crdtp/encoding.h"
+#include "third_party/inspector_protocol/crdtp/json.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/devtools/protocol/window_manager_handler.h"

@@ -36,7 +36,7 @@ Polymer({
   is: 'network-config',
 
   behaviors: [
-    CrNetworkListenerBehavior,
+    NetworkListenerBehavior,
     I18nBehavior,
   ],
 
@@ -484,7 +484,7 @@ Polymer({
     return !!this.guid;
   },
 
-  /** CrNetworkListenerBehavior override */
+  /** NetworkListenerBehavior override */
   onNetworkCertificatesChanged: function() {
     this.networkConfig_.getNetworkCertificates().then(response => {
       const isOpenVpn = !!this.configProperties_.typeConfig.vpn &&

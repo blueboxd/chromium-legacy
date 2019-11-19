@@ -75,29 +75,10 @@ ScriptCustomElementDefinition* ScriptCustomElementDefinition::ForConstructor(
   return static_cast<ScriptCustomElementDefinition*>(definition);
 }
 
-ScriptCustomElementDefinition* ScriptCustomElementDefinition::Create(
-    const ScriptCustomElementDefinitionData& data,
-    const CustomElementDescriptor& descriptor,
-    CustomElementDefinition::Id id) {
-  auto* definition =
-      MakeGarbageCollected<ScriptCustomElementDefinition>(data, descriptor);
-
-  // Tag the JavaScript constructor object with its ID.
-  ScriptState* script_state = data.script_state_;
-  v8::Local<v8::Value> id_value =
-      v8::Integer::NewFromUnsigned(script_state->GetIsolate(), id);
-  auto private_id =
-      script_state->PerContextData()->GetPrivateCustomElementDefinitionId();
-  CHECK(data.constructor_->CallbackObject()
-            ->SetPrivate(script_state->GetContext(), private_id, id_value)
-            .ToChecked());
-
-  return definition;
-}
-
 ScriptCustomElementDefinition::ScriptCustomElementDefinition(
     const ScriptCustomElementDefinitionData& data,
-    const CustomElementDescriptor& descriptor)
+    const CustomElementDescriptor& descriptor,
+    CustomElementDefinition::Id id)
     : CustomElementDefinition(descriptor,
                               std::move(data.observed_attributes_),
                               data.disabled_features_,
@@ -113,7 +94,17 @@ ScriptCustomElementDefinition::ScriptCustomElementDefinition(
       form_associated_callback_(data.form_associated_callback_),
       form_reset_callback_(data.form_reset_callback_),
       form_disabled_callback_(data.form_disabled_callback_),
-      form_state_restore_callback_(data.form_state_restore_callback_) {}
+      form_state_restore_callback_(data.form_state_restore_callback_) {
+  // Tag the JavaScript constructor object with its ID.
+  ScriptState* script_state = data.script_state_;
+  v8::Local<v8::Value> id_value =
+      v8::Integer::NewFromUnsigned(script_state->GetIsolate(), id);
+  auto private_id =
+      script_state->PerContextData()->GetPrivateCustomElementDefinitionId();
+  CHECK(data.constructor_->CallbackObject()
+            ->SetPrivate(script_state->GetContext(), private_id, id_value)
+            .ToChecked());
+}
 
 void ScriptCustomElementDefinition::Trace(Visitor* visitor) {
   visitor->Trace(script_state_);

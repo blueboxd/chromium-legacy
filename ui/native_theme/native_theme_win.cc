@@ -579,53 +579,41 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id,
   if (color_scheme == ColorScheme::kPlatformHighContrast)
     return GetPlatformHighContrastColor(color_id);
 
-  // TODO: Obtain the correct colors for these using GetSysColor.
-  // Button:
-  constexpr SkColor kButtonHoverColor = SkColorSetRGB(6, 45, 117);
-  // Label:
-  constexpr SkColor kLabelTextSelectionBackgroundFocusedColor =
-      gfx::kGoogleBlue700;
+  /* The following colors are intentionally omitted from the subsequent switch
+   * in order to allow Aura colors to override native ones.
+   * TODO(pkasting): Create a complete "native Windows" mapping and then
+   * determine how, if at all, it should mix with the Aura colors instead of
+   * overriding haphazardly like this.
 
-  switch (color_id) {
-    // Windows
-    case kColorId_WindowBackground:
-      return system_colors_[SystemThemeColor::kWindow];
-
-    // Dialogs
-    case kColorId_DialogBackground:
-    case kColorId_BubbleBackground:
-      break;
-
-    // FocusableBorder
-    case kColorId_FocusedBorderColor:
-    case kColorId_UnfocusedBorderColor:
-      break;
-
-    // Button
     case kColorId_ButtonEnabledColor:
       return system_colors_[SystemThemeColor::kButtonText];
-    case kColorId_ButtonHoverColor:
-      return kButtonHoverColor;
-
-    // Label
     case kColorId_LabelEnabledColor:
       return system_colors_[SystemThemeColor::kButtonText];
     case kColorId_LabelDisabledColor:
       return system_colors_[SystemThemeColor::kGrayText];
+    case kColorId_TextfieldDefaultBackground:
+      return system_colors_[SystemThemeColor::kWindow];
+    case kColorId_TextfieldDefaultColor:
+      return system_colors_[SystemThemeColor::kWindowText];
+    case kColorId_TextfieldReadOnlyBackground:
+      return system_colors_[SystemThemeColor::kButtonFace];
+    case kColorId_TextfieldReadOnlyColor:
+      return system_colors_[SystemThemeColor::kGrayText];
+
+   */
+
+  switch (color_id) {
+    // Window
+    case kColorId_WindowBackground:
+      return system_colors_[SystemThemeColor::kWindow];
+
+    // Label
     case kColorId_LabelTextSelectionColor:
       return system_colors_[SystemThemeColor::kHighlightText];
     case kColorId_LabelTextSelectionBackgroundFocused:
-      return kLabelTextSelectionBackgroundFocusedColor;
+      return system_colors_[SystemThemeColor::kHighlight];
 
     // Textfield
-    case kColorId_TextfieldDefaultColor:
-      return system_colors_[SystemThemeColor::kWindowText];
-    case kColorId_TextfieldDefaultBackground:
-      return system_colors_[SystemThemeColor::kWindow];
-    case kColorId_TextfieldReadOnlyColor:
-      return system_colors_[SystemThemeColor::kGrayText];
-    case kColorId_TextfieldReadOnlyBackground:
-      return system_colors_[SystemThemeColor::kButtonFace];
     case kColorId_TextfieldSelectionColor:
       return system_colors_[SystemThemeColor::kHighlightText];
     case kColorId_TextfieldSelectionBackgroundFocused:
@@ -695,6 +683,7 @@ SkColor NativeThemeWin::GetPlatformHighContrastColor(ColorId color_id) const {
 
     // Window Text
     case kColorId_DefaultIconColor:
+    case kColorId_DialogForeground:
     case kColorId_LabelEnabledColor:
     case kColorId_TreeText:
     case kColorId_TableText:

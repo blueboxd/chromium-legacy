@@ -446,6 +446,11 @@ DesktopAutomationHandler.prototype = {
     // Update the focused root url, which gets used as part of focus recovery.
     this.lastRootUrl_ = node.root.docUrl || '';
 
+    // Consider the case when a user presses tab rapidly. The key events may
+    // come in far before the accessibility focus events. We therefore must
+    // category flush here or the focus events will all queue up.
+    Output.forceModeForNextSpeechUtterance(QueueMode.CATEGORY_FLUSH);
+
     var event = new CustomAutomationEvent(EventType.FOCUS, node, evt.eventFrom);
     this.onEventDefault(event);
 

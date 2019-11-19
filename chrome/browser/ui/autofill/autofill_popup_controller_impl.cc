@@ -98,7 +98,7 @@ void AutofillPopupControllerImpl::Show(
 
   bool just_created = false;
   if (!view_) {
-    view_ = AutofillPopupView::Create(this);
+    view_ = AutofillPopupView::Create(GetWeakPtr());
 
     // It is possible to fail to create the popup, in this case
     // treat the popup as hiding right away.

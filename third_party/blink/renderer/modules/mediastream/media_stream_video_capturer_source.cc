@@ -17,18 +17,18 @@ namespace blink {
 
 MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
     LocalFrame* frame,
-    const SourceStoppedCallback& stop_callback,
+    SourceStoppedCallback stop_callback,
     std::unique_ptr<media::VideoCapturerSource> source)
     : frame_(frame), source_(std::move(source)) {
   media::VideoCaptureFormats preferred_formats = source_->GetPreferredFormats();
   if (!preferred_formats.empty())
     capture_params_.requested_format = preferred_formats.front();
-  SetStopCallback(stop_callback);
+  SetStopCallback(std::move(stop_callback));
 }
 
 MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
     LocalFrame* frame,
-    const SourceStoppedCallback& stop_callback,
+    SourceStoppedCallback stop_callback,
     const MediaStreamDevice& device,
     const media::VideoCaptureParams& capture_params,
     DeviceCapturerFactoryCallback device_capturer_factory_callback)
@@ -38,7 +38,7 @@ MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
       device_capturer_factory_callback_(
           std::move(device_capturer_factory_callback)) {
   DCHECK(!device.session_id().is_empty());
-  SetStopCallback(stop_callback);
+  SetStopCallback(std::move(stop_callback));
   SetDevice(device);
   SetDeviceRotationDetection(true /* enabled */);
 }

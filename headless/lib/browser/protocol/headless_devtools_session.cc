@@ -11,7 +11,7 @@
 #include "headless/lib/browser/protocol/headless_handler.h"
 #include "headless/lib/browser/protocol/page_handler.h"
 #include "headless/lib/browser/protocol/target_handler.h"
-#include "third_party/inspector_protocol/crdtp/encoding.h"
+#include "third_party/inspector_protocol/crdtp/json.h"
 
 namespace {
 // TODO(johannes): This is very similar to the code in

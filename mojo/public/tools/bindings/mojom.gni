@@ -300,9 +300,10 @@ if (enable_mojom_typemapping) {
 # The following parameters are used to support the component build. They are
 # needed so that bindings which are linked with a component can use the same
 # export settings for classes. The first three are for the chromium variant, and
-# the last three are for the blink variant. These parameters are mutually
-# exclusive to |component_macro_prefix|, but |component_output_prefix| may still
-# be used to uniqueify the generated invariant (i.e. shared) output component.
+# the last three are for the blink variant. These parameters can also override
+# |component_macro_prefix| for a specific variant, allowing e.g. one variant
+# to be linked into a larger non-mojom component target, while all other
+# variants get their own unique component target.
 #   export_class_attribute (optional)
 #       The attribute to add to the class declaration. e.g. "CONTENT_EXPORT"
 #   export_define (optional)
@@ -344,7 +345,6 @@ template("mojom") {
     assert(defined(invoker.export_class_attribute))
     assert(defined(invoker.export_define))
     assert(defined(invoker.export_header))
-    assert(!defined(invoker.component_macro_prefix))
   }
   if (defined(invoker.export_class_attribute_blink) ||
       defined(invoker.export_define_blink) ||
@@ -352,7 +352,15 @@ template("mojom") {
     assert(defined(invoker.export_class_attribute_blink))
     assert(defined(invoker.export_define_blink))
     assert(defined(invoker.export_header_blink))
-    assert(!defined(invoker.component_macro_prefix))
+
+    # Not all platforms use the Blink variant, so make sure GN doesn't complain
+    # about these values being inconsequential.
+    not_needed(invoker,
+               [
+                 "export_class_attribute_blink",
+                 "export_define_blink",
+                 "export_header_blink",
+               ])
   }
   if (defined(invoker.overridden_deps) || defined(invoker.component_deps)) {
     assert(defined(invoker.overridden_deps))
@@ -777,6 +785,64 @@ template("mojom") {
       variant_suffix = "_${variant}"
       cpp_only = true
     }
+
+    export_defines = []
+    export_defines_overridden = false
+    force_source_set = false
+    if (defined(bindings_configuration.for_blink) &&
+        bindings_configuration.for_blink) {
+      if (defined(invoker.export_define_blink)) {
+        export_defines_overridden = true
+        export_defines = [ invoker.export_define_blink ]
+        force_source_set = true
+      }
+    } else if (defined(invoker.export_define)) {
+      export_defines_overridden = true
+      export_defines = [ invoker.export_define ]
+      force_source_set = true
+    }
+
+    if (!export_defines_overridden && defined(invoker.component_macro_prefix)) {
+      output_name_override =
+          "${invoker.component_output_prefix}${variant_suffix}"
+      export_defines =
+          [ "IS_${invoker.component_macro_prefix}" +
+            "${bindings_configuration.component_macro_suffix}_IMPL" ]
+    }
+
+    export_args = []
+    export_args_overridden = false
+    if (defined(bindings_configuration.for_blink) &&
+        bindings_configuration.for_blink) {
+      if (defined(invoker.export_class_attribute_blink)) {
+        export_args_overridden = true
+        export_args += [
+          "--export_attribute",
+          invoker.export_class_attribute_blink,
+          "--export_header",
+          invoker.export_header_blink,
+        ]
+      }
+    } else if (defined(invoker.export_class_attribute)) {
+      export_args_overridden = true
+      export_args += [
+        "--export_attribute",
+        invoker.export_class_attribute,
+        "--export_header",
+        invoker.export_header,
+      ]
+    }
+
+    if (!export_args_overridden && defined(invoker.component_macro_prefix)) {
+      export_args += [
+        "--export_attribute",
+        "COMPONENT_EXPORT(${invoker.component_macro_prefix}" +
+            "${bindings_configuration.component_macro_suffix})",
+        "--export_header",
+        "base/component_export.h",
+      ]
+    }
+
     generate_java = false
     if (!cpp_only && defined(invoker.generate_java)) {
       generate_java = invoker.generate_java
@@ -866,7 +932,7 @@ template("mojom") {
                  "//mojo/public/tools/bindings:precompile_templates",
                ] + verify_deps_target_names
         outputs = []
-        args = common_generator_args
+        args = common_generator_args + export_args
         filelist = []
         foreach(source, invoker.sources) {
           filelist += [ rebase_path("$source", root_build_dir) ]
@@ -900,36 +966,9 @@ template("mojom") {
           rebase_path(type_mappings_path, root_build_dir),
         ]
 
-        if (defined(invoker.component_macro_prefix)) {
-          args += [
-            "--export_attribute",
-            "COMPONENT_EXPORT(${invoker.component_macro_prefix}" +
-                "${bindings_configuration.component_macro_suffix})",
-            "--export_header",
-            "base/component_export.h",
-          ]
-        }
-
         if (defined(bindings_configuration.for_blink) &&
             bindings_configuration.for_blink) {
           args += [ "--for_blink" ]
-          if (defined(invoker.export_class_attribute_blink)) {
-            args += [
-              "--export_attribute",
-              invoker.export_class_attribute_blink,
-              "--export_header",
-              invoker.export_header_blink,
-            ]
-          }
-        } else {
-          if (defined(invoker.export_class_attribute)) {
-            args += [
-              "--export_attribute",
-              invoker.export_class_attribute,
-              "--export_header",
-              invoker.export_header,
-            ]
-          }
         }
 
         if (defined(invoker.support_lazy_serialization) &&
@@ -1027,7 +1066,7 @@ template("mojom") {
       }
     }
 
-    if (defined(invoker.component_macro_prefix)) {
+    if (!force_source_set && defined(invoker.component_macro_prefix)) {
       output_target_type = "component"
     } else {
       output_target_type = "source_set"
@@ -1037,6 +1076,9 @@ template("mojom") {
     not_needed([ "js_data_deps_target_name" ])
 
     target("jumbo_" + output_target_type, "${target_name}${variant_suffix}") {
+      if (defined(output_name_override)) {
+        output_name = output_name_override
+      }
       if (defined(bindings_configuration.for_blink) &&
           bindings_configuration.for_blink &&
           defined(invoker.visibility_blink)) {
@@ -1047,17 +1089,7 @@ template("mojom") {
       if (defined(invoker.testonly)) {
         testonly = invoker.testonly
       }
-      defines = []
-      if (defined(bindings_configuration.for_blink) &&
-          bindings_configuration.for_blink) {
-        if (defined(invoker.export_define_blink)) {
-          defines += [ invoker.export_define_blink ]
-        }
-      } else {
-        if (defined(invoker.export_define)) {
-          defines += [ invoker.export_define ]
-        }
-      }
+      defines = export_defines
       if (enabled_sources != []) {
         sources = process_file_template(enabled_sources, generator_cpp_outputs)
       }
@@ -1078,11 +1110,6 @@ template("mojom") {
 
       if (enabled_sources != []) {
         public_deps += [ ":$generator_target_name" ]
-      }
-      if (defined(invoker.component_macro_prefix)) {
-        output_name = "${invoker.component_output_prefix}${variant_suffix}"
-        defines += [ "IS_${invoker.component_macro_prefix}" +
-                     "${bindings_configuration.component_macro_suffix}_IMPL" ]
       }
       foreach(d, all_deps) {
         # Resolve the name, so that a target //mojo/something becomes

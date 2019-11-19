@@ -471,13 +471,16 @@ void WebGPUDecoderImpl::DiscoverAdapters() {
   // decide to handle multiple adapters, code on the Chromium side will need to
   // change to do appropriate cross adapter copying to make this happen, either
   // manually or by using DirectComposition.
-    if (adapter.GetBackendType() == dawn_native::BackendType::D3D12) {
+  if (adapter.GetBackendType() == dawn_native::BackendType::D3D12) {
 #else
     if (adapter.GetBackendType() != dawn_native::BackendType::Null &&
         adapter.GetBackendType() != dawn_native::BackendType::OpenGL) {
 #endif
       dawn_adapters_.push_back(adapter);
-    }
+#if defined(OS_WIN)
+      break;
+#endif
+  }
   }
 }
 

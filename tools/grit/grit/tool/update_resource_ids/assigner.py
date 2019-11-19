@@ -261,6 +261,8 @@ Additional comments for (1b) and other steps are detailed below.
       else:
         node.new_id = node.old_id  # Initial S.
       trace.append(node)  # Add B.
+      align = meta['align'].val if meta and 'align' in meta else self._align
+      node.new_id = common.AlignUp(node.new_id, align)
       yield node.item, node.new_id
       # Expect caller to calling FreedWeight() and update |node.weight|.
 

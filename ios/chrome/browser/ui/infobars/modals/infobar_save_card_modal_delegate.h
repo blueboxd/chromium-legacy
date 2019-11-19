@@ -18,6 +18,9 @@
                    expirationMonth:(NSString*)month
                     expirationYear:(NSString*)year;
 
+// Opens |linkURL| in a new tab and dismisses the Modal.
+- (void)dismissModalAndOpenURL:(const GURL&)linkURL;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_INFOBARS_MODALS_INFOBAR_SAVE_CARD_MODAL_DELEGATE_H_

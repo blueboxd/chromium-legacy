@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @fileoverview Logic for panning a braille display within a line of braille
+/**
+ * @fileoverview Logic for panning a braille display within a line of braille
  * content that might not fit on a single display.
  */
 

@@ -29,7 +29,7 @@ class ActionTracker {
   explicit ActionTracker(content::BrowserContext* browser_context);
   ~ActionTracker();
 
-  // Called whenever a request matches with a non-allow rule.
+  // Called whenever a request matches with a rule.
   void OnRuleMatched(const RequestAction& request_action,
                      const WebRequestInfo& request_info);
 

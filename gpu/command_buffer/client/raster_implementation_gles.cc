@@ -160,8 +160,12 @@ SyncToken RasterImplementationGLES::ScheduleImageDecode(
 }
 
 GLuint RasterImplementationGLES::CreateAndConsumeForGpuRaster(
-    const GLbyte* mailbox) {
-  return gl_->CreateAndConsumeTextureCHROMIUM(mailbox);
+    const gpu::Mailbox& mailbox) {
+  if (mailbox.IsSharedImage()) {
+    return gl_->CreateAndTexStorage2DSharedImageCHROMIUM(mailbox.name);
+  } else {
+    return gl_->CreateAndConsumeTextureCHROMIUM(mailbox.name);
+  }
 }
 
 void RasterImplementationGLES::DeleteGpuRasterTexture(GLuint texture) {

@@ -1095,8 +1095,6 @@ if (enable_java_templates) {
   #     the classpath extracted from the build_config.
   #   script_name: Name of the script to generate.
   #   wrapper_script_args: List of extra arguments to pass to the executable.
-  #   bootclasspath: Optional. list of zip/jar file paths to add to the boot
-  #     class path when the script will invoke javac.
   #
   template("java_binary_script") {
     action_with_pydeps(target_name) {
@@ -1141,12 +1139,6 @@ if (enable_java_templates) {
       }
       if (defined(invoker.wrapper_script_args)) {
         args += [ "--" ] + invoker.wrapper_script_args
-      }
-      if (defined(invoker.bootclasspath)) {
-        args += [
-          "--bootclasspath",
-          rebase_path(invoker.bootclasspath, root_build_dir),
-        ]
       }
     }
   }
@@ -3041,8 +3033,6 @@ if (enable_java_templates) {
   #
   # For 'java_binary' and 'junit_binary' targets only. Ignored by others:
   #
-  #  bootclasspath: Optional list of boot class paths used by the generated
-  #    wrapper script.
   #  wrapper_script_name: Optional name for the generated wrapper script.
   #    Default is main target name.
   #  wrapper_script_args: Optional list of extra arguments used by the
@@ -3566,7 +3556,6 @@ if (enable_java_templates) {
       java_binary_script("${target_name}__java_binary_script") {
         forward_variables_from(invoker,
                                [
-                                 "bootclasspath",
                                  "main_class",
                                  "wrapper_script_args",
                                ])

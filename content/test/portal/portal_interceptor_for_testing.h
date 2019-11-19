@@ -19,10 +19,6 @@
 #include "third_party/blink/public/mojom/portal/portal.mojom-test-utils.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom.h"
 
-namespace base {
-class RunLoop;
-}  // namespace base
-
 namespace content {
 
 class RenderFrameHostImpl;
@@ -66,10 +62,6 @@ class PortalInterceptorForTesting final
     navigate_callback_ = std::move(callback);
   }
 
-  // TODO(jbroman): Migrate callers to the more flexible
-  // PortalActivatedObserver.
-  void WaitForActivate();
-
   // Test getters.
   content::Portal* GetPortal() { return portal_.get(); }
   WebContentsImpl* GetPortalContents() { return portal_->GetPortalContents(); }
@@ -95,8 +87,6 @@ class PortalInterceptorForTesting final
       observers_;
   std::unique_ptr<content::Portal> portal_;
   NavigateCallback navigate_callback_;
-  bool portal_activated_ = false;
-  base::RunLoop* run_loop_ = nullptr;
   base::WeakPtrFactory<PortalInterceptorForTesting> weak_ptr_factory_{this};
 };
 

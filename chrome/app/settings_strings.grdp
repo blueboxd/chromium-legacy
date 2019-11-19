@@ -660,25 +660,25 @@
       To create and test your apps, enable the Android Debug Bridge (ADB). Note that this action allows installation of Android apps that haven't been verified by Google, and requires a factory reset to disable.
     </message>
     <message name="IDS_SETTINGS_CROSTINI_ARC_ADB_LABEL" desc="Label for enabling ADB in ARC.">
-      Enable on this device
+      Enable ADB debugging
     </message>
     <message name="IDS_SETTINGS_CROSTINI_ARC_ADB_POWERWASH_REQUIRED_SUBLABEL" desc="Sublabel notifying user of powerwash requirement before enabling ARC ADB sideloading.">
             A factory reset of this Chromebook is required to enable ADB debugging. <ph name="BEGIN_LINK_LEARN_MORE">&lt;a target="_blank" href="$1"&gt;</ph>Learn more<ph name="END_LINK_LEARN_MORE">&lt;/a&gt;</ph>
     </message>
     <message name="IDS_SETTINGS_CROSTINI_ARC_ADB_CONFIRMATION_TITLE_ENABLE" desc="Confirmation dialog title to restart for enabling ADB.">
-      Enable ADB?
+      Enable ADB debugging?
     </message>
     <message name="IDS_SETTINGS_CROSTINI_ARC_ADB_CONFIRMATION_TITLE_DISABLE" desc="Confirmation dialog title to restart for disabling ADB.">
-      Disable ADB?
+      Disable ADB debugging?
     </message>
     <message name="IDS_SETTINGS_CROSTINI_ARC_ADB_CONFIRMATION_MESSAGE_ENABLE" desc="Describes what will happen if the user enables ADB Sideloading.">
-      To enable the Android Debug Bridge, first restart your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. Disabling ADB requires a reset to factory settings.
+      To enable ADB debugging, a restart of this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> is required. Disabling it requires a reset to factory settings.
     </message>
     <message name="IDS_SETTINGS_CROSTINI_ARC_ADB_CONFIRMATION_MESSAGE_DISABLE" desc="Describes what will happen if the user disables ADB Sideloading.">
-      To disable ADB, restart your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. It will be reset to factory settings, and all user accounts and local data will be erased.
+      Disabling ADB debugging will reset this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> to factory settings. All user accounts and local data will be erased.
     </message>
     <message name="IDS_SETTINGS_CROSTINI_ARC_ADB_RESTART_BUTTON" desc="Label for the button that initiates the ADB enabling flow by restarting the device.">
-      Restart
+      Restart and continue
     </message>
 
     <!-- Plugin VM Page -->
@@ -879,6 +879,9 @@
   </message>
   <message name="IDS_SETTINGS_CLEAR" desc="Label used on a menu item or button to clear an item.">
     Clear
+  </message>
+  <message name="IDS_SETTINGS_DELETE" desc="Label used on a menu item or button to delete an item.">
+    Delete
   </message>
   <message name="IDS_SETTINGS_EDIT" desc="Label used on a menu item or button, used in different contexts to edit an item.">
     Edit
@@ -1262,9 +1265,6 @@
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_EXPORT" desc="Label for export button in certificate manager.">
       Export
-    </message>
-    <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_DELETE" desc="Label for delete button in certificate manager.">
-      Delete
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_OTHERS" desc="Label for the others tab in certificate manager.">
       Others
@@ -4797,6 +4797,12 @@
     <message name="IDS_SETTINGS_DISPLAY_ORIENTATION_STANDARD" desc="In Device Settings > Displays, the label for standard orientation (0 rotation).">
       0&#x00B0; (Default)
     </message>
+    <message name="IDS_SETTINGS_DISPLAY_AMBIENT_COLOR_TITLE" desc="In Device Settings > Displays, the label for toggling ambient color.">
+      Ambient colors
+    </message>
+    <message name="IDS_SETTINGS_DISPLAY_AMBIENT_COLOR_SUBTITLE" desc="In Device Settings > Displays, descriptive sublabel for ambient color.">
+      Adjusts the screen color to match the environment
+    </message>
     <message name="IDS_SETTINGS_DISPLAY_OVERSCAN_TEXT" desc="Text explaining that this setting is used to adjust the boundaries of the selected display.">
       Adjust the boundaries of your desktop within the display
     </message>
@@ -5221,7 +5227,7 @@
     Reset your security key
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_RESET_DESC" desc="A header that appears in the Settings subpage for security keys (which are external devices for user authentication). This is the description for the section about resetting them to factory settings.">
-    This will erase all data on the security key, including its PIN
+    This will delete all data on the security key, including its PIN
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_RESET_TITLE" desc="The title of a dialog for factory-resetting security keys (which are external devices for user authentication). Resetting in this context means erasing a security key and returning it to an initial, blank state.">
     Reset your security key
@@ -5233,7 +5239,7 @@
     To continue, remove your security key from your device, then reinsert and touch it
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_RESET_STEP2" desc="An instruction to a user to press the activation button on their security key a second time to confirm that they wish to reset (i.e. erase) their security key (which is an external device for user authentication).">
-    Touch your security key again to confirm reset. All information stored on the security key, including its PIN, will be erased.
+    Touch your security key again to confirm reset. All information stored on the security key, including its PIN, will be deleted.
   </message>
   <message name="IDS_SETTINGS_SECURITY_KEYS_NO_RESET" desc="A failure message reporting to the user that it is not possible to reset the security key that they selected because the device does not support that operation.">
     Can’t reset this security key

@@ -176,7 +176,7 @@ void FeedOfflineHost::SetSuggestionProvider() {
 
 base::Optional<int64_t> FeedOfflineHost::GetOfflineId(const std::string& url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto iter = url_hash_to_id_.find(base::Hash(url));
+  auto iter = url_hash_to_id_.find(base::FastHash(url));
   return iter == url_hash_to_id_.end() ? base::Optional<int64_t>()
                                        : base::Optional<int64_t>(iter->second);
 }
@@ -282,11 +282,11 @@ void FeedOfflineHost::OfflinePageDeleted(const OfflinePageItem& deleted_page) {
 
 void FeedOfflineHost::CacheOfflinePageUrlAndId(const std::string& url,
                                                int64_t id) {
-  url_hash_to_id_[base::Hash(url)] = id;
+  url_hash_to_id_[base::FastHash(url)] = id;
 }
 
 void FeedOfflineHost::EvictOfflinePageUrl(const std::string& url) {
-  url_hash_to_id_.erase(base::Hash(url));
+  url_hash_to_id_.erase(base::FastHash(url));
 }
 
 }  // namespace feed

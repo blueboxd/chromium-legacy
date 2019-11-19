@@ -19,6 +19,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -54,6 +55,7 @@
 #include "chrome/browser/ssl/cert_report_helper.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
 #include "chrome/browser/ssl/certificate_reporting_test_utils.h"
+#include "chrome/browser/ssl/chrome_ssl_blocking_page.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/common_name_mismatch_handler.h"
 #include "chrome/browser/ssl/mitm_software_blocking_page.h"
@@ -75,6 +77,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_settings_agent.mojom.h"
+#include "chrome/common/extensions/api/safe_browsing_private.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -136,6 +139,7 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/sha2.h"
+#include "extensions/browser/event_router.h"
 #include "extensions/common/extension.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -885,6 +889,7 @@ class SSLUITestBase : public InProcessBrowserTest,
   network::mojom::SSLConfig last_ssl_config_;
   mojo::Receiver<network::mojom::SSLConfigClient> receiver_{this};
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(SSLUITestBase);
 };
 
@@ -2516,6 +2521,59 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestDisplaysInsecureForm) {
   CheckSecurityState(browser()->tab_strip_model()->GetActiveWebContents(),
                      CertError::NONE, security_state::NONE,
                      AuthState::DISPLAYED_FORM_WITH_INSECURE_ACTION);
+}
+
+// Verifies that an SSL interstitial generates SafeBrowsing extension api
+// events.
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestExtensionEvents) {
+  class ExtensionEventObserver : public extensions::EventRouter::TestObserver {
+   public:
+    ExtensionEventObserver() = default;
+    ~ExtensionEventObserver() override = default;
+
+    // extensions::EventRouter::TestObserver:
+    void OnWillDispatchEvent(const extensions::Event& event) override {
+      event_names_.push_back(event.event_name);
+    }
+
+    void OnDidDispatchEventToProcess(const extensions::Event& event) override {}
+
+    const std::vector<std::string>& event_names() const { return event_names_; }
+
+   private:
+    std::vector<std::string> event_names_;
+
+    DISALLOW_COPY_AND_ASSIGN(ExtensionEventObserver);
+  };
+
+  ExtensionEventObserver observer;
+  extensions::EventRouter::Get(browser()->profile())
+      ->AddObserverForTesting(&observer);
+
+  ASSERT_TRUE(https_server_expired_.Start());
+
+  GURL request_url = https_server_expired_.GetURL("/title1.html");
+  ui_test_utils::NavigateToURL(browser(), request_url);
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(tab != nullptr);
+  CheckAuthenticationBrokenState(tab, net::CERT_STATUS_DATE_INVALID,
+                                 AuthState::SHOWING_INTERSTITIAL);
+
+  // Verifies that security interstitial shown event is observed.
+  EXPECT_TRUE(base::Contains(observer.event_names(),
+                             extensions::api::safe_browsing_private::
+                                 OnSecurityInterstitialShown::kEventName));
+
+  ProceedThroughInterstitial(tab);
+
+  // Verifies that security interstitial proceeded event is observed.
+  EXPECT_TRUE(base::Contains(observer.event_names(),
+                             extensions::api::safe_browsing_private::
+                                 OnSecurityInterstitialProceeded::kEventName));
+
+  extensions::EventRouter::Get(browser()->profile())
+      ->RemoveObserverForTesting(&observer);
 }
 
 // Test that a report is sent if the user closes the tab on an interstitial
@@ -5306,7 +5364,7 @@ class SSLBlockingPageIDNTest
     net::SSLInfo ssl_info;
     ssl_info.cert =
         net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
-    return SSLBlockingPage::Create(
+    return ChromeSSLBlockingPage::Create(
         contents, net::ERR_CERT_CONTAINS_ERRORS, ssl_info, request_url, 0,
         base::Time::NowFromSystemTime(), GURL(), nullptr);
   }

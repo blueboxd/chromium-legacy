@@ -64,6 +64,8 @@
     --cr-card-shadow: rgba(var(--cr-card-shadow-color-rgb), .3) 0 1px 2px 0,
                       rgba(var(--cr-card-shadow-color-rgb), .15) 0 1px 3px 1px;
 
+    /* TODO(aee): rename --cr-card-shadow  to --cr-card-elevation-box-shadow and
+     * use directly in place of mixin. */
     --cr-card-elevation: {
       box-shadow: var(--cr-card-shadow);
     }
@@ -87,16 +89,8 @@
       --cr-primary-text-color: var(--google-grey-200);
       --cr-secondary-text-color: var(--google-grey-refresh-500);
 
-      --cr-card-background-color: var(--google-grey-900);
+      --cr-card-background-color: var(--google-grey-900-white-4-percent);
       --cr-card-shadow-color-rgb: 0, 0, 0;
-
-      --cr-card-elevation: {
-        /* This gradient intentionally uses the same from/to colors to add 4%
-         * white on top of an opaque background-color. */
-        background-image: linear-gradient(rgba(255, 255, 255, .04),
-                                          rgba(255, 255, 255, .04));
-        box-shadow: var(--cr-card-shadow);  /* Uses --cr-card-shadow-color-rgb. */
-      }
 
       --cr-checked-color: var(--google-blue-refresh-300);
       --cr-form-field-label-color: var(--dark-secondary-color);

@@ -150,7 +150,8 @@ RulesMonitorService::RulesMonitorService(
       extension_registry_(ExtensionRegistry::Get(browser_context)),
       warning_service_(WarningService::Get(browser_context)),
       context_(browser_context),
-      ruleset_manager_(browser_context) {
+      ruleset_manager_(browser_context),
+      action_tracker_(browser_context) {
   registry_observer_.Add(extension_registry_);
 }
 
@@ -170,7 +171,6 @@ RulesMonitorService::~RulesMonitorService() = default;
       - UI.
 
    On dynamic rules update.
-
       - UI -> File -> UI -> IPC to extension
 */
 
@@ -304,9 +304,10 @@ void RulesMonitorService::OnRulesetLoaded(LoadRequestData load_data) {
     return;
 
   extensions_with_rulesets_.insert(load_data.extension_id);
-  LoadRuleset(load_data.extension_id,
-              std::make_unique<CompositeMatcher>(std::move(matchers)),
-              prefs_->GetDNRAllowedPages(load_data.extension_id));
+  LoadRuleset(
+      load_data.extension_id,
+      std::make_unique<CompositeMatcher>(std::move(matchers), &action_tracker_),
+      prefs_->GetDNRAllowedPages(load_data.extension_id));
 }
 
 void RulesMonitorService::OnDynamicRulesUpdated(
@@ -351,6 +352,7 @@ void RulesMonitorService::OnDynamicRulesUpdated(
 void RulesMonitorService::UnloadRuleset(const ExtensionId& extension_id) {
   bool had_extra_headers_matcher = ruleset_manager_.HasAnyExtraHeadersMatcher();
   ruleset_manager_.RemoveRuleset(extension_id);
+  action_tracker_.ClearExtensionData(extension_id);
 
   if (had_extra_headers_matcher &&
       !ruleset_manager_.HasAnyExtraHeadersMatcher()) {

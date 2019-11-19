@@ -28,9 +28,7 @@ ColorMixer& AddMixerForDarkMode(ColorProvider* provider) {
            {kColorAlertHighSeverity, gfx::kGoogleRed300},
            {kColorAlertLowSeverity, gfx::kGoogleGreen300},
            {kColorAlertMediumSeverity, gfx::kGoogleYellow300},
-           {kColorButtonForeground, gfx::kGoogleGrey200},
-           {kColorDisabledForeground, gfx::kGoogleGrey600},
-           {kColorIconForeground, gfx::kGoogleGrey500},
+           {kColorBodyForeground, gfx::kGoogleGrey500},
            {kColorLinkForeground, gfx::kGoogleBlue300},
            {kColorPrimaryBackground, SkColorSetRGB(0x29, 0x2A, 0x2D)},
            {kColorPrimaryForeground, gfx::kGoogleGrey200},
@@ -49,9 +47,7 @@ ColorMixer& AddMixerForLightMode(ColorProvider* provider) {
                     {kColorAlertHighSeverity, gfx::kGoogleRed600},
                     {kColorAlertLowSeverity, gfx::kGoogleGreen700},
                     {kColorAlertMediumSeverity, gfx::kGoogleYellow700},
-                    {kColorButtonForeground, gfx::kGoogleGrey700},
-                    {kColorDisabledForeground, gfx::kGoogleGrey600},
-                    {kColorIconForeground, gfx::kGoogleGrey700},
+                    {kColorBodyForeground, gfx::kGoogleGrey700},
                     {kColorLinkForeground, gfx::kGoogleBlue700},
                     {kColorPrimaryBackground, SK_ColorWHITE},
                     {kColorPrimaryForeground, gfx::kGoogleGrey900},
@@ -69,9 +65,8 @@ void AddCoreDefaultColorMixers(ColorProvider* provider, bool dark_window) {
                                   : AddMixerForLightMode(provider);
   mixer[kColorSecondaryBackground] =
       BlendForMinContrastWithSelf(kColorPrimaryBackground, 1.67f);
-  mixer[kColorSecondaryForeground] =
-      BlendForMinContrast(kColorDisabledForeground, kColorPrimaryBackground,
-                          kColorPrimaryForeground);
+  mixer[kColorSecondaryForeground] = BlendForMinContrast(
+      gfx::kGoogleGrey600, kColorPrimaryBackground, kColorPrimaryForeground);
   // TODO(pkasting): High contrast?
 }
 

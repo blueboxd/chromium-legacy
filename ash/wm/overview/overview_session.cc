@@ -15,6 +15,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_settings.h"
+#include "ash/scoped_animation_disabler.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -315,6 +316,15 @@ void OverviewSession::SelectWindow(OverviewItem* item) {
     }
   }
   item->EnsureVisible();
+
+  // If the selected window is a minimized window, un-minimize it first before
+  // activating it so that the window can use the scale-up animation instead of
+  // un-minimizing animation.
+  if (WindowState::Get(window)->IsMinimized()) {
+    ScopedAnimationDisabler disabler(window);
+    WindowState::Get(window)->Unminimize();
+    item->SetOpacity(1.f);
+  }
   wm::ActivateWindow(window);
 }
 

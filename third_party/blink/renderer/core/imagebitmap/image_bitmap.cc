@@ -341,10 +341,6 @@ scoped_refptr<StaticBitmapImage> GetImageWithAlphaDisposition(
   return StaticBitmapImage::Create(std::move(dst_pixels), info);
 }
 
-void freePixels(const void*, void* pixels) {
-  static_cast<Uint8Array*>(pixels)->Release();
-}
-
 scoped_refptr<StaticBitmapImage> ScaleImage(
     scoped_refptr<StaticBitmapImage>&& image,
     const ImageBitmap::ParsedOptions& parsed_options) {
@@ -380,27 +376,22 @@ scoped_refptr<StaticBitmapImage> ScaleImage(
     // Avoid sRGB transfer function by setting the color space to nullptr.
     if (image_info.colorSpace()->isSRGB())
       image_info = image_info.makeColorSpace(nullptr);
-    scoped_refptr<ArrayBuffer> resized_buffer =
-        ArrayBuffer::CreateOrNull(image_info.computeMinByteSize(), 1);
-    if (!resized_buffer)
+
+    sk_sp<SkData> image_pixels =
+        TryAllocateSkData(image_info.computeMinByteSize());
+    if (!image_pixels) {
       return nullptr;
-    scoped_refptr<Uint8Array> resized_pixels = Uint8Array::Create(
-        std::move(resized_buffer), 0, image_info.computeMinByteSize());
-    if (!resized_pixels)
-      return nullptr;
-    SkPixmap resized_pixmap(image_info, resized_pixels->Data(),
+    }
+
+    SkPixmap resized_pixmap(image_info, image_pixels->data(),
                             image_info.minRowBytes());
     sk_image->scalePixels(resized_pixmap, parsed_options.resize_quality);
     // Tag the resized Pixmap with the correct color space.
     resized_pixmap.setColorSpace(GetSkImageInfo(image).refColorSpace());
 
-    Uint8Array* pixels = resized_pixels.get();
-    if (pixels) {
-      pixels->AddRef();
-      resized_pixels = nullptr;
-    }
     resized_sk_image =
-        SkImage::MakeFromRaster(resized_pixmap, freePixels, pixels);
+        SkImage::MakeRasterData(resized_pixmap.info(), std::move(image_pixels),
+                                resized_pixmap.rowBytes());
   }
 
   if (!resized_sk_image)

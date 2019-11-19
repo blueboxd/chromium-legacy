@@ -24,10 +24,12 @@ source_set("modals") {
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser/infobars:public",
     "//ios/chrome/browser/passwords:public",
+    "//ios/chrome/browser/ui/autofill:autofill_message",
     "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/table_view:styler",
     "//ios/chrome/browser/ui/util",
     "//ui/base",
+    "//url",
   ]
 }
 

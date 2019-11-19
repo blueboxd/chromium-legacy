@@ -72,6 +72,12 @@ void CanvasResource::OnDestroy() {
 #endif
 }
 
+gpu::InterfaceBase* CanvasResource::InterfaceBase() const {
+  if (!ContextProviderWrapper())
+    return nullptr;
+  return ContextProviderWrapper()->ContextProvider()->InterfaceBase();
+}
+
 gpu::gles2::GLES2Interface* CanvasResource::ContextGL() const {
   if (!ContextProviderWrapper())
     return nullptr;
@@ -86,9 +92,8 @@ gpu::raster::RasterInterface* CanvasResource::RasterInterface() const {
 
 void CanvasResource::WaitSyncToken(const gpu::SyncToken& sync_token) {
   if (sync_token.HasData()) {
-    auto* gl = ContextGL();
-    if (gl)
-      gl->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
+    if (auto* interface_base = InterfaceBase())
+      interface_base->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
   }
 }
 
@@ -137,8 +142,7 @@ bool CanvasResource::PrepareAcceleratedTransferableResource(
                "CanvasResource::PrepareAcceleratedTransferableResource");
   // Gpu compositing is a prerequisite for compositing an accelerated resource
   DCHECK(SharedGpuContext::IsGpuCompositingEnabled());
-  auto* gl = ContextGL();
-  if (!gl)
+  if (!ContextProviderWrapper())
     return false;
   const gpu::Mailbox& mailbox = GetOrCreateGpuMailbox(sync_mode);
   if (mailbox.IsZero())
@@ -372,11 +376,11 @@ CanvasResourceSharedImage::CanvasResourceSharedImage(
   // Wait for the mailbox to be ready to be used.
   WaitSyncToken(shared_image_interface->GenUnverifiedSyncToken());
 
-  auto* gl = ContextGL();
-  DCHECK(gl);
+  auto* raster_interface = RasterInterface();
+  DCHECK(raster_interface);
   owning_thread_data().shared_image_mailbox = shared_image_mailbox;
   owning_thread_data().texture_id_for_read_access =
-      gl->CreateAndTexStorage2DSharedImageCHROMIUM(shared_image_mailbox.name);
+      raster_interface->CreateAndConsumeForGpuRaster(shared_image_mailbox);
 
   // For the non-accelerated case, writes are done on the CPU. So we don't need
   // a texture for writes.
@@ -384,7 +388,7 @@ CanvasResourceSharedImage::CanvasResourceSharedImage(
     return;
   if (allow_concurrent_read_write_access) {
     owning_thread_data().texture_id_for_write_access =
-        gl->CreateAndTexStorage2DSharedImageCHROMIUM(shared_image_mailbox.name);
+        raster_interface->CreateAndConsumeForGpuRaster(shared_image_mailbox);
   } else {
     owning_thread_data().texture_id_for_write_access =
         owning_thread_data().texture_id_for_read_access;
@@ -425,24 +429,26 @@ void CanvasResourceSharedImage::TearDown() {
   DCHECK(!is_cross_thread());
 
   if (ContextProviderWrapper()) {
-    auto* gl = ContextGL();
+    auto* raster_interface = RasterInterface();
     auto* shared_image_interface =
         ContextProviderWrapper()->ContextProvider()->SharedImageInterface();
-    if (gl && shared_image_interface) {
+    if (raster_interface && shared_image_interface) {
       gpu::SyncToken shared_image_sync_token;
-      gl->GenUnverifiedSyncTokenCHROMIUM(shared_image_sync_token.GetData());
+      raster_interface->GenUnverifiedSyncTokenCHROMIUM(
+          shared_image_sync_token.GetData());
       shared_image_interface->DestroySharedImage(shared_image_sync_token,
                                                  mailbox());
     }
-    if (gl) {
+    if (raster_interface) {
       if (owning_thread_data().texture_id_for_read_access) {
-        gl->DeleteTextures(1, &owning_thread_data().texture_id_for_read_access);
+        raster_interface->DeleteGpuRasterTexture(
+            owning_thread_data().texture_id_for_read_access);
       }
       if (owning_thread_data().texture_id_for_write_access &&
           owning_thread_data().texture_id_for_write_access !=
               owning_thread_data().texture_id_for_read_access) {
-        gl->DeleteTextures(1,
-                           &owning_thread_data().texture_id_for_write_access);
+        raster_interface->DeleteGpuRasterTexture(
+            owning_thread_data().texture_id_for_write_access);
       }
     }
   }
@@ -615,9 +621,10 @@ const gpu::SyncToken CanvasResourceSharedImage::GetSyncToken() {
   }
 
   if (mailbox_needs_new_sync_token()) {
-    auto* gl = ContextGL();
-    DCHECK(gl);  // caller should already have early exited if !gl.
-    gl->GenUnverifiedSyncTokenCHROMIUM(
+    auto* raster_interface = RasterInterface();
+    DCHECK(raster_interface);  // caller should already have early exited if
+                               // !raster_interface.
+    raster_interface->GenUnverifiedSyncTokenCHROMIUM(
         owning_thread_data().sync_token.GetData());
     owning_thread_data().mailbox_needs_new_sync_token = false;
   }
@@ -625,9 +632,9 @@ const gpu::SyncToken CanvasResourceSharedImage::GetSyncToken() {
   if (owning_thread_data().mailbox_sync_mode == kVerifiedSyncToken &&
       !owning_thread_data().sync_token.verified_flush()) {
     int8_t* token_data = owning_thread_data().sync_token.GetData();
-    auto* gl = ContextGL();
-    gl->ShallowFlushCHROMIUM();
-    gl->VerifySyncTokensCHROMIUM(&token_data, 1);
+    auto* raster_interface = RasterInterface();
+    raster_interface->ShallowFlushCHROMIUM();
+    raster_interface->VerifySyncTokensCHROMIUM(&token_data, 1);
     owning_thread_data().sync_token.SetVerifyFlush();
   }
 

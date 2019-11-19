@@ -344,10 +344,6 @@ class Internals final : public ScriptWrappable {
 
   String layerTreeAsText(Document*, unsigned flags, ExceptionState&) const;
   String layerTreeAsText(Document*, ExceptionState&) const;
-  String elementLayerTreeAsText(Element*,
-                                unsigned flags,
-                                ExceptionState&) const;
-  String elementLayerTreeAsText(Element*, ExceptionState&) const;
 
   bool scrollsWithRespectTo(Element*, Element*, ExceptionState&);
 

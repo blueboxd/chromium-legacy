@@ -3033,6 +3033,14 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
     settings.default_tile_size.set_height(tile_height);
   }
 
+  if (cmd.HasSwitch(switches::kMinHeightForGpuRasterTile)) {
+    int min_height_for_gpu_raster_tile = 0;
+    switch_value_as_int(cmd, switches::kMinHeightForGpuRasterTile, 1,
+                        std::numeric_limits<int>::max(),
+                        &min_height_for_gpu_raster_tile);
+    settings.min_height_for_gpu_raster_tile = min_height_for_gpu_raster_tile;
+  }
+
   int max_untiled_layer_width = settings.max_untiled_layer_size.width();
   if (cmd.HasSwitch(switches::kMaxUntiledLayerWidth)) {
     switch_value_as_int(cmd, switches::kMaxUntiledLayerWidth, 1,

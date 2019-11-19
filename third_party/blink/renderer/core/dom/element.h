@@ -185,6 +185,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // Passing g_null_atom as the second parameter removes the attribute when
   // calling either of these set methods.
   void setAttribute(const QualifiedName&, const AtomicString& value);
+  void setAttribute(const QualifiedName&,
+                    const AtomicString& value,
+                    ExceptionState&);
   void SetSynchronizedLazyAttribute(const QualifiedName&,
                                     const AtomicString& value);
 

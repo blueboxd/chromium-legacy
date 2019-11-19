@@ -251,6 +251,10 @@ const char kIsHeaderFooterManaged[] = "isHeaderFooterManaged";
 // Name of a dictionary field indicating whether the 'Save to PDF' destination
 // is disabled.
 const char kPdfPrinterDisabled[] = "pdfPrinterDisabled";
+// TODO(dhoss): Change this comment when the policy name is changed.
+// Name of a dictionary field indicating whether the destinations are managed by
+// the PrinterTypeBlacklist enterprise policy.
+const char kDestinationsManaged[] = "destinationsManaged";
 // Name of a dictionary field holding the cloud print URL.
 const char kCloudPrintURL[] = "cloudPrintURL";
 // Name of a dictionary field holding the signed in user accounts.
@@ -1082,6 +1086,11 @@ void PrintPreviewHandler::SendInitialSettings(
   initial_settings.SetBoolKey(
       kPdfPrinterDisabled,
       base::Contains(printer_type_blacklist_, kPdfPrinter));
+
+  const bool destinationsManaged =
+      !printer_type_blacklist_.empty() &&
+      prefs->IsManagedPreference(prefs::kPrinterTypeBlacklist);
+  initial_settings.SetBoolKey(kDestinationsManaged, destinationsManaged);
 
   base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   initial_settings.SetBoolKey(kIsInKioskAutoPrintMode,

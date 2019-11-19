@@ -524,9 +524,13 @@ void ToplevelWindowEventHandler::OnTouchEvent(ui::TouchEvent* event) {
 
   if (event->type() == ui::ET_TOUCH_PRESSED) {
     x_drag_amount_ = y_drag_amount_ = 0;
+    during_reverse_dragging_ = false;
   } else {
-    x_drag_amount_ += (event->location().x() - last_touch_point_.x());
-    y_drag_amount_ += (event->location().y() - last_touch_point_.y());
+    const gfx::Point current_location = event->location();
+    x_drag_amount_ += (current_location.x() - last_touch_point_.x());
+    y_drag_amount_ += (current_location.y() - last_touch_point_.y());
+    during_reverse_dragging_ =
+        current_location.x() < last_touch_point_.x() ? true : false;
   }
 
   last_touch_point_ = event->location();
@@ -902,7 +906,8 @@ bool ToplevelWindowEventHandler::HandleGoingBackFromLeftEdge(
       if (!going_back_started_)
         break;
       DCHECK(back_gesture_affordance_);
-      back_gesture_affordance_->SetDragProgress(x_drag_amount_, y_drag_amount_);
+      back_gesture_affordance_->Update(x_drag_amount_, y_drag_amount_,
+                                       during_reverse_dragging_);
       return true;
     case ui::ET_GESTURE_SCROLL_END:
     case ui::ET_SCROLL_FLING_START: {

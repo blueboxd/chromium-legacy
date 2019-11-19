@@ -512,55 +512,48 @@ pp::FloatRect PDFiumPage::GetCharBounds(int char_index) {
   return GetFloatCharRectInPixels(page, text_page, char_index);
 }
 
-uint32_t PDFiumPage::GetLinkCount() {
+std::vector<PDFEngine::AccessibilityLinkInfo> PDFiumPage::GetLinkInfo() {
+  std::vector<PDFEngine::AccessibilityLinkInfo> link_info;
   if (!available_)
-    return 0;
+    return link_info;
+
   CalculateLinks();
-  return links_.size();
+
+  link_info.reserve(links_.size());
+  for (const Link& link : links_) {
+    PDFEngine::AccessibilityLinkInfo cur_info;
+    cur_info.url = link.target.url;
+    cur_info.start_char_index = link.start_char_index;
+    cur_info.char_count = link.char_count;
+
+    pp::Rect link_rect;
+    for (const auto& rect : link.bounding_rects)
+      link_rect = link_rect.Union(rect);
+    cur_info.bounds = pp::FloatRect(link_rect.x(), link_rect.y(),
+                                    link_rect.width(), link_rect.height());
+
+    link_info.push_back(std::move(cur_info));
+  }
+  return link_info;
 }
 
-bool PDFiumPage::GetLinkInfo(uint32_t link_index,
-                             std::string* out_url,
-                             int* out_start_char_index,
-                             int* out_char_count,
-                             pp::FloatRect* out_bounds) {
-  uint32_t link_count = GetLinkCount();
-  if (link_count == 0 || link_index >= link_count)
-    return false;
-
-  const Link& link = links_[link_index];
-  *out_url = link.target.url;
-  *out_start_char_index = link.start_char_index;
-  *out_char_count = link.char_count;
-  pp::Rect link_rect;
-  for (const auto& rect : link.bounding_rects)
-    link_rect = link_rect.Union(rect);
-
-  *out_bounds = pp::FloatRect(link_rect.x(), link_rect.y(), link_rect.width(),
-                              link_rect.height());
-  return true;
-}
-
-uint32_t PDFiumPage::GetImageCount() {
+std::vector<PDFEngine::AccessibilityImageInfo> PDFiumPage::GetImageInfo() {
+  std::vector<PDFEngine::AccessibilityImageInfo> image_info;
   if (!available_)
-    return 0;
+    return image_info;
+
   CalculateImages();
-  return images_.size();
-}
 
-bool PDFiumPage::GetImageInfo(uint32_t image_index,
-                              std::string* out_alt_text,
-                              pp::FloatRect* out_bounds) {
-  uint32_t image_count = GetImageCount();
-  if (image_index >= image_count)
-    return false;
-
-  const Image& image_info = images_[image_index];
-  *out_alt_text = image_info.alt_text;
-  *out_bounds = pp::FloatRect(
-      image_info.bounding_rect.x(), image_info.bounding_rect.y(),
-      image_info.bounding_rect.width(), image_info.bounding_rect.height());
-  return true;
+  image_info.reserve(images_.size());
+  for (const Image& image : images_) {
+    PDFEngine::AccessibilityImageInfo cur_info;
+    cur_info.alt_text = image.alt_text;
+    cur_info.bounds = pp::FloatRect(
+        image.bounding_rect.x(), image.bounding_rect.y(),
+        image.bounding_rect.width(), image.bounding_rect.height());
+    image_info.push_back(std::move(cur_info));
+  }
+  return image_info;
 }
 
 PDFiumPage::Area PDFiumPage::GetLinkTargetAtIndex(int link_index,

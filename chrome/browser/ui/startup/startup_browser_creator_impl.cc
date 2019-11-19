@@ -60,8 +60,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/prefs/pref_service.h"
-#include "components/rappor/public/rappor_utils.h"
-#include "components/rappor/rappor_service_impl.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -332,7 +330,6 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
   UMA_HISTOGRAM_COUNTS_100(
       "Startup.BrowserLaunchURLCount",
       static_cast<base::HistogramBase::Sample>(urls_to_open.size()));
-  RecordRapporOnStartupURLs(urls_to_open);
 
   DCHECK(profile);
   profile_ = profile;
@@ -870,14 +867,6 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
       FlashDeprecationInfoBarDelegate::Create(infobar_service, profile_);
     }
 #endif
-  }
-}
-
-void StartupBrowserCreatorImpl::RecordRapporOnStartupURLs(
-    const std::vector<GURL>& urls_to_open) {
-  for (const GURL& url : urls_to_open) {
-    rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
-                                            "Startup.BrowserLaunchURL", url);
   }
 }
 

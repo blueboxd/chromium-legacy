@@ -27,11 +27,16 @@ class XRCanvasInputEventListener : public NativeEventListener {
     if (!input_provider_->ShouldProcessEvents())
       return;
 
+    PointerEvent* pointer_event = ToPointerEvent(event);
+    DCHECK(pointer_event);
+    if (!pointer_event->isPrimary())
+      return;
+
     if (event->type() == event_type_names::kPointerdown) {
-      input_provider_->OnPointerDown(ToPointerEvent(event));
+      input_provider_->OnPointerDown(pointer_event);
     } else if (event->type() == event_type_names::kPointerup ||
                event->type() == event_type_names::kPointercancel) {
-      input_provider_->OnPointerUp(ToPointerEvent(event));
+      input_provider_->OnPointerUp(pointer_event);
     }
   }
 

@@ -462,7 +462,7 @@ Polymer({
       },
     },
 
-    controlsManaged: {
+    settingsManaged: {
       type: Boolean,
       notify: true,
       value: false,
@@ -1153,7 +1153,7 @@ Polymer({
     managedSettings = managedSettings.concat(
         ['color', 'cssBackground', 'duplex', 'duplexShortEdge', 'pin']);
     // </if>
-    this.controlsManaged = managedSettings.some(settingName => {
+    this.settingsManaged = managedSettings.some(settingName => {
       const setting = this.getSetting(settingName);
       return setting.available && setting.setByPolicy;
     });

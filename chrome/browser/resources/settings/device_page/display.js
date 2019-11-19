@@ -136,6 +136,14 @@ Polymer({
     },
 
     /** @private */
+    ambientColorAvailable_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('deviceSupportsAmbientColor');
+      }
+    },
+
+    /** @private */
     listAllDisplayModes_: {
       type: Boolean,
       value: function() {
@@ -511,6 +519,17 @@ Polymer({
    */
   showOverscanSetting_: function(display) {
     return !display.isInternal;
+  },
+
+  /**
+   * Returns true if the ambient color setting should be shown for |display|.
+   * @param {boolean} ambientColorAvailable
+   * @param {chrome.system.display.DisplayUnitInfo} display
+   * @return {boolean}
+   * @private
+   */
+  showAmbientColorSetting_: function(ambientColorAvailable, display) {
+    return ambientColorAvailable && display && display.isInternal;
   },
 
   /**

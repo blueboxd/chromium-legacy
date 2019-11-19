@@ -98,7 +98,7 @@ if (is_chromeos) {
       ":multidevice_constants",
       ":multidevice_feature_behavior",
       "..:route",
-      "//ui/webui/resources/cr_elements/chromeos/network:cr_network_listener_behavior",
+      "//ui/webui/resources/cr_components/chromeos/network:network_listener_behavior",
     ]
     externs_list = [ "$externs_path/networking_private.js" ]
     extra_sources = [ "$interfaces_path/networking_private_interface.js" ]
@@ -108,7 +108,7 @@ if (is_chromeos) {
     deps = [
       ":multidevice_feature_behavior",
       "..:route",
-      "//ui/webui/resources/cr_elements/chromeos/network:cr_network_listener_behavior",
+      "//ui/webui/resources/cr_components/chromeos/network:network_listener_behavior",
       "//ui/webui/resources/js/chromeos:onc_mojo",
     ]
     externs_list = [ "$externs_path/networking_private.js" ]

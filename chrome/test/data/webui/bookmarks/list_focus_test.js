@@ -2,15 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {isMac} from 'chrome://resources/js/cr.m.js';
+import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+import {TestCommandManager} from 'chrome://test/bookmarks/test_command_manager.js';
+import {TestStore} from 'chrome://test/bookmarks/test_store.js';
+import {Command} from 'chrome://bookmarks/bookmarks.js';
+import {createFolder, createItem, getAllFoldersOpenState, normalizeIterable, replaceBody, testTree} from 'chrome://test/bookmarks/test_util.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {flushTasks} from 'chrome://test/test_util.m.js';
+import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+
 suite('<bookmarks-list>', function() {
   let list;
   let store;
   let items;
-  let commandManager;
-  const multiKey = cr.isMac ? 'meta' : 'ctrl';
+  let testCommandManager;
+  const multiKey = isMac ? 'meta' : 'ctrl';
 
   function keydown(item, key, modifiers) {
-    MockInteractions.keyDownOn(item, '', modifiers, key);
+    keyDownOn(item, '', modifiers, key);
   }
 
   /**
@@ -42,9 +53,9 @@ suite('<bookmarks-list>', function() {
    */
   async function doAndWait(fn) {
     fn();
-    await test_util.flushTasks();
+    await flushTasks();
     // Focus is done asynchronously.
-    await test_util.flushTasks();
+    await flushTasks();
   }
 
   /** @param {string} id */
@@ -61,7 +72,7 @@ suite('<bookmarks-list>', function() {
       createItem('6'),
       createFolder('7', []),
     ]));
-    store = new bookmarks.TestStore({
+    store = new TestStore({
       nodes: nodes,
       folderOpenState: getAllFoldersOpenState(nodes),
       selectedFolder: '1',
@@ -74,11 +85,11 @@ suite('<bookmarks-list>', function() {
     list.style.width = '100%';
     list.style.position = 'absolute';
     replaceBody(list);
-    Polymer.dom.flush();
+    flush();
     items = list.root.querySelectorAll('bookmarks-item');
 
-    commandManager = new TestCommandManager();
-    document.body.appendChild(commandManager);
+    testCommandManager = new TestCommandManager();
+    document.body.appendChild(testCommandManager.getCommandManager());
   });
 
   test('simple keyboard selection', function() {
@@ -233,7 +244,7 @@ suite('<bookmarks-list>', function() {
     keydown(focusedItem, 'Delete');
     // Commands should take affect on the selection, even if something else is
     // focused.
-    commandManager.assertLastCommand(Command.DELETE, ['2', '3']);
+    testCommandManager.assertLastCommand(Command.DELETE, ['2', '3']);
   });
 
   test('iron-list does not steal focus on enter', async () => {
@@ -243,7 +254,7 @@ suite('<bookmarks-list>', function() {
     const button = items[0].$.menuButton;
     button.focus();
     keydown(button, 'Enter');
-    commandManager.closeCommandMenu();
+    testCommandManager.getCommandManager().closeCommandMenu();
     assertEquals(button, items[0].root.activeElement);
   });
 

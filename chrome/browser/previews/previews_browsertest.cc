@@ -65,25 +65,11 @@ void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
 
 }  // namespace
 
-// The parameter selects whether the OptimizationGuideKeyedService is enabled or
-// not (The tests should pass in the same way for both cases).
-class PreviewsBrowserTest : public InProcessBrowserTest,
-                            public testing::WithParamInterface<bool> {
+class PreviewsBrowserTest : public InProcessBrowserTest {
  public:
   PreviewsBrowserTest() = default;
 
   ~PreviewsBrowserTest() override = default;
-
-  void SetUp() override {
-    if (GetParam()) {
-      scoped_feature_list_.InitWithFeatures(
-          {optimization_guide::features::kOptimizationGuideKeyedService}, {});
-    } else {
-      scoped_feature_list_.InitWithFeatures(
-          {}, {optimization_guide::features::kOptimizationGuideKeyedService});
-    }
-    InProcessBrowserTest::SetUp();
-  }
 
   void SetUpOnMainThread() override {
     g_browser_process->network_quality_tracker()
@@ -218,15 +204,10 @@ class PreviewsBrowserTest : public InProcessBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(PreviewsBrowserTest);
 };
 
-// True if testing using the OptimizationGuideKeyedService implementation.
-INSTANTIATE_TEST_SUITE_P(OptimizationGuideKeyedServiceImplementation,
-                         PreviewsBrowserTest,
-                         testing::Bool());
-
 // Loads a webpage that has both script and noscript tags and also requests
 // a script resource. Verifies that the noscript tag is not evaluated and the
 // script resource is loaded.
-IN_PROC_BROWSER_TEST_P(PreviewsBrowserTest, NoScriptPreviewsDisabled) {
+IN_PROC_BROWSER_TEST_F(PreviewsBrowserTest, NoScriptPreviewsDisabled) {
   base::HistogramTester histogram_tester;
   ui_test_utils::NavigateToURL(browser(), https_url());
 
@@ -307,11 +288,6 @@ class PreviewsNoScriptBrowserTest : public PreviewsBrowserTest {
       test_hints_component_creator_;
 };
 
-// True if testing using the OptimizationGuideKeyedService implementation.
-INSTANTIATE_TEST_SUITE_P(OptimizationGuideKeyedServiceImplementation,
-                         PreviewsNoScriptBrowserTest,
-                         testing::Bool());
-
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 #define DISABLE_ON_WIN_MAC_CHROMEOS(x) DISABLED_##x
 #else
@@ -321,7 +297,7 @@ INSTANTIATE_TEST_SUITE_P(OptimizationGuideKeyedServiceImplementation,
 // Loads a webpage that has both script and noscript tags and also requests
 // a script resource. Verifies that the noscript tag is evaluated and the
 // script resource is not loaded.
-IN_PROC_BROWSER_TEST_P(PreviewsNoScriptBrowserTest,
+IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(NoScriptPreviewsEnabled)) {
   GURL url = https_url();
 
@@ -340,7 +316,7 @@ IN_PROC_BROWSER_TEST_P(PreviewsNoScriptBrowserTest,
                                      "Previews.PreviewShown.NoScript", 1);
 }
 
-IN_PROC_BROWSER_TEST_P(
+IN_PROC_BROWSER_TEST_F(
     PreviewsNoScriptBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(NoScriptPreviewsEnabled_Incognito)) {
   GURL url = https_url();
@@ -360,7 +336,7 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_TRUE(noscript_js_requested());
 }
 
-IN_PROC_BROWSER_TEST_P(PreviewsNoScriptBrowserTest,
+IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(NoScriptPreviewsForHttp)) {
   GURL url = http_url();
 
@@ -374,7 +350,7 @@ IN_PROC_BROWSER_TEST_P(PreviewsNoScriptBrowserTest,
   EXPECT_FALSE(noscript_js_requested());
 }
 
-IN_PROC_BROWSER_TEST_P(PreviewsNoScriptBrowserTest,
+IN_PROC_BROWSER_TEST_F(PreviewsNoScriptBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(
                            NoScriptPreviewsEnabledButNoTransformDirective)) {
   GURL url = https_no_transform_url();
@@ -393,7 +369,7 @@ IN_PROC_BROWSER_TEST_P(PreviewsNoScriptBrowserTest,
       "Previews.CacheControlNoTransform.BlockedPreview", 5 /* NoScript */, 1);
 }
 
-IN_PROC_BROWSER_TEST_P(
+IN_PROC_BROWSER_TEST_F(
     PreviewsNoScriptBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(NoScriptPreviewsEnabledHttpRedirectToHttps)) {
   GURL url = redirect_url();
@@ -413,7 +389,7 @@ IN_PROC_BROWSER_TEST_P(
                                      "Previews.PreviewShown.NoScript", 1);
 }
 
-IN_PROC_BROWSER_TEST_P(
+IN_PROC_BROWSER_TEST_F(
     PreviewsNoScriptBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(NoScriptPreviewsRecordsOptOut)) {
   GURL url = redirect_url();
@@ -440,7 +416,7 @@ IN_PROC_BROWSER_TEST_P(
                                      1);
 }
 
-IN_PROC_BROWSER_TEST_P(
+IN_PROC_BROWSER_TEST_F(
     PreviewsNoScriptBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(NoScriptPreviewsEnabledByWhitelist)) {
   GURL url = https_url();
@@ -455,7 +431,7 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_FALSE(noscript_js_requested());
 }
 
-IN_PROC_BROWSER_TEST_P(
+IN_PROC_BROWSER_TEST_F(
     PreviewsNoScriptBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(NoScriptPreviewsNotEnabledByWhitelist)) {
   GURL url = https_url();

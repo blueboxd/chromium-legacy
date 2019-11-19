@@ -99,7 +99,7 @@ class NetworkErrorScreenTest : public InProcessBrowserTest {
     return base::StrCat(
         {"$('offline-network-control').$$('#networkSelect')"
          ".getNetworkListForTest()"
-         ".querySelector('cr-network-list-item[aria-label=\"",
+         ".querySelector('network-list-item[aria-label=\"",
          wifi_network_name, "\"]')"});
   }
 

@@ -84,7 +84,7 @@ Polymer({
 
   /**
    * Retrieves an image that corresponds to signal strength of the tether host.
-   * Custom icons are used here instead of a <cr-network-icon> because this
+   * Custom icons are used here instead of a <network-icon> because this
    * dialog uses a special color scheme.
    * @param {!mojom.ManagedProperties} managedProperties
    * @return {string} The name of the icon to be used to represent the network's

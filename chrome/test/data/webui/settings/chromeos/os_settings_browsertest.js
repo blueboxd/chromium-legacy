@@ -158,6 +158,7 @@ const OSSettingsAppManagementBrowserTest = class extends OSSettingsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
+      '//ui/webui/resources/js/cr/ui/store.js',
       BROWSER_SETTINGS_PATH + '../test_util.js',
       BROWSER_SETTINGS_PATH + '../test_store.js',
       'app_management/test_util.js',

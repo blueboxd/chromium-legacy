@@ -161,10 +161,10 @@ class MockMediaStreamVideoCapturerSource
     : public blink::MockMediaStreamVideoSource {
  public:
   MockMediaStreamVideoCapturerSource(const blink::MediaStreamDevice& device,
-                                     const SourceStoppedCallback& stop_callback)
+                                     SourceStoppedCallback stop_callback)
       : blink::MockMediaStreamVideoSource() {
     SetDevice(device);
-    SetStopCallback(stop_callback);
+    SetStopCallback(std::move(stop_callback));
   }
 
   MOCK_METHOD1(ChangeSourceImpl,
@@ -362,10 +362,10 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
   // UserMediaProcessor overrides.
   std::unique_ptr<blink::MediaStreamVideoSource> CreateVideoSource(
       const blink::MediaStreamDevice& device,
-      const blink::WebPlatformMediaStreamSource::SourceStoppedCallback&
-          stop_callback) override {
-    video_source_ =
-        new MockMediaStreamVideoCapturerSource(device, stop_callback);
+      blink::WebPlatformMediaStreamSource::SourceStoppedCallback stop_callback)
+      override {
+    video_source_ = new MockMediaStreamVideoCapturerSource(
+        device, std::move(stop_callback));
     return base::WrapUnique(video_source_);
   }
 

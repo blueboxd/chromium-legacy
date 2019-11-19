@@ -492,22 +492,22 @@ TEST_P(CleanerTest, NoUnsanitizedPaths) {
 }
 
 // Test all features with the TestOnly engine, which is quick.
-INSTANTIATE_TEST_CASE_P(AllFeatures,
-                        CleanerTest,
-                        Combine(ValuesIn(kAllTestFeatures),
-                                Values(Engine::TEST_ONLY)),
-                        chrome_cleaner::GetParamNameForTest());
+INSTANTIATE_TEST_SUITE_P(AllFeatures,
+                         CleanerTest,
+                         Combine(ValuesIn(kAllTestFeatures),
+                                 Values(Engine::TEST_ONLY)),
+                         chrome_cleaner::GetParamNameForTest());
 
 #if BUILDFLAG(IS_INTERNAL_CHROME_CLEANER_BUILD)
 // The full scan with the ESET engine takes too long to test more than once so
 // don't enable any test features. In fact, don't test it in debug builds since
 // they are slower.
 #ifdef NDEBUG
-INSTANTIATE_TEST_CASE_P(EsetFeatures,
-                        CleanerTest,
-                        Combine(Values(TestFeatures::kNone),
-                                Values(Engine::ESET)),
-                        chrome_cleaner::GetParamNameForTest());
+INSTANTIATE_TEST_SUITE_P(EsetFeatures,
+                         CleanerTest,
+                         Combine(Values(TestFeatures::kNone),
+                                 Values(Engine::ESET)),
+                         chrome_cleaner::GetParamNameForTest());
 #endif  // NDEBUG
 #endif  // BUILDFLAG(IS_INTERNAL_CHROME_CLEANER_BUILD)
 

@@ -194,11 +194,6 @@ void InProcessBrowserTest::SetUp() {
   // Browser tests will create their own g_browser_process later.
   DCHECK(!g_browser_process);
 
-  // Initialize sampling profiler in browser tests. This mimics the behavior
-  // in standalone Chrome, where this is done in chrome/app/chrome_main.cc,
-  // which does not get called by browser tests.
-  sampling_profiler_ = std::make_unique<MainThreadStackSamplingProfiler>();
-
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   // Auto-reload breaks many browser tests, which assume error pages won't be
@@ -210,6 +205,11 @@ void InProcessBrowserTest::SetUp() {
   SetUpCommandLine(command_line);
   // Add command line arguments that are used by all InProcessBrowserTests.
   SetUpDefaultCommandLine(command_line);
+
+  // Initialize sampling profiler in browser tests. This mimics the behavior
+  // in standalone Chrome, where this is done in chrome/app/chrome_main.cc,
+  // which does not get called by browser tests.
+  sampling_profiler_ = std::make_unique<MainThreadStackSamplingProfiler>();
 
   // Create a temporary user data directory if required.
   ASSERT_TRUE(test_launcher_utils::CreateUserDataDir(&temp_user_data_dir_))

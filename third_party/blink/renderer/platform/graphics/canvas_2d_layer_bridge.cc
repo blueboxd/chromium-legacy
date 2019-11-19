@@ -476,18 +476,18 @@ void Canvas2DLayerBridge::SkipQueuedDrawCommands() {
 }
 
 void Canvas2DLayerBridge::ClearPendingRasterTimers() {
-  gpu::gles2::GLES2Interface* gl_interface = nullptr;
+  gpu::raster::RasterInterface* raster_interface = nullptr;
   if (IsAccelerated() && SharedGpuContext::ContextProviderWrapper() &&
       SharedGpuContext::ContextProviderWrapper()->ContextProvider()) {
-    gl_interface = SharedGpuContext::ContextProviderWrapper()
-                       ->ContextProvider()
-                       ->ContextGL();
+    raster_interface = SharedGpuContext::ContextProviderWrapper()
+                           ->ContextProvider()
+                           ->RasterInterface();
   }
 
-  if (gl_interface) {
+  if (raster_interface) {
     while (!pending_raster_timers_.IsEmpty()) {
       RasterTimer rt = pending_raster_timers_.TakeFirst();
-      gl_interface->DeleteQueriesEXT(1, &rt.gl_query_id);
+      raster_interface->DeleteQueriesEXT(1, &rt.gl_query_id);
     }
   } else {
     pending_raster_timers_.clear();
@@ -495,7 +495,7 @@ void Canvas2DLayerBridge::ClearPendingRasterTimers() {
 }
 
 void Canvas2DLayerBridge::FinishRasterTimers(
-    gpu::gles2::GLES2Interface* gl_interface) {
+    gpu::raster::RasterInterface* raster_interface) {
   // If the context was lost, then the old queries are not valid anymore
   if (!CheckResourceProviderValid()) {
     ClearPendingRasterTimers();
@@ -506,7 +506,7 @@ void Canvas2DLayerBridge::FinishRasterTimers(
   while (!pending_raster_timers_.IsEmpty()) {
     auto it = pending_raster_timers_.begin();
     GLuint complete = 1;
-    gl_interface->GetQueryObjectuivEXT(
+    raster_interface->GetQueryObjectuivEXT(
         it->gl_query_id, GL_QUERY_RESULT_AVAILABLE_NO_FLUSH_CHROMIUM_EXT,
         &complete);
     if (!complete) {
@@ -514,8 +514,8 @@ void Canvas2DLayerBridge::FinishRasterTimers(
     }
 
     GLuint raw_gpu_duration = 0u;
-    gl_interface->GetQueryObjectuivEXT(it->gl_query_id, GL_QUERY_RESULT_EXT,
-                                       &raw_gpu_duration);
+    raster_interface->GetQueryObjectuivEXT(it->gl_query_id, GL_QUERY_RESULT_EXT,
+                                           &raw_gpu_duration);
     base::TimeDelta gpu_duration_microseconds =
         base::TimeDelta::FromMicroseconds(raw_gpu_duration);
     base::TimeDelta total_time =
@@ -534,7 +534,7 @@ void Canvas2DLayerBridge::FinishRasterTimers(
         "Blink.Canvas.RasterDuration.Accelerated.Total", total_time, min, max,
         num_buckets);
 
-    gl_interface->DeleteQueriesEXT(1, &it->gl_query_id);
+    raster_interface->DeleteQueriesEXT(1, &it->gl_query_id);
 
     pending_raster_timers_.erase(it);
   }
@@ -546,19 +546,19 @@ void Canvas2DLayerBridge::FlushRecording() {
 
   TRACE_EVENT0("cc", "Canvas2DLayerBridge::flushRecording");
 
-  gpu::gles2::GLES2Interface* gl_interface = nullptr;
+  gpu::raster::RasterInterface* raster_interface = nullptr;
   if (IsAccelerated() && SharedGpuContext::ContextProviderWrapper() &&
       SharedGpuContext::ContextProviderWrapper()->ContextProvider()) {
-    gl_interface = SharedGpuContext::ContextProviderWrapper()
-                       ->ContextProvider()
-                       ->ContextGL();
-    FinishRasterTimers(gl_interface);
+    raster_interface = SharedGpuContext::ContextProviderWrapper()
+                           ->ContextProvider()
+                           ->RasterInterface();
+    FinishRasterTimers(raster_interface);
   }
 
   // Sample one out of every kRasterMetricProbability frames to time
   // This measurement only makes sense if deferral is enabled
   // If the canvas is accelerated, we also need access to the gl_interface
-  bool measure_raster_metric = (gl_interface || !IsAccelerated()) &&
+  bool measure_raster_metric = (raster_interface || !IsAccelerated()) &&
                                is_deferral_enabled_ &&
                                bernoulli_distribution_(random_generator_);
   RasterTimer rasterTimer;
@@ -567,8 +567,8 @@ void Canvas2DLayerBridge::FlushRecording() {
   if (measure_raster_metric) {
     if (IsAccelerated()) {
       GLuint gl_id = 0u;
-      gl_interface->GenQueriesEXT(1, &gl_id);
-      gl_interface->BeginQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM, gl_id);
+      raster_interface->GenQueriesEXT(1, &gl_id);
+      raster_interface->BeginQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM, gl_id);
       rasterTimer.gl_query_id = gl_id;
     }
     timer.emplace();
@@ -590,7 +590,7 @@ void Canvas2DLayerBridge::FlushRecording() {
   if (measure_raster_metric) {
     if (IsAccelerated()) {
       rasterTimer.cpu_raster_duration = timer->Elapsed();
-      gl_interface->EndQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM);
+      raster_interface->EndQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM);
       pending_raster_timers_.push_back(rasterTimer);
     } else {
       UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
@@ -641,14 +641,17 @@ bool Canvas2DLayerBridge::Restore() {
     return false;
   DCHECK(!ResourceProvider());
 
-  gpu::gles2::GLES2Interface* shared_gl = nullptr;
+  gpu::raster::RasterInterface* shared_raster_interface = nullptr;
   layer_->ClearTexture();
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper =
       SharedGpuContext::ContextProviderWrapper();
-  if (context_provider_wrapper)
-    shared_gl = context_provider_wrapper->ContextProvider()->ContextGL();
+  if (context_provider_wrapper) {
+    shared_raster_interface =
+        context_provider_wrapper->ContextProvider()->RasterInterface();
+  }
 
-  if (shared_gl && shared_gl->GetGraphicsResetStatusKHR() == GL_NO_ERROR) {
+  if (shared_raster_interface &&
+      shared_raster_interface->GetGraphicsResetStatusKHR() == GL_NO_ERROR) {
     CanvasResourceProvider* resource_provider =
         resource_host_->GetOrCreateCanvasResourceProviderImpl(
             kPreferAcceleration);

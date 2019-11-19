@@ -2354,7 +2354,7 @@ if (!is_android) {
         "../browser/ui/views/crostini/crostini_installer_view_browsertest.cc",
         "../browser/ui/views/crostini/crostini_uninstaller_view_browsertest.cc",
         "../browser/ui/views/crostini/crostini_update_component_view_browsertest.cc",
-        "../browser/ui/views/crostini/crostini_upgrade_container_view_browsertest.cc",
+        "../browser/ui/views/crostini/crostini_update_filesystem_view_browsertest.cc",
         "../browser/ui/views/extensions/extension_dialog_bounds_browsertest.cc",
         "../browser/ui/views/frame/browser_frame_ash_browsertest.cc",
         "../browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc",
@@ -2492,6 +2492,7 @@ if (!is_android) {
         "../browser/ui/cocoa/touchbar/browser_window_touch_bar_controller_browsertest.mm",
         "../browser/ui/views/certificate_viewer_mac_browsertest.mm",
         "../browser/ui/views/ssl_client_certificate_selector_mac_browsertest.mm",
+        "../common/stack_sampling_browsertest.cc",
 
         # TODO(crbug/845389): Re-Enable the following, which were temporarily
         # omitted from the build, but are still in use.
@@ -2526,6 +2527,10 @@ if (!is_android) {
         "../browser/ui/views/settings_reset_prompt_dialog_browsertest.cc",
         "../browser/ui/views/uninstall_view_browsertest.cc",
       ]
+
+      if (target_cpu == "x64") {
+        sources += [ "../common/stack_sampling_browsertest.cc" ]
+      }
 
       configs += [ "//build/config/win:delayloads" ]
 
@@ -3811,6 +3816,7 @@ test("unit_tests") {
       "../browser/safe_browsing/chrome_cleaner/chrome_prompt_channel_win_unittest.cc",
       "../browser/safe_browsing/chrome_cleaner/mock_chrome_cleaner_process_win.cc",
       "../browser/safe_browsing/chrome_cleaner/mock_chrome_cleaner_process_win.h",
+      "../browser/safe_browsing/chrome_cleaner/reporter_runner_win_unittest.cc",
       "../browser/safe_browsing/chrome_cleaner/srt_delete_extension_win_unittest.cc",
       "../browser/safe_browsing/chrome_cleaner/srt_field_trial_win_unittest.cc",
       "../browser/search/background/ntp_background_service_unittest.cc",
@@ -4448,7 +4454,6 @@ test("unit_tests") {
       "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_test_utils.h",
       "../browser/safe_browsing/test_extension_event_observer.cc",
       "../browser/safe_browsing/test_extension_event_observer.h",
-      "../browser/ssl/ssl_blocking_page_unittest.cc",
       "../browser/sync/glue/extensions_activity_monitor_unittest.cc",
       "../browser/sync_file_system/drive_backend/callback_helper_unittest.cc",
       "../browser/sync_file_system/drive_backend/callback_tracker_unittest.cc",

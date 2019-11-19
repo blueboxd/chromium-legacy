@@ -183,17 +183,17 @@ UkmService::UkmService(PrefService* pref_service,
 
   reporting_service_.Initialize();
 
-  base::Closure rotate_callback =
-      base::Bind(&UkmService::RotateLog, self_ptr_factory_.GetWeakPtr());
+  base::RepeatingClosure rotate_callback = base::BindRepeating(
+      &UkmService::RotateLog, self_ptr_factory_.GetWeakPtr());
   // MetricsServiceClient outlives UkmService, and
   // MetricsReportingScheduler is tied to the lifetime of |this|.
-  const base::Callback<base::TimeDelta(void)>& get_upload_interval_callback =
-      base::Bind(&metrics::MetricsServiceClient::GetUploadInterval,
-                 base::Unretained(client_));
+  const base::RepeatingCallback<base::TimeDelta(void)>&
+      get_upload_interval_callback =
+          base::BindRepeating(&metrics::MetricsServiceClient::GetUploadInterval,
+                              base::Unretained(client_));
   bool fast_startup_for_testing = client_->ShouldStartUpFastForTesting();
   scheduler_.reset(new UkmRotationScheduler(
       rotate_callback, fast_startup_for_testing, get_upload_interval_callback));
-
   StoreWhitelistedEntries();
 
   DelegatingUkmRecorder::Get()->AddDelegate(self_ptr_factory_.GetWeakPtr());

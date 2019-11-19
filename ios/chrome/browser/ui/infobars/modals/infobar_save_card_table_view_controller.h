@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
 @protocol InfobarSaveCardModalDelegate;
+@class SaveCardMessageWithLinks;
 
 // InfobarSaveCardTableViewController represents the content for the Save Card
 // InfobarModal.
@@ -34,6 +35,10 @@
 
 // Card Expiration Year to be displayed.
 @property(nonatomic, copy) NSString* expirationYear;
+
+// Card related Legal Messages to be displayed.
+@property(nonatomic, copy)
+    NSMutableArray<SaveCardMessageWithLinks*>* legalMessages;
 
 // YES if the Card being displayed has been saved.
 @property(nonatomic, assign) BOOL currentCardSaved;

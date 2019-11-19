@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -95,8 +96,14 @@ IN_PROC_BROWSER_TEST_F(SubresourceLoadingPageLoadMetricsObserverBrowserTest,
       1);
 }
 
+// TODO(http://crbug.com/1025737) Flaky on Mac.
+#if defined(OS_MACOSX)
+#define MAYBE_HistoryPlumbing DISABLED_HistoryPlumbing
+#else
+#define MAYBE_HistoryPlumbing HistoryPlumbing
+#endif
 IN_PROC_BROWSER_TEST_F(SubresourceLoadingPageLoadMetricsObserverBrowserTest,
-                       HistoryPlumbing) {
+                       MAYBE_HistoryPlumbing) {
   base::HistogramTester histogram_tester;
   NavigateToPath("/index.html");
   NavigateAway();

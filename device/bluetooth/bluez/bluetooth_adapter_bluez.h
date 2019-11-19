@@ -74,7 +74,7 @@ class BluetoothPairingBlueZ;
 //
 // When adding methods to this class verify shutdown behavior in
 // BluetoothBlueZTest, Shutdown.
-class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
+class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ final
     : public device::BluetoothAdapter,
       public bluez::BluetoothAdapterClient::Observer,
       public bluez::BluetoothDeviceClient::Observer,
@@ -372,6 +372,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
                                  bool success);
 
   // BluetoothAdapter:
+  base::WeakPtr<BluetoothAdapter> GetWeakPtr() override;
   bool SetPoweredImpl(bool powered) override;
   void StartScanWithFilter(
       std::unique_ptr<device::BluetoothDiscoveryFilter> discovery_filter,

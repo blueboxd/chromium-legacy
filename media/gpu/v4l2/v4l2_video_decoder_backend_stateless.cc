@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/sequenced_task_runner.h"
 #include "media/base/decode_status.h"
 #include "media/base/video_codecs.h"

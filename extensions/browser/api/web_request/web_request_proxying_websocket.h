@@ -63,8 +63,6 @@ class WebRequestProxyingWebSocket
   void OnConnectionEstablished(
       mojo::PendingRemote<network::mojom::WebSocket> websocket,
       mojo::PendingReceiver<network::mojom::WebSocketClient> client_receiver,
-      const std::string& selected_protocol,
-      const std::string& extensions,
       network::mojom::WebSocketHandshakeResponsePtr response,
       mojo::ScopedDataPipeConsumerHandle readable) override;
 
@@ -142,8 +140,6 @@ class WebRequestProxyingWebSocket
   bool has_extra_headers_;
   mojo::PendingRemote<network::mojom::WebSocket> websocket_;
   mojo::PendingReceiver<network::mojom::WebSocketClient> client_receiver_;
-  std::string selected_protocol_;
-  std::string extensions_;
   network::mojom::WebSocketHandshakeResponsePtr handshake_response_ = nullptr;
   mojo::ScopedDataPipeConsumerHandle readable_;
 

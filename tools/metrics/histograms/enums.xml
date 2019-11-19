@@ -1057,6 +1057,11 @@ Unknown properties are collapsed to zero. -->
   <int value="2" label="IPv6"/>
 </enum>
 
+<enum name="AddressHasDerivedField">
+  <int value="0" label="No derived field"/>
+  <int value="1" label="Has derived field"/>
+</enum>
+
 <enum name="AddSearchProvider">
   <int value="0" label="window.external.AddSearchProvider was called"/>
   <int value="1" label="A confirmation dialog was shown"/>
@@ -19858,6 +19863,7 @@ Called by update_net_error_codes.py.-->
   <int value="444" label="AUTOFILL_PRIVATE_ON_PERSONAL_DATA_CHANGED"/>
   <int value="445" label="PRINTING_ON_JOB_STATUS_CHANGED"/>
   <int value="446" label="DECLARATIVE_NET_REQUEST_ON_RULE_MATCHED_DEBUG"/>
+  <int value="447" label="TERMINAL_PRIVATE_ON_SETTINGS_CHANGED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -21339,6 +21345,8 @@ Called by update_net_error_codes.py.-->
   <int value="1412" label="WEBSTOREPRIVATE_GETEXTENSIONSTATUS"/>
   <int value="1413" label="INPUTMETHODPRIVATE_SETSELECTIONRANGE"/>
   <int value="1414" label="VIRTUALKEYBOARDPRIVATE_SETAREATOREMAINONSCREEN"/>
+  <int value="1415" label="TERMINALPRIVATE_GETSETTINGS"/>
+  <int value="1416" label="TERMINALPRIVATE_SETSETTINGS"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -36347,6 +36355,7 @@ from previous Chrome versions.
   <int value="-1274502866" label="AllowDisableMouseAcceleration:enabled"/>
   <int value="-1272593346" label="NewTabLoadingAnimation:disabled"/>
   <int value="-1271563519" label="enable-appcontainer"/>
+  <int value="-1271441871" label="AmbientColor:enabled"/>
   <int value="-1269962982" label="SyncUSSPasswords:disabled"/>
   <int value="-1269093329" label="AndroidOmniboxPreviewsBadge:disabled"/>
   <int value="-1269084216" label="ash-md"/>
@@ -36443,6 +36452,8 @@ from previous Chrome versions.
   <int value="-1173361620" label="CCTModulePostMessage:disabled"/>
   <int value="-1172572865" label="NTPShowGoogleGInOmnibox:enabled"/>
   <int value="-1172204005" label="enable-offline-auto-reload-visible-only"/>
+  <int value="-1168910727"
+      label="enable-experimental-accessibility-language-detection-dynamic"/>
   <int value="-1167992523" label="DesktopPWAsCustomTabUI:disabled"/>
   <int value="-1166745977"
       label="BluetoothAggressiveAppearanceFilter:disabled"/>
@@ -37315,6 +37326,7 @@ from previous Chrome versions.
   <int value="-45487487" label="NewTabPageCustomLinks:disabled"/>
   <int value="-45074716" label="SystemDownloadManager:disabled"/>
   <int value="-45067971" label="NewPrintPreview:disabled"/>
+  <int value="-43428597" label="ClickToCallDetectionV2:enabled"/>
   <int value="-41672681" label="WebUITabStripDemoOptions:disabled"/>
   <int value="-40935502" label="ContextualSuggestionsSlimPeekUI:enabled"/>
   <int value="-36503306" label="HomepageLocationPolicy:enabled"/>
@@ -37615,6 +37627,7 @@ from previous Chrome versions.
   <int value="360391863" label="NTPOfflineBadge:enabled"/>
   <int value="360599302" label="enable-gpu-rasterization"/>
   <int value="362644448" label="memlog-in-process"/>
+  <int value="362853088" label="AmbientColor:disabled"/>
   <int value="365068212" label="PiexWasm:disabled"/>
   <int value="365467768" label="prefetch-search-results"/>
   <int value="367063319" label="PasswordImport:disabled"/>
@@ -38170,6 +38183,7 @@ from previous Chrome versions.
   <int value="1096477444" label="AssistantVoiceMatch:enabled"/>
   <int value="1098823967" label="ash-enable-window-cycle-ui"/>
   <int value="1100244809" label="MacSystemMediaPermissionsInfoUI:disabled"/>
+  <int value="1102780374" label="ClickToCallDetectionV2:disabled"/>
   <int value="1104948452" label="manual-enhanced-bookmarks-optout"/>
   <int value="1105439588" label="enable-swipe-selection"/>
   <int value="1106307305" label="AutofillPrimaryInfoStyleExperiment:enabled"/>
@@ -46603,6 +46617,23 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Initializing"/>
   <int value="2" label="Available"/>
   <int value="3" label="Failed"/>
+</enum>
+
+<enum name="OptimizationGuideHintsFetcherRequestStatus">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Success">Request sent and received response.</int>
+  <int value="2" label="Response Error">
+    Request sent but response not received.
+  </int>
+  <int value="3" label="Network Offline">
+    Request not sent because network offline.
+  </int>
+  <int value="4" label="Fetcher Busy">
+    Request not sent because fetcher busy with another request.
+  </int>
+  <int value="5" label="No Hosts to Fetch">
+    Request not sent because no hosts left after filtering.
+  </int>
 </enum>
 
 <enum name="OptimizationGuideOptimizationFilterStatus">
@@ -62281,6 +62312,8 @@ Full version information for the fingerprint enum values:
   <int value="19" label="Aborted by CLD and HTML/content language conflict"/>
   <int value="20" label="Disabled because network unavailable"/>
   <int value="21" label="Page state doesn't require translation"/>
+  <int value="22"
+      label="Identical language translation, use source language Unknown"/>
 </enum>
 
 <enum name="TranslateLanguage">

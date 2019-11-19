@@ -139,15 +139,15 @@ void ShowCrostiniUpdateComponentView(Profile* profile,
 
 // Shows the Crostini Container Upgrade dialog (for running upgrades in the
 // container).
-void ShowCrostiniUpgradeContainerView(Profile* profile,
+void ShowCrostiniUpdateFilesystemView(Profile* profile,
                                       CrostiniUISurface ui_surface);
 // Show the Crostini Container Upgrade dialog after a delay
-// (CloseCrostiniUpgradeContainerView will cancel the next dialog show).
-void PrepareShowCrostiniUpgradeContainerView(Profile* profile,
+// (CloseCrostiniUpdateFilesystemView will cancel the next dialog show).
+void PrepareShowCrostiniUpdateFilesystemView(Profile* profile,
                                              CrostiniUISurface ui_surface);
-// Closes the current CrostiniUpgradeContainerView or ensures that the view will
-// not open until PrepareShowCrostiniUpgradeContainerView is called again.
-void CloseCrostiniUpgradeContainerView();
+// Closes the current CrostiniUpdateFilesystemView or ensures that the view will
+// not open until PrepareShowCrostiniUpdateFilesystemView is called again.
+void CloseCrostiniUpdateFilesystemView();
 
 // Show the Crostini Software Config dialog (for installing Ansible and
 // applying an Ansible playbook in the container).

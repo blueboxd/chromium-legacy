@@ -8,10 +8,35 @@
 #include <string>
 #include <vector>
 
+#include "chrome/browser/profiles/profile.h"
+#include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/value_store/value_store.h"
 
+class PrefChangeRegistrar;
+
 namespace extensions {
+
+class TerminalPrivateAPI : public BrowserContextKeyedAPI {
+ public:
+  explicit TerminalPrivateAPI(content::BrowserContext* context);
+  ~TerminalPrivateAPI() override;
+
+  // BrowserContextKeyedAPI implementation.
+  static BrowserContextKeyedAPIFactory<TerminalPrivateAPI>*
+  GetFactoryInstance();
+
+ private:
+  friend class BrowserContextKeyedAPIFactory<TerminalPrivateAPI>;
+
+  // BrowserContextKeyedAPI implementation.
+  static const char* service_name() { return "TerminalPrivateAPI"; }
+
+  content::BrowserContext* const context_;
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(TerminalPrivateAPI);
+};
 
 // Opens new terminal process. Returns the new terminal id.
 class TerminalPrivateOpenTerminalProcessFunction : public ExtensionFunction {
@@ -122,6 +147,28 @@ class TerminalPrivateGetCroshSettingsFunction : public ExtensionFunction {
 
  private:
   void AsyncRunWithStorage(ValueStore* storage);
+};
+
+class TerminalPrivateGetSettingsFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("terminalPrivate.getSettings",
+                             TERMINALPRIVATE_GETSETTINGS)
+
+ protected:
+  ~TerminalPrivateGetSettingsFunction() override;
+
+  ExtensionFunction::ResponseAction Run() override;
+};
+
+class TerminalPrivateSetSettingsFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("terminalPrivate.setSettings",
+                             TERMINALPRIVATE_SETSETTINGS)
+
+ protected:
+  ~TerminalPrivateSetSettingsFunction() override;
+
+  ExtensionFunction::ResponseAction Run() override;
 };
 
 }  // namespace extensions

@@ -45,8 +45,7 @@ void PortalCreatedObserver::CreatePortal(
   std::move(callback).Run(proxy_host->GetRoutingID(), portal_->portal_token(),
                           portal_->GetDevToolsFrameToken());
 
-  if (run_loop_)
-    run_loop_->Quit();
+  DidCreatePortal();
 }
 
 void PortalCreatedObserver::AdoptPortal(
@@ -62,8 +61,7 @@ void PortalCreatedObserver::AdoptPortal(
       proxy_host->frame_tree_node()->current_replication_state(),
       portal->GetDevToolsFrameToken());
 
-  if (run_loop_)
-    run_loop_->Quit();
+  DidCreatePortal();
 }
 
 Portal* PortalCreatedObserver::WaitUntilPortalCreated() {
@@ -81,6 +79,14 @@ Portal* PortalCreatedObserver::WaitUntilPortalCreated() {
   portal = portal_;
   portal_ = nullptr;
   return portal;
+}
+
+void PortalCreatedObserver::DidCreatePortal() {
+  DCHECK(portal_);
+  if (!created_cb_.is_null())
+    std::move(created_cb_).Run(portal_);
+  if (run_loop_)
+    run_loop_->Quit();
 }
 
 }  // namespace content

@@ -587,6 +587,10 @@ const char kStartMaximized[]                = "start-maximized";
 // Starts the stack sampling profiler in the child process.
 const char kStartStackProfiler[]            = "start-stack-profiler";
 
+// Browser test mode for the |kStartStackProfiler| switch. Limits the profile
+// durations to be significantly less than the test timeout.
+const char kStartStackProfilerBrowserTest[] = "browser-test";
+
 // Sets the supervised user ID for any loaded or newly created profile to the
 // given value. Pass an empty string to mark the profile as non-supervised.
 // Used for testing.

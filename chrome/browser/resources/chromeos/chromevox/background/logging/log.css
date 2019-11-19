@@ -54,7 +54,7 @@ h1 {
 #logList pre {
   font-family: monospace;
   line-height: 20px;
-  margin-left: 205px;
+  margin-inline-start: 205px;
 }
 
 /* Log tags */

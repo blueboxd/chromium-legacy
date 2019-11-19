@@ -126,3 +126,7 @@ exec('//notifiers.star')
 exec('//generators/cq-builders-md.star')
 
 exec('//validators/builders-in-consoles.star')
+# TODO(https://crbug.com/1011908) Provides some checking of scheduler
+# configuration since it can't be migrated to starlark until no-op jobs are
+# removed
+exec('//validators/scheduler-validation.star')

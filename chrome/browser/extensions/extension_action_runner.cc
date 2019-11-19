@@ -529,7 +529,7 @@ void ExtensionActionRunner::DidFinishNavigation(
   // |rules_monitor_service| can be null for some unit tests.
   if (rules_monitor_service) {
     declarative_net_request::ActionTracker& action_tracker =
-        rules_monitor_service->ruleset_manager()->action_tracker();
+        rules_monitor_service->action_tracker();
 
     int tab_id = ExtensionTabUtil::GetTabId(web_contents());
     action_tracker.ResetActionCountForTab(tab_id);
@@ -546,7 +546,7 @@ void ExtensionActionRunner::WebContentsDestroyed() {
   // |rules_monitor_service| can be null for some unit tests.
   if (rules_monitor_service) {
     declarative_net_request::ActionTracker& action_tracker =
-        rules_monitor_service->ruleset_manager()->action_tracker();
+        rules_monitor_service->action_tracker();
 
     int tab_id = ExtensionTabUtil::GetTabId(web_contents());
     action_tracker.ClearTabData(tab_id);

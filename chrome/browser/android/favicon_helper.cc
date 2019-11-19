@@ -285,7 +285,7 @@ void FaviconHelper::OnFaviconImageResultAvailable(
   }
 
   web_contents->DownloadImage(
-      icon_url, true, 0, false,
-      base::Bind(&FaviconHelper::OnFaviconDownloaded, j_availability_callback,
-                 profile, page_url, icon_type));
+      icon_url, true, 0, 0, false,
+      base::BindOnce(&FaviconHelper::OnFaviconDownloaded,
+                     j_availability_callback, profile, page_url, icon_type));
 }

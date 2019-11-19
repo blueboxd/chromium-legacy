@@ -27,7 +27,7 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
@@ -182,7 +182,7 @@ public class InfoBarContainerTest {
         return new Runnable() {
             @Override
             public void run() {
-                PrefServiceBridge.getInstance().setNetworkPredictionEnabled(
+                PrivacyPreferencesManager.getInstance().setNetworkPredictionEnabled(
                         networkPredictionEnabled);
             }
         };
@@ -202,7 +202,8 @@ public class InfoBarContainerTest {
                 TestThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
                     @Override
                     public Boolean call() {
-                        return PrefServiceBridge.getInstance().getNetworkPredictionEnabled();
+                        return PrivacyPreferencesManager.getInstance()
+                                .getNetworkPredictionEnabled();
                     }
                 });
         try {

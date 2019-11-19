@@ -242,10 +242,12 @@ class WebSocketChannelImplTest : public PageTestBase {
     response->http_version = network::mojom::blink::HttpVersion::New();
     response->status_text = "";
     response->headers_text = "";
+    response->selected_protocol = selected_protocol;
+    response->extensions = extensions;
     handshake_client->OnConnectionEstablished(
         std::move(websocket_to_pass),
-        client_remote.InitWithNewPipeAndPassReceiver(), selected_protocol,
-        extensions, std::move(response), std::move(readable));
+        client_remote.InitWithNewPipeAndPassReceiver(), std::move(response),
+        std::move(readable));
     client->Bind(std::move(client_remote));
     return websocket;
   }

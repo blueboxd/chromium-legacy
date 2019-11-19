@@ -323,6 +323,10 @@ ShelfView* HotseatWidget::GetShelfView() {
   return shelf_view_;
 }
 
+bool HotseatWidget::IsShowingShelfMenu() const {
+  return GetShelfView()->IsShowingMenu();
+}
+
 const ShelfView* HotseatWidget::GetShelfView() const {
   return const_cast<const ShelfView*>(
       const_cast<HotseatWidget*>(this)->GetShelfView());

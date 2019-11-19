@@ -133,8 +133,8 @@ void InstallAttributes::Init(const base::FilePath& cache_file) {
   // actually calling TriggerConsistencyCheck().
   consistency_check_running_ = true;
   cryptohome_client_->WaitForServiceToBeAvailable(
-      base::Bind(&InstallAttributes::OnCryptohomeServiceInitiallyAvailable,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&InstallAttributes::OnCryptohomeServiceInitiallyAvailable,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   if (!base::PathExists(cache_file)) {
     LOG_IF(WARNING, base::SysInfo::IsRunningOnChromeOS())
@@ -171,18 +171,18 @@ void InstallAttributes::Init(const base::FilePath& cache_file) {
   DecodeInstallAttributes(attr_map);
 }
 
-void InstallAttributes::ReadImmutableAttributes(const base::Closure& callback) {
+void InstallAttributes::ReadImmutableAttributes(base::OnceClosure callback) {
   if (device_locked_) {
-    callback.Run();
+    std::move(callback).Run();
     return;
   }
 
   cryptohome_client_->InstallAttributesIsReady(
-      base::Bind(&InstallAttributes::ReadAttributesIfReady,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+      base::BindOnce(&InstallAttributes::ReadAttributesIfReady,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void InstallAttributes::ReadAttributesIfReady(const base::Closure& callback,
+void InstallAttributes::ReadAttributesIfReady(base::OnceClosure callback,
                                               base::Optional<bool> is_ready) {
   if (is_ready.value_or(false)) {
     registration_mode_ = policy::DEVICE_MODE_NOT_SET;
@@ -206,7 +206,7 @@ void InstallAttributes::ReadAttributesIfReady(const base::Closure& callback,
       DecodeInstallAttributes(attr_map);
     }
   }
-  callback.Run();
+  std::move(callback).Run();
 }
 
 void InstallAttributes::SetBlockDevmodeInTpm(
@@ -232,7 +232,7 @@ void InstallAttributes::LockDevice(policy::DeviceMode device_mode,
                                    const std::string& domain,
                                    const std::string& realm,
                                    const std::string& device_id,
-                                   const LockResultCallback& callback) {
+                                   LockResultCallback callback) {
   CHECK((device_mode == policy::DEVICE_MODE_ENTERPRISE && !domain.empty() &&
          realm.empty() && !device_id.empty()) ||
         (device_mode == policy::DEVICE_MODE_ENTERPRISE_AD && domain.empty() &&
@@ -241,7 +241,7 @@ void InstallAttributes::LockDevice(policy::DeviceMode device_mode,
          realm.empty() && !device_id.empty()) ||
         (device_mode == policy::DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH &&
          domain.empty() && realm.empty() && device_id.empty()));
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
   CHECK_EQ(device_lock_running_, false);
 
   // Check for existing lock first.
@@ -250,20 +250,20 @@ void InstallAttributes::LockDevice(policy::DeviceMode device_mode,
       LOG(ERROR) << "Trying to re-lock with wrong mode: device_mode: "
                  << device_mode
                  << ", registration_mode: " << registration_mode_;
-      callback.Run(LOCK_WRONG_MODE);
+      std::move(callback).Run(LOCK_WRONG_MODE);
       return;
     }
 
     if (domain != registration_domain_ || realm != registration_realm_ ||
         device_id != registration_device_id_) {
       LOG(ERROR) << "Trying to re-lock with non-matching parameters.";
-      callback.Run(LOCK_WRONG_DOMAIN);
+      std::move(callback).Run(LOCK_WRONG_DOMAIN);
       return;
     }
 
     // Already locked in the right mode, signal success.
     ReportExistingLockUma(true /* is_existing_lock */);
-    callback.Run(LOCK_SUCCESS);
+    std::move(callback).Run(LOCK_SUCCESS);
     return;
   }
 
@@ -272,9 +272,9 @@ void InstallAttributes::LockDevice(policy::DeviceMode device_mode,
   // device locking must wait for TPM initialization anyways.
   if (consistency_check_running_) {
     CHECK(post_check_action_.is_null());
-    post_check_action_ = base::Bind(&InstallAttributes::LockDevice,
-                                    weak_ptr_factory_.GetWeakPtr(), device_mode,
-                                    domain, realm, device_id, callback);
+    post_check_action_ = base::BindOnce(
+        &InstallAttributes::LockDevice, weak_ptr_factory_.GetWeakPtr(),
+        device_mode, domain, realm, device_id, std::move(callback));
     return;
   }
 
@@ -282,7 +282,7 @@ void InstallAttributes::LockDevice(policy::DeviceMode device_mode,
   cryptohome_client_->InstallAttributesIsReady(
       base::BindOnce(&InstallAttributes::LockDeviceIfAttributesIsReady,
                      weak_ptr_factory_.GetWeakPtr(), device_mode, domain, realm,
-                     device_id, callback));
+                     device_id, std::move(callback)));
 }
 
 void InstallAttributes::LockDeviceIfAttributesIsReady(
@@ -290,11 +290,11 @@ void InstallAttributes::LockDeviceIfAttributesIsReady(
     const std::string& domain,
     const std::string& realm,
     const std::string& device_id,
-    const LockResultCallback& callback,
+    LockResultCallback callback,
     base::Optional<bool> is_ready) {
   if (!is_ready.has_value() || !is_ready.value()) {
     device_lock_running_ = false;
-    callback.Run(LOCK_NOT_READY);
+    std::move(callback).Run(LOCK_NOT_READY);
     return;
   }
 
@@ -308,14 +308,14 @@ void InstallAttributes::LockDeviceIfAttributesIsReady(
   if (tpm_util::InstallAttributesIsInvalid()) {
     LOG(ERROR) << "Install attributes invalid.";
     device_lock_running_ = false;
-    callback.Run(LOCK_BACKEND_INVALID);
+    std::move(callback).Run(LOCK_BACKEND_INVALID);
     return;
   }
 
   if (!tpm_util::InstallAttributesIsFirstInstall()) {
     LOG(ERROR) << "Install attributes already installed.";
     device_lock_running_ = false;
-    callback.Run(LOCK_ALREADY_LOCKED);
+    std::move(callback).Run(LOCK_ALREADY_LOCKED);
     return;
   }
 
@@ -336,7 +336,7 @@ void InstallAttributes::LockDeviceIfAttributesIsReady(
       !tpm_util::InstallAttributesSet(kAttrEnterpriseDeviceId, device_id)) {
     LOG(ERROR) << "Failed writing attributes.";
     device_lock_running_ = false;
-    callback.Run(LOCK_SET_ERROR);
+    std::move(callback).Run(LOCK_SET_ERROR);
     return;
   }
 
@@ -344,33 +344,32 @@ void InstallAttributes::LockDeviceIfAttributesIsReady(
       tpm_util::InstallAttributesIsFirstInstall()) {
     LOG(ERROR) << "Failed locking.";
     device_lock_running_ = false;
-    callback.Run(LOCK_FINALIZE_ERROR);
+    std::move(callback).Run(LOCK_FINALIZE_ERROR);
     return;
   }
 
   ReadImmutableAttributes(
-      base::Bind(&InstallAttributes::OnReadImmutableAttributes,
-                 weak_ptr_factory_.GetWeakPtr(), device_mode, domain, realm,
-                 device_id, callback));
+      base::BindOnce(&InstallAttributes::OnReadImmutableAttributes,
+                     weak_ptr_factory_.GetWeakPtr(), device_mode, domain, realm,
+                     device_id, std::move(callback)));
 }
 
-void InstallAttributes::OnReadImmutableAttributes(
-    policy::DeviceMode mode,
-    const std::string& domain,
-    const std::string& realm,
-    const std::string& device_id,
-    const LockResultCallback& callback) {
+void InstallAttributes::OnReadImmutableAttributes(policy::DeviceMode mode,
+                                                  const std::string& domain,
+                                                  const std::string& realm,
+                                                  const std::string& device_id,
+                                                  LockResultCallback callback) {
   device_lock_running_ = false;
 
   if (registration_mode_ != mode || registration_domain_ != domain ||
       registration_realm_ != realm || registration_device_id_ != device_id) {
     LOG(ERROR) << "Locked data doesn't match.";
-    callback.Run(LOCK_READBACK_ERROR);
+    std::move(callback).Run(LOCK_READBACK_ERROR);
     return;
   }
 
   ReportExistingLockUma(false /* is_existing_lock */);
-  callback.Run(LOCK_SUCCESS);
+  std::move(callback).Run(LOCK_SUCCESS);
 }
 
 bool InstallAttributes::IsEnterpriseManaged() const {
@@ -404,8 +403,8 @@ bool InstallAttributes::IsConsumerKioskDeviceWithAutoLaunch() {
 
 void InstallAttributes::TriggerConsistencyCheck(int dbus_retries) {
   cryptohome_client_->TpmGetPassword(
-      base::Bind(&InstallAttributes::OnTpmGetPasswordCompleted,
-                 weak_ptr_factory_.GetWeakPtr(), dbus_retries));
+      base::BindOnce(&InstallAttributes::OnTpmGetPasswordCompleted,
+                     weak_ptr_factory_.GetWeakPtr(), dbus_retries));
 }
 
 void InstallAttributes::OnTpmGetPasswordCompleted(
@@ -440,8 +439,8 @@ void InstallAttributes::OnTpmGetPasswordCompleted(
   // Run any action (LockDevice call) that might have queued behind the
   // consistency check.
   consistency_check_running_ = false;
-  if (!post_check_action_.is_null()) {
-    post_check_action_.Run();
+  if (post_check_action_) {
+    std::move(post_check_action_).Run();
     post_check_action_.Reset();
   }
 }

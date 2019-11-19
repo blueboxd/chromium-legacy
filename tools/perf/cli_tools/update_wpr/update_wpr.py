@@ -284,7 +284,8 @@ class WprUpdater(object):
       '--reset-results', '--story-filter={story}',
       '--browser-logging-verbosity=verbose',
       '--pageset-repeat=%s' % self.repeat,
-      '--output-dir', self.output_dir])
+      '--output-dir', self.output_dir,
+      '--also-run-disabled-tests'])
     if live:
       args.append('--use-live-sites')
     out_file = self._CheckLog(args, log_name=log_name)

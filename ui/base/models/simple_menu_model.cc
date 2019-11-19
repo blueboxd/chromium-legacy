@@ -46,11 +46,6 @@ base::string16 SimpleMenuModel::Delegate::GetLabelForCommandId(
   return base::string16();
 }
 
-base::string16 SimpleMenuModel::Delegate::GetMinorTextForCommandId(
-    int command_id) const {
-  return base::string16();
-}
-
 bool SimpleMenuModel::Delegate::GetIconForCommandId(
     int command_id, gfx::Image* image_skia) const {
   return false;
@@ -410,8 +405,6 @@ base::string16 SimpleMenuModel::GetLabelAt(int index) const {
 }
 
 base::string16 SimpleMenuModel::GetMinorTextAt(int index) const {
-  if (IsItemDynamicAt(index))
-    return delegate_->GetMinorTextForCommandId(GetCommandIdAt(index));
   return items_[ValidateItemIndex(index)].minor_text;
 }
 

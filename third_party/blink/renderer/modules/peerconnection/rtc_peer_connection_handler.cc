@@ -30,7 +30,6 @@
 #include "third_party/blink/public/platform/web_rtc_data_channel_init.h"
 #include "third_party/blink/public/platform/web_rtc_ice_candidate.h"
 #include "third_party/blink/public/platform/web_rtc_legacy_stats.h"
-#include "third_party/blink/public/platform/web_rtc_rtp_sender.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/public/platform/web_rtc_session_description.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
@@ -48,6 +47,7 @@
 #include "third_party/blink/renderer/platform/peerconnection/rtc_event_log_output_sink.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_event_log_output_sink_proxy.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_offer_options_platform.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_sender_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_request.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
@@ -1896,7 +1896,7 @@ void RTCPeerConnectionHandler::AddTrackOnSignalingThread(
 }
 
 webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>>
-RTCPeerConnectionHandler::RemoveTrack(blink::WebRTCRtpSender* web_sender) {
+RTCPeerConnectionHandler::RemoveTrack(blink::RTCRtpSenderPlatform* web_sender) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::RemoveTrack");
   if (configuration_.sdp_semantics == webrtc::SdpSemantics::kPlanB) {
@@ -1914,7 +1914,7 @@ RTCPeerConnectionHandler::RemoveTrack(blink::WebRTCRtpSender* web_sender) {
 }
 
 bool RTCPeerConnectionHandler::RemoveTrackPlanB(
-    blink::WebRTCRtpSender* web_sender) {
+    blink::RTCRtpSenderPlatform* web_sender) {
   DCHECK_EQ(configuration_.sdp_semantics, webrtc::SdpSemantics::kPlanB);
   auto web_track = web_sender->Track();
   auto it = FindSender(web_sender->Id());
@@ -1948,7 +1948,7 @@ bool RTCPeerConnectionHandler::RemoveTrackPlanB(
 
 webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>>
 RTCPeerConnectionHandler::RemoveTrackUnifiedPlan(
-    blink::WebRTCRtpSender* web_sender) {
+    blink::RTCRtpSenderPlatform* web_sender) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK_EQ(configuration_.sdp_semantics, webrtc::SdpSemantics::kUnifiedPlan);
   auto it = FindSender(web_sender->Id());

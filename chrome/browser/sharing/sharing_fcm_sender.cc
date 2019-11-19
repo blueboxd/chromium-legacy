@@ -8,7 +8,6 @@
 #include "base/callback_helpers.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
-#include "chrome/browser/sharing/sharing_target_info.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
 #include "components/gcm_driver/common/gcm_message.h"
 #include "components/gcm_driver/gcm_driver.h"
@@ -22,10 +21,11 @@ SharingFCMSender::SharingFCMSender(gcm::GCMDriver* gcm_driver,
 
 SharingFCMSender::~SharingFCMSender() = default;
 
-void SharingFCMSender::SendMessageToDevice(SharingTargetInfo target,
-                                           base::TimeDelta time_to_live,
-                                           SharingMessage message,
-                                           SendMessageCallback callback) {
+void SharingFCMSender::SendMessageToDevice(
+    syncer::DeviceInfo::SharingTargetInfo target,
+    base::TimeDelta time_to_live,
+    SharingMessage message,
+    SendMessageCallback callback) {
   base::Optional<SharingSyncPreference::FCMRegistration> fcm_registration =
       sync_preference_->GetFCMRegistration();
   if (!fcm_registration) {

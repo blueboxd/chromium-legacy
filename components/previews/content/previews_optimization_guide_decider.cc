@@ -98,13 +98,6 @@ PreviewsOptimizationGuideDecider::PreviewsOptimizationGuideDecider(
 
 PreviewsOptimizationGuideDecider::~PreviewsOptimizationGuideDecider() = default;
 
-bool PreviewsOptimizationGuideDecider::IsReady() const {
-  // TODO(crbug/969558): Figure out what to do here. The behavior in the old
-  // version was to check if the hints were initialized, but that detail is
-  // opaque to us at this level.
-  return true;
-}
-
 bool PreviewsOptimizationGuideDecider::CanApplyPreview(
     PreviewsUserData* previews_data,
     content::NavigationHandle* navigation_handle,
@@ -196,18 +189,6 @@ bool PreviewsOptimizationGuideDecider::GetResourceLoadingHints(
 
   *out_resource_patterns_to_block = rlh_it->second;
   return true;
-}
-
-void PreviewsOptimizationGuideDecider::LogHintCacheMatch(
-    const GURL& url,
-    bool is_committed) const {
-  // Intentionally unimplemented: This is handled directly by the
-  // OptimizationGuideDecider.
-}
-
-void PreviewsOptimizationGuideDecider::ClearFetchedHints() {
-  // Intentionally unimplemented: This is handled directly by the
-  // OptimizationGuideDecider.
 }
 
 }  // namespace previews

@@ -1464,7 +1464,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                     @Override
                     public void onToggleOverlayVideoMode(boolean enabled) {
                         if (mBottomSheetController.isSheetOpen()) {
-                            mBottomSheetController.peekSheet(false);
+                            mBottomSheetController.collapseSheet(false);
                         }
                     }
 

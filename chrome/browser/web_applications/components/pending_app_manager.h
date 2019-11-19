@@ -87,6 +87,7 @@ class PendingAppManager {
   // uninstall succeeded. Runs |callback| for every completed uninstallation -
   // whether or not the uninstallation actually succeeded.
   virtual void UninstallApps(std::vector<GURL> uninstall_urls,
+                             ExternalInstallSource install_source,
                              const UninstallCallback& callback) = 0;
 
   // Installs an app for each ExternalInstallOptions in

@@ -23,98 +23,6 @@
 #include "ash/public/cpp/ash_typography.h"  // nogncheck
 #endif
 
-namespace {
-
-#if defined(OS_MACOSX)
-constexpr char kDefaultMonospacedTypeface[] = "Menlo";
-#elif defined(OS_WIN)
-constexpr char kDefaultMonospacedTypeface[] = "Consolas";
-#else
-constexpr char kDefaultMonospacedTypeface[] = "DejaVu Sans Mono";
-#endif
-constexpr char kUnspecifiedTypeface[] = "";
-
-// If the default foreground color from the native theme isn't black and dark
-// mode is not on the rest of the Harmony spec isn't going to work. Also skip
-// Harmony if a Windows High Contrast theme is enabled. One of the four standard
-// High Contrast themes in Windows 10 still has black text, but (since the user
-// wants high contrast) the grey text shades in Harmony should not be used.
-bool ShouldIgnoreHarmonySpec(const ui::NativeTheme& theme) {
-  // Mac provides users limited ways to customize the UI, including dark and
-  // high contrast modes; all these are addressed elsewhere, so there's no need
-  // for Mac to try to detect non-Harmony cases as Windows and Linux need to,
-  // and dark mode can interfere with the detection below.
-#if defined(OS_MACOSX)
-  return false;
-#else
-  if (theme.UsesHighContrastColors())
-    return true;
-  if (theme.ShouldUseDarkColors())
-    return false;
-
-  // TODO(pbos): Revisit this check. Both GG900 and black are considered
-  // "default black" as the common theme uses GG900 as primary color.
-  const SkColor test_color =
-      theme.GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor);
-  const bool label_color_is_black =
-      test_color == SK_ColorBLACK || test_color == gfx::kGoogleGrey900;
-  return !label_color_is_black;
-#endif  // defined(OS_MACOSX)
-}
-
-// Returns a color for a possibly inverted or high-contrast OS color theme.
-SkColor GetHarmonyTextColorForNonStandardNativeTheme(
-    int context,
-    int style,
-    const ui::NativeTheme& theme) {
-  // At the time of writing, very few UI surfaces need typography for a Chrome-
-  // provided theme. Typically just incognito browser windows (when the native
-  // theme is NativeThemeDarkAura). Instead, this method is consulted when the
-  // actual OS theme is configured in a special way. So pick from a small number
-  // of NativeTheme constants that are known to adapt properly to distinct
-  // colors when configuring the OS to use a high-contrast theme. For example,
-  // ::GetSysColor() on Windows has 8 text colors: BTNTEXT, CAPTIONTEXT,
-  // GRAYTEXT, HIGHLIGHTTEXT, INACTIVECAPTIONTEXT, INFOTEXT (tool tips),
-  // MENUTEXT, and WINDOWTEXT. There's also hyperlinks: COLOR_HOTLIGHT.
-  // Diverging from these risks using a color that doesn't match user
-  // expectations.
-
-  ui::NativeTheme::ColorId color_id =
-      ui::NativeTheme::kColorId_LabelEnabledColor;
-
-  switch (context) {
-    case views::style::CONTEXT_BUTTON:
-    case views::style::CONTEXT_BUTTON_MD:
-      color_id = ui::NativeTheme::kColorId_ButtonEnabledColor;
-      break;
-    case views::style::CONTEXT_TEXTFIELD:
-      color_id = ui::NativeTheme::kColorId_TextfieldDefaultColor;
-      break;
-  }
-
-  switch (style) {
-    case views::style::STYLE_DIALOG_BUTTON_DEFAULT:
-      color_id = ui::NativeTheme::kColorId_TextOnProminentButtonColor;
-      break;
-    case views::style::STYLE_DISABLED:
-      color_id = ui::NativeTheme::kColorId_LabelDisabledColor;
-      break;
-    case views::style::STYLE_LINK:
-      color_id = ui::NativeTheme::kColorId_LinkEnabled;
-      break;
-    case STYLE_RED:
-      color_id = ui::NativeTheme::kColorId_AlertSeverityHigh;
-      break;
-    case STYLE_GREEN:
-      color_id = ui::NativeTheme::kColorId_AlertSeverityLow;
-      break;
-  }
-
-  return theme.GetSystemColor(color_id);
-}
-
-}  // namespace
-
 const gfx::FontList& ChromeTypographyProvider::GetFont(int context,
                                                        int style) const {
   // "Target" font size constants.
@@ -124,7 +32,7 @@ const gfx::FontList& ChromeTypographyProvider::GetFont(int context,
   constexpr int kBodyTextLargeSize = 13;
   constexpr int kDefaultSize = 12;
 
-  std::string typeface = kUnspecifiedTypeface;
+  std::string typeface;
   int size_delta = kDefaultSize - gfx::PlatformFont::kDefaultBaseFontSize;
   gfx::Font::Weight font_weight = gfx::Font::Weight::NORMAL;
 
@@ -179,7 +87,13 @@ const gfx::FontList& ChromeTypographyProvider::GetFont(int context,
 
   if (style == STYLE_PRIMARY_MONOSPACED ||
       style == STYLE_SECONDARY_MONOSPACED) {
-    typeface = kDefaultMonospacedTypeface;
+#if defined(OS_MACOSX)
+    typeface = "Menlo";
+#elif defined(OS_WIN)
+    typeface = "Consolas";
+#else
+    typeface = "DejaVu Sans Mono";
+#endif
   }
 
   return ui::ResourceBundle::GetSharedInstance()
@@ -190,72 +104,28 @@ const gfx::FontList& ChromeTypographyProvider::GetFont(int context,
 SkColor ChromeTypographyProvider::GetColor(const views::View& view,
                                            int context,
                                            int style) const {
-  // TODO(lgrey): Remove anything that could be using native theme
-  // colors from here after UX review of divergences.
-  const ui::NativeTheme* native_theme = view.GetNativeTheme();
-  DCHECK(native_theme);
-  if (ShouldIgnoreHarmonySpec(*native_theme)) {
-    if (context == views::style::CONTEXT_MENU ||
-        context == views::style::CONTEXT_TOUCH_MENU) {
-      return TypographyProvider::GetColor(view, context, style);
-    }
-    return GetHarmonyTextColorForNonStandardNativeTheme(context, style,
-                                                        *native_theme);
+  // Monospaced styles have the same colors as their normal counterparts.
+  if (style == STYLE_PRIMARY_MONOSPACED) {
+    style = views::style::STYLE_PRIMARY;
+  } else if (style == STYLE_SECONDARY_MONOSPACED) {
+    style = views::style::STYLE_SECONDARY;
   }
 
-  if (context == views::style::CONTEXT_BUTTON_MD) {
-    switch (style) {
-      case views::style::STYLE_DIALOG_BUTTON_DEFAULT:
-        return native_theme->ShouldUseDarkColors() ? gfx::kGoogleGrey900
-                                                   : SK_ColorWHITE;
-      case views::style::STYLE_DISABLED:
-        return gfx::kGoogleGrey600;
-      default:
-        return native_theme->ShouldUseDarkColors() ? gfx::kGoogleBlue300
-                                                   : gfx::kGoogleBlue600;
-    }
-  }
-
-  // Use the secondary style instead of primary for message box body text.
-  if (context == views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT) {
-    if (style == views::style::STYLE_PRIMARY) {
-      style = views::style::STYLE_SECONDARY;
-    } else if (style == STYLE_PRIMARY_MONOSPACED) {
-      style = STYLE_SECONDARY_MONOSPACED;
-    }
-  }
-
-  if (context == views::style::CONTEXT_MENU &&
-      style == views::style::STYLE_DISABLED &&
-      native_theme->ShouldUseDarkColors()) {
-    return gfx::kGoogleGrey600;
-  }
-
+  ui::NativeTheme::ColorId color_id;
   switch (style) {
-    case views::style::STYLE_DIALOG_BUTTON_DEFAULT:
-      return SK_ColorWHITE;
-    case views::style::STYLE_DISABLED:
-      return native_theme->ShouldUseDarkColors()
-                 ? gfx::kGoogleGrey800
-                 : SkColorSetRGB(0x9e, 0x9e, 0x9e);
-    case views::style::STYLE_LINK:
-      return gfx::kGoogleBlue700;
-    case views::style::STYLE_SECONDARY:
-    case STYLE_SECONDARY_MONOSPACED:
     case STYLE_HINT:
-      return native_theme->ShouldUseDarkColors() ? gfx::kGoogleGrey500
-                                                 : gfx::kGoogleGrey700;
+      color_id = ui::NativeTheme::kColorId_LabelDisabledColor;
+      break;
     case STYLE_RED:
-      return native_theme->ShouldUseDarkColors() ? gfx::kGoogleRed300
-                                                 : gfx::kGoogleRed600;
+      color_id = ui::NativeTheme::kColorId_AlertSeverityHigh;
+      break;
     case STYLE_GREEN:
-      return native_theme->ShouldUseDarkColors() ? gfx::kGoogleGreen300
-                                                 : gfx::kGoogleGreen700;
+      color_id = ui::NativeTheme::kColorId_AlertSeverityLow;
+      break;
+    default:
+      return TypographyProvider::GetColor(view, context, style);
   }
-
-  // Use default primary color for everything else.
-  return native_theme->ShouldUseDarkColors() ? SkColorSetA(SK_ColorWHITE, 0xDD)
-                                             : gfx::kGoogleGrey900;
+  return view.GetNativeTheme()->GetSystemColor(color_id);
 }
 
 int ChromeTypographyProvider::GetLineHeight(int context, int style) const {

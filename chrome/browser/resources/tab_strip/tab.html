@@ -4,7 +4,12 @@
 
     height: var(--tabstrip-tab-height);
     position: relative;
+    transform-origin: top left;
     width: var(--tabstrip-tab-width);
+  }
+
+  :host-context([dir='rtl']) {
+    transform-origin: top right;
   }
 
   #tab {

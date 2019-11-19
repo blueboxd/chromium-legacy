@@ -49,6 +49,7 @@ class GaiaUrls {
   const GURL& oauth2_issue_token_url() const;
   const GURL& oauth2_token_info_url() const;
   const GURL& oauth2_revoke_url() const;
+  const GURL& reauth_api_url() const;
 
   const GURL& gaia_login_form_realm() const;
 
@@ -99,6 +100,8 @@ class GaiaUrls {
   GURL oauth2_issue_token_url_;
   GURL oauth2_token_info_url_;
   GURL oauth2_revoke_url_;
+
+  GURL reauth_api_url_;
 
   GURL gaia_login_form_realm_;
 

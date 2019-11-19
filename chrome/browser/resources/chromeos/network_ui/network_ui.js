@@ -162,8 +162,8 @@ const NetworkUI = (function() {
   const createStateTableIcon = function(state) {
     const cell = createTableCellElement();
     cell.className = 'state-table-icon-cell';
-    const icon = /** @type {!CrNetworkIconElement} */ (
-        document.createElement('cr-network-icon'));
+    const icon = /** @type {!NetworkIconElement} */ (
+        document.createElement('network-icon'));
     icon.isListItem = true;
     icon.networkState = OncMojo.getDefaultNetworkState(state.type);
     cell.appendChild(icon);
@@ -569,7 +569,7 @@ const NetworkUI = (function() {
   };
 
   /**
-   * Handles clicks on network items in the <cr-network-select> element by
+   * Handles clicks on network items in the <network-select> element by
    * attempting a connection to the selected network or requesting a password
    * if the network requires a password.
    * @param {!Event<!OncMojo.NetworkStateProperties>} event
@@ -605,7 +605,7 @@ const NetworkUI = (function() {
    * Gets network information from WebUI and sets custom items.
    */
   document.addEventListener('DOMContentLoaded', function() {
-    const select = document.querySelector('cr-network-select');
+    const select = document.querySelector('network-select');
     select.customItems = [
       {customItemName: 'Add WiFi', polymerIcon: 'cr:add', customData: 'WiFi'},
       {customItemName: 'Add VPN', polymerIcon: 'cr:add', customData: 'VPN'}

@@ -14,7 +14,7 @@ Polymer({
   is: 'internet-detail-dialog',
 
   behaviors: [
-    CrNetworkListenerBehavior,
+    NetworkListenerBehavior,
     CrPolicyNetworkBehaviorMojo,
     I18nBehavior,
   ],

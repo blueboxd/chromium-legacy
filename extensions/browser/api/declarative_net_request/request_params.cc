@@ -79,7 +79,8 @@ bool IsThirdPartyRequest(const GURL& url, const url::Origin& document_origin) {
 RequestParams::RequestParams(const WebRequestInfo& info)
     : url(&info.url),
       first_party_origin(info.initiator.value_or(url::Origin())),
-      element_type(GetElementType(info)) {
+      element_type(GetElementType(info)),
+      request_info(&info) {
   is_third_party = IsThirdPartyRequest(*url, first_party_origin);
 }
 

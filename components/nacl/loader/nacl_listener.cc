@@ -214,14 +214,14 @@ class FileTokenMessageFilter : public IPC::MessageFilter {
 };
 
 void NaClListener::Listen() {
+  NaClService service(io_thread_.task_runner());
   channel_ = IPC::SyncChannel::Create(this, io_thread_.task_runner().get(),
                                       base::ThreadTaskRunnerHandle::Get(),
                                       &shutdown_event_);
   filter_ = channel_->CreateSyncMessageFilter();
   channel_->AddFilter(new FileTokenMessageFilter());
-  mojo::ScopedMessagePipeHandle channel_handle;
-  auto service = CreateNaClService(io_thread_.task_runner(), &channel_handle);
-  channel_->Init(channel_handle.release(), IPC::Channel::MODE_CLIENT, true);
+  channel_->Init(service.TakeChannelPipe().release(), IPC::Channel::MODE_CLIENT,
+                 true);
   main_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   base::RunLoop().Run();
 }

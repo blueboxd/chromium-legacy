@@ -88,7 +88,7 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
                                 bool needs_mips) override;
 
   // Raster via GrContext.
-  GLuint CreateAndConsumeForGpuRaster(const GLbyte* mailbox) override;
+  GLuint CreateAndConsumeForGpuRaster(const gpu::Mailbox& mailbox) override;
   void DeleteGpuRasterTexture(GLuint texture) override;
   void BeginGpuRaster() override;
   void EndGpuRaster() override;

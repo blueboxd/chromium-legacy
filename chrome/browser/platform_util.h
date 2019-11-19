@@ -41,9 +41,6 @@ enum OpenOperationResult {
 enum OpenItemType {
   OPEN_FILE,
   OPEN_FOLDER,
-#if defined(OS_LINUX)
-  SHOW_ITEM_IN_FOLDER
-#endif
 };
 
 // Callback used with OpenFile and OpenFolder.

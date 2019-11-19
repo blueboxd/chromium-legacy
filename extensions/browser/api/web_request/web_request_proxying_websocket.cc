@@ -163,8 +163,6 @@ void WebRequestProxyingWebSocket::ContinueToHeadersReceived() {
 void WebRequestProxyingWebSocket::OnConnectionEstablished(
     mojo::PendingRemote<network::mojom::WebSocket> websocket,
     mojo::PendingReceiver<network::mojom::WebSocketClient> client_receiver,
-    const std::string& selected_protocol,
-    const std::string& extensions,
     network::mojom::WebSocketHandshakeResponsePtr response,
     mojo::ScopedDataPipeConsumerHandle readable) {
   DCHECK(forwarding_handshake_client_);
@@ -172,8 +170,6 @@ void WebRequestProxyingWebSocket::OnConnectionEstablished(
   is_done_ = true;
   websocket_ = std::move(websocket);
   client_receiver_ = std::move(client_receiver);
-  selected_protocol_ = selected_protocol;
-  extensions_ = extensions;
   handshake_response_ = std::move(response);
   readable_ = std::move(readable);
 
@@ -204,8 +200,8 @@ void WebRequestProxyingWebSocket::ContinueToCompleted() {
   ExtensionWebRequestEventRouter::GetInstance()->OnCompleted(
       browser_context_, &info_, net::ERR_WS_UPGRADE);
   forwarding_handshake_client_->OnConnectionEstablished(
-      std::move(websocket_), std::move(client_receiver_), selected_protocol_,
-      extensions_, std::move(handshake_response_), std::move(readable_));
+      std::move(websocket_), std::move(client_receiver_),
+      std::move(handshake_response_), std::move(readable_));
 
   // Deletes |this|.
   proxies_->RemoveProxy(this);

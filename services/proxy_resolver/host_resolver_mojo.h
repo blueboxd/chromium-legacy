@@ -24,7 +24,7 @@ namespace proxy_resolver {
 
 // A ProxyHostResolver implementation that converts requests to mojo types and
 // forwards them to a mojo Impl interface.
-class HostResolverMojo : public net::ProxyHostResolver {
+class HostResolverMojo : public ProxyHostResolver {
  public:
   class Impl {
    public:

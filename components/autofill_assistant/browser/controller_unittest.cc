@@ -13,6 +13,7 @@
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill_assistant/browser/device_context.h"
 #include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/mock_controller_observer.h"
 #include "components/autofill_assistant/browser/mock_personal_data_manager.h"
@@ -69,6 +70,7 @@ class FakeClient : public Client {
   std::string GetAccountEmailAddress() override { return ""; }
   std::string GetLocale() override { return ""; }
   std::string GetCountryCode() override { return ""; }
+  DeviceContext GetDeviceContext() override { return DeviceContext(); }
   MOCK_METHOD1(Shutdown, void(Metrics::DropOutReason reason));
   MOCK_METHOD0(AttachUI, void());
   MOCK_METHOD0(DestroyUI, void());

@@ -8,6 +8,7 @@
 #include "media/base/video_codecs.h"  // for media::VideoCodecProfile
 #include "media/mojo/mojom/video_decode_perf_history.mojom-blink.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/blink/renderer/modules/media_capabilities/video_configuration.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
@@ -21,8 +22,6 @@ class MediaKeySystemAccess;
 class ScriptPromise;
 class ScriptPromiseResolver;
 class ScriptState;
-struct WebMediaDecodingConfiguration;
-struct WebVideoConfiguration;
 
 class MODULES_EXPORT MediaCapabilities final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -40,11 +39,9 @@ class MODULES_EXPORT MediaCapabilities final : public ScriptWrappable {
 
   ScriptPromise GetEmeSupport(ScriptState*,
                               media::VideoCodecProfile,
-                              const MediaDecodingConfiguration*,
-                              const WebMediaDecodingConfiguration&);
-
+                              const MediaDecodingConfiguration*);
   void GetPerfInfo(media::VideoCodecProfile,
-                   base::Optional<WebVideoConfiguration>,
+                   const VideoConfiguration*,
                    ScriptPromiseResolver*,
                    MediaKeySystemAccess*);
 

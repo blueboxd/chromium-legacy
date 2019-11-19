@@ -99,7 +99,7 @@ struct PageRenderData {
 // load.
 struct ExtraRequestCompleteInfo {
   ExtraRequestCompleteInfo(
-      const GURL& url,
+      const url::Origin& origin_of_final_url,
       const net::IPEndPoint& remote_endpoint,
       int frame_tree_node_id,
       bool was_cached,
@@ -115,8 +115,11 @@ struct ExtraRequestCompleteInfo {
 
   ~ExtraRequestCompleteInfo();
 
-  // The URL for the request.
-  const GURL url;
+  // The origin of the final URL for the request (final = after redirects).
+  //
+  // The full URL is not available, because in some cases the path and query
+  // may be sanitized away - see https://crbug.com/973885.
+  const url::Origin origin_of_final_url;
 
   // The host (IP address) and port for the request.
   const net::IPEndPoint remote_endpoint;

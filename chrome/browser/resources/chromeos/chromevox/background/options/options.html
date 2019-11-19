@@ -5,15 +5,18 @@
 
 <head>
 <title class="i18n" msgid="options_page_title">ChromeVox Options</title>
-<link rel="stylesheet" type="text/css" href="options.css" />
+<link rel="stylesheet" type="text/css" href="options.css">
 
 <script type="text/javascript" src="../../closure/base.js"></script>
 <script type="text/javascript" src="../../deps.js"></script>
 <script type="text/javascript" src="options_loader.js"></script>
 <script type="text/javascript" src="../../chromeVoxChromeOptionsScript.js">
 </script>
-<script type="module" src="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.m.js"></script>
-<script type="module" src="chrome://resources/cr_elements/cr_link_row/cr_link_row.m.js"></script>
+<script type="module"
+    src="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.m.js">
+</script>
+<script type="module"
+    src="chrome://resources/cr_elements/cr_link_row/cr_link_row.m.js"></script>
 </head>
 
 <body>
@@ -28,32 +31,33 @@
   <p id="version"></p>
 
   <div class="option">
-    <input id="useVerboseMode" type="checkbox" class="checkbox pref"
-           name="useVerboseMode">
-    <label for="useVerboseMode" class="i18n" msgid="options_verbosity_verbose">
+    <label class="i18n" msgid="options_verbosity_verbose">
+      <input id="useVerboseMode" type="checkbox" class="checkbox pref"
+             name="useVerboseMode">
       Enable verbose descriptions.
     </label>
   </div>
 
   <div class="option">
-    <input id="autoRead" type="checkbox" class="checkbox pref" name="autoRead">
-    <label for="autoRead" class="i18n" msgid="options_auto_read">
+    <label class="i18n" msgid="options_auto_read">
+      <input id="autoRead" type="checkbox" class="checkbox pref"
+             name="autoRead">
       Automatically read a page after it finishes loading.
     </label>
   </div>
 
   <div class="option">
-    <input id="speakTextUnderMouse" type="checkbox" class="checkbox pref"
-           name="speakTextUnderMouse">
-    <label for="speakTextUnderMouse" class="i18n" msgid="options_speak_mouse">
+    <label class="i18n" msgid="options_speak_mouse">
+      <input id="speakTextUnderMouse" type="checkbox" class="checkbox pref"
+             name="speakTextUnderMouse">
       Speak text under the mouse.
     </label>
   </div>
 
   <div class="option">
-    <input id="announceDownloadNotifications" type="checkbox" class="checkbox pref"
-        name="announceDownloadNotifications">
-    <label for="announceDownloadNotifications" class="i18n" msgid="options_announce_download">
+    <label class="i18n" msgid="options_announce_download">
+      <input id="announceDownloadNotifications" type="checkbox"
+             class="checkbox pref" name="announceDownloadNotifications">
       Announce download notifications.
     </label>
   </div>
@@ -87,10 +91,9 @@
   </div>
 
   <div class="option" id="languageSwitchingOption">
-    <input id="languageSwitching" type="checkbox"
-           class="checkbox pref" name="languageSwitching">
-    <label for="languageSwitching" class="i18n"
-           msgid="options_lang_switching_checkbox_label">
+    <label class="i18n" msgid="options_lang_switching_checkbox_label">
+      <input id="languageSwitching" type="checkbox"
+             class="checkbox pref" name="languageSwitching">
       Automatically switch ChromeVox voice based on language
     </label>
   </div>
@@ -98,8 +101,9 @@
   <div id="richTextIndicationOption">
     <h2 class="i18n" msgid="options_rich_text_header">Formatting</h2>
     <div class="option">
-      <input id="announceRichTextAttributes" type="checkbox" class="checkbox pref" name="announceRichTextAttributes">
-      <label for="announceRichTextAttributes" class="i18n" msgid="options_rich_text_checkbox_label">
+      <label class="i18n" msgid="options_rich_text_checkbox_label">
+      <input id="announceRichTextAttributes" type="checkbox"
+             class="checkbox pref" name="announceRichTextAttributes">
         Announce text styling
       </label>
     </div>

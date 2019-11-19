@@ -104,6 +104,10 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   // Returns the ideal bounds of the shelf assuming it is visible.
   gfx::Rect GetIdealBounds() const;
 
+  // Returns the ideal bounds of the shelf, but always returns in-app shelf
+  // bounds in tablet mode.
+  gfx::Rect GetIdealBoundsForWorkAreaCalculation() const;
+
   // Stops any animations, sets the bounds of the shelf and status widgets, and
   // changes the work area
   void LayoutShelf();
@@ -248,6 +252,10 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
 
   DragWindowFromShelfController* window_drag_controller_for_testing() {
     return window_drag_controller_.get();
+  }
+
+  bool IsDraggingApplist() const {
+    return drag_status_ == kDragAppListInProgress;
   }
 
   // TODO(harrym|oshima): These templates will be moved to a new Shelf class.
@@ -523,7 +531,7 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   base::Optional<DragWindowFromShelfController::ShelfWindowDragResult>
   MaybeEndWindowDrag(const ui::LocatedEvent& event_in_screen);
   void MaybeCancelWindowDrag();
-  bool IsWindowDragInProgress();
+  bool IsWindowDragInProgress() const;
 
   // True when inside UpdateBoundsAndOpacity() method. Used to prevent calling
   // UpdateBoundsAndOpacity() again from SetChildBounds().

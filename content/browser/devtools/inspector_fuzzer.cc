@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "third_party/inspector_protocol/crdtp/encoding.h"
+#include "third_party/inspector_protocol/crdtp/cbor.h"
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {

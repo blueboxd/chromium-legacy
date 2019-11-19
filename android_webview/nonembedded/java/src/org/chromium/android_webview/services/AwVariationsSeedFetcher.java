@@ -26,7 +26,6 @@ import org.chromium.components.version_info.Channel;
 import org.chromium.components.version_info.VersionConstants;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -42,12 +41,14 @@ import java.util.concurrent.TimeUnit;
  */
 @TargetApi(Build.VERSION_CODES.LOLLIPOP) // for JobService
 public class AwVariationsSeedFetcher extends JobService {
-    private static final String TAG = "AwVariationsSeedFet-";
-    private static final int JOB_ID = TaskIds.WEBVIEW_VARIATIONS_SEED_FETCH_JOB_ID;
+    public static final int JOB_ID = TaskIds.WEBVIEW_VARIATIONS_SEED_FETCH_JOB_ID;
     private static final long MIN_JOB_PERIOD_MILLIS = TimeUnit.DAYS.toMillis(1);
+
+    private static final String TAG = "AwVariationsSeedFet-";
 
     private static JobScheduler sMockJobScheduler;
     private static VariationsSeedFetcher sMockDownloader;
+    private static long sMinJobPeriodMillis = MIN_JOB_PERIOD_MILLIS;
 
     private FetchTask mFetchTask;
 
@@ -81,7 +82,7 @@ public class AwVariationsSeedFetcher extends JobService {
                 Context.JOB_SCHEDULER_SERVICE);
     }
 
-    public static void scheduleIfNeeded() {
+    public static void scheduleIfNeeded(long nowMs) {
         JobScheduler scheduler = getScheduler();
         if (scheduler == null) return;
 
@@ -90,24 +91,28 @@ public class AwVariationsSeedFetcher extends JobService {
             return;
         }
 
-        // Check how long it's been since FetchTask last ran.
-        long lastRequestTime = VariationsUtils.getStampTime();
-        if (lastRequestTime != 0) {
-            long now = (new Date()).getTime();
-            if (now < lastRequestTime + MIN_JOB_PERIOD_MILLIS) {
-                return;
-            }
-        }
-
+        long lastRequestTimeMs = VariationsUtils.getStampTime();
         ComponentName thisComponent = new ComponentName(
                 ContextUtils.getApplicationContext(), AwVariationsSeedFetcher.class);
         JobInfo job = new JobInfo.Builder(JOB_ID, thisComponent)
-                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-                .setRequiresCharging(true)
-                .build();
+                              .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                              .setRequiresCharging(true)
+                              .setMinimumLatency(computeJobDelay(nowMs, lastRequestTimeMs))
+                              .build();
         if (scheduler.schedule(job) != JobScheduler.RESULT_SUCCESS) {
             Log.e(TAG, "Failed to schedule job");
         }
+    }
+
+    // Calculates the minimum amount of time to delay the job so we wait at least
+    // sMinJobPeriodMillis between requests. There should be no delay if the previous request
+    // occurred more than sMinJobPeriodMillis ago.
+    public static long computeJobDelay(long nowMs, long lastRequestTimeMs) {
+        if (lastRequestTimeMs == 0) {
+            return 0;
+        }
+        long timeSinceLastRequestMs = nowMs - lastRequestTimeMs;
+        return Math.max(0, sMinJobPeriodMillis - timeSinceLastRequestMs);
     }
 
     private class FetchTask extends BackgroundOnlyAsyncTask<Void> {
@@ -179,5 +184,9 @@ public class AwVariationsSeedFetcher extends JobService {
     public static void setMocks(JobScheduler scheduler, VariationsSeedFetcher fetcher) {
         sMockJobScheduler = scheduler;
         sMockDownloader = fetcher;
+    }
+
+    public static void setMinJobPeriodMillisForTesting(long minJobPeriodMillis) {
+        sMinJobPeriodMillis = minJobPeriodMillis;
     }
 }

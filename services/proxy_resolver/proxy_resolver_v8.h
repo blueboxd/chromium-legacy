@@ -20,6 +20,9 @@ class GURL;
 namespace net {
 class ProxyInfo;
 class PacFileData;
+}  // namespace net
+
+namespace proxy_resolver {
 
 // A synchronous ProxyResolver-like that uses V8 to evaluate PAC scripts.
 class ProxyResolverV8 {
@@ -34,7 +37,7 @@ class ProxyResolverV8 {
     // result. If |*terminate| is set to true, then the script execution will
     // be aborted. Note that termination may not happen right away.
     virtual bool ResolveDns(const std::string& host,
-                            ProxyResolveDnsOperation op,
+                            net::ProxyResolveDnsOperation op,
                             std::string* output,
                             bool* terminate) = 0;
 
@@ -50,13 +53,15 @@ class ProxyResolverV8 {
   };
 
   // Constructs a ProxyResolverV8.
-  static int Create(const scoped_refptr<PacFileData>& script_data,
+  static int Create(const scoped_refptr<net::PacFileData>& script_data,
                     JSBindings* bindings,
                     std::unique_ptr<ProxyResolverV8>* resolver);
 
   ~ProxyResolverV8();
 
-  int GetProxyForURL(const GURL& url, ProxyInfo* results, JSBindings* bindings);
+  int GetProxyForURL(const GURL& url,
+                     net::ProxyInfo* results,
+                     JSBindings* bindings);
 
   // Get total/used heap memory usage of all v8 instances used by the proxy
   // resolver.
@@ -74,11 +79,6 @@ class ProxyResolverV8 {
   DISALLOW_COPY_AND_ASSIGN(ProxyResolverV8);
 };
 
-}  // namespace net
-
-// TODO(mmenke): Move above class into proxy_resolver namespace and remove this.
-namespace proxy_resolver {
-using ProxyResolverV8 = net::ProxyResolverV8;
 }  // namespace proxy_resolver
 
 #endif  // SERIVCES_PROXY_RESOLVER_PROXY_RESOLVER_V8_H_

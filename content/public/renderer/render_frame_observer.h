@@ -189,7 +189,7 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   // |previews_state| is the PreviewsState if the request is a sub-resource. For
   // Document resources, |previews_state| should be reported as PREVIEWS_OFF.
   virtual void DidStartResponse(
-      const GURL& response_url,
+      const url::Origin& origin_of_final_response_url,
       int request_id,
       const network::mojom::URLResponseHead& response_head,
       content::ResourceType resource_type,

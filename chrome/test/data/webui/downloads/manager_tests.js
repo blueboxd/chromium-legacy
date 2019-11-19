@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {BrowserProxy, DangerType, States} from 'chrome://downloads/downloads.js';
+import {isMac} from 'chrome://resources/js/cr.m.js';
+import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {createDownload, TestDownloadsProxy} from 'chrome://test/downloads/test_support.js';
+
 suite('manager tests', function() {
   /** @type {!downloads.Manager} */
   let manager;
@@ -12,26 +18,35 @@ suite('manager tests', function() {
   /** @type {TestDownloadsProxy} */
   let testBrowserProxy;
 
+  /** @type {!downloads.mojom.PageRemote} */
+  let callbackRouterRemote;
+
+  /** @type {CrToastManagerElement} */
+  let toastManager;
+
   setup(function() {
     PolymerTest.clearBody();
 
     testBrowserProxy = new TestDownloadsProxy();
     callbackRouterRemote = testBrowserProxy.callbackRouterRemote;
-    downloads.BrowserProxy.instance_ = testBrowserProxy;
+    BrowserProxy.instance_ = testBrowserProxy;
 
     manager = document.createElement('downloads-manager');
     document.body.appendChild(manager);
+
+    toastManager = manager.$$('cr-toast-manager');
+    assertTrue(!!toastManager);
   });
 
   test('long URLs elide', async () => {
     callbackRouterRemote.insertItems(0, [createDownload({
                                        fileName: 'file name',
-                                       state: downloads.States.COMPLETE,
+                                       state: States.COMPLETE,
                                        sinceString: 'Today',
                                        url: 'a'.repeat(1000),
                                      })]);
     await callbackRouterRemote.$.flushForTesting();
-    Polymer.dom.flush();
+    flush();
 
     const item = manager.$$('downloads-item');
     assertLT(item.$$('#url').offsetWidth, item.offsetWidth);
@@ -51,54 +66,54 @@ suite('manager tests', function() {
 
     callbackRouterRemote.insertItems(0, [download1, download2]);
     await callbackRouterRemote.$.flushForTesting();
-    Polymer.dom.flush();
+    flush();
     assertEquals(1, countDates());
 
     callbackRouterRemote.removeItem(0);
     await callbackRouterRemote.$.flushForTesting();
-    Polymer.dom.flush();
+    flush();
     assertEquals(1, countDates());
 
     callbackRouterRemote.insertItems(0, [download1]);
     await callbackRouterRemote.$.flushForTesting();
-    Polymer.dom.flush();
+    flush();
     assertEquals(1, countDates());
   });
 
   test('update', async () => {
     const dangerousDownload = createDownload({
-      dangerType: downloads.DangerType.DANGEROUS_FILE,
-      state: downloads.States.DANGEROUS,
+      dangerType: DangerType.DANGEROUS_FILE,
+      state: States.DANGEROUS,
     });
     callbackRouterRemote.insertItems(0, [dangerousDownload]);
     await callbackRouterRemote.$.flushForTesting();
-    Polymer.dom.flush();
+    flush();
     assertTrue(!!manager.$$('downloads-item').$$('.dangerous'));
 
     const safeDownload = Object.assign({}, dangerousDownload, {
-      dangerType: downloads.DangerType.NOT_DANGEROUS,
-      state: downloads.States.COMPLETE,
+      dangerType: DangerType.NOT_DANGEROUS,
+      state: States.COMPLETE,
     });
     callbackRouterRemote.updateItem(0, safeDownload);
     await callbackRouterRemote.$.flushForTesting();
-    Polymer.dom.flush();
+    flush();
     assertFalse(!!manager.$$('downloads-item').$$('.dangerous'));
   });
 
   test('remove', async () => {
     callbackRouterRemote.insertItems(0, [createDownload({
                                        fileName: 'file name',
-                                       state: downloads.States.COMPLETE,
+                                       state: States.COMPLETE,
                                        sinceString: 'Today',
                                        url: 'a'.repeat(1000),
                                      })]);
     await callbackRouterRemote.$.flushForTesting();
-    Polymer.dom.flush();
+    flush();
     const item = manager.$$('downloads-item');
 
     item.$.remove.click();
     await testBrowserProxy.handler.whenCalled('remove');
-    Polymer.dom.flush();
+    flush();
     const list = manager.$$('iron-list');
     assertTrue(list.hidden);
   });
@@ -115,13 +130,13 @@ suite('manager tests', function() {
       await callbackRouterRemote.$.flushForTesting();
       assertFalse(manager.$.toolbar.hasClearableDownloads);
     };
-    await checkNotClearable(downloads.States.DANGEROUS);
-    await checkNotClearable(downloads.States.IN_PROGRESS);
-    await checkNotClearable(downloads.States.PAUSED);
+    await checkNotClearable(States.DANGEROUS);
+    await checkNotClearable(States.IN_PROGRESS);
+    await checkNotClearable(States.PAUSED);
 
     callbackRouterRemote.updateItem(0, clearable);
     callbackRouterRemote.insertItems(
-        1, [createDownload({state: downloads.States.DANGEROUS})]);
+        1, [createDownload({state: States.DANGEROUS})]);
     await callbackRouterRemote.$.flushForTesting();
     assertTrue(manager.$.toolbar.hasClearableDownloads);
     callbackRouterRemote.removeItem(0);
@@ -139,33 +154,30 @@ suite('manager tests', function() {
     // Add a download entry so that clear-all-command is applicable.
     callbackRouterRemote.insertItems(0, [createDownload({
                                        fileName: 'file name',
-                                       state: downloads.States.COMPLETE,
+                                       state: States.COMPLETE,
                                        sinceString: 'Today',
                                        url: 'a'.repeat(1000),
                                      })]);
     await callbackRouterRemote.$.flushForTesting();
 
-    const toastManager = cr.toastManager.getInstance();
     assertFalse(toastManager.isToastOpen);
 
     // Simulate 'alt+c' key combo.
-    MockInteractions.keyDownOn(document, null, 'alt', cr.isMac ? 'ç' : 'c');
+    keyDownOn(document, null, 'alt', isMac ? 'ç' : 'c');
     assertTrue(toastManager.isToastOpen);
     assertFalse(toastManager.isUndoButtonHidden);
   });
 
   test('toast is hidden when undo-command is fired', () => {
-    const toastManager = cr.toastManager.getInstance();
     toastManager.show('');
     assertTrue(toastManager.isToastOpen);
 
     // Simulate 'ctrl+z' key combo (or meta+z for Mac).
-    MockInteractions.keyDownOn(document, null, cr.isMac ? 'meta' : 'ctrl', 'z');
+    keyDownOn(document, null, isMac ? 'meta' : 'ctrl', 'z');
     assertFalse(toastManager.isToastOpen);
   });
 
   test('toast is hidden when undo is clicked', () => {
-    const toastManager = cr.toastManager.getInstance();
     toastManager.show('');
     assertTrue(toastManager.isToastOpen);
     toastManager.dispatchEvent(new Event('undo-click'));

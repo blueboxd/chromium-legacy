@@ -192,6 +192,7 @@ class PLATFORM_EXPORT CanvasResource
   // was created.
   virtual void TearDown() = 0;
 
+  gpu::InterfaceBase* InterfaceBase() const;
   gpu::gles2::GLES2Interface* ContextGL() const;
   gpu::raster::RasterInterface* RasterInterface() const;
   GLenum GLFilter() const;

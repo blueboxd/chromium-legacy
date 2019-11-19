@@ -63,6 +63,9 @@ public class CustomTabToolbarColorController {
         mToolbarManager = manager;
         assert manager != null : "Toolbar manager not initialized";
 
+        // Logic isn't shared with WebappActivity yet.
+        if (mIntentDataProvider.getWebappExtras() != null) return;
+
         int toolbarColor = mIntentDataProvider.getToolbarColor();
         manager.onThemeColorChanged(toolbarColor, false);
         if (!mIntentDataProvider.isOpenedByChrome()) {

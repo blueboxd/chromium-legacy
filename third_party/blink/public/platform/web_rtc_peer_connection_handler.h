@@ -57,7 +57,7 @@ class WebLocalFrame;
 class WebMediaConstraints;
 class WebMediaStream;
 class WebMediaStreamTrack;
-class WebRTCRtpSender;
+class RTCRtpSenderPlatform;
 class WebRTCSessionDescription;
 class WebRTCStatsRequest;
 class WebString;
@@ -144,7 +144,7 @@ class WebRTCPeerConnectionHandler {
   // must be nulled by the caller.
   // In Unified Plan: Returns OK() with the updated transceiver state.
   virtual webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>> RemoveTrack(
-      WebRTCRtpSender*) = 0;
+      RTCRtpSenderPlatform*) = 0;
   virtual void Stop() = 0;
 
   // Returns a pointer to the underlying native PeerConnection object.

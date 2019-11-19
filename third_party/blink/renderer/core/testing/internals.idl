@@ -198,10 +198,8 @@
     const unsigned short LAYER_TREE_INCLUDES_ROOT_LAYER = 8;
     const unsigned short LAYER_TREE_INCLUDES_COMPOSITING_REASONS = 32;
     const unsigned short LAYER_TREE_INCLUDES_PAINT_RECORDS = 64;
-    const unsigned short OUTPUT_AS_LAYER_TREE = 0x4000;
 
     [RaisesException] DOMString layerTreeAsText(Document document, optional unsigned short flags);
-    [RaisesException] DOMString elementLayerTreeAsText(Element element, optional unsigned short flags);
 
     [RaisesException] boolean scrollsWithRespectTo(Element element1, Element element2);
 

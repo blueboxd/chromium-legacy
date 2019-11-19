@@ -6,8 +6,8 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
@@ -38,7 +38,8 @@ void ConnectionHelpTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (navigation_handle->IsInMainFrame() &&
       (web_contents()->GetURL().EqualsIgnoringRef(GetHelpCenterURL()) ||
-       web_contents()->GetURL().EqualsIgnoringRef(GURL(kSymantecSupportUrl)))) {
+       web_contents()->GetURL().EqualsIgnoringRef(
+           GURL(chrome::kSymantecSupportUrl)))) {
     LearnMoreClickResult histogram_value;
     if (navigation_handle->IsErrorPage()) {
       if (net::IsCertificateError(navigation_handle->GetNetErrorCode())) {

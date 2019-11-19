@@ -422,9 +422,10 @@ struct NativeValueTraits<IDLSequence<T>>
     }
 
     ImplType result;
-    // TODO(rakuco): Checking for IsArray() may not be enough. Other engines
-    // also prefer regular array iteration over a custom @@iterator when the
-    // latter is defined, but it is not clear if this is a valid optimization.
+    // TODO(https://crbug.com/715122): Checking for IsArray() may not be
+    // enough. Other engines also prefer regular array iteration over a custom
+    // @@iterator when the latter is defined, but it is not clear if this is a
+    // valid optimization.
     if (value->IsArray()) {
       ConvertSequenceFast(isolate, value.As<v8::Array>(), exception_state,
                           result);

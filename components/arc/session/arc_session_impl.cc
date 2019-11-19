@@ -370,10 +370,8 @@ void ArcSessionImpl::DoStartMiniInstance(size_t num_cores_disabled) {
       delegate_->GetChannel() != version_info::Channel::STABLE &&
       delegate_->GetChannel() != version_info::Channel::BETA;
   params.arc_custom_tabs_experiment = is_custom_tab_enabled;
-  const bool is_arc_print_spooler_enabled =
-      base::FeatureList::IsEnabled(arc::kPrintSpoolerExperimentFeature) &&
-      delegate_->GetChannel() != version_info::Channel::STABLE;
-  params.arc_print_spooler_experiment = is_arc_print_spooler_enabled;
+  params.arc_print_spooler_experiment =
+      base::FeatureList::IsEnabled(arc::kPrintSpoolerExperimentFeature);
   params.lcd_density = lcd_density_;
   params.num_cores_disabled = num_cores_disabled;
 

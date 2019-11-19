@@ -592,6 +592,10 @@ HRESULT GlsRunnerTestBase::FinishLogonProcessWithCred(
       EXPECT_EQ(test_cred->GetErrorText(), nullptr);
     }
     return S_OK;
+  } else {
+    // Also extract other registration related fields and verify if those are
+    // non-empty.
+    EXPECT_TRUE(test_cred->ContainsIsAdJoinedUser());
   }
 
   // Call final GetSerialization and expect it to be finished.

@@ -38,6 +38,10 @@ struct WebSocketHandshakeResponse {
   IPEndPoint remote_endpoint;
   array<HttpHeader> headers;
   string headers_text;
+  // Sub-protocol the server selected, or empty if no sub-protocol was selected.
+  string selected_protocol;
+  // The list of extensions negotiated for the connection.
+  string extensions;
 };
 
 // This interface is for HTTP Authentication.
@@ -54,18 +58,12 @@ interface WebSocketHandshakeClient {
   // Notify the renderer that the browser has started an opening handshake.
   OnOpeningHandshakeStarted(WebSocketHandshakeRequest request);
 
-  // Called when the connection is established. |selected_protocol| is the
-  // sub-protocol the server selected, or empty if no sub-protocol was selected.
-  // |extensions| is the list of extensions negotiated for the connection.
-  // default threshold value
+  // Called when the connection is established.
   // |response| may contain cookie-related headers when the client has
   // an access to raw cookie information.
   // |readable| is readable datapipe to receive data from browser.
-  // TODO(yoichio): Merge |selected_protocol| and |extensions| into |response|.
   OnConnectionEstablished(pending_remote<WebSocket> socket,
                           pending_receiver<WebSocketClient> client_receiver,
-                          string selected_protocol,
-                          string extensions,
                           WebSocketHandshakeResponse response,
                           handle<data_pipe_consumer> readable);
 };

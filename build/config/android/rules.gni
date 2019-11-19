@@ -1951,6 +1951,11 @@ if (enable_java_templates) {
         defines += [ "_IS_BUNDLE" ]
       }
 
+      if (defined(invoker.is_incremental_install) &&
+          invoker.is_incremental_install) {
+        defines += [ "_IS_INCREMENTAL_INSTALL" ]
+      }
+
       if (invoker.use_final_fields) {
         forward_variables_from(invoker,
                                [
@@ -2706,6 +2711,7 @@ if (enable_java_templates) {
                                ])
         use_final_fields = true
         enable_multidex = _enable_multidex
+        is_incremental_install = _incremental_apk
         if (defined(invoker.product_version_resources_dep)) {
           resources_version_variable =
               "org.chromium.base.R.string.product_version"

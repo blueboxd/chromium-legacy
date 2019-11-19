@@ -45,8 +45,9 @@ base::Value LoadManifestFile(const base::FilePath& manifest_path,
       std::string::npos) {
     base::DictionaryValue* manifest_dictionary = nullptr;
     manifest->GetAsDictionary(&manifest_dictionary);
-    extension_l10n_util::LocalizeExtension(extension_path, manifest_dictionary,
-                                           error);
+    extension_l10n_util::LocalizeExtension(
+        extension_path, manifest_dictionary,
+        extension_l10n_util::GzippedMessagesPermission::kDisallow, error);
   }
 
   return base::Value(std::move(*manifest));

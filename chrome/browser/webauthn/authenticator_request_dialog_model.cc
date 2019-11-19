@@ -450,10 +450,6 @@ void AuthenticatorRequestDialogModel::Cancel() {
     observer.OnCancelRequest();
 }
 
-void AuthenticatorRequestDialogModel::Back() {
-  SetCurrentStep(Step::kTransportSelection);
-}
-
 void AuthenticatorRequestDialogModel::OnSheetModelDidChange() {
   for (auto& observer : observers_)
     observer.OnSheetModelChanged();

@@ -4254,6 +4254,7 @@ void WebContentsImpl::DidEndColorChooser() {
 int WebContentsImpl::DownloadImage(
     const GURL& url,
     bool is_favicon,
+    uint32_t preferred_size,
     uint32_t max_bitmap_size,
     bool bypass_cache,
     WebContents::ImageDownloadCallback callback) {
@@ -4277,7 +4278,7 @@ int WebContentsImpl::DownloadImage(
   }
 
   mojo_image_downloader->DownloadImage(
-      url, is_favicon, max_bitmap_size, bypass_cache,
+      url, is_favicon, preferred_size, max_bitmap_size, bypass_cache,
       base::BindOnce(&WebContentsImpl::OnDidDownloadImage,
                      weak_factory_.GetWeakPtr(), std::move(callback),
                      download_id, url));
@@ -4466,7 +4467,7 @@ void WebContentsImpl::ReadyToCommitNavigation(
   if (navigation_handle->IsInMainFrame() &&
       navigation_handle->GetNetErrorCode() == net::OK) {
     controller_.ssl_manager()->DidStartResourceResponse(
-        navigation_handle->GetURL(),
+        url::Origin::Create(navigation_handle->GetURL()),
         navigation_handle->GetSSLInfo().has_value()
             ? net::IsCertStatusError(
                   navigation_handle->GetSSLInfo()->cert_status)
@@ -4818,9 +4819,11 @@ void WebContentsImpl::ViewSource(RenderFrameHostImpl* frame) {
   // AddNewContents method call.
 }
 
-void WebContentsImpl::SubresourceResponseStarted(const GURL& url,
-                                                 net::CertStatus cert_status) {
-  controller_.ssl_manager()->DidStartResourceResponse(url, cert_status);
+void WebContentsImpl::SubresourceResponseStarted(
+    const url::Origin& origin_of_final_response_url,
+    net::CertStatus cert_status) {
+  controller_.ssl_manager()->DidStartResourceResponse(
+      origin_of_final_response_url, cert_status);
   SetNotWaitingForResponse();
 }
 

@@ -41,6 +41,9 @@ class TagInfo:
     """
     # Tag name, e.g., 'include' (no "s" at end).
     self.name = StripPlural(raw_key.val)
+    # |len(raw_value) > 1| is possible, e.g., see grd_reader_unittest.py's
+    # testAssignFirstIdsMultipleMessages. This feature seems unused though.
+    # TODO(huangs): Reconcile this (may end up removing multi-value feature).
     assert len(raw_value) == 1
     # Inclusive start *position* of the tag's start ID in resource_ids.
     self.lo = raw_value[0].lo

@@ -284,6 +284,7 @@ js_modulizer("modulize") {
     "cr.ui.FocusRow|FocusRow",
     "cr.ui.focusWithoutInk|focusWithoutInk",
     "cr.ui.StoreObserver|StoreObserver",
+    "cr.ui.VirtualFocusRow|VirtualFocusRow",
   ]
 }
 

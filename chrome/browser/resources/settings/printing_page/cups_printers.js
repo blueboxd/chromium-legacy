@@ -13,7 +13,7 @@ Polymer({
   is: 'settings-cups-printers',
 
   behaviors: [
-      CrNetworkListenerBehavior,
+      NetworkListenerBehavior,
       settings.RouteObserverBehavior,
       WebUIListenerBehavior,
   ],

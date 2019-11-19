@@ -30,6 +30,18 @@ TEST(AXLanguageDetectionTest, FeatureFlag) {
       ::switches::IsExperimentalAccessibilityLanguageDetectionEnabled());
 }
 
+TEST(AXLanguageDetectionTest, DynamicContentFeatureFlag) {
+  // TODO(crbug/889370): Remove this test once this feature is stable
+  EXPECT_FALSE(
+      ::switches::IsExperimentalAccessibilityLanguageDetectionDynamicEnabled());
+
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      ::switches::kEnableExperimentalAccessibilityLanguageDetectionDynamic);
+
+  EXPECT_TRUE(
+      ::switches::IsExperimentalAccessibilityLanguageDetectionDynamicEnabled());
+}
+
 // Tests that AXNode::GetLanguage() terminates when there is no lang attribute.
 TEST(AXLanguageDetectionTest, BoringTree) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(

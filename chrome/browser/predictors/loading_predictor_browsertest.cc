@@ -683,8 +683,9 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest, LearnFromNavigation) {
   url::Origin origin = url::Origin::Create(url);
   std::vector<PreconnectRequest> requests;
   for (auto* const host : kHtmlSubresourcesHosts) {
-    requests.emplace_back(embedded_test_server()->GetURL(host, "/"), 1,
-                          net::NetworkIsolationKey(origin, origin));
+    requests.emplace_back(
+        url::Origin::Create(embedded_test_server()->GetURL(host, "/")), 1,
+        net::NetworkIsolationKey(origin, origin));
   }
 
   ui_test_utils::NavigateToURL(browser(), url);
@@ -718,15 +719,17 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTestLearnAllResources,
   url::Origin origin = url::Origin::Create(url);
   std::vector<PreconnectRequest> requests;
   for (auto* const host : kHtmlSubresourcesHosts) {
-    requests.emplace_back(embedded_test_server()->GetURL(host, "/"), 1,
-                          net::NetworkIsolationKey(origin, origin));
+    requests.emplace_back(
+        url::Origin::Create(embedded_test_server()->GetURL(host, "/")), 1,
+        net::NetworkIsolationKey(origin, origin));
   }
 
   // When kLoadingOnlyLearnHighPriorityResources is disabled, loading data
   // collector should learn the loading of low priority resources hosted on
   // bar.com as well.
-  requests.emplace_back(embedded_test_server()->GetURL("bar.com", "/"), 1,
-                        net::NetworkIsolationKey(origin, origin));
+  requests.emplace_back(
+      url::Origin::Create(embedded_test_server()->GetURL("bar.com", "/")), 1,
+      net::NetworkIsolationKey(origin, origin));
 
   ui_test_utils::NavigateToURL(browser(), url);
   auto prediction = GetPreconnectPrediction(url);
@@ -750,8 +753,9 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
   url::Origin origin = url::Origin::Create(redirect_url);
   std::vector<PreconnectRequest> expected_requests;
   for (auto* const host : kHtmlSubresourcesHosts) {
-    expected_requests.emplace_back(embedded_test_server()->GetURL(host, "/"), 1,
-                                   net::NetworkIsolationKey(origin, origin));
+    expected_requests.emplace_back(
+        url::Origin::Create(embedded_test_server()->GetURL(host, "/")), 1,
+        net::NetworkIsolationKey(origin, origin));
   }
 
   ui_test_utils::NavigateToURL(browser(), original_url);
@@ -771,9 +775,10 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
   EXPECT_FALSE(prediction->is_redirected);
   EXPECT_EQ(prediction->host, original_url.host());
   std::vector<PreconnectRequest> expected_requests_1;
-  expected_requests_1.emplace_back(
-      embedded_test_server()->GetURL(redirect_url.host(), "/"), 1,
-      net::NetworkIsolationKey(origin, origin));
+  url::Origin redirect_origin = url::Origin::Create(
+      embedded_test_server()->GetURL(redirect_url.host(), "/"));
+  expected_requests_1.emplace_back(redirect_origin, 1,
+                                   net::NetworkIsolationKey(origin, origin));
   EXPECT_THAT(prediction->requests,
               testing::UnorderedElementsAreArray(expected_requests_1));
 
@@ -781,9 +786,8 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
   // redirect) after the second navigation.
   ui_test_utils::NavigateToURL(browser(), original_url);
   prediction = GetPreconnectPrediction(original_url);
-  expected_requests.emplace_back(
-      embedded_test_server()->GetURL(redirect_url.host(), "/"), 1,
-      net::NetworkIsolationKey(origin, origin));
+  expected_requests.emplace_back(redirect_origin, 1,
+                                 net::NetworkIsolationKey(origin, origin));
   ASSERT_TRUE(prediction);
   EXPECT_EQ(prediction->is_redirected, true);
   EXPECT_EQ(prediction->host, redirect_url.host());

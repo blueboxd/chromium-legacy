@@ -22,7 +22,6 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.services.AndroidEduAndChildAccountHelper;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
@@ -122,7 +121,7 @@ public abstract class FirstRunFlowSequencer  {
 
     @VisibleForTesting
     protected boolean isFirstRunEulaAccepted() {
-        return PrefServiceBridge.getInstance().isFirstRunEulaAccepted();
+        return FirstRunUtils.isFirstRunEulaAccepted();
     }
 
     protected boolean shouldShowDataReductionPage() {
@@ -224,8 +223,8 @@ public abstract class FirstRunFlowSequencer  {
     public static void markFlowAsCompleted(String signInAccountName, boolean showSignInSettings) {
         // When the user accepts ToS in the Setup Wizard (see ToSAckedReceiver), we do not
         // show the ToS page to the user because the user has already accepted one outside FRE.
-        if (!PrefServiceBridge.getInstance().isFirstRunEulaAccepted()) {
-            PrefServiceBridge.getInstance().setEulaAccepted();
+        if (!FirstRunUtils.isFirstRunEulaAccepted()) {
+            FirstRunUtils.setEulaAccepted();
         }
 
         // Mark the FRE flow as complete and set the sign-in flow preferences if necessary.

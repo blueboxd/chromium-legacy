@@ -47,15 +47,14 @@
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
 #include "third_party/blink/renderer/core/editing/state_machines/backward_code_point_state_machine.h"
 #include "third_party/blink/renderer/core/editing/state_machines/forward_code_point_state_machine.h"
-#include "third_party/blink/renderer/core/enter_key_hint_names.h"
 #include "third_party/blink/renderer/core/events/composition_event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
-#include "third_party/blink/renderer/core/input_mode_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
+#include "third_party/blink/renderer/core/keywords.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
@@ -1447,19 +1446,19 @@ ui::TextInputAction InputMethodController::InputActionOfFocusedElement() const {
 
   if (action.IsEmpty())
     return ui::TextInputAction::kDefault;
-  if (action == enter_key_hint_names::kEnter)
+  if (action == keywords::kEnter)
     return ui::TextInputAction::kEnter;
-  if (action == enter_key_hint_names::kDone)
+  if (action == keywords::kDone)
     return ui::TextInputAction::kDone;
-  if (action == enter_key_hint_names::kGo)
+  if (action == keywords::kGo)
     return ui::TextInputAction::kGo;
-  if (action == enter_key_hint_names::kNext)
+  if (action == keywords::kNext)
     return ui::TextInputAction::kNext;
-  if (action == enter_key_hint_names::kPrevious)
+  if (action == keywords::kPrevious)
     return ui::TextInputAction::kPrevious;
-  if (action == enter_key_hint_names::kSearch)
+  if (action == keywords::kSearch)
     return ui::TextInputAction::kSearch;
-  if (action == enter_key_hint_names::kSend)
+  if (action == keywords::kSend)
     return ui::TextInputAction::kSend;
   return ui::TextInputAction::kDefault;
 }
@@ -1469,21 +1468,21 @@ WebTextInputMode InputMethodController::InputModeOfFocusedElement() const {
 
   if (mode.IsEmpty())
     return kWebTextInputModeDefault;
-  if (mode == input_mode_names::kNone)
+  if (mode == keywords::kNone)
     return kWebTextInputModeNone;
-  if (mode == input_mode_names::kText)
+  if (mode == keywords::kText)
     return kWebTextInputModeText;
-  if (mode == input_mode_names::kTel)
+  if (mode == keywords::kTel)
     return kWebTextInputModeTel;
-  if (mode == input_mode_names::kUrl)
+  if (mode == keywords::kUrl)
     return kWebTextInputModeUrl;
-  if (mode == input_mode_names::kEmail)
+  if (mode == keywords::kEmail)
     return kWebTextInputModeEmail;
-  if (mode == input_mode_names::kNumeric)
+  if (mode == keywords::kNumeric)
     return kWebTextInputModeNumeric;
-  if (mode == input_mode_names::kDecimal)
+  if (mode == keywords::kDecimal)
     return kWebTextInputModeDecimal;
-  if (mode == input_mode_names::kSearch)
+  if (mode == keywords::kSearch)
     return kWebTextInputModeSearch;
   return kWebTextInputModeDefault;
 }

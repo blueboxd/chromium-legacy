@@ -50,7 +50,7 @@
 // issues a dnsResolve() for a yet unresolved hostname, the Javascript
 // execution is "aborted", and then re-started once the DNS result is
 // known.
-namespace net {
+namespace proxy_resolver {
 
 class ScopedAllowThreadJoinForProxyResolverV8Tracing
     : public base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {};
@@ -105,21 +105,22 @@ class Job : public base::RefCountedThreadSafe<Job>,
       std::unique_ptr<ProxyResolverV8Tracing::Bindings> bindings);
 
   // Called from origin thread.
-  void StartCreateV8Resolver(const scoped_refptr<PacFileData>& script_data,
+  void StartCreateV8Resolver(const scoped_refptr<net::PacFileData>& script_data,
                              std::unique_ptr<ProxyResolverV8>* resolver,
-                             CompletionOnceCallback callback);
+                             net::CompletionOnceCallback callback);
 
   // Called from origin thread.
-  void StartGetProxyForURL(const GURL& url,
-                           const NetworkIsolationKey& network_isolation_key,
-                           ProxyInfo* results,
-                           CompletionOnceCallback callback);
+  void StartGetProxyForURL(
+      const GURL& url,
+      const net::NetworkIsolationKey& network_isolation_key,
+      net::ProxyInfo* results,
+      net::CompletionOnceCallback callback);
 
   // Called from origin thread.
   void Cancel();
 
   // Called from origin thread.
-  LoadState GetLoadState() const;
+  net::LoadState GetLoadState() const;
 
  private:
   typedef std::map<std::string, std::string> DnsCache;
@@ -141,7 +142,7 @@ class Job : public base::RefCountedThreadSafe<Job>,
   void CheckIsOnWorkerThread() const;
   void CheckIsOnOriginThread() const;
 
-  void SetCallback(CompletionOnceCallback callback);
+  void SetCallback(net::CompletionOnceCallback callback);
   void ReleaseCallback();
 
   ProxyResolverV8* v8_resolver();
@@ -152,7 +153,9 @@ class Job : public base::RefCountedThreadSafe<Job>,
   void NotifyCaller(int result);
   void NotifyCallerOnOriginLoop(int result);
 
-  void Start(Operation op, bool blocking_dns, CompletionOnceCallback callback);
+  void Start(Operation op,
+             bool blocking_dns,
+             net::CompletionOnceCallback callback);
 
   void ExecuteBlocking();
   void ExecuteNonBlocking();
@@ -160,23 +163,23 @@ class Job : public base::RefCountedThreadSafe<Job>,
 
   // Implementation of ProxyResolverv8::JSBindings
   bool ResolveDns(const std::string& host,
-                  ProxyResolveDnsOperation op,
+                  net::ProxyResolveDnsOperation op,
                   std::string* output,
                   bool* terminate) override;
   void Alert(const base::string16& message) override;
   void OnError(int line_number, const base::string16& error) override;
 
   bool ResolveDnsBlocking(const std::string& host,
-                          ProxyResolveDnsOperation op,
+                          net::ProxyResolveDnsOperation op,
                           std::string* output);
 
   bool ResolveDnsNonBlocking(const std::string& host,
-                             ProxyResolveDnsOperation op,
+                             net::ProxyResolveDnsOperation op,
                              std::string* output,
                              bool* terminate);
 
   bool PostDnsOperationAndWait(const std::string& host,
-                               ProxyResolveDnsOperation op,
+                               net::ProxyResolveDnsOperation op,
                                bool* completed_synchronously)
       WARN_UNUSED_RESULT;
 
@@ -186,19 +189,19 @@ class Job : public base::RefCountedThreadSafe<Job>,
   void ScheduleRestartWithBlockingDns();
 
   bool GetDnsFromLocalCache(const std::string& host,
-                            ProxyResolveDnsOperation op,
+                            net::ProxyResolveDnsOperation op,
                             std::string* output,
                             bool* return_value);
 
   void SaveDnsToLocalCache(const std::string& host,
-                           ProxyResolveDnsOperation op,
+                           net::ProxyResolveDnsOperation op,
                            int net_error,
-                           const std::vector<IPAddress>& addresses);
+                           const std::vector<net::IPAddress>& addresses);
 
   // Makes a key for looking up |host, op| in |dns_cache_|. Strings are used for
   // convenience, to avoid defining custom comparators.
   static std::string MakeDnsCacheKey(const std::string& host,
-                                     ProxyResolveDnsOperation op);
+                                     net::ProxyResolveDnsOperation op);
 
   void HandleAlertOrError(bool is_alert,
                           int line_number,
@@ -220,7 +223,7 @@ class Job : public base::RefCountedThreadSafe<Job>,
 
   // The callback to run (on the origin thread) when the Job finishes.
   // Should only be accessed from origin thread.
-  CompletionOnceCallback callback_;
+  net::CompletionOnceCallback callback_;
 
   // Flag to indicate whether the request has been cancelled.
   base::AtomicFlag cancelled_;
@@ -250,17 +253,17 @@ class Job : public base::RefCountedThreadSafe<Job>,
   // State specific to CREATE_V8_RESOLVER.
   // -------------------------------------------------------
 
-  scoped_refptr<PacFileData> script_data_;
+  scoped_refptr<net::PacFileData> script_data_;
   std::unique_ptr<ProxyResolverV8>* resolver_out_;
 
   // -------------------------------------------------------
   // State specific to GET_PROXY_FOR_URL.
   // -------------------------------------------------------
 
-  ProxyInfo* user_results_;  // Owned by caller, lives on origin thread.
+  net::ProxyInfo* user_results_;  // Owned by caller, lives on origin thread.
   GURL url_;
-  NetworkIsolationKey network_isolation_key_;
-  ProxyInfo results_;
+  net::NetworkIsolationKey network_isolation_key_;
+  net::ProxyInfo results_;
 
   // ---------------------------------------------------------------------------
   // State for ExecuteNonBlocking()
@@ -300,7 +303,7 @@ class Job : public base::RefCountedThreadSafe<Job>,
   // These are the inputs to DoDnsOperation(). Written on the worker thread,
   // read by the origin thread.
   std::string pending_dns_host_;
-  ProxyResolveDnsOperation pending_dns_op_;
+  net::ProxyResolveDnsOperation pending_dns_op_;
 };
 
 class ProxyResolverV8TracingImpl : public ProxyResolverV8Tracing {
@@ -313,17 +316,17 @@ class ProxyResolverV8TracingImpl : public ProxyResolverV8Tracing {
 
   // ProxyResolverV8Tracing overrides.
   void GetProxyForURL(const GURL& url,
-                      const NetworkIsolationKey& network_isolation_key,
-                      ProxyInfo* results,
-                      CompletionOnceCallback callback,
-                      std::unique_ptr<ProxyResolver::Request>* request,
+                      const net::NetworkIsolationKey& network_isolation_key,
+                      net::ProxyInfo* results,
+                      net::CompletionOnceCallback callback,
+                      std::unique_ptr<net::ProxyResolver::Request>* request,
                       std::unique_ptr<Bindings> bindings) override;
 
-  class RequestImpl : public ProxyResolver::Request {
+  class RequestImpl : public net::ProxyResolver::Request {
    public:
     explicit RequestImpl(scoped_refptr<Job> job);
     ~RequestImpl() override;
-    LoadState GetLoadState() override;
+    net::LoadState GetLoadState() override;
 
    private:
     scoped_refptr<Job> job_;
@@ -355,16 +358,17 @@ Job::Job(const Job::Params* params,
   CheckIsOnOriginThread();
 }
 
-void Job::StartCreateV8Resolver(const scoped_refptr<PacFileData>& script_data,
-                                std::unique_ptr<ProxyResolverV8>* resolver,
-                                CompletionOnceCallback callback) {
+void Job::StartCreateV8Resolver(
+    const scoped_refptr<net::PacFileData>& script_data,
+    std::unique_ptr<ProxyResolverV8>* resolver,
+    net::CompletionOnceCallback callback) {
   CheckIsOnOriginThread();
 
   // |network_isolation_key_| is not populated, so any resolutions done while
-  // loading the PAC sript will be done with an empty NetworkIsolationKey. Since
-  // a PAC script is considered trusted, and is loaded once and then handles
-  // requests made by multiple NetworkIsolationKeys, using an empty key makes
-  // sense.
+  // loading the PAC sript will be done with an empty net::NetworkIsolationKey.
+  // Since a PAC script is considered trusted, and is loaded once and then
+  // handles requests made by multiple NetworkIsolationKeys, using an empty key
+  // makes sense.
   DCHECK(network_isolation_key_.IsEmpty());
 
   resolver_out_ = resolver;
@@ -377,10 +381,11 @@ void Job::StartCreateV8Resolver(const scoped_refptr<PacFileData>& script_data,
   Start(CREATE_V8_RESOLVER, true /*blocking*/, std::move(callback));
 }
 
-void Job::StartGetProxyForURL(const GURL& url,
-                              const NetworkIsolationKey& network_isolation_key,
-                              ProxyInfo* results,
-                              CompletionOnceCallback callback) {
+void Job::StartGetProxyForURL(
+    const GURL& url,
+    const net::NetworkIsolationKey& network_isolation_key,
+    net::ProxyInfo* results,
+    net::CompletionOnceCallback callback) {
   CheckIsOnOriginThread();
 
   url_ = url;
@@ -434,13 +439,13 @@ void Job::Cancel() {
   owned_self_reference_ = nullptr;
 }
 
-LoadState Job::GetLoadState() const {
+net::LoadState Job::GetLoadState() const {
   CheckIsOnOriginThread();
 
   if (pending_dns_)
-    return LOAD_STATE_RESOLVING_HOST_IN_PAC_FILE;
+    return net::LOAD_STATE_RESOLVING_HOST_IN_PAC_FILE;
 
-  return LOAD_STATE_RESOLVING_PROXY_FOR_URL;
+  return net::LOAD_STATE_RESOLVING_PROXY_FOR_URL;
 }
 
 Job::~Job() {
@@ -457,7 +462,7 @@ void Job::CheckIsOnOriginThread() const {
   DCHECK(origin_runner_->BelongsToCurrentThread());
 }
 
-void Job::SetCallback(CompletionOnceCallback callback) {
+void Job::SetCallback(net::CompletionOnceCallback callback) {
   CheckIsOnOriginThread();
   DCHECK(callback_.is_null());
   (*params_->num_outstanding_callbacks)++;
@@ -513,7 +518,7 @@ void Job::NotifyCallerOnOriginLoop(int result) {
     *user_results_ = results_;
   }
 
-  CompletionOnceCallback callback = std::move(callback_);
+  net::CompletionOnceCallback callback = std::move(callback_);
   ReleaseCallback();
   std::move(callback).Run(result);
 
@@ -523,7 +528,7 @@ void Job::NotifyCallerOnOriginLoop(int result) {
 
 void Job::Start(Operation op,
                 bool blocking_dns,
-                CompletionOnceCallback callback) {
+                net::CompletionOnceCallback callback) {
   CheckIsOnOriginThread();
 
   operation_ = op;
@@ -579,14 +584,14 @@ void Job::ExecuteNonBlocking() {
 }
 
 int Job::ExecuteProxyResolver() {
-  TRACE_EVENT0(NetTracingCategory(), "Job::ExecuteProxyResolver");
-  int result = ERR_UNEXPECTED;  // Initialized to silence warnings.
+  TRACE_EVENT0(net::NetTracingCategory(), "Job::ExecuteProxyResolver");
+  int result = net::ERR_UNEXPECTED;  // Initialized to silence warnings.
 
   switch (operation_) {
     case CREATE_V8_RESOLVER: {
       std::unique_ptr<ProxyResolverV8> resolver;
       result = ProxyResolverV8::Create(script_data_, this, &resolver);
-      if (result == OK)
+      if (result == net::OK)
         *resolver_out_ = std::move(resolver);
       break;
     }
@@ -605,7 +610,7 @@ int Job::ExecuteProxyResolver() {
 }
 
 bool Job::ResolveDns(const std::string& host,
-                     ProxyResolveDnsOperation op,
+                     net::ProxyResolveDnsOperation op,
                      std::string* output,
                      bool* terminate) {
   if (cancelled_.IsSet()) {
@@ -613,8 +618,8 @@ bool Job::ResolveDns(const std::string& host,
     return false;
   }
 
-  if ((op == ProxyResolveDnsOperation::DNS_RESOLVE ||
-       op == ProxyResolveDnsOperation::DNS_RESOLVE_EX) &&
+  if ((op == net::ProxyResolveDnsOperation::DNS_RESOLVE ||
+       op == net::ProxyResolveDnsOperation::DNS_RESOLVE_EX) &&
       host.empty()) {
     // a DNS resolve with an empty hostname is considered an error.
     return false;
@@ -633,7 +638,7 @@ void Job::OnError(int line_number, const base::string16& error) {
 }
 
 bool Job::ResolveDnsBlocking(const std::string& host,
-                             ProxyResolveDnsOperation op,
+                             net::ProxyResolveDnsOperation op,
                              std::string* output) {
   CheckIsOnWorkerThread();
 
@@ -659,7 +664,7 @@ bool Job::ResolveDnsBlocking(const std::string& host,
 }
 
 bool Job::ResolveDnsNonBlocking(const std::string& host,
-                                ProxyResolveDnsOperation op,
+                                net::ProxyResolveDnsOperation op,
                                 std::string* output,
                                 bool* terminate) {
   CheckIsOnWorkerThread();
@@ -712,7 +717,7 @@ bool Job::ResolveDnsNonBlocking(const std::string& host,
 }
 
 bool Job::PostDnsOperationAndWait(const std::string& host,
-                                  ProxyResolveDnsOperation op,
+                                  net::ProxyResolveDnsOperation op,
                                   bool* completed_synchronously) {
   // Post the DNS request to the origin thread. It is safe to mutate
   // |pending_dns_host_| and |pending_dns_op_| because there cannot be another
@@ -743,15 +748,16 @@ void Job::DoDnsOperation() {
     return;
 
   bool is_my_ip_request =
-      pending_dns_op_ == ProxyResolveDnsOperation::MY_IP_ADDRESS ||
-      pending_dns_op_ == ProxyResolveDnsOperation::MY_IP_ADDRESS_EX;
+      pending_dns_op_ == net::ProxyResolveDnsOperation::MY_IP_ADDRESS ||
+      pending_dns_op_ == net::ProxyResolveDnsOperation::MY_IP_ADDRESS_EX;
   pending_dns_ = host_resolver()->CreateRequest(
-      is_my_ip_request ? GetHostName() : pending_dns_host_, pending_dns_op_,
-      is_my_ip_request ? NetworkIsolationKey() : network_isolation_key_);
+      is_my_ip_request ? net::GetHostName() : pending_dns_host_,
+      pending_dns_op_,
+      is_my_ip_request ? net::NetworkIsolationKey() : network_isolation_key_);
   int result =
       pending_dns_->Start(base::BindOnce(&Job::OnDnsOperationComplete, this));
 
-  pending_dns_completed_synchronously_ = result != ERR_IO_PENDING;
+  pending_dns_completed_synchronously_ = result != net::ERR_IO_PENDING;
 
   // Check if the request was cancelled as a side-effect of calling into the
   // HostResolver. This isn't the ordinary execution flow, however it is
@@ -808,7 +814,7 @@ void Job::ScheduleRestartWithBlockingDns() {
 }
 
 bool Job::GetDnsFromLocalCache(const std::string& host,
-                               ProxyResolveDnsOperation op,
+                               net::ProxyResolveDnsOperation op,
                                std::string* output,
                                bool* return_value) {
   CheckIsOnWorkerThread();
@@ -823,17 +829,17 @@ bool Job::GetDnsFromLocalCache(const std::string& host,
 }
 
 void Job::SaveDnsToLocalCache(const std::string& host,
-                              ProxyResolveDnsOperation op,
+                              net::ProxyResolveDnsOperation op,
                               int net_error,
-                              const std::vector<IPAddress>& addresses) {
+                              const std::vector<net::IPAddress>& addresses) {
   CheckIsOnOriginThread();
 
   // Serialize the result into a string to save to the cache.
   std::string cache_value;
-  if (net_error != OK) {
+  if (net_error != net::OK) {
     cache_value = std::string();
-  } else if (op == ProxyResolveDnsOperation::DNS_RESOLVE ||
-             op == ProxyResolveDnsOperation::MY_IP_ADDRESS) {
+  } else if (op == net::ProxyResolveDnsOperation::DNS_RESOLVE ||
+             op == net::ProxyResolveDnsOperation::MY_IP_ADDRESS) {
     // dnsResolve() and myIpAddress() are expected to return a single IP
     // address.
     cache_value = addresses.front().ToString();
@@ -850,7 +856,7 @@ void Job::SaveDnsToLocalCache(const std::string& host,
 }
 
 std::string Job::MakeDnsCacheKey(const std::string& host,
-                                 ProxyResolveDnsOperation op) {
+                                 net::ProxyResolveDnsOperation op) {
   return base::StringPrintf("%d:%s", op, host.c_str());
 }
 
@@ -956,16 +962,16 @@ ProxyResolverV8TracingImpl::RequestImpl::~RequestImpl() {
   job_->Cancel();
 }
 
-LoadState ProxyResolverV8TracingImpl::RequestImpl::GetLoadState() {
+net::LoadState ProxyResolverV8TracingImpl::RequestImpl::GetLoadState() {
   return job_->GetLoadState();
 }
 
 void ProxyResolverV8TracingImpl::GetProxyForURL(
     const GURL& url,
-    const NetworkIsolationKey& network_isolation_key,
-    ProxyInfo* results,
-    CompletionOnceCallback callback,
-    std::unique_ptr<ProxyResolver::Request>* request,
+    const net::NetworkIsolationKey& network_isolation_key,
+    net::ProxyInfo* results,
+    net::CompletionOnceCallback callback,
+    std::unique_ptr<net::ProxyResolver::Request>* request,
     std::unique_ptr<Bindings> bindings) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!callback.is_null());
@@ -984,11 +990,11 @@ class ProxyResolverV8TracingFactoryImpl : public ProxyResolverV8TracingFactory {
   ~ProxyResolverV8TracingFactoryImpl() override;
 
   void CreateProxyResolverV8Tracing(
-      const scoped_refptr<PacFileData>& pac_script,
+      const scoped_refptr<net::PacFileData>& pac_script,
       std::unique_ptr<ProxyResolverV8Tracing::Bindings> bindings,
       std::unique_ptr<ProxyResolverV8Tracing>* resolver,
-      CompletionOnceCallback callback,
-      std::unique_ptr<ProxyResolverFactory::Request>* request) override;
+      net::CompletionOnceCallback callback,
+      std::unique_ptr<net::ProxyResolverFactory::Request>* request) override;
 
  private:
   class CreateJob;
@@ -1001,13 +1007,13 @@ class ProxyResolverV8TracingFactoryImpl : public ProxyResolverV8TracingFactory {
 };
 
 class ProxyResolverV8TracingFactoryImpl::CreateJob
-    : public ProxyResolverFactory::Request {
+    : public net::ProxyResolverFactory::Request {
  public:
   CreateJob(ProxyResolverV8TracingFactoryImpl* factory,
             std::unique_ptr<ProxyResolverV8Tracing::Bindings> bindings,
-            const scoped_refptr<PacFileData>& pac_script,
+            const scoped_refptr<net::PacFileData>& pac_script,
             std::unique_ptr<ProxyResolverV8Tracing>* resolver_out,
-            CompletionOnceCallback callback)
+            net::CompletionOnceCallback callback)
       : factory_(factory),
         thread_(new base::Thread("Proxy Resolver")),
         resolver_out_(resolver_out),
@@ -1047,7 +1053,7 @@ class ProxyResolverV8TracingFactoryImpl::CreateJob
  private:
   void OnV8ResolverCreated(int error) {
     DCHECK(factory_);
-    if (error == OK) {
+    if (error == net::OK) {
       job_params_->v8_resolver = v8_resolver_.get();
       resolver_out_->reset(new ProxyResolverV8TracingImpl(
           std::move(thread_), std::move(v8_resolver_), std::move(job_params_)));
@@ -1073,7 +1079,7 @@ class ProxyResolverV8TracingFactoryImpl::CreateJob
   scoped_refptr<Job> create_resolver_job_;
   std::unique_ptr<ProxyResolverV8> v8_resolver_;
   std::unique_ptr<ProxyResolverV8Tracing>* resolver_out_;
-  CompletionOnceCallback callback_;
+  net::CompletionOnceCallback callback_;
   int num_outstanding_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(CreateJob);
@@ -1089,11 +1095,11 @@ ProxyResolverV8TracingFactoryImpl::~ProxyResolverV8TracingFactoryImpl() {
 }
 
 void ProxyResolverV8TracingFactoryImpl::CreateProxyResolverV8Tracing(
-    const scoped_refptr<PacFileData>& pac_script,
+    const scoped_refptr<net::PacFileData>& pac_script,
     std::unique_ptr<ProxyResolverV8Tracing::Bindings> bindings,
     std::unique_ptr<ProxyResolverV8Tracing>* resolver,
-    CompletionOnceCallback callback,
-    std::unique_ptr<ProxyResolverFactory::Request>* request) {
+    net::CompletionOnceCallback callback,
+    std::unique_ptr<net::ProxyResolverFactory::Request>* request) {
   std::unique_ptr<CreateJob> job(new CreateJob(
       this, std::move(bindings), pac_script, resolver, std::move(callback)));
   jobs_.insert(job.get());
@@ -1114,4 +1120,4 @@ ProxyResolverV8TracingFactory::Create() {
   return std::make_unique<ProxyResolverV8TracingFactoryImpl>();
 }
 
-}  // namespace net
+}  // namespace proxy_resolver

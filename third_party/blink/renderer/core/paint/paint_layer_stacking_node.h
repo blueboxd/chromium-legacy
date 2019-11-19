@@ -147,45 +147,45 @@ class CORE_EXPORT PaintLayerStackingNode {
   // Holds descendants within our stacking context with negative z-indices.
   PaintLayers neg_z_order_list_;
 
-  // Overlay scrollbars need to be painted above all scrollable contents, even
-  // if the contents are stacked in a stacking context which is an ancestor of
-  // the scrolling layer, for example:
+  // Overlay overflow controls(scrollbar or resizer) need to be painted above
+  // all child contents, even if the contents are stacked in a stacking context
+  // which is an ancestor of the scrolling or resizing layer, for example:
   //   <div id="stacking-context" style="opacity: 0.5">
   //     <div id="other" style="position: relative; z-index: 10></div>
-  //     <div id="scroller" style="overflow: scroll">
+  //     <div id="target" style="overflow: scroll; resize: both">
   //       <div id="child" style="position: relative">CHILD</div>
   //     </div>
   //   </div>
   // and
   //   <div id="stacking-context" style="opacity: 0.5">
   //     <div id="other" style="position: relative; z-index: 10></div>
-  //     <div id="scroller" style="overflow: scroll; position: relative">
+  //     <div id="target" style="overflow: scroll; position: relative">
   //       <div id="child" style="position: absolute; z-index: 5">CHILD</div>
   //     </div>
   //   </div>
   //
-  // The paint order without reordering overlay scrollbars would be:
-  //            stacking-context
-  //               /    |    \
-  //         scroller child  other
-  //            |
-  //    overlay scrollbars
-  // where the overlay scrollbars would be painted incorrectly below |child|
-  // which is scrollable by |scroller|.
+  // The paint order without reordering overlay overflow controls would be:
+  //              stacking-context
+  //                 /      |    \
+  //              target  child  other
+  //                |
+  //    overlay overflow controls
+  // where the overlay overflow controls would be painted incorrectly below
+  // |child| which is the sub content of |target|.
   //
-  // To paint the overlay scrollbars above all scrollable contents, we need to
+  // To paint the overlay overflow controls above all child contents, we need to
   // reorder the z-order of overlay scrollbars in the stacking context:
-  //            stacking-context
-  //             /    |    |   \
-  //       scroller child  |   other
-  //                       |
-  //                overlay scrollbars
+  //              stacking-context
+  //              /      |    |   \
+  //           target  child  |  other
+  //                          |
+  //               overlay overflow controls
   //
   // This map records which PaintLayers (the values of the map) have overlay
-  // scrollbars which should paint after the given PaintLayer (the key of the
-  // map). The value of the map is a list of PaintLayers because there may be
-  // more than one scroller in the same stacking context with overlay
-  // scrollbars.
+  // overflow controls which should paint after the given PaintLayer (the key of
+  // the map). The value of the map is a list of PaintLayers because there may
+  // be more than one scrolling or resizing container in the same stacking
+  // context with overlay overflow controls.
   HashMap<const PaintLayer*, PaintLayers>
       layer_to_overlay_overflow_controls_painting_after_;
 

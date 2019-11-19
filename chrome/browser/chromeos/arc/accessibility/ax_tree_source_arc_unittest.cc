@@ -492,6 +492,13 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputation) {
       data->GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
   ASSERT_EQ("root label text", name);
 
+  // The placeholder text on the node, should also be appended to the name.
+  SetProperty(child2, AXStringProperty::HINT_TEXT, "child2 hint text");
+  CallSerializeNode(child2, &data);
+  ASSERT_TRUE(
+      data->GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
+  ASSERT_EQ("child2 label text child2 hint text", name);
+
   // Clearing both clickable and name from root, the name should not be
   // populated.
   root->boolean_properties->clear();

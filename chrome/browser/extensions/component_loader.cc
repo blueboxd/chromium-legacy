@@ -103,8 +103,13 @@ std::unique_ptr<base::DictionaryValue> LoadManifestOnFileThread(
   }
 
   if (localize_manifest) {
+    // This is only called for Chrome OS component extensions which are loaded
+    // from a read-only rootfs partition, so it is safe to set
+    // |gzip_permission| to kAllowForTrustedSource.
     bool localized = extension_l10n_util::LocalizeExtension(
-        root_directory, manifest.get(), &error);
+        root_directory, manifest.get(),
+        extension_l10n_util::GzippedMessagesPermission::kAllowForTrustedSource,
+        &error);
     CHECK(localized) << error;
   }
 

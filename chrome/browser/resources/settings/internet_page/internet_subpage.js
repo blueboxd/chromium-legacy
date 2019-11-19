@@ -15,7 +15,7 @@ Polymer({
   is: 'settings-internet-subpage',
 
   behaviors: [
-    CrNetworkListenerBehavior,
+    NetworkListenerBehavior,
     CrPolicyNetworkBehaviorMojo,
     settings.RouteObserverBehavior,
     I18nBehavior,
@@ -168,19 +168,19 @@ Polymer({
   },
 
   /**
-   * CrNetworkListenerBehavior override
+   * NetworkListenerBehavior override
    * @param {!Array<OncMojo.NetworkStateProperties>} networks
    */
   onActiveNetworksChanged: function(networks) {
     this.getNetworkStateList_();
   },
 
-  /** CrNetworkListenerBehavior override */
+  /** NetworkListenerBehavior override */
   onNetworkStateListChanged: function() {
     this.getNetworkStateList_();
   },
 
-  /** CrNetworkListenerBehavior override */
+  /** NetworkListenerBehavior override */
   onVpnProvidersChanged: function() {
     if (this.deviceState.type != mojom.NetworkType.kVPN) {
       return;

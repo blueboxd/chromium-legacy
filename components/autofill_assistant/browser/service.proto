@@ -47,6 +47,21 @@ message ClientContextProto {
 
   // True if the script was triggered by a direct action.
   optional bool is_direct_action = 9;
+
+  message DeviceContextProto {
+    message VersionProto {
+      // The Android SDK version of the device.
+      optional int32 sdk_int = 1;
+    }
+    optional VersionProto version = 1;
+
+    // The manufacturer of the device.
+    optional string manufacturer = 2;
+
+    // The model of the device.
+    optional string model = 3;
+  }
+  optional DeviceContextProto device_context = 11;
 }
 
 // Get the list of scripts that can potentially be run on a url.

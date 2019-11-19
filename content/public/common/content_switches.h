@@ -30,6 +30,7 @@ CONTENT_EXPORT extern const char kBrowserSubprocessPath[];
 CONTENT_EXPORT extern const char kBrowserTest[];
 CONTENT_EXPORT extern const char kDefaultTileWidth[];
 CONTENT_EXPORT extern const char kDefaultTileHeight[];
+CONTENT_EXPORT extern const char kMinHeightForGpuRasterTile[];
 CONTENT_EXPORT extern const char kDisable2dCanvasAntialiasing[];
 CONTENT_EXPORT extern const char kDisable2dCanvasImageChromium[];
 CONTENT_EXPORT extern const char kDisable3DAPIs[];

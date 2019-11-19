@@ -120,6 +120,8 @@ class WebAppSyncBridge : public AppRegistryController,
   void ApplySyncChangesToRegistrar(
       std::unique_ptr<RegistryUpdateData> update_local_data);
 
+  void MaybeInstallAppsInSyncInstall();
+
   std::unique_ptr<WebAppDatabase> database_;
   WebAppRegistrarMutable* const registrar_;
   SyncInstallDelegate* const install_delegate_;

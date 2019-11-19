@@ -45,8 +45,7 @@ AnimationEffect::AnimationEffect(const Timing& timing,
       timing_(timing),
       event_delegate_(event_delegate),
       calculated_(),
-      needs_update_(true),
-      last_update_time_(NullValue()) {
+      needs_update_(true) {
   timing_.AssertValid();
 }
 
@@ -74,7 +73,7 @@ void AnimationEffect::updateTiming(OptionalEffectTiming* optional_timing,
   InvalidateAndNotifyOwner();
 }
 
-void AnimationEffect::UpdateInheritedTime(double inherited_time,
+void AnimationEffect::UpdateInheritedTime(base::Optional<double> inherited_time,
                                           TimingUpdateReason reason) const {
   base::Optional<double> playback_rate = base::nullopt;
   if (GetAnimation())
@@ -83,15 +82,13 @@ void AnimationEffect::UpdateInheritedTime(double inherited_time,
       (playback_rate && playback_rate.value() < 0)
           ? Timing::AnimationDirection::kBackwards
           : Timing::AnimationDirection::kForwards;
-  bool needs_update =
-      needs_update_ ||
-      (last_update_time_ != inherited_time &&
-       !(IsNull(last_update_time_) && IsNull(inherited_time))) ||
-      (owner_ && owner_->EffectSuppressed());
+
+  bool needs_update = needs_update_ || last_update_time_ != inherited_time ||
+                      (owner_ && owner_->EffectSuppressed());
   needs_update_ = false;
   last_update_time_ = inherited_time;
 
-  const double local_time = inherited_time;
+  const double local_time = inherited_time.value_or(NullValue());
   if (needs_update) {
     Timing::CalculatedTiming calculated = SpecifiedTiming().CalculateTimings(
         local_time, direction, IsKeyframeEffect(), playback_rate);

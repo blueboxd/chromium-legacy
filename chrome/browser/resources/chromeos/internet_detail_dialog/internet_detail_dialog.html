@@ -10,14 +10,14 @@
 
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_apnlist.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_choose_mobile.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/network/network_icon.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_ip_config.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/network/network_listener_behavior.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_nameservers.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_property_list_mojo.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_proxy.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_shared_css.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_siminfo.html">
-<link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_listener_behavior.html">
-<link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_icon.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_strings.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_page_host_style_css.html">
@@ -97,10 +97,10 @@
     <!-- Title section: Icon + name + connection state. -->
     <div id="title" class="section first">
       <div class="start layout horizontal center">
-        <cr-network-icon
+        <network-icon
             show-technology-badge="[[showTechnologyBadge_]]"
             network-state="[[getNetworkState_(managedProperties_)]]">
-        </cr-network-icon>
+        </network-icon>
         <div id="networkName" class="title">
           [[getNameText_(managedProperties_)]]
         </div>

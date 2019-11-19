@@ -12,6 +12,8 @@
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sharing/click_to_call/feature.h"
+#include "chrome/browser/sharing/click_to_call/phone_number_regex.h"
+#include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/common/pref_names.h"
@@ -28,14 +30,6 @@ namespace {
 // reducing the max length.
 constexpr int kSelectionTextMaxLength = 30;
 
-// Heuristical regex to search for phone number.
-// (^|\p{Z}) makes sure the pattern begins with a new word.
-// (\(?\+[0-9]+\)?) checks for optional international code in number.
-// ([.\p{Z}\-\(]?[0-9][\p{Z}\-\)]?){8,} checks for at least eight occurrences of
-// digits with optional separators to reduce false positives.
-const char kPhoneNumberRegexPattern[] =
-    R"((?:^|\p{Z})((?:\(?\+[0-9]+\)?)?(?:[.\p{Z}\-(]?[0-9][\p{Z}\-)]?){8,}))";
-
 bool IsClickToCallEnabled(content::BrowserContext* browser_context) {
   // Check Chrome enterprise policy for Click to Call.
   Profile* profile = Profile::FromBrowserContext(browser_context);
@@ -47,20 +41,19 @@ bool IsClickToCallEnabled(content::BrowserContext* browser_context) {
   return sharing_service && base::FeatureList::IsEnabled(kClickToCallUI);
 }
 
-// Todo(himanshujaju): Make it generic and move to base/metrics/histogram_base.h
-// Used to Log delay in parsing phone number in highlighted text to UMA.
-struct ScopedUmaHistogramMicrosecondsTimer {
-  ScopedUmaHistogramMicrosecondsTimer() : timer() {}
+base::Optional<std::string> ExtractPhoneNumber(
+    const std::string& text,
+    PhoneNumberRegexVariant regex_variant) {
+  ScopedUmaHistogramMicrosecondsTimer scoped_uma_timer(regex_variant);
+  std::string parsed_number;
 
-  ~ScopedUmaHistogramMicrosecondsTimer() {
-    base::UmaHistogramCustomMicrosecondsTimes(
-        "Sharing.ClickToCallContextMenuPhoneNumberParsingDelay",
-        timer.Elapsed(), base::TimeDelta::FromMicroseconds(1),
-        base::TimeDelta::FromSeconds(1), 50);
-  }
+  const re2::RE2& regex = GetPhoneNumberRegex(regex_variant);
+  if (!re2::RE2::PartialMatch(text, regex, &parsed_number))
+    return base::nullopt;
 
-  const base::ElapsedTimer timer;
-};
+  return base::UTF16ToUTF8(
+      base::TrimWhitespace(base::UTF8ToUTF16(parsed_number), base::TRIM_ALL));
+}
 
 }  // namespace
 
@@ -83,18 +76,7 @@ base::Optional<std::string> ExtractPhoneNumberForClickToCall(
     return base::nullopt;
   }
 
-  ScopedUmaHistogramMicrosecondsTimer scoped_uma_timer;
-
-  // TODO(crbug.com/992906): Find a better way to parse phone numbers.
-  static const re2::LazyRE2 kPhoneNumberRegex = {kPhoneNumberRegexPattern};
-  std::string parsed_phone_number;
-  if (!re2::RE2::PartialMatch(selection_text, *kPhoneNumberRegex,
-                              &parsed_phone_number)) {
-    return base::nullopt;
-  }
-
-  return base::UTF16ToUTF8(base::TrimWhitespace(
-      base::UTF8ToUTF16(parsed_phone_number), base::TRIM_ALL));
+  return ExtractPhoneNumber(selection_text, PhoneNumberRegexVariant::kSimple);
 }
 
 std::string GetUnescapedURLContent(const GURL& url) {

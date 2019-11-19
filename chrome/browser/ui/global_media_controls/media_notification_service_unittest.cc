@@ -134,6 +134,10 @@ class MediaNotificationServiceTest : public testing::Test {
         base::TimeDelta::FromMilliseconds(milliseconds));
   }
 
+  void AdvanceClockMinutes(int minutes) {
+    AdvanceClockMilliseconds(1000 * 60 * minutes);
+  }
+
   base::UnguessableToken SimulatePlayingControllableMedia() {
     base::UnguessableToken id = base::UnguessableToken::Create();
     SimulateFocusGained(id, true);
@@ -234,6 +238,31 @@ class MediaNotificationServiceTest : public testing::Test {
     auto item_itr = service_->sessions_.find(id.ToString());
     EXPECT_NE(service_->sessions_.end(), item_itr);
     item_itr->second.WebContentsDestroyed();
+  }
+
+  void SimulateTabFocused(const base::UnguessableToken& id) {
+    auto item_itr = service_->sessions_.find(id.ToString());
+    EXPECT_NE(service_->sessions_.end(), item_itr);
+    item_itr->second.OnWebContentsFocused(nullptr);
+  }
+
+  void SimulatePlaybackStateChanged(const base::UnguessableToken& id,
+                                    bool playing) {
+    MediaSessionInfoPtr session_info(MediaSessionInfo::New());
+    session_info->is_controllable = true;
+    session_info->playback_state =
+        playing ? media_session::mojom::MediaPlaybackState::kPlaying
+                : media_session::mojom::MediaPlaybackState::kPaused;
+
+    auto item_itr = service_->sessions_.find(id.ToString());
+    EXPECT_NE(service_->sessions_.end(), item_itr);
+    item_itr->second.MediaSessionInfoChanged(std::move(session_info));
+  }
+
+  void SimulateMediaSeeked(const base::UnguessableToken& id) {
+    auto item_itr = service_->sessions_.find(id.ToString());
+    EXPECT_NE(service_->sessions_.end(), item_itr);
+    item_itr->second.MediaSessionPositionChanged(base::nullopt);
   }
 
   void SimulateDismissButtonClicked(const base::UnguessableToken& id) {
@@ -583,4 +612,76 @@ TEST_F(MediaNotificationServiceTest, ShowsOverlayForDraggedOutNotifications) {
   EXPECT_CALL(dialog_delegate, ShowMediaSession(id.ToString(), _));
   manager->OnOverlayNotificationClosed(id.ToString());
   testing::Mock::VerifyAndClearExpectations(&dialog_delegate);
+}
+
+TEST_F(MediaNotificationServiceTest, HidesInactiveNotifications) {
+  // Start playing active media.
+  base::UnguessableToken id = SimulatePlayingControllableMedia();
+  EXPECT_TRUE(HasActiveNotifications());
+
+  // Then, pause the media. We should still have the active notification.
+  SimulatePlaybackStateChanged(id, false);
+  EXPECT_TRUE(HasActiveNotifications());
+
+  // After 59 minutes, the notification should still be there.
+  AdvanceClockMinutes(59);
+  EXPECT_TRUE(HasActiveNotifications());
+
+  // But once it's been inactive for over an hour, it should disappear.
+  AdvanceClockMinutes(2);
+  EXPECT_FALSE(HasActiveNotifications());
+}
+
+TEST_F(MediaNotificationServiceTest, DelaysHidingNotifications_PlayPause) {
+  // Start playing active media.
+  base::UnguessableToken id = SimulatePlayingControllableMedia();
+  EXPECT_TRUE(HasActiveNotifications());
+
+  // Then, pause the media. We should still have the active notification.
+  SimulatePlaybackStateChanged(id, false);
+  EXPECT_TRUE(HasActiveNotifications());
+
+  // After 59 minutes, the notification should still be there.
+  AdvanceClockMinutes(59);
+  EXPECT_TRUE(HasActiveNotifications());
+
+  // If we start playing again, we should not hide the notification, even after
+  // an hour.
+  SimulatePlaybackStateChanged(id, true);
+  AdvanceClockMinutes(2);
+  EXPECT_TRUE(HasActiveNotifications());
+
+  // If we pause again, it should hide after an hour.
+  SimulatePlaybackStateChanged(id, false);
+  AdvanceClockMinutes(61);
+  EXPECT_FALSE(HasActiveNotifications());
+}
+
+TEST_F(MediaNotificationServiceTest, DelaysHidingNotifications_Interactions) {
+  // Start playing active media.
+  base::UnguessableToken id = SimulatePlayingControllableMedia();
+  EXPECT_TRUE(HasActiveNotifications());
+
+  // Then, pause the media. We should still have the active notification.
+  SimulatePlaybackStateChanged(id, false);
+  EXPECT_TRUE(HasActiveNotifications());
+
+  // After 59 minutes, the notification should still be there.
+  AdvanceClockMinutes(59);
+  EXPECT_TRUE(HasActiveNotifications());
+
+  // If the user goes back to the tab, it should reset the hide timer.
+  SimulateTabFocused(id);
+  AdvanceClockMinutes(59);
+  EXPECT_TRUE(HasActiveNotifications());
+
+  // If the user seeks the media before an hour is up, it should reset the hide
+  // timer.
+  SimulateMediaSeeked(id);
+  AdvanceClockMinutes(59);
+  EXPECT_TRUE(HasActiveNotifications());
+
+  // After the hour has passed, the notification should hide.
+  AdvanceClockMinutes(2);
+  EXPECT_FALSE(HasActiveNotifications());
 }

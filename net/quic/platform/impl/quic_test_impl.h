@@ -85,4 +85,6 @@ ParsedQuicVersionVector AllVersionsExcept99();
   } while (0);
 #endif
 
+#define QUIC_SLOW_TEST_IMPL(name) DISABLED_##name
+
 #endif  // NET_QUIC_PLATFORM_IMPL_QUIC_TEST_IMPL_H_

@@ -327,6 +327,10 @@ gfx::Rect Shelf::GetIdealBounds() const {
   return shelf_layout_manager_->GetIdealBounds();
 }
 
+gfx::Rect Shelf::GetIdealBoundsForWorkAreaCalculation() {
+  return shelf_layout_manager_->GetIdealBoundsForWorkAreaCalculation();
+}
+
 gfx::Rect Shelf::GetScreenBoundsOfItemIconForWindow(aura::Window* window) {
   if (!shelf_widget_)
     return gfx::Rect();

@@ -201,6 +201,9 @@ class ASH_EXPORT ToplevelWindowEventHandler
   int x_drag_amount_ = 0;
   int y_drag_amount_ = 0;
 
+  // True if back gesture dragging on the negative direction of x-axis.
+  bool during_reverse_dragging_ = false;
+
   // Position of last touch event. Used to calculate |y_drag_amount_|. Note,
   // only touch events from |first_touch_id_| will be recorded.
   gfx::Point last_touch_point_;

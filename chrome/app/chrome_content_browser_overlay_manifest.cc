@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/webui/downloads/downloads.mojom.h"
 #include "chrome/browser/ui/webui/feed_internals/feed_internals.mojom.h"
 #include "chrome/browser/ui/webui/interventions_internals/interventions_internals.mojom.h"
+#include "chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom.h"
 #include "chrome/browser/ui/webui/omnibox/omnibox.mojom.h"
 #include "chrome/browser/ui/webui/reset_password/reset_password.mojom.h"
 #include "chrome/browser/ui/webui/snippets_internals/snippets_internals.mojom.h"
@@ -122,22 +123,7 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
         .RequireCapability("xr_device_service", "xr_device_provider")
         .RequireCapability("xr_device_service", "xr_device_test_hook")
 #if defined(OS_CHROMEOS)
-        .ExposeInterfaceFilterCapability_Deprecated(
-            "navigation:frame",
-            chromeos::network_config::mojom::kNetworkConfigCapability,
-            service_manager::Manifest::InterfaceList<
-                chromeos::network_config::mojom::CrosNetworkConfig>())
-        .ExposeInterfaceFilterCapability_Deprecated(
-            "navigation:frame", "cellular_setup",
-            service_manager::Manifest::InterfaceList<
-                chromeos::cellular_setup::mojom::CellularSetup>())
         .RequireCapability("multidevice_setup", "multidevice_setup")
-        .ExposeInterfaceFilterCapability_Deprecated(
-            "navigation:frame", "multidevice_setup",
-            service_manager::Manifest::InterfaceList<
-                chromeos::multidevice_setup::mojom::MultiDeviceSetup,
-                chromeos::multidevice_setup::mojom::
-                    PrivilegedHostDeviceSetter>())
 #endif
         .ExposeInterfaceFilterCapability_Deprecated(
             "navigation:frame", "renderer",
@@ -147,10 +133,14 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                 chrome::mojom::OfflinePageAutoFetcher,
 #if defined(OS_CHROMEOS)
                 chromeos_camera::mojom::CameraAppHelper,
+                chromeos::cellular_setup::mojom::CellularSetup,
                 chromeos::crostini_installer::mojom::PageHandlerFactory,
                 chromeos::ime::mojom::InputEngineManager,
                 chromeos::machine_learning::mojom::PageHandler,
                 chromeos::media_perception::mojom::MediaPerception,
+                chromeos::multidevice_setup::mojom::MultiDeviceSetup,
+                chromeos::multidevice_setup::mojom::PrivilegedHostDeviceSetter,
+                chromeos::network_config::mojom::CrosNetworkConfig,
                 cros::mojom::CameraAppDeviceProvider,
 #endif
                 contextual_search::mojom::ContextualSearchJsApiService,
@@ -167,6 +157,7 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                 // for for now.
                 downloads::mojom::PageHandlerFactory,
                 feed_internals::mojom::PageHandler,
+                new_tab_page::mojom::PageHandlerFactory,
 #if defined(OS_ANDROID)
                 explore_sites_internals::mojom::PageHandler,
 #else

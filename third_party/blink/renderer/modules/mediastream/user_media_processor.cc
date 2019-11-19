@@ -1107,8 +1107,8 @@ blink::WebMediaStreamSource UserMediaProcessor::InitializeVideoSourceObject(
   blink::WebMediaStreamSource source = FindOrInitializeSourceObject(device);
   if (!source.GetPlatformSource()) {
     source.SetPlatformSource(CreateVideoSource(
-        device, WTF::BindRepeating(&UserMediaProcessor::OnLocalSourceStopped,
-                                   WrapWeakPersistent(this))));
+        device, WTF::Bind(&UserMediaProcessor::OnLocalSourceStopped,
+                          WrapWeakPersistent(this))));
     String device_id(device.id.data());
     source.SetCapabilities(ComputeCapabilitiesForVideoSource(
         // TODO(crbug.com/704136): Change ComputeCapabilitiesForVideoSource to
@@ -1154,7 +1154,7 @@ blink::WebMediaStreamSource UserMediaProcessor::InitializeAudioSourceObject(
 
   std::unique_ptr<blink::MediaStreamAudioSource> audio_source =
       CreateAudioSource(device, std::move(source_ready));
-  audio_source->SetStopCallback(WTF::BindRepeating(
+  audio_source->SetStopCallback(WTF::Bind(
       &UserMediaProcessor::OnLocalSourceStopped, WrapWeakPersistent(this)));
 
 #if DCHECK_IS_ON()
@@ -1258,14 +1258,13 @@ UserMediaProcessor::CreateAudioSource(
 std::unique_ptr<blink::MediaStreamVideoSource>
 UserMediaProcessor::CreateVideoSource(
     const MediaStreamDevice& device,
-    const blink::WebPlatformMediaStreamSource::SourceStoppedCallback&
-        stop_callback) {
+    blink::WebPlatformMediaStreamSource::SourceStoppedCallback stop_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(current_request_info_);
   DCHECK(current_request_info_->video_capture_settings().HasValue());
 
   return std::make_unique<blink::MediaStreamVideoCapturerSource>(
-      frame_, stop_callback, device,
+      frame_, std::move(stop_callback), device,
       current_request_info_->video_capture_settings().capture_params(),
       WTF::BindRepeating(
           &blink::LocalVideoCapturerSource::Create,

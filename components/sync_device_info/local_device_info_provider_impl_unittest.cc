@@ -18,9 +18,11 @@ const char kLocalDeviceGuid[] = "foo";
 const char kLocalDeviceClientName[] = "bar";
 
 const char kSharingVapidFCMToken[] = "test_vapid_fcm_token";
-const char kSharingSharingFCMToken[] = "test_sharing_fcm_token";
-const char kSharingP256dh[] = "test_p256_dh";
-const char kSharingAuthSecret[] = "test_auth_secret";
+const char kSharingVapidP256dh[] = "test_vapid_p256_dh";
+const char kSharingVapidAuthSecret[] = "test_vapid_auth_secret";
+const char kSharingSenderIdFCMToken[] = "test_sender_id_fcm_token";
+const char kSharingSenderIdP256dh[] = "test_sender_id_p256_dh";
+const char kSharingSenderIdAuthSecret[] = "test_sender_id_auth_secret";
 const sync_pb::SharingSpecificFields::EnabledFeatures
     kSharingEnabledFeatures[] = {sync_pb::SharingSpecificFields::CLICK_TO_CALL};
 
@@ -127,19 +129,31 @@ TEST_F(LocalDeviceInfoProviderImplTest, SharingInfo) {
       std::begin(kSharingEnabledFeatures), std::end(kSharingEnabledFeatures));
   base::Optional<DeviceInfo::SharingInfo> sharing_info =
       base::make_optional<DeviceInfo::SharingInfo>(
-          kSharingVapidFCMToken, kSharingSharingFCMToken, kSharingP256dh,
-          kSharingAuthSecret, enabled_features);
+          DeviceInfo::SharingTargetInfo{kSharingVapidFCMToken,
+                                        kSharingVapidP256dh,
+                                        kSharingVapidAuthSecret},
+          DeviceInfo::SharingTargetInfo{kSharingSenderIdFCMToken,
+                                        kSharingSenderIdP256dh,
+                                        kSharingSenderIdAuthSecret},
+          enabled_features);
   ON_CALL(device_info_sync_client_, GetLocalSharingInfo())
       .WillByDefault(Return(sharing_info));
 
   ASSERT_THAT(provider_->GetLocalDeviceInfo(), NotNull());
   const base::Optional<DeviceInfo::SharingInfo>& local_sharing_info =
       provider_->GetLocalDeviceInfo()->sharing_info();
-  EXPECT_TRUE(local_sharing_info);
-  EXPECT_EQ(kSharingVapidFCMToken, local_sharing_info->vapid_fcm_token);
-  EXPECT_EQ(kSharingSharingFCMToken, local_sharing_info->sharing_fcm_token);
-  EXPECT_EQ(kSharingP256dh, local_sharing_info->p256dh);
-  EXPECT_EQ(kSharingAuthSecret, local_sharing_info->auth_secret);
+  ASSERT_TRUE(local_sharing_info);
+  EXPECT_EQ(kSharingVapidFCMToken,
+            local_sharing_info->vapid_target_info.fcm_token);
+  EXPECT_EQ(kSharingVapidP256dh, local_sharing_info->vapid_target_info.p256dh);
+  EXPECT_EQ(kSharingVapidAuthSecret,
+            local_sharing_info->vapid_target_info.auth_secret);
+  EXPECT_EQ(kSharingSenderIdFCMToken,
+            local_sharing_info->sender_id_target_info.fcm_token);
+  EXPECT_EQ(kSharingSenderIdP256dh,
+            local_sharing_info->sender_id_target_info.p256dh);
+  EXPECT_EQ(kSharingSenderIdAuthSecret,
+            local_sharing_info->sender_id_target_info.auth_secret);
   EXPECT_EQ(enabled_features, local_sharing_info->enabled_features);
 }
 

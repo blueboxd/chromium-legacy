@@ -175,11 +175,6 @@ crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html
 
 crbug.com/845267 [ Mac ] http/tests/inspector-protocol/page/page-lifecycleEvents.js [ Failure Pass ]
 
-# SwiftShader Failures
-crbug.com/726075 [ Win ] compositing/3d-cube.html [ Failure ]
-crbug.com/726075 [ Linux ] compositing/3d-cube.html [ Failure ]
-crbug.com/726075 [ Mac ] compositing/3d-cube.html [ Failure ]
-
 # Looks like a failure to get a paint on time. Test could be changed to use runAfterLayoutAndPaint
 # instead of a timeout, which may fix things.
 crbug.com/713049 images/color-profile-reflection.html [ Failure Pass ]
@@ -371,6 +366,9 @@ crbug.com/1018273 [ Mac ] paint/invalidation/compositing/should-not-paint-outlin
 crbug.com/1018273 [ Mac ] paint/invalidation/compositing/should-not-repaint-scrolling-contents-outline-change.html [ Failure ]
 crbug.com/1018273 [ Mac ] paint/invalidation/compositing/stop-painting-onto-scrolling-contents.html [ Failure ]
 crbug.com/1018273 [ Mac ] paint/overflow/composited-scroll-vertical-rl.html [ Failure ]
+
+crbug.com/1025019 compositing/overflow/scroller-with-border-radius.html [ Crash ]
+crbug.com/1025019 virtual/prefer_compositing_to_lcd_text/compositing/overflow/scroller-with-border-radius.html [ Crash ]
 
 # ====== Paint team owned tests to here ======
 
@@ -708,6 +706,8 @@ crbug.com/591099 external/wpt/css/css-ui/text-overflow-015.html [ Failure ]
 
 crbug.com/1003506 external/wpt/css/css-flexbox/percentage-heights-007.html [ Failure ]
 
+crbug.com/916631 external/wpt/css/cssom-view/scrollIntoView-horizontal-partially-visible.html [ Failure ]
+
 # ====== Layout team owned tests to here ======
 
 # ====== LayoutNG-only failures from here ======
@@ -737,9 +737,7 @@ crbug.com/591099 virtual/text-antialias/font-format-support-color-cff2-vertical.
 crbug.com/591099 virtual/text-antialias/whitespace/018.html [ Failure ]
 crbug.com/591099 fast/writing-mode/auto-sizing-orthogonal-flows.html [ Failure ]
 crbug.com/591099 fast/writing-mode/percentage-height-orthogonal-writing-modes.html [ Failure ]
-crbug.com/591099 paint/invalidation/flexbox/scrollbars-changed.html [ Failure ]
 crbug.com/835484 paint/invalidation/outline/inline-focus.html [ Failure ]
-crbug.com/591099 paint/invalidation/overflow/opacity-change-on-overflow-float.html [ Failure ]
 crbug.com/591099 paint/invalidation/scroll/fixed-under-composited-fixed-scrolled.html [ Failure ]
 crbug.com/591099 virtual/mouseevent_fractional/fast/events/touch/compositor-touch-hit-rects-continuation.html [ Failure ]
 crbug.com/591099 virtual/mouseevent_fractional/fast/events/touch/compositor-touch-hit-rects-list-translate.html [ Failure ]
@@ -777,10 +775,6 @@ crbug.com/591099 fast/selectors/shadow-host-div-with-span.html [ Failure ]
 crbug.com/591099 fast/selectors/shadow-host-div-with-text.html [ Failure ]
 crbug.com/591099 virtual/text-antialias/selection/inline-block-in-selection-root.html [ Failure ]
 crbug.com/591099 paint/invalidation/media-audio-no-spurious-repaints.html [ Failure Timeout ]
-crbug.com/591099 paint/invalidation/compositing/composited-float-under-composited-inline-individual.html [ Failure ]
-crbug.com/591099 paint/invalidation/compositing/composited-float-under-composited-inline.html [ Failure ]
-crbug.com/591099 paint/invalidation/compositing/float-under-composited-inline.html [ Failure ]
-crbug.com/591099 paint/invalidation/compositing/stacked-float-under-composited-inline.html [ Failure ]
 crbug.com/591099 virtual/composite-after-paint/paint/background/scrolling-background-with-negative-z-child.html [ Failure Crash ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-list-item-002.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/border-radius-clipped-layer.html [ Failure ]
@@ -2285,9 +2279,9 @@ crbug.com/613672 [ Mac ] virtual/scroll_customization/fast/events/touch/gesture/
 
 # Since there is no compositor thread when running tests then there is no main thread event queue. Hence the
 # logic for this test will be skipped when running Layout tests.
-crbug.com/770028 external/wpt/pointerevents/extension/pointerevent_pointerrawupdate_in_pointerlock-manual.html [ Skip ]
-crbug.com/770028 external/wpt/pointerevents/extension/pointerevent_predicted_events_attributes-manual.html [ Skip ]
-crbug.com/770028 external/wpt/pointerevents/extension/pointerevent_getPredictedEvents_when_pointerlocked-manual.html [ Skip ]
+crbug.com/770028 external/wpt/pointerevents/pointerlock/pointerevent_pointerrawupdate_in_pointerlock-manual.html [ Skip ]
+crbug.com/770028 external/wpt/pointerevents/pointerlock/pointerevent_getPredictedEvents_when_pointerlocked-manual.html [ Skip ]
+crbug.com/770028 external/wpt/pointerevents/pointerevent_predicted_events_attributes-manual.html [ Skip ]
 
 # This test relies on racy should_send_resource_timing_info_to_parent() flag being sent between processes.
 crbug.com/957181 external/wpt/resource-timing/nested-context-navigations-iframe.html [ Pass Failure ]
@@ -2721,6 +2715,9 @@ crbug.com/893480 external/wpt/infrastructure/testdriver/actions/elementTiming.ht
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/multiDevice.html [ Failure Timeout ]
 crbug.com/893480 external/wpt/pointerevents/pointerevent_touch-action-keyboard.html [ Failure Timeout ]
 crbug.com/893480 external/wpt/infrastructure/testdriver/actions/actionsWithKeyPressed.html [ Failure Timeout ]
+crbug.com/893480 external/wpt/css/css-scroll-snap/input/keyboard.html [ Failure Timeout ]
+crbug.com/893480 virtual/threaded/external/wpt/css/css-scroll-snap/input/keyboard.html [ Failure Timeout ]
+
 
 # Hit a DCHECK
 crbug.com/918664 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/sizing/block-size-with-min-or-max-content-table-1a.html [ Failure Pass ]
@@ -2750,6 +2747,12 @@ crbug.com/618969 external/wpt/css/css-grid/subgrid/ [ Skip ]
 crbug.com/1012627 [ Win7 ] external/wpt/css/css-text/line-breaking/line-breaking-021.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/html/semantics/document-metadata/the-link-element/link-multiple-error-events.html [ Timeout ]
+crbug.com/626703 [ Mac ] external/wpt/html/semantics/document-metadata/the-link-element/link-multiple-error-events.html [ Timeout ]
+crbug.com/626703 [ Win ] external/wpt/html/semantics/document-metadata/the-link-element/link-multiple-error-events.html [ Timeout ]
+crbug.com/626703 [ Linux ] external/wpt/html/semantics/document-metadata/the-link-element/link-multiple-load-events.html [ Timeout ]
+crbug.com/626703 [ Mac ] external/wpt/html/semantics/document-metadata/the-link-element/link-multiple-load-events.html [ Timeout ]
+crbug.com/626703 [ Win ] external/wpt/html/semantics/document-metadata/the-link-element/link-multiple-load-events.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-flexbox/select-element-zero-height-001.html [ Failure ]
 crbug.com/626703 [ Linux ] virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/select-element-zero-height-001.html [ Failure ]
 crbug.com/626703 [ Mac ] virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/select-element-zero-height-001.html [ Failure ]
@@ -5850,9 +5853,6 @@ crbug.com/1021407 [ Retina Release ] virtual/audio-service/media/video-controls-
 crbug.com/1021407 [ Mac10.11 ] virtual/audio-service/media/controls/video-overlay-cast-dark-rendering.html [ Pass Failure ]
 crbug.com/1021407 [ Mac10.11 ] media/controls/video-overlay-cast-dark-rendering.html [ Pass Failure ]
 
-# Sheriff 2019-11-13
-crbug.com/1024398 http/tests/appcache/remove-cache.html [ Pass Failure ]
-
 # Temporarily disabled to land scope changes in DevTools
 crbug.com/963183 http/tests/devtools/sources/debugger-pause/set-return-value.js [ Pass Failure ]
 crbug.com/963183 http/tests/devtools/sources/debugger/debugger-proto-property.js [ Pass Failure ]
@@ -5865,3 +5865,6 @@ crbug.com/1025321 [ Win ] http/tests/devtools/tracing/console-timeline.js [ Pass
 crbug.com/1025321 [ Win ] virtual/threaded/http/tests/devtools/tracing/console-timeline.js [ Pass Failure ]
 crbug.com/1025291 [ Linux ] virtual/android/fullscreen/video-scrolled-iframe.html [ Pass Failure ]
 crbug.com/1025437 virtual/not-site-per-process/http/tests/devtools/debugger/fetch-breakpoints.js [ Timeout Pass ]
+
+# Sheriff 2019-11-18
+crbug.com/1025944 [ Linux ] external/wpt/pointerevents/pointerlock/pointerevent_pointermove_on_chorded_mouse_button_when_locked.html [ Pass Failure ]

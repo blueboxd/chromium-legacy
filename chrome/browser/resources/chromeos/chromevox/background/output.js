@@ -525,7 +525,7 @@ Output.RULES = {
     },
     paragraph: {speak: `$nameOrDescendants`},
     popUpButton: {
-      speak: `$if($value, $value, $descendants) $name $role @aria_has_popup
+      speak: `$name $if($value, $value, $descendants) $role @aria_has_popup
           $if($expanded, @@list_with_items($setSize)) $state $restriction
           $description`
     },
@@ -713,7 +713,14 @@ Output.forceModeForNextSpeechUtterance_;
  * @param {QueueMode|undefined} mode
  */
 Output.forceModeForNextSpeechUtterance = function(mode) {
-  Output.forceModeForNextSpeechUtterance_ = mode;
+  // If previous calls to force the mode went unprocessed, try to honor the
+  // first caller's setting which is generally set by key and gesture events
+  // rather than automation events. Make an exception when a caller explicitly
+  // clears the mode .e.g in editing.
+  if (Output.forceModeForNextSpeechUtterance_ === undefined ||
+      mode === undefined) {
+    Output.forceModeForNextSpeechUtterance_ = mode;
+  }
 };
 
 /**

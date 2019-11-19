@@ -124,6 +124,10 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   // Returns the ideal bounds of the shelf assuming it is visible.
   gfx::Rect GetIdealBounds() const;
 
+  // Returns the ideal bounds of the shelf, but in tablet mode always returns
+  // the bounds of the in-app shelf.
+  gfx::Rect GetIdealBoundsForWorkAreaCalculation();
+
   // Returns the screen bounds of the item for the specified window. If there is
   // no item for the specified window an empty rect is returned.
   gfx::Rect GetScreenBoundsOfItemIconForWindow(aura::Window* window);

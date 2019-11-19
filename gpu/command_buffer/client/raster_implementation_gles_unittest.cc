@@ -411,7 +411,7 @@ TEST_F(RasterImplementationGLESTest, DeleteGpuRasterTexture) {
       .WillOnce(Return(texture_id))
       .RetiresOnSaturation();
 
-  EXPECT_EQ(texture_id, ri_->CreateAndConsumeForGpuRaster(mailbox.name));
+  EXPECT_EQ(texture_id, ri_->CreateAndConsumeForGpuRaster(mailbox));
 
   EXPECT_CALL(*gl_, DeleteTextures(1, _)).Times(1);
   ri_->DeleteGpuRasterTexture(texture_id);
@@ -424,7 +424,7 @@ TEST_F(RasterImplementationGLESTest, CreateAndConsumeForGpuRaster) {
 
   EXPECT_CALL(*gl_, CreateAndConsumeTextureCHROMIUM(mailbox.name))
       .WillOnce(Return(kTextureId));
-  texture_id = ri_->CreateAndConsumeForGpuRaster(mailbox.name);
+  texture_id = ri_->CreateAndConsumeForGpuRaster(mailbox);
   EXPECT_EQ(kTextureId, texture_id);
 }
 

@@ -91,14 +91,6 @@ class ProxiedServiceConnector : public mojom::Connector {
     receivers_.Add(this, std::move(receiver));
   }
 
-  void FilterInterfaces(
-      const std::string& spec,
-      const Identity& source,
-      mojo::PendingReceiver<mojom::InterfaceProvider> source_receiver,
-      mojo::PendingRemote<mojom::InterfaceProvider> target) override {
-    NOTREACHED();
-  }
-
   const base::Token fake_guid_;
   TestConnectorFactory* const factory_;
   TestConnectorFactory::NameToServiceProxyMap* const proxies_;

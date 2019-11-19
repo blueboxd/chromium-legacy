@@ -197,6 +197,9 @@ const char kMessageCenterLockScreenModeShow[] = "show";
 const char kMessageCenterLockScreenModeHide[] = "hide";
 const char kMessageCenterLockScreenModeHideSensitive[] = "hideSensitive";
 
+// A boolean pref storing the enabled status of the ambient color feature.
+const char kAmbientColorEnabled[] = "ash.ambient_color.enabled";
+
 // A boolean pref storing the enabled status of the NightLight feature.
 const char kNightLightEnabled[] = "ash.night_light.enabled";
 

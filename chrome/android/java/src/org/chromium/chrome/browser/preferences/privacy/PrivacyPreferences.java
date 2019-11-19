@@ -48,7 +48,6 @@ public class PrivacyPreferences
         PreferenceUtils.addPreferencesFromResource(this, R.xml.privacy_preferences);
         getActivity().setTitle(R.string.prefs_privacy);
         setHasOptionsMenu(true);
-        PrefServiceBridge prefServiceBridge = PrefServiceBridge.getInstance();
 
         mManagedPreferenceDelegate = createManagedPreferenceDelegate();
 
@@ -58,7 +57,8 @@ public class PrivacyPreferences
 
         ChromeBaseCheckBoxPreference networkPredictionPref =
                 (ChromeBaseCheckBoxPreference) findPreference(PREF_NETWORK_PREDICTIONS);
-        networkPredictionPref.setChecked(prefServiceBridge.getNetworkPredictionEnabled());
+        networkPredictionPref.setChecked(
+                PrivacyPreferencesManager.getInstance().getNetworkPredictionEnabled());
         networkPredictionPref.setOnPreferenceChangeListener(this);
         networkPredictionPref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
@@ -81,7 +81,7 @@ public class PrivacyPreferences
             PrefServiceBridge.getInstance().setBoolean(
                     Pref.CAN_MAKE_PAYMENT_ENABLED, (boolean) newValue);
         } else if (PREF_NETWORK_PREDICTIONS.equals(key)) {
-            PrefServiceBridge.getInstance().setNetworkPredictionEnabled((boolean) newValue);
+            PrivacyPreferencesManager.getInstance().setNetworkPredictionEnabled((boolean) newValue);
         }
 
         return true;
@@ -136,9 +136,8 @@ public class PrivacyPreferences
     private ManagedPreferenceDelegate createManagedPreferenceDelegate() {
         return preference -> {
             String key = preference.getKey();
-            PrefServiceBridge prefs = PrefServiceBridge.getInstance();
             if (PREF_NETWORK_PREDICTIONS.equals(key)) {
-                return prefs.isNetworkPredictionManaged();
+                return PrivacyPreferencesManager.getInstance().isNetworkPredictionManaged();
             }
             return false;
         };

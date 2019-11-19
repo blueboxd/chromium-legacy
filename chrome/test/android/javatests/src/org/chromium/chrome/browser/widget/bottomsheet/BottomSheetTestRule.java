@@ -42,6 +42,9 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
         /** A {@link CallbackHelper} that can wait for the sheet to be hidden. */
         public final CallbackHelper mHiddenCallbackHelper = new CallbackHelper();
 
+        /** A {@link CallbackHelper} that can wait for the sheet to load a URL. */
+        public final CallbackHelper mLoadUrlCallbackHelper = new CallbackHelper();
+
         /** The last value that the onOffsetChanged event sent. */
         private float mLastOffsetChangedValue;
 
@@ -78,6 +81,11 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
         /** @return The last value passed in to {@link #onSheetOffsetChanged(float)}. */
         public float getLastOffsetChangedValue() {
             return mLastOffsetChangedValue;
+        }
+
+        @Override
+        public void onLoadUrl(String url) {
+            mLoadUrlCallbackHelper.notifyCalled();
         }
     }
 

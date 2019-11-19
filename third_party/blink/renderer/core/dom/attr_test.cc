@@ -43,7 +43,7 @@ TEST_F(AttrTest, InitialValueState) {
 TEST_F(AttrTest, SetValue) {
   Attr* attr = CreateAttribute();
   Node* node = attr;
-  attr->setValue(Value());
+  attr->setValue(Value(), ASSERT_NO_EXCEPTION);
   EXPECT_EQ(Value(), attr->value());
   EXPECT_EQ(Value(), node->nodeValue());
   EXPECT_EQ(Value(), attr->textContent());

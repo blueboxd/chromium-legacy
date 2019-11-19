@@ -392,16 +392,13 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
 // This test class enables ResourceLoadingHints with OptimizationHints.
 // First parameter is true if the test should be run with a webpage that
 // preloads resources in the HTML head using link-rel preload.
-// Second parameter is true if the OptimizationGuideKeyedService feature is
-// enabled.
 // All tests should pass in the same way for all cases.
 class ResourceLoadingHintsBrowserTest
-    : public ::testing::WithParamInterface<std::tuple<bool, bool>>,
+    : public ::testing::WithParamInterface<bool>,
       public ResourceLoadingNoFeaturesBrowserTest {
  public:
   ResourceLoadingHintsBrowserTest()
-      : use_preload_resources_webpage_(std::get<0>(GetParam())),
-        use_optimization_guide_keyed_service_(std::get<1>(GetParam())) {}
+      : use_preload_resources_webpage_(GetParam()) {}
 
   ~ResourceLoadingHintsBrowserTest() override = default;
 
@@ -415,14 +412,6 @@ class ResourceLoadingHintsBrowserTest
            data_reduction_proxy::features::
                kDataReductionProxyEnabledWithNetworkService},
           {});
-
-    if (use_optimization_guide_keyed_service_) {
-      ogks_feature_list_.InitWithFeatures(
-          {optimization_guide::features::kOptimizationGuideKeyedService}, {});
-    } else {
-      ogks_feature_list_.InitWithFeatures(
-          {}, {optimization_guide::features::kOptimizationGuideKeyedService});
-    }
     ResourceLoadingNoFeaturesBrowserTest::SetUp();
   }
 
@@ -449,18 +438,13 @@ class ResourceLoadingHintsBrowserTest
 
  private:
   const bool use_preload_resources_webpage_;
-  const bool use_optimization_guide_keyed_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceLoadingHintsBrowserTest);
 };
 
 // First parameter is true if the test should be run with a webpage that
-// preloads resources in the HTML head using link-rel preload. Second parameter
-// is true if the OptimizationGuideKeyedService feature is enabled.
-INSTANTIATE_TEST_SUITE_P(,
-                         ResourceLoadingHintsBrowserTest,
-                         ::testing::Combine(::testing::Bool(),
-                                            ::testing::Bool()));
+// preloads resources in the HTML head using link-rel preload.
+INSTANTIATE_TEST_SUITE_P(, ResourceLoadingHintsBrowserTest, ::testing::Bool());
 
 // Previews InfoBar (which these tests triggers) does not work on Mac.
 // See https://crbug.com/782322 for details. Also occasional flakes on win7

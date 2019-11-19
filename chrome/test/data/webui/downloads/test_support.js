@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-class TestDownloadsProxy {
+import {DangerType, States} from 'chrome://downloads/downloads.js';
+
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+
+export class TestDownloadsProxy {
   constructor() {
     /** @type {downloads.mojom.PageCallbackRouter} */
     this.callbackRouter = new downloads.mojom.PageCallbackRouter();
@@ -82,7 +86,7 @@ class FakePageHandler {
   openDownloadsFolderRequiringGesture() {}
 }
 
-class TestIconLoader extends TestBrowserProxy {
+export class TestIconLoader extends TestBrowserProxy {
   constructor() {
     super(['loadIcon']);
 
@@ -109,12 +113,12 @@ class TestIconLoader extends TestBrowserProxy {
  * @param {Object=} config
  * @return {!downloads.Data}
  */
-function createDownload(config) {
+export function createDownload(config) {
   return Object.assign(
       {
         byExtId: '',
         byExtName: '',
-        dangerType: downloads.DangerType.NOT_DANGEROUS,
+        dangerType: DangerType.NOT_DANGEROUS,
         dateString: '',
         fileExternallyRemoved: false,
         filePath: '/some/file/path',
@@ -130,7 +134,7 @@ function createDownload(config) {
         return: false,
         sinceString: 'Today',
         started: Date.now() - 10000,
-        state: downloads.States.COMPLETE,
+        state: States.COMPLETE,
         total: -1,
         url: 'http://permission.site',
       },

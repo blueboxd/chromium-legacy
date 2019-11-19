@@ -204,35 +204,39 @@ PreconnectManagerTest::~PreconnectManagerTest() {
 
 TEST_F(PreconnectManagerTest, TestStartOneUrlPreresolve) {
   GURL main_frame_url("http://google.com");
-  GURL url_to_preresolve("http://cdn.google.com");
+  url::Origin origin_to_preresolve =
+      url::Origin::Create(GURL("http://cdn.google.com"));
 
   EXPECT_CALL(*mock_network_context_,
-              ResolveHostProxy(url_to_preresolve.host()));
+              ResolveHostProxy(origin_to_preresolve.host()));
   EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url));
   preconnect_manager_->Start(
       main_frame_url,
-      {PreconnectRequest(url_to_preresolve, 0,
+      {PreconnectRequest(origin_to_preresolve, 0,
                          CreateNetworkIsolationKey(main_frame_url))});
-  mock_network_context_->CompleteHostLookup(url_to_preresolve.host(), net::OK);
+  mock_network_context_->CompleteHostLookup(origin_to_preresolve.host(),
+                                            net::OK);
 }
 
 TEST_F(PreconnectManagerTest, TestStartOneUrlPreconnect) {
   GURL main_frame_url("http://google.com");
   net::NetworkIsolationKey network_isolation_key =
       CreateNetworkIsolationKey(main_frame_url);
-  GURL url_to_preconnect("http://cdn.google.com");
+  url::Origin origin_to_preconnect =
+      url::Origin::Create(GURL("http://cdn.google.com"));
 
   EXPECT_CALL(*mock_network_context_,
-              ResolveHostProxy(url_to_preconnect.host()));
+              ResolveHostProxy(origin_to_preconnect.host()));
   preconnect_manager_->Start(
       main_frame_url,
-      {PreconnectRequest(url_to_preconnect, 1, network_isolation_key)});
+      {PreconnectRequest(origin_to_preconnect, 1, network_isolation_key)});
   EXPECT_CALL(
       *mock_network_context_,
-      PreconnectSockets(1, url_to_preconnect, true /* allow credentials */,
-                        network_isolation_key));
+      PreconnectSockets(1, origin_to_preconnect.GetURL(),
+                        true /* allow credentials */, network_isolation_key));
   EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url));
-  mock_network_context_->CompleteHostLookup(url_to_preconnect.host(), net::OK);
+  mock_network_context_->CompleteHostLookup(origin_to_preconnect.host(),
+                                            net::OK);
 }
 
 TEST_F(PreconnectManagerTest,
@@ -240,19 +244,21 @@ TEST_F(PreconnectManagerTest,
   GURL main_frame_url("http://google.com");
   net::NetworkIsolationKey network_isolation_key =
       CreateNetworkIsolationKey(main_frame_url);
-  GURL url_to_preconnect("http://cdn.google.com");
+  url::Origin origin_to_preconnect =
+      url::Origin::Create(GURL("http://cdn.google.com"));
 
   EXPECT_CALL(*mock_network_context_,
-              ResolveHostProxy(url_to_preconnect.host()));
+              ResolveHostProxy(origin_to_preconnect.host()));
   preconnect_manager_->Start(
       main_frame_url,
-      {PreconnectRequest(url_to_preconnect, 1, network_isolation_key)});
+      {PreconnectRequest(origin_to_preconnect, 1, network_isolation_key)});
   EXPECT_CALL(
       *mock_network_context_,
-      PreconnectSockets(1, url_to_preconnect, true /* allow credentials */,
-                        network_isolation_key));
+      PreconnectSockets(1, origin_to_preconnect.GetURL(),
+                        true /* allow credentials */, network_isolation_key));
   EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url));
-  mock_network_context_->CompleteHostLookup(url_to_preconnect.host(), net::OK);
+  mock_network_context_->CompleteHostLookup(origin_to_preconnect.host(),
+                                            net::OK);
 }
 
 // Sends preconnect request for a webpage, and stops the request before
@@ -267,9 +273,9 @@ TEST_F(PreconnectManagerTest, TestStartOneUrlPreconnect_MultipleTimes) {
   std::vector<PreconnectRequest> requests;
   for (size_t i = 0; i < count + 1; ++i) {
     // Exactly PreconnectManager::kMaxInflightPreresolves should be preresolved.
-    requests.emplace_back(
-        GURL(base::StringPrintf("http://cdn%" PRIuS ".google.com", i)), 1,
-        network_isolation_key);
+    std::string url = base::StringPrintf("http://cdn%" PRIuS ".google.com", i);
+    requests.emplace_back(url::Origin::Create(GURL(url)), 1,
+                          network_isolation_key);
   }
   for (size_t i = 0; i < count; ++i) {
     // Exactly PreconnectManager::kMaxInflightPreresolves should be preresolved.
@@ -288,15 +294,15 @@ TEST_F(PreconnectManagerTest, TestStartOneUrlPreconnect_MultipleTimes) {
   // Now, restart the preconnect request.
   EXPECT_CALL(
       *mock_network_context_,
-      PreconnectSockets(1, requests.back().origin, true /* allow credentials */,
-                        network_isolation_key));
+      PreconnectSockets(1, requests.back().origin.GetURL(),
+                        true /* allow credentials */, network_isolation_key));
   EXPECT_CALL(*mock_network_context_,
               ResolveHostProxy(requests.back().origin.host()));
   for (size_t i = 0; i < count; ++i) {
     EXPECT_CALL(
         *mock_network_context_,
-        PreconnectSockets(1, requests[i].origin, true /* allow credentials */,
-                          network_isolation_key));
+        PreconnectSockets(1, requests[i].origin.GetURL(),
+                          true /* allow credentials */, network_isolation_key));
     EXPECT_CALL(*mock_network_context_,
                 ResolveHostProxy(requests[i].origin.host()));
   }
@@ -321,9 +327,9 @@ TEST_F(PreconnectManagerTest, TestTwoConcurrentMainFrameUrls_MultipleTimes) {
   size_t count = PreconnectManager::kMaxInflightPreresolves;
   std::vector<PreconnectRequest> requests;
   for (size_t i = 0; i < count + 1; ++i) {
-    requests.emplace_back(
-        GURL(base::StringPrintf("http://cdn%" PRIuS ".google.com", i)), 1,
-        network_isolation_key_1);
+    std::string url = base::StringPrintf("http://cdn%" PRIuS ".google.com", i);
+    requests.emplace_back(url::Origin::Create(GURL(url)), 1,
+                          network_isolation_key_1);
   }
 
   GURL main_frame_url_2("http://google2.com");
@@ -336,10 +342,10 @@ TEST_F(PreconnectManagerTest, TestTwoConcurrentMainFrameUrls_MultipleTimes) {
   }
   EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url_1));
   for (size_t i = 0; i < count - 1; ++i) {
-    EXPECT_CALL(
-        *mock_network_context_,
-        PreconnectSockets(1, requests[i].origin, true /* allow credentials */,
-                          network_isolation_key_1));
+    EXPECT_CALL(*mock_network_context_,
+                PreconnectSockets(1, requests[i].origin.GetURL(),
+                                  true /* allow credentials */,
+                                  network_isolation_key_1));
   }
 
   preconnect_manager_->Start(
@@ -377,12 +383,12 @@ TEST_F(PreconnectManagerTest, TestTwoConcurrentMainFrameUrls_MultipleTimes) {
 
   EXPECT_CALL(
       *mock_network_context_,
-      PreconnectSockets(1, requests[count - 1].origin,
+      PreconnectSockets(1, requests[count - 1].origin.GetURL(),
                         true /* allow credentials */, network_isolation_key_2));
   EXPECT_CALL(
       *mock_network_context_,
-      PreconnectSockets(1, requests[count].origin, true /* allow credentials */,
-                        network_isolation_key_2));
+      PreconnectSockets(1, requests[count].origin.GetURL(),
+                        true /* allow credentials */, network_isolation_key_2));
 
   mock_network_context_->CompleteHostLookup(requests[count - 1].origin.host(),
                                             net::OK);
@@ -405,9 +411,10 @@ TEST_F(PreconnectManagerTest,
   size_t count = PreconnectManager::kMaxInflightPreresolves;
   std::vector<PreconnectRequest> requests;
   for (size_t i = 0; i < count - 1; ++i) {
-    requests.emplace_back(
-        GURL(base::StringPrintf("http://hanging.cdn%" PRIuS ".google.com", i)),
-        1, network_isolation_key_1);
+    std::string url =
+        base::StringPrintf("http://hanging.cdn%" PRIuS ".google.com", i);
+    requests.emplace_back(url::Origin::Create(GURL(url)), 1,
+                          network_isolation_key_1);
   }
   mock_network_context_->SetHangingHostsFromPreconnectRequests(requests);
 
@@ -417,50 +424,52 @@ TEST_F(PreconnectManagerTest,
   GURL main_frame_url_2("http://google2.com");
   net::NetworkIsolationKey network_isolation_key_2 =
       CreateNetworkIsolationKey(main_frame_url_2);
-  GURL url_to_preconnect_1("http://cdn.google1.com");
-  GURL url_to_preconnect_2("http://cdn.google2.com");
+  url::Origin origin_to_preconnect_1 =
+      url::Origin::Create(GURL("http://cdn.google1.com"));
+  url::Origin origin_to_preconnect_2 =
+      url::Origin::Create(GURL("http://cdn.google2.com"));
 
   EXPECT_CALL(*mock_network_context_,
-              ResolveHostProxy(url_to_preconnect_1.host()));
+              ResolveHostProxy(origin_to_preconnect_1.host()));
   // Starting and stopping preconnect request for |main_frame_url_2|
-  // should still dispatch the request for |url_to_preconnect_1| on the
+  // should still dispatch the request for |origin_to_preconnect_1| on the
   // network.
   preconnect_manager_->Start(
       main_frame_url_2,
-      {PreconnectRequest(url_to_preconnect_1, 1, network_isolation_key_2),
-       PreconnectRequest(url_to_preconnect_2, 1, network_isolation_key_2)});
-  // preconnect request for |url_to_preconnect_1| is still in-flight and
+      {PreconnectRequest(origin_to_preconnect_1, 1, network_isolation_key_2),
+       PreconnectRequest(origin_to_preconnect_2, 1, network_isolation_key_2)});
+  // preconnect request for |origin_to_preconnect_1| is still in-flight and
   // Stop() is called on the associated webpage.
   preconnect_manager_->Stop(main_frame_url_2);
   VerifyAndClearExpectations();
 
   EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url_2));
-  mock_network_context_->CompleteHostLookup(url_to_preconnect_1.host(),
+  mock_network_context_->CompleteHostLookup(origin_to_preconnect_1.host(),
                                             net::OK);
   VerifyAndClearExpectations();
 
   // Request preconnect for |main_frame_url_2| again.
   EXPECT_CALL(*mock_network_context_,
-              ResolveHostProxy(url_to_preconnect_1.host()));
+              ResolveHostProxy(origin_to_preconnect_1.host()));
   EXPECT_CALL(*mock_network_context_,
-              ResolveHostProxy(url_to_preconnect_2.host()));
+              ResolveHostProxy(origin_to_preconnect_2.host()));
   EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url_2));
   EXPECT_CALL(
       *mock_network_context_,
-      PreconnectSockets(1, url_to_preconnect_1, true /* allow credentials */,
-                        network_isolation_key_2));
+      PreconnectSockets(1, origin_to_preconnect_1.GetURL(),
+                        true /* allow credentials */, network_isolation_key_2));
   EXPECT_CALL(
       *mock_network_context_,
-      PreconnectSockets(1, url_to_preconnect_2, true /* allow credentials */,
-                        network_isolation_key_2));
+      PreconnectSockets(1, origin_to_preconnect_2.GetURL(),
+                        true /* allow credentials */, network_isolation_key_2));
   preconnect_manager_->Start(
       main_frame_url_2,
-      {PreconnectRequest(url_to_preconnect_1, 1, network_isolation_key_2),
-       PreconnectRequest(url_to_preconnect_2, 1, network_isolation_key_2)});
+      {PreconnectRequest(origin_to_preconnect_1, 1, network_isolation_key_2),
+       PreconnectRequest(origin_to_preconnect_2, 1, network_isolation_key_2)});
 
-  mock_network_context_->CompleteHostLookup(url_to_preconnect_1.host(),
+  mock_network_context_->CompleteHostLookup(origin_to_preconnect_1.host(),
                                             net::OK);
-  mock_network_context_->CompleteHostLookup(url_to_preconnect_2.host(),
+  mock_network_context_->CompleteHostLookup(origin_to_preconnect_2.host(),
                                             net::OK);
 }
 
@@ -471,48 +480,50 @@ TEST_F(PreconnectManagerTest,
   GURL main_frame_url("http://google.com");
   net::NetworkIsolationKey network_isolation_key =
       CreateNetworkIsolationKey(main_frame_url);
-  GURL url_to_preconnect_1("http://cdn.google1.com");
-  GURL url_to_preconnect_2("http://cdn.google2.com");
+  url::Origin origin_to_preconnect_1 =
+      url::Origin::Create(GURL("http://cdn.google1.com"));
+  url::Origin origin_to_preconnect_2 =
+      url::Origin::Create(GURL("http://cdn.google2.com"));
 
   EXPECT_CALL(*mock_network_context_,
-              ResolveHostProxy(url_to_preconnect_1.host()));
+              ResolveHostProxy(origin_to_preconnect_1.host()));
   EXPECT_CALL(*mock_network_context_,
-              ResolveHostProxy(url_to_preconnect_2.host()));
+              ResolveHostProxy(origin_to_preconnect_2.host()));
 
   preconnect_manager_->Start(
       main_frame_url,
-      {PreconnectRequest(url_to_preconnect_1, 1, network_isolation_key),
-       PreconnectRequest(url_to_preconnect_2, 1, network_isolation_key)});
+      {PreconnectRequest(origin_to_preconnect_1, 1, network_isolation_key),
+       PreconnectRequest(origin_to_preconnect_2, 1, network_isolation_key)});
   preconnect_manager_->Stop(main_frame_url);
 
   EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url));
-  mock_network_context_->CompleteHostLookup(url_to_preconnect_1.host(),
+  mock_network_context_->CompleteHostLookup(origin_to_preconnect_1.host(),
                                             net::OK);
-  mock_network_context_->CompleteHostLookup(url_to_preconnect_2.host(),
+  mock_network_context_->CompleteHostLookup(origin_to_preconnect_2.host(),
                                             net::OK);
   VerifyAndClearExpectations();
 
   // Now, start the preconnect request again.
   EXPECT_CALL(*mock_network_context_,
-              ResolveHostProxy(url_to_preconnect_1.host()));
+              ResolveHostProxy(origin_to_preconnect_1.host()));
   EXPECT_CALL(*mock_network_context_,
-              ResolveHostProxy(url_to_preconnect_2.host()));
+              ResolveHostProxy(origin_to_preconnect_2.host()));
   EXPECT_CALL(
       *mock_network_context_,
-      PreconnectSockets(1, url_to_preconnect_1, true /* allow credentials */,
-                        network_isolation_key));
+      PreconnectSockets(1, origin_to_preconnect_1.GetURL(),
+                        true /* allow credentials */, network_isolation_key));
   EXPECT_CALL(
       *mock_network_context_,
-      PreconnectSockets(1, url_to_preconnect_2, true /* allow credentials */,
-                        network_isolation_key));
+      PreconnectSockets(1, origin_to_preconnect_2.GetURL(),
+                        true /* allow credentials */, network_isolation_key));
   EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url));
   preconnect_manager_->Start(
       main_frame_url,
-      {PreconnectRequest(url_to_preconnect_1, 1, network_isolation_key),
-       PreconnectRequest(url_to_preconnect_2, 1, network_isolation_key)});
-  mock_network_context_->CompleteHostLookup(url_to_preconnect_1.host(),
+      {PreconnectRequest(origin_to_preconnect_1, 1, network_isolation_key),
+       PreconnectRequest(origin_to_preconnect_2, 1, network_isolation_key)});
+  mock_network_context_->CompleteHostLookup(origin_to_preconnect_1.host(),
                                             net::OK);
-  mock_network_context_->CompleteHostLookup(url_to_preconnect_2.host(),
+  mock_network_context_->CompleteHostLookup(origin_to_preconnect_2.host(),
                                             net::OK);
 }
 
@@ -520,35 +531,39 @@ TEST_F(PreconnectManagerTest, TestStopOneUrlBeforePreconnect) {
   GURL main_frame_url("http://google.com");
   net::NetworkIsolationKey network_isolation_key =
       CreateNetworkIsolationKey(main_frame_url);
-  GURL url_to_preconnect("http://cdn.google.com");
+  url::Origin origin_to_preconnect =
+      url::Origin::Create(GURL("http://cdn.google.com"));
 
   // Preconnect job isn't started before preresolve is completed asynchronously.
   EXPECT_CALL(*mock_network_context_,
-              ResolveHostProxy(url_to_preconnect.host()));
+              ResolveHostProxy(origin_to_preconnect.host()));
   preconnect_manager_->Start(
       main_frame_url,
-      {PreconnectRequest(url_to_preconnect, 1, network_isolation_key)});
+      {PreconnectRequest(origin_to_preconnect, 1, network_isolation_key)});
 
   // Stop all jobs for |main_frame_url| before we get the callback.
   preconnect_manager_->Stop(main_frame_url);
   EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url));
-  mock_network_context_->CompleteHostLookup(url_to_preconnect.host(), net::OK);
+  mock_network_context_->CompleteHostLookup(origin_to_preconnect.host(),
+                                            net::OK);
 }
 
 TEST_F(PreconnectManagerTest, TestGetCallbackAfterDestruction) {
   GURL main_frame_url("http://google.com");
   net::NetworkIsolationKey network_isolation_key =
       CreateNetworkIsolationKey(main_frame_url);
-  GURL url_to_preconnect("http://cdn.google.com");
+  url::Origin origin_to_preconnect =
+      url::Origin::Create(GURL("http://cdn.google.com"));
   EXPECT_CALL(*mock_network_context_,
-              ResolveHostProxy(url_to_preconnect.host()));
+              ResolveHostProxy(origin_to_preconnect.host()));
   preconnect_manager_->Start(
       main_frame_url,
-      {PreconnectRequest(url_to_preconnect, 1, network_isolation_key)});
+      {PreconnectRequest(origin_to_preconnect, 1, network_isolation_key)});
 
   // Callback may outlive PreconnectManager but it shouldn't cause a crash.
   preconnect_manager_ = nullptr;
-  mock_network_context_->CompleteHostLookup(url_to_preconnect.host(), net::OK);
+  mock_network_context_->CompleteHostLookup(origin_to_preconnect.host(),
+                                            net::OK);
 }
 
 TEST_F(PreconnectManagerTest, TestUnqueuedPreresolvesCanceled) {
@@ -559,15 +574,15 @@ TEST_F(PreconnectManagerTest, TestUnqueuedPreresolvesCanceled) {
   std::vector<PreconnectRequest> requests;
   for (size_t i = 0; i < count; ++i) {
     // Exactly PreconnectManager::kMaxInflightPreresolves should be preresolved.
-    requests.emplace_back(
-        GURL(base::StringPrintf("http://cdn%" PRIuS ".google.com", i)), 1,
-        network_isolation_key);
+    std::string url = base::StringPrintf("http://cdn%" PRIuS ".google.com", i);
+    requests.emplace_back(url::Origin::Create(GURL(url)), 1,
+                          network_isolation_key);
     EXPECT_CALL(*mock_network_context_,
                 ResolveHostProxy(requests.back().origin.host()));
   }
   // This url shouldn't be preresolved.
-  requests.emplace_back(GURL("http://no.preresolve.com"), 1,
-                        network_isolation_key);
+  requests.emplace_back(url::Origin::Create(GURL("http://no.preresolve.com")),
+                        1, network_isolation_key);
   preconnect_manager_->Start(main_frame_url, requests);
 
   preconnect_manager_->Stop(main_frame_url);
@@ -581,22 +596,24 @@ TEST_F(PreconnectManagerTest, TestTwoConcurrentMainFrameUrls) {
   GURL main_frame_url1("http://google.com");
   net::NetworkIsolationKey network_isolation_key1 =
       CreateNetworkIsolationKey(main_frame_url1);
-  GURL url_to_preconnect1("http://cdn.google.com");
+  url::Origin origin_to_preconnect1 =
+      url::Origin::Create(GURL("http://cdn.google.com"));
   GURL main_frame_url2("http://facebook.com");
   net::NetworkIsolationKey network_isolation_key2 =
       CreateNetworkIsolationKey(main_frame_url2);
-  GURL url_to_preconnect2("http://cdn.facebook.com");
+  url::Origin origin_to_preconnect2 =
+      url::Origin::Create(GURL("http://cdn.facebook.com"));
 
   EXPECT_CALL(*mock_network_context_,
-              ResolveHostProxy(url_to_preconnect1.host()));
+              ResolveHostProxy(origin_to_preconnect1.host()));
   EXPECT_CALL(*mock_network_context_,
-              ResolveHostProxy(url_to_preconnect2.host()));
+              ResolveHostProxy(origin_to_preconnect2.host()));
   preconnect_manager_->Start(
       main_frame_url1,
-      {PreconnectRequest(url_to_preconnect1, 1, network_isolation_key1)});
+      {PreconnectRequest(origin_to_preconnect1, 1, network_isolation_key1)});
   preconnect_manager_->Start(
       main_frame_url2,
-      {PreconnectRequest(url_to_preconnect2, 1, network_isolation_key2)});
+      {PreconnectRequest(origin_to_preconnect2, 1, network_isolation_key2)});
   // Check that the first url didn't block the second one.
   Mock::VerifyAndClearExpectations(preconnect_manager_.get());
 
@@ -604,13 +621,15 @@ TEST_F(PreconnectManagerTest, TestTwoConcurrentMainFrameUrls) {
   // Stopping the second url shouldn't stop the first one.
   EXPECT_CALL(
       *mock_network_context_,
-      PreconnectSockets(1, url_to_preconnect1, true /* allow credentials */,
-                        network_isolation_key1));
+      PreconnectSockets(1, origin_to_preconnect1.GetURL(),
+                        true /* allow credentials */, network_isolation_key1));
   EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url1));
-  mock_network_context_->CompleteHostLookup(url_to_preconnect1.host(), net::OK);
+  mock_network_context_->CompleteHostLookup(origin_to_preconnect1.host(),
+                                            net::OK);
   // No preconnect for the second url.
   EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url2));
-  mock_network_context_->CompleteHostLookup(url_to_preconnect2.host(), net::OK);
+  mock_network_context_->CompleteHostLookup(origin_to_preconnect2.host(),
+                                            net::OK);
 }
 
 // Checks that the PreconnectManager handles no more than one URL per host
@@ -619,29 +638,32 @@ TEST_F(PreconnectManagerTest, TestTwoConcurrentSameHostMainFrameUrls) {
   GURL main_frame_url1("http://google.com/search?query=cats");
   net::NetworkIsolationKey network_isolation_key1 =
       CreateNetworkIsolationKey(main_frame_url1);
-  GURL url_to_preconnect1("http://cats.google.com");
+  url::Origin origin_to_preconnect1 =
+      url::Origin::Create(GURL("http://cats.google.com"));
   GURL main_frame_url2("http://google.com/search?query=dogs");
   net::NetworkIsolationKey network_isolation_key2 =
       CreateNetworkIsolationKey(main_frame_url2);
-  GURL url_to_preconnect2("http://dogs.google.com");
+  url::Origin origin_to_preconnect2 =
+      url::Origin::Create(GURL("http://dogs.google.com"));
 
   EXPECT_CALL(*mock_network_context_,
-              ResolveHostProxy(url_to_preconnect1.host()));
+              ResolveHostProxy(origin_to_preconnect1.host()));
   preconnect_manager_->Start(
       main_frame_url1,
-      {PreconnectRequest(url_to_preconnect1, 1, network_isolation_key1)});
+      {PreconnectRequest(origin_to_preconnect1, 1, network_isolation_key1)});
   // This suggestion should be dropped because the PreconnectManager already has
   // a job for the "google.com" host.
   preconnect_manager_->Start(
       main_frame_url2,
-      {PreconnectRequest(url_to_preconnect2, 1, network_isolation_key2)});
+      {PreconnectRequest(origin_to_preconnect2, 1, network_isolation_key2)});
 
   EXPECT_CALL(
       *mock_network_context_,
-      PreconnectSockets(1, url_to_preconnect1, true /* allow credentials */,
-                        network_isolation_key1));
+      PreconnectSockets(1, origin_to_preconnect1.GetURL(),
+                        true /* allow credentials */, network_isolation_key1));
   EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url1));
-  mock_network_context_->CompleteHostLookup(url_to_preconnect1.host(), net::OK);
+  mock_network_context_->CompleteHostLookup(origin_to_preconnect1.host(),
+                                            net::OK);
 }
 
 TEST_F(PreconnectManagerTest, TestStartPreresolveHost) {
@@ -717,15 +739,16 @@ TEST_F(PreconnectManagerTest, TestDetachedRequestHasHigherPriority) {
   std::vector<PreconnectRequest> requests;
   // Create enough asynchronous jobs to leave the last one in the queue.
   for (size_t i = 0; i < count; ++i) {
-    requests.emplace_back(
-        GURL(base::StringPrintf("http://cdn%" PRIuS ".google.com", i)), 0,
-        network_isolation_key);
+    std::string url = base::StringPrintf("http://cdn%" PRIuS ".google.com", i);
+    requests.emplace_back(url::Origin::Create(GURL(url)), 0,
+                          network_isolation_key);
     EXPECT_CALL(*mock_network_context_,
                 ResolveHostProxy(requests.back().origin.host()));
   }
   // This url will wait in the queue.
-  GURL queued_url("http://fonts.google.com");
-  requests.emplace_back(queued_url, 0, network_isolation_key);
+  url::Origin queued_origin =
+      url::Origin::Create(GURL("http://fonts.google.com"));
+  requests.emplace_back(queued_origin, 0, network_isolation_key);
   preconnect_manager_->Start(main_frame_url, requests);
 
   // This url should come to the front of the queue.
@@ -738,10 +761,10 @@ TEST_F(PreconnectManagerTest, TestDetachedRequestHasHigherPriority) {
   mock_network_context_->CompleteHostLookup(requests[0].origin.host(), net::OK);
 
   Mock::VerifyAndClearExpectations(preconnect_manager_.get());
-  EXPECT_CALL(*mock_network_context_, ResolveHostProxy(queued_url.host()));
+  EXPECT_CALL(*mock_network_context_, ResolveHostProxy(queued_origin.host()));
   mock_network_context_->CompleteHostLookup(detached_preresolve.host(),
                                             net::OK);
-  mock_network_context_->CompleteHostLookup(queued_url.host(), net::OK);
+  mock_network_context_->CompleteHostLookup(queued_origin.host(), net::OK);
 
   EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url));
   for (size_t i = 1; i < count; ++i)
@@ -754,18 +777,19 @@ TEST_F(PreconnectManagerTest, TestSuccessfulProxyLookup) {
   GURL main_frame_url("http://google.com");
   net::NetworkIsolationKey network_isolation_key =
       CreateNetworkIsolationKey(main_frame_url);
-  GURL url_to_preconnect("http://cdn.google.com");
+  url::Origin origin_to_preconnect =
+      url::Origin::Create(GURL("http://cdn.google.com"));
 
   preconnect_manager_->Start(
       main_frame_url,
-      {PreconnectRequest(url_to_preconnect, 1, network_isolation_key)});
+      {PreconnectRequest(origin_to_preconnect, 1, network_isolation_key)});
 
   EXPECT_CALL(
       *mock_network_context_,
-      PreconnectSockets(1, url_to_preconnect, true /* allow credentials */,
-                        network_isolation_key));
+      PreconnectSockets(1, origin_to_preconnect.GetURL(),
+                        true /* allow credentials */, network_isolation_key));
   EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url));
-  mock_network_context_->CompleteProxyLookup(url_to_preconnect,
+  mock_network_context_->CompleteProxyLookup(origin_to_preconnect.GetURL(),
                                              GetIndirectProxyInfo());
 }
 
@@ -774,35 +798,40 @@ TEST_F(PreconnectManagerTest, TestSuccessfulHostLookupAfterProxyLookupFailure) {
   GURL main_frame_url("http://google.com");
   net::NetworkIsolationKey network_isolation_key =
       CreateNetworkIsolationKey(main_frame_url);
-  GURL url_to_preconnect("http://cdn.google.com");
-  GURL url_to_preconnect2("http://ads.google.com");
+  url::Origin origin_to_preconnect =
+      url::Origin::Create(GURL("http://cdn.google.com"));
+  url::Origin origin_to_preconnect2 =
+      url::Origin::Create(GURL("http://ads.google.com"));
 
   preconnect_manager_->Start(
       main_frame_url,
-      {PreconnectRequest(url_to_preconnect, 1, network_isolation_key),
-       PreconnectRequest(url_to_preconnect2, 1, network_isolation_key)});
+      {PreconnectRequest(origin_to_preconnect, 1, network_isolation_key),
+       PreconnectRequest(origin_to_preconnect2, 1, network_isolation_key)});
   EXPECT_CALL(*mock_network_context_,
-              ResolveHostProxy(url_to_preconnect.host()));
+              ResolveHostProxy(origin_to_preconnect.host()));
   EXPECT_CALL(*mock_network_context_,
-              ResolveHostProxy(url_to_preconnect2.host()));
+              ResolveHostProxy(origin_to_preconnect2.host()));
   // First URL uses direct connection.
-  mock_network_context_->CompleteProxyLookup(url_to_preconnect,
+  mock_network_context_->CompleteProxyLookup(origin_to_preconnect.GetURL(),
                                              GetDirectProxyInfo());
   // Second URL proxy lookup failed.
-  mock_network_context_->CompleteProxyLookup(url_to_preconnect2, base::nullopt);
+  mock_network_context_->CompleteProxyLookup(origin_to_preconnect2.GetURL(),
+                                             base::nullopt);
   Mock::VerifyAndClearExpectations(mock_network_context_.get());
 
   EXPECT_CALL(
       *mock_network_context_,
-      PreconnectSockets(1, url_to_preconnect, true /* allow credentials */,
-                        network_isolation_key));
+      PreconnectSockets(1, origin_to_preconnect.GetURL(),
+                        true /* allow credentials */, network_isolation_key));
   EXPECT_CALL(
       *mock_network_context_,
-      PreconnectSockets(1, url_to_preconnect2, true /* allow credentials */,
-                        network_isolation_key));
+      PreconnectSockets(1, origin_to_preconnect2.GetURL(),
+                        true /* allow credentials */, network_isolation_key));
   EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url));
-  mock_network_context_->CompleteHostLookup(url_to_preconnect.host(), net::OK);
-  mock_network_context_->CompleteHostLookup(url_to_preconnect2.host(), net::OK);
+  mock_network_context_->CompleteHostLookup(origin_to_preconnect.host(),
+                                            net::OK);
+  mock_network_context_->CompleteHostLookup(origin_to_preconnect2.host(),
+                                            net::OK);
 }
 
 TEST_F(PreconnectManagerTest, TestBothProxyAndHostLookupFailed) {
@@ -810,19 +839,21 @@ TEST_F(PreconnectManagerTest, TestBothProxyAndHostLookupFailed) {
   GURL main_frame_url("http://google.com");
   net::NetworkIsolationKey network_isolation_key =
       CreateNetworkIsolationKey(main_frame_url);
-  GURL url_to_preconnect("http://cdn.google.com");
+  url::Origin origin_to_preconnect =
+      url::Origin::Create(GURL("http://cdn.google.com"));
 
   preconnect_manager_->Start(
       main_frame_url,
-      {PreconnectRequest(url_to_preconnect, 1, network_isolation_key)});
+      {PreconnectRequest(origin_to_preconnect, 1, network_isolation_key)});
 
   EXPECT_CALL(*mock_network_context_,
-              ResolveHostProxy(url_to_preconnect.host()));
-  mock_network_context_->CompleteProxyLookup(url_to_preconnect, base::nullopt);
+              ResolveHostProxy(origin_to_preconnect.host()));
+  mock_network_context_->CompleteProxyLookup(origin_to_preconnect.GetURL(),
+                                             base::nullopt);
   Mock::VerifyAndClearExpectations(mock_network_context_.get());
 
   EXPECT_CALL(*mock_delegate_, PreconnectFinishedProxy(main_frame_url));
-  mock_network_context_->CompleteHostLookup(url_to_preconnect.host(),
+  mock_network_context_->CompleteHostLookup(origin_to_preconnect.host(),
                                             net::ERR_FAILED);
 }
 

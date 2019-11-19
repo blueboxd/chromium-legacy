@@ -196,9 +196,10 @@ TEST_F(SimpleGeolocationTest, ResponseOK) {
   url_factory.SetSimpleGeolocationProvider(&provider);
 
   GeolocationReceiver receiver;
-  provider.RequestGeolocation(base::TimeDelta::FromSeconds(1), false, false,
-                              base::Bind(&GeolocationReceiver::OnRequestDone,
-                                         base::Unretained(&receiver)));
+  provider.RequestGeolocation(
+      base::TimeDelta::FromSeconds(1), false, false,
+      base::BindOnce(&GeolocationReceiver::OnRequestDone,
+                     base::Unretained(&receiver)));
   receiver.WaitUntilRequestDone();
 
   EXPECT_EQ(kExpectedPosition, receiver.position().ToString());
@@ -218,9 +219,10 @@ TEST_F(SimpleGeolocationTest, ResponseOKWithRetries) {
   url_factory.SetSimpleGeolocationProvider(&provider);
 
   GeolocationReceiver receiver;
-  provider.RequestGeolocation(base::TimeDelta::FromSeconds(1), false, false,
-                              base::Bind(&GeolocationReceiver::OnRequestDone,
-                                         base::Unretained(&receiver)));
+  provider.RequestGeolocation(
+      base::TimeDelta::FromSeconds(1), false, false,
+      base::BindOnce(&GeolocationReceiver::OnRequestDone,
+                     base::Unretained(&receiver)));
   receiver.WaitUntilRequestDone();
   EXPECT_EQ(kExpectedPosition, receiver.position().ToString());
   EXPECT_FALSE(receiver.server_error());
@@ -244,10 +246,10 @@ TEST_F(SimpleGeolocationTest, InvalidResponse) {
       timeout_seconds * 1000 / kRequestRetryIntervalMilliSeconds);
   ASSERT_GE(expected_retries, 2U);
 
-  provider.RequestGeolocation(base::TimeDelta::FromSeconds(timeout_seconds),
-                              false, false,
-                              base::Bind(&GeolocationReceiver::OnRequestDone,
-                                         base::Unretained(&receiver)));
+  provider.RequestGeolocation(
+      base::TimeDelta::FromSeconds(timeout_seconds), false, false,
+      base::BindOnce(&GeolocationReceiver::OnRequestDone,
+                     base::Unretained(&receiver)));
   receiver.WaitUntilRequestDone();
 
   EXPECT_EQ(
@@ -289,9 +291,10 @@ TEST_F(SimpleGeolocationTest, NoWiFi) {
   url_factory.SetSimpleGeolocationProvider(&provider);
 
   GeolocationReceiver receiver;
-  provider.RequestGeolocation(base::TimeDelta::FromSeconds(1), true, false,
-                              base::Bind(&GeolocationReceiver::OnRequestDone,
-                                         base::Unretained(&receiver)));
+  provider.RequestGeolocation(
+      base::TimeDelta::FromSeconds(1), true, false,
+      base::BindOnce(&GeolocationReceiver::OnRequestDone,
+                     base::Unretained(&receiver)));
   receiver.WaitUntilRequestDone();
   EXPECT_EQ(kIPOnlyRequestBody, requests_monitor.last_request_body());
 
@@ -397,10 +400,10 @@ TEST_P(SimpleGeolocationWirelessTest, WiFiExists) {
   provider.set_geolocation_handler(geolocation_handler_.get());
   {
     GeolocationReceiver receiver;
-    provider.RequestGeolocation(base::TimeDelta::FromSeconds(1), GetParam(),
-                                false,
-                                base::Bind(&GeolocationReceiver::OnRequestDone,
-                                           base::Unretained(&receiver)));
+    provider.RequestGeolocation(
+        base::TimeDelta::FromSeconds(1), GetParam(), false,
+        base::BindOnce(&GeolocationReceiver::OnRequestDone,
+                       base::Unretained(&receiver)));
     receiver.WaitUntilRequestDone();
     EXPECT_EQ(kIPOnlyRequestBody, requests_monitor.last_request_body());
 
@@ -424,10 +427,10 @@ TEST_P(SimpleGeolocationWirelessTest, WiFiExists) {
 
   {
     GeolocationReceiver receiver;
-    provider.RequestGeolocation(base::TimeDelta::FromSeconds(1), GetParam(),
-                                false,
-                                base::Bind(&GeolocationReceiver::OnRequestDone,
-                                           base::Unretained(&receiver)));
+    provider.RequestGeolocation(
+        base::TimeDelta::FromSeconds(1), GetParam(), false,
+        base::BindOnce(&GeolocationReceiver::OnRequestDone,
+                       base::Unretained(&receiver)));
     receiver.WaitUntilRequestDone();
     if (GetParam()) {
       // Sending WiFi data is enabled.
@@ -467,10 +470,10 @@ TEST_P(SimpleGeolocationWirelessTest, CellularExists) {
   provider.set_geolocation_handler(geolocation_handler_.get());
   {
     GeolocationReceiver receiver;
-    provider.RequestGeolocation(base::TimeDelta::FromSeconds(1), false,
-                                GetParam(),
-                                base::Bind(&GeolocationReceiver::OnRequestDone,
-                                           base::Unretained(&receiver)));
+    provider.RequestGeolocation(
+        base::TimeDelta::FromSeconds(1), false, GetParam(),
+        base::BindOnce(&GeolocationReceiver::OnRequestDone,
+                       base::Unretained(&receiver)));
     receiver.WaitUntilRequestDone();
     EXPECT_EQ(kIPOnlyRequestBody, requests_monitor.last_request_body());
 
@@ -492,10 +495,10 @@ TEST_P(SimpleGeolocationWirelessTest, CellularExists) {
 
   {
     GeolocationReceiver receiver;
-    provider.RequestGeolocation(base::TimeDelta::FromSeconds(1), false,
-                                GetParam(),
-                                base::Bind(&GeolocationReceiver::OnRequestDone,
-                                           base::Unretained(&receiver)));
+    provider.RequestGeolocation(
+        base::TimeDelta::FromSeconds(1), false, GetParam(),
+        base::BindOnce(&GeolocationReceiver::OnRequestDone,
+                       base::Unretained(&receiver)));
     receiver.WaitUntilRequestDone();
     if (GetParam()) {
       // Sending Cellular data is enabled.

@@ -7482,6 +7482,11 @@
         "test": "net_junit_tests"
       },
       {
+        "name": "paint_preview_junit_tests",
+        "swarming": {},
+        "test": "paint_preview_junit_tests"
+      },
+      {
         "name": "service_junit_tests",
         "swarming": {},
         "test": "service_junit_tests"

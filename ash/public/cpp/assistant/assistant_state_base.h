@@ -9,6 +9,8 @@
 
 #include "ash/public/mojom/assistant_state_controller.mojom.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "base/optional.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 

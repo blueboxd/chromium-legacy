@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
@@ -24,9 +25,10 @@ namespace autofill {
 class AutofillKeyboardAccessoryAdapter : public AutofillPopupView,
                                          public AutofillPopupController {
  public:
-  AutofillKeyboardAccessoryAdapter(AutofillPopupController* controller,
-                                   unsigned int animation_duration_millis,
-                                   bool should_limit_label_width);
+  AutofillKeyboardAccessoryAdapter(
+      base::WeakPtr<AutofillPopupController> controller,
+      unsigned int animation_duration_millis,
+      bool should_limit_label_width);
   ~AutofillKeyboardAccessoryAdapter() override;
 
   // Interface describing the minimal capabilities for the native view.
@@ -98,7 +100,7 @@ class AutofillKeyboardAccessoryAdapter : public AutofillPopupView,
   // |element_index| is the position of an element as returned by |controller_|.
   int OffsetIndexFor(int element_index) const;
 
-  AutofillPopupController* controller_;  // weak.
+  base::WeakPtr<AutofillPopupController> controller_;
   std::unique_ptr<AutofillKeyboardAccessoryAdapter::AccessoryView> view_;
 
   // The labels to be used for the input chips.

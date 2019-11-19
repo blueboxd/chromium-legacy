@@ -14,9 +14,12 @@
 #include "net/proxy_resolution/proxy_resolver_factory.h"
 
 namespace net {
-
 class NetLogWithSource;
 class NetworkIsolationKey;
+}  // namespace net
+
+namespace proxy_resolver {
+
 class ProxyHostResolver;
 
 // ProxyResolverV8Tracing is a non-blocking proxy resolver.
@@ -42,7 +45,7 @@ class ProxyResolverV8Tracing {
 
     // Returns a NetLogWithSource to be passed to the HostResolver returned by
     // GetHostResolver().
-    virtual NetLogWithSource GetNetLogWithSource() = 0;
+    virtual net::NetLogWithSource GetNetLogWithSource() = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Bindings);
@@ -55,12 +58,13 @@ class ProxyResolverV8Tracing {
   // result code is OK then the request was successful and |results| contains
   // the proxy resolution information.  Request can be cancelled by resetting
   // |*request|.
-  virtual void GetProxyForURL(const GURL& url,
-                              const NetworkIsolationKey& network_isolation_key,
-                              ProxyInfo* results,
-                              CompletionOnceCallback callback,
-                              std::unique_ptr<ProxyResolver::Request>* request,
-                              std::unique_ptr<Bindings> bindings) = 0;
+  virtual void GetProxyForURL(
+      const GURL& url,
+      const net::NetworkIsolationKey& network_isolation_key,
+      net::ProxyInfo* results,
+      net::CompletionOnceCallback callback,
+      std::unique_ptr<net::ProxyResolver::Request>* request,
+      std::unique_ptr<Bindings> bindings) = 0;
 };
 
 // A factory for ProxyResolverV8Tracing instances. The default implementation,
@@ -74,11 +78,11 @@ class ProxyResolverV8TracingFactory {
   virtual ~ProxyResolverV8TracingFactory() = default;
 
   virtual void CreateProxyResolverV8Tracing(
-      const scoped_refptr<PacFileData>& pac_script,
+      const scoped_refptr<net::PacFileData>& pac_script,
       std::unique_ptr<ProxyResolverV8Tracing::Bindings> bindings,
       std::unique_ptr<ProxyResolverV8Tracing>* resolver,
-      CompletionOnceCallback callback,
-      std::unique_ptr<ProxyResolverFactory::Request>* request) = 0;
+      net::CompletionOnceCallback callback,
+      std::unique_ptr<net::ProxyResolverFactory::Request>* request) = 0;
 
   static std::unique_ptr<ProxyResolverV8TracingFactory> Create();
 
@@ -86,6 +90,6 @@ class ProxyResolverV8TracingFactory {
   DISALLOW_COPY_AND_ASSIGN(ProxyResolverV8TracingFactory);
 };
 
-}  // namespace net
+}  // namespace proxy_resolver
 
 #endif  // SERIVCES_PROXY_PROXY_RESOLVER_V8_TRACING_H_

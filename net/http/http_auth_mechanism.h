@@ -5,6 +5,9 @@
 #ifndef NET_HTTP_HTTP_AUTH_MECHANISM_H_
 #define NET_HTTP_HTTP_AUTH_MECHANISM_H_
 
+#include <memory>
+
+#include "base/callback_forward.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/http/http_auth.h"
@@ -13,6 +16,7 @@ namespace net {
 
 class AuthCredentials;
 class HttpAuthChallengeTokenizer;
+class HttpAuthPreferences;
 class NetLogWithSource;
 
 class NET_EXPORT_PRIVATE HttpAuthMechanism {
@@ -66,6 +70,11 @@ class NET_EXPORT_PRIVATE HttpAuthMechanism {
   // from a Kerberized MSSQL server.
   virtual void SetDelegation(HttpAuth::DelegationType delegation_type) = 0;
 };
+
+// Factory is just a callback that returns a unique_ptr.
+using HttpAuthMechanismFactory =
+    base::RepeatingCallback<std::unique_ptr<HttpAuthMechanism>(
+        const HttpAuthPreferences*)>;
 
 }  // namespace net
 

@@ -694,7 +694,7 @@ void DevToolsHttpHandler::OnFrontendResourceRequest(
   Send404(connection_id);
 #else
   Send200(connection_id,
-          content::DevToolsFrontendHost::GetFrontendResource(path).as_string(),
+          content::DevToolsFrontendHost::GetFrontendResource(path),
           GetMimeType(path));
 #endif
 }

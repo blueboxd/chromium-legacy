@@ -33,6 +33,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/google/core/common/google_util.h"
+#include "components/password_manager/core/browser/compromised_credentials_table.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -230,9 +231,7 @@ ChromePasswordProtectionService::ChromePasswordProtectionService(
 
 #if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
   scoped_refptr<password_manager::PasswordStore> password_store =
-      PasswordStoreFactory::GetForProfile(profile_,
-                                          ServiceAccessType::EXPLICIT_ACCESS)
-          .get();
+      GetProfilePasswordStore();
   // Password store can be null in tests.
   if (password_store) {
     // Subscribe to gaia hash password changes change notifications.
@@ -1131,17 +1130,14 @@ void ChromePasswordProtectionService::OnWarningTriggerChanged() {
 
   // Clears captured enterprise password hashes or GSuite sync password hashes.
   scoped_refptr<password_manager::PasswordStore> password_store =
-      PasswordStoreFactory::GetForProfile(profile_,
-                                          ServiceAccessType::EXPLICIT_ACCESS);
+      GetProfilePasswordStore();
 
   password_store->ClearAllNonGmailPasswordHash();
   password_store->ClearAllEnterprisePasswordHash();
 }
 
 void ChromePasswordProtectionService::OnEnterprisePasswordUrlChanged() {
-  PasswordStoreFactory::GetForProfile(profile_,
-                                      ServiceAccessType::EXPLICIT_ACCESS)
-      ->ScheduleEnterprisePasswordURLUpdate();
+  GetProfilePasswordStore()->ScheduleEnterprisePasswordURLUpdate();
 }
 
 bool ChromePasswordProtectionService::CanShowInterstitial(
@@ -1541,6 +1537,35 @@ bool ChromePasswordProtectionService::IsURLWhitelistedForPasswordEntry(
   }
 
   return false;
+}
+
+void ChromePasswordProtectionService::PersistPhishedSavedPasswordCredential(
+    const std::string& username,
+    const std::vector<std::string>& matching_domains) {
+  if (!profile_)
+    return;
+  scoped_refptr<password_manager::PasswordStore> password_store =
+      GetProfilePasswordStore();
+
+  // Password store can be null in tests.
+  if (!password_store) {
+    return;
+  }
+  for (const std::string& domain : matching_domains) {
+    password_store->AddCompromisedCredentials(
+        password_manager::CompromisedCredentials(
+            GURL(domain), base::ASCIIToUTF16(username), base::Time::Now(),
+            password_manager::CompromiseType::kPhished));
+  }
+}
+
+password_manager::PasswordStore*
+ChromePasswordProtectionService::GetProfilePasswordStore() const {
+  // Always use EXPLICIT_ACCESS as the password manager checks IsIncognito
+  // itself when it shouldn't access the PasswordStore.
+  return PasswordStoreFactory::GetForProfile(profile_,
+                                             ServiceAccessType::EXPLICIT_ACCESS)
+      .get();
 }
 
 void ChromePasswordProtectionService::SanitizeReferrerChain(

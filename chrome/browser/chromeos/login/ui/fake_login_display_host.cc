@@ -139,4 +139,6 @@ void FakeLoginDisplayHost::HandleDisplayCaptivePortal() {}
 
 void FakeLoginDisplayHost::UpdateAddUserButtonStatus() {}
 
+void FakeLoginDisplayHost::RequestSystemInfoUpdate() {}
+
 }  // namespace chromeos

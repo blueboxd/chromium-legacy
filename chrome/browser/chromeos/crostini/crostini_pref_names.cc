@@ -9,6 +9,7 @@
 
 #include "base/values.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 
 namespace crostini {
@@ -23,6 +24,8 @@ const char kCrostiniRegistry[] = "crostini.registry";
 // enabled state for use with Crostini.
 const char kCrostiniSharedUsbDevices[] = "crostini.shared_usb_devices";
 const char kCrostiniContainers[] = "crostini.containers";
+// Dictionary of terminal UI settings such as font style, colors, etc.
+const char kCrostiniTerminalSettings[] = "crostini.terminal_settings";
 const char kVmKey[] = "vm_name";
 const char kContainerKey[] = "container_name";
 
@@ -100,6 +103,9 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kUserCrostiniRootAccessAllowedByPolicy, true);
   registry->RegisterFilePathPref(kCrostiniAnsiblePlaybookFilePath,
                                  base::FilePath());
+  registry->RegisterDictionaryPref(
+      kCrostiniTerminalSettings, base::DictionaryValue(),
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
 }  // namespace prefs

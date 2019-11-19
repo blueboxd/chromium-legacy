@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_PROTOCOL_ENCODING_H_
 
 #include <memory>
-#include "third_party/inspector_protocol/crdtp/encoding.h"
+#include "third_party/inspector_protocol/crdtp/json.h"
 
 // Convenience adaptations of the conversion functions
 // crdtp::json::ConvertCBORToJSON crdtp::json::ConvertJDONToCBOR.

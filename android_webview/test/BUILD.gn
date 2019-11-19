@@ -190,6 +190,7 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
     "//services/device/public/java:geolocation_java_test_support",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/hamcrest:hamcrest_java",
     "//third_party/junit",
     "//third_party/metrics_proto:metrics_proto_java",
     "//ui/android:ui_java",
@@ -452,6 +453,7 @@ junit_binary("android_webview_junit_tests") {
     "../junit/src/org/chromium/android_webview/robolectric/FindAddressTest.java",
     "../junit/src/org/chromium/android_webview/robolectric/AwScrollOffsetManagerTest.java",
     "../junit/src/org/chromium/android_webview/robolectric/common/services/ServiceNamesTest.java",
+    "../junit/src/org/chromium/android_webview/robolectric/services/AwVariationsSeedFetcherTest.java",
   ]
 
   deps = [

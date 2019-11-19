@@ -26,6 +26,7 @@ enum AssistantViewID {
   // Main stage and its components.
   kMainStage,
   kFooterView,
+  kGreetingLabel,
   kOptInView,
   kProgressIndicator,
   kQueryView,

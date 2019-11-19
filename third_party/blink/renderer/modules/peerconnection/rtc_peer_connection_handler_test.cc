@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/modules/mediastream/mock_media_stream_video_source.h"
 #include "third_party/blink/renderer/modules/mediastream/processed_local_audio_source.h"
 #include "third_party/blink/renderer/modules/mediastream/testing_platform_support_with_mock_audio_capture_source.h"
+#include "third_party/blink/renderer/modules/peerconnection/adapters/web_rtc_cross_thread_copier.h"
 #include "third_party/blink/renderer/modules/peerconnection/mock_data_channel_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/mock_peer_connection_dependency_factory.h"
 #include "third_party/blink/renderer/modules/peerconnection/mock_peer_connection_impl.h"
@@ -52,6 +53,8 @@
 #include "third_party/blink/renderer/platform/peerconnection/rtc_dtmf_sender_handler.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/api/rtp_receiver_interface.h"
 #include "third_party/webrtc/stats/test/rtc_test_stats.h"
@@ -472,9 +475,10 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     std::vector<rtc::scoped_refptr<webrtc::MediaStreamInterface>>
         receiver_streams;
     receiver_streams.push_back(remote_stream);
-    InvokeOnSignalingThread(base::Bind(
-        &webrtc::PeerConnectionObserver::OnAddTrack,
-        base::Unretained(pc_handler_->observer()), receiver, receiver_streams));
+    InvokeOnSignalingThread(
+        CrossThreadBindOnce(&webrtc::PeerConnectionObserver::OnAddTrack,
+                            CrossThreadUnretained(pc_handler_->observer()),
+                            receiver, receiver_streams));
   }
 
   void InvokeOnRemoveStream(
@@ -492,31 +496,33 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
           remote_track) {
     rtc::scoped_refptr<webrtc::RtpReceiverInterface> receiver =
         receivers_by_track_.find(remote_track.get())->second;
-    InvokeOnSignalingThread(
-        base::Bind(&webrtc::PeerConnectionObserver::OnRemoveTrack,
-                   base::Unretained(pc_handler_->observer()), receiver));
+    InvokeOnSignalingThread(CrossThreadBindOnce(
+        &webrtc::PeerConnectionObserver::OnRemoveTrack,
+        CrossThreadUnretained(pc_handler_->observer()), receiver));
   }
 
   template <typename T>
   void InvokeAddTrack(
       const rtc::scoped_refptr<webrtc::MediaStreamInterface>& remote_stream,
       T* webrtc_track) {
-    InvokeOnSignalingThread(base::Bind(
+    InvokeOnSignalingThread(CrossThreadBindOnce(
         [](webrtc::MediaStreamInterface* remote_stream, T* webrtc_track) {
           EXPECT_TRUE(remote_stream->AddTrack(webrtc_track));
         },
-        base::Unretained(remote_stream.get()), base::Unretained(webrtc_track)));
+        CrossThreadUnretained(remote_stream.get()),
+        CrossThreadUnretained(webrtc_track)));
   }
 
   template <typename T>
   void InvokeRemoveTrack(
       const rtc::scoped_refptr<webrtc::MediaStreamInterface>& remote_stream,
       T* webrtc_track) {
-    InvokeOnSignalingThread(base::Bind(
+    InvokeOnSignalingThread(CrossThreadBindOnce(
         [](webrtc::MediaStreamInterface* remote_stream, T* webrtc_track) {
           EXPECT_TRUE(remote_stream->RemoveTrack(webrtc_track));
         },
-        base::Unretained(remote_stream.get()), base::Unretained(webrtc_track)));
+        CrossThreadUnretained(remote_stream.get()),
+        CrossThreadUnretained(webrtc_track)));
   }
 
   bool HasReceiverForEveryTrack(
@@ -543,10 +549,9 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     return false;
   }
 
-  template <typename T>
-  void InvokeOnSignalingThread(T callback) {
+  void InvokeOnSignalingThread(WTF::CrossThreadOnceFunction<void()> callback) {
     mock_dependency_factory_->GetWebRtcSignalingTaskRunner()->PostTask(
-        FROM_HERE, std::move(callback));
+        FROM_HERE, ConvertToBaseOnceCallback(std::move(callback)));
     RunMessageLoopsUntilIdle();
   }
 

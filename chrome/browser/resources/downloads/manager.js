@@ -2,9 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('downloads', function() {
-  const Manager = Polymer({
+import './strings.m.js';
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {BrowserProxy} from './browser_proxy.js';
+import {States} from './constants.js';
+import './item.js';
+import {SearchService} from './search_service.js';
+import './toolbar.js';
+import 'chrome://resources/cr_components/managed_footnote/managed_footnote.m.js';
+import 'chrome://resources/cr_elements/cr_page_host_style_css.m.js';
+import {getInstance as getToastManagerInstance} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
+import 'chrome://resources/cr_elements/hidden_style_css.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import {FindShortcutBehavior} from 'chrome://resources/js/find_shortcut_behavior.m.js';
+import {queryRequiredElement} from 'chrome://resources/js/util.m.js';
+import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
+import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+
+  Polymer({
     is: 'downloads-manager',
+
+    _template: html`{__html_template__}`,
 
     behaviors: [
       FindShortcutBehavior,
@@ -66,7 +88,7 @@ cr.define('downloads', function() {
     /** @private {downloads.mojom.PageHandlerInterface} */
     mojoHandler_: null,
 
-    /** @private {?downloads.SearchService} */
+    /** @private {?SearchService} */
     searchService_: null,
 
     /** @private {!PromiseResolver} */
@@ -80,10 +102,10 @@ cr.define('downloads', function() {
 
     /** @override */
     created: function() {
-      const browserProxy = downloads.BrowserProxy.getInstance();
+      const browserProxy = BrowserProxy.getInstance();
       this.mojoEventTarget_ = browserProxy.callbackRouter;
       this.mojoHandler_ = browserProxy.handler;
-      this.searchService_ = downloads.SearchService.getInstance();
+      this.searchService_ = SearchService.getInstance();
 
       // Regular expression that captures the leading slash, the content and the
       // trailing slash in three different groups.
@@ -176,12 +198,12 @@ cr.define('downloads', function() {
       this.$.toolbar.hasClearableDownloads =
           loadTimeData.getBoolean('allowDeletingHistory') &&
           this.items_.some(
-              ({state}) => state != downloads.States.DANGEROUS &&
-                  state != downloads.States.IN_PROGRESS &&
-                  state != downloads.States.PAUSED);
+              ({state}) => state != States.DANGEROUS &&
+                  state != States.IN_PROGRESS &&
+                  state != States.PAUSED);
 
       if (this.inSearchMode_) {
-        Polymer.IronA11yAnnouncer.requestAvailability();
+        IronA11yAnnouncer.requestAvailability();
         this.fire('iron-announce', {
           text: this.items_.length == 0 ?
               this.noDownloadsText_() :
@@ -241,7 +263,7 @@ cr.define('downloads', function() {
       }
 
       this.mojoHandler_.clearAll();
-      cr.toastManager.getInstance().show(
+      getToastManagerInstance().show(
           loadTimeData.getString('toastClearedAll'), true);
     },
 
@@ -251,7 +273,7 @@ cr.define('downloads', function() {
         return;
       }
 
-      cr.toastManager.getInstance().hide();
+      getToastManagerInstance().hide();
       this.mojoHandler_.undo();
     },
 
@@ -291,7 +313,7 @@ cr.define('downloads', function() {
 
     /** @private */
     onUndoClick_: function() {
-      cr.toastManager.getInstance().hide();
+      getToastManagerInstance().hide();
       this.mojoHandler_.undo();
     },
 
@@ -344,6 +366,3 @@ cr.define('downloads', function() {
       return this.$.toolbar.isSearchFocused();
     },
   });
-
-  return {Manager: Manager};
-});

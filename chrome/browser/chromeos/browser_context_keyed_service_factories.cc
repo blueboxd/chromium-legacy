@@ -29,6 +29,7 @@
 #include "chrome/browser/chromeos/smb_client/smb_service_factory.h"
 #include "chrome/browser/chromeos/tether/tether_service_factory.h"
 #include "chrome/browser/extensions/api/platform_keys/verify_trust_api.h"
+#include "chrome/browser/extensions/api/terminal/terminal_private_api.h"
 #include "extensions/browser/api/clipboard/clipboard_api.h"
 #include "extensions/browser/api/networking_config/networking_config_service_factory.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_private_api.h"
@@ -57,6 +58,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::SessionStateChangedEventDispatcher::GetFactoryInstance();
   extensions::PrintingAPIHandler::GetFactoryInstance();
   extensions::PrintJobFinishedEventDispatcher::GetFactoryInstance();
+  extensions::TerminalPrivateAPI::GetFactoryInstance();
   extensions::VerifyTrustAPI::GetFactoryInstance();
   extensions::VirtualKeyboardAPI::GetFactoryInstance();
   extensions::WebcamPrivateAPI::GetFactoryInstance();

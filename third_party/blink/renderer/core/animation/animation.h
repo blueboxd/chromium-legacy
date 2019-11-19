@@ -244,7 +244,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   void Trace(blink::Visitor*) override;
 
   bool CompositorPendingForTesting() const { return compositor_pending_; }
-  void CommitAllUpdatesForTesting();
+  void CommitAllUpdatesForTesting(double ready_time);
 
  protected:
   DispatchEventResult DispatchEventInternal(Event&) override;
@@ -272,7 +272,6 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   // active playback rate.
   double EffectivePlaybackRate() const;
   void ApplyPendingPlaybackRate();
-  void ResolvePendingPlaybackRate();
 
   // https://drafts.csswg.org/web-animations/#play-states
   // Per spec the viable states are: idle, running, paused and finished.
@@ -291,7 +290,6 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   double CalculateCurrentTime() const;
 
   void UnpauseInternal();
-  void SetPlaybackRateInternal(double);
   void SetStartTimeInternal(base::Optional<double>);
   void UpdateCurrentTimingState(TimingUpdateReason);
 
@@ -360,14 +358,10 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   // Web exposed play state, which does not have pending state.
   AnimationPlayState animation_play_state_;
   double playback_rate_;
-  // Playback rate that is currently in effect if differing from playback_rate_.
-  // When playback_rate_ is modified, the new rate takes effect on the next
-  // async tick. The currently active value is stored for use by the
-  // Animation.playbackRate method.
-  // TODO(crbug.com/960944): Switch to using pending_playback_rate_ once the
-  // web-animations implementation is more closely aligned with the spec (i.e.
-  // supports scheduling of pending tasks).
-  base::Optional<double> active_playback_rate_;
+  // The pending playback rate is not currently in effect. It typically takes
+  // effect when running a scheduled task in response to the animation being
+  // ready.
+  base::Optional<double> pending_playback_rate_;
   base::Optional<double> start_time_;
   base::Optional<double> hold_time_;
   base::Optional<double> previous_current_time_;
@@ -419,7 +413,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
     explicit CompositorState(Animation& animation)
         : start_time(animation.start_time_),
           hold_time(animation.hold_time_),
-          playback_rate(animation.playback_rate_),
+          playback_rate(animation.EffectivePlaybackRate()),
           effect_changed(false),
           pending_action(kStart) {}
     base::Optional<double> start_time;

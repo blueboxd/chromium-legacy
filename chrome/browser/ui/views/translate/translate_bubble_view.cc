@@ -56,6 +56,7 @@
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/combobox/combobox.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/styled_label.h"
@@ -924,35 +925,17 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewTab() {
   std::unique_ptr<views::MenuButton> tab_translate_options_button =
       std::make_unique<views::MenuButton>(
           base::string16(base::ASCIIToUTF16("")), this);
-
   tab_translate_options_button->SetImage(
       views::Button::STATE_NORMAL,
       gfx::CreateVectorIcon(*option_icon_id, 16, option_icon_color));
   tab_translate_options_button->set_ink_drop_base_color(gfx::kChromeIconGrey);
   tab_translate_options_button->SetInkDropMode(views::Button::InkDropMode::ON);
+  InstallCircleHighlightPathGenerator(tab_translate_options_button.get());
   tab_translate_options_button->SetID(BUTTON_ID_OPTIONS_MENU_TAB);
   tab_translate_options_button->SetFocusForPlatform();
   tab_translate_options_button->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_OPTIONS_MENU_BUTTON));
   tab_translate_options_button->set_request_focus_on_press(true);
-
-  // Close button
-  const SkColor close_icon_color = gfx::kChromeIconGrey;
-  const gfx::VectorIcon* close_icon_id = &vector_icons::kCloseRoundedIcon;
-  // Use CreateVectorImageButton automatically enables background ink drop
-  auto close_button = views::CreateVectorImageButton(this);
-  // Size 18 is set for |translate_menu_button| while 16 is set for
-  // |close_button| so that the ink down shadow for both buttons are the same.
-  // MenuButton's insets is smaller than ImageButton by 2. Height is
-  // unadjustable through AddColumn so setting column width will result in
-  // rectangular instead of square column shape.
-  close_button->SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(*close_icon_id, 18, close_icon_color));
-  close_button->set_ink_drop_base_color(gfx::kChromeIconGrey);
-  close_button->SetFocusForPlatform();
-  close_button->SetID(BUTTON_ID_CLOSE);
-  close_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_CLOSE));
 
   constexpr int kColumnSetId = 0;
   views::ColumnSet* cs = layout->AddColumnSet(kColumnSetId);
@@ -996,7 +979,7 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewTab() {
   }
   tabbed_pane_ = layout->AddView(std::move(tabbed_pane));
   layout->AddView(std::move(tab_translate_options_button));
-  layout->AddView(std::move(close_button));
+  layout->AddView(CreateCloseButton());
 
   // NOTE: Panes must be added after |tabbed_pane| has been added to its parent.
   tabbed_pane_->AddTab(original_language_name, CreateEmptyPane());
@@ -1027,23 +1010,6 @@ std::unique_ptr<views::View> TranslateBubbleView::GM2CreateView(
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
           language_icon_id);
   language_icon->SetImage(*language_icon_image);
-
-  // Close button
-  const SkColor close_icon_color = gfx::kChromeIconGrey;
-  const gfx::VectorIcon* close_icon_id = &vector_icons::kCloseRoundedIcon;
-  // Use CreateVectorImageButton automatically enables background ink drop
-  auto close_button = views::CreateVectorImageButton(this);
-  // Size 18 is set for |translate_menu_button| while 16 is set for
-  // |close_button| so that the ink down shadow for both buttons are the same.
-  // MenuButton's insets is smaller than ImageButton by 2. Height is
-  // unadjustable through AddColumn so setting column width will result in
-  // rectangular instead of square column shape.
-  close_button->SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(*close_icon_id, 16, close_icon_color));
-  close_button->set_ink_drop_base_color(gfx::kChromeIconGrey);
-  close_button->SetID(BUTTON_ID_CLOSE);
-  close_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_CLOSE));
 
   // Initialize a columnset
   views::ColumnSet* cs = layout->AddColumnSet(COLUMN_SET_ID_TITLE);
@@ -1098,7 +1064,7 @@ std::unique_ptr<views::View> TranslateBubbleView::GM2CreateView(
   layout->AddView(std::move(status_indicator));
   gm2_target_language_label_ =
       layout->AddView(std::move(target_language_label));
-  layout->AddView(std::move(close_button));
+  layout->AddView(CreateCloseButton());
 
   layout->StartRowWithPadding(
       views::GridLayout::kFixedSize, COLUMN_SET_ID_BUTTONS,
@@ -1409,6 +1375,10 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewErrorNoTitle(
   layout->AddView(std::move(try_again_button));
 
   layout->AddView(std::move(advanced_button));
+
+  layout->AddPaddingRow(
+      views::GridLayout::kFixedSize,
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
   Layout();
   return view;
 }
@@ -1595,25 +1565,6 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedTabUi(
           language_icon_id);
   language_icon->SetImage(*language_icon_image);
 
-  // Close button
-  const SkColor close_icon_color = gfx::kChromeIconGrey;
-  const gfx::VectorIcon* close_icon_id = &vector_icons::kCloseRoundedIcon;
-  // Use CreateVectorImageButton automatically enables background ink drop
-  auto close_button = views::CreateVectorImageButton(this);
-
-  // Size 18 is set for |translate_menu_button| while 16 is set for
-  // |close_button| so that the ink down shadow for both buttons are the same.
-  // MenuButton's insets is smaller than ImageButton by 2. Height is
-  // unadjustable through AddColumn so setting column width will result in
-  // rectangular instead of square column shape.
-  close_button->SetImage(
-      views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(*close_icon_id, 18, close_icon_color));
-  close_button->set_ink_drop_base_color(gfx::kChromeIconGrey);
-  close_button->SetFocusForPlatform();
-  close_button->SetID(BUTTON_ID_CLOSE);
-  close_button->SetTooltipText(l10n_util::GetStringUTF16(IDS_APP_CLOSE));
-
   auto view = std::make_unique<AdvancedViewContainer>();
   views::GridLayout* layout =
       view->SetLayoutManager(std::make_unique<views::GridLayout>());
@@ -1638,10 +1589,9 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedTabUi(
       views::GridLayout::kFixedSize,
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL) *
           4);
-  cs->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
+  cs->AddColumn(views::GridLayout::TRAILING, views::GridLayout::LEADING,
                 views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
                 0);
-  cs->AddPaddingColumn(1.0, 0);
 
   cs = layout->AddColumnSet(COLUMN_SET_ID_LANGUAGES);
 
@@ -1657,6 +1607,9 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedTabUi(
     cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1,
                   views::GridLayout::USE_PREF, 0, 0);
   }
+  cs->AddPaddingColumn(
+      views::GridLayout::kFixedSize,
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
 
   cs = layout->AddColumnSet(COLUMN_SET_ID_BUTTONS);
   cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
@@ -1673,6 +1626,9 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedTabUi(
   cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
                 views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0,
                 0);
+  cs->AddPaddingColumn(
+      views::GridLayout::kFixedSize,
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
 
   layout->StartRow(views::GridLayout::kFixedSize, COLUMN_SET_ID_TITLE);
   if (!UseGoogleTranslateBranding()) {
@@ -1681,11 +1637,12 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedTabUi(
     // happen on non-Chrome-branded builds.
     layout->AddView(std::move(language_icon));
   }
-  layout->AddView(std::move(language_title_label));
-  layout->AddView(std::move(close_button));
-
   const int vertical_spacing =
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL);
+  language_title_label->SetLineHeight(vertical_spacing * 4);
+  layout->AddView(std::move(language_title_label));
+  layout->AddView(CreateCloseButton());
+
   layout->AddPaddingRow(views::GridLayout::kFixedSize, vertical_spacing);
 
   layout->StartRow(views::GridLayout::kFixedSize, COLUMN_SET_ID_LANGUAGES);
@@ -1708,6 +1665,12 @@ std::unique_ptr<views::View> TranslateBubbleView::CreateViewAdvancedTabUi(
   UpdateAdvancedView();
 
   return view;
+}
+
+std::unique_ptr<views::Button> TranslateBubbleView::CreateCloseButton() {
+  auto close_button = views::BubbleFrameView::CreateCloseButton(this, false);
+  close_button->SetID(BUTTON_ID_CLOSE);
+  return close_button;
 }
 
 bool TranslateBubbleView::TabUiIsEquivalentState(
@@ -1799,31 +1762,27 @@ void TranslateBubbleView::UpdateLanguageNames(
 }
 
 void TranslateBubbleView::UpdateInsets(TranslateBubbleModel::ViewState state) {
-  if (bubble_ui_model_ != language::TranslateUIBubbleModel::TAB ||
-      !UseGoogleTranslateBranding()) {
-    // If not in a mode that can display a footer, don't touch the default
-    // insets.
+  if (bubble_ui_model_ != language::TranslateUIBubbleModel::TAB) {
     return;
   }
 
   // Since these are only created once when this code is executed for the first
-  // time, |default_margins| will always contain the default margins() value for
+  // time, |kDefaultMargins| will always contain the default margins() value for
   // this view.
   static const gfx::Insets kDefaultMargins = translate_bubble_view_->margins();
-  // Paddings of the ClientFrameView from mock.
-  // Up: 6px.
-  // Left: 16px = 320px - 180px - 124px.
-  // Bottom: 0px from the NonClientFrameView.
-  // Right: 8px
-  static const gfx::Insets kNoBottomMargins = gfx::Insets(6, 16, 0, 8);
 
-  // TAB UI does not have gap in between ClientFrameView and NonClientFrameView
-  // in these states.
+  gfx::Insets kTabStateMargins = gfx::Insets(7, 16, 8, 12);
+  gfx::Insets kSourceLanguageMargins = gfx::Insets(5, 16, 16, 4);
+  gfx::Insets kTargetLanguageMargins = gfx::Insets(5, 16, 16, 1);
+
   if (state == TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE ||
       state == TranslateBubbleModel::VIEW_STATE_TRANSLATING ||
       state == TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE) {
-    // In these states there will be a footer, so remove the bottom padding.
-    translate_bubble_view_->set_margins(kNoBottomMargins);
+    translate_bubble_view_->set_margins(kTabStateMargins);
+  } else if (state == TranslateBubbleModel::VIEW_STATE_SOURCE_LANGUAGE) {
+    translate_bubble_view_->set_margins(kSourceLanguageMargins);
+  } else if (state == TranslateBubbleModel::VIEW_STATE_TARGET_LANGUAGE) {
+    translate_bubble_view_->set_margins(kTargetLanguageMargins);
   } else {
     // Restore the bottom padding if the bubble is in a mode that doesn't have a
     // footer.

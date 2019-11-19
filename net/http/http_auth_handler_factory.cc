@@ -109,7 +109,7 @@ HttpAuthHandlerFactory::CreateDefault(
 #endif
 #if BUILDFLAG(USE_KERBEROS)
     ,
-    NegotiateAuthSystemFactory negotiate_auth_system_factory
+    HttpAuthMechanismFactory negotiate_auth_system_factory
 #endif
 ) {
   std::vector<std::string> auth_types(std::begin(kDefaultAuthSchemes),
@@ -137,7 +137,7 @@ HttpAuthHandlerRegistryFactory::Create(
 #endif
 #if BUILDFLAG(USE_KERBEROS)
     ,
-    NegotiateAuthSystemFactory negotiate_auth_system_factory
+    HttpAuthMechanismFactory negotiate_auth_system_factory
 #endif
 ) {
   std::set<std::string> auth_schemes_set(auth_schemes.begin(),

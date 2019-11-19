@@ -13,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/stringprintf.h"
@@ -326,8 +325,7 @@ class PrerenderTest : public testing::Test {
       : prerender_manager_(new UnitTestPrerenderManager(&profile_)),
         prerender_link_manager_(
             new PrerenderLinkManager(prerender_manager_.get())),
-        last_prerender_id_(0),
-        field_trial_list_(nullptr) {
+        last_prerender_id_(0) {
     prerender::PrerenderManager::SetMode(
         prerender::PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
     prerender_manager()->SetIsLowEndDevice(false);
@@ -436,10 +434,6 @@ class PrerenderTest : public testing::Test {
   std::unique_ptr<PrerenderLinkManager> prerender_link_manager_;
   int last_prerender_id_;
   base::HistogramTester histogram_tester_;
-
-  // An instance of base::FieldTrialList is necessary in order to initialize
-  // global state.
-  base::FieldTrialList field_trial_list_;
 
   // Restore prerender mode after this test finishes running.
   test_utils::RestorePrerenderMode restore_prerender_mode_;
@@ -1252,7 +1246,7 @@ TEST_F(PrerenderTest, OmniboxAllowedWhenNotDisabled_LowMemory_FeatureDisabled) {
 // Test that when prerender fails and the
 // kPrerenderFallbackToPreconnect experiment is enabled, a
 // prerender initiated by omnibox actually results in preconnect.
-TEST_F(PrerenderTest, OmniboxAllowedWhenNotDisabled_LowMemory_FeatureEnabled) {
+TEST_F(PrerenderTest, Omnibox_AllowedWhenNotDisabled_LowMemory_FeatureEnabled) {
   const GURL kURL(GURL("http://www.example.com"));
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
@@ -1270,6 +1264,37 @@ TEST_F(PrerenderTest, OmniboxAllowedWhenNotDisabled_LowMemory_FeatureEnabled) {
   prerender_manager()->SetIsLowEndDevice(true);
   EXPECT_FALSE(
       prerender_manager()->AddPrerenderFromOmnibox(kURL, nullptr, gfx::Size()));
+
+  // Verify that the prerender request falls back to a preconnect request.
+  EXPECT_EQ(1u, loading_predictor->GetActiveHintsSizeForTesting());
+
+  auto& active_hints = loading_predictor->active_hints_for_testing();
+  auto it = active_hints.find(kURL);
+  EXPECT_NE(it, active_hints.end());
+}
+
+// Test that when prerender fails and the
+// kPrerenderFallbackToPreconnect experiment is enabled, a
+// prerender initiated by an external request actually results in preconnect.
+TEST_F(PrerenderTest,
+       ExternalRequest_AllowedWhenNotDisabled_LowMemory_FeatureEnabled) {
+  const GURL kURL(GURL("http://www.example.com"));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kPrerenderFallbackToPreconnect);
+
+  predictors::LoadingPredictorConfig config;
+  PopulateTestConfig(&config);
+
+  auto* loading_predictor = predictors::LoadingPredictorFactory::GetForProfile(
+      Profile::FromBrowserContext(profile()));
+  loading_predictor->StartInitialization();
+  content::RunAllTasksUntilIdle();
+
+  // Prerender should be disabled on low memory devices.
+  prerender_manager()->SetIsLowEndDevice(true);
+  EXPECT_FALSE(prerender_manager()->AddPrerenderFromExternalRequest(
+      kURL, content::Referrer(), nullptr, gfx::Rect(kSize)));
 
   // Verify that the prerender request falls back to a preconnect request.
   EXPECT_EQ(1u, loading_predictor->GetActiveHintsSizeForTesting());

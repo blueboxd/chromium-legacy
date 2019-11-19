@@ -282,7 +282,7 @@ BrailleIme.prototype = {
    */
   log_: function(func, message) {
     if (this.DEBUG) {
-      if (typeof(message) !== 'string') {
+      if (typeof (message) !== 'string') {
         message = JSON.stringify(message);
       }
       console.log('BrailleIme.' + func + ': ' + message);

@@ -171,7 +171,7 @@ class MODULES_EXPORT RTCRtpTransceiverImpl
   uintptr_t Id() const override;
   blink::WebString Mid() const override;
   void SetMid(base::Optional<blink::WebString>) override;
-  std::unique_ptr<blink::WebRTCRtpSender> Sender() const override;
+  std::unique_ptr<blink::RTCRtpSenderPlatform> Sender() const override;
   std::unique_ptr<blink::WebRTCRtpReceiver> Receiver() const override;
   bool Stopped() const override;
   webrtc::RtpTransceiverDirection Direction() const override;

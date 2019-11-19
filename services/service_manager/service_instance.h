@@ -146,11 +146,6 @@ class ServiceInstance : public mojom::Connector,
       mojo::PendingReceiver<mojom::ProcessMetadata> metadata_receiver,
       RegisterServiceInstanceCallback callback) override;
   void Clone(mojo::PendingReceiver<mojom::Connector> receiver) override;
-  void FilterInterfaces(
-      const std::string& filter_name,
-      const Identity& source,
-      mojo::PendingReceiver<mojom::InterfaceProvider> source_receiver,
-      mojo::PendingRemote<mojom::InterfaceProvider> target) override;
 
   // mojom::ServiceControl:
   void RequestQuit() override;
@@ -198,10 +193,6 @@ class ServiceInstance : public mojom::Connector,
 
   // Indicates if the instance is permanently stopped.
   bool stopped_ = false;
-
-  // Active interface filters registered by this instance.
-  std::set<std::unique_ptr<InterfaceFilter>, base::UniquePtrComparator>
-      interface_filters_;
 
   // The number of outstanding OnBindingInterface requests currently in flight
   // for this instance. This is the total number of OnBindInterface requests

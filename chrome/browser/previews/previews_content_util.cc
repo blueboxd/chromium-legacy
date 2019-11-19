@@ -273,9 +273,6 @@ content::PreviewsState DetermineAllowedClientPreviewsState(
   if (!is_data_saver_user)
     return previews_state;
 
-  // Record whether the hint cache has a matching entry for this pre-commit URL.
-  previews_decider->LogHintCacheMatch(url, false /* is_committed */);
-
   auto* previews_service =
       navigation_handle && navigation_handle->GetWebContents()
           ? PreviewsServiceFactory::GetForProfile(Profile::FromBrowserContext(
@@ -418,9 +415,6 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
     content::PreviewsState previews_state,
     const previews::PreviewsDecider* previews_decider,
     content::NavigationHandle* navigation_handle) {
-  // Record whether the hint cache has a matching entry for this committed URL.
-  previews_decider->LogHintCacheMatch(url, true /* is_committed */);
-
   // Check if an offline preview was actually served.
   if (previews_data && previews_data->offline_preview_used()) {
     DCHECK(previews_state & content::OFFLINE_PAGE_ON);

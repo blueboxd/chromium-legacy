@@ -33,6 +33,7 @@ import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.PageTransition;
 
 /**
@@ -66,7 +67,13 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
         mBottomSheetController.addObserver(new EmptyBottomSheetObserver() {
             @Override
             public void onSheetStateChanged(int newState) {
-                if (newState == BottomSheetController.SheetState.HIDDEN) destroyContent();
+                if (newState == SheetState.HIDDEN) {
+                    destroyContent();
+                    return;
+                }
+
+                if (mSheetContent == null) return;
+                mSheetContent.showOpenInNewTabButton(newState == SheetState.FULL);
             }
         });
     }
@@ -137,8 +144,12 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
         if (state == SheetState.PEEK) {
             mBottomSheetController.expandSheet();
         } else if (state == SheetState.FULL) {
-            mBottomSheetController.peekSheet(true);
+            mBottomSheetController.collapseSheet(true);
         }
+    }
+
+    private void onCloseButtonClick() {
+        mBottomSheetController.hideContent(mSheetContent, /* animate= */ true);
     }
 
     private boolean canPromoteToNewTab() {
@@ -151,8 +162,8 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
     }
 
     private EphemeralTabSheetContent createSheetContent() {
-        mSheetContent = new EphemeralTabSheetContent(
-                mActivity, () -> openInNewTab(), () -> onToolbarClick(), getMaxSheetHeight());
+        mSheetContent = new EphemeralTabSheetContent(mActivity, this::openInNewTab,
+                this::onToolbarClick, this::onCloseButtonClick, getMaxSheetHeight());
 
         mActivity.getWindow().getDecorView().addOnLayoutChangeListener(this);
         return mSheetContent;
@@ -284,7 +295,6 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
     private static class FaviconLoader {
         private final Context mContext;
         private final FaviconHelper mFaviconHelper;
-        private final FaviconHelper.DefaultFaviconHelper mDefaultFaviconHelper;
         private final RoundedIconGenerator mIconGenerator;
         private final int mFaviconSize;
 
@@ -292,7 +302,6 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
         public FaviconLoader(Context context) {
             mContext = context;
             mFaviconHelper = new FaviconHelper();
-            mDefaultFaviconHelper = new FaviconHelper.DefaultFaviconHelper();
             mIconGenerator = FaviconUtils.createCircularIconGenerator(mContext.getResources());
             mFaviconSize =
                     mContext.getResources().getDimensionPixelSize(R.dimen.preview_tab_favicon_size);
@@ -311,8 +320,8 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
                     drawable = FaviconUtils.createRoundedBitmapDrawable(
                             mContext.getResources(), bitmap);
                 } else {
-                    drawable = mDefaultFaviconHelper.getDefaultFaviconDrawable(
-                            mContext.getResources(), iconUrl, true);
+                    drawable = UiUtils.getTintedDrawable(
+                            mContext, R.drawable.ic_globe_24dp, R.color.standard_mode_tint);
                 }
 
                 callback.onResult(drawable);

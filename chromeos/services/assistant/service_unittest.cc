@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "ash/public/mojom/assistant_state_controller.mojom.h"
-#include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -23,7 +22,6 @@
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/services/assistant/assistant_state_proxy.h"
 #include "chromeos/services/assistant/fake_assistant_manager_service_impl.h"
-#include "chromeos/services/assistant/pref_connection_delegate.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/test_support/fake_client.h"
 #include "chromeos/services/assistant/test_support/fully_initialized_assistant_state.h"
@@ -42,30 +40,6 @@ namespace {
 constexpr base::TimeDelta kDefaultTokenExpirationDelay =
     base::TimeDelta::FromMilliseconds(1000);
 }  // namespace
-
-class FakePrefConnectionDelegate : public PrefConnectionDelegate {
- public:
-  FakePrefConnectionDelegate()
-      : pref_service_(std::make_unique<TestingPrefServiceSimple>()) {
-    prefs::RegisterProfilePrefsForBrowser(pref_service_->registry());
-  }
-  ~FakePrefConnectionDelegate() override = default;
-
-  // PrefConnectionDelegate overrides:
-  void ConnectToPrefService(
-      mojo::PendingRemote<::prefs::mojom::PrefStoreConnector> connector,
-      scoped_refptr<PrefRegistrySimple> pref_registry,
-      ::prefs::ConnectCallback callback) override {
-    callback.Run(std::move(pref_service_));
-  }
-
-  TestingPrefServiceSimple* pref_service() { return pref_service_.get(); }
-
- private:
-  std::unique_ptr<TestingPrefServiceSimple> pref_service_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakePrefConnectionDelegate);
-};
 
 class FakeIdentityAccessor : identity::mojom::IdentityAccessor {
  public:
@@ -203,18 +177,13 @@ class AssistantServiceTest : public testing::Test {
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &url_loader_factory_);
 
-    auto fake_pref_connection = std::make_unique<FakePrefConnectionDelegate>();
-    pref_service_ = fake_pref_connection->pref_service();
+    prefs::RegisterProfilePrefs(pref_service_.registry());
+    pref_service_.SetBoolean(prefs::kAssistantEnabled, true);
+    pref_service_.SetBoolean(prefs::kAssistantHotwordEnabled, true);
 
-    pref_service()->SetBoolean(prefs::kAssistantEnabled, true);
-    pref_service()->SetBoolean(prefs::kAssistantHotwordEnabled, true);
-
-    fake_pref_connection_ = fake_pref_connection.get();
-    service_ =
-        std::make_unique<Service>(remote_service_.BindNewPipeAndPassReceiver(),
-                                  shared_url_loader_factory_->Clone());
-    service_->GetAssistantStateProxyForTesting()
-        ->SetPrefConnectionDelegateForTesting(std::move(fake_pref_connection));
+    service_ = std::make_unique<Service>(
+        remote_service_.BindNewPipeAndPassReceiver(),
+        shared_url_loader_factory_->Clone(), &pref_service_);
     service_->is_test_ = true;
 
     mock_task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
@@ -252,7 +221,7 @@ class AssistantServiceTest : public testing::Test {
 
   ash::AssistantState* assistant_state() { return &assistant_state_; }
 
-  PrefService* pref_service() { return pref_service_; }
+  PrefService* pref_service() { return &pref_service_; }
 
   FakeAssistantClient* client() { return &fake_assistant_client_; }
 
@@ -272,8 +241,7 @@ class AssistantServiceTest : public testing::Test {
   FakeAssistantClient fake_assistant_client_{&assistant_state_};
   FakeDeviceActions fake_device_actions_;
 
-  FakePrefConnectionDelegate* fake_pref_connection_;
-  PrefService* pref_service_;
+  TestingPrefServiceSimple pref_service_;
 
   network::TestURLLoaderFactory url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;

@@ -2093,3 +2093,6 @@ crbug.com/870173 virtual/omt-worker-fetch/http/tests/workers/worker-redirect.htm
 # There is a version in wpt_internal that performs the same checks but works
 # as expected.
 external/wpt/ambient-light/AmbientLightSensor.https.html [ Skip ]
+crbug.com/626703 [ Linux ] external/wpt/payment-method-basic-card/billing-address-is-null-manual.https.html [ Skip ]
+crbug.com/626703 [ Mac ] external/wpt/payment-method-basic-card/billing-address-is-null-manual.https.html [ Skip ]
+crbug.com/626703 [ Win ] external/wpt/payment-method-basic-card/billing-address-is-null-manual.https.html [ Skip ]

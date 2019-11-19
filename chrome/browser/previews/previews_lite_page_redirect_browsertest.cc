@@ -141,8 +141,6 @@ class BasePreviewsLitePageRedirectServerBrowserTest
 
   ~BasePreviewsLitePageRedirectServerBrowserTest() override {}
 
-  virtual bool UseOptimizationGuideKeyedServiceImplementation() const = 0;
-
   virtual bool ShouldEnableDRPHoldback() const = 0;
 
   enum PreviewsServerAction {
@@ -324,15 +322,6 @@ class BasePreviewsLitePageRedirectServerBrowserTest
          network::features::kReporting},
         {network::features::kNetworkErrorLogging});
 
-    opt_guide_keyed_service_feature_list_.emplace();
-    if (UseOptimizationGuideKeyedServiceImplementation()) {
-      opt_guide_keyed_service_feature_list_->InitWithFeatures(
-          {optimization_guide::features::kOptimizationGuideKeyedService}, {});
-    } else {
-      opt_guide_keyed_service_feature_list_->InitWithFeatures(
-          {}, {optimization_guide::features::kOptimizationGuideKeyedService});
-    }
-
     drp_holdback_feature_list_.emplace();
     drp_holdback_feature_list_->InitWithFeatureState(
         data_reduction_proxy::features::kDataReductionProxyHoldback,
@@ -341,7 +330,6 @@ class BasePreviewsLitePageRedirectServerBrowserTest
 
   void TearDown() override {
     drp_holdback_feature_list_.reset();
-    opt_guide_keyed_service_feature_list_.reset();
     scoped_feature_list_.reset();
     scoped_parameterized_feature_list_.reset();
   }
@@ -917,8 +905,6 @@ class BasePreviewsLitePageRedirectServerBrowserTest
   base::Optional<base::test::ScopedFeatureList>
       scoped_parameterized_feature_list_;
   base::Optional<base::test::ScopedFeatureList> scoped_feature_list_;
-  base::Optional<base::test::ScopedFeatureList>
-      opt_guide_keyed_service_feature_list_;
   base::Optional<base::test::ScopedFeatureList> drp_holdback_feature_list_;
   std::unique_ptr<net::EmbeddedTestServer> previews_server_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
@@ -948,27 +934,19 @@ class BasePreviewsLitePageRedirectServerBrowserTest
   base::OnceClosure waiting_for_report_closure_;
 };
 
-// First param is true if testing using the OptimizationGuideKeyedService
-// implementation. Second param is true if DRP holdback should be enabled.
+// Param is true if DRP holdback should be enabled.
 class PreviewsLitePageRedirectServerBrowserTest
     : public BasePreviewsLitePageRedirectServerBrowserTest,
-      public ::testing::WithParamInterface<std::tuple<bool, bool>> {
+      public ::testing::WithParamInterface<bool> {
  public:
-  bool UseOptimizationGuideKeyedServiceImplementation() const override {
-    return std::get<0>(GetParam());
-  }
-  bool ShouldEnableDRPHoldback() const override {
-    return std::get<1>(GetParam());
-  }
+  bool ShouldEnableDRPHoldback() const override { return GetParam(); }
 };
 
-// First param is true if testing using the OptimizationGuideKeyedService
-// implementation. Second param is true if DRP holdback should be
-// enabled.
+// Param is true if DRP holdback should be enabled.
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     PreviewsLitePageRedirectServerBrowserTest,
-    ::testing::Combine(::testing::Bool(), ::testing::Bool()));
+    ::testing::Bool());
 
 // Previews InfoBar (which these tests trigger) does not work on Mac.
 // See https://crbug.com/782322 for detail.
@@ -1689,12 +1667,11 @@ class PreviewsLitePageRedirectServerTimeoutBrowserTest
   }
 };
 
-// First param is true if testing using the OptimizationGuideKeyedService
-// implementation. Second param is true if DRP holdback should be enabled.
+// Param is true if DRP holdback should be enabled.
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     PreviewsLitePageRedirectServerTimeoutBrowserTest,
-    ::testing::Combine(::testing::Bool(), ::testing::Bool()));
+    ::testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(PreviewsLitePageRedirectServerTimeoutBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(LitePagePreviewsTimeout)) {
@@ -1758,12 +1735,11 @@ class PreviewsLitePageRedirectServerBadServerBrowserTest
   }
 };
 
-// First param is true if testing using the OptimizationGuideKeyedService
-// implementation. Second param is true if DRP holdback should be enabled.
+// Param is true if DRP holdback should be enabled.
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     PreviewsLitePageRedirectServerBadServerBrowserTest,
-    ::testing::Combine(::testing::Bool(), ::testing::Bool()));
+    ::testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(PreviewsLitePageRedirectServerBadServerBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(LitePagePreviewsBadServer)) {
@@ -1805,12 +1781,11 @@ class PreviewsLitePageRedirectServerDataSaverBrowserTest
   }
 };
 
-// First param is true if testing using the OptimizationGuideKeyedService
-// implementation. Second param is true if DRP holdback should be enabled.
+// Param is true if DRP holdback should be enabled.
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     PreviewsLitePageRedirectServerDataSaverBrowserTest,
-    ::testing::Combine(::testing::Bool(), ::testing::Bool()));
+    ::testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectServerDataSaverBrowserTest,
@@ -1843,12 +1818,11 @@ class PreviewsLitePageRedirectServerNoDataSaverHeaderBrowserTest
   }
 };
 
-// First param is true if testing using the OptimizationGuideKeyedService
-// implementation. Second param is true if DRP holdback should be enabled.
+// Param is true if DRP holdback should be enabled.
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     PreviewsLitePageRedirectServerNoDataSaverHeaderBrowserTest,
-    ::testing::Combine(::testing::Bool(), ::testing::Bool()));
+    ::testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectServerNoDataSaverHeaderBrowserTest,
@@ -1885,12 +1859,11 @@ class PreviewsLitePageRedirectNotificationDSEnabledBrowserTest
   }
 };
 
-// First param is true if testing using the OptimizationGuideKeyedService
-// implementation. Second param is true if DRP holdback should be enabled.
+// Pecond param is true if DRP holdback should be enabled.
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     PreviewsLitePageRedirectNotificationDSEnabledBrowserTest,
-    ::testing::Combine(::testing::Bool(), ::testing::Bool()));
+    ::testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectNotificationDSEnabledBrowserTest,
@@ -1946,12 +1919,11 @@ class PreviewsLitePageRedirectDSDisabledBrowserTest
   }
 };
 
-// First param is true if testing using the OptimizationGuideKeyedService
-// implementation. Second param is true if DRP holdback should be enabled.
+// Param is true if DRP holdback should be enabled.
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     PreviewsLitePageRedirectDSDisabledBrowserTest,
-    ::testing::Combine(::testing::Bool(), ::testing::Bool()));
+    ::testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectDSDisabledBrowserTest,
@@ -1979,12 +1951,11 @@ class PreviewsLitePageRedirectControlBrowserTest
   }
 };
 
-// First param is true if testing using the OptimizationGuideKeyedService
-// implementation. Second param is true if DRP holdback should be enabled.
+// Param is true if DRP holdback should be enabled.
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     PreviewsLitePageRedirectControlBrowserTest,
-    ::testing::Combine(::testing::Bool(), ::testing::Bool()));
+    ::testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageRedirectControlBrowserTest,
@@ -2033,10 +2004,6 @@ class PreviewsLitePageRedirectServerNetworkIsolationBrowserTest
     }
 
     BasePreviewsLitePageRedirectServerBrowserTest::SetUp();
-  }
-
-  bool UseOptimizationGuideKeyedServiceImplementation() const override {
-    return false;
   }
 
   bool ShouldEnableDRPHoldback() const override { return false; }
@@ -2116,12 +2083,11 @@ class PreviewsLitePageRedirectAndPageHintsBrowserTest
   }
 };
 
-// First param is true if testing using the OptimizationGuideKeyedService
-// implementation. Second param is true if DRP holdback should be enabled.
+// Param is true if DRP holdback should be enabled.
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     PreviewsLitePageRedirectAndPageHintsBrowserTest,
-    ::testing::Combine(::testing::Bool(), ::testing::Bool()));
+    ::testing::Bool());
 
 // Regression test for crbug.com/954554.
 IN_PROC_BROWSER_TEST_P(
@@ -2359,27 +2325,26 @@ class CoinFlipHoldbackExperimentBrowserTestWithCoinFlipHoldbackDisabled
   base::test::ScopedFeatureList feature_list_;
 };
 
-// First param is true if testing using the OptimizationGuideKeyedService
-// implementation. Second param is true if DRP holdback should be enabled.
+// Param is true if DRP holdback should be enabled.
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     CoinFlipHoldbackExperimentBrowserTest,
-    ::testing::Combine(::testing::Bool(), ::testing::Bool()));
+    ::testing::Bool());
 
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     CoinFlipHoldbackExperimentBrowserTestWithRandomNavigationCoinFlip,
-    ::testing::Combine(::testing::Bool(), ::testing::Bool()));
+    ::testing::Bool());
 
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     CoinFlipHoldbackExperimentBrowserTestWithoutRandomNavigationCoinFlip,
-    ::testing::Combine(::testing::Bool(), ::testing::Bool()));
+    ::testing::Bool());
 
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     CoinFlipHoldbackExperimentBrowserTestWithCoinFlipHoldbackDisabled,
-    ::testing::Combine(::testing::Bool(), ::testing::Bool()));
+    ::testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(
     CoinFlipHoldbackExperimentBrowserTestWithCoinFlipHoldbackDisabled,

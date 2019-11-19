@@ -239,7 +239,8 @@ ServiceUtilityProcessHost::ServiceUtilityProcessHost(
     : client_(client),
       client_task_runner_(client_task_runner),
       waiting_for_reply_(false) {
-  child_process_host_ = ChildProcessHost::Create(this);
+  child_process_host_ = ChildProcessHost::Create(
+      this, ChildProcessHost::IpcMode::kServiceManager);
 }
 
 ServiceUtilityProcessHost::~ServiceUtilityProcessHost() {

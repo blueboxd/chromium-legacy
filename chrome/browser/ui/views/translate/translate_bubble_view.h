@@ -40,7 +40,7 @@ namespace views {
 class Checkbox;
 class LabelButton;
 class View;
-}
+}  // namespace views
 
 class TranslateBubbleView : public LocationBarBubbleDelegateView,
                             public views::ButtonListener,
@@ -293,6 +293,8 @@ class TranslateBubbleView : public LocationBarBubbleDelegateView,
   std::unique_ptr<views::View> CreateViewAdvancedTabUi(
       std::unique_ptr<views::Combobox> combobox,
       std::unique_ptr<views::Label> language_title_label);
+
+  std::unique_ptr<views::Button> CreateCloseButton();
 
   // Get the current always translate checkbox
   views::Checkbox* GetAlwaysTranslateCheckbox();

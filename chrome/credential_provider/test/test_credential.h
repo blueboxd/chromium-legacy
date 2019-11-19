@@ -14,6 +14,7 @@
 #include <credentialprovider.h>
 
 #include "base/strings/string16.h"
+#include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_base.h"
@@ -54,6 +55,7 @@ class DECLSPEC_UUID("3710aa3a-13c7-44c2-bc38-09ba137804d8") ITestCredential
   virtual bool STDMETHODCALLTYPE IsWindowsPasswordValidForStoredUser() = 0;
   virtual bool STDMETHODCALLTYPE IsGlsRunning() = 0;
   virtual bool STDMETHODCALLTYPE IsAdJoinedUser() = 0;
+  virtual bool STDMETHODCALLTYPE ContainsIsAdJoinedUser() = 0;
 };
 
 // Test implementation of an ICredentialProviderCredential backed by a Gaia
@@ -94,6 +96,7 @@ class ATL_NO_VTABLE CTestCredentialBase : public T, public ITestCredential {
   bool STDMETHODCALLTYPE IsWindowsPasswordValidForStoredUser() override;
   bool STDMETHODCALLTYPE IsGlsRunning() override;
   bool STDMETHODCALLTYPE IsAdJoinedUser() override;
+  bool STDMETHODCALLTYPE ContainsIsAdJoinedUser() override;
 
   void SignalGlsCompletion();
 
@@ -237,12 +240,27 @@ bool CTestCredentialBase<T>::IsAdJoinedUser() {
   if (!results)
     return false;
 
-  base::Optional<bool> is_ad_joined_user =
-      results->FindBoolKey(kKeyIsAdJoinedUser);
+  const std::string* is_ad_joined_user =
+      results->FindStringKey(kKeyIsAdJoinedUser);
 
-  if (!is_ad_joined_user.has_value())
+  if (!is_ad_joined_user)
     return false;
-  return is_ad_joined_user.value();
+  return base::CompareCaseInsensitiveASCII(*is_ad_joined_user, "true") == 0;
+}
+
+template <class T>
+bool CTestCredentialBase<T>::ContainsIsAdJoinedUser() {
+  auto& results = this->get_authentication_results();
+
+  if (!results)
+    return false;
+
+  const std::string* is_ad_joined_user =
+      results->FindStringKey(kKeyIsAdJoinedUser);
+
+  if (!is_ad_joined_user)
+    return false;
+  return true;
 }
 
 template <class T>

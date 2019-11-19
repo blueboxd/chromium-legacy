@@ -11,8 +11,8 @@
 #include "chrome/browser/sharing/sharing_handler_registry.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
-#include "chrome/browser/sharing/sharing_target_info.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
+#include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/fake_device_info_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -30,8 +30,7 @@ const char kTestMessageIdSecondaryUser[] =
 const char kOriginalMessageId[] = "test_original_message_id";
 const char kSenderGuid[] = "test_sender_guid";
 const char kSenderName[] = "test_sender_name";
-const char kVapidFCMToken[] = "test_vapid_fcm_token";
-const char kSharingFCMToken[] = "test_sharing_fcm_token";
+const char kFCMToken[] = "test_vapid_fcm_token";
 const char kP256dh[] = "test_p256_dh";
 const char kAuthSecret[] = "test_auth_secret";
 
@@ -75,7 +74,7 @@ class MockSharingFCMSender : public SharingFCMSender {
   ~MockSharingFCMSender() override {}
 
   MOCK_METHOD4(SendMessageToDevice,
-               void(SharingTargetInfo target,
+               void(syncer::DeviceInfo::SharingTargetInfo target,
                     base::TimeDelta time_to_live,
                     SharingMessage message,
                     SendMessageCallback callback));
@@ -98,7 +97,9 @@ class SharingFCMHandlerTest : public testing::Test {
         /*last_updated_timestamp=*/base::Time::Now(),
         /*send_tab_to_self_receiving_enabled=*/false,
         syncer::DeviceInfo::SharingInfo(
-            kVapidFCMToken, kSharingFCMToken, kP256dh, kAuthSecret,
+            {kFCMToken, kP256dh, kAuthSecret},
+            {"sender_id_fcm_token", "sender_id_p256dh",
+             "sender_id_auth_secret"},
             std::set<sync_pb::SharingSpecificFields::EnabledFeatures>()));
     SharingSyncPreference::RegisterProfilePrefs(prefs_.registry());
   }
@@ -138,7 +139,7 @@ MATCHER_P(ProtoEquals, message, "") {
 }
 
 MATCHER(DeviceMatcher, "") {
-  return arg.fcm_token == kVapidFCMToken && arg.p256dh == kP256dh &&
+  return arg.fcm_token == kFCMToken && arg.p256dh == kP256dh &&
          arg.auth_secret == kAuthSecret;
 }
 
@@ -286,7 +287,7 @@ TEST_F(SharingFCMHandlerTest, PingMessageHandlerWithRecipientInfo) {
   sharing_message.mutable_ping_message();
   chrome_browser_sharing::RecipientInfo* sender_info =
       sharing_message.mutable_sender_info();
-  sender_info->set_fcm_token(kVapidFCMToken);
+  sender_info->set_fcm_token(kFCMToken);
   sender_info->set_p256dh(kP256dh);
   sender_info->set_auth_secret(kAuthSecret);
   gcm::IncomingMessage incoming_message =

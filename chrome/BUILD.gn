@@ -1565,6 +1565,7 @@ group("extra_resources") {
       "//chrome/browser/resources:dev_ui_paks",
       "//chrome/browser/resources:downloads_resources",
       "//chrome/browser/resources:local_ntp_resources",
+      "//chrome/browser/resources:new_tab_page_resources",
       "//chrome/browser/resources:settings_resources",
     ]
   }

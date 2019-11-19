@@ -115,8 +115,8 @@ class AutofillKeyboardAccessoryAdapterTest : public testing::Test {
     accessory_view_ = view.get();
 
     autofill_accessory_adapter_ =
-        std::make_unique<AutofillKeyboardAccessoryAdapter>(controller(), 0,
-                                                           false);
+        std::make_unique<AutofillKeyboardAccessoryAdapter>(
+            popup_controller_->GetWeakPtr(), 0, false);
     autofill_accessory_adapter_->SetAccessoryView(std::move(view));
   }
 

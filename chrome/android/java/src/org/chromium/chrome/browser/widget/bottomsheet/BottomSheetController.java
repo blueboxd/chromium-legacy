@@ -606,7 +606,7 @@ public class BottomSheetController implements Destroyable {
      * @param animate {@code true} for animation effect.
      * @return {@code true} if the sheet could go to the peek state.
      */
-    public boolean peekSheet(boolean animate) {
+    public boolean collapseSheet(boolean animate) {
         if (mBottomSheet == null || mIsSuppressed) return false;
         if (mBottomSheet.isSheetOpen() && mBottomSheet.isPeekStateEnabled()) {
             mBottomSheet.setSheetState(SheetState.PEEK, animate);

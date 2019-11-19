@@ -2089,13 +2089,6 @@ String Internals::layerTreeAsText(Document* document,
   return layerTreeAsText(document, 0, exception_state);
 }
 
-String Internals::elementLayerTreeAsText(
-    Element* element,
-    ExceptionState& exception_state) const {
-  DCHECK(element);
-  return elementLayerTreeAsText(element, 0, exception_state);
-}
-
 bool Internals::scrollsWithRespectTo(Element* element1,
                                      Element* element2,
                                      ExceptionState& exception_state) {
@@ -2150,37 +2143,6 @@ String Internals::layerTreeAsText(Document* document,
       DocumentLifecycle::LifecycleUpdateReason::kTest);
 
   return document->GetFrame()->GetLayerTreeAsTextForTesting(flags);
-}
-
-String Internals::elementLayerTreeAsText(
-    Element* element,
-    unsigned flags,
-    ExceptionState& exception_state) const {
-  DCHECK(element);
-
-  LocalFrameView* frame_view = element->GetDocument().View();
-  frame_view->UpdateAllLifecyclePhases(
-      DocumentLifecycle::LifecycleUpdateReason::kTest);
-
-  LayoutObject* layout_object = element->GetLayoutObject();
-  if (!layout_object || !layout_object->IsBox()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidAccessError,
-        layout_object ? "The provided element's layoutObject is not a box."
-                      : "The provided element has no layoutObject.");
-    return String();
-  }
-
-  PaintLayer* layer = ToLayoutBox(layout_object)->Layer();
-  if (!layer || !layer->HasCompositedLayerMapping() ||
-      !layer->GetCompositedLayerMapping()->MainGraphicsLayer()) {
-    // Don't raise exception in these cases which may be normally used in tests.
-    return String();
-  }
-
-  return GraphicsLayerTreeAsTextForTesting(
-      layer->GetCompositedLayerMapping()->MainGraphicsLayer(),
-      flags | kOutputAsLayerTree);
 }
 
 String Internals::scrollingStateTreeAsText(Document*) const {

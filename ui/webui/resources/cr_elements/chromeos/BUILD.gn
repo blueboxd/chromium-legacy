@@ -10,6 +10,5 @@ group("closure_compile") {
   deps = [
     "cr_lottie:closure_compile",
     "cr_picture:closure_compile",
-    "network:closure_compile",
   ]
 }

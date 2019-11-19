@@ -15,7 +15,7 @@ Polymer({
   is: 'settings-internet-page',
 
   behaviors: [
-    CrNetworkListenerBehavior,
+    NetworkListenerBehavior,
     I18nBehavior,
     settings.RouteObserverBehavior,
     WebUIListenerBehavior,
@@ -217,7 +217,7 @@ Polymer({
     }
   },
 
-  /** CrNetworkListenerBehavior override */
+  /** NetworkListenerBehavior override */
   onVpnProvidersChanged: function() {
     this.networkConfig_.getVpnProviders().then(response => {
       const providers = response.providers;

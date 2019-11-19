@@ -227,7 +227,7 @@ void PageLoadMetricsObserverTester::SimulateLoadedResource(
   }
 
   content::mojom::ResourceLoadInfo resource_load_info;
-  resource_load_info.url = info.url;
+  resource_load_info.url = info.origin_of_final_url.GetURL();
   resource_load_info.was_cached = info.was_cached;
   resource_load_info.raw_body_bytes = info.raw_body_bytes;
   resource_load_info.total_received_bytes =

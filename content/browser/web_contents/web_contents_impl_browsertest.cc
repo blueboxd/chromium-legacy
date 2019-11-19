@@ -2834,7 +2834,7 @@ void DownloadImageTestInternal(Shell* shell,
 
   shell->LoadURL(GURL("about:blank"));
   shell->web_contents()->DownloadImage(
-      image_url, false, 1024, false,
+      image_url, false, 0, 1024, false,
       base::BindOnce(&DownloadImageObserver::OnFinishDownloadImage,
                      base::Unretained(&download_image_observer)));
 
@@ -2852,6 +2852,23 @@ void ExpectNoValidImageCallback(const base::Closure& quit_closure,
   EXPECT_TRUE(bitmap.empty());
   EXPECT_TRUE(sizes.empty());
   quit_closure.Run();
+}
+
+void ExpectSingleValidImageCallback(base::OnceClosure quit_closure,
+                                    int expected_size,
+                                    int id,
+                                    int status_code,
+                                    const GURL& image_url,
+                                    const std::vector<SkBitmap>& bitmap,
+                                    const std::vector<gfx::Size>& sizes) {
+  EXPECT_EQ(200, status_code);
+  ASSERT_EQ(bitmap.size(), 1u);
+  EXPECT_EQ(bitmap[0].width(), expected_size);
+  EXPECT_EQ(bitmap[0].height(), expected_size);
+  ASSERT_EQ(sizes.size(), 1u);
+  EXPECT_EQ(sizes[0].width(), expected_size);
+  EXPECT_EQ(sizes[0].height(), expected_size);
+  std::move(quit_closure).Run();
 }
 
 }  // anonymous namespace
@@ -2887,7 +2904,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, DownloadImage_NoValidImage) {
   shell()->LoadURL(GURL("about:blank"));
   base::RunLoop run_loop;
   shell()->web_contents()->DownloadImage(
-      kImageUrl, false, 2, false,
+      kImageUrl, false, 0, 2, false,
       base::BindOnce(&ExpectNoValidImageCallback, run_loop.QuitClosure()));
 
   run_loop.Run();
@@ -2904,6 +2921,55 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                        DownloadImage_InvalidDataImage) {
   const GURL kImageUrl = GURL("data:image/png;invalid");
   DownloadImageTestInternal(shell(), kImageUrl, 0, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, DownloadImage_DataImageSVG) {
+  const GURL kImageUrl(
+      "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' "
+      "width='64' height='64'></svg>");
+  DownloadImageTestInternal(shell(), kImageUrl, 0, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       DownloadImage_PreferredSize) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL kImageUrl = embedded_test_server()->GetURL("/rgb.svg");
+  shell()->LoadURL(GURL("about:blank"));
+  base::RunLoop run_loop;
+  shell()->web_contents()->DownloadImage(
+      kImageUrl, false, 30, 1024, false,
+      base::BindOnce(&ExpectSingleValidImageCallback, run_loop.QuitClosure(),
+                     30));
+
+  run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       DownloadImage_PreferredSizeZero) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL kImageUrl = embedded_test_server()->GetURL("/rgb.svg");
+  shell()->LoadURL(GURL("about:blank"));
+  base::RunLoop run_loop;
+  shell()->web_contents()->DownloadImage(
+      kImageUrl, false, 0, 1024, false,
+      base::BindOnce(&ExpectSingleValidImageCallback, run_loop.QuitClosure(),
+                     90));
+
+  run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       DownloadImage_PreferredSizeClampedByMaxSize) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL kImageUrl = embedded_test_server()->GetURL("/rgb.svg");
+  shell()->LoadURL(GURL("about:blank"));
+  base::RunLoop run_loop;
+  shell()->web_contents()->DownloadImage(
+      kImageUrl, false, 60, 30, false,
+      base::BindOnce(&ExpectSingleValidImageCallback, run_loop.QuitClosure(),
+                     30));
+
+  run_loop.Run();
 }
 
 class MouseLockDelegate : public WebContentsDelegate {

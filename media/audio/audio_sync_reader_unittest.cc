@@ -11,7 +11,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/shared_memory_mapping.h"
 #include "base/sync_socket.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"

@@ -91,6 +91,7 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   void ShowResetScreen() override;
   void HandleDisplayCaptivePortal() override;
   void UpdateAddUserButtonStatus() override;
+  void RequestSystemInfoUpdate() override;
 
   void OnCancelPasswordChangedFlow() override;
 

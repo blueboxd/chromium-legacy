@@ -50,6 +50,8 @@ class MockPasswordProtectionService : public PasswordProtectionService {
   MOCK_METHOD1(SanitizeReferrerChain, void(ReferrerChain*));
   MOCK_METHOD2(ShowInterstitial,
                void(content::WebContents*, ReusedPasswordAccountType));
+  MOCK_METHOD2(PersistPhishedSavedPasswordCredential,
+               void(const std::string&, const std::vector<std::string>&));
   MOCK_METHOD3(IsPingingEnabled,
                bool(LoginReputationClientRequest::TriggerType,
                     ReusedPasswordAccountType,

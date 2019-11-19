@@ -68,11 +68,12 @@ const AtomicString& Attr::value() const {
   return standalone_value_or_attached_local_name_;
 }
 
-void Attr::setValue(const AtomicString& value) {
+void Attr::setValue(const AtomicString& value,
+                    ExceptionState& exception_state) {
   // Element::setAttribute will remove the attribute if value is null.
   DCHECK(!value.IsNull());
   if (element_)
-    element_->setAttribute(GetQualifiedName(), value);
+    element_->setAttribute(GetQualifiedName(), value, exception_state);
   else
     standalone_value_or_attached_local_name_ = value;
 }
@@ -80,7 +81,11 @@ void Attr::setValue(const AtomicString& value) {
 void Attr::setNodeValue(const String& v) {
   // Attr uses AtomicString type for its value to save memory as there
   // is duplication among Elements' attributes values.
-  setValue(v.IsNull() ? g_empty_atom : AtomicString(v));
+  const AtomicString value = v.IsNull() ? g_empty_atom : AtomicString(v);
+  if (element_)
+    element_->setAttribute(GetQualifiedName(), value);
+  else
+    standalone_value_or_attached_local_name_ = value;
 }
 
 Node* Attr::Clone(Document& factory, CloneChildrenFlag) const {

@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ssl/certificate_reporting_test_utils.h"
+#include "chrome/browser/ssl/chrome_ssl_blocking_page.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -33,7 +34,7 @@ void MockHandleSSLError(
     base::OnceCallback<
         void(std::unique_ptr<security_interstitials::SecurityInterstitialPage>)>
         blocking_page_ready_callback) {
-  std::unique_ptr<SSLBlockingPage> blocking_page(SSLBlockingPage::Create(
+  std::unique_ptr<SSLBlockingPage> blocking_page(ChromeSSLBlockingPage::Create(
       web_contents, cert_error, ssl_info, request_url, 0,
       base::Time::NowFromSystemTime(), GURL(), nullptr));
   if (async) {

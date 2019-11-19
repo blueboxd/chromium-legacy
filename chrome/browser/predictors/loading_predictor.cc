@@ -28,7 +28,7 @@ const base::TimeDelta kMinDelayBetweenPreconnectRequests =
 // Returns true iff |prediction| is not empty.
 bool AddInitialUrlToPreconnectPrediction(const GURL& initial_url,
                                          PreconnectPrediction* prediction) {
-  GURL initial_origin = initial_url.GetOrigin();
+  url::Origin initial_origin = url::Origin::Create(initial_url);
   // Open minimum 2 sockets to the main frame host to speed up the loading if a
   // main page has a redirect to the same host. This is because there can be a
   // race between reading the server redirect response and sending a new request
@@ -39,12 +39,12 @@ bool AddInitialUrlToPreconnectPrediction(const GURL& initial_url,
       prediction->requests.front().origin == initial_origin) {
     prediction->requests.front().num_sockets =
         std::max(prediction->requests.front().num_sockets, kMinSockets);
-  } else if (initial_origin.is_valid() &&
-             initial_origin.SchemeIsHTTPOrHTTPS()) {
-    url::Origin origin = url::Origin::Create(initial_origin);
-    prediction->requests.emplace(prediction->requests.begin(), initial_origin,
-                                 kMinSockets,
-                                 net::NetworkIsolationKey(origin, origin));
+  } else if (!initial_origin.opaque() &&
+             (initial_origin.scheme() == url::kHttpScheme ||
+              initial_origin.scheme() == url::kHttpsScheme)) {
+    prediction->requests.emplace(
+        prediction->requests.begin(), initial_origin, kMinSockets,
+        net::NetworkIsolationKey(initial_origin, initial_origin));
   }
 
   return !prediction->requests.empty();

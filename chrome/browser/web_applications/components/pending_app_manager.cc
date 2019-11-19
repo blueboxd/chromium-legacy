@@ -91,7 +91,7 @@ void PendingAppManager::SynchronizeInstalledApps(
                          urls_to_remove.size() + desired_urls.size()));
 
   UninstallApps(
-      urls_to_remove,
+      urls_to_remove, install_source,
       base::BindRepeating(&PendingAppManager::UninstallForSynchronizeCallback,
                           weak_ptr_factory_.GetWeakPtr(), install_source));
   InstallApps(

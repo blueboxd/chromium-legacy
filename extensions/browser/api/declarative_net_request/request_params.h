@@ -32,9 +32,13 @@ struct RequestParams {
       url_pattern_index::flat::ElementType_OTHER;
   bool is_third_party = false;
 
-  // A map of RulesetMatchers to results of |HasMatchingAllowRule| for this
-  // request. Used as a cache to prevent extra calls to |HasMatchingAllowRule|.
+  // A map from RulesetMatchers to whether it has a matching allow rule. Used as
+  // a cache to prevent additional calls to GetAllowAction.
   mutable base::flat_map<const RulesetMatcher*, bool> allow_rule_cache;
+
+  // Pointer to the corresponding WebRequestInfo object. Outlives this struct.
+  // Can be null for some unit tests.
+  const WebRequestInfo* request_info = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(RequestParams);
 };

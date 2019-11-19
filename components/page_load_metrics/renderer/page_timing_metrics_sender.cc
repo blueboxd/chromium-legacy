@@ -123,7 +123,7 @@ void PageTimingMetricsSender::DidObserveLazyLoadBehavior(
 }
 
 void PageTimingMetricsSender::DidStartResponse(
-    const GURL& response_url,
+    const url::Origin& origin_of_final_response_url,
     int resource_id,
     const network::mojom::URLResponseHead& response_head,
     content::ResourceType resource_type,
@@ -133,8 +133,9 @@ void PageTimingMetricsSender::DidStartResponse(
   auto resource_it = page_resource_data_use_.emplace(
       std::piecewise_construct, std::forward_as_tuple(resource_id),
       std::forward_as_tuple(std::make_unique<PageResourceDataUse>()));
-  resource_it.first->second->DidStartResponse(
-      response_url, resource_id, response_head, resource_type, previews_state);
+  resource_it.first->second->DidStartResponse(origin_of_final_response_url,
+                                              resource_id, response_head,
+                                              resource_type, previews_state);
 }
 
 void PageTimingMetricsSender::DidReceiveTransferSizeUpdate(

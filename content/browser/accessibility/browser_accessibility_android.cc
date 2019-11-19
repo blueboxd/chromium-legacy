@@ -49,52 +49,6 @@ enum {
 // android.view.accessibility.AccessibilityNodeInfo.RangeInfo in Java:
 enum { ANDROID_VIEW_ACCESSIBILITY_RANGE_TYPE_FLOAT = 1 };
 
-static bool HasListAncestor(const content::BrowserAccessibility* node) {
-  if (node == nullptr)
-    return false;  // Base case
-
-  if (ui::IsStaticList(node->GetRole()))
-    return true;
-
-  return HasListAncestor(node->InternalGetParent());
-}
-
-static bool HasListDescendant(const content::BrowserAccessibility* current,
-                              const content::BrowserAccessibility* root) {
-  // Only check role of descendants
-  if (current != root) {
-    if (ui::IsStaticList(current->GetRole()))
-      return true;
-  }
-
-  for (auto it = current->InternalChildrenBegin();
-       it != current->InternalChildrenEnd(); ++it) {
-    if (HasListDescendant(it.get(), root))
-      return true;
-  }
-  return false;
-}
-
-/*
-Determines:
-1. If this is an ancestor of any lists
-2. If this list is a descendant of any lists
-Talkback uses this information to report if the list has levels, and if so,
-which level is currently selected
-*/
-static bool IsHierarchicalList(const content::BrowserAccessibility* node) {
-  // Only makes sense to run if |node| is already a list
-  DCHECK(ui::IsStaticList(node->GetRole()));
-
-  if (node == nullptr)
-    return false;
-
-  bool found_list_in_descendants = HasListDescendant(node, node);
-  bool found_list_in_ancestors = HasListAncestor(node->InternalGetParent());
-
-  return (found_list_in_descendants || found_list_in_ancestors);
-}
-
 }  // namespace
 
 namespace content {
@@ -345,8 +299,7 @@ bool BrowserAccessibilityAndroid::IsHeading() const {
 }
 
 bool BrowserAccessibilityAndroid::IsHierarchical() const {
-  return (GetRole() == ax::mojom::Role::kTree ||
-          (ui::IsStaticList(GetRole()) && IsHierarchicalList(this)));
+  return (GetRole() == ax::mojom::Role::kTree || IsHierarchicalList());
 }
 
 bool BrowserAccessibilityAndroid::IsLink() const {

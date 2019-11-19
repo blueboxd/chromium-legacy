@@ -97,6 +97,7 @@ component("web_engine_core") {
     "//third_party/fuchsia-sdk/sdk:ui_gfx",
     "//third_party/fuchsia-sdk/sdk:web",
     "//third_party/widevine/cdm:headers",
+    "//ui/accessibility",
     "//ui/aura",
     "//ui/base",
     "//ui/base/ime",
@@ -223,9 +224,14 @@ fuchsia_package_runner("web_engine_runner") {
 source_set("browsertest_core") {
   testonly = true
   sources = [
+    "test/test_data.cc",
+    "test/test_data.h",
     "test/web_engine_browser_test.cc",
     "test/web_engine_browser_test.h",
     "test/web_engine_test_launcher.cc",
+  ]
+  data = [
+    "test/data",
   ]
   deps = [
     ":web_engine_core",
@@ -240,15 +246,13 @@ source_set("browsertest_core") {
 
 test("web_engine_browsertests") {
   sources = [
+    "browser/accessibility_bridge_browsertest.cc",
     "browser/content_directory_browsertest.cc",
     "browser/context_impl_browsertest.cc",
     "browser/frame_impl_browsertest.cc",
     "browser/media_browsertest.cc",
   ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
-  data = [
-    "test/data",
-  ]
   deps = [
     ":browsertest_core",
     ":switches",
@@ -260,6 +264,7 @@ test("web_engine_browsertests") {
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/fuchsia-sdk/sdk:accessibility_semantics",
     "//third_party/fuchsia-sdk/sdk:scenic_cpp",
     "//ui/ozone",
   ]
@@ -267,7 +272,6 @@ test("web_engine_browsertests") {
 
 test("web_engine_unittests") {
   sources = [
-    "browser/accessibility_bridge_unittest.cc",
     "browser/ax_tree_converter_unittest.cc",
     "browser/cookie_manager_impl_unittest.cc",
     "browser/frame_impl_unittest.cc",

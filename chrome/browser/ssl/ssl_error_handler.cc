@@ -23,10 +23,12 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/interstitials/enterprise_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/bad_clock_blocking_page.h"
 #include "chrome/browser/ssl/captive_portal_blocking_page.h"
 #include "chrome/browser/ssl/captive_portal_helper.h"
+#include "chrome/browser/ssl/chrome_ssl_blocking_page.h"
 #include "chrome/browser/ssl/mitm_software_blocking_page.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ssl/ssl_error_assistant.h"
@@ -526,7 +528,7 @@ void SSLErrorHandlerDelegateImpl::ShowMITMSoftwareInterstitial(
 
 void SSLErrorHandlerDelegateImpl::ShowSSLInterstitial(const GURL& support_url) {
   // Show SSL blocking page. The interstitial owns the blocking page.
-  OnBlockingPageReady(SSLBlockingPage::Create(
+  OnBlockingPageReady(ChromeSSLBlockingPage::Create(
       web_contents_, cert_error_, ssl_info_, request_url_, options_mask_,
       base::Time::NowFromSystemTime(), support_url,
       std::move(ssl_cert_reporter_)));
@@ -555,6 +557,8 @@ void SSLErrorHandlerDelegateImpl::ReportNetworkConnectivity(
 
 void SSLErrorHandlerDelegateImpl::OnBlockingPageReady(
     security_interstitials::SecurityInterstitialPage* interstitial_page) {
+  MaybeTriggerSecurityInterstitialShownEvent(web_contents_, request_url_,
+                                             "SSL_ERROR", cert_error_);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(blocking_page_ready_callback_),
                                 base::WrapUnique(interstitial_page)));

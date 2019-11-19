@@ -82,8 +82,12 @@ class AssistantAshTestBase : public AshTestBase {
 
   // Return the text field used for inputting new queries.
   views::Textfield* input_text_field();
+
   // Return the mic field used for dictating new queries.
   views::View* mic_view();
+
+  // Return the greeting label shown when you first open the Assistant.
+  views::View* greeting_label();
 
   // Show the on-screen keyboard.
   void ShowKeyboard();

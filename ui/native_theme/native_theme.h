@@ -317,6 +317,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_WindowBackground,
     // Dialogs
     kColorId_DialogBackground,
+    kColorId_DialogForeground,
     kColorId_BubbleBackground,
     kColorId_BubbleFooterBackground,
     // FocusableBorder
@@ -325,7 +326,6 @@ class NATIVE_THEME_EXPORT NativeTheme {
     // Button
     kColorId_ButtonEnabledColor,
     kColorId_ButtonDisabledColor,
-    kColorId_ButtonHoverColor,
     kColorId_ButtonPressedShade,
     kColorId_ProminentButtonColor,
     kColorId_ProminentButtonFocusedColor,

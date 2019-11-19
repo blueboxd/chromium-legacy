@@ -13,7 +13,7 @@
 
 var CrOncTest = CrOncTest || {};
 
-CrOncTest.overrideCrOncStrings = function() {
+CrOncTest.overrideOncStrings = function() {
   // From network_element_localized_string_provider.cc:AddOncLocalizedStrings.
   var oncKeys = {
     'OncConnected': 'OncConnected',

@@ -195,6 +195,12 @@ extern const char kSafetyTipHelpCenterURL[];
 // Help URL for the settings page's search feature.
 extern const char kSettingsSearchHelpURL[];
 
+// URL to use as the 'Learn More' link when the interstitial is caused by
+// a "ERR_CERT_SYMANTEC_LEGACY" error, -202 fragment is included so
+// chrome://connection-help expands the right section if the user can't reach
+// the help center.
+extern const char kSymantecSupportUrl[];
+
 // The URL for the Learn More page about Sync and Google services.
 extern const char kSyncAndGoogleServicesLearnMoreURL[];
 

@@ -43,8 +43,8 @@ class COMPONENT_EXPORT(CHROMEOS_TPM) TPMTokenLoader
     TPM_TOKEN_STATUS_DISABLED
   };
 
-  typedef base::Callback<void(bool)> TPMReadyCallback;
-  typedef std::vector<TPMReadyCallback> TPMReadyCallbackList;
+  using TPMReadyCallback = base::OnceCallback<void(bool)>;
+  using TPMReadyCallbackList = std::vector<TPMReadyCallback>;
 
   // Sets the global instance. Must be called before any calls to Get().
   // The global instance will immediately start observing |LoginState|.
@@ -78,7 +78,7 @@ class COMPONENT_EXPORT(CHROMEOS_TPM) TPMTokenLoader
 
   // Checks if the TPM token is enabled. If the state is unknown, |callback|
   // will be called back once the TPM state is known.
-  TPMTokenStatus IsTPMTokenEnabled(const TPMReadyCallback& callback);
+  TPMTokenStatus IsTPMTokenEnabled(TPMReadyCallback callback);
 
   std::string tpm_user_pin() const { return tpm_user_pin_; }
 

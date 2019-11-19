@@ -5,7 +5,7 @@
 #include "content/browser/devtools/devtools_protocol_encoding.h"
 
 #include <string>
-#include "third_party/inspector_protocol/crdtp/encoding.h"
+#include "third_party/inspector_protocol/crdtp/cbor.h"
 
 // A corpus for this fuzzer is located in
 // devtools_protocol_encoding_cbor_fuzzer_corpus.

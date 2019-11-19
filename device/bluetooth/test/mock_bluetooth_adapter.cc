@@ -43,6 +43,10 @@ void MockBluetoothAdapter::Shutdown() {
 }
 #endif
 
+base::WeakPtr<BluetoothAdapter> MockBluetoothAdapter::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 bool MockBluetoothAdapter::SetPoweredImpl(bool powered) {
   return false;
 }

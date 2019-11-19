@@ -46,7 +46,7 @@ class CORE_EXPORT Attr final : public Node {
   Element* ownerElement() const { return element_; }
 
   const AtomicString& value() const;
-  void setValue(const AtomicString&);
+  void setValue(const AtomicString&, ExceptionState&);
 
   const QualifiedName GetQualifiedName() const;
 

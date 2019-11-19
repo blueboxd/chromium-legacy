@@ -105,7 +105,6 @@
 #include "third_party/blink/public/platform/web_connection_type.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/public/platform/web_http_body.h"
-#include "third_party/blink/public/platform/web_image.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/public/platform/web_network_state_notifier.h"
@@ -197,7 +196,6 @@ using blink::WebGestureEvent;
 using blink::WebHistoryItem;
 using blink::WebHitTestResult;
 using blink::WebHTTPBody;
-using blink::WebImage;
 using blink::WebInputElement;
 using blink::WebInputEvent;
 using blink::WebLocalFrame;

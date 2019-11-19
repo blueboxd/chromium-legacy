@@ -58,6 +58,14 @@ TEST_F('PrintPreviewAppTest', 'PrintPresets', function() {
   this.runMochaTest(print_preview_app_test.TestNames.PrintPresets);
 });
 
+TEST_F('PrintPreviewAppTest', 'DestinationsManaged', function() {
+  this.runMochaTest(print_preview_app_test.TestNames.DestinationsManaged);
+});
+
+TEST_F('PrintPreviewAppTest', 'HeaderFooterManaged', function() {
+  this.runMochaTest(print_preview_app_test.TestNames.HeaderFooterManaged);
+});
+
 // eslint-disable-next-line no-var
 var PrintPreviewSidebarTest = class extends PrintPreviewTest {
   /** @override */

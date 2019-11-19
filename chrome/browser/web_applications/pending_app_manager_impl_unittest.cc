@@ -341,6 +341,7 @@ class PendingAppManagerImplTest : public ChromeRenderViewHostTestHarness {
 
   std::vector<std::pair<GURL, bool>> UninstallAppsAndWait(
       PendingAppManager* pending_app_manager,
+      ExternalInstallSource install_source,
       std::vector<GURL> apps_to_uninstall) {
     std::vector<std::pair<GURL, bool>> results;
 
@@ -348,7 +349,7 @@ class PendingAppManagerImplTest : public ChromeRenderViewHostTestHarness {
     auto barrier_closure =
         base::BarrierClosure(apps_to_uninstall.size(), run_loop.QuitClosure());
     pending_app_manager->UninstallApps(
-        std::move(apps_to_uninstall),
+        std::move(apps_to_uninstall), install_source,
         base::BindLambdaForTesting(
             [&](const GURL& url, bool successfully_uninstalled) {
               results.emplace_back(url, successfully_uninstalled);
@@ -960,7 +961,7 @@ TEST_F(PendingAppManagerImplTest, InstallApps_PendingInstallApps) {
   run_loop.Run();
 }
 
-TEST_F(PendingAppManagerImplTest, Install_PendingMulitpleInstallApps) {
+TEST_F(PendingAppManagerImplTest, Install_PendingMultipleInstallApps) {
   pending_app_manager_impl()->SetNextInstallationTaskResult(
       kFooWebAppUrl, InstallResultCode::kSuccessNewInstall);
   pending_app_manager_impl()->SetNextInstallationLaunchURL(kFooWebAppUrl,
@@ -1190,7 +1191,8 @@ TEST_F(PendingAppManagerImplTest, UninstallApps_Succeeds) {
   install_finalizer()->SetNextUninstallExternalWebAppResult(kFooWebAppUrl,
                                                             true);
   UninstallAppsResults results = UninstallAppsAndWait(
-      pending_app_manager_impl(), std::vector<GURL>{kFooWebAppUrl});
+      pending_app_manager_impl(), ExternalInstallSource::kExternalPolicy,
+      std::vector<GURL>{kFooWebAppUrl});
 
   EXPECT_EQ(results, UninstallAppsResults({{kFooWebAppUrl, true}}));
 
@@ -1202,7 +1204,8 @@ TEST_F(PendingAppManagerImplTest, UninstallApps_Fails) {
   install_finalizer()->SetNextUninstallExternalWebAppResult(kFooWebAppUrl,
                                                             false);
   UninstallAppsResults results = UninstallAppsAndWait(
-      pending_app_manager_impl(), std::vector<GURL>{kFooWebAppUrl});
+      pending_app_manager_impl(), ExternalInstallSource::kExternalPolicy,
+      std::vector<GURL>{kFooWebAppUrl});
   EXPECT_EQ(results, UninstallAppsResults({{kFooWebAppUrl, false}}));
 
   EXPECT_EQ(1u, uninstall_call_count());
@@ -1221,9 +1224,9 @@ TEST_F(PendingAppManagerImplTest, UninstallApps_Multiple) {
                                                             true);
   install_finalizer()->SetNextUninstallExternalWebAppResult(kBarWebAppUrl,
                                                             true);
-  UninstallAppsResults results =
-      UninstallAppsAndWait(pending_app_manager_impl(),
-                           std::vector<GURL>{kFooWebAppUrl, kBarWebAppUrl});
+  UninstallAppsResults results = UninstallAppsAndWait(
+      pending_app_manager_impl(), ExternalInstallSource::kExternalPolicy,
+      std::vector<GURL>{kFooWebAppUrl, kBarWebAppUrl});
   EXPECT_EQ(results, UninstallAppsResults(
                          {{kFooWebAppUrl, true}, {kBarWebAppUrl, true}}));
 
@@ -1250,7 +1253,8 @@ TEST_F(PendingAppManagerImplTest, UninstallApps_PendingInstall) {
   install_finalizer()->SetNextUninstallExternalWebAppResult(kFooWebAppUrl,
                                                             false);
   UninstallAppsResults uninstall_results = UninstallAppsAndWait(
-      pending_app_manager_impl(), std::vector<GURL>{kFooWebAppUrl});
+      pending_app_manager_impl(), ExternalInstallSource::kExternalPolicy,
+      std::vector<GURL>{kFooWebAppUrl});
   EXPECT_EQ(uninstall_results, UninstallAppsResults({{kFooWebAppUrl, false}}));
   EXPECT_EQ(1u, uninstall_call_count());
 

@@ -45,7 +45,7 @@ cr.define('multidevice_setup', () => {
         {
           remoteDevice: {deviceName: 'Nexus 5', deviceId: '12345'},
           connectivityStatus:
-              chromeos.deviceSync.mojom.ConnectivityStatus.kOnline
+              chromeos.deviceSync.mojom.ConnectivityStatus.kUnknownConnectivity
         },
       ];
 
@@ -80,9 +80,8 @@ cr.define('multidevice_setup', () => {
           });
 
       test(
-          'selectedDeviceId changes when dropdown options are selected',
-          () => {
-            selectOptionByTextContent('Nexus 6P');
+          'selectedDeviceId changes when dropdown options are selected', () => {
+            selectOptionByTextContent('Nexus 6P (offline)');
             assertEquals(startSetupPageElement.selectedDeviceId, 'PpPpPp');
             selectOptionByTextContent('Nexus 5');
             assertEquals(startSetupPageElement.selectedDeviceId, '12345');

@@ -19,7 +19,8 @@ void AddUiColorMixers(ColorProvider* provider) {
   mixer[kColorBubbleFooterBackground] = {kColorSecondaryBackgroundSubtle};
   mixer[kColorButtonBackground] = {kColorPrimaryBackground};
   mixer[kColorButtonBorder] = {kColorSecondaryBackground};
-  mixer[kColorButtonDisabledForeground] = {kColorDisabledForeground};
+  mixer[kColorButtonDisabledForeground] = {kColorSecondaryForeground};
+  mixer[kColorButtonForeground] = {kColorAccent};
   mixer[kColorButtonProminentBackground] = {kColorAccent};
   mixer[kColorButtonProminentDisabledBackground] =
       AlphaBlend(kColorSecondaryBackground, kColorButtonBackground,
@@ -29,8 +30,10 @@ void AddUiColorMixers(ColorProvider* provider) {
   mixer[kColorButtonProminentForeground] =
       GetColorWithMaxContrast(kColorButtonProminentBackground);
   mixer[kColorDialogBackground] = {kColorPrimaryBackground};
+  mixer[kColorDialogForeground] = {kColorBodyForeground};
   mixer[kColorFocusableBorderFocused] = SetAlpha(kColorAccent, 0x4D);
   mixer[kColorFocusableBorderUnfocused] = {kColorSecondaryBackground};
+  mixer[kColorIcon] = {kColorBodyForeground};
   mixer[kColorLabelDisabledForeground] =
       SetAlpha(kColorLabelForeground, gfx::kDisabledControlAlpha);
   mixer[kColorLabelForeground] = {kColorPrimaryForeground};
@@ -41,7 +44,7 @@ void AddUiColorMixers(ColorProvider* provider) {
   mixer[kColorMenuBackground] = {kColorPrimaryBackground};
   mixer[kColorMenuBorder] = {kColorSecondaryBackground};
   mixer[kColorMenuItemAlertedBackground] = {kColorAccent};
-  mixer[kColorMenuItemDisabledForeground] = {kColorDisabledForeground};
+  mixer[kColorMenuItemDisabledForeground] = {kColorSecondaryForeground};
   mixer[kColorMenuItemForeground] = {kColorPrimaryForeground};
   mixer[kColorMenuItemHighlightedBackground] = {
       kColorSecondaryBackgroundSubtle};

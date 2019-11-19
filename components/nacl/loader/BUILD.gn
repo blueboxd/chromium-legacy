@@ -322,16 +322,3 @@ if (is_nacl_nonsfi) {
     ]
   }
 }
-
-source_set("nacl_loader_manifest") {
-  sources = [
-    "nacl_loader_manifest.cc",
-    "nacl_loader_manifest.h",
-  ]
-
-  deps = [
-    "//base",
-    "//components/nacl/common",
-    "//services/service_manager/public/cpp",
-  ]
-}

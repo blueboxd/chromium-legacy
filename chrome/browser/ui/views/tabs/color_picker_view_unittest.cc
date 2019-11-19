@@ -38,8 +38,8 @@ class ColorPickerViewTest : public ChromeViewsTestBase {
     widget_ = std::make_unique<views::Widget>();
     widget_->Init(std::move(widget_params));
 
-    color_picker_ =
-        new ColorPickerView(kTestColors, color_selected_callback_.Get());
+    color_picker_ = new ColorPickerView(kTestColors, SK_ColorCYAN,
+                                        color_selected_callback_.Get());
     widget_->SetContentsView(color_picker_);
 
     color_picker_->SizeToPreferredSize();
@@ -88,8 +88,30 @@ const std::array<std::pair<SkColor, base::string16>, 3>
         {SK_ColorBLUE, base::ASCIIToUTF16("Blue")},
     }};
 
-TEST_F(ColorPickerViewTest, NoColorSelectedByDefault) {
+TEST_F(ColorPickerViewTest, NoColorSelectedByDefaultIfNotMatching) {
   EXPECT_FALSE(color_picker_->GetSelectedColor().has_value());
+}
+
+TEST_F(ColorPickerViewTest, ColorSelectedByDefaultIfMatching) {
+  SkColor initial_color = SK_ColorRED;
+
+  views::Widget::InitParams widget_params =
+      CreateParams(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  widget_params.ownership =
+      views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  std::unique_ptr<views::Widget> widget = std::make_unique<views::Widget>();
+  widget->Init(std::move(widget_params));
+
+  ColorPickerView* color_picker = new ColorPickerView(
+      kTestColors, initial_color, color_selected_callback_.Get());
+  widget->SetContentsView(color_picker);
+
+  color_picker->SizeToPreferredSize();
+
+  EXPECT_TRUE(color_picker->GetSelectedColor().has_value());
+  EXPECT_EQ(color_picker->GetSelectedColor().value(), initial_color);
+
+  widget.reset();
 }
 
 TEST_F(ColorPickerViewTest, ClickingSelectsColor) {

@@ -24,11 +24,11 @@ class ASH_EXPORT BackGestureAffordance : public gfx::AnimationDelegate {
   explicit BackGestureAffordance(const gfx::Point& location);
   ~BackGestureAffordance() override;
 
-  // Sets the x-axis and y-axis drag progress. 0 means no progress and 1 means
-  // full progress. For x-axis progress, values more than 1 are also allowed for
-  // resistance animation. Y-axis progress is used to control the y-axis
-  // movement distance of the affordance.
-  void SetDragProgress(int x_drag_amount, int y_drag_amount);
+  // Updates the drag related properties. Note, |during_reverse_dragging|
+  // indicates whether dragging on the negative direction of x-axis currently.
+  void Update(int x_drag_amount,
+              int y_drag_amount,
+              bool during_reverse_dragging);
 
   // Aborts the affordance and animates it back.
   void Abort();
@@ -36,7 +36,7 @@ class ASH_EXPORT BackGestureAffordance : public gfx::AnimationDelegate {
   // Completes the affordance and fading it out.
   void Complete();
 
-  // Return true if the affordance is activated, which means the drag can be
+  // Returns true if the affordance is activated, which means the drag can be
   // completed to trigger go back.
   bool IsActivated() const;
 
@@ -52,9 +52,8 @@ class ASH_EXPORT BackGestureAffordance : public gfx::AnimationDelegate {
   void SetAbortProgress(float progress);
   void SetCompleteProgress(float progress);
 
-  // Helper function that returns the affordance progress according to the
-  // current values of different progress values (drag progress and abort
-  // progress). 1 means the affordance is at the activated state.
+  // Helper function that returns the affordance progress on current
+  // |x_drag_amount_| and |abort_progress_|.
   float GetAffordanceProgress() const;
 
   // gfx::AnimationDelegate:
@@ -67,12 +66,29 @@ class ASH_EXPORT BackGestureAffordance : public gfx::AnimationDelegate {
 
   // Values that determine current state of the affordance.
   State state_ = State::DRAGGING;
-  float drag_progress_ = 0.f;
   float y_drag_progress_ = 0.f;
   float abort_progress_ = 0.f;
   float complete_progress_ = 0.f;
 
   std::unique_ptr<gfx::LinearAnimation> animation_;
+
+  // Drag distance on the positive direction of x-axis.
+  int x_drag_amount_ = 0;
+
+  // True if dragging on the negative direction of x-axis.
+  bool during_reverse_dragging_ = false;
+
+  // X-axis drag distance while starting reverse drag.
+  int x_drag_amount_on_start_reverse_ = 0;
+
+  // X-offset of the affordance while starting reverse drag.
+  float offset_on_start_reverse_ = 0.f;
+
+  // True if started to move the affordance on reverse drag.
+  bool started_reverse_ = false;
+
+  // Current x-offset of the affordance.
+  float current_offset_ = 0.f;
 
   DISALLOW_COPY_AND_ASSIGN(BackGestureAffordance);
 };

@@ -53,8 +53,7 @@ std::unique_ptr<HttpAuthMechanism> CreateAuthSystem(
     HttpAuthHandlerNegotiate::AuthLibrary* auth_library,
 #endif
     const HttpAuthPreferences* prefs,
-    HttpAuthHandlerFactory::NegotiateAuthSystemFactory
-        negotiate_auth_system_factory) {
+    HttpAuthMechanismFactory negotiate_auth_system_factory) {
   if (negotiate_auth_system_factory)
     return negotiate_auth_system_factory.Run(prefs);
 #if defined(OS_ANDROID)
@@ -71,7 +70,7 @@ std::unique_ptr<HttpAuthMechanism> CreateAuthSystem(
 }  // namespace
 
 HttpAuthHandlerNegotiate::Factory::Factory(
-    NegotiateAuthSystemFactory negotiate_auth_system_factory)
+    HttpAuthMechanismFactory negotiate_auth_system_factory)
     : negotiate_auth_system_factory_(negotiate_auth_system_factory) {}
 
 HttpAuthHandlerNegotiate::Factory::~Factory() = default;

@@ -3027,6 +3027,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kBlinkSettings,
     switches::kDefaultTileWidth,
     switches::kDefaultTileHeight,
+    switches::kMinHeightForGpuRasterTile,
     switches::kDisable2dCanvasImageChromium,
     switches::kDisableYUVImageDecoding,
     switches::kDisableAcceleratedVideoDecode,
@@ -4184,7 +4185,7 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSiteInstance(
                                  site_instance->GetIsolationContext(), site_url,
                                  site_instance->lock_url())) {
     base::debug::SetCrashKeyString(bad_message::GetRequestedSiteURLKey(),
-                                   site_url.spec());
+                                   site_url.possibly_invalid_spec());
     ChildProcessSecurityPolicyImpl::GetInstance()->LogKilledProcessOriginLock(
         render_process_host->GetID());
     CHECK(false) << "Unsuitable process reused for site " << site_url;

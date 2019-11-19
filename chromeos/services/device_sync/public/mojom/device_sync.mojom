@@ -63,7 +63,8 @@ struct FindEligibleDevicesResponse {
 
 enum ConnectivityStatus {
   kOnline,
-  kOffline
+  kOffline,
+  kUnknownConnectivity
 };
 
 struct DeviceActivityStatus {

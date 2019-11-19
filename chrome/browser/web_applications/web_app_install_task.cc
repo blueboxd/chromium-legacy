@@ -89,10 +89,7 @@ void WebAppInstallTask::LoadWebAppAndCheckInstallability(
   // TODO(loyso): Implement stealing of shared web_contents in upcoming
   // WebContentsManager.
   std::unique_ptr<content::WebContents> web_contents =
-      content::WebContents::Create(
-          content::WebContents::CreateParams(profile_));
-  InstallableManager::CreateForWebContents(web_contents.get());
-  SecurityStateTabHelper::CreateForWebContents(web_contents.get());
+      CreateWebContents(profile_);
 
   // Grab WebContents pointer now, before the call to BindOnce might null out
   // |web_contents|.
@@ -276,13 +273,8 @@ void WebAppInstallTask::LoadAndRetrieveWebApplicationInfoWithIcons(
   background_installation_ = true;
   only_retrieve_web_application_info_ = true;
 
-  web_contents_ = content::WebContents::Create(
-      content::WebContents::CreateParams(profile_));
+  web_contents_ = CreateWebContents(profile_);
   Observe(web_contents_.get());
-
-  InstallableManager::CreateForWebContents(web_contents_.get());
-  SecurityStateTabHelper::CreateForWebContents(web_contents_.get());
-  favicon::CreateContentFaviconDriverForWebContents(web_contents_.get());
 
   DCHECK(url_loader);
   url_loader->LoadUrl(
@@ -290,6 +282,19 @@ void WebAppInstallTask::LoadAndRetrieveWebApplicationInfoWithIcons(
       WebAppUrlLoader::UrlComparison::kIgnoreQueryParamsAndRef,
       base::BindOnce(&WebAppInstallTask::OnWebAppUrlLoadedGetWebApplicationInfo,
                      weak_ptr_factory_.GetWeakPtr()));
+}
+
+// static
+std::unique_ptr<content::WebContents> WebAppInstallTask::CreateWebContents(
+    Profile* profile) {
+  std::unique_ptr<content::WebContents> web_contents =
+      content::WebContents::Create(content::WebContents::CreateParams(profile));
+
+  InstallableManager::CreateForWebContents(web_contents.get());
+  SecurityStateTabHelper::CreateForWebContents(web_contents.get());
+  favicon::CreateContentFaviconDriverForWebContents(web_contents.get());
+
+  return web_contents;
 }
 
 void WebAppInstallTask::WebContentsDestroyed() {

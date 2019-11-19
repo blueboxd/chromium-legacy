@@ -48,7 +48,10 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   ShelfController::RegisterProfilePrefs(registry);
   TouchDevicesController::RegisterProfilePrefs(registry);
   tray::VPNListView::RegisterProfilePrefs(registry);
-  chromeos::assistant::prefs::RegisterProfilePrefsForeign(registry, for_test);
+
+  // ash_unittests relies on assistant prefs.
+  if (for_test)
+    chromeos::assistant::prefs::RegisterProfilePrefs(registry);
 }
 
 }  // namespace

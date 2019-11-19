@@ -20,10 +20,6 @@ extern const base::Feature kWebAuthUseNativeWinApi;
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const base::Feature kWebAuthBiometricEnrollment;
 
-// Enable credential management in the security keys settings UI.
-COMPONENT_EXPORT(DEVICE_FIDO)
-extern const base::Feature kWebAuthCredentialManagement;
-
 // Enable using a phone as a generic security key.
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const base::Feature kWebAuthPhoneSupport;

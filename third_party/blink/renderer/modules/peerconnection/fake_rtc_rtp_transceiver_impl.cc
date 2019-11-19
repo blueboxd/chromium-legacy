@@ -45,7 +45,7 @@ FakeRTCRtpSenderImpl::~FakeRTCRtpSenderImpl() {}
 FakeRTCRtpSenderImpl& FakeRTCRtpSenderImpl::operator=(
     const FakeRTCRtpSenderImpl&) = default;
 
-std::unique_ptr<blink::WebRTCRtpSender> FakeRTCRtpSenderImpl::ShallowCopy()
+std::unique_ptr<blink::RTCRtpSenderPlatform> FakeRTCRtpSenderImpl::ShallowCopy()
     const {
   return std::make_unique<FakeRTCRtpSenderImpl>(*this);
 }
@@ -221,7 +221,7 @@ blink::WebString FakeRTCRtpTransceiverImpl::Mid() const {
   return mid_ ? blink::WebString::FromUTF8(*mid_) : blink::WebString();
 }
 
-std::unique_ptr<blink::WebRTCRtpSender> FakeRTCRtpTransceiverImpl::Sender()
+std::unique_ptr<blink::RTCRtpSenderPlatform> FakeRTCRtpTransceiverImpl::Sender()
     const {
   return sender_.ShallowCopy();
 }

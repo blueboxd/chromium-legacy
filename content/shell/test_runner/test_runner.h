@@ -22,11 +22,10 @@
 #include "content/shell/test_runner/web_test_runner.h"
 #include "content/shell/test_runner/web_test_runtime_flags.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
-#include "third_party/blink/public/platform/web_image.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "v8/include/v8.h"
 
 class GURL;
-class SkBitmap;
 
 namespace blink {
 class WebContentSettingsClient;

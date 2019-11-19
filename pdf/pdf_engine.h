@@ -284,6 +284,18 @@ class PDFEngine {
     virtual float GetToolbarHeightInScreenCoords() = 0;
   };
 
+  struct AccessibilityLinkInfo {
+    std::string url;
+    int start_char_index;
+    int char_count;
+    pp::FloatRect bounds;
+  };
+
+  struct AccessibilityImageInfo {
+    std::string alt_text;
+    pp::FloatRect bounds;
+  };
+
   // Factory method to create an instance of the PDF Engine.
   static std::unique_ptr<PDFEngine> Create(Client* client,
                                            bool enable_javascript);
@@ -381,24 +393,12 @@ class PDFEngine {
   // failure. e.g. When |start_char_index| is out of bounds.
   virtual base::Optional<pp::PDF::PrivateAccessibilityTextRunInfo>
   GetTextRunInfo(int page_index, int start_char_index) = 0;
-  // Gets the number of links on a given page.
-  virtual uint32_t GetLinkCount(int page_index) = 0;
-  // Gets url, underlying text range and bounding box of a link at |link_index|
-  // on page |page_index|. Returns false if the |link_index| is invalid.
-  virtual bool GetLinkInfo(int page_index,
-                           uint32_t link_index,
-                           std::string* out_url,
-                           int* out_start_char_index,
-                           int* out_char_count,
-                           pp::FloatRect* out_bounds) = 0;
-  // Gets the number of images on a given page.
-  virtual uint32_t GetImageCount(int page_index) = 0;
-  // Gets the alt text and bounding box of an image at |image_index| on page
-  // |page_index|. Returns false if the |image_index| is invalid.
-  virtual bool GetImageInfo(int page_index,
-                            uint32_t image_index,
-                            std::string* out_alt_text,
-                            pp::FloatRect* out_bounds) = 0;
+  // For all the links on page |page_index|, get their urls, underlying text
+  // ranges and bounding boxes.
+  virtual std::vector<AccessibilityLinkInfo> GetLinkInfo(int page_index) = 0;
+  // For all the images in page |page_index|, get their alt texts and bounding
+  // boxes.
+  virtual std::vector<AccessibilityImageInfo> GetImageInfo(int page_index) = 0;
   // Gets the PDF document's print scaling preference. True if the document can
   // be scaled to fit.
   virtual bool GetPrintScaling() = 0;

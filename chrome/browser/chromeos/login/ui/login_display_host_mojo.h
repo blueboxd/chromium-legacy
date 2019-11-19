@@ -95,6 +95,7 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   void ShowResetScreen() override;
   void HandleDisplayCaptivePortal() override;
   void UpdateAddUserButtonStatus() override;
+  void RequestSystemInfoUpdate() override;
 
   // LoginScreenClient::Delegate:
   void HandleAuthenticateUserWithPasswordOrPin(

@@ -208,7 +208,8 @@ scoped_refptr<Extension> LoadExtension(const base::FilePath& extension_path,
   if (!manifest.get())
     return nullptr;
   if (!extension_l10n_util::LocalizeExtension(
-          extension_path, manifest.get(), error)) {
+          extension_path, manifest.get(),
+          extension_l10n_util::GzippedMessagesPermission::kDisallow, error)) {
     return nullptr;
   }
 
@@ -499,6 +500,7 @@ bool ValidateExtensionIconSet(const ExtensionIconSet& icon_set,
 MessageBundle* LoadMessageBundle(
     const base::FilePath& extension_path,
     const std::string& default_locale,
+    extension_l10n_util::GzippedMessagesPermission gzip_permission,
     std::string* error) {
   error->clear();
   // Load locale information if available.
@@ -518,11 +520,8 @@ MessageBundle* LoadMessageBundle(
     return nullptr;
   }
 
-  MessageBundle* message_bundle =
-      extension_l10n_util::LoadMessageCatalogs(
-          locale_path,
-          default_locale,
-          error);
+  MessageBundle* message_bundle = extension_l10n_util::LoadMessageCatalogs(
+      locale_path, default_locale, gzip_permission, error);
 
   return message_bundle;
 }
@@ -560,9 +559,9 @@ MessageBundle::SubstitutionMap* LoadMessageBundleSubstitutionMapFromPaths(
 
   std::string error;
   for (const base::FilePath& path : paths) {
-    std::unique_ptr<MessageBundle> bundle(
-        LoadMessageBundle(path, default_locale, &error));
-
+    std::unique_ptr<MessageBundle> bundle(LoadMessageBundle(
+        path, default_locale,
+        extension_l10n_util::GzippedMessagesPermission::kDisallow, &error));
     if (bundle) {
       for (const auto& iter : *bundle->dictionary()) {
         // |insert| only adds new entries, and does not replace entries in

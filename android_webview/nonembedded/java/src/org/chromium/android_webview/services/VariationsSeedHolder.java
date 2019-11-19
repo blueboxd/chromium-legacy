@@ -17,6 +17,7 @@ import org.chromium.components.variations.firstrun.VariationsSeedFetcher.SeedInf
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.util.Date;
 
 /**
  * VariationsSeedHolder is a singleton which manages the local copy of the variations seed - both
@@ -147,7 +148,7 @@ public class VariationsSeedHolder {
 
     @VisibleForTesting
     public void scheduleFetchIfNeeded() {
-        AwVariationsSeedFetcher.scheduleIfNeeded();
+        AwVariationsSeedFetcher.scheduleIfNeeded(new Date().getTime());
     }
 
     // overridden by tests

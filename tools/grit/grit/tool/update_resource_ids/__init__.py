@@ -158,9 +158,9 @@ class _Args:
 
 
 class UpdateResourceIds(interface.Tool):
-  """Updates all starting IDs in an resource_ids file by reading all GRD files
-it refers to, estimating the number of required IDs of each type, then rewrites
-starting IDs while preserving structure.
+  """Updates all start IDs in an resource_ids file by reading all GRD files it
+refers to, estimating the number of required IDs of each type, then rewrites
+start IDs while preserving structure.
 
 Usage: grit update_resource_ids [--parse|-p] [--read-grd|-r] [--tokenize|-t]
                                 [--naive] [--fake] [-o OUTPUT_FILE]

@@ -422,9 +422,17 @@ interface FrameHost {
       pending_remote<blink.mojom.NavigationInitiator>? navigation_initiator);
 
   // Sent when a subresource response has started.
+  //
+  // |origin_of_final_response_url| is the origin of the final (after all
+  // redirects) URL of the subresource response.  The full URL is not
+  // available, because in some cases the path and query may be sanitized away
+  // - see https://crbug.com/973885.
+  //
   // |cert_status| is the bitmask of status info of the SSL certificate. (see
   // net/cert/cert_status_flags.h).
-  SubresourceResponseStarted(url.mojom.Url url, uint32 cert_status);
+  SubresourceResponseStarted(
+      url.mojom.Origin origin_of_final_response_url,
+      uint32 cert_status);
 
   // Sent when a resource load finished, successfully or not.
   ResourceLoadComplete(ResourceLoadInfo url_load_info);

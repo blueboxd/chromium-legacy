@@ -39,6 +39,7 @@ js_library("tab") {
   deps = [
     "//ui/webui/resources/js:icon.m",
     "//ui/webui/resources/js:load_time_data.m",
+    "//ui/webui/resources/js:util.m",
   ]
 }
 

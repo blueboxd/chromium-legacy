@@ -180,31 +180,4 @@ interface Connector {
   // allows the client to "clone" its Connector arbitrarily many times, for
   // example to mint Connector endpoints for different threads to use.
   Clone(pending_receiver<Connector> receiver);
-
-  // Filter interface requests received from |source| according to the policy
-  // specified in this service's manifest in an InterfaceProviderSpec named
-  // |spec|.
-  //
-  // The flow is basically - remote service wishes to (generically) request
-  // interfaces from this service, and so sends us an
-  // pending_receiver<InterfaceProvider>(|source_receiver|) which it would like
-  // us to bind. We forward this receiver to the Service Manager, passing our
-  // actual InterfaceProvider implementation in |target|. The Service Manager
-  // will only forward interface requests that were permitted by intersecting
-  // |source|'s manifest requirements with thecontents of |spec|.
-  //
-  // DEPRECATED: Please do not introduce new uses of this API, as it will be
-  // removed soon. Please instead avoid using InterfaceProvider altogether in
-  // favor of explicit factory interfaces. i.e., instead of an InterfaceProvider
-  // hooked up to a BinderRegistry, prefer to define something like:
-  //
-  //   interface MyInterfaceBroker {
-  //     GetFoo(Foo& request);
-  //     GetBar(Bar& request);
-  //   };
-  //
-  FilterInterfaces(string spec,
-                   Identity source,
-                   pending_receiver<InterfaceProvider> source_receiver,
-                   pending_remote<InterfaceProvider> target);
 };

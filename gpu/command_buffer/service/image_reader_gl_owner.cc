@@ -8,6 +8,7 @@
 #include <jni.h>
 #include <stdint.h>
 
+#include "base/android/android_hardware_buffer_compat.h"
 #include "base/android/jni_android.h"
 #include "base/android/scoped_hardware_buffer_fence_sync.h"
 #include "base/logging.h"
@@ -349,6 +350,95 @@ void ImageReaderGLOwner::GetTransformMatrix(float mtx[]) {
   static constexpr float kYInvertedIdentity[16]{1, 0, 0, 0, 0, -1, 0, 0,
                                                 0, 0, 1, 0, 0, 1,  0, 1};
   memcpy(mtx, kYInvertedIdentity, sizeof(kYInvertedIdentity));
+
+  // Compute the transform matrix only if we have an image available.
+  if (!current_image_ref_)
+    return;
+
+  // Get the crop rectangle associated with this image. The crop rectangle
+  // specifies the region of valid pixels in the image.
+  // Note that to query the crop rectangle, we don't need to wait for the
+  // AImage to be ready by checking the associated image ready fence.
+  AImageCropRect crop_rect;
+  media_status_t return_code =
+      loader_.AImage_getCropRect(current_image_ref_->image(), &crop_rect);
+  if (return_code != AMEDIA_OK) {
+    DLOG(ERROR) << "Error querying crop rectangle from the image : "
+                << return_code;
+    return;
+  }
+
+  // Get the AHardwareBuffer to query its dimensions.
+  AHardwareBuffer* buffer = nullptr;
+  loader_.AImage_getHardwareBuffer(current_image_ref_->image(), &buffer);
+  if (!buffer) {
+    DLOG(ERROR) << "Unable to get an AHardwareBuffer from the image";
+    return;
+  }
+
+  // Get the buffer descriptor. Note that for querying the buffer descriptor, we
+  // do not need to wait on the AHB to be ready.
+  AHardwareBuffer_Desc desc;
+  base::AndroidHardwareBufferCompat::GetInstance().Describe(buffer, &desc);
+
+  // Note: Below calculation of shrink_amount and the transform matrix params
+  // tx,ty,sx,sy is copied from the android
+  // SurfaceTexture::computeCurrentTransformMatrix() -
+  // https://android.googlesource.com/platform/frameworks/native/+/5c1139f/libs/gui/SurfaceTexture.cpp#516.
+  // We are assuming here that bilinear filtering is always enabled for
+  // sampling the texture.
+  float shrink_amount = 0.0f;
+  float tx = 0.0f, ty = 0.0f, sx = 1.0f, sy = 1.0f;
+
+  // In order to prevent bilinear sampling beyond the edge of the
+  // crop rectangle we may need to shrink it by 2 texels in each
+  // dimension.  Normally this would just need to take 1/2 a texel
+  // off each end, but because the chroma channels of YUV420 images
+  // are subsampled we may need to shrink the crop region by a whole
+  // texel on each side.
+  switch (desc.format) {
+    case AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM:
+    case AHARDWAREBUFFER_FORMAT_R8G8B8X8_UNORM:
+    case AHARDWAREBUFFER_FORMAT_R8G8B8_UNORM:
+    case AHARDWAREBUFFER_FORMAT_R5G6B5_UNORM:
+      // We know there's no subsampling of any channels, so we
+      // only need to shrink by a half a pixel.
+      shrink_amount = 0.5;
+      break;
+    default:
+      // If we don't recognize the format, we must assume the
+      // worst case (that we care about), which is YUV420.
+      shrink_amount = 1.0;
+  }
+
+  int32_t crop_rect_width = (crop_rect.right - crop_rect.left);
+  int32_t crop_rect_height = (crop_rect.bottom - crop_rect.top);
+  DCHECK_GE(crop_rect_width, 0);
+  DCHECK_GE(crop_rect_height, 0);
+
+  int32_t buffer_width = desc.width;
+  int32_t buffer_height = desc.height;
+  DCHECK_GT(buffer_width, 0);
+  DCHECK_GT(buffer_height, 0);
+
+  // Only shrink the dimensions that are not the size of the buffer.
+  if (crop_rect_width < buffer_width) {
+    tx = (float(crop_rect.left) + shrink_amount) / buffer_width;
+    sx = (float(crop_rect_width) - (2.0f * shrink_amount)) / buffer_width;
+  }
+
+  if (crop_rect_height < buffer_height) {
+    ty = (float(buffer_height - crop_rect.bottom) + shrink_amount) /
+         buffer_height;
+    sy = (float(crop_rect_height) - (2.0f * shrink_amount)) / buffer_height;
+  }
+
+  // Update the transform matrix with above parameters by also taking into
+  // account Y inversion/ vertical flip.
+  mtx[0] = sx;
+  mtx[5] = 0 - sy;
+  mtx[12] = tx;
+  mtx[13] = 1 - ty;
 }
 
 void ImageReaderGLOwner::ReleaseBackBuffers() {

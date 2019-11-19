@@ -9,6 +9,7 @@
 
 #include "base/component_export.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/synchronization/lock.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
@@ -71,7 +72,9 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) MessageQuotaChecker
   static scoped_refptr<MessageQuotaChecker> MaybeCreateImpl(
       const Configuration& config);
 
-  size_t GetCurrentQuotaStatus();
+  // Returns the amount of unread message quota currently used if there is
+  // an associated message pipe.
+  base::Optional<size_t> GetCurrentMessagePipeQuota();
   void QuotaCheckImpl(size_t num_enqueued);
 
   const Configuration* config_;
@@ -94,7 +97,8 @@ struct MessageQuotaChecker::Configuration {
   size_t sample_rate = 0u;
   size_t unread_message_count_quota = 0u;
   size_t crash_threshold = 0u;
-  void (*maybe_crash_function)(size_t quota_used);
+  void (*maybe_crash_function)(size_t quota_used,
+                               base::Optional<size_t> message_pipe_quota_used);
 };
 
 }  // namespace internal

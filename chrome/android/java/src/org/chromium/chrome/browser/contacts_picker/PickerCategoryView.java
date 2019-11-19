@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.contacts_picker;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -18,6 +19,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
@@ -45,7 +47,8 @@ import java.util.Set;
 public class PickerCategoryView extends OptimizedFrameLayout
         implements View.OnClickListener, RecyclerView.RecyclerListener,
                    SelectionDelegate.SelectionObserver<ContactDetails>,
-                   SelectableListToolbar.SearchDelegate, TopView.SelectAllToggleCallback {
+                   SelectableListToolbar.SearchDelegate, TopView.SelectAllToggleCallback,
+                   CompressContactIconsWorkerTask.CompressContactIconsCallback {
     // These values are written to logs.  New enum values can be added, but existing
     // enums must never be renumbered or deleted and reused.
     private static final int ACTION_CANCEL = 0;
@@ -91,7 +94,7 @@ public class PickerCategoryView extends OptimizedFrameLayout
     private SelectionDelegate<ContactDetails> mSelectionDelegate;
 
     // A cache for contact images, lazily created.
-    private BitmapCache mBitmapCache;
+    private ContactsBitmapCache mBitmapCache;
 
     // The search icon.
     private ImageView mSearchButton;
@@ -105,9 +108,6 @@ public class PickerCategoryView extends OptimizedFrameLayout
     // Whether the picker is in multi-selection mode.
     private boolean mMultiSelectionAllowed;
 
-    // Whether the contacts data returned includes icons.
-    public final boolean includeIcons;
-
     // Whether the contacts data returned includes names.
     public final boolean includeNames;
 
@@ -119,6 +119,9 @@ public class PickerCategoryView extends OptimizedFrameLayout
 
     // Whether the contacts data returned includes addresses.
     public final boolean includeAddresses;
+
+    // Whether the contacts data returned includes icons.
+    public final boolean includeIcons;
 
     /**
      * @param multiSelectionAllowed Whether the contacts picker should allow multiple items to be
@@ -133,11 +136,11 @@ public class PickerCategoryView extends OptimizedFrameLayout
 
         mActivity = (ChromeActivity) context;
         mMultiSelectionAllowed = multiSelectionAllowed;
-        includeIcons = shouldIncludeIcons;
         includeNames = shouldIncludeNames;
         includeEmails = shouldIncludeEmails;
         includeTel = shouldIncludeTel;
         includeAddresses = shouldIncludeAddresses;
+        includeIcons = shouldIncludeIcons;
 
         mSelectionDelegate = new SelectionDelegate<ContactDetails>();
         if (!multiSelectionAllowed) mSelectionDelegate.setSingleSelectionMode();
@@ -177,12 +180,7 @@ public class PickerCategoryView extends OptimizedFrameLayout
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        // Each image (on a Pixel 2 phone) is about 30-40K. Calculate a proportional amount of the
-        // available memory, but cap it at 5MB.
-        final long maxMemory = ConversionUtils.bytesToKilobytes(Runtime.getRuntime().maxMemory());
-        int iconCacheSizeKb = (int) (maxMemory / 8); // 1/8th of the available memory.
-        mBitmapCache = new BitmapCache(GlobalDiscardableReferencePool.getReferencePool(),
-                Math.min(iconCacheSizeKb, 5 * ConversionUtils.BYTES_PER_MEGABYTE));
+        mBitmapCache = new ContactsBitmapCache();
     }
 
     /**
@@ -296,7 +294,7 @@ public class PickerCategoryView extends OptimizedFrameLayout
     public void onClick(View view) {
         int id = view.getId();
         if (id == R.id.done) {
-            notifyContactsSelected();
+            prepareContactsSelected();
         } else if (id == R.id.search) {
             onStartSearch();
         } else {
@@ -314,7 +312,7 @@ public class PickerCategoryView extends OptimizedFrameLayout
         return mIconGenerator;
     }
 
-    BitmapCache getIconCache() {
+    ContactsBitmapCache getIconCache() {
         return mBitmapCache;
     }
 
@@ -328,6 +326,29 @@ public class PickerCategoryView extends OptimizedFrameLayout
 
     boolean multiSelectionAllowed() {
         return mMultiSelectionAllowed;
+    }
+
+    /**
+     * Formats the selected contacts before notifying the listeners.
+     */
+    private void prepareContactsSelected() {
+        List<ContactDetails> selectedContacts = mSelectionDelegate.getSelectedItemsAsList();
+        Collections.sort(selectedContacts);
+
+        if (includeIcons && PickerAdapter.includesIcons()) {
+            // Fetch missing icons and compress them first.
+            new CompressContactIconsWorkerTask(
+                    mActivity.getContentResolver(), mBitmapCache, selectedContacts, this)
+                    .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            return;
+        }
+
+        notifyContactsSelected(selectedContacts);
+    }
+
+    @Override
+    public void iconsCompressed(List<ContactDetails> selectedContacts) {
+        notifyContactsSelected(selectedContacts);
     }
 
     /**
@@ -355,12 +376,8 @@ public class PickerCategoryView extends OptimizedFrameLayout
     /**
      * Notifies any listeners that one or more contacts have been selected.
      */
-    private void notifyContactsSelected() {
-        List<ContactDetails> selectedContacts = mSelectionDelegate.getSelectedItemsAsList();
-        Collections.sort(selectedContacts);
-
-        List<ContactsPickerListener.Contact> contacts =
-                new ArrayList<ContactsPickerListener.Contact>();
+    private void notifyContactsSelected(List<ContactDetails> selectedContacts) {
+        List<ContactsPickerListener.Contact> contacts = new ArrayList<>();
 
         for (ContactDetails contactDetails : selectedContacts) {
             contacts.add(new ContactsPickerListener.Contact(
@@ -370,10 +387,12 @@ public class PickerCategoryView extends OptimizedFrameLayout
                             contactDetails.getEmails()),
                     getContactPropertyValues(includeTel, PickerAdapter.includesTelephones(),
                             contactDetails.getPhoneNumbers()),
-                    // TODO(crbug.com/1016870): Check the address chip when added.
-                    getContactPropertyValues(
-                            includeAddresses, true, contactDetails.getAddresses())));
+                    getContactPropertyValues(includeAddresses, PickerAdapter.includesAddresses(),
+                            contactDetails.getAddresses()),
+                    getContactPropertyValues(includeIcons, PickerAdapter.includesIcons(),
+                            contactDetails.getIcons())));
         }
+
         executeAction(ContactsPickerListener.ContactsPickerAction.CONTACTS_SELECTED, contacts,
                 ACTION_CONTACTS_SELECTED);
     }
@@ -439,5 +458,36 @@ public class PickerCategoryView extends OptimizedFrameLayout
     @VisibleForTesting
     public TopView getTopViewForTesting() {
         return mTopView;
+    }
+
+    // A wrapper around BitmapCache to keep track of contacts that don't have an icon.
+    protected static class ContactsBitmapCache {
+        public BitmapCache bitmapCache;
+        public Set<String> noIconIds;
+
+        public ContactsBitmapCache() {
+            // Each image (on a Pixel 2 phone) is about 30-40K. Calculate a proportional amount of
+            // the available memory, but cap it at 5MB.
+            final long maxMemory =
+                    ConversionUtils.bytesToKilobytes(Runtime.getRuntime().maxMemory());
+            int iconCacheSizeKb = (int) (maxMemory / 8); // 1/8th of the available memory.
+            bitmapCache = new BitmapCache(GlobalDiscardableReferencePool.getReferencePool(),
+                    Math.min(iconCacheSizeKb, 5 * ConversionUtils.BYTES_PER_MEGABYTE));
+
+            noIconIds = new HashSet<>();
+        }
+
+        public Bitmap getBitmap(String id) {
+            return bitmapCache.getBitmap(id);
+        }
+
+        public void putBitmap(String id, Bitmap icon) {
+            if (icon == null) {
+                noIconIds.add(id);
+            } else {
+                bitmapCache.putBitmap(id, icon);
+                noIconIds.remove(id);
+            }
+        }
     }
 }

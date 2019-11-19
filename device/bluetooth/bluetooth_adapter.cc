@@ -37,7 +37,7 @@ base::WeakPtr<BluetoothAdapter> BluetoothAdapter::CreateAdapter(
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_WIN) && !defined(OS_MACOSX)
 
 base::WeakPtr<BluetoothAdapter> BluetoothAdapter::GetWeakPtrForTesting() {
-  return weak_ptr_factory_.GetWeakPtr();
+  return GetWeakPtr();
 }
 
 #if defined(OS_LINUX)
@@ -446,8 +446,15 @@ void BluetoothAdapter::OnDiscoveryChangeComplete(
     UMABluetoothDiscoverySessionOutcome outcome) {
   UpdateDiscoveryState(is_error);
 
+  // Take a weak reference to |this| in case a callback frees the adapter.
+  base::WeakPtr<BluetoothAdapter> self = GetWeakPtr();
+
   if (is_error) {
     NotifyDiscoveryError(std::move(callbacks_awaiting_response_));
+
+    if (!self)
+      return;
+
     discovery_request_pending_ = false;
     ProcessDiscoveryQueue();
     return;
@@ -455,16 +462,20 @@ void BluetoothAdapter::OnDiscoveryChangeComplete(
 
   current_discovery_filter_.CopyFrom(filter_being_set_);
 
-  while (!callbacks_awaiting_response_.empty()) {
+  auto callbacks_awaiting_response = std::move(callbacks_awaiting_response_);
+  while (!callbacks_awaiting_response.empty()) {
     std::unique_ptr<StartOrStopDiscoveryCallback> callbacks =
-        std::move(callbacks_awaiting_response_.front());
-    callbacks_awaiting_response_.pop();
+        std::move(callbacks_awaiting_response.front());
+    callbacks_awaiting_response.pop();
     if (callbacks->start_callback)
       std::move(callbacks->start_callback).Run();
-
     if (callbacks->stop_callback)
       std::move(callbacks->stop_callback).Run();
   }
+
+  if (!self)
+    return;
+
   discovery_request_pending_ = false;
   ProcessDiscoveryQueue();
 }
@@ -501,14 +512,13 @@ void BluetoothAdapter::ProcessDiscoveryQueue() {
     internal_discovery_state_ = DiscoveryState::kStopping;
     discovery_request_pending_ = true;
     StopScan(base::BindOnce(&BluetoothAdapter::OnDiscoveryChangeComplete,
-                            weak_ptr_factory_.GetWeakPtr()));
+                            GetWeakPtr()));
 
     return;
   }
 
-  auto result_callback =
-      base::BindOnce(&BluetoothAdapter::OnDiscoveryChangeComplete,
-                     weak_ptr_factory_.GetWeakPtr());
+  auto result_callback = base::BindOnce(
+      &BluetoothAdapter::OnDiscoveryChangeComplete, GetWeakPtr());
   auto new_desired_filter = GetMergedDiscoveryFilter();
   discovery_request_pending_ = true;
   filter_being_set_.CopyFrom(*new_desired_filter.get());

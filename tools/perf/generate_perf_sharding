@@ -209,7 +209,8 @@ def _UpdateTimingData(builders):
   for b in builders:
     load_timing_args.append((b.name, b.timing_file_path))
   p = multiprocessing.Pool(len(load_timing_args))
-  p.map(_LoadTimingData, load_timing_args)
+  # Use map_async to work around python bug. See crbug.com/1026004.
+  p.map_async(_LoadTimingData, load_timing_args).get(12*60*60)
 
 
 def _GetBuilderPlatforms(args):

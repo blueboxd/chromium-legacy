@@ -56,10 +56,20 @@ Polymer({
     cloudPrintInterface_: Object,
 
     /** @private {boolean} */
-    controlsManaged_: Boolean,
+    controlsManaged_: {
+      type: Boolean,
+      computed: 'computeControlsManaged_(destinationsManaged_, ' +
+          'settingsManaged_)',
+    },
 
     /** @private {Destination} */
     destination_: Object,
+
+    /** @private {boolean} */
+    destinationsManaged_: {
+      type: Boolean,
+      value: false,
+    },
 
     /** @private {!DestinationState} */
     destinationState_: {
@@ -87,6 +97,12 @@ Polymer({
 
     /** @private {!PrintableArea} */
     printableArea_: Object,
+
+    /** @private {boolean} */
+    settingsManaged_: {
+      type: Boolean,
+      value: false,
+    },
 
     /** @private {?MeasurementSystem} */
     measurementSystem_: {
@@ -303,6 +319,7 @@ Polymer({
           settings.serializedDefaultDestinationSelectionRulesStr,
           settings.userAccounts || null, settings.syncAvailable,
           settings.pdfPrinterDisabled);
+      this.destinationsManaged_ = settings.destinationsManaged;
       this.isInKioskAutoPrintMode_ = settings.isInKioskAutoPrintMode;
 
       // This is only visible in the task manager.
@@ -333,6 +350,15 @@ Polymer({
         assert(this.cloudPrintInterface_).getEventTarget(),
         CloudPrintInterfaceEventType.SUBMIT_FAILED,
         this.onCloudPrintError_.bind(this, appKioskMode));
+  },
+
+  /**
+   * @return {boolean} Whether any of the print preview settings or destinations
+   *     are managed.
+   * @private
+   */
+  computeControlsManaged_: function() {
+    return this.destinationsManaged_ || this.settingsManaged_;
   },
 
   /** @private */

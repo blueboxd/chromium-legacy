@@ -790,7 +790,7 @@ class MenuControllerTest : public ViewsTestBase,
   void AddButtonMenuItems() {
     menu_item()->SetBounds(0, 0, 200, 300);
     MenuItemView* item_view =
-        menu_item()->AppendMenuItemWithLabel(5, base::ASCIIToUTF16("Five"));
+        menu_item()->AppendMenuItem(5, base::ASCIIToUTF16("Five"));
     for (size_t i = 0; i < 3; ++i) {
       LabelButton* button =
           new LabelButton(nullptr, base::ASCIIToUTF16("Label"));
@@ -854,10 +854,10 @@ class MenuControllerTest : public ViewsTestBase,
   void SetupMenuItem() {
     menu_delegate_ = std::make_unique<TestMenuDelegate>();
     menu_item_ = std::make_unique<TestMenuItemViewShown>(menu_delegate_.get());
-    menu_item_->AppendMenuItemWithLabel(1, base::ASCIIToUTF16("One"));
-    menu_item_->AppendMenuItemWithLabel(2, base::ASCIIToUTF16("Two"));
-    menu_item_->AppendMenuItemWithLabel(3, base::ASCIIToUTF16("Three"));
-    menu_item_->AppendMenuItemWithLabel(4, base::ASCIIToUTF16("Four"));
+    menu_item_->AppendMenuItem(1, base::ASCIIToUTF16("One"));
+    menu_item_->AppendMenuItem(2, base::ASCIIToUTF16("Two"));
+    menu_item_->AppendMenuItem(3, base::ASCIIToUTF16("Three"));
+    menu_item_->AppendMenuItem(4, base::ASCIIToUTF16("Four"));
   }
 
   void SetupMenuController() {
@@ -1933,7 +1933,7 @@ TEST_P(MenuControllerTest, TestMenuFitsOnSmallScreen) {
 TEST_P(MenuControllerTest, TestSubmenuFitsOnScreen) {
   menu_controller()->set_use_touchable_layout(true);
   MenuItemView* sub_item = menu_item()->GetSubmenu()->GetMenuItemAt(0);
-  sub_item->AppendMenuItemWithLabel(11, base::ASCIIToUTF16("Subitem.One"));
+  sub_item->AppendMenuItem(11, base::ASCIIToUTF16("Subitem.One"));
 
   const int menu_width = MenuConfig::instance().touchable_menu_width;
   const gfx::Size parent_size(menu_width, menu_width);
@@ -2016,8 +2016,8 @@ TEST_F(MenuControllerTest, MouseAtMenuItemOnShow) {
   std::unique_ptr<TestMenuItemViewNotShown> menu_item(
       new TestMenuItemViewNotShown(menu_delegate()));
   MenuItemView* first_item =
-      menu_item->AppendMenuItemWithLabel(1, base::ASCIIToUTF16("One"));
-  menu_item->AppendMenuItemWithLabel(2, base::ASCIIToUTF16("Two"));
+      menu_item->AppendMenuItem(1, base::ASCIIToUTF16("One"));
+  menu_item->AppendMenuItem(2, base::ASCIIToUTF16("Two"));
   menu_item->SetController(menu_controller());
 
   // Move the mouse to where the first menu item will be shown,

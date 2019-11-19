@@ -44,7 +44,7 @@ float ComputeRedirectConfidence(const predictors::RedirectStat& redirect) {
 void InitializeOriginStatFromOriginRequestSummary(
     OriginStat* origin,
     const OriginRequestSummary& summary) {
-  origin->set_origin(summary.origin.spec());
+  origin->set_origin(summary.origin.GetURL().spec());
   origin->set_number_of_hits(1);
   origin->set_average_position(summary.first_occurrence + 1);
   origin->set_always_access_network(summary.always_access_network);
@@ -67,7 +67,7 @@ GURL CreateRedirectURL(const std::string& scheme,
 }  // namespace
 
 PreconnectRequest::PreconnectRequest(
-    const GURL& origin,
+    const url::Origin& origin,
     int num_sockets,
     const net::NetworkIsolationKey& network_isolation_key)
     : origin(origin),
@@ -197,7 +197,7 @@ bool ResourcePrefetchPredictor::GetRedirectEndpointsForPreconnect(
     // Set network isolation key same as the origin of the redirect target.
     if (prediction) {
       prediction->requests.emplace_back(
-          redirect_origin.GetURL(), 1 /* num_scokets */,
+          redirect_origin, 1 /* num_scokets */,
           net::NetworkIsolationKey(redirect_origin, redirect_origin));
     }
     at_least_one_redirect_endpoint_added = true;
@@ -334,11 +334,13 @@ bool ResourcePrefetchPredictor::PredictPreconnectOrigins(
     has_any_prediction = true;
     if (prediction) {
       if (confidence > kMinOriginConfidenceToTriggerPreconnect) {
-        prediction->requests.emplace_back(GURL(origin.origin()), 1,
-                                          network_isolation_key);
+        prediction->requests.emplace_back(
+            url::Origin::Create(GURL(origin.origin())), 1,
+            network_isolation_key);
       } else {
-        prediction->requests.emplace_back(GURL(origin.origin()), 0,
-                                          network_isolation_key);
+        prediction->requests.emplace_back(
+            url::Origin::Create(GURL(origin.origin())), 0,
+            network_isolation_key);
       }
     }
   }
@@ -479,7 +481,7 @@ void ResourcePrefetchPredictor::LearnRedirect(const std::string& key,
 void ResourcePrefetchPredictor::LearnOrigins(
     const std::string& host,
     const GURL& main_frame_origin,
-    const std::map<GURL, OriginRequestSummary>& summaries) {
+    const std::map<url::Origin, OriginRequestSummary>& summaries) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (host.size() > ResourcePrefetchPredictorTables::kMaxStringLength)
     return;
@@ -505,18 +507,20 @@ void ResourcePrefetchPredictor::LearnOrigins(
   } else {
     data.set_last_visit_time(base::Time::Now().ToInternalValue());
 
-    std::map<GURL, int> old_index;
+    std::map<url::Origin, int> old_index;
     int old_size = static_cast<int>(data.origins_size());
     for (int i = 0; i < old_size; ++i) {
       bool is_new =
-          old_index.insert({GURL(data.origins(i).origin()), i}).second;
+          old_index
+              .insert({url::Origin::Create(GURL(data.origins(i).origin())), i})
+              .second;
       DCHECK(is_new);
     }
 
     // Update the old origins.
     for (int i = 0; i < old_size; ++i) {
       auto* old_origin = data.mutable_origins(i);
-      GURL origin(old_origin->origin());
+      url::Origin origin = url::Origin::Create(GURL(old_origin->origin()));
       auto it = summaries.find(origin);
       if (it == summaries.end()) {
         // miss

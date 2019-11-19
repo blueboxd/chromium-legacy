@@ -55,16 +55,6 @@ const base::Feature kOptimizationHintsFetchingAnonymousDataConsent{
     "OptimizationHintsFetchingAnonymousDataConsent",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables the initialization of the Optimization Guide Keyed Service.
-const base::Feature kOptimizationGuideKeyedService{
-  "OptimizationGuideKeyedService",
-#if defined(OS_ANDROID)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else   // !defined(OS_ANDROID)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif  // defined(OS_ANDROID)
-};
-
 // Enables the prediction of optimization targets.
 const base::Feature kOptimizationTargetPrediction{
     "OptimizationTargetPrediction", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -173,10 +163,6 @@ bool IsHintsFetchingEnabled() {
 bool IsHintsFetchingForAnonymousDataConsentEnabled() {
   return base::FeatureList::IsEnabled(
       kOptimizationHintsFetchingAnonymousDataConsent);
-}
-
-bool IsOptimizationGuideKeyedServiceEnabled() {
-  return base::FeatureList::IsEnabled(kOptimizationGuideKeyedService);
 }
 
 int MaxServerBloomFilterByteSize() {

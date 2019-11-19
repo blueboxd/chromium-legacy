@@ -2,6 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {TestCommandManager} from 'chrome://test/bookmarks/test_command_manager.js';
+import {TestStore} from 'chrome://test/bookmarks/test_store.js';
+import {changeFolderOpen, Command, selectFolder} from 'chrome://bookmarks/bookmarks.js';
+import {createFolder, createItem, findFolderNode, getAllFoldersOpenState, replaceBody, testTree} from 'chrome://test/bookmarks/test_util.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+
 suite('<bookmarks-folder-node>', function() {
   let rootNode;
   let store;
@@ -15,14 +23,14 @@ suite('<bookmarks-folder-node>', function() {
     const activeElement = node.shadowRoot.activeElement;
     assertTrue(
         activeElement != null && activeElement == getDeepActiveElement());
-    const badAction = bookmarks.actions.selectFolder(id);
+    const badAction = selectFolder(id);
     if (store.lastAction != null && badAction.name == store.lastAction.name) {
       assertNotEquals(badAction.id, store.lastAction.id);
     }
   }
 
   function keydown(id, key) {
-    MockInteractions.keyDownOn(getFolderNode(id).$.container, '', [], key);
+    keyDownOn(getFolderNode(id).$.container, '', [], key);
   }
 
   setup(function() {
@@ -39,7 +47,7 @@ suite('<bookmarks-folder-node>', function() {
               createItem('5'),
             ]),
         createFolder('7', []));
-    store = new bookmarks.TestStore({
+    store = new TestStore({
       nodes: nodes,
       folderOpenState: getAllFoldersOpenState(nodes),
       selectedFolder: '1',
@@ -51,7 +59,7 @@ suite('<bookmarks-folder-node>', function() {
     rootNode.itemId = '0';
     rootNode.depth = -1;
     replaceBody(rootNode);
-    Polymer.dom.flush();
+    flush();
   });
 
   test('keyboard selection', function() {
@@ -89,7 +97,7 @@ suite('<bookmarks-folder-node>', function() {
     assertHasFocusAndNotSelected('2');
     keydown('2', ' ');
 
-    assertDeepEquals(bookmarks.actions.selectFolder('2'), store.lastAction);
+    assertDeepEquals(selectFolder('2'), store.lastAction);
     store.data.selectedFolder = '2';
     store.notifyObservers();
 
@@ -102,7 +110,7 @@ suite('<bookmarks-folder-node>', function() {
     assertHasFocusAndNotSelected('7');
     keydown('7', ' ');
 
-    assertDeepEquals(bookmarks.actions.selectFolder('7'), store.lastAction);
+    assertDeepEquals(selectFolder('7'), store.lastAction);
     assertFocused('2', '7');
 
     // Move down past end of list.
@@ -115,14 +123,14 @@ suite('<bookmarks-folder-node>', function() {
     assertHasFocusAndNotSelected('2');
     keydown('2', ' ');
 
-    assertDeepEquals(bookmarks.actions.selectFolder('2'), store.lastAction);
+    assertDeepEquals(selectFolder('2'), store.lastAction);
     assertFocused('7', '2');
 
     // Move up into parent.
     keydown('2', 'ArrowUp');
     assertHasFocusAndNotSelected('1');
     keydown('1', ' ');
-    assertDeepEquals(bookmarks.actions.selectFolder('1'), store.lastAction);
+    assertDeepEquals(selectFolder('1'), store.lastAction);
     assertFocused('2', '1');
 
     // Move up past start of list.
@@ -143,18 +151,18 @@ suite('<bookmarks-folder-node>', function() {
     assertHasFocusAndNotSelected('2');
     keydown('2', ' ');
 
-    assertDeepEquals(bookmarks.actions.selectFolder('2'), store.lastAction);
+    assertDeepEquals(selectFolder('2'), store.lastAction);
 
     // Pressing right on a closed folder opens that folder
     keydown('2', 'ArrowRight');
     assertDeepEquals(
-        bookmarks.actions.changeFolderOpen('2', true), store.lastAction);
+        changeFolderOpen('2', true), store.lastAction);
 
     // Pressing right again descends into first child.
     keydown('2', 'ArrowRight');
     assertHasFocusAndNotSelected('3');
     keydown('3', ' ');
-    assertDeepEquals(bookmarks.actions.selectFolder('3'), store.lastAction);
+    assertDeepEquals(selectFolder('3'), store.lastAction);
 
     // Pressing right on a folder with no children does nothing.
     store.resetLastAction();
@@ -167,29 +175,29 @@ suite('<bookmarks-folder-node>', function() {
     keydown('4', 'ArrowLeft');
     assertHasFocusAndNotSelected('2');
     keydown('2', ' ');
-    assertDeepEquals(bookmarks.actions.selectFolder('2'), store.lastAction);
+    assertDeepEquals(selectFolder('2'), store.lastAction);
 
     // Pressing left again closes the parent.
     keydown('2', 'ArrowLeft');
     assertDeepEquals(
-        bookmarks.actions.changeFolderOpen('2', false), store.lastAction);
+        changeFolderOpen('2', false), store.lastAction);
 
     // RTL flips left and right.
     document.body.style.direction = 'rtl';
     keydown('2', 'ArrowLeft');
     assertDeepEquals(
-        bookmarks.actions.changeFolderOpen('2', true), store.lastAction);
+        changeFolderOpen('2', true), store.lastAction);
 
     keydown('2', 'ArrowRight');
     assertDeepEquals(
-        bookmarks.actions.changeFolderOpen('2', false), store.lastAction);
+        changeFolderOpen('2', false), store.lastAction);
 
     document.body.style.direction = 'ltr';
   });
 
   test('keyboard commands are passed to command manager', function() {
-    const commandManager = new TestCommandManager();
-    document.body.appendChild(commandManager);
+    const testCommandManager = new TestCommandManager();
+    document.body.appendChild(testCommandManager.getCommandManager());
     chrome.bookmarkManagerPrivate.removeTrees = function() {};
 
     store.data.selection.items = new Set(['3', '4']);
@@ -199,6 +207,6 @@ suite('<bookmarks-folder-node>', function() {
     getFolderNode('2').$.container.focus();
     keydown('2', 'Delete');
 
-    commandManager.assertLastCommand(Command.DELETE, ['2']);
+    testCommandManager.assertLastCommand(Command.DELETE, ['2']);
   });
 });

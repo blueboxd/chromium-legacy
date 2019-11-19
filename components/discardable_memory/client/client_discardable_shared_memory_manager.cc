@@ -378,6 +378,16 @@ ClientDiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
                      std::move(event_signal_runner)));
   // Waiting until IPC has finished on the IO thread.
   event.Wait();
+
+  // This is likely address space exhaustion in the the browser process. We
+  // don't want to crash the browser process for that, which is why the check is
+  // here, and not there.
+  //
+  // TODO(crbug.com/983348): If this crashing a lot, fall back to a regular
+  // allocation in the renderer process.
+  if (!region.IsValid())
+    base::TerminateBecauseOutOfMemory(size);
+
   auto memory =
       std::make_unique<base::DiscardableSharedMemory>(std::move(region));
   if (!memory->Map(size))

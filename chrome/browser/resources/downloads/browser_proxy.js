@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('downloads', function() {
-  class BrowserProxy {
+import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
+import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
+import './downloads.mojom-lite.js';
+
+  export class BrowserProxy {
     constructor() {
       /** @type {downloads.mojom.PageCallbackRouter} */
       this.callbackRouter = new downloads.mojom.PageCallbackRouter();
@@ -18,7 +21,4 @@ cr.define('downloads', function() {
     }
   }
 
-  cr.addSingletonGetter(BrowserProxy);
-
-  return {BrowserProxy: BrowserProxy};
-});
+  addSingletonGetter(BrowserProxy);

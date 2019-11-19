@@ -5,8 +5,6 @@
 #ifndef CHROMEOS_SERVICES_ASSISTANT_PUBLIC_CPP_ASSISTANT_PREFS_H_
 #define CHROMEOS_SERVICES_ASSISTANT_PUBLIC_CPP_ASSISTANT_PREFS_H_
 
-#include "components/prefs/pref_service.h"
-
 class PrefRegistrySimple;
 
 namespace chromeos {
@@ -40,11 +38,7 @@ extern const char kAssistantLaunchWithMicOpen[];
 extern const char kAssistantNotificationEnabled[];
 
 // Registers Assistant specific profile preferences for browser prefs.
-void RegisterProfilePrefsForBrowser(PrefRegistrySimple* registry);
-
-// Registers Assistant specific profile preferences from foreign pref services.
-void RegisterProfilePrefsForeign(PrefRegistrySimple* registry,
-                                 bool for_test = false);
+void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
 }  // namespace prefs
 }  // namespace assistant

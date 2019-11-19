@@ -101,6 +101,10 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
 
   PasswordType password_type() const { return password_type_; }
 
+  const std::vector<std::string> matching_domains() const& {
+    return matching_domains_;
+  }
+
   bool is_modal_warning_showing() const { return is_modal_warning_showing_; }
 
   void set_is_modal_warning_showing(bool is_warning_showing) {

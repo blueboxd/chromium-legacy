@@ -198,6 +198,11 @@ message AssociateCastAppWindowRequest {
 
 message AssociateCastAppWindowResponse {}
 
+message ResizeRequest {
+  int32 width = 1;
+  int32 height = 2;
+}
+
 message WebviewRequest {
   // Unique identifier for the request. For requests that will have a response,
   // the response id will match the request id.
@@ -242,6 +247,7 @@ message WebviewRequest {
     NavigationDecision navigation_decision = 19;
     // This must be the first request for CreateCastAppWindowLink
     AssociateCastAppWindowRequest associate = 20;
+    ResizeRequest resize = 21;
   }
 }
 

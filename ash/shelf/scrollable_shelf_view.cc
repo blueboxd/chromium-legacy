@@ -868,6 +868,13 @@ void ScrollableShelfView::OnShelfButtonAboutToRequestFocusFromTabTraversal(
 
   shelf_view_->OnShelfButtonAboutToRequestFocusFromTabTraversal(button,
                                                                 reverse);
+  ShelfWidget* shelf_widget = GetShelf()->shelf_widget();
+  // In tablet mode, when the hotseat is not extended but one of the buttons
+  // gets focused, it should update the visibility of the hotseat.
+  if (IsInTabletMode() && chromeos::switches::ShouldShowShelfHotseat() &&
+      !shelf_widget->hotseat_widget()->IsExtended()) {
+    shelf_widget->shelf_layout_manager()->UpdateVisibilityState();
+  }
 }
 
 void ScrollableShelfView::ButtonPressed(views::Button* sender,

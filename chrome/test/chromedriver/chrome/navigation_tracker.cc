@@ -214,7 +214,8 @@ Status NavigationTracker::DetermineUnknownLoadingState() {
   if (status.IsError() || !result->GetString("result.value", &ready_state)) {
     return MakeNavigationCheckFailedStatus(status);
   }
-  if (ready_state == "complete") {
+  if (ready_state == "complete" ||
+      (is_eager_ && ready_state == "interactive")) {
     loading_state_ = kNotLoading;
   } else {
     loading_state_ = kLoading;

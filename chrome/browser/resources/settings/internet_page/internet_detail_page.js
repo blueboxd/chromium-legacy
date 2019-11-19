@@ -16,7 +16,7 @@ Polymer({
   is: 'settings-internet-detail-page',
 
   behaviors: [
-    CrNetworkListenerBehavior,
+    NetworkListenerBehavior,
     CrPolicyNetworkBehaviorMojo,
     settings.RouteObserverBehavior,
     I18nBehavior,

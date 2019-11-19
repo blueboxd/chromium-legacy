@@ -36,6 +36,12 @@ namespace ash {
 
 namespace {
 
+using assistant::util::CreateLayerAnimationSequence;
+using assistant::util::CreateOpacityElement;
+using assistant::util::CreateTransformElement;
+using assistant::util::StartLayerAnimationSequence;
+using assistant::util::StartLayerAnimationSequencesTogether;
+
 // Appearance.
 constexpr int kGreetingLabelMarginTopDip = 28;
 constexpr int kProgressIndicatorMarginLeftDip = 32;
@@ -293,14 +299,10 @@ void AssistantMainStage::InitOverlayLayoutContainer() {
 }
 
 void AssistantMainStage::OnCommittedQueryChanged(const AssistantQuery& query) {
-  using assistant::util::CreateLayerAnimationSequence;
-  using assistant::util::CreateOpacityElement;
-
   if (is_first_query_) {
     // Hide the greeting label (for the first query)...
-    greeting_label_->layer()->GetAnimator()->StartAnimation(
-        CreateLayerAnimationSequence(
-            CreateOpacityElement(0.f, kGreetingAnimationFadeOutDuration)));
+    assistant::util::FadeOutAndHide(greeting_label_,
+                                    kGreetingAnimationFadeOutDuration);
   }
 
   // ...and always show the progress indicator.
@@ -337,10 +339,6 @@ void AssistantMainStage::OnCommittedQueryChanged(const AssistantQuery& query) {
 }
 
 void AssistantMainStage::OnActivateQuery() {
-  using assistant::util::CreateLayerAnimationSequence;
-  using assistant::util::CreateOpacityElement;
-  using assistant::util::CreateTransformElement;
-
   if (!committed_query_view_)
     return;
 
@@ -381,11 +379,6 @@ void AssistantMainStage::OnActivateQuery() {
 void AssistantMainStage::OnActiveQueryCleared() {
   if (!active_query_view_)
     return;
-
-  using assistant::util::CreateLayerAnimationSequence;
-  using assistant::util::CreateOpacityElement;
-  using assistant::util::CreateTransformElement;
-  using assistant::util::StartLayerAnimationSequencesTogether;
 
   // The active query view will translate off stage.
   gfx::Transform transform;
@@ -428,6 +421,31 @@ bool AssistantMainStage::OnActiveQueryExitAnimationEnded(
   return false;
 }
 
+void AssistantMainStage::AnimateInGreetingLabel() {
+  // We're going to animate the greeting label up into position so we'll
+  // need to apply an initial transformation.
+  gfx::Transform transform;
+  transform.Translate(0, kGreetingAnimationTranslationDip);
+
+  // Set up our pre-animation values.
+  greeting_label_->layer()->SetOpacity(0.f);
+  greeting_label_->layer()->SetTransform(transform);
+  greeting_label_->SetVisible(true);
+
+  // Start animating greeting label.
+  greeting_label_->layer()->GetAnimator()->StartTogether(
+      {// Animate the transformation.
+       CreateLayerAnimationSequence(CreateTransformElement(
+           gfx::Transform(), kGreetingAnimationTranslateUpDuration,
+           gfx::Tween::Type::FAST_OUT_SLOW_IN_2)),
+       // Animate the opacity to 100% with delay.
+       CreateLayerAnimationSequence(
+           ui::LayerAnimationElement::CreatePauseElement(
+               ui::LayerAnimationElement::AnimatableProperty::OPACITY,
+               kGreetingAnimationFadeInDelay),
+           CreateOpacityElement(1.f, kGreetingAnimationFadeInDuration))});
+}
+
 void AssistantMainStage::OnPendingQueryChanged(const AssistantQuery& query) {
   // It is possible for the user to pend multiple queries in rapid succession.
   // When this happens, a new query can be pended before the previously
@@ -439,9 +457,6 @@ void AssistantMainStage::OnPendingQueryChanged(const AssistantQuery& query) {
   }
 
   if (!pending_query_view_) {
-    using assistant::util::CreateLayerAnimationSequence;
-    using assistant::util::CreateOpacityElement;
-
     pending_query_view_ = new AssistantQueryView();
     pending_query_view_->AddObserver(this);
 
@@ -480,9 +495,6 @@ void AssistantMainStage::OnPendingQueryCleared(bool due_to_commit) {
 
 void AssistantMainStage::OnResponseChanged(
     const scoped_refptr<AssistantResponse>& response) {
-  using assistant::util::CreateLayerAnimationSequence;
-  using assistant::util::CreateOpacityElement;
-
   // Animate the progress indicator to 0% opacity.
   progress_indicator_->layer()->GetAnimator()->StartAnimation(
       CreateLayerAnimationSequence(
@@ -500,31 +512,8 @@ void AssistantMainStage::OnUiVisibilityChanged(
   if (assistant::util::IsStartingSession(new_visibility, old_visibility)) {
     // When Assistant is starting a new session, we animate in the appearance of
     // the greeting label and footer.
-    using assistant::util::CreateLayerAnimationSequence;
-    using assistant::util::CreateOpacityElement;
-    using assistant::util::CreateTransformElement;
 
-    // We're going to animate the greeting label up into position so we'll
-    // need to apply an initial transformation.
-    gfx::Transform transform;
-    transform.Translate(0, kGreetingAnimationTranslationDip);
-
-    // Set up our pre-animation values.
-    greeting_label_->layer()->SetOpacity(0.f);
-    greeting_label_->layer()->SetTransform(transform);
-
-    // Start animating greeting label.
-    greeting_label_->layer()->GetAnimator()->StartTogether(
-        {// Animate the transformation.
-         CreateLayerAnimationSequence(CreateTransformElement(
-             gfx::Transform(), kGreetingAnimationTranslateUpDuration,
-             gfx::Tween::Type::FAST_OUT_SLOW_IN_2)),
-         // Animate the opacity to 100% with delay.
-         CreateLayerAnimationSequence(
-             ui::LayerAnimationElement::CreatePauseElement(
-                 ui::LayerAnimationElement::AnimatableProperty::OPACITY,
-                 kGreetingAnimationFadeInDelay),
-             CreateOpacityElement(1.f, kGreetingAnimationFadeInDuration))});
+    AnimateInGreetingLabel();
 
     // Set up our pre-animation values.
     footer_->layer()->SetOpacity(0.f);
@@ -567,6 +556,7 @@ void AssistantMainStage::OnUiVisibilityChanged(
   pending_query_view_ = nullptr;
 
   greeting_label_->layer()->SetOpacity(1.f);
+  greeting_label_->SetVisible(true);
 
   progress_indicator_->layer()->SetOpacity(0.f);
   progress_indicator_->layer()->SetTransform(gfx::Transform());
@@ -619,12 +609,6 @@ void AssistantMainStage::UpdateQueryViewTransform(views::View* query_view) {
 }
 
 void AssistantMainStage::UpdateFooter() {
-  using assistant::util::CreateLayerAnimationSequence;
-  using assistant::util::CreateOpacityElement;
-  using assistant::util::CreateTransformElement;
-  using assistant::util::StartLayerAnimationSequence;
-  using assistant::util::StartLayerAnimationSequencesTogether;
-
   // The footer is only visible when the committed/pending query views are not.
   // When it is not visible, it should not process events.
   bool visible = !committed_query_view_ && !pending_query_view_;

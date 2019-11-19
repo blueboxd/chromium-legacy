@@ -369,29 +369,6 @@ components/rappor/rappor_parameters.h.
   </summary>
 </rappor-metric>
 
-<rappor-metric name="Startup.BrowserLaunchURL" type="UMA_RAPPOR_TYPE">
-  <owner>rkaplow@chromium.org</owner>
-  <summary>
-    The eTLD+1 of a URL that was passed in from the command line when Chrome is
-    invoked. Note that this handles the case of a URL passed to Chrome starting
-    up, or when a running Chrome is given the message to open a new URL.
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="WebComponents.EventPath" type="ETLD_PLUS_ONE">
-  <owner>kojii@chromium.org</owner>
-  <summary>
-    The host of a URL that used Event::Path().
-  </summary>
-</rappor-metric>
-
-<rappor-metric name="WebComponents.EventPath.Extensions" type="ETLD_PLUS_ONE">
-  <owner>kojii@chromium.org</owner>
-  <summary>
-    The name of an extension that used Event::Path().
-  </summary>
-</rappor-metric>
-
 </rappor-metrics>
 
 </rappor-configuration>

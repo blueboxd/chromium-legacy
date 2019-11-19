@@ -9,6 +9,7 @@ import android.graphics.drawable.Drawable;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.blink.mojom.ContactIconBlob;
 import org.chromium.chrome.R;
 import org.chromium.payments.mojom.PaymentAddress;
 
@@ -53,6 +54,9 @@ public class ContactDetails implements Comparable<ContactDetails> {
     // The list of addresses registered for this contact.
     private final List<PaymentAddress> mAddresses;
 
+    // The list of icons registered for this contact.
+    private final List<ContactIconBlob> mIcons;
+
     // Keeps track of whether this is the contact detail for the owner of the device.
     private boolean mIsSelf;
 
@@ -75,6 +79,7 @@ public class ContactDetails implements Comparable<ContactDetails> {
         mEmails = emails != null ? emails : new ArrayList<String>();
         mPhoneNumbers = phoneNumbers != null ? phoneNumbers : new ArrayList<String>();
         mAddresses = addresses != null ? addresses : new ArrayList<PaymentAddress>();
+        mIcons = new ArrayList<>();
 
         mId = id;
     }
@@ -95,12 +100,21 @@ public class ContactDetails implements Comparable<ContactDetails> {
         return mAddresses;
     }
 
+    public List<ContactIconBlob> getIcons() {
+        return mIcons;
+    }
+
     public String getDisplayName() {
         return mDisplayName;
     }
 
     public String getId() {
         return mId;
+    }
+
+    public void setIcon(ContactIconBlob icon) {
+        assert mIcons.isEmpty();
+        mIcons.add(icon);
     }
 
     /**

@@ -475,6 +475,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "click-to-call-detection-v2",
+    "owners": [ "//chrome/browser/sharing/OWNERS" ],
+    "expiry_milestone": 83
+  },
+  {
     "name": "click-to-call-open-dialer-directly",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
     "expiry_milestone": 82
@@ -502,7 +507,7 @@
   {
     "name": "compositor-threaded-scrollbar-scrolling",
     "owners": [ "arakeri@microsoft.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 90
   },
   {
     "name": "context-menu-search-with-google-lens",
@@ -913,11 +918,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-android-web-contents-dark-mode",
-    "owners": [ "tedchoc" ],
-    "expiry_milestone": 80
-  },
-  {
     "name": "enable-app-data-search",
     "owners": [ "jennyz", "kaznacheev" ],
     "expiry_milestone": 86
@@ -1310,6 +1310,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "enable-experimental-accessibility-language-detection-dynamic",
+    "owners": [ "chrishall", "//ui/accessibility/OWNERS" ],
+    "expiry_milestone": 83
+  },
+  {
     "name": "enable-experimental-accessibility-switch-access",
     "owners": [ "anastasi@google.com", "//ui/accessibility/OWNERS" ],
     "expiry_milestone": 85
@@ -1356,7 +1361,7 @@
   {
     "name": "enable-force-dark",
     "owners": [ "gilmanmh@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 85
   },
   {
     "name": "enable-fs-nosymfollow",
@@ -1738,11 +1743,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "enable-safe-browsing-ap-download-verdicts",
-    "owners": [ "drubery" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-save-data",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     // This flag is used for frequent manual testing and should not be removed.
@@ -2014,7 +2014,7 @@
   {
     "name": "enable-viz-hit-test-surface-layer",
     "owners": [ "yigu", "rjkroege", "kylechar" ],
-    "expiry_milestone": 79
+    "expiry_milestone": 81
   },
   {
     "name": "enable-vulkan",
@@ -2170,7 +2170,7 @@
   {
     "name": "enterprise-reporting-in-browser",
     "owners": [ "pastarmovj", "zmin" ],
-    "expiry_milestone": 79
+    "expiry_milestone": 81
   },
   {
     "name": "ev-details-in-page-info",
@@ -2386,11 +2386,6 @@
     "expiry_milestone": 77
   },
   {
-    "name": "identity-disc",
-    "owners": ["//chrome/android/java/src/org/chromium/chrome/browser/toolbar/OWNERS"],
-    "expiry_milestone": 78
-  },
-  {
     "name": "ignore-gpu-blacklist",
     "owners": [ "kbr", "zmo" ],
     // A debugging flag intended for end-users where there may not be any other
@@ -2483,7 +2478,7 @@
   {
     "name": "mac-syscall-sandbox",
     "owners": [ "kerrnel@google.com" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 88
   },
   {
     "name": "mac-system-media-permissions-info-ui",
@@ -2493,7 +2488,7 @@
   {
     "name": "mac-v2-gpu-sandbox",
     "owners": [ "kerrnel@google.com" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 88
   },
   {
     "name": "mac-views-task-manager",
@@ -3146,7 +3141,7 @@
   {
     "name": "scheduler-configuration",
     "owners": [ "kerrnel", "mnissler" ],
-    "expiry_milestone": 77
+    "expiry_milestone": 88
   },
   {
     "name": "scrollable-tabstrip",

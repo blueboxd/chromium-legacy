@@ -62,9 +62,10 @@ bool ManifestIconDownloader::Download(WebContents* web_contents,
 
   web_contents->DownloadImage(
       icon_url,
-      false,  // is_favicon
-      0,      // max_bitmap_size - 0 means no maximum size.
-      false,  // bypass_cache
+      false,                  // is_favicon
+      ideal_icon_size_in_px,  // preferred_size
+      0,                      // max_bitmap_size - 0 means no maximum size.
+      false,                  // bypass_cache
       base::BindOnce(&ManifestIconDownloader::OnIconFetched,
                      ideal_icon_size_in_px, minimum_icon_size_in_px,
                      square_only,

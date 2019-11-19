@@ -1,25 +1,3 @@
-<link rel="import" href="chrome://resources/html/polymer.html">
-
-<link rel="import" href="browser_proxy.html">
-<link rel="import" href="constants.html">
-<link rel="import" href="i18n_setup.html">
-<link rel="import" href="item.html">
-<link rel="import" href="search_service.html">
-<link rel="import" href="toolbar.html">
-<link rel="import" href="chrome://resources/cr_components/managed_footnote/managed_footnote.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_page_host_style_css.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast_manager.html">
-<link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
-<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
-<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
-<link rel="import" href="chrome://resources/html/cr.html">
-<link rel="import" href="chrome://resources/html/find_shortcut_behavior.html">
-<link rel="import" href="chrome://resources/html/util.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-announcer/iron-a11y-announcer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
-
-<dom-module id="downloads-manager">
-  <template>
     <style include="cr-page-host-style cr-shared-style cr-hidden-style">
       :host {
         display: flex;
@@ -142,6 +120,3 @@
     <cr-toast-manager on-undo-click="onUndoClick_" undo-label="$i18n{undo}"
         undo-description="$i18n{undoDescription}" duration="10000">
     </cr-toast-manager>
-  </template>
-  <script src="manager.js"></script>
-</dom-module>

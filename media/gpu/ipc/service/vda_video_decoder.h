@@ -14,7 +14,6 @@
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"

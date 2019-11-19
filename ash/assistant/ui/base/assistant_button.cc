@@ -29,6 +29,10 @@ AssistantButton::AssistantButton(views::ButtonListener* listener,
   constexpr SkColor kInkDropBaseColor = SK_ColorBLACK;
   constexpr float kInkDropVisibleOpacity = 0.06f;
 
+  // Avoid drawing default focus rings since assistant buttons use
+  // a custom highlight on focus.
+  SetInstallFocusRingOnFocus(false);
+
   // Focus.
   SetFocusForPlatform();
 

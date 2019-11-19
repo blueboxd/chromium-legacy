@@ -67,6 +67,7 @@ import org.chromium.chrome.browser.metrics.PageLoadMetrics;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -1395,14 +1396,13 @@ public class CustomTabsConnection {
         if (!DeviceClassManager.enablePrerendering()) {
             return SPECULATION_STATUS_ON_START_NOT_ALLOWED_DEVICE_CLASS;
         }
-        PrefServiceBridge prefs = PrefServiceBridge.getInstance();
-        if (prefs.getBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES)) {
+        if (PrefServiceBridge.getInstance().getBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES)) {
             return SPECULATION_STATUS_ON_START_NOT_ALLOWED_BLOCK_3RD_PARTY_COOKIES;
         }
         // TODO(yusufo): The check for prerender in PrivacyPreferencesManager now checks for the
         // network connection type as well, we should either change that or add another check for
-        // custom tabs. Then PrivacyManager should be used to make the below check.
-        if (!prefs.getNetworkPredictionEnabled()) {
+        // custom tabs. Then that method should be used to make the below check.
+        if (!PrivacyPreferencesManager.getInstance().getNetworkPredictionEnabled()) {
             return SPECULATION_STATUS_ON_START_NOT_ALLOWED_NETWORK_PREDICTION_DISABLED;
         }
         if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()

@@ -1373,12 +1373,14 @@ def fyi_mac_builder(
 
 fyi_mac_builder(
     name = 'Mac Builder Next',
-    goma_backend = goma.backend.RBE_PROD,
+    cores = None,
     os = os.MAC_10_14,
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 fyi_mac_builder(
     name = 'Mac10.14 Tests',
+    cores = None,
     os = os.MAC_10_14,
 )
 

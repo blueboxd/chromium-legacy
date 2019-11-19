@@ -66,6 +66,7 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
   void ShowResetScreen() override;
   void HandleDisplayCaptivePortal() override;
   void UpdateAddUserButtonStatus() override;
+  void RequestSystemInfoUpdate() override;
 
  private:
   class FakeBaseScreen;

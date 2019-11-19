@@ -373,7 +373,7 @@ void WorkletAnimation::cancel() {
   // value in the next frame. See https://crbug.com/883312.
   if (IsActive(play_state_)) {
     for (auto& effect : effects_)
-      effect->UpdateInheritedTime(NullValue(), kTimingUpdateOnDemand);
+      effect->UpdateInheritedTime(base::nullopt, kTimingUpdateOnDemand);
   }
   SetPlayState(Animation::kIdle);
   SetCurrentTime(base::nullopt);
@@ -454,7 +454,9 @@ void WorkletAnimation::Update(TimingUpdateReason reason) {
   DCHECK_EQ(effects_.size(), local_times_.size());
   for (wtf_size_t i = 0; i < effects_.size(); ++i) {
     effects_[i]->UpdateInheritedTime(
-        local_times_[i] ? local_times_[i]->InSecondsF() : NullValue(), reason);
+        local_times_[i] ? base::Optional<double>(local_times_[i]->InSecondsF())
+                        : base::nullopt,
+        reason);
   }
 }
 

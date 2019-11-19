@@ -10,6 +10,6 @@ import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bun
 
 const template = document.createElement('template');
 template.innerHTML = `
-<dom-module id="print-preview-shared" assetpath="chrome://resources/">{__html_template__}</dom-module>
+<dom-module id="print-preview-shared">{__html_template__}</dom-module>
 `;
 document.body.appendChild(template.content.cloneNode(true));

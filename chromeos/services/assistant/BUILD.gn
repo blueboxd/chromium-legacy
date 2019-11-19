@@ -27,8 +27,6 @@ component("lib") {
     "fake_assistant_manager_service_impl.h",
     "fake_assistant_settings_manager_impl.cc",
     "fake_assistant_settings_manager_impl.h",
-    "pref_connection_delegate.cc",
-    "pref_connection_delegate.h",
     "service.cc",
     "service.h",
     "service_context.h",
@@ -50,8 +48,6 @@ component("lib") {
     "//services/device/public/mojom",
     "//services/identity/public/mojom",
     "//services/network/public/cpp:cpp",
-    "//services/preferences/public/cpp",
-    "//services/preferences/public/mojom",
     "//ui/accessibility:ax_assistant",
   ]
 

@@ -10,17 +10,17 @@
 #include "fuchsia/base/frame_test_util.h"
 #include "fuchsia/base/test_navigation_listener.h"
 #include "fuchsia/engine/switches.h"
+#include "fuchsia/engine/test/test_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-const char kTestServerRoot[] = FILE_PATH_LITERAL("fuchsia/engine/test/data");
 
 class MediaTest : public cr_fuchsia::WebEngineBrowserTest {
  public:
   MediaTest()
       : run_timeout_(TestTimeouts::action_timeout(),
                      base::MakeExpectedNotRunClosure(FROM_HERE)) {
-    set_test_server_root(base::FilePath(kTestServerRoot));
+    set_test_server_root(base::FilePath(cr_fuchsia::kTestServerRoot));
   }
   ~MediaTest() override = default;
 

@@ -127,12 +127,6 @@ class NET_EXPORT HttpAuthHandlerFactory {
       HostResolver* host_resolver,
       std::unique_ptr<HttpAuthHandler>* handler);
 
-  // Factory callback to create the auth system used for Negotiate
-  // authentication.
-  using NegotiateAuthSystemFactory =
-      base::RepeatingCallback<std::unique_ptr<net::HttpAuthMechanism>(
-          const net::HttpAuthPreferences*)>;
-
   // Creates a standard HttpAuthHandlerRegistryFactory. The caller is
   // responsible for deleting the factory.
   // The default factory supports Basic, Digest, NTLM, and Negotiate schemes.
@@ -147,8 +141,8 @@ class NET_EXPORT HttpAuthHandlerFactory {
 #endif
 #if BUILDFLAG(USE_KERBEROS)
       ,
-      NegotiateAuthSystemFactory negotiate_auth_system_factory =
-          NegotiateAuthSystemFactory()
+      HttpAuthMechanismFactory negotiate_auth_system_factory =
+          HttpAuthMechanismFactory()
 #endif
   );
 
@@ -209,8 +203,8 @@ class NET_EXPORT HttpAuthHandlerRegistryFactory
 #endif
 #if BUILDFLAG(USE_KERBEROS)
       ,
-      NegotiateAuthSystemFactory negotiate_auth_system_factory =
-          NegotiateAuthSystemFactory()
+      HttpAuthMechanismFactory negotiate_auth_system_factory =
+          HttpAuthMechanismFactory()
 #endif
   );
 

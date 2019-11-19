@@ -1022,8 +1022,8 @@ void MediaSessionImpl::GetMediaImageBitmap(
   }
 
   web_contents()->DownloadImage(
-      image.src, false, desired_size_px /* max_bitmap_size */,
-      false /* bypass_cache */,
+      image.src, false /* is_favicon */, desired_size_px /* preferred_size */,
+      desired_size_px /* max_bitmap_size */, false /* bypass_cache */,
       base::BindOnce(&MediaSessionImpl::OnImageDownloadComplete,
                      base::Unretained(this), std::move(callback),
                      minimum_size_px, desired_size_px));

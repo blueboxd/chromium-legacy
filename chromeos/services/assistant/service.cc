@@ -31,12 +31,10 @@
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/assistant/service_context.h"
-#include "components/prefs/pref_service.h"
 #include "components/user_manager/known_user.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/identity/public/cpp/scope_set.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/preferences/public/mojom/preferences.mojom.h"
 
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #include "chromeos/assistant/internal/internal_constants.h"
@@ -138,14 +136,17 @@ class Service::Context : public ServiceContext {
 
 Service::Service(mojo::PendingReceiver<mojom::AssistantService> receiver,
                  std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-                     url_loader_factory_info)
+                     url_loader_factory_info,
+                 PrefService* profile_prefs)
     : receiver_(this, std::move(receiver)),
       token_refresh_timer_(std::make_unique<base::OneShotTimer>()),
       main_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       context_(std::make_unique<Context>(this)),
-      url_loader_factory_info_(std::move(url_loader_factory_info)) {
-  // TODO(xiaohuic): in MASH we will need to setup the dbus client if assistant
-  // service runs in its own process.
+      url_loader_factory_info_(std::move(url_loader_factory_info)),
+      profile_prefs_(profile_prefs) {
+  DCHECK(profile_prefs_);
+  // TODO(xiaohuic): We will need to setup the power manager dbus client if
+  // assistant service runs in its own process.
   chromeos::PowerManagerClient* power_manager_client =
       context_->power_manager_client();
   power_manager_observer_.Add(power_manager_client);
@@ -177,10 +178,6 @@ void Service::SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer) {
   token_refresh_timer_ = std::move(timer);
 }
 
-AssistantStateProxy* Service::GetAssistantStateProxyForTesting() {
-  return &assistant_state_;
-}
-
 void Service::Init(mojo::PendingRemote<mojom::Client> client,
                    mojo::PendingRemote<mojom::DeviceActions> device_actions,
                    bool is_test) {
@@ -189,7 +186,7 @@ void Service::Init(mojo::PendingRemote<mojom::Client> client,
   client_.Bind(std::move(client));
   device_actions_.Bind(std::move(device_actions));
 
-  assistant_state_.Init(client_.get());
+  assistant_state_.Init(client_.get(), profile_prefs_);
   assistant_state_.AddObserver(this);
 
   DCHECK(!assistant_manager_service_);

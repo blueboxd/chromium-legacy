@@ -167,7 +167,7 @@ class HostResolverMojoTest : public testing::Test {
   int Resolve(const std::string& hostname,
               const net::NetworkIsolationKey& network_isolation_key,
               std::vector<net::IPAddress>* out_addresses) {
-    std::unique_ptr<net::ProxyHostResolver::Request> request =
+    std::unique_ptr<ProxyHostResolver::Request> request =
         resolver_.CreateRequest(hostname,
                                 net::ProxyResolveDnsOperation::DNS_RESOLVE_EX,
                                 network_isolation_key);
@@ -288,11 +288,11 @@ TEST_F(HostResolverMojoTest, Multiple) {
   mock_resolver_.AddAction(
       HostResolverAction::ReturnError(net::ERR_NAME_NOT_RESOLVED));
 
-  std::unique_ptr<net::ProxyHostResolver::Request> request1 =
+  std::unique_ptr<ProxyHostResolver::Request> request1 =
       resolver_.CreateRequest("example.com",
                               net::ProxyResolveDnsOperation::DNS_RESOLVE_EX,
                               net::NetworkIsolationKey());
-  std::unique_ptr<net::ProxyHostResolver::Request> request2 =
+  std::unique_ptr<ProxyHostResolver::Request> request2 =
       resolver_.CreateRequest("example.org",
                               net::ProxyResolveDnsOperation::DNS_RESOLVE_EX,
                               net::NetworkIsolationKey());
@@ -342,10 +342,9 @@ TEST_F(HostResolverMojoTest, EmptyResult) {
 TEST_F(HostResolverMojoTest, Cancel) {
   mock_resolver_.AddAction(HostResolverAction::RetainRequest());
 
-  std::unique_ptr<net::ProxyHostResolver::Request> request =
-      resolver_.CreateRequest("example.com",
-                              net::ProxyResolveDnsOperation::DNS_RESOLVE_EX,
-                              net::NetworkIsolationKey());
+  std::unique_ptr<ProxyHostResolver::Request> request = resolver_.CreateRequest(
+      "example.com", net::ProxyResolveDnsOperation::DNS_RESOLVE_EX,
+      net::NetworkIsolationKey());
   request->Start(base::BindOnce(&Fail));
 
   request.reset();

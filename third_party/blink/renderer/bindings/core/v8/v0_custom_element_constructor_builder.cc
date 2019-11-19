@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/platform/bindings/v0_custom_element_binding.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
@@ -163,7 +164,7 @@ V0CustomElementConstructorBuilder::CreateCallbacks() {
   v8::MaybeLocal<v8::Function> attribute_changed =
       RetrieveCallback("attributeChangedCallback");
 
-  callbacks_ = V8V0CustomElementLifecycleCallbacks::Create(
+  callbacks_ = MakeGarbageCollected<V8V0CustomElementLifecycleCallbacks>(
       script_state_, prototype_, created, attached, detached,
       attribute_changed);
   return callbacks_.Get();

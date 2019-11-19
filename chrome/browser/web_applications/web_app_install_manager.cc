@@ -350,8 +350,7 @@ content::WebContents* WebAppInstallManager::EnsureWebContentsCreated() {
 
   DCHECK(!web_contents_ready_);
 
-  web_contents_ = content::WebContents::Create(
-      content::WebContents::CreateParams(profile()));
+  web_contents_ = WebAppInstallTask::CreateWebContents(profile());
 
   // Load about:blank so that the process actually starts.
   url_loader_->LoadUrl(GURL("about:blank"), web_contents_.get(),

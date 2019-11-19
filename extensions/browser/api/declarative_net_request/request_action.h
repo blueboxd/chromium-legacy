@@ -25,6 +25,9 @@ struct RequestAction {
     BLOCK,
     // Block the network request and collapse the corresponding DOM element.
     COLLAPSE,
+    // Allow the network request, preventing it from being intercepted by other
+    // matching rules. Only used for tracking a matched allow rule.
+    ALLOW,
     // Redirect the network request.
     REDIRECT,
     // Remove request/response headers.

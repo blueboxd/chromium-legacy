@@ -80,6 +80,10 @@ ui::ModalType TabGroupEditorBubbleView::GetModalType() const {
   return ui::MODAL_TYPE_NONE;
 }
 
+views::View* TabGroupEditorBubbleView::GetInitiallyFocusedView() {
+  return title_field_;
+}
+
 TabGroupEditorBubbleView::TabGroupEditorBubbleView(
     TabGroupHeader* anchor_view,
     TabController* tab_controller,
@@ -98,13 +102,16 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
       tab_controller_->GetVisualDataForGroup(group_);
   const int horizontal_spacing = layout_provider->GetDistanceMetric(
       views::DISTANCE_RELATED_CONTROL_HORIZONTAL);
-  const int vertical_spacing = layout_provider->GetDistanceMetric(
+  const int vertical_menu_spacing = layout_provider->GetDistanceMetric(
       views::DISTANCE_RELATED_CONTROL_VERTICAL);
+
+  // The vertical spacing for the non menu items within the editor bubble.
+  const int vertical_dialog_content_spacing = 16;
 
   views::View* group_modifier_container =
       AddChildView(std::make_unique<views::View>());
-  group_modifier_container->SetBorder(
-      views::CreateEmptyBorder(gfx::Insets(horizontal_spacing)));
+  group_modifier_container->SetBorder(views::CreateEmptyBorder(
+      gfx::Insets(vertical_dialog_content_spacing, horizontal_spacing)));
   views::FlexLayout* container_layout =
       group_modifier_container->SetLayoutManager(
           std::make_unique<views::FlexLayout>());
@@ -120,25 +127,25 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
 
   color_selector_ =
       group_modifier_container->AddChildView(std::make_unique<ColorPickerView>(
-          GetColorPickerList(),
+          GetColorPickerList(), current_data->color(),
           base::Bind(&TabGroupEditorBubbleView::UpdateGroup,
                      base::Unretained(this))));
-  color_selector_->SetBorder(
-      views::CreateEmptyBorder(gfx::Insets(vertical_spacing, 0, 0, 0)));
+  color_selector_->SetBorder(views::CreateEmptyBorder(
+      gfx::Insets(vertical_dialog_content_spacing, 0, 0, 0)));
 
   AddChildView(std::make_unique<views::Separator>());
 
   views::View* menu_items_container =
       AddChildView(std::make_unique<views::View>());
   menu_items_container->SetBorder(
-      views::CreateEmptyBorder(gfx::Insets(vertical_spacing, 0)));
+      views::CreateEmptyBorder(gfx::Insets(vertical_menu_spacing, 0)));
   views::FlexLayout* layout_manager_ = menu_items_container->SetLayoutManager(
       std::make_unique<views::FlexLayout>());
   layout_manager_->SetOrientation(views::LayoutOrientation::kVertical)
       .SetIgnoreDefaultMainAxisMargins(true);
 
   gfx::Insets menu_item_border_inset =
-      gfx::Insets(vertical_spacing, horizontal_spacing);
+      gfx::Insets(vertical_menu_spacing, horizontal_spacing);
 
   std::unique_ptr<views::LabelButton> new_tab_menu_item = CreateBubbleMenuItem(
       TAB_GROUP_HEADER_CXMENU_NEW_TAB_IN_GROUP,

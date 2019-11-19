@@ -245,7 +245,7 @@ int StrengthIndex(int strength) {
     return kNumNetworkImages - 1;
 
   // Return an index in the range [1, kNumNetworkImages - 1].
-  // This logic is equivalent to cr_network_icon.js:strengthToIndex_().
+  // This logic is equivalent to network_icon.js:strengthToIndex_().
   int zero_based_index = (strength - 1) * (kNumNetworkImages - 1) / 100;
   return zero_based_index + 1;
 }

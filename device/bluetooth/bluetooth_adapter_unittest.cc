@@ -60,7 +60,7 @@ void AddDeviceFilterWithUUID(BluetoothDiscoveryFilter* filter,
 
 namespace {
 
-class TestBluetoothAdapter : public BluetoothAdapter {
+class TestBluetoothAdapter final : public BluetoothAdapter {
  public:
   TestBluetoothAdapter() = default;
 
@@ -151,6 +151,11 @@ class TestBluetoothAdapter : public BluetoothAdapter {
     run_loop_quit.Run();
   }
 
+  void set_discovery_session_outcome(
+      UMABluetoothDiscoverySessionOutcome outcome) {
+    discovery_session_outcome_ = outcome;
+  }
+
   void StopDiscoverySession(base::Closure run_loop_quit) {
     discovery_sessions_holder_.front()->Stop(
         base::BindRepeating(&TestBluetoothAdapter::OnRemoveDiscoverySession,
@@ -238,12 +243,17 @@ class TestBluetoothAdapter : public BluetoothAdapter {
 
   bool SetPoweredImpl(bool powered) override { return false; }
 
+  base::WeakPtr<BluetoothAdapter> GetWeakPtr() override {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
   void StartScanWithFilter(
       std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
       DiscoverySessionResultCallback callback) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(&TestBluetoothAdapter::SetFilter, this,
+        base::BindOnce(&TestBluetoothAdapter::SetFilter,
+                       weak_ptr_factory_.GetWeakPtr(),
                        std::move(discovery_filter), std::move(callback)));
   }
 
@@ -251,22 +261,27 @@ class TestBluetoothAdapter : public BluetoothAdapter {
                     DiscoverySessionResultCallback callback) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(&TestBluetoothAdapter::SetFilter, this,
+        base::BindOnce(&TestBluetoothAdapter::SetFilter,
+                       weak_ptr_factory_.GetWeakPtr(),
                        std::move(discovery_filter), std::move(callback)));
   }
 
   void SetFilter(std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
                  DiscoverySessionResultCallback callback) {
-    is_discovering_ = true;
-    current_filter->CopyFrom(*discovery_filter.get());
-    std::move(callback).Run(/*is_error=*/false,
-                            UMABluetoothDiscoverySessionOutcome::SUCCESS);
+    bool is_error = discovery_session_outcome_ !=
+                    UMABluetoothDiscoverySessionOutcome::SUCCESS;
+    if (!is_error) {
+      is_discovering_ = true;
+      current_filter->CopyFrom(*discovery_filter.get());
+    }
+    std::move(callback).Run(is_error, discovery_session_outcome_);
   }
 
   void StopScan(DiscoverySessionResultCallback callback) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&TestBluetoothAdapter::FakeOSStopScan, this,
-                                  std::move(callback)));
+        FROM_HERE,
+        base::BindOnce(&TestBluetoothAdapter::FakeOSStopScan,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void FakeOSStopScan(DiscoverySessionResultCallback callback) {
@@ -285,6 +300,13 @@ class TestBluetoothAdapter : public BluetoothAdapter {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   std::move(callback));
   }
+
+  UMABluetoothDiscoverySessionOutcome discovery_session_outcome_ =
+      UMABluetoothDiscoverySessionOutcome::SUCCESS;
+
+  // This must be the last field in the class so that weak pointers are
+  // invalidated first.
+  base::WeakPtrFactory<TestBluetoothAdapter> weak_ptr_factory_{this};
 };
 
 class TestPairingDelegate : public BluetoothDevice::PairingDelegate {
@@ -638,6 +660,30 @@ TEST_F(BluetoothAdapterTest, GetMergedDiscoveryFilterAllFields) {
               resulting_uuids.end());
 
   adapter_->CleanupSessions();
+}
+
+TEST_F(BluetoothAdapterTest, StartDiscoverySession_Destroy) {
+  base::RunLoop loop;
+  adapter_->StartDiscoverySession(
+      base::BindLambdaForTesting(
+          [&](std::unique_ptr<BluetoothDiscoverySession> session) {
+            adapter_.reset();
+            loop.Quit();
+          }),
+      base::DoNothing());
+  loop.Run();
+}
+
+TEST_F(BluetoothAdapterTest, StartDiscoverySessionError_Destroy) {
+  base::RunLoop loop;
+  adapter_->set_discovery_session_outcome(
+      UMABluetoothDiscoverySessionOutcome::FAILED);
+  adapter_->StartDiscoverySession(base::DoNothing(),
+                                  base::BindLambdaForTesting([&]() {
+                                    adapter_.reset();
+                                    loop.Quit();
+                                  }));
+  loop.Run();
 }
 
 // TODO(scheib): Enable BluetoothTest fixture tests on all platforms.

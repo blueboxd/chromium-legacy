@@ -15,4 +15,7 @@ const base::Feature kClickToCallContextMenuForSelectedText{
 
 const base::Feature kClickToCallUI{"ClickToCallUI",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kClickToCallDetectionV2{"ClickToCallDetectionV2",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(ENABLE_CLICK_TO_CALL)

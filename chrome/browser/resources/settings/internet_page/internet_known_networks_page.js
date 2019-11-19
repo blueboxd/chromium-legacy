@@ -11,7 +11,7 @@ Polymer({
   is: 'settings-internet-known-networks-page',
 
   behaviors: [
-    CrNetworkListenerBehavior,
+    NetworkListenerBehavior,
     CrPolicyNetworkBehaviorMojo,
   ],
 

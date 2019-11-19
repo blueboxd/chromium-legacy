@@ -11,11 +11,11 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/task_environment.h"
 #include "net/base/net_errors.h"
 #include "net/proxy_resolution/pac_file_data.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/test/gtest_util.h"
-#include "net/test/test_with_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -24,7 +24,7 @@ using net::test::IsError;
 using net::test::IsOk;
 using ::testing::IsEmpty;
 
-namespace net {
+namespace proxy_resolver {
 namespace {
 
 // Javascript bindings for ProxyResolverV8, which returns mock values.
@@ -43,30 +43,30 @@ class MockJSBindings : public ProxyResolverV8::JSBindings {
   }
 
   bool ResolveDns(const std::string& host,
-                  ProxyResolveDnsOperation op,
+                  net::ProxyResolveDnsOperation op,
                   std::string* output,
                   bool* terminate) override {
     *terminate = should_terminate;
 
-    if (op == ProxyResolveDnsOperation::MY_IP_ADDRESS) {
+    if (op == net::ProxyResolveDnsOperation::MY_IP_ADDRESS) {
       my_ip_address_count++;
       *output = my_ip_address_result;
       return !my_ip_address_result.empty();
     }
 
-    if (op == ProxyResolveDnsOperation::MY_IP_ADDRESS_EX) {
+    if (op == net::ProxyResolveDnsOperation::MY_IP_ADDRESS_EX) {
       my_ip_address_ex_count++;
       *output = my_ip_address_ex_result;
       return !my_ip_address_ex_result.empty();
     }
 
-    if (op == ProxyResolveDnsOperation::DNS_RESOLVE) {
+    if (op == net::ProxyResolveDnsOperation::DNS_RESOLVE) {
       dns_resolves.push_back(host);
       *output = dns_resolve_result;
       return !dns_resolve_result.empty();
     }
 
-    if (op == ProxyResolveDnsOperation::DNS_RESOLVE_EX) {
+    if (op == net::ProxyResolveDnsOperation::DNS_RESOLVE_EX) {
       dns_resolves_ex.push_back(host);
       *output = dns_resolve_ex_result;
       return !dns_resolve_ex_result.empty();
@@ -103,7 +103,7 @@ class MockJSBindings : public ProxyResolverV8::JSBindings {
   bool should_terminate;
 };
 
-class ProxyResolverV8Test : public TestWithTaskEnvironment {
+class ProxyResolverV8Test : public testing::Test {
  public:
   // Creates a ProxyResolverV8 using the PAC script contained in |filename|. If
   // called more than once, the previous ProxyResolverV8 is deleted.
@@ -124,11 +124,11 @@ class ProxyResolverV8Test : public TestWithTaskEnvironment {
     // If we can't load the file from disk, something is misconfigured.
     if (!ok) {
       LOG(ERROR) << "Failed to read file: " << path.value();
-      return ERR_FAILED;
+      return net::ERR_FAILED;
     }
 
     // Create the ProxyResolver using the PAC script.
-    return ProxyResolverV8::Create(PacFileData::FromUTF8(file_contents),
+    return ProxyResolverV8::Create(net::PacFileData::FromUTF8(file_contents),
                                    bindings(), &resolver_);
   }
 
@@ -140,6 +140,7 @@ class ProxyResolverV8Test : public TestWithTaskEnvironment {
   MockJSBindings* bindings() { return &js_bindings_; }
 
  private:
+  base::test::TaskEnvironment task_environment_;
   MockJSBindings js_bindings_;
   std::unique_ptr<ProxyResolverV8> resolver_;
 };
@@ -151,7 +152,7 @@ const GURL kPacUrl;
 TEST_F(ProxyResolverV8Test, Direct) {
   ASSERT_THAT(CreateResolver("direct.js"), IsOk());
 
-  ProxyInfo proxy_info;
+  net::ProxyInfo proxy_info;
   int result = resolver().GetProxyForURL(kQueryUrl, &proxy_info, bindings());
 
   EXPECT_THAT(result, IsOk());
@@ -164,7 +165,7 @@ TEST_F(ProxyResolverV8Test, Direct) {
 TEST_F(ProxyResolverV8Test, ReturnEmptyString) {
   ASSERT_THAT(CreateResolver("return_empty_string.js"), IsOk());
 
-  ProxyInfo proxy_info;
+  net::ProxyInfo proxy_info;
   int result = resolver().GetProxyForURL(kQueryUrl, &proxy_info, bindings());
 
   EXPECT_THAT(result, IsOk());
@@ -181,7 +182,7 @@ TEST_F(ProxyResolverV8Test, Basic) {
   // arguments into a pseudo-host. The purpose of this test is to verify that
   // the correct arguments are being passed to FindProxyForURL().
   {
-    ProxyInfo proxy_info;
+    net::ProxyInfo proxy_info;
     int result = resolver().GetProxyForURL(GURL("http://query.com/path"),
                                            &proxy_info, bindings());
     EXPECT_THAT(result, IsOk());
@@ -189,7 +190,7 @@ TEST_F(ProxyResolverV8Test, Basic) {
               proxy_info.proxy_server().ToURI());
   }
   {
-    ProxyInfo proxy_info;
+    net::ProxyInfo proxy_info;
     int result = resolver().GetProxyForURL(GURL("ftp://query.com:90/path"),
                                            &proxy_info, bindings());
     EXPECT_THAT(result, IsOk());
@@ -206,7 +207,7 @@ TEST_F(ProxyResolverV8Test, Basic) {
 TEST_F(ProxyResolverV8Test, BadReturnType) {
   // These are the filenames of PAC scripts which each return a non-string
   // types for FindProxyForURL(). They should all fail with
-  // ERR_PAC_SCRIPT_FAILED.
+  // net::ERR_PAC_SCRIPT_FAILED.
   static const char* const filenames[] = {
       "return_undefined.js", "return_integer.js", "return_function.js",
       "return_object.js",
@@ -217,10 +218,10 @@ TEST_F(ProxyResolverV8Test, BadReturnType) {
     ASSERT_THAT(CreateResolver(filenames[i]), IsOk());
 
     MockJSBindings bindings;
-    ProxyInfo proxy_info;
+    net::ProxyInfo proxy_info;
     int result = resolver().GetProxyForURL(kQueryUrl, &proxy_info, &bindings);
 
-    EXPECT_THAT(result, IsError(ERR_PAC_SCRIPT_FAILED));
+    EXPECT_THAT(result, IsError(net::ERR_PAC_SCRIPT_FAILED));
 
     EXPECT_EQ(0U, bindings.alerts.size());
     ASSERT_EQ(1U, bindings.errors.size());
@@ -232,7 +233,7 @@ TEST_F(ProxyResolverV8Test, BadReturnType) {
 // Try using a PAC script which defines no "FindProxyForURL" function.
 TEST_F(ProxyResolverV8Test, NoEntryPoint) {
   EXPECT_THAT(CreateResolver("no_entrypoint.js"),
-              IsError(ERR_PAC_SCRIPT_FAILED));
+              IsError(net::ERR_PAC_SCRIPT_FAILED));
 
   ASSERT_EQ(1U, bindings()->errors.size());
   EXPECT_EQ("FindProxyForURL is undefined or not a function.",
@@ -243,7 +244,7 @@ TEST_F(ProxyResolverV8Test, NoEntryPoint) {
 // Try loading a malformed PAC script.
 TEST_F(ProxyResolverV8Test, ParseError) {
   EXPECT_THAT(CreateResolver("missing_close_brace.js"),
-              IsError(ERR_PAC_SCRIPT_FAILED));
+              IsError(net::ERR_PAC_SCRIPT_FAILED));
 
   EXPECT_EQ(0U, bindings()->alerts.size());
 
@@ -261,7 +262,7 @@ TEST_F(ProxyResolverV8Test, SideEffects) {
 
   // The PAC script increments a counter each time we invoke it.
   for (int i = 0; i < 3; ++i) {
-    ProxyInfo proxy_info;
+    net::ProxyInfo proxy_info;
     int result = resolver().GetProxyForURL(kQueryUrl, &proxy_info, bindings());
     EXPECT_THAT(result, IsOk());
     EXPECT_EQ(base::StringPrintf("sideffect_%d:80", i),
@@ -273,7 +274,7 @@ TEST_F(ProxyResolverV8Test, SideEffects) {
   ASSERT_THAT(CreateResolver("side_effects.js"), IsOk());
 
   for (int i = 0; i < 3; ++i) {
-    ProxyInfo proxy_info;
+    net::ProxyInfo proxy_info;
     int result = resolver().GetProxyForURL(kQueryUrl, &proxy_info, bindings());
     EXPECT_THAT(result, IsOk());
     EXPECT_EQ(base::StringPrintf("sideffect_%d:80", i),
@@ -285,10 +286,10 @@ TEST_F(ProxyResolverV8Test, SideEffects) {
 TEST_F(ProxyResolverV8Test, UnhandledException) {
   ASSERT_THAT(CreateResolver("unhandled_exception.js"), IsOk());
 
-  ProxyInfo proxy_info;
+  net::ProxyInfo proxy_info;
   int result = resolver().GetProxyForURL(kQueryUrl, &proxy_info, bindings());
 
-  EXPECT_THAT(result, IsError(ERR_PAC_SCRIPT_FAILED));
+  EXPECT_THAT(result, IsError(net::ERR_PAC_SCRIPT_FAILED));
 
   EXPECT_EQ(0U, bindings()->alerts.size());
   ASSERT_EQ(1U, bindings()->errors.size());
@@ -300,7 +301,7 @@ TEST_F(ProxyResolverV8Test, UnhandledException) {
 // Execute a PAC script which throws an exception when first accessing
 // FindProxyForURL
 TEST_F(ProxyResolverV8Test, ExceptionAccessingFindProxyForURLDuringInit) {
-  EXPECT_EQ(ERR_PAC_SCRIPT_FAILED,
+  EXPECT_EQ(net::ERR_PAC_SCRIPT_FAILED,
             CreateResolver("exception_findproxyforurl_during_init.js"));
 
   ASSERT_EQ(2U, bindings()->errors.size());
@@ -317,10 +318,10 @@ TEST_F(ProxyResolverV8Test, ExceptionAccessingFindProxyForURLDuringResolve) {
   ASSERT_THAT(CreateResolver("exception_findproxyforurl_during_resolve.js"),
               IsOk());
 
-  ProxyInfo proxy_info;
+  net::ProxyInfo proxy_info;
   int result = resolver().GetProxyForURL(kQueryUrl, &proxy_info, bindings());
 
-  EXPECT_THAT(result, IsError(ERR_PAC_SCRIPT_FAILED));
+  EXPECT_THAT(result, IsError(net::ERR_PAC_SCRIPT_FAILED));
 
   ASSERT_EQ(2U, bindings()->errors.size());
   EXPECT_EQ("Uncaught crash!", bindings()->errors[0]);
@@ -333,19 +334,19 @@ TEST_F(ProxyResolverV8Test, ExceptionAccessingFindProxyForURLDuringResolve) {
 TEST_F(ProxyResolverV8Test, ReturnUnicode) {
   ASSERT_THAT(CreateResolver("return_unicode.js"), IsOk());
 
-  ProxyInfo proxy_info;
+  net::ProxyInfo proxy_info;
   int result = resolver().GetProxyForURL(kQueryUrl, &proxy_info, bindings());
 
   // The result from this resolve was unparseable, because it
   // wasn't ASCII.
-  EXPECT_THAT(result, IsError(ERR_PAC_SCRIPT_FAILED));
+  EXPECT_THAT(result, IsError(net::ERR_PAC_SCRIPT_FAILED));
 }
 
 // Test the PAC library functions that we expose in the JS environment.
 TEST_F(ProxyResolverV8Test, JavascriptLibrary) {
   ASSERT_THAT(CreateResolver("pac_library_unittest.js"), IsOk());
 
-  ProxyInfo proxy_info;
+  net::ProxyInfo proxy_info;
   int result = resolver().GetProxyForURL(kQueryUrl, &proxy_info, bindings());
 
   // If the javascript side of this unit-test fails, it will throw a javascript
@@ -362,7 +363,7 @@ TEST_F(ProxyResolverV8Test, V8Bindings) {
   ASSERT_THAT(CreateResolver("bindings.js"), IsOk());
   bindings()->dns_resolve_result = "127.0.0.1";
 
-  ProxyInfo proxy_info;
+  net::ProxyInfo proxy_info;
   int result = resolver().GetProxyForURL(kQueryUrl, &proxy_info, bindings());
 
   EXPECT_THAT(result, IsOk());
@@ -404,7 +405,7 @@ TEST_F(ProxyResolverV8Test, BindingCalledDuringInitialization) {
   // myIpAddress() got called during initialization of the script.
   EXPECT_EQ(1, bindings()->my_ip_address_count);
 
-  ProxyInfo proxy_info;
+  net::ProxyInfo proxy_info;
   int result = resolver().GetProxyForURL(kQueryUrl, &proxy_info, bindings());
 
   EXPECT_THAT(result, IsOk());
@@ -426,7 +427,7 @@ TEST_F(ProxyResolverV8Test, BindingCalledDuringInitialization) {
 TEST_F(ProxyResolverV8Test, EndsWithCommentNoNewline) {
   ASSERT_THAT(CreateResolver("ends_with_comment.js"), IsOk());
 
-  ProxyInfo proxy_info;
+  net::ProxyInfo proxy_info;
   int result = resolver().GetProxyForURL(kQueryUrl, &proxy_info, bindings());
 
   EXPECT_THAT(result, IsOk());
@@ -441,7 +442,7 @@ TEST_F(ProxyResolverV8Test, EndsWithCommentNoNewline) {
 TEST_F(ProxyResolverV8Test, EndsWithStatementNoNewline) {
   ASSERT_THAT(CreateResolver("ends_with_statement_no_semicolon.js"), IsOk());
 
-  ProxyInfo proxy_info;
+  net::ProxyInfo proxy_info;
   int result = resolver().GetProxyForURL(kQueryUrl, &proxy_info, bindings());
 
   EXPECT_THAT(result, IsOk());
@@ -456,7 +457,7 @@ TEST_F(ProxyResolverV8Test, EndsWithStatementNoNewline) {
 TEST_F(ProxyResolverV8Test, DNSResolutionFailure) {
   ASSERT_THAT(CreateResolver("dns_fail.js"), IsOk());
 
-  ProxyInfo proxy_info;
+  net::ProxyInfo proxy_info;
   int result = resolver().GetProxyForURL(kQueryUrl, &proxy_info, bindings());
 
   EXPECT_THAT(result, IsOk());
@@ -468,7 +469,7 @@ TEST_F(ProxyResolverV8Test, DNSResolutionOfInternationDomainName) {
   ASSERT_THAT(CreateResolver("international_domain_names.js"), IsOk());
 
   // Execute FindProxyForURL().
-  ProxyInfo proxy_info;
+  net::ProxyInfo proxy_info;
   int result = resolver().GetProxyForURL(kQueryUrl, &proxy_info, bindings());
 
   EXPECT_THAT(result, IsOk());
@@ -490,7 +491,7 @@ TEST_F(ProxyResolverV8Test, DNSResolutionOfInternationDomainName) {
 TEST_F(ProxyResolverV8Test, IPv6HostnamesNotBracketed) {
   ASSERT_THAT(CreateResolver("resolve_host.js"), IsOk());
 
-  ProxyInfo proxy_info;
+  net::ProxyInfo proxy_info;
   int result = resolver().GetProxyForURL(
       GURL("http://[abcd::efff]:99/watsupdawg"), &proxy_info, bindings());
 
@@ -514,12 +515,12 @@ TEST_F(ProxyResolverV8Test, Terminate) {
   // and alert() may be run).
   bindings()->should_terminate = true;
 
-  ProxyInfo proxy_info;
+  net::ProxyInfo proxy_info;
   int result =
       resolver().GetProxyForURL(GURL("http://hang/"), &proxy_info, bindings());
 
   // The script execution was terminated.
-  EXPECT_THAT(result, IsError(ERR_PAC_SCRIPT_FAILED));
+  EXPECT_THAT(result, IsError(net::ERR_PAC_SCRIPT_FAILED));
 
   EXPECT_EQ(1U, bindings()->dns_resolves.size());
   EXPECT_GE(2U, bindings()->dns_resolves_ex.size());
@@ -543,4 +544,4 @@ TEST_F(ProxyResolverV8Test, Terminate) {
 }
 
 }  // namespace
-}  // namespace net
+}  // namespace proxy_resolver

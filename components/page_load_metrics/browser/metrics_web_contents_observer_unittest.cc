@@ -1380,7 +1380,8 @@ TEST_F(MetricsWebContentsObserverTest, OnLoadedResource_MainFrame) {
       *CreateResourceLoadInfo(main_resource_url,
                               content::ResourceType::kMainFrame));
   EXPECT_EQ(1u, loaded_resources().size());
-  EXPECT_EQ(main_resource_url, loaded_resources().back().url);
+  EXPECT_EQ(url::Origin::Create(main_resource_url),
+            loaded_resources().back().origin_of_final_url);
 
   NavigateToUntrackedUrl();
 
@@ -1391,7 +1392,8 @@ TEST_F(MetricsWebContentsObserverTest, OnLoadedResource_MainFrame) {
       *CreateResourceLoadInfo(main_resource_url,
                               content::ResourceType::kMainFrame));
   EXPECT_EQ(1u, loaded_resources().size());
-  EXPECT_EQ(main_resource_url, loaded_resources().back().url);
+  EXPECT_EQ(url::Origin::Create(main_resource_url),
+            loaded_resources().back().origin_of_final_url);
 }
 
 TEST_F(MetricsWebContentsObserverTest, OnLoadedResource_Subresource) {
@@ -1405,7 +1407,8 @@ TEST_F(MetricsWebContentsObserverTest, OnLoadedResource_Subresource) {
                               content::ResourceType::kScript));
 
   EXPECT_EQ(1u, loaded_resources().size());
-  EXPECT_EQ(loaded_resource_url, loaded_resources().back().url);
+  EXPECT_EQ(url::Origin::Create(loaded_resource_url),
+            loaded_resources().back().origin_of_final_url);
 }
 
 TEST_F(MetricsWebContentsObserverTest,

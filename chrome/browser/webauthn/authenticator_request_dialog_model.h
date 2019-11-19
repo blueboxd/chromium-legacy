@@ -283,11 +283,6 @@ class AuthenticatorRequestDialogModel {
   // Valid action at all steps.
   void Cancel();
 
-  // Backtracks in the flow as a result of the user clicking `Back` on the UI.
-  //
-  // Valid action at all steps.
-  void Back();
-
   // Called by the AuthenticatorRequestSheetModel subclasses when their state
   // changes, which will trigger notifying observers of OnSheetModelChanged.
   void OnSheetModelDidChange();

@@ -558,15 +558,10 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiAuthRequiredTest,
       << message_;
 }
 
-// TODO(crbug.com/998369): Flaky on Win ASAN.
-#if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
-#define MAYBE_WebRequestAuthRequiredParallel \
-  DISABLED_WebRequestAuthRequiredParallel
-#else
-#define MAYBE_WebRequestAuthRequiredParallel WebRequestAuthRequiredParallel
-#endif
+// This is flaky on wide variety of platforms (beyond that tracked previously in
+// https://crbug.com/998369). See https://crbug.com/1026001.
 IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiAuthRequiredTest,
-                       MAYBE_WebRequestAuthRequiredParallel) {
+                       DISABLED_WebRequestAuthRequiredParallel) {
   CancelLoginDialog login_dialog_helper;
 
   ASSERT_TRUE(StartEmbeddedTestServer());

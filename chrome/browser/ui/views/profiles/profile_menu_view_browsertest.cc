@@ -769,8 +769,10 @@ constexpr ProfileMenuViewBase::ActionableItem
         // there are no other buttons at the end.
         ProfileMenuViewBase::ActionableItem::kEditProfileButton};
 
-PROFILE_MENU_CLICK_TEST(kActionableItems_SingleProfileWithCustomName,
-                        ProfileMenuClickTest_SingleProfileWithCustomName) {
+// This test is disabled due to being flaky. See https://crbug.com/1025493.
+PROFILE_MENU_CLICK_TEST(
+    kActionableItems_SingleProfileWithCustomName,
+    DISABLED_ProfileMenuClickTest_SingleProfileWithCustomName) {
   profiles::UpdateProfileName(browser()->profile(),
                               base::UTF8ToUTF16("Custom name"));
   RunTest();

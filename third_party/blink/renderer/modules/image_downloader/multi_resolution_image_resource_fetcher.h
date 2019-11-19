@@ -16,12 +16,11 @@
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
-class SkBitmap;
-
 namespace blink {
 class KURL;
 class LocalFrame;
 class WebAssociatedURLLoader;
+class WebString;
 class WebURLResponse;
 
 // A resource fetcher that returns all (differently-sized) frames in
@@ -30,8 +29,11 @@ class MultiResolutionImageResourceFetcher {
   USING_FAST_MALLOC(MultiResolutionImageResourceFetcher);
 
  public:
+  // The std::string arguments are, in order, the data and the MIME type
+  // (Content-Type) of the response.
   using Callback = base::OnceCallback<void(MultiResolutionImageResourceFetcher*,
-                                           const WTF::Vector<SkBitmap>&)>;
+                                           const std::string& data,
+                                           const WebString& mime_type)>;
 
   // This will be called asynchronously after the URL has been fetched,
   // successfully or not.  If there is a failure, response and data will both be
@@ -65,7 +67,8 @@ class MultiResolutionImageResourceFetcher {
  private:
   class ClientImpl;
 
-  // ResourceFetcher::Callback. Decodes the image and invokes callback_.
+  // ResourceFetcher::Callback. Checks if the fetch succeeded and invokes
+  // |callback_|.
   void OnURLFetchComplete(const WebURLResponse& response,
                           const std::string& data);
 

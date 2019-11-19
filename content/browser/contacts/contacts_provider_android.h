@@ -38,7 +38,8 @@ class ContactsProviderAndroid : public ContactsProvider {
       const base::android::JavaParamRef<jobjectArray>& names_java,
       const base::android::JavaParamRef<jobjectArray>& emails_java,
       const base::android::JavaParamRef<jobjectArray>& tel_java,
-      const base::android::JavaParamRef<jobjectArray>& addresses_java);
+      const base::android::JavaParamRef<jobjectArray>& addresses_java,
+      const base::android::JavaParamRef<jobjectArray>& icons_java);
 
   // Signals the end of adding contacts to the list. The contact list is
   // returned to the web page, the other params are logged via UKM.

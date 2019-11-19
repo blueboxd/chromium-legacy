@@ -10,9 +10,10 @@
 #include "base/callback_list.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
-#include "chrome/browser/sharing/sharing_target_info.h"
+#include "chrome/browser/sharing/sharing_utils.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
+#include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/fake_device_info_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "crypto/ec_private_key.h"
@@ -121,7 +122,7 @@ TEST_F(SharingFCMSenderTest, NoFcmRegistration) {
   ON_CALL(vapid_key_manager_, GetOrCreateKey())
       .WillByDefault(testing::Return(vapid_key.get()));
 
-  SharingTargetInfo target{kFcmToken, kP256dh, kAuthSecret};
+  syncer::DeviceInfo::SharingTargetInfo target{kFcmToken, kP256dh, kAuthSecret};
 
   SharingSendMessageResult result;
   base::Optional<std::string> message_id;
@@ -143,7 +144,7 @@ TEST_F(SharingFCMSenderTest, NoVapidKey) {
   ON_CALL(vapid_key_manager_, GetOrCreateKey())
       .WillByDefault(testing::Return(nullptr));
 
-  SharingTargetInfo target{kFcmToken, kP256dh, kAuthSecret};
+  syncer::DeviceInfo::SharingTargetInfo target{kFcmToken, kP256dh, kAuthSecret};
 
   SharingSendMessageResult result;
   base::Optional<std::string> message_id;
@@ -197,7 +198,7 @@ TEST_P(SharingFCMSenderResultTest, ResultTest) {
   ON_CALL(vapid_key_manager_, GetOrCreateKey())
       .WillByDefault(testing::Return(vapid_key.get()));
 
-  SharingTargetInfo target{kFcmToken, kP256dh, kAuthSecret};
+  syncer::DeviceInfo::SharingTargetInfo target{kFcmToken, kP256dh, kAuthSecret};
 
   SharingSendMessageResult result;
   base::Optional<std::string> message_id;

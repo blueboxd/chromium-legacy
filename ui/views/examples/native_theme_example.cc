@@ -72,12 +72,12 @@ std::unique_ptr<View> CreateAllColorsView() {
                         GridLayout::USE_PREF, 0, 0);
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_WindowBackground));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_DialogBackground));
+  InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_DialogForeground));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_BubbleBackground));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_FocusedBorderColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_UnfocusedBorderColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_ButtonEnabledColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_ButtonDisabledColor));
-  InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_ButtonHoverColor));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_ButtonPressedShade));
   InsertColorRow(layout, COLOR_LABEL_ARGS(kColorId_ProminentButtonColor));
   InsertColorRow(layout,

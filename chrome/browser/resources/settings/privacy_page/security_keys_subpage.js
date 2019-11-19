@@ -11,16 +11,6 @@ Polymer({
 
   properties: {
     /** @private */
-    enableCredentialManagement_: {
-      type: Boolean,
-      readOnly: true,
-      value: function() {
-        return loadTimeData.getBoolean(
-            'enableSecurityKeysCredentialManagement');
-      }
-    },
-
-    /** @private */
     enableBioEnrollment_: {
       type: Boolean,
       readOnly: true,

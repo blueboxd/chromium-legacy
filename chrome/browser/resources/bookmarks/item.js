@@ -2,11 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_icons_css.m.js';
+import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {isMac} from 'chrome://resources/js/cr.m.js';
+import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
+import {getFaviconForPageURL} from 'chrome://resources/js/icon.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {selectItem} from './actions.js';
+import {Command, MenuSource} from './constants.js';
+import {CommandManager} from './command_manager.js';
+import './shared_style.js';
+import {StoreClient} from './store_client.js';
+import './strings.m.js';
+import {BookmarkNode} from './types.js';
+
 Polymer({
   is: 'bookmarks-item',
 
+  _template: html`{__html_template__}`,
+
   behaviors: [
-    bookmarks.StoreClient,
+    StoreClient,
   ],
 
   properties: {
@@ -69,7 +88,7 @@ Polymer({
   },
 
   focusMenuButton: function() {
-    cr.ui.focusWithoutInk(this.$.menuButton);
+    focusWithoutInk(this.$.menuButton);
   },
 
   /** @return {BookmarksItemElement} */
@@ -125,7 +144,7 @@ Polymer({
 
   /** @private */
   selectThisItem_: function() {
-    this.dispatch(bookmarks.actions.selectItem(this.itemId, this.getState(), {
+    this.dispatch(selectItem(this.itemId, this.getState(), {
       clear: true,
       range: false,
       toggle: false,
@@ -157,8 +176,8 @@ Polymer({
     // Ignore double clicks so that Ctrl double-clicking an item won't deselect
     // the item before opening.
     if (e.detail != 2) {
-      const addKey = cr.isMac ? e.metaKey : e.ctrlKey;
-      this.dispatch(bookmarks.actions.selectItem(this.itemId, this.getState(), {
+      const addKey = isMac ? e.metaKey : e.ctrlKey;
+      this.dispatch(selectItem(this.itemId, this.getState(), {
         clear: !addKey,
         range: e.shiftKey,
         toggle: addKey && !e.shiftKey,
@@ -189,7 +208,7 @@ Polymer({
       this.selectThisItem_();
     }
 
-    const commandManager = bookmarks.CommandManager.getInstance();
+    const commandManager = CommandManager.getInstance();
     const itemSet = this.getState().selection.items;
     if (commandManager.canExecute(Command.OPEN, itemSet)) {
       commandManager.handle(Command.OPEN, itemSet);
@@ -210,7 +229,7 @@ Polymer({
       return;
     }
 
-    const commandManager = bookmarks.CommandManager.getInstance();
+    const commandManager = CommandManager.getInstance();
     const itemSet = this.getState().selection.items;
     const command = e.shiftKey ? Command.OPEN : Command.OPEN_NEW_TAB;
     if (commandManager.canExecute(command, itemSet)) {
@@ -245,7 +264,7 @@ Polymer({
   updateFavicon_: function(url) {
     this.$.icon.className = url ? 'website-icon' : 'folder-icon';
     this.$.icon.style.backgroundImage =
-        url ? cr.icon.getFaviconForPageURL(url, false) : null;
+        url ? getFaviconForPageURL(url, false) : '';
   },
 
   /**

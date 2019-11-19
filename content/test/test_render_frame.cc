@@ -150,8 +150,9 @@ class MockFrameHost : public mojom::FrameHost {
       mojo::PendingAssociatedRemote<mojom::NavigationClient>,
       mojo::PendingRemote<blink::mojom::NavigationInitiator>) override {}
 
-  void SubresourceResponseStarted(const GURL& url,
-                                  net::CertStatus cert_status) override {}
+  void SubresourceResponseStarted(
+      const url::Origin& origin_of_final_response_url,
+      net::CertStatus cert_status) override {}
 
   void ResourceLoadComplete(
       mojom::ResourceLoadInfoPtr resource_load_info) override {}

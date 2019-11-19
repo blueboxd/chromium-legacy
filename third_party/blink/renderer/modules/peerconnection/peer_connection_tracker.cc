@@ -130,7 +130,7 @@ static String SerializeOptionalDirection(
 }
 
 static String SerializeSender(const String& indent,
-                              const blink::WebRTCRtpSender& sender) {
+                              const blink::RTCRtpSenderPlatform& sender) {
   StringBuilder result;
   result.Append("{\n");
   // track:'id',

@@ -132,17 +132,13 @@ memory_instrumentation::mojom::ProcessType GetCoordinatorClientProcessType(
 
 }  // namespace
 
-BrowserChildProcessHost* BrowserChildProcessHost::Create(
-    content::ProcessType process_type,
-    BrowserChildProcessHostDelegate* delegate) {
-  return Create(process_type, delegate, std::string());
-}
-
-BrowserChildProcessHost* BrowserChildProcessHost::Create(
+// static
+std::unique_ptr<BrowserChildProcessHost> BrowserChildProcessHost::Create(
     content::ProcessType process_type,
     BrowserChildProcessHostDelegate* delegate,
-    const std::string& service_name) {
-  return new BrowserChildProcessHostImpl(process_type, delegate, service_name);
+    ChildProcessHost::IpcMode ipc_mode) {
+  return std::make_unique<BrowserChildProcessHostImpl>(process_type, delegate,
+                                                       ipc_mode);
 }
 
 BrowserChildProcessHost* BrowserChildProcessHost::FromID(int child_process_id) {
@@ -185,32 +181,41 @@ void BrowserChildProcessHostImpl::RemoveObserver(
 BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
     content::ProcessType process_type,
     BrowserChildProcessHostDelegate* delegate,
-    const std::string& service_name)
+    ChildProcessHost::IpcMode ipc_mode)
     : data_(process_type),
       delegate_(delegate),
       channel_(nullptr),
       is_channel_connected_(false),
       notify_child_disconnected_(false) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
   data_.id = ChildProcessHostImpl::GenerateChildProcessUniqueId();
 
-  child_process_host_ = ChildProcessHost::Create(this);
+  child_process_host_ = ChildProcessHost::Create(this, ipc_mode);
 
   g_child_process_list.Get().push_back(this);
   GetContentClient()->browser()->BrowserChildProcessHostCreated(this);
 
-  if (!service_name.empty()) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    child_connection_ = std::make_unique<ChildConnection>(
-        service_manager::Identity(
-            service_name, service_manager::kSystemInstanceGroup,
-            base::Token::CreateRandom(), base::Token::CreateRandom()),
-        &mojo_invitation_, ServiceManagerContext::GetConnectorForIOThread(),
-        base::ThreadTaskRunnerHandle::Get());
-    data_.metrics_name = service_name;
-  }
-
   // Create a persistent memory segment for subprocess histograms.
   CreateMetricsAllocator();
+}
+
+BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
+    content::ProcessType process_type,
+    BrowserChildProcessHostDelegate* delegate,
+    const std::string& service_name)
+    : BrowserChildProcessHostImpl(process_type,
+                                  delegate,
+                                  ChildProcessHost::IpcMode::kServiceManager) {
+  DCHECK(!service_name.empty());
+  child_connection_ = std::make_unique<ChildConnection>(
+      service_manager::Identity(
+          service_name, service_manager::kSystemInstanceGroup,
+          base::Token::CreateRandom(), base::Token::CreateRandom()),
+      &child_process_host_->GetMojoInvitation().value(),
+      ServiceManagerContext::GetConnectorForIOThread(),
+      base::ThreadTaskRunnerHandle::Get());
+  data_.metrics_name = service_name;
 }
 
 BrowserChildProcessHostImpl::~BrowserChildProcessHostImpl() {
@@ -302,9 +307,11 @@ void BrowserChildProcessHostImpl::SetProcess(base::Process process) {
 
 service_manager::mojom::ServiceRequest
 BrowserChildProcessHostImpl::TakeInProcessServiceRequest() {
-  auto invitation = std::move(mojo_invitation_);
+  base::Optional<mojo::OutgoingInvitation> invitation =
+      std::move(child_process_host_->GetMojoInvitation());
+  DCHECK(invitation);
   return service_manager::mojom::ServiceRequest(
-      invitation.ExtractMessagePipe(child_connection_->service_token()));
+      invitation->ExtractMessagePipe(child_connection_->service_token()));
 }
 
 void BrowserChildProcessHostImpl::ForceShutdown() {
@@ -359,12 +366,13 @@ void BrowserChildProcessHostImpl::LaunchWithoutExtraCommandLineSwitches(
   }
 
   // All processes should have a non-empty metrics name.
-  DCHECK(!data_.metrics_name.empty());
+  if (data_.metrics_name.empty())
+    data_.metrics_name = GetProcessTypeNameInEnglish(data_.process_type);
 
   notify_child_disconnected_ = true;
   child_process_.reset(new ChildProcessLauncher(
       std::move(delegate), std::move(cmd_line), data_.id, this,
-      std::move(mojo_invitation_),
+      std::move(*child_process_host_->GetMojoInvitation()),
       base::BindRepeating(&BrowserChildProcessHostImpl::OnMojoError,
                           weak_factory_.GetWeakPtr(),
                           base::ThreadTaskRunnerHandle::Get()),

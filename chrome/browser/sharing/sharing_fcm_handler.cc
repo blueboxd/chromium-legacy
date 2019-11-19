@@ -13,7 +13,6 @@
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
-#include "chrome/browser/sharing/sharing_target_info.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "third_party/re2/src/re2/re2.h"
 
@@ -140,12 +139,14 @@ void SharingFCMHandler::OnStoreReset() {
   // TODO: Handle GCM store reset.
 }
 
-base::Optional<SharingTargetInfo> SharingFCMHandler::GetTargetInfo(
+base::Optional<syncer::DeviceInfo::SharingTargetInfo>
+SharingFCMHandler::GetTargetInfo(
     const chrome_browser_sharing::SharingMessage& original_message) {
   if (original_message.has_sender_info()) {
     auto& sender_info = original_message.sender_info();
-    return SharingTargetInfo{sender_info.fcm_token(), sender_info.p256dh(),
-                             sender_info.auth_secret()};
+    return syncer::DeviceInfo::SharingTargetInfo{sender_info.fcm_token(),
+                                                 sender_info.p256dh(),
+                                                 sender_info.auth_secret()};
   }
 
   return sync_preference_->GetTargetInfo(original_message.sender_guid());
@@ -154,7 +155,7 @@ base::Optional<SharingTargetInfo> SharingFCMHandler::GetTargetInfo(
 void SharingFCMHandler::SendAckMessage(
     std::string original_message_id,
     chrome_browser_sharing::MessageType original_message_type,
-    base::Optional<SharingTargetInfo> target_info,
+    base::Optional<syncer::DeviceInfo::SharingTargetInfo> target_info,
     std::unique_ptr<chrome_browser_sharing::ResponseMessage> response) {
   if (!target_info) {
     LOG(ERROR) << "Unable to find target info";

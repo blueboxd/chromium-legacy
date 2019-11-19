@@ -714,7 +714,7 @@ void LoginDisplayHostWebUI::Observe(
 
 void LoginDisplayHostWebUI::RenderProcessGone(base::TerminationStatus status) {
   // Do not try to restore on shutdown
-  if (browser_shutdown::HasShutdownStarted())
+  if (browser_shutdown::GetShutdownType() != browser_shutdown::NOT_VALID)
     return;
 
   crash_count_++;
@@ -995,6 +995,10 @@ void LoginDisplayHostWebUI::HandleDisplayCaptivePortal() {
 void LoginDisplayHostWebUI::OnCancelPasswordChangedFlow() {}
 
 void LoginDisplayHostWebUI::UpdateAddUserButtonStatus() {
+  NOTREACHED();
+}
+
+void LoginDisplayHostWebUI::RequestSystemInfoUpdate() {
   NOTREACHED();
 }
 

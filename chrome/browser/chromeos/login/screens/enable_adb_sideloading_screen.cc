@@ -142,6 +142,7 @@ void EnableAdbSideloadingScreen::OnEnableAdbSideload(
   switch (response_code) {
     case SessionManagerClient::AdbSideloadResponseCode::SUCCESS:
       LogEvent(AdbSideloadingPromptEvent::kEnabled);
+      LoginDisplayHost::default_host()->RequestSystemInfoUpdate();
       exit_callback_.Run();
       break;
     case SessionManagerClient::AdbSideloadResponseCode::NEED_POWERWASH:

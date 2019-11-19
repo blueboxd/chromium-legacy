@@ -328,10 +328,11 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportAutoSelection) {
                     &test_paired_device_list_);
     EXPECT_EQ(test_case.expected_first_step, model.current_step());
 
-    if (model.current_step() == Step::kTransportSelection)
+    if (!model.request_may_start_over()) {
       continue;
+    }
 
-    model.Back();
+    model.StartOver();
     EXPECT_EQ(Step::kTransportSelection, model.current_step());
   }
 }

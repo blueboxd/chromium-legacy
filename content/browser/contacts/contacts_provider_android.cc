@@ -11,6 +11,7 @@
 
 #include "base/android/jni_string.h"
 #include "base/callback.h"
+#include "base/metrics/histogram_functions.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/android/content_jni_headers/ContactsDialogHost_jni.h"
@@ -21,6 +22,22 @@
 #include "url/origin.h"
 
 namespace content {
+
+namespace {
+
+void RecordAddressContainsDerivedField(
+    const payments::mojom::PaymentAddress& address) {
+  if (address.address_line.empty() || address.address_line.front().empty())
+    return;
+
+  bool has_derived_field = !address.city.empty() || !address.country.empty() ||
+                           !address.postal_code.empty() ||
+                           !address.region.empty();
+  base::UmaHistogramBoolean("Android.ContactsPicker.AddressHasDerivedField",
+                            has_derived_field);
+}
+
+}  // namespace
 
 ContactsProviderAndroid::ContactsProviderAndroid(
     RenderFrameHostImpl* render_frame_host) {
@@ -64,7 +81,7 @@ void ContactsProviderAndroid::Select(bool multiple,
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_ContactsDialogHost_showDialog(
       env, dialog_, multiple, include_names, include_emails, include_tel,
-      include_addresses,
+      include_addresses, include_icons,
       base::android::ConvertUTF16ToJavaString(env, formatted_origin_));
 }
 
@@ -73,7 +90,8 @@ void ContactsProviderAndroid::AddContact(
     const base::android::JavaParamRef<jobjectArray>& names_java,
     const base::android::JavaParamRef<jobjectArray>& emails_java,
     const base::android::JavaParamRef<jobjectArray>& tel_java,
-    const base::android::JavaParamRef<jobjectArray>& addresses_java) {
+    const base::android::JavaParamRef<jobjectArray>& addresses_java,
+    const base::android::JavaParamRef<jobjectArray>& icons_java) {
   DCHECK(callback_);
 
   base::Optional<std::vector<std::string>> names;
@@ -109,6 +127,7 @@ void ContactsProviderAndroid::AddContact(
               env->GetDirectBufferCapacity(j_address.obj()), &address)) {
         continue;
       }
+      RecordAddressContainsDerivedField(*address);
       addresses_vector.push_back(std::move(address));
     }
 
@@ -116,6 +135,22 @@ void ContactsProviderAndroid::AddContact(
   }
 
   base::Optional<std::vector<blink::mojom::ContactIconBlobPtr>> icons;
+  if (icons_java) {
+    std::vector<blink::mojom::ContactIconBlobPtr> icons_vector;
+
+    for (const base::android::JavaRef<jbyteArray>& j_icon :
+         icons_java.ReadElements<jbyteArray>()) {
+      blink::mojom::ContactIconBlobPtr icon;
+      if (!blink::mojom::ContactIconBlob::Deserialize(
+              static_cast<jbyte*>(env->GetDirectBufferAddress(j_icon.obj())),
+              env->GetDirectBufferCapacity(j_icon.obj()), &icon)) {
+        continue;
+      }
+      icons_vector.push_back(std::move(icon));
+    }
+
+    icons = std::move(icons_vector);
+  }
 
   blink::mojom::ContactInfoPtr contact = blink::mojom::ContactInfo::New(
       std::move(names), std::move(emails), std::move(tel), std::move(addresses),

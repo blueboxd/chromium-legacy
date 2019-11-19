@@ -200,4 +200,3 @@ class SwitchAccessPreferences {
     return autoScanEnabled;
   }
 }
-

@@ -57,8 +57,9 @@ namespace content {
 
 // static
 std::unique_ptr<ChildProcessHost> ChildProcessHost::Create(
-    ChildProcessHostDelegate* delegate) {
-  return base::WrapUnique(new ChildProcessHostImpl(delegate));
+    ChildProcessHostDelegate* delegate,
+    IpcMode ipc_mode) {
+  return base::WrapUnique(new ChildProcessHostImpl(delegate, ipc_mode));
 }
 
 // static
@@ -110,8 +111,20 @@ base::FilePath ChildProcessHost::GetChildPath(int flags) {
   return child_path;
 }
 
-ChildProcessHostImpl::ChildProcessHostImpl(ChildProcessHostDelegate* delegate)
-    : delegate_(delegate), opening_channel_(false) {}
+ChildProcessHostImpl::ChildProcessHostImpl(ChildProcessHostDelegate* delegate,
+                                           IpcMode ipc_mode)
+    : ipc_mode_(ipc_mode), delegate_(delegate), opening_channel_(false) {
+  if (ipc_mode_ == IpcMode::kLegacy) {
+    // In legacy mode, we only have an IPC Channel. Bind ChildProcess to a
+    // disconnected pipe so it quietly discards messages.
+    ignore_result(child_process_.BindNewPipeAndPassReceiver());
+    channel_ = IPC::ChannelMojo::Create(
+        mojo_invitation_->AttachMessagePipe(0), IPC::Channel::MODE_SERVER, this,
+        base::ThreadTaskRunnerHandle::Get(),
+        base::ThreadTaskRunnerHandle::Get(),
+        mojo::internal::MessageQuotaChecker::MaybeCreate());
+  }
+}
 
 ChildProcessHostImpl::~ChildProcessHostImpl() {
   // If a channel was never created than it wasn't registered and the filters
@@ -153,13 +166,24 @@ void ChildProcessHostImpl::ForceShutdown() {
   child_process_->ProcessShutdown();
 }
 
+base::Optional<mojo::OutgoingInvitation>&
+ChildProcessHostImpl::GetMojoInvitation() {
+  return mojo_invitation_;
+}
+
 void ChildProcessHostImpl::CreateChannelMojo() {
-  mojo::MessagePipe pipe;
-  BindInterface(IPC::mojom::ChannelBootstrap::Name_, std::move(pipe.handle1));
-  channel_ = IPC::ChannelMojo::Create(
-      std::move(pipe.handle0), IPC::Channel::MODE_SERVER, this,
-      base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get(),
-      mojo::internal::MessageQuotaChecker::MaybeCreate());
+  // If in legacy mode, |channel_| is already initialized by the constructor,
+  // not bound through the Service Manager.
+  if (ipc_mode_ != IpcMode::kLegacy) {
+    DCHECK(!channel_);
+    mojo::MessagePipe pipe;
+    BindInterface(IPC::mojom::ChannelBootstrap::Name_, std::move(pipe.handle1));
+    channel_ = IPC::ChannelMojo::Create(
+        std::move(pipe.handle0), IPC::Channel::MODE_SERVER, this,
+        base::ThreadTaskRunnerHandle::Get(),
+        base::ThreadTaskRunnerHandle::Get(),
+        mojo::internal::MessageQuotaChecker::MaybeCreate());
+  }
   DCHECK(channel_);
 
   bool initialized = InitChannel();
@@ -175,14 +199,18 @@ bool ChildProcessHostImpl::InitChannel() {
 
   delegate_->OnChannelInitialized(channel_.get());
 
-  // We want to bind this interface as early as possible, but the constructor is
-  // too early. |delegate_| may not be fully initialized at that point and thus
-  // may be unable to properly fulfill the BindInterface() call. Instead we bind
-  // here since the |delegate_| has already been initialized and this is the
-  // first potential use of the interface.
-  mojo::Remote<mojom::ChildProcess> bootstrap;
-  content::BindInterface(this, child_process_.BindNewPipeAndPassReceiver());
-  child_process_->Initialize(bootstrap_receiver_.BindNewPipeAndPassRemote());
+  // In legacy mode, |child_process_| endpoint is already bound to a
+  // disconnected pipe and will remain dysfunctional.
+  if (!child_process_) {
+    // We want to bind this interface as early as possible, but the constructor
+    // is too early. |delegate_| may not be fully initialized at that point and
+    // thus may be unable to properly fulfill the BindInterface() call. Instead
+    // we bind here since the |delegate_| has already been initialized and this
+    // is the first potential use of the interface.
+    mojo::Remote<mojom::ChildProcess> bootstrap;
+    content::BindInterface(this, child_process_.BindNewPipeAndPassReceiver());
+    child_process_->Initialize(bootstrap_receiver_.BindNewPipeAndPassRemote());
+  }
 
   // Make sure these messages get sent first.
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)

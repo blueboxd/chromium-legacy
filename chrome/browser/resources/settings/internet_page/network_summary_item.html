@@ -1,7 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_components/chromeos/network/network_icon.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_siminfo.html">
-<link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_icon.html">
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_strings.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
@@ -39,11 +39,11 @@
       <div actionable class="flex layout horizontal center link-wrapper"
           on-click="onShowDetailsTap_">
         <div id="details" no-flex$="[[showSimInfo_(deviceState)]]">
-          <cr-network-icon
+          <network-icon
               show-technology-badge="[[showTechnologyBadge_]]"
               network-state="[[activeNetworkState]]"
               device-state="[[deviceState]]">
-          </cr-network-icon>
+          </network-icon>
           <div class="flex settings-box-text">
             <div id="networkTitleText">
               [[getTitleText_(activeNetworkState)]]

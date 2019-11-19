@@ -13,11 +13,11 @@
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
-#include "third_party/blink/public/platform/web_rtc_rtp_sender.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_source.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_dtmf_sender_handler.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_sender_platform.h"
 
 namespace blink {
 
@@ -27,7 +27,7 @@ blink::WebMediaStreamTrack CreateWebMediaStreamTrack(
     const std::string& id,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
-class FakeRTCRtpSenderImpl : public blink::WebRTCRtpSender {
+class FakeRTCRtpSenderImpl : public blink::RTCRtpSenderPlatform {
  public:
   FakeRTCRtpSenderImpl(base::Optional<std::string> track_id,
                        std::vector<std::string> stream_ids,
@@ -36,7 +36,7 @@ class FakeRTCRtpSenderImpl : public blink::WebRTCRtpSender {
   ~FakeRTCRtpSenderImpl() override;
   FakeRTCRtpSenderImpl& operator=(const FakeRTCRtpSenderImpl&);
 
-  std::unique_ptr<blink::WebRTCRtpSender> ShallowCopy() const override;
+  std::unique_ptr<blink::RTCRtpSenderPlatform> ShallowCopy() const override;
   uintptr_t Id() const override;
   rtc::scoped_refptr<webrtc::DtlsTransportInterface> DtlsTransport() override;
   webrtc::DtlsTransportInformation DtlsTransportInformation() override;
@@ -104,7 +104,7 @@ class FakeRTCRtpTransceiverImpl : public blink::WebRTCRtpTransceiver {
       const override;
   uintptr_t Id() const override;
   blink::WebString Mid() const override;
-  std::unique_ptr<blink::WebRTCRtpSender> Sender() const override;
+  std::unique_ptr<blink::RTCRtpSenderPlatform> Sender() const override;
   std::unique_ptr<blink::WebRTCRtpReceiver> Receiver() const override;
   bool Stopped() const override;
   webrtc::RtpTransceiverDirection Direction() const override;

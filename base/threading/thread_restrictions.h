@@ -228,10 +228,13 @@ class MultiThreadedCertVerifierScopedAllowBaseSyncPrimitives;
 class MultiThreadedProxyResolverScopedAllowJoinOnIO;
 class NetworkChangeNotifierMac;
 class NetworkConfigWatcherMacThread;
-class ScopedAllowThreadJoinForProxyResolverV8Tracing;
 namespace internal {
 class AddressTrackerLinux;
 }
+}
+
+namespace proxy_resolver {
+class ScopedAllowThreadJoinForProxyResolverV8Tracing;
 }
 
 namespace remoting {
@@ -511,9 +514,9 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   friend class net::
       MultiThreadedProxyResolverScopedAllowJoinOnIO;  // http://crbug.com/69710
   friend class net::NetworkChangeNotifierMac;         // http://crbug.com/125097
-  friend class net::
-      ScopedAllowThreadJoinForProxyResolverV8Tracing;  // http://crbug.com/69710
   friend class printing::PrinterQuery;                 // http://crbug.com/66082
+  friend class proxy_resolver::
+      ScopedAllowThreadJoinForProxyResolverV8Tracing;  // http://crbug.com/69710
   friend class remoting::AutoThread;  // https://crbug.com/944316
   // Not used in production yet, https://crbug.com/844078.
   friend class service_manager::ServiceProcessLauncher;

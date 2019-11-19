@@ -49,10 +49,9 @@ NonSfiListener::~NonSfiListener() {
 }
 
 void NonSfiListener::Listen() {
-  mojo::ScopedMessagePipeHandle channel_handle;
-  auto service = CreateNaClService(io_thread_.task_runner(), &channel_handle);
+  NaClService service(io_thread_.task_runner());
   channel_ = IPC::SyncChannel::Create(
-      channel_handle.release(), IPC::Channel::MODE_CLIENT,
+      service.TakeChannelPipe().release(), IPC::Channel::MODE_CLIENT,
       this,  // As a Listener.
       io_thread_.task_runner(), base::ThreadTaskRunnerHandle::Get(),
       true,  // Create pipe now.

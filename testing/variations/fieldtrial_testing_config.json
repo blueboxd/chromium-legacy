@@ -583,6 +583,24 @@
             ]
         }
     ],
+    "AndroidWideColorGamut": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "UseDisplayWideColorGamut",
+                    "params": {
+                        "enabled_models": "Pixel 4,Pixel 4 XL"
+                    },
+                    "enable_features": [
+                        "UseDisplayWideColorGamut"
+                    ]
+                }
+            ]
+        }
+    ],
     "AppLauncherRefresh": [
         {
             "platforms": [
@@ -703,6 +721,47 @@
                         "AudioServiceOutOfProcessKillAtHang",
                         "AudioServiceSandbox",
                         "WebRtcApmInAudioService"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AutoScreenBrightness": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_11062019",
+                    "params": {
+                        "auto_brightness_als_horizon_seconds": "3",
+                        "brightness_sample_delay_seconds": "3",
+                        "brightness_step_size": "1.5",
+                        "enabled": "true",
+                        "model_als_horizon_seconds": "3",
+                        "model_brightness_step_size": "2.0",
+                        "model_curve": "2",
+                        "user_adjustment_effect": "1"
+                    },
+                    "enable_features": [
+                        "AutoScreenBrightness"
+                    ]
+                },
+                {
+                    "name": "Enabled_11102019",
+                    "params": {
+                        "auto_brightness_als_horizon_seconds": "3",
+                        "brightness_sample_delay_seconds": "3",
+                        "brightness_step_size": "1.5",
+                        "enabled": "true",
+                        "model_als_horizon_seconds": "3",
+                        "model_brightness_step_size": "2.0",
+                        "model_curve": "2",
+                        "user_adjustment_effect": "1"
+                    },
+                    "enable_features": [
+                        "AutoScreenBrightness"
                     ]
                 }
             ]
@@ -1736,12 +1795,17 @@
             ],
             "experiments": [
                 {
-                    "name": "V2EnabledWithCopyingAndLimited",
+                    "name": "V3EnabledLimited",
                     "enable_features": [
                         "D3D11PrintCodecOnCrash",
                         "D3D11VideoDecoder",
+                        "D3D11VideoDecoderAllowOverlay",
                         "D3D11VideoDecoderCopyPictures",
                         "D3D11VideoDecoderLimitTo11_0"
+                    ],
+                    "disable_features": [
+                        "D3D11VideoDecoderAlwaysCopy",
+                        "D3D11VideoDecoderSkipMultithreaded"
                     ]
                 }
             ]
@@ -4993,15 +5057,14 @@
                         "migrate_FeatureEngagementTrackerEventStore": "true",
                         "migrate_FeedContentDatabase": "true",
                         "migrate_FeedJournalDatabase": "true",
-                        "migrate_GCMKeyStore": "true",
                         "migrate_NTPSnippetImages": "true",
                         "migrate_NTPSnippets": "true",
+                        "migrate_NotificationSchedulerIcons": "true",
+                        "migrate_NotificationSchedulerImpressions": "true",
+                        "migrate_NotificationSchedulerNotifications": "true",
                         "migrate_PreviewsHintCacheStore": "true",
                         "migrate_PrintJobDatabase": "true",
                         "migrate_StrikeService": "true",
-                        "migrate_TestDatabase0": "true",
-                        "migrate_TestDatabase1": "true",
-                        "migrate_TestDatabase2": "true",
                         "migrate_UsageStatsSuspension": "true",
                         "migrate_UsageStatsTokenMapping": "true",
                         "migrate_UsageStatsWebsiteEvent": "true",
@@ -5463,6 +5526,24 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SafeBrowsingSendPasswordReusePing"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SafeBrowsingPasswordProtectionShowDomainsForSavedPasswords": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SafeBrowsingPasswordProtectionShowDomainsForSavedPasswords"
                     ]
                 }
             ]

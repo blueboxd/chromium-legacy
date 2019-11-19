@@ -101,13 +101,18 @@ std::tuple<int, ResourceResponse, scoped_refptr<SharedBuffer>> ParseDataURL(
   return std::make_tuple(net::OK, std::move(response), std::move(buffer));
 }
 
-bool IsDataURLMimeTypeSupported(const KURL& url, std::string* data) {
+bool IsDataURLMimeTypeSupported(const KURL& url,
+                                std::string* data,
+                                std::string* mime_type) {
   std::string utf8_mime_type;
   std::string utf8_charset;
-  if (net::DataURL::Parse(GURL(url), &utf8_mime_type, &utf8_charset, data)) {
-    return blink::IsSupportedMimeType(utf8_mime_type);
-  }
-  return false;
+  if (!net::DataURL::Parse(GURL(url), &utf8_mime_type, &utf8_charset, data))
+    return false;
+  if (!blink::IsSupportedMimeType(utf8_mime_type))
+    return false;
+  if (mime_type)
+    utf8_mime_type.swap(*mime_type);
+  return true;
 }
 
 bool IsRedirectResponseCode(int response_code) {

@@ -138,8 +138,7 @@ class OptimizationGuideKeyedServiceDisabledBrowserTest
  public:
   OptimizationGuideKeyedServiceDisabledBrowserTest() {
     feature_list_.InitWithFeatures(
-        {optimization_guide::features::kOptimizationHints},
-        {optimization_guide::features::kOptimizationGuideKeyedService});
+        {}, {optimization_guide::features::kOptimizationHints});
   }
 
  private:
@@ -147,25 +146,6 @@ class OptimizationGuideKeyedServiceDisabledBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceDisabledBrowserTest,
-                       KeyedServiceNotEnabledButOptimizationHintsEnabled) {
-  EXPECT_EQ(nullptr, OptimizationGuideKeyedServiceFactory::GetForProfile(
-                         browser()->profile()));
-}
-
-class OptimizationGuideKeyedServiceHintsDisabledBrowserTest
-    : public InProcessBrowserTest {
- public:
-  OptimizationGuideKeyedServiceHintsDisabledBrowserTest() {
-    feature_list_.InitWithFeatures(
-        {optimization_guide::features::kOptimizationGuideKeyedService},
-        {optimization_guide::features::kOptimizationHints});
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(OptimizationGuideKeyedServiceHintsDisabledBrowserTest,
                        KeyedServiceEnabledButOptimizationHintsDisabled) {
   EXPECT_EQ(nullptr, OptimizationGuideKeyedServiceFactory::GetForProfile(
                          browser()->profile()));
@@ -176,9 +156,7 @@ class OptimizationGuideKeyedServiceBrowserTest
  public:
   OptimizationGuideKeyedServiceBrowserTest() {
     scoped_feature_list_.InitWithFeatures(
-        {optimization_guide::features::kOptimizationHints,
-         optimization_guide::features::kOptimizationGuideKeyedService},
-        {});
+        {optimization_guide::features::kOptimizationHints}, {});
   }
 
   ~OptimizationGuideKeyedServiceBrowserTest() override = default;

@@ -32,7 +32,7 @@ void TestShaderCallback(const base::TimeTicks& start_time,
       // compile complete in 1 minute" by pushing timeouts into the maximum
       // bucket of UMA_HISTOGRAM_MEDIUM_TIMES.
       delta = base::TimeDelta::FromMinutes(3);
-      return;
+      break;
     case metal::TestShaderResult::kSucceeded:
       delta = base::TimeTicks::Now() - start_time;
       break;

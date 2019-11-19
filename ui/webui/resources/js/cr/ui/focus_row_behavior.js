@@ -143,9 +143,7 @@ cr.define('cr.ui', function() {
      * @return {?string}
      */
     computeId_: function(index) {
-      if (index !== undefined) {
-        return `frb${index}`;
-      }
+      return index !== undefined ? `frb${index}` : undefined;
     },
 
     /**

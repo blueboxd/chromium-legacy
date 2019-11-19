@@ -75,6 +75,7 @@ void TestPendingAppManager::InstallApps(
 }
 
 void TestPendingAppManager::UninstallApps(std::vector<GURL> uninstall_urls,
+                                          ExternalInstallSource install_source,
                                           const UninstallCallback& callback) {
   auto weak_ptr = weak_ptr_factory_.GetWeakPtr();
   for (const auto& url : uninstall_urls) {

@@ -344,6 +344,7 @@ void NightLightControllerImpl::RegisterProfilePrefs(
                                 kDefaultStartTimeOffsetMinutes);
   registry->RegisterIntegerPref(prefs::kNightLightCustomEndTime,
                                 kDefaultEndTimeOffsetMinutes);
+  registry->RegisterBooleanPref(prefs::kAmbientColorEnabled, false);
 
   // Non-public prefs, only meant to be used by ash.
   registry->RegisterDoublePref(prefs::kNightLightCachedLatitude, 0.0);
@@ -481,6 +482,11 @@ TimeOfDay NightLightControllerImpl::GetCustomEndTime() const {
   }
 
   return TimeOfDay(kDefaultEndTimeOffsetMinutes);
+}
+
+bool NightLightControllerImpl::GetAmbientColorEnabled() const {
+  return active_user_pref_service_ &&
+         active_user_pref_service_->GetBoolean(prefs::kAmbientColorEnabled);
 }
 
 void NightLightControllerImpl::SetEnabled(bool enabled,
@@ -676,6 +682,11 @@ void NightLightControllerImpl::StartWatchingPrefsChanges() {
       base::BindRepeating(
           &NightLightControllerImpl::OnCustomSchedulePrefsChanged,
           base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kAmbientColorEnabled,
+      base::BindRepeating(
+          &NightLightControllerImpl::OnAmbientColorEnabledPrefChanged,
+          base::Unretained(this)));
 
   // Note: No need to observe changes in the cached latitude/longitude since
   // they're only accessed here in ash. We only load them when the active user
@@ -705,6 +716,12 @@ void NightLightControllerImpl::OnEnabledPrefChanged() {
   DCHECK(active_user_pref_service_);
   Refresh(false /* did_schedule_change */);
   NotifyStatusChanged();
+}
+
+void NightLightControllerImpl::OnAmbientColorEnabledPrefChanged() {
+  DCHECK(active_user_pref_service_);
+  // TODO(dcastagna): Use GetAmbientColorEnabled() to toggle the state
+  // of Ambient EQ. See b/138731765
 }
 
 void NightLightControllerImpl::OnColorTemperaturePrefChanged() {

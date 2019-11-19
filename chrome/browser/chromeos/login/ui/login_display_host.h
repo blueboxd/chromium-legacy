@@ -204,6 +204,9 @@ class LoginDisplayHost {
   // Update status of add user button in the shelf.
   virtual void UpdateAddUserButtonStatus() = 0;
 
+  // Update the system info at login screen.
+  virtual void RequestSystemInfoUpdate() = 0;
+
  protected:
   LoginDisplayHost();
   virtual ~LoginDisplayHost();

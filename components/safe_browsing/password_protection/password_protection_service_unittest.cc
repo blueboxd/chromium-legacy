@@ -1154,6 +1154,10 @@ TEST_P(PasswordProtectionServiceTest, VerifyShouldShowModalWarning) {
     EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
         LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
         reused_password_account_type, LoginReputationClientResponse::PHISHING));
+    EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
+        LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
+        reused_password_account_type,
+        LoginReputationClientResponse::LOW_REPUTATION));
   }
 
   {

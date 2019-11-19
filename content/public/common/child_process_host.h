@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/files/scoped_file.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/common/bind_interface_helpers.h"
@@ -25,6 +26,10 @@ class FilePath;
 
 namespace IPC {
 class MessageFilter;
+}
+
+namespace mojo {
+class OutgoingInvitation;
 }
 
 namespace content {
@@ -42,9 +47,35 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
   // any kind, including the values returned by RenderProcessHost::GetID().
   enum : int { kInvalidUniqueID = -1 };
 
+  // Every ChildProcessHost provides a single primordial Mojo message pipe to
+  // the launched child process, with the other end held by the
+  // ChildProcessHost.
+  //
+  // This enum (given to |Create()|) determines how the ChildProcessHost uses
+  // the pipe.
+  enum class IpcMode {
+    // In this mode, the primordial pipe is a service_manager.mojom.Service
+    // pipe, and the owner of the ChildProcessHost is expected to pass the
+    // Mojo invitation along to a content::ChildProcessConnection.
+    //
+    // In this mode, the ChildProcessHost is fully functional.
+    kServiceManager,
+
+    // In this mode, the primordial pipe is a legacy IPC Channel bootstrapping
+    // pipe (IPC.mojom.ChannelBootstrap). This should be used when the child
+    // process only uses legacy Chrome IPC (e.g. Chrome's NaCl processes.)
+    //
+    // In this mode, ChildProcessHost methods like |BindInterface()| or
+    // |BindReceiver()| are not functional.
+    //
+    // DEPRECATED: Do not introduce new uses of this mode.
+    kLegacy,
+  };
+
   // Used to create a child process host. The delegate must outlive this object.
   static std::unique_ptr<ChildProcessHost> Create(
-      ChildProcessHostDelegate* delegate);
+      ChildProcessHostDelegate* delegate,
+      IpcMode ipc_mode);
 
   // These flags may be passed to GetChildPath in order to alter its behavior,
   // causing it to return a child path more suited to a specific task.
@@ -103,6 +134,15 @@ class CONTENT_EXPORT ChildProcessHost : public IPC::Sender {
 
   // Send the shutdown message to the child process.
   virtual void ForceShutdown() = 0;
+
+  // Exposes the outgoing Mojo invitation for this ChildProcessHost. The
+  // invitation can be given to ChildProcessLauncher to ensure that this
+  // ChildProcessHost's primordial Mojo IPC calls can properly communicate with
+  // the launched process.
+  //
+  // Always valid immediately after ChildProcessHost construction, but may be
+  // null if someone else has taken ownership.
+  virtual base::Optional<mojo::OutgoingInvitation>& GetMojoInvitation() = 0;
 
   // Creates the IPC channel over a Mojo message pipe. The pipe connection is
   // brokered through the Service Manager like any other service connection.

@@ -302,6 +302,10 @@ void BluetoothAdapterMac::DeviceConnected(IOBluetoothDevice* device) {
   ClassicDeviceAdded(device);
 }
 
+base::WeakPtr<BluetoothAdapter> BluetoothAdapterMac::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 bool BluetoothAdapterMac::SetPoweredImpl(bool powered) {
   power_state_function_.Run(base::strict_cast<int>(powered));
   return true;

@@ -2165,6 +2165,10 @@
     "label": "//cc/paint:paint_op_buffer_fuzzer",
     "type": "fuzzer",
   },
+  "paint_preview_junit_tests": {
+    "label": "//components/paint_preview/player/android:paint_preview_junit_tests",
+    "type": "junit_test",
+  },
   "password_generator_proto_fuzzer": {
     "label": "//components/password_manager/core/browser:password_generator_proto_fuzzer",
     "type": "fuzzer",

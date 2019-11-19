@@ -265,16 +265,16 @@ public class BookmarkUtils {
         RecordHistogram.recordEnumeratedHistogram(
                 "Bookmarks.OpenBookmarkType", bookmarkId.getType(), BookmarkType.LAST + 1);
 
-        if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(activity)) {
-            // For tablets, the bookmark manager is open in a tab in the ChromeActivity. Use
-            // the ComponentName of the ChromeActivity passed into this method.
-            openUrl(activity, url, activity.getComponentName());
-        } else {
+        if (activity instanceof BookmarkActivity) {
             // For phones, the bookmark manager is a separate activity. When the activity is
             // launched, an intent extra is set specifying the parent component.
             ComponentName parentComponent = IntentUtils.safeGetParcelableExtra(
-                    activity.getIntent(), IntentHandler.EXTRA_PARENT_COMPONENT);
+                activity.getIntent(), IntentHandler.EXTRA_PARENT_COMPONENT);
             openUrl(activity, url, parentComponent);
+        } else {
+            // For tablets, the bookmark manager is open in a tab in the ChromeActivity. Use
+            // the ComponentName of the ChromeActivity passed into this method.
+            openUrl(activity, url, activity.getComponentName());
         }
 
         return true;

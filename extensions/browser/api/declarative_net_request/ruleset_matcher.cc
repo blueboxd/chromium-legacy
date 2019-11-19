@@ -68,8 +68,9 @@ base::Optional<RequestAction> RulesetMatcher::GetBlockOrCollapseAction(
   return url_pattern_index_matcher_.GetBlockOrCollapseAction(params);
 }
 
-bool RulesetMatcher::HasMatchingAllowRule(const RequestParams& params) const {
-  return url_pattern_index_matcher_.HasMatchingAllowRule(params);
+base::Optional<RequestAction> RulesetMatcher::GetAllowAction(
+    const RequestParams& params) const {
+  return url_pattern_index_matcher_.GetAllowAction(params);
 }
 
 base::Optional<RequestAction> RulesetMatcher::GetRedirectAction(

@@ -62,6 +62,10 @@ class SwReporterTestingDelegate {
 // cleared.
 void SetSwReporterTestingDelegate(SwReporterTestingDelegate* delegate);
 
+// Returns true if the reporter is expected to terminate when the browser does
+// on this version of Windows. Exposed for testing.
+bool ReporterTerminatesOnBrowserExit();
+
 // Launches a reporter process based on the command-line in |invocation| and
 // returns its exit code. Exposed for testing.
 int LaunchAndWaitForExit(const SwReporterInvocation& invocation);

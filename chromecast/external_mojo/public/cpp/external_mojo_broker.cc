@@ -163,16 +163,6 @@ class ExternalMojoBroker::ConnectorImpl : public mojom::ExternalConnector {
       AddReceiver(std::move(receiver));
     }
 
-    void FilterInterfaces(
-        const std::string& spec,
-        const ::service_manager::Identity& source,
-        mojo::PendingReceiver<::service_manager::mojom::InterfaceProvider>
-            source_receiver,
-        mojo::PendingRemote<::service_manager::mojom::InterfaceProvider> target)
-        override {
-      NOTREACHED() << "Call to deprecated FilterInterfaces";
-    }
-
     ExternalMojoBroker::ConnectorImpl* const connector_;
 
     mojo::ReceiverSet<service_manager::mojom::Connector> receivers_;

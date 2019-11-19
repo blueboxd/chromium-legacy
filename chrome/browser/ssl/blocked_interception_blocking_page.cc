@@ -5,9 +5,8 @@
 #include "chrome/browser/ssl/blocked_interception_blocking_page.h"
 
 #include "chrome/browser/interstitials/chrome_metrics_helper.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ssl/cert_report_helper.h"
+#include "chrome/browser/ssl/chrome_ssl_blocking_page.h"
 #include "chrome/browser/ssl/ssl_error_controller_client.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
 #include "components/security_interstitials/core/metrics_helper.h"
@@ -62,7 +61,6 @@ BlockedInterceptionBlockingPage::BlockedInterceptionBlockingPage(
     const net::SSLInfo& ssl_info)
     : SSLBlockingPageBase(
           web_contents,
-          cert_error,
           CertificateErrorReport::INTERSTITIAL_BLOCKED_INTERCEPTION,
           ssl_info,
           request_url,
@@ -81,7 +79,9 @@ BlockedInterceptionBlockingPage::BlockedInterceptionBlockingPage(
           new security_interstitials::BlockedInterceptionUI(request_url,
                                                             cert_error,
                                                             ssl_info,
-                                                            controller())) {}
+                                                            controller())) {
+  ChromeSSLBlockingPage::DoChromeSpecificSetup(this);
+}
 
 BlockedInterceptionBlockingPage::~BlockedInterceptionBlockingPage() = default;
 
@@ -125,11 +125,4 @@ void BlockedInterceptionBlockingPage::CommandReceived(
       controller()->GetPrefService());
   blocked_interception_ui_->HandleCommand(
       static_cast<security_interstitials::SecurityInterstitialCommand>(cmd));
-}
-
-void BlockedInterceptionBlockingPage::OverrideRendererPrefs(
-    blink::mojom::RendererPreferences* prefs) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-  renderer_preferences_util::UpdateFromSystemSettings(prefs, profile);
 }

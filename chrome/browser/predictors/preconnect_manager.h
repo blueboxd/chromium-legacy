@@ -33,12 +33,11 @@ namespace predictors {
 struct PreconnectRequest;
 
 struct PreconnectedRequestStats {
-  PreconnectedRequestStats(const GURL& origin,
-                           bool was_preconnected);
+  PreconnectedRequestStats(const url::Origin& origin, bool was_preconnected);
   PreconnectedRequestStats(const PreconnectedRequestStats& other);
   ~PreconnectedRequestStats();
 
-  GURL origin;
+  url::Origin origin;
   bool was_preconnected;
 };
 

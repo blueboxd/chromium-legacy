@@ -148,24 +148,14 @@ class ColorPickerElementView : public views::Button,
   // Paints a ring in our color circle to indicate selection or mouse hover.
   // Does nothing if not selected or hovered.
   void PaintSelectionIndicator(gfx::Canvas* canvas) {
-    // Visual parameters of our ring.
-    constexpr float kInset = 3.0f;
-    constexpr float kThickness = 2.0f;
-    constexpr SkColor kSelectedColor = SK_ColorWHITE;
-    constexpr SkColor kPendingColor = gfx::kGoogleGrey200;
-
-    SkColor paint_color = gfx::kPlaceholderColor;
-    if (selected_) {
-      paint_color = kSelectedColor;
-    } else if (GetVisualState() == STATE_HOVERED ||
-               hover_animation().is_animating()) {
-      const float alpha = gfx::Tween::CalculateValue(
-          gfx::Tween::FAST_OUT_SLOW_IN, hover_animation().GetCurrentValue());
-      paint_color = color_utils::AlphaBlend(kPendingColor, color_, alpha);
-    } else {
+    if (!selected_) {
       return;
     }
 
+    // Visual parameters of our ring.
+    constexpr float kInset = 3.0f;
+    constexpr float kThickness = 2.0f;
+    constexpr SkColor paint_color = SK_ColorWHITE;
     cc::PaintFlags flags;
     flags.setStyle(cc::PaintFlags::kStroke_Style);
     flags.setStrokeWidth(kThickness);
@@ -187,6 +177,7 @@ class ColorPickerElementView : public views::Button,
 
 ColorPickerView::ColorPickerView(
     base::span<const std::pair<SkColor, base::string16>> colors,
+    SkColor initial_color,
     ColorSelectedCallback callback)
     : callback_(std::move(callback)) {
   elements_.reserve(colors.size());
@@ -197,6 +188,8 @@ ColorPickerView::ColorPickerView(
     elements_.push_back(AddChildView(std::make_unique<ColorPickerElementView>(
         base::Bind(&ColorPickerView::OnColorSelected, base::Unretained(this)),
         color.first, color.second)));
+    if (initial_color == color.first)
+      elements_.back()->SetSelected(true);
   }
 
   // Our children should take keyboard focus, not us.

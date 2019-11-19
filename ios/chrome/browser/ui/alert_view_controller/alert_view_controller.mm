@@ -28,7 +28,7 @@ constexpr float kShadowOpacity = 0.12;
 // Properties of the alert view.
 constexpr CGFloat kCornerRadius = 14;
 constexpr CGFloat kAlertWidth = 270;
-constexpr CGFloat kAlertWidthAccessibilty = 402;
+constexpr CGFloat kAlertWidthAccessibility = 402;
 constexpr CGFloat kTextFieldCornerRadius = 5;
 constexpr CGFloat kMinimumHeight = 30;
 constexpr CGFloat kMinimumMargin = 4;
@@ -158,7 +158,7 @@ constexpr NSUInteger kUIViewAnimationCurveToOptionsShift = 16;
     BOOL isAccessibilityContentSize =
         UIContentSizeCategoryIsAccessibilityCategory(
             [UIApplication sharedApplication].preferredContentSizeCategory);
-    return isAccessibilityContentSize ? kAlertWidthAccessibilty : kAlertWidth;
+    return isAccessibilityContentSize ? kAlertWidthAccessibility : kAlertWidth;
   };
 
   NSLayoutConstraint* widthConstraint =

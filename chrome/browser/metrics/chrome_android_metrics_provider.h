@@ -21,6 +21,7 @@ class ChromeAndroidMetricsProvider : public metrics::MetricsProvider {
   ~ChromeAndroidMetricsProvider() override;
 
   // metrics::MetricsProvider:
+  void OnDidCreateMetricsLog() override;
   void ProvideCurrentSessionData(
       metrics::ChromeUserMetricsExtension* uma_proto) override;
 

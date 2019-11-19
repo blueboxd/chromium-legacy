@@ -66,6 +66,9 @@ class APP_LIST_EXPORT AppListAssistantMainStage
   views::View* CreateDividerLayoutContainer();
   views::View* CreateFooterLayoutContainer();
 
+  void AnimateInGreetingLabel();
+  void AnimateInFooter();
+
   void MaybeHideGreetingLabel();
 
   ash::AssistantViewDelegate* const delegate_;  // Owned by Shell.

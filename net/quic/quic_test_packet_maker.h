@@ -134,6 +134,13 @@ class QuicTestPacketMaker {
       uint64_t least_unacked,
       quic::QuicErrorCode quic_error,
       const std::string& quic_error_details);
+  std::unique_ptr<quic::QuicReceivedPacket> MakeRstAndConnectionClosePacket(
+      uint64_t num,
+      bool include_version,
+      quic::QuicStreamId stream_id,
+      quic::QuicRstStreamErrorCode error_code,
+      quic::QuicErrorCode quic_error,
+      const std::string& quic_error_details);
   std::unique_ptr<quic::QuicReceivedPacket> MakeAckAndConnectionClosePacket(
       uint64_t num,
       bool include_version,

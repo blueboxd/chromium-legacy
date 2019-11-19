@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_macros_local.h"
 #include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
@@ -26,7 +27,6 @@
 #include "components/optimization_guide/bloom_filter.h"
 #include "components/optimization_guide/hint_cache.h"
 #include "components/optimization_guide/hints_component_util.h"
-#include "components/optimization_guide/hints_fetcher.h"
 #include "components/optimization_guide/hints_processing_util.h"
 #include "components/optimization_guide/optimization_filter.h"
 #include "components/optimization_guide/optimization_guide_constants.h"
@@ -482,14 +482,21 @@ void OptimizationGuideHintsManager::FetchTopHostsHints() {
 
 void OptimizationGuideHintsManager::OnHintsFetched(
     optimization_guide::proto::RequestContext request_context,
+    optimization_guide::HintsFetcherRequestStatus fetch_status,
     base::Optional<std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
         get_hints_response) {
   switch (request_context) {
     case optimization_guide::proto::CONTEXT_BATCH_UPDATE:
       OnTopHostsHintsFetched(std::move(get_hints_response));
+      UMA_HISTOGRAM_ENUMERATION(
+          "OptimizationGuide.HintsFetcher.RequestStatus.BatchUpdate",
+          fetch_status);
       return;
     case optimization_guide::proto::CONTEXT_PAGE_NAVIGATION:
       OnPageNavigationHintsFetched(std::move(get_hints_response));
+      UMA_HISTOGRAM_ENUMERATION(
+          "OptimizationGuide.HintsFetcher.RequestStatus.PageNavigation",
+          fetch_status);
       return;
     case optimization_guide::proto::CONTEXT_UNSPECIFIED:
       NOTREACHED();

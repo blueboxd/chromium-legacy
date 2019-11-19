@@ -2202,4 +2202,34 @@ std::ostream& operator<<(std::ostream& stream,
   return stream << object.ToString();
 }
 
+static bool HasListAncestor(const BrowserAccessibility* node) {
+  if (node == nullptr)
+    return false;
+
+  if (ui::IsStaticList(node->GetRole()))
+    return true;
+
+  return HasListAncestor(node->InternalGetParent());
+}
+
+static bool HasListDescendant(const BrowserAccessibility* current,
+                              const BrowserAccessibility* root) {
+  // Do not check the root when looking for a list descendant.
+  if (current != root && ui::IsStaticList(current->GetRole()))
+    return true;
+
+  for (auto it = current->InternalChildrenBegin();
+       it != current->InternalChildrenEnd(); ++it) {
+    if (HasListDescendant(it.get(), root))
+      return true;
+  }
+  return false;
+}
+
+bool BrowserAccessibility::IsHierarchicalList() const {
+  if (!ui::IsStaticList(GetRole()))
+    return false;
+  return HasListDescendant(this, this) || HasListAncestor(InternalGetParent());
+}
+
 }  // namespace content

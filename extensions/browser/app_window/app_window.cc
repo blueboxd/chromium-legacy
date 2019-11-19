@@ -802,7 +802,8 @@ void AppWindow::StartAppIconDownload() {
   image_loader_ptr_factory_.InvalidateWeakPtrs();
   web_contents()->DownloadImage(
       app_icon_url_,
-      true,   // is a favicon
+      true,  // is a favicon
+      app_delegate_->PreferredIconSize(),
       0,      // no maximum size
       false,  // normal cache policy
       base::BindOnce(&AppWindow::DidDownloadFavicon,

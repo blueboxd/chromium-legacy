@@ -1,21 +1,10 @@
-EVENT(fullscreenchange)
-END OF TEST
-
 {
-  "name": "LayoutVideo (positioned) VIDEO id='video'",
-  "bounds": [800, 600],
-  "drawsContent": false,
-  "children": [
+  "layers": [
     {
       "name": "LayoutFlexibleBox (relative positioned) DIV class='phase-pre-ready state-no-source sizing-small use-default-poster'",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "backgroundColor": "#333333"
-    },
-    {
-      "name": "LayoutNGBlockFlow (positioned) DIV",
-      "bounds": [800, 600],
-      "drawsContent": false
     },
     {
       "name": "LayoutFlexibleBox DIV",

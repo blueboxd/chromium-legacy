@@ -283,7 +283,7 @@ class WPTExpectationsUpdater(object):
         if 'MISSING' in actual_results:
             return {'Skip'}
         if '-manual.' in test_name and 'TIMEOUT' in actual_results:
-            return {'WontFix'}
+            return {'Skip'}
         expectations = set()
         failure_types = {'TEXT', 'IMAGE+TEXT', 'IMAGE', 'AUDIO', 'FAIL'}
         other_types = {'TIMEOUT', 'CRASH', 'PASS'}
@@ -485,7 +485,7 @@ class WPTExpectationsUpdater(object):
         webdriver_list = []
         for lines in line_dict.itervalues():
             for line in lines:
-                if 'WontFix' in line:
+                if 'Skip' in line and '-manual.' in line:
                     wont_fix_list.append(line)
                 elif self.finder.webdriver_prefix() in line:
                     webdriver_list.append(line)

@@ -138,14 +138,10 @@ GURL GetURLWithGoogleHost(net::EmbeddedTestServer* server,
 // HintsFetcher-related features. The parameter selects whether the
 // OptimizationGuideKeyedService is enabled (tests should pass in the same way
 // for both cases).
-class HintsFetcherDisabledBrowserTest
-    : public InProcessBrowserTest,
-      public testing::WithParamInterface<bool> {
+class HintsFetcherDisabledBrowserTest : public InProcessBrowserTest {
  public:
   HintsFetcherDisabledBrowserTest() = default;
   ~HintsFetcherDisabledBrowserTest() override = default;
-
-  bool IsOptimizationGuideKeyedServiceEnabled() const { return GetParam(); }
 
   void SetUpOnMainThread() override {
     content::NetworkConnectionChangeSimulator().SetConnectionType(
@@ -186,15 +182,8 @@ class HintsFetcherDisabledBrowserTest
 
     ASSERT_TRUE(hints_server_->Start());
 
-    if (IsOptimizationGuideKeyedServiceEnabled()) {
-      param_feature_list_.InitWithFeatures(
-          {optimization_guide::features::kOptimizationGuideKeyedService,
-           blink::features::kNavigationPredictor},
-          {});
-    } else {
-      param_feature_list_.InitWithFeatures(
-          {}, {optimization_guide::features::kOptimizationGuideKeyedService});
-    }
+    param_feature_list_.InitWithFeatures(
+        {blink::features::kNavigationPredictor}, {});
 
     InProcessBrowserTest::SetUp();
   }
@@ -219,8 +208,7 @@ class HintsFetcherDisabledBrowserTest
                            "example1.com, example2.com");
     cmd->AppendSwitch(previews::switches::kDoNotRequireLitePageRedirectInfoBar);
 
-    if (IsOptimizationGuideKeyedServiceEnabled())
-      cmd->AppendSwitch(optimization_guide::switches::kFetchHintsOverrideTimer);
+    cmd->AppendSwitch(optimization_guide::switches::kFetchHintsOverrideTimer);
   }
 
   // Creates hint data for the |hint_setup_url|'s so that OnHintsUpdated in
@@ -508,10 +496,6 @@ class HintsFetcherDisabledBrowserTest
   DISALLOW_COPY_AND_ASSIGN(HintsFetcherDisabledBrowserTest);
 };
 
-INSTANTIATE_TEST_SUITE_P(OptimizationGuideKeyedServiceImplementation,
-                         HintsFetcherDisabledBrowserTest,
-                         testing::Bool());
-
 // This test class enables OnePlatform Hints.
 class HintsFetcherBrowserTest : public HintsFetcherDisabledBrowserTest {
  public:
@@ -537,11 +521,6 @@ class HintsFetcherBrowserTest : public HintsFetcherDisabledBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(HintsFetcherBrowserTest);
 };
 
-// True if testing using the OptimizationGuideKeyedService implementation.
-INSTANTIATE_TEST_SUITE_P(OptimizationGuideKeyedServiceImplementation,
-                         HintsFetcherBrowserTest,
-                         testing::Bool());
-
 // Issues with multiple profiles likely cause the site engagement service-based
 // tests to flake.
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
@@ -556,7 +535,7 @@ INSTANTIATE_TEST_SUITE_P(OptimizationGuideKeyedServiceImplementation,
 // histograms for the total number of TopEngagementSites and
 // the total number of sites returned controlled by the experiments flag
 // |max_oneplatform_update_hosts|.
-IN_PROC_BROWSER_TEST_P(HintsFetcherBrowserTest,
+IN_PROC_BROWSER_TEST_F(HintsFetcherBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(HintsFetcherEnabled)) {
   const base::HistogramTester* histogram_tester = GetHistogramTester();
 
@@ -584,7 +563,7 @@ IN_PROC_BROWSER_TEST_P(HintsFetcherBrowserTest,
       "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount", 1, 1);
 }
 
-IN_PROC_BROWSER_TEST_P(HintsFetcherDisabledBrowserTest, HintsFetcherDisabled) {
+IN_PROC_BROWSER_TEST_F(HintsFetcherDisabledBrowserTest, HintsFetcherDisabled) {
   const base::HistogramTester* histogram_tester = GetHistogramTester();
 
   // Expect that the histogram for HintsFetcher to be 0 because the OnePlatform
@@ -599,7 +578,7 @@ IN_PROC_BROWSER_TEST_P(HintsFetcherDisabledBrowserTest, HintsFetcherDisabled) {
 // only returns HTTPS-schemed hosts. We verify this with the UMA histogram
 // logged when the GetHintsRequest is made to the remote Optimization Guide
 // Service.
-IN_PROC_BROWSER_TEST_P(
+IN_PROC_BROWSER_TEST_F(
     HintsFetcherBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(PreviewsTopHostProviderHTTPSOnly)) {
   const base::HistogramTester* histogram_tester = GetHistogramTester();
@@ -627,7 +606,7 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_EQ(0u, GetTopHostBlacklistSize());
 }
 
-IN_PROC_BROWSER_TEST_P(
+IN_PROC_BROWSER_TEST_F(
     HintsFetcherBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(HintsFetcherFetchedHintsLoaded)) {
   const base::HistogramTester* histogram_tester = GetHistogramTester();
@@ -672,7 +651,7 @@ IN_PROC_BROWSER_TEST_P(
       0);
 }
 
-IN_PROC_BROWSER_TEST_P(
+IN_PROC_BROWSER_TEST_F(
     HintsFetcherBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(HintsFetcherWithResponsesSuccessful)) {
   SetResponseType(HintsFetcherRemoteResponseType::kSuccessful);
@@ -704,7 +683,7 @@ IN_PROC_BROWSER_TEST_P(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount", 1, 1);
 }
 
-IN_PROC_BROWSER_TEST_P(
+IN_PROC_BROWSER_TEST_F(
     HintsFetcherBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(HintsFetcherWithResponsesUnsuccessful)) {
   SetResponseType(HintsFetcherRemoteResponseType::kUnsuccessful);
@@ -735,7 +714,7 @@ IN_PROC_BROWSER_TEST_P(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount", 0);
 }
 
-IN_PROC_BROWSER_TEST_P(
+IN_PROC_BROWSER_TEST_F(
     HintsFetcherBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(HintsFetcherWithResponsesMalformed)) {
   SetResponseType(HintsFetcherRemoteResponseType::kMalformed);
@@ -785,7 +764,7 @@ IN_PROC_BROWSER_TEST_P(
       0);
 }
 
-IN_PROC_BROWSER_TEST_P(
+IN_PROC_BROWSER_TEST_F(
     HintsFetcherBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(HintsFetcherClearFetchedHints)) {
   const base::HistogramTester* histogram_tester = GetHistogramTester();
@@ -843,14 +822,14 @@ IN_PROC_BROWSER_TEST_P(
                 static_cast<int>(optimization_guide::OptimizationGuideStore::
                                      StoreEntryType::kFetchedHint)));
 
-  EXPECT_LE(IsOptimizationGuideKeyedServiceEnabled() ? 0 : 1,
+  EXPECT_LE(0,
             GetCountBucketSamples(
                 histogram_tester, "OptimizationGuide.HintCache.HintType.Loaded",
                 static_cast<int>(optimization_guide::OptimizationGuideStore::
                                      StoreEntryType::kComponentHint)));
 }
 
-IN_PROC_BROWSER_TEST_P(HintsFetcherBrowserTest,
+IN_PROC_BROWSER_TEST_F(HintsFetcherBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(HintsFetcherOverrideTimer)) {
   const base::HistogramTester* histogram_tester = GetHistogramTester();
   GURL url = https_url();
@@ -907,7 +886,7 @@ IN_PROC_BROWSER_TEST_P(HintsFetcherBrowserTest,
       0);
 }
 
-IN_PROC_BROWSER_TEST_P(
+IN_PROC_BROWSER_TEST_F(
     HintsFetcherBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(HintsFetcherNetworkOffline)) {
   const base::HistogramTester* histogram_tester = GetHistogramTester();
@@ -938,7 +917,7 @@ IN_PROC_BROWSER_TEST_P(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 0);
 }
 
-IN_PROC_BROWSER_TEST_P(HintsFetcherBrowserTest,
+IN_PROC_BROWSER_TEST_F(HintsFetcherBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(HintsFetcherHostCovered)) {
   const base::HistogramTester* histogram_tester = GetHistogramTester();
 
@@ -978,7 +957,7 @@ IN_PROC_BROWSER_TEST_P(HintsFetcherBrowserTest,
       "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", true, 1);
 }
 
-IN_PROC_BROWSER_TEST_P(
+IN_PROC_BROWSER_TEST_F(
     HintsFetcherBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(HintsFetcherHostNotCovered)) {
   const base::HistogramTester* histogram_tester = GetHistogramTester();
@@ -1019,7 +998,7 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 // Test that the hints are fetched at the time of the navigation.
-IN_PROC_BROWSER_TEST_P(
+IN_PROC_BROWSER_TEST_F(
     HintsFetcherBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(HintsFetcher_NavigationFetch_ECT)) {
   const base::HistogramTester* histogram_tester = GetHistogramTester();
@@ -1074,22 +1053,19 @@ IN_PROC_BROWSER_TEST_P(
     histogram_tester->ExpectUniqueSample(
         "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", false,
         1);
-    EXPECT_EQ(IsOptimizationGuideKeyedServiceEnabled() ? 2u : 1u,
-              count_hints_requests_received());
+    EXPECT_EQ(2u, count_hints_requests_received());
     RetryForHistogramUntilCountReached(
         histogram_tester, optimization_guide::kLoadedHintLocalHistogramString,
-        IsOptimizationGuideKeyedServiceEnabled() ? 2 : 1);
-    if (IsOptimizationGuideKeyedServiceEnabled()) {
-      RetryForHistogramUntilCountReached(
-          histogram_tester,
-          "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
-          "AtCommit",
-          1);
-      histogram_tester->ExpectUniqueSample(
-          "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
-          "AtCommit",
-          true, 1);
-    }
+        2);
+    RetryForHistogramUntilCountReached(
+        histogram_tester,
+        "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
+        "AtCommit",
+        1);
+    histogram_tester->ExpectUniqueSample(
+        "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
+        "AtCommit",
+        true, 1);
   }
 
   // Change ECT to a high value. Hints should not be fetched at the time of
@@ -1112,26 +1088,23 @@ IN_PROC_BROWSER_TEST_P(
     histogram_tester->ExpectUniqueSample(
         "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", false,
         2);
-    EXPECT_EQ(IsOptimizationGuideKeyedServiceEnabled() ? 2u : 1u,
-              count_hints_requests_received());
+    EXPECT_EQ(2u, count_hints_requests_received());
     RetryForHistogramUntilCountReached(
         histogram_tester, optimization_guide::kLoadedHintLocalHistogramString,
-        IsOptimizationGuideKeyedServiceEnabled() ? 2 : 1);
-    if (IsOptimizationGuideKeyedServiceEnabled()) {
-      RetryForHistogramUntilCountReached(
-          histogram_tester,
-          "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
-          "AtCommit",
-          2);
-      histogram_tester->ExpectBucketCount(
-          "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
-          "AtCommit",
-          true, 1);
-      histogram_tester->ExpectBucketCount(
-          "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
-          "AtCommit",
-          false, 1);
-    }
+        2);
+    RetryForHistogramUntilCountReached(
+        histogram_tester,
+        "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
+        "AtCommit",
+        2);
+    histogram_tester->ExpectBucketCount(
+        "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
+        "AtCommit",
+        true, 1);
+    histogram_tester->ExpectBucketCount(
+        "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
+        "AtCommit",
+        false, 1);
   }
 
   // Change ECT back to a low value. Hints should be fetched at the time of
@@ -1156,27 +1129,24 @@ IN_PROC_BROWSER_TEST_P(
     histogram_tester->ExpectUniqueSample(
         "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", false,
         3);
-    EXPECT_EQ(IsOptimizationGuideKeyedServiceEnabled() ? 3u : 1u,
-              count_hints_requests_received());
+    EXPECT_EQ(3u, count_hints_requests_received());
     RetryForHistogramUntilCountReached(
         histogram_tester, optimization_guide::kLoadedHintLocalHistogramString,
-        IsOptimizationGuideKeyedServiceEnabled() ? 3 : 1);
+        3);
 
-    if (IsOptimizationGuideKeyedServiceEnabled()) {
-      RetryForHistogramUntilCountReached(
-          histogram_tester,
-          "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
-          "AtCommit",
-          3);
-      histogram_tester->ExpectBucketCount(
-          "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
-          "AtCommit",
-          true, 2);
-      histogram_tester->ExpectBucketCount(
-          "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
-          "AtCommit",
-          false, 1);
-    }
+    RetryForHistogramUntilCountReached(
+        histogram_tester,
+        "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
+        "AtCommit",
+        3);
+    histogram_tester->ExpectBucketCount(
+        "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
+        "AtCommit",
+        true, 2);
+    histogram_tester->ExpectBucketCount(
+        "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
+        "AtCommit",
+        false, 1);
   }
 
   // Navigate again to a webpage with the
@@ -1196,7 +1166,6 @@ IN_PROC_BROWSER_TEST_P(
         histogram_tester,
         "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", 4);
 
-    if (IsOptimizationGuideKeyedServiceEnabled()) {
       // Hints should be available this time for the navigation.
       histogram_tester->ExpectBucketCount(
           "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", false,
@@ -1204,19 +1173,12 @@ IN_PROC_BROWSER_TEST_P(
       histogram_tester->ExpectBucketCount(
           "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", true,
           1);
-    } else {
-      histogram_tester->ExpectUniqueSample(
-          "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch", false,
-          4);
-    }
     // Hints should not be fetched for the same host again.
-    EXPECT_EQ(IsOptimizationGuideKeyedServiceEnabled() ? 3u : 1u,
-              count_hints_requests_received());
-    RetryForHistogramUntilCountReached(
-        histogram_tester, optimization_guide::kLoadedHintLocalHistogramString,
-        IsOptimizationGuideKeyedServiceEnabled() ? 4 : 1);
+      EXPECT_EQ(3u, count_hints_requests_received());
+      RetryForHistogramUntilCountReached(
+          histogram_tester, optimization_guide::kLoadedHintLocalHistogramString,
+          4);
 
-    if (IsOptimizationGuideKeyedServiceEnabled()) {
       RetryForHistogramUntilCountReached(
           histogram_tester,
           "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
@@ -1230,11 +1192,10 @@ IN_PROC_BROWSER_TEST_P(
           "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch."
           "AtCommit",
           false, 1);
-    }
   }
 }
 
-IN_PROC_BROWSER_TEST_P(
+IN_PROC_BROWSER_TEST_F(
     HintsFetcherBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(HintsFetcherHostCoveredNotHTTPS)) {
   const base::HistogramTester* histogram_tester = GetHistogramTester();
@@ -1282,43 +1243,20 @@ class HintsFetcherChangeDefaultBlacklistSizeBrowserTest
     optimization_hints_fetching_params["top_host_blacklist_size_multiplier"] =
         "5";
 
-    if (IsOptimizationGuideKeyedServiceEnabled()) {
       scoped_feature_list_.InitWithFeaturesAndParameters(
           {
               /* vector of enabled features along with params */
               {optimization_guide::features::kOptimizationHintsFetching,
                {optimization_hints_fetching_params}},
               {optimization_guide::features::kOptimizationHints, {}},
-              {optimization_guide::features::kOptimizationGuideKeyedService,
-               {}},
               {previews::features::kPreviews, {}},
               {previews::features::kNoScriptPreviews, {}},
               {previews::features::kResourceLoadingHints, {}},
               {data_reduction_proxy::features::
                    kDataReductionProxyEnabledWithNetworkService,
-               {}},
-              {optimization_guide::features::kOptimizationGuideKeyedService,
                {}},
           },
           {/* disabled_features */});
-    } else {
-      scoped_feature_list_.InitWithFeaturesAndParameters(
-          {
-              /* vector of enabled features along with params */
-              {optimization_guide::features::kOptimizationHintsFetching,
-               {optimization_hints_fetching_params}},
-              {optimization_guide::features::kOptimizationHints, {}},
-              {optimization_guide::features::kOptimizationGuideKeyedService,
-               {}},
-              {previews::features::kPreviews, {}},
-              {previews::features::kNoScriptPreviews, {}},
-              {previews::features::kResourceLoadingHints, {}},
-              {data_reduction_proxy::features::
-                   kDataReductionProxyEnabledWithNetworkService,
-               {}},
-          },
-          {optimization_guide::features::kOptimizationGuideKeyedService, {}});
-    }
 
     // Call to inherited class to match same set up with feature flags added.
     HintsFetcherDisabledBrowserTest::SetUp();
@@ -1346,15 +1284,10 @@ class HintsFetcherChangeDefaultBlacklistSizeBrowserTest
   DISALLOW_COPY_AND_ASSIGN(HintsFetcherChangeDefaultBlacklistSizeBrowserTest);
 };
 
-// True if testing using the OptimizationGuideKeyedService implementation.
-INSTANTIATE_TEST_SUITE_P(OptimizationGuideKeyedServiceImplementation,
-                         HintsFetcherChangeDefaultBlacklistSizeBrowserTest,
-                         testing::Bool());
-
 // Changes the default size of the top host blacklist using finch. Also, sets
 // the count of hosts previously engaged to a large number and verifies that the
 // top host blacklist is correctly populated.
-IN_PROC_BROWSER_TEST_P(HintsFetcherChangeDefaultBlacklistSizeBrowserTest,
+IN_PROC_BROWSER_TEST_F(HintsFetcherChangeDefaultBlacklistSizeBrowserTest,
                        ChangeDefaultBlacklistSize) {
   AddHostsToSiteEngagementService(120u);
   const size_t engaged_hosts = GetCountHostsKnownToSiteEngagementService();
@@ -1366,34 +1299,26 @@ IN_PROC_BROWSER_TEST_P(HintsFetcherChangeDefaultBlacklistSizeBrowserTest,
       engaged_hosts,
       optimization_guide::features::MaxHintsFetcherTopHostBlacklistSize());
 
-  if (GetParam()) {
     SetTopHostBlacklistState(
         optimization_guide::prefs::HintsFetcherTopHostBlacklistState::
             kNotInitialized);
-  }
 
-  optimization_guide::TopHostProvider* top_host_provider = nullptr;
-  if (GetParam()) {
     OptimizationGuideKeyedService* keyed_service =
         OptimizationGuideKeyedServiceFactory::GetForProfile(
             browser()->profile());
-    top_host_provider = keyed_service->GetTopHostProvider();
-  } else {
-    auto* previews_service =
-        PreviewsServiceFactory::GetForProfile(browser()->profile());
-    top_host_provider = previews_service->GetTopHostProviderForTesting();
-  }
-  ASSERT_TRUE(top_host_provider);
+    optimization_guide::TopHostProvider* top_host_provider =
+        keyed_service->GetTopHostProvider();
+    ASSERT_TRUE(top_host_provider);
 
-  std::vector<std::string> top_hosts = top_host_provider->GetTopHosts();
-  EXPECT_EQ(0u, top_hosts.size());
+    std::vector<std::string> top_hosts = top_host_provider->GetTopHosts();
+    EXPECT_EQ(0u, top_hosts.size());
 
-  top_hosts = top_host_provider->GetTopHosts();
-  EXPECT_EQ(0u, top_hosts.size());
+    top_hosts = top_host_provider->GetTopHosts();
+    EXPECT_EQ(0u, top_hosts.size());
 
-  // Everything HTTPS origin within the site engagement service should now be in
-  // the blacklist.
-  EXPECT_EQ(engaged_hosts, GetTopHostBlacklistSize());
+    // Everything HTTPS origin within the site engagement service should now be
+    // in the blacklist.
+    EXPECT_EQ(engaged_hosts, GetTopHostBlacklistSize());
 }
 
 class HintsFetcherSearchPageBrowserTest : public HintsFetcherBrowserTest {
@@ -1405,12 +1330,7 @@ class HintsFetcherSearchPageBrowserTest : public HintsFetcherBrowserTest {
   }
 };
 
-// True if testing using the OptimizationGuideKeyedService implementation.
-INSTANTIATE_TEST_SUITE_P(OptimizationGuideKeyedServiceImplementation,
-                         HintsFetcherSearchPageBrowserTest,
-                         testing::Bool());
-
-IN_PROC_BROWSER_TEST_P(
+IN_PROC_BROWSER_TEST_F(
     HintsFetcherSearchPageBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(HintsFetcher_SRP_Slow_Connection)) {
   g_browser_process->network_quality_tracker()
@@ -1441,11 +1361,6 @@ IN_PROC_BROWSER_TEST_P(
       1);
   histogram_tester->ExpectUniqueSample(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount", 1, 1);
-
-  // Hints fetching on SRP is enabled only when optimization keyed service is
-  // enabled.
-  if (!IsOptimizationGuideKeyedServiceEnabled())
-    return;
 
   // Populate expected hosts with hosts contained in the html response of
   // search_results_page_url(). example2.com is contained in the HTML
@@ -1481,8 +1396,7 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_EQ(1u, count_hints_requests_received());
 
   RetryForHistogramUntilCountReached(
-      histogram_tester, optimization_guide::kLoadedHintLocalHistogramString,
-      IsOptimizationGuideKeyedServiceEnabled() ? 2 : 1);
+      histogram_tester, optimization_guide::kLoadedHintLocalHistogramString, 2);
   // Only the SRP is navigated to and it should not be covered at navigation
   // finish.
   histogram_tester->ExpectUniqueSample(

@@ -20,6 +20,10 @@
 #include "ui/gfx/mojom/buffer_types_mojom_traits.h"
 #include "ui/gfx/mojom/color_space_mojom_traits.h"
 
+#if defined(OS_LINUX)
+#include "base/posix/eintr_wrapper.h"
+#endif  // defined(OS_LINUX)
+
 namespace mojo {
 
 namespace {

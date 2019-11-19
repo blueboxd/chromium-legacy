@@ -15,7 +15,7 @@ suite('network-config', function() {
   suiteSetup(function() {
     mojoApi_ = new FakeNetworkConfig();
     network_config.MojoInterfaceProviderImpl.getInstance().remote_ = mojoApi_;
-    CrOncTest.overrideCrOncStrings();
+    CrOncTest.overrideOncStrings();
   });
 
   function setNetworkConfig(properties) {

@@ -117,6 +117,8 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   void ShowEmbeddedAssistantUI(bool show);
   bool IsShowingEmbeddedAssistantUI() const;
 
+  void FocusEmbeddedAssistantPage();
+
   void ShowFolderContent(AppListFolderItem* folder);
 
   // Sets the active launcher page and animates the pages into place.

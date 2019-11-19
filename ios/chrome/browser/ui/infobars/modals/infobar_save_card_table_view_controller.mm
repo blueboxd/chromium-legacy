@@ -8,15 +8,18 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
+#import "ios/chrome/browser/ui/autofill/save_card_message_with_links.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_constants.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_save_card_modal_delegate.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_link_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -31,16 +34,22 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeCardHolderName,
   ItemTypeCardExpireMonth,
   ItemTypeCardExpireYear,
+  ItemTypeCardLegalMessage,
   ItemTypeCardSave,
 };
 
-@interface InfobarSaveCardTableViewController () <UITextFieldDelegate>
+@interface InfobarSaveCardTableViewController () <TableViewTextLinkCellDelegate,
+                                                  UITextFieldDelegate>
 
 // InfobarSaveCardModalDelegate for this ViewController.
 @property(nonatomic, strong) id<InfobarSaveCardModalDelegate>
     saveCardModalDelegate;
 // Used to build and record metrics.
 @property(nonatomic, strong) InfobarMetricsRecorder* metricsRecorder;
+// Starting index in the SectionIdentifierContent for the legalMessages. Used to
+// query the corresponding SaveCardMessageWithLinks from legalMessages when
+// configuring the cell.
+@property(nonatomic, assign) int legalMessagesStartingIndex;
 
 @end
 
@@ -145,12 +154,22 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addItem:expireYearItem
       toSectionWithIdentifier:SectionIdentifierContent];
 
+  // Set legalMessagesStartingIndex right before adding any
+  // SaveCardMessageWithLinks TableViewTextLinkItems to the model.
+  self.legalMessagesStartingIndex =
+      [model numberOfItemsInSection:
+                 [model sectionForSectionIdentifier:SectionIdentifierContent]];
+  for (SaveCardMessageWithLinks* message in self.legalMessages) {
+    TableViewTextLinkItem* legalMessageItem =
+        [[TableViewTextLinkItem alloc] initWithType:ItemTypeCardLegalMessage];
+    legalMessageItem.text = message.messageText;
+    [model addItem:legalMessageItem
+        toSectionWithIdentifier:SectionIdentifierContent];
+  }
+
   TableViewTextButtonItem* saveCardButtonItem =
       [[TableViewTextButtonItem alloc] initWithType:ItemTypeCardSave];
   saveCardButtonItem.textAlignment = NSTextAlignmentNatural;
-  // TODO(crbug.com/1014652): Implement TOS with Links. This might require a
-  // separate item.
-  saveCardButtonItem.text = @"TOS Agreement";
   saveCardButtonItem.buttonText =
       l10n_util::GetNSString(IDS_IOS_AUTOFILL_SAVE_CARD);
   saveCardButtonItem.enabled = self.currentCardSaved;
@@ -212,6 +231,24 @@ typedef NS_ENUM(NSInteger, ItemType) {
       editCell.textField.delegate = self;
       break;
     }
+    case ItemTypeCardLegalMessage: {
+      NSUInteger legalMessageIndex =
+          indexPath.row - self.legalMessagesStartingIndex;
+      DCHECK(legalMessageIndex >= 0);
+      DCHECK(legalMessageIndex < self.legalMessages.count);
+      TableViewTextLinkCell* linkCell =
+          base::mac::ObjCCast<TableViewTextLinkCell>(cell);
+      SaveCardMessageWithLinks* message = self.legalMessages[legalMessageIndex];
+      [message.linkRanges enumerateObjectsUsingBlock:^(
+                              NSValue* rangeValue, NSUInteger i, BOOL* stop) {
+        [linkCell setLinkURL:message.linkURLs[i]
+                    forRange:rangeValue.rangeValue];
+      }];
+      linkCell.delegate = self;
+      linkCell.separatorInset =
+          UIEdgeInsetsMake(0, self.tableView.bounds.size.width, 0, 0);
+      break;
+    }
     case ItemTypeCardSave: {
       TableViewTextButtonCell* tableViewTextButtonCell =
           base::mac::ObjCCastStrict<TableViewTextButtonCell>(cell);
@@ -238,6 +275,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (BOOL)textFieldShouldReturn:(UITextField*)textField {
   [textField resignFirstResponder];
   return YES;
+}
+
+#pragma mark - TableViewTextLinkCellDelegate
+
+- (void)tableViewTextLinkCell:(TableViewTextLinkCell*)cell
+            didRequestOpenURL:(const GURL&)URL {
+  [self.saveCardModalDelegate dismissModalAndOpenURL:URL];
 }
 
 #pragma mark - Private Methods

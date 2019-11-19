@@ -546,11 +546,6 @@ std::unique_ptr<RenderText> RenderText::CreateFor(Typesetter typesetter) {
   return CreateHarfBuzzInstance();
 }
 
-// static
-std::unique_ptr<RenderText> RenderText::CreateInstanceDeprecated() {
-  return CreateFor(Typesetter::BROWSER);
-}
-
 std::unique_ptr<RenderText> RenderText::CreateInstanceOfSameStyle(
     const base::string16& text) const {
   std::unique_ptr<RenderText> render_text = CreateInstanceOfSameType();

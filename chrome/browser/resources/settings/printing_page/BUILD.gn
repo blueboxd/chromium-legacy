@@ -73,8 +73,8 @@ if (is_chromeos) {
   js_library("cups_edit_printer_dialog") {
     deps = [
       "//ui/webui/resources/cr_components/chromeos/network:mojo_interface_provider",
+      "//ui/webui/resources/cr_components/chromeos/network:network_listener_behavior",
       "//ui/webui/resources/cr_elements:cr_scrollable_behavior",
-      "//ui/webui/resources/cr_elements/chromeos/network:cr_network_listener_behavior",
       "//ui/webui/resources/js/chromeos:onc_mojo",
     ]
   }
@@ -111,7 +111,7 @@ if (is_chromeos) {
       ":cups_saved_printers",
       "..:route",
       "//ui/webui/resources/cr_components/chromeos/network:mojo_interface_provider",
-      "//ui/webui/resources/cr_elements/chromeos/network:cr_network_listener_behavior",
+      "//ui/webui/resources/cr_components/chromeos/network:network_listener_behavior",
       "//ui/webui/resources/cr_elements/cr_toast:cr_toast",
       "//ui/webui/resources/js:assert",
       "//ui/webui/resources/js:load_time_data",

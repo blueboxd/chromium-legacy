@@ -663,8 +663,9 @@ int WebContentsAndroid::DownloadImage(
     jboolean bypass_cache,
     const base::android::JavaParamRef<jobject>& jcallback) {
   GURL url(base::android::ConvertJavaStringToUTF8(env, jurl));
+  const uint32_t preferred_size = 0;
   return web_contents_->DownloadImage(
-      url, is_fav_icon, max_bitmap_size, bypass_cache,
+      url, is_fav_icon, preferred_size, max_bitmap_size, bypass_cache,
       base::Bind(&WebContentsAndroid::OnFinishDownloadImage,
                  weak_factory_.GetWeakPtr(),
                  ScopedJavaGlobalRef<jobject>(env, obj),

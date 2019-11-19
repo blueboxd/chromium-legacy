@@ -77,7 +77,8 @@ class CONTENT_EXPORT SSLManager {
   NavigationControllerImpl* controller() { return controller_; }
 
   void DidCommitProvisionalLoad(const LoadCommittedDetails& details);
-  void DidStartResourceResponse(const GURL& url, bool has_certificate_errors);
+  void DidStartResourceResponse(const url::Origin& origin_of_final_response_url,
+                                bool has_certificate_errors);
 
   // The following methods are called when a page includes insecure
   // content. These methods update the SSLStatus on the NavigationEntry

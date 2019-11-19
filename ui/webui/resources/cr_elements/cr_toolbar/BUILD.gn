@@ -65,6 +65,7 @@ js_library("cr_toolbar.m") {
     "$root_gen_dir/ui/webui/resources/cr_elements/cr_toolbar/cr_toolbar.m.js",
   ]
   deps = [
+    ":cr_toolbar_search_field.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
   extra_deps = [ ":cr_toolbar_module" ]

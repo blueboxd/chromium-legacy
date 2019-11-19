@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.autofill_assistant;
 
 import android.accounts.Account;
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.telephony.TelephonyManager;
 
@@ -345,6 +346,24 @@ class AutofillAssistantClient {
         }
 
         return null;
+    }
+
+    /** Returns the android version of the device. */
+    @CalledByNative
+    private int getSdkInt() {
+        return Build.VERSION.SDK_INT;
+    }
+
+    /** Returns the manufacturer of the device. */
+    @CalledByNative
+    private String getDeviceManufacturer() {
+        return Build.MANUFACTURER;
+    }
+
+    /** Returns the model of the device. */
+    @CalledByNative
+    private String getDeviceModel() {
+        return Build.MODEL;
     }
 
     /** Adds a dynamic action to the given reporter. */

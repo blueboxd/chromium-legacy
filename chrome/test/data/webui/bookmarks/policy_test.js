@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {TestBookmarksBrowserProxy} from 'chrome://test/bookmarks/test_browser_proxy.js';
+import {TestStore} from 'chrome://test/bookmarks/test_store.js';
+import {BrowserProxy, Command, CommandManager, IncognitoAvailability} from 'chrome://bookmarks/bookmarks.js';
+import {createFolder, createItem, getAllFoldersOpenState, replaceBody, testTree} from 'chrome://test/bookmarks/test_util.js';
+
 suite('Bookmarks policies', function() {
   let store;
   let app;
@@ -12,7 +17,7 @@ suite('Bookmarks policies', function() {
     const nodes = testTree(createFolder('1', [
       createItem('11'),
     ]));
-    store = new bookmarks.TestStore({
+    store = new TestStore({
       nodes: nodes,
       folderOpenState: getAllFoldersOpenState(nodes),
       selectedFolder: '1',
@@ -22,14 +27,14 @@ suite('Bookmarks policies', function() {
     store.expectAction('set-can-edit');
     store.replaceSingleton();
 
-    testBrowserProxy = new bookmarks.TestBookmarksBrowserProxy();
-    bookmarks.BrowserProxy.instance_ = testBrowserProxy;
+    testBrowserProxy = new TestBookmarksBrowserProxy();
+    BrowserProxy.instance_ = testBrowserProxy;
     app = document.createElement('bookmarks-app');
     replaceBody(app);
   });
 
   test('incognito availability updates when changed', async function() {
-    const commandManager = bookmarks.CommandManager.getInstance();
+    const commandManager = CommandManager.getInstance();
     // Incognito is disabled during testGenPreamble(). Wait for the front-end to
     // load the config.
     const whenIncognitoSet = await Promise.all([
@@ -51,7 +56,7 @@ suite('Bookmarks policies', function() {
   });
 
   test('canEdit updates when changed', async function() {
-    const commandManager = bookmarks.CommandManager.getInstance();
+    const commandManager = CommandManager.getInstance();
     const whenCanEditSet = await Promise.all([
       testBrowserProxy.whenCalled('getCanEditBookmarks'),
       store.waitForAction('set-can-edit')

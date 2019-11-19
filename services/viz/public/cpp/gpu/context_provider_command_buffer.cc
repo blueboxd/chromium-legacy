@@ -353,7 +353,6 @@ gpu::raster::RasterInterface* ContextProviderCommandBuffer::RasterInterface() {
     return raster_interface_.get();
 
   if (!attributes_.enable_raster_interface) {
-    DLOG(ERROR) << "Unexpected access to RasterInterface()";
     return nullptr;
   }
 

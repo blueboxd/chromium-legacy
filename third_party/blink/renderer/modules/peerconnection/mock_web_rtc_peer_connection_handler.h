@@ -69,7 +69,7 @@ class MockWebRTCPeerConnectionHandler : public WebRTCPeerConnectionHandler {
       const WebMediaStreamTrack&,
       const WebVector<WebMediaStream>&) override;
   webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>> RemoveTrack(
-      WebRTCRtpSender*) override;
+      RTCRtpSenderPlatform*) override;
   scoped_refptr<webrtc::DataChannelInterface> CreateDataChannel(
       const WebString& label,
       const WebRTCDataChannelInit&) override;

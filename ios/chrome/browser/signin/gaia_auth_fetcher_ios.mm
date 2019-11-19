@@ -45,6 +45,7 @@ GaiaAuthFetcherIOS::~GaiaAuthFetcherIOS() {}
 
 void GaiaAuthFetcherIOS::CreateAndStartGaiaFetcher(
     const std::string& body,
+    const std::string& body_content_type,
     const std::string& headers,
     const GURL& gaia_gurl,
     network::mojom::CredentialsMode credentials_mode,
@@ -54,8 +55,9 @@ void GaiaAuthFetcherIOS::CreateAndStartGaiaFetcher(
   bool cookies_required =
       credentials_mode != network::mojom::CredentialsMode::kOmit;
   if (!ShouldUseGaiaAuthFetcherIOS() || !cookies_required) {
-    GaiaAuthFetcher::CreateAndStartGaiaFetcher(
-        body, headers, gaia_gurl, credentials_mode, traffic_annotation);
+    GaiaAuthFetcher::CreateAndStartGaiaFetcher(body, body_content_type, headers,
+                                               gaia_gurl, credentials_mode,
+                                               traffic_annotation);
     return;
   }
 

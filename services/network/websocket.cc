@@ -85,6 +85,7 @@ class WebSocket::WebSocketEventHandler final
   // net::WebSocketEventInterface implementation
 
   void OnCreateURLRequest(net::URLRequest* url_request) override;
+  // TODO(yoichio): Merge OnAddChannelResponse and OnFinishOpeningHandshake.
   void OnAddChannelResponse(const std::string& selected_subprotocol,
                             const std::string& extensions,
                             int64_t send_flow_control_quota) override;
@@ -183,10 +184,12 @@ void WebSocket::WebSocketEventHandler::OnAddChannelResponse(
       base::BindRepeating(&WebSocket::OnWritable, base::Unretained(impl_)));
   DCHECK_EQ(mojo_result, MOJO_RESULT_OK);
 
+  response_->selected_protocol = selected_protocol;
+  response_->extensions = extensions;
   impl_->handshake_client_->OnConnectionEstablished(
       impl_->receiver_.BindNewPipeAndPassRemote(),
-      impl_->client_.BindNewPipeAndPassReceiver(), selected_protocol,
-      extensions, std::move(response_), std::move(readable));
+      impl_->client_.BindNewPipeAndPassReceiver(), std::move(response_),
+      std::move(readable));
   impl_->receiver_.set_disconnect_handler(base::BindOnce(
       &WebSocket::OnConnectionError, base::Unretained(impl_), FROM_HERE));
   impl_->handshake_client_.reset();

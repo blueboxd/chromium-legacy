@@ -81,7 +81,7 @@ Polymer({
 
   /** Updates localized elements of the UI. */
   updateLocalizedContent: function() {
-    this.$.networkSelectLogin.setCrOncStrings();
+    this.$.networkSelectLogin.setOncStrings();
     this.i18nUpdateLocale();
   },
 
@@ -89,7 +89,7 @@ Polymer({
    * Returns element of the network list selected by the query.
    * Used to simplify testing.
    * @param {string} query
-   * @return {CrNetworkList.CrNetworkListItemType}
+   * @return {NetworkList.NetworkListItemType}
    */
   getNetworkListItemWithQueryForTest: function(query) {
     let networkList =
@@ -102,14 +102,14 @@ Polymer({
    * Returns element of the network list with the given name.
    * Used to simplify testing.
    * @param {string} name
-   * @return {?CrNetworkList.CrNetworkListItemType}
+   * @return {?NetworkList.NetworkListItemType}
    */
   getNetworkListItemByNameForTest: function(name) {
     let networkList =
         this.$.networkSelectLogin.$$('#networkSelect').getNetworkListForTest();
     assert(networkList);
     for (const network of networkList.children) {
-      if (network.is === 'cr-network-list-item' &&
+      if (network.is === 'network-list-item' &&
           network.$$('#divText').children[0].innerText === name) {
         return network;
       }

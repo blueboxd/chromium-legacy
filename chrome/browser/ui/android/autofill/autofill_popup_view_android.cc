@@ -182,7 +182,7 @@ bool AutofillPopupViewAndroid::WasSuppressed() {
 
 // static
 AutofillPopupView* AutofillPopupView::Create(
-    AutofillPopupController* controller) {
+    base::WeakPtr<AutofillPopupController> controller) {
   if (IsKeyboardAccessoryEnabled()) {
     auto adapter = std::make_unique<AutofillKeyboardAccessoryAdapter>(
         controller, GetKeyboardAccessoryAnimationDuration(),
@@ -192,7 +192,8 @@ AutofillPopupView* AutofillPopupView::Create(
     return adapter.release();
   }
 
-  auto popup_view = std::make_unique<AutofillPopupViewAndroid>(controller);
+  auto popup_view =
+      std::make_unique<AutofillPopupViewAndroid>(controller.get());
   popup_view->Init();
   return popup_view->WasSuppressed() ? nullptr : popup_view.release();
 }

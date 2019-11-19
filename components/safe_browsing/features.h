@@ -54,6 +54,11 @@ extern const base::Feature kForceUseAPDownloadProtection;
 // Enable password protection for non-Google accounts.
 extern const base::Feature kPasswordProtectionForSavedPasswords;
 
+// Enable whether or not to show a list of domains the saved password was used
+// on the modal warning dialog during password protection. This is only checked
+// if the |kPasswordProtectionForSavedPasswords| experiment is on.
+extern const base::Feature kPasswordProtectionShowDomainsForSavedPasswords;
+
 // Enable GAIA password protection for signed-in users.
 extern const base::Feature kPasswordProtectionForSignedInUsers;
 
@@ -100,10 +105,6 @@ base::ListValue GetFeatureStatusList();
 // ReusedPasswordType enums. This is used in the
 // |kPasswordProtectionForSignedInUsers| experiment.
 bool GetShouldFillOldPhishGuardProto();
-
-// Returns whether or not to show a list of domains the saved password was used
-// on. This is used in the |kPasswordProtectionForSavedPasswords| experiment.
-bool ShouldShowDomainsForSavedPassword();
 
 }  // namespace safe_browsing
 #endif  // COMPONENTS_SAFE_BROWSING_FEATURES_H_

@@ -276,18 +276,23 @@ void TranslateManager::TranslatePage(const std::string& original_source_lang,
   }
 
   if (source_lang == target_lang) {
-    // Trigger the "translate error" UI.
-    translate_client_->ShowTranslateUI(
-        translate::TRANSLATE_STEP_TRANSLATE_ERROR, source_lang, target_lang,
-        TranslateErrors::IDENTICAL_LANGUAGES, triggered_from_menu);
-    NotifyTranslateError(TranslateErrors::IDENTICAL_LANGUAGES);
-    return;
-  } else {
-    // Trigger the "translating now" UI.
-    translate_client_->ShowTranslateUI(
-        translate::TRANSLATE_STEP_TRANSLATING, source_lang, target_lang,
-        TranslateErrors::NONE, triggered_from_menu);
+    // If the languages are the same, try the translation using the unknown
+    // language code. The source and target languages should only be equal if
+    // the translation was manually triggered by the user. Rather than show them
+    // the error, we should attempt to send the page for translation. For pages
+    // with multiple languages we often detect same language, but the
+    // Translation service is able to translate the various languages using it's
+    // own language detection.
+    source_lang = translate::kUnknownLanguageCode;
+    TranslateBrowserMetrics::ReportInitiationStatus(
+        TranslateBrowserMetrics::
+            INITIATION_STATUS_IDENTICAL_LANGUAGE_USE_SOURCE_LANGUAGE_UNKNOWN);
   }
+
+  // Trigger the "translating now" UI.
+  translate_client_->ShowTranslateUI(
+      translate::TRANSLATE_STEP_TRANSLATING, source_lang, target_lang,
+      TranslateErrors::NONE, triggered_from_menu);
 
   TranslateScript* script = TranslateDownloadManager::GetInstance()->script();
   DCHECK(script != nullptr);

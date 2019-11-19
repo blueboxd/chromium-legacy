@@ -26,6 +26,10 @@
         margin-top: 16px;
       }
 
+      .offline-device-name {
+        color: var(--google-grey-600);
+      }
+
       #page-icon-container {
         @apply --layout-horizontal;
         @apply --layout-center-justified;
@@ -101,8 +105,10 @@
                   class="md-select"
                   on-change="onDeviceDropdownSelectionChanged_">
                 <template is="dom-repeat" items="[[devices]]">
-                  <option value$="[[item.remoteDevice.deviceId]]">
-                    [[item.remoteDevice.deviceName]]
+                  <option
+                      class$="[[getDeviceOptionClass_(item.connectivityStatus)]]"
+                      value$="[[item.remoteDevice.deviceId]]">
+                    [[getDeviceNameWithConnectivityStatus_(item)]]
                   </option>
                 </template>
               </select>

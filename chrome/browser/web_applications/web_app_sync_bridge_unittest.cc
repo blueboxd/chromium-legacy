@@ -1019,4 +1019,37 @@ TEST_F(WebAppSyncBridgeTest,
   EXPECT_TRUE(IsDatabaseRegistryEqualToRegistrar());
 }
 
+TEST_F(WebAppSyncBridgeTest, InstallAppsInSyncInstall) {
+  AppsList apps_in_sync_install = CreateAppsList("https://example.com/", 10);
+  for (std::unique_ptr<WebApp>& app : apps_in_sync_install) {
+    app->SetIsLocallyInstalled(AreAppsLocallyInstalledByDefault());
+    app->SetIsInSyncInstall(true);
+  }
+
+  Registry registry;
+  InsertAppsListIntoRegistry(&registry, apps_in_sync_install);
+  database_factory().WriteRegistry(registry);
+
+  base::RunLoop run_loop;
+  controller().SetInstallWebAppsAfterSyncDelegate(base::BindLambdaForTesting(
+      [&](std::vector<WebApp*> apps_to_install,
+          TestWebAppRegistryController::RepeatingInstallCallback callback) {
+        for (WebApp* app_to_install : apps_to_install) {
+          // The app must be registered.
+          EXPECT_TRUE(registrar().GetAppById(app_to_install->app_id()));
+          RemoveWebAppFromAppsList(&apps_in_sync_install,
+                                   app_to_install->app_id());
+        }
+
+        EXPECT_TRUE(apps_in_sync_install.empty());
+        RunCallbacksOnInstall(apps_to_install, callback,
+                              InstallResultCode::kSuccessNewInstall);
+        run_loop.Quit();
+      }));
+
+  InitSyncBridge();
+
+  run_loop.Run();
+}
+
 }  // namespace web_app

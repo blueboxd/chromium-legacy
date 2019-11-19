@@ -32,7 +32,7 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/common/content_switches.h"
 #include "net/server/http_connection.h"
-#include "third_party/inspector_protocol/crdtp/encoding.h"
+#include "third_party/inspector_protocol/crdtp/cbor.h"
 
 const size_t kReceiveBufferSizeForDevTools = 100 * 1024 * 1024;  // 100Mb
 const size_t kWritePacketSize = 1 << 16;

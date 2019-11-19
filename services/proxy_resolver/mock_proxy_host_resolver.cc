@@ -13,31 +13,31 @@
 #include "net/base/net_errors.h"
 #include "net/base/network_isolation_key.h"
 
-namespace net {
+namespace proxy_resolver {
 
 class MockProxyHostResolver::RequestImpl
     : public Request,
       public base::SupportsWeakPtr<RequestImpl> {
  public:
-  RequestImpl(std::vector<IPAddress> results, bool synchronous_mode)
+  RequestImpl(std::vector<net::IPAddress> results, bool synchronous_mode)
       : results_(std::move(results)), synchronous_mode_(synchronous_mode) {}
   ~RequestImpl() override = default;
 
-  int Start(CompletionOnceCallback callback) override {
+  int Start(net::CompletionOnceCallback callback) override {
     if (!synchronous_mode_) {
       callback_ = std::move(callback);
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&RequestImpl::SendResults, AsWeakPtr()));
-      return ERR_IO_PENDING;
+      return net::ERR_IO_PENDING;
     }
 
     if (results_.empty())
-      return ERR_NAME_NOT_RESOLVED;
+      return net::ERR_NAME_NOT_RESOLVED;
 
-    return OK;
+    return net::OK;
   }
 
-  const std::vector<IPAddress>& GetResults() const override {
+  const std::vector<net::IPAddress>& GetResults() const override {
     DCHECK(!callback_);
     return results_;
   }
@@ -45,15 +45,15 @@ class MockProxyHostResolver::RequestImpl
  private:
   void SendResults() {
     if (results_.empty())
-      std::move(callback_).Run(ERR_NAME_NOT_RESOLVED);
+      std::move(callback_).Run(net::ERR_NAME_NOT_RESOLVED);
     else
-      std::move(callback_).Run(OK);
+      std::move(callback_).Run(net::OK);
   }
 
-  const std::vector<IPAddress> results_;
+  const std::vector<net::IPAddress> results_;
   const bool synchronous_mode_;
 
-  CompletionOnceCallback callback_;
+  net::CompletionOnceCallback callback_;
 };
 
 MockProxyHostResolver::MockProxyHostResolver(bool synchronous_mode)
@@ -64,25 +64,26 @@ MockProxyHostResolver::~MockProxyHostResolver() = default;
 std::unique_ptr<ProxyHostResolver::Request>
 MockProxyHostResolver::CreateRequest(
     const std::string& hostname,
-    ProxyResolveDnsOperation operation,
+    net::ProxyResolveDnsOperation operation,
     const net::NetworkIsolationKey& network_isolation_key) {
   ++num_resolve_;
 
   if (fail_all_)
-    return std::make_unique<RequestImpl>(std::vector<IPAddress>(),
+    return std::make_unique<RequestImpl>(std::vector<net::IPAddress>(),
                                          synchronous_mode_);
 
   auto match = results_.find({hostname, operation, network_isolation_key});
   if (match == results_.end())
     return std::make_unique<RequestImpl>(
-        std::vector<IPAddress>({IPAddress(127, 0, 0, 1)}), synchronous_mode_);
+        std::vector<net::IPAddress>({net::IPAddress(127, 0, 0, 1)}),
+        synchronous_mode_);
 
   return std::make_unique<RequestImpl>(match->second, synchronous_mode_);
 }
 
 void MockProxyHostResolver::SetError(
     const std::string& hostname,
-    ProxyResolveDnsOperation operation,
+    net::ProxyResolveDnsOperation operation,
     const net::NetworkIsolationKey& network_isolation_key) {
   fail_all_ = false;
   results_[{hostname, operation, network_isolation_key}].clear();
@@ -90,9 +91,9 @@ void MockProxyHostResolver::SetError(
 
 void MockProxyHostResolver::SetResult(
     const std::string& hostname,
-    ProxyResolveDnsOperation operation,
+    net::ProxyResolveDnsOperation operation,
     const net::NetworkIsolationKey& network_isolation_key,
-    std::vector<IPAddress> result) {
+    std::vector<net::IPAddress> result) {
   DCHECK(!result.empty());
   fail_all_ = false;
   results_[{hostname, operation, network_isolation_key}] = std::move(result);
@@ -109,13 +110,13 @@ class HangingProxyHostResolver::RequestImpl : public Request {
       : resolver_(resolver) {}
   ~RequestImpl() override { ++resolver_->num_cancelled_requests_; }
 
-  int Start(CompletionOnceCallback callback) override {
+  int Start(net::CompletionOnceCallback callback) override {
     if (resolver_->hang_callback_)
       resolver_->hang_callback_.Run();
-    return ERR_IO_PENDING;
+    return net::ERR_IO_PENDING;
   }
 
-  const std::vector<IPAddress>& GetResults() const override {
+  const std::vector<net::IPAddress>& GetResults() const override {
     IMMEDIATE_CRASH();
   }
 
@@ -132,9 +133,9 @@ HangingProxyHostResolver::~HangingProxyHostResolver() = default;
 std::unique_ptr<ProxyHostResolver::Request>
 HangingProxyHostResolver::CreateRequest(
     const std::string& hostname,
-    ProxyResolveDnsOperation operation,
+    net::ProxyResolveDnsOperation operation,
     const net::NetworkIsolationKey& network_isolation_key) {
   return std::make_unique<RequestImpl>(this);
 }
 
-}  // namespace net
+}  // namespace proxy_resolver

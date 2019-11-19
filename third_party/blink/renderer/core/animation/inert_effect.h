@@ -65,7 +65,7 @@ class CORE_EXPORT InertEffect final : public AnimationEffect {
  private:
   Member<KeyframeEffectModelBase> model_;
   bool paused_;
-  double inherited_time_;
+  base::Optional<double> inherited_time_;
 };
 
 DEFINE_TYPE_CASTS(InertEffect,

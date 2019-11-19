@@ -49,14 +49,6 @@ class V8PerContextData;
 class V8V0CustomElementLifecycleCallbacks final
     : public V0CustomElementLifecycleCallbacks {
  public:
-  static V8V0CustomElementLifecycleCallbacks* Create(
-      ScriptState*,
-      v8::Local<v8::Object> prototype,
-      v8::MaybeLocal<v8::Function> created,
-      v8::MaybeLocal<v8::Function> attached,
-      v8::MaybeLocal<v8::Function> detached,
-      v8::MaybeLocal<v8::Function> attribute_changed);
-
   V8V0CustomElementLifecycleCallbacks(
       ScriptState*,
       v8::Local<v8::Object> prototype,

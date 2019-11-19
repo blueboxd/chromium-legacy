@@ -33,8 +33,10 @@ class RulesetMatcherInterface {
   virtual base::Optional<RequestAction> GetBlockOrCollapseAction(
       const RequestParams& params) const = 0;
 
-  // Returns whether the ruleset has a matching allow rule.
-  virtual bool HasMatchingAllowRule(const RequestParams& params) const = 0;
+  // Returns the ruleset's matching RequestAction with type |ALLOW| or
+  // base::nullopt if the ruleset has no matching allow rule.
+  virtual base::Optional<RequestAction> GetAllowAction(
+      const RequestParams& params) const = 0;
 
   // Returns a RequestAction constructed from the matching redirect rule with
   // the highest priority, or base::nullopt if no matching redirect rules are
@@ -76,6 +78,11 @@ class RulesetMatcherInterface {
 
   // Helper to create a RequestAction of type |BLOCK| or |COLLAPSE|.
   RequestAction CreateBlockOrCollapseRequestAction(
+      const RequestParams& params,
+      const url_pattern_index::flat::UrlRule& rule) const;
+
+  // Helper to create a RequestAction of type |ALLOW|.
+  RequestAction CreateAllowAction(
       const RequestParams& params,
       const url_pattern_index::flat::UrlRule& rule) const;
 

@@ -356,7 +356,8 @@ void RTCRtpTransceiverImpl::SetMid(base::Optional<blink::WebString> mid) {
                          : base::nullopt);
 }
 
-std::unique_ptr<blink::WebRTCRtpSender> RTCRtpTransceiverImpl::Sender() const {
+std::unique_ptr<blink::RTCRtpSenderPlatform> RTCRtpTransceiverImpl::Sender()
+    const {
   return internal_->content_sender()->ShallowCopy();
 }
 

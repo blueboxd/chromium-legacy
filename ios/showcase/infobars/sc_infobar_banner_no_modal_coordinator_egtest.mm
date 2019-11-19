@@ -147,7 +147,7 @@ using ::showcase_utils::Close;
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(
                                    kInfobarBannerOpenModalButtonIdentifier)]
-      assertWithMatcher:grey_nil()];
+      assertWithMatcher:grey_notVisible()];
   // Dismiss banner.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kInfobarBannerViewIdentifier)]

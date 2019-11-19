@@ -111,7 +111,7 @@ void TestRequestClient::OnDisconnect() {
   event_waiter_.NotifyEvent(CONNECTION_ERROR);
 }
 
-class MockProxyResolverV8Tracing : public net::ProxyResolverV8Tracing {
+class MockProxyResolverV8Tracing : public ProxyResolverV8Tracing {
  public:
   // TODO(mmenke): This struct violates the Google style guide, as structs
   // aren't allowed to have private members. Fix that.

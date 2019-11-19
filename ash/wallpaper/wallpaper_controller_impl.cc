@@ -1045,6 +1045,11 @@ void WallpaperControllerImpl::ConfirmPreviewWallpaper() {
   }
   std::move(confirm_preview_wallpaper_callback_).Run();
   reload_preview_wallpaper_callback_.Reset();
+
+  // Ensure dimming is applied after confirming the preview wallpaper.
+  if (ShouldApplyDimming())
+    RepaintWallpaper();
+
   for (auto& observer : observers_)
     observer.OnWallpaperPreviewEnded();
 }

@@ -4,6 +4,7 @@
 
 #include "mojo/public/cpp/bindings/lib/message_quota_checker.h"
 
+#include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
 #include "mojo/public/c/system/quota.h"
 #include "mojo/public/cpp/bindings/features.h"
@@ -29,13 +30,17 @@ class MessageQuotaCheckerTest : public testing::Test {
   using MessageQuotaChecker = internal::MessageQuotaChecker;
   using Configuration = MessageQuotaChecker::Configuration;
 
-  static void RecordDumpAttempt(size_t quota_used) {
+  static void RecordDumpAttempt(
+      size_t total_quota_used,
+      base::Optional<size_t> message_pipe_quota_used) {
     ++instance_->num_dumps_;
-    instance_->last_dump_quota_used_ = quota_used;
+    instance_->last_dump_total_quota_used_ = total_quota_used;
+    instance_->last_dump_message_pipe_quota_used_ = message_pipe_quota_used;
   }
 
   size_t num_dumps_ = false;
-  size_t last_dump_quota_used_ = 0u;
+  size_t last_dump_total_quota_used_ = 0u;
+  base::Optional<size_t> last_dump_message_pipe_quota_used_;
 
   static const Configuration enabled_config_;
 
@@ -173,7 +178,8 @@ TEST_F(MessageQuotaCheckerTest, DumpsCoreOnOverrun) {
 
   checker->BeforeMessagesEnqueued(50);
   ASSERT_EQ(1u, num_dumps_);
-  ASSERT_EQ(200u, last_dump_quota_used_);
+  ASSERT_EQ(200u, last_dump_total_quota_used_);
+  ASSERT_EQ(100u, last_dump_message_pipe_quota_used_);
 
   checker->BeforeWrite();
   ASSERT_EQ(MOJO_RESULT_OK,
@@ -181,7 +187,14 @@ TEST_F(MessageQuotaCheckerTest, DumpsCoreOnOverrun) {
                             nullptr, 0, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   ASSERT_EQ(2u, num_dumps_);
-  ASSERT_EQ(201u, last_dump_quota_used_);
+  ASSERT_EQ(201u, last_dump_total_quota_used_);
+  ASSERT_EQ(101u, last_dump_message_pipe_quota_used_);
+
+  checker->SetMessagePipe(mojo::MessagePipeHandle());
+  checker->BeforeMessagesEnqueued(250);
+  ASSERT_EQ(3u, num_dumps_);
+  ASSERT_EQ(350u, last_dump_total_quota_used_);
+  ASSERT_FALSE(last_dump_message_pipe_quota_used_.has_value());
 }
 
 }  // namespace

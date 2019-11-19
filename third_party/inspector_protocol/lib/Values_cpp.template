@@ -6,7 +6,7 @@
 
 //#include "Values.h"
 
-#include "{{config.crdtp.dir}}/encoding.h"
+#include "{{config.crdtp.dir}}/cbor.h"
 
 {% for namespace in config.protocol.namespace %}
 namespace {{namespace}} {

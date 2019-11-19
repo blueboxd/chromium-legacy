@@ -110,8 +110,8 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
     EXPECT_CALL(*delegate_, GetPreferredFormats());
     source_ = new MediaStreamVideoCapturerSource(
         /*LocalFrame =*/nullptr,
-        WTF::BindRepeating(&MediaStreamVideoCapturerSourceTest::OnSourceStopped,
-                           WTF::Unretained(this)),
+        WTF::Bind(&MediaStreamVideoCapturerSourceTest::OnSourceStopped,
+                  WTF::Unretained(this)),
         std::move(delegate));
     source_->SetMediaStreamDispatcherHostForTesting(
         mock_dispatcher_host_.CreatePendingRemoteAndBind());

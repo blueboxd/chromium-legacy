@@ -215,6 +215,16 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   bool IsURLWhitelistedForPasswordEntry(const GURL& url,
                                         RequestOutcome* reason) const override;
 
+  // Persist the phished saved password credential in the "compromised
+  // credentials" table. Calls the password store to add a row for each domain
+  // where the phished saved password is used on.
+  void PersistPhishedSavedPasswordCredential(
+      const std::string& username,
+      const std::vector<std::string>& matching_domains) override;
+
+  // Returns the profile PasswordStore associated with this instance.
+  password_manager::PasswordStore* GetProfilePasswordStore() const;
+
   // Gets the type of sync account associated with current profile or
   // |NOT_SIGNED_IN|.
   LoginReputationClientRequest::PasswordReuseEvent::SyncAccountType
@@ -397,6 +407,8 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
                            VerifyPasswordCaptureEventRecorded);
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
                            VerifyPasswordReuseDetectedSecurityEventRecorded);
+  FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceTest,
+                           VerifyPersistPhishedSavedPasswordCredential);
   // Browser tests
   FRIEND_TEST_ALL_PREFIXES(ChromePasswordProtectionServiceBrowserTest,
                            VerifyCheckGaiaPasswordChange);
@@ -508,6 +520,9 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   // Bypasses the check for probability when sending sample pings.
   bool bypass_probability_for_tests_ = false;
+
+  // Can be set for testing.
+  base::Clock* clock_;
 
   // Used to inject a different password hash, for testing. It's done as a
   // member callback rather than a virtual function because it's needed in the

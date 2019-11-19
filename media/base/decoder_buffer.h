@@ -17,7 +17,6 @@
 #include "base/memory/aligned_memory.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/shared_memory_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/decrypt_config.h"

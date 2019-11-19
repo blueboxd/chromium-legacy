@@ -2497,6 +2497,13 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      SINGLE_VALUE_TYPE(
          ::switches::kEnableExperimentalAccessibilityLanguageDetection)},
+    {"enable-experimental-accessibility-language-detection-dynamic",
+     flag_descriptions::kExperimentalAccessibilityLanguageDetectionDynamicName,
+     flag_descriptions::
+         kExperimentalAccessibilityLanguageDetectionDynamicDescription,
+     kOsAll,
+     SINGLE_VALUE_TYPE(
+         ::switches::kEnableExperimentalAccessibilityLanguageDetectionDynamic)},
 #if defined(OS_CHROMEOS)
     {"enable-encryption-migration",
      flag_descriptions::kEnableEncryptionMigrationName,
@@ -3778,6 +3785,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"click-to-call-ui", flag_descriptions::kClickToCallUIName,
      flag_descriptions::kClickToCallUIDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(kClickToCallUI)},
+
+    {"click-to-call-detection-v2",
+     flag_descriptions::kClickToCallDetectionV2Name,
+     flag_descriptions::kClickToCallDetectionV2Description, kOsDesktop,
+     FEATURE_VALUE_TYPE(kClickToCallDetectionV2)},
 #endif  // BUILDFLAG(ENABLE_CLICK_TO_CALL)
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
@@ -3923,11 +3935,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableMediaSessionServiceName,
      flag_descriptions::kEnableMediaSessionServiceDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(media_session::features::kMediaSessionService)},
-    {"enable-safe-browsing-ap-download-verdicts",
-     flag_descriptions::kSafeBrowsingUseAPDownloadVerdictsName,
-     flag_descriptions::kSafeBrowsingUseAPDownloadVerdictsDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(safe_browsing::kForceUseAPDownloadProtection)},
     {"enable-gpu-service-logging",
      flag_descriptions::kEnableGpuServiceLoggingName,
      flag_descriptions::kEnableGpuServiceLoggingDescription, kOsAll,
@@ -4036,9 +4043,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMobileIdentityConsistencyName,
      flag_descriptions::kMobileIdentityConsistencyDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(signin::kMiceFeature)},
-    {"identity-disc", flag_descriptions::kIdentityDiscName,
-     flag_descriptions::kIdentityDiscDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kIdentityDisc)},
 #endif  // defined(OS_ANDROID)
 
     {"autofill-use-improved-label-disambiguation",

@@ -70,6 +70,52 @@ void GetDefaultFont(int context,
   }
 }
 
+ui::NativeTheme::ColorId GetDisabledColorId(int context) {
+  switch (context) {
+    case style::CONTEXT_BUTTON_MD:
+      return ui::NativeTheme::kColorId_ButtonDisabledColor;
+    case style::CONTEXT_TEXTFIELD:
+      return ui::NativeTheme::kColorId_TextfieldReadOnlyColor;
+    case style::CONTEXT_MENU:
+    case style::CONTEXT_TOUCH_MENU:
+      return ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor;
+    default:
+      return ui::NativeTheme::kColorId_LabelDisabledColor;
+  }
+}
+
+ui::NativeTheme::ColorId GetMenuColorId(int style) {
+  switch (style) {
+    case style::STYLE_SECONDARY:
+      return ui::NativeTheme::kColorId_MenuItemMinorTextColor;
+    case style::STYLE_SELECTED:
+      return ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor;
+    case style::STYLE_HIGHLIGHTED:
+      return ui::NativeTheme::kColorId_HighlightedMenuItemForegroundColor;
+    default:
+      return ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor;
+  }
+}
+
+ui::NativeTheme::ColorId GetColorId(int context, int style) {
+  if (style == style::STYLE_DIALOG_BUTTON_DEFAULT)
+    return ui::NativeTheme::kColorId_TextOnProminentButtonColor;
+  if (style == style::STYLE_DISABLED)
+    return GetDisabledColorId(context);
+  if (style == style::STYLE_LINK)
+    return ui::NativeTheme::kColorId_LinkEnabled;
+  if (context == style::CONTEXT_BUTTON_MD)
+    return ui::NativeTheme::kColorId_ButtonEnabledColor;
+  if (context == style::CONTEXT_MESSAGE_BOX_BODY_TEXT &&
+      (style == style::STYLE_PRIMARY || style == style::STYLE_SECONDARY))
+    return ui::NativeTheme::kColorId_DialogForeground;
+  if (context == style::CONTEXT_TEXTFIELD)
+    return ui::NativeTheme::kColorId_TextfieldDefaultColor;
+  if (context == style::CONTEXT_MENU || context == style::CONTEXT_TOUCH_MENU)
+    return GetMenuColorId(style);
+  return ui::NativeTheme::kColorId_LabelEnabledColor;
+}
+
 }  // namespace
 
 const gfx::FontList& TypographyProvider::GetFont(int context, int style) const {
@@ -80,53 +126,10 @@ const gfx::FontList& TypographyProvider::GetFont(int context, int style) const {
       size_delta, gfx::Font::NORMAL, font_weight);
 }
 
-SkColor TypographyProvider::GetColor(const views::View& view,
+SkColor TypographyProvider::GetColor(const View& view,
                                      int context,
                                      int style) const {
-  ui::NativeTheme::ColorId color_id =
-      ui::NativeTheme::kColorId_LabelEnabledColor;
-  if (context == style::CONTEXT_BUTTON_MD) {
-    switch (style) {
-      case views::style::STYLE_DIALOG_BUTTON_DEFAULT:
-        color_id = ui::NativeTheme::kColorId_TextOnProminentButtonColor;
-        break;
-      case views::style::STYLE_DISABLED:
-        color_id = ui::NativeTheme::kColorId_ButtonDisabledColor;
-        break;
-      default:
-        color_id = ui::NativeTheme::kColorId_ButtonEnabledColor;
-        break;
-    }
-  } else if (context == style::CONTEXT_TEXTFIELD) {
-    color_id = style == style::STYLE_DISABLED
-                   ? ui::NativeTheme::kColorId_TextfieldReadOnlyColor
-                   : ui::NativeTheme::kColorId_TextfieldDefaultColor;
-  } else if ((context == style::CONTEXT_MENU) ||
-             (context == style::CONTEXT_TOUCH_MENU)) {
-    switch (style) {
-      case views::style::STYLE_PRIMARY:
-        color_id = ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor;
-        break;
-      case views::style::STYLE_DISABLED:
-        color_id = ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor;
-        break;
-      case views::style::STYLE_SECONDARY:
-        color_id = ui::NativeTheme::kColorId_MenuItemMinorTextColor;
-        break;
-      case views::style::STYLE_SELECTED:
-        color_id = ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor;
-        break;
-      case views::style::STYLE_HIGHLIGHTED:
-        color_id = ui::NativeTheme::kColorId_HighlightedMenuItemForegroundColor;
-        break;
-    }
-  } else if (style == style::STYLE_DISABLED) {
-    color_id = ui::NativeTheme::kColorId_LabelDisabledColor;
-  }
-
-  const ui::NativeTheme* native_theme = view.GetNativeTheme();
-  DCHECK(native_theme);
-  return native_theme->GetSystemColor(color_id);
+  return view.GetNativeTheme()->GetSystemColor(GetColorId(context, style));
 }
 
 int TypographyProvider::GetLineHeight(int context, int style) const {

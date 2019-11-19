@@ -779,11 +779,13 @@ TEST_P(ResourcePrefetchPredictorPreconnectToRedirectTargetTest,
   EXPECT_TRUE(predictor_->IsUrlPreconnectable(main_frame_url));
   EXPECT_TRUE(
       predictor_->PredictPreconnectOrigins(main_frame_url, prediction.get()));
-  EXPECT_EQ(*prediction,
-            CreatePreconnectPrediction(
-                "google.com", false,
-                {{GURL(gen_origin(1)), 1, network_isolation_key},
-                 {GURL(gen_origin(2)), 0, network_isolation_key}}));
+  EXPECT_EQ(
+      *prediction,
+      CreatePreconnectPrediction(
+          "google.com", false,
+          {{url::Origin::Create(GURL(gen_origin(1))), 1, network_isolation_key},
+           {url::Origin::Create(GURL(gen_origin(2))), 0,
+            network_isolation_key}}));
 
   // Add a redirect.
   RedirectData redirect = CreateRedirectData("google.com", 3);
@@ -801,7 +803,8 @@ TEST_P(ResourcePrefetchPredictorPreconnectToRedirectTargetTest,
       predictor_->PredictPreconnectOrigins(main_frame_url, prediction.get()));
   auto expected_prediction_1 = CreatePreconnectPrediction(
       "google.com", 0,
-      {{GURL("https://www.google.com/"), 1, www_google_network_isolation_key}});
+      {{url::Origin::Create(GURL("https://www.google.com/")), 1,
+        www_google_network_isolation_key}});
   if (enable_preconnect_to_redirect_target_experiment) {
     EXPECT_EQ(expected_prediction_1, *prediction);
   } else {
@@ -821,15 +824,17 @@ TEST_P(ResourcePrefetchPredictorPreconnectToRedirectTargetTest,
   EXPECT_TRUE(
       predictor_->PredictPreconnectOrigins(main_frame_url, prediction.get()));
 
-  auto expected_prediction_2 = CreatePreconnectPrediction(
-      "www.google.com", true,
-      {{GURL(gen_origin(4)), 1, www_google_network_isolation_key}});
+  auto expected_prediction_2 =
+      CreatePreconnectPrediction("www.google.com", true,
+                                 {{url::Origin::Create(GURL(gen_origin(4))), 1,
+                                   www_google_network_isolation_key}});
   if (enable_preconnect_to_redirect_target_experiment) {
     // Getting the prediction for google.com should include the redirect
     // target as well. The redirect target should be present in the front.
     expected_prediction_2.requests.emplace(
-        expected_prediction_2.requests.begin(), GURL("https://www.google.com"),
-        1, www_google_network_isolation_key);
+        expected_prediction_2.requests.begin(),
+        url::Origin::Create(GURL("https://www.google.com")), 1,
+        www_google_network_isolation_key);
   }
   EXPECT_EQ(expected_prediction_2, *prediction);
 }
@@ -872,11 +877,13 @@ TEST_F(ResourcePrefetchPredictorTest,
   EXPECT_TRUE(predictor_->IsUrlPreconnectable(main_frame_url));
   EXPECT_TRUE(
       predictor_->PredictPreconnectOrigins(main_frame_url, prediction.get()));
-  EXPECT_EQ(*prediction,
-            CreatePreconnectPrediction(
-                "google.com", false,
-                {{GURL(gen_origin(1)), 1, network_isolation_key},
-                 {GURL(gen_origin(2)), 0, network_isolation_key}}));
+  EXPECT_EQ(
+      *prediction,
+      CreatePreconnectPrediction(
+          "google.com", false,
+          {{url::Origin::Create(GURL(gen_origin(1))), 1, network_isolation_key},
+           {url::Origin::Create(GURL(gen_origin(2))), 0,
+            network_isolation_key}}));
 
   // Add a redirect.
   RedirectData redirect = CreateRedirectData("google.com", 3);
@@ -898,7 +905,7 @@ TEST_F(ResourcePrefetchPredictorTest,
 
   const auto expected_prediction = CreatePreconnectPrediction(
       "google.com", 0,
-      {{GURL("https://www.google-redirected-to.com/"), 1,
+      {{url::Origin::Create(GURL("https://www.google-redirected-to.com/")), 1,
         www_google_redirected_to_network_isolation_key}});
   EXPECT_EQ(expected_prediction, *prediction);
 
@@ -925,9 +932,9 @@ TEST_F(ResourcePrefetchPredictorTest,
   const auto expected_prediction_redirected_to = CreatePreconnectPrediction(
       "www.google-redirected-to.com", true,
       {
-          {GURL("https://www.google-redirected-to.com"), 1,
+          {url::Origin::Create(GURL("https://www.google-redirected-to.com")), 1,
            www_google_redirected_to_network_isolation_key},
-          {GURL(gen_origin(4)), 1,
+          {url::Origin::Create(GURL(gen_origin(4))), 1,
            www_google_redirected_to_network_isolation_key},
       });
   EXPECT_EQ(expected_prediction_redirected_to, *prediction);

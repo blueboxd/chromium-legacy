@@ -12,7 +12,6 @@
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/shared_memory.h"
 #include "base/process/process.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"

@@ -28,6 +28,15 @@ gfx::Size ShelfContainerView::CalculatePreferredSize() const {
 }
 
 void ShelfContainerView::ChildPreferredSizeChanged(views::View* child) {
+  // The CL (https://crrev.com/c/1876128) modifies View::PreferredSizeChanged
+  // by moving InvalidateLayout() after ChildPreferredSizeChanged(). Meanwhile,
+  // the parent view of ShelfContainerView overrides ChildPreferredSizeChanged
+  // with calling Layout(). Due to the CL above, ShelfContainerView is not
+  // labeled as |needs_layout_| when the parent view updates the layout. As a
+  // result, Calling Layout() in the parent view may not trigger the update in
+  // child view. So we have to invalidate the layout here explicitly.
+  InvalidateLayout();
+
   PreferredSizeChanged();
 }
 

@@ -764,11 +764,6 @@ make_names("make_core_generated_input_type_names") {
   output_dir = blink_core_output_dir
 }
 
-make_names("make_core_generated_input_mode_names") {
-  in_files = [ "editing/input_mode_names.json5" ]
-  output_dir = blink_core_output_dir
-}
-
 make_names("make_core_generated_keywords") {
   in_files = [ "html/keywords.json5" ]
   output_dir = blink_core_output_dir
@@ -776,11 +771,6 @@ make_names("make_core_generated_keywords") {
 
 make_names("make_core_generated_performance_entry_names") {
   in_files = [ "timing/performance_entry_names.json5" ]
-  output_dir = blink_core_output_dir
-}
-
-make_names("make_core_generated_enter_key_hint_names") {
-  in_files = [ "editing/enter_key_hint_names.json5" ]
   output_dir = blink_core_output_dir
 }
 
@@ -986,7 +976,6 @@ targets_generating_sources = [
   ":make_core_generated_css_property_instances",
   ":make_core_generated_css_value_id_mappings",
   ":make_core_generated_cssom_types",
-  ":make_core_generated_enter_key_hint_names",
   ":make_core_generated_event_factory",
   ":make_core_generated_event_names",
   ":make_core_generated_event_target_names",
@@ -996,7 +985,6 @@ targets_generating_sources = [
   ":make_core_generated_html_element_lookup_trie",
   ":make_core_generated_html_entity_table",
   ":make_core_generated_html_tokenizer_names",
-  ":make_core_generated_input_mode_names",
   ":make_core_generated_input_type_names",
   ":make_core_generated_keywords",
   ":make_core_generated_mathml_names",
@@ -1178,6 +1166,7 @@ jumbo_source_set("unit_tests") {
     "exported/web_frame_serializer_test_helper.cc",
     "exported/web_frame_serializer_test_helper.h",
     "exported/web_frame_test.cc",
+    "exported/web_image_test.cc",
     "exported/web_layer_test.cc",
     "exported/web_meaningful_layouts_test.cc",
     "exported/web_node_test.cc",

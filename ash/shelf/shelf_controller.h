@@ -54,11 +54,6 @@ class ASH_EXPORT ShelfController : public message_center::MessageCenterObserver,
 
   // WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;
-  void OnWindowTreeHostReusedForDisplay(
-      AshWindowTreeHost* window_tree_host,
-      const display::Display& display) override;
-  void OnWindowTreeHostsSwappedDisplays(AshWindowTreeHost* host1,
-                                        AshWindowTreeHost* host2) override;
 
   // The shelf model shared by all shelf instances.
   ShelfModel model_;

@@ -20,7 +20,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/clock.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_store.h"
-#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_experiments.h"
@@ -189,10 +188,6 @@ void PreviewsDeciderImpl::ClearBlackList(base::Time begin_time,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   previews_black_list_->ClearBlackList(begin_time, end_time);
-
-  // Removes all fetched hints known to the owned optimization guide.
-  if (previews_opt_guide_)
-    previews_opt_guide_->ClearFetchedHints();
 }
 
 void PreviewsDeciderImpl::SetIgnorePreviewsBlacklistDecision(bool ignored) {
@@ -308,7 +303,7 @@ PreviewsEligibilityReason PreviewsDeciderImpl::DeterminePreviewEligibility(
 
   // Check optimization hints, if provided.
   if (ShouldCheckOptimizationHints(type)) {
-    if (optimization_guide::features::IsOptimizationHintsEnabled()) {
+    if (previews_opt_guide_) {
       // Optimization hints are configured, so determine if those hints
       // allow the optimization type (as of start-of-navigation time anyway).
       return ShouldAllowPreviewPerOptimizationHints(
@@ -385,14 +380,6 @@ bool PreviewsDeciderImpl::GetResourceLoadingHints(
       url, out_resource_patterns_to_block);
 }
 
-void PreviewsDeciderImpl::LogHintCacheMatch(const GURL& url,
-                                            bool is_committed) const {
-  if (!previews_opt_guide_)
-    return;
-
-  previews_opt_guide_->LogHintCacheMatch(url, is_committed);
-}
-
 bool PreviewsDeciderImpl::ShouldCommitPreview(
     PreviewsUserData* previews_data,
     content::NavigationHandle* navigation_handle,
@@ -405,8 +392,7 @@ bool PreviewsDeciderImpl::ShouldCommitPreview(
   const GURL committed_url = navigation_handle->GetURL();
 
   // Re-check server optimization hints (if provided) on this commit-time URL.
-  if (ShouldCheckOptimizationHints(type) &&
-      optimization_guide::features::IsOptimizationHintsEnabled()) {
+  if (ShouldCheckOptimizationHints(type) && previews_opt_guide_) {
     std::vector<PreviewsEligibilityReason> passed_reasons;
     PreviewsEligibilityReason status = ShouldCommitPreviewPerOptimizationHints(
         previews_data, navigation_handle, type, &passed_reasons);
@@ -460,7 +446,7 @@ PreviewsDeciderImpl::ShouldAllowPreviewPerOptimizationHints(
       return PreviewsEligibilityReason::ALLOWED;
     }
 
-    if (!previews_opt_guide_ || !previews_opt_guide_->IsReady())
+    if (!previews_opt_guide_)
       return PreviewsEligibilityReason::OPTIMIZATION_HINTS_NOT_AVAILABLE;
     passed_reasons->push_back(
         PreviewsEligibilityReason::OPTIMIZATION_HINTS_NOT_AVAILABLE);
@@ -496,7 +482,7 @@ PreviewsDeciderImpl::ShouldCommitPreviewPerOptimizationHints(
     return PreviewsEligibilityReason::ALLOWED;
   }
 
-  if (!previews_opt_guide_ || !previews_opt_guide_->IsReady())
+  if (!previews_opt_guide_)
     return PreviewsEligibilityReason::OPTIMIZATION_HINTS_NOT_AVAILABLE;
   passed_reasons->push_back(
       PreviewsEligibilityReason::OPTIMIZATION_HINTS_NOT_AVAILABLE);

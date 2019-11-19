@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/memory/singleton.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/games/core/games_service_impl.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
@@ -34,7 +35,8 @@ GamesService* GamesServiceFactory::GetForBrowserContext(
 
 KeyedService* GamesServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new GamesServiceImpl();
+  Profile* profile = Profile::FromBrowserContext(context);
+  return new GamesServiceImpl(profile->GetPrefs());
 }
 
 }  // namespace games

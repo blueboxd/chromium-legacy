@@ -230,23 +230,23 @@ void PaintLayerStackingNode::CollectLayers(PaintLayer& paint_layer,
   }
 
   if (has_overlay_overflow_controls) {
-    const PaintLayer* layer_to_paint_overlay_scrollbars_after =
+    const PaintLayer* layer_to_paint_overlay_overflow_controls_after =
         subtree_highest_layers->highest_in_flow_stacked;
     if (object.CanContainFixedPositionObjects()) {
-      SetIfHigher(layer_to_paint_overlay_scrollbars_after,
+      SetIfHigher(layer_to_paint_overlay_overflow_controls_after,
                   subtree_highest_layers->highest_fixed_position);
     }
     if (object.CanContainAbsolutePositionObjects()) {
-      SetIfHigher(layer_to_paint_overlay_scrollbars_after,
+      SetIfHigher(layer_to_paint_overlay_overflow_controls_after,
                   subtree_highest_layers->highest_absolute_position);
     }
-    if (layer_to_paint_overlay_scrollbars_after) {
+    if (layer_to_paint_overlay_overflow_controls_after) {
       layer_to_overlay_overflow_controls_painting_after_
-          .insert(layer_to_paint_overlay_scrollbars_after, PaintLayers())
+          .insert(layer_to_paint_overlay_overflow_controls_after, PaintLayers())
           .stored_value->value.push_back(&paint_layer);
     }
     paint_layer.SetNeedsReorderOverlayOverflowControls(
-        !!layer_to_paint_overlay_scrollbars_after);
+        !!layer_to_paint_overlay_overflow_controls_after);
 
     if (highest_layers)
       highest_layers->Merge(*subtree_highest_layers);

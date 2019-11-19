@@ -4,8 +4,6 @@
 
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 
-#include <string>
-
 #include "components/prefs/pref_registry_simple.h"
 
 namespace chromeos {
@@ -50,39 +48,16 @@ const char kAssistantLaunchWithMicOpen[] =
 const char kAssistantNotificationEnabled[] =
     "settings.voice_interaction.notification.enabled";
 
-void RegisterProfilePrefsForBrowser(PrefRegistrySimple* registry) {
+void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(kAssistantConsentStatus,
-                                ConsentStatus::kUnknown, PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(kAssistantContextEnabled, false,
-                                PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(kAssistantDisabledByPolicy, false,
-                                PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(kAssistantEnabled, false, PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(kAssistantHotwordAlwaysOn, false,
-                                PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(kAssistantHotwordEnabled, false,
-                                PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(kAssistantLaunchWithMicOpen, false,
-                                PrefRegistry::PUBLIC);
-  registry->RegisterBooleanPref(kAssistantNotificationEnabled, true,
-                                PrefRegistry::PUBLIC);
-}
-
-void RegisterProfilePrefsForeign(PrefRegistrySimple* registry, bool for_test) {
-  if (for_test) {
-    // In tests there are no remote pref service. Register the prefs as own if
-    // necessary.
-    RegisterProfilePrefsForBrowser(registry);
-    return;
-  }
-  registry->RegisterForeignPref(kAssistantConsentStatus);
-  registry->RegisterForeignPref(kAssistantContextEnabled);
-  registry->RegisterForeignPref(kAssistantDisabledByPolicy);
-  registry->RegisterForeignPref(kAssistantEnabled);
-  registry->RegisterForeignPref(kAssistantHotwordAlwaysOn);
-  registry->RegisterForeignPref(kAssistantHotwordEnabled);
-  registry->RegisterForeignPref(kAssistantLaunchWithMicOpen);
-  registry->RegisterForeignPref(kAssistantNotificationEnabled);
+                                ConsentStatus::kUnknown);
+  registry->RegisterBooleanPref(kAssistantContextEnabled, false);
+  registry->RegisterBooleanPref(kAssistantDisabledByPolicy, false);
+  registry->RegisterBooleanPref(kAssistantEnabled, false);
+  registry->RegisterBooleanPref(kAssistantHotwordAlwaysOn, false);
+  registry->RegisterBooleanPref(kAssistantHotwordEnabled, false);
+  registry->RegisterBooleanPref(kAssistantLaunchWithMicOpen, false);
+  registry->RegisterBooleanPref(kAssistantNotificationEnabled, true);
 }
 
 }  // namespace prefs

@@ -109,6 +109,10 @@
           displayModalInfobar:InfobarType::kInfobarTypePasswordUpdate];
       break;
     }
+    case PopupMenuActionShowSaveCardOptions: {
+      [self.dispatcher displayModalInfobar:InfobarType::kInfobarTypeSaveCard];
+      break;
+    }
     default:
       NOTREACHED() << "Unexpected identifier";
       break;

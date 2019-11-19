@@ -2,6 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {TestCommandManager} from 'chrome://test/bookmarks/test_command_manager.js';
+import {TestStore} from 'chrome://test/bookmarks/test_store.js';
+import {DialogFocusManager, MenuSource} from 'chrome://bookmarks/bookmarks.js';
+import {createFolder, createItem, getAllFoldersOpenState, replaceBody, testTree} from 'chrome://test/bookmarks/test_util.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {eventToPromise} from 'chrome://test/test_util.m.js';
+import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+
 suite('DialogFocusManager', function() {
   let list;
   let store;
@@ -10,7 +18,7 @@ suite('DialogFocusManager', function() {
   let dialogFocusManager;
 
   function keydown(el, key) {
-    MockInteractions.keyDownOn(el, '', '', key);
+    keyDownOn(el, '', '', key);
   }
 
   setup(function() {
@@ -22,7 +30,7 @@ suite('DialogFocusManager', function() {
       createItem('6'),
       createFolder('7', []),
     ]));
-    store = new bookmarks.TestStore({
+    store = new TestStore({
       nodes: nodes,
       folderOpenState: getAllFoldersOpenState(nodes),
       selectedFolder: '1',
@@ -35,14 +43,14 @@ suite('DialogFocusManager', function() {
     list.style.width = '100%';
     list.style.position = 'absolute';
     replaceBody(list);
-    Polymer.dom.flush();
+    flush();
     items = list.root.querySelectorAll('bookmarks-item');
 
-    commandManager = new TestCommandManager();
+    commandManager = new TestCommandManager().getCommandManager();
     document.body.appendChild(commandManager);
 
-    dialogFocusManager = new bookmarks.DialogFocusManager();
-    bookmarks.DialogFocusManager.instance_ = dialogFocusManager;
+    dialogFocusManager = new DialogFocusManager();
+    DialogFocusManager.instance_ = dialogFocusManager;
   });
 
   test('restores focus on dialog dismissal', async function() {
@@ -60,8 +68,8 @@ suite('DialogFocusManager', function() {
     assertFalse(dropdown.open);
 
     await Promise.all([
-      test_util.eventToPromise('close', dropdown),
-      test_util.eventToPromise('focus', focusedItem),
+      eventToPromise('close', dropdown),
+      eventToPromise('focus', focusedItem),
     ]);
 
     assertEquals(focusedItem, dialogFocusManager.getFocusedElement_());
@@ -80,11 +88,11 @@ suite('DialogFocusManager', function() {
     const editDialog = commandManager.$.editDialog.get();
     editDialog.showEditDialog(store.data.nodes['2']);
 
-    await test_util.eventToPromise('close', dropdown);
+    await eventToPromise('close', dropdown);
     editDialog.onCancelButtonTap_();
     assertNotEquals(focusedItem, dialogFocusManager.getFocusedElement_());
 
-    await test_util.eventToPromise('close', editDialog);
+    await eventToPromise('close', editDialog);
     assertEquals(focusedItem, dialogFocusManager.getFocusedElement_());
   });
 
@@ -102,12 +110,12 @@ suite('DialogFocusManager', function() {
     focusedItem.focus();
     commandManager.openCommandMenuAtPosition(0, 0, MenuSource.ITEM);
 
-    await test_util.eventToPromise('close', dropdown);
+    await eventToPromise('close', dropdown);
     assertTrue(dropdown.open);
     dropdown.close();
     assertNotEquals(focusedItem, dialogFocusManager.getFocusedElement_());
 
-    await test_util.eventToPromise('close', dropdown);
+    await eventToPromise('close', dropdown);
     assertEquals(focusedItem, dialogFocusManager.getFocusedElement_());
   });
 });

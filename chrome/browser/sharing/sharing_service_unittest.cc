@@ -191,7 +191,8 @@ class SharingServiceTest : public testing::Test {
         /*last_updated_timestamp=*/base::Time::Now(),
         /*send_tab_to_self_receiving_enabled=*/false,
         syncer::DeviceInfo::SharingInfo(
-            kVapidFcmToken, kSharingFcmToken, kP256dh, kAuthSecret,
+            {kVapidFcmToken, kP256dh, kAuthSecret},
+            {kSharingFcmToken, kP256dh, kAuthSecret},
             std::set<sync_pb::SharingSpecificFields::EnabledFeatures>{
                 sync_pb::SharingSpecificFields::CLICK_TO_CALL}));
   }

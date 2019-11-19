@@ -210,6 +210,13 @@ cr.define('device_page_tests', function() {
   function getFakePrefs() {
     return {
       ash: {
+        ambient_color: {
+          enabled: {
+            key: 'ash.ambient_color.enabled',
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: false,
+          },
+        },
         night_light: {
           enabled: {
             key: 'ash.night_light.enabled',
@@ -419,8 +426,15 @@ cr.define('device_page_tests', function() {
         name: 'fakeDisplayName' + n,
         mirroring: '',
         isPrimary: n == 1,
+        isInternal: n == 1,
         rotation: 0,
-        modes: [],
+        modes: [{
+          deviceScaleFactor: 1.0,
+          widthInNativePixels: 1920,
+          heightInNativePixels: 1080,
+          width: 1920,
+          height: 1080,
+        }],
         bounds: {
           left: 0,
           top: 0,
@@ -790,6 +804,15 @@ cr.define('device_page_tests', function() {
             expectFalse(displayPage.showUnifiedDesktop_(
                 false, false, displayPage.displays));
 
+            // Sanity check the first display is internal.
+            expectTrue(displayPage.displays[0].isInternal);
+
+            // Ambient EQ only shown when enabled.
+            expectTrue(displayPage.showAmbientColorSetting_(
+                true, displayPage.displays[0]));
+            expectFalse(displayPage.showAmbientColorSetting_(
+                false, displayPage.displays[0]));
+
             // Verify that the arrangement section is not shown.
             expectEquals(null, displayPage.$$('#arrangement-section'));
 
@@ -821,6 +844,16 @@ cr.define('device_page_tests', function() {
                 true, true, displayPage.displays));
             expectFalse(displayPage.showUnifiedDesktop_(
                 false, false, displayPage.displays));
+
+            // Sanity check the second display is not internal.
+            expectFalse(displayPage.displays[1].isInternal);
+
+            // Ambient EQ never shown on non-internal display regardless of
+            // whether it is enabled.
+            expectFalse(displayPage.showAmbientColorSetting_(
+                true, displayPage.displays[1]));
+            expectFalse(displayPage.showAmbientColorSetting_(
+                false, displayPage.displays[1]));
 
             // Verify that the arrangement section is shown.
             expectTrue(!!displayPage.$$('#arrangement-section'));

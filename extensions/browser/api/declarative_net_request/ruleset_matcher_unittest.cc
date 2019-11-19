@@ -53,7 +53,7 @@ TEST_F(RulesetMatcherTest, BlockingRule) {
   ASSERT_TRUE(CreateVerifiedMatcher({rule}, CreateTemporarySource(), &matcher));
 
   auto should_block_request = [&matcher](const RequestParams& params) {
-    return !matcher->HasMatchingAllowRule(params) &&
+    return !matcher->GetAllowAction(params) &&
            matcher->GetBlockOrCollapseAction(params).has_value();
   };
 

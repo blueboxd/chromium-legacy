@@ -4,26 +4,9 @@
 
 /** Constants used in Switch Access */
 let SAConstants = {};
+SAConstants.Focus = {};
 
-/**
- * The ID of the menu panel.
- * This must be kept in sync with the div ID in menu_panel.html.
- * @type {string}
- * @const
- */
-SAConstants.MENU_PANEL_ID = 'switchaccess_menu_actions';
-
-/**
- * IDs of menus that can appear in the menu panel.
- * This must be kept in sync with the div ID of each menu
- * in menu_panel.html.
- * @enum {string}
- * @const
- */
-SAConstants.MenuId = {
-  MAIN: 'main_menu',
-  TEXT_NAVIGATION: 'text_navigation_menu'
-};
+// ========================= Constants =========================
 
 /**
  * The ID of the back button.
@@ -33,7 +16,12 @@ SAConstants.MenuId = {
  */
 SAConstants.BACK_ID = 'back';
 
-SAConstants.Focus = {};
+/**
+ * The amount of space (in px) needed to fit a focus ring around an element.
+ * @type {number}
+ * @const
+ */
+SAConstants.Focus.BUFFER = 4;
 
 /**
  * The name of the focus class for the menu.
@@ -42,19 +30,6 @@ SAConstants.Focus = {};
  * @const
  */
 SAConstants.Focus.CLASS = 'focus';
-
-/**
- * The focus ring IDs used by Switch Access.
- * @enum {string}
- */
-SAConstants.Focus.ID = {
-  // The ID for the ring showing the user's current focus.
-  PRIMARY: 'primary',
-  // The ID for the ring showing the next focus.
-  NEXT: 'next',
-  // The ID for the area where text is being input.
-  TEXT: 'text'
-};
 
 /**
  * The buffer (in dip) between a child's focus ring and its parent's focus ring.
@@ -78,11 +53,19 @@ SAConstants.Focus.PRIMARY_COLOR = '#1A73E8FF';
 SAConstants.Focus.SECONDARY_COLOR = '#0006';
 
 /**
- * The amount of space (in px) needed to fit a focus ring around an element.
+ * The maximum length of a row in the Virtual Keyboard.
  * @type {number}
  * @const
  */
-SAConstants.Focus.BUFFER = 4;
+SAConstants.KEYBOARD_MAX_ROW_LENGTH = 14;
+
+/**
+ * The ID of the menu panel.
+ * This must be kept in sync with the div ID in menu_panel.html.
+ * @type {string}
+ * @const
+ */
+SAConstants.MENU_PANEL_ID = 'switchaccess_menu_actions';
 
 /**
  * The delay between keydown and keyup events on the virtual keyboard,
@@ -92,25 +75,19 @@ SAConstants.Focus.BUFFER = 4;
  */
 SAConstants.VK_KEY_PRESS_DURATION_MS = 100;
 
-/**
- * The maximum length of a row in the Virtual Keyboard.
- * @type {number}
- * @const
- */
-SAConstants.KEYBOARD_MAX_ROW_LENGTH = 14;
+// =========================== Enums ===========================
 
 /**
- * Preferences that are configurable in Switch Access.
+ * The focus ring IDs used by Switch Access.
  * @enum {string}
  */
-SAConstants.Preference = {
-  AUTO_SCAN_ENABLED: 'settings.a11y.switch_access.auto_scan.enabled',
-  AUTO_SCAN_TIME: 'settings.a11y.switch_access.auto_scan.speed_ms',
-  AUTO_SCAN_KEYBOARD_TIME:
-      'settings.a11y.switch_access.auto_scan.keyboard.speed_ms',
-  NEXT_SETTING: 'settings.a11y.switch_access.next.setting',
-  PREVIOUS_SETTING: 'settings.a11y.switch_access.previous.setting',
-  SELECT_SETTING: 'settings.a11y.switch_access.select.setting',
+SAConstants.Focus.ID = {
+  // The ID for the ring showing the user's current focus.
+  PRIMARY: 'primary',
+  // The ID for the ring showing the next focus.
+  NEXT: 'next',
+  // The ID for the area where text is being input.
+  TEXT: 'text'
 };
 
 /**
@@ -176,6 +153,32 @@ SAConstants.MenuAction = {
 };
 
 /**
+ * IDs of menus that can appear in the menu panel.
+ * This must be kept in sync with the div ID of each menu
+ * in menu_panel.html.
+ * @enum {string}
+ * @const
+ */
+SAConstants.MenuId = {
+  MAIN: 'main_menu',
+  TEXT_NAVIGATION: 'text_navigation_menu'
+};
+
+/**
+ * Preferences that are configurable in Switch Access.
+ * @enum {string}
+ */
+SAConstants.Preference = {
+  AUTO_SCAN_ENABLED: 'settings.a11y.switch_access.auto_scan.enabled',
+  AUTO_SCAN_TIME: 'settings.a11y.switch_access.auto_scan.speed_ms',
+  AUTO_SCAN_KEYBOARD_TIME:
+      'settings.a11y.switch_access.auto_scan.keyboard.speed_ms',
+  NEXT_SETTING: 'settings.a11y.switch_access.next.setting',
+  PREVIOUS_SETTING: 'settings.a11y.switch_access.previous.setting',
+  SELECT_SETTING: 'settings.a11y.switch_access.select.setting',
+};
+
+/**
  * The types of error or unexpected state that can be encountered by Switch
  * Access.
  * These values are persisted to logs and should not be renumbered or re-used.
@@ -195,10 +198,3 @@ SAConstants.ErrorType = {
   MALFORMED_DESKTOP: 8,
   MISSING_LOCATION: 9,
 };
-
-/**
- * The number of values available in the enum SAConstants.ErrorType.
- * @type {number}
- * @const
- */
-SAConstants.ErrorTypeCountForUMA = Object.keys(SAConstants.ErrorType).length;

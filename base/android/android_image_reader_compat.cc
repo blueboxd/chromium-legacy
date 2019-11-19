@@ -68,6 +68,7 @@ bool AndroidImageReader::LoadFunctions() {
   LOAD_FUNCTION(libmediandk, AImage_getHardwareBuffer);
   LOAD_FUNCTION(libmediandk, AImage_getWidth);
   LOAD_FUNCTION(libmediandk, AImage_getHeight);
+  LOAD_FUNCTION(libmediandk, AImage_getCropRect);
   LOAD_FUNCTION(libmediandk, AImageReader_newWithUsage);
   LOAD_FUNCTION(libmediandk, AImageReader_setImageListener);
   LOAD_FUNCTION(libmediandk, AImageReader_delete);
@@ -109,6 +110,11 @@ media_status_t AndroidImageReader::AImage_getWidth(const AImage* image,
 media_status_t AndroidImageReader::AImage_getHeight(const AImage* image,
                                                     int32_t* height) {
   return AImage_getHeight_(image, height);
+}
+
+media_status_t AndroidImageReader::AImage_getCropRect(const AImage* image,
+                                                      AImageCropRect* rect) {
+  return AImage_getCropRect_(image, rect);
 }
 
 media_status_t AndroidImageReader::AImageReader_newWithUsage(

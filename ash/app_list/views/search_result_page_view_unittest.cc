@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/app_list/app_list_util.h"
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/test/app_list_test_view_delegate.h"
 #include "ash/app_list/test/test_search_result.h"
@@ -77,7 +78,10 @@ class SearchResultPageViewTest
     // Setting up views.
     delegate_ = std::make_unique<AppListTestViewDelegate>();
     app_list_view_ = new AppListView(delegate_.get());
-    app_list_view_->InitView(false /*is_tablet_mode*/, GetContext());
+    app_list_view_->InitView(
+        /*is_tablet_mode=*/false, GetContext(),
+        base::BindRepeating(&UpdateActivationForAppListView, app_list_view_,
+                            /*is_tablet_mode=*/false));
     app_list_view_->Show(false /*is_side_shelf*/, false /*is_tablet_mode*/);
 
     ContentsView* contents_view =

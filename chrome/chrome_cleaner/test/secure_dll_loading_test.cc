@@ -159,13 +159,13 @@ class SecureDLLLoadingTest : public testing::TestWithParam<base::string16> {
   base::FilePath empty_dll_path_;
 };
 
-INSTANTIATE_TEST_CASE_P(SecureDLLLoading,
-                        SecureDLLLoadingTest,
-                        // The value names cannot include ".exe" because "."
-                        // is not a valid character in a test case name.
-                        ::testing::Values(L"software_reporter_tool",
-                                          L"chrome_cleanup_tool"),
-                        chrome_cleaner::GetParamNameForTest());
+INSTANTIATE_TEST_SUITE_P(SecureDLLLoading,
+                         SecureDLLLoadingTest,
+                         // The value names cannot include ".exe" because "."
+                         // is not a valid character in a test case name.
+                         ::testing::Values(L"software_reporter_tool",
+                                           L"chrome_cleanup_tool"),
+                         chrome_cleaner::GetParamNameForTest());
 
 #if !BUILDFLAG(IS_OFFICIAL_CHROME_CLEANER_BUILD)
 TEST_P(SecureDLLLoadingTest, Disabled) {

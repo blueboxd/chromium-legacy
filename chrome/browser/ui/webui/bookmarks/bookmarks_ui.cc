@@ -32,8 +32,14 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/resources/grit/webui_resources.h"
 
 namespace {
+
+#if !BUILDFLAG(OPTIMIZE_WEBUI)
+constexpr char kGeneratedPath[] =
+    "@out_folder@/gen/chrome/browser/resources/bookmarks/";
+#endif
 
 void AddLocalizedString(content::WebUIDataSource* source,
                         const std::string& message,
@@ -46,6 +52,8 @@ void AddLocalizedString(content::WebUIDataSource* source,
 content::WebUIDataSource* CreateBookmarksUIHTMLSource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIBookmarksHost);
+  source->OverrideContentSecurityPolicyScriptSrc(
+      "script-src chrome://resources chrome://test 'self';");
 
   // Build an Accelerator to describe undo shortcut
   // NOTE: the undo shortcut is also defined in bookmarks/command_manager.js
@@ -120,64 +128,25 @@ content::WebUIDataSource* CreateBookmarksUIHTMLSource(Profile* profile) {
 
   // Resources.
 #if BUILDFLAG(OPTIMIZE_WEBUI)
-  source->AddResourcePath("crisper.js", IDR_BOOKMARKS_CRISPER_JS);
+  source->AddResourcePath("bookmarks.js", IDR_BOOKMARKS_BOOKMARKS_ROLLUP_JS);
   source->SetDefaultResource(IDR_BOOKMARKS_VULCANIZED_HTML);
 #else
-  source->AddResourcePath("actions.html", IDR_BOOKMARKS_ACTIONS_HTML);
-  source->AddResourcePath("actions.js", IDR_BOOKMARKS_ACTIONS_JS);
-  source->AddResourcePath("api_listener.html", IDR_BOOKMARKS_API_LISTENER_HTML);
-  source->AddResourcePath("api_listener.js", IDR_BOOKMARKS_API_LISTENER_JS);
-  source->AddResourcePath("app.html", IDR_BOOKMARKS_APP_HTML);
-  source->AddResourcePath("app.js", IDR_BOOKMARKS_APP_JS);
-  source->AddResourcePath("browser_proxy.html",
-                          IDR_BOOKMARKS_BROWSER_PROXY_HTML);
-  source->AddResourcePath("browser_proxy.js", IDR_BOOKMARKS_BROWSER_PROXY_JS);
-  source->AddResourcePath("command_manager.html",
-                          IDR_BOOKMARKS_COMMAND_MANAGER_HTML);
-  source->AddResourcePath("command_manager.js",
-                          IDR_BOOKMARKS_COMMAND_MANAGER_JS);
-  source->AddResourcePath("constants.html", IDR_BOOKMARKS_CONSTANTS_HTML);
-  source->AddResourcePath("constants.js", IDR_BOOKMARKS_CONSTANTS_JS);
-  source->AddResourcePath("debouncer.html", IDR_BOOKMARKS_DEBOUNCER_HTML);
-  source->AddResourcePath("debouncer.js", IDR_BOOKMARKS_DEBOUNCER_JS);
-  source->AddResourcePath("dialog_focus_manager.html",
-                          IDR_BOOKMARKS_DIALOG_FOCUS_MANAGER_HTML);
-  source->AddResourcePath("dialog_focus_manager.js",
-                          IDR_BOOKMARKS_DIALOG_FOCUS_MANAGER_JS);
-  source->AddResourcePath("dnd_manager.html", IDR_BOOKMARKS_DND_MANAGER_HTML);
-  source->AddResourcePath("dnd_manager.js", IDR_BOOKMARKS_DND_MANAGER_JS);
-  source->AddResourcePath("edit_dialog.html", IDR_BOOKMARKS_EDIT_DIALOG_HTML);
-  source->AddResourcePath("edit_dialog.js", IDR_BOOKMARKS_EDIT_DIALOG_JS);
-  source->AddResourcePath("folder_node.html", IDR_BOOKMARKS_FOLDER_NODE_HTML);
-  source->AddResourcePath("folder_node.js", IDR_BOOKMARKS_FOLDER_NODE_JS);
-  source->AddResourcePath("item.html", IDR_BOOKMARKS_ITEM_HTML);
-  source->AddResourcePath("item.js", IDR_BOOKMARKS_ITEM_JS);
-  source->AddResourcePath("list.html", IDR_BOOKMARKS_LIST_HTML);
-  source->AddResourcePath("list.js", IDR_BOOKMARKS_LIST_JS);
-  source->AddResourcePath("mouse_focus_behavior.html",
-                          IDR_BOOKMARKS_MOUSE_FOCUS_BEHAVIOR_HTML);
-  source->AddResourcePath("mouse_focus_behavior.js",
-                          IDR_BOOKMARKS_MOUSE_FOCUS_BEHAVIOR_JS);
-  source->AddResourcePath("reducers.html", IDR_BOOKMARKS_REDUCERS_HTML);
-  source->AddResourcePath("reducers.js", IDR_BOOKMARKS_REDUCERS_JS);
-  source->AddResourcePath("router.html", IDR_BOOKMARKS_ROUTER_HTML);
-  source->AddResourcePath("router.js", IDR_BOOKMARKS_ROUTER_JS);
-  source->AddResourcePath("shared_style.html", IDR_BOOKMARKS_SHARED_STYLE_HTML);
-  source->AddResourcePath("shared_vars.html", IDR_BOOKMARKS_SHARED_VARS_HTML);
-  source->AddResourcePath("store.html", IDR_BOOKMARKS_STORE_HTML);
-  source->AddResourcePath("store.js", IDR_BOOKMARKS_STORE_JS);
-  source->AddResourcePath("store_client.html", IDR_BOOKMARKS_STORE_CLIENT_HTML);
-  source->AddResourcePath("store_client.js", IDR_BOOKMARKS_STORE_CLIENT_JS);
-  source->AddResourcePath("strings.html", IDR_BOOKMARKS_STRINGS_HTML);
-  source->AddResourcePath("toolbar.html", IDR_BOOKMARKS_TOOLBAR_HTML);
-  source->AddResourcePath("toolbar.js", IDR_BOOKMARKS_TOOLBAR_JS);
-  source->AddResourcePath("util.html", IDR_BOOKMARKS_UTIL_HTML);
-  source->AddResourcePath("util.js", IDR_BOOKMARKS_UTIL_JS);
+  // Add all Bookmarks resources.
+  for (size_t i = 0; i < kBookmarksResourcesSize; ++i) {
+    std::string path = kBookmarksResources[i].name;
+    if (path.rfind(kGeneratedPath, 0) == 0) {
+      path = path.substr(sizeof(kGeneratedPath) - 1);
+    }
 
+    source->AddResourcePath(path, kBookmarksResources[i].value);
+  }
   source->SetDefaultResource(IDR_BOOKMARKS_BOOKMARKS_HTML);
 #endif
 
   source->UseStringsJs();
+  source->EnableReplaceI18nInJS();
+  source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
+  source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);
 
   return source;
 }

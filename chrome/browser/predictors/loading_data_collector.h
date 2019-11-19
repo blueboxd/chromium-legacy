@@ -15,6 +15,7 @@
 #include "content/public/common/resource_load_info.mojom.h"
 #include "content/public/common/resource_type.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace predictors {
 
@@ -28,7 +29,7 @@ struct OriginRequestSummary {
   OriginRequestSummary(const OriginRequestSummary& other);
   ~OriginRequestSummary();
 
-  GURL origin;
+  url::Origin origin;
   bool always_access_network = false;
   bool accessed_network = false;
   int first_occurrence = 0;
@@ -48,11 +49,11 @@ struct PageRequestSummary {
 
   // Map of origin -> OriginRequestSummary. Only one instance of each origin
   // is kept per navigation, but the summary is updated several times.
-  std::map<GURL, OriginRequestSummary> origins;
+  std::map<url::Origin, OriginRequestSummary> origins;
 
  private:
   void UpdateOrAddToOrigins(
-      const GURL& url,
+      const url::Origin& origin,
       const content::mojom::CommonNetworkInfoPtr& network_info);
 };
 

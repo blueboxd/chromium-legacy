@@ -66,11 +66,6 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_CPP) StandaloneConnectorImpl
       mojo::PendingReceiver<mojom::ProcessMetadata> metadata_receiver,
       RegisterServiceInstanceCallback callback) override;
   void Clone(mojo::PendingReceiver<mojom::Connector> receiver) override;
-  void FilterInterfaces(
-      const std::string& spec,
-      const Identity& source,
-      mojo::PendingReceiver<mojom::InterfaceProvider> source_receiver,
-      mojo::PendingRemote<mojom::InterfaceProvider> target) override;
 
   Delegate* const delegate_;
 

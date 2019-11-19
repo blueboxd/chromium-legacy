@@ -23,6 +23,25 @@ void AppServiceTest::SetUp(Profile* profile) {
   WaitForAppService();
 }
 
+void AppServiceTest::UninstallAllApps(Profile* profile) {
+  AppServiceProxy* app_service_proxy_ =
+      apps::AppServiceProxyFactory::GetForProfile(profile);
+  DCHECK(app_service_proxy_);
+  std::vector<apps::mojom::AppPtr> apps;
+  app_service_proxy_->AppRegistryCache().ForEachApp(
+      [&apps](const apps::AppUpdate& update) {
+        apps::mojom::AppPtr app = apps::mojom::App::New();
+        app->app_type = update.AppType();
+        app->app_id = update.AppId();
+        app->readiness = apps::mojom::Readiness::kUninstalledByUser;
+        apps.push_back(app.Clone());
+      });
+  app_service_proxy_->AppRegistryCache().OnApps(std::move(apps));
+
+  // Allow async callbacks to run.
+  WaitForAppService();
+}
+
 std::string AppServiceTest::GetAppName(const std::string& app_id) const {
   std::string name;
   if (!app_service_proxy_)

@@ -63,6 +63,7 @@ class FakeWebGraphicsContext3DProvider : public WebGraphicsContext3DProvider {
 
   viz::GLHelper* GetGLHelper() override { return nullptr; }
 
+  gpu::InterfaceBase* InterfaceBase() override { return gl_; }
   gpu::gles2::GLES2Interface* ContextGL() override { return gl_; }
   gpu::raster::RasterInterface* RasterInterface() override {
     if (!raster_interface_)

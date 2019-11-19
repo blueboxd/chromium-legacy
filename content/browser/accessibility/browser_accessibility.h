@@ -544,6 +544,11 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   base::Optional<int> GetPosInSet() const override;
   base::Optional<int> GetSetSize() const override;
 
+  // Returns true if:
+  // 1. This node is a list, AND
+  // 2. This node has a list ancestor or a list descendant.
+  bool IsHierarchicalList() const;
+
   // Returns a string representation of this object for debugging purposes.
   std::string ToString() const;
 

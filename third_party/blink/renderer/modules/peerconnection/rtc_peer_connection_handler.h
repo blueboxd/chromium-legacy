@@ -159,7 +159,7 @@ class MODULES_EXPORT RTCPeerConnectionHandler
       const blink::WebMediaStreamTrack& web_track,
       const blink::WebVector<blink::WebMediaStream>& web_streams) override;
   webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>> RemoveTrack(
-      blink::WebRTCRtpSender* web_sender) override;
+      blink::RTCRtpSenderPlatform* web_sender) override;
 
   scoped_refptr<webrtc::DataChannelInterface> CreateDataChannel(
       const blink::WebString& label,
@@ -296,9 +296,9 @@ class MODULES_EXPORT RTCPeerConnectionHandler
       blink::TransceiverStateSurfacer* transceiver_state_surfacer,
       webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::RtpSenderInterface>>*
           error_or_sender);
-  bool RemoveTrackPlanB(blink::WebRTCRtpSender* web_sender);
+  bool RemoveTrackPlanB(blink::RTCRtpSenderPlatform* web_sender);
   webrtc::RTCErrorOr<std::unique_ptr<blink::WebRTCRtpTransceiver>>
-  RemoveTrackUnifiedPlan(blink::WebRTCRtpSender* web_sender);
+  RemoveTrackUnifiedPlan(blink::RTCRtpSenderPlatform* web_sender);
   void RemoveTrackUnifiedPlanOnSignalingThread(
       rtc::scoped_refptr<webrtc::RtpSenderInterface> sender,
       blink::TransceiverStateSurfacer* transceiver_state_surfacer,

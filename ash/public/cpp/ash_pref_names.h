@@ -82,6 +82,7 @@ ASH_PUBLIC_EXPORT extern const char kMessageCenterLockScreenModeShow[];
 ASH_PUBLIC_EXPORT extern const char kMessageCenterLockScreenModeHide[];
 ASH_PUBLIC_EXPORT extern const char kMessageCenterLockScreenModeHideSensitive[];
 
+ASH_PUBLIC_EXPORT extern const char kAmbientColorEnabled[];
 ASH_PUBLIC_EXPORT extern const char kNightLightEnabled[];
 ASH_PUBLIC_EXPORT extern const char kNightLightTemperature[];
 ASH_PUBLIC_EXPORT extern const char kNightLightScheduleType[];

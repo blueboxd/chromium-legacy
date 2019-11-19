@@ -84,7 +84,7 @@ class InstallAttributesTest : public testing::Test {
     InstallAttributes::LockResult result;
     install_attributes_->LockDevice(
         device_mode, domain, realm, device_id,
-        base::Bind(&CopyLockResult, &loop, &result));
+        base::BindOnce(&CopyLockResult, &loop, &result));
     loop.Run();
     return result;
   }

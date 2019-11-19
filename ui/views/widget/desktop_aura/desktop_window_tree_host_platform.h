@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_WINDOW_TREE_HOST_PLATFORM_H_
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_WINDOW_TREE_HOST_PLATFORM_H_
 
+#include <set>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
@@ -155,7 +156,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
 
   base::WeakPtrFactory<DesktopWindowTreeHostPlatform> close_widget_factory_{
       this};
-  base::WeakPtrFactory<DesktopWindowTreeHostPlatform> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostPlatform);
 };

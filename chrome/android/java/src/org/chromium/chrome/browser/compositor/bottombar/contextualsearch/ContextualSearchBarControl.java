@@ -647,6 +647,9 @@ public class ContextualSearchBarControl {
     private boolean isTouchOnEndButton(float xPx) {
         if (getDividerLineVisibilityPercentage() == TRANSPARENT_OPACITY) return false;
 
+        // Adjust the touch position to compensate for the narrow panel.
+        xPx -= mContextualSearchPanel.getOffsetX() * mDpToPx;
+
         if (LocalizationUtils.isLayoutRtl()) return xPx <= getDividerLineXOffset();
         return xPx > getDividerLineXOffset();
     }

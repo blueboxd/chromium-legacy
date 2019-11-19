@@ -1,7 +1,7 @@
 [{
   "id" : 1,
   "action": { "type" : "block" },
-  "condition" : {"urlFilter" : "*abc.com", "resourceTypes" : ["main_frame"] }
+  "condition" : {"urlFilter" : "abc*", "resourceTypes" : ["main_frame"] }
 },
 {
   "id" : 2,
@@ -14,4 +14,15 @@
   "priority": 1,
   "action": { "type" : "redirect", "redirect" : { "url": "http://abc.com" } },
   "condition" : {"urlFilter" : "redir2.com", "resourceTypes" : ["main_frame"] }
+},
+{
+  "id" : 4,
+  "action": { "type" : "allow" },
+  "condition" : {"urlFilter" : "abcde.com", "resourceTypes" : ["main_frame"] }
+},
+{
+  "id" : 5,
+  "priority": 1,
+  "action": { "type" : "redirect", "redirect" : { "url": "http://nomatch.com" } },
+  "condition" : {"urlFilter" : "abcde.com", "resourceTypes" : ["main_frame"] }
 }]

@@ -520,6 +520,38 @@ TEST_F(ContentCaptureTest, TaskHistogramReporter) {
       ContentCaptureTaskHistogramReporter::kSentContentCount, 9u, 1u);
 }
 
+TEST_F(ContentCaptureTest, RescheduleTask) {
+  // This test assumes test runs much faster than task's long delay which is 5s.
+  scoped_refptr<ContentCaptureTaskTestHelper> task = GetContentCaptureTask();
+  task->CancelTaskForTesting();
+  EXPECT_TRUE(task->GetTaskNextFireIntervalForTesting().is_zero());
+  task->Schedule(ContentCaptureTask::ScheduleReason::kContentChange);
+  auto begin = base::TimeTicks::Now();
+  base::TimeDelta interval1 = task->GetTaskNextFireIntervalForTesting();
+  task->Schedule(ContentCaptureTask::ScheduleReason::kScrolling);
+  base::TimeDelta interval2 = task->GetTaskNextFireIntervalForTesting();
+  auto test_running_time = base::TimeTicks::Now() - begin;
+  // The interval1 will be greater than interval2 even the task wasn't
+  // rescheduled, removing the test_running_time from interval1 make sure
+  // task rescheduled.
+  EXPECT_GT(interval1 - test_running_time, interval2);
+}
+
+TEST_F(ContentCaptureTest, NotRescheduleTask) {
+  // This test assumes test runs much faster than task's long delay which is 5s.
+  scoped_refptr<ContentCaptureTaskTestHelper> task = GetContentCaptureTask();
+  task->CancelTaskForTesting();
+  EXPECT_TRUE(task->GetTaskNextFireIntervalForTesting().is_zero());
+  task->Schedule(ContentCaptureTask::ScheduleReason::kContentChange);
+  auto begin = base::TimeTicks::Now();
+  base::TimeDelta interval1 = task->GetTaskNextFireIntervalForTesting();
+  task->Schedule(ContentCaptureTask::ScheduleReason::kContentChange);
+  base::TimeDelta interval2 = task->GetTaskNextFireIntervalForTesting();
+  auto test_running_time = base::TimeTicks::Now() - begin;
+  EXPECT_GE(interval1, interval2);
+  EXPECT_LE(interval1 - test_running_time, interval2);
+}
+
 // TODO(michaelbai): use RenderingTest instead of PageTestBase for multiple
 // frame test.
 class ContentCaptureSimTest : public SimTest {

@@ -36,6 +36,16 @@ bool WebGraphicsContext3DProviderImpl::BindToCurrentThread() {
   return provider_->BindToCurrentThread() == gpu::ContextResult::kSuccess;
 }
 
+gpu::InterfaceBase* WebGraphicsContext3DProviderImpl::InterfaceBase() {
+  if (ContextGL())
+    return ContextGL();
+  if (RasterInterface())
+    return RasterInterface();
+  if (WebGPUInterface())
+    return WebGPUInterface();
+  return nullptr;
+}
+
 gpu::gles2::GLES2Interface* WebGraphicsContext3DProviderImpl::ContextGL() {
   return provider_->ContextGL();
 }

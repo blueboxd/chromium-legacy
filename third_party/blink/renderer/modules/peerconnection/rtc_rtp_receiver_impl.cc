@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_source.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_sender_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/webrtc_util.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
@@ -339,8 +340,8 @@ blink::WebString RTCRtpReceiverOnlyTransceiver::Mid() const {
   return blink::WebString();
 }
 
-std::unique_ptr<blink::WebRTCRtpSender> RTCRtpReceiverOnlyTransceiver::Sender()
-    const {
+std::unique_ptr<blink::RTCRtpSenderPlatform>
+RTCRtpReceiverOnlyTransceiver::Sender() const {
   NOTIMPLEMENTED();
   return nullptr;
 }

@@ -28,6 +28,7 @@ if (closure_compile) {
         "local_state:closure_compile",
         "management:closure_compile",
         "media_router:closure_compile",
+        "new_tab_page:closure_compile",
         "ntp4:closure_compile",
         "omnibox:closure_compile",
         "pdf:closure_compile",
@@ -109,21 +110,25 @@ grit("webapks_ui_resources") {
 
 if (!is_android) {
   grit("bookmarks_resources") {
+    # The .grd contains references to generated files.
+    source_is_generated = true
+    grit_flags = [
+      "-E",
+      "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+    ]
+
     if (optimize_webui) {
       source = "bookmarks/bookmarks_resources_vulcanized.grd"
-
-      # The .grd contains references to generated files.
-      source_is_generated = true
 
       deps = [
         "//chrome/browser/resources/bookmarks:build",
       ]
-      grit_flags = [
-        "-E",
-        "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
-      ]
     } else {
       source = "bookmarks/bookmarks_resources.grd"
+
+      deps = [
+        "//chrome/browser/resources/bookmarks:polymer3_elements",
+      ]
     }
 
     defines = chrome_grit_defines
@@ -174,6 +179,32 @@ if (!is_android) {
     output_dir = "$root_gen_dir/chrome"
   }
 
+  grit("new_tab_page_resources") {
+    source = "new_tab_page/new_tab_page_resources.grd"
+
+    deps = [
+      "//chrome/browser/resources/new_tab_page:polymer3_elements",
+      "//chrome/browser/ui/webui/new_tab_page:mojo_bindings_js",
+    ]
+
+    # The .grd contains references to generated files.
+    source_is_generated = true
+
+    grit_flags = [
+      "-E",
+      "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+    ]
+
+    defines = chrome_grit_defines
+    outputs = [
+      "grit/new_tab_page_resources.h",
+      "grit/new_tab_page_resources_map.cc",
+      "grit/new_tab_page_resources_map.h",
+      "new_tab_page_resources.pak",
+    ]
+    output_dir = "$root_gen_dir/chrome"
+  }
+
   grit("settings_resources") {
     if (optimize_webui) {
       source = "settings/settings_resources_vulcanized.grd"
@@ -213,6 +244,7 @@ if (!is_android) {
       source = "downloads/downloads_resources.grd"
 
       deps = [
+        "//chrome/browser/resources/downloads:polymer3_elements",
         "//chrome/browser/ui/webui/downloads:mojo_bindings_js",
       ]
     }

@@ -1575,7 +1575,8 @@ void FeatureInfo::InitializeFeatures() {
   }
 
 #if defined(OS_MACOSX)
-  if (false) {
+  if (is_passthrough_cmd_decoder_ &&
+      gfx::HasExtension(extensions, "GL_ANGLE_base_vertex_base_instance")) {
 #else
   if ((!is_passthrough_cmd_decoder_ &&
        ((gl_version_info_->IsAtLeastGLES(3, 2) &&

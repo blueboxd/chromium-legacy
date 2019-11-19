@@ -18,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/cert_report_helper.h"
 #include "chrome/browser/ssl/certificate_error_reporter.h"
+#include "chrome/browser/ssl/chrome_ssl_blocking_page.h"
 #include "chrome/browser/ssl/ssl_error_controller_client.h"
 #include "components/captive_portal/captive_portal_detector.h"
 #include "components/captive_portal/captive_portal_metrics.h"
@@ -75,7 +76,6 @@ CaptivePortalBlockingPage::CaptivePortalBlockingPage(
     int cert_error)
     : SSLBlockingPageBase(
           web_contents,
-          cert_error,
           CertificateErrorReport::INTERSTITIAL_CAPTIVE_PORTAL,
           ssl_info,
           request_url,
@@ -92,10 +92,10 @@ CaptivePortalBlockingPage::CaptivePortalBlockingPage(
       ssl_info_(ssl_info) {
   captive_portal::CaptivePortalMetrics::LogCaptivePortalBlockingPageEvent(
       captive_portal::CaptivePortalMetrics::SHOW_ALL);
+  ChromeSSLBlockingPage::DoChromeSpecificSetup(this);
 }
 
-CaptivePortalBlockingPage::~CaptivePortalBlockingPage() {
-}
+CaptivePortalBlockingPage::~CaptivePortalBlockingPage() = default;
 
 const void* CaptivePortalBlockingPage::GetTypeForTesting() {
   return CaptivePortalBlockingPage::kTypeForTesting;

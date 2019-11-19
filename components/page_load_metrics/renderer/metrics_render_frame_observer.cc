@@ -120,7 +120,7 @@ void MetricsRenderFrameObserver::DidObserveLazyLoadBehavior(
 }
 
 void MetricsRenderFrameObserver::DidStartResponse(
-    const GURL& response_url,
+    const url::Origin& origin_of_final_response_url,
     int request_id,
     const network::mojom::URLResponseHead& response_head,
     content::ResourceType resource_type,
@@ -132,10 +132,12 @@ void MetricsRenderFrameObserver::DidStartResponse(
     // case. There should be a guarantee that DidStartProvisionalLoad be called
     // before DidStartResponse for the frame request.
     provisional_frame_resource_data_use_->DidStartResponse(
-        response_url, request_id, response_head, resource_type, previews_state);
+        origin_of_final_response_url, request_id, response_head, resource_type,
+        previews_state);
   } else if (page_timing_metrics_sender_) {
     page_timing_metrics_sender_->DidStartResponse(
-        response_url, request_id, response_head, resource_type, previews_state);
+        origin_of_final_response_url, request_id, response_head, resource_type,
+        previews_state);
     UpdateResourceMetadata(request_id);
   }
 }

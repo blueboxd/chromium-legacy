@@ -13,8 +13,7 @@
 // static
 OptimizationGuideKeyedService*
 OptimizationGuideKeyedServiceFactory::GetForProfile(Profile* profile) {
-  if (optimization_guide::features::IsOptimizationHintsEnabled() &&
-      optimization_guide::features::IsOptimizationGuideKeyedServiceEnabled()) {
+  if (optimization_guide::features::IsOptimizationHintsEnabled()) {
     return static_cast<OptimizationGuideKeyedService*>(
         GetInstance()->GetServiceForBrowserContext(profile, true));
   }

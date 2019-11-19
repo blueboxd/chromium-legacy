@@ -17,6 +17,9 @@ namespace base {
 
 namespace {
 
+// Used to make the output of base::FastHash() and base::HashInts()
+// non-deterministic between runs, to prevent inadvertent dependencies
+// on the underlying implementation.
 template <typename T>
 T Scramble(T input) {
 #if DCHECK_IS_ON()

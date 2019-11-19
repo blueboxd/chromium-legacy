@@ -40,6 +40,11 @@ String CORE_EXPORT GetStringFromSpecificTrustedType(
     const ExecutionContext*,
     ExceptionState&);
 
+String CORE_EXPORT GetStringFromSpecificTrustedType(const String&,
+                                                    SpecificTrustedType,
+                                                    const ExecutionContext*,
+                                                    ExceptionState&);
+
 String CORE_EXPORT GetStringFromTrustedHTML(StringOrTrustedHTML,
                                             const ExecutionContext*,
                                             ExceptionState&);

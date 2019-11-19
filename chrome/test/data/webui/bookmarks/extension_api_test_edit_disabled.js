@@ -3,12 +3,17 @@
 // found in the LICENSE file.
 
 // Bookmark Manager API test for Chrome.
+import {simulateChromeExtensionAPITest} from 'chrome://test/bookmarks/test_util.js';
 
 test('bookmarkManagerPrivate with edit disabled', async () => {
   const bookmarkManager = chrome.bookmarkManagerPrivate;
   const {pass, fail, runTests} = simulateChromeExtensionAPITest();
 
   const ERROR = 'Bookmark editing is disabled.';
+  let bar;
+  let folder;
+  let aaa;
+  let bbb;
 
   // Bookmark model within this test:
   //  <root>/

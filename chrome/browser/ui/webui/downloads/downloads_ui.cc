@@ -44,6 +44,7 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/resources/grit/webui_resources.h"
 
 using content::BrowserContext;
 using content::DownloadManager;
@@ -51,9 +52,16 @@ using content::WebContents;
 
 namespace {
 
+#if !BUILDFLAG(OPTIMIZE_WEBUI)
+constexpr char kGeneratedPath[] =
+    "@out_folder@/gen/chrome/browser/resources/downloads/";
+#endif
+
 content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIDownloadsHost);
+  source->OverrideContentSecurityPolicyScriptSrc(
+      "script-src chrome://resources chrome://test 'self';");
 
   bool requests_ap_verdicts =
       safe_browsing::AdvancedProtectionStatusManagerFactory::GetForProfile(
@@ -148,19 +156,24 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
                           IDR_DOWNLOADS_IMAGES_NO_DOWNLOADS_SVG);
   source->AddResourcePath("downloads.mojom-lite.js",
                           IDR_DOWNLOADS_MOJO_LITE_JS);
+  source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
+  source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);
 #if BUILDFLAG(OPTIMIZE_WEBUI)
-  source->AddResourcePath("downloads.mojom-lite.html",
-                          IDR_DOWNLOADS_MOJO_LITE_HTML);
-  source->AddResourcePath("crisper.js", IDR_DOWNLOADS_CRISPER_JS);
+  source->AddResourcePath("downloads.js", IDR_DOWNLOADS_DOWNLOADS_ROLLUP_JS);
   source->SetDefaultResource(IDR_DOWNLOADS_VULCANIZED_HTML);
 #else
   for (size_t i = 0; i < kDownloadsResourcesSize; ++i) {
-    source->AddResourcePath(kDownloadsResources[i].name,
-                            kDownloadsResources[i].value);
+    std::string path = kDownloadsResources[i].name;
+    if (path.rfind(kGeneratedPath, 0) == 0) {
+      path = path.substr(sizeof(kGeneratedPath) - 1);
+    }
+
+    source->AddResourcePath(path, kDownloadsResources[i].value);
   }
   source->SetDefaultResource(IDR_DOWNLOADS_DOWNLOADS_HTML);
 #endif
 
+  source->EnableReplaceI18nInJS();
   source->UseStringsJs();
 
   return source;

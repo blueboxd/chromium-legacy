@@ -9,6 +9,7 @@
 // types to be passed across threads using their copy constructors.
 
 #include <set>
+#include <vector>
 
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport.h"
@@ -29,11 +30,14 @@ class SocketAddress;
 
 namespace webrtc {
 class DtlsTransportInformation;
+class MediaStreamInterface;
+class RtpReceiverInterface;
 class SctpTransportInformation;
 }
 
 namespace blink {
 
+class MockWebRtcVideoTrack;
 struct P2PQuicTransportConfig;
 
 }
@@ -129,6 +133,27 @@ struct CrossThreadCopier<webrtc::RTCError>
   static webrtc::RTCError Copy(webrtc::RTCError error) {
     return error;  // This is in fact a move.
   }
+};
+
+template <>
+struct CrossThreadCopier<rtc::scoped_refptr<webrtc::RtpReceiverInterface>>
+    : public CrossThreadCopierPassThrough<
+          rtc::scoped_refptr<webrtc::RtpReceiverInterface>> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
+template <>
+struct CrossThreadCopier<
+    std::vector<rtc::scoped_refptr<webrtc::MediaStreamInterface>>>
+    : public CrossThreadCopierPassThrough<
+          std::vector<rtc::scoped_refptr<webrtc::MediaStreamInterface>>> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
+template <>
+struct CrossThreadCopier<blink::MockWebRtcVideoTrack>
+    : public CrossThreadCopierPassThrough<blink::MockWebRtcVideoTrack> {
+  STATIC_ONLY(CrossThreadCopier);
 };
 
 }  // namespace WTF

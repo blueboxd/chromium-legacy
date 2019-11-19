@@ -38,7 +38,7 @@
 #include "cc/layers/texture_layer_client.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/GLES2/gl2extchromium.h"
-#include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/client/raster_interface.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
@@ -217,7 +217,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   mutable SnapshotState snapshot_state_;
 
   void ClearPendingRasterTimers();
-  void FinishRasterTimers(gpu::gles2::GLES2Interface*);
+  void FinishRasterTimers(gpu::raster::RasterInterface*);
   struct RasterTimer {
     // The id for querying the duration of the gpu-side of the draw
     GLuint gl_query_id = 0u;

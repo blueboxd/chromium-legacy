@@ -104,7 +104,7 @@ ui::MenuModel* AuthenticatorSheetModelBase::GetOtherTransportsMenuModel() {
 
 void AuthenticatorSheetModelBase::OnBack() {
   if (dialog_model())
-    dialog_model()->Back();
+    dialog_model()->StartOver();
 }
 
 void AuthenticatorSheetModelBase::OnAccept() {
@@ -381,10 +381,6 @@ base::string16
 AuthenticatorInternalUnrecognizedErrorSheetModel::GetStepDescription() const {
   return l10n_util::GetStringUTF16(
       IDS_WEBAUTHN_ERROR_INTERNAL_UNRECOGNIZED_DESCRIPTION);
-}
-
-void AuthenticatorInternalUnrecognizedErrorSheetModel::OnBack() {
-  dialog_model()->StartOver();
 }
 
 void AuthenticatorInternalUnrecognizedErrorSheetModel::OnAccept() {
@@ -856,10 +852,6 @@ static bool IsValidUTF16(const base::string16& str16) {
   return base::UTF16ToUTF8(str16.c_str(), str16.size(), &unused_str8);
 }
 
-void AuthenticatorClientPinEntrySheetModel::OnBack() {
-  dialog_model()->StartOver();
-}
-
 void AuthenticatorClientPinEntrySheetModel::OnAccept() {
   // TODO(martinkr): use device::pin::kMinLength once landed.
   constexpr size_t kMinPinLength = 4;
@@ -933,10 +925,6 @@ base::string16 AuthenticatorClientPinTapAgainSheetModel::GetStepDescription()
 base::Optional<base::string16>
 AuthenticatorClientPinTapAgainSheetModel::GetAdditionalDescription() const {
   return PossibleResidentKeyWarning(dialog_model());
-}
-
-void AuthenticatorClientPinTapAgainSheetModel::OnBack() {
-  dialog_model()->StartOver();
 }
 
 // AuthenticatorGenericErrorSheetModel -----------------------------------

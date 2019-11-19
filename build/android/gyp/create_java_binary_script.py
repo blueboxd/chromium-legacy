@@ -31,13 +31,14 @@ import sys
 
 self_dir = os.path.dirname(__file__)
 classpath = [{classpath}]
-bootclasspath = [{bootclasspath}]
 extra_program_args = {extra_program_args}
+java_path = {java_path}
 if os.getcwd() != self_dir:
   offset = os.path.relpath(self_dir, os.getcwd())
-  classpath = [os.path.join(offset, p) for p in classpath]
-  bootclasspath = [os.path.join(offset, p) for p in bootclasspath]
-java_cmd = ['java']
+  fix_path = lambda p: os.path.normpath(os.path.join(offset, p))
+  classpath = [fix_path(p) for p in classpath]
+  java_path = fix_path(java_path)
+java_cmd = [java_path]
 # This is a simple argparser for jvm, jar, and classpath arguments.
 parser = argparse.ArgumentParser()
 parser.add_argument('--jar-args')
@@ -59,8 +60,6 @@ if known_args.classpath:
   classpath += [known_args.classpath]
 
 {noverify_flag}
-if bootclasspath:
-    java_cmd.append('-Xbootclasspath/p:' + ':'.join(bootclasspath))
 java_cmd.extend(
     ['-classpath', ':'.join(classpath), '-enableassertions', \"{main_class}\"])
 java_cmd.extend(extra_program_args)
@@ -76,8 +75,6 @@ def main(argv):
       help='Name of the java class with the "main" entry point.')
   parser.add_option('--classpath', action='append', default=[],
       help='Classpath for running the jar.')
-  parser.add_option('--bootclasspath', action='append', default=[],
-      help='zip/jar files to add to bootclasspath for java cmd.')
   parser.add_option('--noverify', action='store_true',
       help='JVM flag: noverify.')
 
@@ -92,22 +89,18 @@ def main(argv):
   for cp_arg in options.classpath:
     classpath += build_utils.ParseGnList(cp_arg)
 
-  bootclasspath = []
-  for bootcp_arg in options.bootclasspath:
-    bootclasspath += build_utils.ParseGnList(bootcp_arg)
-
   run_dir = os.path.dirname(options.output)
-  bootclasspath = [os.path.relpath(p, run_dir) for p in bootclasspath]
   classpath = [os.path.relpath(p, run_dir) for p in classpath]
+  java_path = os.path.relpath(build_utils.JAVA_PATH, run_dir)
 
   with build_utils.AtomicOutput(options.output) as script:
-    script.write(script_template.format(
-      classpath=('"%s"' % '", "'.join(classpath)),
-      bootclasspath=('"%s"' % '", "'.join(bootclasspath)
-                     if bootclasspath else ''),
-      main_class=options.main_class,
-      extra_program_args=repr(extra_program_args),
-      noverify_flag=noverify_flag))
+    script.write(
+        script_template.format(
+            classpath=('"%s"' % '", "'.join(classpath)),
+            java_path=repr(java_path),
+            main_class=options.main_class,
+            extra_program_args=repr(extra_program_args),
+            noverify_flag=noverify_flag))
 
   os.chmod(options.output, 0750)
 

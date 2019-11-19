@@ -47,6 +47,11 @@
 // of the default combination of Title and Subtitle texts.
 @property(nonatomic, copy) NSString* optionalAccessibilityLabel;
 
+// YES if the banner should be able to present a Modal. Changing this property
+// will immediately update the Banner UI that is related to triggering modal
+// presentation.
+@property(nonatomic, assign) BOOL presentsModal;
+
 // - If no interaction is occuring, the InfobarBanner will be dismissed.
 // - If there's some interaction occuring the InfobarBanner will be dismissed
 // once this interaction ends.

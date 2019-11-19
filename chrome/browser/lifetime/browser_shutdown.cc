@@ -14,7 +14,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
@@ -76,7 +76,7 @@ namespace {
 bool g_trying_to_quit = false;
 
 base::Time* g_shutdown_started = nullptr;
-ShutdownType g_shutdown_type = ShutdownType::kNotValid;
+ShutdownType g_shutdown_type = NOT_VALID;
 int g_shutdown_num_processes;
 int g_shutdown_num_processes_slow;
 
@@ -90,14 +90,14 @@ base::FilePath GetShutdownMsPath() {
 
 const char* ToShutdownTypeString(ShutdownType type) {
   switch (type) {
-    case ShutdownType::kNotValid:
+    case NOT_VALID:
       NOTREACHED();
-      break;
-    case ShutdownType::kWindowClose:
+      return "";
+    case WINDOW_CLOSE:
       return "close";
-    case ShutdownType::kBrowserExit:
+    case BROWSER_EXIT:
       return "exit";
-    case ShutdownType::kEndSession:
+    case END_SESSION:
       return "end";
   }
   return "";
@@ -106,15 +106,18 @@ const char* ToShutdownTypeString(ShutdownType type) {
 }  // namespace
 
 void RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterIntegerPref(prefs::kShutdownType,
-                                static_cast<int>(ShutdownType::kNotValid));
+  registry->RegisterIntegerPref(prefs::kShutdownType, NOT_VALID);
   registry->RegisterIntegerPref(prefs::kShutdownNumProcesses, 0);
   registry->RegisterIntegerPref(prefs::kShutdownNumProcessesSlow, 0);
   registry->RegisterBooleanPref(prefs::kRestartLastSessionOnShutdown, false);
 }
 
+ShutdownType GetShutdownType() {
+  return g_shutdown_type;
+}
+
 void OnShutdownStarting(ShutdownType type) {
-  if (g_shutdown_type != ShutdownType::kNotValid)
+  if (g_shutdown_type != NOT_VALID)
     return;
 
   static crash_reporter::CrashKeyString<8> shutdown_type_key("shutdown-type");
@@ -140,14 +143,6 @@ void OnShutdownStarting(ShutdownType type) {
     if (!i.GetCurrentValue()->FastShutdownIfPossible())
       ++g_shutdown_num_processes_slow;
   }
-}
-
-bool HasShutdownStarted() {
-  return g_shutdown_type != ShutdownType::kNotValid;
-}
-
-ShutdownType GetShutdownType() {
-  return g_shutdown_type;
 }
 
 #if !defined(OS_ANDROID)
@@ -188,11 +183,10 @@ bool ShutdownPreThreadsStop() {
 
 bool RecordShutdownInfoPrefs() {
   PrefService* prefs = g_browser_process->local_state();
-  if (g_shutdown_type != ShutdownType::kNotValid &&
-      g_shutdown_num_processes > 0) {
+  if (g_shutdown_type > NOT_VALID && g_shutdown_num_processes > 0) {
     // Record the shutdown info so that we can put it into a histogram at next
     // startup.
-    prefs->SetInteger(prefs::kShutdownType, static_cast<int>(g_shutdown_type));
+    prefs->SetInteger(prefs::kShutdownType, g_shutdown_type);
     prefs->SetInteger(prefs::kShutdownNumProcesses, g_shutdown_num_processes);
     prefs->SetInteger(prefs::kShutdownNumProcessesSlow,
                       g_shutdown_num_processes_slow);
@@ -223,7 +217,7 @@ void ShutdownPostThreadsStop(RestartMode restart_mode) {
 
 #if defined(OS_WIN)
   if (!browser_util::IsBrowserAlreadyRunning() &&
-      g_shutdown_type != ShutdownType::kEndSession) {
+      g_shutdown_type != END_SESSION) {
     upgrade_util::SwapNewChromeExeIfPresent();
   }
 #endif
@@ -269,8 +263,7 @@ void ShutdownPostThreadsStop(RestartMode restart_mode) {
 #endif  // defined(OS_CHROMEOS)
   }
 
-  if (g_shutdown_type != ShutdownType::kNotValid &&
-      g_shutdown_num_processes > 0) {
+  if (g_shutdown_type > NOT_VALID && g_shutdown_num_processes > 0) {
     // Measure total shutdown time as late in the process as possible
     // and then write it to a file to be read at startup.
     // We can't use prefs since all services are shutdown at this point.
@@ -305,40 +298,29 @@ void ReadLastShutdownFile(ShutdownType type,
     base::StringToInt64(shutdown_ms_str, &shutdown_ms);
   base::DeleteFile(shutdown_ms_file, false);
 
-  if (shutdown_ms == 0 || num_procs == 0)
+  if (type == NOT_VALID || shutdown_ms == 0 || num_procs == 0)
     return;
 
-  const char* time2_metric_name = nullptr;
-  const char* per_proc_metric_name = nullptr;
-
-  switch (type) {
-    case ShutdownType::kNotValid:
-      break;
-
-    case ShutdownType::kWindowClose:
-      time2_metric_name = "Shutdown.window_close.time2";
-      per_proc_metric_name = "Shutdown.window_close.time_per_process";
-      break;
-
-    case ShutdownType::kBrowserExit:
-      time2_metric_name = "Shutdown.browser_exit.time2";
-      per_proc_metric_name = "Shutdown.browser_exit.time_per_process";
-      break;
-
-    case ShutdownType::kEndSession:
-      time2_metric_name = "Shutdown.end_session.time2";
-      per_proc_metric_name = "Shutdown.end_session.time_per_process";
-      break;
+  if (type == WINDOW_CLOSE) {
+    UMA_HISTOGRAM_MEDIUM_TIMES("Shutdown.window_close.time2",
+                               TimeDelta::FromMilliseconds(shutdown_ms));
+    UMA_HISTOGRAM_TIMES("Shutdown.window_close.time_per_process",
+                        TimeDelta::FromMilliseconds(shutdown_ms / num_procs));
+  } else if (type == BROWSER_EXIT) {
+    UMA_HISTOGRAM_MEDIUM_TIMES("Shutdown.browser_exit.time2",
+                               TimeDelta::FromMilliseconds(shutdown_ms));
+    UMA_HISTOGRAM_TIMES("Shutdown.browser_exit.time_per_process",
+                        TimeDelta::FromMilliseconds(shutdown_ms / num_procs));
+  } else if (type == END_SESSION) {
+    UMA_HISTOGRAM_MEDIUM_TIMES("Shutdown.end_session.time2",
+                               TimeDelta::FromMilliseconds(shutdown_ms));
+    UMA_HISTOGRAM_TIMES("Shutdown.end_session.time_per_process",
+                        TimeDelta::FromMilliseconds(shutdown_ms / num_procs));
+  } else {
+    NOTREACHED();
   }
-  if (!time2_metric_name)
-    return;
-
-  base::UmaHistogramMediumTimes(time2_metric_name,
-                                TimeDelta::FromMilliseconds(shutdown_ms));
-  base::UmaHistogramTimes(per_proc_metric_name,
-                          TimeDelta::FromMilliseconds(shutdown_ms / num_procs));
-  base::UmaHistogramCounts100("Shutdown.renderers.total", num_procs);
-  base::UmaHistogramCounts100("Shutdown.renderers.slow", num_procs_slow);
+  UMA_HISTOGRAM_COUNTS_100("Shutdown.renderers.total", num_procs);
+  UMA_HISTOGRAM_COUNTS_100("Shutdown.renderers.slow", num_procs_slow);
 }
 
 void ReadLastShutdownInfo() {
@@ -348,12 +330,11 @@ void ReadLastShutdownInfo() {
   int num_procs = prefs->GetInteger(prefs::kShutdownNumProcesses);
   int num_procs_slow = prefs->GetInteger(prefs::kShutdownNumProcessesSlow);
   // clear the prefs immediately so we don't pick them up on a future run
-  prefs->SetInteger(prefs::kShutdownType,
-                    static_cast<int>(ShutdownType::kNotValid));
+  prefs->SetInteger(prefs::kShutdownType, NOT_VALID);
   prefs->SetInteger(prefs::kShutdownNumProcesses, 0);
   prefs->SetInteger(prefs::kShutdownNumProcessesSlow, 0);
 
-  base::UmaHistogramEnumeration("Shutdown.ShutdownType", type);
+  UMA_HISTOGRAM_ENUMERATION("Shutdown.ShutdownType", type, kNumShutdownTypes);
 
   base::PostTask(
       FROM_HERE,

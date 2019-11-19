@@ -101,9 +101,14 @@ ExtensionUrlPatternIndexMatcher::GetBlockOrCollapseAction(
   return CreateBlockOrCollapseRequestAction(params, *rule);
 }
 
-bool ExtensionUrlPatternIndexMatcher::HasMatchingAllowRule(
+base::Optional<RequestAction> ExtensionUrlPatternIndexMatcher::GetAllowAction(
     const RequestParams& params) const {
-  return GetMatchingRule(params, flat::ActionIndex_allow);
+  const flat_rule::UrlRule* rule =
+      GetMatchingRule(params, flat::ActionIndex_allow);
+  if (!rule)
+    return base::nullopt;
+
+  return CreateAllowAction(params, *rule);
 }
 
 base::Optional<RequestAction>

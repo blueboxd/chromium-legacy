@@ -91,14 +91,13 @@ public class ContactViewHolder
 
     @Override
     public void iconRetrieved(Bitmap icon, String contactId) {
-        if (icon == null) return;
-        if (!contactId.equals(mContact.getId())) return;
-
         if (mCategoryView.getIconCache().getBitmap(contactId) == null) {
             mCategoryView.getIconCache().putBitmap(contactId, icon);
         }
 
-        mItemView.setIconBitmap(icon);
+        if (icon != null && contactId.equals(mContact.getId())) {
+            mItemView.setIconBitmap(icon);
+        }
     }
 
     /** Sets the icon to use when testing. */

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/time/time.h"
 #include "cc/paint/node_id.h"
 #include "third_party/blink/renderer/core/content_capture/content_capture_task_histogram_reporter.h"
 #include "third_party/blink/renderer/core/content_capture/task_session.h"
@@ -65,6 +66,9 @@ class CORE_EXPORT ContentCaptureTask : public RefCounted<ContentCaptureTask> {
 
   void ClearDocumentSessionsForTesting();
 
+  base::TimeDelta GetTaskNextFireIntervalForTesting() const;
+  void CancelTaskForTesting();
+
  protected:
   // All protected data and methods are for testing purpose.
   // Return true if the task should pause.
@@ -95,8 +99,6 @@ class CORE_EXPORT ContentCaptureTask : public RefCounted<ContentCaptureTask> {
 
   void ScheduleInternal(ScheduleReason reason);
   bool CaptureContent(Vector<cc::NodeId>& data);
-
-  bool is_scheduled_ = false;
 
   // Indicates if there is content change since last run.
   bool has_content_change_ = false;

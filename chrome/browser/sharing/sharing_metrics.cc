@@ -47,6 +47,14 @@ const char* ClickToCallEntryPointToSuffix(
   }
 }
 
+const char* PhoneNumberRegexVariantToSuffix(PhoneNumberRegexVariant variant) {
+  switch (variant) {
+    case PhoneNumberRegexVariant::kSimple:
+      // Keep the initial regex in the default metric.
+      return "";
+  }
+}
+
 // The returned values must match the values of the
 // SharingClickToCallSendToDevice suffixes defined in histograms.xml.
 const char* SendToDeviceToSuffix(bool send_to_device) {
@@ -66,6 +74,18 @@ const std::string& MessageTypeToMessageSuffix(
   return chrome_browser_sharing::MessageType_Name(message_type);
 }
 }  // namespace
+
+ScopedUmaHistogramMicrosecondsTimer::ScopedUmaHistogramMicrosecondsTimer(
+    PhoneNumberRegexVariant variant)
+    : variant_(variant) {}
+
+ScopedUmaHistogramMicrosecondsTimer::~ScopedUmaHistogramMicrosecondsTimer() {
+  base::UmaHistogramCustomMicrosecondsTimes(
+      base::StrCat({"Sharing.ClickToCallContextMenuPhoneNumberParsingDelay",
+                    PhoneNumberRegexVariantToSuffix(variant_)}),
+      timer_.Elapsed(), base::TimeDelta::FromMicroseconds(1),
+      base::TimeDelta::FromSeconds(1), 50);
+}
 
 chrome_browser_sharing::MessageType SharingPayloadCaseToMessageType(
     chrome_browser_sharing::SharingMessage::PayloadCase payload_case) {

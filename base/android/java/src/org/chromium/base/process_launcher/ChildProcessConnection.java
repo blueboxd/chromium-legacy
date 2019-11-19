@@ -23,6 +23,7 @@ import org.chromium.base.MemoryPressureLevel;
 import org.chromium.base.MemoryPressureListener;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
+import org.chromium.base.compat.ApiHelperForQ;
 import org.chromium.base.memory.MemoryPressureCallback;
 
 import java.util.Arrays;
@@ -160,7 +161,7 @@ public class ChildProcessConnection {
         public void updateGroupImportance(int group, int importanceInGroup) {
             assert isBound();
             if (BindService.supportVariableConnections()) {
-                BindService.updateServiceGroup(mContext, this, group, importanceInGroup);
+                ApiHelperForQ.updateServiceGroup(mContext, this, group, importanceInGroup);
                 BindService.doBindService(mContext, mBindIntent, this, mBindFlags, mHandler,
                         mExecutor, mInstanceName);
             }

@@ -71,25 +71,6 @@ class ASH_EXPORT WindowTreeHostManager
 
     // Invoked in WindowTreeHostManager::Shutdown().
     virtual void OnWindowTreeHostManagerShutdown() {}
-
-    // Invoked when an existing AshWindowTreeHost is reused for a new display.
-    // This happens when all displays are removed, and then a new display is
-    // added.
-    virtual void OnWindowTreeHostReusedForDisplay(
-        AshWindowTreeHost* window_tree_host,
-        const display::Display& display) {}
-
-    // Called when the primary display is changed to an existing display. This
-    // results in swapping the display ids the two WindowTreeHosts are
-    // associated with. At the time this is called the ids have already been
-    // swapped.
-    // When there is more than one display and the primary display is removed
-    // internally the WindowTreeHosts for the two displays are swapped and then
-    // the WindowTreeHosts for the non-primary that was swapped with is deleted.
-    // This function is also called in this case as well (after the swap, before
-    // the deletion).
-    virtual void OnWindowTreeHostsSwappedDisplays(AshWindowTreeHost* host1,
-                                                  AshWindowTreeHost* host2) {}
   };
 
   WindowTreeHostManager();

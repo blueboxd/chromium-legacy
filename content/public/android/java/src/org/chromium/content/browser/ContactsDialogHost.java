@@ -45,7 +45,8 @@ public class ContactsDialogHost implements ContactsPickerListener {
 
     @CalledByNative
     private void showDialog(boolean multiple, boolean includeNames, boolean includeEmails,
-            boolean includeTel, boolean includeAddresses, String formattedOrigin) {
+            boolean includeTel, boolean includeAddresses, boolean includeIcons,
+            String formattedOrigin) {
         if (mWindowAndroid.getActivity().get() == null) {
             ContactsDialogHostJni.get().endWithPermissionDenied(mNativeContactsProviderAndroid);
             return;
@@ -53,7 +54,7 @@ public class ContactsDialogHost implements ContactsPickerListener {
 
         if (mWindowAndroid.hasPermission(Manifest.permission.READ_CONTACTS)) {
             if (!UiUtils.showContactsPicker(mWindowAndroid.getActivity().get(), this, multiple,
-                        includeNames, includeEmails, includeTel, includeAddresses,
+                        includeNames, includeEmails, includeTel, includeAddresses, includeIcons,
                         formattedOrigin)) {
                 ContactsDialogHostJni.get().endWithPermissionDenied(mNativeContactsProviderAndroid);
             }
@@ -72,7 +73,7 @@ public class ContactsDialogHost implements ContactsPickerListener {
                             && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                         if (!UiUtils.showContactsPicker(mWindowAndroid.getActivity().get(), this,
                                     multiple, includeNames, includeEmails, includeTel,
-                                    includeAddresses, formattedOrigin)) {
+                                    includeAddresses, includeIcons, formattedOrigin)) {
                             ContactsDialogHostJni.get().endWithPermissionDenied(
                                     mNativeContactsProviderAndroid);
                         }
@@ -109,7 +110,10 @@ public class ContactsDialogHost implements ContactsPickerListener {
                             contact.serializedAddresses != null
                                     ? contact.serializedAddresses.toArray(
                                             new ByteBuffer[contact.serializedAddresses.size()])
-                                    : null);
+                                    : null,
+                            contact.serializedIcons != null ? contact.serializedIcons.toArray(
+                                    new ByteBuffer[contact.serializedIcons.size()])
+                                                            : null);
                 }
                 ContactsDialogHostJni.get().endContactsList(
                         mNativeContactsProviderAndroid, percentageShared, propertiesRequested);
@@ -124,7 +128,7 @@ public class ContactsDialogHost implements ContactsPickerListener {
     @NativeMethods
     interface Natives {
         void addContact(long nativeContactsProviderAndroid, String[] names, String[] emails,
-                String[] tel, ByteBuffer[] addresses);
+                String[] tel, ByteBuffer[] addresses, ByteBuffer[] icons);
         void endContactsList(
                 long nativeContactsProviderAndroid, int percentageShared, int propertiesRequested);
         void endWithPermissionDenied(long nativeContactsProviderAndroid);

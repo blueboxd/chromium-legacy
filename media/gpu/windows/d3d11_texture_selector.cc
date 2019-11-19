@@ -72,6 +72,10 @@ std::unique_ptr<TextureSelector> TextureSelector::Create(
     return nullptr;
   }
 
+  // Force texture copy on if requested for debugging.
+  if (base::FeatureList::IsEnabled(kD3D11VideoDecoderAlwaysCopy))
+    needs_texture_copy = true;
+
   if ((input_dxgi_format != output_dxgi_format) || needs_texture_copy) {
     MEDIA_LOG(INFO, media_log) << "D3D11VideoDecoder is copying textures";
     return std::make_unique<CopyTextureSelector>(

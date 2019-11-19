@@ -33,6 +33,14 @@
 
 namespace content {
 
+namespace {
+
+GURL SchemeAndHostToSite(const std::string& scheme, const std::string& host) {
+  return GURL(scheme + url::kStandardSchemeSeparator + host);
+}
+
+}  // namespace
+
 int32_t SiteInstanceImpl::next_site_instance_id_ = 1;
 
 // static
@@ -687,6 +695,13 @@ GURL SiteInstanceImpl::GetSiteForURLInternal(
   if (real_url.SchemeIs(kGuestScheme))
     return real_url;
 
+  // Explicitly group chrome-error: URLs based on their host component.
+  // These URLs are special because we want to group them like other URLs
+  // with a host even though they are considered "no access" and
+  // generate an opaque origin.
+  if (real_url.SchemeIs(kChromeErrorScheme))
+    return SchemeAndHostToSite(real_url.scheme(), real_url.host());
+
   if (should_use_effective_urls)
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -850,10 +865,8 @@ GURL SiteInstanceImpl::GetSiteForOrigin(const url::Origin& origin) {
   std::string domain = net::registry_controlled_domains::GetDomainAndRegistry(
       origin.host(),
       net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-  std::string site = origin.scheme();
-  site += url::kStandardSchemeSeparator;
-  site += domain.empty() ? origin.host() : domain;
-  return GURL(site);
+  return SchemeAndHostToSite(origin.scheme(),
+                             domain.empty() ? origin.host() : domain);
 }
 
 // static
@@ -1021,7 +1034,7 @@ void SiteInstanceImpl::LockToOriginIfNeeded() {
       // We should never attempt to reassign a different origin lock to a
       // process.
       base::debug::SetCrashKeyString(bad_message::GetRequestedSiteURLKey(),
-                                     site_.spec());
+                                     site_.possibly_invalid_spec());
       policy->LogKilledProcessOriginLock(process_->GetID());
       CHECK(false) << "Trying to lock a process to " << lock_url()
                    << " but the process is already locked to " << process_lock;
@@ -1035,7 +1048,7 @@ void SiteInstanceImpl::LockToOriginIfNeeded() {
     // does.
     if (!process_lock.is_empty()) {
       base::debug::SetCrashKeyString(bad_message::GetRequestedSiteURLKey(),
-                                     site_.spec());
+                                     site_.possibly_invalid_spec());
       policy->LogKilledProcessOriginLock(process_->GetID());
       CHECK(false) << "Trying to commit non-isolated site " << site_
                    << " in process locked to " << process_lock;

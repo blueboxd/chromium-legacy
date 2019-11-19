@@ -15,6 +15,7 @@
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_dtmf_sender_handler.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_sender_platform.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/webrtc/api/stats/rtc_stats.h"
 
@@ -22,7 +23,7 @@ namespace blink {
 
 namespace {
 
-// Having a refcounted helper class allows multiple DummyWebRTCRtpSender to
+// Having a refcounted helper class allows multiple DummyRTCRtpSenderPlatform to
 // share the same internal states.
 class DummyRtpSenderInternal
     : public WTF::ThreadSafeRefCounted<DummyRtpSenderInternal> {
@@ -44,18 +45,18 @@ class DummyRtpSenderInternal
 
 uintptr_t DummyRtpSenderInternal::last_id_ = 0;
 
-class DummyWebRTCRtpSender : public WebRTCRtpSender {
+class DummyRTCRtpSenderPlatform : public RTCRtpSenderPlatform {
  public:
-  explicit DummyWebRTCRtpSender(WebMediaStreamTrack track)
+  explicit DummyRTCRtpSenderPlatform(WebMediaStreamTrack track)
       : internal_(
             base::MakeRefCounted<DummyRtpSenderInternal>(std::move(track))) {}
-  DummyWebRTCRtpSender(const DummyWebRTCRtpSender& other)
+  DummyRTCRtpSenderPlatform(const DummyRTCRtpSenderPlatform& other)
       : internal_(other.internal_) {}
-  ~DummyWebRTCRtpSender() override {}
+  ~DummyRTCRtpSenderPlatform() override {}
 
   scoped_refptr<DummyRtpSenderInternal> internal() const { return internal_; }
 
-  std::unique_ptr<WebRTCRtpSender> ShallowCopy() const override {
+  std::unique_ptr<RTCRtpSenderPlatform> ShallowCopy() const override {
     return nullptr;
   }
   uintptr_t Id() const override { return internal_->id(); }
@@ -172,9 +173,9 @@ class DummyTransceiverInternal
   }
 
   uintptr_t id() const { return id_; }
-  DummyWebRTCRtpSender* sender() { return &sender_; }
-  std::unique_ptr<DummyWebRTCRtpSender> Sender() const {
-    return std::make_unique<DummyWebRTCRtpSender>(sender_);
+  DummyRTCRtpSenderPlatform* sender() { return &sender_; }
+  std::unique_ptr<DummyRTCRtpSenderPlatform> Sender() const {
+    return std::make_unique<DummyRTCRtpSenderPlatform>(sender_);
   }
   DummyWebRTCRtpReceiver* receiver() { return &receiver_; }
   std::unique_ptr<DummyWebRTCRtpReceiver> Receiver() const {
@@ -187,7 +188,7 @@ class DummyTransceiverInternal
 
  private:
   const uintptr_t id_;
-  DummyWebRTCRtpSender sender_;
+  DummyRTCRtpSenderPlatform sender_;
   DummyWebRTCRtpReceiver receiver_;
   webrtc::RtpTransceiverDirection direction_;
 };
@@ -214,7 +215,7 @@ class MockWebRTCPeerConnectionHandler::DummyWebRTCRtpTransceiver
   }
   uintptr_t Id() const override { return internal_->id(); }
   WebString Mid() const override { return WebString(); }
-  std::unique_ptr<WebRTCRtpSender> Sender() const override {
+  std::unique_ptr<RTCRtpSenderPlatform> Sender() const override {
     return internal_->Sender();
   }
   std::unique_ptr<WebRTCRtpReceiver> Receiver() const override {
@@ -367,7 +368,7 @@ MockWebRTCPeerConnectionHandler::AddTrack(const WebMediaStreamTrack& track,
 }
 
 webrtc::RTCErrorOr<std::unique_ptr<WebRTCRtpTransceiver>>
-MockWebRTCPeerConnectionHandler::RemoveTrack(WebRTCRtpSender* sender) {
+MockWebRTCPeerConnectionHandler::RemoveTrack(RTCRtpSenderPlatform* sender) {
   const DummyWebRTCRtpTransceiver* transceiver_of_sender = nullptr;
   for (const auto& transceiver : transceivers_) {
     if (transceiver->Sender()->Id() == sender->Id()) {

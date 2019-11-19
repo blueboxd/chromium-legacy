@@ -66,6 +66,8 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 @property(nonatomic, assign) BOOL touchInProgress;
 // YES if the view should be dismissed after any touch gesture has ended.
 @property(nonatomic, assign) BOOL shouldDismissAfterTouchesEnded;
+// UIButton which opens the modal.
+@property(nonatomic, strong) UIButton* openModalButton;
 // UIButton with title |self.buttonText|, which triggers the Infobar action.
 @property(nonatomic, strong) UIButton* infobarButton;
 // UILabel displaying |self.titleText|.
@@ -79,8 +81,6 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 // YES if the banner on screen time metric has already been recorded for this
 // banner.
 @property(nonatomic, assign) BOOL bannerOnScreenTimeWasRecorded;
-// YES if the banner should be able to present a Modal.
-@property(nonatomic, assign) BOOL presentsModal;
 
 @end
 
@@ -216,24 +216,24 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   }
   // Add labels.
   [containerStack addArrangedSubview:labelsStackView];
-  // Check if it should have an Open Modal button.
-  if (self.presentsModal) {
     // Open Modal Button setup.
-    UIButton* openModalButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    UIImage* gearImage = [[UIImage imageNamed:@"infobar_settings_icon"]
-        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    [openModalButton setImage:gearImage forState:UIControlStateNormal];
-    openModalButton.tintColor = [UIColor colorNamed:kTextSecondaryColor];
-    [openModalButton addTarget:self
-                        action:@selector(animateBannerTappedAndPresentModal)
-              forControlEvents:UIControlEventTouchUpInside];
-    [openModalButton
-        setContentHuggingPriority:UILayoutPriorityDefaultHigh
-                          forAxis:UILayoutConstraintAxisHorizontal];
-    openModalButton.accessibilityIdentifier =
-        kInfobarBannerOpenModalButtonIdentifier;
-    [containerStack addArrangedSubview:openModalButton];
-  }
+  self.openModalButton = [UIButton buttonWithType:UIButtonTypeSystem];
+  UIImage* gearImage = [[UIImage imageNamed:@"infobar_settings_icon"]
+      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  [self.openModalButton setImage:gearImage forState:UIControlStateNormal];
+  self.openModalButton.tintColor = [UIColor colorNamed:kTextSecondaryColor];
+  [self.openModalButton addTarget:self
+                           action:@selector(animateBannerTappedAndPresentModal)
+                 forControlEvents:UIControlEventTouchUpInside];
+  [self.openModalButton
+      setContentHuggingPriority:UILayoutPriorityDefaultHigh
+                        forAxis:UILayoutConstraintAxisHorizontal];
+  self.openModalButton.accessibilityIdentifier =
+      kInfobarBannerOpenModalButtonIdentifier;
+  [containerStack addArrangedSubview:self.openModalButton];
+  // Hide open modal button if user shouldn't be allowed to open the modal.
+  self.openModalButton.hidden = !self.presentsModal;
+
   // Add accept button.
   [containerStack addArrangedSubview:self.infobarButton];
   // Configure it.
@@ -353,6 +353,16 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   if (self.infobarButton) {
     [self.infobarButton setTitle:_buttonText forState:UIControlStateNormal];
   }
+}
+
+- (void)setPresentsModal:(BOOL)presentsModal {
+  // TODO(crbug.com/961343): Write a test for setting this to NO;
+  if (_presentsModal == presentsModal) {
+    return;
+  }
+  _presentsModal = presentsModal;
+  self.openModalButton.hidden = !presentsModal;
+  self.view.accessibilityCustomActions = [self accessibilityActions];
 }
 
 #pragma mark - Private Methods

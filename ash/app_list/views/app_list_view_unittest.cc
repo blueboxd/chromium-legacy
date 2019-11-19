@@ -13,6 +13,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/app_list/app_list_util.h"
 #include "ash/app_list/model/search/search_box_model.h"
 #include "ash/app_list/test/app_list_test_model.h"
 #include "ash/app_list/test/app_list_test_view_delegate.h"
@@ -188,7 +189,9 @@ class AppListViewTest : public views::ViewsTestBase,
   void Initialize(bool is_tablet_mode) {
     delegate_ = std::make_unique<AppListTestViewDelegate>();
     view_ = new AppListView(delegate_.get());
-    view_->InitView(is_tablet_mode, GetContext());
+    view_->InitView(is_tablet_mode, GetContext(),
+                    base::BindRepeating(&UpdateActivationForAppListView, view_,
+                                        is_tablet_mode));
     test_api_.reset(new AppsGridViewTestApi(apps_grid_view()));
     EXPECT_FALSE(view_->GetWidget()->IsVisible());
   }
@@ -434,7 +437,9 @@ class AppListViewFocusTest : public views::ViewsTestBase,
             "weather", "Unimportant Title"));
     delegate_ = std::make_unique<AppListTestViewDelegate>();
     view_ = new AppListView(delegate_.get());
-    view_->InitView(false /*is_tablet_mode*/, GetContext());
+    view_->InitView(false /*is_tablet_mode*/, GetContext(),
+                    base::BindRepeating(&UpdateActivationForAppListView, view_,
+                                        /*is_tablet_mode=*/false));
     Show();
     test_api_.reset(new AppsGridViewTestApi(apps_grid_view()));
     suggestions_container_ = contents_view()

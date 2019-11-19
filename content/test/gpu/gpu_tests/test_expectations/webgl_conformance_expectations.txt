@@ -566,3 +566,6 @@ crbug.com/957807 [ chromeos ] deqp/data/gles2/shaders/swizzles.html [ Skip ]
 
 # ChromeOS: AMD
 crbug.com/995652 [ chromeos amd ] conformance/uniforms/out-of-bounds-uniform-array-access.html [ Skip ]
+
+# GPU crash on Nexus 9
+crbug.com/1025790 [ android nvidia ] conformance/textures/misc/tex-image-canvas-corruption.html [ Skip ]

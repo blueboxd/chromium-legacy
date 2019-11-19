@@ -6,6 +6,8 @@ static_library("core") {
   sources = [
     "games_features.cc",
     "games_features.h",
+    "games_prefs.cc",
+    "games_prefs.h",
     "games_service.h",
     "games_service_impl.cc",
     "games_service_impl.h",
@@ -16,12 +18,14 @@ static_library("core") {
     "//base",
     "//components/games/core/proto",
     "//components/keyed_service/core",
+    "//components/prefs:prefs",
   ]
 }
 
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "games_prefs_unittest.cc",
     "games_service_impl_unittest.cc",
   ]
   deps = [
@@ -29,6 +33,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/games/core/proto",
+    "//components/prefs:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

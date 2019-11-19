@@ -92,6 +92,8 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton {
   // Returns whether the icon size is up to date.
   bool IsIconSizeCurrent();
 
+  void FireRippleActivationTimerForTest();
+
  protected:
   // ui::EventHandler overrides:
   void OnGestureEvent(ui::GestureEvent* event) override;

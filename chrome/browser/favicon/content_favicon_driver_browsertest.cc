@@ -221,12 +221,13 @@ class ContentFaviconDriverTest : public InProcessBrowserTest {
 
   favicon_base::FaviconRawBitmapResult GetFaviconForPageURL(
       const GURL& url,
-      favicon_base::IconType icon_type) {
+      favicon_base::IconType icon_type,
+      int desired_size_in_dip) {
     std::vector<favicon_base::FaviconRawBitmapResult> results;
     base::CancelableTaskTracker tracker;
     base::RunLoop loop;
     favicon_service()->GetFaviconForPageURL(
-        url, {icon_type}, /*desired_size_in_dip=*/0,
+        url, {icon_type}, desired_size_in_dip,
         base::Bind(
             [](std::vector<favicon_base::FaviconRawBitmapResult>* save_results,
                base::RunLoop* loop,
@@ -243,6 +244,12 @@ class ContentFaviconDriverTest : public InProcessBrowserTest {
         return result;
     }
     return favicon_base::FaviconRawBitmapResult();
+  }
+
+  favicon_base::FaviconRawBitmapResult GetFaviconForPageURL(
+      const GURL& url,
+      favicon_base::IconType icon_type) {
+    return GetFaviconForPageURL(url, icon_type, /*desired_size_in_dip=*/0);
   }
 
  private:
@@ -765,4 +772,18 @@ IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTestWithAutoupgradesDisabled,
   waiter.Wait();
 
   EXPECT_TRUE(url_interceptor.was_loaded(favicon_url));
+}
+
+IN_PROC_BROWSER_TEST_F(ContentFaviconDriverTest, SVGFavicon) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url =
+      embedded_test_server()->GetURL("/favicon/page_with_svg_favicon.html");
+
+  PendingTaskWaiter waiter(web_contents());
+  ui_test_utils::NavigateToURL(browser(), url);
+  waiter.Wait();
+
+  auto result = GetFaviconForPageURL(url, favicon_base::IconType::kFavicon, 16);
+  EXPECT_EQ(gfx::Size(16, 16), result.pixel_size);
+  EXPECT_NE(nullptr, result.bitmap_data);
 }

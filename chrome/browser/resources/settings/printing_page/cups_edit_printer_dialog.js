@@ -12,7 +12,7 @@ Polymer({
 
   behaviors: [
     CrScrollableBehavior,
-    CrNetworkListenerBehavior,
+    NetworkListenerBehavior,
   ],
 
   properties: {

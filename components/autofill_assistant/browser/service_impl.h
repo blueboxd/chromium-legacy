@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/access_token_fetcher.h"
+#include "components/autofill_assistant/browser/device_context.h"
 #include "components/autofill_assistant/browser/service.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
@@ -43,7 +44,8 @@ class ServiceImpl : public Service {
               content::BrowserContext* context,
               AccessTokenFetcher* token_fetcher,
               const std::string& locale,
-              const std::string& country_code);
+              const std::string& country_code,
+              const DeviceContext& device_context);
   ~ServiceImpl() override;
 
   // Get scripts for a given |url|, which should be a valid URL.
@@ -102,7 +104,8 @@ class ServiceImpl : public Service {
   // Creates and fills a client context protobuf message.
   static ClientContextProto CreateClientContext(
       const std::string& locale,
-      const std::string& country_code);
+      const std::string& country_code,
+      const DeviceContext& device_context);
 
   content::BrowserContext* context_;
   GURL script_server_url_;

@@ -12,8 +12,8 @@
 #include "base/value_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/sharing/features.h"
-#include "chrome/browser/sharing/sharing_target_info.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/fake_device_info_sync_service.h"
 #include "components/sync_device_info/fake_device_info_tracker.h"
 #include "components/sync_device_info/fake_local_device_info_provider.h"
@@ -29,22 +29,27 @@ const std::vector<uint8_t> kVapidKey =
 const char kDeviceGuid[] = "test_device";
 const char kDeviceName[] = "test_name";
 const char kDeviceVapidFcmToken[] = "test_vapid_fcm_token";
-const char kDeviceSharingFcmToken[] = "test_sharing_fcm_token";
-const char kDeviceAuthToken[] = "test_auth_token";
-const char kDeviceP256dh[] = "test_p256dh";
+const char kDeviceVapidAuthToken[] = "test_vapid_auth_token";
+const char kDeviceVapidP256dh[] = "test_vapid_p256dh";
+const char kDeviceSenderIdFcmToken[] = "test_sender_id_fcm_token";
+const char kDeviceSenderIdAuthToken[] = "test_sender_id_auth_token";
+const char kDeviceSenderIdP256dh[] = "test_sender_id_p256dh";
 
 const char kAuthorizedEntity[] = "authorized_entity";
 
 void ExpectSharingInfoEquals(
     const base::Optional<syncer::DeviceInfo::SharingInfo>& sharing_info,
-    const base::Optional<SharingTargetInfo>& target_info,
+    const base::Optional<syncer::DeviceInfo::SharingTargetInfo>&
+        vapid_target_info,
     const std::set<sync_pb::SharingSpecificFields::EnabledFeatures>&
         enabled_features) {
   ASSERT_TRUE(sharing_info);
-  ASSERT_TRUE(target_info);
-  EXPECT_EQ(sharing_info->vapid_fcm_token, target_info->fcm_token);
-  EXPECT_EQ(sharing_info->p256dh, target_info->p256dh);
-  EXPECT_EQ(sharing_info->auth_secret, target_info->auth_secret);
+  ASSERT_TRUE(vapid_target_info);
+  EXPECT_EQ(sharing_info->vapid_target_info.fcm_token,
+            vapid_target_info->fcm_token);
+  EXPECT_EQ(sharing_info->vapid_target_info.p256dh, vapid_target_info->p256dh);
+  EXPECT_EQ(sharing_info->vapid_target_info.auth_secret,
+            vapid_target_info->auth_secret);
   EXPECT_EQ(sharing_info->enabled_features, enabled_features);
 }
 
@@ -59,8 +64,9 @@ class SharingSyncPreferenceTest : public testing::Test {
 
   syncer::DeviceInfo::SharingInfo GetDefaultSharingInfo() {
     return syncer::DeviceInfo::SharingInfo(
-        kDeviceVapidFcmToken, kDeviceSharingFcmToken, kDeviceP256dh,
-        kDeviceAuthToken,
+        {kDeviceVapidFcmToken, kDeviceVapidP256dh, kDeviceVapidAuthToken},
+        {kDeviceSenderIdFcmToken, kDeviceSenderIdP256dh,
+         kDeviceSenderIdAuthToken},
         std::set<sync_pb::SharingSpecificFields::EnabledFeatures>{
             sync_pb::SharingSpecificFields::CLICK_TO_CALL});
   }

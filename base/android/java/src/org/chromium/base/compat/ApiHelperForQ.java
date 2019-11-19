@@ -6,6 +6,9 @@ package org.chromium.base.compat;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Build;
 import android.telephony.CellInfo;
 import android.telephony.TelephonyManager;
@@ -15,6 +18,7 @@ import org.chromium.base.annotations.VerifiesOnQ;
 import org.chromium.base.task.AsyncTask;
 
 import java.util.List;
+import java.util.concurrent.Executor;
 
 /**
  * Utility class to use new APIs that were added in Q (API level 29). These need to exist in a
@@ -37,5 +41,15 @@ public final class ApiHelperForQ {
                         callback.onResult(cellInfos);
                     }
                 });
+    }
+
+    public static boolean bindIsolatedService(Context context, Intent intent, int flags,
+            String instanceName, Executor executor, ServiceConnection connection) {
+        return context.bindIsolatedService(intent, flags, instanceName, executor, connection);
+    }
+
+    public static void updateServiceGroup(
+            Context context, ServiceConnection connection, int group, int importance) {
+        context.updateServiceGroup(connection, group, importance);
     }
 }

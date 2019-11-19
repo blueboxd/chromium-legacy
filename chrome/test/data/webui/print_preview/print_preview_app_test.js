@@ -15,6 +15,8 @@ print_preview_app_test.suiteName = 'PrintPreviewAppTest';
 print_preview_app_test.TestNames = {
   PrintToGoogleDrive: 'print to google drive',
   PrintPresets: 'print presets',
+  DestinationsManaged: 'destinations managed',
+  HeaderFooterManaged: 'header footer managed',
 };
 
 suite(print_preview_app_test.suiteName, function() {
@@ -42,11 +44,28 @@ suite(print_preview_app_test.suiteName, function() {
     documentHasSelection: false,
     shouldPrintSelectionOnly: false,
     printerName: 'FooDevice',
+    isHeaderFooterManaged: false,
     serializedAppStateStr: null,
     serializedDefaultDestinationSelectionRulesStr: null,
     pdfPrinterDisabled: false,
+    destinationsManaged: false,
     cloudPrintURL: 'cloudprint URL',
     userAccounts: ['foo@chromium.org'],
+  };
+
+  /**
+   * Set the native layer initial settings and attach the print preview app to
+   * the DOM.
+   * @return {!Promise} Returns a promise that resolves when the 'getPreview'
+   *     method is called by the preview area contained inside the app.
+   */
+  const initialize = () => {
+    nativeLayer.setInitialSettings(initialSettings);
+    nativeLayer.setLocalDestinationCapabilities(
+        getCddTemplate(initialSettings.printerName));
+    page = document.createElement('print-preview-app');
+    document.body.appendChild(page);
+    return nativeLayer.whenCalled('getPreview');
   };
 
   /** @override */
@@ -55,23 +74,16 @@ suite(print_preview_app_test.suiteName, function() {
     PolymerTest.clearBody();
     nativeLayer = new NativeLayerStub();
     NativeLayer.setInstance(nativeLayer);
-    nativeLayer.setInitialSettings(initialSettings);
-    nativeLayer.setLocalDestinationCapabilities(
-        getCddTemplate(initialSettings.printerName));
     cloudPrintInterface = new CloudPrintInterfaceStub();
     setCloudPrintInterfaceForTesting(cloudPrintInterface);
     pluginProxy = new PDFPluginStub();
     PluginProxy.setInstance(pluginProxy);
-
-    page = document.createElement('print-preview-app');
-    document.body.appendChild(page);
-    const previewArea = page.$.previewArea;
-    return nativeLayer.whenCalled('getPreview');
   });
 
   // Regression test for https://crbug.com/936029
   test(
       assert(print_preview_app_test.TestNames.PrintToGoogleDrive), async () => {
+        await initialize();
         // Set up the UI to have Google Drive as the printer.
         page.destination_ = getGoogleDriveDestination('foo@chromium.org');
         page.destination_.capabilities = getCddTemplate(page.destination_.id);
@@ -89,7 +101,8 @@ suite(print_preview_app_test.suiteName, function() {
         assertEquals('1.0', JSON.parse(args.printTicket).version);
       });
 
-  test(assert(print_preview_app_test.TestNames.PrintPresets), function() {
+  test(assert(print_preview_app_test.TestNames.PrintPresets), async () => {
+    await initialize();
     assertEquals(1, page.settings.copies.value);
     assertFalse(page.settings.duplex.value);
 
@@ -103,4 +116,22 @@ suite(print_preview_app_test.suiteName, function() {
     assertFalse(page.getSetting('duplex').setFromUi);
     assertFalse(page.getSetting('copies').setFromUi);
   });
+
+  test(
+      assert(print_preview_app_test.TestNames.DestinationsManaged),
+      async () => {
+        initialSettings.destinationsManaged = true;
+        await initialize();
+        const sidebar = page.$$('print-preview-sidebar');
+        assertTrue(sidebar.controlsManaged);
+      });
+
+  test(
+      assert(print_preview_app_test.TestNames.HeaderFooterManaged),
+      async () => {
+        initialSettings.isHeaderFooterManaged = true;
+        await initialize();
+        const sidebar = page.$$('print-preview-sidebar');
+        assertTrue(sidebar.controlsManaged);
+      });
 });

@@ -9,6 +9,7 @@
 
 #include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/accelerators/accelerator_table.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/test/app_list_test_helper.h"
@@ -36,6 +37,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_app_button.h"
 #include "ash/shelf/shelf_controller.h"
 #include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
@@ -1400,6 +1402,27 @@ TEST_P(ShelfLayoutManagerTest, VisibleWhenLockScreenShowing) {
   UnlockScreen();
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_BACKGROUND_MAXIMIZED, GetShelfWidget()->GetBackgroundType());
+}
+
+TEST_F(ShelfLayoutManagerTest, ShelfDoesNotAutoHideWithVoxAndTabletMode) {
+  TabletModeControllerTestApi().EnterTabletMode();
+  // Open a window so that the shelf will auto-hide.
+  std::unique_ptr<aura::Window> window(CreateTestWindow());
+  window->Show();
+  Shelf* shelf = GetPrimaryShelf();
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+
+  // Enable Chromevox. The shelf should now show.
+  Shell::Get()->accessibility_controller()->SetSpokenFeedbackEnabled(
+      true, A11Y_NOTIFICATION_NONE);
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  // Disable Chromevox again. The shelf should be able to auto-hide again.
+  Shell::Get()->accessibility_controller()->SetSpokenFeedbackEnabled(
+      false, A11Y_NOTIFICATION_NONE);
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 }
 
 // Tests that the shelf should be visible when in overview mode.
@@ -3444,6 +3467,52 @@ TEST_F(HotseatShelfLayoutManagerTest, SwipeUpInAppShelfShowsHotseat) {
                                      InAppShelfGestures::kSwipeUpToShow, 3);
 }
 
+// The in-app Hotseat should not be hidden automatically when the shelf context
+// menu shows (https://crbug.com/1020388).
+TEST_P(HotseatShelfLayoutManagerTest, InAppShelfShowingContextMenu) {
+  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  TabletModeControllerTestApi().EnterTabletMode();
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+  EXPECT_FALSE(Shell::Get()->app_list_controller()->IsVisible());
+
+  ShelfTestUtil::AddAppShortcut("app_id", TYPE_PINNED_APP);
+
+  // Swipe up on the shelf to show the hotseat.
+  SwipeUpOnShelf();
+  EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
+
+  ShelfViewTestAPI shelf_view_test_api(
+      GetPrimaryShelf()->shelf_widget()->shelf_view_for_testing());
+  ShelfAppButton* app_icon = shelf_view_test_api.GetButton(0);
+
+  // Accelerate the generation of the long press event.
+  ui::GestureConfiguration::GetInstance()->set_show_press_delay_in_ms(1);
+  ui::GestureConfiguration::GetInstance()->set_long_press_time_in_ms(1);
+
+  // Press the icon enough long time to generate the long press event.
+  GetEventGenerator()->MoveTouch(app_icon->GetBoundsInScreen().CenterPoint());
+  GetEventGenerator()->PressTouch();
+  ui::GestureConfiguration* gesture_config =
+      ui::GestureConfiguration::GetInstance();
+  const int long_press_delay_ms = gesture_config->long_press_time_in_ms() +
+                                  gesture_config->show_press_delay_in_ms();
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(),
+      base::TimeDelta::FromMilliseconds(long_press_delay_ms));
+  run_loop.Run();
+  GetEventGenerator()->ReleaseTouch();
+
+  // Expects that the hotseat's state is kExntended.
+  EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
+
+  // Ensures that the ink drop state is InkDropState::ACTIVATED before closing
+  // the menu.
+  app_icon->FireRippleActivationTimerForTest();
+}
+
 // Tests that swiping up on the hotseat does nothing.
 TEST_P(HotseatShelfLayoutManagerTest, SwipeUpOnHotseatBackgroundDoesNothing) {
   GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
@@ -4372,29 +4441,26 @@ class DisplayWorkAreaChangeCounter : public display::DisplayObserver {
   DISALLOW_COPY_AND_ASSIGN(DisplayWorkAreaChangeCounter);
 };
 
-// TODO(https:/crbug.com/1019531): Re-enable this test after the work-area
-// exhibits the desired behavior.
-// Tests that the work area does not update after going to/from tablet mode with
-// no windows open.
+// Tests that the work area updates once each when going to/from tablet mode
+// with no windows open.
 TEST_F(HotseatShelfLayoutManagerTest,
-       DISABLED_WorkAreaDoesNotUpdateClamshellToFromHomeLauncherNoWindows) {
+       WorkAreaUpdatesClamshellToFromHomeLauncherNoWindows) {
   DisplayWorkAreaChangeCounter counter;
   TabletModeControllerTestApi().EnterTabletMode();
 
-  EXPECT_EQ(0, counter.count());
+  EXPECT_EQ(1, counter.count());
 
   TabletModeControllerTestApi().LeaveTabletMode();
 
-  EXPECT_EQ(0, counter.count());
+  EXPECT_EQ(2, counter.count());
 }
 
-// TODO(https:/crbug.com/1019531): Re-enable this test after the work-area
-// exhibits the desired behavior.
-// Tests that opening a window in tablet mode changes the work area.
-TEST_F(HotseatShelfLayoutManagerTest,
-       DISABLED_OpenWindowInTabletModeChangesWorkArea) {
+// Tests that the work area changes just once when opening a window in tablet
+// mode.
+TEST_F(HotseatShelfLayoutManagerTest, OpenWindowInTabletModeChangesWorkArea) {
   DisplayWorkAreaChangeCounter counter;
   TabletModeControllerTestApi().EnterTabletMode();
+  ASSERT_EQ(1, counter.count());
 
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -4403,12 +4469,10 @@ TEST_F(HotseatShelfLayoutManagerTest,
   EXPECT_EQ(1, counter.count());
 }
 
-// TODO(https:/crbug.com/1019531): Re-enable this test after the work-area
-// exhibits the desired behavior.
 // Tests that going to and from tablet mode with an open window results in a
 // work area change.
 TEST_F(HotseatShelfLayoutManagerTest,
-       DISABLED_ToFromTabletModeWithWindowChangesWorkArea) {
+       ToFromTabletModeWithWindowChangesWorkArea) {
   DisplayWorkAreaChangeCounter counter;
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -4421,14 +4485,13 @@ TEST_F(HotseatShelfLayoutManagerTest,
   EXPECT_EQ(2, counter.count());
 }
 
-// TODO(https:/crbug.com/1019531): Re-enable this test after the work-area
-// exhibits the desired behavior.
 // Tests that going between Applist and overview in tablet mode with no windows
 // results in no work area change.
 TEST_F(HotseatShelfLayoutManagerTest,
-       DISABLED_WorkAreaDoesNotUpdateAppListToFromOverviewWithNoWindow) {
-  DisplayWorkAreaChangeCounter counter;
+       WorkAreaDoesNotUpdateAppListToFromOverviewWithNoWindow) {
   TabletModeControllerTestApi().EnterTabletMode();
+  DisplayWorkAreaChangeCounter counter;
+
   {
     OverviewAnimationWaiter waiter;
     Shell::Get()->overview_controller()->StartOverview();
@@ -4446,12 +4509,10 @@ TEST_F(HotseatShelfLayoutManagerTest,
   EXPECT_EQ(0, counter.count());
 }
 
-// TODO(https:/crbug.com/1019531): Re-enable this test after the work-area
-// exhibits the desired behavior.
 // Tests that switching between AppList and overview with a window results in no
 // work area change.
 TEST_F(HotseatShelfLayoutManagerTest,
-       DISABLED_WorkAreaDoesNotUpdateAppListToFromOverviewWithWindow) {
+       WorkAreaDoesNotUpdateAppListToFromOverviewWithWindow) {
   DisplayWorkAreaChangeCounter counter;
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =
@@ -4492,12 +4553,10 @@ TEST_F(HotseatShelfLayoutManagerTest,
   EXPECT_EQ(1, counter.count());
 }
 
-// TODO(https:/crbug.com/1019531): Re-enable this test after the work-area
-// exhibits the desired behavior.
 // Tests that switching between AppList and an active window does not update the
 // work area.
 TEST_F(HotseatShelfLayoutManagerTest,
-       DISABLED_WorkAreaDoesNotUpdateOpenWindowToFromAppList) {
+       WorkAreaDoesNotUpdateOpenWindowToFromAppList) {
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -4520,12 +4579,10 @@ TEST_F(HotseatShelfLayoutManagerTest,
   EXPECT_EQ(0, counter.count());
 }
 
-// TODO(https:/crbug.com/1019531): Re-enable this test after the work-area
-// exhibits the desired behavior.
 // Tests that switching between overview and an active window does not update
 // the work area.
 TEST_F(HotseatShelfLayoutManagerTest,
-       DISABLED_WorkAreaDoesNotUpdateOpenWindowToFromOverview) {
+       WorkAreaDoesNotUpdateOpenWindowToFromOverview) {
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -4603,6 +4660,34 @@ TEST_F(HotseatShelfLayoutManagerTest, ExtendHotseatIfFocusedWithKeyboard) {
   // was manually extended.
   GetPrimaryShelf()->shelf_focus_cycler()->FocusNavigation(
       false /* last_element */);
+  EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
+}
+
+// Tests that if the hotseat was hidden while being focused, doing a trasversal
+// focus on the next element brings it up again.
+TEST_F(HotseatShelfLayoutManagerTest, SwipeDownOnFocusedHotseat) {
+  TabletModeControllerTestApi().EnterTabletMode();
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+  ShelfTestUtil::AddAppShortcut("app_id_1", TYPE_APP);
+  ShelfTestUtil::AddAppShortcut("app_id_2", TYPE_APP);
+  ASSERT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
+
+  // Focus the shelf, then swipe down on the shelf to hide it. Hotseat should be
+  // hidden.
+  GetPrimaryShelf()->shelf_focus_cycler()->FocusShelf(false /* last_element */);
+  gfx::Rect hotseat_bounds =
+      GetShelfWidget()->hotseat_widget()->GetWindowBoundsInScreen();
+  gfx::Point start = hotseat_bounds.top_center();
+  gfx::Point end = start + gfx::Vector2d(0, 80);
+  GetEventGenerator()->GestureScrollSequence(
+      start, end, base::TimeDelta::FromMilliseconds(100), 4 /*scroll_steps*/);
+  EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
+
+  // Focus to the next element in the hotseat. The hotseat should show again.
+  GetEventGenerator()->PressKey(ui::VKEY_TAB, 0);
+  GetEventGenerator()->ReleaseKey(ui::VKEY_TAB, 0);
   EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
 }
 
@@ -4784,6 +4869,64 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, DISABLED_NoOpForHiddenShelf) {
   StartScroll(display_bounds.bottom_center());
   UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
   EXPECT_FALSE(IsWindowDragInProgress());
+  EndScroll(/*is_fling=*/false, 0.f);
+}
+
+// Tests that dragging below the hotseat after dragging the MRU up results in
+// the hotseat not moving from its extended position.
+TEST_F(ShelfLayoutManagerWindowDraggingTest,
+       DragBelowHotseatDoesNotMoveHotseat) {
+  // Go to in-app shelf, then drag the hotseat up until it is extended, this
+  // will start a window drag.
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+  const gfx::Rect shelf_widget_bounds =
+      GetShelfWidget()->GetWindowBoundsInScreen();
+  gfx::Point start = shelf_widget_bounds.bottom_center();
+  StartScroll(start);
+  const int shelf_size = ShelfConfig::Get()->shelf_size();
+  const int hotseat_size = ShelfConfig::Get()->hotseat_size();
+  const int hotseat_padding_size = ShelfConfig::Get()->hotseat_bottom_padding();
+  UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
+  const int hotseat_y =
+      GetShelfWidget()->hotseat_widget()->GetWindowBoundsInScreen().y();
+
+  // Drag down, the hotseat should not move because it was extended when the
+  // window drag began.
+  UpdateScroll(10);
+
+  EXPECT_EQ(hotseat_y,
+            GetShelfWidget()->hotseat_widget()->GetWindowBoundsInScreen().y());
+  EndScroll(/*is_fling=*/false, 0.f);
+}
+
+// Tests that dragging below the hotseat after dragging the MRU up results in
+// the hotseat not moving from its extended position with an autohidden shelf.
+TEST_F(ShelfLayoutManagerWindowDraggingTest,
+       DragBelowHotseatDoesNotMoveHotseatAutoHiddenShelf) {
+  // Extend the hotseat, then start dragging the window.
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+  SwipeUpOnShelf();
+  const gfx::Rect shelf_widget_bounds =
+      GetShelfWidget()->GetWindowBoundsInScreen();
+  const gfx::Point start = shelf_widget_bounds.bottom_center();
+  StartScroll(start);
+  const int shelf_size = ShelfConfig::Get()->shelf_size();
+  const int hotseat_size = ShelfConfig::Get()->hotseat_size();
+  const int hotseat_padding_size = ShelfConfig::Get()->hotseat_bottom_padding();
+  UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
+  const int hotseat_y =
+      GetShelfWidget()->hotseat_widget()->GetWindowBoundsInScreen().y();
+
+  // Drag down, the hotseat should not move because it was extended when the
+  // window drag began.
+  UpdateScroll(10);
+
+  EXPECT_EQ(hotseat_y,
+            GetShelfWidget()->hotseat_widget()->GetWindowBoundsInScreen().y());
   EndScroll(/*is_fling=*/false, 0.f);
 }
 

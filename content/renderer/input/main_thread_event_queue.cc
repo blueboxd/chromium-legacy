@@ -257,6 +257,8 @@ void MainThreadEventQueue::HandleEvent(
     InputEventDispatchType original_dispatch_type,
     InputEventAckState ack_result,
     HandledEventCallback callback) {
+  TRACE_EVENT2("input", "MainThreadEventQueue::HandleEvent", "dispatch_type",
+               original_dispatch_type, "event_type", event->GetType());
   DCHECK(original_dispatch_type == DISPATCH_TYPE_BLOCKING ||
          original_dispatch_type == DISPATCH_TYPE_NON_BLOCKING);
   DCHECK(ack_result == INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING ||
@@ -320,6 +322,7 @@ void MainThreadEventQueue::HandleEvent(
 
   HandledEventCallback event_callback;
   if (!non_blocking) {
+    TRACE_EVENT_INSTANT0("input", "NonBlocking", TRACE_EVENT_SCOPE_THREAD);
     event_callback = std::move(callback);
   }
 

@@ -6,11 +6,13 @@
 
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/mojom/assistant_state_controller.mojom.h"
+#include "base/bind.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_service.h"
 
 AssistantStateClient::AssistantStateClient() {
   arc::ArcSessionManager::Get()->AddObserver(this);

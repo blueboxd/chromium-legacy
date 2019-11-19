@@ -35,7 +35,6 @@ using testing::Bool;
 using testing::Values;
 
 constexpr char kIncludeUwSSwitch[] = "include-uws";
-constexpr char kIncludeRegistryKeysSwitch[] = "include-registry-keys";
 constexpr char kExpectedPromptResultSwitch[] = "expected-prompt-result";
 constexpr char kExpectedChromeDisconnectPointSwitch[] =
     "expected-parent-disconnected";
@@ -112,10 +111,6 @@ struct TestConfig {
       command_line->AppendSwitch(kIncludeUwSSwitch);
     }
 
-    if (with_registry_keys) {
-      command_line->AppendSwitch(kIncludeRegistryKeysSwitch);
-    }
-
     command_line->AppendSwitchASCII(
         kExpectedPromptResultSwitch,
         base::NumberToString(static_cast<int>(expected_prompt_acceptance)));
@@ -126,7 +121,6 @@ struct TestConfig {
   }
 
   bool uws_expected = false;
-  bool with_registry_keys = false;
   PromptUserResponse::PromptAcceptance expected_prompt_acceptance =
       PromptUserResponse::DENIED;
   ChromeDisconnectPoint expected_disconnection_point =
@@ -484,14 +478,11 @@ class ChildProcess {
     CloseConnectionIfDisconectionPointReached(
         ChromeDisconnectPoint::kWhileProcessingChildRequest);
 
-    int32_t expected_files_to_delete_size =
-        command_line_->HasSwitch(kIncludeUwSSwitch) ? 1 : 0;
-    if (request.prompt_user().files_to_delete_size() !=
-        expected_files_to_delete_size) {
-      LOG(ERROR) << "Wrong number of files to delete received.";
-      return false;
-    }
-    if (expected_files_to_delete_size == 1) {
+    if (command_line_->HasSwitch(kIncludeUwSSwitch)) {
+      if (request.prompt_user().files_to_delete_size() != 1) {
+        LOG(ERROR) << "Wrong number of files to delete received.";
+        return false;
+      }
       std::string file_path_utf8;
       base::UTF16ToUTF8(kBadFilePath.value().c_str(),
                         kBadFilePath.value().size(), &file_path_utf8);
@@ -499,19 +490,23 @@ class ChildProcess {
         LOG(ERROR) << "Wrong value for file to delete";
         return false;
       }
-    }
 
-    int32_t expecteed_registry_keys_size =
-        command_line_->HasSwitch(kIncludeRegistryKeysSwitch) ? 1 : 0;
-    if (request.prompt_user().registry_keys_size() !=
-        expecteed_registry_keys_size) {
-      LOG(ERROR) << "Wrong number of registry keys to delete";
-      return false;
-    }
-    if (expecteed_registry_keys_size == 1) {
+      if (request.prompt_user().registry_keys_size() != 1) {
+        LOG(ERROR) << "Wrong number of registry keys to delete";
+        return false;
+      }
       if (request.prompt_user().registry_keys(0) !=
           base::UTF16ToUTF8(kBadRegistryKey)) {
         LOG(ERROR) << "Wrong value for registry key";
+        return false;
+      }
+    } else {
+      if (request.prompt_user().files_to_delete_size() != 0) {
+        LOG(ERROR) << "Wrong number of files to delete received.";
+        return false;
+      }
+      if (request.prompt_user().registry_keys_size() != 0) {
+        LOG(ERROR) << "Wrong number of registry keys to delete";
         return false;
       }
     }
@@ -577,7 +572,6 @@ MULTIPROCESS_TEST_MAIN(ProtoChromePromptIPCClientMain) {
 class ProtoChromePromptIPCTest
     : public ::testing::TestWithParam<
           std::tuple<bool,
-                     bool,
                      PromptUserResponse::PromptAcceptance,
                      ChromeDisconnectPoint>> {
  private:
@@ -641,12 +635,9 @@ class ParentProcess {
     chrome_prompt_ipc.Initialize(error_handler.get());
 
     std::vector<base::FilePath> files_to_delete;
+    std::vector<base::string16> registry_keys;
     if (test_config_.uws_expected) {
       files_to_delete.push_back(kBadFilePath);
-    }
-
-    std::vector<base::string16> registry_keys;
-    if (test_config_.with_registry_keys) {
       registry_keys.push_back(kBadRegistryKey);
     }
 
@@ -719,33 +710,32 @@ class ParentProcess {
 TEST_P(ProtoChromePromptIPCTest, Communication) {
   ParentProcess parent_process;
   TestConfig& test_config = parent_process.GetTestConfig();
-  std::tie(test_config.uws_expected, test_config.with_registry_keys,
-           test_config.expected_prompt_acceptance,
+  std::tie(test_config.uws_expected, test_config.expected_prompt_acceptance,
            test_config.expected_disconnection_point) = GetParam();
 
   ASSERT_TRUE(parent_process.Initialize());
   parent_process.Run();
 }
 
+// Tests disconnection handling for all possible disconnection points when no
+// UwS is present.
 INSTANTIATE_TEST_SUITE_P(NoUwSPresent,
                          ProtoChromePromptIPCTest,
                          testing::Combine(
-                             /*[>uws_expected=<]*/ Values(false),
-                             /*[>with_registry_keys=<]*/ Values(false),
+                             /*uws_expected=*/Values(false),
                              Values(PromptUserResponse::DENIED),
                              Values(ChromeDisconnectPoint::kNone,
                                     ChromeDisconnectPoint::kOnStartup)),
                          GetParamNameForTest());
 
+// Tests disconnection handling for all possible disconnection points when UwS
+// is present
 INSTANTIATE_TEST_SUITE_P(
     UwSPresent,
     ProtoChromePromptIPCTest,
     testing::Combine(
         /*uws_expected=*/Values(true),
-        /*with_registry_keys=*/Bool(),
-        Values(PromptUserResponse::ACCEPTED_WITH_LOGS,
-               PromptUserResponse::ACCEPTED_WITHOUT_LOGS,
-               PromptUserResponse::DENIED),
+        Values(PromptUserResponse::ACCEPTED_WITH_LOGS),
         Values(ChromeDisconnectPoint::kNone,
                ChromeDisconnectPoint::kOnStartup,
                ChromeDisconnectPoint::kAfterVersion,
@@ -753,6 +743,17 @@ INSTANTIATE_TEST_SUITE_P(
                ChromeDisconnectPoint::kAfterCloseMessageLength,
                ChromeDisconnectPoint::kWhileProcessingChildRequest)),
     GetParamNameForTest());
+
+// Tests that all possible PromptUserResponse values are passed correctly.
+INSTANTIATE_TEST_SUITE_P(PromptUserResponse,
+                         ProtoChromePromptIPCTest,
+                         testing::Combine(
+                             /*uws_expected=*/Values(true),
+                             Values(PromptUserResponse::ACCEPTED_WITH_LOGS,
+                                    PromptUserResponse::ACCEPTED_WITHOUT_LOGS,
+                                    PromptUserResponse::DENIED),
+                             Values(ChromeDisconnectPoint::kNone)),
+                         GetParamNameForTest());
 
 class ProtoChromePromptSameProcessTest : public ::testing::Test {
  public:

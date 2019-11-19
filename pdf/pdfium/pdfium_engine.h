@@ -117,18 +117,8 @@ class PDFiumEngine : public PDFEngine,
   base::Optional<pp::PDF::PrivateAccessibilityTextRunInfo> GetTextRunInfo(
       int page_index,
       int start_char_index) override;
-  uint32_t GetLinkCount(int page_index) override;
-  bool GetLinkInfo(int page_index,
-                   uint32_t link_index,
-                   std::string* out_url,
-                   int* out_start_char_index,
-                   int* out_char_count,
-                   pp::FloatRect* out_bounds) override;
-  uint32_t GetImageCount(int page_index) override;
-  bool GetImageInfo(int page_index,
-                    uint32_t image_index,
-                    std::string* out_alt_text,
-                    pp::FloatRect* out_bounds) override;
+  std::vector<AccessibilityLinkInfo> GetLinkInfo(int page_index) override;
+  std::vector<AccessibilityImageInfo> GetImageInfo(int page_index) override;
   bool GetPrintScaling() override;
   int GetCopiesToPrint() override;
   int GetDuplexType() override;

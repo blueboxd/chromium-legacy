@@ -523,8 +523,6 @@ void WindowTreeHostManager::OnDisplayAdded(const display::Display& display) {
     primary_display_id = display.id();
     window_tree_hosts_[display.id()] = ash_host;
     GetRootWindowSettings(GetWindow(ash_host))->display_id = display.id();
-    for (auto& observer : observers_)
-      observer.OnWindowTreeHostReusedForDisplay(ash_host, display);
     const display::ManagedDisplayInfo& display_info =
         GetDisplayManager()->GetDisplayInfo(display.id());
     ash_host->AsWindowTreeHost()->SetBoundsInPixels(
@@ -597,9 +595,6 @@ void WindowTreeHostManager::OnDisplayRemoved(const display::Display& display) {
     window_tree_hosts_[primary_display_id] = primary_host;
     GetRootWindowSettings(GetWindow(primary_host))->display_id =
         primary_display_id;
-
-    for (auto& observer : observers_)
-      observer.OnWindowTreeHostsSwappedDisplays(host_to_delete, primary_host);
 
     OnDisplayMetricsChanged(
         GetDisplayManager()->GetDisplayForId(primary_display_id),
@@ -743,9 +738,6 @@ void WindowTreeHostManager::SetPrimaryDisplayId(int64_t id) {
   base::string16 old_primary_title = primary_window->GetTitle();
   primary_window->SetTitle(non_primary_window->GetTitle());
   non_primary_window->SetTitle(old_primary_title);
-
-  for (auto& observer : observers_)
-    observer.OnWindowTreeHostsSwappedDisplays(primary_host, non_primary_host);
 
   const display::DisplayLayout& layout =
       GetDisplayManager()->GetCurrentDisplayLayout();

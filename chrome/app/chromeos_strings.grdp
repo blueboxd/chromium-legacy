@@ -171,6 +171,10 @@
   <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_MULTIPLE_DEVICE_HEADER" desc="Label appearing over a list of Android phones which this Chromebook can connect to.">
     Select a device
   </message>
+  <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_OFFLINE_DEVICE_OPTION" desc="Device name appearing in the list of Android phones indicating
+  the device is offline.">
+    <ph name="DEVICE_NAME">$1<ex>Pixel 2</ex></ph> (offline)
+  </message>
   <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_FEATURE_LIST_HEADER" desc="Header to introduce a list of the features that the user is agreeing to in the multi-device setup.">
     When you connect your devices, you agree that your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> can:
   </message>
@@ -1469,16 +1473,16 @@
     Do you want to proceed?
   </message>
   <message name="IDS_ENABLE_ARC_ADB_SIDELOADING_SETUP_MESSAGE" desc="Setup message in dialog for enabling ARC ADB Sideloading.">
-    Continuing will enable ADB for creating and testing Android apps. Note that ADB allows installation of test apps that haven't been verified by Google.
+    Continuing will enable ADB debugging for creating and testing Android apps. Note that ADB debugging allows installation of test apps that haven't been verified by Google.
   </message>
   <message name="IDS_ENABLE_ARC_ADB_SIDELOADING_SETUP_ILLUSTRATION_TITLE" desc="Accessible title of ARC ADB sideloading illustration depicting the setup screen.">
     Enabling adb to create apps illustration
   </message>
   <message name="IDS_ENABLE_ARC_ADB_SIDELOADING_ERROR_TITLE" desc="Title message when enabling of ARC ADB Sideloading fails.">
-    Couldn't enable ADB
+    Something went wrong
   </message>
   <message name="IDS_ENABLE_ARC_ADB_SIDELOADING_ERROR_MESSAGE" desc="Error message when enabling of ARC ADB Sideloading fails.">
-    Go to Linux settings and try again
+    Couldn't enable ADB debugging. Go to Settings and try again.
   </message>
   <message name="IDS_ENABLE_ARC_ADB_SIDELOADING_ERROR_ILLUSTRATION_TITLE" desc="Accessible title of ARC ADB sideloading illustration depicting the error screen.">
     Failed to enable ADB illustration

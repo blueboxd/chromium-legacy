@@ -8,6 +8,7 @@
 #include "components/autofill/core/browser/payments/autofill_save_card_infobar_delegate_mobile.h"
 #include "ios/chrome/browser/infobars/infobar_controller_delegate.h"
 #import "ios/chrome/browser/infobars/infobar_type.h"
+#import "ios/chrome/browser/ui/autofill/save_card_message_with_links.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_view_controller.h"
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_coordinator_implementation.h"
 #import "ios/chrome/browser/ui/infobars/infobar_container.h"
@@ -164,6 +165,7 @@
   self.modalViewController.expirationYear = base::SysUTF16ToNSString(
       self.saveCardInfoBarDelegate->expiration_date_year());
   self.modalViewController.currentCardSaved = !self.infobarAccepted;
+  self.modalViewController.legalMessages = [self legalMessagesForModal];
 
   return YES;
 }
@@ -198,6 +200,47 @@
   // TODO(crbug.com/1014652): Once editing is supported send these parameters to
   // the Delegate for saving.
   [self modalInfobarButtonWasAccepted:self];
+}
+
+- (void)dismissModalAndOpenURL:(const GURL&)linkURL {
+  // Before passing the URL to the block, make sure the block has a copy of
+  // the URL and not just a reference.
+  const GURL URL(linkURL);
+  [self dismissInfobarModal:self
+                   animated:YES
+                 completion:^{
+                   self.saveCardInfoBarDelegate->OnLegalMessageLinkClicked(URL);
+                 }];
+}
+
+#pragma mark - Private
+
+// TODO(crbug.com/1014652): Move to a future Mediator since this doesn't belong
+// in the Coordinator.
+- (NSMutableArray<SaveCardMessageWithLinks*>*)legalMessagesForModal {
+  NSMutableArray<SaveCardMessageWithLinks*>* legalMessages =
+      [[NSMutableArray alloc] init];
+  // Only display legal Messages if the card is being uploaded and there are
+  // any.
+  if (self.saveCardInfoBarDelegate->upload() &&
+      !self.saveCardInfoBarDelegate->legal_message_lines().empty()) {
+    for (const auto& line :
+         self.saveCardInfoBarDelegate->legal_message_lines()) {
+      SaveCardMessageWithLinks* message =
+          [[SaveCardMessageWithLinks alloc] init];
+      message.messageText = base::SysUTF16ToNSString(line.text());
+      NSMutableArray* linkRanges = [[NSMutableArray alloc] init];
+      std::vector<GURL> linkURLs;
+      for (const auto& link : line.links()) {
+        [linkRanges addObject:[NSValue valueWithRange:link.range.ToNSRange()]];
+        linkURLs.push_back(link.url);
+      }
+      message.linkRanges = linkRanges;
+      message.linkURLs = linkURLs;
+      [legalMessages addObject:message];
+    }
+  }
+  return legalMessages;
 }
 
 @end

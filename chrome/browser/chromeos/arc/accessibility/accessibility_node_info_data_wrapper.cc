@@ -301,8 +301,13 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
 
   GetProperty(AXStringProperty::PANE_TITLE, &pane_title);
 
+  // |hint_text| attribute in Android is often used as a placeholder text within
+  // textfields.
+  std::string hint_text;
+  GetProperty(AXStringProperty::HINT_TEXT, &hint_text);
+
   if (!text.empty() || !content_description.empty() || !label.empty() ||
-      !pane_title.empty()) {
+      !pane_title.empty() || !hint_text.empty()) {
     // Append non empty properties to name attribute.
     std::vector<std::string> names;
     if (!content_description.empty())
@@ -321,6 +326,11 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
         names.push_back(text);
       }
     }
+
+    // Append hint text as part of name attribute.
+    if (!hint_text.empty())
+      names.push_back(hint_text);
+
     // TODO (sarakato): Exposing all possible labels for a node, may result in
     // too much being spoken. For ARC ++, this may result in divergent behaviour
     // from Talkback.
@@ -348,12 +358,6 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
                              tree_source_->ax_tree_id().ToString().c_str());
       out_data->AddStringAttribute(ax::mojom::StringAttribute::kUrl, url);
     }
-  }
-
-  std::string place_holder;
-  if (GetProperty(AXStringProperty::HINT_TEXT, &place_holder)) {
-    out_data->AddStringAttribute(ax::mojom::StringAttribute::kPlaceholder,
-                                 place_holder);
   }
 
   // If it exists, set tooltip value as on node.

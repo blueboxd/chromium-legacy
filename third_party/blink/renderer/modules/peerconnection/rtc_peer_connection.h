@@ -402,23 +402,23 @@ class MODULES_EXPORT RTCPeerConnection final
   MediaStreamTrack* GetTrack(const WebMediaStreamTrack&) const;
   RTCRtpSender* FindSenderForTrackAndStream(MediaStreamTrack*, MediaStream*);
   HeapVector<Member<RTCRtpSender>>::iterator FindSender(
-      const WebRTCRtpSender& web_sender);
+      const RTCRtpSenderPlatform& web_sender);
   HeapVector<Member<RTCRtpReceiver>>::iterator FindReceiver(
       const WebRTCRtpReceiver& web_receiver);
   HeapVector<Member<RTCRtpTransceiver>>::iterator FindTransceiver(
       const WebRTCRtpTransceiver& web_transceiver);
 
   // Creates or updates the sender such that it is up-to-date with the
-  // WebRTCRtpSender in all regards *except for streams*. The web sender only
-  // knows of stream IDs; updating the stream objects requires additional logic
-  // which is different depending on context, e.g:
+  // RTCRtpSenderPlatform in all regards *except for streams*. The web sender
+  // only knows of stream IDs; updating the stream objects requires additional
+  // logic which is different depending on context, e.g:
   // - If created/updated with addTrack(), the streams were supplied as
   //   arguments.
   // The web sender's web track must already have a correspondent blink track in
   // |tracks_|. The caller is responsible for ensuring this with
   // RegisterTrack(), e.g:
   // - On addTrack(), the track is supplied as an argument.
-  RTCRtpSender* CreateOrUpdateSender(std::unique_ptr<WebRTCRtpSender>,
+  RTCRtpSender* CreateOrUpdateSender(std::unique_ptr<RTCRtpSenderPlatform>,
                                      String kind);
   // Creates or updates the receiver such that it is up-to-date with the
   // WebRTCRtpReceiver in all regards *except for streams*. The web receiver

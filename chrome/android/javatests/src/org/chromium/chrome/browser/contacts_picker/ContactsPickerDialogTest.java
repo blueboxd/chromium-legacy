@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.contacts_picker;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.v7.widget.RecyclerView;
@@ -22,6 +23,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.blink.mojom.ContactIconBlob;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -85,6 +87,9 @@ public class ContactsPickerDialogTest
     // The list of currently selected contacts (built piecemeal).
     private List<ContactDetails> mCurrentContactSelection;
 
+    // An icon to use as contact avatar during testing.
+    private Bitmap mIcon;
+
     // A callback that fires when something is selected in the dialog.
     public final CallbackHelper onSelectionCallback = new CallbackHelper();
 
@@ -94,10 +99,12 @@ public class ContactsPickerDialogTest
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
-        Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
+        mIcon = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(mIcon);
         canvas.drawColor(Color.BLUE);
-        ContactViewHolder.setIconForTesting(bitmap);
+        ContactViewHolder.setIconForTesting(mIcon);
+        // Disable the async task since it tries to access contact icons which would fail in tests.
+        CompressContactIconsWorkerTask.sDisableForTesting = true;
     }
 
     // ContactsPickerDialog.ContactsPickerListener:
@@ -308,6 +315,10 @@ public class ContactsPickerDialogTest
         address.recipient = "";
         address.phone = "";
 
+        ContactIconBlob icon = new ContactIconBlob();
+        icon.data = new byte[] {0x42};
+        icon.mimeType = "image/test";
+
         mTestContacts.add(new ContactDetails("0", "Contact 0", Arrays.asList("0@example.com"),
                 Arrays.asList("555-1234"), Arrays.asList(address)));
         mTestContacts.add(new ContactDetails("1", "Contact 1", /*emails=*/null,
@@ -320,10 +331,12 @@ public class ContactsPickerDialogTest
                 /*phoneNumbers=*/null, /*addresses=*/null));
         mTestContacts.add(new ContactDetails("5", "Contact 5", /*emails=*/null,
                 /*phoneNumbers=*/null, /*addresses=*/null));
+
         if (ownerEmail != null) {
             // Note: The dialog will move Contact 6 (owner) to the top of the list.
             ContactDetails owner = new ContactDetails("6", "Contact 6",
                     Arrays.asList("owner@example.com"), /*phoneNumbers=*/null, /*addresses=*/null);
+            owner.setSelfIcon(new BitmapDrawable(mIcon));
             ContactDetails owner2 = new ContactDetails("7", "Contact 7",
                     Arrays.asList("owner@example.com"), /*phoneNumbers=*/null, /*addresses=*/null);
             mTestContacts.add(owner);
@@ -636,6 +649,28 @@ public class ContactsPickerDialogTest
         Assert.assertTrue(mDialog.isShowing());
         clickCancel();
         Assert.assertEquals(16, mLastPropertiesRequested);
+    }
+
+    @Test
+    @LargeTest
+    public void testSelfIconCompressed() throws Throwable {
+        CompressContactIconsWorkerTask.sDisableForTesting = false;
+
+        setTestContacts(/* ownerEmail = */ "owner@example.com");
+        createDialog(/* multiselect = */ false);
+        Assert.assertTrue(mDialog.isShowing());
+
+        int expectedSelectionCount = 1;
+        clickView(0, expectedSelectionCount, /* expectSelection = */ true);
+        clickDone();
+
+        Assert.assertEquals(ContactsPickerAction.CONTACTS_SELECTED, mLastActionRecorded);
+        Assert.assertEquals(1, mLastSelectedContacts.size());
+
+        ContactIconBlob icon =
+                ContactIconBlob.deserialize(mLastSelectedContacts.get(0).serializedIcons.get(0));
+        Assert.assertTrue(icon.data.length > 0);
+        Assert.assertEquals("image/png", icon.mimeType);
     }
 
     @Test

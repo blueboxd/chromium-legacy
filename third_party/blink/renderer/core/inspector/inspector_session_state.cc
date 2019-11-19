@@ -4,8 +4,7 @@
 
 #include "third_party/blink/renderer/core/inspector/inspector_session_state.h"
 
-#include "third_party/blink/renderer/core/inspector/protocol/Protocol.h"
-#include "third_party/inspector_protocol/crdtp/encoding.h"
+#include "third_party/inspector_protocol/crdtp/cbor.h"
 
 namespace blink {
 namespace {

@@ -5,18 +5,16 @@
 package org.chromium.chrome.browser.firstrun;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.UserManager;
 
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.components.signin.AccountManagerFacade;
 
 /** Provides first run related utility functions. */
@@ -30,14 +28,13 @@ public class FirstRunUtils {
      */
     public static void cacheFirstRunPrefs() {
         SharedPreferences javaPrefs = ContextUtils.getAppSharedPreferences();
-        PrefServiceBridge prefsBridge = PrefServiceBridge.getInstance();
         // Set both Java and native prefs if any of the three indicators indicate ToS has been
         // accepted. This needed because:
         //   - Old versions only set native pref, so this syncs Java pref.
         //   - Backup & restore does not restore native pref, so this needs to update it.
         //   - checkAnyUserHasSeenToS() may be true which needs to sync its state to the prefs.
         boolean javaPrefValue = javaPrefs.getBoolean(CACHED_TOS_ACCEPTED_PREF, false);
-        boolean nativePrefValue = prefsBridge.isFirstRunEulaAccepted();
+        boolean nativePrefValue = isFirstRunEulaAccepted();
         boolean userHasSeenTos =
                 ToSAckedReceiver.checkAnyUserHasSeenToS();
         boolean isFirstRunComplete = FirstRunStatus.getFirstRunFlowComplete();
@@ -46,7 +43,7 @@ public class FirstRunUtils {
                 javaPrefs.edit().putBoolean(CACHED_TOS_ACCEPTED_PREF, true).apply();
             }
             if (!nativePrefValue) {
-                prefsBridge.setEulaAccepted();
+                setEulaAccepted();
             }
         }
     }
@@ -55,8 +52,8 @@ public class FirstRunUtils {
      * @return Whether the user has accepted Chrome Terms of Service.
      */
     public static boolean didAcceptTermsOfService() {
-        // Note: Does not check PrefServiceBridge.getInstance().isFirstRunEulaAccepted()
-        // because this may be called before native is initialized.
+        // Note: Does not check FirstRunUtils.isFirstRunEulaAccepted() because this may be called
+        // before native is initialized.
         return ContextUtils.getAppSharedPreferences().getBoolean(CACHED_TOS_ACCEPTED_PREF, false)
                 || ToSAckedReceiver.checkAnyUserHasSeenToS();
     }
@@ -71,7 +68,7 @@ public class FirstRunUtils {
                 .edit()
                 .putBoolean(CACHED_TOS_ACCEPTED_PREF, true)
                 .apply();
-        PrefServiceBridge.getInstance().setEulaAccepted();
+        setEulaAccepted();
     }
 
     /**
@@ -97,13 +94,30 @@ public class FirstRunUtils {
     }
 
     @SuppressLint("InlinedApi")
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     private static boolean hasSyncPermissions() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) return true;
-
         UserManager manager = (UserManager) ContextUtils.getApplicationContext().getSystemService(
                 Context.USER_SERVICE);
         Bundle userRestrictions = manager.getUserRestrictions();
         return !userRestrictions.getBoolean(UserManager.DISALLOW_MODIFY_ACCOUNTS, false);
+    }
+
+    /**
+     * @return Whether EULA has been accepted by the user.
+     */
+    public static boolean isFirstRunEulaAccepted() {
+        return FirstRunUtilsJni.get().getFirstRunEulaAccepted();
+    }
+
+    /**
+     * Sets the preference that signals when the user has accepted the EULA.
+     */
+    public static void setEulaAccepted() {
+        FirstRunUtilsJni.get().setEulaAccepted();
+    }
+
+    @NativeMethods
+    public interface Natives {
+        boolean getFirstRunEulaAccepted();
+        void setEulaAccepted();
     }
 }

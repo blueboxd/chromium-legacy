@@ -18,6 +18,8 @@
 #include "third_party/blink/public/platform/modules/video_capture/web_video_capture_impl_manager.h"
 #include "third_party/blink/renderer/platform/video_capture/gpu_memory_buffer_test_support.h"
 #include "third_party/blink/renderer/platform/video_capture/video_capture_impl.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 using media::BindToCurrentLoop;
 using ::testing::_;
@@ -216,10 +218,12 @@ class VideoCaptureImplManagerTest : public ::testing::Test,
                                  const media::VideoCaptureParams& params) {
     return manager_->StartCapture(
         id, params,
-        base::Bind(&VideoCaptureImplManagerTest::OnStateUpdate,
-                   base::Unretained(this), id),
-        base::Bind(&VideoCaptureImplManagerTest::OnFrameReady,
-                   base::Unretained(this)));
+        ConvertToBaseCallback(CrossThreadBindRepeating(
+            &VideoCaptureImplManagerTest::OnStateUpdate,
+            CrossThreadUnretained(this), id)),
+        ConvertToBaseCallback(
+            CrossThreadBindRepeating(&VideoCaptureImplManagerTest::OnFrameReady,
+                                     CrossThreadUnretained(this))));
   }
 
   base::test::TaskEnvironment task_environment_;

@@ -48,6 +48,8 @@ constexpr LocalizedString kLocalizedStringsWithoutPlaceholders[] = {
      IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_MULTIPLE_DEVICE_HEADER},
     {"startSetupPageSingleDeviceHeader",
      IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_SINGLE_DEVICE_HEADER},
+    {"startSetupPageOfflineDeviceOption",
+     IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_OFFLINE_DEVICE_OPTION},
     {"startSetupPageFeatureListInstallApps",
      IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_INSTALL_APPS_DESCRIPTION},
     {"startSetupPageFeatureListAddFeatures",

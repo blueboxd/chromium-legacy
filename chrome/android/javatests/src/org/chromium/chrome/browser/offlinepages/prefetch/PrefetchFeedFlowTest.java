@@ -30,10 +30,10 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.feed.FeedProcessScopeFactory;
 import org.chromium.chrome.browser.feed.TestNetworkClient;
+import org.chromium.chrome.browser.firstrun.FirstRunUtils;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.offlinepages.OfflineTestUtil;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.ProfileKey;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -158,7 +158,7 @@ public class PrefetchFeedFlowTest {
             // NTP suggestions require a connection and an accepted EULA.
             TestThreadUtils.runOnUiThreadBlocking(() -> {
                 NetworkChangeNotifier.forceConnectivityState(true);
-                PrefServiceBridge.getInstance().setEulaAccepted();
+                FirstRunUtils.setEulaAccepted();
             });
 
             // Loading the NTP triggers loading suggestions.

@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
@@ -142,7 +143,7 @@ int WindowOrWorkerGlobalScope::setTimeout(
     // be done using the scheduler instead.
     V8GCForContextDispose::Instance().NotifyIdle();
   }
-  ScheduledAction* action = ScheduledAction::Create(
+  auto* action = MakeGarbageCollected<ScheduledAction>(
       script_state, execution_context, handler, arguments);
   return DOMTimer::Install(execution_context, action,
                            base::TimeDelta::FromMilliseconds(timeout), true);
@@ -185,8 +186,8 @@ int WindowOrWorkerGlobalScope::setTimeoutFromString(
     // be done using the scheduler instead.
     V8GCForContextDispose::Instance().NotifyIdle();
   }
-  ScheduledAction* action =
-      ScheduledAction::Create(script_state, execution_context, handler);
+  auto* action = MakeGarbageCollected<ScheduledAction>(
+      script_state, execution_context, handler);
   return DOMTimer::Install(execution_context, action,
                            base::TimeDelta::FromMilliseconds(timeout), true);
 }
@@ -200,7 +201,7 @@ int WindowOrWorkerGlobalScope::setInterval(
   ExecutionContext* execution_context = event_target.GetExecutionContext();
   if (!IsAllowed(execution_context, false, g_empty_string))
     return 0;
-  ScheduledAction* action = ScheduledAction::Create(
+  auto* action = MakeGarbageCollected<ScheduledAction>(
       script_state, execution_context, handler, arguments);
   return DOMTimer::Install(execution_context, action,
                            base::TimeDelta::FromMilliseconds(timeout), false);
@@ -238,8 +239,8 @@ int WindowOrWorkerGlobalScope::setIntervalFromString(
   // performance issue.
   if (handler.IsEmpty())
     return 0;
-  ScheduledAction* action =
-      ScheduledAction::Create(script_state, execution_context, handler);
+  auto* action = MakeGarbageCollected<ScheduledAction>(
+      script_state, execution_context, handler);
   return DOMTimer::Install(execution_context, action,
                            base::TimeDelta::FromMilliseconds(timeout), false);
 }

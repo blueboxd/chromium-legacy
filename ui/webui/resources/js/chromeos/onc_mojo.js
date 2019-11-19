@@ -601,7 +601,7 @@ class OncMojo {
 
   /**
    * Converts an ManagedProperties dictionary to NetworkStateProperties.
-   * Used to provide state properties to CrNetworkIcon.
+   * Used to provide state properties to NetworkIcon.
    * @param {!chromeos.networkConfig.mojom.ManagedProperties} properties
    * @return {!chromeos.networkConfig.mojom.NetworkStateProperties}
    */

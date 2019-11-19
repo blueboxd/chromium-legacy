@@ -78,7 +78,7 @@ void LoadingStatsCollectorTest::TestRedirectStatusHistogram(
   const std::string& script_url = "https://cdn.google.com/script.js";
   PreconnectPrediction prediction = CreatePreconnectPrediction(
       GURL(prediction_url).host(), initial_url != prediction_url,
-      {{GURL(script_url).GetOrigin(), 1, net::NetworkIsolationKey()}});
+      {{url::Origin::Create(GURL(script_url)), 1, net::NetworkIsolationKey()}});
   EXPECT_CALL(*mock_predictor_, PredictPreconnectOrigins(GURL(initial_url), _))
       .WillOnce(DoAll(SetArgPointee<1>(prediction), Return(true)));
 
@@ -108,10 +108,11 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectPrecisionRecallHistograms) {
   // Predicts 4 origins: 2 useful, 2 useless.
   PreconnectPrediction prediction = CreatePreconnectPrediction(
       GURL(main_frame_url).host(), false,
-      {{GURL(main_frame_url).GetOrigin(), 1, net::NetworkIsolationKey()},
-       {GURL(gen(1)).GetOrigin(), 1, net::NetworkIsolationKey()},
-       {GURL(gen(2)).GetOrigin(), 1, net::NetworkIsolationKey()},
-       {GURL(gen(3)).GetOrigin(), 0, net::NetworkIsolationKey()}});
+      {{url::Origin::Create(GURL(main_frame_url)), 1,
+        net::NetworkIsolationKey()},
+       {url::Origin::Create(GURL(gen(1))), 1, net::NetworkIsolationKey()},
+       {url::Origin::Create(GURL(gen(2))), 1, net::NetworkIsolationKey()},
+       {url::Origin::Create(GURL(gen(3))), 0, net::NetworkIsolationKey()}});
   EXPECT_CALL(*mock_predictor_,
               PredictPreconnectOrigins(GURL(main_frame_url), _))
       .WillOnce(DoAll(SetArgPointee<1>(prediction), Return(true)));
@@ -176,11 +177,11 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectHistograms) {
     // Initialize PreconnectStats.
 
     // These two are hits.
-    PreconnectedRequestStats origin1(GURL(gen(1)).GetOrigin(), true);
-    PreconnectedRequestStats origin2(GURL(gen(2)).GetOrigin(), false);
+    PreconnectedRequestStats origin1(url::Origin::Create(GURL(gen(1))), true);
+    PreconnectedRequestStats origin2(url::Origin::Create(GURL(gen(2))), false);
     // And these two are misses.
-    PreconnectedRequestStats origin3(GURL(gen(3)).GetOrigin(), false);
-    PreconnectedRequestStats origin4(GURL(gen(4)).GetOrigin(), true);
+    PreconnectedRequestStats origin3(url::Origin::Create(GURL(gen(3))), false);
+    PreconnectedRequestStats origin4(url::Origin::Create(GURL(gen(4))), true);
 
     auto stats = std::make_unique<PreconnectStats>(GURL(main_frame_url));
     stats->requests_stats = {origin1, origin2, origin3, origin4};
@@ -259,11 +260,11 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectHistogramsPreresolvesOnly) {
     // Initialize PreconnectStats.
 
     // These two are hits.
-    PreconnectedRequestStats origin1(GURL(gen(1)).GetOrigin(), false);
-    PreconnectedRequestStats origin2(GURL(gen(2)).GetOrigin(), false);
+    PreconnectedRequestStats origin1(url::Origin::Create(GURL(gen(1))), false);
+    PreconnectedRequestStats origin2(url::Origin::Create(GURL(gen(2))), false);
     // And these two are misses.
-    PreconnectedRequestStats origin3(GURL(gen(3)).GetOrigin(), false);
-    PreconnectedRequestStats origin4(GURL(gen(4)).GetOrigin(), false);
+    PreconnectedRequestStats origin3(url::Origin::Create(GURL(gen(3))), false);
+    PreconnectedRequestStats origin4(url::Origin::Create(GURL(gen(4))), false);
 
     auto stats = std::make_unique<PreconnectStats>(GURL(main_frame_url));
     stats->requests_stats = {origin1, origin2, origin3, origin4};

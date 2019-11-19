@@ -25,6 +25,7 @@
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/vulkan/buildflags.h"
+#include "third_party/vulkan/include/vulkan/vulkan.h"
 #include "ui/gfx/extension_set.h"
 #include "ui/gl/buildflags.h"
 #include "ui/gl/gl_switches.h"
@@ -809,5 +810,19 @@ std::string VulkanVersionToString(uint32_t vulkan_version) {
   }
 }
 #endif  // OS_WIN
+
+VulkanVersion ConvertToHistogramVulkanVersion(uint32_t vulkan_version) {
+  switch (vulkan_version) {
+    case 0:
+      return VulkanVersion::kVulkanVersionUnknown;
+    case VK_MAKE_VERSION(1, 0, 0):
+      return VulkanVersion::kVulkanVersion_1_0_0;
+    case VK_MAKE_VERSION(1, 1, 0):
+      return VulkanVersion::kVulkanVersion_1_1_0;
+    default:
+      NOTREACHED();
+      return VulkanVersion::kVulkanVersionUnknown;
+  }
+}
 
 }  // namespace gpu

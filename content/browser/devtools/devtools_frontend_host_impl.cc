@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/ref_counted_memory.h"
 #include "build/build_config.h"
 #include "content/browser/bad_message.h"
 #include "content/public/browser/render_frame_host.h"
@@ -48,17 +49,25 @@ void DevToolsFrontendHost::SetupExtensionsAPI(
 }
 
 // static
-base::StringPiece DevToolsFrontendHost::GetFrontendResource(
-    const std::string& path) {
+scoped_refptr<base::RefCountedMemory>
+DevToolsFrontendHost::GetFrontendResourceBytes(const std::string& path) {
 #if !defined(OS_FUCHSIA)
   for (size_t i = 0; i < kDevtoolsResourcesSize; ++i) {
     if (path == kDevtoolsResources[i].name) {
-      return GetContentClient()->GetDataResource(
-          kDevtoolsResources[i].value, ui::SCALE_FACTOR_NONE);
+      return GetContentClient()->GetDataResourceBytes(
+          kDevtoolsResources[i].value);
     }
   }
 #endif  // defined(OS_FUCHSIA)
-  return std::string();
+  return nullptr;
+}
+
+// static
+std::string DevToolsFrontendHost::GetFrontendResource(const std::string& path) {
+  scoped_refptr<base::RefCountedMemory> bytes = GetFrontendResourceBytes(path);
+  if (!bytes)
+    return std::string();
+  return std::string(bytes->front_as<char>(), bytes->size());
 }
 
 DevToolsFrontendHostImpl::DevToolsFrontendHostImpl(
@@ -69,8 +78,7 @@ DevToolsFrontendHostImpl::DevToolsFrontendHostImpl(
   mojo::AssociatedRemote<blink::mojom::DevToolsFrontend> frontend;
   frame_host->GetRemoteAssociatedInterfaces()->GetInterface(&frontend);
   std::string api_script =
-      content::DevToolsFrontendHost::GetFrontendResource(kCompatibilityScript)
-          .as_string() +
+      content::DevToolsFrontendHost::GetFrontendResource(kCompatibilityScript) +
       kCompatibilityScriptSourceURL;
   frontend->SetupDevToolsFrontend(api_script,
                                   receiver_.BindNewEndpointAndPassRemote());

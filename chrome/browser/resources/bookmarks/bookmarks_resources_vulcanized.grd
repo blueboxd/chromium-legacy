@@ -13,7 +13,7 @@
   <release seq="1">
     <structures>
       <structure name="IDR_BOOKMARKS_VULCANIZED_HTML" file="${root_gen_dir}\chrome\browser\resources\bookmarks\vulcanized.html" use_base_dir="false" preprocess="true" type="chrome_html" compress="gzip" />
-      <structure name="IDR_BOOKMARKS_CRISPER_JS" file="${root_gen_dir}\chrome\browser\resources\bookmarks\crisper.js" use_base_dir="false" preprocess="true" type="chrome_html" compress="gzip" />
+      <structure name="IDR_BOOKMARKS_BOOKMARKS_ROLLUP_JS" file="${root_gen_dir}\chrome\browser\resources\bookmarks\bookmarks.js" use_base_dir="false" preprocess="true" type="chrome_html" compress="gzip" />
     </structures>
   </release>
 </grit>

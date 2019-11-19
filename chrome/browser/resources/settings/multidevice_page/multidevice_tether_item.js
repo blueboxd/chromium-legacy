@@ -15,7 +15,7 @@ Polymer({
   is: 'settings-multidevice-tether-item',
 
   behaviors: [
-    CrNetworkListenerBehavior,
+    NetworkListenerBehavior,
     MultiDeviceFeatureBehavior,
   ],
 

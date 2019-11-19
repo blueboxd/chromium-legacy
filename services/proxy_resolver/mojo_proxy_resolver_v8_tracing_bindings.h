@@ -32,7 +32,7 @@ namespace proxy_resolver {
 // be called from the origin task runner.
 template <typename Client>
 class MojoProxyResolverV8TracingBindings
-    : public net::ProxyResolverV8Tracing::Bindings,
+    : public ProxyResolverV8Tracing::Bindings,
       public HostResolverMojo::Impl {
  public:
   explicit MojoProxyResolverV8TracingBindings(Client* client)
@@ -51,7 +51,7 @@ class MojoProxyResolverV8TracingBindings
     client_->OnError(line_number, base::UTF16ToUTF8(message));
   }
 
-  net::ProxyHostResolver* GetHostResolver() override {
+  ProxyHostResolver* GetHostResolver() override {
     DCHECK(thread_checker_.CalledOnValidThread());
     return &host_resolver_;
   }

@@ -14,17 +14,19 @@ namespace password_manager {
 
 using ::autofill::PasswordForm;
 
+using Label = CSVPassword::Label;
 using Status = CSVPassword::Status;
 
-TEST(CSVPassword, Construction) {
-  CSVPassword::ColumnMap col_map = {
-      {0, CSVPassword::Label::kOrigin},
-      {1, CSVPassword::Label::kUsername},
-      {2, CSVPassword::Label::kPassword},
+TEST(CSVPasswordTest, Construction) {
+  const CSVPassword::ColumnMap kColMap = {
+      {0, Label::kOrigin},
+      {1, Label::kUsername},
+      {2, Label::kPassword},
   };
-  CSVPassword csv_pwd(col_map, "http://example.com,user,password");
-  PasswordForm result = csv_pwd.ParseValid();
-  GURL expected_origin("http://example.com");
+  // Use const to check that ParseValid does not mutate the CSVPassword.
+  const CSVPassword csv_pwd(kColMap, "http://example.com,user,password");
+  const PasswordForm result = csv_pwd.ParseValid();
+  const GURL expected_origin("http://example.com");
   EXPECT_EQ(expected_origin, result.origin);
   EXPECT_EQ(expected_origin.GetOrigin().spec(), result.signon_realm);
   EXPECT_EQ(base::ASCIIToUTF16("user"), result.username_value);
@@ -96,85 +98,151 @@ class CSVPasswordTestSuccess : public ::testing::TestWithParam<TestCase> {};
 TEST_P(CSVPasswordTestSuccess, Parse) {
   const TestCase& test_case = GetParam();
   SCOPED_TRACE(test_case.name);
-  CSVPassword csv_pwd(test_case.map, test_case.csv);
+  const CSVPassword csv_pwd(test_case.map, test_case.csv);
   EXPECT_EQ(Status::kOK, csv_pwd.Parse(nullptr));
 
-  PasswordForm result = csv_pwd.ParseValid();
+  const PasswordForm result = csv_pwd.ParseValid();
 
-  GURL expected_origin(test_case.origin);
+  const GURL expected_origin(test_case.origin);
   EXPECT_EQ(expected_origin, result.origin);
   EXPECT_EQ(expected_origin.GetOrigin().spec(), result.signon_realm);
 
-  EXPECT_EQ(base::ASCIIToUTF16(test_case.username), result.username_value);
-  EXPECT_EQ(base::ASCIIToUTF16(test_case.password), result.password_value);
+  EXPECT_EQ(base::UTF8ToUTF16(test_case.username), result.username_value);
+  EXPECT_EQ(base::UTF8ToUTF16(test_case.password), result.password_value);
 
-  PasswordForm result2 = csv_pwd.ParseValid();
-  EXPECT_EQ(result, result2);
+  EXPECT_EQ(result, csv_pwd.ParseValid());
 }
 
 INSTANTIATE_TEST_SUITE_P(
     ,
     CSVPasswordTestSuccess,
-    ::testing::Values(TestCaseBuilder("all columns specified")
-                          .Map({{0, CSVPassword::Label::kOrigin},
-                                {1, CSVPassword::Label::kUsername},
-                                {2, CSVPassword::Label::kPassword}})
-                          .CSV("http://example.com,user,password")
-                          .Origin("http://example.com")
-                          .SignonRealm("http://example.com/")
-                          .Username("user")
-                          .Password("password")
-                          .Build(),
-                      TestCaseBuilder("empty username")
-                          .Map({{0, CSVPassword::Label::kOrigin},
-                                {1, CSVPassword::Label::kPassword},
-                                {2, CSVPassword::Label::kUsername}})
-                          .CSV("http://example.com,password,")
-                          .Origin("http://example.com")
-                          .SignonRealm("http://example.com/")
-                          .Username("")
-                          .Password("password")
-                          .Build(),
-                      TestCaseBuilder("permuted and inserted columns")
-                          .Map({{2, CSVPassword::Label::kOrigin},
-                                {1, CSVPassword::Label::kUsername},
-                                {4, CSVPassword::Label::kPassword}})
-                          .CSV("X,the-user,https://example.org,Y,pwd")
-                          .Origin("https://example.org")
-                          .SignonRealm("https://example.org/")
-                          .Username("the-user")
-                          .Password("pwd")
-                          .Build(),
-                      TestCaseBuilder("Android")
-                          .Map({{2, CSVPassword::Label::kOrigin},
-                                {1, CSVPassword::Label::kUsername},
-                                {0, CSVPassword::Label::kPassword}})
-                          .CSV("pwd,the-user,android://example,Y,X")
-                          .Origin("android://example")
-                          .SignonRealm("android://example")
-                          .Username("the-user")
-                          .Password("pwd")
-                          .Build(),
-                      TestCaseBuilder("Escaped")
-                          .Map({{0, CSVPassword::Label::kOrigin},
-                                {2, CSVPassword::Label::kUsername},
-                                {3, CSVPassword::Label::kPassword}})
-                          .CSV(R"(http://example.org,"a""b","u,+,c","p""")")
-                          .Origin("http://example.org")
-                          .SignonRealm("http://example.org/")
-                          .Username("u,+,c")
-                          .Password("p\"")
-                          .Build(),
-                      TestCaseBuilder("path discarded")
-                          .Map({{2, CSVPassword::Label::kOrigin},
-                                {1, CSVPassword::Label::kUsername},
-                                {0, CSVPassword::Label::kPassword}})
-                          .CSV("password,user,http://example.com/path")
-                          .Origin("http://example.com/path")
-                          .SignonRealm("http://example.com/")
-                          .Username("user")
-                          .Password("password")
-                          .Build()));
+    ::testing::Values(
+        TestCaseBuilder("all columns specified")
+            .Map({{0, Label::kOrigin},
+                  {1, Label::kUsername},
+                  {2, Label::kPassword}})
+            .CSV("http://example.com,user,password")
+            .Origin("http://example.com")
+            .SignonRealm("http://example.com/")
+            .Username("user")
+            .Password("password")
+            .Build(),
+        TestCaseBuilder("empty username")
+            .Map({{0, Label::kOrigin},
+                  {1, Label::kPassword},
+                  {2, Label::kUsername}})
+            .CSV("http://example.com,password,")
+            .Origin("http://example.com")
+            .SignonRealm("http://example.com/")
+            .Username("")
+            .Password("password")
+            .Build(),
+        TestCaseBuilder("permuted and inserted columns")
+            .Map({{2, Label::kOrigin},
+                  {1, Label::kUsername},
+                  {4, Label::kPassword}})
+            .CSV("X,the-user,https://example.org,Y,pwd")
+            .Origin("https://example.org")
+            .SignonRealm("https://example.org/")
+            .Username("the-user")
+            .Password("pwd")
+            .Build(),
+        TestCaseBuilder("Android")
+            .Map({{2, Label::kOrigin},
+                  {1, Label::kUsername},
+                  {0, Label::kPassword}})
+            .CSV("pwd,the-user,android://example,Y,X")
+            .Origin("android://example")
+            .SignonRealm("android://example")
+            .Username("the-user")
+            .Password("pwd")
+            .Build(),
+        TestCaseBuilder("Escaped quotes")
+            .Map({{0, Label::kOrigin},
+                  {1, Label::kUsername},
+                  {2, Label::kPassword}})
+            .CSV(R"(http://example.org,"","""""")")
+            .Origin("http://example.org")
+            .SignonRealm("http://example.org/")
+            .Username("")
+            .Password("\"\"")
+            .Build(),
+        TestCaseBuilder("Escaped quotes 2")
+            .Map({{0, Label::kOrigin},
+                  {1, Label::kUsername},
+                  {2, Label::kPassword}})
+            .CSV(R"(http://example.org,"""","A""B""""C")")
+            .Origin("http://example.org")
+            .SignonRealm("http://example.org/")
+            .Username("\"")
+            .Password("A\"B\"\"C")
+            .Build(),
+        TestCaseBuilder("Escaped commas and quotes")
+            .Map({{0, Label::kOrigin},
+                  {2, Label::kUsername},
+                  {3, Label::kPassword}})
+            .CSV(R"(http://example.org,"a""b","u,+,c","p""")")
+            .Origin("http://example.org")
+            .SignonRealm("http://example.org/")
+            .Username("u,+,c")
+            .Password("p\"")
+            .Build(),
+        TestCaseBuilder("Escaped line breaks")
+            .Map({{0, Label::kOrigin},
+                  {2, Label::kUsername},
+                  {1, Label::kPassword}})
+            .CSV("http://example.org,\"a\nb\",\"u\r\nse\rr\"")
+            .Origin("http://example.org")
+            .SignonRealm("http://example.org/")
+            .Username("u\r\nse\rr")
+            .Password("a\nb")
+            .Build(),
+        TestCaseBuilder("Extra spaces preserved")
+            .Map({{0, Label::kOrigin},
+                  {1, Label::kUsername},
+                  {2, Label::kPassword}})
+            .CSV("http://example.org, user ,  pwd  ")
+            .Origin("http://example.org")
+            .SignonRealm("http://example.org/")
+            .Username(" user ")
+            .Password("  pwd  ")
+            .Build(),
+        TestCaseBuilder("Enclosing quotes are trimmed")
+            .Map({{0, Label::kOrigin},
+                  {1, Label::kUsername},
+                  {2, Label::kPassword}})
+            .CSV("http://example.org,\"user\",\"pwd\"")
+            .Origin("http://example.org")
+            .SignonRealm("http://example.org/")
+            .Username("user")
+            .Password("pwd")
+            .Build(),
+        TestCaseBuilder("Chars outside ASCII printable preserved verbatim")
+            .Map({{0, Label::kOrigin},
+                  {1, Label::kUsername},
+                  {2, Label::kPassword}})
+            .CSV("http://example.org,\x07\t\x0B\x1F,"
+                 "$\xc2\xa2\xe2\x98\x83\xf0\xa4\xad\xa2")
+            .Origin("http://example.org")
+            .SignonRealm("http://example.org/")
+            // Characters below 0x20: bell, horizontal + vertical tab, unit
+            // separator.
+            .Username("\x07\t\x0B\x1F")
+            // Unicode code points having 1..4 byte UTF-8 representation:
+            // dollar sign (U+0024), cent sign (U+00A2), snowman (U+2603), Han
+            // character U+24B62.
+            .Password("$\xc2\xa2\xe2\x98\x83\xf0\xa4\xad\xa2")
+            .Build(),
+        TestCaseBuilder("path discarded")
+            .Map({{2, Label::kOrigin},
+                  {1, Label::kUsername},
+                  {0, Label::kPassword}})
+            .CSV("password,user,http://example.com/path")
+            .Origin("http://example.com/path")
+            .SignonRealm("http://example.com/")
+            .Username("user")
+            .Password("password")
+            .Build()));
 
 class CSVPasswordTestFailure : public ::testing::TestWithParam<TestCase> {};
 
@@ -188,71 +256,90 @@ TEST_P(CSVPasswordTestFailure, Parse) {
 INSTANTIATE_TEST_SUITE_P(
     ,
     CSVPasswordTestFailure,
-    ::testing::Values(TestCaseBuilder("no columns specified")
-                          .Map({})
-                          .CSV("http://example.com,user,password")
-                          .Status(Status::kSemanticError)
-                          .Build(),
-                      TestCaseBuilder("not ASCII")
-                          .Map({{0, CSVPassword::Label::kOrigin},
-                                {1, CSVPassword::Label::kUsername},
-                                {2, CSVPassword::Label::kPassword}})
-                          .CSV("http://example.com/ř,user,password")
-                          .Status(Status::kSyntaxError)
-                          .Build(),
-                      TestCaseBuilder("no origin in map")
-                          .Map({{1, CSVPassword::Label::kUsername},
-                                {2, CSVPassword::Label::kPassword}})
-                          .CSV("http://example.com,user,password")
-                          .Status(Status::kSemanticError)
-                          .Build(),
-                      TestCaseBuilder("no username in map")
-                          .Map({{0, CSVPassword::Label::kOrigin},
-                                {2, CSVPassword::Label::kPassword}})
-                          .CSV("http://example.com,user,password")
-                          .Status(Status::kSemanticError)
-                          .Build(),
-                      TestCaseBuilder("no password in map")
-                          .Map({{0, CSVPassword::Label::kOrigin},
-                                {1, CSVPassword::Label::kUsername}})
-                          .CSV("http://example.com,user,password")
-                          .Status(Status::kSemanticError)
-                          .Build(),
-                      TestCaseBuilder("no origin in CSV")
-                          .Map({{0, CSVPassword::Label::kUsername},
-                                {1, CSVPassword::Label::kPassword},
-                                {2, CSVPassword::Label::kOrigin}})
-                          .CSV("user,password")
-                          .Status(Status::kSemanticError)
-                          .Build(),
-                      TestCaseBuilder("no username in CSV")
-                          .Map({{0, CSVPassword::Label::kOrigin},
-                                {1, CSVPassword::Label::kPassword},
-                                {2, CSVPassword::Label::kUsername}})
-                          .CSV("http://example.com,password")
-                          .Status(Status::kSemanticError)
-                          .Build(),
-                      TestCaseBuilder("no password in CSV")
-                          .Map({{0, CSVPassword::Label::kOrigin},
-                                {1, CSVPassword::Label::kUsername},
-                                {2, CSVPassword::Label::kPassword}})
-                          .CSV("http://example.com,user")
-                          .Status(Status::kSemanticError)
-                          .Build(),
-                      TestCaseBuilder("malformed CSV")
-                          .Map({{0, CSVPassword::Label::kOrigin},
-                                {1, CSVPassword::Label::kUsername},
-                                {2, CSVPassword::Label::kPassword}})
-                          .CSV("\"")
-                          .Status(Status::kSyntaxError)
-                          .Build(),
-                      TestCaseBuilder("map not injective")
-                          .Map({{0, CSVPassword::Label::kOrigin},
-                                {1, CSVPassword::Label::kUsername},
-                                {2, CSVPassword::Label::kPassword},
-                                {3, CSVPassword::Label::kUsername}})
-                          .CSV("http://example.com,user,pwd,user2")
-                          .Status(Status::kSemanticError)
-                          .Build()));
+    ::testing::Values(
+        TestCaseBuilder("no columns specified")
+            .Map({})
+            .CSV("http://example.com,user,password")
+            .Status(Status::kSemanticError)
+            .Build(),
+        TestCaseBuilder("not ASCII")
+            .Map({{0, Label::kOrigin},
+                  {1, Label::kUsername},
+                  {2, Label::kPassword}})
+            .CSV("http://example.com/ř,user,password")
+            .Status(Status::kSyntaxError)
+            .Build(),
+        TestCaseBuilder("no origin in map")
+            .Map({{1, Label::kUsername}, {2, Label::kPassword}})
+            .CSV("http://example.com,user,password")
+            .Status(Status::kSemanticError)
+            .Build(),
+        TestCaseBuilder("no username in map")
+            .Map({{0, Label::kOrigin}, {2, Label::kPassword}})
+            .CSV("http://example.com,user,password")
+            .Status(Status::kSemanticError)
+            .Build(),
+        TestCaseBuilder("no password in map")
+            .Map({{0, Label::kOrigin}, {1, Label::kUsername}})
+            .CSV("http://example.com,user,password")
+            .Status(Status::kSemanticError)
+            .Build(),
+        TestCaseBuilder("no origin in CSV")
+            .Map({{0, Label::kUsername},
+                  {1, Label::kPassword},
+                  {2, Label::kOrigin}})
+            .CSV("user,password")
+            .Status(Status::kSemanticError)
+            .Build(),
+        TestCaseBuilder("no username in CSV")
+            .Map({{0, Label::kOrigin},
+                  {1, Label::kPassword},
+                  {2, Label::kUsername}})
+            .CSV("http://example.com,password")
+            .Status(Status::kSemanticError)
+            .Build(),
+        TestCaseBuilder("no password in CSV")
+            .Map({{0, Label::kOrigin},
+                  {1, Label::kUsername},
+                  {2, Label::kPassword}})
+            .CSV("http://example.com,user")
+            .Status(Status::kSemanticError)
+            .Build(),
+        TestCaseBuilder("malformed CSV")
+            .Map({{0, Label::kOrigin},
+                  {1, Label::kUsername},
+                  {2, Label::kPassword}})
+            .CSV("\"")
+            .Status(Status::kSyntaxError)
+            .Build(),
+        TestCaseBuilder("another malformed CSV")
+            .Map({{0, Label::kOrigin},
+                  {1, Label::kUsername},
+                  {2, Label::kPassword}})
+            .CSV("Url,Username,\"Password\n")
+            .Status(Status::kSyntaxError)
+            .Build(),
+        TestCaseBuilder("no ASCII")
+            .Map({{0, Label::kOrigin},
+                  {1, Label::kUsername},
+                  {2, Label::kPassword}})
+            .CSV("https://aččountš.googľe.čom/,test@gmail.com,test1\n")
+            .Status(Status::kSyntaxError)
+            .Build(),
+        TestCaseBuilder("invalid URI")
+            .Map({{0, Label::kOrigin},
+                  {1, Label::kUsername},
+                  {2, Label::kPassword}})
+            .CSV(":,test@gmail.com,test1\n")
+            .Status(Status::kSemanticError)
+            .Build(),
+        TestCaseBuilder("map not injective")
+            .Map({{0, Label::kOrigin},
+                  {1, Label::kUsername},
+                  {2, Label::kPassword},
+                  {3, Label::kUsername}})
+            .CSV("http://example.com,user,pwd,user2")
+            .Status(Status::kSemanticError)
+            .Build()));
 
 }  // namespace password_manager

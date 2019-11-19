@@ -74,4 +74,10 @@ public class BuildConfig {
 #else
     public static MAYBE_FINAL boolean IS_BUNDLE MAYBE_FALSE;
 #endif
+
+#if defined(_IS_INCREMENTAL_INSTALL)
+    public static MAYBE_FINAL boolean IS_INCREMENTAL_INSTALL = true;
+#else
+    public static MAYBE_FINAL boolean IS_INCREMENTAL_INSTALL MAYBE_FALSE;
+#endif
 }

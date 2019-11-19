@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "third_party/inspector_protocol/crdtp/encoding.h"
+#include "third_party/inspector_protocol/crdtp/json.h"
 
 // Convenience adaptation of the conversion function
 // crdtp::json::ConvertCBORToJSON, crdtp::json::ConvertJSONToCBOR.

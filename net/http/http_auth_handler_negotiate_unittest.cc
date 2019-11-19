@@ -16,6 +16,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/http/http_auth_mechanism.h"
 #include "net/http/http_request_info.h"
 #include "net/http/mock_allow_http_auth_preferences.h"
 #include "net/log/net_log_with_source.h"
@@ -62,8 +63,8 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest,
         "alias", "10.0.0.2", "canonical.example.com");
 
     http_auth_preferences_.reset(new MockAllowHttpAuthPreferences());
-    factory_.reset(new HttpAuthHandlerNegotiate::Factory(
-        net::HttpAuthHandlerFactory::NegotiateAuthSystemFactory()));
+    factory_.reset(
+        new HttpAuthHandlerNegotiate::Factory(HttpAuthMechanismFactory()));
     factory_->set_http_auth_preferences(http_auth_preferences_.get());
 #if defined(OS_ANDROID)
     http_auth_preferences_->set_auth_android_negotiate_account_type(
@@ -388,8 +389,7 @@ TEST_F(HttpAuthHandlerNegotiateTest, NoKerberosCredentials) {
 TEST_F(HttpAuthHandlerNegotiateTest, MissingGSSAPI) {
   MockAllowHttpAuthPreferences http_auth_preferences;
   std::unique_ptr<HttpAuthHandlerNegotiate::Factory> negotiate_factory(
-      new HttpAuthHandlerNegotiate::Factory(
-          net::HttpAuthHandlerFactory::NegotiateAuthSystemFactory()));
+      new HttpAuthHandlerNegotiate::Factory(HttpAuthMechanismFactory()));
   negotiate_factory->set_http_auth_preferences(&http_auth_preferences);
   negotiate_factory->set_library(
       std::make_unique<GSSAPISharedLibrary>("/this/library/does/not/exist"));

@@ -9,8 +9,8 @@
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
-#include "chrome/browser/sharing/sharing_target_info.h"
 #include "chrome/browser/sharing/sharing_utils.h"
+#include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/fake_device_info_sync_service.h"
 #include "components/sync_device_info/fake_local_device_info_provider.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -24,11 +24,9 @@ const char kReceiverGUID[] = "kReceiverGUID";
 const char kReceiverDeviceName[] = "receiver_device";
 const char kP256dh[] = "p256dh";
 const char kAuthSecret[] = "auth_secret";
-const char kVapidFcmToken[] = "vapid_fcm_token";
-const char kSharingFcmToken[] = "sharing_fcm_token";
+const char kFCMToken[] = "vapid_fcm_token";
 const char kAuthorizedEntity[] = "authorized_entity";
 const char kSenderVapidFcmToken[] = "sender_vapid_fcm_token";
-const char kSenderSharingFcmToken[] = "sender_sharing_fcm_token";
 const char kSenderP256dh[] = "sender_p256dh";
 const char kSenderAuthSecret[] = "sender_auth_secret";
 const char kSenderMessageID[] = "sender_message_id";
@@ -40,7 +38,7 @@ class MockSharingFCMSender : public SharingFCMSender {
   ~MockSharingFCMSender() override = default;
 
   MOCK_METHOD4(SendMessageToDevice,
-               void(SharingTargetInfo target,
+               void(syncer::DeviceInfo::SharingTargetInfo target,
                     base::TimeDelta time_to_live,
                     SharingMessage message,
                     SendMessageCallback callback));
@@ -76,8 +74,8 @@ class SharingMessageSenderTest : public testing::Test {
 
 static syncer::DeviceInfo::SharingInfo CreateLocalSharingInfo() {
   return syncer::DeviceInfo::SharingInfo(
-      kSenderVapidFcmToken, kSenderSharingFcmToken, kSenderP256dh,
-      kSenderAuthSecret,
+      {kSenderVapidFcmToken, kSenderP256dh, kSenderAuthSecret},
+      {"sender_id_fcm_token", "sender_id_p256dh", "sender_id_auth_secret"},
       std::set<sync_pb::SharingSpecificFields::EnabledFeatures>());
 }
 
@@ -91,7 +89,8 @@ static std::unique_ptr<syncer::DeviceInfo> CreateFakeDeviceInfo(
       /*last_updated_timestamp=*/base::Time::Now(),
       /*send_tab_to_self_receiving_enabled=*/false,
       syncer::DeviceInfo::SharingInfo(
-          kVapidFcmToken, kSharingFcmToken, kP256dh, kAuthSecret,
+          {kFCMToken, kP256dh, kAuthSecret},
+          {"sender_id_fcm_token", "sender_id_p256dh", "sender_id_auth_secret"},
           std::set<sync_pb::SharingSpecificFields::EnabledFeatures>{
               sync_pb::SharingSpecificFields::CLICK_TO_CALL}));
 }
@@ -124,7 +123,7 @@ TEST_F(SharingMessageSenderTest, MessageSent_AckTimedout) {
               Run(testing::Eq(SharingSendMessageResult::kAckTimeout),
                   testing::Eq(nullptr)));
 
-  auto simulate_timeout = [&](SharingTargetInfo target,
+  auto simulate_timeout = [&](syncer::DeviceInfo::SharingTargetInfo target,
                               base::TimeDelta time_to_live,
                               chrome_browser_sharing::SharingMessage message,
                               SharingFCMSender::SendMessageCallback callback) {
@@ -166,7 +165,8 @@ TEST_F(SharingMessageSenderTest, SendMessageToDevice_InternalError) {
                   testing::Eq(nullptr)));
 
   auto simulate_internal_error =
-      [&](SharingTargetInfo target, base::TimeDelta time_to_live,
+      [&](syncer::DeviceInfo::SharingTargetInfo target,
+          base::TimeDelta time_to_live,
           chrome_browser_sharing::SharingMessage message,
           SharingFCMSender::SendMessageCallback callback) {
         // FCM message not sent succesfully.
@@ -210,7 +210,8 @@ TEST_F(SharingMessageSenderTest, MessageSent_AckReceived) {
                   ProtoEquals(expected_response_message)));
 
   auto simulate_expected_ack_message_received =
-      [&](SharingTargetInfo target, base::TimeDelta time_to_live,
+      [&](syncer::DeviceInfo::SharingTargetInfo target,
+          base::TimeDelta time_to_live,
           chrome_browser_sharing::SharingMessage message,
           SharingFCMSender::SendMessageCallback callback) {
         // FCM message sent successfully.

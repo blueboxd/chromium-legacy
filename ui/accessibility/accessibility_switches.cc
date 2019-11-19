@@ -28,6 +28,11 @@ const char kEnableExperimentalAccessibilityLabelsDebugging[] =
 const char kEnableExperimentalAccessibilityLanguageDetection[] =
     "enable-experimental-accessibility-language-detection";
 
+// Enables language detection for dynamic content which is then exposed to
+// assistive technology such as screen readers.
+const char kEnableExperimentalAccessibilityLanguageDetectionDynamic[] =
+    "enable-experimental-accessibility-language-detection-dynamic";
+
 // Shows setting to enable Switch Access before it has launched.
 const char kEnableExperimentalAccessibilitySwitchAccess[] =
     "enable-experimental-accessibility-switch-access";
@@ -49,6 +54,11 @@ const char kEnableExperimentalAccessibilityChromeVoxSubNodeLanguageSwitching[] =
 bool IsExperimentalAccessibilityLanguageDetectionEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableExperimentalAccessibilityLanguageDetection);
+}
+
+bool IsExperimentalAccessibilityLanguageDetectionDynamicEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      ::switches::kEnableExperimentalAccessibilityLanguageDetectionDynamic);
 }
 
 bool IsExperimentalAccessibilitySwitchAccessTextEnabled() {

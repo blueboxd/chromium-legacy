@@ -16,11 +16,9 @@
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 
-namespace net {
-class ProxyResolverV8TracingFactory;
-}  // namespace net
-
 namespace proxy_resolver {
+
+class ProxyResolverV8TracingFactory;
 
 // mojom::ProxyResolverFactory implementation that handles multiple bound pipes.
 class ProxyResolverFactoryImpl : public mojom::ProxyResolverFactory {
@@ -38,8 +36,7 @@ class ProxyResolverFactoryImpl : public mojom::ProxyResolverFactory {
   // Visible for tests.
   ProxyResolverFactoryImpl(
       mojo::PendingReceiver<mojom::ProxyResolverFactory> receiver,
-      std::unique_ptr<net::ProxyResolverV8TracingFactory>
-          proxy_resolver_factory);
+      std::unique_ptr<ProxyResolverV8TracingFactory> proxy_resolver_factory);
 
  private:
   class Job;
@@ -53,7 +50,7 @@ class ProxyResolverFactoryImpl : public mojom::ProxyResolverFactory {
 
   void RemoveJob(Job* job);
 
-  const std::unique_ptr<net::ProxyResolverV8TracingFactory>
+  const std::unique_ptr<ProxyResolverV8TracingFactory>
       proxy_resolver_impl_factory_;
 
   std::map<Job*, std::unique_ptr<Job>> jobs_;

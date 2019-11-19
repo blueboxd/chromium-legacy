@@ -3448,11 +3448,10 @@ void RenderFrameImpl::CommitNavigationWithParams(
     return;
   }
 
-  // TODO(yoichio): This is temporary switch to have chrome WebUI
-  // use the old web APIs.
-  // After completion of the migration, we should remove this.
-  // See crbug.com/924871 for detail.
-  if (GetContentClient()->renderer()->RequiresHtmlImports(common_params->url)) {
+  // TODO(738611): This is temporary switch to have chrome WebUI use the old web
+  // APIs. After completion of the migration, we should remove this.
+  if (GetContentClient()->renderer()->RequiresWebComponentsV0(
+          common_params->url)) {
     blink::WebRuntimeFeatures::EnableShadowDOMV0(true);
     blink::WebRuntimeFeatures::EnableCustomElementsV0(true);
     blink::WebRuntimeFeatures::EnableHTMLImports(true);
@@ -4605,7 +4604,7 @@ void RenderFrameImpl::DidClearWindowObject() {
       *base::CommandLine::ForCurrentProcess();
 
   if (command_line.HasSwitch(cc::switches::kEnableGpuBenchmarking))
-    GpuBenchmarking::Install(this);
+    GpuBenchmarking::Install(weak_factory_.GetWeakPtr());
 
   if (command_line.HasSwitch(switches::kEnableSkiaBenchmarking))
     SkiaBenchmarking::Install(frame_);
@@ -5131,14 +5130,15 @@ void RenderFrameImpl::DidLoadResourceFromMemoryCache(
 }
 
 void RenderFrameImpl::DidStartResponse(
-    const GURL& response_url,
+    const url::Origin& origin_of_final_response_url,
     int request_id,
     network::mojom::URLResponseHeadPtr response_head,
     content::ResourceType resource_type,
     PreviewsState previews_state) {
-  for (auto& observer : observers_)
-    observer.DidStartResponse(response_url, request_id, *response_head,
-                              resource_type, previews_state);
+  for (auto& observer : observers_) {
+    observer.DidStartResponse(origin_of_final_response_url, request_id,
+                              *response_head, resource_type, previews_state);
+  }
 }
 
 void RenderFrameImpl::DidCompleteResponse(

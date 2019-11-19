@@ -94,8 +94,6 @@ class PreviewEnabledPreviewsDecider : public PreviewsDecider {
     return false;
   }
 
-  void LogHintCacheMatch(const GURL& url, bool is_committed) const override {}
-
  private:
   bool IsEnabled(PreviewsType type) const {
     switch (type) {

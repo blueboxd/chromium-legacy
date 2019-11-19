@@ -410,7 +410,7 @@ class CrostiniManager::CrostiniRestarter
   void StartLxdContainerFinished(CrostiniResult result) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-    CloseCrostiniUpgradeContainerView();
+    CloseCrostiniUpdateFilesystemView();
     for (auto& observer : observer_list_) {
       observer.OnContainerStarted(result);
     }
@@ -2414,7 +2414,7 @@ void CrostiniManager::OnStartLxdContainer(
     case vm_tools::cicerone::StartLxdContainerResponse::REMAPPING:
       // Run the update container dialog to warn users of delays.
       // The callback will be called when we receive the LxdContainerStarting
-      PrepareShowCrostiniUpgradeContainerView(profile_,
+      PrepareShowCrostiniUpdateFilesystemView(profile_,
                                               CrostiniUISurface::kAppList);
       // signal.
       // Then perform the same steps as for starting.

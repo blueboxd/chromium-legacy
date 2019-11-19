@@ -37,12 +37,14 @@
 #include "ash/wm/window_state_observer.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
+#include "ash/wm/work_area_insets.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
@@ -457,10 +459,20 @@ TEST_P(TabletModeWindowManagerTest,
   EXPECT_TRUE(WindowState::Get(window.get())->IsMaximized());
   EXPECT_NE(empty_rect.ToString(), window->bounds().ToString());
   gfx::Rect maximized_size = window->bounds();
+  const gfx::Insets tablet_insets =
+      WorkAreaInsets::ForWindow(window.get())->user_work_area_insets();
 
   // Destroy the tablet mode and check that the resulting size of the window
   // is remaining as it is (but not maximized).
   DestroyTabletModeWindowManager();
+
+  if (chromeos::switches::ShouldShowShelfHotseat()) {
+    // Account for work-area updates when leaving tablet mode.
+    const gfx::Insets clamshell_insets =
+        WorkAreaInsets::ForWindow(window.get())->user_work_area_insets();
+    const gfx::Insets offset_difference = clamshell_insets - tablet_insets;
+    maximized_size.Inset(offset_difference);
+  }
 
   EXPECT_FALSE(WindowState::Get(window.get())->IsMaximized());
   EXPECT_EQ(maximized_size.ToString(), window->bounds().ToString());

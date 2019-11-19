@@ -2143,8 +2143,10 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
     authentication_results_ = std::move(properties);
     // Update the info whether the user is an AD joined user or local user.
     base::string16 sid = OLE2CW(user_sid_);
-    authentication_results_->SetBoolKey(
-        kKeyIsAdJoinedUser, OSUserManager::Get()->IsUserDomainJoined(sid));
+    authentication_results_->SetKey(
+        kKeyIsAdJoinedUser,
+        base::Value(OSUserManager::Get()->IsUserDomainJoined(sid) ? "true"
+                                                                  : "false"));
     // Update the time at which the login attempt happened. This would help
     // track the last time an online login happened via GCPW.
     int64_t current_time = static_cast<int64_t>(

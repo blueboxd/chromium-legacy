@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('bookmarks', function() {
-  'use strict';
+import {sendWithPromise, addSingletonGetter} from 'chrome://resources/js/cr.m.js';
+import {IncognitoAvailability} from './constants.js';
 
-  class BrowserProxy {
+  export class BrowserProxy {
     /**
      * @return {!Promise<!IncognitoAvailability>} Promise resolved with the
      *     current incognito mode preference.
      */
     getIncognitoAvailability() {
-      return cr.sendWithPromise('getIncognitoAvailability');
+      return sendWithPromise('getIncognitoAvailability');
     }
 
     /**
@@ -19,7 +19,7 @@ cr.define('bookmarks', function() {
      *     can be edited.
      */
     getCanEditBookmarks() {
-      return cr.sendWithPromise('getCanEditBookmarks');
+      return sendWithPromise('getCanEditBookmarks');
     }
 
     /**
@@ -27,7 +27,7 @@ cr.define('bookmarks', function() {
      *     string for |messageName| with |itemCount| items.
      */
     getPluralString(messageName, itemCount) {
-      return cr.sendWithPromise('getPluralString', messageName, itemCount);
+      return sendWithPromise('getPluralString', messageName, itemCount);
     }
 
     /**
@@ -42,9 +42,5 @@ cr.define('bookmarks', function() {
     }
   }
 
-  cr.addSingletonGetter(BrowserProxy);
+  addSingletonGetter(BrowserProxy);
 
-  return {
-    BrowserProxy: BrowserProxy,
-  };
-});

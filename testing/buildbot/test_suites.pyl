@@ -2439,6 +2439,7 @@
       'media_router_junit_tests': {},
       'module_installer_junit_tests': {},
       'net_junit_tests': {},
+      'paint_preview_junit_tests': {},
       'service_junit_tests': {},
       'touch_to_fill_junit_tests': {},
       'ui_junit_tests': {},
@@ -4877,12 +4878,13 @@
 
     'viz_chromeos_gtests': {
       # TODO(kylechar): Remove once VizDisplayCompositor is lauched on CrOS.
+      # https://crbug.com/732805
       'non_viz_browser_tests': {
         'args': [
           '--disable-features=VizDisplayCompositor',
         ],
         'swarming': {
-          'shards': 10,
+          'shards': 20,
         },
         'test': 'browser_tests',
       },

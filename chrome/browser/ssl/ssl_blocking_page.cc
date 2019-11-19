@@ -12,16 +12,9 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/interstitials/chrome_metrics_helper.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ssl/cert_report_helper.h"
-#include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
-#include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
-#include "chrome/browser/ssl/ssl_error_controller_client.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/security_interstitials/content/security_interstitial_controller_client.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
@@ -42,78 +35,9 @@ using content::InterstitialPageDelegate;
 using content::NavigationEntry;
 using security_interstitials::SSLErrorUI;
 
-namespace {
-
-std::unique_ptr<ChromeMetricsHelper> CreateSslProblemMetricsHelper(
-    content::WebContents* web_contents,
-    int cert_error,
-    const GURL& request_url,
-    bool overridable) {
-  security_interstitials::MetricsHelper::ReportDetails reporting_info;
-  reporting_info.metric_prefix =
-      overridable ? "ssl_overridable" : "ssl_nonoverridable";
-  return std::make_unique<ChromeMetricsHelper>(web_contents, request_url,
-                                               reporting_info);
-}
-
-}  // namespace
-
 // static
 const InterstitialPageDelegate::TypeID SSLBlockingPage::kTypeForTesting =
     &SSLBlockingPage::kTypeForTesting;
-
-// static
-SSLBlockingPage* SSLBlockingPage::Create(
-    content::WebContents* web_contents,
-    int cert_error,
-    const net::SSLInfo& ssl_info,
-    const GURL& request_url,
-    int options_mask,
-    const base::Time& time_triggered,
-    const GURL& support_url,
-    std::unique_ptr<SSLCertReporter> ssl_cert_reporter) {
-  bool overridable = IsOverridable(options_mask);
-  std::unique_ptr<ChromeMetricsHelper> metrics_helper(
-      CreateSslProblemMetricsHelper(web_contents, cert_error, request_url,
-                                    overridable));
-  metrics_helper.get()->StartRecordingCaptivePortalMetrics(overridable);
-
-  ChromeSSLHostStateDelegate* state =
-      ChromeSSLHostStateDelegateFactory::GetForProfile(
-          Profile::FromBrowserContext(web_contents->GetBrowserContext()));
-  state->DidDisplayErrorPage(cert_error);
-  bool is_recurrent_error = state->HasSeenRecurrentErrors(cert_error);
-  if (overridable) {
-    UMA_HISTOGRAM_BOOLEAN("interstitial.ssl_overridable.is_recurrent_error",
-                          is_recurrent_error);
-    if (cert_error == net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED) {
-      UMA_HISTOGRAM_BOOLEAN(
-          "interstitial.ssl_overridable.is_recurrent_error.ct_error",
-          is_recurrent_error);
-    }
-  } else {
-    UMA_HISTOGRAM_BOOLEAN("interstitial.ssl_nonoverridable.is_recurrent_error",
-                          is_recurrent_error);
-    if (cert_error == net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED) {
-      UMA_HISTOGRAM_BOOLEAN(
-          "interstitial.ssl_nonoverridable.is_recurrent_error.ct_error",
-          is_recurrent_error);
-    }
-  }
-
-  if (cert_error == net::ERR_CERT_SYMANTEC_LEGACY) {
-    GURL symantec_support_url(kSymantecSupportUrl);
-    return new SSLBlockingPage(
-        web_contents, cert_error, ssl_info, request_url, options_mask,
-        time_triggered, std::move(symantec_support_url),
-        std::move(ssl_cert_reporter), overridable, std::move(metrics_helper));
-  }
-
-  return new SSLBlockingPage(web_contents, cert_error, ssl_info, request_url,
-                             options_mask, time_triggered, support_url,
-                             std::move(ssl_cert_reporter), overridable,
-                             std::move(metrics_helper));
-}
 
 bool SSLBlockingPage::ShouldCreateNewNavigation() const {
   return true;
@@ -143,21 +67,17 @@ SSLBlockingPage::SSLBlockingPage(
     const GURL& support_url,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
     bool overridable,
-    std::unique_ptr<ChromeMetricsHelper> metrics_helper)
+    std::unique_ptr<
+        security_interstitials::SecurityInterstitialControllerClient>
+        controller_client)
     : SSLBlockingPageBase(web_contents,
-                          cert_error,
                           CertificateErrorReport::INTERSTITIAL_SSL,
                           ssl_info,
                           request_url,
                           std::move(ssl_cert_reporter),
                           overridable,
                           time_triggered,
-                          std::make_unique<SSLErrorControllerClient>(
-                              web_contents,
-                              ssl_info,
-                              cert_error,
-                              request_url,
-                              std::move(metrics_helper))),
+                          std::move(controller_client)),
       ssl_info_(ssl_info),
       overridable_(overridable),
       ssl_error_ui_(std::make_unique<SSLErrorUI>(request_url,
@@ -195,13 +115,6 @@ void SSLBlockingPage::CommandReceived(const std::string& command) {
       controller()->GetPrefService());
   ssl_error_ui_->HandleCommand(
       static_cast<security_interstitials::SecurityInterstitialCommand>(cmd));
-}
-
-void SSLBlockingPage::OverrideRendererPrefs(
-    blink::mojom::RendererPreferences* prefs) {
-  Profile* profile = Profile::FromBrowserContext(
-      web_contents()->GetBrowserContext());
-  renderer_preferences_util::UpdateFromSystemSettings(prefs, profile);
 }
 
 // static

@@ -92,6 +92,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
           radio_statics);
 
   // BluetoothAdapter:
+  base::WeakPtr<BluetoothAdapter> GetWeakPtr() override;
   bool SetPoweredImpl(bool powered) override;
   void UpdateFilter(std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
                     DiscoverySessionResultCallback callback) override;

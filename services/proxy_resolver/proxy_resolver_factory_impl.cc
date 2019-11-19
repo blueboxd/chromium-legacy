@@ -23,7 +23,7 @@ class ProxyResolverFactoryImpl::Job {
  public:
   Job(ProxyResolverFactoryImpl* parent,
       const scoped_refptr<net::PacFileData>& pac_script,
-      net::ProxyResolverV8TracingFactory* proxy_resolver_factory,
+      ProxyResolverV8TracingFactory* proxy_resolver_factory,
       mojo::PendingReceiver<mojom::ProxyResolver> receiver,
       mojo::PendingRemote<mojom::ProxyResolverFactoryRequestClient> client);
   ~Job();
@@ -33,9 +33,9 @@ class ProxyResolverFactoryImpl::Job {
   void OnProxyResolverCreated(int error);
 
   ProxyResolverFactoryImpl* const parent_;
-  std::unique_ptr<net::ProxyResolverV8Tracing> proxy_resolver_impl_;
+  std::unique_ptr<ProxyResolverV8Tracing> proxy_resolver_impl_;
   mojo::PendingReceiver<mojom::ProxyResolver> proxy_receiver_;
-  net::ProxyResolverV8TracingFactory* factory_;
+  ProxyResolverV8TracingFactory* factory_;
   std::unique_ptr<net::ProxyResolverFactory::Request> request_;
   mojo::Remote<mojom::ProxyResolverFactoryRequestClient> remote_client_;
 
@@ -45,7 +45,7 @@ class ProxyResolverFactoryImpl::Job {
 ProxyResolverFactoryImpl::Job::Job(
     ProxyResolverFactoryImpl* factory,
     const scoped_refptr<net::PacFileData>& pac_script,
-    net::ProxyResolverV8TracingFactory* proxy_resolver_factory,
+    ProxyResolverV8TracingFactory* proxy_resolver_factory,
     mojo::PendingReceiver<mojom::ProxyResolver> receiver,
     mojo::PendingRemote<mojom::ProxyResolverFactoryRequestClient> client)
     : parent_(factory),
@@ -84,7 +84,7 @@ void ProxyResolverFactoryImpl::Job::OnProxyResolverCreated(int error) {
 ProxyResolverFactoryImpl::ProxyResolverFactoryImpl(
     mojo::PendingReceiver<mojom::ProxyResolverFactory> receiver)
     : ProxyResolverFactoryImpl(std::move(receiver),
-                               net::ProxyResolverV8TracingFactory::Create()) {}
+                               ProxyResolverV8TracingFactory::Create()) {}
 
 void ProxyResolverFactoryImpl::AddResolver(
     std::unique_ptr<mojom::ProxyResolver> resolver,
@@ -94,7 +94,7 @@ void ProxyResolverFactoryImpl::AddResolver(
 
 ProxyResolverFactoryImpl::ProxyResolverFactoryImpl(
     mojo::PendingReceiver<mojom::ProxyResolverFactory> receiver,
-    std::unique_ptr<net::ProxyResolverV8TracingFactory> proxy_resolver_factory)
+    std::unique_ptr<ProxyResolverV8TracingFactory> proxy_resolver_factory)
     : proxy_resolver_impl_factory_(std::move(proxy_resolver_factory)),
       receiver_(this, std::move(receiver)) {}
 

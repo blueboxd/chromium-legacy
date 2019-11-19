@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/ui/global_media_controls/cast_media_notification_provider.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_container_observer.h"
 #include "chrome/browser/ui/global_media_controls/overlay_media_notifications_manager.h"
@@ -74,6 +75,9 @@ class MediaNotificationService
   void OnContainerDestroyed(const std::string& id) override;
   void OnContainerDraggedOut(const std::string& id, gfx::Rect bounds) override;
 
+  // KeyedService implementation.
+  void Shutdown() override;
+
   // Called by the |overlay_media_notifications_manager_| when an overlay
   // notification is closed.
   void OnOverlayNotificationClosed(const std::string& id);
@@ -96,28 +100,62 @@ class MediaNotificationService
   friend class MediaNotificationServiceTest;
   friend class MediaToolbarButtonControllerTest;
 
-  class Session : public content::WebContentsObserver {
+  class Session : public content::WebContentsObserver,
+                  public media_session::mojom::MediaControllerObserver {
    public:
     Session(MediaNotificationService* owner,
             const std::string& id,
             std::unique_ptr<media_message_center::MediaSessionNotificationItem>
                 item,
-            content::WebContents* web_contents);
+            content::WebContents* web_contents,
+            mojo::Remote<media_session::mojom::MediaController> controller);
     Session(const Session&) = delete;
     Session& operator=(const Session&) = delete;
     ~Session() override;
 
     // content::WebContentsObserver implementation.
     void WebContentsDestroyed() override;
+    void OnWebContentsFocused(content::RenderWidgetHost*) override;
+
+    // media_session::mojom::MediaControllerObserver:
+    void MediaSessionInfoChanged(
+        media_session::mojom::MediaSessionInfoPtr session_info) override;
+    void MediaSessionMetadataChanged(
+        const base::Optional<media_session::MediaMetadata>& metadata) override {
+    }
+    void MediaSessionActionsChanged(
+        const std::vector<media_session::mojom::MediaSessionAction>& actions)
+        override {}
+    void MediaSessionChanged(
+        const base::Optional<base::UnguessableToken>& request_id) override {}
+    void MediaSessionPositionChanged(
+        const base::Optional<media_session::MediaPosition>& position) override;
 
     media_message_center::MediaSessionNotificationItem* item() {
       return item_.get();
     }
 
+    // Called when a new MediaController is given to the item. We need to
+    // observe the same session as our underlying item.
+    void SetController(
+        mojo::Remote<media_session::mojom::MediaController> controller);
+
    private:
+    void StartInactiveTimer();
+
+    // Called when a session is interacted with (to reset |inactive_timer_|).
+    void OnSessionInteractedWith();
+
     MediaNotificationService* owner_;
     const std::string id_;
     std::unique_ptr<media_message_center::MediaSessionNotificationItem> item_;
+
+    // Used to stop/hide a paused session after a period of inactivity.
+    base::OneShotTimer inactive_timer_;
+
+    // Used to receive updates to the Media Session playback state.
+    mojo::Receiver<media_session::mojom::MediaControllerObserver>
+        observer_receiver_{this};
   };
 
   void OnReceivedAudioFocusRequests(

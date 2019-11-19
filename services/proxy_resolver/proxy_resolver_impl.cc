@@ -46,7 +46,7 @@ class ProxyResolverImpl::Job {
 };
 
 ProxyResolverImpl::ProxyResolverImpl(
-    std::unique_ptr<net::ProxyResolverV8Tracing> resolver)
+    std::unique_ptr<ProxyResolverV8Tracing> resolver)
     : resolver_(std::move(resolver)) {}
 
 ProxyResolverImpl::~ProxyResolverImpl() = default;

@@ -136,6 +136,9 @@ class WebAppInstallTask : content::WebContentsObserver {
       WebAppUrlLoader* url_loader,
       RetrieveWebApplicationInfoWithIconsCallback callback);
 
+  static std::unique_ptr<content::WebContents> CreateWebContents(
+      Profile* profile);
+
   // WebContentsObserver:
   void WebContentsDestroyed() override;
 

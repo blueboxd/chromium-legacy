@@ -1205,7 +1205,7 @@ void RasterImplementation::IssueImageDecodeCacheEntryCreation(
 }
 
 GLuint RasterImplementation::CreateAndConsumeForGpuRaster(
-    const GLbyte* mailbox) {
+    const gpu::Mailbox& mailbox) {
   NOTREACHED();
   return 0;
 }

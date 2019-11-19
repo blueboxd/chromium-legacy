@@ -7,6 +7,7 @@ import './strings.m.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {getFavicon} from 'chrome://resources/js/icon.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {isRTL} from 'chrome://resources/js/util.m.js';
 
 import {AlertIndicatorsElement} from './alert_indicators.js';
 import {CustomElement} from './custom_element.js';
@@ -245,20 +246,27 @@ export class TabElement extends CustomElement {
    * @return {!Promise}
    */
   slideIn() {
+    // TODO(crbug.com/1025390): margin-inline-end cannot be animated yet.
+    const marginInlineEnd = isRTL() ? 'marginLeft' : 'marginRight';
+
+    const startState = {
+      maxWidth: 0,
+      transform: `scale(0)`,
+    };
+    startState[marginInlineEnd] = 0;
+
+    const finishState = {
+      maxWidth: `var(--tabstrip-tab-width)`,
+      transform: `scale(1)`,
+    };
+    finishState[marginInlineEnd] = 'var(--tabstrip-tab-margin-inline-end)';
+
     return new Promise(resolve => {
-      const animation = this.animate(
-          [
-            {maxWidth: 0, opacity: 0},
-            {maxWidth: 'var(--tabstrip-tab-width)', opacity: 1},
-          ],
-          {
-            duration: DEFAULT_ANIMATION_DURATION,
-            fill: 'forwards',
-          });
+      const animation = this.animate([startState, finishState], {
+        duration: 300,
+        easing: 'cubic-bezier(.4, 0, 0, 1)',
+      });
       animation.onfinish = () => {
-        // Cancel the effects of the animation so that maxWidth and opacity
-        // can be animated by other animations.
-        animation.cancel();
         resolve();
       };
     });

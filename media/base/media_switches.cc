@@ -307,6 +307,20 @@ const base::Feature kD3D11VideoDecoderVP9Profile2{
 const base::Feature kD3D11VideoDecoderCopyPictures{
     "D3D11VideoDecoderCopyPictures", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Tell D3D11VideoDecoder not to switch the D3D11 device to multi-threaded mode.
+// This is to help us track down IGD crashes.
+const base::Feature kD3D11VideoDecoderSkipMultithreaded{
+    "D3D11VideoDecoderSkipMultithreaded", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, D3D11VideoDecoder will always copy instead of bind textures.
+const base::Feature kD3D11VideoDecoderAlwaysCopy{
+    "D3D11VideoDecoderAlwaysCopy", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// If enabled, D3D11VideoDecoder may (but is not required to) choose to mark
+// VideoFrames as overlayable.
+const base::Feature kD3D11VideoDecoderAllowOverlay{
+    "D3D11VideoDecoderAllowOverlay", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Falls back to other decoders after audio/video decode error happens. The
 // implementation may choose different strategies on when to fallback. See
 // DecoderStream for details. When disabled, playback will fail immediately

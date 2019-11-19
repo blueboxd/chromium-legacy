@@ -229,6 +229,10 @@ extern const char kExperimentalAccessibilityAutoclickDescription[];
 extern const char kExperimentalAccessibilityLanguageDetectionName[];
 extern const char kExperimentalAccessibilityLanguageDetectionDescription[];
 
+extern const char kExperimentalAccessibilityLanguageDetectionDynamicName[];
+extern const char
+    kExperimentalAccessibilityLanguageDetectionDynamicDescription[];
+
 extern const char kFontSrcLocalMatchingName[];
 extern const char kFontSrcLocalMatchingDescription[];
 
@@ -1525,9 +1529,6 @@ extern const char kHomepageLocationDescription[];
 extern const char kInterestFeedNotificationsName[];
 extern const char kInterestFeedNotificationsDescription[];
 
-extern const char kIdentityDiscName[];
-extern const char kIdentityDiscDescription[];
-
 extern const char kInterestFeedContentSuggestionsName[];
 extern const char kInterestFeedContentSuggestionsDescription[];
 
@@ -2334,6 +2335,9 @@ extern const char kClickToCallContextMenuForSelectedTextDescription[];
 
 extern const char kClickToCallUIName[];
 extern const char kClickToCallUIDescription[];
+
+extern const char kClickToCallDetectionV2Name[];
+extern const char kClickToCallDetectionV2Description[];
 
 #endif  // BUILDFLAG(ENABLE_CLICK_TO_CALL)
 

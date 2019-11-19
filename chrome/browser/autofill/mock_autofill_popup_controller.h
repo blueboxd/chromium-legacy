@@ -66,6 +66,10 @@ class MockAutofillPopupController
     return suggestions_[row].label;
   }
 
+  base::WeakPtr<MockAutofillPopupController> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
   MOCK_METHOD3(GetRemovalConfirmationText,
                bool(int index, base::string16* title, base::string16* body));
   MOCK_METHOD1(RemoveSuggestion, bool(int index));
@@ -87,6 +91,8 @@ class MockAutofillPopupController
  private:
   std::unique_ptr<autofill::AutofillPopupLayoutModel> layout_model_;
   std::vector<autofill::Suggestion> suggestions_;
+
+  base::WeakPtrFactory<MockAutofillPopupController> weak_ptr_factory_{this};
 };
 
 }  // namespace autofill

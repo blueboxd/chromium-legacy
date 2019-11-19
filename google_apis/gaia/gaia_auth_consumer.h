@@ -87,6 +87,25 @@ class GaiaAuthConsumer {
     kMaxValue = kUnknownError
   };
 
+  enum class ReAuthProofTokenStatus {
+    // Successful request: used only to control FakeGaia response.
+    kSuccess = 0,
+    // Request had invalid format.
+    kInvalidRequest = 1,
+    // Password was incorrect.
+    kInvalidGrant = 2,
+    // Unauthorized OAuth client.
+    kUnauthorizedClient = 3,
+    // Scope of OAuth token was insufficient.
+    kInsufficientScope = 4,
+    // No credential specified.
+    kCredentialNotSet = 5,
+    // A network error.
+    kNetworkError = 6,
+    // Other error.
+    kUnknownError = 7,
+  };
+
   virtual ~GaiaAuthConsumer() {}
 
   virtual void OnClientLoginSuccess(const ClientLoginResult& result) {}
@@ -118,6 +137,10 @@ class GaiaAuthConsumer {
   virtual void OnGetCheckConnectionInfoSuccess(const std::string& data) {}
   virtual void OnGetCheckConnectionInfoError(
       const GoogleServiceAuthError& error) {}
+
+  virtual void OnReAuthProofTokenSuccess(
+      const std::string& reauth_proof_token) {}
+  virtual void OnReAuthProofTokenFailure(const ReAuthProofTokenStatus error) {}
 };
 
 #endif  // GOOGLE_APIS_GAIA_GAIA_AUTH_CONSUMER_H_

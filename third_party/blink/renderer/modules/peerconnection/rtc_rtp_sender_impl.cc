@@ -421,7 +421,8 @@ void RTCRtpSenderImpl::set_state(RtpSenderState state) {
   internal_->set_state(std::move(state));
 }
 
-std::unique_ptr<blink::WebRTCRtpSender> RTCRtpSenderImpl::ShallowCopy() const {
+std::unique_ptr<blink::RTCRtpSenderPlatform> RTCRtpSenderImpl::ShallowCopy()
+    const {
   return std::make_unique<RTCRtpSenderImpl>(*this);
 }
 
@@ -502,7 +503,7 @@ bool RTCRtpSenderImpl::RemoveFromPeerConnection(
 }
 
 RTCRtpSenderOnlyTransceiver::RTCRtpSenderOnlyTransceiver(
-    std::unique_ptr<blink::WebRTCRtpSender> sender)
+    std::unique_ptr<blink::RTCRtpSenderPlatform> sender)
     : sender_(std::move(sender)) {
   DCHECK(sender_);
 }
@@ -524,8 +525,8 @@ blink::WebString RTCRtpSenderOnlyTransceiver::Mid() const {
   return blink::WebString();
 }
 
-std::unique_ptr<blink::WebRTCRtpSender> RTCRtpSenderOnlyTransceiver::Sender()
-    const {
+std::unique_ptr<blink::RTCRtpSenderPlatform>
+RTCRtpSenderOnlyTransceiver::Sender() const {
   return sender_->ShallowCopy();
 }
 

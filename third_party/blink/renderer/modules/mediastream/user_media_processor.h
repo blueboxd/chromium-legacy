@@ -126,8 +126,7 @@ class MODULES_EXPORT UserMediaProcessor
           source_ready);
   virtual std::unique_ptr<blink::MediaStreamVideoSource> CreateVideoSource(
       const blink::MediaStreamDevice& device,
-      const blink::WebPlatformMediaStreamSource::SourceStoppedCallback&
-          stop_callback);
+      blink::WebPlatformMediaStreamSource::SourceStoppedCallback stop_callback);
 
   // Intended to be used only for testing.
   const blink::AudioCaptureSettings& AudioCaptureSettingsForTesting() const;

@@ -70,16 +70,15 @@ class WebAppUrlLoaderTest : public InProcessBrowserTest {
     web_contents_.reset();
   }
 
-  Result LoadUrlAndWait(WebAppUrlLoader* loader,
-                        UrlComparison url_comparison,
-                        const std::string& path) {
+  Result LoadUrlAndWait(UrlComparison url_comparison, const std::string& path) {
     base::Optional<Result> result;
     base::RunLoop run_loop;
-    loader->LoadUrl(embedded_test_server()->GetURL(path), web_contents(),
-                    url_comparison, base::BindLambdaForTesting([&](Result r) {
-                      result = r;
-                      run_loop.Quit();
-                    }));
+    WebAppUrlLoader loader;
+    loader.LoadUrl(embedded_test_server()->GetURL(path), web_contents(),
+                   url_comparison, base::BindLambdaForTesting([&](Result r) {
+                     result = r;
+                     run_loop.Quit();
+                   }));
     EXPECT_TRUE(web_contents()->IsLoading());
     run_loop.Run();
     // Currently WebAppUrlLoader uses DidFinishLoad which might get called
@@ -111,18 +110,15 @@ class WebAppUrlLoaderTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, Loaded) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  WebAppUrlLoader loader;
   EXPECT_EQ(Result::kUrlLoaded,
-            LoadUrlAndWait(&loader, UrlComparison::kExact, "/simple.html"));
+            LoadUrlAndWait(UrlComparison::kExact, "/simple.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, LoadedWithParamChangeIgnored) {
   SetupRedirect("/test-redirect", "/test-redirect?param=stuff");
   ASSERT_TRUE(embedded_test_server()->Start());
-  WebAppUrlLoader loader;
-
   EXPECT_EQ(Result::kUrlLoaded,
-            LoadUrlAndWait(&loader, UrlComparison::kIgnoreQueryParamsAndRef,
+            LoadUrlAndWait(UrlComparison::kIgnoreQueryParamsAndRef,
                            "/test-redirect"));
 }
 
@@ -132,58 +128,45 @@ IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest,
   // server, so we cannot check it in the request handler.
   SetupRedirect("/test-redirect", "/test-redirect?param=foo#ref");
   ASSERT_TRUE(embedded_test_server()->Start());
-  WebAppUrlLoader loader;
-
   EXPECT_EQ(Result::kUrlLoaded,
-            LoadUrlAndWait(&loader, UrlComparison::kIgnoreQueryParamsAndRef,
+            LoadUrlAndWait(UrlComparison::kIgnoreQueryParamsAndRef,
                            "/test-redirect"));
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, LoadedWithPathChangeIgnored) {
   SetupRedirect("/test-redirect", "/test-redirect-new-path");
   ASSERT_TRUE(embedded_test_server()->Start());
-  WebAppUrlLoader loader;
-
-  EXPECT_EQ(
-      Result::kUrlLoaded,
-      LoadUrlAndWait(&loader, UrlComparison::kSameOrigin, "/test-redirect"));
+  EXPECT_EQ(Result::kUrlLoaded,
+            LoadUrlAndWait(UrlComparison::kSameOrigin, "/test-redirect"));
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, RedirectWithRefChange) {
   SetupRedirect("/test-redirect", "/test-redirect#ref");
   ASSERT_TRUE(embedded_test_server()->Start());
-  WebAppUrlLoader loader;
-
   EXPECT_EQ(Result::kRedirectedUrlLoaded,
-            LoadUrlAndWait(&loader, UrlComparison::kExact, "/test-redirect"));
+            LoadUrlAndWait(UrlComparison::kExact, "/test-redirect"));
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, RedirectWithParamChange) {
   SetupRedirect("/test-redirect", "/test-redirect?param=stuff");
   ASSERT_TRUE(embedded_test_server()->Start());
-  WebAppUrlLoader loader;
-
   EXPECT_EQ(Result::kRedirectedUrlLoaded,
-            LoadUrlAndWait(&loader, UrlComparison::kExact, "/test-redirect"));
+            LoadUrlAndWait(UrlComparison::kExact, "/test-redirect"));
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, RedirectWithPathChange) {
   SetupRedirect("/test-redirect", "/test-redirect-new-path");
   ASSERT_TRUE(embedded_test_server()->Start());
-  WebAppUrlLoader loader;
-
   EXPECT_EQ(Result::kRedirectedUrlLoaded,
-            LoadUrlAndWait(&loader, UrlComparison::kIgnoreQueryParamsAndRef,
+            LoadUrlAndWait(UrlComparison::kIgnoreQueryParamsAndRef,
                            "/test-redirect"));
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, 302FoundRedirect) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  WebAppUrlLoader loader;
-
   const GURL final_url = embedded_test_server()->GetURL("/simple.html");
   EXPECT_EQ(Result::kRedirectedUrlLoaded,
-            LoadUrlAndWait(&loader, UrlComparison::kIgnoreQueryParamsAndRef,
+            LoadUrlAndWait(UrlComparison::kIgnoreQueryParamsAndRef,
                            "/server-redirect-302?" + final_url.spec()));
 }
 

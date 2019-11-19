@@ -132,6 +132,7 @@ class MockBluetoothAdapter : public BluetoothAdapter {
   }
 
  protected:
+  base::WeakPtr<BluetoothAdapter> GetWeakPtr() override;
   bool SetPoweredImpl(bool powered) override;
   void StartScanWithFilter(
       std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter,
@@ -158,6 +159,10 @@ class MockBluetoothAdapter : public BluetoothAdapter {
                void(BluetoothDevice::PairingDelegate* pairing_delegate));
 
   std::vector<std::unique_ptr<MockBluetoothDevice>> mock_devices_;
+
+  // This must be the last field in the class so that weak pointers are
+  // invalidated first.
+  base::WeakPtrFactory<MockBluetoothAdapter> weak_ptr_factory_{this};
 };
 
 }  // namespace device

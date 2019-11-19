@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('downloads', function() {
   /**
    * Explains why a download is in DANGEROUS state.
    * @enum {string}
    */
-  const DangerType = {
+  export const DangerType = {
     NOT_DANGEROUS: 'NOT_DANGEROUS',
     DANGEROUS_FILE: 'DANGEROUS_FILE',
     DANGEROUS_URL: 'DANGEROUS_URL',
@@ -28,7 +27,7 @@ cr.define('downloads', function() {
    * DownloadsDOMHandler::CreateDownloadItemValue
    * @enum {string}
    */
-  const States = {
+  export const States = {
     IN_PROGRESS: 'IN_PROGRESS',
     CANCELLED: 'CANCELLED',
     COMPLETE: 'COMPLETE',
@@ -36,9 +35,3 @@ cr.define('downloads', function() {
     DANGEROUS: 'DANGEROUS',
     INTERRUPTED: 'INTERRUPTED',
   };
-
-  return {
-    DangerType: DangerType,
-    States: States,
-  };
-});

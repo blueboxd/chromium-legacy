@@ -6,6 +6,7 @@
 #include <sys/ioctl.h>
 
 #include "base/files/file_enumerator.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"

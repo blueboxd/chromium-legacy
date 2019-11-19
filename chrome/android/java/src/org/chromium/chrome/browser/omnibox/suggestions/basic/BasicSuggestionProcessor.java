@@ -234,11 +234,13 @@ public class BasicSuggestionProcessor implements SuggestionProcessor {
                     });
         }
 
-        boolean sameAsTyped =
-                mUrlBarEditingTextProvider.getTextWithoutAutocomplete().trim().equalsIgnoreCase(
-                        suggestion.getDisplayText());
-        model.set(SuggestionViewProperties.REFINABLE, !sameAsTyped);
-
+        boolean isRefinable =
+                !(mUrlBarEditingTextProvider.getTextWithoutAutocomplete().trim().equalsIgnoreCase(
+                          suggestion.getDisplayText())
+                        || suggestionType == OmniboxSuggestionType.CLIPBOARD_TEXT
+                        || suggestionType == OmniboxSuggestionType.CLIPBOARD_URL
+                        || suggestionType == OmniboxSuggestionType.CLIPBOARD_IMAGE);
+        model.set(SuggestionViewProperties.REFINABLE, isRefinable);
     }
 
     /**

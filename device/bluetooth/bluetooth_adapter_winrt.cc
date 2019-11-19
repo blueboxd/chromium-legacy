@@ -841,6 +841,10 @@ void BluetoothAdapterWinrt::CompleteInit(
   }
 }
 
+base::WeakPtr<BluetoothAdapter> BluetoothAdapterWinrt::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 bool BluetoothAdapterWinrt::SetPoweredImpl(bool powered) {
   // Due to an issue on WoW64 we might fail to obtain the radio in
   // OnGetRadio(). This is why it can be null here.

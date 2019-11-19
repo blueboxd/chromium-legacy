@@ -1,7 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_list.html">
-<link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_listener_behavior.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/network/network_list.html">
+<link rel="import" href="chrome://resources/cr_components/chromeos/network/network_listener_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
@@ -28,7 +28,7 @@
       /* Set padding on children instead of the container itself to ensure that
          separator lines can fill the entire width of the page. */
       #networkListDiv > * {
-        /* cr-network-list is padded to the right to allow space for a ripple */
+        /* network-list is padded to the right to allow space for a ripple */
         padding-inline-end: calc(var(--cr-section-padding) -
             var(--cr-icon-ripple-padding));
         padding-inline-start: var(--cr-section-padding);
@@ -57,7 +57,7 @@
         margin: 4px;
       }
 
-      cr-network-list {
+      network-list {
         flex: 1;
       }
 
@@ -130,11 +130,11 @@
         <!-- List of networks (empty if no networks exist). -->
         <template is="dom-if"
             if="[[shouldShowNetworkList_(networkStateList_)]]">
-          <cr-network-list id="networkList" show-buttons
+          <network-list id="networkList" show-buttons
               show-technology-badge="[[showTechnologyBadge_]]"
               networks="[[networkStateList_]]"
               on-selected="onNetworkSelected_">
-          </cr-network-list>
+          </network-list>
         </template>
 
         <!-- Instructions for how to enable "Google Play Services" notifications
@@ -176,11 +176,11 @@
                   on-click="onAddThirdPartyVpnTap_" tabindex$="[[tabindex]]">
               </cr-icon-button>
             </div>
-            <cr-network-list show-buttons
+            <network-list show-buttons
                 hidden$="[[!haveThirdPartyVpnNetwork_(thirdPartyVpns_, item)]]"
                 networks="[[getThirdPartyVpnNetworks_(thirdPartyVpns_, item)]]"
                 on-selected="onNetworkSelected_">
-            </cr-network-list>
+            </network-list>
             <div hidden$="[[haveThirdPartyVpnNetwork_(thirdPartyVpns_, item)]]"
                 class="no-networks settings-box-text">
               $i18n{internetNoNetworks}

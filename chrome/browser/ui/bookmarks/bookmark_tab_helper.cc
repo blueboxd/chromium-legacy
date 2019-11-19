@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper_observer.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/sad_tab.h"
+#include "chrome/browser/ui/webui/new_tab_page/new_tab_page_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
@@ -33,7 +34,10 @@ bool IsNTP(content::WebContents* web_contents) {
       web_contents->GetController().GetLastCommittedEntry();
   if (!entry)
     entry = web_contents->GetController().GetVisibleEntry();
-  return (entry && NewTabUI::IsNewTab(entry->GetURL())) ||
+  if (!entry)
+    return false;
+  const GURL& url = entry->GetURL();
+  return NewTabUI::IsNewTab(url) || NewTabPageUI::IsNewTabPageOrigin(url) ||
          search::NavEntryIsInstantNTP(web_contents, entry);
 }
 

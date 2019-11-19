@@ -63,6 +63,10 @@ class ASH_EXPORT AssistantTestApi {
   // Can only be used after the Assistant UI has been shown at least once.
   virtual views::View* mic_view() = 0;
 
+  // Returns the greeting label shown when the Assistant is displayed.
+  // Can only be used after the Assistant UI has been shown at least once.
+  virtual views::View* greeting_label() = 0;
+
   // Returns the window containing the Assistant UI.
   // Note that this window is shared for all components of the |AppList|.
   virtual aura::Window* window() = 0;

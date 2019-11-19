@@ -39,7 +39,8 @@
       base::mac::ObjCCastStrict<TableViewTextLinkCell>(tableCell);
   cell.textLabel.text = self.text;
   cell.selectionStyle = UITableViewCellSelectionStyleNone;
-  [cell setLinkURL:self.linkURL];
+  if (!self.linkURL.is_empty())
+    [cell setLinkURL:self.linkURL];
 }
 
 @end
@@ -47,14 +48,14 @@
 #pragma mark - TableViewTextLinkCell
 
 @interface TableViewTextLinkCell ()
-// LabelLinkController that configures the link on the Cell's text.
-@property(nonatomic, strong, readwrite)
-    LabelLinkController* labelLinkController;
+// Array that holds all LabelLinkController for this Cell.
+@property(nonatomic, strong)
+    NSMutableArray<LabelLinkController*>* labelLinkControllers;
+
 @end
 
 @implementation TableViewTextLinkCell
 @synthesize delegate = _delegate;
-@synthesize labelLinkController = _labelLinkController;
 @synthesize textLabel = _textLabel;
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style
@@ -72,6 +73,9 @@
 
     // Add subviews to View Hierarchy.
     [self.contentView addSubview:_textLabel];
+
+    // Create labelLinkController array.
+    self.labelLinkControllers = [NSMutableArray array];
 
     // Set and activate constraints.
     [NSLayoutConstraint activateConstraints:@[
@@ -94,15 +98,8 @@
 }
 
 - (void)setLinkURL:(const GURL&)URL {
-  // Init and configure the labelLinkController.
-  __weak TableViewTextLinkCell* weakSelf = self;
-  self.labelLinkController = [[LabelLinkController alloc]
-      initWithLabel:self.textLabel
-             action:^(const GURL& URL) {
-               [[weakSelf delegate] tableViewTextLinkCell:weakSelf
-                                        didRequestOpenURL:URL];
-             }];
-  [self.labelLinkController setLinkColor:[UIColor colorNamed:kBlueColor]];
+  LabelLinkController* labelLinkController =
+      [self labelLinkControllerForURL:URL];
 
   // Remove link delimiter from text and get ranges for links. Must be parsed
   // before being added to the controller because modifying the label text
@@ -113,14 +110,37 @@
         ParseStringWithLink(self.textLabel.text, &otherBrowsingDataRange);
     DCHECK(otherBrowsingDataRange.location != NSNotFound &&
            otherBrowsingDataRange.length);
-    [self.labelLinkController addLinkWithRange:otherBrowsingDataRange url:URL];
+    [labelLinkController addLinkWithRange:otherBrowsingDataRange url:URL];
   }
+  [self.labelLinkControllers addObject:labelLinkController];
+}
+
+- (void)setLinkURL:(const GURL&)URL forRange:(NSRange)range {
+  LabelLinkController* labelLinkController =
+      [self labelLinkControllerForURL:URL];
+  if (URL.is_valid()) {
+    [labelLinkController addLinkWithRange:range url:URL];
+  }
+  [self.labelLinkControllers addObject:labelLinkController];
 }
 
 - (void)prepareForReuse {
   [super prepareForReuse];
-  self.labelLinkController = nil;
+  self.labelLinkControllers = [NSMutableArray array];
   self.delegate = nil;
+}
+
+// Returns a configured labelLinkController.
+- (LabelLinkController*)labelLinkControllerForURL:(const GURL&)URL {
+  __weak TableViewTextLinkCell* weakSelf = self;
+  LabelLinkController* labelLinkController = [[LabelLinkController alloc]
+      initWithLabel:self.textLabel
+             action:^(const GURL& URL) {
+               [[weakSelf delegate] tableViewTextLinkCell:weakSelf
+                                        didRequestOpenURL:URL];
+             }];
+  [labelLinkController setLinkColor:[UIColor colorNamed:kBlueColor]];
+  return labelLinkController;
 }
 
 @end

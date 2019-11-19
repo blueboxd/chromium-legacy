@@ -166,6 +166,41 @@ TEST_F(AssistantPageViewTest, ShouldFocusMicWhenOpeningWithHotword) {
   EXPECT_HAS_FOCUS(mic_view());
 }
 
+TEST_F(AssistantPageViewTest, ShouldShowGreetingLabelWhenOpening) {
+  ShowAssistantUi();
+
+  EXPECT_TRUE(greeting_label()->GetVisible());
+}
+
+TEST_F(AssistantPageViewTest, ShouldHideGreetingLabelAfterQuery) {
+  ShowAssistantUi();
+
+  MockAssistantInteractionWithResponse("The response");
+
+  EXPECT_FALSE(greeting_label()->GetVisible());
+}
+
+TEST_F(AssistantPageViewTest, ShouldShowGreetingLabelAgainAfterReopening) {
+  ShowAssistantUi();
+
+  // Cause the label to be hidden.
+  MockAssistantInteractionWithResponse("The response");
+  ASSERT_FALSE(greeting_label()->GetVisible());
+
+  // Close and reopen the Assistant UI.
+  CloseAssistantUi();
+  ShowAssistantUi();
+
+  EXPECT_TRUE(greeting_label()->GetVisible());
+}
+
+TEST_F(AssistantPageViewTest,
+       ShouldNotShowGreetingLabelWhenOpeningFromSearchResult) {
+  ShowAssistantUi(AssistantEntryPoint::kLauncherSearchResult);
+
+  EXPECT_FALSE(greeting_label()->GetVisible());
+}
+
 // Tests the |AssistantPageView| with tablet mode enabled.
 class AssistantPageViewTabletModeTest : public AssistantAshTestBase {
  public:

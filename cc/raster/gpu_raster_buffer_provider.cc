@@ -200,7 +200,7 @@ static void RasterizeSource(
     // valid by the time the consume command executes.
     ri->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
   }
-  GLuint texture_id = ri->CreateAndConsumeForGpuRaster(mailbox->name);
+  GLuint texture_id = ri->CreateAndConsumeForGpuRaster(*mailbox);
   {
     ScopedGrContextAccess gr_context_access(context_provider);
     base::Optional<viz::ClientResourceProvider::ScopedSkSurface> scoped_surface;

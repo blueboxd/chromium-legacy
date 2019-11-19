@@ -182,8 +182,7 @@ LibLouis.prototype.loadOrReload_ = function(opt_loadCallback) {
       'message', goog.bind(this.onInstanceMessage_, this),
       false /* useCapture */);
   this.worker_.addEventListener(
-      'error', goog.bind(this.onInstanceError_, this),
-      false /* useCapture */);
+      'error', goog.bind(this.onInstanceError_, this), false /* useCapture */);
   this.rpc_('load', {}, () => {
     this.isLoaded_ = true;
     opt_loadCallback && opt_loadCallback(this);

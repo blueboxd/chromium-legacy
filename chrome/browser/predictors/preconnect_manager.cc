@@ -20,10 +20,9 @@ namespace predictors {
 
 const bool kAllowCredentialsOnPreconnectByDefault = true;
 
-PreconnectedRequestStats::PreconnectedRequestStats(const GURL& origin,
+PreconnectedRequestStats::PreconnectedRequestStats(const url::Origin& origin,
                                                    bool was_preconnected)
-    : origin(origin),
-      was_preconnected(was_preconnected) {}
+    : origin(origin), was_preconnected(was_preconnected) {}
 
 PreconnectedRequestStats::PreconnectedRequestStats(
     const PreconnectedRequestStats& other) = default;
@@ -57,7 +56,7 @@ PreresolveJob::PreresolveJob(const GURL& url,
 
 PreresolveJob::PreresolveJob(PreconnectRequest preconnect_request,
                              PreresolveInfo* info)
-    : url(std::move(preconnect_request.origin)),
+    : url(preconnect_request.origin.GetURL()),
       num_sockets(preconnect_request.num_sockets),
       allow_credentials(preconnect_request.allow_credentials),
       network_isolation_key(
@@ -93,7 +92,6 @@ void PreconnectManager::Start(const GURL& url,
 
   for (auto request_it = requests.begin(); request_it != requests.end();
        ++request_it) {
-    DCHECK(request_it->origin.GetOrigin() == request_it->origin);
     PreresolveJobId job_id = preresolve_jobs_.Add(
         std::make_unique<PreresolveJob>(std::move(*request_it), info));
     queued_jobs_.push_back(job_id);
@@ -289,8 +287,10 @@ void PreconnectManager::FinishPreresolveJob(PreresolveJobId job_id,
   }
 
   PreresolveInfo* info = job->info;
-  if (info)
-    info->stats->requests_stats.emplace_back(job->url, need_preconnect);
+  if (info) {
+    info->stats->requests_stats.emplace_back(url::Origin::Create(job->url),
+                                             need_preconnect);
+  }
   preresolve_jobs_.Remove(job_id);
   --inflight_preresolves_count_;
   if (info) {

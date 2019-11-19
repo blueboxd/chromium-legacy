@@ -156,7 +156,7 @@ HRESULT ExtractRegistrationData(const base::Value& registration_data,
                                 base::string16* out_sid,
                                 base::string16* out_username,
                                 base::string16* out_domain,
-                                bool* out_is_ad_user_joined) {
+                                base::string16* out_is_ad_user_joined) {
   DCHECK(out_email);
   DCHECK(out_id_token);
   DCHECK(out_access_token);
@@ -175,6 +175,7 @@ HRESULT ExtractRegistrationData(const base::Value& registration_data,
   *out_sid = GetDictString(registration_data, kKeySID);
   *out_username = GetDictString(registration_data, kKeyUsername);
   *out_domain = GetDictString(registration_data, kKeyDomain);
+  *out_is_ad_user_joined = GetDictString(registration_data, kKeyIsAdJoinedUser);
 
   if (out_email->empty()) {
     LOGFN(ERROR) << "Email is empty";
@@ -206,13 +207,11 @@ HRESULT ExtractRegistrationData(const base::Value& registration_data,
     return E_INVALIDARG;
   }
 
-  if (GetDictString(registration_data, kKeyIsAdJoinedUser).empty()) {
+  if (out_is_ad_user_joined->empty()) {
     LOGFN(ERROR) << "is_ad_user_joined is empty";
     return E_INVALIDARG;
   }
 
-  *out_is_ad_user_joined =
-      (GetDictString(registration_data, kKeyIsAdJoinedUser).compare(L"1") == 0);
   return S_OK;
 }
 
@@ -258,7 +257,7 @@ HRESULT RegisterWithGoogleDeviceManagement(const base::string16& mdm_url,
   base::string16 sid;
   base::string16 username;
   base::string16 domain;
-  bool is_ad_joined_user;
+  base::string16 is_ad_joined_user;
 
   HRESULT hr =
       ExtractRegistrationData(properties, &email, &id_token, &access_token,
@@ -317,7 +316,7 @@ HRESULT RegisterWithGoogleDeviceManagement(const base::string16& mdm_url,
                                  local_administrators_group_name);
   registration_data.SetStringKey("builtin_administrator_name",
                                  builtin_administrator_name);
-  registration_data.SetBoolKey(kKeyIsAdJoinedUser, is_ad_joined_user);
+  registration_data.SetStringKey(kKeyIsAdJoinedUser, is_ad_joined_user);
 
   std::string registration_data_str;
   if (!base::JSONWriter::Write(registration_data, &registration_data_str)) {

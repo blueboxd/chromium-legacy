@@ -15,10 +15,20 @@
 namespace base {
 
 MadvFreeDiscardableMemoryAllocatorPosix::
-    MadvFreeDiscardableMemoryAllocatorPosix() {}
+    MadvFreeDiscardableMemoryAllocatorPosix() {
+  // Don't register dump provider if ThreadTaskRunnerHandle is not set, such as
+  // in tests and Android Webview.
+  if (base::ThreadTaskRunnerHandle::IsSet()) {
+    trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+        this, "MadvFreeDiscardableMemoryAllocator",
+        ThreadTaskRunnerHandle::Get());
+  }
+}
 
 MadvFreeDiscardableMemoryAllocatorPosix::
-    ~MadvFreeDiscardableMemoryAllocatorPosix() {}
+    ~MadvFreeDiscardableMemoryAllocatorPosix() {
+  trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(this);
+}
 
 std::unique_ptr<DiscardableMemory>
 MadvFreeDiscardableMemoryAllocatorPosix::AllocateLockedDiscardableMemory(
@@ -29,6 +39,22 @@ MadvFreeDiscardableMemoryAllocatorPosix::AllocateLockedDiscardableMemory(
 
 size_t MadvFreeDiscardableMemoryAllocatorPosix::GetBytesAllocated() const {
   return bytes_allocated_;
+}
+
+bool MadvFreeDiscardableMemoryAllocatorPosix::OnMemoryDump(
+    const trace_event::MemoryDumpArgs& args,
+    trace_event::ProcessMemoryDump* pmd) {
+  if (args.level_of_detail !=
+      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND) {
+    return true;
+  }
+
+  base::trace_event::MemoryAllocatorDump* total_dump =
+      pmd->CreateAllocatorDump("discardable/madv_free_allocated");
+  total_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                        base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                        GetBytesAllocated());
+  return true;
 }
 
 }  // namespace base

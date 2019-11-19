@@ -76,6 +76,8 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
     case ui::NativeTheme::kColorId_DialogBackground:
     case ui::NativeTheme::kColorId_BubbleBackground:
       return GetBgColor("");
+    case ui::NativeTheme::kColorId_DialogForeground:
+      return GetFgColor("GtkLabel");
     case ui::NativeTheme::kColorId_BubbleFooterBackground:
       return GetBgColor("#statusbar");
 
@@ -179,8 +181,6 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
       return GetFgColor("GtkButton#button.text-button GtkLabel");
     case ui::NativeTheme::kColorId_ButtonDisabledColor:
       return GetFgColor("GtkButton#button.text-button:disabled GtkLabel");
-    case ui::NativeTheme::kColorId_ButtonHoverColor:
-      return GetFgColor("GtkButton#button.text-button:hover GtkLabel");
     case ui::NativeTheme::kColorId_ButtonPressedShade:
       return SK_ColorTRANSPARENT;
 

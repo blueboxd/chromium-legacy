@@ -38,6 +38,7 @@
 #include "net/http/http_server_properties.h"
 #include "net/http/http_stream_factory.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
+#include "net/quic/quic_context.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -232,6 +233,8 @@ void URLRequestContextFactory::InitializeSystemContextDependencies() {
   system_host_resolver_ =
       net::HostResolver::CreateResolver(host_resolver_manager_.get());
 
+  quic_context_ = std::make_unique<net::QuicContext>();
+
   system_dependencies_initialized_ = true;
 }
 
@@ -344,6 +347,7 @@ net::URLRequestContext* URLRequestContextFactory::CreateMediaRequestContext() {
   DCHECK(main_getter_.get())
       << "Getting MediaRequestContext before MainRequestContext";
 
+  InitializeSystemContextDependencies();
   InitializeMediaContextDependencies();
 
   // Reuse main context dependencies except HostResolver and
@@ -403,6 +407,7 @@ void URLRequestContextFactory::ConfigureURLRequestContext(
   context->set_http_server_properties(http_server_properties_.get());
   context->set_http_user_agent_settings(http_user_agent_settings_.get());
   context->set_net_log(net_log_);
+  context->set_quic_context(quic_context_.get());
 
   // settings from the caller
   context->set_job_factory(job_factory.get());

@@ -14,7 +14,8 @@ chromeos::device_sync::mojom::ConnectivityStatus EnumTraits<
     case cryptauthv2::ConnectivityStatus::ONLINE:
       return chromeos::device_sync::mojom::ConnectivityStatus::kOnline;
     case cryptauthv2::ConnectivityStatus::UNKNOWN_CONNECTIVITY:
-      FALLTHROUGH;
+      return chromeos::device_sync::mojom::ConnectivityStatus::
+          kUnknownConnectivity;
     case cryptauthv2::ConnectivityStatus::OFFLINE:
       return chromeos::device_sync::mojom::ConnectivityStatus::kOffline;
     case cryptauthv2::ConnectivityStatus::
@@ -22,7 +23,8 @@ chromeos::device_sync::mojom::ConnectivityStatus EnumTraits<
     case cryptauthv2::ConnectivityStatus::
         ConnectivityStatus_INT_MAX_SENTINEL_DO_NOT_USE_:
       NOTREACHED();
-      return chromeos::device_sync::mojom::ConnectivityStatus::kOffline;
+      return chromeos::device_sync::mojom::ConnectivityStatus::
+          kUnknownConnectivity;
   }
 }
 
@@ -36,6 +38,9 @@ bool EnumTraits<chromeos::device_sync::mojom::ConnectivityStatus,
       return true;
     case chromeos::device_sync::mojom::ConnectivityStatus::kOffline:
       *out = cryptauthv2::ConnectivityStatus::OFFLINE;
+      return true;
+    case chromeos::device_sync::mojom::ConnectivityStatus::kUnknownConnectivity:
+      *out = cryptauthv2::ConnectivityStatus::UNKNOWN_CONNECTIVITY;
       return true;
   }
 

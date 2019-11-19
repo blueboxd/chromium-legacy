@@ -45,6 +45,7 @@ js2gtest("interactive_ui_tests_js_webui") {
     "$root_gen_dir/chrome/test/data/webui/cr_elements/iron_list_focus_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/test_browser_proxy.m.js",
     "$root_gen_dir/chrome/test/data/webui/mock_controller.m.js",
+    "$root_gen_dir/chrome/test/data/webui/test_store.m.js",
     "$root_gen_dir/chrome/test/data/webui/test_util.m.js",
   ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
@@ -201,6 +202,7 @@ js2gtest("browser_tests_js_webui") {
     "$root_gen_dir/chrome/test/data/webui/mock_timer.m.js",
     "$root_gen_dir/chrome/test/data/webui/resources/list_property_update_behavior_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/test_browser_proxy.m.js",
+    "$root_gen_dir/chrome/test/data/webui/test_store.m.js",
     "$root_gen_dir/chrome/test/data/webui/test_util.m.js",
   ]
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
@@ -300,10 +302,12 @@ js_modulizer("modulize_local") {
     "mock_controller.js",
     "mock_timer.js",
     "test_browser_proxy.js",
+    "test_store.js",
     "test_util.js",
   ]
   namespace_rewrites = [
     "cr.ui.FocusRowBehavior|FocusRowBehavior",
+    "cr.ui.Store|Store",
     "MockInteractions.down|down",
     "MockInteractions.pressAndReleaseKeyOn|pressAndReleaseKeyOn",
     "MockInteractions.up|up",

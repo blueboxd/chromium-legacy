@@ -64,8 +64,12 @@ void FrameInterferenceRecorder::OnTaskReady(
   running_time = std::max(base::TimeDelta(), running_time);
 
   ready_task.time_for_all_agents_when_ready += running_time;
-  ready_task.agent_data_when_ready.at(agent_cluster_id_for_current_task_)
-      .accumulated_running_time += running_time;
+  auto agent_data_it =
+      ready_task.agent_data_when_ready.find(agent_cluster_id_for_current_task_);
+  // The agent may have been destroyed before the task completes.
+  if (agent_data_it != ready_task.agent_data_when_ready.end()) {
+    agent_data_it->second.accumulated_running_time += running_time;
+  }
 }
 
 void FrameInterferenceRecorder::OnTaskStarted(

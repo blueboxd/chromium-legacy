@@ -24,10 +24,10 @@ class MenuItemViewTestBasic : public MenuTestBase {
 
   // MenuTestBase implementation
   void BuildMenu(views::MenuItemView* menu) override {
-    menu->AppendMenuItemWithLabel(1, ASCIIToUTF16("item 1"));
-    menu->AppendMenuItemWithLabel(2, ASCIIToUTF16("item 2"));
+    menu->AppendMenuItem(1, ASCIIToUTF16("item 1"));
+    menu->AppendMenuItem(2, ASCIIToUTF16("item 2"));
     menu->AppendSeparator();
-    menu->AppendMenuItemWithLabel(3, ASCIIToUTF16("item 3"));
+    menu->AppendMenuItem(3, ASCIIToUTF16("item 3"));
   }
 
   // Click on item INDEX.
@@ -77,8 +77,8 @@ class MenuItemViewTestInsert : public MenuTestBase {
 
   // MenuTestBase implementation
   void BuildMenu(views::MenuItemView* menu) override {
-    menu->AppendMenuItemWithLabel(1, ASCIIToUTF16("item 1"));
-    menu->AppendMenuItemWithLabel(2, ASCIIToUTF16("item 2"));
+    menu->AppendMenuItem(1, ASCIIToUTF16("item 1"));
+    menu->AppendMenuItem(2, ASCIIToUTF16("item 2"));
   }
 
   // Insert item at INSERT_INDEX and click item at SELECT_INDEX.
@@ -171,9 +171,9 @@ class MenuItemViewTestInsertWithSubmenu : public MenuTestBase {
   // MenuTestBase implementation
   void BuildMenu(views::MenuItemView* menu) override {
     submenu_ = menu->AppendSubMenu(1, ASCIIToUTF16("My Submenu"));
-    submenu_->AppendMenuItemWithLabel(101, ASCIIToUTF16("submenu item 1"));
-    submenu_->AppendMenuItemWithLabel(101, ASCIIToUTF16("submenu item 2"));
-    menu->AppendMenuItemWithLabel(2, ASCIIToUTF16("item 2"));
+    submenu_->AppendMenuItem(101, ASCIIToUTF16("submenu item 1"));
+    submenu_->AppendMenuItem(101, ASCIIToUTF16("submenu item 2"));
+    menu->AppendMenuItem(2, ASCIIToUTF16("item 2"));
   }
 
   // Post submenu.
@@ -230,9 +230,9 @@ class MenuItemViewTestRemove : public MenuTestBase {
 
   // MenuTestBase implementation
   void BuildMenu(views::MenuItemView* menu) override {
-    menu->AppendMenuItemWithLabel(1, ASCIIToUTF16("item 1"));
-    menu->AppendMenuItemWithLabel(2, ASCIIToUTF16("item 2"));
-    menu->AppendMenuItemWithLabel(3, ASCIIToUTF16("item 3"));
+    menu->AppendMenuItem(1, ASCIIToUTF16("item 1"));
+    menu->AppendMenuItem(2, ASCIIToUTF16("item 2"));
+    menu->AppendMenuItem(3, ASCIIToUTF16("item 3"));
   }
 
   // Remove item at REMOVE_INDEX and click item at SELECT_INDEX.
@@ -307,10 +307,10 @@ class MenuItemViewTestRemoveWithSubmenu : public MenuTestBase {
 
   // MenuTestBase implementation
   void BuildMenu(views::MenuItemView* menu) override {
-    menu->AppendMenuItemWithLabel(1, ASCIIToUTF16("item 1"));
+    menu->AppendMenuItem(1, ASCIIToUTF16("item 1"));
     submenu_ = menu->AppendSubMenu(2, ASCIIToUTF16("My Submenu"));
-    submenu_->AppendMenuItemWithLabel(101, ASCIIToUTF16("submenu item 1"));
-    submenu_->AppendMenuItemWithLabel(102, ASCIIToUTF16("submenu item 2"));
+    submenu_->AppendMenuItem(101, ASCIIToUTF16("submenu item 1"));
+    submenu_->AppendMenuItem(102, ASCIIToUTF16("submenu item 2"));
   }
 
   // Post submenu.

@@ -82,7 +82,7 @@ class RasterInterface : public InterfaceBase {
       bool needs_mips) = 0;
 
   // Raster via GrContext.
-  virtual GLuint CreateAndConsumeForGpuRaster(const GLbyte* mailbox) = 0;
+  virtual GLuint CreateAndConsumeForGpuRaster(const gpu::Mailbox& mailbox) = 0;
   virtual void DeleteGpuRasterTexture(GLuint texture) = 0;
   virtual void BeginGpuRaster() = 0;
   virtual void EndGpuRaster() = 0;

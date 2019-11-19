@@ -8,7 +8,6 @@ import android.app.Activity;
 import android.app.Instrumentation.ActivityMonitor;
 import android.content.ComponentName;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ActivityTestRule;
@@ -25,14 +24,11 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.EmbeddedTestServerRule;
-import org.chromium.weblayer.Navigation;
-import org.chromium.weblayer.NavigationCallback;
 import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.WebLayer;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
 import java.lang.reflect.Field;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -43,80 +39,6 @@ import java.util.concurrent.TimeoutException;
 public class InstrumentationActivityTestRule extends ActivityTestRule<InstrumentationActivity> {
     @Rule
     private EmbeddedTestServerRule mTestServerRule = new EmbeddedTestServerRule();
-
-    private static final class NavigationWaiter {
-        private String mUrl;
-        private Tab mTab;
-        private boolean mNavigationObserved;
-        /* True indicates that the expected navigation event is a failure. False indicates that the
-         * expected event is completion. */
-        private boolean mExpectFailure;
-        private boolean mDoneLoading;
-        private boolean mContentfulPaint;
-        private CallbackHelper mCallbackHelper = new CallbackHelper();
-
-        private NavigationCallback mNavigationCallback = new NavigationCallback() {
-            @Override
-            public void onNavigationCompleted(Navigation navigation) {
-                if (navigation.getUri().toString().equals(mUrl) && !mExpectFailure) {
-                    mNavigationObserved = true;
-                    checkComplete();
-                }
-            }
-
-            @Override
-            public void onNavigationFailed(Navigation navigation) {
-                if (navigation.getUri().toString().equals(mUrl) && mExpectFailure) {
-                    mNavigationObserved = true;
-                    checkComplete();
-                }
-            }
-
-            @Override
-            public void onLoadStateChanged(boolean isLoading, boolean toDifferentDocument) {
-                mDoneLoading = !isLoading;
-                checkComplete();
-            }
-
-            @Override
-            public void onFirstContentfulPaint() {
-                mContentfulPaint = true;
-                checkComplete();
-            }
-        };
-
-        // |waitForPaint| should generally be set to true, unless there is a specific reason for
-        // onFirstContentfulPaint to not fire.
-        public NavigationWaiter(
-                String url, Tab controller, boolean expectFailure, boolean waitForPaint) {
-            mUrl = url;
-            mTab = controller;
-            if (!waitForPaint) mContentfulPaint = true;
-            mExpectFailure = expectFailure;
-        }
-
-        public void navigateAndWait() {
-            TestThreadUtils.runOnUiThreadBlocking(() -> {
-                mTab.getNavigationController().registerNavigationCallback(mNavigationCallback);
-                mTab.getNavigationController().navigate(Uri.parse(mUrl));
-            });
-            try {
-                mCallbackHelper.waitForCallback(
-                        0, 1, CallbackHelper.WAIT_TIMEOUT_SECONDS * 2, TimeUnit.SECONDS);
-            } catch (TimeoutException e) {
-                throw new RuntimeException(e);
-            }
-            TestThreadUtils.runOnUiThreadBlocking(() -> {
-                mTab.getNavigationController().unregisterNavigationCallback(mNavigationCallback);
-            });
-        }
-
-        private void checkComplete() {
-            if (mNavigationObserved && mDoneLoading && mContentfulPaint) {
-                mCallbackHelper.notifyCalled();
-            }
-        }
-    }
 
     private static final class JSONCallbackHelper extends CallbackHelper {
         private JSONObject mResult;

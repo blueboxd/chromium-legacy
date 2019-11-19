@@ -16,7 +16,6 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.provider.Browser;
 import android.util.Pair;
@@ -97,8 +96,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
 
     @Nullable
     private DynamicModuleCoordinator mDynamicModuleCoordinator;
-
-    private CustomTabTaskDescriptionHelper mTaskDescriptionHelper;
 
     private CustomTabNightModeStateController mNightModeStateController;
 
@@ -251,11 +248,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
 
         mConnection.showSignInToastIfNecessary(mSession, getIntent());
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && useSeparateTask()) {
-            mTaskDescriptionHelper = new CustomTabTaskDescriptionHelper(this,
-                    ApiCompatibilityUtils.getColor(getResources(), R.color.default_primary_color));
-        }
-
         if (isTaskRoot() && UsageStatsService.isEnabled()) {
             UsageStatsService.getInstance().createPageViewObserver(getTabModelSelector(), this);
         }
@@ -310,12 +302,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
                 (mode == TabCreationMode.HIDDEN || mode == TabCreationMode.EARLY)
                 && !mTabProvider.getTab().isLoading();
         if (earlyCreatedTabIsReady) postDeferredStartupIfNeeded();
-    }
-
-    @Override
-    protected void onDestroyInternal() {
-        super.onDestroyInternal();
-        if (mTaskDescriptionHelper != null) mTaskDescriptionHelper.destroy();
     }
 
     @Override
@@ -611,6 +597,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         component.resolveCompositorContentInitializer();
         component.resolveSessionHandler();
         component.resolveToolbarColorController();
+        component.resolveTaskDescriptionHelper();
 
         if (mIntentDataProvider.isTrustedWebActivity()) {
             component.resolveTrustedWebActivityCoordinator();

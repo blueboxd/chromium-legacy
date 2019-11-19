@@ -35,8 +35,10 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -56,6 +58,7 @@ public class BottomSheetControllerTest {
     private TestBottomSheetContent mHighPriorityContent;
     private TestBottomSheetContent mPeekableContent;
     private TestBottomSheetContent mNonPeekableContent;
+    private ScrimView mScrimView;
 
     @Before
     public void setUp() throws Exception {
@@ -66,7 +69,7 @@ public class BottomSheetControllerTest {
             ViewGroup coordinator = activity.findViewById(org.chromium.chrome.R.id.coordinator);
             BottomSheet.setSmallScreenForTesting(false);
 
-            ScrimView scrim = new ScrimView(mActivityTestRule.getActivity(), null, coordinator);
+            mScrimView = activity.getScrim();
 
             mSheetController = activity.getBottomSheetController();
 
@@ -119,11 +122,26 @@ public class BottomSheetControllerTest {
     @Test
     @SmallTest
     @Feature({"BottomSheetController"})
-    public void testSheetPriorityInExpandedState() throws TimeoutException {
+    public void testSheetPriorityInExpandedState() throws TimeoutException, ExecutionException {
+        CallbackHelper hideCallbackHelper = new CallbackHelper();
+        mSheetController.addObserver(new EmptyBottomSheetObserver() {
+            @Override
+            public void onSheetContentChanged(BottomSheetContent content) {
+                hideCallbackHelper.notifyCalled();
+            }
+        });
+        int callCount = hideCallbackHelper.getCallCount();
         requestContentInSheet(mLowPriorityContent, true);
         expandSheet();
         requestContentInSheet(mHighPriorityContent, false);
         assertEquals("The bottom sheet is showing incorrect content.", mLowPriorityContent,
+                mSheetController.getCurrentSheetContent());
+
+        ThreadUtils.runOnUiThreadBlocking(() -> mSheetController.collapseSheet(false));
+
+        hideCallbackHelper.waitForCallback(callCount);
+
+        assertEquals("The bottom sheet is showing incorrect content.", mHighPriorityContent,
                 mSheetController.getCurrentSheetContent());
     }
 
@@ -343,6 +361,20 @@ public class BottomSheetControllerTest {
 
     @Test
     @MediumTest
+    public void testScrimTapClosesSheet() throws TimeoutException, ExecutionException {
+        requestContentInSheet(mHighPriorityContent, true);
+        BottomSheetTestRule.Observer observer = new BottomSheetTestRule.Observer();
+        mSheetController.addObserver(observer);
+
+        expandSheet();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> mScrimView.performClick());
+
+        observer.mClosedCallbackHelper.waitForCallback(0);
+    }
+
+    @Test
+    @MediumTest
     public void testCustomHalfRatio() throws TimeoutException {
         final float customHalfHeight = 0.3f;
         int containerHeight =
@@ -383,6 +415,29 @@ public class BottomSheetControllerTest {
 
         assertEquals("The bottom sheet should be at the full state when half is disabled.",
                 BottomSheetController.SheetState.FULL, mSheetController.getSheetState());
+    }
+
+    @Test
+    @MediumTest
+    public void testCollapseSheet() throws TimeoutException, ExecutionException {
+        requestContentInSheet(mLowPriorityContent, true);
+
+        ThreadUtils.runOnUiThreadBlocking(() -> mSheetController.collapseSheet(false));
+
+        assertEquals("The bottom sheet should be at the peeking state.",
+                BottomSheetController.SheetState.PEEK, mSheetController.getSheetState());
+    }
+
+    @Test
+    @MediumTest
+    public void testCollapseSheet_peekDisabled() throws TimeoutException, ExecutionException {
+        mLowPriorityContent.setPeekHeight(BottomSheetContent.HeightMode.DISABLED);
+        requestContentInSheet(mLowPriorityContent, true);
+
+        ThreadUtils.runOnUiThreadBlocking(() -> mSheetController.collapseSheet(false));
+
+        assertEquals("The bottom sheet should be at the half state when peek is disabled.",
+                BottomSheetController.SheetState.HALF, mSheetController.getSheetState());
     }
 
     /**

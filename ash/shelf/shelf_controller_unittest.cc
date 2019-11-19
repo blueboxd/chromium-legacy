@@ -220,8 +220,10 @@ TEST_F(ShelfControllerPrefsTest, ShelfRespectsPerDisplayPrefsUnified) {
   EXPECT_EQ(SHELF_ALIGNMENT_RIGHT, shelf->alignment());
 }
 
-// Ensure shelf settings are correct after display swap, see crbug.com/748291
-TEST_F(ShelfControllerPrefsTest, ShelfSettingsValidAfterDisplaySwap) {
+// Ensure shelf settings are correct after display swap at login screen, see
+// crbug.com/748291
+TEST_F(ShelfControllerPrefsTest,
+       ShelfSettingsValidAfterDisplaySwapAtLoginScreen) {
   // Simulate adding an external display at the lock screen.
   GetSessionControllerClient()->RequestLockScreen();
   UpdateDisplay("1024x768,800x600");
@@ -285,6 +287,43 @@ TEST_F(ShelfControllerPrefsTest, ShelfSettingsValidAfterDisplaySwap) {
 
   // After screen unlock the shelves should have the expected alignment values.
   GetSessionControllerClient()->UnlockScreen();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SHELF_ALIGNMENT_LEFT,
+            GetShelfForDisplay(internal_display_id)->alignment());
+  EXPECT_EQ(SHELF_ALIGNMENT_RIGHT,
+            GetShelfForDisplay(external_display_id)->alignment());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER,
+            GetShelfForDisplay(internal_display_id)->auto_hide_behavior());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
+            GetShelfForDisplay(external_display_id)->auto_hide_behavior());
+}
+
+// Test display swap while logged in, which was causing a crash (see
+// crbug.com/1022852)
+TEST_F(ShelfControllerPrefsTest,
+       ShelfSettingsValidAfterDisplaySwapWhileLoggedIn) {
+  // Simulate adding an external display at the lock screen.
+  GetSessionControllerClient()->RequestLockScreen();
+  UpdateDisplay("1024x768,800x600");
+  base::RunLoop().RunUntilIdle();
+  const int64_t internal_display_id = GetPrimaryDisplay().id();
+  const int64_t external_display_id = GetSecondaryDisplay().id();
+
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  // Set some shelf prefs to differentiate the two shelves.
+  SetShelfAlignmentPref(prefs, internal_display_id, SHELF_ALIGNMENT_LEFT);
+  SetShelfAlignmentPref(prefs, external_display_id, SHELF_ALIGNMENT_RIGHT);
+  SetShelfAutoHideBehaviorPref(prefs, external_display_id,
+                               SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+
+  // Unlock the screen.
+  GetSessionControllerClient()->UnlockScreen();
+  base::RunLoop().RunUntilIdle();
+
+  // Simulate the external display becoming the primary display. The shelves are
+  // swapped (each instance now has a different display id), check state.
+  SwapPrimaryDisplay();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SHELF_ALIGNMENT_LEFT,
             GetShelfForDisplay(internal_display_id)->alignment());

@@ -32,10 +32,8 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_model_updater.h"
-#include "chrome/browser/ui/app_list/crostini/crostini_app_model_builder.h"
 #include "chrome/browser/ui/app_list/extension_app_item.h"
 #include "chrome/browser/ui/app_list/extension_app_model_builder.h"
-#include "chrome/browser/ui/app_list/internal_app/internal_app_model_builder.h"
 #include "chrome/browser/ui/app_list/page_break_app_item.h"
 #include "chrome/browser/ui/app_list/page_break_constants.h"
 #include "chrome/common/chrome_features.h"
@@ -434,12 +432,6 @@ void AppListSyncableService::BuildModel() {
     ext_apps_builder_ = std::make_unique<ExtensionAppModelBuilder>(controller);
     if (arc::IsArcAllowedForProfile(profile_))
       arc_apps_builder_ = std::make_unique<ArcAppModelBuilder>(controller);
-    if (crostini::CrostiniFeatures::Get()->IsUIAllowed(profile_)) {
-      crostini_apps_builder_ =
-          std::make_unique<CrostiniAppModelBuilder>(controller);
-    }
-    internal_apps_builder_ =
-        std::make_unique<InternalAppModelBuilder>(controller);
   }
 
   DCHECK(profile_);
@@ -451,9 +443,6 @@ void AppListSyncableService::BuildModel() {
     ext_apps_builder_->Initialize(this, profile_, model_updater_.get());
     if (arc_apps_builder_.get())
       arc_apps_builder_->Initialize(this, profile_, model_updater_.get());
-    if (crostini_apps_builder_.get())
-      crostini_apps_builder_->Initialize(this, profile_, model_updater_.get());
-    internal_apps_builder_->Initialize(this, profile_, model_updater_.get());
   }
 
   HandleUpdateFinished();
@@ -1041,8 +1030,6 @@ void AppListSyncableService::Shutdown() {
     app_service_apps_builder_.reset();
     return;
   }
-  internal_apps_builder_.reset();
-  crostini_apps_builder_.reset();
   arc_apps_builder_.reset();
   ext_apps_builder_.reset();
 }

@@ -194,8 +194,8 @@ TEST_F(AndroidPageLoadMetricsObserverTest, LoadTimingInfo) {
   const base::TimeTicks kNow = base::TimeTicks::Now();
   load_timing_info->connect_timing.dns_start = kNow;
   page_load_metrics::ExtraRequestCompleteInfo info(
-      GURL("https://ignored.com"), net::IPEndPoint(), frame_tree_node_id,
-      false, /* cached */
+      url::Origin::Create(GURL("https://ignored.com")), net::IPEndPoint(),
+      frame_tree_node_id, false, /* cached */
       10 * 1024 /* size */, 0 /* original_network_content_length */,
       nullptr
       /* data_reduction_proxy_data */,

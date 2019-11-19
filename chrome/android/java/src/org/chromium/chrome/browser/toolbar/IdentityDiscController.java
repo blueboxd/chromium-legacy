@@ -12,7 +12,6 @@ import androidx.annotation.IntDef;
 
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
@@ -119,7 +118,6 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
      * Shows/hides Identity Disc depending on whether NTP is visible.
      */
     void updateButtonState(boolean isNTPVisible) {
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.IDENTITY_DISC)) return;
         // Sync is disabled. IdentityDisc will never be shown.
         if (mProfileSyncService == null) return;
 

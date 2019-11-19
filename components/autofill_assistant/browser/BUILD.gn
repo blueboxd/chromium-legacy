@@ -105,6 +105,8 @@ jumbo_static_library("browser") {
     "controller_observer.h",
     "details.cc",
     "details.h",
+    "device_context.cc",
+    "device_context.h",
     "direct_action.cc",
     "direct_action.h",
     "element_area.cc",

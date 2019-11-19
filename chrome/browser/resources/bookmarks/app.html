@@ -1,26 +1,4 @@
-<link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_components/managed_footnote/managed_footnote.html">
-<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast_manager.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_splitter/cr_splitter.html">
-<link rel="import" href="chrome://resources/html/find_shortcut_behavior.html">
-<link rel="import" href="api_listener.html">
-<link rel="import" href="command_manager.html">
-<link rel="import" href="constants.html">
-<link rel="import" href="dnd_manager.html">
-<link rel="import" href="folder_node.html">
-<link rel="import" href="list.html">
-<link rel="import" href="mouse_focus_behavior.html">
-<link rel="import" href="router.html">
-<link rel="import" href="shared_vars.html">
-<link rel="import" href="store.html">
-<link rel="import" href="strings.html">
-<link rel="import" href="toolbar.html">
-<link rel="import" href="util.html">
-
-<dom-module id="bookmarks-app">
-  <template>
     <style>
       :host {
         color: var(--cr-primary-text-color);
@@ -104,6 +82,3 @@
     <cr-toast-manager duration="10000" on-undo-click="onUndoClick_"
         undo-label="$i18n{undo}" undo-description="$i18n{undoDescription}">
     </cr-toast-manager>
-  </template>
-  <script src="app.js"></script>
-</dom-module>

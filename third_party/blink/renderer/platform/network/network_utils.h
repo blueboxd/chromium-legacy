@@ -38,8 +38,10 @@ ParseDataURL(const KURL&, const String& method);
 
 // Returns true if the URL is a data URL and its MIME type is in the list of
 // supported/recognized MIME types.
-PLATFORM_EXPORT bool IsDataURLMimeTypeSupported(const KURL&,
-                                                std::string* data = nullptr);
+PLATFORM_EXPORT bool IsDataURLMimeTypeSupported(
+    const KURL&,
+    std::string* data = nullptr,
+    std::string* mime_type = nullptr);
 
 PLATFORM_EXPORT bool IsRedirectResponseCode(int);
 

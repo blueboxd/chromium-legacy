@@ -19,10 +19,6 @@ These builders must pass before a CL may land.
 
 * [android-marshmallow-arm64-rel](https://ci.chromium.org/p/chromium/builders/try/android-marshmallow-arm64-rel) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+android-marshmallow-arm64-rel)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+android-marshmallow-arm64-rel))
 
-* [android_arm64_dbg_recipe](https://ci.chromium.org/p/chromium/builders/try/android_arm64_dbg_recipe) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+android_arm64_dbg_recipe)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+android_arm64_dbg_recipe))
-
-* [android_clang_dbg_recipe](https://ci.chromium.org/p/chromium/builders/try/android_clang_dbg_recipe) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+android_clang_dbg_recipe)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+android_clang_dbg_recipe))
-
 * [android_compile_dbg](https://ci.chromium.org/p/chromium/builders/try/android_compile_dbg) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+android_compile_dbg)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+android_compile_dbg))
 
 * [android_cronet](https://ci.chromium.org/p/chromium/builders/try/android_cronet) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+android_cronet)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+android_cronet))

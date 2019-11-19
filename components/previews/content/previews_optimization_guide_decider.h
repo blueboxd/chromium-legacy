@@ -29,7 +29,6 @@ class PreviewsOptimizationGuideDecider : public PreviewsOptimizationGuide {
   ~PreviewsOptimizationGuideDecider() override;
 
   // PreviewsOptimizationGuide implementation:
-  bool IsReady() const override;
   bool CanApplyPreview(PreviewsUserData* previews_data,
                        content::NavigationHandle* navigation_handle,
                        PreviewsType type) override;
@@ -38,8 +37,6 @@ class PreviewsOptimizationGuideDecider : public PreviewsOptimizationGuide {
   bool GetResourceLoadingHints(
       const GURL& url,
       std::vector<std::string>* out_resource_patterns_to_block) override;
-  void LogHintCacheMatch(const GURL& url, bool is_committed) const override;
-  void ClearFetchedHints() override;
 
  private:
   // The Optimization Guide Decider to consult for whether an optimization can

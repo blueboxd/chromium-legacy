@@ -306,7 +306,7 @@ DeclarativeNetRequestSetActionCountAsBadgeTextFunction::Run() {
     DCHECK(rules_monitor_service);
 
     const declarative_net_request::ActionTracker& action_tracker =
-        rules_monitor_service->ruleset_manager()->action_tracker();
+        rules_monitor_service->action_tracker();
     action_tracker.OnPreferenceEnabled(extension_id());
   } else {
     DCHECK(ExtensionsAPIClient::Get());

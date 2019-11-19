@@ -29,11 +29,12 @@
 
             <org.chromium.ui.widget.ChromeImageView
                 android:id="@+id/favicon"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginTop="12dp"
-                android:padding="12dp"
-                android:layout_alignParentStart="true"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_alignParentBottom="true"
+                android:layout_marginStart="18dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="14dp"
                 android:scaleType="fitCenter"
                 tools:ignore="ContentDescription" />
 
@@ -48,14 +49,28 @@
                 android:src="@drawable/drag_handlebar" />
 
             <org.chromium.ui.widget.ChromeImageView
-                android:id="@+id/open_in_new_tab"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:id="@+id/close"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
                 android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:padding="12dp"
+                android:layout_alignParentBottom="true"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="14dp"
+                android:src="@drawable/btn_close"
+                android:contentDescription="@string/close"
+                app:tint="@color/default_icon_color" />
+
+            <org.chromium.ui.widget.ChromeImageView
+                android:id="@+id/open_in_new_tab"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_toStartOf="@+id/close"
+                android:layout_alignParentBottom="true"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="14dp"
                 android:src="@drawable/open_in_new_tab"
                 android:contentDescription="@string/contextmenu_open_in_new_tab"
+                android:visibility="gone"
                 app:tint="@color/default_icon_color" />
 
             <TextView

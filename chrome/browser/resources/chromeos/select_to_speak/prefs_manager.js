@@ -273,9 +273,7 @@ PrefsManager.prototype.initPreferences = function() {
  * @public
  */
 PrefsManager.prototype.speechOptions = function() {
-  let options = {
-    enqueue: true
-  };
+  let options = {enqueue: true};
 
   // To use the default (system) voice: don't specify options['voiceName'].
   if (this.voiceNameFromPrefs_ === PrefsManager.SYSTEM_VOICE) {

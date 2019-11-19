@@ -47,7 +47,7 @@
 #include "services/tracing/public/cpp/tracing_features.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
-#include "third_party/inspector_protocol/crdtp/encoding.h"
+#include "third_party/inspector_protocol/crdtp/json.h"
 
 #ifdef OS_ANDROID
 #include "content/browser/renderer_host/compositor_impl_android.h"

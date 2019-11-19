@@ -180,9 +180,6 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
 
         PreferenceUtils.addPreferencesFromResource(this, R.xml.sync_and_services_preferences);
 
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.IDENTITY_DISC)) {
-            getPreferenceScreen().removePreference(findPreference(PREF_USER_CATEGORY));
-        }
         mSigninPreference = (SignInPreference) findPreference(PREF_SIGNIN);
         mSigninPreference.setPersonalizedPromoEnabled(false);
         mManageYourGoogleAccount = findPreference(PREF_MANAGE_YOUR_GOOGLE_ACCOUNT);
@@ -632,7 +629,7 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
                 return mPrefServiceBridge.isManagedPreference(Pref.SAFE_BROWSING_ENABLED);
             }
             if (PREF_USAGE_AND_CRASH_REPORTING.equals(key)) {
-                return mPrefServiceBridge.isMetricsReportingManaged();
+                return PrivacyPreferencesManager.getInstance().isMetricsReportingManaged();
             }
             if (PREF_URL_KEYED_ANONYMIZED_DATA.equals(key)) {
                 return UnifiedConsentServiceBridge.isUrlKeyedAnonymizedDataCollectionManaged();

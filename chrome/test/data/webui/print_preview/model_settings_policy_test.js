@@ -106,7 +106,7 @@ suite('ModelSettingsPolicyTest', function() {
       assertEquals(subtestParams.expectedValue, model.getSettingValue('color'));
       assertEquals(
           subtestParams.expectedAvailable, model.settings.color.available);
-      assertEquals(subtestParams.expectedManaged, model.controlsManaged);
+      assertEquals(subtestParams.expectedManaged, model.settingsManaged);
       assertEquals(
           subtestParams.expectedEnforced, model.settings.color.setByPolicy);
     });
@@ -213,7 +213,7 @@ suite('ModelSettingsPolicyTest', function() {
           subtestParams.expectedValue, model.getSettingValue('duplex'));
       assertEquals(
           subtestParams.expectedAvailable, model.settings.duplex.available);
-      assertEquals(subtestParams.expectedManaged, model.controlsManaged);
+      assertEquals(subtestParams.expectedManaged, model.settingsManaged);
       assertEquals(
           subtestParams.expectedEnforced, model.settings.duplex.setByPolicy);
       assertEquals(
@@ -318,7 +318,7 @@ suite('ModelSettingsPolicyTest', function() {
       assertEquals(subtestParams.expectedValue, model.getSettingValue('pin'));
       assertEquals(
           subtestParams.expectedAvailable, model.settings.pin.available);
-      assertEquals(subtestParams.expectedManaged, model.controlsManaged);
+      assertEquals(subtestParams.expectedManaged, model.settingsManaged);
       assertEquals(
           subtestParams.expectedEnforced, model.settings.pin.setByPolicy);
     });
@@ -396,7 +396,7 @@ suite('ModelSettingsPolicyTest', function() {
       assertEquals(
           subtestParams.expectedAvailable,
           model.settings.cssBackground.available);
-      assertEquals(subtestParams.expectedManaged, model.controlsManaged);
+      assertEquals(subtestParams.expectedManaged, model.settingsManaged);
       assertEquals(
           subtestParams.expectedEnforced,
           model.settings.cssBackground.setByPolicy);

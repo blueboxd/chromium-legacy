@@ -9,7 +9,7 @@ import sys
 
 sys.path.append(os.path.dirname(__file__))
 
-from signing import config, model, pipeline
+from signing import commands, logger, model, pipeline
 
 
 def _link_stdout_and_stderr():
@@ -75,6 +75,14 @@ def create_config(config_args, development):
         config_class = DevelopmentCodeSignConfig
 
     return config_class(*config_args)
+
+
+def _show_tool_versions():
+    logger.info('Showing macOS and tool versions.')
+    commands.run_command(['sw_vers'])
+    commands.run_command(['xcodebuild', '-version'])
+    commands.run_command(['xcrun', '-show-sdk-path'])
+    commands.run_command(['xcrun', '-show-sdk-build-version'])
 
 
 def main():
@@ -153,6 +161,8 @@ def main():
 
     if not os.path.exists(paths.output):
         os.mkdir(paths.output)
+
+    _show_tool_versions()
 
     pipeline.sign_all(
         paths,

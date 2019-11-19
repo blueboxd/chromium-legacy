@@ -55,6 +55,7 @@ export let LocalDestinationInfo;
  *   serializedAppStateStr: ?string,
  *   serializedDefaultDestinationSelectionRulesStr: ?string,
  *   pdfPrinterDisabled: boolean,
+ *   destinationsManaged: boolean,
  *   cloudPrintURL: (string | undefined),
  *   userAccounts: (Array<string> | undefined),
  *   syncAvailable: boolean

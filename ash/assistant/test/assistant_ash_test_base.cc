@@ -166,6 +166,10 @@ views::View* AssistantAshTestBase::mic_view() {
   return test_api_->mic_view();
 }
 
+views::View* AssistantAshTestBase::greeting_label() {
+  return test_api_->greeting_label();
+}
+
 void AssistantAshTestBase::ShowKeyboard() {
   auto* keyboard_controller = keyboard::KeyboardUIController::Get();
   keyboard_controller->ShowKeyboard(/*lock=*/false);

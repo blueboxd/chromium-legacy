@@ -26,6 +26,9 @@
 
 namespace {
 
+constexpr base::TimeDelta kInactiveTimerDelay =
+    base::TimeDelta::FromMinutes(60);
+
 // Here we check to see if the WebContents is focused. Note that since Session
 // is a WebContentsObserver, we could in theory listen for
 // |OnWebContentsFocused()| and |OnWebContentsLostFocus()|. However, this won't
@@ -52,13 +55,16 @@ MediaNotificationService::Session::Session(
     MediaNotificationService* owner,
     const std::string& id,
     std::unique_ptr<media_message_center::MediaSessionNotificationItem> item,
-    content::WebContents* web_contents)
+    content::WebContents* web_contents,
+    mojo::Remote<media_session::mojom::MediaController> controller)
     : content::WebContentsObserver(web_contents),
       owner_(owner),
       id_(id),
       item_(std::move(item)) {
   DCHECK(owner_);
   DCHECK(item_);
+
+  SetController(std::move(controller));
 }
 
 MediaNotificationService::Session::~Session() = default;
@@ -67,6 +73,67 @@ void MediaNotificationService::Session::WebContentsDestroyed() {
   // If the WebContents is destroyed, then we should just remove the item
   // instead of freezing it.
   owner_->RemoveItem(id_);
+}
+
+void MediaNotificationService::Session::OnWebContentsFocused(
+    content::RenderWidgetHost*) {
+  OnSessionInteractedWith();
+}
+
+void MediaNotificationService::Session::MediaSessionInfoChanged(
+    media_session::mojom::MediaSessionInfoPtr session_info) {
+  bool playing =
+      session_info && session_info->playback_state ==
+                          media_session::mojom::MediaPlaybackState::kPlaying;
+
+  // If we've started playing, we don't want the inactive timer to be running.
+  if (playing) {
+    inactive_timer_.Stop();
+    return;
+  }
+
+  // If the timer is already running, we don't need to do anything.
+  if (inactive_timer_.IsRunning())
+    return;
+
+  StartInactiveTimer();
+}
+
+void MediaNotificationService::Session::MediaSessionPositionChanged(
+    const base::Optional<media_session::MediaPosition>& position) {
+  OnSessionInteractedWith();
+}
+
+void MediaNotificationService::Session::SetController(
+    mojo::Remote<media_session::mojom::MediaController> controller) {
+  if (controller.is_bound()) {
+    observer_receiver_.reset();
+    controller->AddObserver(observer_receiver_.BindNewPipeAndPassRemote());
+  }
+}
+
+void MediaNotificationService::Session::OnSessionInteractedWith() {
+  // If we're not currently tracking inactive time, then no action is needed.
+  if (!inactive_timer_.IsRunning())
+    return;
+
+  // Otherwise, reset the timer.
+  inactive_timer_.Stop();
+  StartInactiveTimer();
+}
+
+void MediaNotificationService::Session::StartInactiveTimer() {
+  DCHECK(!inactive_timer_.IsRunning());
+
+  inactive_timer_.Start(
+      FROM_HERE, kInactiveTimerDelay,
+      base::BindOnce(
+          [](media_message_center::MediaSessionNotificationItem* item) {
+            // If the session has been paused and inactive for long enough, then
+            // dismiss it.
+            item->Dismiss();
+          },
+          item_.get()));
 }
 
 MediaNotificationService::MediaNotificationService(
@@ -132,19 +199,23 @@ void MediaNotificationService::OnFocusGained(
   if (it != sessions_.end() && !it->second.item()->frozen())
     return;
 
-  mojo::Remote<media_session::mojom::MediaController> controller;
+  mojo::Remote<media_session::mojom::MediaController> item_controller;
+  mojo::Remote<media_session::mojom::MediaController> session_controller;
 
   // |controller_manager_remote_| may be null in tests where connector is
   // unavailable.
   if (controller_manager_remote_) {
     controller_manager_remote_->CreateMediaControllerForSession(
-        controller.BindNewPipeAndPassReceiver(), *session->request_id);
+        item_controller.BindNewPipeAndPassReceiver(), *session->request_id);
+    controller_manager_remote_->CreateMediaControllerForSession(
+        session_controller.BindNewPipeAndPassReceiver(), *session->request_id);
   }
 
   if (it != sessions_.end()) {
     // If the notification was previously frozen then we should reset the
     // controller because the mojo pipe would have been reset.
-    it->second.item()->SetController(std::move(controller),
+    it->second.SetController(std::move(session_controller));
+    it->second.item()->SetController(std::move(item_controller),
                                      std::move(session->session_info));
     if (!base::Contains(dragged_out_session_ids_, id))
       active_controllable_session_ids_.insert(id);
@@ -159,9 +230,10 @@ void MediaNotificationService::OnFocusGained(
             std::make_unique<
                 media_message_center::MediaSessionNotificationItem>(
                 this, id, session->source_name.value_or(std::string()),
-                std::move(controller), std::move(session->session_info)),
+                std::move(item_controller), std::move(session->session_info)),
             content::MediaSession::GetWebContentsFromRequestId(
-                *session->request_id)));
+                *session->request_id),
+            std::move(session_controller)));
   }
 }
 
@@ -308,6 +380,12 @@ void MediaNotificationService::OnContainerDraggedOut(const std::string& id,
 
   for (auto& observer : observers_)
     observer.OnNotificationListChanged();
+}
+
+void MediaNotificationService::Shutdown() {
+  // |cast_notification_provider_| depends on MediaRouter, which is another
+  // keyed service.
+  cast_notification_provider_.reset();
 }
 
 void MediaNotificationService::OnOverlayNotificationClosed(

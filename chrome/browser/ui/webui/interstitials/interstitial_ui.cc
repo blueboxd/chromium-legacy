@@ -20,8 +20,8 @@
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/ssl/bad_clock_blocking_page.h"
 #include "chrome/browser/ssl/blocked_interception_blocking_page.h"
+#include "chrome/browser/ssl/chrome_ssl_blocking_page.h"
 #include "chrome/browser/ssl/mitm_software_blocking_page.h"
-#include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/url_constants.h"
 #include "components/grit/components_resources.h"
@@ -139,7 +139,7 @@ class CaptivePortalBlockingPageWithNetInfo : public CaptivePortalBlockingPage {
 };
 #endif
 
-SSLBlockingPage* CreateSSLBlockingPage(content::WebContents* web_contents) {
+SSLBlockingPage* CreateSslBlockingPage(content::WebContents* web_contents) {
   // Random parameters for SSL blocking page.
   int cert_error = net::ERR_CERT_CONTAINS_ERRORS;
   GURL request_url("https://example.com");
@@ -184,9 +184,9 @@ SSLBlockingPage* CreateSSLBlockingPage(content::WebContents* web_contents) {
   if (strict_enforcement)
     options_mask |=
         security_interstitials::SSLErrorOptionsMask::STRICT_ENFORCEMENT;
-  return SSLBlockingPage::Create(web_contents, cert_error, ssl_info,
-                                 request_url, options_mask, time_triggered_,
-                                 GURL(), nullptr);
+  return ChromeSSLBlockingPage::Create(web_contents, cert_error, ssl_info,
+                                       request_url, options_mask,
+                                       time_triggered_, GURL(), nullptr);
 }
 
 MITMSoftwareBlockingPage* CreateMITMSoftwareBlockingPage(
@@ -498,7 +498,7 @@ void InterstitialHTMLSource::StartDataRequest(
       GURL(chrome::kChromeUIInterstitialURL).GetWithEmptyPath().Resolve(path);
   std::string path_without_query = url.path();
   if (path_without_query == "/ssl") {
-    interstitial_delegate.reset(CreateSSLBlockingPage(web_contents));
+    interstitial_delegate.reset(CreateSslBlockingPage(web_contents));
   } else if (path_without_query == "/mitm-software-ssl") {
     interstitial_delegate.reset(CreateMITMSoftwareBlockingPage(web_contents));
   } else if (path_without_query == "/blocked-interception") {

@@ -540,7 +540,10 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
   prefs->SetBoolean(prefs::kFactoryResetRequested, true);
 }
 
-IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback, RevertAfterCancel) {
+// This test frequently times out on sanitizer and debug build bots. See
+// https://crbug.com/1025926.
+IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTestWithRollback,
+                       DISABLED_RevertAfterCancel) {
   OobeScreenWaiter(ResetView::kScreenId).Wait();
   EXPECT_TRUE(login_prompt_visible_observer_->signal_emitted());
 

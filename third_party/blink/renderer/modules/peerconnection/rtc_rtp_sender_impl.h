@@ -12,11 +12,11 @@
 #include "base/callback.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
-#include "third_party/blink/public/platform/web_rtc_rtp_sender.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_sender_platform.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/api/rtp_sender_interface.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
@@ -55,7 +55,7 @@ namespace blink {
 // immutable and only accessible on the main thread.
 //
 // TODO(crbug.com/787254): Consider merging RTCRtpSenderImpl and RTCRtpReceiver,
-// and removing WebRTCRtpSender when all its clients are Onion soup'ed.
+// and removing RTCRtpSenderPlatform when all its clients are Onion soup'ed.
 // Also, move away from using std::vector.
 class MODULES_EXPORT RtpSenderState {
  public:
@@ -113,7 +113,7 @@ class MODULES_EXPORT RtpSenderState {
 // all the blink object will need is the RtpSenderState. Requires coordination
 // with transceivers and receivers since these are tightly coupled.
 // https://crbug.com/787254
-class MODULES_EXPORT RTCRtpSenderImpl : public blink::WebRTCRtpSender {
+class MODULES_EXPORT RTCRtpSenderImpl : public blink::RTCRtpSenderPlatform {
  public:
   static uintptr_t getId(const webrtc::RtpSenderInterface* webrtc_sender);
 
@@ -128,8 +128,8 @@ class MODULES_EXPORT RTCRtpSenderImpl : public blink::WebRTCRtpSender {
   const RtpSenderState& state() const;
   void set_state(RtpSenderState state);
 
-  // blink::WebRTCRtpSender.
-  std::unique_ptr<blink::WebRTCRtpSender> ShallowCopy() const override;
+  // blink::RTCRtpSenderPlatform.
+  std::unique_ptr<blink::RTCRtpSenderPlatform> ShallowCopy() const override;
   uintptr_t Id() const override;
   rtc::scoped_refptr<webrtc::DtlsTransportInterface> DtlsTransport() override;
   webrtc::DtlsTransportInformation DtlsTransportInformation() override;
@@ -166,14 +166,14 @@ class MODULES_EXPORT RTCRtpSenderOnlyTransceiver
     : public blink::WebRTCRtpTransceiver {
  public:
   explicit RTCRtpSenderOnlyTransceiver(
-      std::unique_ptr<blink::WebRTCRtpSender> sender);
+      std::unique_ptr<blink::RTCRtpSenderPlatform> sender);
   ~RTCRtpSenderOnlyTransceiver() override;
 
   blink::WebRTCRtpTransceiverImplementationType ImplementationType()
       const override;
   uintptr_t Id() const override;
   blink::WebString Mid() const override;
-  std::unique_ptr<blink::WebRTCRtpSender> Sender() const override;
+  std::unique_ptr<blink::RTCRtpSenderPlatform> Sender() const override;
   std::unique_ptr<blink::WebRTCRtpReceiver> Receiver() const override;
   bool Stopped() const override;
   webrtc::RtpTransceiverDirection Direction() const override;
@@ -186,7 +186,7 @@ class MODULES_EXPORT RTCRtpSenderOnlyTransceiver
       blink::WebVector<webrtc::RtpCodecCapability>) override;
 
  private:
-  std::unique_ptr<blink::WebRTCRtpSender> sender_;
+  std::unique_ptr<blink::RTCRtpSenderPlatform> sender_;
 };
 
 }  // namespace blink

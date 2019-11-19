@@ -52,14 +52,37 @@ suite('Tab', function() {
   });
 
   test('slideIn animates in the element', async () => {
+    document.documentElement.dir = 'ltr';
+    tabElement.style.marginRight = '100px';
+    const tabElementStyle = window.getComputedStyle(tabElement);
+
     const animationPromise = tabElement.slideIn();
     // Before animation completes.
-    assertEquals('0', window.getComputedStyle(tabElement).opacity);
-    assertEquals('0px', window.getComputedStyle(tabElement).maxWidth);
+    assertEquals('0px', tabElementStyle.marginRight);
+    assertEquals('0px', tabElementStyle.maxWidth);
+    assertEquals('matrix(0, 0, 0, 0, 0, 0)', tabElementStyle.transform);
     await animationPromise;
     // After animation completes.
-    assertEquals('1', window.getComputedStyle(tabElement).opacity);
-    assertEquals('none', window.getComputedStyle(tabElement).maxWidth);
+    assertEquals('100px', tabElementStyle.marginRight);
+    assertEquals('none', tabElementStyle.maxWidth);
+    assertEquals('matrix(1, 0, 0, 1, 0, 0)', tabElementStyle.transform);
+  });
+
+  test('slideIn animations right to left for RTL languages', async () => {
+    document.documentElement.dir = 'rtl';
+    tabElement.style.marginLeft = '100px';
+    const tabElementStyle = window.getComputedStyle(tabElement);
+
+    const animationPromise = tabElement.slideIn();
+    // Before animation completes.
+    assertEquals('0px', tabElementStyle.marginLeft);
+    assertEquals('0px', tabElementStyle.maxWidth);
+    assertEquals('matrix(0, 0, 0, 0, 0, 0)', tabElementStyle.transform);
+    await animationPromise;
+    // After animation completes.
+    assertEquals('100px', tabElementStyle.marginLeft);
+    assertEquals('none', tabElementStyle.maxWidth);
+    assertEquals('matrix(1, 0, 0, 1, 0, 0)', tabElementStyle.transform);
   });
 
   test('slideOut animates out the element', async () => {

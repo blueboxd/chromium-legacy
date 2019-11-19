@@ -9,7 +9,7 @@
 namespace page_load_metrics {
 
 ExtraRequestCompleteInfo::ExtraRequestCompleteInfo(
-    const GURL& url,
+    const url::Origin& origin_of_final_url,
     const net::IPEndPoint& remote_endpoint,
     int frame_tree_node_id,
     bool was_cached,
@@ -20,7 +20,7 @@ ExtraRequestCompleteInfo::ExtraRequestCompleteInfo(
     content::ResourceType detected_resource_type,
     int net_error,
     std::unique_ptr<net::LoadTimingInfo> load_timing_info)
-    : url(url),
+    : origin_of_final_url(origin_of_final_url),
       remote_endpoint(remote_endpoint),
       frame_tree_node_id(frame_tree_node_id),
       was_cached(was_cached),
@@ -33,7 +33,7 @@ ExtraRequestCompleteInfo::ExtraRequestCompleteInfo(
 
 ExtraRequestCompleteInfo::ExtraRequestCompleteInfo(
     const ExtraRequestCompleteInfo& other)
-    : url(other.url),
+    : origin_of_final_url(other.origin_of_final_url),
       remote_endpoint(other.remote_endpoint),
       frame_tree_node_id(other.frame_tree_node_id),
       was_cached(other.was_cached),

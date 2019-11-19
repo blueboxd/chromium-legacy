@@ -1476,6 +1476,10 @@ void BluetoothAdapterBlueZ::OnPropertyChangeCompleted(
   }
 }
 
+base::WeakPtr<BluetoothAdapter> BluetoothAdapterBlueZ::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 // BluetoothAdapterBlueZ should override SetPowered() instead.
 bool BluetoothAdapterBlueZ::SetPoweredImpl(bool powered) {
   NOTREACHED();

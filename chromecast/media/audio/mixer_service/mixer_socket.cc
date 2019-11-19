@@ -228,7 +228,9 @@ void MixerSocket::OnSendUnblocked() {
 }
 
 void MixerSocket::ReceiveMoreMessages() {
-  socket_->ReceiveMessagesSynchronously();
+  if (socket_) {
+    socket_->ReceiveMessagesSynchronously();
+  }
 }
 
 void MixerSocket::OnError(int error) {

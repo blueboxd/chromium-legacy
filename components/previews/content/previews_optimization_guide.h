@@ -27,9 +27,6 @@ class PreviewsOptimizationGuide {
   PreviewsOptimizationGuide() {}
   virtual ~PreviewsOptimizationGuide() {}
 
-  // Returns whether the optimization guide is ready to receive requests.
-  virtual bool IsReady() const = 0;
-
   // Returns whether |type| is allowed for the URL associated with
   // |navigation_handle| and the current conditions. |previews_data| can be
   // modified (for further details provided by hints). Note that this will
@@ -53,14 +50,6 @@ class PreviewsOptimizationGuide {
   virtual bool GetResourceLoadingHints(
       const GURL& url,
       std::vector<std::string>* out_resource_patterns_to_block) = 0;
-
-  // Logs UMA for whether the OptimizationGuide HintCache has a matching Hint
-  // guidance for |url|. This is useful for measuring the effectiveness of the
-  // page hints provided by Cacao.
-  virtual void LogHintCacheMatch(const GURL& url, bool is_committed) const = 0;
-
-  // Clears all fetched hints from its store.
-  virtual void ClearFetchedHints() = 0;
 };
 
 }  // namespace previews

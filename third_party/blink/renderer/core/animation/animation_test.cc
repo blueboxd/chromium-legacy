@@ -61,6 +61,14 @@
 
 namespace blink {
 
+namespace {
+
+double MillisecondsToSeconds(double milliseconds) {
+  return milliseconds / 1000;
+}
+
+}  // namespace
+
 void ExpectRelativeErrorWithinEpsilon(double expected, double observed) {
   EXPECT_NEAR(1.0, observed / expected, std::numeric_limits<double>::epsilon());
 }
@@ -169,6 +177,10 @@ class AnimationAnimationTestNoCompositing : public RenderingTest {
   }
 
   bool SimulateFrame(double time_ms) {
+    animation->CommitAllUpdatesForTesting(
+        MillisecondsToSeconds(last_frame_time));
+    SimulateMicrotask();
+
     last_frame_time = time_ms;
     const auto* paint_artifact_compositor =
         GetDocument().GetFrame()->View()->GetPaintArtifactCompositor();
@@ -182,10 +194,6 @@ class AnimationAnimationTestNoCompositing : public RenderingTest {
   }
 
   void SimulateAwaitReady() {
-    animation->CommitAllUpdatesForTesting();
-
-    // TOOD(crbug/958433): This should trigger a call to the microtask for
-    // applying updates.
     SimulateFrame(last_frame_time);
   }
 
@@ -439,10 +447,11 @@ TEST_F(AnimationAnimationTestNoCompositing, StartTimeWithZeroPlaybackRate) {
   animation->setPlaybackRate(0);
   EXPECT_EQ("running", animation->playState());
   SimulateAwaitReady();
-  EXPECT_FALSE(animation->startTime());
+  EXPECT_TRUE(animation->startTime());
 
   SimulateFrame(10000);
   EXPECT_EQ("running", animation->playState());
+  EXPECT_EQ(0, animation->currentTime());
 }
 
 TEST_F(AnimationAnimationTestNoCompositing, PausePlay) {
@@ -575,13 +584,17 @@ TEST_F(AnimationAnimationTestNoCompositing, Reverse) {
 }
 
 TEST_F(AnimationAnimationTestNoCompositing,
-       ReverseDoesNothingWithPlaybackRateZero) {
+       ReverseHoldsCurrentTimeWithPlaybackRateZero) {
   animation->setCurrentTime(10000, false);
   animation->setPlaybackRate(0);
   animation->pause();
   animation->reverse();
-  EXPECT_EQ("paused", animation->playState());
+  SimulateAwaitReady();
+  EXPECT_EQ("running", animation->playState());
   EXPECT_EQ(0, animation->playbackRate());
+  EXPECT_EQ(10000, animation->currentTime());
+
+  SimulateFrame(20000);
   EXPECT_EQ(10000, animation->currentTime());
 }
 

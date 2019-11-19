@@ -45,6 +45,7 @@ class PendingAppManagerImpl : public PendingAppManager {
   void InstallApps(std::vector<ExternalInstallOptions> install_options_list,
                    const RepeatingInstallCallback& callback) override;
   void UninstallApps(std::vector<GURL> uninstall_urls,
+                     ExternalInstallSource install_source,
                      const UninstallCallback& callback) override;
   void Shutdown() override;
 

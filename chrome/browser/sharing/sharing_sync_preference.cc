@@ -11,7 +11,6 @@
 #include "base/value_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/sharing/features.h"
-#include "chrome/browser/sharing/sharing_target_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync_device_info/device_info_sync_service.h"
@@ -32,17 +31,65 @@ const char kDeviceCapabilities[] = "device_capabilities";
 const char kRegistrationAuthorizedEntity[] = "registration_authorized_entity";
 const char kRegistrationTimestamp[] = "registration_timestamp";
 
-const char kSharingInfoVapidFcmToken[] = "sharing_info_vapid_fcm_token";
-const char kSharingInfoSharingFcmToken[] = "sharing_info_sharing_fcm_token";
-const char kSharingInfoP256dh[] = "sharing_info_p256dh";
-const char kSharingInfoAuthSecret[] = "sharing_info_auth_secret";
-const char kSharingInfoEnabledFeatures[] = "sharing_info_enabled_features";
+const char kSharingInfoVapidTargetInfo[] = "vapid_target_info";
+const char kSharingInfoSenderIdTargetInfo[] = "sender_id_target_info";
+const char kSharingInfoEnabledFeatures[] = "enabled_features";
 
 // Legacy value for enabled features on a device. These are stored in sync
 // preferences when the device is registered, and the values should never be
 // changed.
 constexpr int kClickToCall = 1 << 0;
 constexpr int kSharedClipboard = 1 << 1;
+
+base::DictionaryValue TargetInfoToValue(
+    const syncer::DeviceInfo::SharingTargetInfo& target_info) {
+  std::string base64_p256dh, base64_auth_secret;
+  base::Base64Encode(target_info.p256dh, &base64_p256dh);
+  base::Base64Encode(target_info.auth_secret, &base64_auth_secret);
+
+  base::DictionaryValue result;
+  result.SetStringKey(kDeviceFcmToken, target_info.fcm_token);
+  result.SetStringKey(kDeviceP256dh, base64_p256dh);
+  result.SetStringKey(kDeviceAuthSecret, base64_auth_secret);
+  return result;
+}
+
+base::Optional<syncer::DeviceInfo::SharingTargetInfo> ValueToTargetInfo(
+    const base::Value& value) {
+  const std::string* fcm_token = value.FindStringKey(kDeviceFcmToken);
+  if (!fcm_token)
+    return base::nullopt;
+
+  const std::string* base64_p256dh = value.FindStringKey(kDeviceP256dh);
+  const std::string* base64_auth_secret =
+      value.FindStringKey(kDeviceAuthSecret);
+
+  std::string p256dh, auth_secret;
+  if (!base64_p256dh || !base64_auth_secret ||
+      !base::Base64Decode(*base64_p256dh, &p256dh) ||
+      !base::Base64Decode(*base64_auth_secret, &auth_secret)) {
+    return base::nullopt;
+  }
+
+  return syncer::DeviceInfo::SharingTargetInfo{*fcm_token, std::move(p256dh),
+                                               std::move(auth_secret)};
+}
+
+base::Value SharingInfoToValue(const syncer::DeviceInfo::SharingInfo& device) {
+  // For backward compatibility purposes, EnabledFeatures is converted to
+  // bit-mask to be readable by legacy devices. New features won't be included.
+  int capabilities = 0;
+  if (device.enabled_features.count(
+          sync_pb::SharingSpecificFields::CLICK_TO_CALL))
+    capabilities |= kClickToCall;
+  if (device.enabled_features.count(
+          sync_pb::SharingSpecificFields::SHARED_CLIPBOARD))
+    capabilities |= kSharedClipboard;
+
+  base::Value result = TargetInfoToValue(device.vapid_target_info);
+  result.SetIntKey(kDeviceCapabilities, capabilities);
+  return result;
+}
 
 }  // namespace
 
@@ -196,13 +243,11 @@ SharingSyncPreference::GetEnabledFeatures(
   return enabled_features;
 }
 
-base::Optional<SharingTargetInfo> SharingSyncPreference::GetTargetInfo(
-    const std::string& guid) const {
+base::Optional<syncer::DeviceInfo::SharingTargetInfo>
+SharingSyncPreference::GetTargetInfo(const std::string& guid) const {
   auto device_info = device_info_tracker_->GetDeviceInfo(guid);
   if (device_info && device_info->sharing_info()) {
-    auto& sharing_info = device_info->sharing_info();
-    return SharingTargetInfo{sharing_info->vapid_fcm_token,
-                             sharing_info->p256dh, sharing_info->auth_secret};
+    return device_info->sharing_info()->vapid_target_info;
   }
 
   // Fallback to read from prefs::kSharingSyncedDevices if reading from sync
@@ -213,21 +258,7 @@ base::Optional<SharingTargetInfo> SharingSyncPreference::GetTargetInfo(
   if (!value)
     return base::nullopt;
 
-  const std::string* vapid_fcm_token = value->FindStringKey(kDeviceFcmToken);
-  const std::string* base64_p256dh = value->FindStringKey(kDeviceP256dh);
-  const std::string* base64_auth_secret =
-      value->FindStringKey(kDeviceAuthSecret);
-
-  std::string p256dh, auth_secret;
-  if (!vapid_fcm_token || !base64_p256dh || !base64_auth_secret ||
-      !base::Base64Decode(*base64_p256dh, &p256dh) ||
-      !base::Base64Decode(*base64_auth_secret, &auth_secret)) {
-    LOG(ERROR) << "Could not convert synced value to device object.";
-    return base::nullopt;
-  }
-
-  return SharingTargetInfo{std::move(*vapid_fcm_token), std::move(p256dh),
-                           std::move(auth_secret)};
+  return ValueToTargetInfo(*value);
 }
 
 base::Optional<syncer::DeviceInfo::SharingInfo>
@@ -266,9 +297,10 @@ void SharingSyncPreference::SetLocalSharingInfo(
   if (device_info->sharing_info() == sharing_info)
     return;
 
-  std::string base64_p256dh, base64_auth_secret;
-  base::Base64Encode(sharing_info.p256dh, &base64_p256dh);
-  base::Base64Encode(sharing_info.auth_secret, &base64_auth_secret);
+  base::DictionaryValue vapid_target_info =
+      TargetInfoToValue(sharing_info.vapid_target_info);
+  base::DictionaryValue sender_id_target_info =
+      TargetInfoToValue(sharing_info.sender_id_target_info);
 
   base::ListValue list_value;
   for (SharingSpecificFields::EnabledFeatures feature :
@@ -278,14 +310,10 @@ void SharingSyncPreference::SetLocalSharingInfo(
 
   DictionaryPrefUpdate local_sharing_info_update(
       prefs_, prefs::kSharingLocalSharingInfo);
-  local_sharing_info_update->SetStringKey(
-      kSharingInfoVapidFcmToken, std::move(sharing_info.vapid_fcm_token));
-  local_sharing_info_update->SetStringKey(
-      kSharingInfoSharingFcmToken, std::move(sharing_info.sharing_fcm_token));
-  local_sharing_info_update->SetStringKey(kSharingInfoP256dh,
-                                          std::move(base64_p256dh));
-  local_sharing_info_update->SetStringKey(kSharingInfoAuthSecret,
-                                          std::move(base64_auth_secret));
+  local_sharing_info_update->SetKey(kSharingInfoVapidTargetInfo,
+                                    std::move(vapid_target_info));
+  local_sharing_info_update->SetKey(kSharingInfoSenderIdTargetInfo,
+                                    std::move(sender_id_target_info));
   local_sharing_info_update->SetKey(kSharingInfoEnabledFeatures,
                                     std::move(list_value));
 
@@ -316,26 +344,22 @@ base::Optional<syncer::DeviceInfo::SharingInfo>
 SharingSyncPreference::GetLocalSharingInfo(PrefService* prefs) {
   const base::DictionaryValue* registration =
       prefs->GetDictionary(prefs::kSharingLocalSharingInfo);
-  const std::string* vapid_fcm_token =
-      registration->FindStringKey(kSharingInfoVapidFcmToken);
-  const std::string* sharing_fcm_token =
-      registration->FindStringKey(kSharingInfoSharingFcmToken);
-  const std::string* base64_p256dh =
-      registration->FindStringKey(kSharingInfoP256dh);
-  const std::string* base64_auth_secret =
-      registration->FindStringKey(kSharingInfoAuthSecret);
+
+  const base::Value* vapid_target_info_value =
+      registration->FindDictKey(kSharingInfoVapidTargetInfo);
+  const base::Value* sender_id_target_info_value =
+      registration->FindDictKey(kSharingInfoSenderIdTargetInfo);
   const base::Value* enabled_features_value =
       registration->FindListKey(kSharingInfoEnabledFeatures);
-  if (!vapid_fcm_token || !sharing_fcm_token || !base64_p256dh ||
-      !base64_auth_secret || !enabled_features_value) {
+  if (!vapid_target_info_value || !sender_id_target_info_value ||
+      !enabled_features_value) {
     return base::nullopt;
   }
 
-  std::string p256dh, auth_secret;
-  if (!base::Base64Decode(*base64_p256dh, &p256dh) ||
-      !base::Base64Decode(*base64_auth_secret, &auth_secret)) {
+  auto vapid_target_info = ValueToTargetInfo(*vapid_target_info_value);
+  auto sender_id_target_info = ValueToTargetInfo(*sender_id_target_info_value);
+  if (!vapid_target_info || !sender_id_target_info)
     return base::nullopt;
-  }
 
   std::set<SharingSpecificFields::EnabledFeatures> enabled_features;
   for (auto& value : enabled_features_value->GetList()) {
@@ -346,30 +370,7 @@ SharingSyncPreference::GetLocalSharingInfo(PrefService* prefs) {
         static_cast<SharingSpecificFields::EnabledFeatures>(value.GetInt()));
   }
 
-  return syncer::DeviceInfo::SharingInfo(*vapid_fcm_token, *sharing_fcm_token,
-                                         p256dh, auth_secret,
+  return syncer::DeviceInfo::SharingInfo(std::move(*vapid_target_info),
+                                         std::move(*sender_id_target_info),
                                          std::move(enabled_features));
-}
-
-// static
-base::Value SharingSyncPreference::SharingInfoToValue(
-    const syncer::DeviceInfo::SharingInfo& device) {
-  std::string base64_p256dh, base64_auth_secret;
-  base::Base64Encode(device.p256dh, &base64_p256dh);
-  base::Base64Encode(device.auth_secret, &base64_auth_secret);
-
-  // For backward compatibility purposes, EnabledFeatures is converted to
-  // bit-mask to be readable by legacy devices. New features won't be included.
-  int capabilities = 0;
-  if (device.enabled_features.count(SharingSpecificFields::CLICK_TO_CALL))
-    capabilities |= kClickToCall;
-  if (device.enabled_features.count(SharingSpecificFields::SHARED_CLIPBOARD))
-    capabilities |= kSharedClipboard;
-
-  base::Value result(base::Value::Type::DICTIONARY);
-  result.SetStringKey(kDeviceFcmToken, device.vapid_fcm_token);
-  result.SetStringKey(kDeviceP256dh, base64_p256dh);
-  result.SetStringKey(kDeviceAuthSecret, base64_auth_secret);
-  result.SetIntKey(kDeviceCapabilities, capabilities);
-  return result;
 }

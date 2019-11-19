@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "components/autofill_assistant/browser/device_context.h"
 #include "components/autofill_assistant/browser/metrics.h"
 
 namespace autofill {
@@ -56,6 +57,9 @@ class Client {
 
   // Returns the country code.
   virtual std::string GetCountryCode() = 0;
+
+  // Returns details about the device.
+  virtual DeviceContext GetDeviceContext() = 0;
 
   // Stops autofill assistant for the current WebContents, both controller and
   // UI.

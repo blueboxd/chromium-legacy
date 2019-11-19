@@ -4,8 +4,6 @@
 
 #include "chrome/browser/sharing/sharing_constants.h"
 
-const char kFCMScope[] = "GCM";
-
 const char kSharingFCMAppID[] = "com.google.chrome.sharing.fcm";
 
 const char kSharingSenderID[] = "379932496580";

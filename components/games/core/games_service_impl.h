@@ -9,15 +9,19 @@
 
 #include "components/games/core/games_service.h"
 #include "components/games/core/games_types.h"
+#include "components/prefs/pref_service.h"
 
 namespace games {
 
 class GamesServiceImpl : public GamesService {
  public:
-  GamesServiceImpl();
+  explicit GamesServiceImpl(PrefService* prefs);
   ~GamesServiceImpl() override;
 
   void GetHighlightedGame(HighlightedGameCallback callback) override;
+
+  // Will outlive the current instance.
+  PrefService* prefs_;
 };
 
 }  // namespace games

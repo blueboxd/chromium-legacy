@@ -28,7 +28,7 @@ class PageResourceDataUse {
   PageResourceDataUse(const PageResourceDataUse& other);
   ~PageResourceDataUse();
 
-  void DidStartResponse(const GURL& response_url,
+  void DidStartResponse(const url::Origin& origin_of_final_response_url,
                         int resource_id,
                         const network::mojom::URLResponseHead& response_head,
                         content::ResourceType resource_type,

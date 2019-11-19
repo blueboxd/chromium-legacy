@@ -83,6 +83,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantMainStage
   bool OnActiveQueryExitAnimationEnded(
       const ui::CallbackLayerAnimationObserver& observer);
 
+  void AnimateInGreetingLabel();
+
   void OnFooterAnimationStarted(
       const ui::CallbackLayerAnimationObserver& observer);
   bool OnFooterAnimationEnded(

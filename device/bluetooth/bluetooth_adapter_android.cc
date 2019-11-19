@@ -295,6 +295,10 @@ void BluetoothAdapterAndroid::PurgeTimedOutDevices() {
   }
 }
 
+base::WeakPtr<BluetoothAdapter> BluetoothAdapterAndroid::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 bool BluetoothAdapterAndroid::SetPoweredImpl(bool powered) {
   return Java_ChromeBluetoothAdapter_setPowered(AttachCurrentThread(),
                                                 j_adapter_, powered);

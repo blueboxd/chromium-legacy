@@ -32,6 +32,7 @@
 #include "content/public/common/resource_type.h"
 #include "net/base/network_isolation_key.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 class PredictorsHandler;
 class Profile;
@@ -61,11 +62,11 @@ struct PreconnectRequest {
   // preconnected URL are expected to use. If a request is issued with a
   // different key, it may not use the preconnected socket. It has no effect
   // when |num_sockets| == 0.
-  PreconnectRequest(const GURL& origin,
+  PreconnectRequest(const url::Origin& origin,
                     int num_sockets,
                     const net::NetworkIsolationKey& network_isolation_key);
 
-  GURL origin;
+  url::Origin origin;
   // A zero-value means that we need to preresolve a host only.
   int num_sockets = 0;
   bool allow_credentials = true;
@@ -247,9 +248,10 @@ class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
                      const GURL& final_redirect,
                      RedirectDataMap* redirect_data);
 
-  void LearnOrigins(const std::string& host,
-                    const GURL& main_frame_origin,
-                    const std::map<GURL, OriginRequestSummary>& summaries);
+  void LearnOrigins(
+      const std::string& host,
+      const GURL& main_frame_origin,
+      const std::map<url::Origin, OriginRequestSummary>& summaries);
 
   // history::HistoryServiceObserver:
   void OnURLsDeleted(history::HistoryService* history_service,

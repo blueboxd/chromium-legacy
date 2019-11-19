@@ -52,106 +52,96 @@ void SharingDeviceRegistration::RegisterDevice(RegistrationCallback callback) {
     return;
   }
 
-  base::Optional<SharingSyncPreference::FCMRegistration> registration =
-      sharing_sync_preference_->GetFCMRegistration();
-  base::Optional<syncer::DeviceInfo::SharingInfo> sharing_info =
-      sharing_sync_preference_->GetLocalSharingInfo();
-  if (registration && registration->authorized_entity == authorized_entity &&
-      (base::Time::Now() - registration->timestamp < kRegistrationExpiration) &&
-      sharing_info) {
-    // Authorized entity hasn't changed nor has expired, skip to next step.
-    RetrieveEncryptionInfo(std::move(callback), registration->authorized_entity,
-                           sharing_info->vapid_fcm_token,
-                           sharing_info->sharing_fcm_token);
-    return;
-  }
+  RetrieveTargetInfo(
+      *authorized_entity,
+      base::BindOnce(&SharingDeviceRegistration::OnVapidTargetInfoRetrieved,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     *authorized_entity));
+}
 
+void SharingDeviceRegistration::RetrieveTargetInfo(
+    const std::string& authorized_entity,
+    TargetInfoCallback callback) {
   instance_id_driver_->GetInstanceID(kSharingFCMAppID)
-      ->GetToken(
-          *authorized_entity, kFCMScope,
-          /*options=*/{},
-          /*flags=*/{InstanceID::Flags::kBypassScheduler},
-          base::BindOnce(&SharingDeviceRegistration::OnVapidFCMTokenReceived,
-                         weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                         *authorized_entity));
+      ->GetToken(authorized_entity, instance_id::kGCMScope,
+                 /*options=*/{},
+                 /*flags=*/{InstanceID::Flags::kBypassScheduler},
+                 base::BindOnce(&SharingDeviceRegistration::OnFCMTokenReceived,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                std::move(callback), authorized_entity));
 }
 
-void SharingDeviceRegistration::OnVapidFCMTokenReceived(
-    RegistrationCallback callback,
+void SharingDeviceRegistration::OnFCMTokenReceived(
+    TargetInfoCallback callback,
     const std::string& authorized_entity,
-    const std::string& vapid_fcm_token,
-    InstanceID::Result result) {
-  switch (result) {
-    case InstanceID::SUCCESS:
-      instance_id_driver_->GetInstanceID(kSharingFCMAppID)
-          ->GetToken(kSharingSenderID, kFCMScope,
-                     /*options=*/{},
-                     /*flags=*/{InstanceID::Flags::kBypassScheduler},
-                     base::BindOnce(
-                         &SharingDeviceRegistration::OnSharingFCMTokenReceived,
-                         weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                         authorized_entity, vapid_fcm_token));
-      break;
-    case InstanceID::NETWORK_ERROR:
-    case InstanceID::SERVER_ERROR:
-    case InstanceID::ASYNC_OPERATION_PENDING:
-      std::move(callback).Run(
-          SharingDeviceRegistrationResult::kFcmTransientError);
-      break;
-    case InstanceID::INVALID_PARAMETER:
-    case InstanceID::UNKNOWN_ERROR:
-    case InstanceID::DISABLED:
-      std::move(callback).Run(SharingDeviceRegistrationResult::kFcmFatalError);
-      break;
-  }
-}
-
-void SharingDeviceRegistration::OnSharingFCMTokenReceived(
-    RegistrationCallback callback,
-    const std::string& authorized_entity,
-    const std::string& vapid_fcm_token,
-    const std::string& sharing_fcm_token,
+    const std::string& fcm_token,
     instance_id::InstanceID::Result result) {
   switch (result) {
     case InstanceID::SUCCESS:
-      RetrieveEncryptionInfo(std::move(callback), authorized_entity,
-                             vapid_fcm_token, sharing_fcm_token);
+      instance_id_driver_->GetInstanceID(kSharingFCMAppID)
+          ->GetEncryptionInfo(
+              authorized_entity,
+              base::BindOnce(
+                  &SharingDeviceRegistration::OnEncryptionInfoReceived,
+                  weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                  fcm_token));
       break;
     case InstanceID::NETWORK_ERROR:
     case InstanceID::SERVER_ERROR:
     case InstanceID::ASYNC_OPERATION_PENDING:
       std::move(callback).Run(
-          SharingDeviceRegistrationResult::kFcmTransientError);
+          SharingDeviceRegistrationResult::kFcmTransientError, base::nullopt);
       break;
     case InstanceID::INVALID_PARAMETER:
     case InstanceID::UNKNOWN_ERROR:
     case InstanceID::DISABLED:
-      std::move(callback).Run(SharingDeviceRegistrationResult::kFcmFatalError);
+      std::move(callback).Run(SharingDeviceRegistrationResult::kFcmFatalError,
+                              base::nullopt);
       break;
   }
 }
 
-void SharingDeviceRegistration::RetrieveEncryptionInfo(
-    RegistrationCallback callback,
-    const std::string& authorized_entity,
-    const std::string& vapid_fcm_token,
-    const std::string& sharing_fcm_token) {
-  instance_id_driver_->GetInstanceID(kSharingFCMAppID)
-      ->GetEncryptionInfo(
-          authorized_entity,
-          base::BindOnce(&SharingDeviceRegistration::OnEncryptionInfoReceived,
-                         weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                         authorized_entity, vapid_fcm_token,
-                         sharing_fcm_token));
-}
-
 void SharingDeviceRegistration::OnEncryptionInfoReceived(
-    RegistrationCallback callback,
-    const std::string& authorized_entity,
-    const std::string& vapid_fcm_token,
-    const std::string& sharing_fcm_token,
+    TargetInfoCallback callback,
+    const std::string& fcm_token,
     std::string p256dh,
     std::string auth_secret) {
+  std::move(callback).Run(
+      SharingDeviceRegistrationResult::kSuccess,
+      base::make_optional(syncer::DeviceInfo::SharingTargetInfo{
+          fcm_token, p256dh, auth_secret}));
+}
+
+void SharingDeviceRegistration::OnVapidTargetInfoRetrieved(
+    RegistrationCallback callback,
+    const std::string& authorized_entity,
+    SharingDeviceRegistrationResult result,
+    base::Optional<syncer::DeviceInfo::SharingTargetInfo> vapid_target_info) {
+  if (result != SharingDeviceRegistrationResult::kSuccess ||
+      !vapid_target_info) {
+    std::move(callback).Run(result);
+    return;
+  }
+
+  RetrieveTargetInfo(
+      kSharingSenderID,
+      base::BindOnce(&SharingDeviceRegistration::OnSharingTargetInfoRetrieved,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     authorized_entity, std::move(*vapid_target_info)));
+}
+
+void SharingDeviceRegistration::OnSharingTargetInfoRetrieved(
+    RegistrationCallback callback,
+    const std::string& authorized_entity,
+    syncer::DeviceInfo::SharingTargetInfo vapid_target_info,
+    SharingDeviceRegistrationResult result,
+    base::Optional<syncer::DeviceInfo::SharingTargetInfo> sharing_target_info) {
+  if (result != SharingDeviceRegistrationResult::kSuccess ||
+      !sharing_target_info) {
+    std::move(callback).Run(result);
+    return;
+  }
+
   sharing_sync_preference_->SetFCMRegistration(
       SharingSyncPreference::FCMRegistration(authorized_entity,
                                              base::Time::Now()));
@@ -159,8 +149,7 @@ void SharingDeviceRegistration::OnEncryptionInfoReceived(
   std::set<SharingSpecificFields::EnabledFeatures> enabled_features =
       GetEnabledFeatures();
   syncer::DeviceInfo::SharingInfo sharing_info(
-      vapid_fcm_token, sharing_fcm_token, std::move(p256dh),
-      std::move(auth_secret), enabled_features);
+      vapid_target_info, std::move(*sharing_target_info), enabled_features);
   sharing_sync_preference_->SetLocalSharingInfo(std::move(sharing_info));
   std::move(callback).Run(SharingDeviceRegistrationResult::kSuccess);
 }
@@ -176,9 +165,27 @@ void SharingDeviceRegistration::UnregisterDevice(
 
   sharing_sync_preference_->ClearLocalSharingInfo();
 
+  DeleteFCMToken(
+      registration->authorized_entity,
+      base::BindOnce(&SharingDeviceRegistration::OnVapidFCMTokenDeleted,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void SharingDeviceRegistration::OnVapidFCMTokenDeleted(
+    RegistrationCallback callback,
+    SharingDeviceRegistrationResult result) {
+  if (result != SharingDeviceRegistrationResult::kSuccess)
+    std::move(callback).Run(result);
+
+  DeleteFCMToken(kSharingSenderID, std::move(callback));
+}
+
+void SharingDeviceRegistration::DeleteFCMToken(
+    const std::string& authorized_entity,
+    RegistrationCallback callback) {
   instance_id_driver_->GetInstanceID(kSharingFCMAppID)
       ->DeleteToken(
-          registration->authorized_entity, kFCMScope,
+          authorized_entity, instance_id::kGCMScope,
           base::BindOnce(&SharingDeviceRegistration::OnFCMTokenDeleted,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }

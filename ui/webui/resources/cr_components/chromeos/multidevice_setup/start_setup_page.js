@@ -129,6 +129,32 @@ Polymer({
     return devices[0] ? this.devices[0].remoteDevice.deviceName : '';
   },
 
+  /**
+   * @param {!chromeos.deviceSync.mojom.ConnectivityStatus} connectivityStatus
+   * @return {string} The classes to bind to the device name option.
+   * @private
+   */
+  getDeviceOptionClass_: function(connectivityStatus) {
+    return connectivityStatus ==
+            chromeos.deviceSync.mojom.ConnectivityStatus.kOffline ?
+        'offline-device-name' :
+        '';
+  },
+
+  /**
+   * @param {!chromeos.multideviceSetup.mojom.HostDevice} device
+   * @return {string} Name of the device, with connectivity status information.
+   * @private
+   */
+  getDeviceNameWithConnectivityStatus_: function(device) {
+    return device.connectivityStatus ==
+            chromeos.deviceSync.mojom.ConnectivityStatus.kOffline ?
+        this.i18n(
+            'startSetupPageOfflineDeviceOption',
+            device.remoteDevice.deviceName) :
+        device.remoteDevice.deviceName;
+  },
+
   /** @private */
   devicesChanged_: function() {
     if (this.devices.length > 0) {

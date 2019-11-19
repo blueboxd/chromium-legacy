@@ -228,7 +228,16 @@
         </div>
       </template>
 
-      <!-- Link row to overscan dialog -->
+      <template is="dom-if" if="[[showAmbientColorSetting_(
+          ambientColorAvailable_, selectedDisplay)]]">
+        <settings-toggle-button id="ambientColor"
+            class="indented"
+            pref="{{prefs.ash.ambient_color.enabled}}"
+            label="$i18n{displayAmbientColorTitle}"
+            sub-label="$i18n{displayAmbientColorSubtitle}">
+        </settings-toggle-button>
+      </template>
+
       <cr-link-row class="indented hr" id="overscan"
           label="$i18n{displayOverscanPageTitle}"
           sub-label="$i18n{displayOverscanPageText}" on-click="onOverscanTap_"

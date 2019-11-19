@@ -128,7 +128,6 @@
 #include "chrome/browser/site_isolation/site_isolation_policy.h"
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
 #include "chrome/browser/speech/tts_controller_delegate_impl.h"
-#include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ssl/ssl_client_auth_metrics.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
 #include "chrome/browser/ssl/ssl_error_handler.h"
@@ -340,13 +339,6 @@
 #include "ui/resources/grit/ui_resources.h"
 #include "url/gurl.h"
 #include "url/origin.h"
-
-#if BUILDFLAG(ENABLE_NACL)
-#include "components/nacl/loader/nacl_loader_manifest.h"
-#if defined(OS_WIN) && defined(ARCH_CPU_X86)
-#include "components/nacl/broker/nacl_broker_manifest.h"
-#endif
-#endif
 
 #if defined(OS_WIN)
 #include "base/strings/string_tokenizer.h"
@@ -1270,7 +1262,7 @@ void ChromeContentBrowserClient::SetBrowserStartupIsCompleteForTesting() {
 }
 
 bool ChromeContentBrowserClient::IsShuttingDown() {
-  return browser_shutdown::HasShutdownStarted();
+  return browser_shutdown::GetShutdownType() != browser_shutdown::NOT_VALID;
 }
 
 std::string ChromeContentBrowserClient::GetStoragePartitionIdForSite(
@@ -3730,16 +3722,7 @@ ChromeContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
 
 std::vector<service_manager::Manifest>
 ChromeContentBrowserClient::GetExtraServiceManifests() {
-  auto manifests = GetChromeBuiltinServiceManifests();
-
-#if BUILDFLAG(ENABLE_NACL)
-  manifests.push_back(GetNaClLoaderManifest());
-#if defined(OS_WIN) && defined(ARCH_CPU_X86)
-  manifests.push_back(GetNaClBrokerManifest());
-#endif  // defined(OS_WIN)
-#endif  // BUILDFLAG(ENABLE_NACL)
-
-  return manifests;
+  return GetChromeBuiltinServiceManifests();
 }
 
 void ChromeContentBrowserClient::OpenURL(

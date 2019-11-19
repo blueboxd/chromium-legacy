@@ -531,7 +531,7 @@ INSTANTIATE_TEST_SUITE_P(
                        ::testing::Values("domain", "", nullptr),
                        ::testing::Values("serial_number"),
                        ::testing::Values("machine_guid"),
-                       ::testing::Values("0", "1")));
+                       ::testing::Values("true", "false")));
 
 INSTANTIATE_TEST_SUITE_P(
     GcpRegistrationHardwareIds,
@@ -544,6 +544,6 @@ INSTANTIATE_TEST_SUITE_P(
                        ::testing::Values("domain"),
                        ::testing::Values("serial_number", ""),
                        ::testing::Values("machine_guid", ""),
-                       ::testing::Values("1")));
+                       ::testing::Values("true")));
 
 }  // namespace credential_provider

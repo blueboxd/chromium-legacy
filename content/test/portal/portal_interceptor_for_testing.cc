@@ -80,14 +80,8 @@ blink::mojom::Portal* PortalInterceptorForTesting::GetForwardingInterface() {
 
 void PortalInterceptorForTesting::Activate(blink::TransferableMessage data,
                                            ActivateCallback callback) {
-  portal_activated_ = true;
   for (Observer& observer : observers_->data)
     observer.OnPortalActivate();
-
-  if (run_loop_) {
-    run_loop_->Quit();
-    run_loop_ = nullptr;
-  }
 
   // |this| can be destroyed after Activate() is called.
   portal_->Activate(
@@ -114,15 +108,6 @@ void PortalInterceptorForTesting::Navigate(
   }
 
   portal_->Navigate(url, std::move(referrer), std::move(callback));
-}
-
-void PortalInterceptorForTesting::WaitForActivate() {
-  if (portal_activated_)
-    return;
-
-  base::RunLoop run_loop;
-  run_loop_ = &run_loop;
-  run_loop.Run();
 }
 
 }  // namespace content

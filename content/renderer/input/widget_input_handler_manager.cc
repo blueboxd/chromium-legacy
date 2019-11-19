@@ -589,6 +589,10 @@ void WidgetInputHandlerManager::DidHandleInputEventAndOverscroll(
     ui::WebScopedInputEvent input_event,
     const ui::LatencyInfo& latency_info,
     std::unique_ptr<ui::DidOverscrollParams> overscroll_params) {
+  TRACE_EVENT1("input",
+               "WidgetInputHandlerManager::DidHandleInputEventAndOverscroll",
+               "Disposition", event_disposition);
+
   InputEventAckState ack_state = InputEventDispositionToAck(event_disposition);
   if (ack_state == INPUT_EVENT_ACK_STATE_CONSUMED) {
     main_thread_scheduler_->DidHandleInputEventOnCompositorThread(
@@ -635,6 +639,9 @@ void WidgetInputHandlerManager::HandledInputEvent(
   if (!callback)
     return;
 
+  TRACE_EVENT1("input", "WidgetInputHandlerManager::HandledInputEvent",
+               "ack_state", ack_state);
+
   if (!touch_action.has_value()) {
     touch_action = white_listed_touch_action_;
     white_listed_touch_action_.reset();
@@ -646,6 +653,8 @@ void WidgetInputHandlerManager::HandledInputEvent(
   // If there is a compositor task runner and the current thread isn't the
   // compositor thread proxy it over to the compositor thread.
   if (compositor_task_runner_ && !is_compositor_thread) {
+    TRACE_EVENT_INSTANT0("input", "PostingToCompositor",
+                         TRACE_EVENT_SCOPE_THREAD);
     compositor_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(CallCallback, std::move(callback), ack_state,
                                   latency_info, std::move(overscroll_params),

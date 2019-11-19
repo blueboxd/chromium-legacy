@@ -36,7 +36,9 @@ const base::FeatureParam<int> kMojoRecordUnreadMessageCountCrashThreshold = {
     0  // Set to zero to disable crash dumps by default.
 };
 
-NOINLINE void MaybeDumpWithoutCrashing(size_t quota_used) {
+NOINLINE void MaybeDumpWithoutCrashing(
+    size_t total_quota_used,
+    base::Optional<size_t> message_pipe_quota_used) {
   static bool have_crashed = false;
   if (have_crashed)
     return;
@@ -50,7 +52,16 @@ NOINLINE void MaybeDumpWithoutCrashing(size_t quota_used) {
   // |quota_used|.
   base::debug::DumpWithoutCrashing();
 
-  base::debug::Alias(&quota_used);
+  size_t local_quota_used = total_quota_used;
+  bool had_message_pipe = false;
+  if (message_pipe_quota_used.has_value()) {
+    had_message_pipe = true;
+    local_quota_used -= message_pipe_quota_used.value();
+  }
+
+  base::debug::Alias(&total_quota_used);
+  base::debug::Alias(&local_quota_used);
+  base::debug::Alias(&had_message_pipe);
 }
 
 }  // namespace
@@ -97,7 +108,12 @@ void MessageQuotaChecker::SetMessagePipe(MessagePipeHandle message_pipe) {
 
 size_t MessageQuotaChecker::GetCurrentQuotaStatusForTesting() {
   base::AutoLock hold(lock_);
-  return GetCurrentQuotaStatus();
+  size_t quota_used = consumed_quota_;
+  base::Optional<size_t> message_pipe_quota_used = GetCurrentMessagePipeQuota();
+  if (message_pipe_quota_used.has_value())
+    quota_used += message_pipe_quota_used.value();
+
+  return quota_used;
 }
 
 // static
@@ -146,45 +162,62 @@ scoped_refptr<MessageQuotaChecker> MessageQuotaChecker::MaybeCreateImpl(
   return new MessageQuotaChecker(&config);
 }
 
-size_t MessageQuotaChecker::GetCurrentQuotaStatus() {
+base::Optional<size_t> MessageQuotaChecker::GetCurrentMessagePipeQuota() {
   lock_.AssertAcquired();
 
-  size_t quota_status = consumed_quota_;
-  if (message_pipe_) {
-    uint64_t limit = 0;
-    uint64_t usage = 0;
-    MojoResult rv = MojoQueryQuota(message_pipe_.value(),
-                                   MOJO_QUOTA_TYPE_UNREAD_MESSAGE_COUNT,
-                                   nullptr, &limit, &usage);
-    if (rv == MOJO_RESULT_OK)
-      quota_status += usage;
-  }
+  if (!message_pipe_)
+    return base::nullopt;
 
-  return quota_status;
+  uint64_t limit = 0;
+  uint64_t usage = 0;
+  MojoResult rv = MojoQueryQuota(message_pipe_.value(),
+                                 MOJO_QUOTA_TYPE_UNREAD_MESSAGE_COUNT, nullptr,
+                                 &limit, &usage);
+  return rv == MOJO_RESULT_OK ? usage : 0u;
 }
 
 void MessageQuotaChecker::QuotaCheckImpl(size_t num_enqueued) {
   bool new_max = false;
-  size_t quota_used = 0u;
+
+  // By the time a crash is reported, another thread might have consumed some of
+  // the locally queued messages, and/or the message pipe might have been unset.
+  // To make the crash reports as useful as possible, grab the state of the
+  // local and the message pipe queues into individual variables, then pass them
+  // into the crashing function.
+  size_t total_quota_used = 0u;
+  base::Optional<size_t> message_pipe_quota_used;
   {
     base::AutoLock hold(lock_);
 
-    consumed_quota_ += num_enqueued;
-    quota_used = GetCurrentQuotaStatus();
+    message_pipe_quota_used = GetCurrentMessagePipeQuota();
 
-    // Account for the message that will be written.
-    if (!num_enqueued)
-      ++quota_used;
+    if (num_enqueued) {
+      consumed_quota_ += num_enqueued;
+    } else {
+      // BeforeWrite passes num_enqueued zero, as the message won't be locally
+      // enqueued. The assumption is that there's already a message pipe in
+      // play, and that the caller is keeping it alive somehow.
+      DCHECK(message_pipe_);
+      DCHECK(message_pipe_quota_used.has_value());
 
-    if (quota_used > max_consumed_quota_) {
-      max_consumed_quota_ = quota_used;
+      // Account for the message about to be written to the message pipe in the
+      // the full tally.
+      ++message_pipe_quota_used.value();
+    }
+
+    total_quota_used += consumed_quota_;
+    if (message_pipe_quota_used.has_value())
+      total_quota_used += message_pipe_quota_used.value();
+
+    if (total_quota_used > max_consumed_quota_) {
+      max_consumed_quota_ = total_quota_used;
       new_max = true;
     }
   }
 
   if (new_max && config_->crash_threshold != 0 &&
-      quota_used >= config_->crash_threshold) {
-    config_->maybe_crash_function(quota_used);
+      total_quota_used >= config_->crash_threshold) {
+    config_->maybe_crash_function(total_quota_used, message_pipe_quota_used);
   }
 }
 

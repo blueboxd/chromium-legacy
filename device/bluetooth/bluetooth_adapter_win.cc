@@ -279,6 +279,10 @@ void BluetoothAdapterWin::DevicesPolled(
   }
 }
 
+base::WeakPtr<BluetoothAdapter> BluetoothAdapterWin::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 // BluetoothAdapterWin should override SetPowered() instead.
 bool BluetoothAdapterWin::SetPoweredImpl(bool powered) {
   NOTREACHED();

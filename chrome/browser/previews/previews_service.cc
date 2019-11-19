@@ -23,11 +23,9 @@
 #include "components/blacklist/opt_out_blacklist/sql/opt_out_store_sql.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
-#include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/previews/content/previews_decider_impl.h"
 #include "components/previews/content/previews_optimization_guide_decider.h"
-#include "components/previews/content/previews_optimization_guide_impl.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_logger.h"
@@ -210,19 +208,10 @@ void PreviewsService::Initialize(
   std::unique_ptr<previews::PreviewsOptimizationGuide> previews_opt_guide;
   OptimizationGuideKeyedService* optimization_guide_keyed_service =
       OptimizationGuideKeyedServiceFactory::GetForProfile(profile);
-  if (optimization_guide_keyed_service &&
-      optimization_guide::features::IsOptimizationGuideKeyedServiceEnabled()) {
+  if (optimization_guide_keyed_service) {
     previews_opt_guide =
         std::make_unique<previews::PreviewsOptimizationGuideDecider>(
             optimization_guide_keyed_service);
-  } else if (optimization_guide_service) {
-    previews_opt_guide =
-        std::make_unique<previews::PreviewsOptimizationGuideImpl>(
-            optimization_guide_service, ui_task_runner, background_task_runner,
-            profile_path, profile->GetPrefs(), profile->IsOffTheRecord(),
-            database_provider, top_host_provider_.get(),
-            optimization_guide_url_loader_factory_,
-            g_browser_process->network_quality_tracker());
   }
 
   previews_ui_service_ = std::make_unique<previews::PreviewsUIService>(

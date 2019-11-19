@@ -20,6 +20,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service.h"
 #include "components/optimization_guide/hints_component_info.h"
+#include "components/optimization_guide/hints_fetcher.h"
 #include "components/optimization_guide/optimization_guide_service_observer.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/proto/models.pb.h"
@@ -44,7 +45,6 @@ class SharedURLLoaderFactory;
 
 namespace optimization_guide {
 class HintCache;
-class HintsFetcher;
 enum class OptimizationGuideDecision;
 class OptimizationFilter;
 struct OptimizationMetadata;
@@ -203,9 +203,11 @@ class OptimizationGuideHintsManager
   void FetchTopHostsHints();
 
   // Called when the hints have been fetched from the remote Optimization Guide
-  // Service and are ready for parsing.
+  // Service and are ready for parsing or when the fetch was not able to be
+  // completed.
   void OnHintsFetched(
       optimization_guide::proto::RequestContext request_context,
+      optimization_guide::HintsFetcherRequestStatus fetch_status,
       base::Optional<
           std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
           get_hints_response);

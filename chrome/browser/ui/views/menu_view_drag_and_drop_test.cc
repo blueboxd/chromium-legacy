@@ -197,13 +197,13 @@ class MenuViewDragAndDropTest : public MenuTestBase,
 void MenuViewDragAndDropTest::BuildMenu(views::MenuItemView* menu) {
   // Build a menu item that has a nested view that supports its own drag and
   // drop...
-  views::MenuItemView* menu_item_view = menu->AppendMenuItem(
-      1, base::ASCIIToUTF16("item 1"), views::MenuItemView::NORMAL);
+  views::MenuItemView* menu_item_view =
+      menu->AppendMenuItem(1, base::ASCIIToUTF16("item 1"));
   target_view_ = new TestTargetView();
   menu_item_view->AddChildView(target_view_);
   // ... as well as two other, normal items.
-  menu->AppendMenuItemWithLabel(2, base::ASCIIToUTF16("item 2"));
-  menu->AppendMenuItemWithLabel(3, base::ASCIIToUTF16("item 3"));
+  menu->AppendMenuItem(2, base::ASCIIToUTF16("item 2"));
+  menu->AppendMenuItem(3, base::ASCIIToUTF16("item 3"));
 }
 
 void MenuViewDragAndDropTest::DoTestWithMenuOpen() {

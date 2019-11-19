@@ -467,6 +467,22 @@ std::string ClientAndroid::GetCountryCode() {
                                                   java_object_));
 }
 
+DeviceContext ClientAndroid::GetDeviceContext() {
+  DeviceContext context;
+  Version version;
+  version.sdk_int = Java_AutofillAssistantClient_getSdkInt(
+      AttachCurrentThread(), java_object_);
+
+  context.version = version;
+  context.manufacturer = base::android::ConvertJavaStringToUTF8(
+      Java_AutofillAssistantClient_getDeviceManufacturer(AttachCurrentThread(),
+                                                         java_object_));
+  context.model = base::android::ConvertJavaStringToUTF8(
+      Java_AutofillAssistantClient_getDeviceModel(AttachCurrentThread(),
+                                                  java_object_));
+  return context;
+}
+
 void ClientAndroid::Shutdown(Metrics::DropOutReason reason) {
   if (!controller_)
     return;

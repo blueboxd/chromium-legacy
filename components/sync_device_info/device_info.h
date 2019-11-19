@@ -25,11 +25,24 @@ namespace syncer {
 // A class that holds information regarding the properties of a device.
 class DeviceInfo {
  public:
+  // A struct that holds information regarding to FCM web push.
+  struct SharingTargetInfo {
+    // FCM registration token of device.
+    std::string fcm_token;
+
+    // Public key for Sharing message encryption[RFC8291].
+    std::string p256dh;
+
+    // Auth secret for Sharing message encryption[RFC8291].
+    std::string auth_secret;
+
+    bool operator==(const SharingTargetInfo& other) const;
+  };
+
+  // A struct that holds information regarding to Sharing features.
   struct SharingInfo {
-    SharingInfo(std::string vapid_fcm_token,
-                std::string sharing_fcm_token,
-                std::string p256dh,
-                std::string auth_secret,
+    SharingInfo(SharingTargetInfo vapid_target_info,
+                SharingTargetInfo sharing_target_info,
                 std::set<sync_pb::SharingSpecificFields::EnabledFeatures>
                     enabled_features);
     SharingInfo(const SharingInfo& other);
@@ -37,17 +50,12 @@ class DeviceInfo {
     SharingInfo& operator=(const SharingInfo& other);
     ~SharingInfo();
 
-    // FCM registration token of device subscribed using VAPID key.
-    std::string vapid_fcm_token;
+    // Target info using VAPID key.
+    // TODO(crbug.com/1012226): Deprecate when VAPID migration is over.
+    SharingTargetInfo vapid_target_info;
 
-    // FCM registration token of device subscribed using Sharing sender ID.
-    std::string sharing_fcm_token;
-
-    // Subscription public key required for Sharing message encryption[RFC8291].
-    std::string p256dh;
-
-    // Auth secret key required for Sharing message encryption[RFC8291].
-    std::string auth_secret;
+    // Target info using Sharing sender ID.
+    SharingTargetInfo sender_id_target_info;
 
     // Set of Sharing features enabled on the device.
     std::set<sync_pb::SharingSpecificFields::EnabledFeatures> enabled_features;

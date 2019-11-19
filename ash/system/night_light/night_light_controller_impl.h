@@ -133,6 +133,7 @@ class ASH_EXPORT NightLightControllerImpl
   ScheduleType GetScheduleType() const;
   TimeOfDay GetCustomStartTime() const;
   TimeOfDay GetCustomEndTime() const;
+  bool GetAmbientColorEnabled() const;
 
   // Set the desired NightLight settings in the current active user prefs.
   void SetEnabled(bool enabled, AnimationDuration animation_type);
@@ -188,6 +189,10 @@ class ASH_EXPORT NightLightControllerImpl
 
   // Called when the user pref for the enabled status of NightLight is changed.
   void OnEnabledPrefChanged();
+
+  // Called when the user pref for the enabled status of Ambient Color is
+  // changed.
+  void OnAmbientColorEnabledPrefChanged();
 
   // Called when the user pref for the color temperature is changed.
   void OnColorTemperaturePrefChanged();

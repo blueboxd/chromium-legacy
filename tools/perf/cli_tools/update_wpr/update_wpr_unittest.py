@@ -185,7 +185,8 @@ class UpdateWprTest(unittest.TestCase):
           'system_health.memory_desktop', '--output-format=html',
           '--show-stdout', '--reset-results', '--story-filter=^\\<story\\>$',
           '--browser-logging-verbosity=verbose', '--pageset-repeat=1',
-          '--output-dir', '/tmp/dir', '--use-live-sites'
+          '--output-dir', '/tmp/dir', '--also-run-disabled-tests',
+          '--use-live-sites'
         ],
         env={'LC_ALL': 'en_US.UTF-8'},
         log_path='/tmp/dir/<log_name>_<tstamp>')

@@ -186,30 +186,9 @@ void ShelfController::OnTabletModeEnded() {
 }
 
 void ShelfController::OnDisplayConfigurationChanged() {
-  // Set/init the shelf behaviors from preferences, in case a display was added.
-  SetShelfBehaviorsFromPrefs();
-
-  // Update shelf visibility to adapt to display changes. For instance shelf
-  // should be hidden on secondary display during inactive session states.
-  UpdateShelfVisibility();
-}
-
-void ShelfController::OnWindowTreeHostReusedForDisplay(
-    AshWindowTreeHost* window_tree_host,
-    const display::Display& display) {
-  // See comment in OnWindowTreeHostsSwappedDisplays().
-  SetShelfBehaviorsFromPrefs();
-
-  // Update shelf visibility to adapt to display changes. For instance shelf
-  // should be hidden on secondary display during inactive session states.
-  UpdateShelfVisibility();
-}
-
-void ShelfController::OnWindowTreeHostsSwappedDisplays(
-    AshWindowTreeHost* host1,
-    AshWindowTreeHost* host2) {
-  // The display ids for existing shelf instances may have changed, so update
-  // the alignment and auto-hide state from prefs. See http://crbug.com/748291
+  // Update the alignment and auto-hide state from prefs, because a display may
+  // have been added, or the display ids for existing shelf instances may have
+  // changed. See https://crbug.com/748291
   SetShelfBehaviorsFromPrefs();
 
   // Update shelf visibility to adapt to display changes. For instance shelf

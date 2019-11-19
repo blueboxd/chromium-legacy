@@ -68,6 +68,9 @@ std::ostream& operator<<(std::ostream& output, RequestAction::Type type) {
     case RequestAction::Type::COLLAPSE:
       output << "COLLAPSE";
       break;
+    case RequestAction::Type::ALLOW:
+      output << "ALLOW";
+      break;
     case RequestAction::Type::REDIRECT:
       output << "REDIRECT";
       break;

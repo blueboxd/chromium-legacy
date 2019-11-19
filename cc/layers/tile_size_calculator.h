@@ -26,6 +26,7 @@ class CC_EXPORT TileSizeCalculator {
     bool use_gpu_rasterization = false;
     float device_scale_factor = 0.0f;
     gfx::Size max_tile_size;
+    int min_height_for_gpu_raster_tile;
     gfx::Size gpu_raster_max_texture_size;
     gfx::Size max_untiled_layer_size;
     gfx::Size default_tile_size;

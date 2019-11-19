@@ -41,6 +41,11 @@ void ActionTracker::OnRuleMatched(const RequestAction& request_action,
   DispatchOnRuleMatchedDebugIfNeeded(request_action,
                                      CreateRequestDetails(request_info));
 
+  // Return early since allow rules do not result in any action being taken on
+  // the request.
+  if (request_action.type == RequestAction::Type::ALLOW)
+    return;
+
   const ExtensionId& extension_id = request_action.extension_id;
   auto key = std::make_pair(extension_id, tab_id);
   int action_count = ++actions_matched_[key];

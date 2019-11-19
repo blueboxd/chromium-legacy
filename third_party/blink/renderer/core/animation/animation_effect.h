@@ -124,7 +124,8 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   // When AnimationEffect receives a new inherited time via updateInheritedTime
   // it will (if necessary) recalculate timings and (if necessary) call
   // updateChildrenAndEffects.
-  void UpdateInheritedTime(double inherited_time, TimingUpdateReason) const;
+  void UpdateInheritedTime(base::Optional<double> inherited_time,
+                           TimingUpdateReason) const;
   void Invalidate() const { needs_update_ = true; }
   void InvalidateAndNotifyOwner() const;
   bool RequiresIterationEvents() const {
@@ -156,7 +157,7 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
 
   mutable Timing::CalculatedTiming calculated_;
   mutable bool needs_update_;
-  mutable double last_update_time_;
+  mutable base::Optional<double> last_update_time_;
   const Timing::CalculatedTiming& EnsureCalculated() const;
 };
 

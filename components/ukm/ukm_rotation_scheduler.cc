@@ -9,9 +9,10 @@
 namespace ukm {
 
 UkmRotationScheduler::UkmRotationScheduler(
-    const base::Closure& upload_callback,
+    const base::RepeatingClosure& upload_callback,
     bool fast_startup_for_testing,
-    const base::Callback<base::TimeDelta(void)>& upload_interval_callback)
+    const base::RepeatingCallback<base::TimeDelta(void)>&
+        upload_interval_callback)
     : metrics::MetricsRotationScheduler(upload_callback,
                                         upload_interval_callback,
                                         fast_startup_for_testing) {}

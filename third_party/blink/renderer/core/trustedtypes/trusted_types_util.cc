@@ -245,6 +245,18 @@ String GetStringFromSpecificTrustedType(
   }
 }
 
+String GetStringFromSpecificTrustedType(
+    const String& string,
+    SpecificTrustedType specific_trusted_type,
+    const ExecutionContext* execution_context,
+    ExceptionState& exception_state) {
+  if (specific_trusted_type == SpecificTrustedType::kNone)
+    return string;
+  return GetStringFromSpecificTrustedType(
+      StringOrTrustedHTMLOrTrustedScriptOrTrustedScriptURL::FromString(string),
+      specific_trusted_type, execution_context, exception_state);
+}
+
 String GetStringFromTrustedHTML(StringOrTrustedHTML string_or_trusted_html,
                                 const ExecutionContext* execution_context,
                                 ExceptionState& exception_state) {

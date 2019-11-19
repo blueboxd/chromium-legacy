@@ -321,7 +321,7 @@ RTCRtpCodecParameters* ToRtpCodecParameters(
 }
 
 RTCRtpSender::RTCRtpSender(RTCPeerConnection* pc,
-                           std::unique_ptr<WebRTCRtpSender> sender,
+                           std::unique_ptr<RTCRtpSenderPlatform> sender,
                            String kind,
                            MediaStreamTrack* track,
                            MediaStreamVector streams)
@@ -488,7 +488,7 @@ ScriptPromise RTCRtpSender::getStats(ScriptState* script_state) {
   return promise;
 }
 
-WebRTCRtpSender* RTCRtpSender::web_sender() {
+RTCRtpSenderPlatform* RTCRtpSender::web_sender() {
   return sender_.get();
 }
 

@@ -192,8 +192,13 @@ Spannable.prototype = {
    * @return {!Array<{start: number, end: number}>}
    */
   getSpanIntervals: function(value) {
-    return this.spans_.filter(function(s) { return s.value == value; })
-        .map(function(s) { return {start: s.start, end: s.end}; });
+    return this.spans_
+        .filter(function(s) {
+          return s.value == value;
+        })
+        .map(function(s) {
+          return {start: s.start, end: s.end};
+        });
   },
 
   /**
@@ -508,5 +513,4 @@ function spanValueIs(value) {
 function valueOfSpan(span) {
   return span ? span.value : undefined;
 }
-
 });

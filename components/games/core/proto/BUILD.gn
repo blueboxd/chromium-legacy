@@ -6,6 +6,10 @@ import("//third_party/protobuf/proto_library.gni")
 
 proto_library("proto") {
   sources = [
+    "date.proto",
     "game.proto",
+    "game_image.proto",
+    "games_catalog.proto",
+    "highlighted_games.proto",
   ]
 }

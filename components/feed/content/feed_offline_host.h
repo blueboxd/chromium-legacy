@@ -122,7 +122,7 @@ class FeedOfflineHost : public offline_pages::SuggestionsProvider,
   // are ever no listeners to the offline host logic and OnNoListeners() is
   // called this map is cleared. The key is the hash of the url, and the value
   // is the offline id for the given page.
-  base::flat_map<uint32_t, int64_t> url_hash_to_id_;
+  base::flat_map<size_t, int64_t> url_hash_to_id_;
 
   // Starts an the async request for ContentMetadata through KnownContentApi's
   // GetKnownContent(). Will only be invoked when there isn't already an

@@ -295,7 +295,8 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
   GURL url = GetAppURL();
   UpdateCheckResultAwaiter awaiter(browser(), url);
   ui_test_utils::NavigateToURL(browser(), url);
-  GetProvider().install_finalizer().UninstallWebApp(app_id, base::DoNothing());
+  GetProvider().install_finalizer().UninstallWebAppFromSyncByUser(
+      app_id, base::DoNothing());
   EXPECT_EQ(std::move(awaiter).AwaitNextResult(),
             ManifestUpdateResult::kAppUninstalled);
   histogram_tester_.ExpectBucketCount(kUpdateHistogramName,

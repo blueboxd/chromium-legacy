@@ -575,33 +575,33 @@ TEST_P(EngineRequestsNoBlockingTest, TestRequest) {
   test_process.Terminate(0, true);
 }
 
-INSTANTIATE_TEST_CASE_P(All,
-                        EngineRequestsNoBlockingTest,
-                        testing::Values("FindFirstFile",
-                                        "FindNextFile",
-                                        "FindClose",
-                                        "OpenReadOnlyFile",
-                                        "GetFileAttributes",
-                                        "GetKnownFolderPath",
-                                        "GetProcesses",
-                                        "GetTasks",
-                                        "GetProcessImagePath",
-                                        "GetLoadedModules",
-                                        "GetProcessCommandLine",
-                                        "GetUserInfoFromSID",
-                                        "OpenReadOnlyRegistry",
-                                        "NtOpenReadOnlyRegistry",
+INSTANTIATE_TEST_SUITE_P(All,
+                         EngineRequestsNoBlockingTest,
+                         testing::Values("FindFirstFile",
+                                         "FindNextFile",
+                                         "FindClose",
+                                         "OpenReadOnlyFile",
+                                         "GetFileAttributes",
+                                         "GetKnownFolderPath",
+                                         "GetProcesses",
+                                         "GetTasks",
+                                         "GetProcessImagePath",
+                                         "GetLoadedModules",
+                                         "GetProcessCommandLine",
+                                         "GetUserInfoFromSID",
+                                         "OpenReadOnlyRegistry",
+                                         "NtOpenReadOnlyRegistry",
 #if 0
                                         // Calls using FileRemover still block.
                                         "DeleteFile",
                                         "DeleteFilePostReboot",
 #endif
-                                        "NtDeleteRegistryKey",
-                                        "NtDeleteRegistryValue",
-                                        "NtChangeRegistryValue",
-                                        "DeleteService",
-                                        "DeleteTask",
-                                        "TerminateProcess"),
-                        GetParamNameForTest());
+                                         "NtDeleteRegistryKey",
+                                         "NtDeleteRegistryValue",
+                                         "NtChangeRegistryValue",
+                                         "DeleteService",
+                                         "DeleteTask",
+                                         "TerminateProcess"),
+                         GetParamNameForTest());
 
 }  // namespace chrome_cleaner

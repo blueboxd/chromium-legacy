@@ -154,8 +154,7 @@ HostResolverMojo::HostResolverMojo(Impl* impl)
 
 HostResolverMojo::~HostResolverMojo() = default;
 
-std::unique_ptr<net::ProxyHostResolver::Request>
-HostResolverMojo::CreateRequest(
+std::unique_ptr<ProxyHostResolver::Request> HostResolverMojo::CreateRequest(
     const std::string& hostname,
     net::ProxyResolveDnsOperation operation,
     const net::NetworkIsolationKey& network_isolation_key) {

@@ -403,13 +403,10 @@ content::WebUIDataSource* CreatePrintPreviewUISource(Profile* profile) {
   source->EnableReplaceI18nInJS();
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   source->AddResourcePath("print_preview.js",
-                          IDR_PRINT_PREVIEW_PRINT_PREVIEW_JS);
+                          IDR_PRINT_PREVIEW_PRINT_PREVIEW_ROLLUP_JS);
   source->SetDefaultResource(IDR_PRINT_PREVIEW_VULCANIZED_HTML);
 #else
   // Add all Print Preview resources.
-  std::string generated_path =
-      "@out_folder@/gen/chrome/browser/resources/print_preview/";
-
   for (size_t i = 0; i < kPrintPreviewResourcesSize; ++i) {
     std::string path = kPrintPreviewResources[i].name;
     if (path.rfind(kGeneratedPath, 0) == 0) {

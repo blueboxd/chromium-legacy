@@ -4,6 +4,7 @@
 
 static_library("performance_manager") {
   sources = [
+    "decorators/page_live_state_decorator.cc",
     "frame_priority/boosting_vote_aggregator.cc",
     "frame_priority/frame_priority.cc",
     "frame_priority/max_vote_aggregator.cc",
@@ -48,6 +49,7 @@ static_library("performance_manager") {
     "performance_manager_tab_helper.h",
     "process_node_source.cc",
     "process_node_source.h",
+    "public/decorators/page_live_state_decorator.h",
     "public/frame_priority/boosting_vote_aggregator.h",
     "public/frame_priority/frame_priority.h",
     "public/frame_priority/max_vote_aggregator.h",
@@ -89,6 +91,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "decorators/page_live_state_decorator_unittest.cc",
     "frame_priority/boosting_vote_aggregator_unittest.cc",
     "frame_priority/frame_priority_unittest.cc",
     "frame_priority/max_vote_aggregator_unittest.cc",

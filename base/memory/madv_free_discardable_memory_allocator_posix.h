@@ -18,11 +18,13 @@
 #include "base/memory/discardable_memory.h"
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/memory/madv_free_discardable_memory_posix.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "build/build_config.h"
 
 namespace base {
 class BASE_EXPORT MadvFreeDiscardableMemoryAllocatorPosix
-    : public DiscardableMemoryAllocator {
+    : public DiscardableMemoryAllocator,
+      public base::trace_event::MemoryDumpProvider {
  public:
   MadvFreeDiscardableMemoryAllocatorPosix();
   ~MadvFreeDiscardableMemoryAllocatorPosix() override;
@@ -36,6 +38,9 @@ class BASE_EXPORT MadvFreeDiscardableMemoryAllocatorPosix
     // Do nothing, since MADV_FREE discardable memory does not keep any memory
     // overhead that can be released.
   }
+
+  bool OnMemoryDump(const trace_event::MemoryDumpArgs& args,
+                    trace_event::ProcessMemoryDump* pmd) override;
 
  private:
   std::atomic<size_t> bytes_allocated_{0};

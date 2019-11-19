@@ -77,8 +77,7 @@ void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
 
 }  // namespace
 
-class DeferAllScriptBrowserTest : public InProcessBrowserTest,
-                                  public testing::WithParamInterface<bool> {
+class DeferAllScriptBrowserTest : public InProcessBrowserTest {
  public:
   DeferAllScriptBrowserTest() {
     scoped_feature_list_.InitWithFeatures(
@@ -88,14 +87,6 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest,
          data_reduction_proxy::features::
              kDataReductionProxyEnabledWithNetworkService},
         {});
-
-    if (GetParam()) {
-      param_feature_list_.InitWithFeatures(
-          {optimization_guide::features::kOptimizationGuideKeyedService}, {});
-    } else {
-      param_feature_list_.InitWithFeatures(
-          {}, {optimization_guide::features::kOptimizationGuideKeyedService});
-    }
   }
 
   ~DeferAllScriptBrowserTest() override = default;
@@ -233,11 +224,6 @@ class DeferAllScriptBrowserTest : public InProcessBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(DeferAllScriptBrowserTest);
 };
 
-// True if testing using the OptimizationGuideKeyedService implementation.
-INSTANTIATE_TEST_SUITE_P(OptimizationGuideKeyedServiceImplementation,
-                         DeferAllScriptBrowserTest,
-                         testing::Bool());
-
 // Avoid flakes and issues on non-applicable platforms.
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 #define DISABLE_ON_WIN_MAC_CHROMEOS(x) DISABLED_##x
@@ -245,7 +231,7 @@ INSTANTIATE_TEST_SUITE_P(OptimizationGuideKeyedServiceImplementation,
 #define DISABLE_ON_WIN_MAC_CHROMEOS(x) x
 #endif
 
-IN_PROC_BROWSER_TEST_P(
+IN_PROC_BROWSER_TEST_F(
     DeferAllScriptBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(DeferAllScriptHttpsWhitelisted)) {
   GURL url = https_url();
@@ -287,7 +273,7 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 // Test with an incognito browser.
-IN_PROC_BROWSER_TEST_P(
+IN_PROC_BROWSER_TEST_F(
     DeferAllScriptBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(DeferAllScriptHttpsWhitelisted_Incognito)) {
   GURL url = https_url();
@@ -312,7 +298,7 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 // Defer should not be used on a webpage whose URL matches the denylist regex.
-IN_PROC_BROWSER_TEST_P(
+IN_PROC_BROWSER_TEST_F(
     DeferAllScriptBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(DeferAllScriptHttpsWhitelistedDenylistURL)) {
   // Whitelist DeferAllScript for any path for the url's host.
@@ -342,7 +328,7 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_EQ(kNonDeferredPageExpectedOutput, GetScriptLog());
 }
 
-IN_PROC_BROWSER_TEST_P(
+IN_PROC_BROWSER_TEST_F(
     DeferAllScriptBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(DeferAllScriptHttpsNotWhitelisted)) {
   GURL url = https_url();
@@ -387,7 +373,7 @@ class DeferAllScriptBrowserTestWithCoinFlipHoldback
   base::test::ScopedFeatureList feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_P(
+IN_PROC_BROWSER_TEST_F(
     DeferAllScriptBrowserTestWithCoinFlipHoldback,
     DISABLE_ON_WIN_MAC_CHROMEOS(
         DeferAllScriptHttpsWhitelistedButWithCoinFlipHoldback)) {
@@ -435,16 +421,12 @@ IN_PROC_BROWSER_TEST_P(
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(OptimizationGuideKeyedServiceImplementation,
-                         DeferAllScriptBrowserTestWithCoinFlipHoldback,
-                         testing::Bool());
-
 // The client_redirect_url (/client_redirect_base.html) performs a client
 // redirect to "/client_redirect_loop_with_defer_all_script.html" which
 // peforms a client redirect back to the initial client_redirect_url if
 // and only if script execution is deferred. This emulates the navigation
 // pattern seen in crbug.com/987062
-IN_PROC_BROWSER_TEST_P(
+IN_PROC_BROWSER_TEST_F(
     DeferAllScriptBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(DeferAllScriptClientRedirectLoopStopped)) {
   PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
@@ -496,7 +478,7 @@ IN_PROC_BROWSER_TEST_P(
 // client_redirect_url_target_url(). Finally,
 // client_redirect_url_target_url() performs a client redirect back to
 // client_redirect_url() only if script execution is deferred.
-IN_PROC_BROWSER_TEST_P(DeferAllScriptBrowserTest,
+IN_PROC_BROWSER_TEST_F(DeferAllScriptBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMEOS(
                            DeferAllScriptServerClientRedirectLoopStopped)) {
   PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
@@ -548,7 +530,7 @@ IN_PROC_BROWSER_TEST_P(DeferAllScriptBrowserTest,
 // performs a server redirect which does a client redirect followed
 // by another client redirect (only when defer is enabled) to
 // server_redirect_base_redirect_to_final_server_redirect().
-IN_PROC_BROWSER_TEST_P(
+IN_PROC_BROWSER_TEST_F(
     DeferAllScriptBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMEOS(
         DeferAllScriptServerClientServerClientServerRedirectLoopStopped)) {

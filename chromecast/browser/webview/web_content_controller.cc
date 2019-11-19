@@ -121,6 +121,15 @@ void WebContentController::ProcessRequest(
       }
       break;
 
+    case webview::WebviewRequest::kResize:
+      if (request.has_resize()) {
+        GetWebContents()->GetNativeView()->SetBounds(
+            gfx::Rect(request.resize().width(), request.resize().height()));
+      } else {
+        client_->OnError("resize() not supplied");
+      }
+      break;
+
     default:
       client_->OnError("Unknown request code");
       break;

@@ -191,7 +191,7 @@ class CC_EXPORT FrameSequenceTracker {
 
     // The difference in |BeginFrameArgs::sequence_number| fields of the last
     // two processed BeginFrameArgs.
-    uint8_t previous_sequence_delta = 0;
+    uint32_t previous_sequence_delta = 0;
   };
 
   struct ThroughputData {

@@ -2,33 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('bookmarks', function() {
-  /**
-   * Test version of the bookmarks browser proxy.
-   */
-  class TestBookmarksBrowserProxy extends TestBrowserProxy {
-    constructor() {
-      super(['getIncognitoAvailability', 'getCanEditBookmarks']);
-    }
+import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+import {IncognitoAvailability} from 'chrome://bookmarks/bookmarks.js';
 
-    getIncognitoAvailability() {
-      this.methodCalled('getIncognitoAvailability');
-      return Promise.resolve(IncognitoAvailability.DISABLED);
-    }
-
-    getCanEditBookmarks() {
-      this.methodCalled('getCanEditBookmarks');
-      return Promise.resolve(false);
-    }
-
-    getPluralString(messageName, itemCount) {
-      return Promise.resolve('test');
-    }
-
-    recordInHistogram(histogram, bucket, maxBucket) {}
+/**
+ * Test version of the bookmarks browser proxy.
+ */
+export class TestBookmarksBrowserProxy extends TestBrowserProxy {
+  constructor() {
+    super(['getIncognitoAvailability', 'getCanEditBookmarks']);
   }
 
-  return {
-    TestBookmarksBrowserProxy: TestBookmarksBrowserProxy,
-  };
-});
+  getIncognitoAvailability() {
+    this.methodCalled('getIncognitoAvailability');
+    return Promise.resolve(IncognitoAvailability.DISABLED);
+  }
+
+  getCanEditBookmarks() {
+    this.methodCalled('getCanEditBookmarks');
+    return Promise.resolve(false);
+  }
+
+  getPluralString(messageName, itemCount) {
+    return Promise.resolve('test');
+  }
+
+  recordInHistogram(histogram, bucket, maxBucket) {}
+}

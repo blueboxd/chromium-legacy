@@ -82,6 +82,22 @@ var tests = [
     });
   },
 
+  function testAllowRule() {
+    addRuleMatchedListener();
+
+    const url = getServerURL('abcde.com');
+    navigateTab(url, url, (tab) => {
+      // The allow rule should not be matched twice despite it overriding both
+      // a block and a redirect rule (rules with id 1 and 5).
+      chrome.test.assertEq(1, matchedRules.length);
+      const matchedRule = matchedRules[0];
+      chrome.test.assertEq(4, matchedRule.rule.ruleId);
+
+      removeRuleMatchedListener();
+      chrome.test.succeed();
+    });
+  },
+
   function testMultipleRules() {
     addRuleMatchedListener();
 

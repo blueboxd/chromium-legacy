@@ -14,7 +14,7 @@ if __name__ == '__main__':
 
 from grit.tool.update_resource_ids import assigner, common, parser
 
-# |spec| format: A comma-separated list of (old) starting IDs. Modifiers:
+# |spec| format: A comma-separated list of (old) start IDs. Modifiers:
 # * Prefix with n '*' to assign the item's META "join" field to n + 1.
 # * Suffix with "+[usage]" to assign |usage| for the item (else default=10)
 

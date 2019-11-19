@@ -57,6 +57,7 @@ int WebAppIconDownloader::DownloadImage(const GURL& url) {
   return web_contents()->DownloadImage(
       url,
       true,   // is_favicon
+      0,      // no preferred size
       0,      // no max size
       false,  // normal cache policy
       base::BindOnce(&WebAppIconDownloader::DidDownloadFavicon,

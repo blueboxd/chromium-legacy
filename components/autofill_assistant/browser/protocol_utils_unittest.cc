@@ -21,11 +21,18 @@ using ::testing::SizeIs;
 ClientContextProto CreateClientContextProto() {
   ClientContextProto context;
   context.mutable_chrome()->set_chrome_version("v");
+  auto* device_context = context.mutable_device_context();
+  device_context->mutable_version()->set_sdk_int(1);
+  device_context->set_manufacturer("ma");
+  device_context->set_model("mo");
   return context;
 }
 
 void AssertClientContext(const ClientContextProto& context) {
   EXPECT_EQ("v", context.chrome().chrome_version());
+  EXPECT_EQ(1, context.device_context().version().sdk_int());
+  EXPECT_EQ("ma", context.device_context().manufacturer());
+  EXPECT_EQ("mo", context.device_context().model());
 }
 
 TEST(ProtocolUtilsTest, ScriptMissingPath) {

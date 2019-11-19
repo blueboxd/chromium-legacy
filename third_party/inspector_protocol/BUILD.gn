@@ -6,11 +6,18 @@ import("//build/config/jumbo.gni")
 
 jumbo_component("crdtp") {
   sources = [
-    "crdtp/bindings.cc",
-    "crdtp/bindings.h",
-    "crdtp/encoding.cc",
-    "crdtp/encoding.h",
+    "crdtp/cbor.h",
     "crdtp/export.h",
+    "crdtp/glue.h",
+    "crdtp/status.h",
+    "crdtp/json.h",
+    "crdtp/json_platform.h",
+    "crdtp/parser_handler.h",
+    "crdtp/span.h",
+    "crdtp/status.h",
+    "crdtp/cbor.cc",
+    "crdtp/json.cc",
+    "crdtp/status.cc",
   ]
 
   defines = [ "CRDTP_IMPLEMENTATION" ]

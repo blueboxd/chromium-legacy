@@ -506,7 +506,6 @@ void OnDNRActionMatched(content::BrowserContext* browser_context,
 
   declarative_net_request::ActionTracker& action_tracker =
       declarative_net_request::RulesMonitorService::Get(browser_context)
-          ->ruleset_manager()
           ->action_tracker();
 
   action_tracker.OnRuleMatched(action, request);
@@ -1104,6 +1103,9 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
         OnDNRActionMatched(browser_context, *request, action);
         *should_collapse_initiator = true;
         return net::ERR_BLOCKED_BY_CLIENT;
+      case DNRRequestAction::Type::ALLOW:
+        NOTREACHED();
+        break;
       case DNRRequestAction::Type::REDIRECT:
         ClearPendingCallbacks(*request);
         DCHECK_EQ(1u, actions.size());

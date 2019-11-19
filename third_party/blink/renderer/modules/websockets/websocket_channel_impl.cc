@@ -457,11 +457,11 @@ void WebSocketChannelImpl::OnConnectionEstablished(
     mojo::PendingRemote<network::mojom::blink::WebSocket> websocket,
     mojo::PendingReceiver<network::mojom::blink::WebSocketClient>
         client_receiver,
-    const String& protocol,
-    const String& extensions,
     network::mojom::blink::WebSocketHandshakeResponsePtr response,
     mojo::ScopedDataPipeConsumerHandle readable) {
   DCHECK_EQ(GetState(), State::kConnecting);
+  const String& protocol = response->selected_protocol;
+  const String& extensions = response->extensions;
   NETWORK_DVLOG(1) << this << " OnConnectionEstablished(" << protocol << ", "
                    << extensions << ")";
   TRACE_EVENT_INSTANT1(

@@ -44,11 +44,9 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
     // Delegate should return true if |command_id| should be visible.
     virtual bool IsCommandIdVisible(int command_id) const;
 
-    // Some command ids have labels, minor text and icons that change over
-    // time.
+    // Some command ids have labels and icons that change over time.
     virtual bool IsItemForCommandIdDynamic(int command_id) const;
     virtual base::string16 GetLabelForCommandId(int command_id) const;
-    virtual base::string16 GetMinorTextForCommandId(int command_id) const;
     // Gets the icon for the item with the specified id, returning true if there
     // is an icon, false otherwise.
     virtual bool GetIconForCommandId(int command_id,

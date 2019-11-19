@@ -46,12 +46,12 @@ public class PrivacyPreferencesManagerNativeTest {
         PrivacyPreferencesManager preferenceManager = new PrivacyPreferencesManager(context);
 
         // Setup prefs to be out of sync.
-        prefBridge.setMetricsReportingEnabled(false);
+        PrivacyPreferencesManager.getInstance().setMetricsReportingEnabled(false);
         pref.edit().putBoolean(PrivacyPreferencesManager.PREF_METRICS_REPORTING, true).apply();
 
         preferenceManager.syncUsageAndCrashReportingPrefs();
-        Assert.assertTrue(
-                "Native preference should be True ", prefBridge.isMetricsReportingEnabled());
+        Assert.assertTrue("Native preference should be True ",
+                PrivacyPreferencesManager.getInstance().isMetricsReportingEnabled());
     }
 
     @Test
@@ -68,14 +68,14 @@ public class PrivacyPreferencesManagerNativeTest {
 
         preferenceManager.setUsageAndCrashReporting(true);
         Assert.assertTrue(pref.getBoolean(PrivacyPreferencesManager.PREF_METRICS_REPORTING, false));
-        Assert.assertTrue(
-                "Native preference should be True ", prefBridge.isMetricsReportingEnabled());
+        Assert.assertTrue("Native preference should be True ",
+                PrivacyPreferencesManager.getInstance().isMetricsReportingEnabled());
 
         preferenceManager.setUsageAndCrashReporting(false);
         Assert.assertFalse(
                 pref.getBoolean(PrivacyPreferencesManager.PREF_METRICS_REPORTING, false));
-        Assert.assertFalse(
-                "Native preference should be False ", prefBridge.isMetricsReportingEnabled());
+        Assert.assertFalse("Native preference should be False ",
+                PrivacyPreferencesManager.getInstance().isMetricsReportingEnabled());
     }
 
     private static class PermissionContext extends AdvancedMockContext {

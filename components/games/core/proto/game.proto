@@ -6,15 +6,19 @@ syntax = "proto3";
 
 package games;
 
+import "game_image.proto";
+
 option optimize_for = LITE_RUNTIME;
 
 message Game {
   // URL at which the Web game can be played.
   string url = 1;
 
-  // Title of the Web game.
   string title = 2;
 
-  // Bytes for the image to be associated with this game.
-  bytes image = 3;
+  reserved 5;
+
+  int32 id = 3;
+
+  repeated GameImage images = 4;
 }

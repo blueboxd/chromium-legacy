@@ -7,6 +7,10 @@
 #include <memory>
 #include <string>
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/process/process.h"
@@ -23,6 +27,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/buildflags.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/keep_alive_registry/keep_alive_registry.h"
 #include "components/language/core/browser/pref_names.h"
@@ -56,10 +61,10 @@
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #endif
 
 namespace chrome {
-
 namespace {
 
 #if !defined(OS_ANDROID)
@@ -224,6 +229,23 @@ void AttemptUserExit() {
 // The Android implementation is in application_lifetime_android.cc
 #if !defined(OS_ANDROID)
 void AttemptRestart() {
+#if defined(OS_WIN)
+  // On Windows, Breakpad will upload crash reports if the breakpad pipe name
+  // environment variable is defined. So we undefine this environment variable
+  // before restarting, as the restarted processes will inherit their
+  // environment variables from ours, thus suppressing crash uploads.
+  if (!ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled()) {
+    HMODULE exe_module = GetModuleHandle(kBrowserProcessExecutableName);
+    if (exe_module) {
+      typedef void (__cdecl *ClearBreakpadPipeEnvVar)();
+      ClearBreakpadPipeEnvVar clear = reinterpret_cast<ClearBreakpadPipeEnvVar>(
+          GetProcAddress(exe_module, "ClearBreakpadPipeEnvironmentVariable"));
+      if (clear)
+        clear();
+    }
+  }
+#endif  // defined(OS_WIN)
+
   // TODO(beng): Can this use ProfileManager::GetLoadedProfiles instead?
   for (auto* browser : *BrowserList::GetInstance())
     content::BrowserContext::SaveSessionState(browser->profile());
@@ -285,9 +307,10 @@ void ExitIgnoreUnloadHandlers() {
   // In this case, AreAllBrowsersCloseable()
   // can be false in following cases. a) power-off b) signout from
   // screen locker.
-  browser_shutdown::OnShutdownStarting(
-      AreAllBrowsersCloseable() ? browser_shutdown::ShutdownType::kBrowserExit
-                                : browser_shutdown::ShutdownType::kEndSession);
+  if (!AreAllBrowsersCloseable())
+    browser_shutdown::OnShutdownStarting(browser_shutdown::END_SESSION);
+  else
+    browser_shutdown::OnShutdownStarting(browser_shutdown::BROWSER_EXIT);
 #endif
   AttemptExitInternal(true);
 }
@@ -323,8 +346,7 @@ void SessionEnding() {
   ShutdownWatcherHelper shutdown_watcher;
   shutdown_watcher.Arm(base::TimeDelta::FromSeconds(90));
 
-  browser_shutdown::OnShutdownStarting(
-      browser_shutdown::ShutdownType::kEndSession);
+  browser_shutdown::OnShutdownStarting(browser_shutdown::END_SESSION);
 
   // In a clean shutdown, browser_shutdown::OnShutdownStarting sets
   // g_shutdown_type, and browser_shutdown::ShutdownPreThreadsStop calls
@@ -344,7 +366,6 @@ void SessionEnding() {
 #if defined(OS_WIN)
   base::win::SetShouldCrashOnProcessDetach(false);
 #endif
-
   // On Windows 7 and later, the system will consider the process ripe for
   // termination as soon as it hides or destroys its windows. Since any
   // execution past that point will be non-deterministically cut short, we

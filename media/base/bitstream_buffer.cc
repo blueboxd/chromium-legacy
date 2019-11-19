@@ -35,23 +35,6 @@ BitstreamBuffer::BitstreamBuffer(int32_t id,
       offset_(offset),
       presentation_timestamp_(presentation_timestamp) {}
 
-BitstreamBuffer::BitstreamBuffer(int32_t id,
-                                 base::SharedMemoryHandle handle,
-                                 bool read_only,
-                                 size_t size,
-                                 off_t offset,
-                                 base::TimeDelta presentation_timestamp)
-    : id_(id),
-      region_(
-          base::subtle::PlatformSharedMemoryRegion::TakeFromSharedMemoryHandle(
-              handle.Duplicate(),
-              read_only
-                  ? base::subtle::PlatformSharedMemoryRegion::Mode::kReadOnly
-                  : base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe)),
-      size_(size),
-      offset_(offset),
-      presentation_timestamp_(presentation_timestamp) {}
-
 BitstreamBuffer::BitstreamBuffer(BitstreamBuffer&&) = default;
 BitstreamBuffer& BitstreamBuffer::operator=(BitstreamBuffer&&) = default;
 

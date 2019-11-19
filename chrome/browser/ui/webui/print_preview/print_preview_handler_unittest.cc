@@ -416,6 +416,8 @@ class PrintPreviewHandlerTest : public testing::Test {
 
     ASSERT_TRUE(settings->FindKeyOfType("pdfPrinterDisabled",
                                         base::Value::Type::BOOLEAN));
+    ASSERT_TRUE(settings->FindKeyOfType("destinationsManaged",
+                                        base::Value::Type::BOOLEAN));
     ASSERT_TRUE(
         settings->FindKeyOfType("cloudPrintURL", base::Value::Type::STRING));
     ASSERT_TRUE(

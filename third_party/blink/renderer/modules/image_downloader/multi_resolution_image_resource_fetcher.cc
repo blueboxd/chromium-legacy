@@ -8,10 +8,9 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_http_body.h"
-#include "third_party/blink/public/platform/web_image.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/web_associated_url_loader_client.h"
@@ -22,7 +21,6 @@
 #include "third_party/blink/renderer/core/loader/web_associated_url_loader_impl.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace blink {
 
@@ -156,31 +154,22 @@ MultiResolutionImageResourceFetcher::~MultiResolutionImageResourceFetcher() {
 void MultiResolutionImageResourceFetcher::OnURLFetchComplete(
     const WebURLResponse& response,
     const std::string& data) {
-  WTF::Vector<SkBitmap> bitmaps;
   if (!response.IsNull()) {
     http_status_code_ = response.HttpStatusCode();
     KURL url(response.CurrentRequestUrl());
     if (http_status_code_ == 200 || url.IsLocalFile()) {
-      // Request succeeded, try to convert it to an image.
-      const unsigned char* src_data =
-          reinterpret_cast<const unsigned char*>(data.data());
-      std::vector<SkBitmap> decoded_bitmaps =
-          WebImage::FramesFromData(
-              WebData(reinterpret_cast<const char*>(src_data), data.size()))
-              .ReleaseVector();
-
-      bitmaps.AppendRange(std::make_move_iterator(decoded_bitmaps.rbegin()),
-                          std::make_move_iterator(decoded_bitmaps.rend()));
+      std::move(callback_).Run(this, data, response.MimeType());
+      return;
     }
   }  // else case:
-     // If we get here, it means no image from server or couldn't decode the
-     // response as an image. The delegate will see an empty vector.
+     // If we get here, it means there was no or an error response from the
+     // server.
 
-  std::move(callback_).Run(this, bitmaps);
+  std::move(callback_).Run(this, std::string(), WebString());
 }
 
 void MultiResolutionImageResourceFetcher::Dispose() {
-  std::move(callback_).Run(this, WTF::Vector<SkBitmap>());
+  std::move(callback_).Run(this, std::string(), WebString());
 }
 
 void MultiResolutionImageResourceFetcher::SetSkipServiceWorker(

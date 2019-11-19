@@ -212,6 +212,13 @@ RequestAction RulesetMatcherInterface::CreateBlockOrCollapseRequestAction(
                              rule.priority(), source_type(), extension_id());
 }
 
+RequestAction RulesetMatcherInterface::CreateAllowAction(
+    const RequestParams& params,
+    const url_pattern_index::flat::UrlRule& rule) const {
+  return RequestAction(RequestAction::Type::ALLOW, rule.id(), rule.priority(),
+                       source_type(), extension_id());
+}
+
 RequestAction RulesetMatcherInterface::CreateUpgradeAction(
     const RequestParams& params,
     const url_pattern_index::flat::UrlRule& rule) const {

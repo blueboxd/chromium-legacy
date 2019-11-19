@@ -68,7 +68,8 @@ class RulesetMatcher : public RulesetMatcherInterface {
 
   base::Optional<RequestAction> GetBlockOrCollapseAction(
       const RequestParams& params) const override;
-  bool HasMatchingAllowRule(const RequestParams& params) const override;
+  base::Optional<RequestAction> GetAllowAction(
+      const RequestParams& params) const override;
   base::Optional<RequestAction> GetRedirectAction(
       const RequestParams& params) const override;
   base::Optional<RequestAction> GetUpgradeAction(

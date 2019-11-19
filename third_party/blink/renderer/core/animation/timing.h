@@ -53,6 +53,10 @@ static inline double NullValue() {
   return std::numeric_limits<double>::quiet_NaN();
 }
 
+static inline base::Optional<double> OptionalFromDoubleWithNull(double value) {
+  return IsNull(value) ? base::nullopt : base::Optional<double>(value);
+}
+
 struct CORE_EXPORT Timing {
   USING_FAST_MALLOC(Timing);
 

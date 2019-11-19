@@ -27,7 +27,8 @@ class FakeRemoteGattService;
 // device/bluetooth/bluetooth_adapter.h.
 //
 // Not intended for direct use by clients.  See README.md.
-class FakeCentral : public mojom::FakeCentral, public device::BluetoothAdapter {
+class FakeCentral final : public mojom::FakeCentral,
+                          public device::BluetoothAdapter {
  public:
   FakeCentral(mojom::CentralState state,
               mojo::PendingReceiver<mojom::FakeCentral> receiver);
@@ -183,6 +184,7 @@ class FakeCentral : public mojom::FakeCentral, public device::BluetoothAdapter {
 #endif
   device::BluetoothLocalGattService* GetGattService(
       const std::string& identifier) const override;
+  base::WeakPtr<BluetoothAdapter> GetWeakPtr() override;
   bool SetPoweredImpl(bool powered) override;
   void UpdateFilter(
       std::unique_ptr<device::BluetoothDiscoveryFilter> discovery_filter,
@@ -214,6 +216,7 @@ class FakeCentral : public mojom::FakeCentral, public device::BluetoothAdapter {
 
   mojom::CentralState state_;
   mojo::Receiver<mojom::FakeCentral> receiver_;
+  base::WeakPtrFactory<FakeCentral> weak_ptr_factory_{this};
 };
 
 }  // namespace bluetooth

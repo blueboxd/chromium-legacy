@@ -25,7 +25,6 @@
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
 #include "components/account_id/account_id.h"
-#include "components/prefs/pref_registry_simple.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -34,6 +33,7 @@
 #include "services/identity/public/mojom/identity_accessor.mojom.h"
 
 class GoogleServiceAuthError;
+class PrefService;
 
 namespace base {
 class OneShotTimer;
@@ -51,7 +51,6 @@ namespace chromeos {
 namespace assistant {
 
 class AssistantSettingsManager;
-class PrefConnectionDelegate;
 class ServiceContext;
 
 // |AssistantManagerService|'s state won't update if it's currently in the
@@ -69,7 +68,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
  public:
   Service(mojo::PendingReceiver<mojom::AssistantService> receiver,
           std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-              url_loader_factory_info);
+              url_loader_factory_info,
+          PrefService* profile_prefs);
   ~Service() override;
 
   // Allows tests to override the AssistantSettingsManager bound by the service.
@@ -80,11 +80,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
       mojo::PendingRemote<identity::mojom::IdentityAccessor> identity_accessor);
 
   void SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer);
-
-  void SetPrefConnectionDelegateForTesting(
-      std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate);
-
-  AssistantStateProxy* GetAssistantStateProxyForTesting();
 
  private:
   friend class AssistantServiceTest;
@@ -207,6 +202,9 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
 
   // non-null until |assistant_manager_service_| is created.
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory_info_;
+
+  // User profile preferences.
+  PrefService* const profile_prefs_;
 
   base::CancelableOnceClosure update_assistant_manager_callback_;
 

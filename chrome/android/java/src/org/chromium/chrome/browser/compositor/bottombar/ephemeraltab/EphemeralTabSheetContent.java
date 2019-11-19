@@ -40,6 +40,7 @@ public class EphemeralTabSheetContent implements BottomSheetContent {
     private final Context mContext;
     private final Runnable mOpenNewTabCallback;
     private final Runnable mToolbarClickCallback;
+    private final Runnable mCloseButtonCallback;
     private final int mToolbarHeightPx;
 
     private ViewGroup mToolbarView;
@@ -57,13 +58,15 @@ public class EphemeralTabSheetContent implements BottomSheetContent {
      * @param context An Android context.
      * @param openNewTabCallback Callback invoked to open a new tab.
      * @param toolbarClickCallback Callback invoked when user clicks on the toolbar.
+     * @param closeButtonCallback Callback invoked when user clicks on the close button.
      * @param maxSheetHeight The height of the sheet in full height position.
      */
     public EphemeralTabSheetContent(Context context, Runnable openNewTabCallback,
-            Runnable toolbarClickCallback, int maxSheetHeight) {
+            Runnable toolbarClickCallback, Runnable closeButtonCallback, int maxSheetHeight) {
         mContext = context;
         mOpenNewTabCallback = openNewTabCallback;
         mToolbarClickCallback = toolbarClickCallback;
+        mCloseButtonCallback = closeButtonCallback;
         mToolbarHeightPx =
                 mContext.getResources().getDimensionPixelSize(R.dimen.sheet_tab_toolbar_height);
 
@@ -112,6 +115,9 @@ public class EphemeralTabSheetContent implements BottomSheetContent {
 
         View toolbar = mToolbarView.findViewById(R.id.toolbar);
         toolbar.setOnClickListener(view -> mToolbarClickCallback.run());
+
+        View closeButton = mToolbarView.findViewById(R.id.close);
+        closeButton.setOnClickListener(view -> mCloseButtonCallback.run());
 
         mFaviconView = mToolbarView.findViewById(R.id.favicon);
         mCurrentFavicon = mFaviconView.getDrawable();
@@ -179,6 +185,12 @@ public class EphemeralTabSheetContent implements BottomSheetContent {
     public void setProgressVisible(boolean visible) {
         ProgressBar progressBar = mToolbarView.findViewById(R.id.progress_bar);
         progressBar.setVisibility(visible ? View.VISIBLE : View.GONE);
+    }
+
+    /** Called to show or hide the open in new tab button. */
+    public void showOpenInNewTabButton(boolean show) {
+        View openInNewTabButton = mToolbarView.findViewById(R.id.open_in_new_tab);
+        openInNewTabButton.setVisibility(show ? View.VISIBLE : View.GONE);
     }
 
     @Override

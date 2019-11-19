@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/sync/protocol/device_info_specifics.pb.h"
+#include "components/sync_device_info/device_info.h"
 
 class PrefService;
 
@@ -31,6 +32,9 @@ class SharingDeviceRegistration {
  public:
   using RegistrationCallback =
       base::OnceCallback<void(SharingDeviceRegistrationResult)>;
+  using TargetInfoCallback = base::OnceCallback<void(
+      SharingDeviceRegistrationResult,
+      base::Optional<syncer::DeviceInfo::SharingTargetInfo>)>;
 
   SharingDeviceRegistration(PrefService* pref_service,
                             SharingSyncPreference* prefs,
@@ -69,45 +73,41 @@ class SharingDeviceRegistration {
   FRIEND_TEST_ALL_PREFIXES(SharingDeviceRegistrationTest,
                            RegisterDeviceTest_Success);
 
-  // Callback function responsible for validating VAPID FCM registration token
-  // and retrieving public encryption key and authentication secret associated
-  // with FCM App ID of Sharing. Also responsible for calling |callback| with
-  // |result| of GetToken.
-  void OnVapidFCMTokenReceived(RegistrationCallback callback,
-                               const std::string& authorized_entity,
-                               const std::string& vapid_fcm_token,
-                               instance_id::InstanceID::Result result);
+  void RetrieveTargetInfo(const std::string& authorized_entity,
+                          TargetInfoCallback callback);
 
-  // Callback function responsible for validating Sharing FCM registration token
-  // and retrieving public encryption key and authentication secret associated
-  // with FCM App ID of Sharing. Also responsible for calling |callback| with
-  // |result| of GetToken.
-  void OnSharingFCMTokenReceived(RegistrationCallback callback,
-                                 const std::string& authorized_entity,
-                                 const std::string& vapid_fcm_token,
-                                 const std::string& sharing_fcm_token,
-                                 instance_id::InstanceID::Result result);
+  void OnFCMTokenReceived(TargetInfoCallback callback,
+                          const std::string& authorized_entity,
+                          const std::string& fcm_token,
+                          instance_id::InstanceID::Result result);
 
-  // Callback function responsible for deleting FCM registration token
-  // associated with FCM App ID of Sharing. Also responsible for calling
-  // |callback| with |result| of DeleteToken.
-  void OnFCMTokenDeleted(RegistrationCallback callback,
-                         instance_id::InstanceID::Result result);
-
-  // Retrieve encryption info from InstanceID.
-  void RetrieveEncryptionInfo(RegistrationCallback callback,
-                              const std::string& authorized_entity,
-                              const std::string& vapid_fcm_token,
-                              const std::string& sharing_fcm_token);
-
-  // Callback function responsible for saving device registration information in
-  // SharingSyncPreference.
-  void OnEncryptionInfoReceived(RegistrationCallback callback,
-                                const std::string& authorized_entity,
-                                const std::string& vapid_fcm_token,
-                                const std::string& sharing_fcm_token,
+  void OnEncryptionInfoReceived(TargetInfoCallback callback,
+                                const std::string& fcm_token,
                                 std::string p256dh,
                                 std::string auth_secret);
+
+  void OnVapidTargetInfoRetrieved(
+      RegistrationCallback callback,
+      const std::string& authorized_entity,
+      SharingDeviceRegistrationResult result,
+      base::Optional<syncer::DeviceInfo::SharingTargetInfo> vapid_target_info);
+
+  void OnSharingTargetInfoRetrieved(
+      RegistrationCallback callback,
+      const std::string& authorized_entity,
+      syncer::DeviceInfo::SharingTargetInfo vapid_target_info,
+      SharingDeviceRegistrationResult result,
+      base::Optional<syncer::DeviceInfo::SharingTargetInfo>
+          sharing_target_info);
+
+  void OnVapidFCMTokenDeleted(RegistrationCallback callback,
+                              SharingDeviceRegistrationResult result);
+
+  void DeleteFCMToken(const std::string& authorized_entity,
+                      RegistrationCallback callback);
+
+  void OnFCMTokenDeleted(RegistrationCallback callback,
+                         instance_id::InstanceID::Result result);
 
   // Returns the authorization entity for FCM registration.
   base::Optional<std::string> GetAuthorizationEntity() const;

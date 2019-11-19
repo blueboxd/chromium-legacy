@@ -289,6 +289,8 @@ void WebAppSyncBridge::OnDatabaseOpened(
 
   registrar_->InitRegistry(std::move(registry));
   std::move(callback).Run();
+
+  MaybeInstallAppsInSyncInstall();
 }
 
 void WebAppSyncBridge::OnDataWritten(CommitCallback callback, bool success) {
@@ -493,6 +495,20 @@ std::string WebAppSyncBridge::GetClientTag(
 std::string WebAppSyncBridge::GetStorageKey(
     const syncer::EntityData& entity_data) {
   return GetClientTag(entity_data);
+}
+
+void WebAppSyncBridge::MaybeInstallAppsInSyncInstall() {
+  std::vector<WebApp*> apps_in_sync_install;
+
+  for (WebApp& app : registrar_->AllAppsMutable()) {
+    if (app.is_in_sync_install())
+      apps_in_sync_install.push_back(&app);
+  }
+
+  if (!apps_in_sync_install.empty()) {
+    install_delegate_->InstallWebAppsAfterSync(std::move(apps_in_sync_install),
+                                               base::DoNothing());
+  }
 }
 
 }  // namespace web_app

@@ -63,13 +63,4 @@ void StandaloneConnectorImpl::Clone(
   receivers_.Add(this, std::move(receiver));
 }
 
-void StandaloneConnectorImpl::FilterInterfaces(
-    const std::string& spec,
-    const Identity& source,
-    mojo::PendingReceiver<mojom::InterfaceProvider> source_receiver,
-    mojo::PendingRemote<mojom::InterfaceProvider> target) {
-  NOTIMPLEMENTED()
-      << "FilterInterfaces is not supported by StandaloneConnectorImpl.";
-}
-
 }  // namespace service_manager

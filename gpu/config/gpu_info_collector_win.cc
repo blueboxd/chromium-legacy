@@ -31,6 +31,7 @@
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/windows_version.h"
 #include "build/branding_buildflags.h"
+#include "gpu/config/gpu_util.h"
 #include "third_party/vulkan/include/vulkan/vulkan.h"
 
 namespace gpu {
@@ -59,30 +60,6 @@ inline D3D12FeatureLevel ConvertToHistogramFeatureLevel(
     default:
       NOTREACHED();
       return D3D12FeatureLevel::kD3DFeatureLevelUnknown;
-  }
-}
-
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-// This should match enum VulkanVersion in \tools\metrics\histograms\enums.xml
-enum class VulkanVersion {
-  kVulkanVersionUnknown = 0,
-  kVulkanVersion_1_0_0 = 1,
-  kVulkanVersion_1_1_0 = 2,
-  kMaxValue = kVulkanVersion_1_1_0,
-};
-
-inline VulkanVersion ConvertToHistogramVulkanVersion(uint32_t vulkan_version) {
-  switch (vulkan_version) {
-    case 0:
-      return VulkanVersion::kVulkanVersionUnknown;
-    case VK_MAKE_VERSION(1, 0, 0):
-      return VulkanVersion::kVulkanVersion_1_0_0;
-    case VK_MAKE_VERSION(1, 1, 0):
-      return VulkanVersion::kVulkanVersion_1_1_0;
-    default:
-      NOTREACHED();
-      return VulkanVersion::kVulkanVersionUnknown;
   }
 }
 

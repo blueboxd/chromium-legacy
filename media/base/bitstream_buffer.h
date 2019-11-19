@@ -50,16 +50,6 @@ class MEDIA_EXPORT BitstreamBuffer {
                   off_t offset = 0,
                   base::TimeDelta presentation_timestamp = kNoTimestamp);
 
-  // As above, but creates by duplicating a SharedMemoryHandle.
-  // TODO(https://crbug.com/793446): remove once legacy shared memory has been
-  // converted.
-  BitstreamBuffer(int32_t id,
-                  base::SharedMemoryHandle handle,
-                  bool read_only,
-                  size_t size,
-                  off_t offset = 0,
-                  base::TimeDelta presentation_timestamp = kNoTimestamp);
-
   // Move operations are allowed.
   BitstreamBuffer(BitstreamBuffer&&);
   BitstreamBuffer& operator=(BitstreamBuffer&&);

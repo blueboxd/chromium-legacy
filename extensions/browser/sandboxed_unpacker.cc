@@ -487,7 +487,9 @@ void SandboxedUnpacker::UnpackExtensionSucceeded(
   // with base::string16
   std::string utf8_error;
   if (!extension_l10n_util::LocalizeExtension(
-          extension_root_, final_manifest.get(), &utf8_error)) {
+          extension_root_, final_manifest.get(),
+          extension_l10n_util::GzippedMessagesPermission::kDisallow,
+          &utf8_error)) {
     ReportFailure(
         SandboxedUnpackerFailureReason::COULD_NOT_LOCALIZE_EXTENSION,
         l10n_util::GetStringFUTF16(IDS_EXTENSION_PACKAGE_ERROR_MESSAGE,

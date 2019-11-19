@@ -61,18 +61,18 @@ void GetAccessibilityLinkInfo(
     int32_t page_index,
     const std::vector<pp::PDF::PrivateAccessibilityTextRunInfo>& text_runs,
     std::vector<pp::PDF::PrivateAccessibilityLinkInfo>* links) {
-  uint32_t link_count = engine->GetLinkCount(page_index);
-  for (uint32_t i = 0; i < link_count; ++i) {
+  std::vector<PDFEngine::AccessibilityLinkInfo> engine_link_info =
+      engine->GetLinkInfo(page_index);
+  for (size_t i = 0; i < engine_link_info.size(); ++i) {
+    auto& cur_engine_info = engine_link_info[i];
     pp::PDF::PrivateAccessibilityLinkInfo link_info;
-    int start_char_index = -1;
-    int char_count = 0;
-    bool is_link_info_present =
-        engine->GetLinkInfo(page_index, i, &link_info.url, &start_char_index,
-                            &char_count, &link_info.bounds);
-    DCHECK(is_link_info_present);
+    link_info.url = std::move(cur_engine_info.url);
     link_info.index_in_page = i;
+    link_info.bounds = std::move(cur_engine_info.bounds);
+
     if (!GetEnclosingTextRunRangeForCharRange(
-            text_runs, start_char_index, char_count, &link_info.text_run_index,
+            text_runs, cur_engine_info.start_char_index,
+            cur_engine_info.char_count, &link_info.text_run_index,
             &link_info.text_run_count)) {
       // If a valid text run range is not found for the link, set the fallback
       // values of |text_run_index| and |text_run_count| for |link_info|.
@@ -93,12 +93,12 @@ void GetAccessibilityImageInfo(
     int32_t page_index,
     uint32_t text_run_count,
     std::vector<pp::PDF::PrivateAccessibilityImageInfo>* images) {
-  uint32_t image_count = engine->GetImageCount(page_index);
-  for (uint32_t i = 0; i < image_count; ++i) {
+  std::vector<PDFEngine::AccessibilityImageInfo> engine_image_info =
+      engine->GetImageInfo(page_index);
+  for (auto& cur_engine_info : engine_image_info) {
     pp::PDF::PrivateAccessibilityImageInfo image_info;
-    bool ret = engine->GetImageInfo(page_index, i, &image_info.alt_text,
-                                    &image_info.bounds);
-    DCHECK(ret);
+    image_info.alt_text = std::move(cur_engine_info.alt_text);
+    image_info.bounds = std::move(cur_engine_info.bounds);
     // TODO(mohitb): Update text run index to nearest text run to image bounds.
     image_info.text_run_index = text_run_count;
     images->push_back(std::move(image_info));

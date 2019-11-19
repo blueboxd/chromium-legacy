@@ -6,6 +6,7 @@ package org.chromium.ui;
 
 import androidx.annotation.IntDef;
 
+import org.chromium.blink.mojom.ContactIconBlob;
 import org.chromium.payments.mojom.PaymentAddress;
 
 import java.lang.annotation.Retention;
@@ -26,9 +27,11 @@ public interface ContactsPickerListener {
         public final List<String> emails;
         public final List<String> tel;
         public final List<ByteBuffer> serializedAddresses;
+        public final List<ByteBuffer> serializedIcons;
 
         public Contact(List<String> contactNames, List<String> contactEmails,
-                List<String> contactTel, List<PaymentAddress> contactAddresses) {
+                List<String> contactTel, List<PaymentAddress> contactAddresses,
+                List<ContactIconBlob> contactIcons) {
             names = contactNames;
             emails = contactEmails;
             tel = contactTel;
@@ -40,6 +43,15 @@ public interface ContactsPickerListener {
                 }
             } else {
                 serializedAddresses = null;
+            }
+
+            if (contactIcons != null) {
+                serializedIcons = new ArrayList<ByteBuffer>();
+                for (ContactIconBlob icon : contactIcons) {
+                    serializedIcons.add(icon.serialize());
+                }
+            } else {
+                serializedIcons = null;
             }
         }
     }

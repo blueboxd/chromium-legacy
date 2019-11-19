@@ -172,8 +172,7 @@ void NotifyRequestWithheld(const ExtensionId& extension_id,
 RulesetManager::RulesetManager(content::BrowserContext* browser_context)
     : browser_context_(browser_context),
       prefs_(ExtensionPrefs::Get(browser_context)),
-      permission_helper_(PermissionHelper::Get(browser_context)),
-      action_tracker_(browser_context) {
+      permission_helper_(PermissionHelper::Get(browser_context)) {
   DCHECK(browser_context_);
 
   // RulesetManager can be created on any sequence.
@@ -218,7 +217,6 @@ void RulesetManager::RemoveRuleset(const ExtensionId& extension_id) {
       << "RemoveRuleset called without a corresponding AddRuleset for "
       << extension_id;
 
-  action_tracker_.ClearExtensionData(extension_id);
   base::EraseIf(rulesets_, compare_by_id);
 
   if (test_observer_)

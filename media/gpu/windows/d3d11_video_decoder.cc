@@ -272,16 +272,18 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
   }
 
   // TODO(liberato): dxva does this.  don't know if we need to.
-  ComD3D11Multithread multi_threaded;
-  hr = device_->QueryInterface(IID_PPV_ARGS(&multi_threaded));
-  if (!SUCCEEDED(hr)) {
-    NotifyError("Failed to query ID3D11Multithread");
-    return;
+  if (!base::FeatureList::IsEnabled(kD3D11VideoDecoderSkipMultithreaded)) {
+    ComD3D11Multithread multi_threaded;
+    hr = device_->QueryInterface(IID_PPV_ARGS(&multi_threaded));
+    if (!SUCCEEDED(hr)) {
+      NotifyError("Failed to query ID3D11Multithread");
+      return;
+    }
+    // TODO(liberato): This is a hack, since the unittest returns
+    // success without providing |multi_threaded|.
+    if (multi_threaded)
+      multi_threaded->SetMultithreadProtected(TRUE);
   }
-  // TODO(liberato): This is a hack, since the unittest returns
-  // success without providing |multi_threaded|.
-  if (multi_threaded)
-    multi_threaded->SetMultithreadProtected(TRUE);
 
   UINT config_count = 0;
   hr = video_device_->GetVideoDecoderConfigCount(
@@ -682,7 +684,14 @@ void D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
   // For NV12, overlay is allowed by default. If the decoder is going to support
   // non-NV12 textures, then this may have to be conditionally set. Also note
   // that ALLOW_OVERLAY is required for encrypted video path.
-  frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
+  // Since all of our picture buffers allow overlay, we just use the finch
+  // feature.  However, we may choose to set ALLOW_OVERLAY to false even if
+  // the finch flag is enabled.  We may not choose to set ALLOW_OVERLAY if the
+  // flag is off, however.
+  const bool allow_overlay =
+      base::FeatureList::IsEnabled(kD3D11VideoDecoderAllowOverlay);
+  frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY,
+                                allow_overlay);
 
   if (config_.is_encrypted()) {
     frame->metadata()->SetBoolean(VideoFrameMetadata::PROTECTED_VIDEO, true);
@@ -735,6 +744,7 @@ void D3D11VideoDecoder::NotifyError(const char* reason) {
 
   if (current_decode_cb_)
     std::move(current_decode_cb_).Run(DecodeStatus::DECODE_ERROR);
+  current_buffer_ = nullptr;
 
   for (auto& queue_pair : input_buffer_queue_)
     std::move(queue_pair.second).Run(DecodeStatus::DECODE_ERROR);

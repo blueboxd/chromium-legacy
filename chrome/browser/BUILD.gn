@@ -1590,7 +1590,6 @@ jumbo_static_library("browser") {
     "sharing/sharing_service_proxy_android.h",
     "sharing/sharing_sync_preference.cc",
     "sharing/sharing_sync_preference.h",
-    "sharing/sharing_target_info.h",
     "sharing/sharing_utils.cc",
     "sharing/sharing_utils.h",
     "sharing/sms/sms_fetch_request_handler.cc",
@@ -1686,6 +1685,8 @@ jumbo_static_library("browser") {
     "ssl/certificate_error_report.h",
     "ssl/certificate_error_reporter.cc",
     "ssl/certificate_error_reporter.h",
+    "ssl/chrome_ssl_blocking_page.cc",
+    "ssl/chrome_ssl_blocking_page.h",
     "ssl/chrome_ssl_host_state_delegate.cc",
     "ssl/chrome_ssl_host_state_delegate.h",
     "ssl/chrome_ssl_host_state_delegate_factory.cc",
@@ -2567,6 +2568,7 @@ jumbo_static_library("browser") {
       "android/preferences/preferences_launcher.cc",
       "android/preferences/preferences_launcher.h",
       "android/preferences/prefs.h",
+      "android/preferences/privacy_preferences_manager.cc",
       "android/preferences/website_preference_bridge.cc",
       "android/preferences/website_preference_bridge.h",
       "android/profile_key_startup_accessor.cc",
@@ -2764,6 +2766,7 @@ jumbo_static_library("browser") {
       "download/android/service/download_task_scheduler.h",
       "engagement/site_engagement_service_android.cc",
       "engagement/site_engagement_service_android.h",
+      "first_run/android/first_run_utils.cc",
       "history/android/android_history_provider_service.cc",
       "history/android/android_history_provider_service.h",
       "history/android/android_provider_backend.cc",
@@ -3450,6 +3453,8 @@ jumbo_static_library("browser") {
       "sharing/click_to_call/click_to_call_ui_controller.h",
       "sharing/click_to_call/click_to_call_utils.cc",
       "sharing/click_to_call/click_to_call_utils.h",
+      "sharing/click_to_call/phone_number_regex.cc",
+      "sharing/click_to_call/phone_number_regex.h",
       "sharing/shared_clipboard/remote_copy_message_handler.cc",
       "sharing/shared_clipboard/remote_copy_message_handler.h",
       "sharing/shared_clipboard/shared_clipboard_context_menu_observer.cc",
@@ -4719,13 +4724,6 @@ jumbo_static_library("browser") {
       "nacl_host/nacl_infobar_delegate.h",
     ]
     deps += [ "//components/nacl/browser" ]
-
-    if (enable_nacl) {
-      deps += [ "//components/nacl/loader:nacl_loader_manifest" ]
-      if (is_win && target_cpu == "x86") {
-        deps += [ "//components/nacl/broker:nacl_broker_manifest" ]
-      }
-    }
   }
 
   if (enable_offline_pages) {

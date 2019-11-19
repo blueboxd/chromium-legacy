@@ -23,6 +23,7 @@
 #include "content/common/child_process_host_impl.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/child_process_data.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/common/child_process_host_delegate.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
@@ -54,9 +55,18 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
       public ChildProcessLauncher::Client,
       public memory_instrumentation::mojom::CoordinatorConnector {
  public:
+  // Constructs a process host with Service Manager IPC support.
   BrowserChildProcessHostImpl(content::ProcessType process_type,
                               BrowserChildProcessHostDelegate* delegate,
                               const std::string& service_name);
+
+  // Constructs a process host with |ipc_mode| determining how IPC is done.
+  // To use |IpcMode::kServiceManager|, use the above constructor instead, which
+  // also provides the child process's service name.
+  BrowserChildProcessHostImpl(content::ProcessType process_type,
+                              BrowserChildProcessHostDelegate* delegate,
+                              ChildProcessHost::IpcMode ipc_mode);
+
   ~BrowserChildProcessHostImpl() override;
 
   // Terminates all child processes and deletes each BrowserChildProcessHost
@@ -131,7 +141,7 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   }
 
   mojo::OutgoingInvitation* GetInProcessMojoInvitation() {
-    return &mojo_invitation_;
+    return &child_process_host_->GetMojoInvitation().value();
   }
 
   IPC::Channel* child_channel() const { return channel_; }
@@ -194,7 +204,6 @@ class CONTENT_EXPORT BrowserChildProcessHostImpl
   mojo::Receiver<memory_instrumentation::mojom::CoordinatorConnector>
       coordinator_connector_receiver_{this};
 
-  mojo::OutgoingInvitation mojo_invitation_;
   std::unique_ptr<ChildConnection> child_connection_;
 
   std::unique_ptr<ChildProcessLauncher> child_process_;

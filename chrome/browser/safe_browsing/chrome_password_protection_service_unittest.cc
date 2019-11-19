@@ -25,10 +25,11 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/password_manager/core/browser/compromised_credentials_table.h"
 #include "components/password_manager/core/browser/hash_password_manager.h"
+#include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
-#include "components/password_manager/core/browser/test_password_store.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/safe_browsing/common/utils.h"
@@ -44,7 +45,6 @@
 #include "components/sync_user_events/fake_user_event_service.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_navigation_handle.h"
 #include "extensions/browser/test_event_router.h"
 #include "net/http/http_util.h"
@@ -205,16 +205,20 @@ class ChromePasswordProtectionServiceTest
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    // Use TestPasswordStore to remove a possible race. Normally the
+    // Use MockPasswordStore to remove a possible race. Normally the
     // PasswordStore does its database manipulation on the DB thread, which
     // creates a possible race during navigation. Specifically the
     // PasswordManager will ignore any forms in a page if the load from the
     // PasswordStore has not completed.
-    PasswordStoreFactory::GetInstance()->SetTestingFactory(
-        profile(),
-        base::BindRepeating(
-            &password_manager::BuildPasswordStore<
-                content::BrowserContext, password_manager::TestPasswordStore>));
+    password_store_ =
+        base::WrapRefCounted(static_cast<password_manager::MockPasswordStore*>(
+            PasswordStoreFactory::GetInstance()
+                ->SetTestingFactoryAndUse(
+                    profile(),
+                    base::BindRepeating(&password_manager::BuildPasswordStore<
+                                        content::BrowserContext,
+                                        password_manager::MockPasswordStore>))
+                .get()));
 
     profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled, true);
     profile()->GetPrefs()->SetInteger(
@@ -255,6 +259,7 @@ class ChromePasswordProtectionServiceTest
     base::RunLoop().RunUntilIdle();
     service_.reset();
     request_ = nullptr;
+    password_store_->ShutdownOnUIThread();
     identity_test_env_profile_adaptor_.reset();
     cache_manager_.reset();
     content_setting_map_->ShutdownOnUIThread();
@@ -366,6 +371,7 @@ class ChromePasswordProtectionServiceTest
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
       identity_test_env_profile_adaptor_;
   MockSecurityEventRecorder* security_event_recorder_;
+  scoped_refptr<password_manager::MockPasswordStore> password_store_;
   // Owned by KeyedServiceFactory.
   syncer::FakeUserEventService* fake_user_event_service_;
   extensions::TestEventRouter* test_event_router_;
@@ -541,6 +547,17 @@ TEST_F(ChromePasswordProtectionServiceTest,
   EXPECT_TRUE(service_->IsURLWhitelistedForPasswordEntry(
       GURL("https://mydomain.com/login.html#ref?user_name=alice"), &reason));
   EXPECT_EQ(RequestOutcome::MATCHED_ENTERPRISE_LOGIN_URL, reason);
+}
+
+TEST_F(ChromePasswordProtectionServiceTest,
+       VerifyPersistPhishedSavedPasswordCredential) {
+  service_->ConfigService(/*is_incognito=*/false,
+                          /*is_extended_reporting=*/true);
+
+  std::vector<std::string> domains{"http://example.com",
+                                   "https://2.example.com"};
+  EXPECT_CALL(*password_store_, AddCompromisedCredentialsImpl(_)).Times(2);
+  service_->PersistPhishedSavedPasswordCredential("username", domains);
 }
 
 TEST_F(ChromePasswordProtectionServiceTest, VerifyCanSendSamplePing) {

@@ -2415,7 +2415,7 @@ RTCRtpSender* RTCPeerConnection::FindSenderForTrackAndStream(
 }
 
 HeapVector<Member<RTCRtpSender>>::iterator RTCPeerConnection::FindSender(
-    const WebRTCRtpSender& web_sender) {
+    const RTCRtpSenderPlatform& web_sender) {
   for (auto* it = rtp_senders_.begin(); it != rtp_senders_.end(); ++it) {
     if ((*it)->web_sender()->Id() == web_sender.Id())
       return it;
@@ -2443,7 +2443,7 @@ RTCPeerConnection::FindTransceiver(
 }
 
 RTCRtpSender* RTCPeerConnection::CreateOrUpdateSender(
-    std::unique_ptr<WebRTCRtpSender> web_sender,
+    std::unique_ptr<RTCRtpSenderPlatform> web_sender,
     String kind) {
   // The track corresponding to |web_track| must already be known to us by being
   // in |tracks_|, as is a prerequisite of CreateOrUpdateSender().

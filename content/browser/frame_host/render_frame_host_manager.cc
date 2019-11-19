@@ -860,7 +860,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("lock_url",
                                             base::debug::CrashKeySize::Size64),
-        lock_url.spec());
+        lock_url.possibly_invalid_spec());
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("commit_origin",
                                             base::debug::CrashKeySize::Size64),

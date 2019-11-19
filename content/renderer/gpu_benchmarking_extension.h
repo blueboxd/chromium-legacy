@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_GPU_BENCHMARKING_EXTENSION_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "content/common/input/input_injector.mojom.h"
 #include "gin/wrappable.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -27,10 +28,10 @@ class RenderFrameImpl;
 class GpuBenchmarking : public gin::Wrappable<GpuBenchmarking> {
  public:
   static gin::WrapperInfo kWrapperInfo;
-  static void Install(RenderFrameImpl* frame);
+  static void Install(base::WeakPtr<RenderFrameImpl> frame);
 
  private:
-  explicit GpuBenchmarking(RenderFrameImpl* frame);
+  explicit GpuBenchmarking(base::WeakPtr<RenderFrameImpl> frame);
   ~GpuBenchmarking() override;
   void EnsureRemoteInterface();
 
@@ -99,7 +100,7 @@ class GpuBenchmarking : public gin::Wrappable<GpuBenchmarking> {
   // The callback is removed once it's executed.
   bool AddSwapCompletionEventListener(gin::Arguments* args);
 
-  RenderFrameImpl* render_frame_;
+  base::WeakPtr<RenderFrameImpl> render_frame_;
   mojo::Remote<mojom::InputInjector> input_injector_;
   DISALLOW_COPY_AND_ASSIGN(GpuBenchmarking);
 };

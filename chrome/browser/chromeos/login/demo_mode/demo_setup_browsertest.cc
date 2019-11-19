@@ -213,7 +213,7 @@ class DemoSetupTest : public LoginManagerTest {
   bool IsCustomNetworkListElementShown(const std::string& custom_item_name) {
     const std::string element_selector = base::StrCat(
         {ScreenToContentQuery(NetworkScreenView::kScreenId),
-         ".getNetworkListItemWithQueryForTest('cr-network-list-item')"});
+         ".getNetworkListItemWithQueryForTest('network-list-item')"});
     const std::string query =
         base::StrCat({"!!", element_selector, " && ", element_selector,
                       ".item.customItemName == '", custom_item_name, "' && !",
@@ -329,7 +329,7 @@ class DemoSetupTest : public LoginManagerTest {
   }
 
   // Simulates click on the network list item. |element| should specify
-  // the aria-label of the desired cr-network-list-item.
+  // the aria-label of the desired network-list-item.
   void ClickNetworkListElement(const std::string& name) {
     const std::string query = base::StrCat(
         {ScreenToContentQuery(NetworkScreenView::kScreenId),

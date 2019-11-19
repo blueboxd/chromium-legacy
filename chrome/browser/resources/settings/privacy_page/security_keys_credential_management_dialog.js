@@ -174,8 +174,7 @@ Polymer({
         break;
       case CredentialManagementDialogPage.CREDENTIALS:
         this.cancelButtonVisible_ = true;
-        this.confirmButtonLabel_ =
-            this.i18n('securityKeysCredentialManagementErase');
+        this.confirmButtonLabel_ = this.i18n('delete');
         this.confirmButtonDisabled_ = true;
         this.confirmButtonVisible_ = true;
         this.closeButtonVisible_ = false;

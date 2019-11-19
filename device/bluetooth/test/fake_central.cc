@@ -584,6 +584,10 @@ device::BluetoothLocalGattService* FakeCentral::GetGattService(
   return nullptr;
 }
 
+base::WeakPtr<device::BluetoothAdapter> FakeCentral::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 bool FakeCentral::SetPoweredImpl(bool powered) {
   NOTREACHED();
   return false;

@@ -46,26 +46,23 @@ const SkColor kBgShadowColor = SkColorSetA(SK_ColorBLACK, 0x4D);
 constexpr int kFullRippleRadius = 32;
 
 // Radius of the ripple while x-axis movement of the affordance achieves
-// |kDistanceForMaxRipple|.
+// |kDistanceForMaxRadius|.
 constexpr int kMaxRippleRadius = 40;
 
 // Maximium burst ripple radius while release the drag with COMPLETING state.
 constexpr int kMaxBurstRippleRadius = 48;
 
-// Drag distance for full ripple radius. Also the drag distance for full drag
-// progress. The affordance arrow and background colors will be updated while
-// its x-axis movement achieves this.
+// X-axis movement of the affordance to achieve full ripple radius. Note, the
+// movement equals to drag distance while in this range.
 constexpr float kDistanceForFullRadius = 100.f;
 
-// |kDistanceForFullRadius| plus the x-axis distance for the ripple of the
-// affordance to increase from |kFullRippleRadius| to |kMaxRippleRadius|.
-constexpr float kDistanceForMaxRipple = 116.f;
+// |kDistanceForFullRadius| plus the x-axis movement of the affordance for
+// ripple to increase from |kFullRippleRadius| to |kMaxRippleRadius|.
+constexpr float kDistanceForMaxRadius = 116.f;
 
-// Drag distance to achieve the max drag progress.
-constexpr float kDistanceForMaxDragProgress = 260.f;
-
-constexpr float kMaxDragProgress =
-    kDistanceForMaxDragProgress / kDistanceForFullRadius;
+// Drag distance of the gesture events for the ripple radius to achieve
+// |kMaxRippleRadius|.
+constexpr float kDragDistanceForMaxRadius = 260.f;
 
 constexpr base::TimeDelta kAbortAnimationTimeout =
     base::TimeDelta::FromMilliseconds(300);
@@ -92,12 +89,12 @@ class AffordanceView : public views::View {
 
   // Schedule painting on given |affordance_progress|, |complete_progress| and
   // |state|.
-  void Paint(float affordance_progress,
-             float complete_progress,
-             BackGestureAffordance::State state) {
-    affordance_progress_ = affordance_progress;
+  void Paint(float complete_progress,
+             BackGestureAffordance::State state,
+             float x_offset) {
     complete_progress_ = complete_progress;
     state_ = state;
+    x_offset_ = x_offset;
     SchedulePaint();
   }
 
@@ -115,7 +112,7 @@ class AffordanceView : public views::View {
     ripple_flags.setStyle(cc::PaintFlags::kFill_Style);
     ripple_flags.setColor(kRippleColor);
 
-    const bool is_activated = affordance_progress_ >= 1.f;
+    const bool is_activated = x_offset_ >= kDistanceForFullRadius;
     float ripple_radius = 0.f;
     if (state_ == BackGestureAffordance::State::COMPLETING) {
       const float burst_progress = gfx::Tween::CalculateValue(
@@ -124,14 +121,14 @@ class AffordanceView : public views::View {
           kMaxRippleRadius +
           burst_progress * (kMaxBurstRippleRadius - kMaxRippleRadius);
     } else if (is_activated) {
-      const float factor =
-          (kMaxRippleRadius - kFullRippleRadius) / (kMaxDragProgress - 1);
-      ripple_radius =
-          (kFullRippleRadius - factor) + factor * affordance_progress_;
+      const float factor = (kMaxRippleRadius - kFullRippleRadius) /
+                           (kDistanceForMaxRadius - kDistanceForFullRadius);
+      ripple_radius = (kFullRippleRadius - factor * kDistanceForFullRadius) +
+                      factor * x_offset_;
     } else {
-      ripple_radius =
-          kBackgroundRadius +
-          affordance_progress_ * (kFullRippleRadius - kBackgroundRadius);
+      const float factor =
+          (kFullRippleRadius - kBackgroundRadius) / kDistanceForFullRadius;
+      ripple_radius = kBackgroundRadius + factor * x_offset_;
     }
     canvas->DrawCircle(center_point, ripple_radius, ripple_flags);
 
@@ -163,9 +160,9 @@ class AffordanceView : public views::View {
     }
   }
 
-  float affordance_progress_ = 0.f;
   float complete_progress_ = 0.f;
   BackGestureAffordance::State state_ = BackGestureAffordance::State::DRAGGING;
+  float x_offset_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(AffordanceView);
 };
@@ -196,24 +193,20 @@ BackGestureAffordance::BackGestureAffordance(const gfx::Point& location) {
 
 BackGestureAffordance::~BackGestureAffordance() {}
 
-void BackGestureAffordance::SetDragProgress(int x_drag_amount,
-                                            int y_drag_amount) {
+void BackGestureAffordance::Update(int x_drag_amount,
+                                   int y_drag_amount,
+                                   bool during_reverse_dragging) {
   DCHECK_EQ(State::DRAGGING, state_);
-  DCHECK_LE(0.f, drag_progress_);
 
   // Since affordance is put outside of the display, add the distance from its
   // center point to the left edge of the display to be the actual drag
   // distance.
-  float progress = (x_drag_amount + kBackgroundRadius) / kDistanceForFullRadius;
-  progress = std::min(progress, kMaxDragProgress);
+  x_drag_amount_ = x_drag_amount + kBackgroundRadius;
 
   float y_progress = y_drag_amount / kDistanceForFullYProgress;
-  y_progress = std::min(1.0f, std::max(-1.0f, y_progress));
+  y_drag_progress_ = std::min(1.0f, std::max(-1.0f, y_progress));
 
-  if (drag_progress_ == progress && y_progress == y_drag_progress_)
-    return;
-  drag_progress_ = progress;
-  y_drag_progress_ = y_progress;
+  during_reverse_dragging_ = during_reverse_dragging;
 
   UpdateTransform();
   SchedulePaint();
@@ -223,6 +216,8 @@ void BackGestureAffordance::Abort() {
   DCHECK_EQ(State::DRAGGING, state_);
 
   state_ = State::ABORTING;
+  started_reverse_ = false;
+  x_drag_amount_ = current_offset_;
   animation_ = std::make_unique<gfx::LinearAnimation>(
       GetAffordanceProgress() * kAbortAnimationTimeout,
       gfx::LinearAnimation::kDefaultFrameRate, this);
@@ -239,7 +234,7 @@ void BackGestureAffordance::Complete() {
 }
 
 bool BackGestureAffordance::IsActivated() const {
-  return GetAffordanceProgress() >= 1.0f;
+  return current_offset_ >= kDistanceForFullRadius;
 }
 
 void BackGestureAffordance::CreateAffordanceWidget(const gfx::Point& location) {
@@ -261,15 +256,32 @@ void BackGestureAffordance::CreateAffordanceWidget(const gfx::Point& location) {
 }
 
 void BackGestureAffordance::UpdateTransform() {
-  const float progress = GetAffordanceProgress();
   float offset = 0.f;
-  if (IsActivated()) {
-    const float factor = (kDistanceForMaxRipple - kDistanceForFullRadius) /
-                         (kMaxDragProgress - 1.f);
-    offset = (kDistanceForFullRadius - factor) + factor * progress;
+  if (started_reverse_) {
+    offset = x_drag_amount_ -
+             (x_drag_amount_on_start_reverse_ - offset_on_start_reverse_);
+    // Reset the previous started reverse drag if back to its started position.
+    if (!during_reverse_dragging_ &&
+        x_drag_amount_ >= x_drag_amount_on_start_reverse_) {
+      started_reverse_ = false;
+    }
   } else {
-    offset = progress * kDistanceForFullRadius;
+    if (x_drag_amount_ <= kDistanceForFullRadius) {
+      offset = GetAffordanceProgress() * kDistanceForFullRadius;
+    } else {
+      if (during_reverse_dragging_) {
+        started_reverse_ = true;
+        offset_on_start_reverse_ = current_offset_;
+        x_drag_amount_on_start_reverse_ = x_drag_amount_;
+      }
+      const float factor = (kDistanceForMaxRadius - kDistanceForFullRadius) /
+                           (kDragDistanceForMaxRadius - kDistanceForFullRadius);
+      offset = (kDistanceForFullRadius - kDistanceForFullRadius * factor) +
+               factor * x_drag_amount_;
+    }
   }
+  offset = std::fmin(kDistanceForMaxRadius, std::fmax(0, offset));
+  current_offset_ = offset;
 
   float y_offset = kMaxYMovement * y_drag_progress_;
   gfx::Transform transform;
@@ -279,7 +291,7 @@ void BackGestureAffordance::UpdateTransform() {
 
 void BackGestureAffordance::SchedulePaint() {
   static_cast<AffordanceView*>(affordance_widget_->GetContentsView())
-      ->Paint(GetAffordanceProgress(), complete_progress_, state_);
+      ->Paint(complete_progress_, state_, current_offset_);
 }
 
 void BackGestureAffordance::SetAbortProgress(float progress) {
@@ -312,7 +324,7 @@ void BackGestureAffordance::SetCompleteProgress(float progress) {
 }
 
 float BackGestureAffordance::GetAffordanceProgress() const {
-  return drag_progress_ *
+  return (x_drag_amount_ / kDistanceForFullRadius) *
          (1 - gfx::Tween::CalculateValue(gfx::Tween::FAST_OUT_SLOW_IN,
                                          abort_progress_));
 }

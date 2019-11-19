@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.customtabs.CustomTabCompositorContentInitiali
 import org.chromium.chrome.browser.customtabs.CustomTabSessionHandler;
 import org.chromium.chrome.browser.customtabs.CustomTabStatusBarColorProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabTabPersistencePolicy;
+import org.chromium.chrome.browser.customtabs.CustomTabTaskDescriptionHelper;
 import org.chromium.chrome.browser.customtabs.CustomTabUmaRecorder;
 import org.chromium.chrome.browser.customtabs.ReparentingTaskProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
@@ -43,6 +44,7 @@ public interface CustomTabActivityComponent extends ChromeActivityComponent {
     DynamicModuleToolbarController resolveDynamicModuleToolbarController();
     DynamicModuleCoordinator resolveDynamicModuleCoordinator();
 
+    CustomTabTaskDescriptionHelper resolveTaskDescriptionHelper();
     CustomTabBottomBarDelegate resolveBottomBarDelegate();
     CustomTabActivityTabController resolveTabController();
     CustomTabActivityTabFactory resolveTabFactory();

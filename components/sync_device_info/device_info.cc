@@ -8,16 +8,18 @@
 
 namespace syncer {
 
+bool DeviceInfo::SharingTargetInfo::operator==(
+    const SharingTargetInfo& other) const {
+  return fcm_token == other.fcm_token && p256dh == other.p256dh &&
+         auth_secret == other.auth_secret;
+}
+
 DeviceInfo::SharingInfo::SharingInfo(
-    std::string vapid_fcm_token,
-    std::string sharing_fcm_token,
-    std::string p256dh,
-    std::string auth_secret,
+    SharingTargetInfo vapid_target_info,
+    SharingTargetInfo sender_id_target_info,
     std::set<sync_pb::SharingSpecificFields::EnabledFeatures> enabled_features)
-    : vapid_fcm_token(std::move(vapid_fcm_token)),
-      sharing_fcm_token(std::move(sharing_fcm_token)),
-      p256dh(std::move(p256dh)),
-      auth_secret(std::move(auth_secret)),
+    : vapid_target_info(std::move(vapid_target_info)),
+      sender_id_target_info(std::move(sender_id_target_info)),
       enabled_features(std::move(enabled_features)) {}
 
 DeviceInfo::SharingInfo::SharingInfo(const SharingInfo& other) = default;
@@ -30,9 +32,8 @@ DeviceInfo::SharingInfo& DeviceInfo::SharingInfo::operator=(
 DeviceInfo::SharingInfo::~SharingInfo() = default;
 
 bool DeviceInfo::SharingInfo::operator==(const SharingInfo& other) const {
-  return vapid_fcm_token == other.vapid_fcm_token &&
-         sharing_fcm_token == other.sharing_fcm_token &&
-         p256dh == other.p256dh && auth_secret == other.auth_secret &&
+  return vapid_target_info == other.vapid_target_info &&
+         sender_id_target_info == other.sender_id_target_info &&
          enabled_features == other.enabled_features;
 }
 

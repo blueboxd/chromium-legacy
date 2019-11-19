@@ -12,18 +12,20 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
+#include "base/lazy_instance.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/extensions/api/terminal/crostini_startup_status.h"
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/terminal_private.h"
 #include "chromeos/process_proxy/process_proxy_registry.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -45,6 +47,7 @@ namespace CloseTerminalProcess =
     extensions::api::terminal_private::CloseTerminalProcess;
 namespace SendInput = extensions::api::terminal_private::SendInput;
 namespace AckOutput = extensions::api::terminal_private::AckOutput;
+namespace SetSettings = extensions::api::terminal_private::SetSettings;
 
 using crostini::mojom::InstallerState;
 
@@ -116,9 +119,45 @@ int GetTabOrWindowSessionId(content::BrowserContext* browser_context,
   return window ? window->session_id().id() : -1;
 }
 
+void SettingsChanged(Profile* profile) {
+  const base::DictionaryValue* value = profile->GetPrefs()->GetDictionary(
+      crostini::prefs::kCrostiniTerminalSettings);
+
+  auto args = std::make_unique<base::ListValue>();
+  args->Append(value->CreateDeepCopy());
+
+  extensions::EventRouter* event_router = extensions::EventRouter::Get(profile);
+  if (event_router) {
+    auto event = std::make_unique<extensions::Event>(
+        extensions::events::TERMINAL_PRIVATE_ON_SETTINGS_CHANGED,
+        terminal_private::OnSettingsChanged::kEventName, std::move(args));
+    event_router->BroadcastEvent(std::move(event));
+  }
+}
+
 }  // namespace
 
 namespace extensions {
+
+TerminalPrivateAPI::TerminalPrivateAPI(content::BrowserContext* context)
+    : context_(context),
+      pref_change_registrar_(std::make_unique<PrefChangeRegistrar>()) {
+  Profile* profile = Profile::FromBrowserContext(context);
+  pref_change_registrar_->Init(profile->GetPrefs());
+  pref_change_registrar_->Add(crostini::prefs::kCrostiniTerminalSettings,
+                              base::BindRepeating(&SettingsChanged, profile));
+}
+
+TerminalPrivateAPI::~TerminalPrivateAPI() = default;
+
+static base::LazyInstance<BrowserContextKeyedAPIFactory<TerminalPrivateAPI>>::
+    DestructorAtExit g_factory = LAZY_INSTANCE_INITIALIZER;
+
+// static
+BrowserContextKeyedAPIFactory<TerminalPrivateAPI>*
+TerminalPrivateAPI::GetFactoryInstance() {
+  return g_factory.Pointer();
+}
 
 TerminalPrivateOpenTerminalProcessFunction::
     ~TerminalPrivateOpenTerminalProcessFunction() = default;
@@ -414,6 +453,32 @@ void TerminalPrivateGetCroshSettingsFunction::AsyncRunWithStorage(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&TerminalPrivateGetCroshSettingsFunction::Respond, this,
                      std::move(response)));
+}
+
+TerminalPrivateGetSettingsFunction::~TerminalPrivateGetSettingsFunction() =
+    default;
+
+ExtensionFunction::ResponseAction TerminalPrivateGetSettingsFunction::Run() {
+  PrefService* service =
+      Profile::FromBrowserContext(browser_context())->GetPrefs();
+  const base::DictionaryValue* value =
+      service->GetDictionary(crostini::prefs::kCrostiniTerminalSettings);
+  return RespondNow(OneArgument(value->CreateDeepCopy()));
+}
+
+TerminalPrivateSetSettingsFunction::~TerminalPrivateSetSettingsFunction() =
+    default;
+
+ExtensionFunction::ResponseAction TerminalPrivateSetSettingsFunction::Run() {
+  std::unique_ptr<SetSettings::Params> params(
+      SetSettings::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  PrefService* service =
+      Profile::FromBrowserContext(browser_context())->GetPrefs();
+  service->Set(crostini::prefs::kCrostiniTerminalSettings,
+               params->settings.additional_properties);
+  return RespondNow(NoArguments());
 }
 
 }  // namespace extensions

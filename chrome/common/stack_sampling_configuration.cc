@@ -66,7 +66,22 @@ bool IsExtensionRenderer(const base::CommandLine& command_line) {
 #endif
 }
 
+// Allows the profiler to be run in a special browser test mode for testing that
+// profiles are collected as expected, by providing a switch value. The test
+// mode reduces the profiling duration to ensure the startup profiles complete
+// well within the test timeout, and always profiles renderer processes.
+bool IsBrowserTestModeEnabled() {
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  return command_line->GetSwitchValueASCII(switches::kStartStackProfiler) ==
+         switches::kStartStackProfilerBrowserTest;
+}
+
 bool ShouldEnableProfilerForNextRendererProcess() {
+  // Ensure deterministic behavior for testing the profiler itself.
+  if (IsBrowserTestModeEnabled())
+    return true;
+
   // Enable for every N-th renderer process, where N = 5.
   return base::RandInt(0, 4) == 0;
 }
@@ -93,17 +108,17 @@ StackSamplingConfiguration::StackSamplingConfiguration()
 }
 
 base::StackSamplingProfiler::SamplingParams
-StackSamplingConfiguration::GetSamplingParamsForCurrentProcess() const {
+StackSamplingConfiguration::GetSamplingParams() const {
   base::StackSamplingProfiler::SamplingParams params;
   params.initial_delay = base::TimeDelta::FromMilliseconds(0);
-  params.sampling_interval = base::TimeDelta::FromMilliseconds(0);
-  params.samples_per_profile = 0;
-
-  if (IsProfilerEnabledForCurrentProcess()) {
-    const base::TimeDelta duration = base::TimeDelta::FromSeconds(30);
-    params.sampling_interval = base::TimeDelta::FromMilliseconds(100);
-    params.samples_per_profile = duration / params.sampling_interval;
-  }
+  // Trim the sampling duration when testing the profiler using browser tests.
+  // The standard 30 second duration risks flaky timeouts since it's close to
+  // the test timeout of 45 seconds.
+  const base::TimeDelta duration =
+      base::TimeDelta::FromSeconds(IsBrowserTestModeEnabled() ? 1 : 30);
+  params.sampling_interval = base::TimeDelta::FromMilliseconds(100);
+  params.samples_per_profile = duration / params.sampling_interval;
+  params.keep_consistent_sampling_interval = true;
 
   return params;
 }
@@ -172,7 +187,13 @@ void StackSamplingConfiguration::AppendCommandLineSwitchForChildProcess(
        // compositor thread in them is not useful.
        !IsExtensionRenderer(*command_line) &&
        ShouldEnableProfilerForNextRendererProcess())) {
-    command_line->AppendSwitch(switches::kStartStackProfiler);
+    if (IsBrowserTestModeEnabled()) {
+      // Propagate the browser test mode switch argument to the child processes.
+      command_line->AppendSwitchASCII(switches::kStartStackProfiler,
+                                      switches::kStartStackProfilerBrowserTest);
+    } else {
+      command_line->AppendSwitch(switches::kStartStackProfiler);
+    }
   }
 }
 

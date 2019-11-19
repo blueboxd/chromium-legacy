@@ -25,6 +25,8 @@ class AppServiceTest {
 
   void SetUp(Profile* profile);
 
+  void UninstallAllApps(Profile* profile);
+
   std::string GetAppName(const std::string& app_id) const;
 
   // Allow AppService async callbacks to run.

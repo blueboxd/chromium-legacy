@@ -220,9 +220,7 @@ void AdvancedProtectionStatusManager::UpdateLastRefreshTime() {
 }
 
 bool AdvancedProtectionStatusManager::RequestsAdvancedProtectionVerdicts() {
-  static bool force_enabled =
-      base::FeatureList::IsEnabled(kForceUseAPDownloadProtection);
-  return force_enabled || is_under_advanced_protection();
+  return is_under_advanced_protection();
 }
 
 bool AdvancedProtectionStatusManager::IsUnconsentedPrimaryAccount(

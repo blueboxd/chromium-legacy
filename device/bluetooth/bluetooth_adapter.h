@@ -671,6 +671,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   BluetoothAdapter();
   virtual ~BluetoothAdapter();
 
+  virtual base::WeakPtr<BluetoothAdapter> GetWeakPtr() = 0;
+
   // This method calls into platform specific logic on macOS and Android where
   // pending SetPowered() callbacks need to be stored explicitly.
   virtual bool SetPoweredImpl(bool powered) = 0;
@@ -818,10 +820,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
 
   // enum used to track our internal discovery state.
   DiscoveryState internal_discovery_state_ = DiscoveryState::kIdle;
-
-  // Note: This should remain the last member so it'll be destroyed and
-  // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<BluetoothAdapter> weak_ptr_factory_{this};
 };
 
 }  // namespace device

@@ -317,6 +317,10 @@ void LoginDisplayHostMojo::UpdateAddUserButtonStatus() {
       !GetOobeUI()->signin_screen_handler()->AllWhitelistedUsersPresent());
 }
 
+void LoginDisplayHostMojo::RequestSystemInfoUpdate() {
+  system_info_updater_->StartRequest();
+}
+
 void LoginDisplayHostMojo::OnCancelPasswordChangedFlow() {
   HideOobeDialog();
 }

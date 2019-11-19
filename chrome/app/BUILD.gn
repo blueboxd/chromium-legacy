@@ -48,7 +48,11 @@ source_set("chrome_dll_resources") {
   ]
 
   if (is_win) {
-    sources += [ "chrome_dll.rc" ]
+    sources += [
+      "chrome_dll.rc",
+      "etw_events/chrome_events_win.rc",
+    ]
+
     deps += [
       "//build:branding_buildflags",
       "//printing/buildflags",
@@ -409,6 +413,7 @@ source_set("chrome_content_browser_overlay_manifest") {
     "//chrome/browser/ui/webui/downloads:mojo_bindings",
     "//chrome/browser/ui/webui/feed_internals:mojo_bindings",
     "//chrome/browser/ui/webui/interventions_internals:mojo_bindings",
+    "//chrome/browser/ui/webui/new_tab_page:mojo_bindings",
     "//chrome/browser/ui/webui/omnibox:mojo_bindings",
     "//chrome/browser/ui/webui/reset_password:mojo_bindings",
     "//chrome/browser/ui/webui/snippets_internals:mojo_bindings",

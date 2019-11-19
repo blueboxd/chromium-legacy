@@ -15,6 +15,9 @@ namespace blink {
 class KURL;
 class LocalFrame;
 class MultiResolutionImageResourceFetcher;
+class WebString;
+
+struct WebSize;
 
 class ImageDownloaderImpl final : public GarbageCollected<ImageDownloaderImpl>,
                                   public Supplement<LocalFrame>,
@@ -46,6 +49,7 @@ class ImageDownloaderImpl final : public GarbageCollected<ImageDownloaderImpl>,
   // image. When done, |callback| will be called.
   void DownloadImage(const KURL& url,
                      bool is_favicon,
+                     uint32_t preferred_size,
                      uint32_t max_bitmap_size,
                      bool bypass_cache,
                      DownloadImageCallback callback) override;
@@ -73,6 +77,7 @@ class ImageDownloaderImpl final : public GarbageCollected<ImageDownloaderImpl>,
   // are returned.
   void FetchImage(const KURL& image_url,
                   bool is_favicon,
+                  const WebSize& preferred_size,
                   bool bypass_cache,
                   DownloadCallback callback);
 
@@ -80,8 +85,10 @@ class ImageDownloaderImpl final : public GarbageCollected<ImageDownloaderImpl>,
   // successfully or with a failure. See FetchImage for more
   // details.
   void DidFetchImage(DownloadCallback callback,
+                     const WebSize& preferred_size,
                      MultiResolutionImageResourceFetcher* fetcher,
-                     const WTF::Vector<SkBitmap>& images);
+                     const std::string& image_data,
+                     const WebString& mime_type);
 
   typedef WTF::Vector<std::unique_ptr<MultiResolutionImageResourceFetcher>>
       ImageResourceFetcherList;

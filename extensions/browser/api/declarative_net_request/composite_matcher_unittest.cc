@@ -83,8 +83,8 @@ TEST_F(CompositeMatcherTest, RulesetPriority) {
   std::vector<std::unique_ptr<RulesetMatcher>> matchers;
   matchers.push_back(std::move(matcher_1));
   matchers.push_back(std::move(matcher_2));
-  auto composite_matcher =
-      std::make_unique<CompositeMatcher>(std::move(matchers));
+  auto composite_matcher = std::make_unique<CompositeMatcher>(
+      std::move(matchers), nullptr /* action_tracker */);
 
   GURL google_url = GURL("http://google.com");
   RequestParams google_params;
@@ -122,7 +122,8 @@ TEST_F(CompositeMatcherTest, RulesetPriority) {
       CreateTemporarySource(kSource2ID, kSource1Priority), &matcher_2));
   matchers.push_back(std::move(matcher_1));
   matchers.push_back(std::move(matcher_2));
-  composite_matcher = std::make_unique<CompositeMatcher>(std::move(matchers));
+  composite_matcher = std::make_unique<CompositeMatcher>(
+      std::move(matchers), nullptr /* action_tracker */);
 
   // Reusing request params means that their allow_rule_caches must be cleared.
   google_params.allow_rule_cache.clear();
@@ -192,8 +193,8 @@ TEST_F(CompositeMatcherTest, AllowRuleOverrides) {
   std::vector<std::unique_ptr<RulesetMatcher>> matchers;
   matchers.push_back(std::move(matcher_1));
   matchers.push_back(std::move(matcher_2));
-  auto composite_matcher =
-      std::make_unique<CompositeMatcher>(std::move(matchers));
+  auto composite_matcher = std::make_unique<CompositeMatcher>(
+      std::move(matchers), nullptr /* action_tracker */);
 
   // Send a request to google.com which should be redirected.
   GURL google_url = GURL("http://google.com");
@@ -243,7 +244,8 @@ TEST_F(CompositeMatcherTest, AllowRuleOverrides) {
       &matcher_2));
   matchers.push_back(std::move(matcher_1));
   matchers.push_back(std::move(matcher_2));
-  composite_matcher = std::make_unique<CompositeMatcher>(std::move(matchers));
+  composite_matcher = std::make_unique<CompositeMatcher>(
+      std::move(matchers), nullptr /* action_tracker */);
 
   // Reusing request params means that their allow_rule_caches must be cleared.
   google_params.allow_rule_cache.clear();
@@ -326,8 +328,8 @@ TEST_F(CompositeMatcherTest, HeadersMaskForRules) {
   std::vector<std::unique_ptr<RulesetMatcher>> matchers;
   matchers.push_back(std::move(matcher_1));
   matchers.push_back(std::move(matcher_2));
-  auto composite_matcher =
-      std::make_unique<CompositeMatcher>(std::move(matchers));
+  auto composite_matcher = std::make_unique<CompositeMatcher>(
+      std::move(matchers), nullptr /* action_tracker */);
 
   GURL google_url = GURL("http://google.com");
   RequestParams google_params;
@@ -423,8 +425,8 @@ TEST_F(CompositeMatcherTest, NotifyWithholdFromPageAccess) {
   // Create a composite matcher.
   std::vector<std::unique_ptr<RulesetMatcher>> matchers;
   matchers.push_back(std::move(matcher_1));
-  auto composite_matcher =
-      std::make_unique<CompositeMatcher>(std::move(matchers));
+  auto composite_matcher = std::make_unique<CompositeMatcher>(
+      std::move(matchers), nullptr /* action_tracker */);
 
   GURL google_url = GURL("http://google.com");
   GURL example_url = GURL("http://example.com");
@@ -512,8 +514,8 @@ TEST_F(CompositeMatcherTest, GetRedirectUrlFromPriority) {
   // Create a composite matcher.
   std::vector<std::unique_ptr<RulesetMatcher>> matchers;
   matchers.push_back(std::move(matcher_1));
-  auto composite_matcher =
-      std::make_unique<CompositeMatcher>(std::move(matchers));
+  auto composite_matcher = std::make_unique<CompositeMatcher>(
+      std::move(matchers), nullptr /* action_tracker */);
 
   struct {
     GURL request_url;

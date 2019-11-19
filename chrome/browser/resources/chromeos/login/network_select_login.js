@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview Polymer element wrapping cr-network-select for login/oobe.
+ * @fileoverview Polymer element wrapping network-select for login/oobe.
  */
 
 {
@@ -84,7 +84,7 @@
 
     /** Refreshes the list of the networks. */
     refresh: function() {
-      /** @type {!CrNetworkSelectElement} */ (this.$.networkSelect)
+      /** @type {!NetworkSelectElement} */ (this.$.networkSelect)
           .refreshNetworks();
       this.networkLastSelectedGuid_ = '';
     },
@@ -105,9 +105,9 @@
     },
 
     /**
-     * Call after strings are loaded to set CrOncStrings for cr-network-select.
+     * Call after strings are loaded to set CrOncStrings for network-select.
      */
-    setCrOncStrings: function() {
+    setOncStrings: function() {
       CrOncStrings = {
         OncTypeCellular: loadTimeData.getString('OncTypeCellular'),
         OncTypeEthernet: loadTimeData.getString('OncTypeEthernet'),
@@ -237,7 +237,7 @@
     },
 
     /**
-     * Event triggered when a cr-network-list-item connection state changes.
+     * Event triggered when a network-list-item connection state changes.
      * @param {!CustomEvent<!OncMojo.NetworkStateProperties>} event
      * @private
      */

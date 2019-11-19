@@ -66,7 +66,8 @@ std::unique_ptr<ServiceImpl> ServiceImpl::Create(
 
   return std::make_unique<ServiceImpl>(
       client->GetApiKey(), server_url, context, client->GetAccessTokenFetcher(),
-      client->GetLocale(), client->GetCountryCode());
+      client->GetLocale(), client->GetCountryCode(),
+      client->GetDeviceContext());
 }
 
 ServiceImpl::ServiceImpl(const std::string& api_key,
@@ -74,7 +75,8 @@ ServiceImpl::ServiceImpl(const std::string& api_key,
                          content::BrowserContext* context,
                          AccessTokenFetcher* access_token_fetcher,
                          const std::string& locale,
-                         const std::string& country_code)
+                         const std::string& country_code,
+                         const DeviceContext& device_context)
     : context_(context),
       api_key_(api_key),
       access_token_fetcher_(access_token_fetcher),
@@ -82,7 +84,8 @@ ServiceImpl::ServiceImpl(const std::string& api_key,
       auth_enabled_("false" !=
                     base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
                         switches::kAutofillAssistantAuth)),
-      client_context_(CreateClientContext(locale, country_code)),
+      client_context_(
+          CreateClientContext(locale, country_code, device_context)),
       weak_ptr_factory_(this) {
   DCHECK(server_url.is_valid());
 
@@ -276,12 +279,14 @@ void ServiceImpl::OnFetchAccessToken(bool success,
 // static
 ClientContextProto ServiceImpl::CreateClientContext(
     const std::string& locale,
-    const std::string& country_code) {
+    const std::string& country_code,
+    const DeviceContext& device_context) {
   ClientContextProto context;
   context.mutable_chrome()->set_chrome_version(
       version_info::GetProductNameAndVersionForUserAgent());
   context.set_locale(locale);
   context.set_country(country_code);
+  device_context.ToProto(context.mutable_device_context());
 
   base::FieldTrial::ActiveGroups active_groups;
   base::FieldTrialList::GetActiveFieldTrialGroups(&active_groups);

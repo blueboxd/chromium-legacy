@@ -4,7 +4,7 @@
 
 import {SelectBehavior} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {eventToPromise} from 'chrome://test/test_util.m.js';
 
 window.select_behavior_test = {};
@@ -23,20 +23,17 @@ suite(select_behavior_test.suiteName, function() {
 
   /** @override */
   setup(function() {
-    document.body.innerHTML = `
-            <dom-module id="test-select">
-              <template>
-                <select value="{{selectedValue::change}}">
-                  <option value="0" selected>0</option>
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                </select>
-              </template>
-            </dom-module>
-          `;
-
     Polymer({
       is: 'test-select',
+
+      _template: html`
+        <select value="{{selectedValue::change}}">
+          <option value="0" selected>0</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+        </select>
+      `,
+
       behaviors: [SelectBehavior],
 
       onProcessSelectChange: function(value) {

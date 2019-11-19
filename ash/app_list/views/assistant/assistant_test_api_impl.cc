@@ -13,6 +13,7 @@
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "components/prefs/pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/test/event_generator.h"
@@ -70,6 +71,10 @@ views::Textfield* AssistantTestApiImpl::input_text_field() {
 
 views::View* AssistantTestApiImpl::mic_view() {
   return page_view()->GetViewByID(AssistantViewID::kMicView);
+}
+
+views::View* AssistantTestApiImpl::greeting_label() {
+  return page_view()->GetViewByID(AssistantViewID::kGreetingLabel);
 }
 
 aura::Window* AssistantTestApiImpl::window() {

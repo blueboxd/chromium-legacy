@@ -35,7 +35,7 @@ base::string16 CreateLabel(const Suggestion& suggestion) {
 }  // namespace
 
 AutofillKeyboardAccessoryAdapter::AutofillKeyboardAccessoryAdapter(
-    AutofillPopupController* controller,
+    base::WeakPtr<AutofillPopupController> controller,
     unsigned int animation_duration_millis,
     bool should_limit_label_width)
     : controller_(controller),

@@ -8,9 +8,6 @@
 #include "base/time/time.h"
 #include "net/base/backoff_entry.h"
 
-// InstanceID scope for Firebase Cloud Messaging to get FCM enabled token.
-extern const char kFCMScope[];
-
 // App ID linked to FCM messages for Sharing.
 extern const char kSharingFCMAppID[];
 

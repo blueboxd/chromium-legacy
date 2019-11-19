@@ -10,7 +10,6 @@
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
-#include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "components/network_session_configurator/common/network_features.h"
@@ -35,8 +34,7 @@ class NetworkSessionConfiguratorTest : public testing::Test {
  public:
   NetworkSessionConfiguratorTest()
       : quic_user_agent_id_("Chrome/52.0.2709.0 Linux x86_64") {
-    field_trial_list_.reset(new base::FieldTrialList(
-        std::make_unique<base::MockEntropyProvider>()));
+    scoped_feature_list_.Init();
     variations::testing::ClearAllVariationParams();
   }
 
@@ -52,7 +50,7 @@ class NetworkSessionConfiguratorTest : public testing::Test {
   }
 
   std::string quic_user_agent_id_;
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
+  base::test::ScopedFeatureList scoped_feature_list_;
   net::HttpNetworkSession::Params params_;
 };
 

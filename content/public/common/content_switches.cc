@@ -67,6 +67,9 @@ const char kBrowserTest[] = "browser-test";
 const char kDefaultTileWidth[]              = "default-tile-width";
 const char kDefaultTileHeight[]             = "default-tile-height";
 
+// Sets the min tile height for GPU raster.
+const char kMinHeightForGpuRasterTile[] = "min-height-for-gpu-raster-tile";
+
 // Disable antialiasing on 2d canvas.
 const char kDisable2dCanvasAntialiasing[]   = "disable-canvas-aa";
 

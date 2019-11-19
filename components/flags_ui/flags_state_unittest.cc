@@ -154,7 +154,7 @@ static FeatureEntry kEntries[] = {
 class FlagsStateTest : public ::testing::Test,
                        public flags_ui::FlagsState::Delegate {
  protected:
-  FlagsStateTest() : flags_storage_(&prefs_), trial_list_(nullptr) {
+  FlagsStateTest() : flags_storage_(&prefs_) {
     prefs_.registry()->RegisterListPref(prefs::kAboutFlagsEntries);
     prefs_.registry()->RegisterDictionaryPref(prefs::kAboutFlagsOriginLists);
 
@@ -180,7 +180,6 @@ class FlagsStateTest : public ::testing::Test,
   TestingPrefServiceSimple prefs_;
   PrefServiceFlagsStorage flags_storage_;
   std::unique_ptr<FlagsState> flags_state_;
-  base::FieldTrialList trial_list_;
   std::set<std::string> exclude_flags_;
 };
 

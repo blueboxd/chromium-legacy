@@ -4,8 +4,6 @@
 
 #include "ash/app_list/views/assistant/assistant_main_stage.h"
 
-#include <numeric>
-
 #include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
@@ -35,6 +33,10 @@ namespace ash {
 
 namespace {
 
+using assistant::util::CreateLayerAnimationSequence;
+using assistant::util::CreateOpacityElement;
+using assistant::util::CreateTransformElement;
+
 // Appearance.
 constexpr int kSeparatorThicknessDip = 1;
 constexpr int kSeparatorWidthDip = 64;
@@ -56,6 +58,13 @@ constexpr base::TimeDelta kDividerAnimationFadeOutDuration =
 // Greeting animation.
 constexpr base::TimeDelta kGreetingAnimationFadeOutDuration =
     base::TimeDelta::FromMilliseconds(83);
+constexpr int kGreetingAnimationTranslationDip = 115;
+constexpr base::TimeDelta kGreetingAnimationFadeInDelay =
+    base::TimeDelta::FromMilliseconds(33);
+constexpr base::TimeDelta kGreetingAnimationFadeInDuration =
+    base::TimeDelta::FromMilliseconds(167);
+constexpr base::TimeDelta kGreetingAnimationTranslateUpDuration =
+    base::TimeDelta::FromMilliseconds(250);
 
 // HorizontalSeparator ---------------------------------------------------------
 
@@ -88,9 +97,14 @@ class HorizontalSeparator : public views::View {
   DISALLOW_COPY_AND_ASSIGN(HorizontalSeparator);
 };
 
-bool IsLayerVisible(views::View* view) {
+// A view is considered shown when it is visible and not in the process of
+// fading out.
+bool IsShown(const views::View* view) {
   DCHECK(view->layer());
-  return !cc::MathUtil::IsWithinEpsilon(view->layer()->GetTargetOpacity(), 0.f);
+  bool is_fading_out =
+      cc::MathUtil::IsWithinEpsilon(view->layer()->GetTargetOpacity(), 0.f);
+
+  return view->GetVisible() && !is_fading_out;
 }
 
 }  // namespace
@@ -98,7 +112,7 @@ bool IsLayerVisible(views::View* view) {
 // AppListAssistantMainStage ---------------------------------------------------
 
 AppListAssistantMainStage::AppListAssistantMainStage(
-    ash::AssistantViewDelegate* delegate)
+    AssistantViewDelegate* delegate)
     : delegate_(delegate) {
   SetID(AssistantViewID::kMainStage);
   InitLayout();
@@ -162,15 +176,15 @@ views::View* AppListAssistantMainStage::CreateContentLayoutContainer() {
   InitGreetingLabel();
   content_layout_container->AddChildView(greeting_label_);
   auto* stack_layout = content_layout_container->SetLayoutManager(
-      std::make_unique<ash::StackLayout>());
+      std::make_unique<StackLayout>());
 
   // We need to stretch |greeting_label_| to match its parent so that it
   // won't use heuristics in Label to infer line breaking, which seems to cause
   // text clipping with DPI adjustment. See b/112843496.
   stack_layout->SetRespectDimensionForView(
-      greeting_label_, ash::StackLayout::RespectDimension::kHeight);
+      greeting_label_, StackLayout::RespectDimension::kHeight);
   stack_layout->SetVerticalAlignmentForView(
-      greeting_label_, ash::StackLayout::VerticalAlignment::kCenter);
+      greeting_label_, StackLayout::VerticalAlignment::kCenter);
 
   auto* main_content_layout_container = CreateMainContentLayoutContainer();
   content_layout_container->AddChildView(main_content_layout_container);
@@ -178,8 +192,7 @@ views::View* AppListAssistantMainStage::CreateContentLayoutContainer() {
   // Do not respect height, otherwise bounds will not be set correctly for
   // scrolling.
   stack_layout->SetRespectDimensionForView(
-      main_content_layout_container,
-      ash::StackLayout::RespectDimension::kWidth);
+      main_content_layout_container, StackLayout::RespectDimension::kWidth);
 
   return content_layout_container;
 }
@@ -188,10 +201,11 @@ void AppListAssistantMainStage::InitGreetingLabel() {
   // Greeting label, which will be animated on its own layer.
   greeting_label_ = new views::Label(
       l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_PROMPT_DEFAULT));
+  greeting_label_->SetID(AssistantViewID::kGreetingLabel);
   greeting_label_->SetAutoColorReadabilityEnabled(false);
-  greeting_label_->SetEnabledColor(ash::kTextColorPrimary);
+  greeting_label_->SetEnabledColor(kTextColorPrimary);
   greeting_label_->SetFontList(
-      ash::assistant::ui::GetDefaultFontList()
+      assistant::ui::GetDefaultFontList()
           .DeriveWithSizeDelta(8)
           .DeriveWithWeight(gfx::Font::Weight::MEDIUM));
   greeting_label_->SetHorizontalAlignment(
@@ -214,14 +228,14 @@ views::View* AppListAssistantMainStage::CreateMainContentLayoutContainer() {
   content_layout_container->AddChildView(CreateDividerLayoutContainer());
 
   // Query view. Will be animated on its own layer.
-  query_view_ = new ash::AssistantQueryView();
+  query_view_ = new AssistantQueryView();
   query_view_->SetPaintToLayer();
   query_view_->layer()->SetFillsBoundsOpaquely(false);
   query_view_->AddObserver(this);
   content_layout_container->AddChildView(query_view_);
 
   // UI element container.
-  ui_element_container_ = new ash::UiElementContainerView(delegate_);
+  ui_element_container_ = new UiElementContainerView(delegate_);
   ui_element_container_->AddObserver(this);
   content_layout_container->AddChildView(ui_element_container_);
   content_layout->SetFlexForView(ui_element_container_, 1,
@@ -234,10 +248,10 @@ views::View* AppListAssistantMainStage::CreateDividerLayoutContainer() {
   // Dividers: the progress indicator and the horizontal separator will be the
   // separator when querying and showing the results, respectively.
   views::View* divider_container = new views::View();
-  divider_container->SetLayoutManager(std::make_unique<ash::StackLayout>());
+  divider_container->SetLayoutManager(std::make_unique<StackLayout>());
 
   // Progress indicator, which will be animated on its own layer.
-  progress_indicator_ = new ash::AssistantProgressIndicator();
+  progress_indicator_ = new AssistantProgressIndicator();
   progress_indicator_->SetPaintToLayer();
   progress_indicator_->layer()->SetFillsBoundsOpaquely(false);
   divider_container->AddChildView(progress_indicator_);
@@ -261,7 +275,7 @@ views::View* AppListAssistantMainStage::CreateFooterLayoutContainer() {
   views::View* footer_container = new views::View();
   footer_container->SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  footer_ = new ash::AssistantFooterView(delegate_);
+  footer_ = new AssistantFooterView(delegate_);
   footer_->AddObserver(this);
 
   // The footer will be animated on its own layer.
@@ -273,22 +287,58 @@ views::View* AppListAssistantMainStage::CreateFooterLayoutContainer() {
   return footer_container;
 }
 
+void AppListAssistantMainStage::AnimateInGreetingLabel() {
+  greeting_label_->layer()->GetAnimator()->StopAnimating();
+
+  // We're going to animate the greeting label up into position so we'll
+  // need to apply an initial transformation.
+  gfx::Transform transform;
+  transform.Translate(0, kGreetingAnimationTranslationDip);
+
+  // Set up our pre-animation values.
+  greeting_label_->layer()->SetOpacity(0.f);
+  greeting_label_->layer()->SetTransform(transform);
+  greeting_label_->SetVisible(true);
+
+  // Start animating greeting label.
+  greeting_label_->layer()->GetAnimator()->StartTogether(
+      {// Animate the transformation.
+       CreateLayerAnimationSequence(CreateTransformElement(
+           gfx::Transform(), kGreetingAnimationTranslateUpDuration,
+           gfx::Tween::Type::FAST_OUT_SLOW_IN_2)),
+       // Animate the opacity to 100% with delay.
+       CreateLayerAnimationSequence(
+           ui::LayerAnimationElement::CreatePauseElement(
+               ui::LayerAnimationElement::AnimatableProperty::OPACITY,
+               kGreetingAnimationFadeInDelay),
+           CreateOpacityElement(1.f, kGreetingAnimationFadeInDuration))});
+}
+
+void AppListAssistantMainStage::AnimateInFooter() {
+  // Set up our pre-animation values.
+  footer_->layer()->SetOpacity(0.f);
+
+  // Animate the footer to 100% opacity with delay.
+  footer_->layer()->GetAnimator()->StartAnimation(CreateLayerAnimationSequence(
+      ui::LayerAnimationElement::CreatePauseElement(
+          ui::LayerAnimationElement::AnimatableProperty::OPACITY,
+          kFooterEntryAnimationFadeInDelay),
+      CreateOpacityElement(1.f, kFooterEntryAnimationFadeInDuration)));
+}
+
 void AppListAssistantMainStage::OnCommittedQueryChanged(
-    const ash::AssistantQuery& query) {
+    const AssistantQuery& query) {
   // Update the view.
   query_view_->SetQuery(query);
 
   // If query is empty and we are showing greeting label, do not update the Ui.
-  if (query.Empty() && IsLayerVisible(greeting_label_))
+  if (query.Empty() && IsShown(greeting_label_))
     return;
-
-  using ash::assistant::util::CreateLayerAnimationSequence;
-  using ash::assistant::util::CreateOpacityElement;
 
   // Hide the horizontal separator.
   horizontal_separator_->layer()->GetAnimator()->StartAnimation(
-      CreateLayerAnimationSequence(ash::assistant::util::CreateOpacityElement(
-          0.f, kDividerAnimationFadeOutDuration)));
+      CreateLayerAnimationSequence(
+          CreateOpacityElement(0.f, kDividerAnimationFadeOutDuration)));
 
   // Show the progress indicator.
   progress_indicator_->layer()->GetAnimator()->StartAnimation(
@@ -298,22 +348,18 @@ void AppListAssistantMainStage::OnCommittedQueryChanged(
               ui::LayerAnimationElement::AnimatableProperty::OPACITY,
               kDividerAnimationFadeInDelay),
           // ...then fade in.
-          ash::assistant::util::CreateOpacityElement(
-              1.f, kDividerAnimationFadeInDuration)));
+          CreateOpacityElement(1.f, kDividerAnimationFadeInDuration)));
 
   MaybeHideGreetingLabel();
 }
 
 void AppListAssistantMainStage::OnPendingQueryChanged(
-    const ash::AssistantQuery& query) {
+    const AssistantQuery& query) {
   // Update the view.
   query_view_->SetQuery(query);
 
-  if (!IsLayerVisible(greeting_label_))
+  if (!IsShown(greeting_label_))
     return;
-
-  using ash::assistant::util::CreateLayerAnimationSequence;
-  using ash::assistant::util::CreateOpacityElement;
 
   // Animate the opacity to 100% with delay equal to |greeting_label_| fade out
   // animation duration to avoid the two views displaying at the same time.
@@ -340,11 +386,8 @@ void AppListAssistantMainStage::OnPendingQueryCleared(bool due_to_commit) {
 }
 
 void AppListAssistantMainStage::OnResponseChanged(
-    const scoped_refptr<ash::AssistantResponse>& response) {
+    const scoped_refptr<AssistantResponse>& response) {
   MaybeHideGreetingLabel();
-
-  using ash::assistant::util::CreateLayerAnimationSequence;
-  using ash::assistant::util::CreateOpacityElement;
 
   // Show the horizontal separator.
   horizontal_separator_->layer()->GetAnimator()->StartAnimation(
@@ -354,79 +397,37 @@ void AppListAssistantMainStage::OnResponseChanged(
               ui::LayerAnimationElement::AnimatableProperty::OPACITY,
               kDividerAnimationFadeInDelay),
           // ...then fade in.
-          ash::assistant::util::CreateOpacityElement(
-              1.f, kDividerAnimationFadeInDuration)));
+          CreateOpacityElement(1.f, kDividerAnimationFadeInDuration)));
 
   // Hide the progress indicator.
   progress_indicator_->layer()->GetAnimator()->StartAnimation(
-      CreateLayerAnimationSequence(ash::assistant::util::CreateOpacityElement(
-          0.f, kDividerAnimationFadeOutDuration)));
+      CreateLayerAnimationSequence(
+          CreateOpacityElement(0.f, kDividerAnimationFadeOutDuration)));
 }
 
 void AppListAssistantMainStage::OnUiVisibilityChanged(
-    ash::AssistantVisibility new_visibility,
-    ash::AssistantVisibility old_visibility,
-    base::Optional<ash::AssistantEntryPoint> entry_point,
-    base::Optional<ash::AssistantExitPoint> exit_point) {
-  if (ash::assistant::util::IsStartingSession(new_visibility, old_visibility)) {
+    AssistantVisibility new_visibility,
+    AssistantVisibility old_visibility,
+    base::Optional<AssistantEntryPoint> entry_point,
+    base::Optional<AssistantExitPoint> exit_point) {
+  if (assistant::util::IsStartingSession(new_visibility, old_visibility)) {
     // When Assistant is starting a new session, we animate in the appearance of
     // the greeting label and footer.
-    using ash::assistant::util::CreateLayerAnimationSequence;
-    using ash::assistant::util::CreateOpacityElement;
-    using ash::assistant::util::CreateTransformElement;
-
     const bool from_search =
-        entry_point == ash::AssistantEntryPoint::kLauncherSearchResult;
+        entry_point == AssistantEntryPoint::kLauncherSearchResult;
     progress_indicator_->layer()->SetOpacity(0.f);
     horizontal_separator_->layer()->SetOpacity(from_search ? 1.f : 0.f);
 
-    greeting_label_->layer()->GetAnimator()->StopAnimating();
+    if (!from_search)
+      AnimateInGreetingLabel();
+    else
+      greeting_label_->SetVisible(false);
 
-    // We're going to animate the greeting label up into position so we'll
-    // need to apply an initial transformation.
-    constexpr int kGreetingAnimationTranslationDip = 115;
-    gfx::Transform transform;
-    transform.Translate(0, kGreetingAnimationTranslationDip);
-
-    // Set up our pre-animation values.
-    greeting_label_->layer()->SetOpacity(0.f);
-    greeting_label_->layer()->SetTransform(transform);
-    if (!from_search) {
-      constexpr base::TimeDelta kGreetingAnimationFadeInDelay =
-          base::TimeDelta::FromMilliseconds(33);
-      constexpr base::TimeDelta kGreetingAnimationFadeInDuration =
-          base::TimeDelta::FromMilliseconds(167);
-      constexpr base::TimeDelta kGreetingAnimationTranslateUpDuration =
-          base::TimeDelta::FromMilliseconds(250);
-
-      // Start animating greeting label.
-      greeting_label_->layer()->GetAnimator()->StartTogether(
-          {// Animate the transformation.
-           CreateLayerAnimationSequence(CreateTransformElement(
-               gfx::Transform(), kGreetingAnimationTranslateUpDuration,
-               gfx::Tween::Type::FAST_OUT_SLOW_IN_2)),
-           // Animate the opacity to 100% with delay.
-           CreateLayerAnimationSequence(
-               ui::LayerAnimationElement::CreatePauseElement(
-                   ui::LayerAnimationElement::AnimatableProperty::OPACITY,
-                   kGreetingAnimationFadeInDelay),
-               CreateOpacityElement(1.f, kGreetingAnimationFadeInDuration))});
-    }
-
-    // Set up our pre-animation values.
-    footer_->layer()->SetOpacity(0.f);
-
-    // Animate the footer to 100% opacity with delay.
-    footer_->layer()->GetAnimator()->StartAnimation(
-        CreateLayerAnimationSequence(
-            ui::LayerAnimationElement::CreatePauseElement(
-                ui::LayerAnimationElement::AnimatableProperty::OPACITY,
-                kFooterEntryAnimationFadeInDelay),
-            CreateOpacityElement(1.f, kFooterEntryAnimationFadeInDuration)));
+    AnimateInFooter();
     return;
   }
 
-  query_view_->SetQuery(ash::AssistantNullQuery());
+  query_view_->SetQuery(AssistantNullQuery());
 
   footer_->SetVisible(true);
   footer_->layer()->SetOpacity(1.f);
@@ -434,15 +435,11 @@ void AppListAssistantMainStage::OnUiVisibilityChanged(
 }
 
 void AppListAssistantMainStage::MaybeHideGreetingLabel() {
-  if (!IsLayerVisible(greeting_label_))
+  if (!IsShown(greeting_label_))
     return;
 
-  using ash::assistant::util::CreateLayerAnimationSequence;
-  using ash::assistant::util::CreateOpacityElement;
-
-  greeting_label_->layer()->GetAnimator()->StartAnimation(
-      CreateLayerAnimationSequence(
-          CreateOpacityElement(0.f, kGreetingAnimationFadeOutDuration)));
+  assistant::util::FadeOutAndHide(greeting_label_,
+                                  kGreetingAnimationFadeOutDuration);
 }
 
 }  // namespace ash

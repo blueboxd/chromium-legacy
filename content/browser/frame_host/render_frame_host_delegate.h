@@ -414,8 +414,9 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual bool IsBeingDestroyed();
 
   // Notifies that the render frame started loading a subresource.
-  virtual void SubresourceResponseStarted(const GURL& url,
-                                          net::CertStatus cert_status) {}
+  virtual void SubresourceResponseStarted(
+      const url::Origin& origin_of_final_response_url,
+      net::CertStatus cert_status) {}
 
   // Notifies that the render finished loading a subresource for the frame
   // associated with |render_frame_host|.

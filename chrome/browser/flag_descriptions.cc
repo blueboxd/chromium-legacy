@@ -836,6 +836,12 @@ const char kExperimentalAccessibilityLanguageDetectionDescription[] =
     "Enable language detection for in-page content which is then exposed to "
     "assistive technologies such as screen readers.";
 
+const char kExperimentalAccessibilityLanguageDetectionDynamicName[] =
+    "Experimental accessibility language detection for dynamic content";
+const char kExperimentalAccessibilityLanguageDetectionDynamicDescription[] =
+    "Enable language detection for dynamic content which is then exposed to "
+    "assistive technologies such as screen readers.";
+
 const char kVizDisplayCompositorName[] = "Viz Display Compositor (OOP-D)";
 const char kVizDisplayCompositorDescription[] =
     "If enabled, the display compositor runs as part of the viz service in the"
@@ -1769,13 +1775,6 @@ const char kPrefetchMainResourceNetworkIsolationKeyDescription[] =
     "Prefetch requests for cross-origin main resources can be reused by next "
     "top-level navigations when HTTP cache is double-keyed.";
 
-const char kSafeBrowsingUseAPDownloadVerdictsName[] =
-    "Request Advanced Protection verdicts when inspecting downloads";
-const char kSafeBrowsingUseAPDownloadVerdictsDescription[] =
-    "If enabled, download protection will request Advanced Protection "
-    "verdicts from Safe Browsing. These will provide stronger protections "
-    "from files Safe Browsing is unsure about.";
-
 const char kSafetyTipName[] =
     "Show Safety Tip UI when visiting low-reputation websites";
 const char kSafetyTipDescription[] =
@@ -2585,10 +2584,6 @@ const char kInterestFeedNotificationsName[] = "Interest Feed Notifications";
 const char kInterestFeedNotificationsDescription[] =
     "Show notifications for some suggested content from the interest feed. "
     "#interest-feed-content-suggestions should also be enabled.";
-
-const char kIdentityDiscName[] = "Identity Disc";
-const char kIdentityDiscDescription[] =
-    "Enables Identity Disc, profile avatar icon button in toolbar.";
 
 const char kInterestFeedContentSuggestionsDescription[] =
     "Use the interest feed to render content suggestions. Currently "
@@ -3911,6 +3906,11 @@ const char kClickToCallUIName[] =
 const char kClickToCallUIDescription[] =
     "Enables click to call feature signals to be handled on desktop by showing "
     "a list of user's available devices with telephony functionality.";
+
+const char kClickToCallDetectionV2Name[] = "Click to call detection V2";
+const char kClickToCallDetectionV2Description[] =
+    "Improves the detection of phone numbers in the context menu for the click "
+    "to call feature.";
 
 #endif  // BUILDFLAG(ENABLE_CLICK_TO_CALL)
 

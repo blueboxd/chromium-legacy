@@ -16,6 +16,13 @@ import android.os.Process;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
+import androidx.browser.customtabs.CustomTabsCallback;
+import androidx.browser.customtabs.CustomTabsClient;
+import androidx.browser.customtabs.CustomTabsService;
+import androidx.browser.customtabs.CustomTabsServiceConnection;
+import androidx.browser.customtabs.CustomTabsSession;
+import androidx.browser.customtabs.CustomTabsSessionToken;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -33,6 +40,7 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -44,13 +52,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-
-import androidx.browser.customtabs.CustomTabsCallback;
-import androidx.browser.customtabs.CustomTabsClient;
-import androidx.browser.customtabs.CustomTabsService;
-import androidx.browser.customtabs.CustomTabsServiceConnection;
-import androidx.browser.customtabs.CustomTabsSession;
-import androidx.browser.customtabs.CustomTabsSessionToken;
 
 /** Tests for CustomTabsConnection. */
 @RunWith(ChromeJUnit4ClassRunner.class)
@@ -607,8 +608,9 @@ public class CustomTabsConnectionTest {
         // Needs the browser process to be initialized.
         boolean enabled = TestThreadUtils.runOnUiThreadBlocking(() -> {
             PrefServiceBridge prefs = PrefServiceBridge.getInstance();
-            boolean oldEnabled = prefs.getNetworkPredictionEnabled();
-            prefs.setNetworkPredictionEnabled(false);
+            boolean oldEnabled =
+                    PrivacyPreferencesManager.getInstance().getNetworkPredictionEnabled();
+            PrivacyPreferencesManager.getInstance().setNetworkPredictionEnabled(false);
             return oldEnabled;
         });
 
@@ -618,7 +620,9 @@ public class CustomTabsConnectionTest {
             TestThreadUtils.runOnUiThreadBlocking(this::assertSpareWebContentsNotNullAndDestroy);
         } finally {
             TestThreadUtils.runOnUiThreadBlocking(
-                    () -> PrefServiceBridge.getInstance().setNetworkPredictionEnabled(enabled));
+                    ()
+                            -> PrivacyPreferencesManager.getInstance().setNetworkPredictionEnabled(
+                                    enabled));
         }
     }
 

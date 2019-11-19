@@ -54,6 +54,7 @@
 #include "content/public/common/process_type.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "ipc/ipc_channel.h"
+#include "mojo/public/cpp/system/invitation.h"
 #include "net/socket/socket_descriptor.h"
 #include "ppapi/host/host_factory.h"
 #include "ppapi/host/ppapi_host.h"
@@ -232,9 +233,9 @@ NaClProcessHost::NaClProcessHost(
       process_type_(process_type),
       profile_directory_(profile_directory),
       render_view_id_(render_view_id) {
-  process_.reset(content::BrowserChildProcessHost::Create(
+  process_ = content::BrowserChildProcessHost::Create(
       static_cast<content::ProcessType>(PROCESS_TYPE_NACL_LOADER), this,
-      kNaClLoaderServiceName));
+      content::ChildProcessHost::IpcMode::kLegacy);
 
   // Set the display name so the user knows what plugin the process is running.
   // We aren't on the UI thread so getting the pref locale for language
@@ -545,7 +546,7 @@ bool NaClProcessHost::LaunchSelLdr() {
   if (RunningOnWOW64()) {
     if (!NaClBrokerService::GetInstance()->LaunchLoader(
             weak_factory_.GetWeakPtr(),
-            process_->TakeInProcessServiceRequest())) {
+            process_->GetHost()->GetMojoInvitation()->ExtractMessagePipe(0))) {
       SendErrorToRenderer("broker service did not launch process");
       return false;
     }

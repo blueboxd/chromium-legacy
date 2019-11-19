@@ -787,11 +787,6 @@ void PrerenderManager::MaybePreconnect(Origin origin,
     return;
   }
 
-  // Currently, the fallback is only enabled for prerenders initiated by
-  // omnibox.
-  if (origin != ORIGIN_OMNIBOX)
-    return;
-
   auto* loading_predictor = predictors::LoadingPredictorFactory::GetForProfile(
       Profile::FromBrowserContext(profile_));
   if (loading_predictor) {

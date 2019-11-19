@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
+#include "extensions/browser/api/declarative_net_request/action_tracker.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_registry.h"
@@ -77,6 +78,9 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
 
   RulesetManager* ruleset_manager() { return &ruleset_manager_; }
 
+  const ActionTracker& action_tracker() const { return action_tracker_; }
+  ActionTracker& action_tracker() { return action_tracker_; }
+
  private:
   class FileSequenceBridge;
 
@@ -134,6 +138,8 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
   content::BrowserContext* const context_;
 
   declarative_net_request::RulesetManager ruleset_manager_;
+
+  ActionTracker action_tracker_;
 
   // Must be the last member variable. See WeakPtrFactory documentation for
   // details.

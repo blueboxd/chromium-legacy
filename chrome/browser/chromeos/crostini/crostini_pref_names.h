@@ -15,6 +15,7 @@ extern const char kCrostiniMimeTypes[];
 extern const char kCrostiniRegistry[];
 extern const char kCrostiniSharedUsbDevices[];
 extern const char kCrostiniContainers[];
+extern const char kCrostiniTerminalSettings[];
 extern const char kVmKey[];
 extern const char kContainerKey[];
 

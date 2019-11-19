@@ -171,6 +171,22 @@ class GaiaAuthFetcher {
   // Starts a request to log out the accounts in the GAIA cookie.
   void StartLogOut();
 
+  // Given a child account's OAuth2 refresh token, the parent account's
+  // obfuscated GAIA ID, and their |credential| create the reauth proof token
+  // for the parent.
+  //
+  // |max_retries| specifies the maximum number of times we should retry on a
+  // network error.  This could help to fetch the token in the case of a flaky
+  // network connection. This does not apply in the case of an ReAuth error
+  // (i.e. there was something wrong with the ReAuth input arguments).  Setting
+  // |max_retries| to -1 implies infinite retries.
+  //
+  // Virtual so it can be overridden by fake implementations.
+  virtual void StartCreateReAuthProofTokenForParent(
+      const std::string& child_oauth_access_token,
+      const std::string& parent_obfuscated_gaia_id,
+      const std::string& parent_credential);
+
   // Starts a request to get the list of URLs to check for connection info.
   // Returns token/URL pairs to check, and the resulting status can be given to
   // /MergeSession requests.
@@ -190,8 +206,9 @@ class GaiaAuthFetcher {
 
  protected:
   // Creates and starts |url_loader_|, used to make all Gaia request.  |body| is
-  // used as the body of the POST request sent to GAIA.  Any strings listed in
-  // |headers| are added as extra HTTP headers in the request.
+  // used as the body of the POST request sent to GAIA. |body_content_type| is
+  // the body content type to set, but only used if |body| is set.  Any strings
+  // listed in |headers| are added as extra HTTP headers in the request.
   //
   // |credentials_mode| are passed to directly to
   // network::SimpleURLLoader::Create() when creating the SimpleURLLoader.
@@ -200,6 +217,7 @@ class GaiaAuthFetcher {
   // return true afterwards.
   virtual void CreateAndStartGaiaFetcher(
       const std::string& body,
+      const std::string& body_content_type,
       const std::string& headers,
       const GURL& gaia_gurl,
       network::mojom::CredentialsMode credentials_mode,
@@ -224,6 +242,8 @@ class GaiaAuthFetcher {
   // TODO(https://crbug.com/889471) Remove this once requests are done using
   // NSUrlSession in iOS.
   bool IsMultiloginUrl(const GURL& url);
+
+  bool IsReAuthApiUrl(const GURL& url);
 
  private:
   // The format of the POST body for IssueAuthToken.
@@ -295,6 +315,10 @@ class GaiaAuthFetcher {
                                        net::Error net_error,
                                        int response_code);
 
+  void OnReAuthApiInfoFetched(const std::string& data,
+                              net::Error net_error,
+                              int response_code);
+
   // Tokenize the results of a ClientLogin fetch.
   static void ParseClientLoginResponse(const std::string& data,
                                        std::string* sid,
@@ -352,6 +376,7 @@ class GaiaAuthFetcher {
   const GURL list_accounts_gurl_;
   const GURL logout_gurl_;
   const GURL get_check_connection_info_url_;
+  const GURL reauth_api_url_;
 
   // While a fetch is going on:
   std::unique_ptr<network::SimpleURLLoader> url_loader_;

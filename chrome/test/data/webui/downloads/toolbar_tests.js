@@ -2,25 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {SearchService} from 'chrome://downloads/downloads.js';
+
 suite('toolbar tests', function() {
   /** @type {!downloads.Toolbar} */
   let toolbar;
 
+  /** @type {!CrToastManagerElement} */
+  let toastManager;
+
   setup(function() {
-    class TestSearchService extends downloads.SearchService {
+    class TestSearchService extends SearchService {
       loadMore() { /* Prevent chrome.send(). */
       }
     }
 
     PolymerTest.clearBody();
     toolbar = document.createElement('downloads-toolbar');
-    downloads.SearchService.instance_ = new TestSearchService;
+    SearchService.instance_ = new TestSearchService;
     document.body.appendChild(toolbar);
-    document.body.appendChild(document.createElement('cr-toast-manager'));
+
+    toastManager = document.createElement('cr-toast-manager');
+    document.body.appendChild(toastManager);
   });
 
   test('resize closes more options menu', function() {
-    MockInteractions.tap(toolbar.$.moreActions);
+    toolbar.$.moreActions.click();
     assertTrue(toolbar.$.moreActionsMenu.open);
 
     window.dispatchEvent(new CustomEvent('resize'));
@@ -48,7 +55,6 @@ suite('toolbar tests', function() {
   });
 
   test('toast is shown when clear all button clicked', () => {
-    const toastManager = cr.toastManager.getInstance();
     assertFalse(toastManager.isToastOpen);
     toolbar.hasClearableDownloads = true;
     toolbar.$$('#moreActionsMenu button').click();

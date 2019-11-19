@@ -57,13 +57,19 @@ class HintsFetcherTest : public testing::Test {
 
   ~HintsFetcherTest() override {}
 
-  void OnHintsFetched(optimization_guide::proto::RequestContext request_context,
-                      base::Optional<std::unique_ptr<proto::GetHintsResponse>>
-                          get_hints_response) {
+  void OnHintsFetched(
+      optimization_guide::proto::RequestContext request_context,
+      optimization_guide::HintsFetcherRequestStatus fetcher_request_status,
+      base::Optional<std::unique_ptr<proto::GetHintsResponse>>
+          get_hints_response) {
+    fetcher_request_status_ = fetcher_request_status;
     if (get_hints_response)
       hints_fetched_ = true;
   }
 
+  optimization_guide::HintsFetcherRequestStatus fetcher_request_status() {
+    return fetcher_request_status_;
+  }
   bool hints_fetched() { return hints_fetched_; }
 
   void SetConnectionOffline() {
@@ -142,6 +148,8 @@ class HintsFetcherTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  optimization_guide::HintsFetcherRequestStatus fetcher_request_status_ =
+      optimization_guide::HintsFetcherRequestStatus::kUnknown;
   bool hints_fetched_ = false;
   base::test::TaskEnvironment task_environment_;
 
@@ -162,6 +170,8 @@ TEST_F(HintsFetcherTest, FetchOptimizationGuideServiceHints) {
   EXPECT_TRUE(FetchHints(std::vector<std::string>{"foo.com"}));
   VerifyHasPendingFetchRequests();
   EXPECT_TRUE(SimulateResponse(response_content, net::HTTP_OK));
+  EXPECT_EQ(optimization_guide::HintsFetcherRequestStatus::kSuccess,
+            fetcher_request_status());
   EXPECT_TRUE(hints_fetched());
 
   histogram_tester.ExpectTotalCount(
@@ -179,10 +189,14 @@ TEST_F(HintsFetcherTest, FetchInProgress) {
   // |fetch_in_progress_| should cause early exit.
   EXPECT_TRUE(FetchHints(std::vector<std::string>{"foo.com"}));
   EXPECT_FALSE(FetchHints(std::vector<std::string>{"bar.com"}));
+  EXPECT_EQ(optimization_guide::HintsFetcherRequestStatus::kFetcherBusy,
+            fetcher_request_status());
 
   // Once response arrives, check to make sure a new fetch can start.
   SimulateResponse(response_content, net::HTTP_OK);
   EXPECT_TRUE(FetchHints(std::vector<std::string>{"bar.com"}));
+  EXPECT_EQ(optimization_guide::HintsFetcherRequestStatus::kSuccess,
+            fetcher_request_status());
 }
 
 // Tests that the hints are refreshed again for hosts for whom hints were
@@ -250,6 +264,8 @@ TEST_F(HintsFetcherTest, FetchReturned404) {
   // Send a 404 to HintsFetcher.
   SimulateResponse(response_content, net::HTTP_NOT_FOUND);
   EXPECT_FALSE(hints_fetched());
+  EXPECT_EQ(optimization_guide::HintsFetcherRequestStatus::kResponseError,
+            fetcher_request_status());
 
   // Make sure histogram not recorded on bad response.
   histogram_tester.ExpectTotalCount(
@@ -264,6 +280,8 @@ TEST_F(HintsFetcherTest, FetchReturnBadResponse) {
   VerifyHasPendingFetchRequests();
   EXPECT_TRUE(SimulateResponse(response_content, net::HTTP_OK));
   EXPECT_FALSE(hints_fetched());
+  EXPECT_EQ(optimization_guide::HintsFetcherRequestStatus::kResponseError,
+            fetcher_request_status());
 
   // Make sure histogram not recorded on bad response.
   histogram_tester.ExpectTotalCount(
@@ -277,6 +295,8 @@ TEST_F(HintsFetcherTest, FetchAttemptWhenNetworkOffline) {
   std::string response_content;
   EXPECT_FALSE(FetchHints(std::vector<std::string>{"foo.com"}));
   EXPECT_FALSE(hints_fetched());
+  EXPECT_EQ(optimization_guide::HintsFetcherRequestStatus::kNetworkOffline,
+            fetcher_request_status());
 
   // Make sure histogram not recorded on bad response.
   histogram_tester.ExpectTotalCount(

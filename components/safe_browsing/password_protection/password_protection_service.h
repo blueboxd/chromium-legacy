@@ -201,6 +201,13 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       const GURL& url,
       RequestOutcome* reason) const = 0;
 
+  // Persist the phished saved password credential in the "compromised
+  // credentials" table. Calls the password store to add a row for each domain
+  // where the phished saved password is used on.
+  virtual void PersistPhishedSavedPasswordCredential(
+      const std::string& username,
+      const std::vector<std::string>& matching_domains) = 0;
+
   // Converts from password::metrics_util::PasswordType to
   // LoginReputationClientRequest::PasswordReuseEvent::ReusedPasswordType.
   static ReusedPasswordType GetPasswordProtectionReusedPasswordType(

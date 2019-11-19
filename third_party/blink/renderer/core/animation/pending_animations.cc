@@ -77,9 +77,18 @@ bool PendingAnimations::Update(
         started_synchronized_on_compositor = true;
       }
 
-      if (animation->Playing() && !animation->startTime() &&
-          animation->timeline() && animation->timeline()->IsActive()) {
-        waiting_for_start_time.push_back(animation.Get());
+      if (animation->Playing() && animation->timeline() &&
+          animation->timeline()->IsActive()) {
+        if (!animation->startTime()) {
+          waiting_for_start_time.push_back(animation.Get());
+        } else if (animation->pending()) {
+          // A pending animation that already has a start time does not need to
+          // be synchronized with animations that are starting up. Nonetheless,
+          // it needs to notify the animation to resolve the ready promise and
+          // commit a pending change to the playback rate.
+          animation->NotifyCompositorStartTime(
+              animation->timeline()->CurrentTimeSeconds().value_or(0));
+        }
       }
     } else {
       deferred.push_back(animation);
@@ -138,11 +147,12 @@ void PendingAnimations::NotifyCompositorAnimationStarted(
     double monotonic_animation_start_time,
     int compositor_group) {
   TRACE_EVENT0("blink", "PendingAnimations::notifyCompositorAnimationStarted");
+
   HeapVector<Member<Animation>> animations;
   animations.swap(waiting_for_compositor_animation_start_);
 
   for (auto animation : animations) {
-    if (animation->startTime() || !animation->NeedsCompositorTimeSync() ||
+    if (animation->startTime() || !animation->pending() ||
         !animation->timeline() || !animation->timeline()->IsActive()) {
       // Already started or no longer relevant.
       continue;

@@ -124,6 +124,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterMac
       base::RepeatingCallback<bool(const std::string& address)>;
 
   // BluetoothAdapter override:
+  base::WeakPtr<BluetoothAdapter> GetWeakPtr() override;
   bool SetPoweredImpl(bool powered) override;
   void RemovePairingDelegateInternal(
       device::BluetoothDevice::PairingDelegate* pairing_delegate) override;

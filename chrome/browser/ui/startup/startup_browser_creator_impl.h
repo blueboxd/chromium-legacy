@@ -175,9 +175,6 @@ class StartupBrowserCreatorImpl {
       Browser* browser,
       chrome::startup::IsProcessStartup is_process_startup);
 
-  // Records Rappor metrics on startup URLs.
-  void RecordRapporOnStartupURLs(const std::vector<GURL>& urls_to_open);
-
   // Determines how the launch flow should obtain a Browser.
   static BrowserOpenBehavior DetermineBrowserOpenBehavior(
       const SessionStartupPref& pref,

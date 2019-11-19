@@ -96,17 +96,28 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
   SEQUENCE_CHECKER(sequence_checker_);
 
   if (content::GetNetworkConnectionTracker()->IsOffline()) {
-    std::move(hints_fetched_callback).Run(request_context, base::nullopt);
+    std::move(hints_fetched_callback)
+        .Run(request_context, HintsFetcherRequestStatus::kNetworkOffline,
+             base::nullopt);
     return false;
   }
 
-  if (url_loader_)
+  if (active_url_loader_) {
+    std::move(hints_fetched_callback)
+        .Run(request_context, HintsFetcherRequestStatus::kFetcherBusy,
+             base::nullopt);
     return false;
+  }
 
   std::vector<std::string> filtered_hosts =
       GetSizeLimitedHostsDueForHintsRefresh(hosts);
-  if (filtered_hosts.empty())
+  if (filtered_hosts.empty()) {
+    std::move(hints_fetched_callback)
+        .Run(request_context, HintsFetcherRequestStatus::kNoHostsToFetch,
+             base::nullopt);
     return false;
+  }
+
   DCHECK_GE(features::MaxHostsForOptimizationGuideServiceHintsFetch(),
             filtered_hosts.size());
 
@@ -163,24 +174,25 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
   resource_request->method = "POST";
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
-  url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
-                                                 traffic_annotation);
+  active_url_loader_ = network::SimpleURLLoader::Create(
+      std::move(resource_request), traffic_annotation);
 
-  url_loader_->AttachStringForUpload(serialized_request,
-                                     "application/x-protobuf");
+  active_url_loader_->AttachStringForUpload(serialized_request,
+                                            "application/x-protobuf");
 
   UMA_HISTOGRAM_COUNTS_100(
       "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount",
       filtered_hosts.size());
 
-  // |url_loader_| should not retry on 5xx errors since the server may already
-  // be overloaded.  |url_loader_| should retry on network changes since the
-  // network stack may receive the connection change event later than |this|.
+  // |active_url_loader_| should not retry on 5xx errors since the server may
+  // already be overloaded. |active_url_loader_| should retry on network changes
+  // since the network stack may receive the connection change event later than
+  // |this|.
   static const int kMaxRetries = 1;
-  url_loader_->SetRetryOptions(
+  active_url_loader_->SetRetryOptions(
       kMaxRetries, network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
 
-  url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+  active_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       url_loader_factory_.get(),
       base::BindOnce(&HintsFetcher::OnURLLoadComplete, base::Unretained(this)));
 
@@ -216,9 +228,12 @@ void HintsFetcher::HandleResponse(const std::string& get_hints_response_data,
         base::TimeTicks::Now() - hints_fetch_start_time_);
     UpdateHostsSuccessfullyFetched();
     std::move(hints_fetched_callback_)
-        .Run(request_context_, std::move(get_hints_response));
+        .Run(request_context_, HintsFetcherRequestStatus::kSuccess,
+             std::move(get_hints_response));
   } else {
-    std::move(hints_fetched_callback_).Run(request_context_, base::nullopt);
+    std::move(hints_fetched_callback_)
+        .Run(request_context_, HintsFetcherRequestStatus::kResponseError,
+             base::nullopt);
   }
 }
 
@@ -277,12 +292,14 @@ void HintsFetcher::OnURLLoadComplete(
   SEQUENCE_CHECKER(sequence_checker_);
 
   int response_code = -1;
-  if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers) {
-    response_code = url_loader_->ResponseInfo()->headers->response_code();
+  if (active_url_loader_->ResponseInfo() &&
+      active_url_loader_->ResponseInfo()->headers) {
+    response_code =
+        active_url_loader_->ResponseInfo()->headers->response_code();
   }
-  HandleResponse(response_body ? *response_body : "", url_loader_->NetError(),
-                 response_code);
-  url_loader_.reset();
+  HandleResponse(response_body ? *response_body : "",
+                 active_url_loader_->NetError(), response_code);
+  active_url_loader_.reset();
 }
 
 std::vector<std::string> HintsFetcher::GetSizeLimitedHostsDueForHintsRefresh(

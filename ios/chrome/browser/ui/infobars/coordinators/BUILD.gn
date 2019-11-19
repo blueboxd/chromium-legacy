@@ -28,6 +28,7 @@ source_set("coordinators") {
     "//ios/chrome/browser/passwords:infobar_delegates",
     "//ios/chrome/browser/passwords:public",
     "//ios/chrome/browser/translate:public",
+    "//ios/chrome/browser/ui/autofill:autofill_message",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/fullscreen",

@@ -1122,7 +1122,7 @@ void AutofillPopupViewNativeViews::DoUpdateBoundsAndRedrawPopup() {
 
 // static
 AutofillPopupView* AutofillPopupView::Create(
-    AutofillPopupController* controller) {
+    base::WeakPtr<AutofillPopupController> controller) {
 #if defined(OS_MACOSX)
   // It's possible for the container_view to not be in a window. In that case,
   // cancel the popup since we can't fully set it up.
@@ -1142,7 +1142,7 @@ AutofillPopupView* AutofillPopupView::Create(
     return nullptr;
 #endif
 
-  return new AutofillPopupViewNativeViews(controller, observing_widget);
+  return new AutofillPopupViewNativeViews(controller.get(), observing_widget);
 }
 
 }  // namespace autofill

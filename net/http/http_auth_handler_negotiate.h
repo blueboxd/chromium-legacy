@@ -44,7 +44,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNegotiate : public HttpAuthHandler {
 
   class NET_EXPORT_PRIVATE Factory : public HttpAuthHandlerFactory {
    public:
-    explicit Factory(NegotiateAuthSystemFactory negotiate_auth_system_factory);
+    explicit Factory(HttpAuthMechanismFactory negotiate_auth_system_factory);
     ~Factory() override;
 
 #if !defined(OS_ANDROID)
@@ -71,7 +71,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNegotiate : public HttpAuthHandler {
                           std::unique_ptr<HttpAuthHandler>* handler) override;
 
    private:
-    NegotiateAuthSystemFactory negotiate_auth_system_factory_;
+    HttpAuthMechanismFactory negotiate_auth_system_factory_;
     bool is_unsupported_ = false;
 #if !defined(OS_ANDROID)
     std::unique_ptr<AuthLibrary> auth_library_;

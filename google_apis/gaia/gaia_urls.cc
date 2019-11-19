@@ -56,6 +56,7 @@ const char kOAuth2RevokeUrlSuffix[] = "o/oauth2/revoke";
 const char kOAuth2TokenUrlSuffix[] = "oauth2/v4/token";
 const char kOAuth2TokenInfoUrlSuffix[] = "oauth2/v2/tokeninfo";
 const char kOAuthUserInfoUrlSuffix[] = "oauth2/v1/userinfo";
+const char kReAuthApiUrlSuffix[] = "reauth/v1beta/users/";
 
 // API calls from oauthaccountmanager.googleapis.com
 const char kOAuth2IssueTokenUrlSuffix[] = "v1/issuetoken";
@@ -150,6 +151,7 @@ GaiaUrls::GaiaUrls() {
       google_apis_origin_url.Resolve(kOAuth2TokenInfoUrlSuffix);
   oauth_user_info_url_ =
       google_apis_origin_url.Resolve(kOAuthUserInfoUrlSuffix);
+  reauth_api_url_ = google_apis_origin_url.Resolve(kReAuthApiUrlSuffix);
 
   // URLs from oauthaccountmanager.googleapis.com/v1/issuetoken
   oauth2_issue_token_url_ =
@@ -284,6 +286,10 @@ const GURL& GaiaUrls::oauth2_token_info_url() const {
 
 const GURL& GaiaUrls::oauth2_revoke_url() const {
   return oauth2_revoke_url_;
+}
+
+const GURL& GaiaUrls::reauth_api_url() const {
+  return reauth_api_url_;
 }
 
 const GURL& GaiaUrls::gaia_login_form_realm() const {

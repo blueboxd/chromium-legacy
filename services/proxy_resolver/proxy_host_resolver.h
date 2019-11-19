@@ -14,8 +14,10 @@
 #include "net/proxy_resolution/proxy_resolve_dns_operation.h"
 
 namespace net {
-
 class NetworkIsolationKey;
+}  // namespace net
+
+namespace proxy_resolver {
 
 // Interface for a limited (compared to the standard HostResolver) host resolver
 // used just for proxy resolution.
@@ -26,16 +28,16 @@ class ProxyHostResolver {
   class Request {
    public:
     virtual ~Request() {}
-    virtual int Start(CompletionOnceCallback callback) = 0;
-    virtual const std::vector<IPAddress>& GetResults() const = 0;
+    virtual int Start(net::CompletionOnceCallback callback) = 0;
+    virtual const std::vector<net::IPAddress>& GetResults() const = 0;
   };
 
   virtual std::unique_ptr<Request> CreateRequest(
       const std::string& hostname,
-      ProxyResolveDnsOperation operation,
+      net::ProxyResolveDnsOperation operation,
       const net::NetworkIsolationKey& network_isolation_key) = 0;
 };
 
-}  // namespace net
+}  // namespace proxy_resolver
 
 #endif  // SERVICES_PROXY_RESOLVER_PROXY_HOST_RESOLVER_H_

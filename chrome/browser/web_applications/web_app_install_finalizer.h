@@ -37,11 +37,13 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
   void FinalizeUpdate(const WebApplicationInfo& web_app_info,
                       InstallFinalizedCallback callback) override;
   void UninstallExternalWebApp(const GURL& app_url,
+                               ExternalInstallSource external_install_source,
                                UninstallWebAppCallback callback) override;
-  void UninstallWebApp(const AppId& app_id, UninstallWebAppCallback) override;
+  bool CanUserUninstallFromSync(const AppId& app_id) const override;
+  void UninstallWebAppFromSyncByUser(const AppId& app_id,
+                                     UninstallWebAppCallback) override;
   bool CanRevealAppShim() const override;
   void RevealAppShim(const AppId& app_id) override;
-  bool CanUserUninstallFromSync(const AppId& app_id) const override;
 
  private:
   void OnIconsDataWritten(InstallFinalizedCallback callback,

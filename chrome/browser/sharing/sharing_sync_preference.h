@@ -30,7 +30,6 @@ class PrefRegistrySyncable;
 }
 
 class PrefService;
-struct SharingTargetInfo;
 
 // SharingSyncPreference manages all preferences related to Sharing using Sync,
 // such as storing list of user devices synced via Chrome and VapidKey used
@@ -89,7 +88,7 @@ class SharingSyncPreference {
       const syncer::DeviceInfo* device_info) const;
 
   // Returns the SharingTargetInfo of device with specified |device_info|.
-  base::Optional<SharingTargetInfo> GetTargetInfo(
+  base::Optional<syncer::DeviceInfo::SharingTargetInfo> GetTargetInfo(
       const std::string& guid) const;
 
   base::Optional<syncer::DeviceInfo::SharingInfo> GetLocalSharingInfo() const;
@@ -107,10 +106,6 @@ class SharingSyncPreference {
   // Returns local SharingInfo stored in preferences.
   static base::Optional<syncer::DeviceInfo::SharingInfo> GetLocalSharingInfo(
       PrefService* prefs);
-
-  // Convert SharingInfo to value readable by legacy devices.
-  static base::Value SharingInfoToValue(
-      const syncer::DeviceInfo::SharingInfo& device);
 
   PrefService* prefs_;
   syncer::DeviceInfoSyncService* device_info_sync_service_;

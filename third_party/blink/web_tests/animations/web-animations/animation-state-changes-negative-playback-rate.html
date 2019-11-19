@@ -252,13 +252,22 @@ test(function() {
   assert_equals(animation.playState, 'finished');
 }, "Calling finish() on a running animation");
 
-test(function() {
+async_test(function(t) {
   var animation = runningAnimation();
+  assert_equals(animation.playbackRate, -1);
   animation.reverse();
-  assert_unresolved(animation.startTime);
-  assert_times_equal(animation.currentTime, duration / 2);
   assert_true(animation.pending);
+  assert_times_equal(animation.currentTime, duration / 2);
+  assert_equals(animation.playbackRate, -1);
   assert_equals(animation.playState, 'running');
+  animation.ready.then(t.step_func_done(() => {
+    assert_false(animation.pending);
+    // TODO(crbug.com/960944): Add check to ensure that current time remains
+    // unchanged once remaining timing glitches are resolved.
+    assert_not_equals(animation.startTime, null);
+    assert_equals(animation.playbackRate, 1);
+    assert_equals(animation.playState, 'running');
+  }));
 }, "Calling reverse() on a running animation");
 
 test(function() {
@@ -382,13 +391,22 @@ test(function() {
   assert_equals(animation.playState, 'finished');
 }, "Calling finish() on a finished animation");
 
-test(function() {
+async_test(function(t) {
   var animation = finishedAnimation();
   animation.reverse();
-  assert_unresolved(animation.startTime);
+  assert_equals(animation.startTime, null);
   assert_equals(animation.currentTime, 0);
+  assert_equals(animation.playbackRate, -1);
   assert_true(animation.pending);
   assert_equals(animation.playState, 'running');
+  animation.ready.then(t.step_func_done(() => {
+    assert_false(animation.pending);
+    assert_not_equals(animation.startTime, null);
+    assert_greater_than_equal(animation.currentTime, 0);
+    assert_equals(animation.playbackRate, 1);
+    assert_equals(animation.playState, 'running');
+  }));
+
 }, "Calling reverse() on a finished animation");
 
 test(function() {

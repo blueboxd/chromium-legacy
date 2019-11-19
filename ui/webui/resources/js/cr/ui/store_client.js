@@ -82,7 +82,7 @@ cr.define('cr.ui', function() {
       this.getStore().dispatchAsync(action);
     },
 
-    /** @param {string} newState */
+    /** @param {Object} newState */
     onStateChanged: function(newState) {
       this.watches_.forEach((watch) => {
         const oldValue = this[watch.localProperty];

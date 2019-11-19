@@ -4,7 +4,7 @@
 # directly but this requires an exception here.
 
 specific_include_rules = {
-  '^.*_test_helper\.h$': [
+  '^test_platform.*$': [
     '+base',
     '+testing/gtest/include',
     '+testing/gmock/include',

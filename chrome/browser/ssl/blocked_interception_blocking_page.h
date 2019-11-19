@@ -31,7 +31,6 @@ class BlockedInterceptionBlockingPage : public SSLBlockingPageBase {
   // InterstitialPageDelegate implementation:
   void CommandReceived(const std::string& command) override;
   void OverrideEntry(content::NavigationEntry* entry) override;
-  void OverrideRendererPrefs(blink::mojom::RendererPreferences* prefs) override;
 
   // SecurityInterstitialPage implementation:
   bool ShouldCreateNewNavigation() const override;

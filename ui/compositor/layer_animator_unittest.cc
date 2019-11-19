@@ -1706,7 +1706,7 @@ TEST(LayerAnimatorTest, AddObserverExplicit) {
 
   animator->StartAnimation(sequence);
 
-  animator = NULL;
+  animator.reset();
 
   EXPECT_EQ(observer.last_aborted_sequence(), sequence);
 }
@@ -2366,7 +2366,7 @@ TEST(LayerAnimatorTest, ImplicitObserversAtAnimatorDestruction) {
 
   EXPECT_FALSE(observer_notify.animations_completed());
   EXPECT_FALSE(observer_do_not_notify.animations_completed());
-  animator = NULL;
+  animator.reset();
   EXPECT_TRUE(observer_notify.animations_completed());
   EXPECT_TRUE(observer_notify.WasAnimationAbortedForProperty(
       LayerAnimationElement::BRIGHTNESS));

@@ -52,4 +52,23 @@ apps::mojom::IntentFilterPtr CreateIntentFilterForUrlScope(const GURL& url) {
 
   return intent_filter;
 }
+
+int GetFilterMatchLevel(const apps::mojom::IntentFilterPtr& intent_filter) {
+  int match_level = IntentFilterMatchLevel::kNone;
+  for (const auto& condition : intent_filter->conditions) {
+    switch (condition->condition_type) {
+      case apps::mojom::ConditionType::kScheme:
+        match_level += IntentFilterMatchLevel::kScheme;
+        break;
+      case apps::mojom::ConditionType::kHost:
+        match_level += IntentFilterMatchLevel::kHost;
+        break;
+      case apps::mojom::ConditionType::kPattern:
+        match_level += IntentFilterMatchLevel::kPattern;
+        break;
+    }
+  }
+  return match_level;
+}
+
 }  // namespace apps_util

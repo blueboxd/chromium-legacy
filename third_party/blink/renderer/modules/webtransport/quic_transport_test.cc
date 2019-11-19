@@ -171,8 +171,7 @@ TEST_F(QuicTransportTest, FailWithNoHost) {
   EXPECT_TRUE(exception_state.HadException());
   EXPECT_EQ(static_cast<int>(DOMExceptionCode::kSyntaxError),
             exception_state.Code());
-  EXPECT_EQ("The URL 'quic-transport:///' is invalid.",
-            exception_state.Message());
+  EXPECT_EQ("The URL 'quic-transport:' is invalid.", exception_state.Message());
 }
 
 TEST_F(QuicTransportTest, FailWithURLFragment) {

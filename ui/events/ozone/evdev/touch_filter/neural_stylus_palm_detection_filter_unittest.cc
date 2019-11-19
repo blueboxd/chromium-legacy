@@ -72,7 +72,7 @@ TEST_F(NeuralStylusPalmDetectionFilterTest, EventDeviceSimpleTest) {
   std::vector<std::pair<DeviceCapabilities, bool>> devices = {
       {kNocturneTouchScreen, true},
       {kEveTouchScreen, true},
-      {kLinkTouchscreen, false},
+      {kLinkTouchscreen, true},  // No ABS_MT_TOOL_TYPE
       {kNocturneStylus, false},
       {kKohakuTouchscreen, true}};
   for (const auto& it : devices) {

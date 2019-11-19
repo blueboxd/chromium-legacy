@@ -493,8 +493,11 @@ WebResourceTimingInfo Performance::GenerateResourceTiming(
 
 void Performance::AddResourceTiming(const WebResourceTimingInfo& info,
                                     const AtomicString& initiator_type) {
+  // TODO(https://crbug.com/900700): Implement this, making the receiver
+  // connected to a remote which is passed to blink::FetchEvent for subresouces
+  // and finding the path for navigation.
   auto* entry = MakeGarbageCollected<PerformanceResourceTiming>(
-      info, time_origin_, initiator_type);
+      info, time_origin_, initiator_type, mojo::NullReceiver());
   NotifyObserversOfEntry(*entry);
   // https://w3c.github.io/resource-timing/#dfn-add-a-performanceresourcetiming-entry
   if (CanAddResourceTimingEntry() &&

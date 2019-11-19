@@ -4704,6 +4704,7 @@ def CheckChangeOnCommit(input_api, output_api):
 
 
 def _CheckTranslationScreenshots(input_api, output_api):
+  PART_FILE_TAG = "part"
   import os
   import sys
   from io import StringIO
@@ -4711,10 +4712,46 @@ def _CheckTranslationScreenshots(input_api, output_api):
   try:
     old_sys_path = sys.path
     sys.path = sys.path + [input_api.os_path.join(
-          input_api.PresubmitLocalPath(), 'tools', 'translation')]
-    from helper import grd_helper
+          input_api.PresubmitLocalPath(), 'tools', 'grit')]
+    import grit.grd_reader
+    import grit.node.message
+    import grit.util
   finally:
     sys.path = old_sys_path
+
+  def _GetGrdMessages(grd_path_or_string, dir_path='.'):
+    """Load the grd file and return a dict of message ids to messages.
+
+    Ignores any nested grdp files pointed by <part> tag.
+    """
+    doc = grit.grd_reader.Parse(grd_path_or_string, dir_path,
+        stop_after=None, first_ids_file=None,
+        debug=False, defines={'_chromium': 1},
+        tags_to_ignore=set([PART_FILE_TAG]))
+    return {
+      msg.attrs['name']:msg for msg in doc.GetChildrenOfType(
+        grit.node.message.MessageNode)
+    }
+
+  def _GetGrdpMessagesFromString(grdp_string):
+    """Parses the contents of a grdp file given in grdp_string.
+
+    grd_reader can't parse grdp files directly. Instead, this creates a
+    temporary directory with a grd file pointing to the grdp file, and loads the
+    grd from there. Any nested grdp files (pointed by <part> tag) are ignored.
+    """
+    WRAPPER = """<?xml version="1.0" encoding="utf-8"?>
+    <grit latest_public_release="1" current_release="1">
+      <release seq="1">
+        <messages>
+          <part file="sub.grdp" />
+        </messages>
+      </release>
+    </grit>
+    """
+    with grit.util.TempDir({'main.grd': WRAPPER,
+                            'sub.grdp': grdp_string}) as temp_dir:
+      return _GetGrdMessages(temp_dir.GetPath('main.grd'), temp_dir.GetPath())
 
   new_or_added_paths = set(f.LocalPath()
       for f in input_api.AffectedFiles()
@@ -4776,18 +4813,18 @@ def _CheckTranslationScreenshots(input_api, output_api):
     new_id_to_msg_map = {}
     if file_path.endswith('.grdp'):
       if f.OldContents():
-        old_id_to_msg_map = grd_helper.GetGrdpMessagesFromString(
+        old_id_to_msg_map = _GetGrdpMessagesFromString(
           unicode('\n'.join(f.OldContents())))
       if f.NewContents():
-        new_id_to_msg_map = grd_helper.GetGrdpMessagesFromString(
+        new_id_to_msg_map = _GetGrdpMessagesFromString(
           unicode('\n'.join(f.NewContents())))
     else:
       if f.OldContents():
-        old_id_to_msg_map = grd_helper.GetGrdMessages(
-          StringIO(unicode('\n'.join(f.OldContents()))), '.')
+        old_id_to_msg_map = _GetGrdMessages(
+          StringIO(unicode('\n'.join(f.OldContents()))))
       if f.NewContents():
-        new_id_to_msg_map = grd_helper.GetGrdMessages(
-          StringIO(unicode('\n'.join(f.NewContents()))), '.')
+        new_id_to_msg_map = _GetGrdMessages(
+          StringIO(unicode('\n'.join(f.NewContents()))))
 
     # Compute added, removed and modified message IDs.
     old_ids = set(old_id_to_msg_map)

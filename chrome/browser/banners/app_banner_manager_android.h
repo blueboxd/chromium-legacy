@@ -155,9 +155,6 @@ class AppBannerManagerAndroid
   // Title to display in the banner for native app.
   base::string16 native_app_title_;
 
-  // Whether WebAPKs can be installed.
-  bool can_install_webapk_;
-
   base::WeakPtrFactory<AppBannerManagerAndroid> weak_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();

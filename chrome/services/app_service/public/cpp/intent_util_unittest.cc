@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/services/app_service/public/cpp/intent_util.h"
+
 #include "chrome/services/app_service/public/cpp/intent_filter_util.h"
+#include "chrome/services/app_service/public/cpp/intent_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -146,4 +148,32 @@ TEST_F(IntentUtilTest, GlobMatchType) {
       apps_util::ConditionValueMatches("/a*b", condition_value_escape_star));
   EXPECT_FALSE(
       apps_util::ConditionValueMatches("/acb", condition_value_escape_star));
+}
+
+TEST_F(IntentUtilTest, FilterMatchLevel) {
+  auto filter_scheme_only = apps_util::CreateSchemeOnlyFilter("http");
+  auto filter_scheme_and_host_only =
+      apps_util::CreateSchemeAndHostOnlyFilter("https", "www.abc.com");
+  auto filter_url = apps_util::CreateIntentFilterForUrlScope(
+      GURL("https:://www.google.com/"));
+  auto filter_empty = apps::mojom::IntentFilter::New();
+
+  EXPECT_EQ(apps_util::GetFilterMatchLevel(filter_url),
+            apps_util::IntentFilterMatchLevel::kScheme +
+                apps_util::IntentFilterMatchLevel::kHost +
+                apps_util::IntentFilterMatchLevel::kPattern);
+  EXPECT_EQ(apps_util::GetFilterMatchLevel(filter_scheme_and_host_only),
+            apps_util::IntentFilterMatchLevel::kScheme +
+                apps_util::IntentFilterMatchLevel::kHost);
+  EXPECT_EQ(apps_util::GetFilterMatchLevel(filter_scheme_only),
+            apps_util::IntentFilterMatchLevel::kScheme);
+  EXPECT_EQ(apps_util::GetFilterMatchLevel(filter_empty),
+            apps_util::IntentFilterMatchLevel::kNone);
+
+  EXPECT_TRUE(apps_util::GetFilterMatchLevel(filter_url) >
+              apps_util::GetFilterMatchLevel(filter_scheme_and_host_only));
+  EXPECT_TRUE(apps_util::GetFilterMatchLevel(filter_scheme_and_host_only) >
+              apps_util::GetFilterMatchLevel(filter_scheme_only));
+  EXPECT_TRUE(apps_util::GetFilterMatchLevel(filter_scheme_only) >
+              apps_util::GetFilterMatchLevel(filter_empty));
 }

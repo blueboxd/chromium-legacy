@@ -15,6 +15,18 @@
 
 namespace apps_util {
 
+// The concept of match level is taken from Android. The values are not
+// necessary the same.
+// See
+// https://developer.android.com/reference/android/content/IntentFilter.html#constants_2
+// for more details.
+enum IntentFilterMatchLevel {
+  kNone = 0,
+  kScheme = 1,
+  kHost = 2,
+  kPattern = 4,
+};
+
 // Creates condition value that makes up App Service intent filter
 // condition. Each condition contains a list of condition values.
 // For pattern type of condition, the value match will be based on the
@@ -37,6 +49,14 @@ apps::mojom::ConditionPtr MakeCondition(
 // e.g. filter created for https://www.google.com/ will match any URL that
 // started with https://www.google.com/*.
 apps::mojom::IntentFilterPtr CreateIntentFilterForUrlScope(const GURL& url);
+
+// Get the |intent_filter| match level. The higher the return value, the better
+// the match is. For example, an filter with scheme, host and path is better
+// match compare with filter with only scheme. Each condition type has a
+// matching level value, and this function will return the sum of the matching
+// level values of all existing condition types.
+int GetFilterMatchLevel(const apps::mojom::IntentFilterPtr& intent_filter);
+
 }  // namespace apps_util
 
 #endif  // CHROME_SERVICES_APP_SERVICE_PUBLIC_CPP_INTENT_FILTER_UTIL_H_

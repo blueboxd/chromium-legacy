@@ -27,6 +27,7 @@
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -39,7 +40,7 @@
 #include "content/test/data/web_ui_test_mojo_bindings.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
+#include "services/service_manager/public/cpp/binder_map.h"
 
 namespace content {
 namespace {
@@ -143,33 +144,19 @@ class TestWebUIController : public WebUIController {
 
 // TestWebUIController that additionally creates the ping test BrowserTarget
 // implementation at the right time.
-class PingTestWebUIController : public TestWebUIController,
-                                public WebContentsObserver {
+class PingTestWebUIController : public TestWebUIController {
  public:
   PingTestWebUIController(WebUI* web_ui, base::RunLoop* run_loop)
-      : TestWebUIController(web_ui, run_loop),
-        WebContentsObserver(web_ui->GetWebContents()) {
-    registry_.AddInterface(base::Bind(&PingTestWebUIController::CreateHandler,
-                                      base::Unretained(this)));
-  }
+      : TestWebUIController(web_ui, run_loop) {}
+
   ~PingTestWebUIController() override {}
 
-  // WebContentsObserver implementation:
-  void OnInterfaceRequestFromFrame(
-      RenderFrameHost* render_frame_host,
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle* interface_pipe) override {
-    registry_.TryBindInterface(interface_name, interface_pipe);
-  }
-
-  void CreateHandler(mojom::BrowserTargetRequest request) {
+  void CreateHandler(mojo::PendingReceiver<mojom::BrowserTarget> receiver) {
     browser_target_ =
-        std::make_unique<BrowserTargetImpl>(run_loop_, std::move(request));
+        std::make_unique<BrowserTargetImpl>(run_loop_, std::move(receiver));
   }
 
  private:
-  service_manager::BinderRegistry registry_;
-
   DISALLOW_COPY_AND_ASSIGN(PingTestWebUIController);
 };
 
@@ -250,6 +237,30 @@ class TestWebUIControllerFactory : public WebUIControllerFactory {
   DISALLOW_COPY_AND_ASSIGN(TestWebUIControllerFactory);
 };
 
+// Base for unit tests that need a ContentBrowserClient.
+class TestWebUIContentBrowserClient : public ContentBrowserClient {
+ public:
+  TestWebUIContentBrowserClient() {}
+  TestWebUIContentBrowserClient(const TestWebUIContentBrowserClient&) = delete;
+  TestWebUIContentBrowserClient& operator=(
+      const TestWebUIContentBrowserClient&) = delete;
+  ~TestWebUIContentBrowserClient() override {}
+
+  void RegisterBrowserInterfaceBindersForFrame(
+      service_manager::BinderMapWithContext<content::RenderFrameHost*>* map)
+      override {
+    map->Add<mojom::BrowserTarget>(
+        base::BindRepeating(&TestWebUIContentBrowserClient::BindBrowserTarget,
+                            base::Unretained(this)));
+  }
+  void BindBrowserTarget(content::RenderFrameHost* render_frame_host,
+                         mojo::PendingReceiver<mojom::BrowserTarget> receiver) {
+    auto* contents = WebContents::FromRenderFrameHost(render_frame_host);
+    static_cast<PingTestWebUIController*>(contents->GetWebUI()->GetController())
+        ->CreateHandler(std::move(receiver));
+  }
+};
+
 class WebUIMojoTest : public ContentBrowserTest {
  public:
   WebUIMojoTest() {
@@ -278,8 +289,20 @@ class WebUIMojoTest : public ContentBrowserTest {
     return result;
   }
 
+ protected:
+  void SetUpOnMainThread() override {
+    original_client_ = SetBrowserClientForTesting(&client_);
+  }
+
+  void TearDownOnMainThread() override {
+    if (original_client_)
+      SetBrowserClientForTesting(original_client_);
+  }
+
  private:
   TestWebUIControllerFactory factory_;
+  ContentBrowserClient* original_client_ = nullptr;
+  TestWebUIContentBrowserClient client_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUIMojoTest);
 };

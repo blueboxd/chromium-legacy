@@ -101,7 +101,8 @@ class WPTMetadataBuilder(object):
     def get_test_names_to_fail(self):
         """Determines which tests should be expected to fail.
 
-        This is currently just tests that have failing baselines defined.
+        This is currently tests with baseline files containing failing subtests.
+        Failing subtests are those with statuses in (FAIL, NOTRUN, TIMEOUT).
 
         Returns:
             A list of test names that need metadata.
@@ -112,7 +113,7 @@ class WPTMetadataBuilder(object):
             test_baseline = self.port.expected_text(test)
             if not test_baseline:
                 continue
-            if re.search("^FAIL", test_baseline, re.MULTILINE):
+            if re.search("^(FAIL|NOTRUN|TIMEOUT)", test_baseline, re.MULTILINE):
                 failing_baseline_tests.append(test)
             else:
                 # Treat this as an error because we don't want it to happen.

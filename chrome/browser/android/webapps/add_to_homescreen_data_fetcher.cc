@@ -18,7 +18,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/shortcut_helper.h"
-#include "chrome/browser/android/webapk/chrome_webapk_host.h"
 #include "chrome/browser/android/webapk/webapk_web_manifest_checker.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/installable/installable_manager.h"
@@ -275,8 +274,7 @@ void AddToHomescreenDataFetcher::OnDidPerformInstallableCheck(
 
   bool webapk_compatible =
       (data.errors.empty() && data.valid_manifest && data.has_worker &&
-       AreWebManifestUrlsWebApkCompatible(*data.manifest) &&
-       ChromeWebApkHost::CanInstallWebApk());
+       AreWebManifestUrlsWebApkCompatible(*data.manifest));
   observer_->OnUserTitleAvailable(
       webapk_compatible ? shortcut_info_.name : shortcut_info_.user_title,
       shortcut_info_.url, webapk_compatible);

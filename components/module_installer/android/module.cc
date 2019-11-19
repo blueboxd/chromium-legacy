@@ -55,8 +55,8 @@ void* LoadLibrary(const std::string& library_name,
   library_handle =
       BundleUtils::DlOpenModuleLibraryPartition(library_name, partition_name);
 #elif defined(COMPONENT_BUILD)
-  const std::string lib_name = "lib" + library_name + ".so";
-  library_handle = dlopen(lib_name.c_str(), RTLD_LOCAL);
+  std::string library_path = BundleUtils::ResolveLibraryPath(library_name);
+  library_handle = dlopen(library_path.c_str(), RTLD_LOCAL);
 #else
 #error "Unsupported configuration."
 #endif  // defined(COMPONENT_BUILD)

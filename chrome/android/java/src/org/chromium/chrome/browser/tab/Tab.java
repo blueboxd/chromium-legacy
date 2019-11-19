@@ -1681,15 +1681,6 @@ public class Tab {
     }
 
     /**
-     * Request that this tab receive focus. Currently, this function requests focus for the main
-     * View (usually a ContentView).
-     */
-    public void requestFocus() {
-        View view = getView();
-        if (view != null) view.requestFocus();
-    }
-
-    /**
      * Update whether or not the current native tab and/or web contents are
      * currently visible (from an accessibility perspective), or whether
      * they're obscured by another view.

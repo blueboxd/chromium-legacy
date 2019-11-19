@@ -55,13 +55,7 @@ void WebViewWebMainParts::PreCreateThreads() {
        autofill::features::kAutofillNoLocalSaveOnUploadSuccess.name,
        autofill::features::kAutofillNoLocalSaveOnUnmaskSuccess.name},
       ",");
-  std::string disabled_features = base::JoinString(
-      {// Allows form_structure.cc to run heuristics on single field forms.
-       // This is needed to find autofillable password forms with less than 3
-       // fields in CWVAutofillControllerDelegate's
-       // |autofillController:didScanForAutofillableForms:| method.
-       autofill::features::kAutofillEnforceMinRequiredFieldsForHeuristics.name},
-      ",");
+  std::string disabled_features = base::JoinString({}, ",");
   feature_list->InitializeFromCommandLine(
       /*enable_features=*/enable_features,
       /*disable_features=*/disabled_features);

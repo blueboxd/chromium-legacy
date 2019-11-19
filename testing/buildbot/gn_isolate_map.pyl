@@ -2307,6 +2307,14 @@
     "script": "//third_party/catapult/devil/devil/android/tools/system_app.py",
     "type": "script",
   },
+  "performance_weblayer_test_suite": {
+    "args": [
+      "../../tools/perf/run_benchmark",
+    ],
+    "label": "//chrome/test:performance_test_suite",
+    "script": "//testing/scripts/run_performance_tests.py",
+    "type": "script",
+  },
   "pickle_fuzzer": {
     "label": "//base:pickle_fuzzer",
     "type": "fuzzer",

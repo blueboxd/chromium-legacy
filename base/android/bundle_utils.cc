@@ -47,7 +47,10 @@ const void* ReadRelPtr(const int32_t* relptr) {
   return reinterpret_cast<const char*>(relptr) + *relptr;
 }
 
-std::string ResolveLibraryPath(const std::string& library_name) {
+}  // namespace
+
+// static
+std::string BundleUtils::ResolveLibraryPath(const std::string& library_name) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> java_path = Java_BundleUtils_getNativeLibraryPath(
       env, base::android::ConvertUTF8ToJavaString(env, library_name));
@@ -57,8 +60,6 @@ std::string ResolveLibraryPath(const std::string& library_name) {
   }
   return base::android::ConvertJavaStringToUTF8(env, java_path);
 }
-
-}  // namespace
 
 // static
 bool BundleUtils::IsBundle() {

@@ -2658,8 +2658,6 @@ jumbo_static_library("browser") {
       "android/util/url_utilities.cc",
       "android/warmup_manager.cc",
       "android/web_contents_factory.cc",
-      "android/webapk/chrome_webapk_host.cc",
-      "android/webapk/chrome_webapk_host.h",
       "android/webapk/webapk_handler_delegate.cc",
       "android/webapk/webapk_handler_delegate.h",
       "android/webapk/webapk_icon_hasher.cc",

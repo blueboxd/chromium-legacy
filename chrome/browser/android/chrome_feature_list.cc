@@ -146,7 +146,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kHomepageLocation,
     &kHorizontalTabSwitcherAndroid,
     &kImmersiveUiMode,
-    &kImprovedA2HS,
     &kInlineUpdateFlow,
     &kIntentBlockExternalFormRedirectsNoGesture,
     &kJellyBeanSupported,
@@ -439,13 +438,6 @@ const base::Feature kHomepageLocation{"HomepageLocationPolicy",
 
 const base::Feature kHorizontalTabSwitcherAndroid{
     "HorizontalTabSwitcherAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Makes "Add to Home screen" in the app menu generate an APK for the shortcut
-// URL which opens Chrome in fullscreen.
-// This feature is kept around so that we have a kill-switch in case of server
-// issues.
-const base::Feature kImprovedA2HS{"ImprovedA2HS",
-                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kImmersiveUiMode{"ImmersiveUiMode",
                                      base::FEATURE_DISABLED_BY_DEFAULT};

@@ -135,6 +135,9 @@ function runSimpleTests(moduleName) {
  */
 function runTest(testModule, testName) {
   try {
+    if (typeof testModule.setup === 'function') {
+      throw 'use setUp instead of setup';
+    }
     if (typeof testModule.setUp === 'function') {
       testModule.setUp();
     }

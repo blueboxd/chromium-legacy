@@ -101,6 +101,17 @@ int HorizontalPaddingBetweenItems() {
       views::DISTANCE_RELATED_CONTROL_HORIZONTAL);
 }
 
+// An ink drop with round corners in shown when the user hovers over the button.
+// Insets are kept small to avoid increasing web app frame toolbar height.
+void SetInsetsForWebAppToolbarButton(ToolbarButton* toolbar_button,
+                                     bool is_browser_focus_mode) {
+  toolbar_button->SetLayoutInsets(gfx::Insets());
+  if (!is_browser_focus_mode) {
+    constexpr gfx::Insets kInkDropInsets(2);
+    toolbar_button->SetProperty(views::kInternalPaddingKey, kInkDropInsets);
+  }
+}
+
 }  // namespace
 
 // Holds controls in the far left or far right of the toolbar.
@@ -269,6 +280,7 @@ WebAppFrameToolbarView::WebAppFrameToolbarView(views::Widget* widget,
   }
 
   const auto* app_controller = browser_view_->browser()->app_controller();
+  const bool is_browser_focus_mode = browser_view_->browser()->is_focus_mode();
 
   if (base::FeatureList::IsEnabled(features::kDesktopMinimalUI) &&
       app_controller->HasMinimalUiButtons()) {
@@ -282,15 +294,18 @@ WebAppFrameToolbarView::WebAppFrameToolbarView(views::Widget* widget,
             .WithOrder(2));
 
     back_ = left_container_->AddChildView(
-        CreateBackButton(this, browser_view->browser()));
+        CreateBackButton(this, browser_view_->browser()));
     reload_ = left_container_->AddChildView(
-        CreateReloadButton(browser_view->browser()));
+        CreateReloadButton(browser_view_->browser()));
+
+    SetInsetsForWebAppToolbarButton(back_, is_browser_focus_mode);
+    SetInsetsForWebAppToolbarButton(reload_, is_browser_focus_mode);
 
     views::SetHitTestComponent(back_, static_cast<int>(HTCLIENT));
     views::SetHitTestComponent(reload_, static_cast<int>(HTCLIENT));
 
-    chrome::AddCommandObserver(browser_view->browser(), IDC_BACK, this);
-    chrome::AddCommandObserver(browser_view->browser(), IDC_RELOAD, this);
+    chrome::AddCommandObserver(browser_view_->browser(), IDC_BACK, this);
+    chrome::AddCommandObserver(browser_view_->browser(), IDC_RELOAD, this);
     md_observer_.Add(ui::MaterialDesignController::GetInstance());
   }
 
@@ -311,7 +326,7 @@ WebAppFrameToolbarView::WebAppFrameToolbarView(views::Widget* widget,
 
   if (app_controller->HasTitlebarAppOriginText()) {
     web_app_origin_text_ = right_container_->AddChildView(
-        std::make_unique<WebAppOriginText>(browser_view->browser()));
+        std::make_unique<WebAppOriginText>(browser_view_->browser()));
   }
 
   if (app_controller->HasTitlebarContentSettings()) {
@@ -350,7 +365,7 @@ WebAppFrameToolbarView::WebAppFrameToolbarView(views::Widget* widget,
   } else {
     browser_actions_container_ = right_container_->AddChildView(
         std::make_unique<BrowserActionsContainer>(
-            browser_view->browser(), nullptr, this, false /* interactive */));
+            browser_view_->browser(), nullptr, this, false /* interactive */));
     views::SetHitTestComponent(browser_actions_container_,
                                static_cast<int>(HTCLIENT));
   }
@@ -359,15 +374,16 @@ WebAppFrameToolbarView::WebAppFrameToolbarView(views::Widget* widget,
 #if defined(OS_CHROMEOS)
   if (app_controller->UseTitlebarTerminalSystemAppMenu()) {
     web_app_menu_button_ = right_container_->AddChildView(
-        std::make_unique<TerminalSystemAppMenuButton>(browser_view));
+        std::make_unique<TerminalSystemAppMenuButton>(browser_view_));
   } else {
     web_app_menu_button_ = right_container_->AddChildView(
-        std::make_unique<WebAppMenuButton>(browser_view));
+        std::make_unique<WebAppMenuButton>(browser_view_));
   }
 #else
   web_app_menu_button_ = right_container_->AddChildView(
-      std::make_unique<WebAppMenuButton>(browser_view));
+      std::make_unique<WebAppMenuButton>(browser_view_));
 #endif
+  SetInsetsForWebAppToolbarButton(web_app_menu_button_, is_browser_focus_mode);
   right_container_->SetChildControllingHeight(web_app_menu_button_);
 
   UpdateChildrenColor();

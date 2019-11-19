@@ -18,6 +18,11 @@ class BASE_EXPORT BundleUtils {
   // Returns true if the current build is a bundle.
   static bool IsBundle();
 
+  // Helper function asking Java to resolve a library path. This is required for
+  // resolving a module library made available via SplitCompat, rather than in
+  // its eventual fully-installed state.
+  static std::string ResolveLibraryPath(const std::string& library_name);
+
   // dlopen wrapper that works for partitioned native libraries in dynamic
   // feature modules. This routine looks up the partition's address space in a
   // table of main library symbols, and uses it when loading the feature

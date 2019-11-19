@@ -97,14 +97,25 @@ IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, CustomizeMenuTests) {
 }
 
 #if !(defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER))
-IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, RealboxTests) {
+IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, Realbox1Tests) {
   content::WebContents* active_tab = local_ntp_test_utils::OpenNewTab(
       browser(), GURL(chrome::kChromeUINewTabURL));
   ASSERT_TRUE(search::IsInstantNTP(active_tab));
 
   bool success = false;
   ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
-      active_tab, "!!runSimpleTests('realbox')", &success));
+      active_tab, "!!runSimpleTests('realbox1')", &success));
+  EXPECT_TRUE(success);
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, Realbox2Tests) {
+  content::WebContents* active_tab = local_ntp_test_utils::OpenNewTab(
+      browser(), GURL(chrome::kChromeUINewTabURL));
+  ASSERT_TRUE(search::IsInstantNTP(active_tab));
+
+  bool success = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab, "!!runSimpleTests('realbox2')", &success));
   EXPECT_TRUE(success);
 }
 #endif

@@ -167,7 +167,7 @@ void WrappedTask::RemoveFromTaskRunnerQueue() {
     pumpable_task_runner_->task_queue_.erase(iterator_);
     iterator_ = pumpable_task_runner_->task_queue_.end();
   }
-  pumpable_task_runner_ = NULL;
+  pumpable_task_runner_.reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

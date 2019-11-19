@@ -510,12 +510,31 @@ BUILDERS = {
         'extra_args': [
           '--test-shard-map-filename=android-pixel2_webview-perf_map.json',
         ],
-        'num_shards': 28
+        'num_shards': 28,
       }
     ],
     'platform': 'android-webview-google',
     'dimension': {
       'pool': 'chrome.tests.perf-webview',
+      'os': 'Android',
+      'device_type': 'walleye',
+      'device_os': 'OPM1.171019.021',
+      'device_os_flavor': 'google',
+    },
+  },
+  'android-pixel2_weblayer-perf': {
+    'tests': [
+      {
+        'isolate': 'performance_weblayer_test_suite',
+        'extra_args': [
+          '--test-shard-map-filename=android-pixel2_weblayer-perf_map.json',
+        ],
+        'num_shards': 4,
+      }
+    ],
+    'platform': 'android-weblayer',
+    'dimension': {
+      'pool': 'chrome.tests.perf-weblayer',
       'os': 'Android',
       'device_type': 'walleye',
       'device_os': 'OPM1.171019.021',
@@ -959,7 +978,8 @@ def get_scheduled_non_telemetry_benchmarks(perf_waterfall_file):
     # on the benchmark bot map instead of on the generated tests
     # for new perf recipe.
     if not name in ('performance_test_suite',
-                    'performance_webview_test_suite'):
+                    'performance_webview_test_suite',
+                    'performance_weblayer_test_suite'):
       test_names.add(name)
 
   return test_names
@@ -1157,6 +1177,11 @@ def generate_telemetry_args(tester_config):
   if tester_config['platform'].startswith('android-webview'):
     test_args.append(
         '--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk')
+  if tester_config['platform'] == 'android-weblayer':
+    test_args.append(
+        '--webview-embedder-apk=../../out/Release/apks/WebLayerShell.apk')
+    test_args.append(
+        '--webview-embedder-apk=../../out/Release/apks/WebLayerSupport.apk')
 
   return test_args
 

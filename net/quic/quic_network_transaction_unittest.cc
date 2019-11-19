@@ -3141,10 +3141,6 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
     quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
                                         2, packet_num++, true));
 
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeConnectionClosePacket(
-                           packet_num++, true, quic::QUIC_NETWORK_IDLE_TIMEOUT,
-                           "No recent network activity."));
   } else {
     // Settings were sent in the request packet so there is only 1 packet to
     // retransmit.
@@ -3163,7 +3159,10 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
     // RTO 3
     quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
                                         1, packet_num++, true));
-
+  }
+  for (auto level :
+       {quic::ENCRYPTION_ZERO_RTT, quic::ENCRYPTION_FORWARD_SECURE}) {
+    client_maker_.SetEncryptionLevel(level);
     quic_data.AddWrite(SYNCHRONOUS,
                        client_maker_.MakeConnectionClosePacket(
                            packet_num++, true, quic::QUIC_NETWORK_IDLE_TIMEOUT,
@@ -3264,9 +3263,15 @@ TEST_P(QuicNetworkTransactionTest, TooManyRtosAfterHandshakeConfirmed) {
     quic_data.AddWrite(SYNCHRONOUS,
                        client_maker_.MakeRetransmissionPacket(2, 12, true));
     // RTO 5
+    client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
     quic_data.AddWrite(SYNCHRONOUS,
                        client_maker_.MakeConnectionClosePacket(
                            13, true, quic::QUIC_TOO_MANY_RTOS,
+                           "5 consecutive retransmission timeouts"));
+    client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeConnectionClosePacket(
+                           14, true, quic::QUIC_TOO_MANY_RTOS,
                            "5 consecutive retransmission timeouts"));
   } else {
     // TLP 1
@@ -3288,9 +3293,15 @@ TEST_P(QuicNetworkTransactionTest, TooManyRtosAfterHandshakeConfirmed) {
     quic_data.AddWrite(SYNCHRONOUS,
                        client_maker_.MakeRetransmissionPacket(1, 7, true));
     // RTO 5
+    client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
     quic_data.AddWrite(SYNCHRONOUS,
                        client_maker_.MakeConnectionClosePacket(
                            8, true, quic::QUIC_TOO_MANY_RTOS,
+                           "5 consecutive retransmission timeouts"));
+    client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeConnectionClosePacket(
+                           9, true, quic::QUIC_TOO_MANY_RTOS,
                            "5 consecutive retransmission timeouts"));
   }
 
@@ -3393,9 +3404,15 @@ TEST_P(QuicNetworkTransactionTest,
     quic_data.AddWrite(SYNCHRONOUS,
                        client_maker_.MakeRetransmissionPacket(2, 12, true));
     // RTO 5
+    client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
     quic_data.AddWrite(SYNCHRONOUS,
                        client_maker_.MakeConnectionClosePacket(
                            13, true, quic::QUIC_TOO_MANY_RTOS,
+                           "5 consecutive retransmission timeouts"));
+    client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeConnectionClosePacket(
+                           14, true, quic::QUIC_TOO_MANY_RTOS,
                            "5 consecutive retransmission timeouts"));
   } else if (FLAGS_quic_allow_http3_priority) {
     quic_data.AddWrite(
@@ -3431,9 +3448,15 @@ TEST_P(QuicNetworkTransactionTest,
     quic_data.AddWrite(SYNCHRONOUS,
                        client_maker_.MakeRetransmissionPacket(1, 13, true));
     // RTO 5
+    client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
     quic_data.AddWrite(SYNCHRONOUS,
                        client_maker_.MakeConnectionClosePacket(
                            14, true, quic::QUIC_TOO_MANY_RTOS,
+                           "5 consecutive retransmission timeouts"));
+    client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeConnectionClosePacket(
+                           15, true, quic::QUIC_TOO_MANY_RTOS,
                            "5 consecutive retransmission timeouts"));
   } else {
     quic_data.AddWrite(
@@ -3471,9 +3494,15 @@ TEST_P(QuicNetworkTransactionTest,
     quic_data.AddWrite(SYNCHRONOUS,
                        client_maker_.MakeRetransmissionPacket(3, 13, true));
     // RTO 5
+    client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
     quic_data.AddWrite(SYNCHRONOUS,
                        client_maker_.MakeConnectionClosePacket(
                            14, true, quic::QUIC_TOO_MANY_RTOS,
+                           "5 consecutive retransmission timeouts"));
+    client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeConnectionClosePacket(
+                           15, true, quic::QUIC_TOO_MANY_RTOS,
                            "5 consecutive retransmission timeouts"));
   }
 
@@ -3547,11 +3576,15 @@ TEST_P(QuicNetworkTransactionTest, ProtocolErrorAfterHandshakeConfirmed) {
                  1, false, GetNthClientInitiatedBidirectionalStreamId(47),
                  quic::QUIC_STREAM_LAST_ERROR));
   std::string quic_error_details = "Data for nonexistent stream";
-  quic_data.AddWrite(SYNCHRONOUS,
-                     ConstructClientAckAndConnectionClosePacket(
-                         packet_num++, quic::QuicTime::Delta::Zero(), 1, 1, 1,
-                         quic::QUIC_INVALID_STREAM_ID, quic_error_details,
-                         quic::IETF_RST_STREAM));
+  for (auto level :
+       {quic::ENCRYPTION_ZERO_RTT, quic::ENCRYPTION_FORWARD_SECURE}) {
+    client_maker_.SetEncryptionLevel(level);
+    quic_data.AddWrite(SYNCHRONOUS,
+                       ConstructClientAckAndConnectionClosePacket(
+                           packet_num++, quic::QuicTime::Delta::Zero(), 1, 1, 1,
+                           quic::QUIC_INVALID_STREAM_ID, quic_error_details,
+                           quic::IETF_RST_STREAM));
+  }
   quic_data.AddSocketDataToFactory(&socket_factory_);
 
   // In order for a new QUIC session to be established via alternate-protocol
@@ -3639,11 +3672,6 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken2) {
                                         1, packet_num++, true));
     quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
                                         2, packet_num++, true));
-
-    quic_data.AddWrite(SYNCHRONOUS,
-                       client_maker_.MakeConnectionClosePacket(
-                           packet_num++, true, quic::QUIC_NETWORK_IDLE_TIMEOUT,
-                           "No recent network activity."));
   } else {
     // TLP 1
     quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
@@ -3660,7 +3688,11 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken2) {
     // RTO 3
     quic_data.AddWrite(SYNCHRONOUS, client_maker_.MakeRetransmissionPacket(
                                         1, packet_num++, true));
+  }
 
+  for (auto level :
+       {quic::ENCRYPTION_ZERO_RTT, quic::ENCRYPTION_FORWARD_SECURE}) {
+    client_maker_.SetEncryptionLevel(level);
     quic_data.AddWrite(SYNCHRONOUS,
                        client_maker_.MakeConnectionClosePacket(
                            packet_num++, true, quic::QUIC_NETWORK_IDLE_TIMEOUT,
@@ -3765,11 +3797,15 @@ TEST_P(QuicNetworkTransactionTest,
                  1, false, GetNthClientInitiatedBidirectionalStreamId(47),
                  quic::QUIC_STREAM_LAST_ERROR));
   std::string quic_error_details = "Data for nonexistent stream";
-  quic_data.AddWrite(SYNCHRONOUS,
-                     ConstructClientAckAndConnectionClosePacket(
-                         packet_num++, quic::QuicTime::Delta::Zero(), 1, 1, 1,
-                         quic::QUIC_INVALID_STREAM_ID, quic_error_details,
-                         quic::IETF_RST_STREAM));
+  for (auto level :
+       {quic::ENCRYPTION_ZERO_RTT, quic::ENCRYPTION_FORWARD_SECURE}) {
+    client_maker_.SetEncryptionLevel(level);
+    quic_data.AddWrite(SYNCHRONOUS,
+                       ConstructClientAckAndConnectionClosePacket(
+                           packet_num++, quic::QuicTime::Delta::Zero(), 1, 1, 1,
+                           quic::QUIC_INVALID_STREAM_ID, quic_error_details,
+                           quic::IETF_RST_STREAM));
+  }
   quic_data.AddSocketDataToFactory(&socket_factory_);
 
   // After that fails, it will be resent via TCP.
@@ -3876,11 +3912,15 @@ TEST_P(QuicNetworkTransactionTest,
                  1, false, GetNthClientInitiatedBidirectionalStreamId(47),
                  quic::QUIC_STREAM_LAST_ERROR));
   std::string quic_error_details = "Data for nonexistent stream";
-  quic_data.AddWrite(
-      SYNCHRONOUS, ConstructClientAckAndConnectionClosePacket(
-                       packet_number++, quic::QuicTime::Delta::Zero(), 1, 1, 1,
-                       quic::QUIC_INVALID_STREAM_ID, quic_error_details,
-                       quic::IETF_RST_STREAM));
+  for (auto level :
+       {quic::ENCRYPTION_ZERO_RTT, quic::ENCRYPTION_FORWARD_SECURE}) {
+    client_maker_.SetEncryptionLevel(level);
+    quic_data.AddWrite(SYNCHRONOUS,
+                       ConstructClientAckAndConnectionClosePacket(
+                           packet_number++, quic::QuicTime::Delta::Zero(), 1, 1,
+                           1, quic::QUIC_INVALID_STREAM_ID, quic_error_details,
+                           quic::IETF_RST_STREAM));
+  }
   quic_data.AddSocketDataToFactory(&socket_factory_);
 
   // After that fails, it will be resent via TCP.
@@ -5574,11 +5614,15 @@ TEST_P(QuicNetworkTransactionTest,
                  1, false, GetNthClientInitiatedBidirectionalStreamId(47),
                  quic::QUIC_STREAM_LAST_ERROR));
   std::string quic_error_details = "Data for nonexistent stream";
-  mock_quic_data.AddWrite(
-      SYNCHRONOUS, ConstructClientAckAndConnectionClosePacket(
-                       packet_num++, quic::QuicTime::Delta::Zero(), 1, 1, 1,
-                       quic::QUIC_INVALID_STREAM_ID, quic_error_details,
-                       quic::IETF_RST_STREAM));
+  for (auto level :
+       {quic::ENCRYPTION_ZERO_RTT, quic::ENCRYPTION_FORWARD_SECURE}) {
+    client_maker_.SetEncryptionLevel(level);
+    mock_quic_data.AddWrite(
+        SYNCHRONOUS, ConstructClientAckAndConnectionClosePacket(
+                         packet_num++, quic::QuicTime::Delta::Zero(), 1, 1, 1,
+                         quic::QUIC_INVALID_STREAM_ID, quic_error_details,
+                         quic::IETF_RST_STREAM));
+  }
   mock_quic_data.AddSocketDataToFactory(&socket_factory_);
 
   // The non-alternate protocol job needs to hang in order to guarantee that

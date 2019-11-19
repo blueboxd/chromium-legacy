@@ -29,7 +29,6 @@
 #include "chrome/android/chrome_jni_headers/WebApkInstaller_jni.h"
 #include "chrome/browser/android/color_helpers.h"
 #include "chrome/browser/android/shortcut_helper.h"
-#include "chrome/browser/android/webapk/chrome_webapk_host.h"
 #include "chrome/browser/android/webapk/webapk.pb.h"
 #include "chrome/browser/android/webapk/webapk_icon_hasher.h"
 #include "chrome/browser/android/webapk/webapk_install_service.h"

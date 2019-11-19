@@ -199,11 +199,6 @@ void ToolbarButton::SetLabelSideSpacing(int spacing) {
   }
 }
 
-void ToolbarButton::OverrideLayoutInsets(const gfx::Insets& insets) {
-  layout_insets_ = insets;
-  UpdateColorsAndInsets();
-}
-
 void ToolbarButton::SetLayoutInsetDelta(const gfx::Insets& inset_delta) {
   if (layout_inset_delta_ == inset_delta)
     return;
@@ -233,6 +228,11 @@ void ToolbarButton::ClearPendingMenu() {
 
 bool ToolbarButton::IsMenuShowing() const {
   return menu_showing_;
+}
+
+void ToolbarButton::SetLayoutInsets(const gfx::Insets& insets) {
+  layout_insets_ = insets;
+  UpdateColorsAndInsets();
 }
 
 void ToolbarButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {

@@ -8,6 +8,12 @@
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 
 namespace gpu {
+#if defined(OS_WIN)
+// If the actual time the watched GPU thread spent doing actual work is less
+// than the wathdog timeout, the GPU thread can continue running through
+// OnGPUWatchdogTimeout for at most 4 times before the gpu thread is killed.
+constexpr int kMaxCountOfMoreGpuThreadTimeAllowed = 4;
+#endif
 
 class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
     : public GpuWatchdogThread,
@@ -58,6 +64,10 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   bool IsArmed();
   void OnWatchdogTimeout();
   bool GpuIsAlive();
+  bool WatchedThreadNeedsMoreTime(bool no_gpu_hang_detected);
+#if defined(OS_WIN)
+  base::ThreadTicks GetWatchedThreadTime();
+#endif
 
   // Do not change the function name. It is used for [GPU HANG] carsh reports.
   void DeliberatelyTerminateToRecoverFromHang();
@@ -82,13 +92,27 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   base::TimeTicks backgrounded_timeticks_;
   base::TimeTicks foregrounded_timeticks_;
 
-  // Time:      Interpreting the wall-clock time provided by a remote system.
   // TimeTicks: Tracking the amount of time a task runs. Executing delayed
   //            tasks at the right time.
+  // ThreadTicks: Use this timer to (approximately) measure how much time the
+  // calling thread spent doing actual work vs. being de-scheduled.
 
   // The time the last OnWatchdogTimeout() was called.
   base::TimeTicks last_on_watchdog_timeout_timeticks_;
-  base::Time last_on_watchdog_timeout_time_;
+#if defined(OS_WIN)
+  base::ThreadTicks last_on_watchdog_timeout_thread_ticks_;
+
+  // The difference between the timeout and the actual time the watched thread
+  // spent doing actual work.
+  base::TimeDelta remaining_watched_thread_ticks_;
+
+  // The Windows thread hanndle of the watched GPU main thread.
+  void* watched_thread_handle_ = nullptr;
+
+  // After GPU hang detected, how many times has the GPU thread been allowed to
+  // continue due to not enough thread time.
+  int count_of_more_gpu_thread_time_allowed = 0;
+#endif
 
   // The system has entered the power suspension mode.
   bool in_power_suspension_ = false;

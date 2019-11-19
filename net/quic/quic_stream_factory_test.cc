@@ -12122,11 +12122,14 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleAsyncResolveAsyncNoMatch) {
     quic_data.AddWrite(SYNCHRONOUS,
                        ConstructInitialSettingsPacket(packet_num++));
   }
-  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
-  quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeConnectionClosePacket(
-                         packet_num++, true,
-                         quic::QUIC_STALE_CONNECTION_CANCELLED, "net error"));
+  for (auto level :
+       {quic::ENCRYPTION_ZERO_RTT, quic::ENCRYPTION_FORWARD_SECURE}) {
+    client_maker_.SetEncryptionLevel(level);
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeConnectionClosePacket(
+                           packet_num++, true,
+                           quic::QUIC_STALE_CONNECTION_CANCELLED, "net error"));
+  }
   quic_data.AddSocketDataToFactory(socket_factory_.get());
 
   client_maker_.Reset();
@@ -12208,13 +12211,17 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceResolveAsyncStaleAsyncNoMatch) {
   quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
   int packet_number = 1;
-  if (VersionUsesHttp3(version_.transport_version))
+  if (VersionUsesHttp3(version_.transport_version)) {
     quic_data.AddWrite(SYNCHRONOUS,
                        ConstructInitialSettingsPacket(packet_number++));
-  quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeConnectionClosePacket(
-                         packet_number++, true,
-                         quic::QUIC_STALE_CONNECTION_CANCELLED, "net error"));
+  }
+  for (auto level : {quic::ENCRYPTION_INITIAL, quic::ENCRYPTION_ZERO_RTT}) {
+    client_maker_.SetEncryptionLevel(level);
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeConnectionClosePacket(
+                           packet_number++, true,
+                           quic::QUIC_STALE_CONNECTION_CANCELLED, "net error"));
+  }
   quic_data.AddSocketDataToFactory(socket_factory_.get());
 
   client_maker_.Reset();
@@ -12582,10 +12589,13 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceResolveAsyncErrorStaleAsync) {
     quic_data.AddWrite(SYNCHRONOUS,
                        ConstructInitialSettingsPacket(packet_number++));
   }
-  quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeConnectionClosePacket(
-                         packet_number++, true,
-                         quic::QUIC_STALE_CONNECTION_CANCELLED, "net error"));
+  for (auto level : {quic::ENCRYPTION_INITIAL, quic::ENCRYPTION_ZERO_RTT}) {
+    client_maker_.SetEncryptionLevel(level);
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeConnectionClosePacket(
+                           packet_number++, true,
+                           quic::QUIC_STALE_CONNECTION_CANCELLED, "net error"));
+  }
   quic_data.AddSocketDataToFactory(socket_factory_.get());
 
   QuicStreamRequest request(factory_.get());
@@ -12647,10 +12657,13 @@ TEST_P(QuicStreamFactoryTest,
     quic_data.AddWrite(SYNCHRONOUS,
                        ConstructInitialSettingsPacket(packet_number++));
   }
-  quic_data.AddWrite(SYNCHRONOUS,
-                     client_maker_.MakeConnectionClosePacket(
-                         packet_number++, true,
-                         quic::QUIC_STALE_CONNECTION_CANCELLED, "net error"));
+  for (auto level : {quic::ENCRYPTION_INITIAL, quic::ENCRYPTION_ZERO_RTT}) {
+    client_maker_.SetEncryptionLevel(level);
+    quic_data.AddWrite(SYNCHRONOUS,
+                       client_maker_.MakeConnectionClosePacket(
+                           packet_number++, true,
+                           quic::QUIC_STALE_CONNECTION_CANCELLED, "net error"));
+  }
   quic_data.AddSocketDataToFactory(socket_factory_.get());
 
   QuicStreamRequest request(factory_.get());

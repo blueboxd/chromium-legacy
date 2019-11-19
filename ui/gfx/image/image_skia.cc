@@ -497,7 +497,7 @@ void ImageSkia::RemoveUnsupportedRepresentationsForScale(float scale) {
 
 void ImageSkia::Init(const ImageSkiaRep& image_rep) {
   if (image_rep.GetBitmap().drawsNothing()) {
-    storage_ = NULL;
+    storage_.reset();
     return;
   }
   storage_ = new internal::ImageSkiaStorage(

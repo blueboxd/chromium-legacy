@@ -129,7 +129,7 @@ class WPTMetadataBuilderTest(unittest.TestCase):
         test_names = metadata_builder.get_test_names_to_skip()
         self.assertFalse(test_names)
 
-    def test_wpt_test_with_baseline(self):
+    def test_wpt_test_with_fail_baseline(self):
         """A WPT test with a baseline file containing failures gets metadata."""
         test_name = "external/wpt/dir/zzzz.html"
         # Manually initialize the baseline file and its contents
@@ -137,6 +137,38 @@ class WPTMetadataBuilderTest(unittest.TestCase):
         self.host.filesystem.write_text_file(
             os.path.join(self.port.web_tests_dir(), baseline_filename),
             "This is a test\nPASS some subtest\nFAIL some failing subtest\n")
+        expectations = TestExpectations(self.port)
+        metadata_builder = WPTMetadataBuilder(expectations, self.port)
+        filename, contents = metadata_builder.get_metadata_filename_and_contents(test_name, 'FAIL')
+        self.assertEqual(os.path.join("dir", "zzzz.html.ini"), filename)
+        self.assertEqual(
+            "[zzzz.html]\n  blink_expect_any_subtest_status: True # wpt_metadata_builder.py\n",
+            contents)
+
+    def test_wpt_test_with_notrun_baseline(self):
+        """A WPT test with a baseline file containing notrun test gets metadata."""
+        test_name = "external/wpt/dir/zzzz.html"
+        # Manually initialize the baseline file and its contents
+        baseline_filename = "external/wpt/dir/zzzz-expected.txt"
+        self.host.filesystem.write_text_file(
+            os.path.join(self.port.web_tests_dir(), baseline_filename),
+            "This is a test\nPASS some subtest\nNOTRUN some not run subtest\n")
+        expectations = TestExpectations(self.port)
+        metadata_builder = WPTMetadataBuilder(expectations, self.port)
+        filename, contents = metadata_builder.get_metadata_filename_and_contents(test_name, 'FAIL')
+        self.assertEqual(os.path.join("dir", "zzzz.html.ini"), filename)
+        self.assertEqual(
+            "[zzzz.html]\n  blink_expect_any_subtest_status: True # wpt_metadata_builder.py\n",
+            contents)
+
+    def test_wpt_test_with_timeout_baseline(self):
+        """A WPT test with a baseline file containing timeouts gets metadata."""
+        test_name = "external/wpt/dir/zzzz.html"
+        # Manually initialize the baseline file and its contents
+        baseline_filename = "external/wpt/dir/zzzz-expected.txt"
+        self.host.filesystem.write_text_file(
+            os.path.join(self.port.web_tests_dir(), baseline_filename),
+            "This is a test\nPASS some subtest\nTIMEOUT some timeout subtest\n")
         expectations = TestExpectations(self.port)
         metadata_builder = WPTMetadataBuilder(expectations, self.port)
         filename, contents = metadata_builder.get_metadata_filename_and_contents(test_name, 'FAIL')

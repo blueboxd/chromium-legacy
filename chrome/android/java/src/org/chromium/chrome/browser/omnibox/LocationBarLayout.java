@@ -367,7 +367,10 @@ public class LocationBarLayout extends FrameLayout
 
     /** Focuses the current page. */
     private void focusCurrentTab() {
-        if (mToolbarDataProvider.hasTab()) getCurrentTab().requestFocus();
+        if (mToolbarDataProvider.hasTab()) {
+            View view = getCurrentTab().getView();
+            if (view != null) view.requestFocus();
+        }
     }
 
     @Override

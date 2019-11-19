@@ -1291,7 +1291,7 @@
               "ssd": "0"
             }
           ],
-          "shards": 10
+          "shards": 4
         },
         "test": "content_browsertests"
       },

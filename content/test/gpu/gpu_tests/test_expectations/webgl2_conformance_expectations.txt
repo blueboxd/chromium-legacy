@@ -119,6 +119,24 @@ crbug.com/angleproject/2994 [ opengl win passthrough intel ] conformance2/textur
 # Intel driver issues
 crbug.com/602688 [ opengl win passthrough intel ] conformance2/glsl3/vector-dynamic-indexing.html [ Failure ]
 
+# Intel driver 26.20.100.7323 issues
+crbug.com/1016459 [ opengl win passthrough intel ] conformance/textures/image_bitmap_from_video/tex-2d-alpha-alpha-unsigned_byte.html [ Skip ]
+crbug.com/1016459 [ opengl win passthrough intel ] conformance/textures/image_bitmap_from_video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Skip ]
+crbug.com/1016459 [ opengl win passthrough intel ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Skip ]
+crbug.com/1016459 [ opengl win passthrough intel ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_byte.html [ Skip ]
+crbug.com/1016459 [ opengl win passthrough intel ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Skip ]
+crbug.com/1016459 [ opengl win passthrough intel ] conformance2/textures/image_bitmap_from_video/tex-2d-rgb5_a1-rgba-unsigned_byte.html [ Skip ]
+crbug.com/1016459 [ opengl win passthrough intel ] conformance2/textures/image_bitmap_from_video/tex-3d-rgb10_a2-rgba-unsigned_int_2_10_10_10_rev.html [ Skip ]
+crbug.com/1016459 [ opengl win passthrough intel ] conformance2/textures/image_bitmap_from_video/tex-3d-rgb9_e5-rgb-half_float.html [ Skip ]
+crbug.com/1016459 [ opengl win passthrough intel ] conformance2/textures/image_bitmap_from_video/tex-3d-rgba16f-rgba-half_float.html [ Skip ]
+crbug.com/1016459 [ opengl win passthrough intel ] conformance2/textures/misc/tex-image-with-bad-args-from-dom-elements.html [ Skip ]
+crbug.com/1016459 [ opengl win passthrough intel ] conformance2/textures/video/tex-2d-rg8ui-rg_integer-unsigned_byte.html [ Skip ]
+crbug.com/1016459 [ opengl win passthrough intel ] conformance2/textures/video/tex-2d-rgb9_e5-rgb-float.html [ Skip ]
+crbug.com/1016459 [ opengl win passthrough intel ] conformance2/textures/video/tex-2d-rgba32f-rgba-float.html [ Skip ]
+crbug.com/1016459 [ opengl win passthrough intel ] conformance2/textures/video/tex-2d-srgb8_alpha8-rgba-unsigned_byte.html [ Skip ]
+crbug.com/1016459 [ opengl win passthrough intel ] conformance2/textures/video/tex-3d-rgb10_a2-rgba-unsigned_int_2_10_10_10_rev.html [ Skip ]
+crbug.com/1016459 [ opengl win passthrough intel ] conformance2/textures/video/tex-3d-rgb565-rgb-unsigned_byte.html [ Skip ]
+
 # Passthrough command decoder / Windows / OpenGL / Intel
 # This case causes no-over-optimization-on-uniform-array fail.
 crbug.com/884210 [ opengl win passthrough intel ] conformance/ogles/GL/gl_FragCoord/gl_FragCoord_001_to_003.html [ Skip ]
@@ -795,21 +813,3 @@ crbug.com/angleproject/3753 [ android opengles ] conformance/textures/misc/textu
 # Conflicts if between a generic os condition and a specific version
 #[ sierra nvidia debug opengl ] WebglExtension_test_10 [ Failure ]
 #[ mac nvidia debug opengl ] WebglExtension_test_10 [ Failure ]
-
-# Attempts to update the Intel driver as leading to test failures.
-crbug.com/1016459 [ win intel ] conformance/textures/image_bitmap_from_video/tex-2d-alpha-alpha-unsigned_byte.html [ Skip ]
-crbug.com/1016459 [ win intel ] conformance/textures/image_bitmap_from_video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Skip ]
-crbug.com/1016459 [ win intel ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Skip ]
-crbug.com/1016459 [ win intel ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_byte.html [ Skip ]
-crbug.com/1016459 [ win intel ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Skip ]
-crbug.com/1016459 [ win intel ] conformance2/textures/image_bitmap_from_video/tex-2d-rgb5_a1-rgba-unsigned_byte.html [ Skip ]
-crbug.com/1016459 [ win intel ] conformance2/textures/image_bitmap_from_video/tex-3d-rgb10_a2-rgba-unsigned_int_2_10_10_10_rev.html [ Skip ]
-crbug.com/1016459 [ win intel ] conformance2/textures/image_bitmap_from_video/tex-3d-rgb9_e5-rgb-half_float.html [ Skip ]
-crbug.com/1016459 [ win intel ] conformance2/textures/image_bitmap_from_video/tex-3d-rgba16f-rgba-half_float.html [ Skip ]
-crbug.com/1016459 [ win intel ] conformance2/textures/misc/tex-image-with-bad-args-from-dom-elements.html [ Skip ]
-crbug.com/1016459 [ win intel ] conformance2/textures/video/tex-2d-rg8ui-rg_integer-unsigned_byte.html [ Skip ]
-crbug.com/1016459 [ win intel ] conformance2/textures/video/tex-2d-rgb9_e5-rgb-float.html [ Skip ]
-crbug.com/1016459 [ win intel ] conformance2/textures/video/tex-2d-rgba32f-rgba-float.html [ Skip ]
-crbug.com/1016459 [ win intel ] conformance2/textures/video/tex-2d-srgb8_alpha8-rgba-unsigned_byte.html [ Skip ]
-crbug.com/1016459 [ win intel ] conformance2/textures/video/tex-3d-rgb10_a2-rgba-unsigned_int_2_10_10_10_rev.html [ Skip ]
-crbug.com/1016459 [ win intel ] conformance2/textures/video/tex-3d-rgb565-rgb-unsigned_byte.html [ Skip ]

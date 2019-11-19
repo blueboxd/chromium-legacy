@@ -501,6 +501,11 @@
           'idempotent': False, # https://crbug.com/1013093
         },
       },
+      'linux-chromeos-rel': {
+        'swarming': {
+          'shards': 3,
+        },
+      },
     },
   },
   'content_shell_crash_test': {

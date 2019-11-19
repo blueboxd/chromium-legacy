@@ -351,7 +351,7 @@ std::string NeuralStylusPalmDetectionFilter::FilterNameForTesting() const {
 }
 
 const std::vector<int> NeuralStylusPalmDetectionFilter::kRequiredAbsMtCodes = {
-    ABS_MT_TOOL_TYPE, ABS_MT_POSITION_X, ABS_MT_POSITION_Y, ABS_MT_TOUCH_MAJOR};
+    ABS_MT_POSITION_X, ABS_MT_POSITION_Y, ABS_MT_TOUCH_MAJOR};
 
 bool NeuralStylusPalmDetectionFilter::
     CompatibleWithNeuralStylusPalmDetectionFilter(

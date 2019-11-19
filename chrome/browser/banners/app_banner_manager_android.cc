@@ -14,7 +14,6 @@
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/tab_web_contents_delegate_android.h"
-#include "chrome/browser/android/webapk/chrome_webapk_host.h"
 #include "chrome/browser/android/webapk/webapk_metrics.h"
 #include "chrome/browser/android/webapk/webapk_web_manifest_checker.h"
 #include "chrome/browser/android/webapps/add_to_homescreen_installer.h"
@@ -70,7 +69,6 @@ namespace banners {
 AppBannerManagerAndroid::AppBannerManagerAndroid(
     content::WebContents* web_contents)
     : AppBannerManager(web_contents) {
-  can_install_webapk_ = ChromeWebApkHost::CanInstallWebApk();
   CreateJavaBannerManager(web_contents);
 }
 
@@ -168,7 +166,7 @@ InstallableParams
 AppBannerManagerAndroid::ParamsToPerformInstallableWebAppCheck() {
   InstallableParams params =
       AppBannerManager::ParamsToPerformInstallableWebAppCheck();
-  params.valid_badge_icon = can_install_webapk_;
+  params.valid_badge_icon = true;
   params.prefer_maskable_icon =
       ShortcutHelper::DoesAndroidSupportMaskableIcons();
 
@@ -183,7 +181,7 @@ void AppBannerManagerAndroid::PerformInstallableChecks() {
 }
 
 void AppBannerManagerAndroid::PerformInstallableWebAppCheck() {
-  if (can_install_webapk_ && !AreWebManifestUrlsWebApkCompatible(manifest_)) {
+  if (!AreWebManifestUrlsWebApkCompatible(manifest_)) {
     Stop(URL_NOT_SUPPORTED_FOR_WEBAPK);
     return;
   }
@@ -216,9 +214,7 @@ void AppBannerManagerAndroid::ShowBannerUi(WebappInstallSource install_source) {
   auto a2hs_params = std::make_unique<AddToHomescreenParams>();
   a2hs_params->primary_icon = primary_icon_;
   if (native_app_data_.is_null()) {
-    a2hs_params->app_type = can_install_webapk_
-                                ? AddToHomescreenParams::AppType::WEBAPK
-                                : AddToHomescreenParams::AppType::SHORTCUT;
+    a2hs_params->app_type = AddToHomescreenParams::AppType::WEBAPK;
     a2hs_params->shortcut_info = ShortcutHelper::CreateShortcutInfo(
         manifest_url_, manifest_, primary_icon_url_, badge_icon_url_);
     a2hs_params->install_source = install_source;

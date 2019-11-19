@@ -2406,6 +2406,50 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_TRUE(new_browser->window()->IsMaximized());
 }
 
+namespace {
+
+void NewBrowerWindowStateStep2(DetachToBrowserTabDragControllerTest* test,
+                               TabStrip* tab_strip) {
+  // There should be two browser windows, including the newly created one for
+  // the dragged tab.
+  EXPECT_EQ(3u, test->browser_list->size());
+
+  // Get this new created window for the dragged tab.
+  Browser* new_browser = test->browser_list->get(2);
+  aura::Window* window = new_browser->window()->GetNativeWindow();
+  EXPECT_NE(window->GetProperty(aura::client::kShowStateKey),
+            ui::SHOW_STATE_MAXIMIZED);
+  EXPECT_EQ(window->GetProperty(aura::client::kShowStateKey),
+            ui::SHOW_STATE_DEFAULT);
+
+  ASSERT_TRUE(test->ReleaseInput());
+}
+
+}  // namespace
+
+// Test that tab dragging can work on a browser window with its initial show
+// state is MAXIMIZED.
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
+                       NewBrowerWindowState) {
+  // Create a browser window whose initial show state is MAXIMIZED.
+  Browser::CreateParams params(browser()->profile(), /*user_gesture=*/false);
+  params.initial_show_state = ui::SHOW_STATE_MAXIMIZED;
+  Browser* browser = new Browser(params);
+  AddBlankTabAndShow(browser);
+  TabStrip* tab_strip = GetTabStripForBrowser(browser);
+  AddTabsAndResetBrowser(browser, 1);
+
+  // Maximize the browser window.
+  browser->window()->Maximize();
+  EXPECT_EQ(browser->window()->GetNativeWindow()->GetProperty(
+                aura::client::kShowStateKey),
+            ui::SHOW_STATE_MAXIMIZED);
+
+  // Drag it far enough that the first tab detaches.
+  DragTabAndNotify(tab_strip,
+                   base::BindOnce(&NewBrowerWindowStateStep2, this, tab_strip));
+}
+
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
                        OffsetForDraggingInMaximizedWindow) {
   AddTabsAndResetBrowser(browser(), 1);

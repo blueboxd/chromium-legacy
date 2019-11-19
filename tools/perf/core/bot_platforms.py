@@ -167,6 +167,8 @@ _ANDROID_NEXUS_6_WEBVIEW_BENCHMARK_CONFIGS = (
 _ANDROID_PIXEL2_BENCHMARK_CONFIGS = _OFFICIAL_EXCEPT_DISPLAY_LOCKING
 _ANDROID_PIXEL2_WEBVIEW_BENCHMARK_CONFIGS = (
     _OFFICIAL_EXCEPT_DISPLAY_LOCKING_JETSTREAM2)
+_ANDROID_PIXEL2_WEBLAYER_BENCHMARK_CONFIGS = frozenset([
+    _GetBenchmarkConfig('system_health.common_mobile')])
 _ANDROID_NEXUS5X_FYI_BENCHMARK_CONFIGS = frozenset([
     _GetBenchmarkConfig('heap_profiling.mobile.disabled'),
     _GetBenchmarkConfig('heap_profiling.mobile.native'),
@@ -239,7 +241,9 @@ ANDROID_PIXEL2 = PerfPlatform(
 ANDROID_PIXEL2_WEBVIEW = PerfPlatform(
     'android-pixel2_webview-perf', 'Android OPM1.171019.021',
     _ANDROID_PIXEL2_WEBVIEW_BENCHMARK_CONFIGS, 28, 'android')
-
+ANDROID_PIXEL2_WEBLAYER = PerfPlatform(
+    'android-pixel2_weblayer-perf', 'Android OPM1.171019.021',
+    _ANDROID_PIXEL2_WEBLAYER_BENCHMARK_CONFIGS, 4, 'android')
 # FYI bots
 WIN_10_LOW_END_HP_CANDIDATE = PerfPlatform(
     'win-10_laptop_low_end-perf_HP-Candidate', 'HP 15-BS121NR Laptop Candidate',

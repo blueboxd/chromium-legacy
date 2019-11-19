@@ -196,7 +196,7 @@ class WebAppFrameToolbarView : public views::AccessiblePaneView,
   base::OneShotTimer icon_fade_in_delay_;
 
   // The containing browser view.
-  BrowserView* browser_view_;
+  BrowserView* const browser_view_;
 
   // Button and text colors.
   bool paint_as_active_ = true;

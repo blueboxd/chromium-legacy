@@ -4893,7 +4893,7 @@
           '--disable-features=VizDisplayCompositor',
         ],
         'swarming': {
-          'shards': 10,
+          'shards': 4,
         },
         'test': 'content_browsertests',
       },

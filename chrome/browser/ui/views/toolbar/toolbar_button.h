@@ -78,6 +78,9 @@ class ToolbarButton : public views::LabelButton,
   void ClearPendingMenu();
   bool IsMenuShowing() const;
 
+  // Sets |layout_insets_|, see comment there.
+  void SetLayoutInsets(const gfx::Insets& insets);
+
   // views::LabelButton:
   void SetText(const base::string16& text) override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
@@ -128,9 +131,6 @@ class ToolbarButton : public views::LabelButton,
 
   // Function to show the dropdown menu.
   virtual void ShowDropDownMenu(ui::MenuSourceType source_type);
-
-  // Sets |layout_insets_|, see comment there.
-  void OverrideLayoutInsets(const gfx::Insets& insets);
 
   // Sets |layout_inset_delta_|, see comment there.
   void SetLayoutInsetDelta(const gfx::Insets& insets);

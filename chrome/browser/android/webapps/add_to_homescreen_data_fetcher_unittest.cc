@@ -18,7 +18,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/installable/installable_metrics.h"
@@ -570,27 +569,4 @@ TEST_F(AddToHomescreenDataFetcherTest, ManifestNoNameNoShortName) {
   EXPECT_FALSE(fetcher->primary_icon().drawsNothing());
   EXPECT_EQ(fetcher->shortcut_info().best_primary_icon_url,
             GURL(kDefaultIconUrl));
-}
-
-TEST_F(AddToHomescreenDataFetcherTest, WebApkFeatureDisabled) {
-  // Test that AddToHomescreenDataFetcher considers Web Manifests as not
-  // WebAPK-compatible when the "Improved add to homescreen" feature is
-  // disabled via variations.
-  bool kTestCasesEnableWebapkFeature[] = {true, false};
-
-  SetManifest(BuildDefaultManifest());
-
-  for (bool enable_webapk_feature : kTestCasesEnableWebapkFeature) {
-    base::test::ScopedFeatureList scoped_feature_list;
-    if (enable_webapk_feature)
-      scoped_feature_list.InitAndEnableFeature(chrome::android::kImprovedA2HS);
-    else
-      scoped_feature_list.InitAndDisableFeature(chrome::android::kImprovedA2HS);
-
-    ObserverWaiter waiter;
-    std::unique_ptr<AddToHomescreenDataFetcher> fetcher = BuildFetcher(&waiter);
-    RunFetcher(fetcher.get(), waiter, kDefaultManifestShortName,
-               kDefaultManifestName, blink::mojom::DisplayMode::kStandalone,
-               enable_webapk_feature);
-  }
 }

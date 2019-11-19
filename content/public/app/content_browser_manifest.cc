@@ -205,7 +205,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.PrefetchURLLoaderService",
                   "blink.mojom.QuotaDispatcherHost",
                   "blink.mojom.SharedWorkerConnector",
-                  "content.mojom.BrowserTarget",
                   "content.mojom.InputInjector",
                   "content.mojom.RendererAudioInputStreamFactory",
                   "content.mojom.RendererAudioOutputStreamFactory",

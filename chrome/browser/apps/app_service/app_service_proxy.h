@@ -235,6 +235,9 @@ class AppServiceProxy : public KeyedService,
   void OnAppRegistryCacheWillBeDestroyed(
       apps::AppRegistryCache* cache) override;
 
+  apps::mojom::IntentFilterPtr FindBestMatchingFilter(
+      const apps::mojom::IntentPtr& intent);
+
   // This proxy privately owns its instance of the App Service. This should not
   // be exposed except through the Mojo interface connected to |app_service_|.
   std::unique_ptr<apps::AppServiceImpl> app_service_impl_;

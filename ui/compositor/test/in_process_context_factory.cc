@@ -336,7 +336,7 @@ InProcessContextFactory::SharedMainThreadContextProvider() {
       &gpu_memory_buffer_manager_, &image_factory_, support_locking);
   auto result = shared_main_thread_contexts_->BindToCurrentThread();
   if (result != gpu::ContextResult::kSuccess)
-    shared_main_thread_contexts_ = NULL;
+    shared_main_thread_contexts_.reset();
 
   return shared_main_thread_contexts_;
 }

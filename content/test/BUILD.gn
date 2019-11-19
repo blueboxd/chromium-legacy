@@ -1098,6 +1098,7 @@ test("content_browsertests") {
     "//content/shell:content_shell_lib",
     "//content/shell:mojo_bindings",
     "//content/shell:pak",
+    "//content/test:mojo_web_test_bindings",
     "//content/test:test_support",
     "//device/base/synchronization",
     "//gin",

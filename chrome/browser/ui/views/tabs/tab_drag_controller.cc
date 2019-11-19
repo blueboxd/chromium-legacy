@@ -1995,6 +1995,11 @@ Browser* TabDragController::CreateBrowserForDrag(
   create_params.user_gesture = true;
   create_params.in_tab_dragging = true;
   create_params.initial_bounds = new_bounds;
+  // Do not copy attached window's show state as the attached window might be a
+  // maximized or fullscreen window and we do not want the newly created browser
+  // window is a maximized or fullscreen window since it will prevent window
+  // moving/resizing on Chrome OS. See crbug.com/1023871 for details.
+  create_params.initial_show_state = ui::SHOW_STATE_DEFAULT;
   Browser* browser = new Browser(create_params);
   is_dragging_new_browser_ = true;
   // If the window is created maximized then the bounds we supplied are ignored.

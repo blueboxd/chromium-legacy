@@ -23,25 +23,6 @@
 #include "content/public/browser/url_data_source.h"
 #include "url/url_constants.h"
 
-namespace {
-
-apps::mojom::IntentFilterPtr FindBestMatchingFilter(
-    const apps::mojom::IntentPtr& intent) {
-  // TODO(crbug.com/853604): Update the matching util method to return how well
-  // the match is instead of just bool. And return the best match here. At the
-  // moment just return the url filter itself.
-  apps::mojom::IntentFilterPtr intent_filter;
-  if (intent->scheme.has_value() && intent->host.has_value() &&
-      intent->path.has_value()) {
-    intent_filter = apps_util::CreateIntentFilterForUrlScope(
-        GURL(intent->scheme.value() + url::kStandardSchemeSeparator +
-             intent->host.value() + intent->path.value()));
-  }
-  return intent_filter;
-}
-
-}  // namespace
-
 namespace apps {
 
 AppServiceProxy::InnerIconLoader::InnerIconLoader(AppServiceProxy* host)
@@ -505,6 +486,31 @@ void AppServiceProxy::OnAppUpdate(const apps::AppUpdate& update) {
 void AppServiceProxy::OnAppRegistryCacheWillBeDestroyed(
     apps::AppRegistryCache* cache) {
   Observe(nullptr);
+}
+
+apps::mojom::IntentFilterPtr AppServiceProxy::FindBestMatchingFilter(
+    const apps::mojom::IntentPtr& intent) {
+  apps::mojom::IntentFilterPtr best_matching_intent_filter;
+  if (!app_service_.is_bound()) {
+    return best_matching_intent_filter;
+  }
+
+  int best_match_level = apps_util::IntentFilterMatchLevel::kNone;
+  cache_.ForEachApp([&intent, &best_match_level, &best_matching_intent_filter](
+                        const apps::AppUpdate& update) {
+    for (const auto& filter : update.IntentFilters()) {
+      if (!apps_util::IntentMatchesFilter(intent, filter)) {
+        continue;
+      }
+      auto match_level = apps_util::GetFilterMatchLevel(filter);
+      if (match_level <= best_match_level) {
+        continue;
+      }
+      best_matching_intent_filter = filter->Clone();
+      best_match_level = match_level;
+    }
+  });
+  return best_matching_intent_filter;
 }
 
 }  // namespace apps

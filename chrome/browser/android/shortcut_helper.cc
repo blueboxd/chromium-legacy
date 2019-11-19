@@ -23,7 +23,6 @@
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/color_helpers.h"
 #include "chrome/browser/android/tab_android.h"
-#include "chrome/browser/android/webapk/chrome_webapk_host.h"
 #include "chrome/browser/android/webapk/webapk_install_service.h"
 #include "chrome/browser/android/webapk/webapk_metrics.h"
 #include "chrome/common/chrome_switches.h"

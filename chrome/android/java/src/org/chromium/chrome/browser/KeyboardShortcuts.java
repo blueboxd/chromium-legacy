@@ -328,7 +328,7 @@ public class KeyboardShortcuts {
                                 && tab.getWebContents().focusLocationBarByDefault()) {
                             activity.getToolbarManager().revertLocationBarChanges();
                         } else {
-                            tab.requestFocus();
+                            if (tab.getView() != null) tab.getView().requestFocus();
                         }
                     }
                     return true;

@@ -1967,7 +1967,7 @@
   {
     "name": "enable-usbguard",
     "owners": [ "allenwebb", "mnissler", "jorgelo" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 84
   },
   {
     "name": "enable-use-hdr-transfer-function",

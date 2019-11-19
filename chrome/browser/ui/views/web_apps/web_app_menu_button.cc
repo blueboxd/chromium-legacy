@@ -32,7 +32,6 @@ WebAppMenuButton::WebAppMenuButton(BrowserView* browser_view)
 
   SetInkDropMode(InkDropMode::ON);
   SetFocusBehavior(FocusBehavior::ALWAYS);
-  OverrideLayoutInsets(gfx::Insets());
 
   // This name is guaranteed not to change during the lifetime of this button.
   // Get the app name only, aka "Google Docs" instead of "My Doc - Google Docs",
@@ -49,10 +48,6 @@ WebAppMenuButton::WebAppMenuButton(BrowserView* browser_view)
                            : GetLayoutConstant(WEB_APP_MENU_BUTTON_SIZE);
   SetMinSize(gfx::Size(size, size));
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  if (!is_focus_mode) {
-    constexpr gfx::Insets kInkDropInsets(2);
-    SetProperty(views::kInternalPaddingKey, kInkDropInsets);
-  }
 }
 
 WebAppMenuButton::~WebAppMenuButton() {}

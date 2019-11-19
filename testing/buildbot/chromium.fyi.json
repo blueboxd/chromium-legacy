@@ -2302,7 +2302,7 @@
         "name": "non_viz_content_browsertests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "shards": 10
+          "shards": 4
         },
         "test": "content_browsertests"
       },
@@ -17497,7 +17497,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
-          "shards": 10
+          "shards": 4
         },
         "test": "content_browsertests"
       },

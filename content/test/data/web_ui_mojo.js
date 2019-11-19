@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 (async () => {
-  const browserTarget = content.mojom.BrowserTarget.getRemote();
+  const browserTarget = content.mojom.BrowserTarget.getRemote(true);
 
   await browserTarget.start();
   browserTarget.stop();

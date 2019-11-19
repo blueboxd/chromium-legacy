@@ -88,9 +88,9 @@ public class AddToHomescreenManagerTest {
             + "</head><body>Webapp capable</body></html>");
 
     private static final String NON_MASKABLE_MANIFEST_TEST_PAGE_PATH =
-            "/chrome/test/data/banners/manifest_test_page.html";
+            "/chrome/test/data/banners/manifest_test_page.html?manifest=manifest_empty_name_short_name.json";
     private static final String MASKABLE_MANIFEST_TEST_PAGE_PATH =
-            "/chrome/test/data/banners/manifest_test_page.html?manifest=manifest_maskable.json";
+            "/chrome/test/data/banners/manifest_test_page.html?manifest=manifest_empty_name_short_name_maskable.json";
     private static final String MANIFEST_TEST_PAGE_TITLE = "Web app banner test page";
 
     private static class TestShortcutHelperDelegate extends ShortcutHelper.Delegate {
@@ -221,9 +221,6 @@ public class AddToHomescreenManagerTest {
     @Test
     @SmallTest
     @Feature("{Webapp}")
-    // The test manifest fulfills the requirements of a WebAPK so disable WebAPKs to force plain old
-    // add to home screen.
-    @CommandLineFlags.Add({"disable-features=ImprovedA2HS"})
     @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.O)
     public void testAddAdaptableShortcut() throws Exception {
         // Test the baseline of no adaptive icon.

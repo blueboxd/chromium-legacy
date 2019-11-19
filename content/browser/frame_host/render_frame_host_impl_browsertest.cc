@@ -43,7 +43,7 @@
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
-#include "content/test/data/web_ui_test_mojo_bindings.mojom.h"
+#include "content/test/data/mojo_web_test_helper_test.mojom.h"
 #include "content/test/did_commit_navigation_interceptor.h"
 #include "content/test/frame_host_test_interface.mojom.h"
 #include "content/test/test_content_browser_client.h"
@@ -2027,8 +2027,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   const GURL kUrl3(embedded_test_server()->GetURL("/title3.html"));
   const GURL kUrl4(embedded_test_server()->GetURL("/empty.html"));
 
-  // The 31-bit hash of the string "content.mojom:BrowserTarget".
-  const int32_t kHashOfContentMojomBrowserTarget = 0x1730feb8;
+  // The 31-bit hash of the string "content.mojom.MojoWebTestHelper".
+  const int32_t kHashOfContentMojomMojoWebTestHelper = 0x77b7b3d6;
 
   // Client ends of the fake interface provider requests injected for the first
   // and second navigations.
@@ -2060,9 +2060,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 
   // Simulate two interface requests corresponding to the first navigation
   // arrived after the second navigation was committed, hence were dropped.
-  interface_provider_1->GetInterface(mojom::BrowserTarget::Name_,
+  interface_provider_1->GetInterface(mojom::MojoWebTestHelper::Name_,
                                      CreateDisconnectedMessagePipeHandle());
-  interface_provider_1->GetInterface(mojom::BrowserTarget::Name_,
+  interface_provider_1->GetInterface(mojom::MojoWebTestHelper::Name_,
                                      CreateDisconnectedMessagePipeHandle());
 
   // RFHI destroys the DroppedInterfaceRequestLogger from navigation `n` on
@@ -2076,11 +2076,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
         "RenderFrameHostImpl.DroppedInterfaceRequests", 2, 1);
     histogram_tester.ExpectUniqueSample(
         "RenderFrameHostImpl.DroppedInterfaceRequestName",
-        kHashOfContentMojomBrowserTarget, 2);
+        kHashOfContentMojomMojoWebTestHelper, 2);
   }
 
   // Simulate one interface request dropped for the second URL.
-  interface_provider_2->GetInterface(mojom::BrowserTarget::Name_,
+  interface_provider_2->GetInterface(mojom::MojoWebTestHelper::Name_,
                                      CreateDisconnectedMessagePipeHandle());
 
   // A final navigation should record the sample from the second URL.
@@ -2091,14 +2091,14 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
         "RenderFrameHostImpl.DroppedInterfaceRequests", 1, 1);
     histogram_tester.ExpectUniqueSample(
         "RenderFrameHostImpl.DroppedInterfaceRequestName",
-        kHashOfContentMojomBrowserTarget, 1);
+        kHashOfContentMojomMojoWebTestHelper, 1);
   }
 
   // Both the DroppedInterfaceRequestLogger for the first and second URLs are
   // destroyed -- even more interfacerequests should not cause any crashes.
-  interface_provider_1->GetInterface(mojom::BrowserTarget::Name_,
+  interface_provider_1->GetInterface(mojom::MojoWebTestHelper::Name_,
                                      CreateDisconnectedMessagePipeHandle());
-  interface_provider_2->GetInterface(mojom::BrowserTarget::Name_,
+  interface_provider_2->GetInterface(mojom::MojoWebTestHelper::Name_,
                                      CreateDisconnectedMessagePipeHandle());
 
   // The interface connections should be broken.

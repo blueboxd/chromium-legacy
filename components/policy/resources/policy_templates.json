@@ -662,6 +662,7 @@
         'DeviceLoginScreenStickyKeysEnabled',
         'DeviceLoginScreenKeyboardFocusHighlightEnabled',
         'DeviceLoginScreenScreenMagnifierType',
+        'DeviceLoginScreenShowOptionsInSystemTrayMenu',
       ],
     },
     {
@@ -10107,6 +10108,31 @@
           When accessiblity features are enabled by other means (e.g by a key combination), Accessibility options will always appear in system tray menu.'''
     },
     {
+      'name': 'DeviceLoginScreenShowOptionsInSystemTrayMenu',
+      'owners': ['file://components/policy/resources/OWNERS'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:80-'],
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 646,
+      'caption': '''Show accessibility options in system tray menu in the login screen''',
+      'tags': [],
+      'desc': '''If this policy is set to true, Accessibility options always appear in system tray menu.
+
+          If this policy is set to false, Accessibility options never appear in system tray menu.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, Accessibility options will not appear in the system tray menu, but the user can cause the Accessibility options to appear via the Settings page.
+
+          When accessiblity features are enabled by other means (e.g by a key combination), Accessibility options will always appear in system tray menu.'''
+    },
+    {
       'name': 'LargeCursorEnabled',
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'main',
@@ -19319,6 +19345,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceAutoUpdateP2PEnabled': 'auto_update_settings.p2p_enabled',
     'DeviceLoginScreenDefaultLargeCursorEnabled': 'accessibility_settings.login_screen_default_large_cursor_enabled',
     'DeviceLoginScreenLargeCursorEnabled': 'accessibility_settings.login_screen_large_cursor_enabled',
+    'DeviceLoginScreenShowOptionsInSystemTrayMenu': 'accessibility_settings.login_screen_show_options_in_system_tray_menu_enabled',
     'DeviceLoginScreenSpokenFeedbackEnabled': 'accessibility_settings.login_screen_spoken_feedback_enabled',
     'DeviceLoginScreenDefaultSpokenFeedbackEnabled': 'accessibility_settings.login_screen_default_spoken_feedback_enabled',
     'DeviceLoginScreenDefaultHighContrastEnabled': 'accessibility_settings.login_screen_default_high_contrast_enabled',
@@ -19845,6 +19872,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 645,
+  'highest_id_currently_used': 646,
   'highest_atomic_group_id_currently_used': 38
 }

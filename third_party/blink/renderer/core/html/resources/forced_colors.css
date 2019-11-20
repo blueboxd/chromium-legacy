@@ -191,6 +191,7 @@
   select:disabled {
     border-color: GrayText;
     color: GrayText;
+    opacity: 1;
   }
 
   meter::-webkit-meter-bar {

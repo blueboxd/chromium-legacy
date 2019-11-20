@@ -40,7 +40,7 @@ const base::Feature kIPHDataSaverDetailFeature{
 const base::Feature kIPHDataSaverMilestonePromoFeature{
     "IPH_DataSaverMilestonePromo", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHDataSaverPreviewFeature{
-    "IPH_DataSaverPreview", base::FEATURE_DISABLED_BY_DEFAULT};
+    "IPH_DataSaverPreview", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHDownloadHomeFeature{"IPH_DownloadHome",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHDownloadPageFeature{"IPH_DownloadPage",
@@ -78,7 +78,7 @@ const base::Feature kIPHKeyboardAccessoryPasswordFillingFeature{
 const base::Feature kIPHKeyboardAccessoryPaymentFillingFeature{
     "IPH_KeyboardAccessoryPaymentFilling", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHPreviewsOmniboxUIFeature{
-    "IPH_PreviewsOmniboxUI", base::FEATURE_DISABLED_BY_DEFAULT};
+    "IPH_PreviewsOmniboxUI", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kIPHTabGroupsQuicklyComparePagesFeature{
     "IPH_TabGroupsQuicklyComparePages", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHTabGroupsTapToSeeAnotherTabFeature{

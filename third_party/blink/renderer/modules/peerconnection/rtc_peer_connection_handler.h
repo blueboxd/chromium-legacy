@@ -142,7 +142,7 @@ class MODULES_EXPORT RTCPeerConnectionHandler
       override;
   void AddICECandidate(
       blink::RTCVoidRequest* request,
-      scoped_refptr<blink::WebRTCICECandidate> candidate) override;
+      scoped_refptr<RTCIceCandidatePlatform> candidate) override;
   void RestartIce() override;
 
   void GetStats(const blink::WebRTCStatsRequest& request) override;

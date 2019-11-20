@@ -98,15 +98,17 @@ def adb_push_db():
 
 
 def get_feed_protos():
-  result = [join(ROOT_DIR, 'components/feed/core/proto/content_storage.proto')]
-  for root, _, files in os.walk(join(ROOT_DIR, "third_party/feed")):
+  result = [
+      join(ROOT_DIR, 'components/feed_library/core/proto/content_storage.proto')
+  ]
+  for root, _, files in os.walk(join(ROOT_DIR, "third_party/feed_library")):
     result += [join(root, f) for f in files if f.endswith('.proto')]
 
   return result
 
 
 protoc_common_args = [
-    '-I' + join(ROOT_DIR, 'third_party/feed/src'), '-I' + join(ROOT_DIR)
+    '-I' + join(ROOT_DIR, 'third_party/feed_library/src'), '-I' + join(ROOT_DIR)
 ] + get_feed_protos()
 
 

@@ -7,6 +7,7 @@
 
 #include "chromeos/services/device_sync/cryptauth_device_manager.h"
 #include "chromeos/services/device_sync/remote_device_provider.h"
+#include "google_apis/gaia/core_account_id.h"
 
 namespace chromeos {
 
@@ -22,7 +23,7 @@ class RemoteDeviceProviderImpl : public RemoteDeviceProvider,
    public:
     static std::unique_ptr<RemoteDeviceProvider> NewInstance(
         CryptAuthDeviceManager* device_manager,
-        const std::string& user_id,
+        const CoreAccountId& user_account_id,
         const std::string& user_private_key);
 
     static void SetInstanceForTesting(Factory* factory);
@@ -31,7 +32,7 @@ class RemoteDeviceProviderImpl : public RemoteDeviceProvider,
     virtual ~Factory();
     virtual std::unique_ptr<RemoteDeviceProvider> BuildInstance(
         CryptAuthDeviceManager* device_manager,
-        const std::string& user_id,
+        const CoreAccountId& user_account_id,
         const std::string& user_private_key);
 
    private:
@@ -39,7 +40,7 @@ class RemoteDeviceProviderImpl : public RemoteDeviceProvider,
   };
 
   RemoteDeviceProviderImpl(CryptAuthDeviceManager* device_manager,
-                           const std::string& user_id,
+                           const CoreAccountId& user_account_id,
                            const std::string& user_private_key);
 
   ~RemoteDeviceProviderImpl() override;
@@ -60,7 +61,7 @@ class RemoteDeviceProviderImpl : public RemoteDeviceProvider,
   CryptAuthDeviceManager* device_manager_;
 
   // The account ID of the current user.
-  const std::string user_id_;
+  const CoreAccountId user_account_id_;
 
   // The private key used to generate RemoteDevices.
   const std::string user_private_key_;

@@ -94,13 +94,11 @@ base::Value GetPrinterCapabilitiesOnBlockingTaskRunner(
     const std::string& device_name,
     const PrinterSemanticCapsAndDefaults::Papers& additional_papers,
     bool has_secure_protocol,
-    scoped_refptr<PrintBackend> print_backend) {
+    scoped_refptr<PrintBackend> backend) {
+  DCHECK(!device_name.empty());
+
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
-  DCHECK(!device_name.empty());
-  scoped_refptr<PrintBackend> backend =
-      print_backend ? print_backend
-                    : printing::PrintBackend::CreateInstance(nullptr);
 
   VLOG(1) << "Get printer capabilities start for " << device_name;
   crash_keys::ScopedPrinterInfo crash_key(

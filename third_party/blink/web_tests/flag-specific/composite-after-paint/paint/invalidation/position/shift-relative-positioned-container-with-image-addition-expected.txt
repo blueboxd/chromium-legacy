@@ -31,14 +31,7 @@
     {
       "name": "VerticalScrollbar",
       "position": [785, 0],
-      "bounds": [15, 600],
-      "paintInvalidations": [
-        {
-          "object": "VerticalScrollbar",
-          "rect": [0, 0, 15, 600],
-          "reason": "scroll control"
-        }
-      ]
+      "bounds": [15, 600]
     }
   ]
 }

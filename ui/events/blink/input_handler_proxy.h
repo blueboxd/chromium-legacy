@@ -168,7 +168,8 @@ class InputHandlerProxy : public cc::InputHandlerClient,
                         const cc::InputHandlerScrollResult& scroll_result);
 
   // Whether to use a smooth scroll animation for this event.
-  bool ShouldAnimate(bool has_precise_scroll_deltas) const;
+  bool ShouldAnimate(blink::WebGestureDevice device,
+                     bool has_precise_scroll_deltas) const;
 
   // Update the elastic overscroll controller with |gesture_event|.
   void HandleScrollElasticityOverscroll(

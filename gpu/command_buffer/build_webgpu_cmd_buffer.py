@@ -20,6 +20,7 @@ _NAMED_TYPE_INFO = {
   'PowerPreference': {
     'type': 'PowerPreference',
     'valid': [
+      'PowerPreference::kDefault',
       'PowerPreference::kHighPerformance',
       'PowerPreference::kLowPower',
     ],
@@ -62,7 +63,8 @@ _FUNCTION_INFO = {
   },
   'RequestAdapter': {
     'impl_func': False,
-    'cmd_args': 'uint32_t power_preference'
+    'internal': True,
+    'cmd_args': 'uint32_t request_adapter_serial, uint32_t power_preference'
   },
 }
 

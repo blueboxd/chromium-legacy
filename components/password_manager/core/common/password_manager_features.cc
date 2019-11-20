@@ -30,6 +30,11 @@ const base::Feature kEnableOverwritingPlaceholderUsernames{
 const base::Feature kEnablePasswordsAccountStorage = {
     "EnablePasswordsAccountStorage", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Provides the UI to save Gaia-account-scoped passwords. Relies on the feature
+// "EnablePasswordsAccountStorage" to be active.
+const base::Feature kEnablePasswordsAccountStorageSavingUi = {
+    "EnablePasswordsAccountStorageSavingUi", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature KEnablePasswordGenerationForClearTextFields = {
     "EnablePasswordGenerationForClearTextFields",
     base::FEATURE_DISABLED_BY_DEFAULT};

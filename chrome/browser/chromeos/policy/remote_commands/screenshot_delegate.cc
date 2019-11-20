@@ -55,7 +55,7 @@ std::unique_ptr<UploadJob> ScreenshotDelegate::CreateUploadJob(
   chromeos::DeviceOAuth2TokenService* device_oauth2_token_service =
       chromeos::DeviceOAuth2TokenServiceFactory::Get();
 
-  std::string robot_account_id =
+  CoreAccountId robot_account_id =
       device_oauth2_token_service->GetRobotAccountId();
 
   SYSLOG(INFO) << "Creating upload job for screenshot";

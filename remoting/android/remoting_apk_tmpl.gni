@@ -10,7 +10,19 @@ template("remoting_apk_tmpl") {
   android_apk(target_name) {
     forward_variables_from(invoker, "*")
 
-    enable_multidex = false
+    if (!is_java_debug) {
+      proguard_enabled = true
+      enable_multidex = false
+      disable_checkdiscard = true
+      if (!defined(proguard_configs)) {
+        proguard_configs = []
+      }
+      proguard_configs += [
+        "//remoting/android/proguard.flags",
+        "//base/android/proguard/chromium_apk.flags",
+        "//base/android/proguard/chromium_code.flags",
+      ]
+    }
 
     android_manifest = "$root_gen_dir/remoting/android/AndroidManifest.xml"
     android_manifest_dep = "//remoting/android:remoting_apk_manifest"

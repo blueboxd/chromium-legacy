@@ -629,9 +629,11 @@ void DeleteRegistryKeyPartial(
 
   // Delete the key if it no longer has any subkeys.
   if (to_skip.empty()) {
-    result = key.DeleteEmptyKey(L"");
-    LOG_IF(ERROR, result != ERROR_SUCCESS) << "Failed to delete empty key "
-                                           << path << "; result: " << result;
+    result = key.DeleteKey(L"");
+    if (result != ERROR_SUCCESS) {
+      ::SetLastError(result);
+      PLOG(ERROR) << "Failed to delete key " << path;
+    }
     return;
   }
 

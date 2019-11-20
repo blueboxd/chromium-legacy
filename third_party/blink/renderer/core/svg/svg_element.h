@@ -37,6 +37,7 @@ namespace blink {
 
 class AffineTransform;
 class Document;
+class ElementSMILAnimations;
 class SVGAnimatedPropertyBase;
 class SubtreeLayoutScope;
 class SVGAnimatedString;
@@ -100,6 +101,9 @@ class CORE_EXPORT SVGElement : public Element {
   void SetWebAnimatedAttribute(const QualifiedName& attribute,
                                SVGPropertyBase*);
   void ClearWebAnimatedAttributes();
+
+  ElementSMILAnimations* GetSMILAnimations();
+  ElementSMILAnimations& EnsureSMILAnimations();
 
   void SetAnimatedAttribute(const QualifiedName&, SVGPropertyBase*);
   void ClearAnimatedAttribute(const QualifiedName&);

@@ -27,18 +27,6 @@ var DownloadsTest = class extends PolymerTest {
   get featureList() {
     return {enabled: ['network::features::kOutOfBlinkCors']};
   }
-
-  /** @override */
-  get runAccessibilityChecks() {
-    // TODO(dpapad): Revert this temporarily.
-    return false;
-  }
-
-  /** @override */
-  setUp() {
-    PolymerTest.prototype.setUp.call(this);
-    this.accessibilityAuditConfig.ignoreSelectors('humanLangMissing', 'html');
-  }
 };
 
 // eslint-disable-next-line no-var

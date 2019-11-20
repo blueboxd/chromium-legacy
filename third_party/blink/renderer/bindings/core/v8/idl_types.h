@@ -87,6 +87,8 @@ struct IDLUnrestrictedDouble final : public IDLBaseHelper<double> {};
 struct IDLFloat final : public IDLBaseHelper<float> {};
 struct IDLUnrestrictedFloat final : public IDLBaseHelper<float> {};
 
+// Date
+// TODO(crbug.com/988343): Change |double| to |base::Time|.
 struct IDLDate final : public IDLBaseHelper<double> {};
 
 // Promise

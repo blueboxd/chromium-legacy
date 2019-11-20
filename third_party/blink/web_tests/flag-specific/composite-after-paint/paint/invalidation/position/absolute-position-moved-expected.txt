@@ -12,11 +12,6 @@
           "reason": "chunk appeared"
         }
       ]
-    },
-    {
-      "name": "LayoutNGBlockFlow (positioned) DIV class='fixed red'",
-      "drawsContent": false,
-      "backgroundColor": "#FF0000"
     }
   ]
 }

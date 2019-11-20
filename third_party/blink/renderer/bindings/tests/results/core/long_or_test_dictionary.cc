@@ -128,3 +128,4 @@ LongOrTestDictionary NativeValueTraits<LongOrTestDictionary>::NativeValue(
 }
 
 }  // namespace blink
+

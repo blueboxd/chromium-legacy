@@ -44,6 +44,7 @@ class SVGDiscardElement final : public SVGSMILElement {
   bool IsSVGDiscardElement() const override { return true; }
 
  private:
+  void StartedActiveInterval() override;
   void ResetAnimatedType() override {}
   void ClearAnimatedType() override {}
   void ApplyResultsToTarget() override {}

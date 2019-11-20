@@ -117,14 +117,7 @@
     {
       "name": "HorizontalScrollbar",
       "position": [0, 235],
-      "bounds": [600, 15],
-      "paintInvalidations": [
-        {
-          "object": "HorizontalScrollbar",
-          "rect": [0, 0, 600, 15],
-          "reason": "full layer"
-        }
-      ]
+      "bounds": [600, 15]
     }
   ],
   "transforms": [
@@ -158,14 +151,7 @@
     {
       "name": "HorizontalScrollbar",
       "position": [0, 235],
-      "bounds": [400, 15],
-      "paintInvalidations": [
-        {
-          "object": "HorizontalScrollbar",
-          "rect": [0, 0, 400, 15],
-          "reason": "scroll control"
-        }
-      ]
+      "bounds": [400, 15]
     }
   ],
   "transforms": [

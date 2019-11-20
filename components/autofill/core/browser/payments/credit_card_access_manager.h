@@ -171,6 +171,10 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   void OnDidCancelCardVerification();
 #endif
 
+  // Used with PostTaskWithDelay() to signal |can_fetch_unmask_details_| event
+  // after a timeout.
+  void SignalCanFetchUnmaskDetails();
+
   // Is set to true only when waiting for the callback to
   // OnCVCAuthenticationComplete() to be executed.
   bool is_authentication_in_progress_ = false;

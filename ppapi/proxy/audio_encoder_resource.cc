@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "ppapi/c/pp_array_output.h"
 #include "ppapi/c/pp_codecs.h"
 #include "ppapi/proxy/audio_buffer_resource.h"

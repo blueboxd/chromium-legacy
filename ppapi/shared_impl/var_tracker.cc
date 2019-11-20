@@ -9,7 +9,7 @@
 #include <limits>
 
 #include "base/logging.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/shared_impl/id_assignment.h"
 #include "ppapi/shared_impl/proxy_lock.h"

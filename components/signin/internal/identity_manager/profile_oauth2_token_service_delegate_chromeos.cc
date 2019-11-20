@@ -343,7 +343,7 @@ void ProfileOAuth2TokenServiceDelegateChromeOS::OnTokenUpserted(
   // All Gaia accounts in Chrome OS Account Manager must have an email
   // associated with them (https://crbug.com/933307).
   DCHECK(!account.raw_email.empty());
-  std::string account_id = account_tracker_service_->SeedAccountInfo(
+  CoreAccountId account_id = account_tracker_service_->SeedAccountInfo(
       account.key.id /* gaia_id */, account.raw_email);
   DCHECK(!account_id.empty());
 
@@ -391,7 +391,7 @@ void ProfileOAuth2TokenServiceDelegateChromeOS::OnAccountRemoved(
       chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA) {
     return;
   }
-  std::string account_id =
+  CoreAccountId account_id =
       account_tracker_service_
           ->FindAccountInfoByGaiaId(account.key.id /* gaia_id */)
           .account_id;

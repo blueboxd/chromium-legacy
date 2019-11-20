@@ -106,6 +106,13 @@ const char kUmaSelectDefaultSearchEngine[] =
   [self loadModel];
 }
 
+- (void)setEditing:(BOOL)editing animated:(BOOL)animated {
+  [super setEditing:editing animated:animated];
+
+  // Disable prepopulated engines in editing mode.
+  [self setPrepopulatedEnginesEnabled:!editing];
+}
+
 #pragma mark - ChromeTableViewController
 
 - (void)loadModel {
@@ -496,6 +503,22 @@ const char kUmaSelectDefaultSearchEngine[] =
         }
         [strongSelf updateUIForEditState];
       }];
+}
+
+// Enables/Disables prepopulated engines by forbidding user interaction and
+// changing cells's alpha.
+- (void)setPrepopulatedEnginesEnabled:(BOOL)enabled {
+  NSArray<NSIndexPath*>* indexPaths =
+      [self.tableViewModel indexPathsForItemType:ItemTypePrepopulatedEngine
+                               sectionIdentifier:SectionIdentifierFirstList];
+  for (NSIndexPath* indexPath in indexPaths) {
+    TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
+    SearchEngineItem* engineItem =
+        base::mac::ObjCCastStrict<SearchEngineItem>(item);
+    engineItem.enabled = enabled;
+  }
+  [self.tableView reloadRowsAtIndexPaths:indexPaths
+                        withRowAnimation:UITableViewRowAnimationAutomatic];
 }
 
 @end

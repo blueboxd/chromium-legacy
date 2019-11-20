@@ -34,6 +34,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
+#include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
@@ -73,6 +74,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/bindings/to_v8.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/language.h"
@@ -1196,16 +1198,24 @@ void HTMLInputElement::UpdateView() {
   input_type_view_->UpdateView();
 }
 
-double HTMLInputElement::valueAsDate(bool& is_null) const {
+ScriptValue HTMLInputElement::valueAsDate(ScriptState* script_state) const {
+  // TODO(crbug.com/988343): InputType::ValueAsDate() should return
+  // base::Optional<base::Time>.
   double date = input_type_->ValueAsDate();
-  is_null = !std::isfinite(date);
-  return date;
+  v8::Isolate* isolate = script_state->GetIsolate();
+  if (!std::isfinite(date))
+    return ScriptValue::CreateNull(isolate);
+  return ScriptValue(isolate, ToV8(base::Time::FromJsTime(date), script_state));
 }
 
-void HTMLInputElement::setValueAsDate(double value,
-                                      bool is_null,
+void HTMLInputElement::setValueAsDate(ScriptState* script_state,
+                                      const ScriptValue& value,
                                       ExceptionState& exception_state) {
-  input_type_->SetValueAsDate(value, exception_state);
+  double date_ms = NativeValueTraits<IDLDate>::NativeValue(
+      script_state->GetIsolate(), value.V8Value(), exception_state);
+  if (exception_state.HadException())
+    return;
+  input_type_->SetValueAsDate(date_ms, exception_state);
 }
 
 double HTMLInputElement::valueAsNumber() const {

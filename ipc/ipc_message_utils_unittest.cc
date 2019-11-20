@@ -11,7 +11,6 @@
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/shared_memory.h"
 #include "base/test/test_shared_memory_util.h"
 #include "base/unguessable_token.h"
 #include "ipc/ipc_channel_handle.h"
@@ -139,25 +138,6 @@ TEST(IPCMessageUtilsTest, OptionalSet) {
   EXPECT_TRUE(IPC::ReadParam(&pickle, &iter, &unserialized_opt));
   EXPECT_TRUE(unserialized_opt);
   EXPECT_EQ(opt.value(), unserialized_opt.value());
-}
-
-TEST(IPCMessageUtilsTest, SharedMemoryHandle) {
-  base::SharedMemoryCreateOptions options;
-  options.size = 1004;
-  base::SharedMemory shmem;
-  ASSERT_TRUE(shmem.Create(options));
-
-  base::SharedMemoryHandle pre_pickle = shmem.handle().Duplicate();
-  ASSERT_TRUE(pre_pickle.IsValid());
-
-  IPC::Message message;
-  IPC::WriteParam(&message, pre_pickle);
-
-  base::SharedMemoryHandle post_pickle;
-  base::PickleIterator iter(message);
-  EXPECT_TRUE(IPC::ReadParam(&message, &iter, &post_pickle));
-  EXPECT_EQ(pre_pickle.GetGUID(), post_pickle.GetGUID());
-  EXPECT_EQ(pre_pickle.GetSize(), post_pickle.GetSize());
 }
 
 template <typename SharedMemoryRegionType>

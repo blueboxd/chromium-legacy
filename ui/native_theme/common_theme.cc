@@ -26,7 +26,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
   // darker or lighter.
   if (base_theme->UsesHighContrastColors()) {
     switch (color_id) {
-      case NativeTheme::kColorId_ButtonEnabledColor:
+      case NativeTheme::kColorId_ButtonUncheckedColor:
       case NativeTheme::kColorId_MenuBorderColor:
       case NativeTheme::kColorId_MenuSeparatorColor:
       case NativeTheme::kColorId_SeparatorColor:
@@ -34,6 +34,7 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       case NativeTheme::kColorId_TabBottomBorder:
         return color_scheme == NativeTheme::ColorScheme::kDark ? SK_ColorWHITE
                                                                : SK_ColorBLACK;
+      case NativeTheme::kColorId_ButtonEnabledColor:
       case NativeTheme::kColorId_FocusedBorderColor:
       case NativeTheme::kColorId_ProminentButtonColor:
         return color_scheme == NativeTheme::ColorScheme::kDark
@@ -65,6 +66,8 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       case NativeTheme::kColorId_ButtonEnabledColor:
       case NativeTheme::kColorId_ProminentButtonColor:
         return gfx::kGoogleBlue300;
+      case NativeTheme::kColorId_ButtonUncheckedColor:
+        return gfx::kGoogleGrey500;
       case NativeTheme::kColorId_TextOnProminentButtonColor:
         return gfx::kGoogleGrey900;
 
@@ -180,6 +183,8 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       return SK_ColorWHITE;
     case NativeTheme::kColorId_ButtonPressedShade:
       return SK_ColorTRANSPARENT;
+    case NativeTheme::kColorId_ButtonUncheckedColor:
+      return gfx::kGoogleGrey700;
     case NativeTheme::kColorId_ButtonDisabledColor: {
       const SkColor bg = base_theme->GetSystemColor(
           NativeTheme::kColorId_DialogBackground, color_scheme);

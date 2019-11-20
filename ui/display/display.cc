@@ -81,6 +81,21 @@ gfx::ColorSpace ForcedColorProfileStringToColorSpace(const std::string& value) {
   return gfx::ColorSpace::CreateSRGB();
 }
 
+const char* ToRotationString(display::Display::Rotation rotation) {
+  switch (rotation) {
+    case display::Display::ROTATE_0:
+      return "0";
+    case display::Display::ROTATE_90:
+      return "90";
+    case display::Display::ROTATE_180:
+      return "180";
+    case display::Display::ROTATE_270:
+      return "270";
+  }
+  NOTREACHED();
+  return "unkonwn";
+}
+
 }  // namespace
 
 bool CompareDisplayIds(int64_t id1, int64_t id2) {
@@ -266,6 +281,10 @@ void Display::SetRotationAsDegree(int rotation) {
   }
 }
 
+int Display::PanelRotationAsDegree() const {
+  return RotationToDegrees(panel_rotation_);
+}
+
 // static
 gfx::Transform Display::GetRotationTransform(Rotation rotation,
                                              const gfx::SizeF& size) {
@@ -357,9 +376,11 @@ gfx::Size Display::GetSizeInPixel() const {
 
 std::string Display::ToString() const {
   return base::StringPrintf(
-      "Display[%lld] bounds=[%s], workarea=[%s], scale=%g, %s.",
+      "Display[%lld] bounds=[%s], workarea=[%s], scale=%g, rotation=%s, "
+      "panel_rotation=%s %s.",
       static_cast<long long int>(id_), bounds_.ToString().c_str(),
       work_area_.ToString().c_str(), device_scale_factor_,
+      ToRotationString(rotation_), ToRotationString(panel_rotation_),
       IsInternal() ? "internal" : "external");
 }
 

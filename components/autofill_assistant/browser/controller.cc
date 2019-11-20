@@ -174,6 +174,10 @@ std::string Controller::GetAccountEmailAddress() {
   return client_->GetAccountEmailAddress();
 }
 
+std::string Controller::GetLocale() {
+  return client_->GetLocale();
+}
+
 void Controller::SetTouchableElementArea(const ElementAreaProto& area) {
   touchable_element_area()->SetFromProto(area);
 }
@@ -1122,7 +1126,7 @@ void Controller::UpdateCollectUserDataActions() {
   }
 
   bool confirm_button_enabled = CollectUserDataAction::IsUserDataComplete(
-      *user_data_, *collect_user_data_options_);
+      *user_data_, *collect_user_data_options_, client_->GetLocale());
 
   UserAction confirm(collect_user_data_options_->confirm_action);
   confirm.SetEnabled(confirm_button_enabled);

@@ -6,15 +6,10 @@
 <script src="/serviceworker/resources/test-helpers.js"></script>
 
 <script>
-function openWindow(url, t) {
-  const win = window.open(url, '_blank');
-  t.add_cleanup(() => win.close());
-}
-
 window.onmessage = function(message) {
-    if (message.data.hasOwnProperty('Status')) {
-      window.onRequestStatusChanged(message.data['Status']);
-    }
+  if (message.data.hasOwnProperty('Status')) {
+    window.onRequestStatusChanged(message.data['Status']);
+  }
 }
 
 // This test creates a window controlled by the server worker, which makes a

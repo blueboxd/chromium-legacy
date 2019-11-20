@@ -14,11 +14,31 @@
         {
           "object": "LayoutTextControl (floating) TEXTAREA id='target'",
           "rect": [8, 8, 306, 306],
-          "reason": "chunk appeared"
+          "reason": "chunk disappeared"
         },
         {
           "object": "LayoutTextControl (floating) TEXTAREA id='target'",
           "rect": [8, 8, 306, 306],
+          "reason": "chunk disappeared"
+        },
+        {
+          "object": "LayoutTextControl (floating) TEXTAREA id='target'",
+          "rect": [8, 8, 306, 306],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutTextControl (floating) TEXTAREA id='target'",
+          "rect": [9, 9, 289, 304],
+          "reason": "chunk disappeared"
+        },
+        {
+          "object": "LayoutTextControl (floating) TEXTAREA id='target'",
+          "rect": [11, 11, 285, 302],
+          "reason": "chunk disappeared"
+        },
+        {
+          "object": "VerticalScrollbar",
+          "rect": [298, 9, 15, 289],
           "reason": "chunk disappeared"
         }
       ]

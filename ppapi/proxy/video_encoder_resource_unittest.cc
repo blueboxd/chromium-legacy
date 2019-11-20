@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/memory/shared_memory.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/process/process.h"
 #include "base/synchronization/waitable_event.h"
 #include "ppapi/c/pp_codecs.h"

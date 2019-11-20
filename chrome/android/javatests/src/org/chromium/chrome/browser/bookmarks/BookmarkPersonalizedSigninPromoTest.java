@@ -31,18 +31,13 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.signin.SigninActivityLauncher;
-import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.browser.sync.SyncTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.BookmarkTestUtil;
-import org.chromium.components.signin.AccountManagerFacade;
-import org.chromium.components.signin.ProfileDataSource;
+import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
-import org.chromium.components.signin.test.util.AccountHolder;
-import org.chromium.components.signin.test.util.AccountManagerTestRule;
-import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
 
 /**
  * Tests for the personalized signin promo on the Bookmarks page.
@@ -50,16 +45,8 @@ import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class BookmarkPersonalizedSigninPromoTest {
-    private static final String TEST_ACCOUNT_NAME = "test@gmail.com";
-    private static final String TEST_FULL_NAME = "Test Account";
-
     @Rule
-    public final ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
-
-    @Rule
-    public final AccountManagerTestRule mAccountManagerTestRule =
-            new AccountManagerTestRule(FakeAccountManagerDelegate.ENABLE_PROFILE_DATA_SOURCE);
+    public final SyncTestRule mSyncTestRule = new SyncTestRule();
 
     private final SigninActivityLauncher mMockSigninActivityLauncher =
             mock(SigninActivityLauncher.class);
@@ -69,7 +56,7 @@ public class BookmarkPersonalizedSigninPromoTest {
         BookmarkPromoHeader.forcePromoStateForTests(
                 BookmarkPromoHeader.PromoState.PROMO_SIGNIN_PERSONALIZED);
         SigninActivityLauncher.setLauncherForTest(mMockSigninActivityLauncher);
-        mActivityTestRule.startMainActivityFromLauncher();
+        mSyncTestRule.startMainActivityFromLauncher();
     }
 
     @After
@@ -84,12 +71,12 @@ public class BookmarkPersonalizedSigninPromoTest {
         doNothing()
                 .when(SigninActivityLauncher.get())
                 .launchActivityForPromoDefaultFlow(any(Context.class), anyInt(), anyString());
-        addTestAccount();
+        Account account = SigninTestUtil.addTestAccount();
         showBookmarkManagerAndCheckSigninPromoIsDisplayed();
         onView(withId(R.id.signin_promo_signin_button)).perform(click());
         verify(mMockSigninActivityLauncher)
                 .launchActivityForPromoDefaultFlow(any(Activity.class),
-                        eq(SigninAccessPoint.BOOKMARK_MANAGER), eq(TEST_ACCOUNT_NAME));
+                        eq(SigninAccessPoint.BOOKMARK_MANAGER), eq(account.name));
     }
 
     @Test
@@ -98,12 +85,12 @@ public class BookmarkPersonalizedSigninPromoTest {
         doNothing()
                 .when(SigninActivityLauncher.get())
                 .launchActivityForPromoChooseAccountFlow(any(Context.class), anyInt(), anyString());
-        addTestAccount();
+        Account account = SigninTestUtil.addTestAccount();
         showBookmarkManagerAndCheckSigninPromoIsDisplayed();
         onView(withId(R.id.signin_promo_choose_account_button)).perform(click());
         verify(mMockSigninActivityLauncher)
                 .launchActivityForPromoChooseAccountFlow(any(Activity.class),
-                        eq(SigninAccessPoint.BOOKMARK_MANAGER), eq(TEST_ACCOUNT_NAME));
+                        eq(SigninAccessPoint.BOOKMARK_MANAGER), eq(account.name));
     }
 
     @Test
@@ -120,15 +107,7 @@ public class BookmarkPersonalizedSigninPromoTest {
     }
 
     private void showBookmarkManagerAndCheckSigninPromoIsDisplayed() {
-        BookmarkTestUtil.showBookmarkManager(mActivityTestRule.getActivity());
+        BookmarkTestUtil.showBookmarkManager(mSyncTestRule.getActivity());
         onView(withId(R.id.signin_promo_view_container)).check(matches(isDisplayed()));
-    }
-
-    private void addTestAccount() {
-        Account account = AccountManagerFacade.createAccountFromName(TEST_ACCOUNT_NAME);
-        AccountHolder.Builder accountHolder = AccountHolder.builder(account).alwaysAccept(true);
-        ProfileDataSource.ProfileData profileData =
-                new ProfileDataSource.ProfileData(TEST_ACCOUNT_NAME, null, TEST_FULL_NAME, null);
-        mAccountManagerTestRule.addAccount(accountHolder.build(), profileData);
     }
 }

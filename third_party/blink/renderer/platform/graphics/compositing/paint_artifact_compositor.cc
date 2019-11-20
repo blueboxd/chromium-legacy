@@ -178,14 +178,15 @@ const HitTestData::ScrollHitTest*
 PaintArtifactCompositor::ScrollHitTestForLayer(
     const PaintArtifact& paint_artifact,
     const PendingLayer& pending_layer) {
-  auto paint_chunks =
-      paint_artifact.GetPaintChunkSubset(pending_layer.paint_chunk_indices);
-  DCHECK(paint_chunks.size());
-  const auto& first_paint_chunk = paint_chunks[0];
-  if (first_paint_chunk.size() != 1)
+  if (pending_layer.paint_chunk_indices.size() != 1)
     return nullptr;
 
-  const HitTestData* hit_test_data = first_paint_chunk.hit_test_data.get();
+  const auto& paint_chunk =
+      paint_artifact.PaintChunks()[pending_layer.paint_chunk_indices[0]];
+  if (paint_chunk.size() != 1)
+    return nullptr;
+
+  const HitTestData* hit_test_data = paint_chunk.hit_test_data.get();
   if (!hit_test_data)
     return nullptr;
 
@@ -241,11 +242,11 @@ PaintArtifactCompositor::ScrollHitTestLayerForPendingLayer(
 scoped_refptr<cc::Layer> PaintArtifactCompositor::ScrollbarLayerForPendingLayer(
     const PaintArtifact& paint_artifact,
     const PendingLayer& pending_layer) {
-  auto paint_chunks =
-      paint_artifact.GetPaintChunkSubset(pending_layer.paint_chunk_indices);
-  if (paint_chunks.size() != 1)
+  if (pending_layer.paint_chunk_indices.size() != 1)
     return nullptr;
-  const auto& paint_chunk = paint_chunks[0];
+
+  const auto& paint_chunk =
+      paint_artifact.PaintChunks()[pending_layer.paint_chunk_indices[0]];
   if (paint_chunk.size() != 1)
     return nullptr;
 
@@ -361,9 +362,6 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
 
 void PaintArtifactCompositor::UpdateTouchActionRects(
     cc::Layer* layer,
-    // TODO(wangxianzhu): Remove this parameter and use
-    // layer->offset_to_transform_parent() after we fully launch
-    // BlinkGenPropertyTrees.
     const gfx::Vector2dF& layer_offset,
     const PropertyTreeState& layer_state,
     const PaintChunkSubset& paint_chunks) {
@@ -392,9 +390,6 @@ void PaintArtifactCompositor::UpdateTouchActionRects(
 
 void PaintArtifactCompositor::UpdateNonFastScrollableRegions(
     cc::Layer* layer,
-    // TODO(wangxianzhu): Remove this parameter and use
-    // layer->offset_to_transform_parent() after we fully launch
-    // BlinkGenPropertyTrees.
     const gfx::Vector2dF& layer_offset,
     const PropertyTreeState& layer_state,
     const PaintChunkSubset& paint_chunks) {
@@ -471,7 +466,6 @@ PaintArtifactCompositor::PendingLayer::PendingLayer(
 
 void PaintArtifactCompositor::PendingLayer::Merge(const PendingLayer& guest) {
   DCHECK(!requires_own_layer && !guest.requires_own_layer);
-
   paint_chunk_indices.AppendVector(guest.paint_chunk_indices);
   FloatClipRect guest_bounds_in_home(guest.bounds);
   GeometryMapper::LocalToAncestorVisualRect(
@@ -688,6 +682,15 @@ static bool SkipGroupIfEffectivelyInvisible(
   return true;
 }
 
+static bool IsCompositedScrollHitTest(const DisplayItem& item) {
+  if (!item.IsScrollHitTest())
+    return false;
+  const auto* scroll_offset_node =
+      static_cast<const ScrollHitTestDisplayItem&>(item).scroll_offset_node();
+  return scroll_offset_node &&
+         scroll_offset_node->HasDirectCompositingReasons();
+}
+
 static bool IsCompositedScrollbar(const DisplayItem& item) {
   if (!item.IsScrollbar())
     return false;
@@ -736,16 +739,13 @@ void PaintArtifactCompositor::LayerizeGroup(
     const auto& chunk_effect = chunk_it->properties.Effect().Unalias();
     if (&chunk_effect == &unaliased_group) {
       // Case A: The next chunk belongs to the current group but no subgroup.
-      const auto& last_display_item =
+      const auto& first_display_item =
           paint_artifact.GetDisplayItemList()[chunk_it->begin_index];
-      bool item_for_scrolling = last_display_item.IsScrollHitTest() &&
-                                !last_display_item.IsResizerScrollHitTest() &&
-                                !last_display_item.IsPluginScrollHitTest();
-      bool requires_own_layer = last_display_item.IsForeignLayer() ||
-                                // TODO(pdr): This should require a direct
-                                // compositing reason.
-                                item_for_scrolling ||
-                                IsCompositedScrollbar(last_display_item);
+      bool requires_own_layer = first_display_item.IsForeignLayer() ||
+                                IsCompositedScrollHitTest(first_display_item) ||
+                                IsCompositedScrollbar(first_display_item);
+      DCHECK(!requires_own_layer || chunk_it->size() == 1u);
+
       pending_layers_.emplace_back(
           *chunk_it, chunk_it - paint_artifact.PaintChunks().begin(),
           requires_own_layer);

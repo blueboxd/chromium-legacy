@@ -111,3 +111,4 @@ StringOrDouble NativeValueTraits<StringOrDouble>::NativeValue(
 }
 
 }  // namespace blink
+

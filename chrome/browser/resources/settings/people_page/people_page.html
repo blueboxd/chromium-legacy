@@ -146,7 +146,9 @@
 <if expr="not chromeos">
                 <cr-icon-button class="subpage-arrow"
                     aria-label="$i18n{editPerson}"
-                    aria-describedby="profile-name"></cr-icon-button>
+                    aria-describedby="profile-name"
+                    aria-roledescription="$i18n{subpageArrowRoleDescription}">
+                </cr-icon-button>
 </if>
 <if expr="chromeos">
                 <cr-icon-button class$="[[profileRowIconClass_]]"
@@ -215,8 +217,9 @@
             <div class="start settings-box-text">
               $i18n{profileNameAndPicture}
             </div>
-            <cr-icon-button class="subpage-arrow"
-                aria-label="$i18n{editPerson}"></cr-icon-button>
+            <cr-icon-button class="subpage-arrow" aria-label="$i18n{editPerson}"
+                aria-roledescription="$i18n{subpageArrowRoleDescription}">
+            </cr-icon-button>
           </div>
         </template>
 </if>

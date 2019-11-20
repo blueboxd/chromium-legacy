@@ -51,3 +51,7 @@ file://chrome/android/java/src/org/chromium/chrome/browser/searchwidget/COMPLIAN
 # Android, so should not be added or removed lightly, and the proper
 # deprecation and versioning steps must be taken when doing so.
 file://chrome/android/java/src/org/chromium/chrome/browser/notifications/channels/NOTIFICATION_CHANNEL_OWNERS
+
+# The Weblayer API is supposed to be stable and will be used outside of the
+# chromium repository.
+file://weblayer/API_OWNERS

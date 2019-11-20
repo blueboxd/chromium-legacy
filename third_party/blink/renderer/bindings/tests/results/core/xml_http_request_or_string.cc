@@ -111,3 +111,4 @@ XMLHttpRequestOrString NativeValueTraits<XMLHttpRequestOrString>::NativeValue(
 }
 
 }  // namespace blink
+

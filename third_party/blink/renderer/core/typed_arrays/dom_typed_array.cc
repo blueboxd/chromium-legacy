@@ -75,21 +75,28 @@ DOMTypedArray<TypedArray, V8TypedArray>::GetWrapperTypeInfo() const {
       DOMTypedArray<TypedArray, V8TypedArray>>::Type::GetWrapperTypeInfo();
 }
 
-template class CORE_TEMPLATE_EXPORT DOMTypedArray<Int8Array, v8::Int8Array>;
-template class CORE_TEMPLATE_EXPORT DOMTypedArray<Int16Array, v8::Int16Array>;
-template class CORE_TEMPLATE_EXPORT DOMTypedArray<Int32Array, v8::Int32Array>;
-template class CORE_TEMPLATE_EXPORT DOMTypedArray<Uint8Array, v8::Uint8Array>;
 template class CORE_TEMPLATE_EXPORT
-    DOMTypedArray<Uint8ClampedArray, v8::Uint8ClampedArray>;
-template class CORE_TEMPLATE_EXPORT DOMTypedArray<Uint16Array, v8::Uint16Array>;
-template class CORE_TEMPLATE_EXPORT DOMTypedArray<Uint32Array, v8::Uint32Array>;
+    DOMTypedArray<IntegralTypedArrayBase<int8_t>, v8::Int8Array>;
 template class CORE_TEMPLATE_EXPORT
-    DOMTypedArray<BigInt64Array, v8::BigInt64Array>;
+    DOMTypedArray<IntegralTypedArrayBase<int16_t>, v8::Int16Array>;
 template class CORE_TEMPLATE_EXPORT
-    DOMTypedArray<BigUint64Array, v8::BigUint64Array>;
+    DOMTypedArray<IntegralTypedArrayBase<int32_t>, v8::Int32Array>;
 template class CORE_TEMPLATE_EXPORT
-    DOMTypedArray<Float32Array, v8::Float32Array>;
+    DOMTypedArray<IntegralTypedArrayBase<uint8_t>, v8::Uint8Array>;
 template class CORE_TEMPLATE_EXPORT
-    DOMTypedArray<Float64Array, v8::Float64Array>;
+    DOMTypedArray<IntegralTypedArrayBase<uint8_t, /*clamped=*/true>,
+                  v8::Uint8ClampedArray>;
+template class CORE_TEMPLATE_EXPORT
+    DOMTypedArray<IntegralTypedArrayBase<uint16_t>, v8::Uint16Array>;
+template class CORE_TEMPLATE_EXPORT
+    DOMTypedArray<IntegralTypedArrayBase<uint32_t>, v8::Uint32Array>;
+template class CORE_TEMPLATE_EXPORT
+    DOMTypedArray<IntegralTypedArrayBase<int64_t>, v8::BigInt64Array>;
+template class CORE_TEMPLATE_EXPORT
+    DOMTypedArray<IntegralTypedArrayBase<uint64_t>, v8::BigUint64Array>;
+template class CORE_TEMPLATE_EXPORT
+    DOMTypedArray<IntegralTypedArrayBase<float>, v8::Float32Array>;
+template class CORE_TEMPLATE_EXPORT
+    DOMTypedArray<IntegralTypedArrayBase<double>, v8::Float64Array>;
 
 }  // namespace blink

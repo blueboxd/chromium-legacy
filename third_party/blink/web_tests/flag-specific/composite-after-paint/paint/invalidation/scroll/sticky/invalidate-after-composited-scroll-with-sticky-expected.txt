@@ -1,0 +1,73 @@
+{
+  "layers": [
+    {
+      "name": "Scrolling background of LayoutView #document",
+      "bounds": [785, 656],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "VerticalScrollbar",
+          "rect": [353, 8, 15, 640],
+          "reason": "scroll control"
+        }
+      ]
+    },
+    {
+      "name": "VerticalScrollbar",
+      "position": [785, 0],
+      "bounds": [15, 600]
+    },
+    {
+      "name": "LayoutNGBlockFlow (sticky positioned) DIV id='sticky'",
+      "bounds": [144, 19],
+      "transform": 4
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, -0.1],
+        [0, 0, 0, 1]
+      ],
+      "origin": [188, 328]
+    },
+    {
+      "id": 2,
+      "parent": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 8, 0, 1]
+      ],
+      "flattenInheritedTransform": false
+    },
+    {
+      "id": 3,
+      "parent": 2,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, -35, 0, 1]
+      ],
+      "flattenInheritedTransform": false
+    },
+    {
+      "id": 4,
+      "parent": 3,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 35, 0, 1]
+      ],
+      "flattenInheritedTransform": false
+    }
+  ]
+}
+

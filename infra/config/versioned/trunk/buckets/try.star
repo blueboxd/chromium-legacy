@@ -60,7 +60,7 @@ defaults.bucketed_triggers.set(True)
 def tryjob(
     *,
     disable_reuse=None,
-    experiment_percentage=vars.experiment_percentage.get(),
+    experiment_percentage=None,
     location_regexp=None,
     location_regexp_exclude=None):
   return struct(

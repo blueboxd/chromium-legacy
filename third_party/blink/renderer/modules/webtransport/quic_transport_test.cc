@@ -10,9 +10,9 @@
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/network/public/mojom/quic_transport.mojom-blink.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/webtransport/quic_transport_connector.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
@@ -77,11 +77,12 @@ class MockQuicTransport final : public network::mojom::blink::QuicTransport {
 class QuicTransportTest : public ::testing::Test {
  public:
   void AddBinder(const V8TestingScope& scope) {
-    service_manager::InterfaceProvider::TestApi(
-        scope.GetExecutionContext()->GetInterfaceProvider())
-        .SetBinderForName(mojom::blink::QuicTransportConnector::Name_,
-                          base::BindRepeating(&QuicTransportTest::BindConnector,
-                                              weak_ptr_factory_.GetWeakPtr()));
+    interface_broker_ =
+        &scope.GetExecutionContext()->GetBrowserInterfaceBroker();
+    interface_broker_->SetBinderForTesting(
+        mojom::blink::QuicTransportConnector::Name_,
+        base::BindRepeating(&QuicTransportTest::BindConnector,
+                            weak_ptr_factory_.GetWeakPtr()));
   }
 
   // Creates, connects and returns a QuicTransport object with the given |url|.
@@ -125,6 +126,14 @@ class QuicTransportTest : public ::testing::Test {
         std::move(handle)));
   }
 
+  void TearDown() override {
+    if (!interface_broker_)
+      return;
+    interface_broker_->SetBinderForTesting(
+        mojom::blink::QuicTransportConnector::Name_, {});
+  }
+
+  BrowserInterfaceBrokerProxy* interface_broker_ = nullptr;
   QuicTransportConnector connector_;
   std::unique_ptr<MockQuicTransport> mock_quic_transport_;
 

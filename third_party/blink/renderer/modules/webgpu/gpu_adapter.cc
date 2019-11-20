@@ -13,24 +13,27 @@ namespace blink {
 // static
 GPUAdapter* GPUAdapter::Create(
     const String& name,
-    gpu::webgpu::PowerPreference power_preference,
+    uint32_t adapter_service_id,
+    const WGPUDeviceProperties& properties,
     scoped_refptr<DawnControlClientHolder> dawn_control_client) {
-  return MakeGarbageCollected<GPUAdapter>(name, power_preference,
+  return MakeGarbageCollected<GPUAdapter>(name, adapter_service_id, properties,
                                           std::move(dawn_control_client));
 }
 
 GPUAdapter::GPUAdapter(
     const String& name,
-    gpu::webgpu::PowerPreference power_preference,
+    uint32_t adapter_service_id,
+    const WGPUDeviceProperties& properties,
     scoped_refptr<DawnControlClientHolder> dawn_control_client)
     : DawnObjectBase(dawn_control_client), name_(name) {
-  dawn_control_client->GetInterface()->RequestAdapter(power_preference);
+  // TODO(jiawei.shao@intel.com): add GPUExtensions as a member of GPUAdapter
 }
 
 const String& GPUAdapter::name() const {
   return name_;
 }
 
+// TODO(jiawei.shao@intel.com) request device with adapter_server_id
 ScriptPromise GPUAdapter::requestDevice(ScriptState* script_state,
                                         const GPUDeviceDescriptor* descriptor) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);

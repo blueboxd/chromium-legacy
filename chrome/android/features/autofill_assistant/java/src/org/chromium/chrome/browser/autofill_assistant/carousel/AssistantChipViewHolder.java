@@ -84,6 +84,8 @@ public class AssistantChipViewHolder extends ViewHolder {
             mView.getPrimaryTextView().setVisibility(View.VISIBLE);
         }
 
+        // Setting this view to clickable may be required for a11y to correctly announce it.
+        mView.setClickable(true);
         mView.setOnClickListener(ignoredView -> chip.getSelectedListener().run());
 
         int iconResource;
@@ -108,12 +110,10 @@ public class AssistantChipViewHolder extends ViewHolder {
 
         mView.setIcon(iconResource, /* tintWithTextColor= */ true);
 
-        // We set the content description of the icon on the whole button view if there is no text.
-        // Otherwise the text description will be used by TalkBack.
         if (iconDescriptionResource != 0 && text.isEmpty()) {
             mView.setContentDescription(mView.getContext().getString(iconDescriptionResource));
         } else {
-            mView.setContentDescription(null);
+            mView.setContentDescription(text);
         }
     }
 }

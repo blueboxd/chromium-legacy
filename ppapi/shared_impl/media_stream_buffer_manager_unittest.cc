@@ -8,12 +8,9 @@
 
 #include <utility>
 
-#include "base/memory/shared_memory.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "ppapi/c/pp_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using base::SharedMemory;
-using base::SharedMemoryCreateOptions;
 
 namespace {
 

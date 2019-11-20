@@ -708,12 +708,18 @@ void InputHandlerProxy::RecordMainThreadScrollingReasons(
   }
 }
 
-bool InputHandlerProxy::ShouldAnimate(bool has_precise_scroll_deltas) const {
+bool InputHandlerProxy::ShouldAnimate(blink::WebGestureDevice device,
+                                      bool has_precise_scroll_deltas) const {
+  if (!smooth_scroll_enabled_)
+    return false;
+
 #if defined(OS_MACOSX)
   // Mac does not smooth scroll wheel events (crbug.com/574283).
-  return false;
+  return device == blink::WebGestureDevice::kScrollbar
+             ? !has_precise_scroll_deltas
+             : false;
 #else
-  return smooth_scroll_enabled_ && !has_precise_scroll_deltas;
+  return !has_precise_scroll_deltas;
 #endif
 }
 
@@ -794,8 +800,9 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
     scroll_status = input_handler_->RootScrollBegin(
         &scroll_state, GestureScrollInputType(gesture_event.SourceDevice()));
   } else if (ShouldAnimate(
+                 gesture_event.SourceDevice(),
                  gesture_event.data.scroll_begin.delta_hint_units !=
-                 ui::input_types::ScrollGranularity::kScrollByPixel)) {
+                     ui::input_types::ScrollGranularity::kScrollByPixel)) {
     DCHECK(!scroll_state.is_in_inertial_phase());
     scroll_status = input_handler_->ScrollAnimatedBegin(&scroll_state);
   } else {
@@ -863,8 +870,9 @@ InputHandlerProxy::HandleGestureScrollUpdate(
   in_inertial_scrolling_ = scroll_state.is_in_inertial_phase();
   gfx::PointF scroll_point(gesture_event.PositionInWidget());
 
-  if (ShouldAnimate(gesture_event.data.scroll_update.delta_units !=
-                    ui::input_types::ScrollGranularity::kScrollByPixel)) {
+  if (ShouldAnimate(gesture_event.SourceDevice(),
+                    gesture_event.data.scroll_update.delta_units !=
+                        ui::input_types::ScrollGranularity::kScrollByPixel)) {
     DCHECK(!scroll_state.is_in_inertial_phase());
     base::TimeTicks event_time = gesture_event.TimeStamp();
     base::TimeDelta delay = base::TimeTicks::Now() - event_time;

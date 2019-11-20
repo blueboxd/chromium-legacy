@@ -498,7 +498,7 @@ void BackendImpl::SyncOnExternalCacheHit(const std::string& key) {
   if (disabled_)
     return;
 
-  uint32_t hash = base::Hash(key);
+  uint32_t hash = base::PersistentHash(key);
   bool error;
   scoped_refptr<EntryImpl> cache_entry =
       MatchEntry(key, hash, false, Addr(), &error);
@@ -511,7 +511,7 @@ scoped_refptr<EntryImpl> BackendImpl::OpenEntryImpl(const std::string& key) {
     return nullptr;
 
   TimeTicks start = TimeTicks::Now();
-  uint32_t hash = base::Hash(key);
+  uint32_t hash = base::PersistentHash(key);
   Trace("Open hash 0x%x", hash);
 
   bool error;
@@ -552,7 +552,7 @@ scoped_refptr<EntryImpl> BackendImpl::CreateEntryImpl(const std::string& key) {
     return nullptr;
 
   TimeTicks start = TimeTicks::Now();
-  uint32_t hash = base::Hash(key);
+  uint32_t hash = base::PersistentHash(key);
   Trace("Create hash 0x%x", hash);
 
   scoped_refptr<EntryImpl> parent;

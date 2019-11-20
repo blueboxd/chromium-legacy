@@ -11,6 +11,28 @@
 
 namespace blink {
 
+// static
+ScriptIterator ScriptIterator::FromIterable(v8::Isolate* isolate,
+                                            v8::Local<v8::Object> value,
+                                            ExceptionState& exception_state) {
+  // First, call the GetMethod(V, @@iterator) abstract ES operation.
+  const v8::Local<v8::Function> iterator_method =
+      GetEsIteratorMethod(isolate, value, exception_state);
+  if (exception_state.HadException())
+    return ScriptIterator(nullptr);
+  if (iterator_method.IsEmpty())
+    return ScriptIterator(nullptr);
+
+  // Use the method returned above to invoke the GetIterator(V, sync, method)
+  // abstract ES operation.
+  const v8::Local<v8::Object> iterator =
+      GetEsIteratorWithMethod(isolate, iterator_method, value, exception_state);
+  if (exception_state.HadException())
+    return ScriptIterator(nullptr);
+
+  return ScriptIterator(iterator, isolate);
+}
+
 ScriptIterator::ScriptIterator(v8::Local<v8::Object> iterator,
                                v8::Isolate* isolate)
     : isolate_(isolate),

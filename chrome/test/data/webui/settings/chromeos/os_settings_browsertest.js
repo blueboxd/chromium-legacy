@@ -165,11 +165,6 @@ const OSSettingsAppManagementBrowserTest = class extends OSSettingsBrowserTest {
       'app_management/test_store.js',
     ]);
   }
-
-  /** @override */
-  get runAccessibilityChecks() {
-    return true;
-  }
 };
 
 // Text fixture for the app management dom switch element.

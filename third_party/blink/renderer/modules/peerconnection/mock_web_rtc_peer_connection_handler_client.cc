@@ -30,7 +30,7 @@ MockWebRTCPeerConnectionHandlerClient::
     ~MockWebRTCPeerConnectionHandlerClient() {}
 
 void MockWebRTCPeerConnectionHandlerClient::didGenerateICECandidateWorker(
-    scoped_refptr<blink::WebRTCICECandidate> candidate) {
+    scoped_refptr<RTCIceCandidatePlatform> candidate) {
   candidate_sdp_ = candidate->Candidate().Utf8();
   candidate_mline_index_ = candidate->SdpMLineIndex();
   candidate_mid_ = candidate->SdpMid().Utf8();

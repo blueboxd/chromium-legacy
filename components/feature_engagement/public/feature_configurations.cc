@@ -27,6 +27,30 @@ base::Optional<FeatureConfig> GetClientSideFeatureConfig(
                     Comparator(GREATER_THAN_OR_EQUAL, 10), 90, 360));
     return config;
   }
+  if (kIPHDataSaverPreviewFeature.name == feature->name) {
+    base::Optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(EQUAL, 0);
+    config->trigger = EventConfig("data_saver_preview_iph_trigger",
+                                  Comparator(EQUAL, 0), 90, 360);
+    config->used = EventConfig("data_saver_preview_opened",
+                               Comparator(LESS_THAN_OR_EQUAL, 1), 90, 360);
+    return config;
+  }
+  if (kIPHPreviewsOmniboxUIFeature.name == feature->name) {
+    base::Optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(EQUAL, 0);
+    config->trigger = EventConfig("previews_verbose_iph_triggered_2",
+                                  Comparator(LESS_THAN, 2), 90, 360);
+    config->used = EventConfig("previews_verbose_status_opened",
+                               Comparator(EQUAL, 0), 90, 360);
+    config->event_configs.insert(EventConfig(
+        "preview_page_load", Comparator(GREATER_THAN_OR_EQUAL, 1), 90, 360));
+    return config;
+  }
   if (kIPHDownloadHomeFeature.name == feature->name) {
     base::Optional<FeatureConfig> config = FeatureConfig();
     config->valid = true;

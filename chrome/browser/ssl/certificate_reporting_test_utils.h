@@ -10,8 +10,8 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "chrome/browser/ssl/cert_logger.pb.h"
 #include "chrome/browser/ssl/certificate_error_reporter.h"
+#include "components/security_interstitials/content/cert_logger.pb.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
 
 #if !defined(OS_ANDROID)

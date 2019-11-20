@@ -30,7 +30,6 @@
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_rtc_data_channel_init.h"
-#include "third_party/blink/public/platform/web_rtc_ice_candidate.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
 #include "third_party/blink/public/platform/web_rtc_session_description.h"
@@ -51,6 +50,7 @@
 #include "third_party/blink/renderer/modules/webrtc/webrtc_audio_device_impl.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_dtmf_sender_handler.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_ice_candidate_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -169,7 +169,7 @@ class MockPeerConnectionTracker : public PeerConnectionTracker {
            const webrtc::PeerConnectionInterface::RTCConfiguration& config));
   MOCK_METHOD4(TrackAddIceCandidate,
                void(RTCPeerConnectionHandler* pc_handler,
-                    scoped_refptr<blink::WebRTCICECandidate> candidate,
+                    scoped_refptr<RTCIceCandidatePlatform> candidate,
                     Source source,
                     bool succeeded));
   MOCK_METHOD4(TrackAddTransceiver,
@@ -791,8 +791,8 @@ TEST_F(RTCPeerConnectionHandlerTest, setConfigurationError) {
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, addICECandidate) {
-  scoped_refptr<blink::WebRTCICECandidate> candidate =
-      blink::WebRTCICECandidate::Create(kDummySdp, "sdpMid", 1);
+  scoped_refptr<RTCIceCandidatePlatform> candidate =
+      RTCIceCandidatePlatform::Create(kDummySdp, "sdpMid", 1);
 
   EXPECT_CALL(*mock_tracker_.get(),
               TrackAddIceCandidate(pc_handler_.get(), candidate,

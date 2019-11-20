@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
+#include "google_apis/gaia/core_account_id.h"
 
 namespace enterprise_management {
 class DeviceManagementResponse;
@@ -52,7 +53,7 @@ class AndroidManagementClient {
   AndroidManagementClient(
       DeviceManagementService* service,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       signin::IdentityManager* identity_manager);
   ~AndroidManagementClient();
 
@@ -88,7 +89,7 @@ class AndroidManagementClient {
   std::unique_ptr<DeviceManagementService::Job> request_job_;
 
   // The account ID that will be used for the access token fetch.
-  const std::string account_id_;
+  const CoreAccountId account_id_;
 
   signin::IdentityManager* identity_manager_;
   std::unique_ptr<signin::AccessTokenFetcher> access_token_fetcher_;

@@ -7,8 +7,8 @@
  * and/or have non-trivial logic.
  */
 
+import {ROOT_NODE_ID, selectFolder, selectItem} from 'chrome://bookmarks/bookmarks.js';
 import {TestStore} from 'chrome://test/bookmarks/test_store.js';
-import {selectFolder, selectItem, ROOT_NODE_ID} from 'chrome://bookmarks/bookmarks.js';
 import {createFolder, createItem, testTree} from 'chrome://test/bookmarks/test_util.js';
 
 suite('selectItem', function() {

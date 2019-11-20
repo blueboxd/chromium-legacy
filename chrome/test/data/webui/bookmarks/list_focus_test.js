@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {Command} from 'chrome://bookmarks/bookmarks.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {isMac} from 'chrome://resources/js/cr.m.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {TestCommandManager} from 'chrome://test/bookmarks/test_command_manager.js';
 import {TestStore} from 'chrome://test/bookmarks/test_store.js';
-import {Command} from 'chrome://bookmarks/bookmarks.js';
 import {createFolder, createItem, getAllFoldersOpenState, normalizeIterable, replaceBody, testTree} from 'chrome://test/bookmarks/test_util.js';
-import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {flushTasks} from 'chrome://test/test_util.m.js';
-import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 
 suite('<bookmarks-list>', function() {
   let list;

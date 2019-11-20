@@ -221,7 +221,8 @@ public abstract class SuggestionsMetrics {
         private void recordSpinnerShowUMA(@State int state) {
             int feedSpinnerType;
 
-            // Here is convert the to {@link SpinnerType} in /third_party/feed/src/main/java/com/
+            // Here is convert the to {@link SpinnerType} in
+            // /third_party/feed_library/src/main/java/com/
             // google/android/libraries/feed/host/logging/SpinnerType.java.
             // {@link SpinnerType} cannot be directly used here since feed libraries are not always
             // compiled.

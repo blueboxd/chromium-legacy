@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -36,7 +37,6 @@
 #include "extensions/common/extension_urls.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/resources/grit/webui_resources.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
@@ -64,10 +64,15 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
                                                    bool in_dev_mode) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIExtensionsHost);
-  source->OverrideContentSecurityPolicyScriptSrc(
-      "script-src chrome://resources chrome://test 'self';");
-
-  source->UseStringsJs();
+#if BUILDFLAG(OPTIMIZE_WEBUI)
+  webui::SetupBundledWebUIDataSource(source, "extensions.js",
+                                     IDR_EXTENSIONS_CRISPER_JS,
+                                     IDR_EXTENSIONS_VULCANIZED_HTML);
+#else
+  webui::SetupWebUIDataSource(
+      source, base::make_span(kExtensionsResources, kExtensionsResourcesSize),
+      kGeneratedPath, IDR_EXTENSIONS_EXTENSIONS_HTML);
+#endif
 
   static constexpr LocalizedString kLocalizedStrings[] = {
     // Add common strings.
@@ -303,25 +308,6 @@ content::WebUIDataSource* CreateMdExtensionsSource(Profile* profile,
                      base::CommandLine::ForCurrentProcess()->HasSwitch(
                          ::switches::kEnableExtensionActivityLogging));
   source->AddString(kLoadTimeClassesKey, GetLoadTimeClasses(in_dev_mode));
-
-#if BUILDFLAG(OPTIMIZE_WEBUI)
-  source->AddResourcePath("extensions.js", IDR_EXTENSIONS_CRISPER_JS);
-  source->SetDefaultResource(IDR_EXTENSIONS_VULCANIZED_HTML);
-#else
-  // Add all MD Extensions resources.
-  for (size_t i = 0; i < kExtensionsResourcesSize; ++i) {
-    std::string path = kExtensionsResources[i].name;
-    if (path.rfind(kGeneratedPath, 0) == 0) {
-      path = path.substr(sizeof(kGeneratedPath) - 1);
-    }
-
-    source->AddResourcePath(path, kExtensionsResources[i].value);
-  }
-  source->SetDefaultResource(IDR_EXTENSIONS_EXTENSIONS_HTML);
-#endif
-  source->EnableReplaceI18nInJS();
-  source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
-  source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);
 
   return source;
 }

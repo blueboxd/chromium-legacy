@@ -1,85 +1,84 @@
+<template>
+  <style include="cr-shared-style">
+    hr {
+      background: rgba(0, 0, 0, 0.11);
+      border-width: 0;
+      height: 1px;
+      margin: 8px 0;
+    }
 
-  <template>
-    <style include="cr-shared-style">
+    @media (prefers-color-scheme: dark) {
       hr {
-        background: rgba(0, 0, 0, 0.11);
-        border-width: 0;
-        height: 1px;
-        margin: 8px 0;
+        background: var(--cr-separator-color);
       }
+    }
 
-      @media (prefers-color-scheme: dark) {
-        hr {
-          background: var(--cr-separator-color);
-        }
-      }
+    .drag-above::before,
+    .drag-below::after {
+      background-clip: padding-box;
+      background-color: var(--interactive-color);
+      border: 3px solid var(--interactive-color);
+      border-bottom-color: transparent;
+      border-radius: 0;
+      border-top-color: transparent;
+      box-sizing: border-box;
+      content: '';
+      display: block;
+      height: 8px;
+      left: 0;
+      position: absolute;
+      right: 0;
+      z-index: 1;
+    }
 
-      .drag-above::before,
-      .drag-below::after {
-        background-clip: padding-box;
-        background-color: var(--interactive-color);
-        border: 3px solid var(--interactive-color);
-        border-bottom-color: transparent;
-        border-radius: 0;
-        border-top-color: transparent;
-        box-sizing: border-box;
-        content: '';
-        display: block;
-        height: 8px;
-        left: 0;
-        position: absolute;
-        right: 0;
-        z-index: 1;
-      }
+    .drag-above::before {
+      top: 0;
+      transform: translateY(-50%);
+    }
 
-      .drag-above::before {
-        top: 0;
-        transform: translateY(-50%);
-      }
+    .drag-below::after {
+      bottom: 0;
+      transform: translateY(50%);
+    }
 
-      .drag-below::after {
-        bottom: 0;
-        transform: translateY(50%);
-      }
+    .drag-on {
+      background-color: var(--highlight-color);
+    }
 
-      .drag-on {
-        background-color: var(--highlight-color);
-      }
+    :host-context([hide-focus-ring]) [tabindex]:focus {
+      outline: none;
+    }
 
-      :host-context([hide-focus-ring]) [tabindex]:focus {
-        outline: none;
-      }
-
-      .folder-icon {
-        content: url(chrome://theme/IDR_FOLDER_CLOSED);
-        height: 20px;
-        min-width: 20px;
-        width: 20px;
-      }
+    .folder-icon {
+      content: url(chrome://theme/IDR_FOLDER_CLOSED);
+      height: 20px;
+      min-width: 20px;
+      width: 20px;
+    }
 
 <if expr="is_macosx">
-      @media (prefers-color-scheme: dark) {
-        .folder-icon {
-           content: url(chrome://theme/IDR_FOLDER_CLOSED_WHITE);
-        }
+    @media (prefers-color-scheme: dark) {
+      .folder-icon {
+         content: url(chrome://theme/IDR_FOLDER_CLOSED_WHITE);
       }
+    }
 </if>
 
 <if expr="not is_macosx">
-      .folder-icon[open] {
-        content: url(chrome://theme/IDR_FOLDER_OPEN);
-      }
+    .folder-icon[open] {
+      content: url(chrome://theme/IDR_FOLDER_OPEN);
+    }
 </if>
 
-      :host-context([dir=rtl]) .folder-icon {
-        transform: scaleX(-1);
-      }
+    :host-context([dir=rtl]) .folder-icon {
+      transform: scaleX(-1);
+    }
 
-      .website-icon {
-        background-repeat: no-repeat;
-        height: 16px;
-        margin: 2px;
-        width: 16px;
-      }
-    </style>
-  </template>
+    .website-icon {
+      background-repeat: no-repeat;
+      height: 16px;
+      margin: 2px;
+      width: 16px;
+    }
+  </style>
+</template>

@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/no_destructor.h"
 #include "base/strings/strcat.h"
 #include "base/task/post_task.h"
 #include "base/timer/timer.h"
@@ -34,6 +35,8 @@
 #include "chrome/browser/ui/ash/launcher/shelf_spinner_item_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -288,7 +291,7 @@ std::ostream& operator<<(std::ostream& ostream,
 
 bool IsUninstallable(Profile* profile, const std::string& app_id) {
   if (!CrostiniFeatures::Get()->IsEnabled(profile) ||
-      app_id == kCrostiniTerminalId) {
+      app_id == GetTerminalId()) {
     return false;
   }
   CrostiniRegistryService* registry_service =
@@ -360,7 +363,7 @@ void LaunchCrostiniApp(Profile* profile,
 
   base::OnceClosure launch_closure;
   Browser* browser = nullptr;
-  if (app_id == kCrostiniTerminalId) {
+  if (app_id == GetTerminalId()) {
     DCHECK(files.empty());
     RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kTerminal);
 
@@ -373,6 +376,13 @@ void LaunchCrostiniApp(Profile* profile,
 
     GURL vsh_in_crosh_url = GenerateVshInCroshUrl(
         profile, vm_name, container_name, std::vector<std::string>());
+
+    if (base::FeatureList::IsEnabled(features::kTerminalSystemApp)) {
+      web_app::LaunchSystemWebApp(profile, web_app::SystemAppType::TERMINAL,
+                                  vsh_in_crosh_url);
+      return;
+    }
+
     apps::AppLaunchParams launch_params = GenerateTerminalAppLaunchParams();
     // Create the terminal here so it's created in the right display. If the
     // browser creation is delayed into the callback the root window for new
@@ -499,6 +509,15 @@ base::string16 GetTimeRemainingMessage(base::TimeTicks start, int percent) {
     return l10n_util::GetStringUTF16(
         IDS_CROSTINI_NOTIFICATION_OPERATION_STARTING);
   }
+}
+
+const std::string& GetTerminalId() {
+  static const base::NoDestructor<std::string> app_id([] {
+    return base::FeatureList::IsEnabled(features::kTerminalSystemApp)
+               ? kCrostiniTerminalSystemAppId
+               : kCrostiniTerminalId;
+  }());
+  return *app_id;
 }
 
 }  // namespace crostini

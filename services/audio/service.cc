@@ -4,6 +4,7 @@
 
 #include "services/audio/service.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -50,7 +51,10 @@ Service::Service(
   magic_bytes_ = 0x600DC0DEu;
   g_service_state_for_crashing.Set("constructing");
   DCHECK(audio_manager_accessor_);
+
   if (enable_remote_client_support_) {
+    CHECK(!base::SystemMonitor::Get());
+    system_monitor_ = std::make_unique<base::SystemMonitor>();
     log_factory_manager_ = std::make_unique<LogFactoryManager>();
     audio_manager_accessor_->SetAudioLogFactory(
         log_factory_manager_->GetLogFactory());
@@ -192,10 +196,6 @@ void Service::BindDeviceNotifierReceiver(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(enable_remote_client_support_);
 
-  if (!system_monitor_) {
-    CHECK(!base::SystemMonitor::Get());
-    system_monitor_ = std::make_unique<base::SystemMonitor>();
-  }
   InitializeDeviceMonitor();
   if (!device_notifier_)
     device_notifier_ = std::make_unique<DeviceNotifier>();
@@ -227,10 +227,8 @@ void Service::InitializeDeviceMonitor() {
 
   audio_device_listener_mac_ = std::make_unique<media::AudioDeviceListenerMac>(
       media::BindToCurrentLoop(base::BindRepeating([] {
-        if (base::SystemMonitor::Get()) {
-          base::SystemMonitor::Get()->ProcessDevicesChanged(
-              base::SystemMonitor::DEVTYPE_AUDIO);
-        }
+        if (auto* monitor = base::SystemMonitor::Get())
+          monitor->ProcessDevicesChanged(base::SystemMonitor::DEVTYPE_AUDIO);
       })),
       true /* monitor_default_input */, true /* monitor_addition_removal */,
       true /* monitor_sources */);

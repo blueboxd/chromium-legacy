@@ -74,7 +74,7 @@ std::string CreateSortKey(const autofill::PasswordForm& form) {
   // To separate HTTP/HTTPS credentials, add the scheme to the key.
   key += kSortKeyPartsSeparator + link_url.scheme();
 
-  if (form.from_store == autofill::PasswordForm::Store::kAccountStore) {
+  if (form.in_store == autofill::PasswordForm::Store::kAccountStore) {
     key += kSortKeyPartsSeparator + std::string("account");
   }
 

@@ -7,6 +7,7 @@
 
 #include "services/device/public/mojom/nfc.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -17,6 +18,7 @@ namespace blink {
 class ExecutionContext;
 class NFCProxy;
 class NDEFScanOptions;
+class ScriptPromiseResolver;
 
 class MODULES_EXPORT NDEFReader : public EventTargetWithInlineData,
                                   public ActiveScriptWrappable<NDEFReader>,
@@ -39,24 +41,30 @@ class MODULES_EXPORT NDEFReader : public EventTargetWithInlineData,
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(error, kError)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(reading, kReading)
-  void scan(const NDEFScanOptions*);
+  ScriptPromise scan(ScriptState*, const NDEFScanOptions*, ExceptionState&);
 
   void Trace(blink::Visitor*) override;
 
   // Called by NFCProxy for dispatching events.
   virtual void OnReading(const String& serial_number,
-                         const device::mojom::blink::NDEFMessage& message);
-  virtual void OnError(device::mojom::blink::NDEFErrorType error);
+                         const device::mojom::blink::NDEFMessage&);
+  virtual void OnError(device::mojom::blink::NDEFErrorType);
+
+  // Called by NFCProxy for notification about connection error.
+  void OnMojoConnectionError();
 
  private:
   // ContextLifecycleObserver overrides.
   void ContextDestroyed(ExecutionContext*) override;
 
-  void Abort();
+  void Abort(ScriptPromiseResolver*);
 
   NFCProxy* GetNfcProxy() const;
 
-  bool CheckSecurity();
+  // |resolver_| is kept here to handle Mojo connection failures because in that
+  // case the callback passed to Watch() won't be called and
+  // mojo::WrapCallbackWithDefaultInvokeIfNotRun() is forbidden in Blink.
+  Member<ScriptPromiseResolver> resolver_;
 };
 
 }  // namespace blink

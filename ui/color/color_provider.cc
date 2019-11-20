@@ -23,7 +23,7 @@ ColorMixer& ColorProvider::AddMixer() {
   return mixers_.front();
 }
 
-SkColor ColorProvider::GetColor(ColorId id, ColorVariant variant) const {
+SkColor ColorProvider::GetColor(ColorId id) const {
   DCHECK_COLOR_ID_VALID(id);
 
   if (mixers_.empty())

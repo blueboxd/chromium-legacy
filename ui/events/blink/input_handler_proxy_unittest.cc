@@ -743,6 +743,71 @@ TEST_P(InputHandlerProxyTest, GestureScrollIgnored) {
   VERIFY_AND_RESET_MOCKS();
 }
 
+TEST_P(InputHandlerProxyTest, AnimatedScrollbarScroll) {
+  VERIFY_AND_RESET_MOCKS();
+  SetSmoothScrollEnabled(true);
+  expected_disposition_ = InputHandlerProxy::DID_HANDLE;
+  gesture_.SetSourceDevice(blink::WebGestureDevice::kScrollbar);
+  gesture_.data.scroll_begin.delta_hint_units =
+      gesture_.data.scroll_update.delta_units =
+          ui::input_types::ScrollGranularity::kScrollByPixel;
+
+  // Test setup for a kGestureScrollBegin.
+  gesture_.SetType(WebInputEvent::kGestureScrollBegin);
+  EXPECT_CALL(mock_input_handler_, ScrollAnimatedBegin(_))
+      .WillOnce(testing::Return(kImplThreadScrollState));
+  EXPECT_EQ(expected_disposition_,
+            input_handler_->RouteToTypeSpecificHandler(gesture_));
+  EXPECT_TRUE(input_handler_->gesture_scroll_on_impl_thread_for_testing());
+
+  VERIFY_AND_RESET_MOCKS();
+
+  // Test setup for a kGestureScrollUpdate.
+  gesture_.SetType(WebInputEvent::kGestureScrollUpdate);
+  EXPECT_CALL(mock_input_handler_, ScrollAnimated(_, _, _))
+      .WillOnce(testing::Return(kImplThreadScrollState));
+  EXPECT_EQ(expected_disposition_,
+            input_handler_->RouteToTypeSpecificHandler(gesture_));
+  EXPECT_TRUE(input_handler_->gesture_scroll_on_impl_thread_for_testing());
+
+  VERIFY_AND_RESET_MOCKS();
+}
+
+TEST_P(InputHandlerProxyTest, NonAnimatedScrollbarScroll) {
+  VERIFY_AND_RESET_MOCKS();
+  SetSmoothScrollEnabled(false);
+  expected_disposition_ = InputHandlerProxy::DID_HANDLE;
+  gesture_.SetSourceDevice(blink::WebGestureDevice::kScrollbar);
+  gesture_.data.scroll_begin.delta_hint_units =
+      gesture_.data.scroll_update.delta_units =
+          ui::input_types::ScrollGranularity::kScrollByPixel;
+
+  // Test setup for a kGestureScrollBegin.
+  gesture_.SetType(WebInputEvent::kGestureScrollBegin);
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(_, _))
+      .WillOnce(testing::Return(kImplThreadScrollState));
+  EXPECT_EQ(expected_disposition_,
+            input_handler_->RouteToTypeSpecificHandler(gesture_));
+  EXPECT_TRUE(input_handler_->gesture_scroll_on_impl_thread_for_testing());
+
+  VERIFY_AND_RESET_MOCKS();
+
+  // Test setup for a kGestureScrollUpdate.
+  gesture_.SetType(WebInputEvent::kGestureScrollUpdate);
+  gesture_.data.scroll_update.delta_y =
+      -40;  // -ve value implies "scrolling down".
+  EXPECT_CALL(
+      mock_input_handler_,
+      ScrollBy(testing::Property(&cc::ScrollState::delta_y, testing::Gt(0))))
+      .WillOnce(testing::Return(scroll_result_did_scroll_));
+  EXPECT_CALL(mock_input_handler_, ScrollAnimated(_, _, _)).Times(0);
+  EXPECT_EQ(expected_disposition_,
+            input_handler_->RouteToTypeSpecificHandler(gesture_));
+  EXPECT_TRUE(input_handler_->gesture_scroll_on_impl_thread_for_testing());
+
+  VERIFY_AND_RESET_MOCKS();
+}
+
 TEST_P(InputHandlerProxyTest, GestureScrollByPage) {
   // We should send all events to the widget for this gesture.
   expected_disposition_ = InputHandlerProxy::DID_NOT_HANDLE;

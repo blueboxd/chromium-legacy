@@ -12,10 +12,10 @@
 #include "base/macros.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
-#include "third_party/blink/public/platform/web_rtc_ice_candidate.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_ice_candidate_platform.h"
 
 namespace blink {
 
@@ -28,7 +28,7 @@ class MockWebRTCPeerConnectionHandlerClient
   // WebRTCPeerConnectionHandlerClient implementation.
   MOCK_METHOD0(NegotiationNeeded, void());
   MOCK_METHOD1(DidGenerateICECandidate,
-               void(scoped_refptr<blink::WebRTCICECandidate> candidate));
+               void(scoped_refptr<RTCIceCandidatePlatform> candidate));
   MOCK_METHOD4(DidFailICECandidate,
                void(const blink::WebString& host_candidate,
                     const blink::WebString& url,
@@ -77,7 +77,7 @@ class MockWebRTCPeerConnectionHandlerClient
            bool));
 
   void didGenerateICECandidateWorker(
-      scoped_refptr<blink::WebRTCICECandidate> candidate);
+      scoped_refptr<RTCIceCandidatePlatform> candidate);
   void didAddReceiverWorker(
       std::unique_ptr<blink::WebRTCRtpReceiver>* stream_web_rtp_receivers);
   void didRemoveReceiverWorker(

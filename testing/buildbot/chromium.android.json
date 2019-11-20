@@ -26647,7 +26647,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 22
+          "shards": 25
         },
         "test": "chrome_public_test_apk"
       },
@@ -26828,7 +26828,7 @@
               "name": "shard #${SHARD_INDEX} logcats"
             }
           ],
-          "shards": 11
+          "shards": 16
         },
         "test": "content_browsertests"
       },
@@ -28863,7 +28863,7 @@
             }
           ],
           "idempotent": false,
-          "shards": 13
+          "shards": 10
         }
       }
     ],

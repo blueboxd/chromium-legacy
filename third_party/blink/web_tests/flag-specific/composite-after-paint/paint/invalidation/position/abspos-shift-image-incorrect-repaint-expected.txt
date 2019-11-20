@@ -36,14 +36,7 @@
     {
       "name": "HorizontalScrollbar",
       "position": [0, 585],
-      "bounds": [800, 15],
-      "paintInvalidations": [
-        {
-          "object": "HorizontalScrollbar",
-          "rect": [0, 0, 800, 15],
-          "reason": "scroll control"
-        }
-      ]
+      "bounds": [800, 15]
     }
   ]
 }

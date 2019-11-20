@@ -396,9 +396,10 @@ angle_builder(
 )
 
 
-def blink_builder(*, name, **kwargs):
+def blink_builder(*, name, goma_backend = None, **kwargs):
   return try_builder(
       name = name,
+      goma_backend = goma_backend,
       mastername = 'tryserver.blink',
       **kwargs
   )
@@ -433,33 +434,29 @@ def blink_mac_builder(*, name, **kwargs):
   return blink_builder(
       name = name,
       cores = None,
+      goma_backend = goma.backend.RBE_PROD,
       os = os.MAC_ANY,
       **kwargs
   )
 
 blink_mac_builder(
     name = 'mac10.10-blink-rel',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 blink_mac_builder(
     name = 'mac10.11-blink-rel',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 blink_mac_builder(
     name = 'mac10.12-blink-rel',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 blink_mac_builder(
     name = 'mac10.13-blink-rel',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 blink_mac_builder(
     name = 'mac10.13_retina-blink-rel',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 
@@ -850,6 +847,7 @@ def gpu_mac_builder(*, name, **kwargs):
   return gpu_builder(
       name = name,
       cores = None,
+      goma_backend = goma.backend.RBE_PROD,
       mastername = 'tryserver.chromium.mac',
       os = os.MAC_ANY,
       **kwargs
@@ -857,57 +855,46 @@ def gpu_mac_builder(*, name, **kwargs):
 
 gpu_mac_builder(
     name = 'gpu-fyi-try-mac-amd-dqp',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_mac_builder(
     name = 'gpu-fyi-try-mac-amd-pro-rel',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_mac_builder(
     name = 'gpu-fyi-try-mac-amd-retina-dbg',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_mac_builder(
     name = 'gpu-fyi-try-mac-amd-retina-exp',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_mac_builder(
     name = 'gpu-fyi-try-mac-amd-retina-rel',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_mac_builder(
     name = 'gpu-fyi-try-mac-asan',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_mac_builder(
     name = 'gpu-fyi-try-mac-intel-dbg',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_mac_builder(
     name = 'gpu-fyi-try-mac-intel-dqp',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_mac_builder(
     name = 'gpu-fyi-try-mac-intel-exp',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_mac_builder(
     name = 'gpu-fyi-try-mac-intel-rel',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_mac_builder(
     name = 'gpu-fyi-try-mac-nvidia-retina-dbg',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_mac_builder(
@@ -916,27 +903,22 @@ gpu_mac_builder(
     # If it gets more, the modified execution_timeout should be removed.
     # See crbug.com/853307 for more context.
     execution_timeout = 12 * time.hour,
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_mac_builder(
     name = 'gpu-fyi-try-mac-nvidia-retina-rel',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_mac_builder(
     name = 'gpu-try-mac-amd-retina-dbg',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_mac_builder(
     name = 'gpu-try-mac-intel-dbg',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 gpu_mac_builder(
     name = 'mac_optional_gpu_tests_rel',
-    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(
         location_regexp = [
             '.+/[+]/chrome/browser/vr/.+',
@@ -1412,10 +1394,17 @@ linux_builder(
 )
 
 
-def mac_builder(*, name, cores=None, os=os.MAC_ANY, **kwargs):
+def mac_builder(
+    *,
+    name,
+    cores=None,
+    goma_backend = goma.backend.RBE_PROD,
+    os=os.MAC_ANY,
+    **kwargs):
   return try_builder(
       name = name,
       cores = cores,
+      goma_backend = goma_backend,
       mastername = 'tryserver.chromium.mac',
       os = os,
       **kwargs
@@ -1424,14 +1413,12 @@ def mac_builder(*, name, cores=None, os=os.MAC_ANY, **kwargs):
 mac_builder(
     name = 'mac-osxbeta-rel',
     builderless = True,
-    goma_backend = goma.backend.RBE_PROD,
     os = os.MAC_DEFAULT,
     ssd = True,
 )
 
 mac_builder(
     name = 'mac-rel',
-    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
     tryjob = tryjob(),
 )
@@ -1441,39 +1428,32 @@ mac_builder(
 # The 10.xx version translates to which bots will run isolated tests.
 mac_builder(
     name = 'mac_chromium_10.10',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 mac_builder(
     name = 'mac_chromium_10.12_rel_ng',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 mac_builder(
     name = 'mac_chromium_10.13_rel_ng',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 mac_builder(
     name = 'mac_chromium_10.14_rel_ng',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 mac_builder(
     name = 'mac_chromium_archive_rel_ng',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 mac_builder(
     name = 'mac_chromium_asan_rel_ng',
     goma_jobs = goma.jobs.J150,
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 mac_builder(
     name = 'mac_chromium_compile_dbg_ng',
     builderless = True,
-    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
     os = os.MAC_10_13,
     ssd = True,
@@ -1482,12 +1462,10 @@ mac_builder(
 
 mac_builder(
     name = 'mac_chromium_compile_rel_ng',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 mac_builder(
     name = 'mac_chromium_dbg_ng',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 mac_builder(

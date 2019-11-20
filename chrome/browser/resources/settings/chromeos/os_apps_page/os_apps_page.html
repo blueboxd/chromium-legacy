@@ -56,7 +56,9 @@
             <template is="dom-if" if="[[androidAppsInfo.playStoreEnabled]]">
               <cr-icon-button class="subpage-arrow"
                   aria-label="$i18n{androidAppsPageTitle}"
-                  aria-describedby="secondaryText"></cr-icon-button>
+                  aria-describedby="secondaryText"
+                  aria-roledescription="$i18n{subpageArrowRoleDescription}">
+              </cr-icon-button>
             </template>
             <template is="dom-if" if="[[!androidAppsInfo.playStoreEnabled]]">
               <div class="separator"></div>

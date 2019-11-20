@@ -2125,6 +2125,8 @@ if (enable_java_templates) {
   #     (optional).
   #   product_config_java_packages: Optional list of java packages. If given, a
   #     ProductConfig.java file will be generated for each package.
+  #   disable_checkdiscard: Turn off -checkdiscard directives in the proguard
+  #     step.
   #   disable_r8_outlining: Turn off outlining during the proguard step.
   #   annotation_processor_deps: List of java_annotation_processor targets to
   #     use when compiling the java_files given to this target (optional).
@@ -2922,6 +2924,7 @@ if (enable_java_templates) {
       dex(_final_dex_target_name) {
         forward_variables_from(invoker,
                                [
+                                 "disable_checkdiscard",
                                  "disable_r8_outlining",
                                  "min_sdk_version",
                                  "dexlayout_profile",
@@ -3408,6 +3411,7 @@ if (enable_java_templates) {
                                "data_deps",
                                "deps",
                                "dexlayout_profile",
+                               "disable_checkdiscard",
                                "disable_r8_outlining",
                                "dist_ijar_path",
                                "enable_chromium_linker_tests",
@@ -3744,6 +3748,7 @@ if (enable_java_templates) {
           proguard_configs = []
         }
         proguard_configs += [ "//testing/android/proguard_for_test.flags" ]
+        disable_checkdiscard = true
         if (defined(final_apk_path)) {
           _final_apk_path = final_apk_path
         } else {

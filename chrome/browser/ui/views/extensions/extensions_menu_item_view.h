@@ -44,6 +44,7 @@ class ExtensionsMenuItemView : public views::View,
   bool IsPinned();
 
   ExtensionsMenuButton* primary_action_button_for_testing();
+  views::ImageButton* pin_button_for_testing() { return pin_button_; }
   ToolbarActionViewController* view_controller_for_testing() {
     return controller_.get();
   }

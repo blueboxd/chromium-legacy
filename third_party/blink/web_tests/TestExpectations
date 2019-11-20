@@ -3540,7 +3540,7 @@ crbug.com/626703 external/wpt/css/css-fonts/font-synthesis-02.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/font-synthesis-03.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/font-synthesis-04.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/font-synthesis-05.html [ Failure ]
-crbug.com/626703 external/wpt/acid/acid2/reftest.html [ Failure ]
+crbug.com/626703 external/wpt/acid/acid2/reftest.html [ Failure Pass ]
 crbug.com/626703 external/wpt/acid/acid3/test.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-ui/cursor-auto-006.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-ui/cursor-auto-007.html [ Skip ]
@@ -5804,7 +5804,6 @@ crbug.com/1018064 [ Mac10.13 ] virtual/threaded/http/tests/devtools/tracing/time
 # Sheriff 2019-10-30
 crbug.com/1014810 [ Mac ] virtual/threaded/external/wpt/animation-worklet/stateful-animator.https.html [ Pass Timeout Crash ]
 crbug.com/1019662 external/wpt/html/dom/idlharness.worker.html [ Pass Timeout ]
-crbug.com/1019663 external/wpt/web-nfc/NDEFReader_options.https.html [ Failure Pass ]
 
 # Temporarily disable to land source map changes that log error on failure
 crbug.com/1016772 http/tests/devtools/compiler-script-mapping.js [ Pass Failure ]
@@ -5871,3 +5870,6 @@ crbug.com/1025437 virtual/not-site-per-process/http/tests/devtools/debugger/fetc
 
 # Sheriff 2019-11-18
 crbug.com/1025944 [ Linux ] external/wpt/pointerevents/pointerlock/pointerevent_pointermove_on_chorded_mouse_button_when_locked.html [ Pass Failure ]
+
+# Timeout media preload test until preloading media destinations gets enabled.
+crbug.com/977033 http/tests/priorities/resource-load-priorities-media-preload.html [ Timeout ]

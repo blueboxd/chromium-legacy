@@ -9,6 +9,7 @@ import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isEnabled;
 import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
@@ -17,6 +18,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.getElementValue;
@@ -210,5 +212,87 @@ public class AutofillAssistantPersonalDataManagerTest {
         waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
         assertThat(getElementValue("profile_name", getWebContents()), is("John Doe"));
         assertThat(getElementValue("email", getWebContents()), is("johndoe@google.com"));
+    }
+
+    // TODO(b/143265578): Add test where credit card is manually entered.
+
+    /**
+     * Catch live insert of a credit card.
+     */
+    @Test
+    @MediumTest
+    public void testLiveInsertCreditCard() throws Exception {
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setCollectUserData(
+                                 CollectUserDataProto.newBuilder()
+                                         .setRequestPaymentMethod(true)
+                                         .addSupportedBasicCardNetworks("visa")
+                                         .setThirdpartyPrivacyNoticeText("3rd party privacy text")
+                                         .setRequestTermsAndConditions(false))
+                         .build());
+        // No UseCreditCardAction, that is tested in PaymentTest.
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("form_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Payment")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(
+                allOf(withId(R.id.section_title_add_button_label), withText("Add card")),
+                isCompletelyDisplayed());
+        String profileId = mHelper.addDummyProfile("John Doe", "johndoe@google.com");
+        mHelper.addDummyCreditCard(profileId);
+        waitUntilViewMatchesCondition(allOf(withId(R.id.credit_card_number),
+                                              isDescendantOfA(withId(R.id.payment_method_summary))),
+                allOf(withText(containsString("1111")), isDisplayed()));
+        waitUntilViewMatchesCondition(withText("Continue"), isEnabled());
+    }
+
+    /**
+     * Catch live insert of a credit card with billing address missing a postal code.
+     */
+    @Test
+    @MediumTest
+    public void testLiveInsertAndEnterCreditCardWithoutBillingZip() throws Exception {
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setCollectUserData(
+                                 CollectUserDataProto.newBuilder()
+                                         .setRequestPaymentMethod(true)
+                                         .addSupportedBasicCardNetworks("visa")
+                                         .setRequireBillingPostalCode(true)
+                                         .setBillingPostalCodeMissingText("Missing Billing Code")
+                                         .setThirdpartyPrivacyNoticeText("3rd party privacy text")
+                                         .setRequestTermsAndConditions(false))
+                         .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("form_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Payment")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(
+                allOf(withId(R.id.section_title_add_button_label), withText("Add card")),
+                isCompletelyDisplayed());
+        String profileId =
+                mHelper.addDummyProfile("John Doe", "johndoe@google.com", /* postcode= */ "");
+        mHelper.addDummyCreditCard(profileId);
+        waitUntilViewMatchesCondition(allOf(withText("Missing Billing Code"),
+                                              isDescendantOfA(withId(R.id.payment_method_summary))),
+                isDisplayed());
+        waitUntilViewMatchesCondition(withText("Continue"), isEnabled());
     }
 }

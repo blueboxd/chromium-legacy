@@ -103,6 +103,8 @@ class Controller : public ScriptExecutorDelegate,
   WebsiteLoginFetcher* GetWebsiteLoginFetcher() override;
   content::WebContents* GetWebContents() override;
   std::string GetAccountEmailAddress() override;
+  std::string GetLocale() override;
+
   void SetTouchableElementArea(const ElementAreaProto& area) override;
   void SetStatusMessage(const std::string& message) override;
   std::string GetStatusMessage() const override;

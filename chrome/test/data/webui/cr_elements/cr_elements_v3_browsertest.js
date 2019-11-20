@@ -27,18 +27,6 @@ var CrElementsV3BrowserTest = class extends PolymerTest {
   get webuiHost() {
     return 'dummyurl';
   }
-
-  /** @override */
-  get runAccessibilityChecks() {
-    return true;
-  }
-
-  /** @override */
-  setUp() {
-    PolymerTest.prototype.setUp.call(this);
-    // We aren't loading the main document.
-    this.accessibilityAuditConfig.ignoreSelectors('humanLangMissing', 'html');
-  }
 };
 
 // eslint-disable-next-line no-var

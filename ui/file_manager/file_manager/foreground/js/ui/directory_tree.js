@@ -1859,6 +1859,9 @@ class DirectoryTree extends cr.ui.Tree {
         fileOperationManager, 'entries-changed',
         this.onEntriesChanged_.bind(this));
 
+    this.addEventListener(
+        'scroll', this.onTreeScrollEvent_.bind(this), {passive: true});
+
     this.addEventListener('click', (event) => {
       // Chromevox triggers |click| without switching focus, we force the focus
       // here so we can handle further keyboard/mouse events to expand/collapse
@@ -2217,6 +2220,31 @@ class DirectoryTree extends cr.ui.Tree {
         if (currentDir) {
           this.selectByEntry(currentDir);
         }
+      }
+    });
+  }
+
+  /*
+   * The directory tree does not support horizontal scrolling (by design), but
+   * can gain a scrollLeft > 0, see crbug.com/1025581. Always clamp scrollLeft
+   * back to 0 if needed.
+   */
+  onTreeScrollEvent_() {
+    if (this.scrollRAFActive_ === true) {
+      return;
+    }
+
+    /**
+     * True if a scroll RAF is active: scroll events are frequent and serviced
+     * using RAF to throttle our processing of these events.
+     * @type {boolean}
+     */
+    this.scrollRAFActive_ = true;
+
+    window.requestAnimationFrame(() => {
+      this.scrollRAFActive_ = false;
+      if (this.scrollLeft) {
+        this.scrollLeft = 0;
       }
     });
   }

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright 2018 The Feed Authors.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+  <string name="more_button_label">Vairāk</string>
+  <string name="no_suggestions">Pagaidām tas arī viss!</string>
+  <string name="zero_state_text_morning">Drīzumā būs pieejami citi raksti. Jauku rītu!</string>
+  <string name="zero_state_text_afternoon">Drīzumā būs pieejami citi raksti. Jauku pēcpusdienu!</string>
+  <string name="zero_state_text_evening">Drīzumā būs pieejami citi raksti. Jauku vakaru!</string>
+  <string name="feed_refresh">Atsvaidzināt</string>
+  <string name="snackbar_fetch_failed">Nevar iegūt ieteikumus.</string>
+  <string name="snackbar_fetch_no_new_suggestions">Nav jaunu ieteikumu</string>
+  <string name="suggestions_section_empty">Ieteiktie raksti tiek parādīti šeit</string>
+  <string name="snackbar_default_action">Atsaukt</string>
+</resources>

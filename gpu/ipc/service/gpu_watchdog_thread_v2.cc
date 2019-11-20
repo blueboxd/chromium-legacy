@@ -154,20 +154,20 @@ void GpuWatchdogThreadImplV2::AddPowerObserver() {
                                 base::Unretained(this)));
 }
 
-// Called from the gpu thread.
+// Android Chrome goes to the background. Called from the gpu thread.
 void GpuWatchdogThreadImplV2::OnBackgrounded() {
   task_runner()->PostTask(
       FROM_HERE,
-      base::BindOnce(&GpuWatchdogThreadImplV2::OnWatchdogBackgrounded,
-                     base::Unretained(this)));
+      base::BindOnce(&GpuWatchdogThreadImplV2::StopWatchdogTimeoutTask,
+                     base::Unretained(this), kAndroidBackgroundForeground));
 }
 
-// Called from the gpu thread.
+// Android Chrome goes to the foreground. Called from the gpu thread.
 void GpuWatchdogThreadImplV2::OnForegrounded() {
   task_runner()->PostTask(
       FROM_HERE,
-      base::BindOnce(&GpuWatchdogThreadImplV2::OnWatchdogForegrounded,
-                     base::Unretained(this)));
+      base::BindOnce(&GpuWatchdogThreadImplV2::RestartWatchdogTimeoutTask,
+                     base::Unretained(this), kAndroidBackgroundForeground));
 }
 
 // Called from the gpu thread when gpu init has completed.
@@ -186,6 +186,26 @@ void GpuWatchdogThreadImplV2::OnGpuProcessTearDown() {
   in_gpu_process_teardown_ = true;
   if (!IsArmed())
     Arm();
+}
+
+// Called from the gpu main thread.
+void GpuWatchdogThreadImplV2::PauseWatchdog() {
+  DCHECK(watched_gpu_task_runner_->BelongsToCurrentThread());
+
+  task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&GpuWatchdogThreadImplV2::StopWatchdogTimeoutTask,
+                     base::Unretained(this), kGeneralGpuFlow));
+}
+
+// Called from the gpu main thread.
+void GpuWatchdogThreadImplV2::ResumeWatchdog() {
+  DCHECK(watched_gpu_task_runner_->BelongsToCurrentThread());
+
+  task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&GpuWatchdogThreadImplV2::RestartWatchdogTimeoutTask,
+                     base::Unretained(this), kGeneralGpuFlow));
 }
 
 // Running on the watchdog thread.
@@ -252,23 +272,14 @@ void GpuWatchdogThreadImplV2::DidProcessTask(
     Disarm();
 }
 
-// Running on the watchdog thread.
+// Power Suspends. Running on the watchdog thread.
 void GpuWatchdogThreadImplV2::OnSuspend() {
-  DCHECK(watchdog_thread_task_runner_->BelongsToCurrentThread());
-  in_power_suspension_ = true;
-  // Revoke any pending watchdog timeout task
-  weak_factory_.InvalidateWeakPtrs();
-  suspend_timeticks_ = base::TimeTicks::Now();
+  StopWatchdogTimeoutTask(kPowerSuspendResume);
 }
 
-// Running on the watchdog thread.
+// Power Resumes. Running on the watchdog thread.
 void GpuWatchdogThreadImplV2::OnResume() {
-  DCHECK(watchdog_thread_task_runner_->BelongsToCurrentThread());
-
-  in_power_suspension_ = false;
-  RestartWatchdogTimeoutTask();
-  resume_timeticks_ = base::TimeTicks::Now();
-  is_first_timeout_after_power_resume = true;
+  RestartWatchdogTimeoutTask(kPowerSuspendResume);
 }
 
 // Running on the watchdog thread.
@@ -280,38 +291,45 @@ void GpuWatchdogThreadImplV2::OnAddPowerObserver() {
 }
 
 // Running on the watchdog thread.
-void GpuWatchdogThreadImplV2::OnWatchdogBackgrounded() {
+void GpuWatchdogThreadImplV2::RestartWatchdogTimeoutTask(
+    PauseResumeSource source_of_request) {
   DCHECK(watchdog_thread_task_runner_->BelongsToCurrentThread());
+  base::TimeDelta timeout;
 
-  is_backgrounded_ = true;
-  // Revoke any pending watchdog timeout task
-  weak_factory_.InvalidateWeakPtrs();
-  backgrounded_timeticks_ = base::TimeTicks::Now();
-}
+  switch (source_of_request) {
+    case kAndroidBackgroundForeground:
+      if (!is_backgrounded_)
+        return;
+      is_backgrounded_ = false;
+      timeout = watchdog_timeout_ * kRestartFactor;
+      foregrounded_timeticks_ = base::TimeTicks::Now();
+      break;
+    case kPowerSuspendResume:
+      if (!in_power_suspension_)
+        return;
+      in_power_suspension_ = false;
+      timeout = watchdog_timeout_ * kRestartFactor;
+      power_resume_timeticks_ = base::TimeTicks::Now();
+      is_first_timeout_after_power_resume = true;
+      break;
+    case kGeneralGpuFlow:
+      if (!is_paused_)
+        return;
+      is_paused_ = false;
+      timeout = watchdog_timeout_ * kInitFactor;
+      watchdog_resume_timeticks_ = base::TimeTicks::Now();
+      break;
+  }
 
-// Running on the watchdog thread.
-void GpuWatchdogThreadImplV2::OnWatchdogForegrounded() {
-  DCHECK(watchdog_thread_task_runner_->BelongsToCurrentThread());
-
-  is_backgrounded_ = false;
-  RestartWatchdogTimeoutTask();
-  foregrounded_timeticks_ = base::TimeTicks::Now();
-}
-
-// Running on the watchdog thread.
-void GpuWatchdogThreadImplV2::RestartWatchdogTimeoutTask() {
-  DCHECK(watchdog_thread_task_runner_->BelongsToCurrentThread());
-
-  if (!is_backgrounded_ && !in_power_suspension_) {
-    // Make the timeout twice long. The system/gpu might be very slow right
-    // after resume or foregrounded.
+  if (!is_backgrounded_ && !in_power_suspension_ && !is_paused_) {
     weak_ptr_ = weak_factory_.GetWeakPtr();
-    base::TimeDelta timeout = watchdog_timeout_ * kRestartFactor;
     task_runner()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&GpuWatchdogThreadImplV2::OnWatchdogTimeout, weak_ptr_),
         timeout);
     last_on_watchdog_timeout_timeticks_ = base::TimeTicks::Now();
+    last_arm_disarm_counter_ =
+        base::subtle::NoBarrier_Load(&arm_disarm_counter_);
 #if defined(OS_WIN)
     if (watched_thread_handle_) {
       last_on_watchdog_timeout_thread_ticks_ = GetWatchedThreadTime();
@@ -319,6 +337,35 @@ void GpuWatchdogThreadImplV2::RestartWatchdogTimeoutTask() {
     }
 #endif
   }
+}
+
+void GpuWatchdogThreadImplV2::StopWatchdogTimeoutTask(
+    PauseResumeSource source_of_request) {
+  DCHECK(watchdog_thread_task_runner_->BelongsToCurrentThread());
+
+  switch (source_of_request) {
+    case kAndroidBackgroundForeground:
+      if (is_backgrounded_)
+        return;
+      is_backgrounded_ = true;
+      backgrounded_timeticks_ = base::TimeTicks::Now();
+      break;
+    case kPowerSuspendResume:
+      if (in_power_suspension_)
+        return;
+      in_power_suspension_ = true;
+      power_suspend_timeticks_ = base::TimeTicks::Now();
+      break;
+    case kGeneralGpuFlow:
+      if (is_paused_)
+        return;
+      is_paused_ = true;
+      watchdog_pause_timeticks_ = base::TimeTicks::Now();
+      break;
+  }
+
+  // Revoke any pending watchdog timeout task
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 // Called from the gpu main thread.
@@ -362,6 +409,7 @@ void GpuWatchdogThreadImplV2::OnWatchdogTimeout() {
   DCHECK(watchdog_thread_task_runner_->BelongsToCurrentThread());
   DCHECK(!is_backgrounded_);
   DCHECK(!in_power_suspension_);
+  DCHECK(!is_paused_);
   base::subtle::Atomic32 arm_disarm_counter =
       base::subtle::NoBarrier_Load(&arm_disarm_counter_);
 
@@ -476,10 +524,12 @@ void GpuWatchdogThreadImplV2::DeliberatelyTerminateToRecoverFromHang() {
   base::debug::Alias(&in_gpu_init);
   base::debug::Alias(&function_begin_timeticks);
   base::debug::Alias(&watchdog_start_timeticks_);
-  base::debug::Alias(&suspend_timeticks_);
-  base::debug::Alias(&resume_timeticks_);
+  base::debug::Alias(&power_suspend_timeticks_);
+  base::debug::Alias(&power_resume_timeticks_);
   base::debug::Alias(&backgrounded_timeticks_);
   base::debug::Alias(&foregrounded_timeticks_);
+  base::debug::Alias(&watchdog_pause_timeticks_);
+  base::debug::Alias(&watchdog_resume_timeticks_);
   base::debug::Alias(&in_power_suspension_);
   base::debug::Alias(&in_gpu_process_teardown_);
   base::debug::Alias(&is_backgrounded_);

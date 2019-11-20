@@ -36,8 +36,7 @@ namespace blink {
 // This class implements/helps with implementing the "sandwich model" from SMIL.
 // https://www.w3.org/TR/SMIL3/smil-animation.html#animationNS-AnimationSandwichModel
 //
-// A "sandwich" contains all the animation elements (actually timed elements in
-// our case because of how we handle <discard>) that targets a specific
+// A "sandwich" contains all the animation elements that targets a specific
 // attribute (or property) on a certain element.
 //
 // Consider the following simple example:
@@ -103,7 +102,7 @@ class SMILAnimationSandwich : public GarbageCollected<SMILAnimationSandwich> {
   void Remove(SVGSMILElement* animation);
 
   void UpdateActiveAnimationStack(SMILTime presentation_time);
-  SVGSMILElement* ApplyAnimationValues();
+  bool ApplyAnimationValues();
 
   bool IsEmpty() { return sandwich_.IsEmpty(); }
 

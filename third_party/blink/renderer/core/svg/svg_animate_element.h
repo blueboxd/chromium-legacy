@@ -54,10 +54,10 @@ class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
   bool IsAdditive() const final;
 
  protected:
-  bool HasValidTarget() const override;
-
   void WillChangeAnimationTarget() final;
   void DidChangeAnimationTarget() final;
+
+  bool HasValidAnimation() const override;
 
   void ResetAnimatedType() final;
   void ClearAnimatedType() final;
@@ -98,6 +98,9 @@ class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
   virtual void ResolveTargetProperty();
   void ClearTargetProperty();
   void UpdateTargetProperty();
+
+  void WillChangeAnimatedType();
+  void DidChangeAnimatedType();
 
   virtual SVGPropertyBase* CreatePropertyForAnimation(const String&) const;
   SVGPropertyBase* CreatePropertyForAttributeAnimation(const String&) const;

@@ -288,6 +288,8 @@ TEST_F(PdfAccessibilityTreeTest, TestPdfAccessibilityTreeCreation) {
   ui::AXNode* paragraph_node = page_node->children()[0];
   ASSERT_TRUE(paragraph_node);
   EXPECT_EQ(ax::mojom::Role::kParagraph, paragraph_node->data().role);
+  EXPECT_TRUE(paragraph_node->GetBoolAttribute(
+      ax::mojom::BoolAttribute::kIsLineBreakingObject));
   ASSERT_EQ(1u, paragraph_node->children().size());
 
   ui::AXNode* link_node = paragraph_node->children()[0];
@@ -302,6 +304,8 @@ TEST_F(PdfAccessibilityTreeTest, TestPdfAccessibilityTreeCreation) {
   paragraph_node = page_node->children()[1];
   ASSERT_TRUE(paragraph_node);
   EXPECT_EQ(ax::mojom::Role::kParagraph, paragraph_node->data().role);
+  EXPECT_TRUE(paragraph_node->GetBoolAttribute(
+      ax::mojom::BoolAttribute::kIsLineBreakingObject));
   ASSERT_EQ(3u, paragraph_node->children().size());
 
   ui::AXNode* static_text_node = paragraph_node->children()[0];
@@ -386,6 +390,8 @@ TEST_F(PdfAccessibilityTreeTest, TestPreviousNextOnLine) {
   ui::AXNode* paragraph_node = page_node->children()[0];
   ASSERT_TRUE(paragraph_node);
   EXPECT_EQ(ax::mojom::Role::kParagraph, paragraph_node->data().role);
+  EXPECT_TRUE(paragraph_node->GetBoolAttribute(
+      ax::mojom::BoolAttribute::kIsLineBreakingObject));
   ASSERT_EQ(2u, paragraph_node->children().size());
 
   ui::AXNode* static_text_node = paragraph_node->children()[0];

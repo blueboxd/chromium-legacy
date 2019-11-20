@@ -57,6 +57,7 @@ blink_modules_sources("filesystem") {
     "html_input_element_file_system.h",
     "local_file_system.cc",
     "local_file_system.h",
+    "metadata.cc",
     "metadata.h",
     "sync_callback_helper.h",
     "worker_global_scope_file_system.cc",

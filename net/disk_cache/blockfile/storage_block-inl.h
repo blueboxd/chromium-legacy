@@ -217,7 +217,7 @@ template<typename T> void StorageBlock<T>::DeleteData() {
 
 template <typename T>
 uint32_t StorageBlock<T>::CalculateHash() const {
-  return base::Hash(data_, offsetof(T, self_hash));
+  return base::PersistentHash(data_, offsetof(T, self_hash));
 }
 
 }  // namespace disk_cache

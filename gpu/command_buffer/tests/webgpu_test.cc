@@ -19,6 +19,13 @@
 
 namespace gpu {
 
+namespace {
+
+void OnRequestAdapterCallback(uint32_t adapter_server_id,
+                              const WGPUDeviceProperties& properties) {}
+
+}  // anonymous namespace
+
 WebGPUTest::Options::Options() = default;
 
 WebGPUTest::WebGPUTest() = default;
@@ -84,7 +91,9 @@ void WebGPUTest::Initialize(const Options& options) {
                            image_factory, channel_manager);
   ASSERT_EQ(result, ContextResult::kSuccess);
 
-  webgpu()->RequestAdapter(webgpu::PowerPreference::kHighPerformance);
+  ASSERT_TRUE(
+      webgpu()->RequestAdapterAsync(webgpu::PowerPreference::kDefault,
+                                    base::Bind(&OnRequestAdapterCallback)));
 
   DawnProcTable procs = webgpu()->GetProcs();
   dawnProcSetProcs(&procs);

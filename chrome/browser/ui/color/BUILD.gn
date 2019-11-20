@@ -21,6 +21,21 @@ executable("dump_colors") {
 
   deps = [
     ":color",
+    ":mixers",
+    "//ui/color:mixers",
+  ]
+}
+
+source_set("mixers") {
+  sources = [
+    "chrome_color_mixers.cc",
+    "chrome_color_mixers.h",
+    "omnibox_color_mixers.cc",
+    "omnibox_color_mixers.h",
+  ]
+
+  deps = [
+    ":color",
     "//ui/color:mixers",
   ]
 }

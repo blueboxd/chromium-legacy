@@ -7591,7 +7591,7 @@ TEST_F(PersonalDataManagerTest, ShouldShowCardsFromAccountOption) {
   // Set an an active secondary account.
   AccountInfo active_info;
   active_info.email = kPrimaryAccountEmail;
-  active_info.account_id = "account_id";
+  active_info.account_id = CoreAccountId("account_id");
   sync_service_.SetAuthenticatedAccountInfo(active_info);
   sync_service_.SetIsAuthenticatedAccountPrimary(false);
 

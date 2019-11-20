@@ -41,4 +41,9 @@ SVGDiscardElement::SVGDiscardElement(Document& document)
   UseCounter::Count(&GetDocument(), WebFeature::kSVGSMILDiscardElementParsed);
 }
 
+void SVGDiscardElement::StartedActiveInterval() {
+  SVGSMILElement::StartedActiveInterval();
+  QueueDiscard();
+}
+
 }  // namespace blink

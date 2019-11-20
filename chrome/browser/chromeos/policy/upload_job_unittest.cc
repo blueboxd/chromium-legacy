@@ -230,7 +230,7 @@ class UploadJobTestBase : public testing::Test, public UploadJob::Delegate {
       std::unique_ptr<UploadJobImpl::MimeBoundaryGenerator>
           mime_boundary_generator) {
     std::unique_ptr<UploadJob> upload_job(new UploadJobImpl(
-        GetServerURL(), kRobotAccountId, &access_token_manager_,
+        GetServerURL(), CoreAccountId(kRobotAccountId), &access_token_manager_,
         url_loader_factory_, this, std::move(mime_boundary_generator),
         TRAFFIC_ANNOTATION_FOR_TESTS, base::ThreadTaskRunnerHandle::Get()));
 

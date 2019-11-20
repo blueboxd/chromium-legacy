@@ -26,7 +26,7 @@
 [
     NoInterfaceObject
 ] interface RTCLegacyStatsReport {
-    readonly attribute Date timestamp;
+    [CallWith=ScriptState] readonly attribute object timestamp;
     readonly attribute DOMString id;
     readonly attribute DOMString type;
     DOMString stat(DOMString name);

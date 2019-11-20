@@ -1030,4 +1030,62 @@ IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
   magnification_manager->SetDockedMagnifierEnabled(false);
   EXPECT_FALSE(magnification_manager->IsDockedMagnifierEnabled());
 }
+
+IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
+                       DeviceLoginScreenShowOptionsInSystemTrayMenu) {
+  // Verifies that the visibility of the accessibility options on the login
+  // screen can be controlled through device policy.
+  PrefService* prefs = login_profile_->GetPrefs();
+  ASSERT_TRUE(prefs);
+  EXPECT_FALSE(
+      prefs->GetBoolean(ash::prefs::kShouldAlwaysShowAccessibilityMenu));
+
+  // Manually show the accessibility options in tray menu.
+  prefs->SetBoolean(ash::prefs::kShouldAlwaysShowAccessibilityMenu, true);
+  EXPECT_TRUE(
+      prefs->GetBoolean(ash::prefs::kShouldAlwaysShowAccessibilityMenu));
+
+  // Hide the accessibility options in tray menu through device policy and wait
+  // for the change to take effect.
+  em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_show_options_in_system_tray_menu_enabled(false);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kShouldAlwaysShowAccessibilityMenu);
+
+  // Verify that the pref which controls the visibility of the accessibility
+  // options tray menu in the login profile is managed by the policy.
+  EXPECT_TRUE(IsPrefManaged(ash::prefs::kShouldAlwaysShowAccessibilityMenu));
+  EXPECT_EQ(base::Value(false),
+            GetPrefValue(ash::prefs::kShouldAlwaysShowAccessibilityMenu));
+
+  // Verify that its not possible to change the visibility of the accessibility
+  // options in tray menu, manually anymore.
+  prefs->SetBoolean(ash::prefs::kShouldAlwaysShowAccessibilityMenu, true);
+  EXPECT_FALSE(
+      prefs->GetBoolean(ash::prefs::kShouldAlwaysShowAccessibilityMenu));
+
+  // Show the accessibility options in tray menu through device policy as a
+  // recommended value and wait for the change to take effect.
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_show_options_in_system_tray_menu_enabled(true);
+  proto.mutable_accessibility_settings()
+      ->mutable_login_screen_show_options_in_system_tray_menu_enabled_options()
+      ->set_mode(em::PolicyOptions::RECOMMENDED);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kShouldAlwaysShowAccessibilityMenu);
+
+  // Verify that the pref which controls the visibility of the accessibility
+  // options in tray menu in the login profile is being applied as recommended
+  // by the policy.
+  EXPECT_FALSE(IsPrefManaged(ash::prefs::kShouldAlwaysShowAccessibilityMenu));
+  EXPECT_EQ(base::Value(true),
+            GetPrefValue(ash::prefs::kShouldAlwaysShowAccessibilityMenu));
+
+  // Verify that the visibility of the accessibility options in tray menu can be
+  // enabled manually again.
+  prefs->SetBoolean(ash::prefs::kShouldAlwaysShowAccessibilityMenu, false);
+  EXPECT_FALSE(
+      prefs->GetBoolean(ash::prefs::kShouldAlwaysShowAccessibilityMenu));
+}
 }  // namespace policy

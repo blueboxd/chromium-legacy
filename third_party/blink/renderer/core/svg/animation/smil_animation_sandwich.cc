@@ -88,10 +88,10 @@ void SMILAnimationSandwich::UpdateActiveAnimationStack(
     old_result_element->ClearAnimatedType();
 }
 
-SVGSMILElement* SMILAnimationSandwich::ApplyAnimationValues() {
+bool SMILAnimationSandwich::ApplyAnimationValues() {
   SVGSMILElement* result_element = ResultElement();
   if (!result_element)
-    return nullptr;
+    return false;
 
   // Only reset the animated type to the base value once for
   // the lowest priority animation that animates and
@@ -116,7 +116,7 @@ SVGSMILElement* SMILAnimationSandwich::ApplyAnimationValues() {
   }
 
   result_element->ApplyResultsToTarget();
-  return result_element;
+  return true;
 }
 
 void SMILAnimationSandwich::Trace(blink::Visitor* visitor) {

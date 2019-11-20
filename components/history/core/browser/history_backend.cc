@@ -16,8 +16,12 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/containers/flat_set.h"
 #include "base/files/file_enumerator.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
@@ -74,6 +78,50 @@ using syncer::ClientTagBasedModelTypeProcessor;
 namespace history {
 
 namespace {
+
+#if DCHECK_IS_ON()
+// Use to keep track of paths used to host HistoryBackends. This class
+// is thread-safe. No two backends should ever run at the same time using the
+// same directory since they will contend on the files created there.
+class HistoryPathsTracker {
+ public:
+  HistoryPathsTracker(const HistoryPathsTracker&) = delete;
+  HistoryPathsTracker& operator=(const HistoryPathsTracker&) = delete;
+
+  static HistoryPathsTracker* GetInstance() {
+    static base::NoDestructor<HistoryPathsTracker> instance;
+    return instance.get();
+  }
+
+  void AddPath(const base::FilePath& file_path) {
+    base::AutoLock auto_lock(lock_);
+    paths_.insert(file_path);
+  }
+
+  void RemovePath(const base::FilePath& file_path) {
+    base::AutoLock auto_lock(lock_);
+    auto it = paths_.find(file_path);
+
+    // If the backend was created without a db we are not tracking it.
+    if (it != paths_.end())
+      paths_.erase(it);
+  }
+
+  bool HasPath(const base::FilePath& file_path) {
+    base::AutoLock auto_lock(lock_);
+    return paths_.find(file_path) != paths_.end();
+  }
+
+ private:
+  friend class base::NoDestructor<HistoryPathsTracker>;
+
+  HistoryPathsTracker() = default;
+  ~HistoryPathsTracker() = default;
+
+  base::Lock lock_;
+  base::flat_set<base::FilePath> paths_ GUARDED_BY(lock_);
+};
+#endif
 
 void RunUnlessCanceled(
     const base::Closure& closure,
@@ -225,6 +273,10 @@ HistoryBackend::~HistoryBackend() {
     backend_destroy_task_runner_->PostTask(FROM_HERE, backend_destroy_task_);
   }
 
+#if DCHECK_IS_ON()
+  HistoryPathsTracker::GetInstance()->RemovePath(history_dir_);
+#endif
+
 #if defined(OS_ANDROID)
   if (backend_client_ && !history_dir_.empty())
     backend_client_->OnHistoryBackendDestroyed(this, history_dir_);
@@ -235,6 +287,12 @@ void HistoryBackend::Init(
     bool force_fail,
     const HistoryDatabaseParams& history_database_params) {
   TRACE_EVENT0("browser", "HistoryBackend::Init");
+
+  DCHECK(base::PathExists(history_database_params.history_dir))
+      << "History directory does not exist. If you are in a test make sure "
+         "that ~TestingProfile() has not been called or that the "
+         "ScopedTempDirectory used outlives this task.";
+
   // HistoryBackend is created on the UI thread by HistoryService, then the
   // HistoryBackend::Init() method is called on the DB thread. Create the
   // base::SupportsUserData on the DB thread since it is not thread-safe.
@@ -674,6 +732,18 @@ void HistoryBackend::InitImpl(
 
   // Compute the file names.
   history_dir_ = history_database_params.history_dir;
+
+#if DCHECK_IS_ON()
+  DCHECK(!HistoryPathsTracker::GetInstance()->HasPath(history_dir_))
+      << "There already is a HistoryBackend running using the file at: "
+      << history_database_params.history_dir
+      << ". Tests have to make sure that HistoryBackend destruction is "
+         "complete using SetOnBackendDestroyTask() or other flush mechanisms "
+         "before creating a new HistoryBackend that uses the same directory.";
+
+  HistoryPathsTracker::GetInstance()->AddPath(history_dir_);
+#endif
+
   base::FilePath history_name = history_dir_.Append(kHistoryFilename);
   base::FilePath thumbnail_name = GetFaviconsFileName();
 

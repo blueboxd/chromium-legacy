@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_SSL_SSL_BLOCKING_PAGE_BASE_H_
 
 #include "base/callback_forward.h"
-#include "chrome/browser/ssl/cert_report_helper.h"
-#include "chrome/browser/ssl/certificate_error_report.h"
+#include "components/security_interstitials/content/cert_report_helper.h"
+#include "components/security_interstitials/content/certificate_error_report.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
 
 namespace base {

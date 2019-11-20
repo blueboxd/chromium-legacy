@@ -69,14 +69,14 @@ NSString* const kSettingsToolbarDeleteButtonId =
 #pragma mark - Public
 
 - (void)updateUIForEditState {
-  if (self.tableView.editing) {
-    self.navigationItem.rightBarButtonItem = [self createEditModeDoneButton];
-    return;
-  }
-
+  // Update toolbar.
   [self.navigationController setToolbarHidden:self.shouldHideToolbar
                                      animated:YES];
-  if (self.shouldShowEditButton) {
+
+  // Update edit button.
+  if (self.tableView.editing) {
+    self.navigationItem.rightBarButtonItem = [self createEditModeDoneButton];
+  } else if (self.shouldShowEditButton) {
     self.navigationItem.rightBarButtonItem = [self createEditButton];
   } else {
     self.navigationItem.rightBarButtonItem = [self doneButtonIfNeeded];

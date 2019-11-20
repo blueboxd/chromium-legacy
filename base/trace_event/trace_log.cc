@@ -1405,15 +1405,19 @@ void TraceLog::UpdateTraceEventDuration(
   if (!category_group_enabled_local)
     return;
 
-  UpdateTraceEventDurationExplicit(category_group_enabled, name, handle,
-                                   OffsetNow(), ThreadNow(),
-                                   ThreadInstructionNow());
+  UpdateTraceEventDurationExplicit(
+      category_group_enabled, name, handle,
+      static_cast<int>(base::PlatformThread::CurrentId()),
+      /*explicit_timestamps=*/false, OffsetNow(), ThreadNow(),
+      ThreadInstructionNow());
 }
 
 void TraceLog::UpdateTraceEventDurationExplicit(
     const unsigned char* category_group_enabled,
     const char* name,
     TraceEventHandle handle,
+    int thread_id,
+    bool explicit_timestamps,
     const TimeTicks& now,
     const ThreadTicks& thread_now,
     ThreadInstructionCount thread_instruction_now) {
@@ -1438,7 +1442,9 @@ void TraceLog::UpdateTraceEventDurationExplicit(
     auto update_duration_override =
         update_duration_override_.load(std::memory_order_relaxed);
     if (update_duration_override) {
-      update_duration_override(handle, now, thread_now, thread_instruction_now);
+      update_duration_override(category_group_enabled, name, handle, thread_id,
+                               explicit_timestamps, now, thread_now,
+                               thread_instruction_now);
       return;
     }
   }
@@ -1816,13 +1822,15 @@ void UpdateTraceEventDurationExplicit(
     const unsigned char* category_group_enabled,
     const char* name,
     base::trace_event::TraceEventHandle handle,
+    int thread_id,
+    bool explicit_timestamps,
     const base::TimeTicks& now,
     const base::ThreadTicks& thread_now,
     base::trace_event::ThreadInstructionCount thread_instruction_now) {
   return base::trace_event::TraceLog::GetInstance()
       ->UpdateTraceEventDurationExplicit(category_group_enabled, name, handle,
-                                         now, thread_now,
-                                         thread_instruction_now);
+                                         thread_id, explicit_timestamps, now,
+                                         thread_now, thread_instruction_now);
 }
 
 ScopedTraceBinaryEfficient::ScopedTraceBinaryEfficient(

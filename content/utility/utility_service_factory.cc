@@ -81,7 +81,7 @@ class ContentCdmServiceClient final : public media::CdmService::Client {
   std::unique_ptr<media::CdmFactory> CreateCdmFactory(
       service_manager::mojom::InterfaceProvider* host_interfaces) override {
     return std::make_unique<media::CdmAdapterFactory>(
-        base::Bind(&CreateCdmHelper, host_interfaces));
+        base::BindRepeating(&CreateCdmHelper, host_interfaces));
   }
 
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)

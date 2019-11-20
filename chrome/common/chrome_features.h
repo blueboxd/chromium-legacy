@@ -419,6 +419,7 @@ extern const char kSitePerProcessOnlyForHighMemoryClientsParamName[];
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kStreamlinedUsbPrinterSetup;
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kNativeSmb;
+COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kSmbFs;
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)

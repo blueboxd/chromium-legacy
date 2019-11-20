@@ -19,5 +19,4 @@ void AssociateMailbox(GLuint device_id,
                       GLuint usage,
                       const GLbyte* mailbox) override;
 void DissociateMailbox(GLuint texture_id, GLuint texture_generation) override;
-void RequestAdapter(PowerPreference power_preference) override;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_WEBGPU_INTERFACE_STUB_AUTOGEN_H_

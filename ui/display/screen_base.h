@@ -35,6 +35,8 @@ class DISPLAY_EXPORT ScreenBase : public Screen {
   Display GetDisplayMatching(const gfx::Rect& match_rect) const override;
   void AddObserver(DisplayObserver* observer) override;
   void RemoveObserver(DisplayObserver* observer) override;
+  void SetPanelRotationForTesting(int64_t display_id,
+                                  Display::Rotation rotation) override;
 
  protected:
   // Invoked when a display changed in some way, including being added.

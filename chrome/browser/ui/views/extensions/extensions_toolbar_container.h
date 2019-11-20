@@ -54,6 +54,24 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   // ToolbarIconContainerView:
   void UpdateAllIcons() override;
 
+  // ExtensionsContainer:
+  ToolbarActionViewController* GetActionForId(
+      const std::string& action_id) override;
+  ToolbarActionViewController* GetPoppedOutAction() const override;
+  bool IsActionVisibleOnToolbar(
+      const ToolbarActionViewController* action) const override;
+  void UndoPopOut() override;
+  void SetPopupOwner(ToolbarActionViewController* popup_owner) override;
+  void HideActivePopup() override;
+  bool CloseOverflowMenuIfOpen() override;
+  void PopOutAction(ToolbarActionViewController* action,
+                    bool is_sticky,
+                    const base::Closure& closure) override;
+  void ShowToolbarActionBubble(
+      std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) override;
+  void ShowToolbarActionBubbleAsync(
+      std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) override;
+
   ToolbarActionView* GetViewForId(const std::string& id);
 
   void ShowActiveBubble(
@@ -87,24 +105,6 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   // Sets a pinned extension button's image to be shown/hidden.
   void SetExtensionIconVisibility(ToolbarActionsModel::ActionId id,
                                   bool visible);
-
-  // ExtensionsContainer:
-  ToolbarActionViewController* GetActionForId(
-      const std::string& action_id) override;
-  ToolbarActionViewController* GetPoppedOutAction() const override;
-  bool IsActionVisibleOnToolbar(
-      const ToolbarActionViewController* action) const override;
-  void UndoPopOut() override;
-  void SetPopupOwner(ToolbarActionViewController* popup_owner) override;
-  void HideActivePopup() override;
-  bool CloseOverflowMenuIfOpen() override;
-  void PopOutAction(ToolbarActionViewController* action,
-                    bool is_sticky,
-                    const base::Closure& closure) override;
-  void ShowToolbarActionBubble(
-      std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) override;
-  void ShowToolbarActionBubbleAsync(
-      std::unique_ptr<ToolbarActionsBarBubbleDelegate> bubble) override;
 
   // ToolbarActionsModel::Observer:
   void OnToolbarActionAdded(const ToolbarActionsModel::ActionId& action_id,

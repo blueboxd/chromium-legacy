@@ -19,8 +19,16 @@ textarea {
 input:disabled,
 select:disabled,
 textarea:disabled {
-  background-color: rgba(239, 239, 239, 0.3);
   border-color: rgba(118, 118, 118, 0.3);
+}
+
+input:disabled,
+textarea:disabled {
+  background-color: rgba(239, 239, 239, 0.3);
+}
+
+select:disabled {
+  opacity: 0.7;
 }
 
 input[type="button" i],
@@ -154,39 +162,18 @@ select:-internal-list-box {
   border-radius: 2px;
 }
 
-select:-internal-list-box option:hover {
+select:-internal-list-box:enabled option:hover:enabled {
   background-color: #f3f3f3;
 }
 
 /* option selected */
 select:-internal-list-box option:checked,
-select:-internal-list-box option:checked:hover {
+select:-internal-list-box:enabled option:checked:enabled:hover {
   background-color: #cecece !important;
   color: #101010 !important;
 }
 
-select:-internal-list-box:focus option:checked:hover {
+select:-internal-list-box:focus option:checked:enabled:hover {
   background-color: -internal-active-list-box-selection !important;
   color: -internal-active-list-box-selection-text !important;
-}
-
-/* option disabled */
-select:-internal-list-box option:disabled,
-select:-internal-list-box option:disabled:hover,
-select:-internal-list-box:disabled option,
-select:-internal-list-box:disabled option:hover {
-  background-color: #ffffff !important;
-}
-
-/* option both disabled and selected */
-option:checked:disabled,
-option:checked:disabled:hover,
-select:-internal-list-box:focus option:checked:disabled,
-select:-internal-list-box:focus option:checked:disabled:hover,
-select:-internal-list-box:disabled option:checked,
-select:-internal-list-box:disabled option:checked:hover,
-select:-internal-list-box option:checked:disabled,
-select:-internal-list-box option:checked:disabled:hover {
-  background-color: #f0f0f0 !important;
-  color: #c5c5c5 !important;
 }

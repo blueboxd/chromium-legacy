@@ -20,6 +20,4 @@ void WebGPUInterfaceStub::AssociateMailbox(GLuint /* device_id */,
                                            const GLbyte* /* mailbox */) {}
 void WebGPUInterfaceStub::DissociateMailbox(GLuint /* texture_id */,
                                             GLuint /* texture_generation */) {}
-void WebGPUInterfaceStub::RequestAdapter(
-    PowerPreference /* power_preference */) {}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_WEBGPU_INTERFACE_STUB_IMPL_AUTOGEN_H_

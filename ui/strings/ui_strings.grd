@@ -805,8 +805,8 @@ need to be translated for each locale.-->
       <message name="IDS_ALL_APPS_INDICATOR" desc="Indicator text in the launcher on top of all apps.">
         ALL APPS
       </message>
-      <message name="IDS_APP_LIST_APP_DRAG_LOCATION_ACCESSIBILE_NAME" desc="The spoken feedback which tells the location that a dragged app will drop to.">
-        Move to Page <ph name="PAGE_NUMBER">$1<ex>1</ex></ph>, row <ph name="ROW_NUMBER">$2<ex>4</ex></ph>, column <ph name="COLUMN_NUMBER">$3<ex>2</ex></ph>.
+      <message name="IDS_APP_LIST_APP_DRAG_LOCATION_ACCESSIBILE_NAME" desc="The spoken feedback which tells the location that a dragged app has dropped to.">
+        Moved to Page <ph name="PAGE_NUMBER">$1<ex>1</ex></ph>, row <ph name="ROW_NUMBER">$2<ex>4</ex></ph>, column <ph name="COLUMN_NUMBER">$3<ex>2</ex></ph>.
       </message>
       <message name="IDS_APP_LIST_APP_DRAG_CREATE_FOLDER_ACCESSIBILE_NAME" desc="The spoken feedback text which describes the app that is currently being dragged over another app, and how to create a folder.">
         <ph name="DRAGGED_APP_NAME">$1<ex>App Name</ex></ph> on top of <ph name="IN_PLACE_APP">$2<ex>Other App Name</ex></ph>, release to create folder.

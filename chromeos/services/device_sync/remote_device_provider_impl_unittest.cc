@@ -159,7 +159,8 @@ class DeviceSyncRemoteDeviceProviderImplTest : public testing::Test {
 
   void CreateRemoteDeviceProvider() {
     remote_device_provider_ = std::make_unique<RemoteDeviceProviderImpl>(
-        fake_device_manager_.get(), kTestUserId, kTestUserPrivateKey);
+        fake_device_manager_.get(), CoreAccountId(kTestUserId),
+        kTestUserPrivateKey);
     remote_device_provider_->AddObserver(test_observer_.get());
     EXPECT_EQ(0u, remote_device_provider_->GetSyncedDevices().size());
     test_device_loader_factory_->InvokeLastCallback(

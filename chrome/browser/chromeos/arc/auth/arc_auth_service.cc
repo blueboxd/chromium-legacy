@@ -693,7 +693,7 @@ void ArcAuthService::FetchSecondaryAccountInfo(
     return;
   }
 
-  const std::string& account_id = account_info->account_id;
+  const CoreAccountId& account_id = account_info->account_id;
   DCHECK(!account_id.empty());
 
   std::unique_ptr<ArcBackgroundAuthCodeFetcher> fetcher =
@@ -767,7 +767,7 @@ void ArcAuthService::OnDataRemovalAccepted(bool accepted) {
 
 std::unique_ptr<ArcBackgroundAuthCodeFetcher>
 ArcAuthService::CreateArcBackgroundAuthCodeFetcher(
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     bool initial_signin) {
   base::Optional<AccountInfo> account_info =
       identity_manager_

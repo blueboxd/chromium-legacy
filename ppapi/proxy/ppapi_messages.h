@@ -21,7 +21,6 @@
 #endif  // WIN32
 
 #include "base/files/file_path.h"
-#include "base/memory/shared_memory.h"
 #include "base/process/process.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
@@ -538,16 +537,6 @@ IPC_STRUCT_TRAITS_BEGIN(ppapi::proxy::PPB_AudioEncodeParameters)
   IPC_STRUCT_TRAITS_MEMBER(initial_bitrate)
   IPC_STRUCT_TRAITS_MEMBER(acceleration)
 IPC_STRUCT_TRAITS_END()
-
-#if !defined(OS_NACL) && !defined(NACL_WIN64)
-
-IPC_STRUCT_TRAITS_BEGIN(ppapi::proxy::PPPDecryptor_Buffer)
-  IPC_STRUCT_TRAITS_MEMBER(resource)
-  IPC_STRUCT_TRAITS_MEMBER(handle)
-  IPC_STRUCT_TRAITS_MEMBER(size)
-IPC_STRUCT_TRAITS_END()
-
-#endif  // !defined(OS_NACL) && !defined(NACL_WIN64)
 
 // These are from the browser to the plugin.
 // Loads the given plugin.

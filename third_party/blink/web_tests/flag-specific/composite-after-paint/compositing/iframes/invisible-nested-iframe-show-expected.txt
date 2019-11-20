@@ -7,12 +7,6 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "VerticalScrollbar",
-      "position": [8, 0],
-      "bounds": [292, 150],
-      "transform": 1
-    },
-    {
       "name": "LayoutNGBlockFlow DIV id='iframe-content' class='box'",
       "bounds": [210, 210],
       "contentsOpaque": true,

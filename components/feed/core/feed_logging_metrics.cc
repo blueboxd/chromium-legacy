@@ -63,7 +63,8 @@ const char kHistogramArticlesUsageTimeLocal[] =
     "NewTabPage.ContentSuggestions.UsageTimeLocal";
 
 // Values correspond to
-// third_party/feed/src/src/main/java/com/google/android/libraries/feed/host/
+// third_party/feed_library/src/
+//   src/main/java/com/google/android/libraries/feed/host/
 // logging/SpinnerType.java, enums.xml and histograms.xml.
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -77,7 +78,8 @@ enum class SpinnerType {
 };
 
 // Values correspond to
-// third_party/feed/src/src/main/java/com/google/android/libraries/feed/host/
+// third_party/feed_library/src/
+//   src/main/java/com/google/android/libraries/feed/host/
 // logging/Task.java.
 enum class TaskType {
   KUnknown = 0,
@@ -117,7 +119,8 @@ enum class TaskType {
 };
 
 // Values correspond to
-// third_party/feed/src/main/proto/search/now/ui/action/feed_action.proto.
+// third_party/feed_library/src/
+//   main/proto/search/now/ui/action/feed_action.proto.
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 enum class ElementType {

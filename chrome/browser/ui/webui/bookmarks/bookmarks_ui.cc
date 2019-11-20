@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/plural_string_handler.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/bookmarks_resources.h"
@@ -32,7 +33,6 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/resources/grit/webui_resources.h"
 
 namespace {
 
@@ -52,8 +52,16 @@ void AddLocalizedString(content::WebUIDataSource* source,
 content::WebUIDataSource* CreateBookmarksUIHTMLSource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIBookmarksHost);
-  source->OverrideContentSecurityPolicyScriptSrc(
-      "script-src chrome://resources chrome://test 'self';");
+
+#if BUILDFLAG(OPTIMIZE_WEBUI)
+  webui::SetupBundledWebUIDataSource(source, "bookmarks.js",
+                                     IDR_BOOKMARKS_BOOKMARKS_ROLLUP_JS,
+                                     IDR_BOOKMARKS_VULCANIZED_HTML);
+#else
+  webui::SetupWebUIDataSource(
+      source, base::make_span(kBookmarksResources, kBookmarksResourcesSize),
+      kGeneratedPath, IDR_BOOKMARKS_BOOKMARKS_HTML);
+#endif
 
   // Build an Accelerator to describe undo shortcut
   // NOTE: the undo shortcut is also defined in bookmarks/command_manager.js
@@ -125,28 +133,6 @@ content::WebUIDataSource* CreateBookmarksUIHTMLSource(Profile* profile) {
   };
   for (const auto& str : kStrings)
     AddLocalizedString(source, str.name, str.id);
-
-  // Resources.
-#if BUILDFLAG(OPTIMIZE_WEBUI)
-  source->AddResourcePath("bookmarks.js", IDR_BOOKMARKS_BOOKMARKS_ROLLUP_JS);
-  source->SetDefaultResource(IDR_BOOKMARKS_VULCANIZED_HTML);
-#else
-  // Add all Bookmarks resources.
-  for (size_t i = 0; i < kBookmarksResourcesSize; ++i) {
-    std::string path = kBookmarksResources[i].name;
-    if (path.rfind(kGeneratedPath, 0) == 0) {
-      path = path.substr(sizeof(kGeneratedPath) - 1);
-    }
-
-    source->AddResourcePath(path, kBookmarksResources[i].value);
-  }
-  source->SetDefaultResource(IDR_BOOKMARKS_BOOKMARKS_HTML);
-#endif
-
-  source->UseStringsJs();
-  source->EnableReplaceI18nInJS();
-  source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
-  source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);
 
   return source;
 }

@@ -247,8 +247,8 @@ BackForwardCacheCanStoreDocumentResult BackForwardCacheImpl::CanStoreDocument(
   // This check makes sure the old and new document aren't sharing the same
   // BrowsingInstance.
   if (rfh->GetSiteInstance()->GetRelatedActiveContentsCount() != 0) {
-    result.No(BackForwardCacheMetrics::NotRestoredReason::
-                  kRelatedActiveContentsExist);
+    result.NoDueToRelatedActiveContents(
+        rfh->browsing_instance_not_swapped_reason());
   }
 
   // Only store documents that have successful http status code.

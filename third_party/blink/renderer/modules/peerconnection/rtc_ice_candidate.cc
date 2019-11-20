@@ -64,90 +64,91 @@ RTCIceCandidate* RTCIceCandidate::Create(
                       WebFeature::kRTCIceCandidateDefaultSdpMLineIndex);
   }
 
-  return MakeGarbageCollected<RTCIceCandidate>(WebRTCICECandidate::Create(
+  return MakeGarbageCollected<RTCIceCandidate>(RTCIceCandidatePlatform::Create(
       candidate_init->candidate(), sdp_mid, std::move(sdp_m_line_index),
       candidate_init->usernameFragment()));
 }
 
 RTCIceCandidate* RTCIceCandidate::Create(
-    scoped_refptr<WebRTCICECandidate> web_candidate) {
-  return MakeGarbageCollected<RTCIceCandidate>(std::move(web_candidate));
+    scoped_refptr<RTCIceCandidatePlatform> platform_candidate) {
+  return MakeGarbageCollected<RTCIceCandidate>(std::move(platform_candidate));
 }
 
 RTCIceCandidate::RTCIceCandidate(
-    scoped_refptr<WebRTCICECandidate> web_candidate)
-    : web_candidate_(std::move(web_candidate)) {}
+    scoped_refptr<RTCIceCandidatePlatform> platform_candidate)
+    : platform_candidate_(std::move(platform_candidate)) {}
 
 String RTCIceCandidate::candidate() const {
-  return web_candidate_->Candidate();
+  return platform_candidate_->Candidate();
 }
 
 String RTCIceCandidate::sdpMid() const {
-  return web_candidate_->SdpMid();
+  return platform_candidate_->SdpMid();
 }
 
 uint16_t RTCIceCandidate::sdpMLineIndex(bool& is_null) const {
-  is_null = !web_candidate_->SdpMLineIndex().has_value();
-  return is_null ? 0 : *web_candidate_->SdpMLineIndex();
+  is_null = !platform_candidate_->SdpMLineIndex().has_value();
+  return is_null ? 0 : *platform_candidate_->SdpMLineIndex();
 }
 
-scoped_refptr<WebRTCICECandidate> RTCIceCandidate::WebCandidate() const {
-  return web_candidate_;
+scoped_refptr<RTCIceCandidatePlatform> RTCIceCandidate::PlatformCandidate()
+    const {
+  return platform_candidate_;
 }
 
 String RTCIceCandidate::foundation() const {
-  return web_candidate_->Foundation();
+  return platform_candidate_->Foundation();
 }
 
 String RTCIceCandidate::component() const {
-  return web_candidate_->Component();
+  return platform_candidate_->Component();
 }
 
 uint32_t RTCIceCandidate::priority(bool& is_null) const {
-  is_null = !web_candidate_->Priority().has_value();
-  return is_null ? 0 : *web_candidate_->Priority();
+  is_null = !platform_candidate_->Priority().has_value();
+  return is_null ? 0 : *platform_candidate_->Priority();
 }
 
 String RTCIceCandidate::address() const {
-  return web_candidate_->Address();
+  return platform_candidate_->Address();
 }
 
 String RTCIceCandidate::protocol() const {
-  return web_candidate_->Protocol();
+  return platform_candidate_->Protocol();
 }
 
 uint16_t RTCIceCandidate::port(bool& is_null) const {
-  is_null = !web_candidate_->Port().has_value();
-  return is_null ? 0 : *web_candidate_->Port();
+  is_null = !platform_candidate_->Port().has_value();
+  return is_null ? 0 : *platform_candidate_->Port();
 }
 
 String RTCIceCandidate::type() const {
-  return web_candidate_->Type();
+  return platform_candidate_->Type();
 }
 
 String RTCIceCandidate::tcpType() const {
-  return web_candidate_->TcpType();
+  return platform_candidate_->TcpType();
 }
 
 String RTCIceCandidate::relatedAddress() const {
-  return web_candidate_->RelatedAddress();
+  return platform_candidate_->RelatedAddress();
 }
 
 uint16_t RTCIceCandidate::relatedPort(bool& is_null) const {
-  is_null = !web_candidate_->RelatedPort().has_value();
-  return is_null ? 0 : *web_candidate_->RelatedPort();
+  is_null = !platform_candidate_->RelatedPort().has_value();
+  return is_null ? 0 : *platform_candidate_->RelatedPort();
 }
 
 String RTCIceCandidate::usernameFragment() const {
-  return web_candidate_->UsernameFragment();
+  return platform_candidate_->UsernameFragment();
 }
 
 ScriptValue RTCIceCandidate::toJSONForBinding(ScriptState* script_state) {
   V8ObjectBuilder result(script_state);
-  result.AddString("candidate", web_candidate_->Candidate());
-  result.AddString("sdpMid", web_candidate_->SdpMid());
-  if (web_candidate_->SdpMLineIndex())
-    result.AddNumber("sdpMLineIndex", *web_candidate_->SdpMLineIndex());
+  result.AddString("candidate", platform_candidate_->Candidate());
+  result.AddString("sdpMid", platform_candidate_->SdpMid());
+  if (platform_candidate_->SdpMLineIndex())
+    result.AddNumber("sdpMLineIndex", *platform_candidate_->SdpMLineIndex());
   return result.GetScriptValue();
 }
 

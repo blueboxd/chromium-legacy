@@ -312,17 +312,19 @@ void PasswordProtectionService::RequestFinished(
     auto verdict =
         response ? response->verdict_type()
                  : LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED;
-    auto is_phishing_url = verdict == LoginReputationClientResponse::PHISHING;
 
 #if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
-    MaybeReportPasswordReuseDetected(request->web_contents(),
-                                     request->username(),
-                                     request->password_type(), is_phishing_url);
+    MaybeReportPasswordReuseDetected(
+        request->web_contents(), request->username(), request->password_type(),
+        verdict == LoginReputationClientResponse::PHISHING);
 #endif
 
     // Persist a bit in CompromisedCredentials table when saved password is
-    // reused on a phishing site.
-    if (is_phishing_url) {
+    // reused on a phishing or low reputation site.
+    auto is_unsafe_url =
+        verdict == LoginReputationClientResponse::PHISHING ||
+        verdict == LoginReputationClientResponse::LOW_REPUTATION;
+    if (is_unsafe_url) {
       PersistPhishedSavedPasswordCredential(request->username(),
                                             request->matching_domains());
     }

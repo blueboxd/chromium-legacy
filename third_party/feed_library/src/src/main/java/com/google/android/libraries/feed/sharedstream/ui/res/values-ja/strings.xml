@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright 2018 The Feed Authors.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+  <string name="more_button_label">もっと見る</string>
+  <string name="no_suggestions">現在、コンテンツはありません</string>
+  <string name="zero_state_text_morning">記事は随時更新されます。また後でご覧ください。</string>
+  <string name="zero_state_text_afternoon">記事は随時更新されます。また後でご覧ください。</string>
+  <string name="zero_state_text_evening">記事は随時更新されます。また後でご覧ください。</string>
+  <string name="feed_refresh">更新</string>
+  <string name="snackbar_fetch_failed">おすすめの記事を取得できません</string>
+  <string name="snackbar_fetch_no_new_suggestions">新しいおすすめ記事はありません</string>
+  <string name="suggestions_section_empty">おすすめの記事がここに表示されます</string>
+  <string name="snackbar_default_action">元に戻す</string>
+</resources>

@@ -47,8 +47,9 @@
         <template is="dom-if" if="[[allowNavigateToSiteDetail_]]">
           <cr-icon-button class="subpage-arrow"
               aria-label$="[[computeDisplayName_(model)]]"
-              aria-describedby="siteDescription" focus-row-control
-              focus-type="site-details"></cr-icon-button>
+              aria-describedby="siteDescription"
+              aria-roledescription="$i18n{subpageArrowRoleDescription}"
+              focus-type="site-details" focus-row-control></cr-icon-button>
           <div class="separator"></div>
         </template>
       </div>

@@ -12,7 +12,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_mixer.h"
-#include "ui/color/color_variant.h"
 
 namespace ui {
 
@@ -37,9 +36,7 @@ class COMPONENT_EXPORT(COLOR) ColorProvider {
   // Returns the result color for |id| by applying the effects of each mixer in
   // order.  Returns gfx::kPlaceholderColor if no mixer knows how to construct
   // |id|.
-  // TODO(pkasting): Current |variant| has no effect; figure out how to support
-  // it.
-  SkColor GetColor(ColorId id, ColorVariant variant = ColorVariant()) const;
+  SkColor GetColor(ColorId id) const;
 
  private:
   // The entire color pipeline, in reverse order (that is, the "last" mixer is

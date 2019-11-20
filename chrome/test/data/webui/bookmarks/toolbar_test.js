@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {Command} from 'chrome://bookmarks/bookmarks.js';
 import {isMac} from 'chrome://resources/js/cr.m.js';
+import {pressAndReleaseKeyOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {TestCommandManager} from 'chrome://test/bookmarks/test_command_manager.js';
 import {TestStore} from 'chrome://test/bookmarks/test_store.js';
-import {Command} from 'chrome://bookmarks/bookmarks.js';
 import {createFolder, createItem, getAllFoldersOpenState, replaceBody, testTree} from 'chrome://test/bookmarks/test_util.js';
-import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {pressAndReleaseKeyOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 
 suite('<bookmarks-toolbar>', function() {
   let toolbar;

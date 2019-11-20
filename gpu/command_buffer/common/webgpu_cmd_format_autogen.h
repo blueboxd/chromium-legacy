@@ -176,25 +176,32 @@ struct RequestAdapter {
 
   void SetHeader() { header.SetCmd<ValueType>(); }
 
-  void Init(uint32_t _power_preference) {
+  void Init(uint32_t _request_adapter_serial, uint32_t _power_preference) {
     SetHeader();
+    request_adapter_serial = _request_adapter_serial;
     power_preference = _power_preference;
   }
 
-  void* Set(void* cmd, uint32_t _power_preference) {
-    static_cast<ValueType*>(cmd)->Init(_power_preference);
+  void* Set(void* cmd,
+            uint32_t _request_adapter_serial,
+            uint32_t _power_preference) {
+    static_cast<ValueType*>(cmd)->Init(_request_adapter_serial,
+                                       _power_preference);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   gpu::CommandHeader header;
+  uint32_t request_adapter_serial;
   uint32_t power_preference;
 };
 
-static_assert(sizeof(RequestAdapter) == 8,
-              "size of RequestAdapter should be 8");
+static_assert(sizeof(RequestAdapter) == 12,
+              "size of RequestAdapter should be 12");
 static_assert(offsetof(RequestAdapter, header) == 0,
               "offset of RequestAdapter header should be 0");
-static_assert(offsetof(RequestAdapter, power_preference) == 4,
-              "offset of RequestAdapter power_preference should be 4");
+static_assert(offsetof(RequestAdapter, request_adapter_serial) == 4,
+              "offset of RequestAdapter request_adapter_serial should be 4");
+static_assert(offsetof(RequestAdapter, power_preference) == 8,
+              "offset of RequestAdapter power_preference should be 8");
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_WEBGPU_CMD_FORMAT_AUTOGEN_H_

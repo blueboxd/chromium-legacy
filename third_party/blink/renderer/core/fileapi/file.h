@@ -207,7 +207,9 @@ class CORE_EXPORT File final : public Blob {
 
   // Getter for the lastModifiedDate IDL attribute,
   // http://www.w3.org/TR/FileAPI/#dfn-lastModifiedDate
-  double lastModifiedDate() const;
+  ScriptValue lastModifiedDate(ScriptState* script_state) const;
+  // Returns milliseconds from the Unix epoch.
+  double LastModifiedDate() const;
 
   UserVisibility GetUserVisibility() const { return user_visibility_; }
 

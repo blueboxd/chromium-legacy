@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {TestStore} from 'chrome://test/bookmarks/test_store.js';
 import {removeBookmark, Store, StoreClient} from 'chrome://bookmarks/bookmarks.js';
+import {flush, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {TestStore} from 'chrome://test/bookmarks/test_store.js';
 import {createFolder, createItem, getAllFoldersOpenState, replaceBody, testTree} from 'chrome://test/bookmarks/test_util.js';
-import {flush, Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 suite('bookmarks.Store', function() {
   let store;
@@ -35,11 +35,9 @@ suite('bookmarks.Store', function() {
     store.addObserver(observer);
     store.beginBatchUpdate();
 
-    store.dispatch(
-        removeBookmark('11', '1', 0, store.data.nodes));
+    store.dispatch(removeBookmark('11', '1', 0, store.data.nodes));
     assertEquals(null, lastStateChange);
-    store.dispatch(
-        removeBookmark('12', '1', 0, store.data.nodes));
+    store.dispatch(removeBookmark('12', '1', 0, store.data.nodes));
     assertEquals(null, lastStateChange);
 
     store.endBatchUpdate();

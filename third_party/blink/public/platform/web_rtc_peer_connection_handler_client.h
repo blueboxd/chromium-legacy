@@ -41,7 +41,7 @@
 
 namespace blink {
 
-class WebRTCICECandidate;
+class RTCIceCandidatePlatform;
 class WebRTCRtpReceiver;
 class WebRTCRtpTransceiver;
 class WebString;
@@ -59,7 +59,8 @@ class BLINK_PLATFORM_EXPORT WebRTCPeerConnectionHandlerClient {
   virtual ~WebRTCPeerConnectionHandlerClient();
 
   virtual void NegotiationNeeded() = 0;
-  virtual void DidGenerateICECandidate(scoped_refptr<WebRTCICECandidate>) = 0;
+  virtual void DidGenerateICECandidate(
+      scoped_refptr<RTCIceCandidatePlatform>) = 0;
   virtual void DidFailICECandidate(const WebString& host_candidate,
                                    const WebString& url,
                                    int error_code,

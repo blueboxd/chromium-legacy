@@ -18,6 +18,7 @@ group("closure_compile") {
 js_type_check("compile_resources") {
   deps = [
     ":background",
+    ":chrome_util",
     ":intent",
     ":metrics",
     ":nav",
@@ -28,6 +29,9 @@ js_type_check("compile_resources") {
     ":type",
     ":util",
   ]
+}
+
+js_library("chrome_util") {
 }
 
 js_library("intent") {

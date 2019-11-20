@@ -151,14 +151,14 @@ DesktopAutomationHandler.prototype = {
         EventSourceState.get() != EventSourceType.TOUCH_GESTURE)
       return;
 
-    var prevRange = ChromeVoxState.instance.currentRange;
+    var prevRange = ChromeVoxState.instance.getCurrentRangeWithoutRecovery();
 
     ChromeVoxState.instance.setCurrentRange(cursors.Range.fromNode(node));
 
     // Don't output if focused node hasn't changed. Allow focus announcements
     // when interacting via touch. Touch never sets focus without a double tap.
     if (prevRange && evt.type == 'focus' &&
-        ChromeVoxState.instance.currentRange.equals(prevRange) &&
+        ChromeVoxState.instance.currentRange.equalsWithoutRecovery(prevRange) &&
         EventSourceState.get() != EventSourceType.TOUCH_GESTURE)
       return;
 

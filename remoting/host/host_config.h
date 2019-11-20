@@ -47,8 +47,6 @@ extern const char kEnableVp9ConfigPath[];
 extern const char kEnableH264ConfigPath[];
 // Number of Kibibytes of frame data to allow each client to record.
 extern const char kFrameRecorderBufferKbConfigPath[];
-// The GCD device ID of this host (if registered with GCD).
-extern const char kGcdDeviceIdConfigPath[];
 // Key which marks the config's token as up-to-date for FTL. If present, the
 // token-exchange will be skipped, which avoids querying over the network for
 // the current token's scopes.

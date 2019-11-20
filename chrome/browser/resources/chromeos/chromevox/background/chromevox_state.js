@@ -71,6 +71,12 @@ ChromeVoxState.prototype = {
   },
 
   /**
+   * Return the current range, but focus recovery is not applied to it.
+   * @return {cursors.Range} The current range.
+   */
+  getCurrentRangeWithoutRecovery: goog.abstractMethod,
+
+  /**
    * @param {cursors.Range} newRange The new range.
    */
   setCurrentRange: goog.abstractMethod,

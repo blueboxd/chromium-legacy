@@ -213,9 +213,7 @@ AnimatedPropertyType SVGAnimateElement::GetAnimatedPropertyType() const {
   return !targetElement() ? kAnimatedUnknown : type_;
 }
 
-bool SVGAnimateElement::HasValidTarget() const {
-  if (!SVGAnimationElement::HasValidTarget())
-    return false;
+bool SVGAnimateElement::HasValidAnimation() const {
   if (AttributeName() == AnyQName())
     return false;
   if (type_ == kAnimatedUnknown)
@@ -537,28 +535,37 @@ float SVGAnimateElement::CalculateDistance(const String& from_string,
   return from_value->CalculateDistance(to_value, targetElement());
 }
 
-void SVGAnimateElement::WillChangeAnimationTarget() {
-  SVGAnimationElement::WillChangeAnimationTarget();
-  // Should be cleared by the above.
+void SVGAnimateElement::WillChangeAnimatedType() {
+  UnregisterAnimation(attribute_name_);
+  // Should've been cleared by the above if needed.
   DCHECK(!animated_value_);
   from_property_.Clear();
   to_property_.Clear();
   to_at_end_of_duration_property_.Clear();
 }
 
-void SVGAnimateElement::DidChangeAnimationTarget() {
-  // Call this before calling the super-class, because it will check
-  // HasValidTarget() which depends on the animation type being resolved.
+void SVGAnimateElement::DidChangeAnimatedType() {
   UpdateTargetProperty();
+  RegisterAnimation(attribute_name_);
+}
+
+void SVGAnimateElement::WillChangeAnimationTarget() {
+  SVGAnimationElement::WillChangeAnimationTarget();
+  WillChangeAnimatedType();
+}
+
+void SVGAnimateElement::DidChangeAnimationTarget() {
+  DidChangeAnimatedType();
   SVGAnimationElement::DidChangeAnimationTarget();
 }
 
 void SVGAnimateElement::SetAttributeName(const QualifiedName& attribute_name) {
   if (attribute_name == attribute_name_)
     return;
-  WillChangeAnimationTarget();
+  WillChangeAnimatedType();
   attribute_name_ = attribute_name;
-  DidChangeAnimationTarget();
+  DidChangeAnimatedType();
+  AnimationAttributeChanged();
 }
 
 void SVGAnimateElement::SetAttributeType(
@@ -570,9 +577,10 @@ void SVGAnimateElement::SetAttributeType(
     attribute_type = kAttributeTypeXML;
   if (attribute_type == attribute_type_)
     return;
-  WillChangeAnimationTarget();
+  WillChangeAnimatedType();
   attribute_type_ = attribute_type;
-  DidChangeAnimationTarget();
+  DidChangeAnimatedType();
+  AnimationAttributeChanged();
 }
 
 void SVGAnimateElement::Trace(blink::Visitor* visitor) {

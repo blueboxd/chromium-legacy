@@ -13,6 +13,7 @@
 #include "base/stl_util.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_iterator.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_event.h"
 
@@ -80,12 +81,18 @@ void V8LongSequenceOrEvent::ToImpl(
     return;
   }
 
-  if (HasCallableIteratorSymbol(isolate, v8_value, exception_state)) {
-    Vector<int32_t> cpp_value = NativeValueTraits<IDLSequence<IDLLong>>::NativeValue(isolate, v8_value, exception_state);
+  if (v8_value->IsObject()) {
+    ScriptIterator script_iterator = ScriptIterator::FromIterable(
+        isolate, v8_value.As<v8::Object>(), exception_state);
     if (exception_state.HadException())
       return;
-    impl.SetLongSequence(cpp_value);
-    return;
+    if (!script_iterator.IsNull()) {
+      Vector<int32_t> cpp_value = NativeValueTraits<IDLSequence<IDLLong>>::NativeValue(isolate, std::move(script_iterator), exception_state);
+      if (exception_state.HadException())
+        return;
+      impl.SetLongSequence(cpp_value);
+      return;
+    }
   }
 
   exception_state.ThrowTypeError("The provided value is not of type '(sequence<long> or Event)'");
@@ -113,3 +120,4 @@ LongSequenceOrEvent NativeValueTraits<LongSequenceOrEvent>::NativeValue(
 }
 
 }  // namespace blink
+

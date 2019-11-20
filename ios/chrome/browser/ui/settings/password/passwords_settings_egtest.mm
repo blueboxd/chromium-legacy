@@ -338,9 +338,9 @@ class TestStoreConsumer : public password_manager::PasswordStoreConsumer {
 // done.
 void SaveToPasswordStore(const PasswordForm& form) {
   GetPasswordStore()->AddLogin(form);
-  // When we retrieve the form from the store, |from_store| should be set.
+  // When we retrieve the form from the store, |in_store| should be set.
   autofill::PasswordForm expected_form = form;
-  expected_form.from_store = autofill::PasswordForm::Store::kProfileStore;
+  expected_form.in_store = autofill::PasswordForm::Store::kProfileStore;
   // Check the result and ensure PasswordStore processed this.
   TestStoreConsumer consumer;
   for (const auto& result : consumer.GetStoreResults()) {

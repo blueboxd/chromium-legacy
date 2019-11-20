@@ -1,104 +1,103 @@
+<style include="shared-style cr-icons">
+  :host {
+    align-items: center;
+    color: inherit;
+    display: flex;
+    flex-direction: row;
+    height: 40px;
+    padding-inline-start: 20px;
+    position: relative;
+    text-decoration: none;
+    user-select: none;
+  }
 
-    <style include="shared-style cr-icons">
-      :host {
-        align-items: center;
-        color: inherit;
-        display: flex;
-        flex-direction: row;
-        height: 40px;
-        padding-inline-start: 20px;
-        position: relative;
-        text-decoration: none;
-        user-select: none;
-      }
+  :host([is-selected-item_]) {
+    background-color: var(--highlight-color);
+  }
 
-      :host([is-selected-item_]) {
-        background-color: var(--highlight-color);
-      }
+  :host([is-selected-item_]) cr-icon-button {
+    --cr-icon-button-focus-color: var(--highlight-color);
+  }
 
-      :host([is-selected-item_]) cr-icon-button {
-        --cr-icon-button-focus-color: var(--highlight-color);
-      }
+  @media (prefers-color-scheme: dark) {
+    :host([is-selected-item_]),
+    :host([is-selected-item_]) .folder-icon {
+      color: var(--google-grey-refresh-700);
+    }
+  }
 
-      @media (prefers-color-scheme: dark) {
-        :host([is-selected-item_]),
-        :host([is-selected-item_]) .folder-icon {
-          color: var(--google-grey-refresh-700);
-        }
-      }
+  #website-title {
+    color: var(--cr-primary-text-color);
+    flex: 1;
+    margin-inline-start: 20px;
+    text-decoration: none;
+  }
 
-      #website-title {
-        color: var(--cr-primary-text-color);
-        flex: 1;
-        margin-inline-start: 20px;
-        text-decoration: none;
-      }
+  :host([is-selected-item_]) #website-title {
+    flex: 0 auto;
+  }
 
-      :host([is-selected-item_]) #website-title {
-        flex: 0 auto;
-      }
+  @media (prefers-color-scheme: dark) {
+    :host([is-selected-item_]) #website-title {
+      color: var(--google-grey-900);
+    }
+  }
 
-      @media (prefers-color-scheme: dark) {
-        :host([is-selected-item_]) #website-title {
-          color: var(--google-grey-900);
-        }
-      }
+  #website-url {
+    /* Transparent version of --cr-secondary-text-color */
+    color: rgba(0, 0, 0, 0.54);
+    display: none;
+    flex: 1;
+    margin-inline-start: 20px;
+    min-width: 100px;
+  }
 
-      #website-url {
-        /* Transparent version of --cr-secondary-text-color */
-        color: rgba(0, 0, 0, 0.54);
-        display: none;
-        flex: 1;
-        margin-inline-start: 20px;
-        min-width: 100px;
-      }
+  @media (prefers-color-scheme: dark) {
+    #website-url {
+      color: var(--google-grey-800);
+    }
+  }
 
-      @media (prefers-color-scheme: dark) {
-        #website-url {
-          color: var(--google-grey-800);
-        }
-      }
+  :host([is-selected-item_]) #website-url {
+    display: block;
+  }
 
-      :host([is-selected-item_]) #website-url {
-        display: block;
-      }
+  #icon {
+    flex: none;
+  }
 
-      #icon {
-        flex: none;
-      }
+  cr-icon-button {
+    margin-inline-end: 12px;
+  }
 
-      cr-icon-button {
-        margin-inline-end: 12px;
-      }
+  @media (prefers-color-scheme: dark) {
+    :host([is-selected-item_]) cr-icon-button {
+      --cr-icon-button-color: var(--google-grey-700);
+    }
+  }
 
-      @media (prefers-color-scheme: dark) {
-        :host([is-selected-item_]) cr-icon-button {
-          --cr-icon-button-color: var(--google-grey-700);
-        }
-      }
+  :host(:focus) {
+    z-index: 1;
+  }
 
-      :host(:focus) {
-        z-index: 1;
-      }
-
-      .elided-text {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-    </style>
-    <div id="icon"></div>
-    <div id="website-title" class="elided-text" title="[[item_.title]]">
-      [[item_.title]]
-    </div>
-    <div id="website-url" class="elided-text" title="[[item_.url]]">
-      [[item_.url]]
-    </div>
-    <cr-icon-button class="icon-more-vert"
-        id="menuButton"
-        tabindex="[[ironListTabIndex]]"
-        title="$i18n{moreActionsButtonTitle}"
-        aria-label$="[[getButtonAriaLabel_(item_, isSelectedItem_,
-            isMultiSelect_)]]"
-        on-click="onMenuButtonClick_"
-        aria-haspopup="menu"></cr-icon-button>
+  .elided-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+</style>
+<div id="icon"></div>
+<div id="website-title" class="elided-text" title="[[item_.title]]">
+  [[item_.title]]
+</div>
+<div id="website-url" class="elided-text" title="[[item_.url]]">
+  [[item_.url]]
+</div>
+<cr-icon-button class="icon-more-vert"
+    id="menuButton"
+    tabindex="[[ironListTabIndex]]"
+    title="$i18n{moreActionsButtonTitle}"
+    aria-label$="[[getButtonAriaLabel_(item_, isSelectedItem_,
+        isMultiSelect_)]]"
+    on-click="onMenuButtonClick_"
+    aria-haspopup="menu"></cr-icon-button>

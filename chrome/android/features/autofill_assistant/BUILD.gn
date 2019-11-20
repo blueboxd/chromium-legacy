@@ -246,7 +246,7 @@ android_library("test_java") {
     "//third_party/android_deps:com_google_protobuf_protobuf_lite_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/espresso:espresso_all_java",
-    "//third_party/feed:feed_lib_java",
+    "//third_party/feed_library:feed_lib_java",
     "//third_party/hamcrest:hamcrest_java",
     "//third_party/junit",
     "//third_party/mockito:mockito_java",

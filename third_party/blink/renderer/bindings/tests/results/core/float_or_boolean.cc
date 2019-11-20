@@ -116,3 +116,4 @@ FloatOrBoolean NativeValueTraits<FloatOrBoolean>::NativeValue(
 }
 
 }  // namespace blink
+

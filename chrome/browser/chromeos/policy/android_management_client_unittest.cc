@@ -52,7 +52,7 @@ class AndroidManagementClientTest : public testing::Test {
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &url_loader_factory_);
     client_.reset(new AndroidManagementClient(
-        &service_, shared_url_loader_factory_, kAccountId,
+        &service_, shared_url_loader_factory_, CoreAccountId(kAccountId),
         identity_test_environment_.identity_manager()));
 
     service_.ScheduleInitialization(0);

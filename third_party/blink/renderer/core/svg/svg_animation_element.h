@@ -114,6 +114,9 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
     use_paced_key_times_ = false;
     calc_mode_ = calc_mode;
   }
+  virtual bool HasValidAnimation() const = 0;
+  void UnregisterAnimation(const QualifiedName& attribute_name);
+  void RegisterAnimation(const QualifiedName& attribute_name);
 
   // Parses a list of values as specified by SVG, stripping leading
   // and trailing whitespace, and places them in result. If the
@@ -123,6 +126,7 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
   static bool ParseValues(const String&, Vector<String>& result);
 
   void WillChangeAnimationTarget() override;
+  void AnimationAttributeChanged();
 
  private:
   bool IsValid() const final { return SVGTests::IsValid(); }
@@ -131,7 +135,6 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
   String ByValue() const;
   String FromValue() const;
 
-  void AnimationAttributeChanged();
   bool CheckAnimationParameters();
   virtual bool CalculateToAtEndOfDurationValue(
       const String& to_at_end_of_duration_string) = 0;
@@ -176,6 +179,7 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
     kInvalid,
   };
   AnimationValidity animation_valid_;
+  bool registered_animation_;
   bool use_paced_key_times_;
 
   Vector<String> values_;

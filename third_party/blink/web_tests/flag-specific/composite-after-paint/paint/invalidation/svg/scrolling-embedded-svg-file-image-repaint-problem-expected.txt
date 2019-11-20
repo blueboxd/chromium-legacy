@@ -16,14 +16,17 @@
     },
     {
       "name": "HorizontalScrollbar",
-      "bounds": [800, 600],
-      "paintInvalidations": [
-        {
-          "object": "VerticalScrollbar",
-          "rect": [785, 0, 15, 585],
-          "reason": "scroll control"
-        }
-      ]
+      "position": [0, 585],
+      "bounds": [785, 15]
+    },
+    {
+      "name": "VerticalScrollbar",
+      "position": [785, 0],
+      "bounds": [15, 585]
+    },
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600]
     },
     {
       "name": "LayoutSVGContainer g",

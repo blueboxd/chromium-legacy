@@ -7,6 +7,13 @@
       "backgroundColor": "#FFFFFF"
     },
     {
+      "name": "LayoutNGBlockFlow DIV class='composited'",
+      "bounds": [30, 30],
+      "contentsOpaque": true,
+      "backgroundColor": "#808080",
+      "transform": 1
+    },
+    {
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV id='scroller' class='overflow')",
       "position": [12, 12],
       "bounds": [306, 206],

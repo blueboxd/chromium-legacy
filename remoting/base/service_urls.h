@@ -20,12 +20,6 @@ class ServiceUrls {
  public:
   static ServiceUrls* GetInstance();
 
-  // Remoting directory REST API URLs.
-  const std::string& gcd_base_url() const { return gcd_base_url_; }
-
-  // JID for communicating with GCD.
-  const std::string& gcd_jid() const { return gcd_jid_; }
-
   const std::string& ftl_server_endpoint() const {
     return ftl_server_endpoint_;
   }
@@ -42,8 +36,6 @@ class ServiceUrls {
 
   std::string directory_base_url_;
   std::string directory_hosts_url_;
-  std::string gcd_base_url_;
-  std::string gcd_jid_;
   std::string ice_config_url_;
   std::string ftl_server_endpoint_;
   std::string remoting_server_endpoint_;

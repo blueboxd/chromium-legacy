@@ -15,7 +15,9 @@ ChromeBrowserMainExtraPartsViewsLinux::ChromeBrowserMainExtraPartsViewsLinux() =
 ChromeBrowserMainExtraPartsViewsLinux::
     ~ChromeBrowserMainExtraPartsViewsLinux() = default;
 
-void ChromeBrowserMainExtraPartsViewsLinux::PreEarlyInitialization() {
+void ChromeBrowserMainExtraPartsViewsLinux::ToolkitInitialized() {
+  ChromeBrowserMainExtraPartsViews::ToolkitInitialized();
+
   views::LinuxUI* linux_ui = views::BuildLinuxUI();
   if (!linux_ui)
     return;
@@ -27,21 +29,11 @@ void ChromeBrowserMainExtraPartsViewsLinux::PreEarlyInitialization() {
         return ThemeServiceAuraLinux::ShouldUseSystemThemeForProfile(
             GetThemeProfileForWindow(window));
       }));
-  views::LinuxUI::SetInstance(linux_ui);
-}
 
-void ChromeBrowserMainExtraPartsViewsLinux::ToolkitInitialized() {
-  ChromeBrowserMainExtraPartsViews::ToolkitInitialized();
-  auto* instance = views::LinuxUI::instance();
-  if (instance)
-    instance->Initialize();
-}
-
-void ChromeBrowserMainExtraPartsViewsLinux::PreCreateThreads() {
   // Update the device scale factor before initializing views
   // because its display::Screen instance depends on it.
-  auto* instance = views::LinuxUI::instance();
-  if (instance)
-    instance->UpdateDeviceScaleFactor();
-  ChromeBrowserMainExtraPartsViews::PreCreateThreads();
+  linux_ui->UpdateDeviceScaleFactor();
+
+  views::LinuxUI::SetInstance(linux_ui);
+  linux_ui->Initialize();
 }

@@ -587,6 +587,9 @@ void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
   params->request = std::move(request_);
   params->client_id = client_id_;
   params->preload_handle = std::move(preload_handle_);
+  // TODO(https://crbug.com/900700): Make the remote connected to a receiver
+  // which is passed to blink::PerformanceResourceTiming.
+  params->worker_timing_remote = mojo::NullRemote();
   // |endpoint()| is owned by |version_|. So it is safe to pass the
   // unretained raw pointer of |version_| to OnFetchEventFinished callback.
   // Pass |url_loader_assets_| to the callback to keep the URL loader related

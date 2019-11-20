@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {isMac} from 'chrome://resources/js/cr.m.js';
 import {normalizeNodes} from 'chrome://bookmarks/bookmarks.js';
+import {isMac} from 'chrome://resources/js/cr.m.js';
 
 /**
  * Replace the current body of the test with a new element.
@@ -24,8 +24,7 @@ export function replaceBody(element) {
  * @return {NodeMap}
  */
 export function testTree(nodes) {
-  return normalizeNodes(
-      createFolder('0', Array.from(arguments)));
+  return normalizeNodes(createFolder('0', Array.from(arguments)));
 }
 
 /**

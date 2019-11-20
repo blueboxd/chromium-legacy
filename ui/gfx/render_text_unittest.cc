@@ -276,6 +276,7 @@ class TestSkiaTextRenderer : public internal::SkiaTextRenderer {
     TextLog() : glyph_count(0u), color(SK_ColorTRANSPARENT) {}
     PointF origin;
     size_t glyph_count;
+    std::vector<uint16_t> glyphs;
     SkColor color;
   };
 
@@ -302,6 +303,7 @@ class TestSkiaTextRenderer : public internal::SkiaTextRenderer {
         log_entry.origin.SetToMin(
             PointF(SkScalarToFloat(pos[i].x()), SkScalarToFloat(pos[i].y())));
       }
+      log_entry.glyphs = std::vector<uint16_t>(glyphs, glyphs + glyph_count);
     }
     log_entry.color =
         test::RenderTextTestApi::GetRendererPaint(this).getColor();
@@ -724,6 +726,58 @@ TEST_F(RenderTextTest, ApplyStyleMultipleGraphemes) {
   ASSERT_EQ(2u, text_log.size());
   EXPECT_EQ(2U, text_log[0].glyph_count);
   EXPECT_EQ(1U, text_log[1].glyph_count);
+}
+
+TEST_F(RenderTextTest, ApplyColorArabicLigature) {
+  // In Arabic, letters of each word join together whenever possible. During
+  // the shaping pass of the font, characters will take their joining form:
+  // Isolated, Initial, Medial or Final.
+
+  // Render the isolated form of the first glyph.
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(WideToUTF16(L"\u0628"));
+  DrawVisualText();
+  std::vector<TestSkiaTextRenderer::TextLog> text_log;
+  renderer()->GetTextLogAndReset(&text_log);
+  ASSERT_EQ(1u, text_log.size());
+  ASSERT_EQ(1u, text_log[0].glyph_count);
+  uint16_t isolated_first_glyph = text_log[0].glyphs[0];
+
+  // Render a pair of glyphs (initial form and final form).
+  render_text->SetText(WideToUTF16(L"\u0628\u0645"));
+  DrawVisualText();
+  renderer()->GetTextLogAndReset(&text_log);
+  ASSERT_EQ(1u, text_log.size());
+  ASSERT_LE(2u, text_log[0].glyph_count);
+  uint16_t initial_first_glyph = text_log[0].glyphs[0];
+  uint16_t final_second_glyph = text_log[0].glyphs[1];
+
+  // A ligature is applied between glyphs and the two glyphs (isolated and
+  // initial form) are displayed differently.
+  EXPECT_NE(isolated_first_glyph, initial_first_glyph);
+
+  // Ensures that both characters didn't merge in a single glyph.
+  EXPECT_NE(initial_first_glyph, final_second_glyph);
+
+  // Applying color should not break the ligature.
+  // see: https://w3c.github.io/alreq/#h_styling_individual_letters
+  render_text->ApplyColor(SK_ColorRED, Range(0, 1));
+  render_text->ApplyColor(SK_ColorBLACK, Range(1, 2));
+  DrawVisualText();
+  renderer()->GetTextLogAndReset(&text_log);
+  ASSERT_EQ(2u, text_log.size());
+  ASSERT_LE(1u, text_log[0].glyph_count);
+  ASSERT_EQ(1u, text_log[1].glyph_count);
+  uint16_t colored_first_glyph = text_log[1].glyphs[0];
+  uint16_t colored_second_glyph = text_log[0].glyphs[0];
+
+  // Glyphs should be the same with and without color.
+  EXPECT_EQ(initial_first_glyph, colored_first_glyph);
+  EXPECT_EQ(final_second_glyph, colored_second_glyph);
+
+  // Colors should be applied.
+  EXPECT_EQ(SK_ColorRED, text_log[0].color);
+  EXPECT_EQ(SK_ColorBLACK, text_log[1].color);
 }
 
 TEST_F(RenderTextTest, AppendTextKeepsStyles) {

@@ -64,9 +64,20 @@ SVGAnimateMotionElement::SVGAnimateMotionElement(Document& document)
 
 SVGAnimateMotionElement::~SVGAnimateMotionElement() = default;
 
-bool SVGAnimateMotionElement::HasValidTarget() const {
-  return SVGAnimationElement::HasValidTarget() &&
-         TargetCanHaveMotionTransform(*targetElement());
+bool SVGAnimateMotionElement::HasValidAnimation() const {
+  return TargetCanHaveMotionTransform(*targetElement());
+}
+
+void SVGAnimateMotionElement::WillChangeAnimationTarget() {
+  SVGAnimationElement::WillChangeAnimationTarget();
+  UnregisterAnimation(svg_names::kAnimateMotionTag);
+}
+
+void SVGAnimateMotionElement::DidChangeAnimationTarget() {
+  // Use our QName as the key to RegisterAnimation to get a separate sandwich
+  // for animateMotion.
+  RegisterAnimation(svg_names::kAnimateMotionTag);
+  SVGAnimationElement::DidChangeAnimationTarget();
 }
 
 void SVGAnimateMotionElement::ParseAttribute(

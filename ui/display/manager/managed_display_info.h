@@ -202,10 +202,6 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
   // orientation adjustment applied.
   Display::Rotation GetLogicalActiveRotation() const;
 
-  // Returns the natural orientation rotation with the panel orientation
-  // adjustment applied.
-  Display::Rotation GetNaturalOrientationRotation() const;
-
   // Returns the source which set the active rotation for this display.
   Display::RotationSource active_rotation_source() const {
     return active_rotation_source_;

@@ -494,7 +494,7 @@ AppsNavigationThrottle::HandleRequest() {
   constexpr bool kAllowFormSubmit = false;
 
   // Ignore navigations with the CLIENT_REDIRECT qualifier on.
-  constexpr bool kAllowClientRedirect = false;
+  constexpr bool kAllowClientRedirect = true;
 
   ui::PageTransition page_transition = handle->GetPageTransition();
   content::WebContents* web_contents = handle->GetWebContents();

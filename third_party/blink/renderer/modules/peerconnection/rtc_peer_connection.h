@@ -286,7 +286,7 @@ class MODULES_EXPORT RTCPeerConnection final
 
   // WebRTCPeerConnectionHandlerClient
   void NegotiationNeeded() override;
-  void DidGenerateICECandidate(scoped_refptr<WebRTCICECandidate>) override;
+  void DidGenerateICECandidate(scoped_refptr<RTCIceCandidatePlatform>) override;
   void DidFailICECandidate(const WebString& host_candidate,
                            const WebString& url,
                            int error_code,

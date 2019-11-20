@@ -58,6 +58,13 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThread : public base::Thread,
   // viz::GpuServiceImpl::~GpuServiceImpl()
   virtual void OnGpuProcessTearDown() = 0;
 
+  // Pause the GPU watchdog to stop the timeout task. If the current heavy task
+  // is not running on the GPU driver, the watchdog can be paused to avoid
+  // unneeded crash.
+  virtual void PauseWatchdog() = 0;
+  // Continue the watchdog after a pause.
+  virtual void ResumeWatchdog() = 0;
+
   virtual void GpuWatchdogHistogram(GpuWatchdogThreadEvent thread_event) = 0;
 
   // For gpu testing only. Return status for the watchdog tests
@@ -86,6 +93,8 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV1
   void OnForegrounded() override;
   void OnInitComplete() override {}
   void OnGpuProcessTearDown() override {}
+  void ResumeWatchdog() override {}
+  void PauseWatchdog() override {}
   void GpuWatchdogHistogram(GpuWatchdogThreadEvent thread_event) override;
   bool IsGpuHangDetectedForTesting() override;
 

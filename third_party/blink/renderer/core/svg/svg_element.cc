@@ -240,6 +240,16 @@ void SVGElement::ClearWebAnimatedAttributes() {
   SvgRareData()->WebAnimatedAttributes().clear();
 }
 
+ElementSMILAnimations* SVGElement::GetSMILAnimations() {
+  if (!HasSVGRareData())
+    return nullptr;
+  return SvgRareData()->GetSMILAnimations();
+}
+
+ElementSMILAnimations& SVGElement::EnsureSMILAnimations() {
+  return EnsureSVGRareData()->EnsureSMILAnimations();
+}
+
 void SVGElement::SetAnimatedAttribute(const QualifiedName& attribute,
                                       SVGPropertyBase* value) {
   ForSelfAndInstances(this, [&attribute, &value](SVGElement* element) {

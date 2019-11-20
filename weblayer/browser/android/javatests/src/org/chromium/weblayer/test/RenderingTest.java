@@ -35,9 +35,9 @@ public class RenderingTest {
         String url = "data:text,foo";
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            activity.getBrowser().setSupportsEmbedding(true).addCallback((Boolean result) -> {
+            activity.getBrowser().setSupportsEmbedding(true, (Boolean result) -> {
                 Assert.assertTrue(result);
-                activity.getBrowser().setSupportsEmbedding(false).addCallback((Boolean result2) -> {
+                activity.getBrowser().setSupportsEmbedding(false, (Boolean result2) -> {
                     Assert.assertTrue(result2);
                     latch.countDown();
                 });
@@ -58,13 +58,12 @@ public class RenderingTest {
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
 
         CountDownLatch latch = new CountDownLatch(2);
-        String url = "data:text,foo";
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            activity.getBrowser().setSupportsEmbedding(true).addCallback((Boolean result) -> {
+            activity.getBrowser().setSupportsEmbedding(true, (Boolean result) -> {
                 Assert.assertTrue(result);
                 latch.countDown();
             });
-            activity.getBrowser().setSupportsEmbedding(true).addCallback((Boolean result) -> {
+            activity.getBrowser().setSupportsEmbedding(true, (Boolean result) -> {
                 Assert.assertTrue(result);
                 latch.countDown();
             });

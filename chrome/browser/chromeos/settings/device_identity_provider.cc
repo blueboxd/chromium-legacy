@@ -18,7 +18,7 @@ class ActiveAccountAccessTokenFetcherImpl
       OAuth2AccessTokenManager::Consumer {
  public:
   ActiveAccountAccessTokenFetcherImpl(
-      const std::string& active_account_id,
+      const CoreAccountId& active_account_id,
       const std::string& oauth_consumer_name,
       DeviceOAuth2TokenService* token_service,
       const OAuth2AccessTokenManager::ScopeSet& scopes,
@@ -48,7 +48,7 @@ class ActiveAccountAccessTokenFetcherImpl
 }  // namespace
 
 ActiveAccountAccessTokenFetcherImpl::ActiveAccountAccessTokenFetcherImpl(
-    const std::string& active_account_id,
+    const CoreAccountId& active_account_id,
     const std::string& oauth_consumer_name,
     DeviceOAuth2TokenService* token_service,
     const OAuth2AccessTokenManager::ScopeSet& scopes,

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {TestStore} from 'chrome://test/bookmarks/test_store.js';
 import {Command, MenuSource} from 'chrome://bookmarks/bookmarks.js';
-import {createFolder, createItem, customClick, getAllFoldersOpenState, normalizeIterable, replaceBody, testTree} from 'chrome://test/bookmarks/test_util.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {TestStore} from 'chrome://test/bookmarks/test_store.js';
+import {createFolder, createItem, customClick, getAllFoldersOpenState, normalizeIterable, replaceBody, testTree} from 'chrome://test/bookmarks/test_util.js';
 import {flushTasks} from 'chrome://test/test_util.m.js';
 
 suite('<bookmarks-list>', function() {

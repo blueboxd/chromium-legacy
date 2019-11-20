@@ -347,6 +347,13 @@ const char kEnablePasswordsAccountStorageDescription[] =
     "Enables storing passwords in a second, Gaia-account-scoped storage for "
     "signed-in but not syncing users";
 
+const char kEnablePasswordsAccountStorageSavingUiName[] =
+    "Enable the UI to save passwords to the account storage";
+const char kEnablePasswordsAccountStorageSavingUiDescription[] =
+    "Enables the UI that allows storing passwords to the Gaia-account-scoped "
+    "storage for signed-in but not syncing users. Requires enabling the "
+    "account storage #passwords-account-storage.";
+
 const char kFocusMode[] = "Focus Mode";
 const char kFocusModeDescription[] =
     "If enabled, allows the user to switch to Focus Mode";
@@ -2243,6 +2250,12 @@ const char kWebPaymentsExperimentalFeaturesName[] =
 const char kWebPaymentsExperimentalFeaturesDescription[] =
     "Enable experimental Web Payments API features";
 
+const char kWebrtcCaptureMultiChannelApmName[] =
+    "WebRTC multi-channel capture audio processing.";
+const char kWebrtcCaptureMultiChannelApmDescription[] =
+    "Support in WebRTC for processing capture audio in multi channel without "
+    "downmixing when running APM in the render process.";
+
 const char kWebrtcHideLocalIpsWithMdnsName[] =
     "Anonymize local IPs exposed by WebRTC.";
 const char kWebrtcHideLocalIpsWithMdnsDecription[] =
@@ -2259,12 +2272,6 @@ const char kWebrtcHwDecodingDescription[] =
 const char kWebrtcHwEncodingName[] = "WebRTC hardware video encoding";
 const char kWebrtcHwEncodingDescription[] =
     "Support in WebRTC for encoding video streams using platform hardware.";
-
-const char kWebrtcMultiChannelApmName[] =
-    "WebRTC multi-channel audio processing.";
-const char kWebrtcMultiChannelApmDescription[] =
-    "Support in WebRTC for processing playout and capture audio in multi "
-    "channel without downmixing.";
 
 const char kWebrtcNewEncodeCpuLoadEstimatorName[] =
     "WebRTC new encode cpu load estimator";
@@ -3940,10 +3947,6 @@ const char kAnimatedAvatarButtonDescription[] =
 const char kProfileMenuRevampName[] = "Profile menu revamp";
 const char kProfileMenuRevampDescription[] =
     "Enables the new version of the profile menu (aka user menu).";
-
-const char kSyncClipboardServiceName[] = "Sync Clipboard Service";
-const char kSyncClipboardServiceDescription[] =
-    "Enables clipboard syncing via Chrome Sync.";
 
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 

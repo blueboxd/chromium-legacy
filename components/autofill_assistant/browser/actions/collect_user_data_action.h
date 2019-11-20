@@ -34,7 +34,8 @@ class CollectUserDataAction : public Action,
 
   static bool IsUserDataComplete(
       const UserData& user_data,
-      const CollectUserDataOptions& collect_user_data_options);
+      const CollectUserDataOptions& collect_user_data_options,
+      const std::string& locale);
 
  private:
   struct LoginDetails {

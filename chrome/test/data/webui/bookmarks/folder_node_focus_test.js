@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {changeFolderOpen, Command, selectFolder} from 'chrome://bookmarks/bookmarks.js';
+import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {TestCommandManager} from 'chrome://test/bookmarks/test_command_manager.js';
 import {TestStore} from 'chrome://test/bookmarks/test_store.js';
-import {changeFolderOpen, Command, selectFolder} from 'chrome://bookmarks/bookmarks.js';
 import {createFolder, createItem, findFolderNode, getAllFoldersOpenState, replaceBody, testTree} from 'chrome://test/bookmarks/test_util.js';
-import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
-import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 
 suite('<bookmarks-folder-node>', function() {
   let rootNode;
@@ -155,8 +155,7 @@ suite('<bookmarks-folder-node>', function() {
 
     // Pressing right on a closed folder opens that folder
     keydown('2', 'ArrowRight');
-    assertDeepEquals(
-        changeFolderOpen('2', true), store.lastAction);
+    assertDeepEquals(changeFolderOpen('2', true), store.lastAction);
 
     // Pressing right again descends into first child.
     keydown('2', 'ArrowRight');
@@ -179,18 +178,15 @@ suite('<bookmarks-folder-node>', function() {
 
     // Pressing left again closes the parent.
     keydown('2', 'ArrowLeft');
-    assertDeepEquals(
-        changeFolderOpen('2', false), store.lastAction);
+    assertDeepEquals(changeFolderOpen('2', false), store.lastAction);
 
     // RTL flips left and right.
     document.body.style.direction = 'rtl';
     keydown('2', 'ArrowLeft');
-    assertDeepEquals(
-        changeFolderOpen('2', true), store.lastAction);
+    assertDeepEquals(changeFolderOpen('2', true), store.lastAction);
 
     keydown('2', 'ArrowRight');
-    assertDeepEquals(
-        changeFolderOpen('2', false), store.lastAction);
+    assertDeepEquals(changeFolderOpen('2', false), store.lastAction);
 
     document.body.style.direction = 'ltr';
   });

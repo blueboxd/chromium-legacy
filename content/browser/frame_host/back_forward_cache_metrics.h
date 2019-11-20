@@ -14,6 +14,7 @@
 #include "base/strings/string_piece.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
+#include "content/browser/frame_host/should_swap_browsing_instance.h"
 #include "content/common/content_export.h"
 
 namespace url {
@@ -182,6 +183,8 @@ class BackForwardCacheMetrics
 
   NotRestoredReasons not_restored_reasons_;
   uint64_t blocklisted_features_ = 0;
+  base::Optional<ShouldSwapBrowsingInstance>
+      browsing_instance_not_swapped_reason_;
 
   // The reasons given at BackForwardCache::DisableForRenderFrameHost. These are
   // a further breakdown of NotRestoredReason::kDisableForRenderFrameHostCalled.

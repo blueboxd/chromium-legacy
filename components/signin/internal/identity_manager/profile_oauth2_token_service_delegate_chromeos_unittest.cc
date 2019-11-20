@@ -80,7 +80,7 @@ class TestOAuth2TokenServiceObserver
     is_inside_batch_ = true;
 
     // Start a new batch
-    batch_change_records_.emplace_back(std::vector<std::string>());
+    batch_change_records_.emplace_back(std::vector<CoreAccountId>());
   }
 
   void OnEndBatchChanges() override {
@@ -129,16 +129,16 @@ class TestOAuth2TokenServiceObserver
 
   int on_auth_error_changed_calls = 0;
 
-  std::string last_err_account_id_;
+  CoreAccountId last_err_account_id_;
   GoogleServiceAuthError last_err_;
-  std::set<std::string> account_ids_;
+  std::set<CoreAccountId> account_ids_;
   bool is_inside_batch_ = false;
   bool refresh_tokens_loaded_ = false;
 
   // Records batch changes for later verification. Each index of this vector
   // represents a batch change. Each batch change is a vector of account ids for
   // which |OnRefreshTokenAvailable| is called.
-  std::vector<std::vector<std::string>> batch_change_records_;
+  std::vector<std::vector<CoreAccountId>> batch_change_records_;
 
   // Non-owning pointer.
   ProfileOAuth2TokenServiceDelegate* const delegate_;
@@ -243,7 +243,7 @@ TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
 
   // Test that LoadCredentials works as expected.
   EXPECT_FALSE(observer.refresh_tokens_loaded_);
-  delegate->LoadCredentials("" /* primary_account_id */);
+  delegate->LoadCredentials(CoreAccountId() /* primary_account_id */);
   EXPECT_TRUE(observer.refresh_tokens_loaded_);
   EXPECT_EQ(LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
             delegate->load_credentials_state());
@@ -381,11 +381,11 @@ TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
 
   delegate_->UpdateCredentials(account_info_.account_id, kGaiaToken);
   observer.account_ids_.clear();
-  observer.last_err_account_id_ = std::string();
+  observer.last_err_account_id_ = CoreAccountId();
   delegate_->UpdateCredentials(account_info_.account_id, kGaiaToken);
 
   EXPECT_TRUE(observer.account_ids_.empty());
-  EXPECT_EQ(std::string(), observer.last_err_account_id_);
+  EXPECT_TRUE(observer.last_err_account_id_.empty());
 }
 
 TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
@@ -448,7 +448,7 @@ TEST_F(ProfileOAuth2TokenServiceDelegateChromeOSTest,
   // been fully initialized.
   EXPECT_EQ(3UL, observer.batch_change_records_.size());
 
-  const std::vector<std::string>& first_batch =
+  const std::vector<CoreAccountId>& first_batch =
       observer.batch_change_records_[0];
   EXPECT_EQ(2UL, first_batch.size());
   EXPECT_TRUE(base::Contains(first_batch, account1.account_id));

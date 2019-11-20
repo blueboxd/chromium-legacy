@@ -76,4 +76,10 @@ bool Screen::GetDisplayWithDisplayId(int64_t display_id,
   return false;
 }
 
+void Screen::SetPanelRotationForTesting(int64_t display_id,
+                                        Display::Rotation rotation) {
+  // Not implemented.
+  DCHECK(false);
+}
+
 }  // namespace display

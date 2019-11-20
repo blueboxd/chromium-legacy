@@ -114,34 +114,36 @@ bool ShouldSwapBrowsingInstancesForDynamicIsolation(
       future_isolation_context, destination_effective_url);
 }
 
-bool ShouldProactivelySwapBrowsingInstance(
+ShouldSwapBrowsingInstance ShouldProactivelySwapBrowsingInstance(
     RenderFrameHostImpl* current_rfh,
     const GURL& destination_effective_url) {
   if (!IsProactivelySwapBrowsingInstanceEnabled())
-    return false;
+    return ShouldSwapBrowsingInstance::kNo_ProactiveSwapDisabled;
 
   // Only main frames are eligible to swap BrowsingInstances.
   if (!current_rfh->frame_tree_node()->IsMainFrame())
-    return false;
+    return ShouldSwapBrowsingInstance::kNo_NotMainFrame;
 
   // Skip cases when there are other windows that might script this one.
   SiteInstanceImpl* current_instance = current_rfh->GetSiteInstance();
   if (current_instance->GetRelatedActiveContentsCount() > 1u)
-    return false;
+    return ShouldSwapBrowsingInstance::kNo_HasRelatedActiveContents;
 
   // "about:blank" and chrome-native-URL do not "use" a SiteInstance. This
   // allows the SiteInstance to be reused cross-site. Starting a new
   // BrowsingInstance would prevent the SiteInstance to be reused, that's why
   // this case is excluded here.
   if (!current_instance->HasSite())
-    return false;
+    return ShouldSwapBrowsingInstance::kNo_DoesNotHaveSite;
 
   // Exclude non http(s) schemes. Some tests don't expect navigations to
   // data-URL or to about:blank to switch to a different BrowsingInstance.
   const GURL& current_url = current_rfh->GetLastCommittedURL();
-  if (!current_url.SchemeIsHTTPOrHTTPS() ||
-      !destination_effective_url.SchemeIsHTTPOrHTTPS())
-    return false;
+  if (!current_url.SchemeIsHTTPOrHTTPS())
+    return ShouldSwapBrowsingInstance::kNo_SourceURLSchemeIsNotHTTPOrHTTPS;
+
+  if (!destination_effective_url.SchemeIsHTTPOrHTTPS())
+    return ShouldSwapBrowsingInstance::kNo_DestinationURLSchemeIsNotHTTPOrHTTPS;
 
   // Nothing prevents two pages with the same website to live in different
   // BrowsingInstance. However many tests are making this assumption. The scope
@@ -151,10 +153,10 @@ bool ShouldProactivelySwapBrowsingInstance(
   if (SiteInstanceImpl::IsSameSite(current_instance->GetIsolationContext(),
                                    current_url, destination_effective_url,
                                    true)) {
-    return false;
+    return ShouldSwapBrowsingInstance::kNo_SameSiteNavigation;
   }
 
-  return true;
+  return ShouldSwapBrowsingInstance::kYes;
 }
 
 }  // namespace
@@ -1095,7 +1097,8 @@ void RenderFrameHostManager::DeleteRenderFrameProxyHost(
   proxy_hosts_.erase(site_instance->GetId());
 }
 
-bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
+ShouldSwapBrowsingInstance
+RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
     const GURL& current_effective_url,
     bool current_is_view_source_mode,
     SiteInstance* destination_site_instance,
@@ -1104,7 +1107,7 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
     bool is_failure) const {
   // A subframe must stay in the same BrowsingInstance as its parent.
   if (!frame_tree_node_->IsMainFrame())
-    return false;
+    return ShouldSwapBrowsingInstance::kNo_NotMainFrame;
 
   // If the navigation has resulted in an error page, do not swap
   // BrowsingInstance and keep the error page in a related SiteInstance. If
@@ -1112,14 +1115,19 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
   // create a new BrowsingInstance if needed.
   if (is_failure && SiteIsolationPolicy::IsErrorPageIsolationEnabled(
                         frame_tree_node_->IsMainFrame())) {
-    return false;
+    return ShouldSwapBrowsingInstance::kNo_ErrorPage;
   }
 
   // If new_entry already has a SiteInstance, assume it is correct.  We only
   // need to force a swap if it is in a different BrowsingInstance.
   if (destination_site_instance) {
-    return !destination_site_instance->IsRelatedSiteInstance(
+    bool should_swap = !destination_site_instance->IsRelatedSiteInstance(
         render_frame_host_->GetSiteInstance());
+    if (should_swap) {
+      return ShouldSwapBrowsingInstance::kYes;
+    } else {
+      return ShouldSwapBrowsingInstance::kNo_AlreadyHasMatchingBrowsingInstance;
+    }
   }
 
   // Check for reasons to swap processes even if we are in a process model that
@@ -1131,7 +1139,7 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
   // Don't force a new BrowsingInstance for URLs that are handled in the
   // renderer process, like javascript: or debug URLs like chrome://crash.
   if (IsRendererDebugURL(destination_effective_url))
-    return false;
+    return ShouldSwapBrowsingInstance::kNo_RendererDebugURL;
 
   // Transitions across BrowserContexts should always require a
   // BrowsingInstance swap. For example, this can happen if an extension in a
@@ -1145,7 +1153,7 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
             render_frame_host_->GetSiteInstance()->GetBrowserContext());
   if (browser_context !=
       render_frame_host_->GetSiteInstance()->GetBrowserContext()) {
-    return true;
+    return ShouldSwapBrowsingInstance::kYes;
   }
 
   // For security, we should transition between processes when one is a Web UI
@@ -1158,7 +1166,7 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
     // Here, data URLs are never allowed.
     if (!WebUIControllerFactoryRegistry::GetInstance()->IsURLAcceptableForWebUI(
             browser_context, destination_effective_url)) {
-      return true;
+      return ShouldSwapBrowsingInstance::kYes;
     }
 
     // Force swap if the current WebUI type differs from the one for the
@@ -1167,13 +1175,13 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
             browser_context, current_effective_url) !=
         WebUIControllerFactoryRegistry::GetInstance()->GetWebUIType(
             browser_context, destination_effective_url)) {
-      return true;
+      return ShouldSwapBrowsingInstance::kYes;
     }
   } else {
     // Force a swap if it's a Web UI URL.
     if (WebUIControllerFactoryRegistry::GetInstance()->UseWebUIBindingsForURL(
             browser_context, destination_effective_url)) {
-      return true;
+      return ShouldSwapBrowsingInstance::kYes;
     }
   }
 
@@ -1183,7 +1191,7 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
   if (GetContentClient()->browser()->ShouldSwapBrowsingInstancesForNavigation(
           render_frame_host_->GetSiteInstance(), current_effective_url,
           destination_effective_url)) {
-    return true;
+    return ShouldSwapBrowsingInstance::kYes;
   }
 
   // We can't switch a RenderView between view source and non-view source mode
@@ -1191,7 +1199,7 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
   // "view-source:http://foo.com/" and "http://foo.com/", Blink doesn't treat
   // it as a new navigation). So require a BrowsingInstance switch.
   if (current_is_view_source_mode != destination_is_view_source_mode)
-    return true;
+    return ShouldSwapBrowsingInstance::kYes;
 
   // If the target URL's origin was dynamically isolated, and the isolation
   // wouldn't apply in the current BrowsingInstance, see if this navigation can
@@ -1202,17 +1210,13 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
   // possible (e.g., when there are no existing script references).
   if (ShouldSwapBrowsingInstancesForDynamicIsolation(
           render_frame_host_.get(), destination_effective_url)) {
-    return true;
+    return ShouldSwapBrowsingInstance::kYes;
   }
 
   // Experimental mode to swap BrowsingInstances on most cross-site navigations
   // when there are no other windows in the BrowsingInstance.
-  if (ShouldProactivelySwapBrowsingInstance(render_frame_host_.get(),
-                                            destination_effective_url)) {
-    return true;
-  }
-
-  return false;
+  return ShouldProactivelySwapBrowsingInstance(render_frame_host_.get(),
+                                               destination_effective_url);
 }
 
 scoped_refptr<SiteInstance>
@@ -1272,10 +1276,16 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
                                          ? current_entry->IsViewSourceMode()
                                          : dest_is_view_source_mode;
 
-  bool force_swap = ShouldSwapBrowsingInstancesForNavigation(
-      current_effective_url, current_is_view_source_mode, dest_instance,
-      SiteInstanceImpl::GetEffectiveURL(browser_context, dest_url),
-      dest_is_view_source_mode, is_failure);
+  ShouldSwapBrowsingInstance force_swap_result =
+      ShouldSwapBrowsingInstancesForNavigation(
+          current_effective_url, current_is_view_source_mode, dest_instance,
+          SiteInstanceImpl::GetEffectiveURL(browser_context, dest_url),
+          dest_is_view_source_mode, is_failure);
+  bool force_swap = force_swap_result == ShouldSwapBrowsingInstance::kYes;
+  if (!force_swap) {
+    render_frame_host_->set_browsing_instance_not_swapped_reason(
+        force_swap_result);
+  }
   SiteInstanceDescriptor new_instance_descriptor =
       SiteInstanceDescriptor(current_instance);
   new_instance_descriptor = DetermineSiteInstanceForURL(

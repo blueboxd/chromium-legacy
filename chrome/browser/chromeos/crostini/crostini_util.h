@@ -153,9 +153,14 @@ void CloseCrostiniUpdateFilesystemView();
 // applying an Ansible playbook in the container).
 void ShowCrostiniAnsibleSoftwareConfigView(Profile* profile);
 
+const std::string& GetTerminalId();
+
 // We use an arbitrary well-formed extension id for the Terminal app, this
 // is equal to GenerateId("Terminal").
 constexpr char kCrostiniTerminalId[] = "oajcgpnkmhaalajejhlfpacbiokdnnfe";
+// web_app::GenerateAppIdFromURL("chrome://terminal/html/terminal.html")
+constexpr char kCrostiniTerminalSystemAppId[] =
+    "oapmgeobaaddjmlgbbjbdhapidbomlgg";
 
 constexpr char kCrostiniDefaultVmName[] = "termina";
 constexpr char kCrostiniDefaultContainerName[] = "penguin";

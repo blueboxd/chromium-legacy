@@ -32,6 +32,6 @@
 [
     NoInterfaceObject
 ] interface Metadata {
-    readonly attribute Date modificationTime;
+    [CallWith=ScriptState] readonly attribute object modificationTime;
     readonly attribute unsigned long long size;
 };

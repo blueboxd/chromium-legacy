@@ -258,7 +258,7 @@ void ChildAccountService::OnExtendedAccountInfoUpdated(
     return;
   }
 
-  std::string auth_account_id = identity_manager_->GetPrimaryAccountId();
+  CoreAccountId auth_account_id = identity_manager_->GetPrimaryAccountId();
   if (info.account_id != auth_account_id)
     return;
 

@@ -342,7 +342,7 @@ android_library("chrome_java") {
     "//third_party/cacheinvalidation:cacheinvalidation_javalib",
     "//third_party/cacheinvalidation:cacheinvalidation_proto_java",
     "//third_party/cct_dynamic_module:cct_dynamic_module_java",
-    "//third_party/feed:feed_lib_proto_java",
+    "//third_party/feed_library:feed_lib_proto_java",
     "//third_party/gif_player:gif_player_java",
     "//third_party/google_android_play_core:com_google_android_play_core_java",
     "//third_party/jsr-305:jsr_305_javalib",

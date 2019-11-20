@@ -174,7 +174,7 @@ class ArcAuthService : public KeyedService,
   // fetcher is being created for the initial ARC provisioning flow or for a
   // subsequent sign-in.
   std::unique_ptr<ArcBackgroundAuthCodeFetcher>
-  CreateArcBackgroundAuthCodeFetcher(const std::string& account_id,
+  CreateArcBackgroundAuthCodeFetcher(const CoreAccountId& account_id,
                                      bool initial_signin);
 
   // Deletes a completed enrollment token / auth code fetch request from

@@ -86,7 +86,7 @@ class PermissionRequestCreatorApiaryTest : public testing::Test {
   MOCK_METHOD1(OnRequestCreated, void(bool success));
 
   base::test::SingleThreadTaskEnvironment task_environment_;
-  std::string account_id_;
+  CoreAccountId account_id_;
   signin::IdentityTestEnvironment identity_test_env_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;

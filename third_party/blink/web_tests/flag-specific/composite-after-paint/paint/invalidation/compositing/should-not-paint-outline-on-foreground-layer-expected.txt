@@ -8,6 +8,18 @@
     },
     {
       "name": "HorizontalScrollbar",
+      "position": [0, 285],
+      "bounds": [285, 15],
+      "transform": 1
+    },
+    {
+      "name": "VerticalScrollbar",
+      "position": [285, 0],
+      "bounds": [15, 285],
+      "transform": 1
+    },
+    {
+      "name": "LayoutNGBlockFlow DIV id='container'",
       "position": [-10, -10],
       "bounds": [320, 320],
       "paintInvalidations": [
@@ -15,11 +27,6 @@
           "object": "LayoutNGBlockFlow DIV id='container'",
           "rect": [0, 0, 320, 320],
           "reason": "chunk appeared"
-        },
-        {
-          "object": "VerticalScrollbar",
-          "rect": [295, 10, 15, 285],
-          "reason": "scroll control"
         }
       ],
       "transform": 1

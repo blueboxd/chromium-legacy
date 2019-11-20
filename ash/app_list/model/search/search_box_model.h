@@ -43,12 +43,6 @@ class APP_LIST_MODEL_EXPORT SearchBoxModel {
   void UpdateAccessibleName();
   const base::string16& accessible_name() const { return accessible_name_; }
 
-  // Sets/gets the selection model for the search box's Textfield.
-  void SetSelectionModel(const gfx::SelectionModel& sel);
-  const gfx::SelectionModel& selection_model() const {
-    return selection_model_;
-  }
-
   void SetTabletMode(bool is_tablet_mode);
   bool is_tablet_mode() const { return is_tablet_mode_; }
 
@@ -72,7 +66,6 @@ class APP_LIST_MODEL_EXPORT SearchBoxModel {
   base::string16 tablet_accessible_name_;
   base::string16 clamshell_accessible_name_;
   base::string16 accessible_name_;
-  gfx::SelectionModel selection_model_;
   base::string16 text_;
   bool search_engine_is_google_ = false;
   bool is_tablet_mode_ = false;

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {BrowserProxy, Command, CommandManager, IncognitoAvailability} from 'chrome://bookmarks/bookmarks.js';
 import {TestBookmarksBrowserProxy} from 'chrome://test/bookmarks/test_browser_proxy.js';
 import {TestStore} from 'chrome://test/bookmarks/test_store.js';
-import {BrowserProxy, Command, CommandManager, IncognitoAvailability} from 'chrome://bookmarks/bookmarks.js';
 import {createFolder, createItem, getAllFoldersOpenState, replaceBody, testTree} from 'chrome://test/bookmarks/test_util.js';
 
 suite('Bookmarks policies', function() {

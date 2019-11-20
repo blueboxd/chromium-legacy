@@ -46,7 +46,6 @@
 #include "third_party/blink/public/platform/web_crypto_algorithm_params.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_rtc_data_channel_init.h"
-#include "third_party/blink/public/platform/web_rtc_ice_candidate.h"
 #include "third_party/blink/public/platform/web_rtc_session_description.h"
 #include "third_party/blink/public/platform/web_rtc_stats_request.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -115,6 +114,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_answer_options_platform.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_ice_candidate_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_offer_options_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
@@ -213,7 +213,7 @@ RTCAnswerOptionsPlatform* ConvertToRTCAnswerOptionsPlatform(
                                            : true);
 }
 
-scoped_refptr<WebRTCICECandidate> ConvertToWebRTCIceCandidate(
+scoped_refptr<RTCIceCandidatePlatform> ConvertToRTCIceCandidatePlatform(
     ExecutionContext* context,
     const RTCIceCandidateInitOrRTCIceCandidate& candidate) {
   DCHECK(!candidate.IsNull());
@@ -228,13 +228,13 @@ scoped_refptr<WebRTCICECandidate> ConvertToWebRTCIceCandidate(
       UseCounter::Count(context,
                         WebFeature::kRTCIceCandidateDefaultSdpMLineIndex);
     }
-    return WebRTCICECandidate::Create(
+    return RTCIceCandidatePlatform::Create(
         ice_candidate_init->candidate(), ice_candidate_init->sdpMid(),
         sdp_m_line_index, ice_candidate_init->usernameFragment());
   }
 
   DCHECK(candidate.IsRTCIceCandidate());
-  return candidate.GetAsRTCIceCandidate()->WebCandidate();
+  return candidate.GetAsRTCIceCandidate()->PlatformCandidate();
 }
 
 enum SdpSemanticRequested {
@@ -1767,21 +1767,22 @@ ScriptPromise RTCPeerConnection::addIceCandidate(
     return ScriptPromise();
   }
 
-  scoped_refptr<WebRTCICECandidate> web_candidate = ConvertToWebRTCIceCandidate(
-      ExecutionContext::From(script_state), candidate);
+  scoped_refptr<RTCIceCandidatePlatform> platform_candidate =
+      ConvertToRTCIceCandidatePlatform(ExecutionContext::From(script_state),
+                                       candidate);
 
   // Temporary mitigation to avoid throwing an exception when candidate is
   // empty.
   // TODO(crbug.com/978582): Remove this mitigation when the WebRTC layer
   // handles the empty candidate field correctly.
-  if (web_candidate->Candidate().IsEmpty())
+  if (platform_candidate->Candidate().IsEmpty())
     return ScriptPromise::CastUndefined(script_state);
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   auto* request = MakeGarbageCollected<RTCVoidRequestPromiseImpl>(
       base::nullopt, this, resolver, "RTCPeerConnection", "addIceCandidate");
-  peer_handler_->AddICECandidate(request, std::move(web_candidate));
+  peer_handler_->AddICECandidate(request, std::move(platform_candidate));
   return promise;
 }
 
@@ -1803,20 +1804,21 @@ ScriptPromise RTCPeerConnection::addIceCandidate(
     return ScriptPromise();
   }
 
-  scoped_refptr<WebRTCICECandidate> web_candidate = ConvertToWebRTCIceCandidate(
-      ExecutionContext::From(script_state), candidate);
+  scoped_refptr<RTCIceCandidatePlatform> platform_candidate =
+      ConvertToRTCIceCandidatePlatform(ExecutionContext::From(script_state),
+                                       candidate);
 
   // Temporary mitigation to avoid throwing an exception when candidate is
   // empty.
   // TODO(crbug.com/978582): Remove this mitigation when the WebRTC layer
   // handles the empty candidate field correctly.
-  if (web_candidate->Candidate().IsEmpty())
+  if (platform_candidate->Candidate().IsEmpty())
     return ScriptPromise::CastUndefined(script_state);
 
   auto* request = MakeGarbageCollected<RTCVoidRequestImpl>(
       GetExecutionContext(), base::nullopt, this, success_callback,
       error_callback);
-  peer_handler_->AddICECandidate(request, std::move(web_candidate));
+  peer_handler_->AddICECandidate(request, std::move(platform_candidate));
   return ScriptPromise::CastUndefined(script_state);
 }
 
@@ -2686,12 +2688,12 @@ void RTCPeerConnection::MaybeFireNegotiationNeeded() {
 }
 
 void RTCPeerConnection::DidGenerateICECandidate(
-    scoped_refptr<WebRTCICECandidate> web_candidate) {
+    scoped_refptr<RTCIceCandidatePlatform> platform_candidate) {
   DCHECK(!closed_);
   DCHECK(GetExecutionContext()->IsContextThread());
-  DCHECK(web_candidate);
+  DCHECK(platform_candidate);
   RTCIceCandidate* ice_candidate =
-      RTCIceCandidate::Create(std::move(web_candidate));
+      RTCIceCandidate::Create(std::move(platform_candidate));
   ScheduleDispatchEvent(RTCPeerConnectionIceEvent::Create(ice_candidate));
 }
 void RTCPeerConnection::DidFailICECandidate(const WebString& host_candidate,

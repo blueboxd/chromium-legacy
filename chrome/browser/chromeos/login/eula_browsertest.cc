@@ -248,15 +248,23 @@ class EulaTest : public OobeBaseTest {
 };
 
 // Tests that online version is shown when it is accessible.
-
-// https://crbug.com/865710: Flaky (crashes intermittently) on
-// linux-chromeos-rel builder.
-IN_PROC_BROWSER_TEST_F(EulaTest, DISABLED_LoadOnline) {
+IN_PROC_BROWSER_TEST_F(EulaTest, LoadOnline) {
   set_allow_online_eula(true);
   ShowEulaScreen();
 
-  EXPECT_TRUE(test::GetWebViewContents({"oobe-eula-md", "crosEulaFrame"})
-                  .find(kFakeOnlineEula) != std::string::npos);
+  // Wait until the webview has finished loading.
+  content::WebContents* eula_contents = FindEulaContents();
+  ASSERT_TRUE(eula_contents);
+  WebContentsLoadFinishedWaiter(eula_contents).Wait();
+
+  // Wait until the Accept button on the EULA frame becomes enabled.
+  chromeos::test::OobeJS()
+      .CreateEnabledWaiter(true, {"oobe-eula-md", "acceptButton"})
+      ->Wait();
+
+  const std::string webview_contents =
+      test::GetWebViewContents({"oobe-eula-md", "crosEulaFrame"});
+  EXPECT_TRUE(webview_contents.find(kFakeOnlineEula) != std::string::npos);
 }
 
 // Tests that offline version is shown when the online version is not

@@ -476,9 +476,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ExtensionsSchemas) {
   ASSERT_TRUE(schema->GetKnownProperty("string-policy").valid());
   EXPECT_EQ(base::Value::Type::STRING,
             schema->GetKnownProperty("string-policy").type());
+  ASSERT_TRUE(schema->GetKnownProperty("string-enum-policy").valid());
+  EXPECT_EQ(base::Value::Type::STRING,
+            schema->GetKnownProperty("string-enum-policy").type());
   ASSERT_TRUE(schema->GetKnownProperty("int-policy").valid());
   EXPECT_EQ(base::Value::Type::INTEGER,
             schema->GetKnownProperty("int-policy").type());
+  ASSERT_TRUE(schema->GetKnownProperty("int-enum-policy").valid());
+  EXPECT_EQ(base::Value::Type::INTEGER,
+            schema->GetKnownProperty("int-enum-policy").type());
   ASSERT_TRUE(schema->GetKnownProperty("double-policy").valid());
   EXPECT_EQ(base::Value::Type::DOUBLE,
             schema->GetKnownProperty("double-policy").type());
@@ -510,7 +516,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ManagedStorage) {
   std::unique_ptr<base::DictionaryValue> policy =
       extensions::DictionaryBuilder()
           .Set("string-policy", "value")
+          .Set("string-enum-policy", "value-1")
           .Set("int-policy", -123)
+          .Set("int-enum-policy", 1)
           .Set("double-policy", 456e7)
           .Set("boolean-policy", true)
           .Set("list-policy", extensions::ListBuilder()

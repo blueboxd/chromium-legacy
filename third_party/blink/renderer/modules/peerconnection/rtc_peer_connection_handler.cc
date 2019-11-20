@@ -28,7 +28,6 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_rtc_data_channel_init.h"
-#include "third_party/blink/public/platform/web_rtc_ice_candidate.h"
 #include "third_party/blink/public/platform/web_rtc_legacy_stats.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/public/platform/web_rtc_session_description.h"
@@ -46,6 +45,7 @@
 #include "third_party/blink/renderer/platform/peerconnection/rtc_answer_options_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_event_log_output_sink.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_event_log_output_sink_proxy.h"
+#include "third_party/blink/renderer/platform/peerconnection/rtc_ice_candidate_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_offer_options_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_sender_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_request.h"
@@ -602,7 +602,7 @@ MediaStreamTrackMetrics::Kind MediaStreamTrackMetricsKind(
              : MediaStreamTrackMetrics::Kind::kVideo;
 }
 
-bool IsHostnameCandidate(const blink::WebRTCICECandidate& candidate) {
+bool IsHostnameCandidate(const RTCIceCandidatePlatform& candidate) {
   // Currently the legitimate hostname candidates have only the .local
   // top-level domain, which are gathered when the mDNS concealment of local
   // IPs is enabled.
@@ -1564,7 +1564,7 @@ webrtc::RTCErrorType RTCPeerConnectionHandler::SetConfiguration(
 
 void RTCPeerConnectionHandler::AddICECandidate(
     RTCVoidRequest* request,
-    scoped_refptr<WebRTCICECandidate> candidate) {
+    scoped_refptr<RTCIceCandidatePlatform> candidate) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::addICECandidate");
   std::unique_ptr<webrtc::IceCandidateInterface> native_candidate(
@@ -1578,8 +1578,8 @@ void RTCPeerConnectionHandler::AddICECandidate(
   auto callback_on_task_runner =
       [](base::WeakPtr<RTCPeerConnectionHandler> handler_weak_ptr,
          base::WeakPtr<PeerConnectionTracker> tracker_weak_ptr,
-         scoped_refptr<WebRTCICECandidate> candidate, webrtc::RTCError result,
-         RTCVoidRequest* request) {
+         scoped_refptr<RTCIceCandidatePlatform> candidate,
+         webrtc::RTCError result, RTCVoidRequest* request) {
         // Inform tracker (chrome://webrtc-internals).
         if (handler_weak_ptr && tracker_weak_ptr) {
           tracker_weak_ptr->TrackAddIceCandidate(
@@ -2415,8 +2415,8 @@ void RTCPeerConnectionHandler::OnIceCandidate(const String& sdp,
                                               int address_family) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnIceCandidateImpl");
-  scoped_refptr<blink::WebRTCICECandidate> web_candidate =
-      blink::WebRTCICECandidate::Create(sdp, sdp_mid, sdp_mline_index);
+  scoped_refptr<RTCIceCandidatePlatform> web_candidate =
+      RTCIceCandidatePlatform::Create(sdp, sdp_mid, sdp_mline_index);
   if (peer_connection_tracker_) {
     peer_connection_tracker_->TrackAddIceCandidate(
         this, web_candidate, PeerConnectionTracker::SOURCE_LOCAL, true);

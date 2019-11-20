@@ -42,8 +42,6 @@ CrSettingsBrowserTest.prototype = {
   /** @override */
   setUp: function() {
     PolymerTest.prototype.setUp.call(this);
-    // We aren't loading the main document.
-    this.accessibilityAuditConfig.ignoreSelectors('humanLangMissing', 'html');
 
     settings.ensureLazyLoaded();
   },

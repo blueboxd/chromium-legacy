@@ -4,34 +4,18 @@
       "name": "Scrolling background of LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "backgroundColor": "#FFFFFF"
-    },
-    {
-      "name": "HorizontalScrollbar",
-      "bounds": [100, 100],
+      "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
           "object": "HorizontalScrollbar",
-          "rect": [0, 85, 85, 15],
+          "rect": [8, 93, 85, 15],
           "reason": "scroll control"
         },
         {
           "object": "VerticalScrollbar",
-          "rect": [85, 0, 15, 85],
+          "rect": [93, 8, 15, 85],
           "reason": "scroll control"
         }
-      ],
-      "transform": 1
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [8, 8, 0, 1]
       ]
     }
   ]

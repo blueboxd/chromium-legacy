@@ -124,3 +124,4 @@ TestInterfaceOrLong NativeValueTraits<TestInterfaceOrLong>::NativeValue(
 }
 
 }  // namespace blink
+

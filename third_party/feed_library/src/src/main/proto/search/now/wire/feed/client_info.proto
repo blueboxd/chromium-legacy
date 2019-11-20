@@ -1,0 +1,64 @@
+// Copyright 2018 The Feed Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto2";
+
+package search.now.wire.feed;
+
+option optimize_for=LITE_RUNTIME;
+
+import "src/main/proto/search/now/wire/feed/display_info.proto";
+import "src/main/proto/search/now/wire/feed/version.proto";
+
+option java_package = "com.google.search.now.wire.feed";
+option java_outer_classname = "ClientInfoProto";
+
+// Information about the client performing the request similar to a user-agent
+// string in HTTP.
+// Next ID: 7.
+message ClientInfo {
+  enum PlatformType {
+    UNKNOWN_PLATFORM = 0;
+    ANDROID = 1;
+    IOS = 2;
+  }
+
+  enum AppType {
+    UNKNOWN_APP = 0;
+    GSA = 1;
+    CHROME = 2;
+    TEST_APP = 3;
+  }
+
+  // The type of OS that the client is running.
+  optional PlatformType platform_type = 1;
+
+  // The version of the OS that the client is running.
+  optional Version platform_version = 2;
+
+  // The type of client app.
+  optional AppType app_type = 3;
+
+  // The version of the client app.
+  optional Version app_version = 4;
+
+  // A string identifying the language and region preferences of the client.
+  // Follows the BCP 47 format such as "en-US" or "fr-CA"
+  optional string locale = 5;
+
+  // The information about the screen of the client. This is repeated because
+  // there are some devices that might have multiple display screens.
+  // (Ex foldable phones)
+  repeated DisplayInfo display_info = 6;
+}

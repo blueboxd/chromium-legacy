@@ -7,21 +7,6 @@
 #include "chromeos/login/login_state/login_state.h"
 #include "components/user_manager/user_manager.h"
 
-namespace {
-
-// Returns true if user is signed in to a non-guest profile.
-bool IsSignedInNonGuest() {
-  if (user_manager::UserManager::IsInitialized() &&
-      user_manager::UserManager::Get()->IsUserLoggedIn() &&
-      chromeos::LoginState::Get() &&
-      !chromeos::LoginState::Get()->IsGuestSessionUser()) {
-    return true;
-  }
-  return false;
-}
-
-} // namespace
-
 SigninStatusMetricsProviderChromeOS::SigninStatusMetricsProviderChromeOS() {
   SetCurrentSigninStatus();
 }
@@ -42,9 +27,9 @@ void SigninStatusMetricsProviderChromeOS::ProvideCurrentSessionData(
 }
 
 void SigninStatusMetricsProviderChromeOS::SetCurrentSigninStatus() {
-  if (IsSignedInNonGuest())
-    UpdateSigninStatus(ALL_PROFILES_SIGNED_IN);
-  UpdateSigninStatus(ALL_PROFILES_NOT_SIGNED_IN);
+  SigninStatus status = IsSignedInNonGuest() ? ALL_PROFILES_SIGNED_IN
+                                             : ALL_PROFILES_NOT_SIGNED_IN;
+  UpdateSigninStatus(status);
 }
 
 SigninStatusMetricsProviderBase::SigninStatus
@@ -66,3 +51,19 @@ SigninStatusMetricsProviderChromeOS::ComputeSigninStatusToUpload(
     return ERROR_GETTING_SIGNIN_STATUS;
   }
 }
+
+bool SigninStatusMetricsProviderChromeOS::IsSignedInNonGuest() {
+  if (guest_for_testing_.has_value())
+    return !guest_for_testing_.value();
+
+  return user_manager::UserManager::IsInitialized() &&
+         user_manager::UserManager::Get()->IsUserLoggedIn() &&
+         chromeos::LoginState::Get() &&
+         !chromeos::LoginState::Get()->IsGuestSessionUser();
+}
+
+void SigninStatusMetricsProviderChromeOS::SetGuestForTesting(bool is_guest) {
+  guest_for_testing_ = is_guest;
+}
+
+base::Optional<bool> SigninStatusMetricsProviderChromeOS::guest_for_testing_;

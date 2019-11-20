@@ -64,3 +64,15 @@
 # Allowing Proguard to change modifiers. This change shrinks the .dex size by
 # ~1%, and reduces the method count by ~4%.
 -allowaccessmodification
+
+# Workaround for crbug/1002847. Methods of BaseGmsClient are incorrectly
+# removed even though they are required for the derived class GmsClient
+# to correctly implement Api$Client.
+# TODO: remove once crbug/1002847 resolved.
+-keep public class com.google.android.gms.common.internal.BaseGmsClient {
+  public void disconnect();
+  public void dump(java.lang.String,java.io.FileDescriptor,java.io.PrintWriter,java.lang.String[]);
+  public int getMinApkVersion();
+  public boolean requiresSignIn();
+}
+

@@ -13,7 +13,10 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chromeos/components/account_manager/account_manager.h"
+#include "components/account_id/account_id.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+
+class Profile;
 
 namespace chromeos {
 namespace settings {
@@ -43,6 +46,10 @@ class AccountManagerUIHandler : public ::settings::SettingsPageUIHandler,
   void OnExtendedAccountInfoUpdated(const AccountInfo& info) override;
 
  private:
+  friend class AccountManagerUIHandlerTest;
+
+  void SetProfileForTesting(Profile* profile);
+
   // WebUI "getAccounts" message callback.
   void HandleGetAccounts(const base::ListValue* args);
 
@@ -66,8 +73,18 @@ class AccountManagerUIHandler : public ::settings::SettingsPageUIHandler,
       base::Value callback_id,
       const std::vector<AccountManager::Account>& stored_accounts);
 
+  // Returns secondary Gaia accounts from |stored_accounts| list. If the Device
+  // Account is a Gaia account, populates |device_account| with information
+  // about that account, otherwise does not modify |device_account|.
+  base::ListValue GetSecondaryGaiaAccounts(
+      const std::vector<AccountManager::Account>& stored_accounts,
+      const AccountId device_account_id,
+      base::DictionaryValue* device_account);
+
   // Refreshes the UI.
   void RefreshUI();
+
+  Profile* profile_ = nullptr;
 
   // A non-owning pointer to |AccountManager|.
   AccountManager* const account_manager_;
@@ -86,6 +103,7 @@ class AccountManagerUIHandler : public ::settings::SettingsPageUIHandler,
       identity_manager_observer_;
 
   base::WeakPtrFactory<AccountManagerUIHandler> weak_factory_{this};
+
   DISALLOW_COPY_AND_ASSIGN(AccountManagerUIHandler);
 };
 

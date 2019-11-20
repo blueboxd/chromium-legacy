@@ -27,7 +27,8 @@ GURL kVisitedUrl("http://visited_url.com/");
 // Fixed "now" to make tests more deterministic.
 char kNowString[] = "2018-06-11 15:41";
 
-// This needs to keep in sync with ActionType in third_party/feed/src/src/main/
+// This needs to keep in sync with ActionType in
+// third_party/feed_library/src/src/main/
 // java/com/google/android/libraries/feed/host/logging/ActionType.java.
 enum FeedActionType {
   UNKNOWN = -1,

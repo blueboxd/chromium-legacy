@@ -36,7 +36,9 @@ class SVGAnimateMotionElement final : public SVGAnimationElement {
   void UpdateAnimationPath();
 
  private:
-  bool HasValidTarget() const override;
+  bool HasValidAnimation() const override;
+  void WillChangeAnimationTarget() override;
+  void DidChangeAnimationTarget() override;
 
   void ParseAttribute(const AttributeModificationParams&) override;
 

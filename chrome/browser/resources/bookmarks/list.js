@@ -2,25 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Polymer, html, afterNextRender} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
+import './item.js';
+import './shared_style.js';
+import './strings.m.js';
+
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {isMac} from 'chrome://resources/js/cr.m.js';
-import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+import {ListPropertyUpdateBehavior} from 'chrome://resources/js/list_property_update_behavior.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
-import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
+import {afterNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 import {deselectItems, selectAll, selectItem, updateAnchor} from './actions.js';
 import {BrowserProxy} from './browser_proxy.js';
 import {CommandManager} from './command_manager.js';
 import {MenuSource} from './constants.js';
-import './item.js';
-import './shared_style.js';
 import {StoreClient} from './store_client.js';
-import './strings.m.js';
 import {BookmarksPageState} from './types.js';
 import {canReorderChildren, getDisplayedList} from './util.js';
-import {ListPropertyUpdateBehavior} from 'chrome://resources/js/list_property_update_behavior.m.js';
 
 Polymer({
   is: 'bookmarks-list',
@@ -180,8 +182,8 @@ Polymer({
   emptyListMessage_: function() {
     let emptyListMessage = 'noSearchResults';
     if (!this.searchTerm_) {
-      emptyListMessage = canReorderChildren(
-                             this.getState(), this.getState().selectedFolder) ?
+      emptyListMessage =
+          canReorderChildren(this.getState(), this.getState().selectedFolder) ?
           'emptyList' :
           'emptyUnmodifiableList';
     }
@@ -236,8 +238,7 @@ Polymer({
     }
 
     const leadId = toHighlight[0];
-    this.dispatch(
-        selectAll(toHighlight, this.getState(), leadId));
+    this.dispatch(selectAll(toHighlight, this.getState(), leadId));
 
     // Allow iron-list time to render additions to the list.
     this.async(function() {
@@ -274,8 +275,8 @@ Polymer({
       focusedIndex = list.items.length - 1;
       focusMoved = true;
     } else if (e.key == ' ' && cursorModifier) {
-      this.dispatch(selectItem(
-          this.displayedIds_[focusedIndex], this.getState(), {
+      this.dispatch(
+          selectItem(this.displayedIds_[focusedIndex], this.getState(), {
             clear: false,
             range: false,
             toggle: true,
@@ -289,13 +290,11 @@ Polymer({
       list.focusItem(focusedIndex);
 
       if (cursorModifier && !e.shiftKey) {
-        this.dispatch(
-            updateAnchor(this.displayedIds_[focusedIndex]));
+        this.dispatch(updateAnchor(this.displayedIds_[focusedIndex]));
       } else {
         // If shift-selecting with no anchor, use the old focus index.
         if (e.shiftKey && this.getState().selection.anchor == null) {
-          this.dispatch(updateAnchor(
-              this.displayedIds_[oldFocusedIndex]));
+          this.dispatch(updateAnchor(this.displayedIds_[oldFocusedIndex]));
         }
 
         // If the focus moved from something other than a Ctrl + move event,

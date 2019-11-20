@@ -5,11 +5,11 @@
 #ifndef SERVICES_TRACING_PUBLIC_CPP_PERFETTO_JAVA_HEAP_PROFILER_HPROF_BUFFER_ANDROID_H_
 #define SERVICES_TRACING_PUBLIC_CPP_PERFETTO_JAVA_HEAP_PROFILER_HPROF_BUFFER_ANDROID_H_
 
-#include <stddef.h>
-#include <cstdint>
+#include <string>
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "services/tracing/public/cpp/perfetto/java_heap_profiler/hprof_data_type_android.h"
 
 namespace tracing {
 
@@ -33,6 +33,15 @@ class COMPONENT_EXPORT(TRACING_CPP) HprofBuffer {
   // Skips |delta| bytes in the buffer.
   void Skip(uint32_t delta);
 
+  void SkipBytesByType(DataType type);
+  void SkipId();
+
+  // Returns a pointer to the current position of |data_| with offset included.
+  const char* DataPosition();
+  uint32_t SizeOfType(uint32_t index);
+  size_t offset() const { return offset_; }
+  unsigned object_id_size_in_bytes() const { return object_id_size_in_bytes_; }
+
  private:
   unsigned char GetByte();
 
@@ -42,11 +51,12 @@ class COMPONENT_EXPORT(TRACING_CPP) HprofBuffer {
   // Read in the next |num_bytes| as an uint64_t.
   uint64_t GetUInt64FromBytes(size_t num_bytes);
 
-  const unsigned char* const data_;
-  const size_t size_;
-  size_t data_position_ = 0;
   // The ID size in bytes of the objects in the hprof, valid values are 4 and 8.
   unsigned object_id_size_in_bytes_ = 4;
+
+  const unsigned char* const data_;  // Pointer to buffer.
+  const size_t size_;                // Total size of buffer.
+  size_t offset_ = 0;  // Index into buffer as we parse through contents.
 };
 
 }  // namespace tracing

@@ -226,7 +226,7 @@ void RecordActivityControlConsent(Profile* profile,
                                   bool opted_in) {
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
   DCHECK(identity_manager->HasPrimaryAccount());
-  const std::string account_id = identity_manager->GetPrimaryAccountId();
+  const CoreAccountId account_id = identity_manager->GetPrimaryAccountId();
 
   UserConsentTypes::AssistantActivityControlConsent consent;
   consent.set_ui_audit_key(ui_audit_key);

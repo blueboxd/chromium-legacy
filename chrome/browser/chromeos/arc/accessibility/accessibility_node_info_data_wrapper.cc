@@ -66,19 +66,23 @@ bool AccessibilityNodeInfoDataWrapper::IsFocused() const {
 }
 
 bool AccessibilityNodeInfoDataWrapper::CanBeAccessibilityFocused() const {
-  // In Chrome, this means:
-  // a node with a non-generic role and:
-  // actionable nodes or top level scrollables with a name
+  // An important node with a non-generic role and:
+  // - actionable nodes
+  // - top level scrollables with a name
+  // - interesting leaf nodes
   ui::AXNodeData data;
   PopulateAXRole(&data);
+  bool important = GetProperty(AXBooleanProperty::IMPORTANCE) ||
+                   IsFocusableNativeWeb(data.role);
   bool non_generic_role = data.role != ax::mojom::Role::kGenericContainer &&
                           data.role != ax::mojom::Role::kGroup;
-  bool actionable = GetProperty(AXBooleanProperty::CLICKABLE) ||
+  bool actionable = is_clickable_leaf_ ||
                     GetProperty(AXBooleanProperty::FOCUSABLE) ||
                     GetProperty(AXBooleanProperty::CHECKABLE);
   bool top_level_scrollable = HasProperty(AXStringProperty::TEXT) &&
                               GetProperty(AXBooleanProperty::SCROLLABLE);
-  return non_generic_role && (actionable || top_level_scrollable);
+  return important && non_generic_role &&
+         (actionable || top_level_scrollable || IsInterestingLeaf());
 }
 
 void AccessibilityNodeInfoDataWrapper::PopulateAXRole(

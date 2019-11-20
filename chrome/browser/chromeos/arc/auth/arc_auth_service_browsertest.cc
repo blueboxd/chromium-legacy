@@ -332,12 +332,12 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
         ->MakeAccountAvailable(email);
   }
 
-  void SetInvalidRefreshTokenForAccount(const std::string& account_id) {
+  void SetInvalidRefreshTokenForAccount(const CoreAccountId& account_id) {
     identity_test_environment_adaptor_->identity_test_env()
         ->SetInvalidRefreshTokenForAccount(account_id);
   }
 
-  void SetRefreshTokenForAccount(const std::string& account_id) {
+  void SetRefreshTokenForAccount(const CoreAccountId& account_id) {
     identity_test_environment_adaptor_->identity_test_env()
         ->SetRefreshTokenForAccount(account_id);
   }

@@ -296,8 +296,10 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
                 IntentUtils.safeGetIntExtra(intent, EXTRA_UI_TYPE, CustomTabsUiType.DEFAULT);
         mUiType = verifiedUiType(requestedUiType);
 
-        // Currently incognito is only supported for payments.
-        mIsIncognito = isIncognitoForPaymentsFlow(intent);
+        // TODO(https://crbug.com/1023759): WARNING: Current implementation uses
+        // a common off-the-record profile with browser's incognito mode and is
+        // not privacy-safe.
+        mIsIncognito = isValidIncognitoIntent(intent);
 
         CustomTabColorSchemeParams params = getColorSchemeParams(intent, colorScheme);
         retrieveCustomButtons(intent, context);
@@ -450,11 +452,26 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
         }
     }
 
-    private boolean isIncognitoForPaymentsFlow(Intent intent) {
-        boolean incognitoRequested = IntentUtils.safeGetBooleanExtra(
-                intent, IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false);
-        return incognitoRequested && isTrustedIntent() && isOpenedByChrome()
+    // TODO(https://crbug.com/1023759): Remove this function and enable
+    // incognito CCT request for all apps.
+    private boolean isValidIncognitoIntent(Intent intent) {
+        if (!isIncognitoRequested(intent)) return false;
+        // Incognito requests for payments flow are supported without
+        // INCOGNITO_CCT flag as an exceptional case that can use Chrome
+        // incognito profile.
+        if (isForPaymentsFlow(intent)) return true;
+        assert ChromeFeatureList.isInitialized();
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_INCOGNITO);
+    }
+
+    private boolean isForPaymentsFlow(Intent intent) {
+        return isIncognitoRequested(intent) && isTrustedIntent() && isOpenedByChrome()
                 && isForPaymentRequest();
+    }
+
+    private static boolean isIncognitoRequested(Intent intent) {
+        return IntentUtils.safeGetBooleanExtra(
+                intent, IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false);
     }
 
     /**

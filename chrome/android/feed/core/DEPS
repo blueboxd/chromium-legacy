@@ -5,5 +5,5 @@ include_rules = [
   "+components/feature_engagement",
   "+components/feed",
   "+content/public/android/java/src/org/chromium/content_public",
-  "+third_party/feed"
+  "+third_party/feed_library"
 ]

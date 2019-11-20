@@ -142,6 +142,14 @@ function testFilesDisplayPanelErrorText() {
   // Add a panel item to the display panel container.
   const panelItem = displayPanel.addPanelItem('testpanel');
 
+  /** @type {!HTMLElement} */
+  const text = assert(panelItem.shadowRoot.querySelector('.xf-panel-text'));
+
+  // To work with screen readers, the text element containing
+  // parent element should have aria role 'alert'.
+  const textParent = text.parentElement;
+  assertEquals('alert', textParent.getAttribute('role'));
+
   // Change the primary and secondary text on the panel item.
   panelItem.primaryText = 'foo';
   panelItem.secondaryText = 'bar';

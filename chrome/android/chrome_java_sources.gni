@@ -369,6 +369,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/customtabs/CustomTabActivity.java",
   "java/src/org/chromium/chrome/browser/customtabs/CustomTabActivityClientConnectionKeeper.java",
   "java/src/org/chromium/chrome/browser/customtabs/CustomTabActivityLifecycleUmaTracker.java",
+  "java/src/org/chromium/chrome/browser/customtabs/CustomTabIncognitoManager.java",
   "java/src/org/chromium/chrome/browser/customtabs/CustomTabAppMenuPropertiesDelegate.java",
   "java/src/org/chromium/chrome/browser/customtabs/CustomTabBottomBarDelegate.java",
   "java/src/org/chromium/chrome/browser/customtabs/CustomTabCompositorContentInitializer.java",

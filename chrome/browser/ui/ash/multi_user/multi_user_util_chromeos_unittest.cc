@@ -53,21 +53,21 @@ class MultiUserUtilTest : public ChromeAshTestBase {
   }
 
   // Add a user to the identity manager with given gaia_id and email.
-  std::string AddUserAndSignIn(const std::string& email) {
+  CoreAccountId AddUserAndSignIn(const std::string& email) {
     AccountInfo account_info =
         identity_test_env()->MakePrimaryAccountAvailable(email);
     fake_user_manager_->AddUser(
-        multi_user_util::GetAccountIdFromEmail(account_info.account_id));
+        multi_user_util::GetAccountIdFromEmail(account_info.email));
     fake_user_manager_->UserLoggedIn(
-        multi_user_util::GetAccountIdFromEmail(account_info.account_id),
+        multi_user_util::GetAccountIdFromEmail(account_info.email),
         chromeos::ProfileHelper::GetUserIdHashByUserIdForTesting(
-            account_info.account_id),
+            account_info.email),
         false /* browser_restart */, false /* is_child */);
 
     return account_info.account_id;
   }
 
-  void SimulateTokenRevoked(const std::string& account_id) {
+  void SimulateTokenRevoked(const CoreAccountId& account_id) {
     identity_test_env()->RemoveRefreshTokenForAccount(account_id);
   }
 
@@ -92,7 +92,7 @@ class MultiUserUtilTest : public ChromeAshTestBase {
 // valid profile is provided, even if this profile's refresh token has been
 // revoked. (On Chrome OS we don't force to end the session in this case.)
 TEST_F(MultiUserUtilTest, ReturnValidAccountIdIfTokenRevoked) {
-  std::string account_id = AddUserAndSignIn(kTestAccountEmail);
+  CoreAccountId account_id = AddUserAndSignIn(kTestAccountEmail);
   signin::IdentityManager* identity_manager =
       identity_test_env()->identity_manager();
 

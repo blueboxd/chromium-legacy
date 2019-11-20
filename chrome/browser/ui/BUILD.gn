@@ -2962,8 +2962,6 @@ jumbo_static_library("ui") {
       "views/native_file_system/native_file_system_ui_helpers.h",
       "views/native_file_system/native_file_system_usage_bubble_view.cc",
       "views/native_file_system/native_file_system_usage_bubble_view.h",
-      "views/omnibox/omnibox_color_mixer.cc",
-      "views/omnibox/omnibox_color_mixer.h",
       "views/omnibox/omnibox_match_cell_view.cc",
       "views/omnibox/omnibox_match_cell_view.h",
       "views/omnibox/omnibox_popup_contents_view.cc",
@@ -3287,6 +3285,7 @@ jumbo_static_library("ui") {
       "webauthn/transport_utils.h",
     ]
     deps += [
+      "//chrome/browser/ui/color:mixers",
       "//chrome/browser/ui/views",
       "//components/constrained_window",
       "//components/media_message_center",

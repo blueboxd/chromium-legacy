@@ -130,7 +130,8 @@ void ArcPlayStoreEnabledPreferenceHandler::OnPreferenceChanged() {
       // of the conditional below.
       // DCHECK(identity_manager->HasPrimaryAccount());
       if (identity_manager->HasPrimaryAccount()) {
-        const std::string account_id = identity_manager->GetPrimaryAccountId();
+        const CoreAccountId account_id =
+            identity_manager->GetPrimaryAccountId();
 
         UserConsentTypes::ArcPlayTermsOfServiceConsent play_consent;
         play_consent.set_status(UserConsentTypes::NOT_GIVEN);

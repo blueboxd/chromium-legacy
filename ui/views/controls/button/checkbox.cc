@@ -185,8 +185,8 @@ const gfx::VectorIcon& Checkbox::GetVectorIcon() const {
 SkColor Checkbox::GetIconImageColor(int icon_state) const {
   const SkColor active_color = GetNativeTheme()->GetSystemColor(
       (icon_state & IconState::CHECKED)
-          ? ui::NativeTheme::kColorId_ProminentButtonColor
-          : ui::NativeTheme::kColorId_ButtonEnabledColor);
+          ? ui::NativeTheme::kColorId_ButtonEnabledColor
+          : ui::NativeTheme::kColorId_ButtonUncheckedColor);
   return (icon_state & IconState::ENABLED)
              ? active_color
              : color_utils::BlendTowardMaxContrast(active_color,

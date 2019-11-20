@@ -1205,7 +1205,7 @@ void SVGSMILElement::WillChangeAnimationTarget() {
     return;
   DCHECK(time_container_);
   DCHECK(target_element_);
-  time_container_->Unschedule(this, target_element_, attribute_name_);
+  time_container_->Unschedule(this);
   RemovedFromTimeContainer();
   is_scheduled_ = false;
 }
@@ -1214,9 +1214,14 @@ void SVGSMILElement::DidChangeAnimationTarget() {
   DCHECK(!is_scheduled_);
   if (!time_container_ || !HasValidTarget())
     return;
-  time_container_->Schedule(this, target_element_, attribute_name_);
+  time_container_->Schedule(this);
   AddedToTimeContainer();
   is_scheduled_ = true;
+}
+
+void SVGSMILElement::QueueDiscard() {
+  if (time_container_)
+    time_container_->QueueDiscard(this);
 }
 
 void SVGSMILElement::Trace(blink::Visitor* visitor) {

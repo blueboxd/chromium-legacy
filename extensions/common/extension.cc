@@ -417,11 +417,11 @@ const HashedExtensionId& Extension::hashed_id() const {
   return manifest_->hashed_id();
 }
 
-const std::string Extension::VersionString() const {
+std::string Extension::VersionString() const {
   return version_.GetString();
 }
 
-const std::string Extension::DifferentialFingerprint() const {
+std::string Extension::DifferentialFingerprint() const {
   std::string fingerprint;
   // We currently support two sources of differential fingerprints:
   // server-provided and synthesized. Fingerprints are of the format V.FP, where
@@ -435,7 +435,7 @@ const std::string Extension::DifferentialFingerprint() const {
              : "2." + VersionString();
 }
 
-const std::string Extension::GetVersionForDisplay() const {
+std::string Extension::GetVersionForDisplay() const {
   if (version_name_.size() > 0)
     return version_name_;
   return VersionString();

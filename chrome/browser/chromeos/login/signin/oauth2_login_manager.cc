@@ -148,8 +148,8 @@ signin::IdentityManager* OAuth2LoginManager::GetIdentityManager() {
   return IdentityManagerFactory::GetForProfile(user_profile_);
 }
 
-std::string OAuth2LoginManager::GetPrimaryAccountId() {
-  const std::string primary_account_id =
+CoreAccountId OAuth2LoginManager::GetPrimaryAccountId() {
+  const CoreAccountId primary_account_id =
       GetIdentityManager()->GetPrimaryAccountId();
   LOG_IF(ERROR, primary_account_id.empty()) << "Primary account id is empty.";
   return primary_account_id;
@@ -215,14 +215,14 @@ void OAuth2LoginManager::OnListAccountsSuccess(
     const std::vector<gaia::ListedAccount>& accounts) {
   MergeVerificationOutcome outcome = POST_MERGE_SUCCESS;
   // Let's analyze which accounts we see logged in here:
-  std::string user_email = gaia::CanonicalizeEmail(GetPrimaryAccountId());
+  CoreAccountId user_account_id = GetPrimaryAccountId();
   if (!accounts.empty()) {
     bool found = false;
     bool first = true;
     for (std::vector<gaia::ListedAccount>::const_iterator iter =
              accounts.begin();
          iter != accounts.end(); ++iter) {
-      if (iter->email == user_email) {
+      if (iter->id == user_account_id) {
         found = iter->valid;
         break;
       }

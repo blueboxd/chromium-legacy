@@ -437,7 +437,10 @@ TEST_F(DiskCachePerfTest, BlockfileHashes) {
   base::ElapsedTimer timer;
   for (int i = 0; i < 300000; i++) {
     std::string key = GenerateKey(true);
-    base::Hash(key);
+    // TODO(dcheng): It's unclear if this is sufficient to keep a sufficiently
+    // smart optimizer from simply discarding the function call if it realizes
+    // there are no side effects.
+    base::PersistentHash(key);
   }
   reporter.AddResult(kMetricCacheKeysHashTimeMs,
                      timer.Elapsed().InMillisecondsF());

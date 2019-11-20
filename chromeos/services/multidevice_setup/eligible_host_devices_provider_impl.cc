@@ -133,14 +133,10 @@ void EligibleHostDevicesProviderImpl::OnGetDevicesActivityStatus(
       eligible_active_devices_from_last_sync_.end(),
       [&id_to_activity_status_map](const auto& first_device,
                                    const auto& second_device) {
-        // This is actually wrong; we should be using the instance ID here and
-        // not the public key since that's the ID DeviceActivityStatus uses.
-        // TODO(themaxli): update this when instance ID is available on
-        // RemoteDeviceRef.
         auto it1 = id_to_activity_status_map.find(
-            first_device.remote_device.public_key());
+            first_device.remote_device.instance_id());
         auto it2 = id_to_activity_status_map.find(
-            second_device.remote_device.public_key());
+            second_device.remote_device.instance_id());
         if (it1 == id_to_activity_status_map.end() &&
             it2 == id_to_activity_status_map.end()) {
           return first_device.remote_device.last_update_time_millis() >
@@ -186,7 +182,7 @@ void EligibleHostDevicesProviderImpl::OnGetDevicesActivityStatus(
 
   for (auto& host_device : eligible_active_devices_from_last_sync_) {
     auto it =
-        id_to_activity_status_map.find(host_device.remote_device.public_key());
+        id_to_activity_status_map.find(host_device.remote_device.instance_id());
     if (it == id_to_activity_status_map.end()) {
       continue;
     }

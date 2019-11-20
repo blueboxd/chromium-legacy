@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/webtransport/quic_transport_connector.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -149,11 +149,9 @@ void QuicTransport::Init(ExceptionState& exception_state) {
   // disallowed. Must be done before shipping.
 
   mojo::Remote<mojom::blink::QuicTransportConnector> connector;
-  auto* interface_provider = execution_context->GetInterfaceProvider();
-
-  DCHECK(interface_provider);
-  interface_provider->GetInterface(connector.BindNewPipeAndPassReceiver(
-      execution_context->GetTaskRunner(TaskType::kNetworking)));
+  execution_context->GetBrowserInterfaceBroker().GetInterface(
+      connector.BindNewPipeAndPassReceiver(
+          execution_context->GetTaskRunner(TaskType::kNetworking)));
 
   connector->Connect(
       url_, handshake_client_receiver_.BindNewPipeAndPassRemote(

@@ -47,6 +47,12 @@ TEST_F(PackExtensionTest, Extension) {
                                               .AppendASCII("basics")));
 }
 
+TEST_F(PackExtensionTest, ExtensionWithManagedStorage) {
+  ASSERT_TRUE(TestPackExtension(test_data_dir_.AppendASCII("api_test")
+                                    .AppendASCII("settings")
+                                    .AppendASCII("managed_storage")));
+}
+
 TEST_F(PackExtensionTest, PackagedApp) {
   ASSERT_TRUE(TestPackExtension(test_data_dir_.AppendASCII("packaged_app")));
 }

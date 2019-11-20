@@ -35,11 +35,11 @@ class SVGAnimateTransformElement final : public SVGAnimateElement {
   explicit SVGAnimateTransformElement(Document&);
 
  private:
-  bool HasValidTarget() const override;
+  bool HasValidAnimation() const override;
+  void ResolveTargetProperty() override;
 
   void ParseAttribute(const AttributeModificationParams&) override;
 
-  void ResolveTargetProperty() override;
   SVGPropertyBase* CreatePropertyForAnimation(const String&) const override;
 
   SVGTransformType transform_type_;

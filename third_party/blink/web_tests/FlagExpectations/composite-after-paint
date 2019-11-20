@@ -2,6 +2,8 @@
 # See: https://docs.google.com/document/d/1QCM912Dr6u38DqyQqd7pxQxDy8FFOoWMMDq7uAXqKdA/view
 Bug(none) http/tests/devtools/tracing/ [ Skip ]
 
+Bug(none) virtual/composite-after-paint/ [ Skip ]
+
 Bug(none) virtual/gpu/fast/canvas/ [ Skip ]
 Bug(none) virtual/layout_ng_block_frag/ [ Skip ]
 Bug(none) virtual/layout_ng_fieldset/ [ Skip ]
@@ -18,6 +20,9 @@ Bug(none) virtual/threaded/printing/ [ Skip ]
 Bug(none) virtual/threaded/http/tests/devtools/tracing/ [ Skip ]
 Bug(none) virtual/controls-refresh/ [ Skip ]
 Bug(none) virtual/controls-refresh-hc/ [ Skip ]
+
+# Can't rebaseline because the file path is too long.
+Bug(none) virtual/compositor_threaded_scrollbar_scrolling/paint/invalidation/scroll/sticky/invalidate-after-composited-scroll-with-sticky.html [ Skip ]
 
 # Fail before CompositeAfterPaint but pass with it.
 crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html [ Pass ]
@@ -86,15 +91,12 @@ Bug(none) external/wpt/portals/portals-rendering.html [ Failure ]
 Bug(none) fast/css/outline-offset-large.html [ Failure ]
 Bug(none) fast/forms/validation-bubble-device-emulation-change.html [ Failure ]
 Bug(none) fast/webgl/pixelated.html [ Failure ]
-Bug(none) images/color-profile-svg-foreign-object.html [ Failure ]
 Bug(none) fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ Failure ]
-Bug(none) fragmentation/outline-crossing-columns.html [ Crash ]
 Bug(none) fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure ]
 Bug(none) http/tests/devtools/layers/layers-3d-view-after-update.js [ Failure ]
 Bug(none) http/tests/input/discard-events-to-unstable-iframe.html [ Failure ]
 Bug(none) http/tests/misc/destroy-middle-click-locked-target-crash.html [ Timeout ]
 Bug(none) http/tests/misc/synthetic-gesture-initiated-in-cross-origin-frame.html [ Failure ]
-Bug(none) paint/invalidation/window-resize/window-resize-child-background-image-fixed-centered.html [ Pass Failure ]
 Bug(none) printing/fixed-positioned-headers-and-footers-absolute-covering-some-pages.html [ Failure ]
 Bug(none) printing/fixed-positioned-headers-and-footers-larger-than-page.html [ Failure ]
 Bug(none) printing/offscreencanvas-2d-printing.html [ Failure ]
@@ -112,12 +114,6 @@ Bug(none) virtual/threaded-prefer-compositing/fast/scrolling/no-hover-during-smo
 crbug.com/959936 http/tests/images/image-decode-in-frame.html [ Failure ]
 
 crbug.com/907601 virtual/threaded-prefer-compositing/fast/scrolling/events/scrollend-event-fired-after-snap.html [ Skip ]
-
-# Need to create layers for fully invisible content for hit testing.
-crbug.com/937573 virtual/threaded-no-composited-antialiasing/animations/invisible-composited-animations-prevent-scroll.html [ Failure ]
-
-# Scrolling with the mouse wheel does not work.
-crbug.com/979352 virtual/threaded-prefer-compositing/fast/scrolling/non-composited-scroller-in-sticky.html [ Failure ]
 
 # Less invalidations or different invalidations without pixel failures.
 # Some might be good. Some might be under-invalidations for which under-invalidation
@@ -175,10 +171,8 @@ Bug(none) paint/invalidation/compositing/overlap-test-with-filter.html [ Failure
 Bug(none) paint/invalidation/compositing/should-not-repaint-composited-descendants.html [ Failure ]
 
 # Subpixel or 1-pixel differences. May be real subpixel handling bugs.
-Bug(none) fast/forms/text/input-appearance-autocomplete-very-long-value.html [ Failure ]
 Bug(none) paint/invalidation/scroll/scroll-in-transformed-layer.html [ Failure ]
 Bug(none) paint/invalidation/scroll/scroll-with-transformed-parent-layer.html [ Failure ]
-Bug(none) external/wpt/css/css-position/hypothetical-box-scroll-parent.html [ Failure ]
 Bug(none) external/wpt/svg/render/reftests/blending-001.svg [ Failure ]
 Bug(none) external/wpt/svg/render/reftests/blending-002.svg [ Failure ]
 
@@ -187,6 +181,9 @@ Bug(none) compositing/overflow/ancestor-with-clip-path.html [ Failure ]
 Bug(none) fast/multicol/mixed-opacity-fixed-test.html [ Failure ]
 Bug(none) fast/multicol/mixed-positioning-stacking-order.html [ Failure ]
 Bug(none) fullscreen/rendering/backdrop-object.html [ Failure ]
+Bug(none) external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-clip-003.html [ Failure ]
+Bug(none) external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-clip-004.html [ Failure ]
+Bug(none) external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-paint-clip-005.html [ Failure ]
 
 # Text failures due to layerization differences
 Bug(none) compositing/overflow/scroller-with-border-radius.html [ Failure ]
@@ -199,94 +196,17 @@ Bug(none) virtual/threaded-prefer-compositing/fast/scroll-behavior/first-scroll-
 Bug(none) virtual/threaded/compositing/visibility/layer-visible-content.html [ Failure ]
 Bug(none) virtual/threaded/synthetic_gestures/smooth-scroll-tiny-delta.html [ Failure Timeout Pass ]
 
-# Failures due to an extra layer caused by a scroll hit test layer. Most of
-# these should pass once compositing reasons are correct in CompositeAfterPaint.
-crbug.com/738613 compositing/dont-composite-select-elements.html [ Failure ]
-crbug.com/738613 compositing/dont-composite-text-input-elements.html [ Failure ]
-crbug.com/738613 paint/invalidation/table/table-overflow-auto-in-overflow-auto-scrolled.html [ Failure ]
-crbug.com/738613 paint/invalidation/table/table-overflow-scroll-in-overflow-scroll-scrolled.html [ Failure ]
-crbug.com/738613 paint/invalidation/scroll/resize-scrollable-iframe.html [ Failure ]
-crbug.com/738613 paint/invalidation/scroll/caret-invalidation-in-overflow-scroll.html [ Failure ]
-crbug.com/738613 paint/invalidation/forms/textarea-caret.html [ Failure ]
-crbug.com/738613 paint/invalidation/scroll/overflow-auto-in-overflow-auto-scrolled.html [ Failure ]
-crbug.com/738613 paint/invalidation/scroll/overflow-scroll-in-overflow-scroll-scrolled.html [ Failure ]
-
-# Unlike SPV1, there is no raster invalidation when a scrollbar layer disappears
-# because the scrollbar layer is completely composited. This will match the
-# SPV1 result once compositing reasons no longer cause the scrollbar to be
-# composited.
-crbug.com/738613 paint/invalidation/scroll/destroy-overlay-scrollbar.html [ Failure ]
-crbug.com/738613 paint/invalidation/scroll/destroy-scrollbar.html [ Failure ]
-
-# Failures due to subpixel differences caused by scroll compositing differences.
-
-# Different layer tree about scrolling layer. Some may also have wrong invalidations.
-crbug.com/738613 compositing/overflow/composited-scroll-overlap-test.html [ Failure ]
-crbug.com/738613 paint/invalidation/scroll/caret-with-composited-scroll.html [ Failure ]
-crbug.com/738613 paint/invalidation/overflow/composited-overflow-with-local-background.html [ Failure ]
-crbug.com/738613 paint/invalidation/compositing/new-stacking-context.html [ Failure ]
-
-# Needs fully composited scrollbar support: needs investigation on unwanted squashing into scrollbars. 
 crbug.com/931486 compositing/overflow/overlap-testing-ancestor-scroller-high-dpi.html [ Failure ]
-crbug.com/931486 compositing/layer-creation/fixed-position-in-fixed-overflow.html [ Failure ]
-crbug.com/931486 compositing/layer-creation/overflow-scroll-overlap.html [ Failure ]
-crbug.com/931486 compositing/rtl/rtl-iframe-absolute-overflow.html [ Failure ]
-crbug.com/931486 compositing/rtl/rtl-iframe-fixed-overflow.html [ Failure ]
 crbug.com/931486 compositing/squashing/squash-above-fixed-1.html [ Failure ]
 crbug.com/931486 compositing/squashing/squash-above-fixed-3.html [ Failure ]
 crbug.com/931486 paint/invalidation/compositing/pointer-events-composited-scrolling.html [ Failure ]
 crbug.com/931486 paint/invalidation/compositing/scrolling-neg-z-index-descendants.html [ Failure ]
-crbug.com/931486 paint/invalidation/compositing/text-color-change.html [ Failure ]
-crbug.com/931486 paint/invalidation/compositing/text-match-highlight.html [ Failure ]
-crbug.com/931486 paint/invalidation/compositing/updating-scrolling-container-and-content.html [ Failure ]
-crbug.com/931486 paint/invalidation/line-flow-with-floats-1.html [ Failure ]
-crbug.com/931486 paint/invalidation/line-flow-with-floats-10.html [ Failure ]
-crbug.com/931486 paint/invalidation/line-flow-with-floats-2.html [ Failure ]
-crbug.com/931486 paint/invalidation/line-flow-with-floats-3.html [ Failure ]
-crbug.com/931486 paint/invalidation/line-flow-with-floats-4.html [ Failure ]
-crbug.com/931486 paint/invalidation/line-flow-with-floats-5.html [ Failure ]
-crbug.com/931486 paint/invalidation/line-flow-with-floats-6.html [ Failure ]
-crbug.com/931486 paint/invalidation/line-flow-with-floats-7.html [ Failure ]
-crbug.com/931486 paint/invalidation/line-flow-with-floats-8.html [ Failure ]
-crbug.com/931486 paint/invalidation/line-flow-with-floats-9.html [ Failure ]
 crbug.com/931486 paint/invalidation/flexbox/scrollbars-changed.html [ Failure ]
 crbug.com/931486 paint/invalidation/scroll/composited-iframe-scroll-repaint.html [ Failure ]
-crbug.com/931486 paint/invalidation/scroll/overflow-scroll-composited-non-stacking-child.html [ Failure ]
-crbug.com/931486 paint/invalidation/scroll/overflow-scroll-delete.html [ Failure ]
-crbug.com/931486 paint/invalidation/scroll/scrollbar-ancestor-clip-change.html [ Failure ]
 crbug.com/931486 paint/invalidation/scroll/scrollbar-damage-and-full-viewport-repaint.html [ Failure ]
-crbug.com/931486 paint/invalidation/text-match-document-change.html [ Failure ]
-crbug.com/931486 paint/invalidation/table/scroll-relative-table-inside-table-cell.html [ Failure ]
-crbug.com/931486 paint/invalidation/table/table-shrink-row-repaint.html [ Failure ]
-
-# Needs raster invalidation tracking for composited scrollbar layers.
-crbug.com/931486 paint/invalidation/invalidation-after-opacity-change-subtree.html [ Failure ]
-crbug.com/931486 paint/invalidation/requestAnimation-translation-leave-traces.html [ Failure ]
-crbug.com/931486 paint/invalidation/compositing/scrolling-without-painting.html [ Failure ]
-crbug.com/931486 paint/invalidation/compositing/should-not-paint-outline-on-foreground-layer.html [ Failure ]
-crbug.com/931486 paint/invalidation/overflow/composited-overflow-local-background-removed.html [ Failure ]
-crbug.com/931486 paint/invalidation/position/abspos-shift-image-incorrect-repaint.html [ Failure ]
-crbug.com/931486 paint/invalidation/position/shift-relative-positioned-container-with-image-addition.html [ Failure ]
-crbug.com/931486 paint/invalidation/position/shift-relative-positioned-container-with-image-removal.html [ Failure ]
-crbug.com/931486 paint/invalidation/scroll/iframe-scrollbar-hover.html [ Failure ]
-crbug.com/931486 paint/invalidation/scroll/invalidate-after-composited-scroll-of-window.html [ Failure ]
-crbug.com/931486 paint/invalidation/scroll/overflow-scroll-local-background-text-color-change.html [ Failure ]
-crbug.com/931486 paint/invalidation/scroll/sticky/invalidate-after-composited-scroll-with-sticky.html [ Failure ]
-crbug.com/931486 paint/invalidation/svg/scrolling-embedded-svg-file-image-repaint-problem.html [ Failure ]
-crbug.com/931486 paint/invalidation/table/scroll-inside-table-cell.html [ Failure ]
-crbug.com/931486 virtual/compositor_threaded_scrollbar_scrolling/paint/invalidation/scroll/sticky/invalidate-after-composited-scroll-with-sticky.html [ Failure ]
-
-# Other failures about composited scrollbars.
-crbug.com/931486 paint/invalidation/position/absolute-position-moved.html [ Failure ]
-crbug.com/931486 scrollbars/auto-scrollbar-fades-out.html [ Failure ]
-crbug.com/931486 scrollbars/hidden-scrollbars-invisible.html [ Failure ]
 crbug.com/931486 scrollbars/overlay-scrollbars-within-overflow-scroll.html [ Failure ]
 crbug.com/931486 scrollbars/reconstruct-coordinated-scrollbar.html [ Failure ]
 crbug.com/931486 virtual/prefer_compositing_to_lcd_text/scrollbars/reconstruct-coordinated-scrollbar.html [ Failure ]
-
-crbug.com/919789 paint/invalidation/window-resize/window-resize-background-image-fixed-scrolling-contents.html [ Pass Timeout Failure ]
-crbug.com/919789 paint/invalidation/window-resize/window-resize-child-background-image-fixed-tiled.html [ Pass Timeout Failure ]
-crbug.com/919789 paint/invalidation/window-resize/window-resize-vertical-writing-mode.html [ Pass Timeout Failure ]
 
 # See comment regarding this test in NeverFixTests. It also fails for other
 # reasons, in particular that the composited layerization algorithm provides
@@ -316,8 +236,6 @@ crbug.com/923429 virtual/scalefactor200/css3/filters/backdrop-filter-plus-mask-l
 
 crbug.com/940033 virtual/threaded-prefer-compositing/fast/scrolling/wheel-scrolling-over-custom-scrollbar.html [ Pass Failure ]
 
-crbug.com/979389 ietestcenter/css3/bordersbackgrounds/background-attachment-local-scrolling.htm [ Failure ]
-
 # Crash during PictureLayer::GetPicture() when DisplayItemList is finished twice.
 Bug(none) http/tests/devtools/layers/layer-canvas-log.js [ Crash ]
 Bug(none) http/tests/devtools/layers/layer-replay-scale.js [ Crash ]
@@ -342,23 +260,6 @@ crbug.com/979369 external/wpt/css/css-masking/clip-path-svg-content/mask-nested-
 crbug.com/979369 external/wpt/css/css-masking/clip-path-svg-content/mask-nested-clip-path-panning-001.svg [ Failure ]
 crbug.com/979369 svg/clip-path/deep-nested-clip-in-mask.svg [ Failure ]
 
-# CompositeAfterPaint incorrectly composites all scrollers, and these do not
-# produce non-fast scrollable regions, so there are differences in the non-fast
-# regions compared to pre-CompositeAfterPaint.
-crbug.com/980290 scrollingcoordinator/donot-compute-non-fast-scrollable-region-for-hidden-frames.html [ Failure ]
-crbug.com/980290 scrollingcoordinator/non-fast-scrollable-region-nested.html [ Failure ]
-crbug.com/980290 scrollingcoordinator/non-fast-scrollable-region-scaled-iframe.html [ Failure ]
-crbug.com/980290 scrollingcoordinator/non-fast-scrollable-region-transformed-iframe.html [ Failure ]
-crbug.com/980290 scrollingcoordinator/non-fast-scrollable-transform-changed.html [ Failure ]
-crbug.com/980290 scrollingcoordinator/non-fast-scrollable-visibility-change.html [ Failure ]
-
 # These failures need to be triaged and are being added to unblock the CQ (see: https://crbug.com/966981).
-crbug.com/966981 virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-disabled-frame-no-scroll-manual.tentative.html [ Failure ]
 crbug.com/966981 virtual/threaded/fast/events/pinch/gesture-pinch-zoom-scroll-bubble.html [ Timeout ]
 crbug.com/966981 virtual/threaded-prefer-compositing/fast/scroll-behavior/overscroll-behavior.html [ Failure ]
-crbug.com/966981 virtual/threaded-prefer-compositing/fast/scrolling/non-composited-scroller-in-position-fixed-scrolled-document.html [ Failure ]
-crbug.com/966981 virtual/threaded-prefer-compositing/fast/scrolling/non-composited-scroller-in-position-fixed-scroller-scrolled-document.html [ Failure ]
-crbug.com/966981 virtual/threaded-prefer-compositing/fast/scrolling/non-composited-scroller-in-root-scroller.html [ Failure ]
-
-# We need the inner viewport scroll layer.
-crbug.com/1015625 inspector-protocol/emulation/device-emulation-restore.js [ Crash ]

@@ -70,18 +70,13 @@ public final class Profile {
      * @param toMillis Defines the end (in milliseconds since epoch) of the time range to clear.
      * For clearing all data prefer using {@link Long#MAX_VALUE} to
      * {@link System.currentTimeMillis()} to take into account possible system clock changes.
-     * @return {@link ListenableResult} into which a "null" will be supplied when clearing is
-     * finished.
+     * @param callback {@link Runnable} which is run when clearing is finished.
      */
-    @NonNull
-    public ListenableResult<Void> clearBrowsingData(
-            @NonNull @BrowsingDataType int[] dataTypes, long fromMillis, long toMillis) {
+    public void clearBrowsingData(@NonNull @BrowsingDataType int[] dataTypes, long fromMillis,
+            long toMillis, @NonNull Runnable callback) {
         ThreadCheck.ensureOnUiThread();
         try {
-            ListenableResult<Void> result = new ListenableResult<>();
-            mImpl.clearBrowsingData(dataTypes, fromMillis, toMillis,
-                    ObjectWrapper.wrap((Runnable) () -> result.supplyResult(null)));
-            return result;
+            mImpl.clearBrowsingData(dataTypes, fromMillis, toMillis, ObjectWrapper.wrap(callback));
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
@@ -89,11 +84,11 @@ public final class Profile {
 
     /**
      * Clears the data associated with the Profile.
-     * Same as {@link #clearBrowsingData(int[], long, long)} with unbounded time range.
+     * Same as {@link #clearBrowsingData(int[], long, long, Runnable)} with unbounded time range.
      */
-    @NonNull
-    public ListenableResult<Void> clearBrowsingData(@NonNull @BrowsingDataType int[] dataTypes) {
-        return clearBrowsingData(dataTypes, 0, Long.MAX_VALUE);
+    public void clearBrowsingData(
+            @NonNull @BrowsingDataType int[] dataTypes, @NonNull Runnable callback) {
+        clearBrowsingData(dataTypes, 0, Long.MAX_VALUE, callback);
     }
 
     public void destroy() {

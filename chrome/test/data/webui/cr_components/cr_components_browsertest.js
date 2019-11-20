@@ -21,16 +21,6 @@ CrComponentsBrowserTest.prototype = {
   get browsePreload() {
     throw 'subclasses should override to load a WebUI page that includes it.';
   },
-
-  /** @override */
-  runAccessibilityChecks: true,
-
-  /** @override */
-  setUp: function() {
-    PolymerTest.prototype.setUp.call(this);
-    // We aren't loading the main document.
-    this.accessibilityAuditConfig.ignoreSelectors('humanLangMissing', 'html');
-  },
 };
 
 /**

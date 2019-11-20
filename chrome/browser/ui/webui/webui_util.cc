@@ -4,26 +4,51 @@
 
 #include "chrome/browser/ui/webui/webui_util.h"
 
-#include "base/strings/utf_string_conversions.h"
-#include "base/values.h"
+#include "chrome/common/buildflags.h"
+#include "content/public/browser/web_ui_data_source.h"
+#include "ui/resources/grit/webui_resources.h"
+#include "ui/resources/grit/webui_resources_map.h"
 
 namespace webui {
-namespace webui_util {
 
-void AddPair(base::ListValue* list,
-             const base::string16& key,
-             const base::string16& value) {
-  std::unique_ptr<base::DictionaryValue> results(new base::DictionaryValue());
-  results->SetString("key", key);
-  results->SetString("value", value);
-  list->Append(std::move(results));
+namespace {
+
+void SetupPolymer3Defaults(content::WebUIDataSource* source) {
+  source->OverrideContentSecurityPolicyScriptSrc(
+      "script-src chrome://resources chrome://test 'self';");
+  source->UseStringsJs();
+  source->EnableReplaceI18nInJS();
+  source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
+  source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);
 }
 
-void AddPair(base::ListValue* list,
-             const base::string16& key,
-             const std::string& value) {
-  AddPair(list, key, base::UTF8ToUTF16(value));
+}  // namespace
+
+void SetupWebUIDataSource(content::WebUIDataSource* source,
+                          base::span<const GritResourceMap> resources,
+                          const std::string& generated_path,
+                          int default_resource) {
+  SetupPolymer3Defaults(source);
+  for (const GritResourceMap& resource : resources) {
+    std::string path = resource.name;
+    if (path.rfind(generated_path, 0) == 0) {
+      path = path.substr(generated_path.size());
+    }
+
+    source->AddResourcePath(path, resource.value);
+  }
+  source->SetDefaultResource(default_resource);
 }
 
-}  // namespace webui_util
+#if BUILDFLAG(OPTIMIZE_WEBUI)
+void SetupBundledWebUIDataSource(content::WebUIDataSource* source,
+                                 base::StringPiece bundled_path,
+                                 int bundle,
+                                 int default_resource) {
+  SetupPolymer3Defaults(source);
+  source->AddResourcePath(bundled_path, bundle);
+  source->SetDefaultResource(default_resource);
+}
+#endif
+
 }  // namespace webui

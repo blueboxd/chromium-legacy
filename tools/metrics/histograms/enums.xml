@@ -4868,6 +4868,20 @@ Unknown properties are collapsed to zero. -->
   <int value="5" label="Overlay Insecure Non-player-element Fullscreen"/>
 </enum>
 
+<enum name="BackForwardCacheBrowsingInstanceNotSwappedReason">
+  <int value="0" label="Swapped"/>
+  <int value="1" label="Proactive swap disabled"/>
+  <int value="2" label="Not a main frame"/>
+  <int value="3" label="Has related active contents"/>
+  <int value="4" label="Does not have a site"/>
+  <int value="5" label="Source URL scheme is not HTTP(S)"/>
+  <int value="6" label="Destination URL scheme is not HTTP(S)"/>
+  <int value="7" label="Same site navigation"/>
+  <int value="8" label="Error page"/>
+  <int value="9" label="Already has matching browsing instance"/>
+  <int value="10" label="Renderer debug URL"/>
+</enum>
+
 <enum name="BackForwardCacheDisabledForRenderFrameHostReason">
   <int value="-1859200986" label="WebUSB"/>
   <int value="-1521338555" label="OfflinePage"/>
@@ -18758,6 +18772,8 @@ Called by update_net_error_codes.py.-->
   <int value="643" label="GloballyScopeHTTPAuthCacheEnabled"/>
   <int value="644" label="WebComponentsV0Enabled"/>
   <int value="645" label="ClickToCallEnabled"/>
+  <int value="646"
+      label="DeviceLoginScreenShowAccessibilityOptionsInSystemTrayMenu"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -25615,7 +25631,7 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <!-- Keep elements in sync with components/feed/core/feed_logging_metrics.cc and
- third_party/feed/src/src/main/java/com/google/android/libraries/feed/api/host/logging/InternalFeedError.java
+ third_party/feed_library/src/src/main/java/com/google/android/libraries/feed/api/host/logging/InternalFeedError.java
  -->
 
 <enum name="FeedInternalError">
@@ -36972,7 +36988,6 @@ from previous Chrome versions.
   <int value="-513305102" label="LanguagesPreference:enabled"/>
   <int value="-513066193" label="SyncUSSPasswords:enabled"/>
   <int value="-512971943" label="disable-one-copy"/>
-  <int value="-512786338" label="SyncClipboardService:enabled"/>
   <int value="-510488450" label="disable-pnacl"/>
   <int value="-508250572" label="ServiceWorkerLongRunningMessage:disabled"/>
   <int value="-508143738" label="disable-accelerated-fixed-root-background"/>
@@ -36987,7 +37002,6 @@ from previous Chrome versions.
   <int value="-496119023" label="WebXR:enabled"/>
   <int value="-495585885" label="enable-spdy-proxy-dev-auth-origin"/>
   <int value="-494722408" label="ContentSuggestionsLargeThumbnail:enabled"/>
-  <int value="-493716471" label="WebRtcEnableMultiChannelApm:enabled"/>
   <int value="-493551777" label="StaleWhileRevalidate2:disabled"/>
   <int value="-492864618" label="NTPForeignSessionsSuggestions:disabled"/>
   <int value="-491131428" label="OmniboxNewAnswerLayout:disabled"/>
@@ -37157,6 +37171,7 @@ from previous Chrome versions.
   <int value="-271790049" label="ArcUsbHost:enabled"/>
   <int value="-271084069" label="ClickToCallUI:enabled"/>
   <int value="-270626757" label="log-net-log"/>
+  <int value="-270261701" label="WebRtcEnableCaptureMultiChannelApm:disabled"/>
   <int value="-268549184"
       label="AutofillSaveCreditCardUsesStrikeSystemV2:enabled"/>
   <int value="-268357961" label="enable-feature-policy"/>
@@ -37377,6 +37392,7 @@ from previous Chrome versions.
   </int>
   <int value="1343197" label="UseSearchClickForRightClick:enabled"/>
   <int value="1558582" label="ResamplingInputEvents:enabled"/>
+  <int value="2070488" label="EnablePasswordsAccountStorageSavingUi:disabled"/>
   <int value="3826348" label="DarkenWebsitesCheckboxInThemesSetting:disabled"/>
   <int value="5654819" label="CrostiniGpuSupport:disabled"/>
   <int value="7444737" label="NTPSuggestionsStandaloneUI:disabled"/>
@@ -37754,7 +37770,6 @@ from previous Chrome versions.
   <int value="513258875" label="WinrtSensorsImplementation:disabled"/>
   <int value="513356954" label="InstantTethering:disabled"/>
   <int value="513372959" label="ViewsProfileChooser:enabled"/>
-  <int value="515951869" label="SyncClipboardService:disabled"/>
   <int value="517429103" label="AutofillImportDynamicForms:enabled"/>
   <int value="517568645" label="AnimatedAppMenuIcon:disabled"/>
   <int value="520982116" label="BuiltInModuleAll:enabled"/>
@@ -37806,7 +37821,6 @@ from previous Chrome versions.
   <int value="595168244" label="NotificationExpansionAnimation:enabled"/>
   <int value="595371145" label="OmniboxRichEntitySuggestions:disabled"/>
   <int value="596106994" label="CustomFeedbackUi:enabled"/>
-  <int value="596108787" label="WebRtcEnableMultiChannelApm:disabled"/>
   <int value="598827460" label="enable-roboto-font-ui"/>
   <int value="598926697" label="VrLaunchIntent:disabled"/>
   <int value="600037637" label="AndroidSigninPromos:enabled"/>
@@ -38473,6 +38487,8 @@ from previous Chrome versions.
   <int value="1442830837" label="MemoryAblation:disabled"/>
   <int value="1447295459" label="SyncPseudoUSSApps:enabled"/>
   <int value="1448684258" label="TabHoverCardImages:enabled"/>
+  <int value="1449177114"
+      label="EnablePasswordsAccountStorageSavingUi:enabled"/>
   <int value="1452492841" label="TerminalSystemAppSplits:enabled"/>
   <int value="1452546183" label="PwaPersistentNotification:enabled"/>
   <int value="1454006695" label="BlinkHeapUnifiedGarbageCollection:disabled"/>
@@ -38484,6 +38500,7 @@ from previous Chrome versions.
   <int value="1458475849" label="D3D11VideoDecoder:disabled"/>
   <int value="1458583431" label="arc-use-auth-endpoint"/>
   <int value="1459529277" label="disable-text-input-focus-manager"/>
+  <int value="1459803015" label="WebRtcEnableCaptureMultiChannelApm:enabled"/>
   <int value="1460747747" label="GdiTextPrinting:enabled"/>
   <int value="1460958818" label="NTPForeignSessionsSuggestions:enabled"/>
   <int value="1465624446" label="disable-zero-copy"/>
@@ -49482,7 +49499,7 @@ Called by update_net_trust_anchors.py.-->
   <summary>
     Piet Error Code as defined in
     com.google.search.now.ui.piet.ErrorsProto.ErrorCode, which located in
-    /third_party/feed/src/main/proto/search/now/ui/piet/errors.proto.
+    /third_party/feed_library/src/main/proto/search/now/ui/piet/errors.proto.
   </summary>
   <int value="0" label="ERR_UNSPECIFIED"/>
   <int value="1" label="ERR_MISSING_STYLESHEET"/>

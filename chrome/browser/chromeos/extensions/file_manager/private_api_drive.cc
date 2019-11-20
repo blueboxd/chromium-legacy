@@ -1050,7 +1050,7 @@ void FileManagerPrivateInternalGetDownloadUrlFunction::OnGotDownloadUrl(
   const ChromeExtensionFunctionDetails chrome_details(this);
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(chrome_details.GetProfile());
-  const std::string& account_id = identity_manager->GetPrimaryAccountId();
+  const CoreAccountId& account_id = identity_manager->GetPrimaryAccountId();
   std::vector<std::string> scopes;
   scopes.emplace_back("https://www.googleapis.com/auth/drive.readonly");
 

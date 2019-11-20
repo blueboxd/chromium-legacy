@@ -24,7 +24,7 @@ struct CoreAccountId {
   CoreAccountId& operator=(const CoreAccountId&);
   CoreAccountId& operator=(CoreAccountId&&) noexcept;
 
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if defined(OS_ANDROID)
   // Those implicit constructor and conversion operator allow to
   // progressively migrate the code to use this struct. Removing
   // them is tracked by https://crbug.com/959161

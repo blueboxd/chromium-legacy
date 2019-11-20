@@ -165,12 +165,12 @@ class MockIdentityAccessor {
   MOCK_METHOD3(
       GetAccessToken,
       std::pair<base::Optional<std::string>, GoogleServiceAuthError::State>(
-          const std::string& account_id,
+          const CoreAccountId& account_id,
           const ::identity::ScopeSet& scopes,
           const std::string& consumer_id));
 
   void OnGetAccessToken(
-      const std::string& account_id,
+      const CoreAccountId& account_id,
       const ::identity::ScopeSet& scopes,
       const std::string& consumer_id,
       identity::mojom::IdentityAccessor::GetAccessTokenCallback callback) {
@@ -530,7 +530,7 @@ TEST_F(DriveFsHostTest, GetAccessToken_UnmountDuringMojoRequest) {
   ASSERT_NO_FATAL_FAILURE(DoMount());
 
   EXPECT_CALL(mock_identity_accessor_,
-              GetAccessToken("test@example.com", _, "drivefs"))
+              GetAccessToken(CoreAccountId("test@example.com"), _, "drivefs"))
       .WillOnce(testing::DoAll(
           testing::InvokeWithoutArgs([&]() { host_->Unmount(); }),
           testing::Return(std::make_pair(
@@ -708,7 +708,7 @@ TEST_F(DriveFsHostTest, Remount_CachedOnceOnly) {
   ASSERT_NO_FATAL_FAILURE(DoMount());
 
   EXPECT_CALL(mock_identity_accessor_,
-              GetAccessToken("test@example.com", _, "drivefs"))
+              GetAccessToken(CoreAccountId("test@example.com"), _, "drivefs"))
       .WillOnce(testing::Return(
           std::make_pair("auth token", GoogleServiceAuthError::NONE)))
       .WillOnce(testing::Return(

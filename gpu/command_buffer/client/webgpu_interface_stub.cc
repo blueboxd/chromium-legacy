@@ -29,6 +29,12 @@ WGPUDevice WebGPUInterfaceStub::GetDefaultDevice() {
 ReservedTexture WebGPUInterfaceStub::ReserveTexture(WGPUDevice device) {
   return {nullptr, 0, 0};
 }
+bool WebGPUInterfaceStub::RequestAdapterAsync(
+    PowerPreference power_preference,
+    base::OnceCallback<void(uint32_t, const WGPUDeviceProperties&)>
+        request_adapter_callback) {
+  return false;
+}
 
 // Include the auto-generated part of this class. We split this because
 // it means we can easily edit the non-auto generated parts right here in

@@ -19,7 +19,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/platform_thread.h"
@@ -2567,8 +2566,6 @@ TEST_F(DiskCacheTest, SimpleCacheControlJoin) {
 
   // Instantiate the SimpleCacheTrial, forcing this run into the
   // ExperimentControl group.
-  base::FieldTrialList field_trial_list(
-      std::make_unique<base::MockEntropyProvider>());
   base::FieldTrialList::CreateFieldTrial("SimpleCacheTrial",
                                          "ExperimentControl");
   net::TestCompletionCallback cb;
@@ -2587,8 +2584,6 @@ TEST_F(DiskCacheTest, SimpleCacheControlJoin) {
 TEST_F(DiskCacheTest, SimpleCacheControlRestart) {
   // Instantiate the SimpleCacheTrial, forcing this run into the
   // ExperimentControl group.
-  base::FieldTrialList field_trial_list(
-      std::make_unique<base::MockEntropyProvider>());
   base::FieldTrialList::CreateFieldTrial("SimpleCacheTrial",
                                          "ExperimentControl");
 
@@ -2620,8 +2615,6 @@ TEST_F(DiskCacheTest, SimpleCacheControlLeave) {
   {
     // Instantiate the SimpleCacheTrial, forcing this run into the
     // ExperimentControl group.
-    base::FieldTrialList field_trial_list(
-        std::make_unique<base::MockEntropyProvider>());
     base::FieldTrialList::CreateFieldTrial("SimpleCacheTrial",
                                            "ExperimentControl");
 
@@ -2632,8 +2625,6 @@ TEST_F(DiskCacheTest, SimpleCacheControlLeave) {
 
   // Instantiate the SimpleCacheTrial, forcing this run into the
   // ExperimentNo group.
-  base::FieldTrialList field_trial_list(
-      std::make_unique<base::MockEntropyProvider>());
   base::FieldTrialList::CreateFieldTrial("SimpleCacheTrial", "ExperimentNo");
   net::TestCompletionCallback cb;
 

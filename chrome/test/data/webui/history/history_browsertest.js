@@ -17,9 +17,6 @@ HistoryBrowserTest.prototype = {
 
   browsePreload: 'chrome://history',
 
-  /** @override */
-  runAccessibilityChecks: false,
-
   extraLibraries: [
     ...PolymerTest.prototype.extraLibraries,
     '../test_util.js',

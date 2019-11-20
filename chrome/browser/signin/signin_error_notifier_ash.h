@@ -44,7 +44,7 @@ class SigninErrorNotifier : public SigninErrorController::Observer,
   // Displays a notification that allows users to open crOS Account Manager UI.
   // |account_id| is the account identifier (used by the Token Service chain)
   // for the Secondary Account which received an error.
-  void HandleSecondaryAccountError(const std::string& account_id);
+  void HandleSecondaryAccountError(const CoreAccountId& account_id);
 
   // |chromeos::AccountManager::GetAccounts| callback handler.
   void OnGetAccounts(

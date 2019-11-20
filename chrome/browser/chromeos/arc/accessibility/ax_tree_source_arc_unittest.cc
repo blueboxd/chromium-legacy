@@ -835,7 +835,7 @@ TEST_F(AXTreeSourceArcTest, GetTreeDataAppliesFocus) {
   EXPECT_EQ(2, GetDispatchedEventCount(ax::mojom::Event::kFocus));
 }
 
-TEST_F(AXTreeSourceArcTest, EventTypeForViewSelected) {
+TEST_F(AXTreeSourceArcTest, OnViewSelectedEvent) {
   auto event = AXEventData::New();
   event->source_id = 0;
   event->task_id = 1;
@@ -878,6 +878,49 @@ TEST_F(AXTreeSourceArcTest, EventTypeForViewSelected) {
   SetProperty(button2, AXBooleanProperty::FOCUSED, true);
   CallNotifyAccessibilityEvent(event.get());
   EXPECT_EQ(1, GetDispatchedEventCount(ax::mojom::Event::kValueChanged));
+}
+
+TEST_F(AXTreeSourceArcTest, OnWindowStateChangedEvent) {
+  auto event = AXEventData::New();
+  event->source_id = 1;  // node1.
+  event->task_id = 1;
+  event->event_type = AXEventType::WINDOW_STATE_CHANGED;
+
+  event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
+  event->window_data->emplace_back(AXWindowInfoData::New());
+  AXWindowInfoData* root_window = event->window_data->back().get();
+  root_window->window_id = 100;
+  root_window->root_node_id = 10;
+
+  event->node_data.emplace_back(AXNodeInfoData::New());
+  AXNodeInfoData* root = event->node_data.back().get();
+  root->id = 10;
+
+  SetProperty(root, AXIntListProperty::CHILD_NODE_IDS, std::vector<int>({1}));
+  SetProperty(root, AXBooleanProperty::IMPORTANCE, true);
+
+  event->node_data.emplace_back(AXNodeInfoData::New());
+  AXNodeInfoData* node1 = event->node_data.back().get();
+  node1->id = 1;
+  SetProperty(node1, AXIntListProperty::CHILD_NODE_IDS, std::vector<int>({2}));
+  SetProperty(node1, AXBooleanProperty::IMPORTANCE, true);
+  SetProperty(node1, AXBooleanProperty::VISIBLE_TO_USER, true);
+
+  event->node_data.emplace_back(AXNodeInfoData::New());
+  AXNodeInfoData* node2 = event->node_data.back().get();
+  node2->id = 2;
+  SetProperty(node2, AXBooleanProperty::IMPORTANCE, true);
+  SetProperty(node2, AXBooleanProperty::VISIBLE_TO_USER, true);
+  SetProperty(node2, AXStringProperty::TEXT, "sample string.");
+
+  CallNotifyAccessibilityEvent(event.get());
+  ui::AXTreeData data;
+
+  // Focus is now at the first accessible node (node2).
+  EXPECT_TRUE(CallGetTreeData(&data));
+  EXPECT_EQ(node2->id, data.focus_id);
+
+  EXPECT_EQ(1, GetDispatchedEventCount(ax::mojom::Event::kFocus));
 }
 
 TEST_F(AXTreeSourceArcTest, SerializeAndUnserialize) {

@@ -18,6 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/frame_host/back_forward_cache_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/frame_host/should_swap_browsing_instance.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_request_id.h"
@@ -578,7 +579,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   // SiteInstance's site and when we later call IsSameSite.  If there is no
   // current NavigationEntry, check the current SiteInstance's site, which might
   // already be committed to a Web UI URL (such as the NTP).
-  bool ShouldSwapBrowsingInstancesForNavigation(
+  ShouldSwapBrowsingInstance ShouldSwapBrowsingInstancesForNavigation(
       const GURL& current_effective_url,
       bool current_is_view_source_mode,
       SiteInstance* destination_site_instance,

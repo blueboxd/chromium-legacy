@@ -511,6 +511,10 @@ std::string ScriptExecutor::GetAccountEmailAddress() {
   return delegate_->GetAccountEmailAddress();
 }
 
+std::string ScriptExecutor::GetLocale() {
+  return delegate_->GetLocale();
+}
+
 void ScriptExecutor::SetDetails(std::unique_ptr<Details> details) {
   return delegate_->SetDetails(std::move(details));
 }

@@ -195,8 +195,12 @@ void CRDHostDelegate::StartCRDHostAndGetCode(
 
   // Store all parameters for future connect call.
   base::Value connect_params(base::Value::Type::DICTIONARY);
-  std::string username =
+  CoreAccountId account_id =
       chromeos::DeviceOAuth2TokenServiceFactory::Get()->GetRobotAccountId();
+
+  // TODO(msarda): This conversion will not be correct once account id is
+  // migrated to be the Gaia ID on ChromeOS. Fix it.
+  std::string username = account_id.id;
 
   connect_params.SetKey(kCRDConnectUserName, base::Value(username));
   connect_params.SetKey(kCRDConnectAuth, base::Value("oauth2:" + oauth_token));

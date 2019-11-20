@@ -1,0 +1,53 @@
+// Copyright 2019 The Feed Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package com.google.android.libraries.feed.testing.host.stream;
+
+import com.google.android.libraries.feed.api.host.stream.TooltipInfo.FeatureName;
+import com.google.android.libraries.feed.api.host.stream.TooltipSupportedApi;
+import com.google.android.libraries.feed.api.internal.common.ThreadUtils;
+import com.google.android.libraries.feed.common.functional.Consumer;
+import java.util.ArrayList;
+
+/** Fake implementation of {@link TooltipSupportedApi}. */
+public final class FakeTooltipSupportedApi implements TooltipSupportedApi {
+  private final ArrayList<String> unsupportedFeatures = new ArrayList<>();
+  private final ThreadUtils threadUtils;
+  /*@Nullable*/ private String lastFeatureName = null;
+
+  public FakeTooltipSupportedApi(ThreadUtils threadUtils) {
+    this.threadUtils = threadUtils;
+  }
+
+  @Override
+  public void wouldTriggerHelpUi(@FeatureName String featureName, Consumer<Boolean> consumer) {
+    threadUtils.checkMainThread();
+    lastFeatureName = featureName;
+    consumer.accept(!unsupportedFeatures.contains(featureName));
+  }
+
+  /** Adds an unsupported feature. */
+  public FakeTooltipSupportedApi addUnsupportedFeature(String featureName) {
+    unsupportedFeatures.add(featureName);
+    return this;
+  }
+
+  /**
+   * Gets the last feature name that was passed in to {@link wouldTriggerHelpUi(String, Consumer)}.
+   */
+  /*@Nullable*/
+  public String getLatestFeatureName() {
+    return lastFeatureName;
+  }
+}

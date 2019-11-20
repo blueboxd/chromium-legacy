@@ -31,6 +31,26 @@ static_assert(
     sizeof(DawnReturnDataHeader) % GPU_DAWN_RETURN_DATA_ALIGNMENT == 0,
     "DawnReturnDataHeader must align to GPU_DAWN_RETURN_DATA_ALIGNMENT");
 
+struct alignas(GPU_DAWN_RETURN_DATA_ALIGNMENT) DawnReturnAdapterIDs {
+  uint32_t request_adapter_serial;
+  uint32_t adapter_service_id;
+};
+
+static_assert(
+    sizeof(DawnReturnAdapterIDs) % GPU_DAWN_RETURN_DATA_ALIGNMENT == 0,
+    "DawnReturnAdapterIDs must align to GPU_DAWN_RETURN_DATA_ALIGNMENT");
+
+struct alignas(GPU_DAWN_RETURN_DATA_ALIGNMENT) DawnReturnAdapterInfo {
+  DawnReturnAdapterIDs adapter_ids;
+  char deserialized_buffer[];
+};
+
+static_assert(offsetof(DawnReturnAdapterInfo, deserialized_buffer) %
+                      GPU_DAWN_RETURN_DATA_ALIGNMENT ==
+                  0,
+              "The offset of deserialized_buffer must align to "
+              "GPU_DAWN_RETURN_DATA_ALIGNMENT");
+
 // Command buffer is GPU_COMMAND_BUFFER_ENTRY_ALIGNMENT byte aligned.
 #pragma pack(push, 4)
 static_assert(GPU_COMMAND_BUFFER_ENTRY_ALIGNMENT == 4,

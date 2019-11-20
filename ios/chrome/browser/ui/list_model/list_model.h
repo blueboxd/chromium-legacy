@@ -184,6 +184,11 @@ const NSInteger kItemTypeEnumZero = 100;
 // item is found.
 - (NSIndexPath*)indexPathForItemType:(NSInteger)itemType;
 
+// Returns index paths for all |itemType| in the section for
+// |sectionIdentifier|.
+- (NSArray<NSIndexPath*>*)indexPathsForItemType:(NSInteger)itemType
+                              sectionIdentifier:(NSInteger)sectionIdentifier;
+
 #pragma mark Query index paths from items
 
 // Returns whether |item| exists in section for |sectionIdentifier|.

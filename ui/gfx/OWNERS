@@ -1,8 +1,14 @@
-# Font rendering and what not.
-asvitkine@chromium.org
+# For any other files, defer to ui/OWNERS.
 
 # RenderText and related classes.
-msw@chromium.org
+per-file render_text*=etienneb@chromium.org
+per-file render_text*=msw@chromium.org
+
+# Fonts and fallback fonts.
+per-file font*=etienneb@chromium.org
+per-file font*=robliao@chromium.org
+per-file platform_font*=etienneb@chromium.org
+per-file platform_font*=robliao@chromium.org
 
 # Color utils.
 per-file color_palette.h=pkasting@chromium.org

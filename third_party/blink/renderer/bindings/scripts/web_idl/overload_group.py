@@ -56,3 +56,92 @@ class OverloadGroup(WithIdentifier):
         functions.
         """
         return min(map(lambda func: func.num_of_required_arguments, self))
+
+    @staticmethod
+    def are_distinguishable_types(idl_type1, idl_type2):
+        # https://heycam.github.io/webidl/#dfn-distinguishable
+        # step 1. If one type includes a nullable type and the other type either
+        #   includes a nullable type, is a union type with flattened member
+        #   types including a dictionary type, or is a dictionary type, ...
+        type1_nullable = (idl_type1.does_include_nullable_type
+                          or idl_type1.unwrap().is_dictionary)
+        type2_nullable = (idl_type2.does_include_nullable_type
+                          or idl_type2.unwrap().is_dictionary)
+        if type1_nullable and type2_nullable:
+            return False
+
+        type1 = idl_type1.unwrap()
+        type2 = idl_type2.unwrap()
+
+        # step 2. If both types are either a union type or nullable union type,
+        #   ...
+        if type1.is_union and type2.is_union:
+            for member1 in type1.member_types:
+                for member2 in type2.member_types:
+                    if not OverloadGroup.are_distinguishable_types(
+                            member1, member2):
+                        return False
+            return True
+
+        # step 3. If one type is a union type or nullable union type, ...
+        if type1.is_union or type2.is_union:
+            union = type1 if type1.is_union else type2
+            other = type2 if type1.is_union else type1
+            for member in union.member_types:
+                if not OverloadGroup.are_distinguishable_types(member, other):
+                    return False
+            return True
+
+        # step 4. Consider the two "innermost" types ...
+        def is_interface_like(idl_type):
+            # TODO(yukishiino): Add buffer source types into IdlType.
+            return idl_type.is_interface  # or buffer source types
+
+        def is_dictionary_like(idl_type):
+            return (idl_type.is_dictionary or idl_type.is_record
+                    or idl_type.is_callback_interface)
+
+        def is_sequence_like(idl_type):
+            return idl_type.is_sequence or idl_type.is_frozen_array
+
+        if not (type2.is_boolean or type2.is_numeric or type2.is_string
+                or type2.is_object or type2.is_symbol
+                or is_interface_like(type2) or type2.is_callback_function
+                or is_dictionary_like(type2) or is_sequence_like(type2)):
+            return False  # Out of the table
+
+        if type1.is_boolean:
+            return not type2.is_boolean
+        if type1.is_numeric:
+            return not type2.is_numeric
+        if type1.is_string:
+            return not type2.is_string
+        if type1.is_object:
+            return (type2.is_boolean or type2.is_numeric or type2.is_string
+                    or type2.is_symbol)
+        if type1.is_symbol:
+            return not type2.is_symbol
+        if is_interface_like(type1):
+            if type2.is_object:
+                return False
+            if not is_interface_like(type2):
+                return True
+            # Additional requirements: The two identified interface-like types
+            # are not the same, and no single platform object implements both
+            # interface-like types.
+            if not (type1.is_interface and type2.is_interface):
+                return type1.identifier != type2.identifier
+            interface1 = type1.type_definition_object
+            interface2 = type2.type_definition_object
+            return not (
+                interface1 in interface2.inclusive_inherited_interfaces
+                or interface2 in interface1.inclusive_inherited_interfaces)
+        if type1.is_callback_function:
+            return not (type2.is_object or type2.is_callback_function
+                        or is_dictionary_like(type2))
+        if is_dictionary_like(type1):
+            return not (type2.is_object or type2.is_callback_function
+                        or is_dictionary_like(type2))
+        if is_sequence_like(type1):
+            return not (type2.is_object or is_sequence_like(type2))
+        return False  # Out of the table

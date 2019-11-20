@@ -26,12 +26,15 @@ void DisplayUtil::DisplayToScreenInfo(ScreenInfo* screen_info,
   screen_info->is_monochrome = display.is_monochrome();
   screen_info->display_frequency = display.display_frequency();
 
-  screen_info->orientation_angle = display.RotationAsDegree();
+  // TODO(https://crbug.com/998131): Expose panel orientation via a proper web
+  // API instead of window.screen.orientation.angle.
+  screen_info->orientation_angle = display.PanelRotationAsDegree();
 #if defined(USE_AURA)
   // The Display rotation and the ScreenInfo orientation are not the same
   // angle. The former is the physical display rotation while the later is the
   // rotation required by the content to be shown properly on the screen, in
   // other words, relative to the physical display.
+  // Spec: https://w3c.github.io/screen-orientation/#dom-screenorientation-angle
   // TODO(ccameron): Should this apply to macOS? Should this be reconciled at a
   // higher level (say, in conversion to WebScreenInfo)?
   if (screen_info->orientation_angle == 90)
@@ -84,7 +87,7 @@ void DisplayUtil::GetNativeViewScreenInfo(ScreenInfo* screen_info,
 // static
 ScreenOrientationValues DisplayUtil::GetOrientationTypeForMobile(
     const display::Display& display) {
-  int angle = display.RotationAsDegree();
+  int angle = display.PanelRotationAsDegree();
   const gfx::Rect& bounds = display.bounds();
 
   // Whether the device's natural orientation is portrait.
@@ -119,7 +122,7 @@ ScreenOrientationValues DisplayUtil::GetOrientationTypeForDesktop(
   static int primary_landscape_angle = -1;
   static int primary_portrait_angle = -1;
 
-  int angle = display.RotationAsDegree();
+  int angle = display.PanelRotationAsDegree();
   const gfx::Rect& bounds = display.bounds();
   bool is_portrait = bounds.height() >= bounds.width();
 

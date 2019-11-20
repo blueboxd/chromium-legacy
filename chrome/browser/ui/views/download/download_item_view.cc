@@ -167,8 +167,10 @@ class TransparentButton : public views::Button {
   // constructor but then it won't be correct after dark mode changes, and to
   // deal with that this class would have to observe NativeTheme and so on.
   SkColor GetInkDropBaseColor() const override {
+    // This button will be used like a LabelButton, so use the same foreground
+    // base color as a label button.
     return color_utils::DeriveDefaultIconColor(GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_ButtonEnabledColor));
+        ui::NativeTheme::kColorId_LabelEnabledColor));
   }
 
   const char* GetClassName() const override { return "TransparentButton"; }

@@ -3,25 +3,42 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/frame/deprecation_report_body.h"
+
+#include "third_party/blink/renderer/platform/bindings/to_v8.h"
 #include "third_party/blink/renderer/platform/text/date_components.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
+
+ScriptValue DeprecationReportBody::anticipatedRemoval(
+    ScriptState* script_state) const {
+  v8::Isolate* isolate = script_state->GetIsolate();
+  // We can't use AnticipatedRemoval() here because it's time value is not
+  // compatible due to FromDoubleT().
+  if (!anticipatedRemoval_)
+    return ScriptValue::CreateNull(isolate);
+  return ScriptValue(
+      isolate, ToV8(base::Time::FromJsTime(anticipatedRemoval_), script_state));
+}
+
+base::Optional<base::Time> DeprecationReportBody::AnticipatedRemoval() const {
+  if (!anticipatedRemoval_)
+    return base::nullopt;
+  return base::Time::FromDoubleT(anticipatedRemoval_);
+}
 
 void DeprecationReportBody::BuildJSONValue(V8ObjectBuilder& builder) const {
   LocationReportBody::BuildJSONValue(builder);
   builder.AddString("id", id());
   builder.AddString("message", message());
 
-  bool is_null = false;
-  double anticipated_removal_value = anticipatedRemoval(is_null);
-  if (is_null) {
+  if (!anticipatedRemoval_) {
     builder.AddNull("anticipatedRemoval");
   } else {
     DateComponents anticipated_removal_date;
     bool is_valid =
         anticipated_removal_date.SetMillisecondsSinceEpochForDateTimeLocal(
-            anticipated_removal_value);
+            anticipatedRemoval_);
     if (!is_valid) {
       builder.AddNull("anticipatedRemoval");
     } else {

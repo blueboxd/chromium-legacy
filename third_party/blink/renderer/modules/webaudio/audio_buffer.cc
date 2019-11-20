@@ -29,7 +29,6 @@
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer.h"
 
 #include <memory>
-#include "third_party/blink/renderer/core/typed_arrays/array_buffer/float32_array.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_buffer_options.h"
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"

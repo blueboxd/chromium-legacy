@@ -648,7 +648,7 @@ bool EntryImpl::DataSanityCheck() {
   if (!key_addr.is_initialized() && stored->key[stored->key_len])
     return false;
 
-  if (stored->hash != base::Hash(GetKey()))
+  if (stored->hash != base::PersistentHash(GetKey()))
     return false;
 
   for (int i = 0; i < kNumStreams; i++) {

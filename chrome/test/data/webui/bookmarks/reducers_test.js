@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Command, MenuSource, changeFolderOpen, clearSearch, createBookmark, createEmptyState, deselectItems, editBookmark, getDisplayedList, isShowingSearch, moveBookmark, reduceAction, removeBookmark, reorderChildren, selectFolder, setSearchResults, setSearchTerm, updateFolderOpenState, updateAnchor, updateNodes, updateSelectedFolder, updateSelection} from 'chrome://bookmarks/bookmarks.js';
+import {changeFolderOpen, clearSearch, Command, createBookmark, createEmptyState, deselectItems, editBookmark, getDisplayedList, isShowingSearch, MenuSource, moveBookmark, reduceAction, removeBookmark, reorderChildren, selectFolder, setSearchResults, setSearchTerm, updateAnchor, updateFolderOpenState, updateNodes, updateSelectedFolder, updateSelection} from 'chrome://bookmarks/bookmarks.js';
 import {createFolder, createItem, normalizeIterable, replaceBody, testTree} from 'chrome://test/bookmarks/test_util.js';
 
 suite('selection state', function() {
@@ -164,8 +164,7 @@ suite('folder open state', function() {
 
   test('close folder', function() {
     action = changeFolderOpen('2', false);
-    folderOpenState = updateFolderOpenState(
-        folderOpenState, action, nodes);
+    folderOpenState = updateFolderOpenState(folderOpenState, action, nodes);
     assertFalse(folderOpenState.has('1'));
     assertFalse(folderOpenState.get('2'));
   });
@@ -173,15 +172,13 @@ suite('folder open state', function() {
   test('select folder with closed parent', function() {
     // Close '1'
     action = changeFolderOpen('1', false);
-    folderOpenState = updateFolderOpenState(
-        folderOpenState, action, nodes);
+    folderOpenState = updateFolderOpenState(folderOpenState, action, nodes);
     assertFalse(folderOpenState.get('1'));
     assertFalse(folderOpenState.has('2'));
 
     // Should re-open when '2' is selected.
     action = selectFolder('2');
-    folderOpenState = updateFolderOpenState(
-        folderOpenState, action, nodes);
+    folderOpenState = updateFolderOpenState(folderOpenState, action, nodes);
     assertTrue(folderOpenState.get('1'));
     assertFalse(folderOpenState.has('2'));
 
@@ -189,8 +186,7 @@ suite('folder open state', function() {
     // explicitly closed.
     folderOpenState = new Map();
     action = selectFolder('2');
-    folderOpenState = updateFolderOpenState(
-        folderOpenState, action, nodes);
+    folderOpenState = updateFolderOpenState(folderOpenState, action, nodes);
     assertTrue(folderOpenState.get('1'));
     assertFalse(folderOpenState.has('2'));
   });
@@ -199,16 +195,14 @@ suite('folder open state', function() {
     // Moving bookmark items should not open folders.
     folderOpenState = new Map([['1', false]]);
     action = moveBookmark('3', '1', 1, '1', 0);
-    folderOpenState = updateFolderOpenState(
-        folderOpenState, action, nodes);
+    folderOpenState = updateFolderOpenState(folderOpenState, action, nodes);
 
     assertFalse(folderOpenState.get('1'));
 
     // Moving folders should open their parents.
     folderOpenState = new Map([['1', false], ['2', false]]);
     action = moveBookmark('4', '2', 0, '0', 1);
-    folderOpenState = updateFolderOpenState(
-        folderOpenState, action, nodes);
+    folderOpenState = updateFolderOpenState(folderOpenState, action, nodes);
     assertTrue(folderOpenState.get('1'));
     assertTrue(folderOpenState.get('2'));
   });
@@ -234,42 +228,35 @@ suite('selected folder', function() {
 
   test('updates from selectFolder action', function() {
     action = selectFolder('2');
-    selectedFolder = updateSelectedFolder(
-        selectedFolder, action, nodes);
+    selectedFolder = updateSelectedFolder(selectedFolder, action, nodes);
     assertEquals('2', selectedFolder);
   });
 
   test('updates when parent of selected folder is closed', function() {
     action = selectFolder('2');
-    selectedFolder = updateSelectedFolder(
-        selectedFolder, action, nodes);
+    selectedFolder = updateSelectedFolder(selectedFolder, action, nodes);
 
     action = changeFolderOpen('1', false);
-    selectedFolder = updateSelectedFolder(
-        selectedFolder, action, nodes);
+    selectedFolder = updateSelectedFolder(selectedFolder, action, nodes);
     assertEquals('1', selectedFolder);
   });
 
   test('selects ancestor when selected folder is deleted', function() {
     action = selectFolder('3');
-    selectedFolder = updateSelectedFolder(
-        selectedFolder, action, nodes);
+    selectedFolder = updateSelectedFolder(selectedFolder, action, nodes);
 
     // Delete the selected folder:
     action = removeBookmark('3', '2', 0, nodes);
-    selectedFolder = updateSelectedFolder(
-        selectedFolder, action, nodes);
+    selectedFolder = updateSelectedFolder(selectedFolder, action, nodes);
 
     assertEquals('2', selectedFolder);
 
     action = selectFolder('4');
-    selectedFolder = updateSelectedFolder(
-        selectedFolder, action, nodes);
+    selectedFolder = updateSelectedFolder(selectedFolder, action, nodes);
 
     // Delete an ancestor of the selected folder:
     action = removeBookmark('2', '1', 0, nodes);
-    selectedFolder = updateSelectedFolder(
-        selectedFolder, action, nodes);
+    selectedFolder = updateSelectedFolder(selectedFolder, action, nodes);
 
     assertEquals('1', selectedFolder);
   });
@@ -432,8 +419,7 @@ suite('search state', function() {
 
     // UI changes once search results arrive.
     assertTrue(isShowingSearch(searchedState));
-    assertDeepEquals(
-        ['2', '3'], getDisplayedList(searchedState));
+    assertDeepEquals(['2', '3'], getDisplayedList(searchedState));
 
     // Case 1: Clear search by setting an empty search term.
     action = setSearchTerm('');

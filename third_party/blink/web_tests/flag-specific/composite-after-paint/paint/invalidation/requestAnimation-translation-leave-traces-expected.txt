@@ -44,19 +44,7 @@ Tested locations: 1200,1500
     {
       "name": "HorizontalScrollbar",
       "position": [0, 585],
-      "bounds": [800, 15],
-      "paintInvalidations": [
-        {
-          "object": "HorizontalScrollbar",
-          "rect": [0, 0, 800, 15],
-          "reason": "scroll control"
-        },
-        {
-          "object": "HorizontalScrollbar",
-          "rect": [0, 0, 800, 15],
-          "reason": "scroll control"
-        }
-      ]
+      "bounds": [800, 15]
     }
   ]
 }

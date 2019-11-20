@@ -61,8 +61,6 @@
 #include "remoting/host/desktop_session_connector.h"
 #include "remoting/host/ftl_host_change_notification_listener.h"
 #include "remoting/host/ftl_signaling_connector.h"
-#include "remoting/host/gcd_rest_client.h"
-#include "remoting/host/gcd_state_updater.h"
 #include "remoting/host/heartbeat_sender.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/host_event_logger.h"
@@ -100,7 +98,6 @@
 #include "remoting/protocol/transport_context.h"
 #include "remoting/signaling/ftl_host_device_id_provider.h"
 #include "remoting/signaling/ftl_signal_strategy.h"
-#include "remoting/signaling/push_notification_subscriber.h"
 #include "remoting/signaling/remoting_log_to_server.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
@@ -406,26 +403,19 @@ class HostProcess : public ConfigWatcher::Delegate,
   // Used to specify which window to stream, if enabled.
   webrtc::WindowId window_id_ = 0;
 
-  // TODO(crbug.com/954566): Clean up GCD code
-  // Must outlive |signal_strategy_|, |gcd_state_updater_| and
-  // |ftl_signaling_connector_|.
+  // Must outlive |signal_strategy_| and |ftl_signaling_connector_|.
   std::unique_ptr<OAuthTokenGetterImpl> oauth_token_getter_;
 
   // Must outlive |heartbeat_sender_| and |host_status_logger_|.
   std::unique_ptr<LogToServer> log_to_server_;
 
-  // Signal strategies must outlive |ftl_signaling_connector_| and
-  // |gcd_subscriber_|.
+  // Signal strategies must outlive |ftl_signaling_connector_|.
   std::unique_ptr<SignalStrategy> signal_strategy_;
 
   std::unique_ptr<FtlSignalingConnector> ftl_signaling_connector_;
   std::unique_ptr<HeartbeatSender> heartbeat_sender_;
   std::unique_ptr<FtlHostChangeNotificationListener>
       ftl_host_change_notification_listener_;
-#if defined(USE_GCD)
-  std::unique_ptr<GcdStateUpdater> gcd_state_updater_;
-  std::unique_ptr<PushNotificationSubscriber> gcd_subscriber_;
-#endif  // defined(USE_GCD)
 
   std::unique_ptr<HostStatusLogger> host_status_logger_;
   std::unique_ptr<HostEventLogger> host_event_logger_;
@@ -1422,10 +1412,6 @@ void HostProcess::InitializeSignaling() {
   DCHECK(!signal_strategy_);
   DCHECK(!oauth_token_getter_);
   DCHECK(!ftl_signaling_connector_);
-#if defined(USE_GCD)
-  DCHECK(!gcd_state_updater_);
-  DCHECK(!gcd_subscriber_);
-#endif  // defined(USE_GCD)
   DCHECK(!heartbeat_sender_);
 
   auto oauth_credentials =
@@ -1463,24 +1449,6 @@ void HostProcess::InitializeSignaling() {
       std::make_unique<FtlHostChangeNotificationListener>(
           this, ftl_signal_strategy.get());
   signal_strategy_ = std::move(ftl_signal_strategy);
-
-#if defined(USE_GCD)
-  // Create objects to manage GCD state.
-  ServiceUrls* service_urls = ServiceUrls::GetInstance();
-  std::unique_ptr<GcdRestClient> gcd_rest_client(new GcdRestClient(
-      service_urls->gcd_base_url(), host_id_, context_->url_loader_factory(),
-      oauth_token_getter_.get()));
-  gcd_state_updater_.reset(new GcdStateUpdater(
-      base::Bind(&HostProcess::OnHeartbeatSuccessful, base::Unretained(this)),
-      base::Bind(&HostProcess::OnUnknownHostIdError, base::Unretained(this)),
-      signal_strategy_.get(), std::move(gcd_rest_client)));
-  PushNotificationSubscriber::Subscription sub;
-  sub.channel = "cloud_devices";
-  PushNotificationSubscriber::SubscriptionList subs;
-  subs.push_back(sub);
-  gcd_subscriber_.reset(
-      new PushNotificationSubscriber(signal_strategy_.get(), subs));
-#endif  // defined(USE_GCD)
 }
 
 void HostProcess::StartHostIfReady() {
@@ -1670,14 +1638,6 @@ void HostProcess::GoOffline(const std::string& host_offline_reason) {
         host_offline_reason,
         base::TimeDelta::FromSeconds(kHostOfflineReasonTimeoutSeconds),
         base::BindOnce(&HostProcess::OnHostOfflineReasonAck, this));
-#if defined(USE_GCD)
-    if (gcd_state_updater_) {
-      gcd_state_updater_->SetHostOfflineReason(
-          host_offline_reason,
-          base::TimeDelta::FromSeconds(kHostOfflineReasonTimeoutSeconds),
-          base::Bind(&HostProcess::OnHostOfflineReasonAck, this));
-    }
-#endif  // defined(USE_GCD)
     return;  // Shutdown will resume after OnHostOfflineReasonAck.
   }
 
@@ -1697,10 +1657,6 @@ void HostProcess::OnHostOfflineReasonAck(bool success) {
   oauth_token_getter_.reset();
   ftl_signaling_connector_.reset();
   signal_strategy_.reset();
-#if defined(USE_GCD)
-  gcd_state_updater_.reset();
-  gcd_subscriber_.reset();
-#endif  // defined(USE_GCD)
 
   if (state_ == HOST_GOING_OFFLINE_TO_RESTART) {
     SetState(HOST_STARTING);

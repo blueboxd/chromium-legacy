@@ -35,6 +35,7 @@
 #include "content/browser/browser_interface_broker_impl.h"
 #include "content/browser/can_commit_status.h"
 #include "content/browser/frame_host/back_forward_cache_metrics.h"
+#include "content/browser/frame_host/should_swap_browsing_instance.h"
 #include "content/browser/renderer_host/media/render_frame_audio_input_stream_factory.h"
 #include "content/browser/renderer_host/media/render_frame_audio_output_stream_factory.h"
 #include "content/browser/site_instance_impl.h"
@@ -1182,6 +1183,19 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // enumerations.
   const std::string& GetMediaDeviceIDSaltBase() const {
     return media_device_id_salt_base_;
+  }
+
+  // Returns the reason why the BrowsingInstance wasn't swapped for the last
+  // navigation inside this frame.
+  // TODO(crbug.com/1026101): Remove after the investigation.
+  base::Optional<ShouldSwapBrowsingInstance>
+  browsing_instance_not_swapped_reason() const {
+    return browsing_instance_not_swapped_reason_;
+  }
+
+  void set_browsing_instance_not_swapped_reason(
+      ShouldSwapBrowsingInstance reason) {
+    browsing_instance_not_swapped_reason_ = reason;
   }
 
   base::WeakPtr<RenderFrameHostImpl> GetWeakPtr();
@@ -2490,6 +2504,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // still alive when the new provider host is created and added to this vector,
   // and the old provider host is destroyed shortly after navigation.
   std::vector<ServiceWorkerProviderHost*> service_worker_provider_hosts_;
+
+  // The reason why the last attempted navigation in the frame didn't use a new
+  // BrowsingInstance.
+  // TODO(crbug.com/1026101): Remove after the investigation.
+  base::Optional<ShouldSwapBrowsingInstance>
+      browsing_instance_not_swapped_reason_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_{this};

@@ -12,14 +12,39 @@
           "reason": "chunk appeared"
         },
         {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 300, 150],
+          "reason": "chunk disappeared"
+        },
+        {
+          "object": "HorizontalScrollbar",
+          "rect": [0, 135, 285, 15],
+          "reason": "chunk disappeared"
+        },
+        {
           "object": "LayoutSVGRect rect",
           "rect": [211, 11, 180, 180],
-          "reason": "chunk appeared"
+          "reason": "paint property change"
         },
         {
           "object": "LayoutSVGRoot svg",
           "rect": [11, 11, 180, 180],
-          "reason": "chunk appeared"
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [10, 10, 180, 125],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [210, 10, 75, 125],
+          "reason": "paint property change"
+        },
+        {
+          "object": "VerticalScrollbar",
+          "rect": [285, 0, 15, 135],
+          "reason": "chunk disappeared"
         }
       ]
     }

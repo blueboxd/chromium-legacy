@@ -35,26 +35,154 @@ namespace blink {
 
 // Base class for all WebGL<T>Array types holding integral
 // (non-floating-point) values.
-template <typename T>
+template <typename T, bool clamped = false>
 class IntegralTypedArrayBase : public TypedArrayBase<T> {
  public:
-  void Set(unsigned index, double value) {
-    if (index >= TypedArrayBase<T>::length_)
-      return;
-    if (std::isnan(value))  // Clamp NaN to 0
-      value = 0;
-    // The double cast is necessary to get the correct wrapping
-    // for out-of-range values with Int32Array and Uint32Array.
-    TypedArrayBase<T>::Data()[index] =
-        static_cast<T>(static_cast<int64_t>(value));
-  }
+  static inline scoped_refptr<IntegralTypedArrayBase<T, clamped>> Create(
+      unsigned length);
+  static inline scoped_refptr<IntegralTypedArrayBase<T, clamped>> Create(
+      const T* array,
+      unsigned length);
+  static inline scoped_refptr<IntegralTypedArrayBase<T, clamped>>
+  Create(scoped_refptr<ArrayBuffer>, unsigned byte_offset, unsigned length);
 
- protected:
+  inline void Set(unsigned index, double value);
+
+  inline void Set(unsigned index, uint64_t value);
+
+  ArrayBufferView::ViewType GetType() const override;
+
   IntegralTypedArrayBase(scoped_refptr<ArrayBuffer> buffer,
                          unsigned byte_offset,
                          unsigned length)
       : TypedArrayBase<T>(std::move(buffer), byte_offset, length) {}
 };
+
+template <typename T, bool clamped>
+scoped_refptr<IntegralTypedArrayBase<T, clamped>>
+IntegralTypedArrayBase<T, clamped>::Create(unsigned length) {
+  return TypedArrayBase<T>::template Create<IntegralTypedArrayBase<T, clamped>>(
+      length);
+}
+
+template <typename T, bool clamped>
+scoped_refptr<IntegralTypedArrayBase<T, clamped>>
+IntegralTypedArrayBase<T, clamped>::Create(const T* array, unsigned length) {
+  return TypedArrayBase<T>::template Create<IntegralTypedArrayBase<T, clamped>>(
+      array, length);
+}
+
+template <typename T, bool clamped>
+scoped_refptr<IntegralTypedArrayBase<T, clamped>>
+IntegralTypedArrayBase<T, clamped>::Create(scoped_refptr<ArrayBuffer> buffer,
+                                           unsigned byte_offset,
+                                           unsigned length) {
+  return TypedArrayBase<T>::template Create<IntegralTypedArrayBase<T, clamped>>(
+      std::move(buffer), byte_offset, length);
+}
+
+template <typename T, bool clamped>
+inline void IntegralTypedArrayBase<T, clamped>::Set(unsigned index,
+                                                    double value) {
+  if (index >= TypedArrayBase<T>::length_)
+    return;
+  if (std::isnan(value))  // Clamp NaN to 0
+    value = 0;
+  // The double cast is necessary to get the correct wrapping
+  // for out-of-range values with Int32Array and Uint32Array.
+  TypedArrayBase<T>::Data()[index] =
+      static_cast<T>(static_cast<int64_t>(value));
+}
+
+template <>
+inline void IntegralTypedArrayBase<uint8_t, true>::Set(unsigned index,
+                                                       double value) {
+  if (index >= TypedArrayBase<uint8_t>::length_) {
+    return;
+  }
+  if (std::isnan(value) || value < 0) {
+    value = 0;
+  } else if (value > 255) {
+    value = 255;
+  }
+
+  Data()[index] = static_cast<unsigned char>(lrint(value));
+}
+
+template <>
+inline void IntegralTypedArrayBase<float, false>::Set(unsigned index,
+                                                      double value) {
+  if (index >= TypedArrayBase<float>::length_)
+    return;
+  TypedArrayBase<float>::Data()[index] = static_cast<float>(value);
+}
+
+template <>
+inline void IntegralTypedArrayBase<double, false>::Set(unsigned index,
+                                                       double value) {
+  if (index >= TypedArrayBase<double>::length_)
+    return;
+  TypedArrayBase<double>::Data()[index] = value;
+}
+
+template <typename T, bool clamped>
+inline void IntegralTypedArrayBase<T, clamped>::Set(unsigned index,
+                                                    uint64_t value) {
+  NOTREACHED();
+}
+
+template <>
+inline void IntegralTypedArrayBase<int64_t, false>::Set(unsigned index,
+                                                        uint64_t value) {
+  if (index >= TypedArrayBase<int64_t>::length_)
+    return;
+  TypedArrayBase<int64_t>::Data()[index] = static_cast<int64_t>(value);
+}
+
+template <>
+inline void IntegralTypedArrayBase<uint64_t, false>::Set(unsigned index,
+                                                         uint64_t value) {
+  if (index >= TypedArrayBase<uint64_t>::length_)
+    return;
+  TypedArrayBase<uint64_t>::Data()[index] = value;
+}
+
+template <typename T, bool clamped>
+inline ArrayBufferView::ViewType IntegralTypedArrayBase<T, clamped>::GetType()
+    const {
+  NOTREACHED();
+  return ArrayBufferView::kTypeInt16;
+}
+
+#define FOREACH_VIEW_TYPE(V) \
+  V(int8_t, kTypeInt8)       \
+  V(int16_t, kTypeInt16)     \
+  V(int32_t, kTypeInt32)     \
+  V(uint8_t, kTypeUint8)     \
+  V(uint16_t, kTypeUint16)   \
+  V(uint32_t, kTypeUint32)   \
+  V(float, kTypeFloat32)     \
+  V(double, kTypeFloat64)    \
+  V(int64_t, kTypeBigInt64)  \
+  V(uint64_t, kTypeBigUint64)
+
+#define GET_TYPE(c_type, view_type)                        \
+  template <>                                              \
+  inline ArrayBufferView::ViewType                         \
+  IntegralTypedArrayBase<c_type, false>::GetType() const { \
+    return ArrayBufferView::view_type;                     \
+  }
+
+FOREACH_VIEW_TYPE(GET_TYPE)
+
+#undef GET_TYPE
+#undef FOREACH_VIEW_TYPE
+
+template <>
+inline ArrayBufferView::ViewType
+IntegralTypedArrayBase<uint8_t, true>::GetType() const {
+  return ArrayBufferView::kTypeUint8Clamped;
+}
 
 }  // namespace blink
 

@@ -68,6 +68,13 @@ void ScreenBase::RemoveObserver(DisplayObserver* observer) {
   display_list_.RemoveObserver(observer);
 }
 
+void ScreenBase::SetPanelRotationForTesting(int64_t display_id,
+                                            Display::Rotation rotation) {
+  Display display = *display_list_.FindDisplayById(display_id);
+  display.set_panel_rotation(rotation);
+  ProcessDisplayChanged(display, true);
+}
+
 void ScreenBase::ProcessDisplayChanged(const Display& changed_display,
                                        bool is_primary) {
   if (display_list_.FindDisplayById(changed_display.id()) ==

@@ -21,8 +21,7 @@
     "fileManagerPrivate",
     "fileSystem.requestDownloads",
     {"fileSystem": ["write", "directory"]},
-    "https://www.google-analytics.com/",
-    "chrome://resources/"
+    "https://www.google-analytics.com/"
   ],
   "app": {
     "background": {
@@ -34,7 +33,6 @@
         "js/intent.js",
         "js/background.js"
       ]
-    },
-    "content_security_policy": "script-src 'self' chrome://resources;"
+    }
   }
 }

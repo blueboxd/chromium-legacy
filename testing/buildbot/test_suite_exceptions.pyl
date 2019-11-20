@@ -327,7 +327,7 @@
       },
       'android-marshmallow-arm64-rel': {
         'swarming': {
-          'shards': 22,
+          'shards': 25,
         },
       },
       'KitKat Phone Tester (dbg)': {
@@ -448,7 +448,7 @@
       },
       'android-marshmallow-arm64-rel': {
         'swarming': {
-          'shards': 11,
+          'shards': 16,
         },
       },
       # chromium.linux
@@ -1622,7 +1622,7 @@
               'temp_band': '<30',
             },
           ],
-          'shards': 13,
+          'shards': 10,
         },
       },
       'android-pie-arm64-rel': {

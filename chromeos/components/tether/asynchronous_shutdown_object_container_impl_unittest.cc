@@ -40,7 +40,7 @@ class FakeRemoteDeviceProviderFactory
   // device_sync::RemoteDeviceProviderImpl::Factory:
   std::unique_ptr<device_sync::RemoteDeviceProvider> BuildInstance(
       device_sync::CryptAuthDeviceManager* device_manager,
-      const std::string& user_id,
+      const CoreAccountId& user_account_id,
       const std::string& user_private_key) override {
     return std::make_unique<device_sync::FakeRemoteDeviceProvider>();
   }

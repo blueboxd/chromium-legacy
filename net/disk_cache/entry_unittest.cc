@@ -15,7 +15,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/mock_entropy_provider.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/platform_thread.h"
 #include "net/base/completion_once_callback.h"
@@ -5532,9 +5531,7 @@ TEST_F(DiskCacheEntryTest, BlockFileSparsePendingAfterDtor) {
 
 class DiskCacheSimplePrefetchTest : public DiskCacheEntryTest {
  public:
-  DiskCacheSimplePrefetchTest()
-      : field_trial_list_(std::make_unique<base::FieldTrialList>(
-            std::make_unique<base::MockEntropyProvider>())) {}
+  DiskCacheSimplePrefetchTest() = default;
 
   enum { kEntrySize = 1024 };
 
@@ -5614,9 +5611,6 @@ class DiskCacheSimplePrefetchTest : public DiskCacheEntryTest {
 
  protected:
   scoped_refptr<net::IOBuffer> payload_;
-
-  // Need to have the one "global" trial list before we change things.
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 

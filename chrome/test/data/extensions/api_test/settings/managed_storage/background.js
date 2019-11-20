@@ -29,7 +29,9 @@ chrome.test.runTests([
         chrome.test.callbackPass(function(results) {
           chrome.test.assertEq({
             'string-policy': 'value',
+            'string-enum-policy': 'value-1',
             'int-policy': -123,
+            'int-enum-policy': 1,
             'double-policy': 456e7,
             'boolean-policy': true,
             'list-policy': [ 'one', 'two', 'three' ],

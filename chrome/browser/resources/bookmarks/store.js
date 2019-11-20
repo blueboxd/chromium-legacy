@@ -14,12 +14,11 @@ import {createEmptyState} from './util.js';
  * the store.
  */
 
-  /** @extends {CrUiStore<BookmarksPageState>} */
-  export class Store extends CrUiStore {
-    constructor() {
-      super(createEmptyState(), reduceAction);
-    }
+/** @extends {CrUiStore<BookmarksPageState>} */
+export class Store extends CrUiStore {
+  constructor() {
+    super(createEmptyState(), reduceAction);
   }
+}
 
-  addSingletonGetter(Store);
-
+addSingletonGetter(Store);

@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -44,7 +45,6 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/resources/grit/webui_resources.h"
 
 using content::BrowserContext;
 using content::DownloadManager;
@@ -60,8 +60,16 @@ constexpr char kGeneratedPath[] =
 content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIDownloadsHost);
-  source->OverrideContentSecurityPolicyScriptSrc(
-      "script-src chrome://resources chrome://test 'self';");
+
+#if BUILDFLAG(OPTIMIZE_WEBUI)
+  webui::SetupBundledWebUIDataSource(source, "downloads.js",
+                                     IDR_DOWNLOADS_DOWNLOADS_ROLLUP_JS,
+                                     IDR_DOWNLOADS_VULCANIZED_HTML);
+#else
+  webui::SetupWebUIDataSource(
+      source, base::make_span(kDownloadsResources, kDownloadsResourcesSize),
+      kGeneratedPath, IDR_DOWNLOADS_DOWNLOADS_HTML);
+#endif
 
   bool requests_ap_verdicts =
       safe_browsing::AdvancedProtectionStatusManagerFactory::GetForProfile(
@@ -156,25 +164,6 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
                           IDR_DOWNLOADS_IMAGES_NO_DOWNLOADS_SVG);
   source->AddResourcePath("downloads.mojom-lite.js",
                           IDR_DOWNLOADS_MOJO_LITE_JS);
-  source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
-  source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);
-#if BUILDFLAG(OPTIMIZE_WEBUI)
-  source->AddResourcePath("downloads.js", IDR_DOWNLOADS_DOWNLOADS_ROLLUP_JS);
-  source->SetDefaultResource(IDR_DOWNLOADS_VULCANIZED_HTML);
-#else
-  for (size_t i = 0; i < kDownloadsResourcesSize; ++i) {
-    std::string path = kDownloadsResources[i].name;
-    if (path.rfind(kGeneratedPath, 0) == 0) {
-      path = path.substr(sizeof(kGeneratedPath) - 1);
-    }
-
-    source->AddResourcePath(path, kDownloadsResources[i].value);
-  }
-  source->SetDefaultResource(IDR_DOWNLOADS_DOWNLOADS_HTML);
-#endif
-
-  source->EnableReplaceI18nInJS();
-  source->UseStringsJs();
 
   return source;
 }

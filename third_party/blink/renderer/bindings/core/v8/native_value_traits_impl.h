@@ -416,6 +416,7 @@ struct NativeValueTraits<IDLSequence<T>>
   static ImplType NativeValue(v8::Isolate* isolate,
                               v8::Local<v8::Value> value,
                               ExceptionState& exception_state) {
+    // 1. If Type(V) is not Object, throw a TypeError.
     if (!value->IsObject()) {
       exception_state.ThrowTypeError(
           "The provided value cannot be converted to a sequence.");
@@ -431,12 +432,39 @@ struct NativeValueTraits<IDLSequence<T>>
       ConvertSequenceFast(isolate, value.As<v8::Array>(), exception_state,
                           result);
     } else {
-      ConvertSequenceSlow(isolate, value.As<v8::Object>(), exception_state,
+      // 2. Let method be ? GetMethod(V, @@iterator).
+      // 3. If method is undefined, throw a TypeError.
+      // 4. Return the result of creating a sequence from V and method.
+      auto script_iterator = ScriptIterator::FromIterable(
+          isolate, value.As<v8::Object>(), exception_state);
+      if (exception_state.HadException())
+        return ImplType();
+      if (script_iterator.IsNull()) {
+        // A null ScriptIterator with an empty |exception_state| means the
+        // object is lacking a callable @@iterator property.
+        exception_state.ThrowTypeError(
+            "The object must have a callable @@iterator property.");
+        return ImplType();
+      }
+      ConvertSequenceSlow(isolate, std::move(script_iterator), exception_state,
                           result);
     }
 
     if (exception_state.HadException())
       return ImplType();
+    return result;
+  }
+
+  // https://heycam.github.io/webidl/#es-sequence
+  // This is a special case, used when converting an IDL union that contains a
+  // sequence or frozen array type.
+  static ImplType NativeValue(v8::Isolate* isolate,
+                              ScriptIterator script_iterator,
+                              ExceptionState& exception_state) {
+    DCHECK(!script_iterator.IsNull());
+    ImplType result;
+    ConvertSequenceSlow(isolate, std::move(script_iterator), exception_state,
+                        result);
     return result;
   }
 
@@ -470,38 +498,15 @@ struct NativeValueTraits<IDLSequence<T>>
 
   // Slow case: follow WebIDL's "Creating a sequence from an iterable" steps to
   // iterate through each element.
-  // https://heycam.github.io/webidl/#create-sequence-from-iterable
   static void ConvertSequenceSlow(v8::Isolate* isolate,
-                                  v8::Local<v8::Object> v8_object,
+                                  ScriptIterator script_iterator,
                                   ExceptionState& exception_state,
                                   ImplType& result) {
-    // https://heycam.github.io/webidl/#es-sequence
-    // 2. Let method be ? GetMethod(V, @@iterator).
-    // 3. If method is undefined, throw a TypeError.
-    // 4. Return the result of creating a sequence from V and method.
-    const v8::Local<v8::Function> iterator_method =
-        GetEsIteratorMethod(isolate, v8_object, exception_state);
-    if (exception_state.HadException())
-      return;
-    if (iterator_method.IsEmpty()) {
-      exception_state.ThrowTypeError("Iterator getter is not callable.");
-      return;
-    }
-
     // https://heycam.github.io/webidl/#create-sequence-from-iterable
-    // To create an IDL value of type sequence<T> given an iterable iterable
-    // and an iterator getter method, perform the following steps:
-    // 1. Let iter be ? GetIterator(iterable, sync, method).
-    const v8::Local<v8::Object> iterator = GetEsIteratorWithMethod(
-        isolate, iterator_method, v8_object, exception_state);
-    if (exception_state.HadException())
-      return;
-
     // 2. Initialize i to be 0.
     // 3. Repeat:
     ExecutionContext* execution_context =
         ToExecutionContext(isolate->GetCurrentContext());
-    ScriptIterator script_iterator(iterator, isolate);
     while (script_iterator.Next(execution_context, exception_state)) {
       // 3.1. Let next be ? IteratorStep(iter).
       // 3.2. If next is false, then return an IDL sequence value of type

@@ -41,15 +41,6 @@ void SearchBoxModel::UpdateAccessibleName() {
     observer.HintTextChanged();
 }
 
-void SearchBoxModel::SetSelectionModel(const gfx::SelectionModel& sel) {
-  if (selection_model_ == sel)
-    return;
-
-  selection_model_ = sel;
-  for (auto& observer : observers_)
-    observer.SelectionModelChanged();
-}
-
 void SearchBoxModel::SetTabletMode(bool is_tablet_mode) {
   if (is_tablet_mode == is_tablet_mode_)
     return;

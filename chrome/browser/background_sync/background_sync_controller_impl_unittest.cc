@@ -74,8 +74,6 @@ class BackgroundSyncControllerImplTest : public testing::Test {
   }
 
   void ResetFieldTrialList() {
-    field_trial_list_ =
-        std::make_unique<base::FieldTrialList>(nullptr /* entropy provider */);
     variations::testing::ClearAllVariationParams();
     base::FieldTrialList::CreateFieldTrial(
         BackgroundSyncControllerImpl::kFieldTrialName, kFieldTrialGroup);
@@ -100,7 +98,6 @@ class BackgroundSyncControllerImplTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   TestingProfile profile_;
   std::unique_ptr<BackgroundSyncControllerImpl> controller_;
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncControllerImplTest);
 };

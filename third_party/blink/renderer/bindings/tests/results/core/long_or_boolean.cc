@@ -116,3 +116,4 @@ LongOrBoolean NativeValueTraits<LongOrBoolean>::NativeValue(
 }
 
 }  // namespace blink
+

@@ -114,15 +114,22 @@ void {{v8_class}}::ToImpl(
   {% endif %}
   {% if array_or_sequence_type %}
   {# 11.1, 11.2. Sequences and frozen arrays #}
-  if (HasCallableIteratorSymbol(isolate, v8_value, exception_state)) {
-    {{v8_value_to_local_cpp_value(array_or_sequence_type) | trim | indent}}
-    {% if array_or_sequence_type.enum_values %}
-    {{declare_enum_validation_variable(array_or_sequence_type.enum_values) | trim | indent(4)}}
-    if (!IsValidEnum(cpp_value, kValidValues, base::size(kValidValues), "{{array_or_sequence_type.enum_type}}", exception_state))
+  if (v8_value->IsObject()) {
+    ScriptIterator script_iterator = ScriptIterator::FromIterable(
+        isolate, v8_value.As<v8::Object>(), exception_state);
+    if (exception_state.HadException())
       return;
-    {% endif %}
-    impl.Set{{array_or_sequence_type.type_name}}(cpp_value);
-    return;
+    if (!script_iterator.IsNull()) {
+      {{v8_value_to_local_cpp_value(array_or_sequence_type) | trim | indent(6)}}
+      {% if array_or_sequence_type.enum_values %}
+      {{declare_enum_validation_variable(array_or_sequence_type.enum_values) | trim | indent(6)}}
+      if (!IsValidEnum(cpp_value, kValidValues, base::size(kValidValues),
+                       "{{array_or_sequence_type.enum_type}}", exception_state))
+        return;
+      {% endif %}
+      impl.Set{{array_or_sequence_type.type_name}}(cpp_value);
+      return;
+    }
   }
 
   {% endif %}
@@ -232,3 +239,4 @@ v8::Local<v8::Value> ToV8(const {{cpp_class}}& impl, v8::Local<v8::Object> creat
 }  // namespace blink
 
 {% endfilter %}{# format_blink_cpp_source_code #}
+

@@ -44,7 +44,8 @@ const char kUmaCacheLoadHistogramName[] =
 const char kUmaNetworkLoadHistogramName[] =
     "ContentSuggestions.Feed.Image.LoadFromNetworkTime";
 
-// Keep in sync with DIMENSION_UNKNOWN in third_party/feed/src/main/java/com/
+// Keep in sync with DIMENSION_UNKNOWN in
+// third_party/feed_library/src/main/java/com/
 //  google/android/libraries/feed/host/imageloader/ImageLoaderApi.java.
 const int DIMENSION_UNKNOWN = -1;
 

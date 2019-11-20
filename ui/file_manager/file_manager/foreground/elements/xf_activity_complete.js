@@ -23,18 +23,17 @@ class ActivityComplete extends HTMLElement {
                     .complete {
                         height: 36px;
                         width: 36px;
-                        stroke-width: 3px;
-                        fill: none;
                     }
                 </style>
                 <div class='complete'>
                     <svg xmlns='http://www.w3.org/2000/svg'
                         viewBox='0 0 36 36'>
-                        <path id='success' display='inherit'
-                            d='M4 20l9 9l22 -22' stroke='#34A853'/>
-                        <g id='failure' display='none' stroke='#EA4335'>
-                            <circle cx='18' cy='18' r='14'/>
-                            <path d='M18 10l0 10M18 23l0 3'/>
+                        <path id='success' display='inherit' fill='#34A853'
+                          d='M14 23.6L8.4 18l-1.9 1.9 7.5 7.4 16-16-1.9-1.8z'/>
+                        <g id='failure' display='none' stroke='#EA4335'
+                           stroke-width='2.6'>
+                          <circle cx='18' cy='18' r='12.1' fill='none'/>
+                          <path d='M18 11v8.5m0 2.6v2.6'/>
                         </g>
                     </svg>
                 </div>`;

@@ -6,7 +6,7 @@ import("//components/feed/features.gni")
 
 if (enable_feed_in_chrome) {
   # TODO(twellington): Add a dependency on //components/feed when an appropriate target is defined.
-  feed_deps = [ "//third_party/feed:feed_lib_java" ]
+  feed_deps = [ "//third_party/feed_library:feed_lib_java" ]
 
   feed_java_sources = [
     "//chrome/android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedAppLifecycle.java",
@@ -69,8 +69,8 @@ if (enable_feed_in_chrome) {
   ]
 
   feed_test_deps = [
-    "//third_party/feed:feed_lib_java",
-    "//third_party/feed:feed_conformance_test_lib_android_java",
+    "//third_party/feed_library:feed_lib_java",
+    "//third_party/feed_library:feed_conformance_test_lib_android_java",
   ]
 } else {
   feed_deps = []

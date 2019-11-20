@@ -8,6 +8,7 @@
 #include <dawn/dawn_proc_table.h>
 #include <dawn/webgpu.h>
 
+#include "base/callback.h"
 #include "gpu/command_buffer/client/interface_base.h"
 #include "gpu/command_buffer/common/webgpu_cmd_enums.h"
 
@@ -29,6 +30,10 @@ class WebGPUInterface : public InterfaceBase {
   virtual void FlushCommands() = 0;
   virtual WGPUDevice GetDefaultDevice() = 0;
   virtual ReservedTexture ReserveTexture(WGPUDevice device) = 0;
+  virtual bool RequestAdapterAsync(
+      PowerPreference power_preference,
+      base::OnceCallback<void(uint32_t, const WGPUDeviceProperties&)>
+          request_adapter_callback) = 0;
 
 // Include the auto-generated part of this class. We split this because
 // it means we can easily edit the non-auto generated parts right here in

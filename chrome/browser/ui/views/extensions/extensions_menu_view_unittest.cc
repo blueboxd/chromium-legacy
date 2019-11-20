@@ -16,13 +16,21 @@
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_button.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_item_view.h"
+#include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
-#include "chrome/test/base/browser_with_test_window_test.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/test_with_browser_view.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
+#include "ui/events/base_event_utils.h"
+#include "ui/events/event.h"
+#include "ui/events/event_constants.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/views/controls/button/image_button.h"
 
-class ExtensionsMenuViewUnitTest : public BrowserWithTestWindowTest {
+class ExtensionsMenuViewUnitTest : public TestWithBrowserView {
  public:
   ExtensionsMenuViewUnitTest()
       : allow_extension_menu_instances_(
@@ -31,8 +39,8 @@ class ExtensionsMenuViewUnitTest : public BrowserWithTestWindowTest {
   }
   ~ExtensionsMenuViewUnitTest() override = default;
 
+  // TestWithBrowserView:
   void SetUp() override;
-  void TearDown() override;
 
   // Adds a simple extension to the profile.
   scoped_refptr<const extensions::Extension> AddSimpleExtension(
@@ -42,7 +50,15 @@ class ExtensionsMenuViewUnitTest : public BrowserWithTestWindowTest {
     return extension_service_;
   }
 
-  ExtensionsMenuView* extensions_menu() { return extensions_menu_.get(); }
+  ExtensionsToolbarContainer* extensions_container() {
+    return browser_view()->toolbar()->extensions_container();
+  }
+
+  ExtensionsMenuView* extensions_menu() {
+    return ExtensionsMenuView::GetExtensionsMenuViewForTesting();
+  }
+
+  void ClickPinButton(ExtensionsMenuItemView* menu_item) const;
 
  private:
   base::AutoReset<bool> allow_extension_menu_instances_;
@@ -50,17 +66,13 @@ class ExtensionsMenuViewUnitTest : public BrowserWithTestWindowTest {
 
   extensions::ExtensionService* extension_service_ = nullptr;
 
-  std::unique_ptr<ExtensionsToolbarContainer> extensions_container_;
-  std::unique_ptr<ExtensionsMenuView> extensions_menu_;
-
   DISALLOW_COPY_AND_ASSIGN(ExtensionsMenuViewUnitTest);
 };
 
 void ExtensionsMenuViewUnitTest::SetUp() {
-  BrowserWithTestWindowTest::SetUp();
+  TestWithBrowserView::SetUp();
 
   // Set up some extension-y bits.
-  extensions::LoadErrorReporter::Init(false);
   extensions::TestExtensionSystem* extension_system =
       static_cast<extensions::TestExtensionSystem*>(
           extensions::ExtensionSystem::Get(profile()));
@@ -70,24 +82,8 @@ void ExtensionsMenuViewUnitTest::SetUp() {
   extension_service_ =
       extensions::ExtensionSystem::Get(profile())->extension_service();
 
-  extensions::extension_action_test_util::CreateToolbarModelForProfile(
-      profile());
-
-  // And create the menu itself.
-  extensions_container_ =
-      std::make_unique<ExtensionsToolbarContainer>(browser());
-  extensions_container_->set_owned_by_client();
-
-  extensions_menu_ = std::make_unique<ExtensionsMenuView>(
-      nullptr, browser(), extensions_container_.get());
-  extensions_menu_->set_owned_by_client();
-}
-
-void ExtensionsMenuViewUnitTest::TearDown() {
-  extensions_menu_ = nullptr;
-  extensions_container_ = nullptr;
-
-  BrowserWithTestWindowTest::TearDown();
+  ExtensionsMenuView::ShowBubble(extensions_container()->extensions_button(),
+                                 browser(), extensions_container());
 }
 
 scoped_refptr<const extensions::Extension>
@@ -97,6 +93,19 @@ ExtensionsMenuViewUnitTest::AddSimpleExtension(const char* name) {
   extension_service()->AddExtension(extension.get());
 
   return extension;
+}
+
+void ExtensionsMenuViewUnitTest::ClickPinButton(
+    ExtensionsMenuItemView* menu_item) const {
+  views::ImageButton* pin_button = menu_item->pin_button_for_testing();
+  ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, gfx::Point(1, 1),
+                             gfx::Point(), ui::EventTimeForNow(),
+                             ui::EF_LEFT_MOUSE_BUTTON, 0);
+  pin_button->OnMousePressed(press_event);
+  ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, gfx::Point(1, 1),
+                               gfx::Point(), ui::EventTimeForNow(),
+                               ui::EF_LEFT_MOUSE_BUTTON, 0);
+  pin_button->OnMouseReleased(release_event);
 }
 
 TEST_F(ExtensionsMenuViewUnitTest, ExtensionsAreShownInTheMenu) {
@@ -117,3 +126,20 @@ TEST_F(ExtensionsMenuViewUnitTest, ExtensionsAreShownInTheMenu) {
                                     ->label_text_for_testing()));
   }
 }
+
+TEST_F(ExtensionsMenuViewUnitTest, PinnedExtensionAppearsInToolbar) {
+  AddSimpleExtension("Test Name");
+
+  ExtensionsMenuItemView* menu_item =
+      extensions_menu()->extensions_menu_items_for_testing()[0];
+  ToolbarActionViewController* controller =
+      menu_item->view_controller_for_testing();
+  EXPECT_FALSE(extensions_container()->IsActionVisibleOnToolbar(controller));
+
+  ClickPinButton(menu_item);
+
+  EXPECT_TRUE(extensions_container()->IsActionVisibleOnToolbar(controller));
+}
+
+// TODO(crbug.com/984654): Add tests for multiple extensions, reordering
+// extensions, and showing in multiple windows.

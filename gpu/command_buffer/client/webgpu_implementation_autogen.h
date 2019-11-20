@@ -22,7 +22,4 @@ void AssociateMailbox(GLuint device_id,
 
 void DissociateMailbox(GLuint texture_id, GLuint texture_generation) override;
 
-void RequestAdapter(PowerPreference power_preference =
-                        PowerPreference::kHighPerformance) override;
-
 #endif  // GPU_COMMAND_BUFFER_CLIENT_WEBGPU_IMPLEMENTATION_AUTOGEN_H_

@@ -21,6 +21,4 @@ virtual void AssociateMailbox(GLuint device_id,
                               const GLbyte* mailbox) = 0;
 virtual void DissociateMailbox(GLuint texture_id,
                                GLuint texture_generation) = 0;
-virtual void RequestAdapter(
-    PowerPreference power_preference = PowerPreference::kHighPerformance) = 0;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_WEBGPU_INTERFACE_AUTOGEN_H_

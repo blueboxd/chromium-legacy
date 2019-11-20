@@ -9,6 +9,7 @@
 #include "base/metrics/sparse_histogram.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
+#include "content/browser/frame_host/should_swap_browsing_instance.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -183,6 +184,10 @@ void BackForwardCacheMetrics::MarkNotRestoredWithReason(
     const BackForwardCacheCanStoreDocumentResult& can_store) {
   not_restored_reasons_ |= can_store.not_stored_reasons();
   blocklisted_features_ |= can_store.blocklisted_features();
+  if (!browsing_instance_not_swapped_reason_) {
+    browsing_instance_not_swapped_reason_ =
+        can_store.browsing_instance_not_swapped_reason();
+  }
 }
 
 void BackForwardCacheMetrics::MarkDisableForRenderFrameHost(
@@ -238,6 +243,15 @@ void BackForwardCacheMetrics::RecordMetricsForHistoryNavigationCommit(
     // integer.
     histogram->Add(base::HistogramBase::Sample(
         static_cast<int32_t>(base::HashMetricName(reason))));
+  }
+
+  if (not_restored_reasons_.test(static_cast<size_t>(
+          NotRestoredReason::kRelatedActiveContentsExist)) &&
+      browsing_instance_not_swapped_reason_) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "BackForwardCache.HistoryNavigationOutcome."
+        "BrowsingInstanceNotSwappedReason",
+        browsing_instance_not_swapped_reason_.value());
   }
 }
 

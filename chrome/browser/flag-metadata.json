@@ -2087,6 +2087,11 @@
     "expiry_milestone": 82
   },
   {
+    "name": "enable-webrtc-capture-multi-channel-audio-processing",
+    "owners": [ "saza" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "enable-webrtc-hide-local-ips-with-mdns",
     "owners": [ "qingsi" ],
     "expiry_milestone": 81
@@ -2110,11 +2115,6 @@
     "name": "enable-webrtc-hybrid-agc",
     "owners": [ "aleloi" ],
     "expiry_milestone": 83
-  },
-  {
-    "name": "enable-webrtc-multi-channel-audio-processing",
-    "owners": [ "saza" ],
-    "expiry_milestone": 85
   },
   {
     "name": "enable-webrtc-new-encode-cpu-load-estimator",
@@ -3009,6 +3009,11 @@
     "expiry_milestone": 85
   },
   {
+    "name": "passwords-account-storage-saving-ui",
+    "owners": ["mamir", "fhorschig"],
+    "expiry_milestone": 85
+  },
+  {
     "name": "pdf-annotations",
     "owners": [ "dstockwell@google.com" ],
     "expiry_milestone": 76
@@ -3340,11 +3345,6 @@
     "name": "SupervisedUserCommittedInterstitials",
     "owners": [ "carlosil" ],
     "expiry_milestone": 77
-  },
-  {
-    "name": "sync-clipboard-service",
-    "owners": [ "joaodasilva" ],
-    "expiry_milestone": 80
   },
   {
     "name": "sync-wifi-configurations",

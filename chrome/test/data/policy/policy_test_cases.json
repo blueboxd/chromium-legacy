@@ -4202,6 +4202,9 @@
   "DeviceLoginScreenLargeCursorEnabled" : {
   },
 
+  "DeviceLoginScreenShowOptionsInSystemTrayMenu" : {
+  },
+
   "DeviceLoginScreenDefaultSpokenFeedbackEnabled" : {
   },
 

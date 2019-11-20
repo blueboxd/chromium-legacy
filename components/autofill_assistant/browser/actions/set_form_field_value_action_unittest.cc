@@ -28,6 +28,7 @@ namespace autofill_assistant {
 using ::base::test::RunOnceCallback;
 using ::testing::_;
 using ::testing::InSequence;
+using ::testing::Invoke;
 using ::testing::Pointee;
 using ::testing::Property;
 using ::testing::Return;
@@ -184,6 +185,30 @@ TEST_F(SetFormFieldValueActionTest, Text) {
   EXPECT_CALL(mock_action_delegate_,
               OnSetFieldValue(fake_selector_, "SomeText𠜎", _, _, _))
       .WillOnce(RunOnceCallback<4>(OkClientStatus()));
+
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
+  action.ProcessAction(callback_.Get());
+}
+
+TEST_F(SetFormFieldValueActionTest, MultipleValuesAndSimulateKeypress) {
+  auto* value = set_form_field_proto_->add_value();
+  value->set_text("SomeText");
+  auto* enter = set_form_field_proto_->add_value();
+  enter->set_keycode(13);
+  set_form_field_proto_->set_simulate_key_presses(true);
+
+  SetFormFieldValueAction action(&mock_action_delegate_, proto_);
+  EXPECT_CALL(
+      mock_action_delegate_,
+      OnSetFieldValue(_, "SomeText", /* simulate_key_presses = */ true, _, _))
+      .WillOnce(RunOnceCallback<4>(OkClientStatus()));
+  // The second entry, a deprecated keycode is transformed into a
+  // field_input.keyboard_input.
+  EXPECT_CALL(mock_action_delegate_,
+              OnSendKeyboardInput(_, std::vector<int>{13}, _, _))
+      .WillOnce(RunOnceCallback<3>(OkClientStatus()));
 
   EXPECT_CALL(
       callback_,

@@ -153,32 +153,31 @@ void SetFormFieldValueAction::OnSetFieldValue(int next,
   auto next_field_callback = base::BindOnce(
       &SetFormFieldValueAction::OnSetFieldValue, weak_ptr_factory_.GetWeakPtr(),
       /* next = */ next + 1);
-  for (const auto& field_input : field_inputs_) {
-    if (field_input.keyboard_input) {
-      delegate_->SendKeyboardInput(selector_, *field_input.keyboard_input,
-                                   delay_in_millisecond,
-                                   std::move(next_field_callback));
-    } else if (field_input.use_password) {
-      delegate_->GetWebsiteLoginFetcher()->GetPasswordForLogin(
-          *delegate_->GetClientMemory()->selected_login(),
-          base::BindOnce(&SetFormFieldValueAction::OnGetPassword,
-                         weak_ptr_factory_.GetWeakPtr(),
-                         /* field_index = */ next));
-    } else {
-      if (simulate_key_presses || field_input.value.empty()) {
-        delegate_->SetFieldValue(selector_, field_input.value,
-                                 simulate_key_presses, delay_in_millisecond,
+  const auto& field_input = field_inputs_[next];
+  if (field_input.keyboard_input) {
+    delegate_->SendKeyboardInput(selector_, *field_input.keyboard_input,
+                                 delay_in_millisecond,
                                  std::move(next_field_callback));
-      } else {
-        delegate_->SetFieldValue(
-            selector_, field_input.value, simulate_key_presses,
-            delay_in_millisecond,
-            base::BindOnce(
-                &SetFormFieldValueAction::OnSetFieldValueAndCheckFallback,
-                weak_ptr_factory_.GetWeakPtr(),
-                /* field_index = */ next,
-                /* requested_value = */ field_input.value));
-      }
+  } else if (field_input.use_password) {
+    delegate_->GetWebsiteLoginFetcher()->GetPasswordForLogin(
+        *delegate_->GetClientMemory()->selected_login(),
+        base::BindOnce(&SetFormFieldValueAction::OnGetPassword,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       /* field_index = */ next));
+  } else {
+    if (simulate_key_presses || field_input.value.empty()) {
+      delegate_->SetFieldValue(selector_, field_input.value,
+                               simulate_key_presses, delay_in_millisecond,
+                               std::move(next_field_callback));
+    } else {
+      delegate_->SetFieldValue(
+          selector_, field_input.value, simulate_key_presses,
+          delay_in_millisecond,
+          base::BindOnce(
+              &SetFormFieldValueAction::OnSetFieldValueAndCheckFallback,
+              weak_ptr_factory_.GetWeakPtr(),
+              /* field_index = */ next,
+              /* requested_value = */ field_input.value));
     }
   }
 }

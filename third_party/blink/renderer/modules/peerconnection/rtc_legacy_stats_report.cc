@@ -25,12 +25,20 @@
 
 #include "third_party/blink/renderer/modules/peerconnection/rtc_legacy_stats_report.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/platform/bindings/to_v8.h"
+
 namespace blink {
 
 RTCLegacyStatsReport::RTCLegacyStatsReport(const String& id,
                                            const String& type,
                                            double timestamp)
     : id_(id), type_(type), timestamp_(timestamp) {}
+
+ScriptValue RTCLegacyStatsReport::timestamp(ScriptState* script_state) const {
+  return ScriptValue(script_state->GetIsolate(),
+                     ToV8(base::Time::FromJsTime(timestamp_), script_state));
+}
 
 Vector<String> RTCLegacyStatsReport::names() const {
   Vector<String> result;

@@ -556,8 +556,7 @@ void MediaStreamAudioProcessor::InitializeAudioProcessingModule(
   }
 
   webrtc::AudioProcessing::Config apm_config = audio_processing_->GetConfig();
-  apm_config.pipeline.experimental_multi_channel =
-      base::FeatureList::IsEnabled(features::kWebRtcEnableMultiChannelApm);
+  apm_config.pipeline.experimental_multi_channel = true;
 
   base::Optional<double> gain_control_compression_gain_db;
   blink::PopulateApmConfig(&apm_config, properties,
@@ -616,10 +615,16 @@ void MediaStreamAudioProcessor::InitializeCaptureFifo(
                                      blink::kAudioProcessingSampleRate
 #endif  // defined(IS_CHROMECAST)
                                      : input_format.sample_rate();
-  media::ChannelLayout output_channel_layout =
-      audio_processing_
-          ? media::GuessChannelLayout(kAudioProcessingNumberOfChannels)
-          : input_format.channel_layout();
+
+  media::ChannelLayout output_channel_layout;
+  if (!audio_processing_ ||
+      base::FeatureList::IsEnabled(
+          features::kWebRtcEnableCaptureMultiChannelApm)) {
+    output_channel_layout = input_format.channel_layout();
+  } else {
+    output_channel_layout =
+        media::GuessChannelLayout(kAudioProcessingNumberOfChannels);
+  }
 
   // The output channels from the fifo is normally the same as input.
   int fifo_output_channels = input_format.channels();

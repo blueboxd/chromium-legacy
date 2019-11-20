@@ -225,6 +225,10 @@ double Time::ToJsTime() const {
     // Preserve 0 so the invalid result doesn't depend on the platform.
     return 0;
   }
+  return ToJsTimeIgnoringNull();
+}
+
+double Time::ToJsTimeIgnoringNull() const {
   if (is_max()) {
     // Preserve max without offset to prevent overflow.
     return std::numeric_limits<double>::infinity();

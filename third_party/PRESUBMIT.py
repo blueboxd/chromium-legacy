@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
+
 ANDROID_WHITELISTED_LICENSES = [
   'A(pple )?PSL 2(\.0)?',
   'Android Software Development Kit License',
@@ -143,7 +145,8 @@ def _CheckThirdPartyReadmesUpdated(input_api, output_api):
 
 
 def _IgnoreIfDeleting(input_api, output_api, affected_file, errors):
-  third_party_dir = input_api.os_path.dirname(affected_file.LocalPath())
+  third_party_dir = input_api.os_path.dirname(affected_file.LocalPath()) + \
+    os.path.sep
   for f in input_api.AffectedFiles():
     if f.LocalPath().startswith(third_party_dir):
       if 'D' not in f.Action():

@@ -25,12 +25,12 @@ class DataChannelInterface;
 }  // namespace webrtc
 
 namespace blink {
-class RTCPeerConnectionHandler;
 class RTCAnswerOptionsPlatform;
+class RTCIceCandidatePlatform;
 class RTCOfferOptionsPlatform;
+class RTCPeerConnectionHandler;
 class WebLocalFrame;
 class WebMediaConstraints;
-class WebRTCICECandidate;
 class WebUserMediaRequest;
 
 // This class collects data about each peer connection,
@@ -124,7 +124,7 @@ class MODULES_EXPORT PeerConnectionTracker
   // Sends an update when an Ice candidate is added.
   virtual void TrackAddIceCandidate(
       RTCPeerConnectionHandler* pc_handler,
-      scoped_refptr<blink::WebRTCICECandidate> candidate,
+      scoped_refptr<RTCIceCandidatePlatform> candidate,
       Source source,
       bool succeeded);
 

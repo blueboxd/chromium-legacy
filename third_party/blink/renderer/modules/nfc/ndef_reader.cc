@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "services/device/public/mojom/nfc.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_error_event.h"
@@ -18,6 +19,19 @@
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
+
+namespace {
+
+void OnScanRequestCompleted(ScriptPromiseResolver* resolver,
+                            device::mojom::blink::NDEFErrorPtr error) {
+  if (error) {
+    resolver->Reject(NDEFErrorTypeToDOMException(error->error_type));
+    return;
+  }
+  resolver->Resolve();
+}
+
+}  // namespace
 
 // static
 NDEFReader* NDEFReader::Create(ExecutionContext* context) {
@@ -47,39 +61,70 @@ bool NDEFReader::HasPendingActivity() const {
 }
 
 // https://w3c.github.io/web-nfc/#the-scan-method
-void NDEFReader::scan(const NDEFScanOptions* options) {
-  if (!CheckSecurity())
-    return;
-
-  if (options->hasSignal()) {
-    // 6. If reader.[[Signal]]'s aborted flag is set, then return.
-    if (options->signal()->aborted())
-      return;
-
-    // 7. If reader.[[Signal]] is not null, then add the following abort steps
-    // to reader.[[Signal]]:
-    options->signal()->AddAlgorithm(
-        WTF::Bind(&NDEFReader::Abort, WrapPersistent(this)));
+ScriptPromise NDEFReader::scan(ScriptState* script_state,
+                               const NDEFScanOptions* options,
+                               ExceptionState& exception_state) {
+  ExecutionContext* execution_context = GetExecutionContext();
+  // https://w3c.github.io/web-nfc/#security-policies
+  // WebNFC API must be only accessible from top level browsing context.
+  if (!execution_context || !To<Document>(execution_context)->IsInMainFrame()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
+                                      "NFC interfaces are only avaliable "
+                                      "in a top-level browsing context");
+    return ScriptPromise();
   }
 
-  // Step 8.4, if the url is not an empty string and it is not a valid URL
-  // pattern, fire a NDEFErrorEvent with "SyntaxError" DOMException, then
-  // return.
+  // 7. If reader.[[Signal]]'s aborted flag is set, then reject p with a
+  // "AbortError" DOMException and return p.
+  if (options->hasSignal() && options->signal()->aborted()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kAbortError,
+                                      "The NFC operation was cancelled.");
+    return ScriptPromise();
+  }
+
+  // 9.4 If the reader.[[Id]] is not an empty string and it is not a valid URL
+  // pattern, then reject p with a "SyntaxError" DOMException and return p.
+  // TODO(https://crbug.com/520391): Instead of NDEFScanOptions#url, introduce
+  // and use NDEFScanOptions#id to do the filtering after we add support for
+  // writing NDEFRecord#id.
   if (options->hasURL() && !options->url().IsEmpty()) {
     KURL pattern_url(options->url());
     if (!pattern_url.IsValid() || pattern_url.Protocol() != "https") {
-      DispatchEvent(*MakeGarbageCollected<NDEFErrorEvent>(
-          event_type_names::kError, MakeGarbageCollected<DOMException>(
-                                        DOMExceptionCode::kSyntaxError,
-                                        "Invalid URL pattern was provided.")));
-      return;
+      exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
+                                        "Invalid URL pattern was provided.");
+      return ScriptPromise();
     }
   }
 
-  GetNfcProxy()->StartReading(this, options);
+  // TODO(https://crbug.com/520391): With the note in
+  // https://w3c.github.io/web-nfc/#the-ndefreader-and-ndefwriter-objects,
+  // successive invocations of NDEFReader.scan() with new options should replace
+  // existing filters. For now we just reject this new scan() when there is an
+  // ongoing filter active.
+  if (GetNfcProxy()->IsReading(this)) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "There is already a scan() operation ongoing.");
+    return ScriptPromise();
+  }
+
+  resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  // 8. If reader.[[Signal]] is not null, then add the following abort steps to
+  // reader.[[Signal]]:
+  if (options->hasSignal()) {
+    options->signal()->AddAlgorithm(WTF::Bind(&NDEFReader::Abort,
+                                              WrapPersistent(this),
+                                              WrapPersistent(resolver_.Get())));
+  }
+
+  GetNfcProxy()->StartReading(
+      this, options,
+      WTF::Bind(&OnScanRequestCompleted, WrapPersistent(resolver_.Get())));
+  return resolver_->Promise();
 }
 
 void NDEFReader::Trace(blink::Visitor* visitor) {
+  visitor->Trace(resolver_);
   EventTargetWithInlineData::Trace(visitor);
   ActiveScriptWrappable::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
@@ -98,29 +143,31 @@ void NDEFReader::OnError(device::mojom::blink::NDEFErrorType error) {
       event_type_names::kError, NDEFErrorTypeToDOMException(error)));
 }
 
-void NDEFReader::ContextDestroyed(ExecutionContext*) {
-  GetNfcProxy()->StopReading(this);
-}
-
-void NDEFReader::Abort() {
-  GetNfcProxy()->StopReading(this);
-}
-
-bool NDEFReader::CheckSecurity() {
-  ExecutionContext* execution_context = GetExecutionContext();
-  if (!execution_context)
-    return false;
-  // https://w3c.github.io/web-nfc/#security-policies
-  // WebNFC API must be only accessible from top level browsing context.
-  if (!To<Document>(execution_context)->IsInMainFrame()) {
-    DispatchEvent(*MakeGarbageCollected<NDEFErrorEvent>(
-        event_type_names::kError,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotAllowedError,
-                                           "NFC interfaces are only avaliable "
-                                           "in a top-level browsing context")));
-    return false;
+void NDEFReader::OnMojoConnectionError() {
+  // If |resolver_| has already settled this rejection is silently ignored.
+  if (resolver_) {
+    resolver_->Reject(NDEFErrorTypeToDOMException(
+        device::mojom::blink::NDEFErrorType::NOT_SUPPORTED));
   }
-  return true;
+  // Dispatches an error event.
+  OnError(device::mojom::blink::NDEFErrorType::NOT_SUPPORTED);
+}
+
+void NDEFReader::ContextDestroyed(ExecutionContext*) {
+  // If |resolver_| has already settled this rejection is silently ignored.
+  if (resolver_) {
+    resolver_->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kAbortError,
+        "The execution context is going to be gone."));
+  }
+  GetNfcProxy()->StopReading(this);
+}
+
+void NDEFReader::Abort(ScriptPromiseResolver* resolver) {
+  // If |resolver| has already settled this rejection is silently ignored.
+  resolver->Reject(MakeGarbageCollected<DOMException>(
+      DOMExceptionCode::kAbortError, "The NFC operation was cancelled."));
+  GetNfcProxy()->StopReading(this);
 }
 
 NFCProxy* NDEFReader::GetNfcProxy() const {

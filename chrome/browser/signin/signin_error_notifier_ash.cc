@@ -126,7 +126,7 @@ void SigninErrorNotifier::OnErrorChanged() {
     return;
   }
 
-  const std::string error_account_id = error_controller_->error_account_id();
+  const CoreAccountId error_account_id = error_controller_->error_account_id();
   if (error_account_id ==
       identity_manager_->GetPrimaryAccountInfo().account_id) {
     HandleDeviceAccountError();
@@ -177,7 +177,7 @@ void SigninErrorNotifier::HandleDeviceAccountError() {
 }
 
 void SigninErrorNotifier::HandleSecondaryAccountError(
-    const std::string& account_id) {
+    const CoreAccountId& account_id) {
   account_manager_->GetAccounts(base::BindOnce(
       &SigninErrorNotifier::OnGetAccounts, weak_factory_.GetWeakPtr()));
 }

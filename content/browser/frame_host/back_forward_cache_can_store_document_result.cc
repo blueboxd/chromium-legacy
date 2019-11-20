@@ -115,6 +115,14 @@ void BackForwardCacheCanStoreDocumentResult::NoDueToFeatures(
   blocklisted_features_ |= features;
 }
 
+void BackForwardCacheCanStoreDocumentResult::NoDueToRelatedActiveContents(
+    base::Optional<ShouldSwapBrowsingInstance>
+        browsing_instance_not_swapped_reason) {
+  not_stored_reasons_.set(static_cast<size_t>(
+      BackForwardCacheMetrics::NotRestoredReason::kRelatedActiveContentsExist));
+  browsing_instance_not_swapped_reason_ = browsing_instance_not_swapped_reason;
+}
+
 BackForwardCacheCanStoreDocumentResult::
     BackForwardCacheCanStoreDocumentResult() = default;
 BackForwardCacheCanStoreDocumentResult::BackForwardCacheCanStoreDocumentResult(

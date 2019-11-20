@@ -1438,6 +1438,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"ui-disable-partial-swap", flag_descriptions::kUiPartialSwapName,
      flag_descriptions::kUiPartialSwapDescription, kOsAll,
      SINGLE_DISABLE_VALUE_TYPE(switches::kUIDisablePartialSwap)},
+    {"enable-webrtc-capture-multi-channel-audio-processing",
+     flag_descriptions::kWebrtcCaptureMultiChannelApmName,
+     flag_descriptions::kWebrtcCaptureMultiChannelApmDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kWebRtcEnableCaptureMultiChannelApm)},
     {"disable-webrtc-hw-decoding", flag_descriptions::kWebrtcHwDecodingName,
      flag_descriptions::kWebrtcHwDecodingDescription, kOsAndroid | kOsCrOS,
      SINGLE_DISABLE_VALUE_TYPE(switches::kDisableWebRtcHWDecoding)},
@@ -1470,10 +1474,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-webrtc-hybrid-agc", flag_descriptions::kWebrtcHybridAgcName,
      flag_descriptions::kWebrtcHybridAgcDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebRtcHybridAgc)},
-    {"enable-webrtc-multi-channel-audio-processing",
-     flag_descriptions::kWebrtcMultiChannelApmName,
-     flag_descriptions::kWebrtcMultiChannelApmDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kWebRtcEnableMultiChannelApm)},
     {"enable-webrtc-new-encode-cpu-load-estimator",
      flag_descriptions::kWebrtcNewEncodeCpuLoadEstimatorName,
      flag_descriptions::kWebrtcNewEncodeCpuLoadEstimatorDescription, kOsAll,
@@ -4632,6 +4632,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          password_manager::features::kEnablePasswordsAccountStorage)},
 
+    {"passwords-account-storage-saving-ui",
+     flag_descriptions::kEnablePasswordsAccountStorageSavingUiName,
+     flag_descriptions::kEnablePasswordsAccountStorageSavingUiDescription,
+     kOsWin | kOsMac | kOsLinux,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kEnablePasswordsAccountStorageSavingUi)},
+
 #if !defined(OS_ANDROID)
     {"improved-cookie-controls", flag_descriptions::kImprovedCookieControlsName,
      flag_descriptions::kImprovedCookieControlsDescription, kOsDesktop,
@@ -4645,12 +4652,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          content_settings::kImprovedCookieControlsForThirdPartyCookieBlocking)},
 #endif  // !defined(OS_ANDROID)
-
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-    {"sync-clipboard-service", flag_descriptions::kSyncClipboardServiceName,
-     flag_descriptions::kSyncClipboardServiceDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kSyncClipboardServiceFeature)},
-#endif  // OS_WIN || OS_MACOSX || OS_LINUX
 
 #if !defined(OS_ANDROID)
     {"accessibility-internals-page-improvements",

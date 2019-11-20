@@ -6,7 +6,7 @@ div::-webkit-scrollbar {
     display: none;
 }
 </style>
-<div id=scroller style="width: 400px; height: 400px; overflow-y: scroll; will-change: transform">
+<div id=scroller style="width: 400px; height: 400px; overflow-y: scroll; will-change: transform; border: 1px solid black">
   <div style="height: 400px"></div>
   <div id=overlap style="backface-visibility: hidden; width: 100px; height: 100px; background-color: red"></div>
   <div id=target style="position: relative; top: -50px; left: 50px; width: 100px; height: 100px; background-color: green"></div>
@@ -23,6 +23,8 @@ function drawsContentAndLayoutObject(layer) {
     if (layer.drawsContent === false)
         return false;
     if (!layer.name.includes("Layout"))
+        return false;
+    if (layer.name.includes("LayoutView"))
         return false;
     return true;
 }

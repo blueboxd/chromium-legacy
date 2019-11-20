@@ -142,7 +142,6 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
 
   // Overridden from SearchBoxModelObserver:
   void HintTextChanged() override;
-  void SelectionModelChanged() override;
   void Update() override;
   void SearchEngineChanged() override;
   void ShowAssistantChanged() override;

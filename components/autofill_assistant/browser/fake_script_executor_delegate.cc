@@ -58,6 +58,10 @@ std::string FakeScriptExecutorDelegate::GetAccountEmailAddress() {
   return std::string();
 }
 
+std::string FakeScriptExecutorDelegate::GetLocale() {
+  return "en-US";
+}
+
 void FakeScriptExecutorDelegate::EnterState(AutofillAssistantState state) {
   state_ = state;
 }

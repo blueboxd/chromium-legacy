@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ssl/ssl_blocking_page_base.h"
 
-#include "chrome/browser/ssl/cert_report_helper.h"
+#include "components/security_interstitials/content/cert_report_helper.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
 

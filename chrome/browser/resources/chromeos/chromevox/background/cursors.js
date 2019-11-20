@@ -119,6 +119,10 @@ cursors.Cursor.prototype = {
     return this.node === rhs.node && this.index === rhs.index;
   },
 
+  equalsWithoutRecovery: function(rhs) {
+    return this.recovery_.equalsWithoutRecovery(rhs.recovery_);
+  },
+
   /**
    * Returns true if |rhs| is equal to this cursor.
    * Use this for loose equality between cursors where specific character-based
@@ -749,6 +753,11 @@ cursors.Range.prototype = {
    */
   equals: function(rhs) {
     return this.start_.equals(rhs.start) && this.end_.equals(rhs.end);
+  },
+
+  equalsWithoutRecovery: function(rhs) {
+    return this.start_.equalsWithoutRecovery(rhs.start) &&
+        this.end_.equalsWithoutRecovery(rhs.end);
   },
 
   /**

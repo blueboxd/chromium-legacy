@@ -576,6 +576,25 @@ TEST_F(DeleteRegistryKeyPartialTest, EmptyKey) {
 
 TEST_F(DeleteRegistryKeyPartialTest, NonEmptyKey) {
   CreateSubKeys(false); /* !with_preserves */
+
+  // Put some values into the main key.
+  {
+    RegKey key(root_, path_.c_str(), KEY_SET_VALUE);
+    ASSERT_TRUE(key.Valid());
+    ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(nullptr, 5U));
+    ASSERT_EQ(
+        1u,
+        base::win::RegistryValueIterator(root_, path_.c_str()).ValueCount());
+    ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(L"foo", L"bar"));
+    ASSERT_EQ(
+        2u,
+        base::win::RegistryValueIterator(root_, path_.c_str()).ValueCount());
+    ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(L"baz", L"huh"));
+    ASSERT_EQ(
+        3u,
+        base::win::RegistryValueIterator(root_, path_.c_str()).ValueCount());
+  }
+
   DeleteRegistryKeyPartial(root_, path_.c_str(), std::vector<base::string16>());
   ASSERT_FALSE(RegKey(root_, path_.c_str(), KEY_READ).Valid());
 

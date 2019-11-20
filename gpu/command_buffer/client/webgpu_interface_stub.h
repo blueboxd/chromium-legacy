@@ -27,6 +27,10 @@ class WebGPUInterfaceStub : public WebGPUInterface {
   void FlushCommands() override;
   WGPUDevice GetDefaultDevice() override;
   ReservedTexture ReserveTexture(WGPUDevice device) override;
+  bool RequestAdapterAsync(
+      PowerPreference power_preference,
+      base::OnceCallback<void(uint32_t, const WGPUDeviceProperties&)>
+          request_adapter_callback) override;
 
 // Include the auto-generated part of this class. We split this because
 // it means we can easily edit the non-auto generated parts right here in

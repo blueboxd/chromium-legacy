@@ -22,7 +22,7 @@ COMPONENT_EXPORT(MEDIA_WEBRTC)
 extern const base::Feature kWebRtcApmInAudioService;
 
 COMPONENT_EXPORT(MEDIA_WEBRTC)
-extern const base::Feature kWebRtcEnableMultiChannelApm;
+extern const base::Feature kWebRtcEnableCaptureMultiChannelApm;
 
 COMPONENT_EXPORT(MEDIA_WEBRTC)
 extern const base::Feature kWebRtcHybridAgc;

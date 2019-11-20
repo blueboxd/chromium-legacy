@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "chrome/browser/chromeos/arc/accessibility/accessibility_info_data_wrapper.h"
@@ -110,6 +111,10 @@ class AXTreeSourceArc : public ui::AXTreeSource<AccessibilityInfoDataWrapper*,
       int32_t root_index,
       const std::vector<mojom::AccessibilityNodeInfoDataPtr>& nodes,
       const std::map<int32_t, int32_t>& node_id_to_array_index) const;
+
+  // Find the most top-left focusable node under the given node.
+  AccessibilityInfoDataWrapper* FindFirstFocusableNode(
+      AccessibilityInfoDataWrapper* info_data) const;
 
   // Resets tree state.
   void Reset();

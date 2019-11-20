@@ -130,3 +130,4 @@ TestEnumOrDouble NativeValueTraits<TestEnumOrDouble>::NativeValue(
 }
 
 }  // namespace blink
+

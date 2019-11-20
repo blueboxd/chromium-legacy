@@ -9,9 +9,6 @@
 #include "google_apis/google_api_keys.h"
 
 // Configurable service data.
-constexpr char kGcdBaseUrl[] = "https://www.googleapis.com/clouddevices/v1";
-constexpr char kGcdJid[] = "clouddevices.gserviceaccount.com";
-
 // Debug builds should default to the autopush environment (can be configured
 // via cmd line switch).  Release builds will point to the prod environment.
 #if defined(NDEBUG)
@@ -26,8 +23,6 @@ constexpr char kRemotingServerEndpoint[] =
 
 // Command line switches.
 #if !defined(NDEBUG)
-constexpr char kGcdBaseUrlSwitch[] = "gcd-base-url";
-constexpr char kGcdJidSwitch[] = "gcd-jid";
 constexpr char kFtlServerEndpointSwitch[] = "ftl-server-endpoint";
 constexpr char kRemotingServerEndpointSwitch[] = "remoting-server-endpoint";
 #endif  // !defined(NDEBUG)
@@ -35,9 +30,7 @@ constexpr char kRemotingServerEndpointSwitch[] = "remoting-server-endpoint";
 namespace remoting {
 
 ServiceUrls::ServiceUrls()
-    : gcd_base_url_(kGcdBaseUrl),
-      gcd_jid_(kGcdJid),
-      ftl_server_endpoint_(kFtlServerEndpoint),
+    : ftl_server_endpoint_(kFtlServerEndpoint),
       remoting_server_endpoint_(kRemotingServerEndpoint) {
 #if !defined(NDEBUG)
   // The command line may not be initialized when running as a PNaCl plugin.
@@ -45,12 +38,6 @@ ServiceUrls::ServiceUrls()
     // Allow debug builds to override urls via command line.
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     CHECK(command_line);
-    if (command_line->HasSwitch(kGcdBaseUrlSwitch)) {
-      gcd_base_url_ = command_line->GetSwitchValueASCII(kGcdBaseUrlSwitch);
-    }
-    if (command_line->HasSwitch(kGcdJidSwitch)) {
-      gcd_jid_ = command_line->GetSwitchValueASCII(kGcdJidSwitch);
-    }
     if (command_line->HasSwitch(kFtlServerEndpointSwitch)) {
       ftl_server_endpoint_ =
           command_line->GetSwitchValueASCII(kFtlServerEndpointSwitch);

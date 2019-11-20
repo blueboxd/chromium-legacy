@@ -4,9 +4,6 @@
 
 package org.chromium.chromoting.jni;
 
-import android.content.Context;
-
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -23,11 +20,8 @@ public class JniInterface {
     /**
      * To be called once from the Application context singleton. Loads and initializes the native
      * code. Called on the UI thread.
-     * @param context The Application context.
      */
-    @SuppressWarnings("NoContextGetApplicationContext")
-    public static void loadLibrary(Context context) {
-        ContextUtils.initApplicationContext(context.getApplicationContext());
+    public static void loadLibrary() {
         try {
             System.loadLibrary(LIBRARY_NAME);
         } catch (UnsatisfiedLinkError e) {

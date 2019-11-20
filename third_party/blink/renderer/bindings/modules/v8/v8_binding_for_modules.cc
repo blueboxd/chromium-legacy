@@ -377,9 +377,9 @@ static std::unique_ptr<IDBKey> CreateIDBKeyFromValueAndKeyPath(
         continue;
       }
       if (element == "lastModifiedDate") {
-        v8_value =
-            v8::Date::New(context, V8File::ToImpl(object)->lastModifiedDate())
-                .ToLocalChecked();
+        v8_value = V8File::ToImpl(object)
+                       ->lastModifiedDate(ScriptState::From(context))
+                       .V8Value();
         continue;
       }
       // Fall through.

@@ -343,7 +343,8 @@ HtmlFieldType FieldTypeFromAutocompleteAttributeValue(
       autocomplete_attribute_value == "phone_ext")
     return HTML_TYPE_TEL_EXTENSION;
 
-  if (autocomplete_attribute_value == "email")
+  if (autocomplete_attribute_value == "email" ||
+      autocomplete_attribute_value == "username")
     return HTML_TYPE_EMAIL;
 
   if (autocomplete_attribute_value == "upi-vpa" ||

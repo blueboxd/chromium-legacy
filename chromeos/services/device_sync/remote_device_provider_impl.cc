@@ -11,6 +11,15 @@
 
 namespace chromeos {
 
+namespace {
+// Converts |user_account_id| to a string that can be used as a user id when
+// creating a remote device loader.
+std::string ToRemoteDeviceUserId(const CoreAccountId& user_account_id) {
+  // TODO(msarda): For now simply return the underlying id of |user_account_id|.
+  return user_account_id.id;
+}
+}  // namespace
+
 namespace device_sync {
 
 // static
@@ -21,12 +30,12 @@ RemoteDeviceProviderImpl::Factory*
 std::unique_ptr<RemoteDeviceProvider>
 RemoteDeviceProviderImpl::Factory::NewInstance(
     CryptAuthDeviceManager* device_manager,
-    const std::string& user_id,
+    const CoreAccountId& user_account_id,
     const std::string& user_private_key) {
   if (!factory_instance_) {
     factory_instance_ = new Factory();
   }
-  return factory_instance_->BuildInstance(device_manager, user_id,
+  return factory_instance_->BuildInstance(device_manager, user_account_id,
                                           user_private_key);
 }
 
@@ -41,22 +50,23 @@ RemoteDeviceProviderImpl::Factory::~Factory() = default;
 std::unique_ptr<RemoteDeviceProvider>
 RemoteDeviceProviderImpl::Factory::BuildInstance(
     CryptAuthDeviceManager* device_manager,
-    const std::string& user_id,
+    const CoreAccountId& user_account_id,
     const std::string& user_private_key) {
-  return base::WrapUnique(
-      new RemoteDeviceProviderImpl(device_manager, user_id, user_private_key));
+  return base::WrapUnique(new RemoteDeviceProviderImpl(
+      device_manager, user_account_id, user_private_key));
 }
 
 RemoteDeviceProviderImpl::RemoteDeviceProviderImpl(
     CryptAuthDeviceManager* device_manager,
-    const std::string& user_id,
+    const CoreAccountId& user_account_id,
     const std::string& user_private_key)
     : device_manager_(device_manager),
-      user_id_(user_id),
+      user_account_id_(user_account_id),
       user_private_key_(user_private_key) {
   device_manager_->AddObserver(this);
   remote_device_loader_ = RemoteDeviceLoader::Factory::NewInstance(
-      device_manager->GetSyncedDevices(), user_id, user_private_key,
+      device_manager->GetSyncedDevices(), ToRemoteDeviceUserId(user_account_id),
+      user_private_key,
       multidevice::SecureMessageDelegateImpl::Factory::NewInstance());
   remote_device_loader_->Load(
       base::Bind(&RemoteDeviceProviderImpl::OnRemoteDevicesLoaded,
@@ -74,7 +84,8 @@ void RemoteDeviceProviderImpl::OnSyncFinished(
       device_change_result ==
           CryptAuthDeviceManager::DeviceChangeResult::CHANGED) {
     remote_device_loader_ = RemoteDeviceLoader::Factory::NewInstance(
-        device_manager_->GetSyncedDevices(), user_id_, user_private_key_,
+        device_manager_->GetSyncedDevices(),
+        ToRemoteDeviceUserId(user_account_id_), user_private_key_,
         multidevice::SecureMessageDelegateImpl::Factory::NewInstance());
 
     remote_device_loader_->Load(

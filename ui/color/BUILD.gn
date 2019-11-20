@@ -18,7 +18,6 @@ jumbo_component("color") {
     "color_set.h",
     "color_transform.cc",
     "color_transform.h",
-    "color_variant.h",
   ]
 
   defines = [ "IS_COLOR_IMPL" ]

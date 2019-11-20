@@ -9,6 +9,7 @@
 #include "build/branding_buildflags.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ui/webui/localized_string.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/browser/ui/webui/welcome/bookmark_handler.h"
 #include "chrome/browser/ui/webui/welcome/google_apps_handler.h"
 #include "chrome/browser/ui/webui/welcome/helpers.h"
@@ -25,13 +26,15 @@
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/strings/grit/components_strings.h"
 #include "net/base/url_util.h"
-#include "ui/resources/grit/webui_resources.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif
 
 namespace {
+
+constexpr char kGeneratedPath[] =
+    "@out_folder@/gen/chrome/browser/resources/welcome/";
 
 const char kPreviewBackgroundPath[] = "preview-background.jpg";
 
@@ -128,26 +131,12 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
 
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(url.host());
-  html_source->OverrideContentSecurityPolicyScriptSrc(
-      "script-src chrome://resources chrome://test 'self';");
+  webui::SetupWebUIDataSource(
+      html_source, base::make_span(kWelcomeResources, kWelcomeResourcesSize),
+      kGeneratedPath, IDR_WELCOME_HTML);
 
   // Add welcome strings.
   AddStrings(html_source);
-
-  // Add all welcome resources.
-  std::string generated_path =
-      "@out_folder@/gen/chrome/browser/resources/welcome/";
-
-  for (size_t i = 0; i < kWelcomeResourcesSize; ++i) {
-    std::string path = kWelcomeResources[i].name;
-    if (path.rfind(generated_path, 0) == 0) {
-      path = path.substr(generated_path.length());
-    }
-
-    html_source->AddResourcePath(path, kWelcomeResources[i].value);
-  }
-  html_source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
-  html_source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Load unscaled images.
@@ -178,9 +167,6 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
   html_source->AddResourcePath("images/set_default_light.svg",
                                IDR_WELCOME_SET_DEFAULT_LIGHT);
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
-
-  // chrome://welcome
-  html_source->SetDefaultResource(IDR_WELCOME_HTML);
 
 #if defined(OS_WIN)
   html_source->AddBoolean("is_win10",
@@ -213,8 +199,6 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
                           weak_ptr_factory_.GetWeakPtr()),
       base::BindRepeating(&HandleRequestCallback,
                           weak_ptr_factory_.GetWeakPtr()));
-  html_source->UseStringsJs();
-  html_source->EnableReplaceI18nInJS();
 
   content::WebUIDataSource::Add(profile, html_source);
 }

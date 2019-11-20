@@ -55,10 +55,9 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode&) override;
 
-  virtual bool HasValidTarget() const;
-
   SMILTimeContainer* TimeContainer() const { return time_container_.Get(); }
 
+  bool HasValidTarget() const;
   SVGElement* targetElement() const { return target_element_; }
   const QualifiedName& AttributeName() const { return attribute_name_; }
 
@@ -135,6 +134,9 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   virtual void WillChangeAnimationTarget();
   virtual void DidChangeAnimationTarget();
 
+  virtual void StartedActiveInterval();
+  void QueueDiscard();
+
   QualifiedName attribute_name_;
 
  private:
@@ -142,7 +144,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   void ClearResourceAndEventBaseReferences();
   void ClearConditions();
 
-  void StartedActiveInterval();
   void EndedActiveInterval();
   virtual void UpdateAnimation(float percent,
                                unsigned repeat,

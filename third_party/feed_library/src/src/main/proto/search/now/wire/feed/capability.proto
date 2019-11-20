@@ -1,0 +1,40 @@
+// Copyright 2019 The Feed Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto2";
+
+package search.now.wire.feed;
+
+option optimize_for=LITE_RUNTIME;
+
+option java_package = "com.google.search.now.wire.feed";
+option java_outer_classname = "CapabilityProto";
+
+// Feature capability of either the client or the server.
+// Next ID: 12.
+enum Capability {
+  UNKNOWN_CAPABILITY = 0;
+  BASE_UI = 1;
+  FEED_UI = 2;
+  UNDOABLE_ACTIONS = 4;
+  MANAGE_INTERESTS = 5;
+  CARD_MENU_TOOLTIP = 6;
+  USE_SECONDARY_PAGE_REQUEST = 7;
+  ARTICLE_SNIPPETS = 8;
+  CAROUSELS = 9;
+  ELEMENTS = 10;
+  CONTENT_ID_UNIFICATION = 11;
+
+  reserved 3;
+}

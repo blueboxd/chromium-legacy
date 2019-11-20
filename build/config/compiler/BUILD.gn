@@ -1534,24 +1534,21 @@ config("default_warnings") {
 
           # TODO(https://crbug.com/1002945): Evaluate and possibly enable.
           "-Wno-sizeof-array-div",
+
+          # TODO(https://crbug.com/1016947) Clean up, enable.
+          "-Wno-bitwise-conditional-parentheses",
+
+          # TODO(https://crbug.com/1016945) Clean up, enable.
+          "-Wno-builtin-assume-aligned-alignment",
+
+          # TODO(https://crbug.com/1024203) Clean up, enable.
+          "-Wno-tautological-bitwise-compare",
         ]
 
         cflags_c += [
           # TODO(https://crbug.com/995993): Clean up and enable.
           "-Wno-implicit-fallthrough",
         ]
-        if (llvm_force_head_revision) {
-          cflags += [
-            # TODO(https://crbug.com/1016947) Clean up, enable.
-            "-Wno-bitwise-conditional-parentheses",
-
-            # TODO(https://crbug.com/1016945) Clean up, enable.
-            "-Wno-builtin-assume-aligned-alignment",
-
-            # TODO(https://crbug.com/1024203) Clean up, enable.
-            "-Wno-tautological-bitwise-compare",
-          ]
-        }
       }
     }
   }

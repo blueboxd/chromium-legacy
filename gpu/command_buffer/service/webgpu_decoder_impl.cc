@@ -45,6 +45,9 @@ class WireServerCommandSerializer : public dawn_wire::CommandSerializer {
   ~WireServerCommandSerializer() override = default;
   void* GetCmdSpace(size_t size) final;
   bool Flush() final;
+  void SendAdapterProperties(uint32_t request_adapter_serial,
+                             uint32_t adapter_server_id,
+                             const dawn_native::Adapter& adapter);
 
  private:
   DecoderClient* client_;
@@ -107,12 +110,48 @@ bool WireServerCommandSerializer::Flush() {
   return true;
 }
 
+void WireServerCommandSerializer::SendAdapterProperties(
+    uint32_t request_adapter_serial,
+    uint32_t adapter_service_id,
+    const dawn_native::Adapter& adapter) {
+  WGPUDeviceProperties adapter_properties = adapter.GetAdapterProperties();
+
+  size_t serialized_adapter_properties_size =
+      dawn_wire::SerializedWGPUDevicePropertiesSize(&adapter_properties);
+  std::vector<char> serialized_buffer(sizeof(cmds::DawnReturnDataHeader) +
+                                      sizeof(cmds::DawnReturnAdapterIDs) +
+                                      serialized_adapter_properties_size);
+
+  // Set Dawn return data header
+  reinterpret_cast<cmds::DawnReturnDataHeader*>(serialized_buffer.data())
+      ->return_data_type = DawnReturnDataType::kRequestedDawnAdapterProperties;
+
+  // Set adapter ids
+  cmds::DawnReturnAdapterInfo* return_adapter_info =
+      reinterpret_cast<cmds::DawnReturnAdapterInfo*>(
+          serialized_buffer.data() + sizeof(cmds::DawnReturnDataHeader));
+  return_adapter_info->adapter_ids.request_adapter_serial =
+      request_adapter_serial;
+  return_adapter_info->adapter_ids.adapter_service_id = adapter_service_id;
+
+  // Set serialized adapter properties
+  dawn_wire::SerializeWGPUDeviceProperties(
+      &adapter_properties, return_adapter_info->deserialized_buffer);
+
+  client_->HandleReturnData(base::make_span(
+      reinterpret_cast<const uint8_t*>(serialized_buffer.data()),
+      serialized_buffer.size()));
+}
+
 dawn_native::DeviceType PowerPreferenceToDawnDeviceType(
     PowerPreference power_preference) {
   switch (power_preference) {
     case PowerPreference::kLowPower:
       return dawn_native::DeviceType::IntegratedGPU;
     case PowerPreference::kHighPerformance:
+    // Currently for simplicity we always choose discrete GPU as the device
+    // related to default power preference.
+    case PowerPreference::kDefault:
       return dawn_native::DeviceType::DiscreteGPU;
     default:
       NOTREACHED();
@@ -351,10 +390,9 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
 
   void DiscoverAdapters();
 
-  dawn_native::Adapter GetPreferredAdapter(
-      PowerPreference power_preference) const;
+  int32_t GetPreferredAdapterIndex(PowerPreference power_preference) const;
 
-  error::Error InitDawnDeviceAndSetWireServer(dawn_native::Adapter* adapter);
+  error::Error InitDawnDeviceAndSetWireServer(int32_t requested_adapter_index);
 
   std::unique_ptr<SharedImageRepresentationFactory>
       shared_image_representation_factory_;
@@ -434,8 +472,8 @@ ContextResult WebGPUDecoderImpl::Initialize() {
 }
 
 error::Error WebGPUDecoderImpl::InitDawnDeviceAndSetWireServer(
-    dawn_native::Adapter* adapter) {
-  DCHECK(adapter != nullptr && (*adapter));
+    int32_t requested_adapter_index) {
+  DCHECK_LE(0, requested_adapter_index);
 
   // TODO(jiawei.shao@intel.com): support multiple Dawn devices.
   if (wgpu_device_ != nullptr) {
@@ -443,7 +481,9 @@ error::Error WebGPUDecoderImpl::InitDawnDeviceAndSetWireServer(
     return error::kNoError;
   }
 
-  wgpu_device_ = adapter->CreateDevice();
+  DCHECK_LT(static_cast<size_t>(requested_adapter_index),
+            dawn_adapters_.size());
+  wgpu_device_ = dawn_adapters_[requested_adapter_index].CreateDevice();
   if (wgpu_device_ == nullptr) {
     return error::kLostContext;
   }
@@ -484,32 +524,33 @@ void WebGPUDecoderImpl::DiscoverAdapters() {
   }
 }
 
-dawn_native::Adapter WebGPUDecoderImpl::GetPreferredAdapter(
+int32_t WebGPUDecoderImpl::GetPreferredAdapterIndex(
     PowerPreference power_preference) const {
   dawn_native::DeviceType preferred_device_type =
       PowerPreferenceToDawnDeviceType(power_preference);
 
-  dawn_native::Adapter discrete_gpu_adapter = {};
-  dawn_native::Adapter integrated_gpu_adapter = {};
-  dawn_native::Adapter cpu_adapter = {};
-  dawn_native::Adapter unknown_adapter = {};
+  int32_t discrete_gpu_adapter_index = -1;
+  int32_t integrated_gpu_adapter_index = -1;
+  int32_t cpu_adapter_index = -1;
+  int32_t unknown_adapter_index = -1;
 
-  for (const dawn_native::Adapter& adapter : dawn_adapters_) {
+  for (int32_t i = 0; i < static_cast<int32_t>(dawn_adapters_.size()); ++i) {
+    const dawn_native::Adapter& adapter = dawn_adapters_[i];
     if (adapter.GetDeviceType() == preferred_device_type) {
-      return adapter;
+      return i;
     }
     switch (adapter.GetDeviceType()) {
       case dawn_native::DeviceType::DiscreteGPU:
-        discrete_gpu_adapter = adapter;
+        discrete_gpu_adapter_index = i;
         break;
       case dawn_native::DeviceType::IntegratedGPU:
-        integrated_gpu_adapter = adapter;
+        integrated_gpu_adapter_index = i;
         break;
       case dawn_native::DeviceType::CPU:
-        cpu_adapter = adapter;
+        cpu_adapter_index = i;
         break;
       case dawn_native::DeviceType::Unknown:
-        unknown_adapter = adapter;
+        unknown_adapter_index = i;
         break;
       default:
         NOTREACHED();
@@ -518,19 +559,19 @@ dawn_native::Adapter WebGPUDecoderImpl::GetPreferredAdapter(
   }
 
   // For now, we always prefer the discrete GPU
-  if (discrete_gpu_adapter) {
-    return discrete_gpu_adapter;
+  if (discrete_gpu_adapter_index >= 0) {
+    return discrete_gpu_adapter_index;
   }
-  if (integrated_gpu_adapter) {
-    return integrated_gpu_adapter;
+  if (integrated_gpu_adapter_index >= 0) {
+    return integrated_gpu_adapter_index;
   }
-  if (cpu_adapter) {
-    return cpu_adapter;
+  if (cpu_adapter_index >= 0) {
+    return cpu_adapter_index;
   }
-  if (unknown_adapter) {
-    return unknown_adapter;
+  if (unknown_adapter_index >= 0) {
+    return unknown_adapter_index;
   }
-  return dawn_native::Adapter();
+  return -1;
 }
 
 const char* WebGPUDecoderImpl::GetCommandName(unsigned int command_id) const {
@@ -614,14 +655,22 @@ error::Error WebGPUDecoderImpl::HandleRequestAdapter(
 
   PowerPreference power_preference =
       static_cast<PowerPreference>(c.power_preference);
-  dawn_native::Adapter requested_adapter =
-      GetPreferredAdapter(power_preference);
-  if (!requested_adapter) {
+  int32_t requested_adapter_index = GetPreferredAdapterIndex(power_preference);
+  if (requested_adapter_index < 0) {
     return error::kLostContext;
   }
 
+  // Currently we treat the index of the adapter in dawn_adapters_ as the id of
+  // the adapter in the server side.
+  DCHECK_LT(static_cast<size_t>(requested_adapter_index),
+            dawn_adapters_.size());
+  const dawn_native::Adapter& adapter = dawn_adapters_[requested_adapter_index];
+  wire_serializer_->SendAdapterProperties(
+      static_cast<uint32_t>(c.request_adapter_serial),
+      static_cast<uint32_t>(requested_adapter_index), adapter);
+
   // TODO(jiawei.shao@intel.com): support creating device with device descriptor
-  return InitDawnDeviceAndSetWireServer(&requested_adapter);
+  return InitDawnDeviceAndSetWireServer(requested_adapter_index);
 }
 
 error::Error WebGPUDecoderImpl::HandleDawnCommands(

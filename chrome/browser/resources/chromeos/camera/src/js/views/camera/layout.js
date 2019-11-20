@@ -25,7 +25,7 @@ cca.views.camera = cca.views.camera || {};
 var Resolution = Resolution || {};
 
 /**
- * import {assert} from 'chrome://resources/js/assert.js';
+ * import {assert} from '../chrome_util.js';
  */
 var assert = assert || {};
 

@@ -162,6 +162,11 @@ class DISPLAY_EXPORT Display final {
   int RotationAsDegree() const;
   void SetRotationAsDegree(int rotation);
 
+  // Panel's native rotation. This is same as |rotation()| in normal case.
+  Rotation panel_rotation() const { return panel_rotation_; }
+  void set_panel_rotation(Rotation rotation) { panel_rotation_ = rotation; }
+  int PanelRotationAsDegree() const;
+
   // Returns an exact matrix representation of the transform that corrects for
   // the display's rotation.
   static gfx::Transform GetRotationTransform(Rotation rotation,
@@ -292,6 +297,7 @@ class DISPLAY_EXPORT Display final {
   gfx::Rect work_area_;
   float device_scale_factor_;
   Rotation rotation_ = ROTATE_0;
+  Rotation panel_rotation_ = ROTATE_0;
   TouchSupport touch_support_ = TouchSupport::UNKNOWN;
   AccelerometerSupport accelerometer_support_ = AccelerometerSupport::UNKNOWN;
   gfx::Size maximum_cursor_size_;

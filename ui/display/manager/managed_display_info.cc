@@ -335,10 +335,6 @@ Display::Rotation ManagedDisplayInfo::GetLogicalActiveRotation() const {
       GetRotation(Display::RotationSource::ACTIVE));
 }
 
-Display::Rotation ManagedDisplayInfo::GetNaturalOrientationRotation() const {
-  return GetRotationWithPanelOrientation(Display::ROTATE_0);
-}
-
 Display::Rotation ManagedDisplayInfo::GetRotation(
     Display::RotationSource source) const {
   if (rotations_.find(source) == rotations_.end())

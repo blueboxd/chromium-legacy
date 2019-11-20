@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {isMac} from 'chrome://resources/js/cr.m.js';
-import {TestStore} from 'chrome://test/bookmarks/test_store.js';
 import {HIDE_FOCUS_RING_ATTRIBUTE, LOCAL_STORAGE_FOLDER_STATE_KEY, LOCAL_STORAGE_TREE_WIDTH_KEY} from 'chrome://bookmarks/bookmarks.js';
-import {createFolder, normalizeIterable, replaceBody} from 'chrome://test/bookmarks/test_util.js';
-import {keyDownOn, pressAndReleaseKeyOn, tap} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+import {isMac} from 'chrome://resources/js/cr.m.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+import {keyDownOn, pressAndReleaseKeyOn, tap} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+import {TestStore} from 'chrome://test/bookmarks/test_store.js';
+import {createFolder, normalizeIterable, replaceBody} from 'chrome://test/bookmarks/test_util.js';
 import {flushTasks} from 'chrome://test/test_util.m.js';
 
 suite('<bookmarks-app>', function() {
@@ -81,8 +81,7 @@ suite('<bookmarks-app>', function() {
     await flushTasks();
     const list = app.$$('bookmarks-list');
     const item = list.root.querySelectorAll('bookmarks-item')[0];
-    const getFocusAttribute = () =>
-        app.getAttribute(HIDE_FOCUS_RING_ATTRIBUTE);
+    const getFocusAttribute = () => app.getAttribute(HIDE_FOCUS_RING_ATTRIBUTE);
 
     assertEquals(null, getFocusAttribute());
 
@@ -102,8 +101,7 @@ suite('<bookmarks-app>', function() {
     const searchInput =
         app.$$('bookmarks-toolbar').searchField.getSearchInput();
     assertNotEquals(searchInput, getDeepActiveElement());
-    pressAndReleaseKeyOn(
-        document.body, '', isMac ? 'meta' : 'ctrl', 'f');
+    pressAndReleaseKeyOn(document.body, '', isMac ? 'meta' : 'ctrl', 'f');
     assertEquals(searchInput, getDeepActiveElement());
   });
 });

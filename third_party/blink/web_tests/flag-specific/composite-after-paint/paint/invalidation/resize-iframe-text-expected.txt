@@ -15,6 +15,11 @@
           "object": "LayoutNGBlockFlow HTML",
           "rect": [8, 300, 60, 22],
           "reason": "chunk appeared"
+        },
+        {
+          "object": "VerticalScrollbar",
+          "rect": [485, 0, 15, 200],
+          "reason": "chunk disappeared"
         }
       ]
     }

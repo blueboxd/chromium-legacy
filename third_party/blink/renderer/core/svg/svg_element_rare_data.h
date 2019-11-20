@@ -29,6 +29,7 @@
 
 namespace blink {
 
+class ElementSMILAnimations;
 class SVGResourceClient;
 
 class SVGElementRareData final : public GarbageCollected<SVGElementRareData> {
@@ -79,6 +80,9 @@ class SVGElementRareData final : public GarbageCollected<SVGElementRareData> {
     return web_animated_attributes_;
   }
 
+  ElementSMILAnimations* GetSMILAnimations() { return smil_animations_; }
+  ElementSMILAnimations& EnsureSMILAnimations();
+
   MutableCSSPropertyValueSet* AnimatedSMILStyleProperties() const {
     return animated_smil_style_properties_.Get();
   }
@@ -108,6 +112,7 @@ class SVGElementRareData final : public GarbageCollected<SVGElementRareData> {
   HeapHashSet<WeakMember<SVGElement>> element_instances_;
   Member<SVGElement> corresponding_element_;
   Member<SVGResourceClient> resource_client_;
+  Member<ElementSMILAnimations> smil_animations_;
   bool instances_updates_blocked_ : 1;
   bool use_override_computed_style_ : 1;
   bool needs_override_computed_style_update_ : 1;

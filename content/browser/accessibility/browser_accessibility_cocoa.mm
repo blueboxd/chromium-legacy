@@ -1431,10 +1431,14 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     return nil;
   if ([self internalRole] == ax::mojom::Role::kColumn) {
     DCHECK(owner_->node());
-    return @(*owner_->node()->GetTableColColIndex());
+    base::Optional<int> col_index = *owner_->node()->GetTableColColIndex();
+    if (col_index)
+      return @(*col_index);
   } else if ([self internalRole] == ax::mojom::Role::kRow) {
     DCHECK(owner_->node());
-    return @(*owner_->node()->GetTableRowRowIndex());
+    base::Optional<int> row_index = owner_->node()->GetTableRowRowIndex();
+    if (row_index)
+      return @(*row_index);
   }
 
   return nil;

@@ -44,6 +44,10 @@ RecoveryStrategy.prototype = {
    */
   recover: function() {
     return null;
+  },
+
+  equalsWithoutRecovery: function(rhs) {
+    return this.node_ === rhs.node_;
   }
 };
 

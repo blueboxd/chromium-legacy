@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 72 tests; 70 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 72 tests; 71 PASS, 1 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS NDEFMessage interface: existence and properties of interface object
@@ -53,7 +53,7 @@ PASS NDEFReader interface: existence and properties of interface prototype objec
 PASS NDEFReader interface: existence and properties of interface prototype object's @@unscopables property
 PASS NDEFReader interface: attribute onerror
 PASS NDEFReader interface: attribute onreading
-FAIL NDEFReader interface: operation scan(NDEFScanOptions) assert_unreached: Throws "TypeError: Illegal invocation" instead of rejecting promise Reached unreachable code
+PASS NDEFReader interface: operation scan(NDEFScanOptions)
 PASS NDEFReader must be primary interface of new NDEFReader();
 PASS Stringification of new NDEFReader();
 PASS NDEFReader interface: new NDEFReader(); must inherit property "onerror" with the proper type

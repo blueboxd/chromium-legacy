@@ -97,28 +97,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
       const network::ResourceRequest& request) {
     return request.isolated_world_origin;
   }
-  static const GURL& referrer(const network::ResourceRequest& request) {
-    // TODO(crbug.com/912680, crbug.com/1020592): Move this back to
-    // NetworkServiceNetworkDelegate when the current cause of referrer
-    // mismatches is found.
-    if (request.referrer != net::URLRequestJob::ComputeReferrerForPolicy(
-                                request.referrer_policy, request.referrer,
-                                request.request_initiator, request.url)) {
-      // Record information to help debug issues like http://crbug.com/422871.
-      if (request.url.SchemeIsHTTPOrHTTPS()) {
-        auto referrer_policy = request.referrer_policy;
-        base::debug::Alias(&referrer_policy);
-        DEBUG_ALIAS_FOR_GURL(target_buf, request.url);
-        DEBUG_ALIAS_FOR_GURL(referrer_buf, request.referrer);
-        DEBUG_ALIAS_FOR_GURL(
-            initiator_buf,
-            request.request_initiator.value_or(url::Origin()).GetURL())
-        base::debug::DumpWithoutCrashing();
-      }
-    }
-
-    return request.referrer;
-  }
+  static const GURL& referrer(const network::ResourceRequest& request);
   static net::URLRequest::ReferrerPolicy referrer_policy(
       const network::ResourceRequest& request) {
     return request.referrer_policy;

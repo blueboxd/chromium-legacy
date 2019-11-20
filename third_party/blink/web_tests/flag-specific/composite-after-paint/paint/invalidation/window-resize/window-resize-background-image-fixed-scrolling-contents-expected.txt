@@ -16,14 +16,7 @@
     {
       "name": "VerticalScrollbar",
       "position": [585, 0],
-      "bounds": [15, 250],
-      "paintInvalidations": [
-        {
-          "object": "VerticalScrollbar",
-          "rect": [0, 0, 15, 250],
-          "reason": "scroll control"
-        }
-      ]
+      "bounds": [15, 250]
     }
   ]
 }
@@ -45,14 +38,7 @@
     {
       "name": "VerticalScrollbar",
       "position": [385, 0],
-      "bounds": [15, 250],
-      "paintInvalidations": [
-        {
-          "object": "VerticalScrollbar",
-          "rect": [0, 0, 15, 250],
-          "reason": "paint property change"
-        }
-      ]
+      "bounds": [15, 250]
     }
   ]
 }
@@ -74,14 +60,7 @@
     {
       "name": "VerticalScrollbar",
       "position": [385, 0],
-      "bounds": [15, 600],
-      "paintInvalidations": [
-        {
-          "object": "VerticalScrollbar",
-          "rect": [0, 0, 15, 600],
-          "reason": "scroll control"
-        }
-      ]
+      "bounds": [15, 600]
     }
   ]
 }
@@ -103,14 +82,7 @@
     {
       "name": "VerticalScrollbar",
       "position": [785, 0],
-      "bounds": [15, 600],
-      "paintInvalidations": [
-        {
-          "object": "VerticalScrollbar",
-          "rect": [0, 0, 15, 600],
-          "reason": "paint property change"
-        }
-      ]
+      "bounds": [15, 600]
     }
   ]
 }

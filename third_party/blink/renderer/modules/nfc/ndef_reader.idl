@@ -15,5 +15,6 @@
     attribute EventHandler onreading;
     attribute EventHandler onerror;
 
-    void scan(optional NDEFScanOptions options={});
+    [CallWith=ScriptState, RaisesException] Promise<void> scan(
+        optional NDEFScanOptions options={});
 };

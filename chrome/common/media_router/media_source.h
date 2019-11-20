@@ -68,7 +68,7 @@ class MediaSource {
   // Hash operator for hash containers.
   struct Hash {
     uint32_t operator()(const MediaSource& source) const {
-      return base::Hash(source.id());
+      return base::FastHash(source.id());
     }
   };
 

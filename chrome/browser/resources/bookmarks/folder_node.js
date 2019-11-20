@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
-import {changeFolderOpen, selectFolder} from './actions.js';
-import {ROOT_NODE_ID, FOLDER_OPEN_BY_DEFAULT_DEPTH, MenuSource} from './constants.js';
-import {CommandManager} from './command_manager.js';
 import './shared_style.js';
-import {StoreClient} from './store_client.js';
 import './strings.m.js';
+
+import {assert} from 'chrome://resources/js/assert.m.js';
+import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {changeFolderOpen, selectFolder} from './actions.js';
+import {CommandManager} from './command_manager.js';
+import {FOLDER_OPEN_BY_DEFAULT_DEPTH, MenuSource, ROOT_NODE_ID} from './constants.js';
+import {StoreClient} from './store_client.js';
 import {BookmarkNode, BookmarksPageState} from './types.js';
 import {hasChildFolders, isShowingSearch} from './util.js';
 
@@ -91,7 +93,7 @@ Polymer({
       return /** @type {!BookmarksPageState} */ (state).selectedFolder;
     });
     this.watch('searchActive_', state => {
-      return isShowingSearch(/** @type {!BookmarksPageState} */(state));
+      return isShowingSearch(/** @type {!BookmarksPageState} */ (state));
     });
 
     this.updateFromStore();
@@ -165,8 +167,7 @@ Polymer({
       // otherwise.
       if (this.hasChildFolder_) {
         if (!this.isOpen) {
-          this.dispatch(
-              changeFolderOpen(this.item_.id, true));
+          this.dispatch(changeFolderOpen(this.item_.id, true));
         } else {
           yDirection = 1;
         }
@@ -283,8 +284,7 @@ Polymer({
   /** @private */
   selectFolder_: function() {
     if (!this.isSelectedFolder_) {
-      this.dispatch(
-          selectFolder(this.itemId, this.getState().nodes));
+      this.dispatch(selectFolder(this.itemId, this.getState().nodes));
     }
   },
 
@@ -313,8 +313,7 @@ Polymer({
    * @param {!Event} e
    */
   toggleFolder_: function(e) {
-    this.dispatch(
-        changeFolderOpen(this.itemId, !this.isOpen));
+    this.dispatch(changeFolderOpen(this.itemId, !this.isOpen));
     e.stopPropagation();
   },
 

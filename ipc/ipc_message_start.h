@@ -45,7 +45,6 @@ enum IPCMessageStart {
   NetworkHintsMsgStart,
   ExtensionsGuestViewMsgStart,
   GuestViewMsgStart,
-  IPCTestMsgStart,
   MediaPlayerDelegateMsgStart,
   ExtensionWorkerMsgStart,
   SubresourceFilterMsgStart,

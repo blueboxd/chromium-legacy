@@ -102,4 +102,7 @@ instrumentation_test_apk("remoting_test_apk") {
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/junit:junit",
   ]
+  if (!is_java_debug) {
+    proguard_enabled = true
+  }
 }

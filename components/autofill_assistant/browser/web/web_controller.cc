@@ -643,7 +643,8 @@ void WebController::FindElement(const Selector& selector,
   auto* ptr = finder.get();
   pending_workers_.emplace_back(std::move(finder));
   ptr->Start(base::BindOnce(&WebController::OnFindElementResult,
-                            base::Unretained(this), ptr, std::move(callback)));
+                            weak_ptr_factory_.GetWeakPtr(), ptr,
+                            std::move(callback)));
 }
 
 void WebController::OnFindElementResult(

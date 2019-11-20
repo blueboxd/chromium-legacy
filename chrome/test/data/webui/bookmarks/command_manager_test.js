@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {Command, CommandManager, createBookmark, DialogFocusManager, getDisplayedList, MenuSource, selectFolder} from 'chrome://bookmarks/bookmarks.js';
 import {isMac} from 'chrome://resources/js/cr.m.js';
-import {TestStore} from 'chrome://test/bookmarks/test_store.js';
-import {Command, CommandManager, DialogFocusManager, createBookmark, getDisplayedList, MenuSource, selectFolder} from 'chrome://bookmarks/bookmarks.js';
-import {TestCommandManager} from 'chrome://test/bookmarks/test_command_manager.js';
-import {createFolder, createItem, customClick, findFolderNode, normalizeIterable, replaceBody, testTree} from 'chrome://test/bookmarks/test_util.js';
 import {pressAndReleaseKeyOn, tap} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
-import {flushTasks} from 'chrome://test/test_util.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {TestCommandManager} from 'chrome://test/bookmarks/test_command_manager.js';
+import {TestStore} from 'chrome://test/bookmarks/test_store.js';
+import {createFolder, createItem, customClick, findFolderNode, normalizeIterable, replaceBody, testTree} from 'chrome://test/bookmarks/test_util.js';
+import {flushTasks} from 'chrome://test/test_util.m.js';
 
 suite('<bookmarks-command-manager>', function() {
   let commandManager;
@@ -190,28 +190,24 @@ suite('<bookmarks-command-manager>', function() {
     const redoModifier = isMac ? ['meta', 'shift'] : 'ctrl';
     const redoKey = isMac ? 'Z' : 'y';
 
-    pressAndReleaseKeyOn(
-        document.body, '', undoModifier, undoKey);
+    pressAndReleaseKeyOn(document.body, '', undoModifier, undoKey);
     testCommandManager.assertLastCommand(Command.UNDO);
 
-    pressAndReleaseKeyOn(
-        document.body, '', redoModifier, redoKey);
+    pressAndReleaseKeyOn(document.body, '', redoModifier, redoKey);
     testCommandManager.assertLastCommand(Command.REDO);
   });
 
   test('undo triggered when bookmarks-toolbar element has focus', function() {
     const element = document.createElement('bookmarks-toolbar');
     document.body.appendChild(element);
-    pressAndReleaseKeyOn(
-        element, '', isMac ? 'meta' : 'ctrl', 'z');
+    pressAndReleaseKeyOn(element, '', isMac ? 'meta' : 'ctrl', 'z');
     testCommandManager.assertLastCommand(Command.UNDO);
   });
 
   test('undo not triggered when most other elements have focus', function() {
     const element = document.createElement('div');
     document.body.appendChild(element);
-    pressAndReleaseKeyOn(
-        element, '', isMac ? 'meta' : 'ctrl', 'z');
+    pressAndReleaseKeyOn(element, '', isMac ? 'meta' : 'ctrl', 'z');
     testCommandManager.assertLastCommand(null);
   });
 
@@ -220,8 +216,7 @@ suite('<bookmarks-command-manager>', function() {
     const input = document.createElement('input');
     toolbar.appendChild(input);
     document.body.appendChild(toolbar);
-    pressAndReleaseKeyOn(
-        input, '', isMac ? 'meta' : 'ctrl', 'z');
+    pressAndReleaseKeyOn(input, '', isMac ? 'meta' : 'ctrl', 'z');
     testCommandManager.assertLastCommand(null);
   });
 

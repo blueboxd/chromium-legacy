@@ -199,21 +199,17 @@ public final class Browser {
      * need to control z-order with other views or other BrowserFragmentImpls. Note embedder should
      * keep WebLayer in the default non-embedding mode when user is interacting with the web
      * content. Embedding mode does not support encrypted video.
-     * @return a ListenableResult of whether the request succeeded. A request might fail if it is
-     * subsumed by a subsequent request, or if this object is destroyed.
+     *
+     * @param enable Whether to support embedding
+     * @param callback {@link Callback} to be called with a boolean indicating whether request
+     * succeeded. A request might fail if it is subsumed by a subsequent request, or if this object
+     * is destroyed.
      */
-    @NonNull
-    public ListenableResult<Boolean> setSupportsEmbedding(boolean enable) {
+    public void setSupportsEmbedding(boolean enable, @NonNull Callback<Boolean> callback) {
         ThreadCheck.ensureOnUiThread();
         try {
-            final ListenableResult<Boolean> listenableResult = new ListenableResult<Boolean>();
-            mImpl.setSupportsEmbedding(enable, ObjectWrapper.wrap(new ValueCallback<Boolean>() {
-                @Override
-                public void onReceiveValue(Boolean result) {
-                    listenableResult.supplyResult(result);
-                }
-            }));
-            return listenableResult;
+            mImpl.setSupportsEmbedding(
+                    enable, ObjectWrapper.wrap((ValueCallback<Boolean>) callback::onResult));
         } catch (RemoteException e) {
             throw new APICallException(e);
         }

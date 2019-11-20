@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {selectFolder} from 'chrome://bookmarks/bookmarks.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {TestCommandManager} from 'chrome://test/bookmarks/test_command_manager.js';
 import {TestStore} from 'chrome://test/bookmarks/test_store.js';
-import {selectFolder} from 'chrome://bookmarks/bookmarks.js';
 import {createFolder, createItem, findFolderNode, getAllFoldersOpenState, replaceBody, testTree} from 'chrome://test/bookmarks/test_util.js';
-import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 suite('<bookmarks-folder-node>', function() {
   let rootNode;

@@ -45,7 +45,9 @@ class MODULES_EXPORT NFCProxy final : public GarbageCollected<NFCProxy>,
   // collected.
   void AddWriter(NDEFWriter*);
 
-  void StartReading(NDEFReader*, const NDEFScanOptions*);
+  void StartReading(NDEFReader*,
+                    const NDEFScanOptions*,
+                    device::mojom::blink::NFC::WatchCallback);
   void StopReading(NDEFReader*);
   bool IsReading(const NDEFReader*);
   void Push(device::mojom::blink::NDEFMessagePtr,
@@ -61,6 +63,7 @@ class MODULES_EXPORT NFCProxy final : public GarbageCollected<NFCProxy>,
 
   void OnReaderRegistered(NDEFReader*,
                           uint32_t watch_id,
+                          device::mojom::blink::NFC::WatchCallback,
                           device::mojom::blink::NDEFErrorPtr);
 
   // Implementation of PageVisibilityObserver.

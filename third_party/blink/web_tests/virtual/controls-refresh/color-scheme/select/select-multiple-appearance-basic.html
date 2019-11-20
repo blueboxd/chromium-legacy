@@ -3,7 +3,7 @@
 <body>
 
 <!-- no style for reference -->
-<select multiple autofocus>
+<select multiple autofocus size=5>
   <optgroup label="unstyled">
     <option selected>first selected option</option>
     <option>unselected option</option>
@@ -12,22 +12,31 @@
 </select> <br>
 
 <!-- disabled select -->
-<select multiple disabled>
+<select multiple disabled size=5>
   <optgroup label="disabled select">
     <option selected>first selected option</option>
     <option>unselected option</option>
     <option selected>second selected option</option>
   </optgroup>
 </select>
+<div style="background: black; display:inline-block">
+<select multiple disabled size=5>
+  <optgroup label="disabled select black-bg">
+    <option selected>first selected option</option>
+    <option>unselected option</option>
+    <option selected>second selected option</option>
+  </optgroup>
+</select>
+</div>
 
 <!-- disabled option -->
 <select multiple>
-    <optgroup label="disabled option">
-      <option selected>first selected option</option>
-      <option disabled>disabled unselected option</option>
-      <option selected>second selected option</option>
-    </optgroup>
-  </select>
+  <optgroup label="disabled option">
+    <option selected>first selected option</option>
+    <option disabled>disabled unselected option</option>
+    <option selected>second selected option</option>
+  </optgroup>
+</select>
 
 <!-- disabled selected option -->
 <select multiple>

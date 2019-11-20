@@ -133,6 +133,7 @@ def _update_includes_and_forward_decls(member, info_provider):
             _update_includes_and_forward_decls(member.value_type, info_provider)
         elif member.is_array_or_sequence_type:
             _update_includes_and_forward_decls(member.element_type, info_provider)
+            cpp_includes.add('bindings/core/v8/script_iterator.h')
         elif member.is_union_type:
             # Reaching this block means we have a union that is inside a
             # record or sequence.
@@ -146,6 +147,14 @@ def member_context(member, info_provider):
     if member.is_nullable:
         member = member.inner_type
     type_name = (member.inner_type if member.is_annotated_type else member).name
+    # When converting a sequence or frozen array, we need to call the GetMethod(V, @@iterator)
+    # ES abstract operation and then use the result of that call to create a sequence from an
+    # iterable. For the purposes of this method, it means we need to pass |script_iterator|
+    # rather than |v8_value| in v8_value_to_local_cpp_value().
+    if member.is_array_or_sequence_type:
+        v8_value_name = 'std::move(script_iterator)'
+    else:
+        v8_value_name = 'v8_value'
     return {
         'cpp_name': to_snake_case(v8_utilities.cpp_name(member)),
         'cpp_type': member.cpp_type_args(used_in_cpp_sequence=True),
@@ -162,6 +171,6 @@ def member_context(member, info_provider):
         'specific_type_enum': 'k' + member.name,
         'type_name': type_name,
         'v8_value_to_local_cpp_value': member.v8_value_to_local_cpp_value(
-            {}, 'v8_value', 'cpp_value', isolate='isolate',
+            {}, v8_value_name, 'cpp_value', isolate='isolate',
             use_exception_state=True)
     }

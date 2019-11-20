@@ -1679,10 +1679,6 @@ jumbo_static_library("browser") {
     "ssl/captive_portal_helper_android.cc",
     "ssl/captive_portal_helper_android.h",
     "ssl/captive_portal_helper_win.cc",
-    "ssl/cert_report_helper.cc",
-    "ssl/cert_report_helper.h",
-    "ssl/certificate_error_report.cc",
-    "ssl/certificate_error_report.h",
     "ssl/certificate_error_reporter.cc",
     "ssl/certificate_error_reporter.h",
     "ssl/chrome_ssl_blocking_page.cc",
@@ -2069,6 +2065,7 @@ jumbo_static_library("browser") {
     "//components/search",
     "//components/search_engines",
     "//components/search_provider_logos",
+    "//components/security_interstitials/content:proto",
     "//components/security_interstitials/content:security_interstitial_page",
     "//components/security_interstitials/core",
     "//components/security_state/content",
@@ -4190,10 +4187,6 @@ jumbo_static_library("browser") {
       "payments/payment_request_display_manager_factory.h",
       "payments/payment_request_factory.cc",
       "payments/payment_request_factory.h",
-      "sync/sync_clipboard_service.cc",
-      "sync/sync_clipboard_service.h",
-      "sync/sync_clipboard_service_factory.cc",
-      "sync/sync_clipboard_service_factory.h",
     ]
     deps += [ "//components/payments/content" ]
   }

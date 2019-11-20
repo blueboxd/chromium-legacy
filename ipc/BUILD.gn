@@ -251,9 +251,6 @@ if (!is_ios) {
       "ipc_sync_channel_unittest.cc",
       "ipc_sync_message_unittest.cc",
       "ipc_sync_message_unittest.h",
-      "ipc_test_message_generator.cc",
-      "ipc_test_message_generator.h",
-      "ipc_test_messages.h",
       "sync_socket_unittest.cc",
     ]
 

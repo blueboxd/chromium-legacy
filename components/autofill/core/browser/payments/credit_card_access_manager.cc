@@ -16,6 +16,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
@@ -38,7 +39,7 @@ namespace autofill {
 
 namespace {
 // Timeout to wait for unmask details from Google Payments in milliseconds.
-constexpr int64_t kUnmaskDetailsResponseTimeoutMs = 1000;
+constexpr int64_t kUnmaskDetailsResponseTimeoutMs = 3 * 1000;  // 3 sec
 // Time to wait between multiple calls to GetUnmaskDetails().
 constexpr int64_t kDelayForGetUnmaskDetails = 3 * 60 * 1000;  // 3 min
 
@@ -47,11 +48,6 @@ bool WaitForEvent(base::WaitableEvent* event) {
   event->declare_only_used_while_idle();
   return event->TimedWait(
       base::TimeDelta::FromMilliseconds(kUnmaskDetailsResponseTimeoutMs));
-}
-
-// Used with PostTaskWithDelay() to signal event after a timeout.
-void SignalEvent(base::WaitableEvent* event) {
-  event->Signal();
 }
 }  // namespace
 
@@ -254,8 +250,12 @@ void CreditCardAccessManager::OnDidGetUnmaskDetails(
 #endif
   ready_to_start_authentication_.Signal();
 
-  base::PostDelayedTask(
-      FROM_HERE, base::BindOnce(&SignalEvent, &can_fetch_unmask_details_),
+  // Use the weak_ptr here so that the delayed task won't be executed if the
+  // |credit_card_access_manager| is reset.
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&CreditCardAccessManager::SignalCanFetchUnmaskDetails,
+                     weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(delay_ms));
 }
 
@@ -531,5 +531,9 @@ void CreditCardAccessManager::OnDidCancelCardVerification() {
   is_authentication_in_progress_ = false;
 }
 #endif
+
+void CreditCardAccessManager::SignalCanFetchUnmaskDetails() {
+  can_fetch_unmask_details_.Signal();
+}
 
 }  // namespace autofill

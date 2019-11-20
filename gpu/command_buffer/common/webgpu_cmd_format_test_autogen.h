@@ -81,11 +81,13 @@ TEST_F(WebGPUFormatTest, DissociateMailbox) {
 
 TEST_F(WebGPUFormatTest, RequestAdapter) {
   cmds::RequestAdapter& cmd = *GetBufferAs<cmds::RequestAdapter>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<uint32_t>(11));
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<uint32_t>(11), static_cast<uint32_t>(12));
   EXPECT_EQ(static_cast<uint32_t>(cmds::RequestAdapter::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<uint32_t>(11), cmd.power_preference);
+  EXPECT_EQ(static_cast<uint32_t>(11), cmd.request_adapter_serial);
+  EXPECT_EQ(static_cast<uint32_t>(12), cmd.power_preference);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 

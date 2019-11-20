@@ -10,45 +10,17 @@
           "object": "LayoutTextControl INPUT id='target'",
           "rect": [7, 7, 63, 24],
           "reason": "subtree"
-        }
-      ]
-    },
-    {
-      "name": "LayoutBlockFlow DIV",
-      "bounds": [74, 16],
-      "paintInvalidations": [
+        },
         {
-          "object": "InlineTextBox 'test test test'",
-          "rect": [0, 0, 74, 16],
-          "reason": "subtree"
+          "object": "LayoutBlockFlow DIV",
+          "rect": [10, 11, 57, 16],
+          "reason": "paint property change"
         },
         {
           "object": "InlineTextBox 'test test test'",
-          "rect": [26, 0, 26, 16],
+          "rect": [31, 11, 26, 16],
           "reason": "selection"
         }
-      ],
-      "transform": 2
-    }
-  ],
-  "transforms": [
-    {
-      "id": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [10, 11, 0, 1]
-      ]
-    },
-    {
-      "id": 2,
-      "parent": 1,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [-5, 0, 0, 1]
       ]
     }
   ]

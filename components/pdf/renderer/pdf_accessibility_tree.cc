@@ -689,6 +689,8 @@ ui::AXNodeData* PdfAccessibilityTree::CreateParagraphNode(
     double font_size,
     double heading_font_size_threshold) {
   ui::AXNodeData* para_node = CreateNode(ax::mojom::Role::kParagraph);
+  para_node->AddBoolAttribute(ax::mojom::BoolAttribute::kIsLineBreakingObject,
+                              true);
 
   // If font size exceeds the |heading_font_size_threshold|, then classify
   // it as a Heading.

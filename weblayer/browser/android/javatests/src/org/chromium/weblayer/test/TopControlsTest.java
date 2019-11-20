@@ -67,10 +67,8 @@ public class TopControlsTest {
         // Calling setSupportsEmbedding() makes sure onTopControlsChanged() will get called, which
         // should not crash.
         CallbackHelper helper = new CallbackHelper();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mBrowser.setSupportsEmbedding(true).addCallback(
-                    (Boolean result) -> { helper.notifyCalled(); });
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { mBrowser.setSupportsEmbedding(true, (result) -> helper.notifyCalled()); });
         helper.waitForCallback(0);
     }
 

@@ -12,6 +12,7 @@
 #define GPU_COMMAND_BUFFER_SERVICE_WEBGPU_CMD_VALIDATION_IMPLEMENTATION_AUTOGEN_H_
 
 static const PowerPreference valid_power_preference_table[] = {
+    PowerPreference::kDefault,
     PowerPreference::kHighPerformance,
     PowerPreference::kLowPower,
 };

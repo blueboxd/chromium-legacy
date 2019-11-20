@@ -57,7 +57,8 @@ constexpr net::BackoffEntry::Policy kRetryBackoffPolicy = {
 
 }  // namespace
 
-ArcAuthContext::ArcAuthContext(Profile* profile, const std::string& account_id)
+ArcAuthContext::ArcAuthContext(Profile* profile,
+                               const CoreAccountId& account_id)
     : profile_(profile),
       account_id_(account_id),
       identity_manager_(IdentityManagerFactory::GetForProfile(profile)),

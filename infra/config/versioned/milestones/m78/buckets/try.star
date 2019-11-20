@@ -60,7 +60,7 @@ defaults.bucketed_triggers.set(True)
 def tryjob(
     *,
     disable_reuse=None,
-    experiment_percentage=vars.experiment_percentage.get(),
+    experiment_percentage=None,
     location_regexp=None,
     location_regexp_exclude=None):
   return struct(
@@ -130,6 +130,7 @@ linux_builder(
     name = 'linux-rel',
     goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
-    tryjob = tryjob(),
+    # TODO(https://crbug.com/1024637) Make non-experimental
+    tryjob = tryjob(experiment_percentage = 100),
     use_clang_coverage = True,
 )

@@ -52,7 +52,7 @@ const char kAuthTokenExchangeEndPoint[] =
 ArcBackgroundAuthCodeFetcher::ArcBackgroundAuthCodeFetcher(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     Profile* profile,
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     bool initial_signin,
     bool is_primary_account)
     : url_loader_factory_(std::move(url_loader_factory)),

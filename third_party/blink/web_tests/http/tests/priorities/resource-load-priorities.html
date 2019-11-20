@@ -5,41 +5,13 @@
 <script src="/resources/testharnessreport.js"></script>
 
 <script>
-function openWindow(url) {
-  const win = window.open(url, '_blank');
-  add_result_callback(() => win.close());
-  return win;
-}
-
 window.onmessage = function(message) {
-    if (message.data.hasOwnProperty('Priority')) {
-      window.onRequestPriorityUpdated(message.data['Priority']);
-    }
-    if (message.data.hasOwnProperty('Status')) {
-      window.onRequestStatusChanged(message.data['Status']);
-    }
-}
-
-function resource_load_priority_test(windowURL, expected_priority,
-                                     description) {
-  promise_test(async () => {
-    openWindow('resources/' + windowURL);
-
-    // The order in which these two events are sent can't be relied upon.
-    const priority_event_promise =
-       new Promise(resolve => window.onRequestPriorityUpdated = resolve);
-    const subresource_finished_loading_event_promise =
-       new Promise(resolve => window.onRequestStatusChanged = resolve);
-
-    const priority_event = await priority_event_promise;
-    assert_equals(priority_event, expected_priority);
-
-    const subresource_finished_loading_event = 
-        await subresource_finished_loading_event_promise;
-    assert_equals(subresource_finished_loading_event, 'LOADED',
-                  'The resource loaded successfully');
-
-  }, description);
+  if (message.data.hasOwnProperty('Priority')) {
+    window.onRequestPriorityUpdated(message.data['Priority']);
+  }
+  if (message.data.hasOwnProperty('Status')) {
+    window.onRequestStatusChanged(message.data['Status']);
+  }
 }
 
 resource_load_priority_test(

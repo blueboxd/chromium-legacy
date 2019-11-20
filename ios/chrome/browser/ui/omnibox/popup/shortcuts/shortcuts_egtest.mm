@@ -150,7 +150,12 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
+#if defined(CHROME_EARL_GREY_2)
+// TODO(crbug.com/1026579): Enable the tests once the bug is fixed
+- (void)FLAKY_testReadingListShortcut {
+#else
 - (void)testReadingListShortcut {
+#endif
   [self navigateToAPage];
   [ChromeEarlGreyUI focusOmnibox];
 

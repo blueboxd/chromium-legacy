@@ -22,8 +22,8 @@ js_type_check("compile_resources") {
 
 js_library("layout") {
   deps = [
+    "../..:chrome_util",
     "../..:type",
-    "//ui/webui/resources/js:assert",
   ]
 }
 

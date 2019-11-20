@@ -79,10 +79,8 @@ public class DataClearingTest {
         CountDownLatch latch = new CountDownLatch(2);
         runOnUiThreadBlocking(() -> {
             Profile profile = activity.getBrowser().getProfile();
-            profile.clearBrowsingData(new int[] {COOKIES_AND_SITE_DATA})
-                    .addCallback((ignored) -> latch.countDown());
-            profile.clearBrowsingData(new int[] {CACHE})
-                    .addCallback((ignored) -> latch.countDown());
+            profile.clearBrowsingData(new int[] {COOKIES_AND_SITE_DATA}, latch::countDown);
+            profile.clearBrowsingData(new int[] {CACHE}, latch::countDown);
         });
         assertTrue(latch.await(3, TimeUnit.SECONDS));
     }
@@ -95,9 +93,8 @@ public class DataClearingTest {
         CountDownLatch latch = new CountDownLatch(1);
         runOnUiThreadBlocking(() -> {
             Profile profile = activity.getBrowser().getProfile();
-            profile.clearBrowsingData(new int[] {COOKIES_AND_SITE_DATA}).addCallback((v1) -> {
-                profile.clearBrowsingData(new int[] {CACHE}).addCallback((v2) -> latch.countDown());
-            });
+            profile.clearBrowsingData(new int[] {COOKIES_AND_SITE_DATA},
+                    () -> { profile.clearBrowsingData(new int[] {CACHE}, latch::countDown); });
         });
         assertTrue(latch.await(3, TimeUnit.SECONDS));
     }
@@ -110,7 +107,7 @@ public class DataClearingTest {
         CountDownLatch latch = new CountDownLatch(1);
         runOnUiThreadBlocking(() -> {
             Profile profile = activity.getBrowser().getProfile();
-            profile.clearBrowsingData(new int[] {COOKIES_AND_SITE_DATA});
+            profile.clearBrowsingData(new int[] {COOKIES_AND_SITE_DATA}, () -> {});
 
             // We need to remove the fragment before calling Profile#destroy().
             FragmentManager fm = activity.getSupportFragmentManager();
@@ -127,8 +124,7 @@ public class DataClearingTest {
         InstrumentationActivity activity = mActivityTestRule.launchWithProfile(profileName);
         CountDownLatch latch = new CountDownLatch(1);
         runOnUiThreadBlocking(() -> {
-            activity.getBrowser().getProfile().clearBrowsingData(dataTypes).addCallback(
-                    (ignored) -> latch.countDown());
+            activity.getBrowser().getProfile().clearBrowsingData(dataTypes, latch::countDown);
         });
         assertTrue(latch.await(3, TimeUnit.SECONDS));
     }

@@ -155,12 +155,8 @@ void ReportingContext::SendToReportingAPI(Report* report,
     // Send the deprecation report.
     const DeprecationReportBody* body =
         static_cast<DeprecationReportBody*>(report->body());
-    base::Optional<base::Time> anticipated_removal =
-        base::Time::FromDoubleT(body->anticipatedRemoval(is_null));
-    if (is_null)
-      anticipated_removal = base::nullopt;
     GetReportingService()->QueueDeprecationReport(
-        url, body->id(), anticipated_removal, body->message(),
+        url, body->id(), body->AnticipatedRemoval(), body->message(),
         body->sourceFile(), line_number, column_number);
   } else if (type == ReportType::kFeaturePolicyViolation) {
     // Send the feature policy violation report.

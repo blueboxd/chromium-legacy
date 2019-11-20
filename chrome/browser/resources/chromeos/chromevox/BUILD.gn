@@ -371,12 +371,10 @@ if (is_chromeos) {
     testonly = true
     assert(enable_extensions)
 
-    # TODO(crbug.com/1026473): Reenable these when failures on
-    # linux-chromeos-rel are addressed.
-    # deps = [
-    #  ":chromevox_extjs_tests",
-    #  ":chromevox_unitjs_tests",
-    # ]
+    deps = [
+      ":chromevox_extjs_tests",
+      ":chromevox_unitjs_tests",
+    ]
 
     # TODO(jamescook): Figure out which of these are really necessary.
     data = [
@@ -400,7 +398,7 @@ if (is_chromeos) {
 action("chromevox_test_messages_js") {
   script = "tools/generate_test_messages.py"
   sources = [
-    "$chromevox_out_dir/_locales/en/messages.json.gz",
+    "$chromevox_out_dir/_locales/en/messages.json",
   ]
   output_file = "$root_out_dir/test_data/chrome/browser/resources/chromeos/chromevox/host/testing/test_messages.js"
   outputs = [

@@ -34,7 +34,6 @@
 #include <memory>
 #include <string>
 
-#include "third_party/blink/public/platform/web_rtc_ice_candidate.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_transceiver.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -53,6 +52,7 @@ class RTCAnswerOptionsPlatform;
 class RTCOfferOptionsPlatform;
 class RTCSessionDescriptionRequest;
 class RTCVoidRequest;
+class RTCIceCandidatePlatform;
 class WebLocalFrame;
 class WebMediaConstraints;
 class WebMediaStream;
@@ -115,7 +115,7 @@ class WebRTCPeerConnectionHandler {
       const webrtc::PeerConnectionInterface::RTCConfiguration&) = 0;
 
   virtual void AddICECandidate(RTCVoidRequest*,
-                               scoped_refptr<WebRTCICECandidate>) = 0;
+                               scoped_refptr<RTCIceCandidatePlatform>) = 0;
   virtual void RestartIce() = 0;
   virtual void GetStats(const WebRTCStatsRequest&) = 0;
   // Gets stats using the new stats collection API, see

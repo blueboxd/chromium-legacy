@@ -70,12 +70,12 @@ class ServiceManagerConnectionImpl::IOThreadContext
   }
 
   // Safe to call from any thread.
-  void Start(const base::Closure& stop_callback) {
+  void Start(base::OnceClosure stop_callback) {
     DCHECK(!started_);
 
     started_ = true;
     callback_task_runner_ = base::ThreadTaskRunnerHandle::Get();
-    stop_callback_ = stop_callback;
+    stop_callback_ = std::move(stop_callback);
     io_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&IOThreadContext::StartOnIOThread, this));
   }
@@ -290,7 +290,7 @@ class ServiceManagerConnectionImpl::IOThreadContext
 
   void OnDisconnected() override {
     ClearConnectionFiltersOnIOThread();
-    callback_task_runner_->PostTask(FROM_HERE, stop_callback_);
+    callback_task_runner_->PostTask(FROM_HERE, std::move(stop_callback_));
   }
 
   base::ThreadChecker io_thread_checker_;
@@ -311,7 +311,7 @@ class ServiceManagerConnectionImpl::IOThreadContext
   scoped_refptr<base::SequencedTaskRunner> callback_task_runner_;
 
   // Callback to run if the service is stopped by the service manager.
-  base::Closure stop_callback_;
+  base::OnceClosure stop_callback_;
 
   std::unique_ptr<service_manager::ServiceBinding> service_binding_;
 
@@ -408,8 +408,8 @@ ServiceManagerConnectionImpl::~ServiceManagerConnectionImpl() {
 
 void ServiceManagerConnectionImpl::Start() {
   context_->Start(
-      base::Bind(&ServiceManagerConnectionImpl::OnConnectionLost,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&ServiceManagerConnectionImpl::OnConnectionLost,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void ServiceManagerConnectionImpl::Stop() {

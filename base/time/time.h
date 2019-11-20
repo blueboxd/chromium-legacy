@@ -606,8 +606,14 @@ class BASE_EXPORT Time : public time_internal::TimeBase<Time> {
   // Converts to/from the Javascript convention for times, a number of
   // milliseconds since the epoch:
   // https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Date/getTime.
+  //
+  // Don't use ToJsTime() in new code, since it contains a subtle hack (only
+  // exactly 1601-01-01 00:00 UTC is represented as 1970-01-01 00:00 UTC), and
+  // that is not appropriate for general use. Try to use ToJsTimeIgnoringNull()
+  // unless you have a very good reason to use ToJsTime().
   static Time FromJsTime(double ms_since_epoch);
   double ToJsTime() const;
+  double ToJsTimeIgnoringNull() const;
 
   // Converts to/from Java convention for times, a number of milliseconds since
   // the epoch. Because the Java format has less resolution, converting to Java

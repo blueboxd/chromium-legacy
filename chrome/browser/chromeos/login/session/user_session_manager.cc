@@ -1433,7 +1433,7 @@ void UserSessionManager::InitProfilePreferences(
               gaia_id, user_context.GetAccountId().GetUserEmail());
     }
 
-    std::string account_id = identity_manager->GetPrimaryAccountId();
+    CoreAccountId account_id = identity_manager->GetPrimaryAccountId();
     VLOG(1) << "Seed IdentityManager with the authenticated account info, "
             << "success=" << !account_id.empty();
 

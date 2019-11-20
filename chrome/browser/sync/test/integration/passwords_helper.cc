@@ -305,7 +305,7 @@ PasswordForm CreateTestPasswordForm(int index) {
   form.password_value =
       base::ASCIIToUTF16(base::StringPrintf("password%d", index));
   form.date_created = base::Time::Now();
-  form.from_store = autofill::PasswordForm::Store::kProfileStore;
+  form.in_store = autofill::PasswordForm::Store::kProfileStore;
   return form;
 }
 

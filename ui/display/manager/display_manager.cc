@@ -2038,6 +2038,7 @@ Display DisplayManager::CreateDisplayFromDisplayInfoById(int64_t id) {
   new_display.SetScaleAndBounds(device_scale_factor,
                                 gfx::Rect(bounds_in_native.size()));
   new_display.set_rotation(display_info.GetActiveRotation());
+  new_display.set_panel_rotation(display_info.GetLogicalActiveRotation());
   new_display.set_touch_support(display_info.touch_support());
   new_display.set_maximum_cursor_size(display_info.maximum_cursor_size());
   new_display.SetColorSpaceAndDepth(display_info.color_space());

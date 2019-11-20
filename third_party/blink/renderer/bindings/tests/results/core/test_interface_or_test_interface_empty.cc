@@ -116,3 +116,4 @@ TestInterfaceOrTestInterfaceEmpty NativeValueTraits<TestInterfaceOrTestInterface
 }
 
 }  // namespace blink
+

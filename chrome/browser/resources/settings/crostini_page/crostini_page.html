@@ -39,7 +39,9 @@
           <template is="dom-if" if="[[prefs.crostini.enabled.value]]">
             <cr-icon-button class="subpage-arrow"
                 aria-label="$i18n{crostiniPageTitle}"
-                aria-describedby="secondaryText"></cr-icon-button>
+                aria-describedby="secondaryText"
+                aria-roledescription="$i18n{subpageArrowRoleDescription}">
+            </cr-icon-button>
           </template>
           <template is="dom-if" if="[[!prefs.crostini.enabled.value]]">
             <div class="separator"></div>

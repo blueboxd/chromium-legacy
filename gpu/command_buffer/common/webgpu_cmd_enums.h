@@ -11,11 +11,13 @@ namespace webgpu {
 enum class PowerPreference : uint32_t {
   kLowPower,
   kHighPerformance,
+  kDefault,
   kNumPowerPreferences
 };
 
 enum class DawnReturnDataType : uint32_t {
   kDawnCommands,
+  kRequestedDawnAdapterProperties,
   kNumDawnReturnDataType
 };
 

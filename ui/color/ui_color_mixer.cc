@@ -30,6 +30,7 @@ void AddUiColorMixers(ColorProvider* provider) {
       BlendForMinContrastWithSelf(kColorButtonProminentBackground, 1.3f);
   mixer[kColorButtonProminentForeground] =
       GetColorWithMaxContrast(kColorButtonProminentBackground);
+  mixer[kColorButtonUncheckedForeground] = {kColorSecondaryForeground};
   mixer[kColorDialogBackground] = {kColorPrimaryBackground};
   mixer[kColorDialogForeground] = {kColorBodyForeground};
   mixer[kColorFocusableBorderFocused] = SetAlpha(kColorAccent, 0x4D);

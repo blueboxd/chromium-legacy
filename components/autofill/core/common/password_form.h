@@ -311,7 +311,7 @@ struct PasswordForm {
     // Credential came from the Gaia-account-scoped storage.
     kAccountStore
   };
-  Store from_store = Store::kNotSet;
+  Store in_store = Store::kNotSet;
 
   // Return true if we consider this form to be a change password form.
   // We use only client heuristics, so it could include signup forms.
@@ -339,7 +339,7 @@ struct PasswordForm {
   bool IsSingleUsername() const;
 
   // Returns whether this form is stored in the account-scoped store, i.e.
-  // whether |from_store == Store::kAccountStore|.
+  // whether |in_store == Store::kAccountStore|.
   bool IsUsingAccountStore() const;
 
   // Equality operators for testing.

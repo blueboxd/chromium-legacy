@@ -1362,7 +1362,7 @@ bool SimpleSynchronousEntry::CheckHeaderAndKey(base::File* file,
   }
 
   char* key_data = header_data.data() + sizeof(*header);
-  if (base::Hash(key_data, header->key_length) != header->key_hash) {
+  if (base::PersistentHash(key_data, header->key_length) != header->key_hash) {
     RecordSyncOpenResult(cache_type_, OPEN_ENTRY_KEY_HASH_MISMATCH);
     return false;
   }
@@ -1483,7 +1483,7 @@ bool SimpleSynchronousEntry::InitializeCreatedFile(
   header.version = kSimpleEntryVersionOnDisk;
 
   header.key_length = key_.size();
-  header.key_hash = base::Hash(key_);
+  header.key_hash = base::PersistentHash(key_);
 
   int bytes_written =
       file->Write(0, reinterpret_cast<char*>(&header), sizeof(header));
@@ -1873,7 +1873,7 @@ bool SimpleSynchronousEntry::InitializeSparseFile(base::File* sparse_file) {
   header.initial_magic_number = kSimpleInitialMagicNumber;
   header.version = kSimpleVersion;
   header.key_length = key_.size();
-  header.key_hash = base::Hash(key_);
+  header.key_hash = base::PersistentHash(key_);
 
   int header_write_result =
       sparse_file->Write(0, reinterpret_cast<char*>(&header), sizeof(header));

@@ -586,6 +586,7 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id,
    * overriding haphazardly like this.
 
     case kColorId_ButtonEnabledColor:
+    case kColorId_ButtonUncheckedColor:
       return system_colors_[SystemThemeColor::kButtonText];
     case kColorId_LabelEnabledColor:
       return system_colors_[SystemThemeColor::kButtonText];

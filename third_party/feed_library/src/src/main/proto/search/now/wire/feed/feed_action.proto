@@ -1,0 +1,46 @@
+// Copyright 2018 The Feed Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto2";
+
+package search.now.wire.feed;
+
+option optimize_for=LITE_RUNTIME;
+
+import "src/main/proto/search/now/wire/feed/action_payload.proto";
+import "src/main/proto/search/now/wire/feed/content_id.proto";
+import "src/main/proto/search/now/wire/feed/semantic_properties.proto";
+
+option java_package = "com.google.search.now.wire.feed";
+option java_outer_classname = "FeedActionProto";
+
+message FeedAction {
+  // The Id for the content that this action was triggered on.
+  optional ContentId content_id = 1;
+  // Additional logging data that is on a per-action level
+  optional ActionPayload action_payload = 4;
+  // Client-generated data that pertains to the action.
+  optional ClientData client_data = 5;
+  // Fields beyond ID needed to determine uniqueness for the card or collection.
+  // Opaque to the client, round-tripped from the server.
+  optional SemanticProperties semantic_properties = 6;
+  // Next Id: 7
+  reserved 2, 3;
+
+  // The data the client provides to the server.
+  message ClientData {
+    // When the action was recorded on the client
+    optional int64 timestamp_seconds = 1;
+  }
+}

@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/core/svg/animation/element_smil_animations.h"
 #include "third_party/blink/renderer/core/svg/svg_animate_element.h"
 #include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"
 #include "third_party/blink/renderer/core/svg_names.h"
@@ -39,6 +40,7 @@ SVGAnimationElement::SVGAnimationElement(const QualifiedName& tag_name,
                                          Document& document)
     : SVGSMILElement(tag_name, document),
       animation_valid_(AnimationValidity::kUnknown),
+      registered_animation_(false),
       calc_mode_(kCalcModeLinear),
       animation_mode_(kNoAnimation) {
   UseCounter::Count(document, WebFeature::kSVGAnimationElement);
@@ -227,6 +229,28 @@ void SVGAnimationElement::AnimationAttributeChanged() {
   animation_valid_ = AnimationValidity::kUnknown;
   last_values_animation_from_ = String();
   last_values_animation_to_ = String();
+}
+
+void SVGAnimationElement::UnregisterAnimation(
+    const QualifiedName& attribute_name) {
+  if (!registered_animation_)
+    return;
+  DCHECK(targetElement());
+  SVGElement* target = targetElement();
+  if (ElementSMILAnimations* smil_animations = target->GetSMILAnimations())
+    smil_animations->RemoveAnimation(attribute_name, this);
+  registered_animation_ = false;
+}
+
+void SVGAnimationElement::RegisterAnimation(
+    const QualifiedName& attribute_name) {
+  DCHECK(!registered_animation_);
+  if (!HasValidTarget() || !HasValidAnimation())
+    return;
+  SVGElement* target = targetElement();
+  ElementSMILAnimations& smil_animations = target->EnsureSMILAnimations();
+  smil_animations.AddAnimation(attribute_name, this);
+  registered_animation_ = true;
 }
 
 void SVGAnimationElement::WillChangeAnimationTarget() {

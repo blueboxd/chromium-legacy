@@ -26,8 +26,8 @@ std::string ToString(const T& obj) {
   return ostream.str();
 }
 
-std::string StoreToString(PasswordForm::Store from_store) {
-  switch (from_store) {
+std::string StoreToString(PasswordForm::Store in_store) {
+  switch (in_store) {
     case PasswordForm::Store::kNotSet:
       return "Not Set";
     case PasswordForm::Store::kProfileStore:
@@ -96,7 +96,7 @@ void PasswordFormToJSON(const PasswordForm& form,
   target->SetBoolean("is_gaia_with_skip_save_password_form",
                      form.form_data.is_gaia_with_skip_save_password_form);
   target->SetBoolean("is_new_password_reliable", form.is_new_password_reliable);
-  target->SetString("from_store", StoreToString(form.from_store));
+  target->SetString("in_store", StoreToString(form.in_store));
 }
 
 }  // namespace
@@ -149,7 +149,7 @@ bool PasswordForm::IsSingleUsername() const {
 }
 
 bool PasswordForm::IsUsingAccountStore() const {
-  return from_store == Store::kAccountStore;
+  return in_store == Store::kAccountStore;
 }
 
 bool PasswordForm::operator==(const PasswordForm& form) const {
@@ -197,7 +197,7 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
          submission_event == form.submission_event &&
          only_for_fallback == form.only_for_fallback &&
          is_new_password_reliable == form.is_new_password_reliable &&
-         from_store == form.from_store;
+         in_store == form.in_store;
 }
 
 bool PasswordForm::operator!=(const PasswordForm& form) const {

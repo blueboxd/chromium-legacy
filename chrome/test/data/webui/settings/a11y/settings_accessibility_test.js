@@ -81,9 +81,6 @@ SettingsAccessibilityTest.prototype = {
     '../ensure_lazy_loaded.js',
   ],
 
-  // TODO(hcarmona): Remove once ADT is not longer in the testing infrastructure
-  runAccessibilityChecks: false,
-
   setUp: function() {
     PolymerTest.prototype.setUp.call(this);
     settings.ensureLazyLoaded();

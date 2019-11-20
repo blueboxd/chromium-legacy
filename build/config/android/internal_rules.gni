@@ -1024,8 +1024,9 @@ if (enable_java_templates) {
         args += [ "--disable-outlining" ]
       }
 
-      if (defined(testonly) && testonly) {
-        args += [ "--is-test-only" ]
+      if (defined(invoker.disable_checkdiscard) &&
+          invoker.disable_checkdiscard) {
+        args += [ "--disable-checkdiscard" ]
       }
 
       if (defined(invoker.is_static_library) && invoker.is_static_library) {
@@ -1190,6 +1191,7 @@ if (enable_java_templates) {
         forward_variables_from(invoker,
                                [
                                  "build_config",
+                                 "disable_checkdiscard",
                                  "disable_r8_outlining",
                                  "deps",
                                  "failed_proguard_expectation_file",

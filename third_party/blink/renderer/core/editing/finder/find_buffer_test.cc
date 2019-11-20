@@ -650,4 +650,12 @@ TEST_F(FindBufferTest, NullRange) {
   EXPECT_EQ(0u, buffer.FindMatches("find", 0)->CountForTesting());
 }
 
+TEST_F(FindBufferTest, FindObjectReplacementCharacter) {
+  SetBodyContent(
+      "some text with <br> and \uFFFC (object replacement character)");
+  FindBuffer buffer(WholeDocumentRange());
+  const auto results = buffer.FindMatches("\uFFFC", 0);
+  ASSERT_EQ(1u, results->CountForTesting());
+}
+
 }  // namespace blink

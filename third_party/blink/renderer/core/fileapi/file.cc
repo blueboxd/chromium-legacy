@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/html/forms/form_controller.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/to_v8.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -317,7 +318,15 @@ int64_t File::lastModified() const {
   return floor(modified_date);
 }
 
-double File::lastModifiedDate() const {
+ScriptValue File::lastModifiedDate(ScriptState* script_state) const {
+  // lastModifiedDate returns a Date instance,
+  // http://www.w3.org/TR/FileAPI/#dfn-lastModifiedDate
+  return ScriptValue(
+      script_state->GetIsolate(),
+      ToV8(base::Time::FromJsTime(LastModifiedDate()), script_state));
+}
+
+double File::LastModifiedDate() const {
   double modified_date = LastModifiedMS();
 
   // The getter should return the current time when the last modification time
@@ -325,8 +334,6 @@ double File::lastModifiedDate() const {
   if (!IsValidFileTime(modified_date))
     modified_date = base::Time::Now().ToDoubleT() * 1000.0;
 
-  // lastModifiedDate returns a Date instance,
-  // http://www.w3.org/TR/FileAPI/#dfn-lastModifiedDate
   return modified_date;
 }
 

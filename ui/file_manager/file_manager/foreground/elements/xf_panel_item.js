@@ -146,7 +146,7 @@ class PanelItem extends HTMLElement {
                 height: 68px;
               }
             </style>
-            <div class='xf-panel-item'>
+            <div class='xf-panel-item' role='alert'>
                 <xf-circular-progress id='indicator'>
                 </xf-circular-progress>
                 <div class='xf-panel-text'>

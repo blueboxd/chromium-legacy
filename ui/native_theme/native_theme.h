@@ -327,6 +327,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_ButtonEnabledColor,
     kColorId_ButtonDisabledColor,
     kColorId_ButtonPressedShade,
+    kColorId_ButtonUncheckedColor,
     kColorId_ProminentButtonColor,
     kColorId_ProminentButtonFocusedColor,
     kColorId_ProminentButtonDisabledColor,

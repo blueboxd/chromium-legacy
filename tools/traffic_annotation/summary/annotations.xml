@@ -273,7 +273,6 @@ Refer to README.md for content description and update process.
  <item id="supervised_users_blacklist" hash_code="78544924" type="0" deprecated="2019-07-30" content_hash_code="10924669" file_path=""/>
  <item id="sync_attachment_downloader" hash_code="26372521" type="0" deprecated="2018-02-08" content_hash_code="70097603" file_path=""/>
  <item id="sync_attachment_uploader" hash_code="132657055" type="0" deprecated="2018-02-08" content_hash_code="25152853" file_path=""/>
- <item id="sync_clipboard_service" hash_code="109391496" type="0" content_hash_code="91758204" os_list="linux,windows" file_path="chrome/browser/sync/sync_clipboard_service.cc"/>
  <item id="sync_file_system" hash_code="102819690" type="0" content_hash_code="52153962" os_list="linux,windows" file_path="chrome/browser/sync_file_system/drive_backend/sync_engine.cc"/>
  <item id="sync_http_bridge" hash_code="57144960" type="0" content_hash_code="32868346" os_list="linux,windows" file_path="components/sync/engine/net/http_bridge.cc"/>
  <item id="sync_stop_reporter" hash_code="5021348" type="0" content_hash_code="56902850" os_list="linux,windows" file_path="components/sync/driver/sync_stopped_reporter.cc"/>

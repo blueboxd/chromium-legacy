@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "ui/display/display.h"
 #include "ui/display/display_export.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -17,7 +18,6 @@ class Rect;
 }
 
 namespace display {
-class Display;
 class DisplayObserver;
 
 // A utility class for getting various info about screen size, displays,
@@ -103,6 +103,9 @@ class DISPLAY_EXPORT Screen {
   // display in |display|. Otherwise returns false and |display| remains
   // untouched.
   bool GetDisplayWithDisplayId(int64_t display_id, Display* display) const;
+
+  virtual void SetPanelRotationForTesting(int64_t display_id,
+                                          Display::Rotation rotation);
 
  private:
   static gfx::NativeWindow GetWindowForView(gfx::NativeView view);

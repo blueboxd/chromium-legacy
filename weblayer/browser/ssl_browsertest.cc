@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "build/build_config.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "weblayer/shell/browser/shell.h"
 #include "weblayer/test/interstitial_utils.h"
@@ -14,12 +15,19 @@
 #include "weblayer/test/test_navigation_observer.h"
 #include "weblayer/test/weblayer_browser_test_utils.h"
 
+// TODO(crbug.com/1026523): Fix flakiness on Win10.
+#if defined(OS_WIN)
+#define MAYBE_SSLBrowserTest DISABLED_SSLBrowserTest
+#else
+#define MAYBE_SSLBrowserTest SSLBrowserTest
+#endif
+
 namespace weblayer {
 
-class SSLBrowserTest : public WebLayerBrowserTest {
+class MAYBE_SSLBrowserTest : public WebLayerBrowserTest {
  public:
-  SSLBrowserTest() = default;
-  ~SSLBrowserTest() override = default;
+  MAYBE_SSLBrowserTest() = default;
+  ~MAYBE_SSLBrowserTest() override = default;
 
   // WebLayerBrowserTest:
   void PreRunTestOnMainThread() override {
@@ -123,11 +131,11 @@ class SSLBrowserTest : public WebLayerBrowserTest {
   std::unique_ptr<net::EmbeddedTestServer> https_server_mismatched_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SSLBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(MAYBE_SSLBrowserTest);
 };
 
 // Tests clicking "take me back" on the interstitial page.
-IN_PROC_BROWSER_TEST_F(SSLBrowserTest, TakeMeBack) {
+IN_PROC_BROWSER_TEST_F(MAYBE_SSLBrowserTest, TakeMeBack) {
   NavigateToOkPage();
   NavigateToPageWithSslErrorExpectBlocked();
 
@@ -144,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(SSLBrowserTest, TakeMeBack) {
 
 // Tests clicking "take me back" on the interstitial page when there's no
 // navigation history. The user should be taken to a safe page (about:blank).
-IN_PROC_BROWSER_TEST_F(SSLBrowserTest, TakeMeBackEmptyNavigationHistory) {
+IN_PROC_BROWSER_TEST_F(MAYBE_SSLBrowserTest, TakeMeBackEmptyNavigationHistory) {
   NavigateToPageWithSslErrorExpectBlocked();
 
   // Click "Take me back".
@@ -152,7 +160,7 @@ IN_PROC_BROWSER_TEST_F(SSLBrowserTest, TakeMeBackEmptyNavigationHistory) {
                                            GURL("about:blank"));
 }
 
-IN_PROC_BROWSER_TEST_F(SSLBrowserTest, Reload) {
+IN_PROC_BROWSER_TEST_F(MAYBE_SSLBrowserTest, Reload) {
   NavigateToOkPage();
   NavigateToPageWithSslErrorExpectBlocked();
 
@@ -172,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(SSLBrowserTest, Reload) {
 // Tests clicking proceed link on the interstitial page. This is a PRE_ test
 // because it also acts as setup for the test below which verifies the behavior
 // across restarts.
-IN_PROC_BROWSER_TEST_F(SSLBrowserTest, PRE_Proceed) {
+IN_PROC_BROWSER_TEST_F(MAYBE_SSLBrowserTest, PRE_Proceed) {
   NavigateToOkPage();
   NavigateToPageWithSslErrorExpectBlocked();
   SendInterstitialNavigationCommandAndWait(true /*proceed*/);
@@ -186,12 +194,12 @@ IN_PROC_BROWSER_TEST_F(SSLBrowserTest, PRE_Proceed) {
 // The proceed decision is not perpetuated across WebLayer sessions, i.e.
 // WebLayer will block again when navigating to the same bad page that was
 // previously proceeded through.
-IN_PROC_BROWSER_TEST_F(SSLBrowserTest, Proceed) {
+IN_PROC_BROWSER_TEST_F(MAYBE_SSLBrowserTest, Proceed) {
   NavigateToPageWithSslErrorExpectBlocked();
 }
 
 // Tests navigating away from the interstitial page.
-IN_PROC_BROWSER_TEST_F(SSLBrowserTest, NavigateAway) {
+IN_PROC_BROWSER_TEST_F(MAYBE_SSLBrowserTest, NavigateAway) {
   NavigateToOkPage();
   NavigateToPageWithSslErrorExpectBlocked();
   NavigateToOtherOkPage();

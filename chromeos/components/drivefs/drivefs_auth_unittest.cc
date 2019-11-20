@@ -62,7 +62,7 @@ class MockIdentityAccessor {
   MOCK_METHOD3(
       GetAccessToken,
       std::pair<base::Optional<std::string>, GoogleServiceAuthError::State>(
-          const std::string& account_id,
+          const CoreAccountId& account_id,
           const ::identity::ScopeSet& scopes,
           const std::string& consumer_id));
 
@@ -128,18 +128,18 @@ class FakeIdentityService
 
 class DriveFsAuthTest : public ::testing::Test {
  public:
-  DriveFsAuthTest() = default;
+  DriveFsAuthTest() : kTestAccountId("test@example.com") {}
 
  protected:
   void SetUp() override {
-    account_id_ = AccountId::FromUserEmailGaiaId("test@example.com", "ID");
     clock_.SetNow(base::Time::Now());
     identity_service_ = std::make_unique<FakeIdentityService>(
         &mock_identity_accessor_, &clock_);
     auto timer = std::make_unique<base::MockOneShotTimer>();
     timer_ = timer.get();
-    delegate_ = std::make_unique<AuthDelegateImpl>(identity_service_.get(),
-                                                   account_id_);
+    delegate_ = std::make_unique<AuthDelegateImpl>(
+        identity_service_.get(),
+        AccountId::FromUserEmailGaiaId("test@example.com", "ID"));
     auth_ = std::make_unique<DriveFsAuth>(&clock_,
                                           base::FilePath("/path/to/profile"),
                                           std::move(timer), delegate_.get());
@@ -165,12 +165,11 @@ class DriveFsAuthTest : public ::testing::Test {
     run_loop.Run();
   }
 
+  const CoreAccountId kTestAccountId;
   base::test::TaskEnvironment task_environment_;
   MockIdentityAccessor mock_identity_accessor_;
   base::SimpleTestClock clock_;
   std::unique_ptr<FakeIdentityService> identity_service_;
-
-  AccountId account_id_;
 
   std::unique_ptr<AuthDelegateImpl> delegate_;
   std::unique_ptr<DriveFsAuth> auth_;
@@ -182,7 +181,7 @@ class DriveFsAuthTest : public ::testing::Test {
 
 TEST_F(DriveFsAuthTest, GetAccessToken_Success) {
   EXPECT_CALL(mock_identity_accessor_,
-              GetAccessToken("test@example.com", _, "drivefs"))
+              GetAccessToken(kTestAccountId, _, "drivefs"))
       .WillOnce(testing::Return(
           std::make_pair("auth token", GoogleServiceAuthError::NONE)));
   ExpectAccessToken(false, mojom::AccessTokenStatus::kSuccess, "auth token");
@@ -190,7 +189,7 @@ TEST_F(DriveFsAuthTest, GetAccessToken_Success) {
 
 TEST_F(DriveFsAuthTest, GetAccessToken_GetAccessTokenFailure_Permanent) {
   EXPECT_CALL(mock_identity_accessor_,
-              GetAccessToken("test@example.com", _, "drivefs"))
+              GetAccessToken(kTestAccountId, _, "drivefs"))
       .WillOnce(testing::Return(std::make_pair(
           base::nullopt, GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS)));
   ExpectAccessToken(false, mojom::AccessTokenStatus::kAuthError, "");
@@ -198,7 +197,7 @@ TEST_F(DriveFsAuthTest, GetAccessToken_GetAccessTokenFailure_Permanent) {
 
 TEST_F(DriveFsAuthTest, GetAccessToken_GetAccessTokenFailure_Transient) {
   EXPECT_CALL(mock_identity_accessor_,
-              GetAccessToken("test@example.com", _, "drivefs"))
+              GetAccessToken(kTestAccountId, _, "drivefs"))
       .WillOnce(testing::Return(std::make_pair(
           base::nullopt, GoogleServiceAuthError::SERVICE_UNAVAILABLE)));
   ExpectAccessToken(false, mojom::AccessTokenStatus::kTransientError, "");
@@ -221,7 +220,7 @@ TEST_F(DriveFsAuthTest, GetAccessToken_GetAccessTokenFailure_Timeout) {
 TEST_F(DriveFsAuthTest, GetAccessToken_ParallelRequests) {
   base::RunLoop run_loop;
   EXPECT_CALL(mock_identity_accessor_,
-              GetAccessToken("test@example.com", _, "drivefs"))
+              GetAccessToken(kTestAccountId, _, "drivefs"))
       .WillOnce(testing::Return(
           std::make_pair("auth token", GoogleServiceAuthError::NONE)));
   auto quit_closure = run_loop.QuitClosure();
@@ -244,14 +243,14 @@ TEST_F(DriveFsAuthTest, GetAccessToken_ParallelRequests) {
 TEST_F(DriveFsAuthTest, GetAccessToken_SequentialRequests) {
   for (int i = 0; i < 3; ++i) {
     EXPECT_CALL(mock_identity_accessor_,
-                GetAccessToken("test@example.com", _, "drivefs"))
+                GetAccessToken(kTestAccountId, _, "drivefs"))
         .WillOnce(testing::Return(
             std::make_pair("auth token", GoogleServiceAuthError::NONE)));
     ExpectAccessToken(false, mojom::AccessTokenStatus::kSuccess, "auth token");
   }
   for (int i = 0; i < 3; ++i) {
     EXPECT_CALL(mock_identity_accessor_,
-                GetAccessToken("test@example.com", _, "drivefs"))
+                GetAccessToken(kTestAccountId, _, "drivefs"))
         .WillOnce(testing::Return(std::make_pair(
             base::nullopt, GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS)));
     ExpectAccessToken(false, mojom::AccessTokenStatus::kAuthError, "");
@@ -260,7 +259,7 @@ TEST_F(DriveFsAuthTest, GetAccessToken_SequentialRequests) {
 
 TEST_F(DriveFsAuthTest, Caching) {
   EXPECT_CALL(mock_identity_accessor_,
-              GetAccessToken("test@example.com", _, "drivefs"))
+              GetAccessToken(kTestAccountId, _, "drivefs"))
       .WillOnce(testing::Return(
           std::make_pair("auth token", GoogleServiceAuthError::NONE)));
 
@@ -272,7 +271,7 @@ TEST_F(DriveFsAuthTest, Caching) {
 
 TEST_F(DriveFsAuthTest, CachedAndNotCached) {
   EXPECT_CALL(mock_identity_accessor_,
-              GetAccessToken("test@example.com", _, "drivefs"))
+              GetAccessToken(kTestAccountId, _, "drivefs"))
       .WillOnce(testing::Return(
           std::make_pair("auth token", GoogleServiceAuthError::NONE)))
       .WillOnce(testing::Return(
@@ -289,7 +288,7 @@ TEST_F(DriveFsAuthTest, CachedAndNotCached) {
 
 TEST_F(DriveFsAuthTest, CacheExpired) {
   EXPECT_CALL(mock_identity_accessor_,
-              GetAccessToken("test@example.com", _, "drivefs"))
+              GetAccessToken(kTestAccountId, _, "drivefs"))
       .WillOnce(testing::Return(
           std::make_pair("auth token", GoogleServiceAuthError::NONE)))
       .WillOnce(testing::Return(

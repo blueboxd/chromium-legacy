@@ -28,7 +28,7 @@ namespace policy {
 AndroidManagementClient::AndroidManagementClient(
     DeviceManagementService* device_management_service,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    const std::string& account_id,
+    const CoreAccountId& account_id,
     signin::IdentityManager* identity_manager)
     : device_management_service_(device_management_service),
       url_loader_factory_(url_loader_factory),

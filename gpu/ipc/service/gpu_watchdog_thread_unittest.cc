@@ -276,6 +276,37 @@ TEST_F(GpuWatchdogTest, GpuSwitchingToForegroundHang) {
   EXPECT_TRUE(result);
 }
 
+TEST_F(GpuWatchdogTest, GpuInitializationPause) {
+  // Running for 100 ms in the beginning of GPU init.
+  SimpleTask(base::TimeDelta::FromMilliseconds(100));
+  watchdog_thread_->PauseWatchdog();
+
+  // The Gpu init continues for another (init timeout + 1000) ms after the pause
+  SimpleTask(kGpuWatchdogTimeoutForTesting * kInitFactor +
+             base::TimeDelta::FromMilliseconds(1000));
+
+  // No GPU hang is detected when the watchdog is paused.
+  bool result = watchdog_thread_->IsGpuHangDetectedForTesting();
+  EXPECT_FALSE(result);
+
+  // Continue the watchdog now.
+  watchdog_thread_->ResumeWatchdog();
+  // The Gpu init continues for (init timeout + 4000) ms.
+#if defined(OS_WIN)
+  SimpleTask(kGpuWatchdogTimeoutForTesting * kInitFactor +
+             kGpuWatchdogTimeoutForTesting *
+                 kMaxCountOfMoreGpuThreadTimeAllowed +
+             base::TimeDelta::FromMilliseconds(4000));
+#else
+  SimpleTask(kGpuWatchdogTimeoutForTesting * kInitFactor +
+             base::TimeDelta::FromMilliseconds(4000));
+#endif
+
+  // A GPU hang should be detected.
+  result = watchdog_thread_->IsGpuHangDetectedForTesting();
+  EXPECT_TRUE(result);
+}
+
 TEST_F(GpuWatchdogPowerTest, GpuOnSuspend) {
   // watchdog_thread_->OnInitComplete() is called in SetUp
 

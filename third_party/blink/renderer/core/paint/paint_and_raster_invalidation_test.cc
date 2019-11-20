@@ -412,21 +412,17 @@ TEST_P(PaintAndRasterInvalidationTest, NonCompositedLayoutViewResize) {
   GetDocument().View()->SetTracksRasterInvalidations(true);
   iframe->setAttribute(html_names::kStyleAttr, "height: 200px");
   UpdateAllLifecyclePhasesForTest();
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    // TODO(wangxianzhu): This is probably incorrect, but for now we assume
-    // any scrolling contents as composited during CAP painting. Perhaps we
-    // need some heuristic about composited scrolling during painting.
-    EXPECT_FALSE(GetRasterInvalidationTracking()->HasInvalidations());
-  } else {
-    // The iframe doesn't have anything visible by itself, so we only issue
-    // raster invalidation for the frame contents.
-    EXPECT_THAT(
-        GetRasterInvalidationTracking()->Invalidations(),
-        UnorderedElementsAre(RasterInvalidationInfo{
-            content->GetLayoutObject()->View(),
-            content->GetLayoutObject()->View()->DebugName(),
-            IntRect(0, 100, 100, 100), PaintInvalidationReason::kIncremental}));
-  }
+  // The iframe doesn't have anything visible by itself, so we only issue
+  // raster invalidation for the frame contents.
+  const auto* iframe_layout_view = content->GetLayoutObject()->View();
+  const auto* client = RuntimeEnabledFeatures::CompositeAfterPaintEnabled()
+                           ? &iframe_layout_view->GetScrollableArea()
+                                  ->GetScrollingBackgroundDisplayItemClient()
+                           : iframe_layout_view;
+  EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
+              UnorderedElementsAre(RasterInvalidationInfo{
+                  client, client->DebugName(), IntRect(0, 100, 100, 100),
+                  PaintInvalidationReason::kIncremental}));
   GetDocument().View()->SetTracksRasterInvalidations(false);
 }
 
@@ -460,17 +456,27 @@ TEST_P(PaintAndRasterInvalidationTest, NonCompositedLayoutViewGradientResize) {
   GetDocument().View()->SetTracksRasterInvalidations(true);
   content->setAttribute(html_names::kStyleAttr, "height: 500px");
   UpdateAllLifecyclePhasesForTest();
+  const auto* client = RuntimeEnabledFeatures::CompositeAfterPaintEnabled()
+                           ? &frame_layout_view->GetScrollableArea()
+                                  ->GetScrollingBackgroundDisplayItemClient()
+                           : frame_layout_view;
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    // TODO(wangxianzhu): This is probably incorrect, but for now we assume
-    // any scrolling contents as composited during CAP painting. Perhaps we
-    // need some heuristic about composited scrolling during painting.
-    EXPECT_FALSE(GetRasterInvalidationTracking()->HasInvalidations());
+    // The duplication is because we invalidated both the old visual rect and
+    // the new visual rect of the scrolling background display item which
+    // changed size, and then both mapped to the same rect in the layer.
+    EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
+                UnorderedElementsAre(
+                    RasterInvalidationInfo{
+                        client, client->DebugName(), IntRect(0, 0, 100, 100),
+                        PaintInvalidationReason::kBackground},
+                    RasterInvalidationInfo{
+                        client, client->DebugName(), IntRect(0, 0, 100, 100),
+                        PaintInvalidationReason::kBackground}));
   } else {
-    EXPECT_THAT(
-        GetRasterInvalidationTracking()->Invalidations(),
-        UnorderedElementsAre(RasterInvalidationInfo{
-            frame_layout_view, frame_layout_view->DebugName(),
-            IntRect(0, 0, 100, 100), PaintInvalidationReason::kBackground}));
+    EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
+                UnorderedElementsAre(RasterInvalidationInfo{
+                    client, client->DebugName(), IntRect(0, 0, 100, 100),
+                    PaintInvalidationReason::kBackground}));
   }
   GetDocument().View()->SetTracksRasterInvalidations(false);
 
@@ -478,20 +484,12 @@ TEST_P(PaintAndRasterInvalidationTest, NonCompositedLayoutViewGradientResize) {
   GetDocument().View()->SetTracksRasterInvalidations(true);
   iframe->setAttribute(html_names::kStyleAttr, "height: 200px");
   UpdateAllLifecyclePhasesForTest();
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    // TODO(wangxianzhu): This is probably incorrect, but for now we assume
-    // any scrolling contents as composited during CAP painting. Perhaps we
-    // need some heuristic about composited scrolling during painting.
-    EXPECT_FALSE(GetRasterInvalidationTracking()->HasInvalidations());
-  } else {
-    // The iframe doesn't have anything visible by itself, so we only issue
-    // raster invalidation for the frame contents.
-    EXPECT_THAT(
-        GetRasterInvalidationTracking()->Invalidations(),
-        UnorderedElementsAre(RasterInvalidationInfo{
-            frame_layout_view, frame_layout_view->DebugName(),
-            IntRect(0, 100, 100, 100), PaintInvalidationReason::kIncremental}));
-  }
+  // The iframe doesn't have anything visible by itself, so we only issue
+  // raster invalidation for the frame contents.
+  EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
+              UnorderedElementsAre(RasterInvalidationInfo{
+                  client, client->DebugName(), IntRect(0, 100, 100, 100),
+                  PaintInvalidationReason::kIncremental}));
   GetDocument().View()->SetTracksRasterInvalidations(false);
 }
 
@@ -657,17 +655,10 @@ TEST_P(PaintAndRasterInvalidationTest,
   GetDocument().View()->SetTracksRasterInvalidations(true);
   target->setAttribute(html_names::kStyleAttr, "height: 200px");
   UpdateAllLifecyclePhasesForTest();
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    // TODO(wangxianzhu): This is probably incorrect, but for now we assume
-    // any scrolling contents as composited during CAP painting. Perhaps we
-    // need some heuristic about composited scrolling during painting.
-    EXPECT_FALSE(GetRasterInvalidationTracking()->HasInvalidations());
-  } else {
-    EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
-                UnorderedElementsAre(RasterInvalidationInfo{
-                    object, object->DebugName(), IntRect(0, 100, 50, 100),
-                    PaintInvalidationReason::kIncremental}));
-  }
+  EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
+              UnorderedElementsAre(RasterInvalidationInfo{
+                  object, object->DebugName(), IntRect(0, 100, 50, 100),
+                  PaintInvalidationReason::kIncremental}));
   GetDocument().View()->SetTracksRasterInvalidations(false);
 }
 

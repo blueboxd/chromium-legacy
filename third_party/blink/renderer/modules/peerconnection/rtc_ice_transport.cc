@@ -53,7 +53,7 @@ base::Optional<cricket::Candidate> ConvertToCricketIceCandidate(
 }
 
 RTCIceCandidate* ConvertToRtcIceCandidate(const cricket::Candidate& candidate) {
-  return RTCIceCandidate::Create(WebRTCICECandidate::Create(
+  return RTCIceCandidate::Create(RTCIceCandidatePlatform::Create(
       String::FromUTF8(webrtc::SdpSerializeCandidate(candidate)), "", 0));
 }
 

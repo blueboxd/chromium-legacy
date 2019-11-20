@@ -58,29 +58,38 @@ TEST_F(SettingsRootTableViewControllerTest, TestUpdateUIForEditState) {
 
   // Check that there the navigation controller's button if the table view isn't
   // edited and the controller has the default behavior for
-  // |shouldShowEditButton|.
+  // |shouldShowEditButton|. Also check that toolbar is hidden when
+  // |shouldHideToolbar| returns YES.
   controller.tableView.editing = NO;
+  OCMExpect([mockController shouldHideToolbar]).andReturn(YES);
   [controller updateUIForEditState];
   UIBarButtonItem* item = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemDone
                            target:nil
                            action:nil];
   EXPECT_NSEQ(item.title, controller.navigationItem.rightBarButtonItem.title);
+  EXPECT_TRUE(controller.navigationController.toolbarHidden);
 
   // Check that there the OK button if the table view is being edited and the
-  // controller has the default behavior for |shouldShowEditButton|.
+  // controller has the default behavior for |shouldShowEditButton|. Also check
+  // that toolbar is not hidden when |shouldHideToolbar| returns NO.
   controller.tableView.editing = YES;
+  OCMExpect([mockController shouldHideToolbar]).andReturn(NO);
   [controller updateUIForEditState];
   EXPECT_NSEQ(l10n_util::GetNSString(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON),
               controller.navigationItem.rightBarButtonItem.title);
+  EXPECT_FALSE(controller.navigationController.toolbarHidden);
 
   // Check that there the OK button if the table view isn't edited and the
-  // controller returns YES for |shouldShowEditButton|.
+  // controller returns YES for |shouldShowEditButton|. Also check that toolbar
+  // is not hidden when |shouldHideToolbar| returns NO.
   controller.tableView.editing = NO;
   OCMStub([mockController shouldShowEditButton]).andReturn(YES);
+  OCMExpect([mockController shouldHideToolbar]).andReturn(NO);
   [controller updateUIForEditState];
   EXPECT_NSEQ(l10n_util::GetNSString(IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON),
               controller.navigationItem.rightBarButtonItem.title);
+  EXPECT_FALSE(controller.navigationController.toolbarHidden);
 }
 
 // Tests that the delete button in the bottom toolbar is displayed only when the

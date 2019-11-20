@@ -52,16 +52,16 @@ void NFCProxy::Trace(blink::Visitor* visitor) {
 }
 
 void NFCProxy::StartReading(NDEFReader* reader,
-                            const NDEFScanOptions* options) {
+                            const NDEFScanOptions* options,
+                            device::mojom::blink::NFC::WatchCallback callback) {
   DCHECK(reader);
-  if (readers_.Contains(reader))
-    return;
+  DCHECK(!readers_.Contains(reader));
 
   EnsureMojoConnection();
   nfc_remote_->Watch(
       device::mojom::blink::NDEFScanOptions::From(options), next_watch_id_,
       WTF::Bind(&NFCProxy::OnReaderRegistered, WrapPersistent(this),
-                WrapPersistent(reader), next_watch_id_));
+                WrapPersistent(reader), next_watch_id_, std::move(callback)));
   readers_.insert(reader, next_watch_id_);
   next_watch_id_++;
 }
@@ -119,9 +119,11 @@ void NFCProxy::OnWatch(const Vector<uint32_t>& watch_ids,
   }
 }
 
-void NFCProxy::OnReaderRegistered(NDEFReader* reader,
-                                  uint32_t watch_id,
-                                  device::mojom::blink::NDEFErrorPtr error) {
+void NFCProxy::OnReaderRegistered(
+    NDEFReader* reader,
+    uint32_t watch_id,
+    device::mojom::blink::NFC::WatchCallback callback,
+    device::mojom::blink::NDEFErrorPtr error) {
   DCHECK(reader);
   // |reader| may have already stopped reading.
   if (!readers_.Contains(reader))
@@ -134,13 +136,15 @@ void NFCProxy::OnReaderRegistered(NDEFReader* reader,
     return;
 
   if (error) {
-    reader->OnError(error->error_type);
     readers_.erase(reader);
+    std::move(callback).Run(std::move(error));
     return;
   }
 
-  // It's good the watch request has been accepted, we do nothing here but just
-  // wait for message notifications in OnWatch().
+  std::move(callback).Run(nullptr);
+
+  // It's good the watch request has been accepted, next we just wait for
+  // message notifications in OnWatch().
 }
 
 void NFCProxy::PageVisibilityChanged() {
@@ -182,9 +186,7 @@ void NFCProxy::OnMojoConnectionError() {
   // Notify all active readers about the connection error and clear the list.
   ReaderMap readers = std::move(readers_);
   for (auto& pair : readers) {
-    // The reader may call StopReading() to remove itself from |readers_| when
-    // handling the error.
-    pair.key->OnError(device::mojom::blink::NDEFErrorType::NOT_SUPPORTED);
+    pair.key->OnMojoConnectionError();
   }
 
   // Each connection maintains its own watch ID numbering, so reset to 1 on

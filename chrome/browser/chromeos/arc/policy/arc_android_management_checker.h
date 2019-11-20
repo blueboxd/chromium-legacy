@@ -51,7 +51,7 @@ class ArcAndroidManagementChecker : public signin::IdentityManager::Observer {
   Profile* profile_;
   signin::IdentityManager* const identity_manager_;
 
-  const std::string device_account_id_;
+  const CoreAccountId device_account_id_;
 
   // If true, on error, instead of reporting the error to the caller, schedule
   // the retry with delay.

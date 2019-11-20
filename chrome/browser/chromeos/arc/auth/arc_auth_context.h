@@ -31,7 +31,7 @@ class ArcAuthContext : public GaiaAuthConsumer,
   // must be the |account_id| used by the OAuth Token Service chain.
   // Note: |account_id| can be the Device Account or a Secondary Account stored
   // in Chrome OS Account Manager.
-  ArcAuthContext(Profile* profile, const std::string& account_id);
+  ArcAuthContext(Profile* profile, const CoreAccountId& account_id);
   ~ArcAuthContext() override;
 
   // Prepares the context. Calling while an inflight operation exists will
@@ -75,7 +75,7 @@ class ArcAuthContext : public GaiaAuthConsumer,
 
   // Unowned pointer.
   Profile* const profile_;
-  const std::string account_id_;
+  const CoreAccountId account_id_;
   signin::IdentityManager* const identity_manager_;
 
   // Whether the merge session should be skipped. Set to true only in testing.

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {TestStore} from 'chrome://test/bookmarks/test_store.js';
 import {canEditNode, canReorderChildren, getDescendants, removeIdsFromObject, removeIdsFromSet} from 'chrome://bookmarks/bookmarks.js';
+import {TestStore} from 'chrome://test/bookmarks/test_store.js';
 import {createFolder, createItem, normalizeIterable, testTree} from 'chrome://test/bookmarks/test_util.js';
 
 suite('util', function() {

@@ -31,9 +31,8 @@ std::pair<std::string, std::string> GetPrinterNameAndDescription(
 
 // Returns the JSON representing printer capabilities for the device registered
 // as |device_name| in the PrinterBackend.  The returned dictionary is suitable
-// for passage to the WebUI. The settings are obtained using |print_backend| if
-// it is provided. If |print_backend| is null, uses a new PrintBackend instance
-// with default settings.
+// for passage to the WebUI. The settings are obtained using |print_backend|,
+// which is required.
 // Data from |basic_info|, |additional_papers| and |has_secure_protocol| are
 // incorporated into the returned dictionary.
 base::Value GetSettingsOnBlockingTaskRunner(

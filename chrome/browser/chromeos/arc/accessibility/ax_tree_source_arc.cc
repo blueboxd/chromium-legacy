@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
 #include "extensions/browser/api/automation_internal/automation_event_router.h"
 #include "extensions/common/extension_messages.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/platform/ax_android_constants.h"
 #include "ui/aura/window.h"
 #include "ui/views/view.h"
@@ -116,6 +117,17 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
   }
 
   // Calculate the focused ID.
+  if (event_data->event_type == AXEventType::WINDOW_STATE_CHANGED) {
+    // When accessibility window changed, a11y event of WINDOW_CONTENT_CHANGED
+    // is fired from Android multiple times.
+    // The event of WINDOW_STATE_CHANGED is fired only once for each window
+    // change and use it as a trigger to move the a11y focus to the first node.
+    AccessibilityInfoDataWrapper* new_focus =
+        FindFirstFocusableNode(GetFromId(event_data->source_id));
+    if (IsValid(new_focus))
+      focused_id_ = new_focus->GetId();
+  }
+
   if (!focused_id_.has_value()) {
     if (root_id_.has_value()) {
       AccessibilityInfoDataWrapper* root = GetRoot();
@@ -144,13 +156,14 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
 
   event_bundle.events.emplace_back();
   ui::AXEvent& event = event_bundle.events.back();
+
   // When the focused node exists, give it as a hint to decide a Chrome
   // automation event type.
-  AXNodeInfoData* opt_focused_node = nullptr;
+  AXNodeInfoData* focused_node = nullptr;
   if (focused_id_.has_value() &&
       tree_map_.find(*focused_id_) != tree_map_.end())
-    opt_focused_node = tree_map_[*focused_id_]->GetNode();
-  event.event_type = ToAXEvent(event_data->event_type, opt_focused_node);
+    focused_node = tree_map_[*focused_id_]->GetNode();
+  event.event_type = ToAXEvent(event_data->event_type, focused_node);
   event.id = event_data->source_id;
 
   event_bundle.updates.emplace_back();
@@ -353,6 +366,25 @@ bool AXTreeSourceArc::ComputeIsClickableLeaf(
     }
   }
   return true;
+}
+
+AccessibilityInfoDataWrapper* AXTreeSourceArc::FindFirstFocusableNode(
+    AccessibilityInfoDataWrapper* info_data) const {
+  if (!IsValid(info_data))
+    return nullptr;
+
+  if (info_data->IsVisibleToUser() && info_data->CanBeAccessibilityFocused())
+    return info_data;
+
+  std::vector<AccessibilityInfoDataWrapper*> children;
+  GetChildren(info_data, &children);
+  for (AccessibilityInfoDataWrapper* child : children) {
+    AccessibilityInfoDataWrapper* candidate = FindFirstFocusableNode(child);
+    if (candidate)
+      return candidate;
+  }
+
+  return nullptr;
 }
 
 void AXTreeSourceArc::Reset() {

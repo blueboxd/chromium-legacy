@@ -13,7 +13,8 @@
 #include "ui/display/fake/fake_display_delegate.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/platform/x11/x11_event_source_default.h"
-#include "ui/gfx/x/x11.h"
+#include "ui/gfx/x/x11_connection.h"
+#include "ui/gfx/x/x11_types.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/platform/x11/x11_clipboard_ozone.h"
 #include "ui/ozone/platform/x11/x11_cursor_factory_ozone.h"
@@ -148,7 +149,8 @@ class OzonePlatformX11 : public OzonePlatform {
 
     // Always initialize in multi-thread mode, since this is used only during
     // development.
-    XInitThreads();
+    // TODO(crbug.com/1024477): Initialize Xlib threads only when required
+    gfx::InitializeThreadedX11();
 
     // If XOpenDisplay() failed there is nothing we can do. Crash here instead
     // of crashing later. If you are crashing here, make sure there is an X

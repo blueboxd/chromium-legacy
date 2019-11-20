@@ -1523,7 +1523,7 @@ TEST(V8ScriptValueSerializerTest, DecodeFileV3) {
   EXPECT_EQ("text/plain", new_file->type());
   EXPECT_FALSE(new_file->HasValidSnapshotMetadata());
   EXPECT_EQ(0u, new_file->size());
-  EXPECT_TRUE(time_interval_checker.WasAliveAt(new_file->lastModifiedDate()));
+  EXPECT_TRUE(time_interval_checker.WasAliveAt(new_file->LastModifiedDate()));
   EXPECT_EQ(File::kIsUserVisible, new_file->GetUserVisibility());
 }
 
@@ -1548,7 +1548,7 @@ TEST(V8ScriptValueSerializerTest, DecodeFileV4) {
   EXPECT_EQ("text/plain", new_file->type());
   EXPECT_FALSE(new_file->HasValidSnapshotMetadata());
   EXPECT_EQ(0u, new_file->size());
-  EXPECT_TRUE(time_interval_checker.WasAliveAt(new_file->lastModifiedDate()));
+  EXPECT_TRUE(time_interval_checker.WasAliveAt(new_file->LastModifiedDate()));
   EXPECT_EQ(File::kIsUserVisible, new_file->GetUserVisibility());
 }
 
@@ -1575,7 +1575,7 @@ TEST(V8ScriptValueSerializerTest, DecodeFileV4WithSnapshot) {
   EXPECT_EQ(512u, new_file->size());
   // From v4 to v7, the last modified time is written in seconds.
   // So -0.25 represents 250 ms before the Unix epoch.
-  EXPECT_EQ(-250.0, new_file->lastModifiedDate());
+  EXPECT_EQ(-250.0, new_file->LastModifiedDate());
 }
 
 TEST(V8ScriptValueSerializerTest, DecodeFileV7) {
@@ -1599,7 +1599,7 @@ TEST(V8ScriptValueSerializerTest, DecodeFileV7) {
   EXPECT_EQ("text/plain", new_file->type());
   EXPECT_FALSE(new_file->HasValidSnapshotMetadata());
   EXPECT_EQ(0u, new_file->size());
-  EXPECT_TRUE(time_interval_checker.WasAliveAt(new_file->lastModifiedDate()));
+  EXPECT_TRUE(time_interval_checker.WasAliveAt(new_file->LastModifiedDate()));
   EXPECT_EQ(File::kIsNotUserVisible, new_file->GetUserVisibility());
 }
 
@@ -1626,7 +1626,7 @@ TEST(V8ScriptValueSerializerTest, DecodeFileV8WithSnapshot) {
   EXPECT_EQ(512u, new_file->size());
   // From v8, the last modified time is written in milliseconds.
   // So -0.25 represents 0.25 ms before the Unix epoch.
-  EXPECT_EQ(-0.25, new_file->lastModifiedDate());
+  EXPECT_EQ(-0.25, new_file->LastModifiedDate());
   EXPECT_EQ(File::kIsUserVisible, new_file->GetUserVisibility());
 }
 
@@ -1756,7 +1756,7 @@ TEST(V8ScriptValueSerializerTest, DecodeFileListV8WithoutSnapshot) {
   EXPECT_EQ("text/plain", new_file->type());
   EXPECT_FALSE(new_file->HasValidSnapshotMetadata());
   EXPECT_EQ(0u, new_file->size());
-  EXPECT_TRUE(time_interval_checker.WasAliveAt(new_file->lastModifiedDate()));
+  EXPECT_TRUE(time_interval_checker.WasAliveAt(new_file->LastModifiedDate()));
   EXPECT_EQ(File::kIsNotUserVisible, new_file->GetUserVisibility());
 }
 

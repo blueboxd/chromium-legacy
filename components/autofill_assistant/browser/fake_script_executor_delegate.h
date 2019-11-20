@@ -36,6 +36,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   WebsiteLoginFetcher* GetWebsiteLoginFetcher() override;
   content::WebContents* GetWebContents() override;
   std::string GetAccountEmailAddress() override;
+  std::string GetLocale() override;
   void EnterState(AutofillAssistantState state) override;
   void SetTouchableElementArea(const ElementAreaProto& element) override;
   void SetStatusMessage(const std::string& message) override;

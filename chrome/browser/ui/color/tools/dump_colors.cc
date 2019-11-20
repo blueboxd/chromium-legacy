@@ -10,6 +10,8 @@
 #include <iostream>
 
 #include "chrome/browser/ui/color/chrome_color_id.h"
+#include "chrome/browser/ui/color/chrome_color_mixers.h"
+#include "chrome/browser/ui/color/omnibox_color_mixers.h"
 #include "ui/color/color_mixers.h"
 #include "ui/color/color_provider.h"
 
@@ -19,6 +21,8 @@ int main(int argc, const char* argv[]) {
     ui::AddCoreDefaultColorMixers(provider, dark_window);
     ui::AddNativeColorMixers(provider);
     ui::AddUiColorMixers(provider);
+    AddChromeColorMixers(provider);
+    AddOmniboxColorMixers(provider, false);
   };
   ui::ColorProvider light_provider, dark_provider;
   add_mixers(&light_provider, false);

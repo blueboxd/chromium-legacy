@@ -33,6 +33,8 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   void OnForegrounded() override;
   void OnInitComplete() override;
   void OnGpuProcessTearDown() override;
+  void ResumeWatchdog() override;
+  void PauseWatchdog() override;
   void GpuWatchdogHistogram(GpuWatchdogThreadEvent thread_event) override;
   bool IsGpuHangDetectedForTesting() override;
   void WaitForPowerObserverAddedForTesting() override;
@@ -53,11 +55,16 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   void OnResume() override;
 
  private:
+  enum PauseResumeSource {
+    kAndroidBackgroundForeground = 0,
+    kPowerSuspendResume = 1,
+    kGeneralGpuFlow = 2,
+  };
+
   GpuWatchdogThreadImplV2(base::TimeDelta timeout, bool test_mode);
   void OnAddPowerObserver();
-  void OnWatchdogBackgrounded();
-  void OnWatchdogForegrounded();
-  void RestartWatchdogTimeoutTask();
+  void RestartWatchdogTimeoutTask(PauseResumeSource source_of_request);
+  void StopWatchdogTimeoutTask(PauseResumeSource source_of_request);
   void Arm();
   void Disarm();
   void InProgress();
@@ -78,19 +85,23 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   // thread.
   int32_t last_arm_disarm_counter_ = 0;
 
-  // Timeout on the watchdog thread to check if gpu hangs
+  // Timeout on the watchdog thread to check if gpu hangs.
   base::TimeDelta watchdog_timeout_;
 
-  // The time the gpu watchdog was created
+  // The time the gpu watchdog was created.
   base::TimeTicks watchdog_start_timeticks_;
 
   // The time the last OnSuspend and OnResume was called.
-  base::TimeTicks suspend_timeticks_;
-  base::TimeTicks resume_timeticks_;
+  base::TimeTicks power_suspend_timeticks_;
+  base::TimeTicks power_resume_timeticks_;
 
   // The time the last OnBackgrounded and OnForegrounded was called.
   base::TimeTicks backgrounded_timeticks_;
   base::TimeTicks foregrounded_timeticks_;
+
+  // The time PauseWatchdog and ResumeWatchdog was called.
+  base::TimeTicks watchdog_pause_timeticks_;
+  base::TimeTicks watchdog_resume_timeticks_;
 
   // TimeTicks: Tracking the amount of time a task runs. Executing delayed
   //            tasks at the right time.
@@ -126,6 +137,9 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   // Chrome is running on the background on Android. Gpu is probably very slow
   // or stalled.
   bool is_backgrounded_ = false;
+
+  // The GPU watchdog is paused. The timeout task is temporarily stopped.
+  bool is_paused_ = false;
 
   // Whether the watchdog thread has been called and added to the power monitor
   // observer.

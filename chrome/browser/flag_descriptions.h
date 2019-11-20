@@ -220,6 +220,9 @@ extern const char kDrawVerticallyEdgeToEdgeDescription[];
 extern const char kEnablePasswordsAccountStorageName[];
 extern const char kEnablePasswordsAccountStorageDescription[];
 
+extern const char kEnablePasswordsAccountStorageSavingUiName[];
+extern const char kEnablePasswordsAccountStorageSavingUiDescription[];
+
 extern const char kExperimentalAccessibilityFeaturesName[];
 extern const char kExperimentalAccessibilityFeaturesDescription[];
 
@@ -1313,6 +1316,9 @@ extern const char kWebMidiDescription[];
 extern const char kWebPaymentsExperimentalFeaturesName[];
 extern const char kWebPaymentsExperimentalFeaturesDescription[];
 
+extern const char kWebrtcCaptureMultiChannelApmName[];
+extern const char kWebrtcCaptureMultiChannelApmDescription[];
+
 extern const char kWebrtcHideLocalIpsWithMdnsName[];
 extern const char kWebrtcHideLocalIpsWithMdnsDecription[];
 
@@ -1324,9 +1330,6 @@ extern const char kWebrtcHwDecodingDescription[];
 
 extern const char kWebrtcHwEncodingName[];
 extern const char kWebrtcHwEncodingDescription[];
-
-extern const char kWebrtcMultiChannelApmName[];
-extern const char kWebrtcMultiChannelApmDescription[];
 
 extern const char kWebrtcNewEncodeCpuLoadEstimatorName[];
 extern const char kWebrtcNewEncodeCpuLoadEstimatorDescription[];
@@ -2360,9 +2363,6 @@ extern const char kAnimatedAvatarButtonDescription[];
 
 extern const char kProfileMenuRevampName[];
 extern const char kProfileMenuRevampDescription[];
-
-extern const char kSyncClipboardServiceName[];
-extern const char kSyncClipboardServiceDescription[];
 
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 

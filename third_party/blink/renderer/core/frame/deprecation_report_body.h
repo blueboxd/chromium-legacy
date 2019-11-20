@@ -24,10 +24,8 @@ class CORE_EXPORT DeprecationReportBody : public LocationReportBody {
 
   String id() const { return id_; }
   String message() const { return message_; }
-  double anticipatedRemoval(bool& is_null) const {
-    is_null = !anticipatedRemoval_;
-    return anticipatedRemoval_;
-  }
+  ScriptValue anticipatedRemoval(ScriptState* script_state) const;
+  base::Optional<base::Time> AnticipatedRemoval() const;
 
   void BuildJSONValue(V8ObjectBuilder& builder) const override;
 

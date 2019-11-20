@@ -37,13 +37,13 @@ public class SmokeTest {
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
 
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { activity.getBrowser().setSupportsEmbedding(true); });
+                () -> { activity.getBrowser().setSupportsEmbedding(true, (result) -> {}); });
 
         CountDownLatch latch = new CountDownLatch(1);
         String url = "data:text,foo";
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            activity.getBrowser().setSupportsEmbedding(true).addCallback((Boolean result) -> {
+            activity.getBrowser().setSupportsEmbedding(true, (result) -> {
                 Assert.assertTrue(result);
                 latch.countDown();
             });

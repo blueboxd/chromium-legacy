@@ -112,3 +112,4 @@ TestInterface2OrUint8Array NativeValueTraits<TestInterface2OrUint8Array>::Native
 }
 
 }  // namespace blink
+

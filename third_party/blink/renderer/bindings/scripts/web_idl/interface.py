@@ -193,6 +193,20 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
         return self._inherited.target_object if self._inherited else None
 
     @property
+    def inclusive_inherited_interfaces(self):
+        """
+        Returns the list of inclusive inherited interfaces.
+
+        https://heycam.github.io/webidl/#interface-inclusive-inherited-interfaces
+        """
+        result = []
+        interface = self
+        while interface is not None:
+            result.append(interface)
+            interface = interface.inherited
+        return result
+
+    @property
     def attributes(self):
         """
         Returns attributes, including [Unforgeable] attributes in ancestors.

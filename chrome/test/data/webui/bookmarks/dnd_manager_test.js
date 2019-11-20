@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {BrowserProxy, changeFolderOpen, DragInfo, DropPosition} from 'chrome://bookmarks/bookmarks.js';
+import {middleOfNode, topLeftOfNode} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {TestBookmarksBrowserProxy} from 'chrome://test/bookmarks/test_browser_proxy.js';
 import {TestStore} from 'chrome://test/bookmarks/test_store.js';
 import {TestTimerProxy} from 'chrome://test/bookmarks/test_timer_proxy.js';
-import {BrowserProxy, changeFolderOpen, DragInfo, DropPosition} from 'chrome://bookmarks/bookmarks.js';
 import {createFolder, createItem, findFolderNode, getAllFoldersOpenState, normalizeIterable, replaceBody, testTree} from 'chrome://test/bookmarks/test_util.js';
-import {middleOfNode, topLeftOfNode} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
-import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 suite('drag and drop', function() {
   let app;
@@ -80,8 +80,7 @@ suite('drag and drop', function() {
   }
 
   function move(target, dest) {
-    dispatchDragEvent(
-        'dragover', target, dest || middleOfNode(target));
+    dispatchDragEvent('dragover', target, dest || middleOfNode(target));
   }
 
   function getDragIds() {
@@ -422,8 +421,7 @@ suite('drag and drop', function() {
     simulateDragStart(dragElement);
     assertDeepEquals(['13'], getDragIds());
 
-    dispatchDragEvent(
-        'dragover', dragTarget, topLeftOfNode(dragTarget));
+    dispatchDragEvent('dragover', dragTarget, topLeftOfNode(dragTarget));
     assertDragStyle(dragTarget, DRAG_STYLE.ABOVE);
 
     dispatchDragEvent('drop', dragTarget);

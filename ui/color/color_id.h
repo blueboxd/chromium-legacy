@@ -45,6 +45,7 @@ enum ColorIds : ColorId {
   kColorButtonProminentDisabledBackground,
   kColorButtonProminentFocusedBackground,
   kColorButtonProminentForeground,
+  kColorButtonUncheckedForeground,
   kColorDialogBackground,
   kColorDialogForeground,
   kColorFocusableBorderFocused,

@@ -178,6 +178,13 @@ Background.prototype = {
   /**
    * @override
    */
+  getCurrentRangeWithoutRecovery: function() {
+    return this.currentRange_;
+  },
+
+  /**
+   * @override
+   */
   setCurrentRange: function(newRange) {
     // Clear anything that was frozen on the braille display whenever
     // the user navigates.

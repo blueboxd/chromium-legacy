@@ -259,6 +259,32 @@ void WebGPUImplementation::OnGpuControlReturnData(
         NOTREACHED();
       }
       break;
+    case DawnReturnDataType::kRequestedDawnAdapterProperties: {
+      const cmds::DawnReturnAdapterInfo* returned_adapter_info =
+          reinterpret_cast<const cmds::DawnReturnAdapterInfo*>(
+              dawnReturnDataBody);
+
+      GLuint request_adapter_serial =
+          returned_adapter_info->adapter_ids.request_adapter_serial;
+      auto request_callback_iter =
+          request_adapter_callback_map_.find(request_adapter_serial);
+      if (request_callback_iter == request_adapter_callback_map_.end()) {
+        // TODO(jiawei.shao@intel.com): Lose the context.
+        NOTREACHED();
+        break;
+      }
+      auto& request_callback = request_callback_iter->second;
+      GLuint adapter_service_id =
+          returned_adapter_info->adapter_ids.adapter_service_id;
+      WGPUDeviceProperties adapter_properties = {};
+      const volatile char* deserialized_buffer =
+          reinterpret_cast<const volatile char*>(
+              returned_adapter_info->deserialized_buffer);
+      dawn_wire::DeserializeWGPUDeviceProperties(&adapter_properties,
+                                                 deserialized_buffer);
+      std::move(request_callback).Run(adapter_service_id, adapter_properties);
+      request_adapter_callback_map_.erase(request_callback_iter);
+    } break;
     default:
       // TODO(jiawei.shao@intel.com): Lose the context.
       NOTREACHED();
@@ -365,11 +391,30 @@ ReservedTexture WebGPUImplementation::ReserveTexture(WGPUDevice device) {
 #endif
 }
 
-void WebGPUImplementation::RequestAdapter(PowerPreference power_preference) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] wgRequestAdapter("
-                     << static_cast<uint32_t>(power_preference) << ")");
-  helper_->RequestAdapter(static_cast<uint32_t>(power_preference));
+uint32_t WebGPUImplementation::NextRequestAdapterSerial() {
+  return ++request_adapter_serial_;
+}
+
+bool WebGPUImplementation::RequestAdapterAsync(
+    PowerPreference power_preference,
+    base::OnceCallback<void(uint32_t, const WGPUDeviceProperties&)>
+        request_adapter_callback) {
+  uint32_t request_adapter_serial = NextRequestAdapterSerial();
+
+  // Avoid the overflow of request_adapter_serial and old slot being reused.
+  if (request_adapter_callback_map_.find(request_adapter_serial) !=
+      request_adapter_callback_map_.end()) {
+    return false;
+  }
+
+  helper_->RequestAdapter(request_adapter_serial,
+                          static_cast<uint32_t>(power_preference));
+  helper_->Flush();
+
+  request_adapter_callback_map_[request_adapter_serial] =
+      std::move(request_adapter_callback);
+
+  return true;
 }
 
 }  // namespace webgpu

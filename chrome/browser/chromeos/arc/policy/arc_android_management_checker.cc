@@ -35,7 +35,7 @@ policy::DeviceManagementService* GetDeviceManagementService() {
 
 // Returns the Device Account Id. Assumes that |profile| is the only Profile
 // on Chrome OS.
-std::string GetDeviceAccountId(Profile* profile) {
+CoreAccountId GetDeviceAccountId(Profile* profile) {
   const auto* const identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
 

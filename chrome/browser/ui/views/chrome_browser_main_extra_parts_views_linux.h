@@ -21,9 +21,7 @@ class ChromeBrowserMainExtraPartsViewsLinux
   ~ChromeBrowserMainExtraPartsViewsLinux() override;
 
   // Overridden from ChromeBrowserMainExtraParts:
-  void PreEarlyInitialization() override;
   void ToolkitInitialized() override;
-  void PreCreateThreads() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsViewsLinux);

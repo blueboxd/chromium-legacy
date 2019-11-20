@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -58,7 +59,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/resources/grit/webui_resources.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
@@ -396,31 +396,19 @@ void SetupPrintPreviewPlugin(content::WebUIDataSource* source) {
 content::WebUIDataSource* CreatePrintPreviewUISource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIPrintHost);
-  source->OverrideContentSecurityPolicyScriptSrc(
-      "script-src chrome://resources chrome://test 'self';");
-  AddPrintPreviewStrings(source);
-  source->UseStringsJs();
-  source->EnableReplaceI18nInJS();
 #if BUILDFLAG(OPTIMIZE_WEBUI)
-  source->AddResourcePath("print_preview.js",
-                          IDR_PRINT_PREVIEW_PRINT_PREVIEW_ROLLUP_JS);
-  source->SetDefaultResource(IDR_PRINT_PREVIEW_VULCANIZED_HTML);
+  webui::SetupBundledWebUIDataSource(source, "print_preview.js",
+                                     IDR_PRINT_PREVIEW_PRINT_PREVIEW_ROLLUP_JS,
+                                     IDR_PRINT_PREVIEW_VULCANIZED_HTML);
 #else
-  // Add all Print Preview resources.
-  for (size_t i = 0; i < kPrintPreviewResourcesSize; ++i) {
-    std::string path = kPrintPreviewResources[i].name;
-    if (path.rfind(kGeneratedPath, 0) == 0) {
-      path = path.substr(sizeof(kGeneratedPath) - 1);
-    }
-
-    source->AddResourcePath(path, kPrintPreviewResources[i].value);
-  }
-  source->SetDefaultResource(IDR_PRINT_PREVIEW_HTML);
+  webui::SetupWebUIDataSource(
+      source,
+      base::make_span(kPrintPreviewResources, kPrintPreviewResourcesSize),
+      kGeneratedPath, IDR_PRINT_PREVIEW_HTML);
 #endif
+  AddPrintPreviewStrings(source);
   SetupPrintPreviewPlugin(source);
   AddPrintPreviewFlags(source, profile);
-  source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
-  source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);
   return source;
 }
 

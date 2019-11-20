@@ -5,6 +5,7 @@
 #include "weblayer/test/weblayer_browser_test.h"
 
 #include "base/files/file_path.h"
+#include "build/build_config.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "weblayer/public/navigation.h"
@@ -65,9 +66,16 @@ class OneShotNavigationObserver : public NavigationObserver {
 
 }  // namespace
 
-using NavigationBrowserTest = WebLayerBrowserTest;
+// TODO(crbug.com/1026523): Fix flakiness on Win10.
+#if defined(OS_WIN)
+#define MAYBE_NavigationBrowserTest DISABLED_NavigationBrowserTest
+#else
+#define MAYBE_NavigationBrowserTest NavigationBrowserTest
+#endif
 
-IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, NoError) {
+using MAYBE_NavigationBrowserTest = WebLayerBrowserTest;
+
+IN_PROC_BROWSER_TEST_F(MAYBE_NavigationBrowserTest, NoError) {
   EXPECT_TRUE(embedded_test_server()->Start());
 
   OneShotNavigationObserver observer(shell());
@@ -82,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, NoError) {
   EXPECT_EQ(observer.navigation_state(), NavigationState::kComplete);
 }
 
-IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, HttpClientError) {
+IN_PROC_BROWSER_TEST_F(MAYBE_NavigationBrowserTest, HttpClientError) {
   EXPECT_TRUE(embedded_test_server()->Start());
 
   OneShotNavigationObserver observer(shell());
@@ -97,7 +105,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, HttpClientError) {
   EXPECT_EQ(observer.navigation_state(), NavigationState::kComplete);
 }
 
-IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, HttpServerError) {
+IN_PROC_BROWSER_TEST_F(MAYBE_NavigationBrowserTest, HttpServerError) {
   EXPECT_TRUE(embedded_test_server()->Start());
 
   OneShotNavigationObserver observer(shell());
@@ -112,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, HttpServerError) {
   EXPECT_EQ(observer.navigation_state(), NavigationState::kComplete);
 }
 
-IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, SSLError) {
+IN_PROC_BROWSER_TEST_F(MAYBE_NavigationBrowserTest, SSLError) {
   net::EmbeddedTestServer https_server_mismatched(
       net::EmbeddedTestServer::TYPE_HTTPS);
   https_server_mismatched.SetSSLConfig(
@@ -133,7 +141,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, SSLError) {
   EXPECT_EQ(observer.navigation_state(), NavigationState::kFailed);
 }
 
-IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, HttpConnectivityError) {
+IN_PROC_BROWSER_TEST_F(MAYBE_NavigationBrowserTest, HttpConnectivityError) {
   GURL url("http://doesntexist.com/foo");
   auto interceptor = content::URLLoaderInterceptor::SetupRequestFailForURL(
       url, net::ERR_NAME_NOT_RESOLVED);

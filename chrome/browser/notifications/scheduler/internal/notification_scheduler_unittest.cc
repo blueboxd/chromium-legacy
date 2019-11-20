@@ -241,14 +241,18 @@ TEST_F(NotificationSchedulerTest, DeleteAllNotifications) {
   scheduler()->DeleteAllNotifications(SchedulerClientType::kTest1);
 }
 
-// Test to get impression details.
-TEST_F(NotificationSchedulerTest, GetImpressionDetail) {
+// Test to get client overview.
+TEST_F(NotificationSchedulerTest, GetClientOverview) {
   Init();
-
   EXPECT_CALL(*impression_tracker(),
-              GetImpressionDetail(SchedulerClientType::kTest1, _));
-  scheduler()->GetImpressionDetail(SchedulerClientType::kTest1,
-                                   base::DoNothing());
+              GetImpressionDetail(SchedulerClientType::kTest1, _))
+      .WillOnce(Invoke([](SchedulerClientType type,
+                          ImpressionDetail::ImpressionDetailCallback callback) {
+        std::move(callback).Run(ImpressionDetail());
+      }));
+  EXPECT_CALL(*notification_manager(), GetNotifications(_, _));
+  scheduler()->GetClientOverview(SchedulerClientType::kTest1,
+                                 base::DoNothing());
 }
 
 // Test to verify user actions are propagated through correctly.

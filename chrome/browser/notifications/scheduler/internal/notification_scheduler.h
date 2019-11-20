@@ -9,7 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "chrome/browser/notifications/scheduler/public/impression_detail.h"
+#include "chrome/browser/notifications/scheduler/public/client_overview.h"
 #include "chrome/browser/notifications/scheduler/public/notification_background_task_scheduler.h"
 #include "chrome/browser/notifications/scheduler/public/user_action_handler.h"
 
@@ -39,10 +39,11 @@ class NotificationScheduler
   virtual void Schedule(
       std::unique_ptr<NotificationParams> notification_params) = 0;
 
-  // Queries impression detail for a given |SchedulerClientType|.
-  virtual void GetImpressionDetail(
+  // Queries an overview of client information for a given
+  // |SchedulerClientType| including impression details.
+  virtual void GetClientOverview(
       SchedulerClientType type,
-      ImpressionDetail::ImpressionDetailCallback callback) = 0;
+      ClientOverview::ClientOverviewCallback callback) = 0;
 
   // Deletes all notifications of a given |SchedulerClientType|.
   virtual void DeleteAllNotifications(SchedulerClientType type) = 0;

@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/values.h"
 #include "fuchsia/engine/web_engine_export.h"
 
 namespace base {
@@ -43,6 +44,11 @@ class WEB_ENGINE_EXPORT ContextProviderImpl
   // create Context processes.
   void SetLaunchCallbackForTest(LaunchCallbackForTest launch);
 
+  // Sets a config to use for the test, instead of looking for the config file.
+  void set_config_for_test(base::Value config) {
+    config_for_test_ = std::move(config);
+  }
+
  private:
   // fuchsia::web::Debug implementation.
   void EnableDevTools(
@@ -52,6 +58,9 @@ class WEB_ENGINE_EXPORT ContextProviderImpl
   // Set by tests to use to launch Context child processes, e.g. to allow a
   // fake Context process to be launched.
   LaunchCallbackForTest launch_for_test_;
+
+  // Set by configuration tests.
+  base::Value config_for_test_;
 
   // The DevToolsListeners registered via the Debug interface.
   fidl::InterfacePtrSet<fuchsia::web::DevToolsListener> devtools_listeners_;

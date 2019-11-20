@@ -132,6 +132,16 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventMetadataSource
 class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
     : public PerfettoTracedProcess::DataSourceBase {
  public:
+  struct SessionFlags {
+    // True if startup tracing is enabled for the current tracing session.
+    bool is_startup_tracing : 1;
+
+    // This ID is incremented whenever a new tracing session is started (either
+    // when startup tracing is enabled or when the service tells us to start the
+    // session otherwise).
+    uint32_t session_id : 31;
+  };
+
   static TraceEventDataSource* GetInstance();
 
   // Destroys and recreates the global instance for testing.
@@ -214,15 +224,17 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   void LogHistogram(base::HistogramBase* histogram);
   void EmitProcessDescriptor();
 
+  void IncrementSessionIdOrClearStartupFlagWhileLocked();
+  void SetStartupTracingFlagsWhileLocked();
+
   bool disable_interning_ = false;
   base::OnceClosure stop_complete_callback_;
+  base::TimeDelta startup_tracing_timeout_ = base::TimeDelta::FromSeconds(60);
 
   // Incremented and accessed atomically but without memory order guarantees.
-  // This ID is incremented whenever a new tracing session is started.
   static constexpr uint32_t kInvalidSessionID = 0;
-  static constexpr uint32_t kFirstSessionID = 1;
-  base::TimeDelta startup_tracing_timeout_ = base::TimeDelta::FromSeconds(60);
-  std::atomic<uint32_t> session_id_{kInvalidSessionID};
+  std::atomic<SessionFlags> session_flags_{
+      SessionFlags{false, kInvalidSessionID}};
 
   // To avoid lock-order inversion, this lock should not be held while making
   // calls to mojo interfaces or posting tasks, or calling any other code path

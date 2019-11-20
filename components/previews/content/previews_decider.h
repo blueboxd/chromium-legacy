@@ -5,16 +5,11 @@
 #ifndef COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_DECIDER_H_
 #define COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_DECIDER_H_
 
-#include <string>
-#include <vector>
-
 #include "components/previews/core/previews_experiments.h"
 
 namespace content {
 class NavigationHandle;
 }  // namespace content
-
-class GURL;
 
 namespace previews {
 class PreviewsUserData;
@@ -46,12 +41,6 @@ class PreviewsDecider {
   // associated with |navigation_handle|.
   virtual bool AreCommitTimePreviewsAvailable(
       content::NavigationHandle* navigation_handle) = 0;
-
-  // Whether |url| has loaded resource loading hints and, if it does, populates
-  // |out_resource_patterns_to_block| with the resource patterns to block.
-  virtual bool GetResourceLoadingHints(
-      const GURL& url,
-      std::vector<std::string>* out_resource_patterns_to_block) const = 0;
 
  protected:
   PreviewsDecider() {}

@@ -161,7 +161,7 @@ public class WebappActivity extends ChromeActivity<WebappActivityComponent> {
 
         super.onNewIntent(intent);
 
-        WebappInfo newWebappInfo = popWebappInfo(WebappIntentDataProvider.idFromIntent(intent));
+        WebappInfo newWebappInfo = popWebappInfo(WebappIntentUtils.idFromIntent(intent));
         if (newWebappInfo == null) newWebappInfo = createWebappInfo(intent);
 
         if (newWebappInfo == null) {
@@ -293,7 +293,7 @@ public class WebappActivity extends ChromeActivity<WebappActivityComponent> {
     @Override
     public void performPreInflationStartup() {
         Intent intent = getIntent();
-        String id = WebappIntentDataProvider.idFromIntent(intent);
+        String id = WebappIntentUtils.idFromIntent(intent);
         WebappInfo info = popWebappInfo(id);
         // When WebappActivity is killed by the Android OS, and an entry stays in "Android Recents"
         // (The user does not swipe it away), when WebappActivity is relaunched it is relaunched

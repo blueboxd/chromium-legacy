@@ -35,9 +35,9 @@ class InitAwareNotificationScheduler : public NotificationScheduler {
   void Schedule(
       std::unique_ptr<NotificationParams> notification_params) override;
   void DeleteAllNotifications(SchedulerClientType type) override;
-  void GetImpressionDetail(
+  void GetClientOverview(
       SchedulerClientType type,
-      ImpressionDetail::ImpressionDetailCallback callback) override;
+      ClientOverview::ClientOverviewCallback callback) override;
   void OnStartTask(TaskFinishedCallback callback) override;
   void OnStopTask() override;
   void OnUserAction(const UserActionData& action_data) override;

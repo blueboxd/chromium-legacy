@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_UI_SERVICE_H_
 #define COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_UI_SERVICE_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 

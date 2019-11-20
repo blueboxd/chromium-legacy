@@ -86,6 +86,7 @@ defaults.bucket.set('try')
 def android_builder(*, name, **kwargs):
   return try_builder(
       name = name,
+      goma_backend = goma.backend.RBE_PROD,
       mastername = 'tryserver.chromium.android',
       **kwargs
   )
@@ -93,14 +94,12 @@ def android_builder(*, name, **kwargs):
 android_builder(
     name = 'android-binary-size',
     executable = luci.recipe(name = 'binary_size_trybot'),
-    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
     tryjob = tryjob(),
 )
 
 android_builder(
     name = 'android-cronet-arm-dbg',
-    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(
         location_regexp = [
             '.+/[+]/components/cronet/.+',
@@ -118,19 +117,16 @@ android_builder(
     name = 'android-deterministic-dbg',
     executable = luci.recipe(name = 'swarming/deterministic_build'),
     execution_timeout = 6 * time.hour,
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-deterministic-rel',
     executable = luci.recipe(name = 'swarming/deterministic_build'),
     execution_timeout = 6 * time.hour,
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-kitkat-arm-rel',
-    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
     tryjob = tryjob(),
 )
@@ -138,7 +134,6 @@ android_builder(
 android_builder(
     name = 'android-marshmallow-arm64-coverage-rel',
     cores = 16,
-    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J300,
     ssd = True,
     use_java_coverage = True,
@@ -150,7 +145,6 @@ android_builder(
 android_builder(
     name = 'android-marshmallow-arm64-rel',
     cores = 16,
-    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J300,
     ssd = True,
     tryjob = tryjob(),
@@ -158,27 +152,22 @@ android_builder(
 
 android_builder(
     name = 'android-marshmallow-x86-fyi-rel',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-opus-kitkat-arm-rel',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-oreo-arm64-cts-networkservice-dbg',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-oreo-arm64-dbg',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-pie-arm64-dbg',
-    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(
         location_regexp = [
             '.+/[+]/chrome/android/java/src/org/chromium/chrome/browser/vr/.+',
@@ -190,12 +179,10 @@ android_builder(
 
 android_builder(
     name = 'android-pie-x86-fyi-rel',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-pie-arm64-rel',
-    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(
         experiment_percentage = 50,
     ),
@@ -203,72 +190,59 @@ android_builder(
 
 android_builder(
     name = 'android-webview-marshmallow-arm64-dbg',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-webview-nougat-arm64-dbg',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-webview-oreo-arm64-dbg',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-webview-pie-arm64-dbg',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-webview-pie-arm64-fyi-rel',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android_archive_rel_ng',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android_arm64_dbg_recipe',
-    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J300,
 )
 
 android_builder(
     name = 'android_blink_rel',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android_cfi_rel_ng',
     cores = 32,
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android_clang_dbg_recipe',
-    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J300,
 )
 
 android_builder(
     name = 'android_compile_dbg',
-    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
     tryjob = tryjob(),
 )
 
 android_builder(
     name = 'android_compile_rel',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android_compile_x64_dbg',
-    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(
         location_regexp = [
             '.+/[+]/chrome/android/java/src/org/chromium/chrome/browser/vr/.+',
@@ -284,7 +258,6 @@ android_builder(
 
 android_builder(
     name = 'android_compile_x86_dbg',
-    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(
         location_regexp = [
             '.+/[+]/chrome/android/java/src/org/chromium/chrome/browser/vr/.+',
@@ -300,7 +273,6 @@ android_builder(
 
 android_builder(
     name = 'android_cronet',
-    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(),
 )
 
@@ -313,28 +285,23 @@ android_builder(
 
 android_builder(
     name = 'android_mojo',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android_n5x_swarming_dbg',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android_unswarmed_pixel_aosp',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'cast_shell_android',
-    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(),
 )
 
 android_builder(
     name = 'linux_android_dbg_ng',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
@@ -552,15 +519,18 @@ chromiumos_builder(
 
 chromiumos_builder(
     name = 'linux-chromeos-compile-dbg',
+    goma_backend = goma.backend.RBE_PROD,
     tryjob = tryjob(),
 )
 
 chromiumos_builder(
     name = 'linux-chromeos-dbg',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 chromiumos_builder(
     name = 'linux-chromeos-rel',
+    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.J150,
     tryjob = tryjob(),
     use_clang_coverage = True,

@@ -4,6 +4,8 @@
 
 #include "components/previews/content/previews_ui_service.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "url/gurl.h"
@@ -88,19 +90,6 @@ void PreviewsUIService::SetIgnorePreviewsBlacklistDecision(bool ignored) {
 void PreviewsUIService::OnIgnoreBlacklistDecisionStatusChanged(bool ignored) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   logger_->OnIgnoreBlacklistDecisionStatusChanged(ignored);
-}
-
-std::vector<std::string>
-PreviewsUIService::GetResourceLoadingHintsResourcePatternsToBlock(
-    const GURL& document_gurl) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  std::vector<std::string> resource_patterns_to_block;
-  if (previews_decider_impl_) {
-    previews_decider_impl_->GetResourceLoadingHints(
-        document_gurl, &resource_patterns_to_block);
-  }
-  return resource_patterns_to_block;
 }
 
 PreviewsLogger* PreviewsUIService::previews_logger() const {

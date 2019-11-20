@@ -73,6 +73,8 @@ class MockRemoteCharacteristic : public RemoteCharacteristic {
   const bluetooth_v2_shlib::Uuid uuid_;
 
  private:
+  friend testing::StrictMock<MockRemoteCharacteristic>;
+
   ~MockRemoteCharacteristic();
 };
 

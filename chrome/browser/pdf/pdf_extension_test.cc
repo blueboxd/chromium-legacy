@@ -253,8 +253,9 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
   }
 
   // Load all the PDFs contained in chrome/test/data/<dir_name>. This only runs
-  // the test if base::Hash(filename) mod kNumberLoadTestParts == k in order
-  // to shard the files evenly across values of k in [0, kNumberLoadTestParts).
+  // the test if base::PersistentHash(filename) mod kNumberLoadTestParts == k in
+  // order to shard the files evenly across values of k in [0,
+  // kNumberLoadTestParts).
   void LoadAllPdfsTest(const std::string& dir_name, int k) {
     base::ScopedAllowBlockingForTesting allow_blocking;
     base::FilePath test_data_dir;
@@ -271,7 +272,8 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
 
       std::string pdf_file = dir_name + "/" + filename;
       SCOPED_TRACE(pdf_file);
-      if (static_cast<int>(base::Hash(filename) % kNumberLoadTestParts) == k) {
+      if (static_cast<int>(base::PersistentHash(filename) %
+                           kNumberLoadTestParts) == k) {
         LOG(INFO) << "Loading: " << pdf_file;
         bool success = LoadPdf(embedded_test_server()->GetURL("/" + pdf_file));
         if (pdf_file == "pdf_private/cfuzz5.pdf")

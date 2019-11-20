@@ -417,7 +417,7 @@ const base::Feature kDownloadNotificationBadge{
     "DownloadNotificationBadge", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kDownloadRename{"DownloadRename",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kEphemeralTab{"EphemeralTab",
                                   base::FEATURE_DISABLED_BY_DEFAULT};

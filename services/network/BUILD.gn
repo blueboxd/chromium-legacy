@@ -26,6 +26,8 @@ jumbo_component("network_service") {
     "cors/cors_url_loader_factory.h",
     "cors/preflight_controller.cc",
     "cors/preflight_controller.h",
+    "crash_keys.cc",
+    "crash_keys.h",
     "crl_set_distributor.cc",
     "crl_set_distributor.h",
     "cross_origin_read_blocking.cc",

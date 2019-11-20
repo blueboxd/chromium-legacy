@@ -32,9 +32,9 @@ class NotificationScheduleServiceImpl
   void Schedule(
       std::unique_ptr<NotificationParams> notification_params) override;
   void DeleteNotifications(SchedulerClientType type) override;
-  void GetImpressionDetail(
+  void GetClientOverview(
       SchedulerClientType,
-      ImpressionDetail::ImpressionDetailCallback callback) override;
+      ClientOverview::ClientOverviewCallback callback) override;
   NotificationBackgroundTaskScheduler::Handler*
   GetBackgroundTaskSchedulerHandler() override;
   UserActionHandler* GetUserActionHandler() override;

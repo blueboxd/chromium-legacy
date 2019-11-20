@@ -31,6 +31,8 @@ class MockRemoteService : public RemoteService {
   const bluetooth_v2_shlib::Uuid uuid_;
 
  private:
+  friend testing::StrictMock<MockRemoteService>;
+
   ~MockRemoteService();
 };
 

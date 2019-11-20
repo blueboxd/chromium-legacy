@@ -367,18 +367,6 @@ bool PreviewsDeciderImpl::AreCommitTimePreviewsAvailable(
   return previews_opt_guide_->AreCommitTimePreviewsAvailable(navigation_handle);
 }
 
-bool PreviewsDeciderImpl::GetResourceLoadingHints(
-    const GURL& url,
-    std::vector<std::string>* out_resource_patterns_to_block) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (!previews_opt_guide_)
-    return false;
-
-  return previews_opt_guide_->GetResourceLoadingHints(
-      url, out_resource_patterns_to_block);
-}
-
 bool PreviewsDeciderImpl::ShouldCommitPreview(
     PreviewsUserData* previews_data,
     content::NavigationHandle* navigation_handle,

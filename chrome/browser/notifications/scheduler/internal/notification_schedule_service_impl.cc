@@ -34,10 +34,10 @@ void NotificationScheduleServiceImpl::DeleteNotifications(
   scheduler_->DeleteAllNotifications(type);
 }
 
-void NotificationScheduleServiceImpl::GetImpressionDetail(
+void NotificationScheduleServiceImpl::GetClientOverview(
     SchedulerClientType type,
-    ImpressionDetail::ImpressionDetailCallback callback) {
-  scheduler_->GetImpressionDetail(type, std::move(callback));
+    ClientOverview::ClientOverviewCallback callback) {
+  scheduler_->GetClientOverview(type, std::move(callback));
 }
 
 NotificationBackgroundTaskScheduler::Handler*

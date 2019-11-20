@@ -7,7 +7,6 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "base/test/gtest_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -87,12 +86,6 @@ class PreviewEnabledPreviewsDecider : public PreviewsDecider {
       content::NavigationHandle* navigation_handle) override {
     return navigation_handle->GetURL().host_piece().ends_with(
         "hintcachedhost.com");
-  }
-
-  bool GetResourceLoadingHints(
-      const GURL& url,
-      std::vector<std::string>* out_resource_patterns_to_block) const override {
-    return false;
   }
 
  private:

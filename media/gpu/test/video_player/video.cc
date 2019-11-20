@@ -257,8 +257,12 @@ base::Optional<base::FilePath> Video::ResolveFilePath(
 
 // static
 VideoCodecProfile Video::ConvertStringtoProfile(const std::string& profile) {
-  if (profile == "H264PROFILE_MAIN") {
+  if (profile == "H264PROFILE_BASELINE") {
+    return H264PROFILE_BASELINE;
+  } else if (profile == "H264PROFILE_MAIN") {
     return H264PROFILE_MAIN;
+  } else if (profile == "H264PROFILE_HIGH") {
+    return H264PROFILE_HIGH;
   } else if (profile == "VP8PROFILE_ANY") {
     return VP8PROFILE_ANY;
   } else if (profile == "VP9PROFILE_PROFILE0") {

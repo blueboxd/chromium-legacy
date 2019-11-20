@@ -102,7 +102,7 @@ public class WebApkInfo extends WebappInfo {
     }
 
     public static WebApkInfo createEmpty() {
-        return create(WebApkIntentDataProvider.createEmpty());
+        return create(createEmptyIntentDataProvider());
     }
 
     /**
@@ -111,7 +111,7 @@ public class WebApkInfo extends WebappInfo {
      * @param intent Intent containing info about the app.
      */
     public static WebApkInfo create(Intent intent) {
-        return create(WebApkIntentDataProvider.create(intent));
+        return create(WebApkIntentDataProviderFactory.create(intent));
     }
 
     /**
@@ -131,9 +131,9 @@ public class WebApkInfo extends WebappInfo {
     public static WebApkInfo create(String webApkPackageName, String url, int source,
             boolean forceNavigation, boolean canUseSplashFromContentProvider, ShareData shareData,
             String shareDataActivityClassName) {
-        return create(
-                WebApkIntentDataProvider.create(webApkPackageName, url, source, forceNavigation,
-                        canUseSplashFromContentProvider, shareData, shareDataActivityClassName));
+        return create(WebApkIntentDataProviderFactory.create(webApkPackageName, url, source,
+                forceNavigation, canUseSplashFromContentProvider, shareData,
+                shareDataActivityClassName));
     }
 
     /**
@@ -180,7 +180,7 @@ public class WebApkInfo extends WebappInfo {
             Map<String, String> iconUrlToMurmur2HashMap, ShareTarget shareTarget,
             boolean forceNavigation, boolean isSplashProvidedByWebApk, ShareData shareData,
             int webApkVersionCode) {
-        return create(WebApkIntentDataProvider.create(url, scope, primaryIcon, badgeIcon,
+        return create(WebApkIntentDataProviderFactory.create(url, scope, primaryIcon, badgeIcon,
                 splashIcon, name, shortName, displayMode, orientation, source, themeColor,
                 backgroundColor, defaultBackgroundColor, isPrimaryIconMaskable,
                 isSplashIconMaskable, webApkPackageName, shellApkVersion, manifestUrl,

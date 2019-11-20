@@ -144,6 +144,7 @@ def android_builder(
     **kwargs):
   return builder(
       name = name,
+      goma_backend = goma.backend.RBE_PROD,
       goma_jobs = goma_jobs,
       mastername = 'chromium.android',
       **kwargs
@@ -151,43 +152,35 @@ def android_builder(
 
 android_builder(
     name = 'Android ASAN (dbg)',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'Android WebView L (dbg)',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'Android WebView M (dbg)',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'Android WebView N (dbg)',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'Android WebView O (dbg)',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'Android WebView P (dbg)',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'Android arm Builder (dbg)',
-    goma_backend = goma.backend.RBE_PROD,
     execution_timeout = 4 * time.hour,
 )
 
 android_builder(
     name = 'Android arm64 Builder (dbg)',
-    goma_backend = goma.backend.RBE_PROD,
     goma_jobs = goma.jobs.MANY_JOBS_FOR_CI,
     execution_timeout = 4 * time.hour,
 )
@@ -195,31 +188,26 @@ android_builder(
 android_builder(
     name = 'Android x64 Builder (dbg)',
     execution_timeout = 4 * time.hour,
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'Android x86 Builder (dbg)',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'Cast Android (dbg)',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'Deterministic Android',
     executable = luci.recipe(name = 'swarming/deterministic_build'),
     execution_timeout = 6 * time.hour,
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'Deterministic Android (dbg)',
     executable = luci.recipe(name = 'swarming/deterministic_build'),
     execution_timeout = 6 * time.hour,
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
@@ -265,43 +253,36 @@ android_builder(
 
 android_builder(
     name = 'android-cronet-arm-dbg',
-    goma_backend = goma.backend.RBE_PROD,
     notifies = ['cronet'],
 )
 
 android_builder(
     name = 'android-cronet-arm-rel',
-    goma_backend = goma.backend.RBE_PROD,
     notifies = ['cronet'],
 )
 
 android_builder(
     name = 'android-cronet-arm64-dbg',
-    goma_backend = goma.backend.RBE_PROD,
     notifies = ['cronet'],
 )
 
 android_builder(
     name = 'android-cronet-arm64-rel',
-    goma_backend = goma.backend.RBE_PROD,
     notifies = ['cronet'],
 )
 
 android_builder(
     name = 'android-cronet-asan-arm-rel',
-    goma_backend = goma.backend.RBE_PROD,
     notifies = ['cronet'],
 )
 
 android_builder(
     name = 'android-cronet-kitkat-arm-rel',
-    goma_backend = goma.backend.RBE_PROD,
     notifies = ['cronet'],
 )
 
 android_builder(
     name = 'android-cronet-lollipop-arm-rel',
-    goma_backend = goma.backend.RBE_PROD,
     notifies = ['cronet'],
 )
 
@@ -311,85 +292,72 @@ android_builder(
     cores = None,
     cpu = None,
     executable = luci.recipe(name = 'cronet'),
-    goma_backend = goma.backend.RBE_PROD,
     notifies = ['cronet'],
     os = os.ANDROID,
 )
 
 android_builder(
     name = 'android-cronet-marshmallow-arm64-rel',
-    goma_backend = goma.backend.RBE_PROD,
     notifies = ['cronet'],
 )
 
 android_builder(
     name = 'android-cronet-x86-dbg',
-    goma_backend = goma.backend.RBE_PROD,
     notifies = ['cronet'],
 )
 
 android_builder(
     name = 'android-cronet-x86-rel',
-    goma_backend = goma.backend.RBE_PROD,
     notifies = ['cronet'],
 )
 
 android_builder(
     name = 'android-incremental-dbg',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-kitkat-arm-rel',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-marshmallow-arm64-rel',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-pie-arm64-dbg',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_builder(
     name = 'android-pie-arm64-rel',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 
 def android_fyi_builder(*, name, **kwargs):
   return builder(
       name = name,
+      goma_backend = goma.backend.RBE_PROD,
       mastername = 'chromium.android.fyi',
       **kwargs
   )
 
 android_fyi_builder(
     name = 'android-bfcache-debug',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_fyi_builder(
     name = 'Android WebView P FYI (rel)',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_fyi_builder(
     name = 'Android WebView P OOR-CORS FYI (rel)',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_fyi_builder(
     name = 'android-marshmallow-x86-fyi-rel',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_fyi_builder(
     name = 'android-pie-x86-fyi-rel',
-    goma_backend = goma.backend.RBE_PROD,
 )
 
 android_fyi_builder(
@@ -510,10 +478,12 @@ chromiumos_builder(
 
 chromiumos_builder(
     name = 'linux-chromeos-dbg',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 chromiumos_builder(
     name = 'linux-chromeos-rel',
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 
@@ -1283,6 +1253,7 @@ fyi_coverage_builder(
 
 fyi_coverage_builder(
     name = 'linux-chromeos-code-coverage',
+    goma_backend = goma.backend.RBE_PROD,
     ssd = True,
     use_clang_coverage = True,
 )

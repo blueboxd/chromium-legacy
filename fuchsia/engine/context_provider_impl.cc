@@ -33,8 +33,10 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
+#include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -135,6 +137,33 @@ base::Value LoadConfigFrom(const base::FilePath& file_path) {
 const base::Value& GetWebEngineConfig() {
   static base::Value config = LoadConfigFrom(base::FilePath(kConfigFileName));
   return config;
+}
+
+// Returns false if the config is present but has invalid contents.
+bool MaybeAddCommandLineArgsFromConfig(const base::Value& config,
+                                       base::CommandLine* command_line) {
+  const base::Value* args = config.FindDictKey("command-line-args");
+  if (!args)
+    return true;
+
+  static const base::StringPiece kAllowedArgs[] = {
+      switches::kRendererProcessLimit,
+      switches::kMinHeightForGpuRasterTile,
+  };
+
+  for (const auto& arg : args->DictItems()) {
+    if (!base::Contains(kAllowedArgs, arg.first)) {
+      LOG(ERROR) << "Unknown command-line arg: " << arg.first;
+      return false;
+    }
+    if (!arg.second.is_string()) {
+      LOG(ERROR) << "Config command-line arg must be a string: " << arg.first;
+      return false;
+    }
+    command_line->AppendSwitchNative(arg.first, arg.second.GetString());
+  }
+
+  return true;
 }
 
 // Returns true if DRM is supported in current configuration. Currently we
@@ -305,7 +334,8 @@ void ContextProviderImpl::Create(
     launch_command.AppendSwitch(switches::kDisableSoftwareRasterizer);
   }
 
-  const base::Value& web_engine_config = GetWebEngineConfig();
+  const base::Value& web_engine_config =
+      config_for_test_.is_none() ? GetWebEngineConfig() : config_for_test_;
   bool allow_protected_graphics =
       web_engine_config.FindBoolPath("allow-protected-graphics")
           .value_or(false);
@@ -359,6 +389,11 @@ void ContextProviderImpl::Create(
     }
 
     launch_command.AppendSwitch(switches::kDisableSoftwareVideoDecoders);
+  }
+
+  if (!MaybeAddCommandLineArgsFromConfig(web_engine_config, &launch_command)) {
+    context_request.Close(ZX_ERR_INTERNAL);
+    return;
   }
 
   // Validate embedder-supplied product, and optional version, and pass it to

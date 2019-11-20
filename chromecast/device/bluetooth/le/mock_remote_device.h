@@ -88,6 +88,8 @@ class MockRemoteDevice : public RemoteDevice {
   const bluetooth_v2_shlib::Addr addr_;
 
  private:
+  friend testing::StrictMock<MockRemoteDevice>;
+
   ~MockRemoteDevice();
 };
 

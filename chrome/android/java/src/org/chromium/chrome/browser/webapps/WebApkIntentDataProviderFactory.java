@@ -17,9 +17,6 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Pair;
 
-import androidx.annotation.Nullable;
-import androidx.browser.customtabs.CustomTabsIntent;
-
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -45,63 +42,21 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * Stores info for WebAPK.
+ * Factory for building {@link BrowserServicesIntentDataProvider} for WebAPKs.
  */
-public class WebApkIntentDataProvider extends BrowserServicesIntentDataProvider {
+public class WebApkIntentDataProviderFactory {
     public static final String RESOURCE_NAME = "name";
     public static final String RESOURCE_SHORT_NAME = "short_name";
     public static final String RESOURCE_STRING_TYPE = "string";
 
     private static final String TAG = "WebApkInfo";
 
-    private int mToolbarColor;
-    private WebappExtras mWebappExtras;
-    private WebApkExtras mWebApkExtras;
-
     /**
-     * Returns the WebAPK's shell launch timestamp associated with the passed-in intent, or -1.
-     */
-    public static long getWebApkShellLaunchTime(Intent intent) {
-        return intent.getLongExtra(WebApkConstants.EXTRA_WEBAPK_LAUNCH_TIME, -1);
-    }
-
-    /**
-     * Copies the WebAPKs's shell launch timestamp, if set, from {@link fromIntent} to
-     * {@link toIntent}.
-     */
-    public static void copyWebApkShellLaunchTime(Intent fromIntent, Intent toIntent) {
-        toIntent.putExtra(
-                WebApkConstants.EXTRA_WEBAPK_LAUNCH_TIME, getWebApkShellLaunchTime(fromIntent));
-    }
-
-    /**
-     * Returns the timestamp when the WebAPK shell showed the splash screen. Returns -1 if the
-     * WebAPK shell did not show the splash screen.
-     */
-    public static long getNewStyleWebApkSplashShownTime(Intent intent) {
-        return intent.getLongExtra(WebApkConstants.EXTRA_NEW_STYLE_SPLASH_SHOWN_TIME, -1);
-    }
-
-    /**
-     * Copies the timestamp, if set, that the WebAPK shell showed the splash screen from
-     * {@link fromIntent} to {@link toIntent}.
-     */
-    public static void copyNewStyleWebApkSplashShownTime(Intent fromIntent, Intent toIntent) {
-        toIntent.putExtra(WebApkConstants.EXTRA_NEW_STYLE_SPLASH_SHOWN_TIME,
-                getNewStyleWebApkSplashShownTime(fromIntent));
-    }
-
-    public static WebApkIntentDataProvider createEmpty() {
-        return new WebApkIntentDataProvider(WebappIntentDataProvider.getDefaultToolbarColor(),
-                WebappExtras.createEmpty(), WebApkExtras.createEmpty());
-    }
-
-    /**
-     * Constructs a WebApkIntentDataProvider from the passed in Intent and <meta-data> in the
-     * WebAPK's Android manifest.
+     * Constructs a BrowserServicesIntentDataProvider from the passed in Intent and <meta-data> in
+     * the WebAPK's Android manifest.
      * @param intent Intent containing info about the app.
      */
-    public static WebApkIntentDataProvider create(Intent intent) {
+    public static BrowserServicesIntentDataProvider create(Intent intent) {
         String webApkPackageName =
                 IntentUtils.safeGetStringExtra(intent, WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME);
 
@@ -174,8 +129,8 @@ public class WebApkIntentDataProvider extends BrowserServicesIntentDataProvider 
     }
 
     /**
-     * Constructs a WebApkIntentDataProvider from the passed in parameters and <meta-data> in the
-     * WebAPK's Android manifest.
+     * Constructs a BrowserServicesIntentDataProvider from the passed in parameters and <meta-data>
+     * in the WebAPK's Android manifest.
      *
      * @param webApkPackageName The package name of the WebAPK.
      * @param url Url that the WebAPK should navigate to when launched.
@@ -187,9 +142,9 @@ public class WebApkIntentDataProvider extends BrowserServicesIntentDataProvider 
      * @param shareData Shared information from the share intent.
      * @param shareDataActivityClassName Name of WebAPK activity which received share intent.
      */
-    public static WebApkIntentDataProvider create(String webApkPackageName, String url, int source,
-            boolean forceNavigation, boolean canUseSplashFromContentProvider, ShareData shareData,
-            String shareDataActivityClassName) {
+    public static BrowserServicesIntentDataProvider create(String webApkPackageName, String url,
+            int source, boolean forceNavigation, boolean canUseSplashFromContentProvider,
+            ShareData shareData, String shareDataActivityClassName) {
         // Unlike non-WebAPK web apps, WebAPK ids are predictable. A malicious actor may send an
         // intent with a valid start URL and arbitrary other data. Only use the start URL, the
         // package name and the ShortcutSource from the launch intent and extract the remaining data
@@ -310,7 +265,7 @@ public class WebApkIntentDataProvider extends BrowserServicesIntentDataProvider 
     }
 
     /**
-     * Construct a {@link WebApkIntentDataProvider} instance.
+     * Construct a {@link BrowserServicesIntentDataProvider} instance.
      * @param url                      URL that the WebAPK should navigate to when launched.
      * @param scope                    Scope for the WebAPK.
      * @param primaryIcon              Primary icon to show for the WebAPK.
@@ -345,15 +300,15 @@ public class WebApkIntentDataProvider extends BrowserServicesIntentDataProvider 
      * @param shareData                Shared information from the share intent.
      * @param webApkVersionCode        WebAPK's version code.
      */
-    public static WebApkIntentDataProvider create(String url, String scope, WebappIcon primaryIcon,
-            WebappIcon badgeIcon, WebappIcon splashIcon, String name, String shortName,
-            @WebDisplayMode int displayMode, int orientation, int source, long themeColor,
-            long backgroundColor, int defaultBackgroundColor, boolean isPrimaryIconMaskable,
-            boolean isSplashIconMaskable, String webApkPackageName, int shellApkVersion,
-            String manifestUrl, String manifestStartUrl, @WebApkDistributor int distributor,
-            Map<String, String> iconUrlToMurmur2HashMap, ShareTarget shareTarget,
-            boolean forceNavigation, boolean isSplashProvidedByWebApk, ShareData shareData,
-            int webApkVersionCode) {
+    public static BrowserServicesIntentDataProvider create(String url, String scope,
+            WebappIcon primaryIcon, WebappIcon badgeIcon, WebappIcon splashIcon, String name,
+            String shortName, @WebDisplayMode int displayMode, int orientation, int source,
+            long themeColor, long backgroundColor, int defaultBackgroundColor,
+            boolean isPrimaryIconMaskable, boolean isSplashIconMaskable, String webApkPackageName,
+            int shellApkVersion, String manifestUrl, String manifestStartUrl,
+            @WebApkDistributor int distributor, Map<String, String> iconUrlToMurmur2HashMap,
+            ShareTarget shareTarget, boolean forceNavigation, boolean isSplashProvidedByWebApk,
+            ShareData shareData, int webApkVersionCode) {
         if (manifestStartUrl == null || webApkPackageName == null) {
             Log.e(TAG, "Incomplete data provided: " + manifestStartUrl + ", " + webApkPackageName);
             return null;
@@ -386,13 +341,12 @@ public class WebApkIntentDataProvider extends BrowserServicesIntentDataProvider 
             shareTarget = new ShareTarget();
         }
 
-        WebappExtras webappExtras =
-                new WebappExtras(WebappRegistry.webApkIdForPackage(webApkPackageName), url, scope,
-                        primaryIcon, name, shortName, displayMode, orientation, source,
-                        WebappIntentDataProvider.isLongColorValid(themeColor),
-                        WebappIntentDataProvider.colorFromLongColor(backgroundColor),
-                        defaultBackgroundColor, false /* isIconGenerated */, isPrimaryIconMaskable,
-                        forceNavigation);
+        WebappExtras webappExtras = new WebappExtras(
+                WebappRegistry.webApkIdForPackage(webApkPackageName), url, scope, primaryIcon, name,
+                shortName, displayMode, orientation, source,
+                WebappIntentUtils.isLongColorValid(themeColor),
+                WebappIntentUtils.colorFromLongColor(backgroundColor), defaultBackgroundColor,
+                false /* isIconGenerated */, isPrimaryIconMaskable, forceNavigation);
         WebApkExtras webApkExtras = new WebApkExtras(webApkPackageName, badgeIcon, splashIcon,
                 isSplashIconMaskable, shellApkVersion, manifestUrl, manifestStartUrl, distributor,
                 iconUrlToMurmur2HashMap, shareTarget, isSplashProvidedByWebApk, shareData,
@@ -400,14 +354,7 @@ public class WebApkIntentDataProvider extends BrowserServicesIntentDataProvider 
         int toolbarColor = webappExtras.hasCustomToolbarColor
                 ? (int) themeColor
                 : WebappIntentDataProvider.getDefaultToolbarColor();
-        return new WebApkIntentDataProvider(toolbarColor, webappExtras, webApkExtras);
-    }
-
-    private WebApkIntentDataProvider(
-            int toolbarColor, WebappExtras webappExtras, WebApkExtras webApkExtras) {
-        mToolbarColor = toolbarColor;
-        mWebappExtras = webappExtras;
-        mWebApkExtras = webApkExtras;
+        return new WebappIntentDataProvider(toolbarColor, webappExtras, webApkExtras);
     }
 
     private static int computeSource(Intent intent, ShareData shareData) {
@@ -582,27 +529,5 @@ public class WebApkIntentDataProvider extends BrowserServicesIntentDataProvider 
             return new Pair<>(shareTargetActivityName, target);
         }
         return new Pair<>(null, new ShareTarget());
-    }
-
-    @Override
-    public int getToolbarColor() {
-        return mToolbarColor;
-    }
-
-    @Override
-    public int getTitleVisibilityState() {
-        return CustomTabsIntent.SHOW_PAGE_TITLE;
-    }
-
-    @Override
-    @Nullable
-    public WebappExtras getWebappExtras() {
-        return mWebappExtras;
-    }
-
-    @Override
-    @Nullable
-    public WebApkExtras getWebApkExtras() {
-        return mWebApkExtras;
     }
 }

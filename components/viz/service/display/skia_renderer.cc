@@ -2078,8 +2078,8 @@ void SkiaRenderer::ScheduleDCLayers() {
 
       // Sync tokens ensure the texture to be overlaid is available before
       // scheduling it for display.
-      DCHECK(image_context->mailbox_holder().sync_token.HasData());
-      sync_tokens.push_back(image_context->mailbox_holder().sync_token);
+      if (image_context->mailbox_holder().sync_token.HasData())
+        sync_tokens.push_back(image_context->mailbox_holder().sync_token);
 
       dc_layer_overlay.mailbox[i] = image_context->mailbox_holder().mailbox;
     }

@@ -126,10 +126,6 @@ class PreviewsDeciderImpl : public PreviewsDecider,
   bool AreCommitTimePreviewsAvailable(
       content::NavigationHandle* navigation_handle) override;
 
-  bool GetResourceLoadingHints(
-      const GURL& url,
-      std::vector<std::string>* out_resource_patterns_to_block) const override;
-
   // Generates a page ID that is guaranteed to be unique from any other page ID
   // generated in this browser session. Also, guaranteed to be non-zero.
   uint64_t GeneratePageId();

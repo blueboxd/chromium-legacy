@@ -4,7 +4,7 @@
 
 #include "components/previews/content/previews_ui_service.h"
 
-#include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
@@ -163,15 +163,6 @@ class TestPreviewsDeciderImpl : public PreviewsDeciderImpl {
   // PreviewsDeciderImpl:
   void SetIgnorePreviewsBlacklistDecision(bool ignored) override {
     blacklist_ignored_ = ignored;
-  }
-  bool GetResourceLoadingHints(
-      const GURL& url,
-      std::vector<std::string>* out_resource_patterns_to_block) const override {
-    if (url.host() == "blockresources.com") {
-      out_resource_patterns_to_block->push_back("BlockMe");
-      return true;
-    }
-    return false;
   }
 
   // Exposed the status of blacklist decisions ignored for testing
@@ -364,20 +355,6 @@ TEST_F(PreviewsUIServiceTest, TestOnIgnoreBlacklistDecisionStatusChanged) {
 
   ui_service()->OnIgnoreBlacklistDecisionStatusChanged(false /* ignored */);
   EXPECT_FALSE(logger_ptr_->blacklist_ignored());
-}
-
-TEST_F(PreviewsUIServiceTest,
-       TestGetResourceLoadingHintsResourcePatternsToBlock) {
-  EXPECT_TRUE(ui_service()
-                  ->GetResourceLoadingHintsResourcePatternsToBlock(
-                      GURL("https://www.somedomain.org/"))
-                  .empty());
-
-  std::vector<std::string> patterns_to_block =
-      ui_service()->GetResourceLoadingHintsResourcePatternsToBlock(
-          GURL("https://blockresources.com/"));
-  EXPECT_EQ(1ul, patterns_to_block.size());
-  EXPECT_EQ("BlockMe", patterns_to_block[0]);
 }
 
 }  // namespace previews

@@ -815,5 +815,20 @@ luci.console_view(
             category = 'win|week1.1',
             short_name = 'code',
         ),
+        luci.console_view_entry(
+            builder = 'ci/linux-chromeos-dbg',
+            category = 'cros|week1',
+            short_name = 'dbg',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/linux-chromeos-rel',
+            category = 'cros|week1',
+            short_name = 'rel',
+        ),
+        luci.console_view_entry(
+            builder = 'ci/linux-chromeos-code-coverage',
+            category = 'cros|week1',
+            short_name = 'code',
+        ),
     ],
 )

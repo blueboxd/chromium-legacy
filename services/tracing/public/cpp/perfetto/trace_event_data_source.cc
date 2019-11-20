@@ -486,6 +486,7 @@ void TraceEventDataSource::SetupStartupTracing(bool privacy_filtering_enabled) {
     privacy_filtering_enabled_ = privacy_filtering_enabled;
     startup_writer_registry_ =
         std::make_unique<perfetto::StartupTraceWriterRegistry>();
+    SetStartupTracingFlagsWhileLocked();
 
     DCHECK(!trace_writer_);
     trace_writer_ = CreateTraceWriterLocked();
@@ -544,17 +545,40 @@ void TraceEventDataSource::StartupTracingTimeoutFired() {
                    /*use_worker_thread=*/false);
 }
 
+void TraceEventDataSource::IncrementSessionIdOrClearStartupFlagWhileLocked() {
+  // Protected by |lock_| for CreateThreadLocalEventSink() and
+  // SetStartupTracingFlagsWhileLocked().
+  lock_.AssertAcquired();
+  SessionFlags flags = session_flags_.load(std::memory_order_relaxed);
+  if (flags.is_startup_tracing) {
+    // Don't increment the session ID if startup tracing was active for this
+    // session. This way, the sinks that were created while startup tracing for
+    // the current session won't be cleared away (resetting such sinks could
+    // otherwise cause data buffered in their potentially still unbound
+    // StartupTraceWriters to be lost).
+    flags.is_startup_tracing = false;
+  } else {
+    flags.session_id++;
+  }
+  session_flags_.store(flags, std::memory_order_relaxed);
+}
+
+void TraceEventDataSource::SetStartupTracingFlagsWhileLocked() {
+  // Protected by |lock_| for CreateThreadLocalEventSink() and
+  // IncrementSessionIdOrClearStartupFlagWhileLocked().
+  lock_.AssertAcquired();
+  SessionFlags flags = session_flags_.load(std::memory_order_relaxed);
+  flags.is_startup_tracing = true;
+  flags.session_id++;
+  session_flags_.store(flags, std::memory_order_relaxed);
+}
+
 void TraceEventDataSource::OnFlushFinished(
     const scoped_refptr<base::RefCountedString>&,
     bool has_more_events) {
   if (has_more_events) {
     return;
   }
-
-  // Increment the session id to make sure that once tracing starts the events
-  // are added to a new trace writer that comes from perfetto producer, instead
-  // of holding on to the startup registry's writers.
-  session_id_.fetch_add(1u, std::memory_order_relaxed);
 
   // Clear the pending task on the tracing service thread.
   DCHECK_CALLED_ON_VALID_SEQUENCE(perfetto_sequence_checker_);
@@ -565,6 +589,11 @@ void TraceEventDataSource::OnFlushFinished(
     // task.
     task = std::move(flush_complete_task_);
     flushing_trace_log_ = false;
+
+    // Increment the session id to make sure that once tracing starts the events
+    // are added to a new trace writer that comes from perfetto producer,
+    // instead of holding on to the startup registry's writers.
+    IncrementSessionIdOrClearStartupFlagWhileLocked();
   }
   if (task) {
     std::move(task).Run();
@@ -611,8 +640,7 @@ void TraceEventDataSource::StartTracingInternal(
     // Reduce lock contention by binding the registry without holding the lock.
     unbound_writer_registry = std::move(startup_writer_registry_);
 
-    // Protected by |lock_| for CreateThreadLocalEventSink().
-    session_id_.fetch_add(1u, std::memory_order_relaxed);
+    IncrementSessionIdOrClearStartupFlagWhileLocked();
 
     if (!trace_writer_) {
       trace_writer_ = CreateTraceWriterLocked();
@@ -790,7 +818,8 @@ TraceEventDataSource::CreateTraceWriterLocked() {
 ThreadLocalEventSink* TraceEventDataSource::CreateThreadLocalEventSink(
     bool thread_will_flush) {
   base::AutoLock lock(lock_);
-  uint32_t session_id = session_id_.load(std::memory_order_relaxed);
+  uint32_t session_id =
+      session_flags_.load(std::memory_order_relaxed).session_id;
 
   auto trace_writer = CreateTraceWriterLocked();
   if (!trace_writer) {
@@ -826,25 +855,17 @@ void TraceEventDataSource::OnAddTraceEvent(
   // been reset if the current thread doesn't support flushing. In that case, we
   // need to check here that it writes to the right buffer.
   //
-  // Because we want to avoid locking for each event, we access |session_id_|
+  // Because we want to avoid locking for each event, we access |session_flags_|
   // racily. It's OK if we don't see it change to the session immediately. In
   // that case, the first few trace events may get lost, but we will eventually
   // notice that we are writing to the wrong buffer once the change to
-  // |session_id_| has propagated, and reset the sink. Note we will still
+  // |session_flags_| has propagated, and reset the sink. Note we will still
   // acquire the |lock_| to safely recreate the sink in
   // CreateThreadLocalEventSink().
-  if (!thread_will_flush && thread_local_event_sink) {
-    uint32_t new_session_id =
-        GetInstance()->session_id_.load(std::memory_order_relaxed);
-    // Ignore the first session to avoid resetting the sink during startup
-    // tracing, where the sink is created with kInvalidSessionID. Resetting the
-    // sink during startup might cause data buffered in its potentially still
-    // unbound StartupTraceWriter to be lost.
-    // NOTE: If the trace event we're adding disallows PostTasks (meaning
-    // events emitted while the taskqueue is locked), we can't reset the
-    // sink as the TraceWriter deletion is done through PostTask.
-    if (new_session_id > kFirstSessionID &&
-        new_session_id != thread_local_event_sink->session_id()) {
+  if (thread_local_event_sink) {
+    SessionFlags new_session_flags =
+        GetInstance()->session_flags_.load(std::memory_order_relaxed);
+    if (new_session_flags.session_id != thread_local_event_sink->session_id()) {
       delete thread_local_event_sink;
       thread_local_event_sink = nullptr;
     }

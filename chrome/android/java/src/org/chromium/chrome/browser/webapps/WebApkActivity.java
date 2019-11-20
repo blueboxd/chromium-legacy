@@ -181,8 +181,8 @@ public class WebApkActivity extends WebappActivity {
                 Intent intent = getIntent();
                 // Splash observers are removed once the splash screen is hidden.
                 addSplashscreenObserver(new WebApkSplashscreenMetrics(
-                        WebApkIntentDataProvider.getWebApkShellLaunchTime(intent),
-                        WebApkIntentDataProvider.getNewStyleWebApkSplashShownTime(intent)));
+                        WebappIntentUtils.getWebApkShellLaunchTime(intent),
+                        WebappIntentUtils.getNewStyleWebApkSplashShownTime(intent)));
             }
         }
     }

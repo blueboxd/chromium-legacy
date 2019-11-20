@@ -8,6 +8,8 @@ if (is_android) {
 
 source_set("public") {
   sources = [
+    "client_overview.cc",
+    "client_overview.h",
     "display_agent.cc",
     "display_agent.h",
     "features.cc",

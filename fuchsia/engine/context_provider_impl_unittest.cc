@@ -30,6 +30,7 @@
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/service_directory.h"
 #include "base/path_service.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
@@ -100,6 +101,18 @@ base::Process LaunchFakeContextProcess(const base::CommandLine& command_line,
                                           options_with_tmp);
 }
 
+fuchsia::web::CreateContextParams BuildCreateContextParams() {
+  fidl::InterfaceHandle<fuchsia::io::Directory> directory;
+  zx_status_t result =
+      fdio_service_connect(base::fuchsia::kServiceDirectoryPath,
+                           directory.NewRequest().TakeChannel().release());
+  ZX_CHECK(result == ZX_OK, result) << "Failed to open /svc";
+
+  fuchsia::web::CreateContextParams output;
+  output.set_service_directory(std::move(directory));
+  return output;
+}
+
 }  // namespace
 
 class ContextProviderImplTest : public base::MultiProcessTest {
@@ -147,18 +160,6 @@ class ContextProviderImplTest : public base::MultiProcessTest {
     EXPECT_EQ(change_listener.captured_state()->url(), kUrl);
     ASSERT_TRUE(change_listener.captured_state()->has_title());
     EXPECT_EQ(change_listener.captured_state()->title(), kTitle);
-  }
-
-  fuchsia::web::CreateContextParams BuildCreateContextParams() {
-    fidl::InterfaceHandle<fuchsia::io::Directory> directory;
-    zx_status_t result =
-        fdio_service_connect(base::fuchsia::kServiceDirectoryPath,
-                             directory.NewRequest().TakeChannel().release());
-    ZX_CHECK(result == ZX_OK, result) << "Failed to open /svc";
-
-    fuchsia::web::CreateContextParams output;
-    output.set_service_directory(std::move(directory));
-    return output;
   }
 
   // Checks that the Context channel was dropped.
@@ -357,4 +358,101 @@ TEST_F(ContextProviderImplTest, CleansUpContextJobs) {
   EXPECT_TRUE(WaitUntilJobIsEmpty(
       base::GetDefaultJob(),
       zx::duration(TestTimeouts::action_timeout().InNanoseconds())));
+}
+
+TEST(ContextProviderImplConfigTest, WithConfigWithCommandLineArgs) {
+  const base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
+
+  base::Value config_dict(base::Value::Type::DICTIONARY);
+
+  // Specify a configuration that sets valid args with valid strings.
+  base::Value args(base::Value::Type::DICTIONARY);
+  args.SetStringKey("renderer-process-limit", "0");
+  config_dict.SetKey("command-line-args", std::move(args));
+
+  base::RunLoop loop;
+  ContextProviderImpl context_provider;
+  context_provider.set_config_for_test(std::move(config_dict));
+  context_provider.SetLaunchCallbackForTest(
+      base::BindLambdaForTesting([&loop](const base::CommandLine& command,
+                                         const base::LaunchOptions& options) {
+        EXPECT_TRUE(command.HasSwitch("renderer-process-limit"));
+        loop.Quit();
+        return base::Process();
+      }));
+
+  fuchsia::web::ContextPtr context;
+  context.set_error_handler([&loop](zx_status_t status) {
+    ZX_LOG(ERROR, status);
+    ADD_FAILURE();
+    loop.Quit();
+  });
+  context_provider.Create(BuildCreateContextParams(), context.NewRequest());
+
+  loop.Run();
+}
+
+TEST(ContextProviderImplConfigTest, WithConfigWithDisallowedCommandLineArgs) {
+  const base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
+
+  base::Value config_dict(base::Value::Type::DICTIONARY);
+
+  // Specify a configuration that sets a disallowed command-line argument.
+  base::Value args(base::Value::Type::DICTIONARY);
+  args.SetStringKey("kittens-are-nice", "0");
+  config_dict.SetKey("command-line-args", std::move(args));
+
+  base::RunLoop loop;
+  ContextProviderImpl context_provider;
+  context_provider.set_config_for_test(std::move(config_dict));
+  context_provider.SetLaunchCallbackForTest(
+      base::BindLambdaForTesting([&](const base::CommandLine& command,
+                                     const base::LaunchOptions& options) {
+        ADD_FAILURE();
+        loop.Quit();
+        return base::Process();
+      }));
+
+  fuchsia::web::ContextPtr context;
+  context.set_error_handler([&loop](zx_status_t status) {
+    EXPECT_EQ(status, ZX_ERR_INTERNAL);
+    loop.Quit();
+  });
+  context_provider.Create(BuildCreateContextParams(), context.NewRequest());
+
+  loop.Run();
+}
+
+TEST(ContextProviderImplConfigTest, WithConfigWithWronglyTypedCommandLineArgs) {
+  const base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
+
+  base::Value config_dict(base::Value::Type::DICTIONARY);
+
+  // Specify a configuration that sets valid args with invalid value.
+  base::Value args(base::Value::Type::DICTIONARY);
+  args.SetBoolKey("renderer-process-limit", false);
+  config_dict.SetKey("command-line-args", std::move(args));
+
+  base::RunLoop loop;
+  ContextProviderImpl context_provider;
+  context_provider.set_config_for_test(std::move(config_dict));
+  context_provider.SetLaunchCallbackForTest(
+      base::BindLambdaForTesting([&](const base::CommandLine& command,
+                                     const base::LaunchOptions& options) {
+        ADD_FAILURE();
+        loop.Quit();
+        return base::Process();
+      }));
+
+  fuchsia::web::ContextPtr context;
+  context.set_error_handler([&loop](zx_status_t status) {
+    EXPECT_EQ(status, ZX_ERR_INTERNAL);
+    loop.Quit();
+  });
+  context_provider.Create(BuildCreateContextParams(), context.NewRequest());
+
+  loop.Run();
 }

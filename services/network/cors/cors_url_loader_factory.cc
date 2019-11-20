@@ -14,6 +14,7 @@
 #include "net/base/load_flags.h"
 #include "services/network/cors/cors_url_loader.h"
 #include "services/network/cors/preflight_controller.h"
+#include "services/network/crash_keys.h"
 #include "services/network/cross_origin_read_blocking.h"
 #include "services/network/initiator_lock_compatibility.h"
 #include "services/network/loader_util.h"
@@ -97,6 +98,8 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
     const ResourceRequest& resource_request,
     mojo::PendingRemote<mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
+  debug::ScopedRequestCrashKeys request_crash_keys(resource_request);
+
   if (!IsSane(context_, resource_request, options)) {
     mojo::Remote<mojom::URLLoaderClient>(std::move(client))
         ->OnComplete(URLLoaderCompletionStatus(net::ERR_INVALID_ARGUMENT));

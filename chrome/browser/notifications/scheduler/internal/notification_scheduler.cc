@@ -227,11 +227,23 @@ class NotificationSchedulerImpl : public NotificationScheduler {
     context_->notification_manager()->DeleteNotifications(type);
   }
 
-  void GetImpressionDetail(
+  void GetClientOverview(
       SchedulerClientType type,
-      ImpressionDetail::ImpressionDetailCallback callback) override {
-    context_->impression_tracker()->GetImpressionDetail(type,
-                                                        std::move(callback));
+      ClientOverview::ClientOverviewCallback callback) override {
+    context_->impression_tracker()->GetImpressionDetail(
+        type, base::BindOnce(
+                  &NotificationSchedulerImpl::OnImpressionDetailQueryCompleted,
+                  weak_ptr_factory_.GetWeakPtr(), type, std::move(callback)));
+  }
+
+  void OnImpressionDetailQueryCompleted(
+      SchedulerClientType type,
+      ClientOverview::ClientOverviewCallback callback,
+      ImpressionDetail impression_detail) {
+    std::vector<const NotificationEntry*> notifications;
+    context_->notification_manager()->GetNotifications(type, &notifications);
+    ClientOverview result(std::move(impression_detail), notifications.size());
+    std::move(callback).Run(std::move(result));
   }
 
   void OnInitialized(InitCallback init_callback, bool success) {

@@ -49,18 +49,14 @@ TEST_F(StackTraceTest, OutputToStream) {
   size_t frames_found = 0;
   const void* const* addresses = trace.Addresses(&frames_found);
 
-#if defined(OFFICIAL_BUILD) && defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OFFICIAL_BUILD) && \
+    ((defined(OS_POSIX) && !defined(OS_MACOSX)) || defined(OS_FUCHSIA))
   // Stack traces require an extra data table that bloats our binaries,
   // so they're turned off for official builds. Stop the test here, so
   // it at least verifies that StackTrace calls don't crash.
   return;
-#endif  // defined(OFFICIAL_BUILD) && defined(OS_POSIX) && !defined(OS_MACOSX)
-
-#if defined(OFFICIAL_BUILD) && defined(OS_FUCHSIA)
-  // TODO(https://crbug.com/1025329): StackTrace fails to capture any frames in
-  // Fuchsia Official builds.
-  return;
-#endif  // defined(OFFICIAL_BUILD) && defined(OS_FUCHSIA)
+#endif  // defined(OFFICIAL_BUILD) &&
+        // ((defined(OS_POSIX) && !defined(OS_MACOSX)) || defined(OS_FUCHSIA))
 
   ASSERT_TRUE(addresses);
   ASSERT_GT(frames_found, 5u) << "Too few frames found.";
